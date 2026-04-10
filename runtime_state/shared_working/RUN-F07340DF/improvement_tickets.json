@@ -1,0 +1,28 @@
+{
+  "tickets": [
+    {
+      "created_at": "2026-03-31T06:01:52.488729+00:00",
+      "hypothesis": "Threshold coupling or upstream data fetch failures can collapse candidate output.",
+      "owner_agent": "scanner_agent",
+      "owner_module": "app.py|auto_bot.py scanner bridge",
+      "priority": "high",
+      "requested_change": "Add per-filter reject counters and surface them in scanner_trace.",
+      "run_id": "RUN-F07340DF",
+      "status": "open",
+      "ticket_id": "TKT-356E6C5A",
+      "title": "Investigate zero-candidate scan runs"
+    },
+    {
+      "created_at": "2026-03-31T06:01:52.488738+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-F07340DF",
+      "status": "open",
+      "ticket_id": "TKT-9928626F",
+      "title": "Strengthen small-sample safeguards"
+    }
+  ]
+}

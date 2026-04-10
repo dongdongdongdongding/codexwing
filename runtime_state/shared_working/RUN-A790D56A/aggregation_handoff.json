@@ -1,0 +1,106 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 2,
+      "label": "⏱️ Intraday Trend | 1H",
+      "share": 1.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 76.9,
+      "leader_ticker": "095340.KQ",
+      "member_count": 1,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "반도체",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 73.6,
+      "leader_ticker": "028300.KQ",
+      "member_count": 1,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 2,
+    "strategy_distribution": {
+      "⏱️ Intraday Trend | 1H": 2
+    },
+    "theme_distribution": {
+      "바이오/헬스케어": 1,
+      "반도체": 1
+    },
+    "top_strategy": "⏱️ Intraday Trend | 1H",
+    "top_strategy_share": 1.0,
+    "trend_distribution": {
+      "UP": 2
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "095340.KQ",
+      "member_count": 1,
+      "theme_name": "반도체",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 76.9,
+          "score": 70.6,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "095340.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "028300.KQ",
+      "member_count": 1,
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 73.6,
+          "score": 61.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "028300.KQ"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-09T10:10:48.149982+00:00",
+  "quality_notes": [
+    "Total candidates: 2",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: ⏱️ Intraday Trend | 1H (2/2)",
+    "Top theme cluster: 반도체 (1/2)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T10:10:46.561414+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-A790D56A",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": [
+    {
+      "code": "STRATEGY_CONCENTRATION",
+      "message": "Candidates are concentrated in one strategy tag (⏱️ Intraday Trend | 1H).",
+      "severity": "warning"
+    }
+  ]
+}

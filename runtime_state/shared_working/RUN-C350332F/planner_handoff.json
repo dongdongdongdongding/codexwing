@@ -1,0 +1,643 @@
+{
+  "avoid_list": [],
+  "decisions": [
+    {
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 1,
+      "rationale": [
+        "scanner_score=111.1",
+        "rank=1",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#319660.KQ",
+      "stock_name": "피에스케이",
+      "ticker": "319660.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 2,
+      "rationale": [
+        "scanner_score=108.8",
+        "rank=2",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#065440.KQ",
+      "stock_name": "이루온",
+      "ticker": "065440.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 3,
+      "rationale": [
+        "scanner_score=107.3",
+        "rank=3",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#069540.KQ",
+      "stock_name": "빛과전자",
+      "ticker": "069540.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 4,
+      "rationale": [
+        "scanner_score=103.7",
+        "rank=4",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#033160.KQ",
+      "stock_name": "엠케이전자",
+      "ticker": "033160.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 5,
+      "rationale": [
+        "scanner_score=103.2",
+        "rank=5",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.2%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#095340.KQ",
+      "stock_name": "ISC",
+      "ticker": "095340.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 6,
+      "rationale": [
+        "scanner_score=101.0",
+        "rank=6",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.2%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#218410.KQ",
+      "stock_name": "RFHIC",
+      "ticker": "218410.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.936,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 7,
+      "rationale": [
+        "scanner_score=97.3",
+        "rank=7",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#023160.KQ",
+      "stock_name": "태광",
+      "ticker": "023160.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.936,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 8,
+      "rationale": [
+        "scanner_score=97.2",
+        "rank=8",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#027360.KQ",
+      "stock_name": "아주IB투자",
+      "ticker": "027360.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.933,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 9,
+      "rationale": [
+        "scanner_score=96.7",
+        "rank=9",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#100790.KQ",
+      "stock_name": "미래에셋벤처투자",
+      "ticker": "100790.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.92,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 10,
+      "rationale": [
+        "scanner_score=94.0",
+        "rank=10",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#330860.KQ",
+      "stock_name": "네패스아크",
+      "ticker": "330860.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.916,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 11,
+      "rationale": [
+        "scanner_score=93.3",
+        "rank=11",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#234690.KQ",
+      "stock_name": "녹십자웰빙",
+      "ticker": "234690.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.913,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 12,
+      "rationale": [
+        "scanner_score=92.7",
+        "rank=12",
+        "전략: 🎣 OBV_DIV | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#417200.KQ",
+      "stock_name": "LS머트리얼즈",
+      "ticker": "417200.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.879,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 13,
+      "rationale": [
+        "scanner_score=85.8",
+        "rank=13",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#037230.KQ",
+      "stock_name": "한국팩키지",
+      "ticker": "037230.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.877,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 14,
+      "rationale": [
+        "scanner_score=85.3",
+        "rank=14",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.2%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#131970.KQ",
+      "stock_name": "두산테스나",
+      "ticker": "131970.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.87,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 15,
+      "rationale": [
+        "scanner_score=84.0",
+        "rank=15",
+        "전략: 🚀 Momentum | Ranker:35.2%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#160980.KQ",
+      "stock_name": "싸이맥스",
+      "ticker": "160980.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.821,
+      "decision": "WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 16,
+      "rationale": [
+        "scanner_score=74.2",
+        "rank=16",
+        "전략: 🚀 Momentum | Ranker:35.2%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#031980.KQ",
+      "stock_name": "피에스케이홀딩스",
+      "ticker": "031980.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.814,
+      "decision": "WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 17,
+      "rationale": [
+        "scanner_score=72.8",
+        "rank=17",
+        "전략: 🚀 Momentum | Ranker:35.2%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#078350.KQ",
+      "stock_name": "한양디지텍",
+      "ticker": "078350.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.807,
+      "decision": "WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 18,
+      "rationale": [
+        "scanner_score=71.4",
+        "rank=18",
+        "전략: 🚀 Momentum | Ranker:35.2%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#131290.KQ",
+      "stock_name": "티에스이",
+      "ticker": "131290.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.778,
+      "decision": "WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 19,
+      "rationale": [
+        "scanner_score=65.7",
+        "rank=19",
+        "전략: 🚀 Momentum | Ranker:35.9%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#083650.KQ",
+      "stock_name": "비에이치아이",
+      "ticker": "083650.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.757,
+      "decision": "OBSERVE",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 20,
+      "rationale": [
+        "scanner_score=61.4",
+        "rank=20",
+        "전략: 🎣 RSI_DIV | ⚡ 단기과열(강세) | Ranker:35.2%",
+        "추세: DOWN"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#354320.KQ",
+      "stock_name": "알멕",
+      "ticker": "354320.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.748,
+      "decision": "OBSERVE",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 21,
+      "rationale": [
+        "scanner_score=59.5",
+        "rank=21",
+        "전략: 🚀 Momentum | Ranker:35.0%",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#044490.KQ",
+      "stock_name": "태웅",
+      "ticker": "044490.KQ",
+      "warnings": []
+    }
+  ],
+  "global_warnings": [
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "message": "Planner attached bear-market exception leaders from rejected candidates for follow-up tracking.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-01T13:36:56.654629+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T13:36:51.851665+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-C350332F",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "watchlist": [
+    "319660.KQ",
+    "065440.KQ",
+    "069540.KQ",
+    "033160.KQ",
+    "095340.KQ",
+    "218410.KQ",
+    "023160.KQ",
+    "027360.KQ",
+    "100790.KQ",
+    "330860.KQ",
+    "234690.KQ",
+    "417200.KQ",
+    "037230.KQ",
+    "131970.KQ",
+    "160980.KQ",
+    "031980.KQ",
+    "078350.KQ",
+    "131290.KQ",
+    "083650.KQ",
+    "354320.KQ"
+  ],
+  "watchlist_meta": [
+    {
+      "alpha_score": 62.0,
+      "conviction_score": 59.3,
+      "exception_score": 108.0,
+      "expires_at": "2026-04-04T13:36:57.412838+00:00",
+      "generated_at": "2026-04-01T13:36:57.412838+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "prob_5": 30.8,
+      "prob_clean": 24.9,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 14.276735386623399,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 100.0,
+      "real_trend": "UP",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "precision_gate_t3_low_ml_support",
+      "risk_label": "EXCEPTION_LEADER",
+      "source_profile": "exception_leader",
+      "stock_name": "리노공업",
+      "ticker": "058470.KQ",
+      "tier_sort": 3
+    },
+    {
+      "alpha_score": 55.0,
+      "conviction_score": 53.4,
+      "exception_score": 94.0,
+      "expires_at": "2026-04-04T13:36:57.412838+00:00",
+      "generated_at": "2026-04-01T13:36:57.412838+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "prob_5": 28.0,
+      "prob_clean": 8.1,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 39.22344668249112,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 100.0,
+      "real_trend": "UP",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "precision_gate_t3_low_ml_support",
+      "risk_label": "EXCEPTION_LEADER",
+      "source_profile": "exception_leader",
+      "stock_name": "삼천당제약",
+      "ticker": "000250.KQ",
+      "tier_sort": 3
+    },
+    {
+      "alpha_score": 57.0,
+      "conviction_score": 50.3,
+      "exception_score": 84.3,
+      "expires_at": "2026-04-04T13:36:57.412838+00:00",
+      "generated_at": "2026-04-01T13:36:57.412838+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "prob_5": 36.0,
+      "prob_clean": 37.5,
+      "profile_adjustment": 17.3,
+      "profile_avg_5d_pct": 5.4054054054053955,
+      "profile_confidence": 0.903,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 7,
+      "profile_win_5d_pct": 100.0,
+      "real_trend": "DOWN",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "precision_gate_t3_low_ml_support",
+      "risk_label": "EXCEPTION_LEADER",
+      "source_profile": "exception_leader",
+      "stock_name": "차바이오텍",
+      "ticker": "085660.KQ",
+      "tier_sort": 3
+    },
+    {
+      "alpha_score": 43.0,
+      "conviction_score": 52.9,
+      "exception_score": 81.0,
+      "expires_at": "2026-04-04T13:36:57.412838+00:00",
+      "generated_at": "2026-04-01T13:36:57.412838+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "prob_5": 28.1,
+      "prob_clean": 31.6,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 16.832072266712306,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 77.77777777777779,
+      "real_trend": "UP",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "precision_gate_t3_low_ml_support",
+      "risk_label": "EXCEPTION_LEADER",
+      "source_profile": "exception_leader",
+      "stock_name": "에코프로",
+      "ticker": "086520.KQ",
+      "tier_sort": 3
+    },
+    {
+      "alpha_score": 46.0,
+      "conviction_score": 34.0,
+      "exception_score": 80.0,
+      "expires_at": "2026-04-04T13:36:57.412838+00:00",
+      "generated_at": "2026-04-01T13:36:57.412838+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "prob_5": 28.0,
+      "prob_clean": 20.2,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 25.924452750348653,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 100.0,
+      "real_trend": "NEUTRAL",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "precision_gate_t3_low_ml_support",
+      "risk_label": "EXCEPTION_LEADER",
+      "source_profile": "exception_leader",
+      "stock_name": "레인보우로보틱스",
+      "ticker": "277810.KQ",
+      "tier_sort": 3
+    },
+    {
+      "alpha_score": 0.0,
+      "conviction_score": 0.0,
+      "exception_score": 59.9,
+      "expires_at": "2026-04-04T13:36:57.412838+00:00",
+      "generated_at": "2026-04-01T13:36:57.412838+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "profile_adjustment": 19.9,
+      "profile_avg_5d_pct": 8.092485549132958,
+      "profile_confidence": 0.903,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 7,
+      "profile_win_5d_pct": 100.0,
+      "real_trend": "",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "kr_signal_window_fail",
+      "risk_label": "EXCEPTION_LEADER",
+      "source_profile": "exception_leader",
+      "stock_name": "에코프로에이치엔",
+      "ticker": "383310.KQ",
+      "tier_sort": 3
+    }
+  ]
+}

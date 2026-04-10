@@ -1,0 +1,28 @@
+{
+  "tickets": [
+    {
+      "created_at": "2026-04-09T10:10:50.986386+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-A790D56A",
+      "status": "open",
+      "ticket_id": "TKT-0DED3000",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-04-09T10:10:50.986401+00:00",
+      "hypothesis": "Planner is suppressing active recommendations because the learned market/regime bucket is currently avoid.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "planner policy + regime scan policy",
+      "priority": "medium",
+      "requested_change": "Validate whether watchlist-only mode is appropriate for this market/regime bucket and retrain policy once more realized outcomes accumulate.",
+      "run_id": "RUN-A790D56A",
+      "status": "open",
+      "ticket_id": "TKT-4D8D382A",
+      "title": "Review watchlist-only market policy coverage"
+    }
+  ]
+}

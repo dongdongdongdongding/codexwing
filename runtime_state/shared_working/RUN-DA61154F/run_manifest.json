@@ -1,0 +1,19 @@
+{
+  "code_version": "bridge-v1",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-DA61154F/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-DA61154F/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-DA61154F/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-DA61154F/market_context_handoff.json",
+    "outcome_health": "runtime_state/shared_working/RUN-DA61154F/outcome_health.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-DA61154F/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-DA61154F/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-DA61154F/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-DA61154F/realized_outcomes.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-DA61154F/scanner_handoff.json"
+  },
+  "market": "KOSDAQ",
+  "model_version": "legacy",
+  "run_id": "RUN-DA61154F",
+  "strategy_version": "legacy-ui-v1"
+}

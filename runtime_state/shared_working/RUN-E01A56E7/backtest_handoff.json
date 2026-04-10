@@ -1,0 +1,59 @@
+{
+  "calibration": {
+    "confidence_penalty": 0.15,
+    "reason": "Sample-size and realized-outcome linkage are incomplete.",
+    "status": "proxy_only"
+  },
+  "diagnostics": {
+    "candidate_count": 0,
+    "expectancy_proxy": -1.0,
+    "mode": "proxy_from_scanner_handoff",
+    "real_backtest": {
+      "errors": [],
+      "selected_tickers": 0,
+      "tested_tickers": 0
+    },
+    "sample_size_bucket": "small",
+    "score_stats": {
+      "max": 0.0,
+      "mean": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "std": 0.0
+    },
+    "weak_candidate_ratio": 1.0
+  },
+  "produced_at": "2026-04-09T15:59:09.178189+00:00",
+  "regime_sensitivity": {
+    "benchmark": null,
+    "errors": [
+      "SKIPPED"
+    ],
+    "slices": [],
+    "source": "backtest_framework._backtest_period + market_data provider",
+    "status": "unknown",
+    "summary": {},
+    "windows": {}
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T15:59:05.371647+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-E01A56E7",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": [
+    {
+      "code": "PROXY_BACKTEST_ONLY",
+      "message": "Backtest handoff is proxy-only in this stage; connect real diagnostics next.",
+      "severity": "warning"
+    },
+    {
+      "code": "SMALL_SAMPLE",
+      "message": "Sample size is small (0 candidates).",
+      "severity": "warning"
+    }
+  ]
+}

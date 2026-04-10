@@ -1,0 +1,48 @@
+{
+  "calibration": {
+    "confidence_penalty": 0.15,
+    "reason": "Sample-size and realized-outcome linkage are incomplete.",
+    "status": "proxy_only"
+  },
+  "diagnostics": {
+    "candidate_count": 2,
+    "expectancy_proxy": 0.372,
+    "mode": "proxy_from_scanner_handoff",
+    "sample_size_bucket": "small",
+    "score_stats": {
+      "max": 79.2,
+      "mean": 68.6,
+      "median": 68.6,
+      "min": 58.0,
+      "std": 10.6
+    },
+    "weak_candidate_ratio": 0.0
+  },
+  "produced_at": "2026-03-30T10:49:11.091814+00:00",
+  "regime_sensitivity": {
+    "note": "Real regime-aware backtest is not wired in this bridge stage.",
+    "required_next_source": "backtest_framework.py outputs",
+    "status": "unknown"
+  },
+  "run_context": {
+    "as_of_date": "2026-03-30",
+    "code_version": "bridge-v3",
+    "created_at": "2026-03-30T10:49:11.091157+00:00",
+    "market": "KR",
+    "model_version": "legacy",
+    "run_id": "RUN-603E605C",
+    "strategy_version": "bridge-smoke-longterm"
+  },
+  "warnings": [
+    {
+      "code": "PROXY_BACKTEST_ONLY",
+      "message": "Backtest handoff is proxy-only in this stage; connect real diagnostics next.",
+      "severity": "warning"
+    },
+    {
+      "code": "SMALL_SAMPLE",
+      "message": "Sample size is small (2 candidates).",
+      "severity": "warning"
+    }
+  ]
+}

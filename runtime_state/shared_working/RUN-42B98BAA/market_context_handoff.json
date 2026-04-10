@@ -1,0 +1,749 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1479.93994140625,
+      "krw_change_1d": NaN,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.293000221252441,
+      "tnx_change_1d": 0.05,
+      "vix": 19.489999771118164,
+      "vix_change_1d": -7.37
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "방산",
+      "건설",
+      "조선"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.787,
+        "strength_score": 50.0,
+        "theme_id": "finance",
+        "theme_name": "금융"
+      },
+      {
+        "confidence": 0.751,
+        "strength_score": 45.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.607,
+        "strength_score": 36.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼"
+      },
+      {
+        "confidence": 0.586,
+        "strength_score": 33.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      },
+      {
+        "confidence": 0.543,
+        "strength_score": 27.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체"
+      },
+      {
+        "confidence": 0.543,
+        "strength_score": 27.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "description": "환율이 1470원대에서 후퇴하며 코스피에 긍정적 영향",
+        "direction": "DOWN",
+        "market_impact": 2
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 5,
+      "ECONOMY": 0,
+      "FX": 2,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": 4,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 3,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+      "[속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+      "환율 1470원대 후퇴…동결 속 불안 여전",
+      "한화에어로스페이스 - 단일판매ㆍ공급계약체결"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "외국인 매수세 유입과 한국은행의 완화적 통화정책 시그널로 코스피가 상승세를 보였으나, 환율 관련 잠재적 불안감은 주시 필요.",
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "description": "외국인 투자자의 현·선물 동반 순매수 전환으로 시장 유동성 개선",
+        "evidence": "외국인 현·선물 동반 순매수 전환",
+        "market_impact": 4,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "RATES",
+        "description": "한국은행 총재의 금리 인상에 대한 신중한 입장 표명",
+        "evidence": "한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "FX",
+        "description": "환율이 1470원대에서 후퇴했으나, 동결 속 불안감은 여전",
+        "evidence": "환율 1470원대 후퇴…동결 속 불안 여전",
+        "market_impact": 2,
+        "signal": "MIXED"
+      },
+      {
+        "category": "EARNINGS",
+        "description": "여러 기업의 대규모 계약 체결로 향후 실적 기대감 증가",
+        "evidence": "HJ중공업, 자이에스앤디, 한화에어로스페이스 - 단일판매ㆍ공급계약체결",
+        "market_impact": 2,
+        "signal": "BULLISH"
+      }
+    ],
+    "market_sentiment": "BULLISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "방위산업",
+        "건설",
+        "조선"
+      ],
+      "beneficiary_sectors": [
+        "방산",
+        "건설",
+        "조선"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.787,
+          "strength_score": 50.0,
+          "theme_id": "finance",
+          "theme_name": "금융"
+        },
+        {
+          "confidence": 0.751,
+          "strength_score": 45.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.607,
+          "strength_score": 36.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼"
+        },
+        {
+          "confidence": 0.586,
+          "strength_score": 33.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        },
+        {
+          "confidence": 0.543,
+          "strength_score": 27.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체"
+        },
+        {
+          "confidence": 0.543,
+          "strength_score": 27.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화"
+        }
+      ],
+      "company_event_bias": {
+        "HJ중공업": 8,
+        "자이에스앤디": 8,
+        "한화에어로스페이스": 8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "description": "환율이 1470원대에서 후퇴하며 코스피에 긍정적 영향",
+          "direction": "DOWN",
+          "market_impact": 2
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "HJ중공업",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "자이에스앤디",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한화에어로스페이스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "HJ중공업",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "자이에스앤디",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한화에어로스페이스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 5,
+        "ECONOMY": 0,
+        "FX": 2,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": 4,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 3,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+        "[속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+        "환율 1470원대 후퇴…동결 속 불안 여전",
+        "한화에어로스페이스 - 단일판매ㆍ공급계약체결"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "외국인 매수세 유입과 한국은행의 완화적 통화정책 시그널로 코스피가 상승세를 보였으나, 환율 관련 잠재적 불안감은 주시 필요.",
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "description": "외국인 투자자의 현·선물 동반 순매수 전환으로 시장 유동성 개선",
+          "evidence": "외국인 현·선물 동반 순매수 전환",
+          "market_impact": 4,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "RATES",
+          "description": "한국은행 총재의 금리 인상에 대한 신중한 입장 표명",
+          "evidence": "한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "FX",
+          "description": "환율이 1470원대에서 후퇴했으나, 동결 속 불안감은 여전",
+          "evidence": "환율 1470원대 후퇴…동결 속 불안 여전",
+          "market_impact": 2,
+          "signal": "MIXED"
+        },
+        {
+          "category": "EARNINGS",
+          "description": "여러 기업의 대규모 계약 체결로 향후 실적 기대감 증가",
+          "evidence": "HJ중공업, 자이에스앤디, 한화에어로스페이스 - 단일판매ㆍ공급계약체결",
+          "market_impact": 2,
+          "signal": "BULLISH"
+        }
+      ],
+      "market_sentiment": "BULLISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+        "[DART 20260410] HJ중공업 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 자이에스앤디 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 한화에어로스페이스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260409] 남광토건 - 투자판단관련주요경영사항 | 전자공시",
+        "[DART 20260410] 한화투자증권 - 투자설명서(일괄신고) | 전자공시",
+        "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+        "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+        "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
+        "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제",
+        "[Fri, 10 Apr 2026 11:09:32 +09:00] 정부 방침 나오자마자…국민은행, SCB 시범 도입 발표 | 매일경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달"
+      ],
+      "risk_flags": [
+        "환율 불안정성"
+      ],
+      "sentiment_score": 70,
+      "source": "gemini",
+      "theme_evidence": {
+        "eco_energy": [],
+        "finance": [
+          "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+          "[DART 20260410] 한화투자증권 - 투자설명서(일괄신고) | 전자공시",
+          "[Fri, 10 Apr 2026 11:09:32 +09:00] 정부 방침 나오자마자…국민은행, SCB 시범 도입 발표 | 매일경제",
+          "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제"
+        ],
+        "it_platform": [],
+        "robotics": [],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "semiconductor": [],
+        "telecom": [
+          "[주달 핫테마] 5G | 주달"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "confidence": 0.787,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+            "[DART 20260410] 한화투자증권 - 투자설명서(일괄신고) | 전자공시",
+            "[Fri, 10 Apr 2026 11:09:32 +09:00] 정부 방침 나오자마자…국민은행, SCB 시범 도입 발표 | 매일경제",
+            "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제"
+          ],
+          "strength_score": 50.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-10T03:54:07.544706+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.751,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 45.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-10T03:54:07.545693+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "IT서비스/플랫폼",
+            "IT서비스",
+            "플랫폼",
+            "소프트웨어",
+            "SW",
+            "클라우드"
+          ],
+          "confidence": 0.607,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [],
+          "strength_score": 36.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "updated_at": "2026-04-10T03:54:07.544539+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ],
+          "confidence": 0.586,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 33.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-10T03:54:07.545487+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "반도체",
+            "메모리",
+            "HBM",
+            "낸드",
+            "DRAM",
+            "파운드리"
+          ],
+          "confidence": 0.543,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 27.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-10T03:54:07.544998+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "로봇/자동화",
+            "로봇",
+            "자동화",
+            "스마트팩토리",
+            "협동로봇",
+            "물류로봇"
+          ],
+          "confidence": 0.543,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY"
+          ],
+          "evidence": [],
+          "strength_score": 27.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "updated_at": "2026-04-10T03:54:07.545575+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "updated_at": "2026-04-10T03:54:07.545165+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "외국인 현·선물 동반 순매수로 코스피 상승 견인",
+          "impact": "POSITIVE",
+          "theme": "외국인 투자심리 개선"
+        },
+        {
+          "description": "한은총재의 공급충격 일시적 대응 발언으로 금리 인상 우려 완화",
+          "impact": "POSITIVE",
+          "theme": "통화정책 완화 기대"
+        },
+        {
+          "description": "주요 기업들의 단일판매·공급계약 체결 소식",
+          "impact": "POSITIVE",
+          "theme": "기업 실적 개선"
+        }
+      ],
+      "timestamp": "2026-04-10 12:54",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+      "[DART 20260410] HJ중공업 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 자이에스앤디 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 한화에어로스페이스 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260409] 남광토건 - 투자판단관련주요경영사항 | 전자공시",
+      "[DART 20260410] 한화투자증권 - 투자설명서(일괄신고) | 전자공시",
+      "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+      "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+      "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
+      "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제",
+      "[Fri, 10 Apr 2026 11:09:32 +09:00] 정부 방침 나오자마자…국민은행, SCB 시범 도입 발표 | 매일경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달"
+    ],
+    "risk_flags": [
+      "환율 불안정성"
+    ],
+    "sentiment_score": 70,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "eco_energy": [],
+      "finance": [
+        "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+        "[DART 20260410] 한화투자증권 - 투자설명서(일괄신고) | 전자공시",
+        "[Fri, 10 Apr 2026 11:09:32 +09:00] 정부 방침 나오자마자…국민은행, SCB 시범 도입 발표 | 매일경제",
+        "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제"
+      ],
+      "it_platform": [],
+      "robotics": [],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "semiconductor": [],
+      "telecom": [
+        "[주달 핫테마] 5G | 주달"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "confidence": 0.787,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260410] NH투자증권 - 증권발행실적보고서 | 전자공시",
+          "[DART 20260410] 한화투자증권 - 투자설명서(일괄신고) | 전자공시",
+          "[Fri, 10 Apr 2026 11:09:32 +09:00] 정부 방침 나오자마자…국민은행, SCB 시범 도입 발표 | 매일경제",
+          "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제"
+        ],
+        "strength_score": 50.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-10T03:54:07.544706+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.751,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 45.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-10T03:54:07.545693+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "IT서비스/플랫폼",
+          "IT서비스",
+          "플랫폼",
+          "소프트웨어",
+          "SW",
+          "클라우드"
+        ],
+        "confidence": 0.607,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [],
+        "strength_score": 36.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "updated_at": "2026-04-10T03:54:07.544539+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ],
+        "confidence": 0.586,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 33.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-10T03:54:07.545487+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "반도체",
+          "메모리",
+          "HBM",
+          "낸드",
+          "DRAM",
+          "파운드리"
+        ],
+        "confidence": 0.543,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 27.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-10T03:54:07.544998+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "로봇/자동화",
+          "로봇",
+          "자동화",
+          "스마트팩토리",
+          "협동로봇",
+          "물류로봇"
+        ],
+        "confidence": 0.543,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY"
+        ],
+        "evidence": [],
+        "strength_score": 27.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "updated_at": "2026-04-10T03:54:07.545575+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "updated_at": "2026-04-10T03:54:07.545165+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-10T03:54:07.548412+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-10T03:53:17.190870+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-42B98BAA",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

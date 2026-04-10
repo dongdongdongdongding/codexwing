@@ -1,0 +1,452 @@
+from __future__ import annotations
+
+import math
+from typing import Any, Dict, List
+
+from modules.kosdaq_3d_continuation_ranker import predict_continuation_overlay
+
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        if value in (None, "", "nan"):
+            return float(default)
+        result = float(value)
+        if math.isnan(result) or math.isinf(result):
+            return float(default)
+        return result
+    except Exception:
+        return float(default)
+
+
+def _has_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip().lower() not in {"", "nan", "none", "null", "unknown", "na", "n/a"}
+    try:
+        numeric = float(value)
+        if math.isnan(numeric) or math.isinf(numeric):
+            return False
+        return True
+    except Exception:
+        return True
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, float(value)))
+
+
+def _extract_feature(candidate: Dict[str, Any], *keys: str) -> Any:
+    feature_snapshot = candidate.get("feature_snapshot", {}) if isinstance(candidate.get("feature_snapshot"), dict) else {}
+    for key in keys:
+        if key in candidate and candidate.get(key) not in (None, ""):
+            return candidate.get(key)
+        if key in feature_snapshot and feature_snapshot.get(key) not in (None, ""):
+            return feature_snapshot.get(key)
+    return None
+
+
+def _collect_context(candidate: Dict[str, Any]) -> Dict[str, Any]:
+    feature_snapshot = candidate.get("feature_snapshot", {}) if isinstance(candidate.get("feature_snapshot"), dict) else {}
+    theme_context = candidate.get("theme_context", {}) if isinstance(candidate.get("theme_context"), dict) else {}
+    leader_metrics = candidate.get("leader_metrics", {}) if isinstance(candidate.get("leader_metrics"), dict) else {}
+    if not theme_context and isinstance(feature_snapshot.get("theme_context"), dict):
+        theme_context = feature_snapshot.get("theme_context", {})
+    if not leader_metrics and isinstance(feature_snapshot.get("leader_metrics"), dict):
+        leader_metrics = feature_snapshot.get("leader_metrics", {})
+
+    raw_scan_mode = _extract_feature(candidate, "scan_mode")
+    raw_phase25_variant = _extract_feature(candidate, "phase25_variant")
+    raw_real_trend = _extract_feature(candidate, "real_trend", "trend")
+    raw_routing_path = _extract_feature(candidate, "routing_path", "theme_routing_path")
+    raw_strategy_text = _extract_feature(candidate, "strategy", "note")
+    raw_context_text = _extract_feature(candidate, "context")
+    raw_prob_5 = _extract_feature(candidate, "prob_5", "_prob_5", "ml_prob")
+    raw_prob_clean = _extract_feature(candidate, "prob_clean", "_prob_clean")
+    raw_whale_score = _extract_feature(candidate, "whale_score")
+    raw_expected_return_1d_pct = _extract_feature(candidate, "expected_return_1d_pct")
+    raw_expected_return_3d_pct = _extract_feature(candidate, "expected_return_3d_pct")
+    raw_theme_direction = theme_context.get("theme_direction")
+    raw_theme_strength = theme_context.get("theme_strength_score")
+    raw_leader_score = leader_metrics.get("kr_flow_leader_score", leader_metrics.get("leader_score"))
+    raw_context_adjustment = leader_metrics.get("kr_context_adjustment", theme_context.get("context_score_adjustment"))
+    raw_alpha_score = _extract_feature(candidate, "alpha_score")
+    raw_decision_score = _extract_feature(candidate, "decision_score", "score")
+    continuation_overlay = predict_continuation_overlay(
+        decision_score=raw_decision_score,
+        alpha_score=raw_alpha_score,
+        ml_prob=raw_prob_5,
+        trend=raw_real_trend,
+    )
+
+    return {
+        "feature_snapshot": feature_snapshot,
+        "theme_context": theme_context,
+        "leader_metrics": leader_metrics,
+        "scan_mode": str(raw_scan_mode or "").upper(),
+        "phase25_variant": str(raw_phase25_variant or ""),
+        "real_trend": str(raw_real_trend or "").upper(),
+        "routing_path": str(raw_routing_path or theme_context.get("routing_path") or "").lower(),
+        "strategy_text": str(raw_strategy_text or ""),
+        "context_text": str(raw_context_text or ""),
+        "prob_5": _safe_float(raw_prob_5, 50.0),
+        "prob_clean": _safe_float(raw_prob_clean, 50.0),
+        "whale_score": _safe_float(raw_whale_score, 50.0),
+        "expected_return_1d_pct": raw_expected_return_1d_pct,
+        "expected_return_3d_pct": raw_expected_return_3d_pct,
+        "theme_direction": str(raw_theme_direction or "").upper(),
+        "theme_strength": _safe_float(raw_theme_strength, 0.0),
+        "leader_score": _safe_float(raw_leader_score, 0.0),
+        "context_adjustment": _safe_float(raw_context_adjustment, 0.0),
+        "flow_consensus": bool(leader_metrics.get("kr_flow_consensus_buying", False)),
+        "retail_dominant": bool(leader_metrics.get("kr_retail_dominant", False)),
+        "has_prob_5": _has_value(raw_prob_5),
+        "has_prob_clean": _has_value(raw_prob_clean),
+        "has_whale_score": _has_value(raw_whale_score),
+        "has_expected_return_1d_pct": _has_value(raw_expected_return_1d_pct),
+        "has_expected_return_3d_pct": _has_value(raw_expected_return_3d_pct),
+        "has_real_trend": _has_value(raw_real_trend),
+        "has_routing_path": _has_value(raw_routing_path) or _has_value(theme_context.get("routing_path")),
+        "has_theme_direction": _has_value(raw_theme_direction),
+        "has_leader_score": _has_value(raw_leader_score),
+        "has_context_adjustment": _has_value(raw_context_adjustment),
+        "has_strategy_text": _has_value(raw_strategy_text),
+        "has_context_text": _has_value(raw_context_text),
+        "continuation_overlay": continuation_overlay if isinstance(continuation_overlay, dict) else {},
+    }
+
+
+def _score_horizon(
+    *,
+    market: str,
+    raw_score: float,
+    context: Dict[str, Any],
+    horizon: str,
+) -> Dict[str, Any]:
+    scan_mode = str(context.get("scan_mode") or "").upper()
+    phase25_variant = str(context.get("phase25_variant") or "")
+    real_trend = str(context.get("real_trend") or "").upper()
+    routing_path = str(context.get("routing_path") or "").lower()
+    strategy_text = str(context.get("strategy_text") or "")
+    context_text = str(context.get("context_text") or "")
+    prob_5 = _safe_float(context.get("prob_5"), 50.0)
+    prob_clean = _safe_float(context.get("prob_clean"), 50.0)
+    whale_score = _safe_float(context.get("whale_score"), 50.0)
+    expected_return_1d_pct = context.get("expected_return_1d_pct")
+    expected_return_3d_pct = context.get("expected_return_3d_pct")
+    theme_direction = str(context.get("theme_direction") or "").upper()
+    theme_strength = _safe_float(context.get("theme_strength"), 0.0)
+    leader_score = _safe_float(context.get("leader_score"), 0.0)
+    context_adjustment = _safe_float(context.get("context_adjustment"), 0.0)
+    flow_consensus = bool(context.get("flow_consensus", False))
+    retail_dominant = bool(context.get("retail_dominant", False))
+    has_prob_5 = bool(context.get("has_prob_5", False))
+    has_prob_clean = bool(context.get("has_prob_clean", False))
+    has_whale_score = bool(context.get("has_whale_score", False))
+    has_expected_return_1d_pct = bool(context.get("has_expected_return_1d_pct", False))
+    has_expected_return_3d_pct = bool(context.get("has_expected_return_3d_pct", False))
+    has_real_trend = bool(context.get("has_real_trend", False))
+    has_routing_path = bool(context.get("has_routing_path", False))
+    has_theme_direction = bool(context.get("has_theme_direction", False))
+    has_leader_score = bool(context.get("has_leader_score", False))
+    has_context_adjustment = bool(context.get("has_context_adjustment", False))
+    has_strategy_text = bool(context.get("has_strategy_text", False))
+    has_context_text = bool(context.get("has_context_text", False))
+    continuation_overlay = context.get("continuation_overlay", {}) if isinstance(context.get("continuation_overlay"), dict) else {}
+    continuation_enabled = bool(continuation_overlay.get("enabled", False))
+    continuation_prob = _safe_float(continuation_overlay.get("prob_up_3d"), 50.0)
+    continuation_score_adjustment = _safe_float(continuation_overlay.get("score_adjustment"), 0.0)
+
+    score = float(raw_score)
+    adjustments: List[Dict[str, Any]] = []
+
+    def _add(delta: float, reason: str) -> None:
+        nonlocal score
+        if abs(float(delta)) < 0.01:
+            return
+        score += float(delta)
+        adjustments.append({"reason": reason, "delta": round(float(delta), 2)})
+
+    if horizon == "1d":
+        intraday_exception = (
+            scan_mode == "INTRADAY"
+            and raw_score >= (84.0 if market == "KOSPI" else 86.0)
+            and prob_5 >= 58.0
+            and real_trend == "UP"
+        )
+        if scan_mode == "SWING":
+            _add(5.0 if market == "KOSPI" else 6.5, "SCAN_MODE_SWING_1D")
+        elif scan_mode == "INTRADAY" and not intraday_exception:
+            _add(-4.0 if market == "KOSPI" else -7.0, "SCAN_MODE_INTRADAY_1D")
+        elif intraday_exception:
+            _add(2.0, "SCAN_MODE_INTRADAY_EXCEPTION_1D")
+    else:
+        if scan_mode == "SWING":
+            _add(10.0 if market == "KOSPI" else 12.0, "SCAN_MODE_SWING_3D")
+        elif scan_mode == "INTRADAY":
+            _add(-8.0 if market == "KOSPI" else -14.0, "SCAN_MODE_INTRADAY_3D")
+
+    if real_trend == "UP":
+        _add(4.0, "TREND_UP")
+    elif real_trend == "DOWN":
+        _add(-7.0, "TREND_DOWN")
+
+    if phase25_variant.startswith("phase25_kr_intraday"):
+        _add(-5.0 if horizon == "1d" else (-7.0 if market == "KOSPI" else -10.0), f"PHASE25_INTRADAY_{horizon.upper()}_PENALTY")
+    elif phase25_variant.startswith("phase25_kr_swing"):
+        _add(1.5 if horizon == "1d" else 3.0, f"PHASE25_SWING_{horizon.upper()}_PREMIUM")
+
+    if has_expected_return_1d_pct:
+        multiplier = 1.8 if horizon == "1d" else 0.7
+        _add(_clamp(_safe_float(expected_return_1d_pct) * multiplier, -7.0, 9.0), f"EXPECTED_RETURN_1D_{horizon.upper()}")
+    if has_expected_return_3d_pct:
+        multiplier = 0.35 if horizon == "1d" else 0.95
+        _add(_clamp(_safe_float(expected_return_3d_pct) * multiplier, -6.0, 11.0), f"EXPECTED_RETURN_3D_{horizon.upper()}")
+
+    if routing_path == "theme_routed":
+        _add(4.0 if horizon == "1d" else 5.0, f"THEME_ROUTED_{horizon.upper()}")
+    elif routing_path == "theme_shadow":
+        _add(1.2 if horizon == "1d" else 1.8, f"THEME_SHADOW_{horizon.upper()}")
+
+    if has_context_text and ("수혜" in context_text or "Beneficiary" in context_text):
+        _add(4.5 if horizon == "1d" else 3.5, f"NEWS_BENEFICIARY_{horizon.upper()}")
+    if has_context_text and "피해" in context_text:
+        _add(-5.0 if horizon == "1d" else -4.5, f"NEWS_HEADWIND_{horizon.upper()}")
+    if has_strategy_text and "FlowLeader" in strategy_text:
+        _add(4.0 if horizon == "1d" else 3.0, f"FLOW_LEADER_{horizon.upper()}")
+    if has_strategy_text and "ThemeRoute" in strategy_text:
+        _add(2.0, f"THEME_ROUTE_TAG_{horizon.upper()}")
+    if has_strategy_text and "ContextTailwind" in strategy_text:
+        _add(3.0 if horizon == "1d" else 2.0, f"CONTEXT_TAILWIND_{horizon.upper()}")
+    if has_strategy_text and "ContextRisk" in strategy_text:
+        _add(-4.0 if horizon == "1d" else -3.0, f"CONTEXT_RISK_{horizon.upper()}")
+
+    if has_theme_direction and theme_direction == "BENEFICIARY":
+        bonus = min(4.0 if horizon == "1d" else 5.0, 1.0 + theme_strength / (25.0 if horizon == "1d" else 20.0))
+        _add(bonus, f"THEME_BENEFICIARY_{horizon.upper()}")
+    elif has_theme_direction and theme_direction == "HEADWIND":
+        penalty = min(5.0 if horizon == "1d" else 5.5, 1.0 + theme_strength / (20.0 if horizon == "1d" else 18.0))
+        _add(-penalty, f"THEME_HEADWIND_{horizon.upper()}")
+
+    if has_leader_score and leader_score >= 80.0:
+        _add(5.0 if horizon == "1d" else 4.0, f"LEADER_SCORE_HIGH_{horizon.upper()}")
+    elif has_leader_score and leader_score >= 70.0:
+        _add(2.5 if horizon == "1d" else 2.0, f"LEADER_SCORE_SUPPORT_{horizon.upper()}")
+    if has_context_adjustment and context_adjustment != 0.0:
+        _add(_clamp(context_adjustment * (0.7 if horizon == "1d" else 0.45), -6.0, 6.0), f"CONTEXT_ADJUSTMENT_{horizon.upper()}")
+
+    if has_leader_score and flow_consensus:
+        _add(2.0 if horizon == "1d" else 1.2, f"FLOW_CONSENSUS_{horizon.upper()}")
+    if has_leader_score and retail_dominant:
+        _add(-4.0 if horizon == "1d" else -3.0, f"RETAIL_DOMINANT_{horizon.upper()}")
+
+    if has_prob_clean and prob_clean >= 38.0:
+        _add(1.5 if horizon == "1d" else 2.5, f"CLEAN_PROB_STRONG_{horizon.upper()}")
+    elif has_prob_clean and prob_clean < 28.0:
+        _add(-4.0 if horizon == "1d" else -5.0, f"CLEAN_PROB_WEAK_{horizon.upper()}")
+
+    if has_prob_5 and prob_5 >= 60.0:
+        _add(_clamp((prob_5 - 60.0) * (0.13 if horizon == "1d" else 0.09), 0.0, 4.0), f"MODEL_SUPPORT_{horizon.upper()}")
+    elif has_prob_5 and prob_5 < 45.0:
+        _add(-_clamp((45.0 - prob_5) * (0.15 if horizon == "1d" else 0.10), 0.0, 4.0), f"MODEL_UNDER_SUPPORT_{horizon.upper()}")
+
+    if has_whale_score and whale_score >= 65.0:
+        _add(_clamp((whale_score - 65.0) * (0.10 if horizon == "1d" else 0.07), 0.0, 3.0), f"WHALE_SUPPORT_{horizon.upper()}")
+    elif has_whale_score and whale_score < 40.0:
+        _add(-_clamp((40.0 - whale_score) * (0.10 if horizon == "1d" else 0.08), 0.0, 3.0), f"WHALE_WEAK_{horizon.upper()}")
+
+    if market == "KOSDAQ" and horizon == "3d":
+        if continuation_enabled:
+            _add(continuation_score_adjustment, "KOSDAQ_3D_CONTINUATION_MODEL")
+        has_exp_1d = has_expected_return_1d_pct
+        has_exp_3d = has_expected_return_3d_pct
+        has_route = has_routing_path
+        has_trend = has_real_trend
+        exp_1d = _safe_float(expected_return_1d_pct, 0.0)
+        exp_3d = _safe_float(expected_return_3d_pct, 0.0)
+        strong_route = routing_path in {"theme_routed", "theme_shadow"}
+        persistent_flow = flow_consensus and leader_score >= 72.0 and not retail_dominant
+
+        if has_exp_3d and exp_3d >= 4.0 and persistent_flow and real_trend == "UP":
+            _add(5.0, "KOSDAQ_3D_PERSISTENCE_STRONG")
+        elif has_exp_3d and exp_3d >= 2.5 and strong_route and real_trend == "UP":
+            _add(2.5, "KOSDAQ_3D_PERSISTENCE_BASE")
+
+        if has_exp_3d and exp_3d < 1.5:
+            _add(-8.0, "KOSDAQ_3D_EXPECTED_RETURN_WEAK")
+        elif has_exp_3d and exp_3d < 2.5:
+            _add(-3.5, "KOSDAQ_3D_EXPECTED_RETURN_SOFT")
+
+        if has_exp_1d and has_exp_3d and exp_1d >= exp_3d + 3.0:
+            _add(-4.5, "KOSDAQ_3D_BURST_OVER_CONTINUATION")
+
+        if has_prob_clean and prob_clean < 34.0:
+            _add(-4.0, "KOSDAQ_3D_CLEAN_PROB_LOW")
+
+        if has_trend and real_trend != "UP":
+            _add(-5.0, "KOSDAQ_3D_TREND_NOT_UP")
+
+        if has_route and not strong_route:
+            _add(-4.0, "KOSDAQ_3D_THEME_ROUTE_MISSING")
+
+        if has_leader_score and leader_score >= 60.0 and not flow_consensus:
+            _add(-3.0, "KOSDAQ_3D_FLOW_NOT_CONFIRMED")
+
+        if has_leader_score and retail_dominant:
+            _add(-3.0, "KOSDAQ_3D_RETAIL_DOMINANT")
+
+        evidence_count = sum(
+            1
+            for flag in [
+                has_exp_3d,
+                has_exp_1d,
+                has_route,
+                has_trend,
+                has_leader_score,
+                has_prob_clean,
+                has_prob_5,
+                has_strategy_text,
+                has_context_text,
+                has_theme_direction,
+                continuation_enabled,
+            ]
+            if flag
+        )
+        shrink = 1.0
+        if evidence_count <= 1:
+            shrink = 0.10
+        elif evidence_count == 2:
+            shrink = 0.25
+        elif evidence_count == 3:
+            shrink = 0.45
+        elif evidence_count == 4:
+            shrink = 0.65
+        elif evidence_count == 5:
+            shrink = 0.80
+        if shrink < 1.0:
+            original_delta = score - raw_score
+            adjusted_delta = original_delta * shrink
+            score = raw_score + adjusted_delta
+            adjustments.append({"reason": "KOSDAQ_3D_EVIDENCE_SHRINK", "delta": round(adjusted_delta - original_delta, 2)})
+
+    final_score = round(_clamp(score, 0.0, 100.0), 2)
+    return {
+        "score": final_score,
+        "raw_score": round(raw_score, 2),
+        "adjustments": adjustments,
+        "reasons": [str(row["reason"]) for row in adjustments[:8]],
+    }
+
+
+def compute_kr_quant_rerank(candidate: Dict[str, Any], run_market: str) -> Dict[str, Any]:
+    market = str(run_market or "").upper()
+    raw_score = _safe_float(candidate.get("score", _extract_feature(candidate, "decision_score", "score")), 50.0)
+    if market not in {"KOSPI", "KOSDAQ"}:
+        return {
+            "score": round(raw_score, 2),
+            "score_1d": round(raw_score, 2),
+            "score_3d": round(raw_score, 2),
+            "lane": "raw",
+            "raw_score": round(raw_score, 2),
+            "adjustments": [],
+            "reasons": [],
+        }
+
+    context = _collect_context(candidate)
+    rank_1d = _score_horizon(market=market, raw_score=raw_score, context=context, horizon="1d")
+    rank_3d = _score_horizon(market=market, raw_score=raw_score, context=context, horizon="3d")
+    scan_mode = str(context.get("scan_mode") or "").upper()
+    continuation_evidence = sum(
+        1
+        for flag in [
+            bool(context.get("has_expected_return_3d_pct", False)),
+            bool(context.get("has_expected_return_1d_pct", False)),
+            bool(context.get("has_routing_path", False)),
+            bool(context.get("has_real_trend", False)),
+            bool(context.get("has_leader_score", False)),
+            bool(context.get("has_prob_clean", False)),
+            bool(context.get("has_theme_direction", False)),
+            bool(context.get("continuation_overlay", {}).get("enabled", False)),
+        ]
+        if flag
+    )
+    continuation_prob = _safe_float(context.get("continuation_overlay", {}).get("prob_up_3d"), 50.0)
+    if scan_mode == "INTRADAY":
+        lane = "1d"
+    elif market == "KOSDAQ":
+        if bool(context.get("continuation_overlay", {}).get("enabled", False)) and continuation_prob >= 62.0:
+            lane = "3d"
+        elif continuation_evidence >= 2 and float(rank_3d["score"]) >= float(rank_1d["score"]) - 1.0:
+            lane = "3d"
+        else:
+            lane = "1d"
+    else:
+        lane = "3d"
+    primary = rank_1d if lane == "1d" else rank_3d
+    return {
+        "score": float(primary["score"]),
+        "score_1d": float(rank_1d["score"]),
+        "score_3d": float(rank_3d["score"]),
+        "lane": lane,
+        "continuation_evidence": int(continuation_evidence),
+        "raw_score": round(raw_score, 2),
+        "adjustments": list(primary.get("adjustments", [])),
+        "reasons": list(primary.get("reasons", [])),
+    }
+
+
+def resolve_kr_active_lane(scored_candidates: List[Dict[str, Any]], run_market: str) -> str:
+    market = str(run_market or "").upper()
+    if market != "KOSDAQ":
+        return "mixed"
+
+    lane_scores: Dict[str, List[float]] = {"1d": [], "3d": []}
+    lane_evidence: Dict[str, List[float]] = {"1d": [], "3d": []}
+    for cand in scored_candidates:
+        quant_meta = cand.get("_quant_rerank", {}) if isinstance(cand.get("_quant_rerank"), dict) else {}
+        lane = str(quant_meta.get("lane", "raw") or "raw")
+        if lane == "1d":
+            lane_scores["1d"].append(_safe_float(quant_meta.get("score_1d", quant_meta.get("score")), 0.0))
+            lane_evidence["1d"].append(_safe_float(quant_meta.get("continuation_evidence"), 0.0))
+        elif lane == "3d":
+            lane_scores["3d"].append(_safe_float(quant_meta.get("score_3d", quant_meta.get("score")), 0.0))
+            lane_evidence["3d"].append(_safe_float(quant_meta.get("continuation_evidence"), 0.0))
+
+    def _top_avg(values: List[float]) -> float:
+        if not values:
+            return 0.0
+        ordered = sorted([float(v) for v in values], reverse=True)[:3]
+        return sum(ordered) / len(ordered)
+
+    lane_1d = _top_avg(lane_scores["1d"])
+    lane_3d = _top_avg(lane_scores["3d"])
+    lane_3d_count = len(lane_scores["3d"])
+    lane_3d_evidence = _top_avg(lane_evidence["3d"])
+    if lane_3d_count < 150 or lane_3d_evidence < 3.0:
+        return "1d"
+    if lane_3d >= lane_1d + 6.0:
+        return "3d"
+    return "1d"
+
+
+def compute_kr_basket_priority(
+    candidate: Dict[str, Any],
+    run_market: str,
+    active_lane: str,
+) -> Dict[str, Any]:
+    quant_meta = candidate.get("_quant_rerank", {}) if isinstance(candidate.get("_quant_rerank"), dict) else {}
+    market = str(run_market or "").upper()
+    lane = str(quant_meta.get("lane", "raw") or "raw")
+    score = _safe_float(quant_meta.get("score", candidate.get("score")), 0.0)
+    score_1d = _safe_float(quant_meta.get("score_1d", score), score)
+    score_3d = _safe_float(quant_meta.get("score_3d", score), score)
+
+    if market != "KOSDAQ" or active_lane not in {"1d", "3d"}:
+        return {"score": round(score, 2), "lane": lane, "active_lane": active_lane, "delta": 0.0}
+
+    if lane == active_lane:
+        boosted = (score_1d if lane == "1d" else score_3d) + 4.0
+        return {"score": round(boosted, 2), "lane": lane, "active_lane": active_lane, "delta": 4.0}
+
+    secondary_score = (score_1d if lane == "1d" else score_3d) - 8.0
+    return {"score": round(secondary_score, 2), "lane": lane, "active_lane": active_lane, "delta": -8.0}

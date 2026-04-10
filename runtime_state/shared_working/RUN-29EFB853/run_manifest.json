@@ -1,0 +1,19 @@
+{
+  "code_version": "verify-phase25-meta-v2",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-29EFB853/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-29EFB853/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-29EFB853/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-29EFB853/market_context_handoff.json",
+    "outcome_health": "runtime_state/shared_working/RUN-29EFB853/outcome_health.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-29EFB853/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-29EFB853/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-29EFB853/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-29EFB853/realized_outcomes.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-29EFB853/scanner_handoff.json"
+  },
+  "market": "KOSDAQ",
+  "model_version": "phase25-kr-intraday-xgb",
+  "run_id": "RUN-29EFB853",
+  "strategy_version": "verify-phase25-meta"
+}

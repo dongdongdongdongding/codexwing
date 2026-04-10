@@ -1,0 +1,655 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1473.22998046875,
+      "krw_change_1d": -1.73,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.269000053405762,
+      "tnx_change_1d": -0.51,
+      "vix": 20.110000610351562,
+      "vix_change_1d": -4.42
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "2차전지",
+      "2차전지 장비"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.623,
+        "strength_score": 27.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.573,
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "중동 휴전 기대감으로 유가 급등 압력 완화",
+        "direction": "NEUTRAL",
+        "market_impact": 1
+      },
+      {
+        "asset": "BRENT",
+        "description": "중동 휴전 기대감으로 유가 급등 압력 완화",
+        "direction": "NEUTRAL",
+        "market_impact": 1
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": -2,
+      "FX": 0,
+      "GEOPOLITICS": 1,
+      "LIQUIDITY": -3,
+      "OIL": 1,
+      "POLITICS": 0,
+      "RATES": -1,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "美 4분기 GDP 성장률 0.5% 그쳐 … 기준금리 '안갯속'",
+      "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려",
+      "[주달 상승테마] 2차전지",
+      "[주달 상승테마] 2차전지 장비"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "미국 경제 지표 둔화로 금리 불확실성이 커진 가운데, 2차전지 섹터 강세와 중동 지정학적 리스크 완화 기대가 KOSPI 시장에 혼재된 영향.",
+    "macro_drivers": [
+      {
+        "category": "ECONOMY",
+        "description": "미국 4분기 GDP 성장률 둔화로 글로벌 경기 둔화 우려 증대",
+        "evidence": "美 4분기 GDP 성장률 0.5% 그쳐",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "RATES",
+        "description": "미국 GDP 둔화로 기준금리 정책 불확실성 증대",
+        "evidence": "기준금리 '안갯속'",
+        "market_impact": -1,
+        "signal": "MIXED"
+      },
+      {
+        "category": "OIL",
+        "description": "국내 유가 동결 및 중동 휴전 기대감으로 유가 안정화",
+        "evidence": "3차 석유 최고가격 '동결'…국제유가 등 고려",
+        "market_impact": 1,
+        "signal": "NEUTRAL"
+      },
+      {
+        "category": "GEOPOLITICS",
+        "description": "중동전쟁 휴전 가능성 언급으로 지정학적 리스크 완화 기대",
+        "evidence": "중동전쟁 휴전",
+        "market_impact": 1,
+        "signal": "BULLISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "2차전지",
+        "배터리",
+        "전기차",
+        "장비"
+      ],
+      "beneficiary_sectors": [
+        "2차전지",
+        "2차전지 장비"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.623,
+          "strength_score": 27.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.573,
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크"
+        }
+      ],
+      "company_event_bias": {
+        "동성제약": -8,
+        "미래산업": -8,
+        "한신공영": 8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "중동 휴전 기대감으로 유가 급등 압력 완화",
+          "direction": "NEUTRAL",
+          "market_impact": 1
+        },
+        {
+          "asset": "BRENT",
+          "description": "중동 휴전 기대감으로 유가 급등 압력 완화",
+          "direction": "NEUTRAL",
+          "market_impact": 1
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "한신공영",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "미래산업",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자또는주식관련사채등의발행결과(자율공시)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한신공영",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "동성제약",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자또는주식관련사채등의발행결과(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "미래산업",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한신공영",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "미래산업",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자또는주식관련사채등의발행결과(자율공시)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한신공영",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 2,
+        "ECONOMY": -2,
+        "FX": 0,
+        "GEOPOLITICS": 1,
+        "LIQUIDITY": -3,
+        "OIL": 1,
+        "POLITICS": 0,
+        "RATES": -1,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "美 4분기 GDP 성장률 0.5% 그쳐 … 기준금리 '안갯속'",
+        "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려",
+        "[주달 상승테마] 2차전지",
+        "[주달 상승테마] 2차전지 장비"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "미국 경제 지표 둔화로 금리 불확실성이 커진 가운데, 2차전지 섹터 강세와 중동 지정학적 리스크 완화 기대가 KOSPI 시장에 혼재된 영향.",
+      "macro_drivers": [
+        {
+          "category": "ECONOMY",
+          "description": "미국 4분기 GDP 성장률 둔화로 글로벌 경기 둔화 우려 증대",
+          "evidence": "美 4분기 GDP 성장률 0.5% 그쳐",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "RATES",
+          "description": "미국 GDP 둔화로 기준금리 정책 불확실성 증대",
+          "evidence": "기준금리 '안갯속'",
+          "market_impact": -1,
+          "signal": "MIXED"
+        },
+        {
+          "category": "OIL",
+          "description": "국내 유가 동결 및 중동 휴전 기대감으로 유가 안정화",
+          "evidence": "3차 석유 최고가격 '동결'…국제유가 등 고려",
+          "market_impact": 1,
+          "signal": "NEUTRAL"
+        },
+        {
+          "category": "GEOPOLITICS",
+          "description": "중동전쟁 휴전 가능성 언급으로 지정학적 리스크 완화 기대",
+          "evidence": "중동전쟁 휴전",
+          "market_impact": 1,
+          "signal": "BULLISH"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260409] 남광토건 - 투자판단관련주요경영사항 | 전자공시",
+        "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시",
+        "[DART 20260409] 한신공영 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260409] 미래산업 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+        "[DART 20260409] 한신공영 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260409] 동성제약 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+        "[DART 20260409] 미래산업 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "[Thu, 09 Apr 2026 23:07:12 +09:00] 美 4분기 GDP 성장률 0.5% 그쳐 … 기준금리 '안갯속' | 매일경제",
+        "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달",
+        "[주달 기대수익률] BGF그룹 | 주달"
+      ],
+      "risk_flags": [
+        "미국 경기 둔화",
+        "미국 금리 정책 불확실성",
+        "중동 지정학적 리스크"
+      ],
+      "sentiment_score": 10,
+      "source": "gemini",
+      "theme_evidence": {
+        "bio": [
+          "[DART 20260409] 동성제약 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시"
+        ],
+        "eco_energy": [
+          "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+        ],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "semiconductor": [
+          "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+        ],
+        "steel_materials": [
+          "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+        ],
+        "telecom": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.623,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 27.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-09T16:56:07.804313+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "통신/네트워크",
+            "통신",
+            "네트워크",
+            "5G",
+            "6G",
+            "안테나"
+          ],
+          "confidence": 0.573,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달",
+            "[주달 핫테마] 6G | 주달"
+          ],
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "updated_at": "2026-04-09T16:56:07.804096+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "steel_materials",
+          "theme_name": "철강/금속/소재",
+          "updated_at": "2026-04-09T16:56:07.803739+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.4,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+          ],
+          "strength_score": 7.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-09T16:56:07.804233+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.393,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[DART 20260409] 동성제약 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시"
+          ],
+          "strength_score": 6.0,
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "updated_at": "2026-04-09T16:56:07.803818+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.357,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+          ],
+          "strength_score": 1.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-09T16:56:07.804027+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "2차전지 관련주 강세 지속",
+          "impact": "POSITIVE",
+          "theme": "2차전지"
+        },
+        {
+          "description": "2차전지 장비 관련주 강세 지속",
+          "impact": "POSITIVE",
+          "theme": "2차전지 장비"
+        }
+      ],
+      "timestamp": "2026-04-10 01:56",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[DART 20260409] 남광토건 - 투자판단관련주요경영사항 | 전자공시",
+      "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시",
+      "[DART 20260409] 한신공영 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260409] 미래산업 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+      "[DART 20260409] 한신공영 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260409] 동성제약 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+      "[DART 20260409] 미래산업 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+      "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스",
+      "[Thu, 09 Apr 2026 23:07:12 +09:00] 美 4분기 GDP 성장률 0.5% 그쳐 … 기준금리 '안갯속' | 매일경제",
+      "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달",
+      "[주달 핫테마] 6G | 주달",
+      "[주달 기대수익률] BGF그룹 | 주달"
+    ],
+    "risk_flags": [
+      "미국 경기 둔화",
+      "미국 금리 정책 불확실성",
+      "중동 지정학적 리스크"
+    ],
+    "sentiment_score": 10,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "bio": [
+        "[DART 20260409] 동성제약 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시"
+      ],
+      "eco_energy": [
+        "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+      ],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "semiconductor": [
+        "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+      ],
+      "steel_materials": [
+        "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+      ],
+      "telecom": [
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.623,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 27.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-09T16:56:07.804313+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "통신/네트워크",
+          "통신",
+          "네트워크",
+          "5G",
+          "6G",
+          "안테나"
+        ],
+        "confidence": 0.573,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "updated_at": "2026-04-09T16:56:07.804096+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "steel_materials",
+        "theme_name": "철강/금속/소재",
+        "updated_at": "2026-04-09T16:56:07.803739+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.4,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+        ],
+        "strength_score": 7.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-09T16:56:07.804233+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.393,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[DART 20260409] 동성제약 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시"
+        ],
+        "strength_score": 6.0,
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "updated_at": "2026-04-09T16:56:07.803818+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.357,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+        ],
+        "strength_score": 1.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-09T16:56:07.804027+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-09T16:56:13.179843+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T16:56:13.173108+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-98F08590",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": []
+}

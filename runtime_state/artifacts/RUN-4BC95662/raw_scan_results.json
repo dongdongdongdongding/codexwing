@@ -1,0 +1,152 @@
+{
+  "applied_profile_defaults": {
+    "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "2.5",
+    "AG_AMEX_MOONSHOT_MAX_PRICE": "25",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA": "28",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "40",
+    "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "4.0",
+    "AG_AMEX_MOONSHOT_MIN_PRICE": "0.7",
+    "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "6.0",
+    "AG_AMEX_MOONSHOT_MIN_RS": "-12.0",
+    "AG_AMEX_MOONSHOT_MIN_SCORE": "62",
+    "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.8",
+    "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "78",
+    "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+    "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+    "AG_AMEX_MOONSHOT_SUB7_BONUS": "10.0",
+    "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "8.0",
+    "AG_AMEX_RED_MIN_CONVICTION": "56",
+    "AG_AMEX_SCAN_MIN_CLEAN_PROB": "38",
+    "AG_AMEX_SCAN_MIN_PROB": "42",
+    "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+    "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+    "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+    "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+    "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+    "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+    "AG_INTRADAY_US_MIN_VOLUME": "40000",
+    "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+    "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+    "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+    "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+    "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+    "AG_KOSPI_MIN_TURNOVER": "10000000000",
+    "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "diagnostics": {
+    "error_symbols": [],
+    "exception_symbols": [],
+    "executor_exception_count": 0,
+    "filtered_count": 3,
+    "filtered_symbols": [
+      "196170.KQ",
+      "086520.KQ",
+      "247540.KQ"
+    ],
+    "reject_details_by_symbol": {
+      "086520.KQ": [
+        {
+          "ai_prob": 16.9,
+          "alpha_score": 40.0,
+          "market_gate": "YELLOW",
+          "mode": "avoid",
+          "pf": 1.69,
+          "policy": {
+            "ai_min": 20,
+            "alpha_min": 20,
+            "avg_5d_pct": 2.703706035194082,
+            "mode": "avoid",
+            "objective": 38.76995874739898,
+            "samples": 21,
+            "win_5d_pct": 42.857142857142854
+          },
+          "real_trend": "DOWN",
+          "signal_hits": 1,
+          "stage": "market_policy",
+          "stock_name": "086520.KQ",
+          "ticker": "086520.KQ",
+          "wr": 52.43
+        }
+      ],
+      "196170.KQ": [
+        {
+          "signal_hits": 0,
+          "signal_lookback": 10,
+          "stage": "signal_window",
+          "stock_name": "196170.KQ",
+          "ticker": "196170.KQ"
+        }
+      ],
+      "247540.KQ": [
+        {
+          "ai_prob": 17.2,
+          "alpha_score": 43.0,
+          "market_gate": "YELLOW",
+          "mode": "avoid",
+          "pf": 1.32,
+          "policy": {
+            "ai_min": 20,
+            "alpha_min": 20,
+            "avg_5d_pct": 2.703706035194082,
+            "mode": "avoid",
+            "objective": 38.76995874739898,
+            "samples": 21,
+            "win_5d_pct": 42.857142857142854
+          },
+          "real_trend": "DOWN",
+          "signal_hits": 1,
+          "stage": "market_policy",
+          "stock_name": "247540.KQ",
+          "ticker": "247540.KQ",
+          "wr": 51.85
+        }
+      ]
+    },
+    "reject_reason_counts": {
+      "KR_SIGNAL_WINDOW_FAIL": 1,
+      "MARKET_POLICY_AVOID": 2
+    },
+    "reject_reasons_by_symbol": {
+      "086520.KQ": "MARKET_POLICY_AVOID",
+      "196170.KQ": "KR_SIGNAL_WINDOW_FAIL",
+      "247540.KQ": "MARKET_POLICY_AVOID"
+    },
+    "worker_error_count": 0
+  },
+  "execution_profile": "prod",
+  "gate_config": {
+    "us_hard_filter": null,
+    "us_signal_window": null
+  },
+  "results_sorted": [],
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "codex-theme",
+    "created_at": "2026-04-09T08:01:58.413371+00:00",
+    "market": "KOSDAQ",
+    "model_version": "phase25",
+    "run_id": "RUN-4BC95662",
+    "strategy_version": "theme-shadow-v1"
+  },
+  "scan_mode": "SWING",
+  "scan_result": {
+    "error_count": 0,
+    "results": [],
+    "total_scans": 3
+  },
+  "strategy_family": "KR_CORE",
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: MARKET_POLICY_AVOID (2).",
+      "severity": "warning"
+    }
+  ]
+}

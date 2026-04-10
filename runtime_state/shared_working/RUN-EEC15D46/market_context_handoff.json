@@ -1,0 +1,92 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1511.5799560546875,
+      "krw_change_1d": -0.3,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 1.14,
+      "tnx": 4.304999828338623,
+      "tnx_change_1d": -0.14,
+      "vix": 23.809999465942383,
+      "vix_change_1d": -5.7
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "key_insight": "NASDAQ은 AI 기술 변화로 인한 반도체 섹터의 불안감과 지정학적 불확실성에 따른 시장 변동성에 직면해 있습니다.",
+    "market_sentiment": "MIXED",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "evidence_headlines": [
+        "Micron Slides 5% as Google's AI Memory Algorithm Sparks Fresh Fears Across the Semiconductor Sector - 24/7 Wall St.",
+        "Tech Weekly: Contradictory Peace Signals Whipsaw Markets - Investing News Network"
+      ],
+      "key_insight": "NASDAQ은 AI 기술 변화로 인한 반도체 섹터의 불안감과 지정학적 불확실성에 따른 시장 변동성에 직면해 있습니다.",
+      "market_sentiment": "MIXED",
+      "raw_headlines": [
+        "[Mon, 30 Mar 2026 14:46:45 GMT] Micron Slides 5% as Google's AI Memory Algorithm Sparks Fresh Fears Across the Semiconductor Sector - 24/7 Wall St. | 24/7 Wall St.",
+        "[Fri, 27 Mar 2026 21:30:00 GMT] Tech Weekly: Contradictory Peace Signals Whipsaw Markets - Investing News Network | Investing News Network"
+      ],
+      "sentiment_score": -40,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "구글의 AI 메모리 알고리즘 개발로 반도체 섹터 전반에 대한 우려 증폭",
+          "impact": "NEGATIVE",
+          "theme": "AI 기술의 반도체 시장 변화"
+        },
+        {
+          "description": "모순적인 평화 신호가 시장 변동성을 확대시킴",
+          "impact": "MIXED",
+          "theme": "지정학적 불확실성"
+        }
+      ],
+      "timestamp": "2026-04-02 01:03",
+      "victim_keywords": [
+        "마이크론",
+        "반도체"
+      ],
+      "victim_sectors": [
+        "반도체"
+      ]
+    },
+    "sentiment_score": -40,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "반도체"
+    ]
+  },
+  "produced_at": "2026-04-01T16:03:58.055604+00:00",
+  "regime": {
+    "market": "NASDAQ",
+    "market_group": "US",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-02",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-01T16:03:35.113253+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-EEC15D46",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,94 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json",
+    "profile_diagnostics.json"
+  ],
+  "failure_summary": "Pre-outcome quality risk detected. See tickets for agent-specific fixes.",
+  "likely_causes": [
+    "Scanner produced zero candidates; filter or data pipeline mismatch is likely.",
+    "Sample size is small; confidence may be overstated.",
+    "Prod gate profile appears over-restrictive versus recent dev baseline, causing candidate starvation.",
+    "Prod profile has repeated zero-result runs and requires immediate fallback policy."
+  ],
+  "produced_at": "2026-03-30T16:02:07.515330+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-03-30T16:01:58.405244+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-A805FF84",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-03-30T16:02:07.515289+00:00",
+      "hypothesis": "Threshold coupling or upstream data fetch failures can collapse candidate output.",
+      "owner_agent": "scanner_agent",
+      "owner_module": "app.py|auto_bot.py scanner bridge",
+      "priority": "high",
+      "requested_change": "Add per-filter reject counters and surface them in scanner_trace.",
+      "run_id": "RUN-A805FF84",
+      "status": "open",
+      "ticket_id": "TKT-D6DE84A3",
+      "title": "Investigate zero-candidate scan runs"
+    },
+    {
+      "created_at": "2026-03-30T16:02:07.515300+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-A805FF84",
+      "status": "open",
+      "ticket_id": "TKT-680ECC92",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-03-30T16:02:07.515311+00:00",
+      "hypothesis": "Prod thresholds may be too strict relative to current regime and suppress viable candidates.",
+      "owner_agent": "scanner_agent",
+      "owner_module": "multi_agent/config/scan_profiles.py + modules/scanner_services.py",
+      "priority": "high",
+      "requested_change": "Compare prod/dev reject-reason distributions and retune prod thresholds with guardrails.",
+      "run_id": "RUN-A805FF84",
+      "status": "open",
+      "ticket_id": "TKT-467AC392",
+      "title": "Calibrate prod gate thresholds against observed profile gap"
+    },
+    {
+      "created_at": "2026-03-30T16:02:07.515319+00:00",
+      "hypothesis": "Threshold relaxation without regime validation can increase false positives.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics + threshold calibration",
+      "priority": "medium",
+      "requested_change": "Run regime-sliced backtests for candidate filters and attach calibration delta report.",
+      "run_id": "RUN-A805FF84",
+      "status": "open",
+      "ticket_id": "TKT-5FA7E59B",
+      "title": "Validate threshold changes with regime-sliced backtests"
+    },
+    {
+      "created_at": "2026-03-30T16:02:07.515326+00:00",
+      "hypothesis": "Fallback watchlist is now active but still needs explicit risk caps and expiry rules.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "planner policy / fallback mode",
+      "priority": "high",
+      "requested_change": "Add max-hold horizon, risk label, and expiry metadata for fallback watchlist entries.",
+      "run_id": "RUN-A805FF84",
+      "status": "open",
+      "ticket_id": "TKT-57971BC5",
+      "title": "Harden fallback watchlist governance in prod"
+    }
+  ]
+}

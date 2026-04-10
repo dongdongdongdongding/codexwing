@@ -1,0 +1,58 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 58,
+  "current_top_reject_reason": {
+    "count": 204,
+    "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL"
+  },
+  "current_total_scans": 286,
+  "exception_leaders": {
+    "applied": false,
+    "considered_filtered_symbols": 228,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 0,
+    "prod_zero_streak_alert": false
+  },
+  "generated_at": "2026-04-01T14:51:19.100795+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 23,
+  "history_window_runs_seen": 80,
+  "market": "AMEX",
+  "profile_summary": {
+    "prod": {
+      "filtered_count": 833,
+      "result_count": 25,
+      "runs": 23,
+      "top_reject_reason": {
+        "count": 424,
+        "reason": "LIQUIDITY_FILTER_FAIL"
+      },
+      "total_scans": 858,
+      "weighted_filtered_rate_pct": 97.09,
+      "weighted_pass_rate_pct": 2.91,
+      "zero_result_runs": 16
+    }
+  },
+  "run_id": "RUN-773F18E1",
+  "watchlist_only_policy": {
+    "applied": true,
+    "market_gate": "GREEN",
+    "market_policy_avoid_count": 0,
+    "mode": "avoid",
+    "policy": {
+      "ai_min": 5,
+      "alpha_min": 75,
+      "avg_5d_pct": -1.9785067638158298,
+      "mode": "avoid",
+      "objective": 18.448716180920854,
+      "samples": 32,
+      "win_5d_pct": 46.875
+    },
+    "total_rejects": 228,
+    "watchlist_count": 10
+  }
+}

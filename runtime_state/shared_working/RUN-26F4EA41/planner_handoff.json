@@ -1,0 +1,70 @@
+{
+  "avoid_list": [],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "MARKET_POLICY_WATCHLIST_ONLY",
+      "message": "Planner downgraded active recommendations to watchlist-only because learned policy for KOSPI/YELLOW is avoid.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-09T10:10:47.936398+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T10:10:44.849985+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-26F4EA41",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "watchlist": [
+    "006800.KS",
+    "373220.KS",
+    "006400.KS"
+  ],
+  "watchlist_meta": [
+    {
+      "expires_at": "2026-04-11T10:10:49.985014+00:00",
+      "generated_at": "2026-04-09T10:10:49.985014+00:00",
+      "horizon_days": 2,
+      "market_gate": "YELLOW",
+      "policy_avg_5d_pct": -2.56,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 32.26,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "미래에셋증권",
+      "ticker": "006800.KS"
+    },
+    {
+      "expires_at": "2026-04-11T10:10:49.985014+00:00",
+      "generated_at": "2026-04-09T10:10:49.985014+00:00",
+      "horizon_days": 2,
+      "market_gate": "YELLOW",
+      "policy_avg_5d_pct": -2.56,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 32.26,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "LG에너지솔루션",
+      "ticker": "373220.KS"
+    },
+    {
+      "expires_at": "2026-04-11T10:10:49.985014+00:00",
+      "generated_at": "2026-04-09T10:10:49.985014+00:00",
+      "horizon_days": 2,
+      "market_gate": "YELLOW",
+      "policy_avg_5d_pct": -2.56,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 32.26,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "삼성SDI",
+      "ticker": "006400.KS"
+    }
+  ]
+}

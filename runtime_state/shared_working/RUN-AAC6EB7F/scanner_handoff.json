@@ -1,0 +1,344 @@
+{
+  "candidates": [],
+  "produced_at": "2026-04-01T09:37:55.241914+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "orchestrated-us-research",
+    "created_at": "2026-04-01T09:37:55.241271+00:00",
+    "market": "AMEX",
+    "model_version": "research-baseline",
+    "run_id": "RUN-AAC6EB7F",
+    "strategy_version": "us-research-v1"
+  },
+  "summary": {
+    "applied_profile_defaults": {
+      "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+      "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+      "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+      "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+      "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+      "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+      "AG_INTRADAY_US_MIN_VOLUME": "40000",
+      "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+      "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+      "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+      "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+      "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+      "AG_KOSPI_MIN_TURNOVER": "10000000000",
+      "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "40",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+      "AG_US_SIGNAL_LOOKBACK": "10",
+      "AG_US_SIGNAL_MIN_HITS": "1"
+    },
+    "candidate_count": 0,
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 5,
+      "filtered_symbols": [
+        "CBOE",
+        "IMO",
+        "PSLV",
+        "PHYS",
+        "EQX"
+      ],
+      "reject_details_by_symbol": {
+        "CBOE": [
+          {
+            "ai_prob": 21.1,
+            "alpha_score": 33.0,
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "EQX": [
+          {
+            "ai_prob": 25.1,
+            "alpha_score": 42.0,
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "IMO": [
+          {
+            "ai_prob": 11.1,
+            "alpha_score": 39.0,
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "PHYS": [
+          {
+            "ai_prob": 28.3,
+            "alpha_score": 41.0,
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "PSLV": [
+          {
+            "lookback": 10,
+            "min_hits": 1,
+            "reason": "US_SIGNAL_WINDOW_FAIL",
+            "signal_hits": 0
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "MARKET_POLICY_AVOID": 4,
+        "US_SIGNAL_WINDOW_FAIL": 1
+      },
+      "reject_reasons_by_symbol": {
+        "CBOE": "MARKET_POLICY_AVOID",
+        "EQX": "MARKET_POLICY_AVOID",
+        "IMO": "MARKET_POLICY_AVOID",
+        "PHYS": "MARKET_POLICY_AVOID",
+        "PSLV": "US_SIGNAL_WINDOW_FAIL"
+      },
+      "worker_error_count": 0
+    },
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 40.0,
+        "min_alpha_down": 55.0
+      },
+      "us_signal_window": {
+        "lookback": 10,
+        "min_hits": 1
+      }
+    },
+    "input_meta": {
+      "applied_profile_defaults": {
+        "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+        "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+        "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+        "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+        "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+        "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+        "AG_INTRADAY_US_MIN_VOLUME": "40000",
+        "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+        "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+        "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+        "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+        "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+        "AG_KOSPI_MIN_TURNOVER": "10000000000",
+        "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+        "AG_US_HARD_AMEX_RS_MIN": "-5",
+        "AG_US_HARD_MIN_ALPHA": "40",
+        "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+        "AG_US_SIGNAL_LOOKBACK": "10",
+        "AG_US_SIGNAL_MIN_HITS": "1"
+      },
+      "diagnostics": {
+        "error_symbols": [],
+        "exception_symbols": [],
+        "executor_exception_count": 0,
+        "filtered_count": 5,
+        "filtered_symbols": [
+          "CBOE",
+          "IMO",
+          "PSLV",
+          "PHYS",
+          "EQX"
+        ],
+        "reject_details_by_symbol": {
+          "CBOE": [
+            {
+              "ai_prob": 21.1,
+              "alpha_score": 33.0,
+              "policy": {
+                "ai_min": 5,
+                "alpha_min": 75,
+                "avg_5d_pct": -1.9785067638158298,
+                "mode": "avoid",
+                "objective": 18.448716180920854,
+                "samples": 32,
+                "win_5d_pct": 46.875
+              },
+              "reason": "MARKET_POLICY_AVOID"
+            }
+          ],
+          "EQX": [
+            {
+              "ai_prob": 25.1,
+              "alpha_score": 42.0,
+              "policy": {
+                "ai_min": 5,
+                "alpha_min": 75,
+                "avg_5d_pct": -1.9785067638158298,
+                "mode": "avoid",
+                "objective": 18.448716180920854,
+                "samples": 32,
+                "win_5d_pct": 46.875
+              },
+              "reason": "MARKET_POLICY_AVOID"
+            }
+          ],
+          "IMO": [
+            {
+              "ai_prob": 11.1,
+              "alpha_score": 39.0,
+              "policy": {
+                "ai_min": 5,
+                "alpha_min": 75,
+                "avg_5d_pct": -1.9785067638158298,
+                "mode": "avoid",
+                "objective": 18.448716180920854,
+                "samples": 32,
+                "win_5d_pct": 46.875
+              },
+              "reason": "MARKET_POLICY_AVOID"
+            }
+          ],
+          "PHYS": [
+            {
+              "ai_prob": 28.3,
+              "alpha_score": 41.0,
+              "policy": {
+                "ai_min": 5,
+                "alpha_min": 75,
+                "avg_5d_pct": -1.9785067638158298,
+                "mode": "avoid",
+                "objective": 18.448716180920854,
+                "samples": 32,
+                "win_5d_pct": 46.875
+              },
+              "reason": "MARKET_POLICY_AVOID"
+            }
+          ],
+          "PSLV": [
+            {
+              "lookback": 10,
+              "min_hits": 1,
+              "reason": "US_SIGNAL_WINDOW_FAIL",
+              "signal_hits": 0
+            }
+          ]
+        },
+        "reject_reason_counts": {
+          "MARKET_POLICY_AVOID": 4,
+          "US_SIGNAL_WINDOW_FAIL": 1
+        },
+        "reject_reasons_by_symbol": {
+          "CBOE": "MARKET_POLICY_AVOID",
+          "EQX": "MARKET_POLICY_AVOID",
+          "IMO": "MARKET_POLICY_AVOID",
+          "PHYS": "MARKET_POLICY_AVOID",
+          "PSLV": "US_SIGNAL_WINDOW_FAIL"
+        },
+        "worker_error_count": 0
+      },
+      "error_count": 0,
+      "execution_profile": "prod",
+      "gate_config": {
+        "us_hard_filter": {
+          "amex_rs_min": -5.0,
+          "min_alpha": 40.0,
+          "min_alpha_down": 55.0
+        },
+        "us_signal_window": {
+          "lookback": 10,
+          "min_hits": 1
+        }
+      },
+      "macro_ctx": {
+        "flags": [
+          "VIX_HIGH"
+        ],
+        "krw": 1506.5799560546875,
+        "krw_change_1d": -0.63,
+        "macro_multiplier": 1.0,
+        "macro_penalty": 0,
+        "macro_risk_score": 25,
+        "macro_state": "NORMAL",
+        "spy_change_1d": 2.91,
+        "tnx": 4.310999870300293,
+        "tnx_change_1d": -0.71,
+        "vix": 25.079999923706055,
+        "vix_change_1d": -0.67
+      },
+      "market": "AMEX",
+      "market_gate": {
+        "gate": "GREEN",
+        "kosdaq_chg": 6.061444728151452,
+        "kospi_chg": 8.436291186282054,
+        "live_mode": false,
+        "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+      },
+      "regime": {
+        "desc": "하락장 (현재<6635<6794)",
+        "emoji": "🔴",
+        "regime": "BEAR"
+      },
+      "scan_mode": "SWING",
+      "strategy_family": "AMEX_MOONSHOT",
+      "total_scans": 5,
+      "warnings": [
+        {
+          "code": "ZERO_RESULT_ALL_FILTERED",
+          "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: MARKET_POLICY_AVOID (4).",
+          "severity": "warning"
+        }
+      ]
+    },
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 6.061444728151452,
+      "kospi_chg": 8.436291186282054,
+      "live_mode": false,
+      "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6635<6794)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "source": "scanner_agent_input",
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: MARKET_POLICY_AVOID (4).",
+        "severity": "warning"
+      }
+    ],
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

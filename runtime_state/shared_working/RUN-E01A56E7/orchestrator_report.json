@@ -1,0 +1,141 @@
+{
+  "assignments": [
+    {
+      "agent_name": "scanner_agent",
+      "depends_on": [],
+      "input_refs": [
+        "runtime_state/local_short_term/scanner_agent/RUN-E01A56E7/legacy_scan_results.json"
+      ],
+      "notes": [],
+      "objective": "Generate or ingest scanner handoff with candidate reasons and structured traces.",
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/scanner_handoff.json",
+      "status": "completed",
+      "step_id": "step_scanner"
+    },
+    {
+      "agent_name": "aggregation_agent",
+      "depends_on": [
+        "step_scanner"
+      ],
+      "input_refs": [
+        "scanner_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Analyze concentration, common traits, and candidate quality.",
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/aggregation_handoff.json",
+      "status": "completed",
+      "step_id": "step_aggregation"
+    },
+    {
+      "agent_name": "backtest_learning_agent",
+      "depends_on": [
+        "step_scanner",
+        "step_aggregation"
+      ],
+      "input_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Validate current candidates with realistic diagnostics and regime sensitivity.",
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/backtest_handoff.json",
+      "status": "completed",
+      "step_id": "step_backtest"
+    },
+    {
+      "agent_name": "market_news_context_agent",
+      "depends_on": [],
+      "input_refs": [],
+      "notes": [],
+      "objective": "Assess current market regime, macro pressure, and news context.",
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/market_context_handoff.json",
+      "status": "completed",
+      "step_id": "step_market"
+    },
+    {
+      "agent_name": "pm_planner_agent",
+      "depends_on": [
+        "step_scanner",
+        "step_aggregation",
+        "step_backtest",
+        "step_market"
+      ],
+      "input_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Synthesize all evidence into final decisions, watchlists, and warnings.",
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/planner_handoff.json",
+      "status": "completed",
+      "step_id": "step_planner"
+    }
+  ],
+  "produced_at": "2026-04-09T15:59:09.174601+00:00",
+  "request_summary": {
+    "requested_agents": [
+      "scanner_agent",
+      "aggregation_agent",
+      "backtest_learning_agent",
+      "market_news_context_agent",
+      "pm_planner_agent"
+    ],
+    "requested_market": "KOSDAQ",
+    "task_kind": "scan_pipeline",
+    "user_request": "Run full non-UI scan pipeline for KOSDAQ and produce planner-ready outputs."
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T15:59:05.371647+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-E01A56E7",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "shared_evidence": [
+    "runtime_state/shared_working/RUN-E01A56E7/orchestrator_request.json",
+    "runtime_state/shared_working/RUN-E01A56E7/scanner_handoff.json",
+    "runtime_state/shared_working/RUN-E01A56E7/aggregation_handoff.json",
+    "runtime_state/shared_working/RUN-E01A56E7/backtest_handoff.json",
+    "runtime_state/shared_working/RUN-E01A56E7/market_context_handoff.json",
+    "runtime_state/shared_working/RUN-E01A56E7/planner_handoff.json"
+  ],
+  "status": "completed",
+  "task_id": "TASK-B7E2463D",
+  "validation_checks": [
+    {
+      "agent_name": "scanner_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/scanner_handoff.json",
+      "step_id": "step_scanner"
+    },
+    {
+      "agent_name": "aggregation_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/aggregation_handoff.json",
+      "step_id": "step_aggregation"
+    },
+    {
+      "agent_name": "backtest_learning_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/backtest_handoff.json",
+      "step_id": "step_backtest"
+    },
+    {
+      "agent_name": "market_news_context_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/market_context_handoff.json",
+      "step_id": "step_market"
+    },
+    {
+      "agent_name": "pm_planner_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-E01A56E7/planner_handoff.json",
+      "step_id": "step_planner"
+    }
+  ],
+  "warnings": []
+}

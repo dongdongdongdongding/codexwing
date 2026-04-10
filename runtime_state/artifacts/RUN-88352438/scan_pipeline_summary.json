@@ -1,0 +1,24 @@
+{
+  "artifact_dir": "runtime_state/artifacts/RUN-88352438",
+  "error_count": 0,
+  "executor_exception_count": 0,
+  "filtered_count": 0,
+  "manifest_paths": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-88352438/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-88352438/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-88352438/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-88352438/market_context_handoff.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-88352438/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-88352438/postmortem_report.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-88352438/realized_outcomes.json",
+    "run_manifest": "runtime_state/shared_working/RUN-88352438/run_manifest.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-88352438/scanner_handoff.json"
+  },
+  "market": "NASDAQ",
+  "result_count": 0,
+  "run_id": "RUN-88352438",
+  "scanner_input_path": "runtime_state/local_short_term/scanner_agent/RUN-88352438/legacy_scan_results.json",
+  "total_scans": 0,
+  "warnings": [],
+  "worker_error_count": 0
+}

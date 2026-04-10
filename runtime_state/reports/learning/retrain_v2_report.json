@@ -1,0 +1,415 @@
+{
+  "generated_at": "2026-04-07T22:30:17.830481",
+  "rows_loaded": 2438,
+  "backend": "rf",
+  "segments": [
+    {
+      "name": "phase25_global",
+      "status": "trained",
+      "rows": 874,
+      "positives": 129,
+      "negative": 745,
+      "return_col": "return_3d_pct",
+      "positive_threshold": 5.0,
+      "auc": 0.5115815556992027,
+      "accuracy": 0.8136882129277566,
+      "positive_precision": 0.23076923076923078,
+      "positive_recall": 0.07142857142857142,
+      "recommended_probability_threshold": 0.4,
+      "threshold_sweep": [
+        {
+          "threshold": 0.25,
+          "picks": 257,
+          "avg_return": -0.42485226459143954,
+          "win_rate": 40.46692607003891,
+          "hit_rate": 15.953307392996107
+        },
+        {
+          "threshold": 0.3,
+          "picks": 256,
+          "avg_return": -0.42405894140625,
+          "win_rate": 40.625,
+          "hit_rate": 16.015625
+        },
+        {
+          "threshold": 0.35,
+          "picks": 186,
+          "avg_return": 0.21643106451612906,
+          "win_rate": 43.54838709677419,
+          "hit_rate": 16.129032258064516
+        },
+        {
+          "threshold": 0.4,
+          "picks": 37,
+          "avg_return": 3.781690405405406,
+          "win_rate": 51.35135135135135,
+          "hit_rate": 21.62162162162162
+        },
+        {
+          "threshold": 0.45,
+          "picks": 13,
+          "avg_return": 1.2154430769230768,
+          "win_rate": 46.15384615384615,
+          "hit_rate": 23.076923076923077
+        },
+        {
+          "threshold": 0.5,
+          "picks": 13,
+          "avg_return": 1.2154430769230768,
+          "win_rate": 46.15384615384615,
+          "hit_rate": 23.076923076923077
+        },
+        {
+          "threshold": 0.6,
+          "picks": 1,
+          "avg_return": 17.348066,
+          "win_rate": 100.0,
+          "hit_rate": 100.0
+        }
+      ],
+      "best_threshold_row": {
+        "threshold": 0.4,
+        "picks": 37,
+        "avg_return": 3.781690405405406,
+        "win_rate": 51.35135135135135,
+        "hit_rate": 21.62162162162162
+      },
+      "feature_importance_top15": [
+        {
+          "feature": "vol_float",
+          "importance": 0.14742832658334531
+        },
+        {
+          "feature": "decision_score",
+          "importance": 0.11879617831020928
+        },
+        {
+          "feature": "ml_prob",
+          "importance": 0.11576076335244738
+        },
+        {
+          "feature": "whale_score",
+          "importance": 0.10413088206889284
+        },
+        {
+          "feature": "tech_score",
+          "importance": 0.08843841408824554
+        },
+        {
+          "feature": "alpha_score",
+          "importance": 0.07898661336252247
+        },
+        {
+          "feature": "vol_08_18x",
+          "importance": 0.06168052244642784
+        },
+        {
+          "feature": "is_kosdaq",
+          "importance": 0.041478487129037504
+        },
+        {
+          "feature": "is_kospi",
+          "importance": 0.031986954049219946
+        },
+        {
+          "feature": "scan_intraday",
+          "importance": 0.02905402395939189
+        },
+        {
+          "feature": "scan_swing",
+          "importance": 0.02804009592239117
+        },
+        {
+          "feature": "vol_lt05x",
+          "importance": 0.020020304291296177
+        },
+        {
+          "feature": "tier_t1",
+          "importance": 0.016395839122458806
+        },
+        {
+          "feature": "tier_t2",
+          "importance": 0.015480271700845332
+        },
+        {
+          "feature": "is_uptrend",
+          "importance": 0.01547078755795187
+        }
+      ],
+      "model_path": "models/phase25_model.pkl",
+      "description": "Global compatibility model using realized 3D >= +5%."
+    },
+    {
+      "name": "phase25_kr_swing",
+      "status": "trained",
+      "rows": 187,
+      "positives": 40,
+      "negative": 147,
+      "return_col": "return_3d_pct",
+      "positive_threshold": 5.0,
+      "auc": 0.520979020979021,
+      "accuracy": 0.7894736842105263,
+      "positive_precision": 1.0,
+      "positive_recall": 0.07692307692307693,
+      "recommended_probability_threshold": 0.3,
+      "threshold_sweep": [
+        {
+          "threshold": 0.25,
+          "picks": 23,
+          "avg_return": 4.394416739130435,
+          "win_rate": 69.56521739130434,
+          "hit_rate": 30.434782608695656
+        },
+        {
+          "threshold": 0.3,
+          "picks": 14,
+          "avg_return": 5.0907417142857145,
+          "win_rate": 64.28571428571429,
+          "hit_rate": 28.57142857142857
+        },
+        {
+          "threshold": 0.35,
+          "picks": 5,
+          "avg_return": 9.2996114,
+          "win_rate": 100.0,
+          "hit_rate": 40.0
+        },
+        {
+          "threshold": 0.4,
+          "picks": 1,
+          "avg_return": 17.348066,
+          "win_rate": 100.0,
+          "hit_rate": 100.0
+        },
+        {
+          "threshold": 0.45,
+          "picks": 1,
+          "avg_return": 17.348066,
+          "win_rate": 100.0,
+          "hit_rate": 100.0
+        },
+        {
+          "threshold": 0.5,
+          "picks": 1,
+          "avg_return": 17.348066,
+          "win_rate": 100.0,
+          "hit_rate": 100.0
+        },
+        {
+          "threshold": 0.6,
+          "picks": 0,
+          "avg_return": null,
+          "win_rate": null,
+          "hit_rate": null
+        }
+      ],
+      "best_threshold_row": {
+        "threshold": 0.3,
+        "picks": 14,
+        "avg_return": 5.0907417142857145,
+        "win_rate": 64.28571428571429,
+        "hit_rate": 28.57142857142857
+      },
+      "feature_importance_top15": [
+        {
+          "feature": "ml_prob",
+          "importance": 0.11379421810857193
+        },
+        {
+          "feature": "alpha_score",
+          "importance": 0.11345579555785011
+        },
+        {
+          "feature": "whale_score",
+          "importance": 0.10146785551423304
+        },
+        {
+          "feature": "decision_score",
+          "importance": 0.0989720319612325
+        },
+        {
+          "feature": "vol_float",
+          "importance": 0.08806607610876138
+        },
+        {
+          "feature": "tech_score",
+          "importance": 0.08463639681759098
+        },
+        {
+          "feature": "is_kosdaq",
+          "importance": 0.07288317102737411
+        },
+        {
+          "feature": "is_kospi",
+          "importance": 0.07205124670602307
+        },
+        {
+          "feature": "is_uptrend",
+          "importance": 0.05377477768410389
+        },
+        {
+          "feature": "is_rising",
+          "importance": 0.0460925780925795
+        },
+        {
+          "feature": "tier_t2",
+          "importance": 0.03616501880941178
+        },
+        {
+          "feature": "vol_08_18x",
+          "importance": 0.03125264230183404
+        },
+        {
+          "feature": "vol_gt25x",
+          "importance": 0.028360600785617585
+        },
+        {
+          "feature": "is_peak",
+          "importance": 0.016758473713440046
+        },
+        {
+          "feature": "tier_t1",
+          "importance": 0.01231814395983299
+        }
+      ],
+      "model_path": "models/phase25_kr_swing.pkl",
+      "description": "KR swing model using realized 3D >= +5%."
+    },
+    {
+      "name": "phase25_kr_intraday",
+      "status": "trained",
+      "rows": 769,
+      "positives": 207,
+      "negative": 562,
+      "return_col": "return_1d_pct",
+      "positive_threshold": 0.0,
+      "auc": 0.6147208883553421,
+      "accuracy": 0.5627705627705628,
+      "positive_precision": 0.5303867403314917,
+      "positive_recall": 0.8571428571428571,
+      "recommended_probability_threshold": 0.6,
+      "threshold_sweep": [
+        {
+          "threshold": 0.25,
+          "picks": 231,
+          "avg_return": 0.355337787878788,
+          "win_rate": 45.887445887445885,
+          "hit_rate": 48.484848484848484
+        },
+        {
+          "threshold": 0.3,
+          "picks": 231,
+          "avg_return": 0.355337787878788,
+          "win_rate": 45.887445887445885,
+          "hit_rate": 48.484848484848484
+        },
+        {
+          "threshold": 0.35,
+          "picks": 227,
+          "avg_return": 0.38487155066079304,
+          "win_rate": 46.25550660792951,
+          "hit_rate": 48.89867841409692
+        },
+        {
+          "threshold": 0.4,
+          "picks": 206,
+          "avg_return": 0.5303257864077671,
+          "win_rate": 48.54368932038835,
+          "hit_rate": 50.48543689320388
+        },
+        {
+          "threshold": 0.45,
+          "picks": 197,
+          "avg_return": 0.5751474111675128,
+          "win_rate": 49.23857868020304,
+          "hit_rate": 50.76142131979695
+        },
+        {
+          "threshold": 0.5,
+          "picks": 181,
+          "avg_return": 0.8365739447513814,
+          "win_rate": 51.38121546961326,
+          "hit_rate": 53.03867403314917
+        },
+        {
+          "threshold": 0.6,
+          "picks": 170,
+          "avg_return": 0.8592423470588237,
+          "win_rate": 51.17647058823529,
+          "hit_rate": 52.94117647058824
+        }
+      ],
+      "best_threshold_row": {
+        "threshold": 0.6,
+        "picks": 170,
+        "avg_return": 0.8592423470588237,
+        "win_rate": 51.17647058823529,
+        "hit_rate": 52.94117647058824
+      },
+      "feature_importance_top15": [
+        {
+          "feature": "decision_score",
+          "importance": 0.26554749375442205
+        },
+        {
+          "feature": "ml_prob",
+          "importance": 0.1270120467882984
+        },
+        {
+          "feature": "vol_float",
+          "importance": 0.12452324712858612
+        },
+        {
+          "feature": "whale_score",
+          "importance": 0.09173935553039786
+        },
+        {
+          "feature": "alpha_score",
+          "importance": 0.08093700847119195
+        },
+        {
+          "feature": "tech_score",
+          "importance": 0.07698256771488557
+        },
+        {
+          "feature": "is_uptrend",
+          "importance": 0.06965246495272444
+        },
+        {
+          "feature": "is_kosdaq",
+          "importance": 0.023210101549757903
+        },
+        {
+          "feature": "tier_t1",
+          "importance": 0.022416845375042394
+        },
+        {
+          "feature": "is_kospi",
+          "importance": 0.019863107530972007
+        },
+        {
+          "feature": "vol_08_18x",
+          "importance": 0.018385113575114492
+        },
+        {
+          "feature": "vol_lt05x",
+          "importance": 0.01810147354730382
+        },
+        {
+          "feature": "tier_t2",
+          "importance": 0.015107678457500134
+        },
+        {
+          "feature": "is_rising",
+          "importance": 0.010601645379509573
+        },
+        {
+          "feature": "vol_gt25x",
+          "importance": 0.008009188501014728
+        }
+      ],
+      "model_path": "models/phase25_kr_intraday.pkl",
+      "description": "KR intraday model using next-day positive return."
+    }
+  ]
+}

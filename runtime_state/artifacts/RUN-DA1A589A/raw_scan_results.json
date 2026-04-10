@@ -1,0 +1,1199 @@
+{
+  "applied_profile_defaults": {},
+  "diagnostics": {
+    "error_symbols": [],
+    "exception_symbols": [],
+    "executor_exception_count": 0,
+    "filtered_count": 47,
+    "filtered_symbols": [
+      "OBE",
+      "CTGO",
+      "UMAC",
+      "URG",
+      "FAX",
+      "WRN",
+      "BHB",
+      "QNC",
+      "NML",
+      "ITRG",
+      "EIM",
+      "ELA",
+      "CATX",
+      "LCTX",
+      "BRBS",
+      "CMCL",
+      "ARMP",
+      "RLGT",
+      "ELLO",
+      "GRAF",
+      "LEGO",
+      "EAD",
+      "VKI",
+      "NBH",
+      "HYLN",
+      "AEF",
+      "REI",
+      "VGZ",
+      "TII",
+      "GTE",
+      "CIX",
+      "FJET",
+      "LEGT",
+      "EVI",
+      "BKTI",
+      "ERC",
+      "GLO",
+      "MPTI",
+      "GLDG",
+      "GENC",
+      "PLG",
+      "MINE",
+      "OZ",
+      "LODE",
+      "PED",
+      "FLYX",
+      "NHS"
+    ],
+    "reject_details_by_symbol": {
+      "AEF": [
+        {
+          "ai_prob": 12.6,
+          "alpha_score": 47.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.67,
+            "gap_pct": 1.23,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 34.3,
+            "price": 7.42,
+            "range_pct": 1.69,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.53
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "ARMP": [
+        {
+          "curr_price": 10.3,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "ARMP",
+          "ticker": "ARMP",
+          "turnover": 323022.2
+        }
+      ],
+      "BHB": [
+        {
+          "reason": "US_MIN_PRICE_VOLUME_FAIL"
+        }
+      ],
+      "BKTI": [
+        {
+          "ai_prob": 18.2,
+          "alpha_score": 29.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.23,
+            "gap_pct": -0.04,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 37.0,
+            "price": 76.615,
+            "range_pct": 4.74,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.13
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "BRBS": [
+        {
+          "reason": "US_BASELINE_FILTER_FAIL"
+        }
+      ],
+      "CATX": [
+        {
+          "ai_prob": 29.9,
+          "alpha_score": 22.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.57,
+            "gap_pct": 0.96,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 41.5,
+            "price": 4.35,
+            "range_pct": 5.17,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.59
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "CIX": [
+        {
+          "curr_price": 23.36,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "CIX",
+          "ticker": "CIX",
+          "turnover": 86730.9
+        }
+      ],
+      "CMCL": [
+        {
+          "ai_prob": 22.9,
+          "alpha_score": 48.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.76,
+            "gap_pct": 3.85,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 45.2,
+            "price": 23.66,
+            "range_pct": 3.04,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.22
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "CTGO": [
+        {
+          "ai_prob": 19.4,
+          "alpha_score": 25.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 2.19,
+            "gap_pct": 1.07,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 42.7,
+            "price": 18.73,
+            "range_pct": 3.36,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.74
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "EAD": [
+        {
+          "ai_prob": 7.7,
+          "alpha_score": 57.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.15,
+            "gap_pct": 0.46,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 60.2,
+            "price": 6.53,
+            "range_pct": 1.99,
+            "strategy_type": "MOMENTUM",
+            "volume_ratio": 3.42
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "EIM": [
+        {
+          "ai_prob": 20.1,
+          "alpha_score": 37.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.36,
+            "gap_pct": -0.31,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 31.8,
+            "price": 9.715,
+            "range_pct": 0.44,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.31
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "ELA": [
+        {
+          "reason": "US_MIN_PRICE_VOLUME_FAIL"
+        }
+      ],
+      "ELLO": [
+        {
+          "curr_price": 24.31,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "ELLO",
+          "ticker": "ELLO",
+          "turnover": 44195.43
+        }
+      ],
+      "ERC": [
+        {
+          "curr_price": 9.1,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "ERC",
+          "ticker": "ERC",
+          "turnover": 626909.17
+        }
+      ],
+      "EVI": [
+        {
+          "curr_price": 21.02,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "EVI",
+          "ticker": "EVI",
+          "turnover": 787189.65
+        }
+      ],
+      "FAX": [
+        {
+          "ai_prob": 11.4,
+          "alpha_score": 35.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.55,
+            "gap_pct": 0.62,
+            "is_pre_surge": true,
+            "is_sub7": false,
+            "moonshot_score": 44.0,
+            "price": 14.43,
+            "range_pct": 0.76,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.92
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "FLYX": [
+        {
+          "ai_prob": 29.3,
+          "alpha_score": 0.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 8.62,
+            "gap_pct": 0.0,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 45.3,
+            "price": 2.32,
+            "range_pct": 11.21,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.31
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "GENC": [
+        {
+          "curr_price": 15.16,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "GENC",
+          "ticker": "GENC",
+          "turnover": 524761.68
+        }
+      ],
+      "GLDG": [
+        {
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.96,
+            "gap_pct": 5.88,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 72.0,
+            "price": 1.2599,
+            "range_pct": 5.92,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 2.02
+          },
+          "conviction_score": 41.8,
+          "gate": "GREEN",
+          "prob_5": 69.8,
+          "prob_clean": 55.8,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "GLO": [
+        {
+          "curr_price": 5.57,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "GLO",
+          "ticker": "GLO",
+          "turnover": 703580.33
+        }
+      ],
+      "GRAF": [
+        {
+          "curr_price": 10.74,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "GRAF",
+          "ticker": "GRAF",
+          "turnover": 57932.69
+        }
+      ],
+      "GTE": [
+        {
+          "ai_prob": 21.0,
+          "alpha_score": 43.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 4.77,
+            "gap_pct": -4.35,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 31.1,
+            "price": 8.38,
+            "range_pct": 7.16,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.66
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "HYLN": [
+        {
+          "ai_prob": 23.4,
+          "alpha_score": 29.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.55,
+            "gap_pct": 0.0,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 38.8,
+            "price": 1.81,
+            "range_pct": 3.31,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.54
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "ITRG": [
+        {
+          "ai_prob": 24.6,
+          "alpha_score": 28.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.43,
+            "gap_pct": 3.66,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 54.4,
+            "price": 2.795,
+            "range_pct": 3.76,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.62
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "LCTX": [
+        {
+          "reason": "US_BASELINE_FILTER_FAIL"
+        }
+      ],
+      "LEGT": [
+        {
+          "reason": "US_MIN_PRICE_VOLUME_FAIL"
+        }
+      ],
+      "LODE": [
+        {
+          "ai_prob": 27.2,
+          "alpha_score": 45.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.11,
+            "gap_pct": 1.31,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 54.8,
+            "price": 3.135,
+            "range_pct": 2.82,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.61
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "MPTI": [
+        {
+          "ai_prob": 22.2,
+          "alpha_score": 57.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.19,
+            "gap_pct": 1.45,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 51.5,
+            "price": 71.72,
+            "range_pct": 5.89,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.53
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "NBH": [
+        {
+          "curr_price": 10.08,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "NBH",
+          "ticker": "NBH",
+          "turnover": 987711.92
+        }
+      ],
+      "NHS": [
+        {
+          "ai_prob": 18.3,
+          "alpha_score": 31.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.62,
+            "gap_pct": 0.77,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 44.0,
+            "price": 6.465,
+            "range_pct": 1.85,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.63
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "NML": [
+        {
+          "ai_prob": 22.9,
+          "alpha_score": 44.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 3.15,
+            "gap_pct": -0.67,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 42.0,
+            "price": 10.1211,
+            "range_pct": 3.85,
+            "strategy_type": "WAIT",
+            "volume_ratio": 3.02
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "OBE": [
+        {
+          "ai_prob": 29.9,
+          "alpha_score": 47.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 4.76,
+            "gap_pct": -3.17,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 27.6,
+            "price": 9.04,
+            "range_pct": 6.19,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.18
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "OZ": [
+        {
+          "reason": "US_MIN_PRICE_VOLUME_FAIL"
+        }
+      ],
+      "PED": [
+        {
+          "reason": "US_MIN_PRICE_VOLUME_FAIL"
+        }
+      ],
+      "PLG": [
+        {
+          "ai_prob": 27.3,
+          "alpha_score": 26.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.63,
+            "gap_pct": 3.39,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 54.9,
+            "price": 1.84,
+            "range_pct": 3.8,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.29
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "REI": [
+        {
+          "ai_prob": 20.4,
+          "alpha_score": 40.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 4.53,
+            "gap_pct": -3.27,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 54.8,
+            "price": 1.435,
+            "range_pct": 6.97,
+            "strategy_type": "WAIT",
+            "volume_ratio": 2.82
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "RLGT": [
+        {
+          "curr_price": 7.2,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "RLGT",
+          "ticker": "RLGT",
+          "turnover": 846728.01
+        }
+      ],
+      "TII": [
+        {
+          "curr_price": 3.23,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "TII",
+          "ticker": "TII",
+          "turnover": 983798.43
+        }
+      ],
+      "UMAC": [
+        {
+          "ai_prob": 28.2,
+          "alpha_score": 16.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 4.65,
+            "gap_pct": 7.58,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 30.2,
+            "price": 12.9,
+            "range_pct": 6.51,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.48
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "URG": [
+        {
+          "ai_prob": 41.7,
+          "alpha_score": 55.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.32,
+            "gap_pct": 1.34,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 50.9,
+            "price": 1.555,
+            "range_pct": 4.5,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.89
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "VGZ": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.12,
+            "gap_pct": 4.08,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 70.8,
+            "price": 2.057,
+            "range_pct": 3.28,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.85
+          },
+          "conviction_score": 52.0,
+          "gate": "GREEN",
+          "prob_5": 69.0,
+          "prob_clean": 55.1,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "VKI": [
+        {
+          "ai_prob": 12.0,
+          "alpha_score": 46.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.12,
+            "gap_pct": -0.23,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 40.3,
+            "price": 8.67,
+            "range_pct": 0.87,
+            "strategy_type": "WAIT",
+            "volume_ratio": 2.03
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "WRN": [
+        {
+          "ai_prob": 31.1,
+          "alpha_score": 26.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.57,
+            "gap_pct": 3.16,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 54.2,
+            "price": 2.615,
+            "range_pct": 3.06,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.01
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ]
+    },
+    "reject_reason_counts": {
+      "FETCH_DATA_FAIL": 3,
+      "LIQUIDITY_FILTER_FAIL": 11,
+      "MARKET_POLICY_AVOID": 23,
+      "MISSING_ANTIGRAV_SCORE": 1,
+      "PRECISION_GATE_TREND_MISMATCH": 2,
+      "US_BASELINE_FILTER_FAIL": 2,
+      "US_MIN_PRICE_VOLUME_FAIL": 5
+    },
+    "reject_reasons_by_symbol": {
+      "AEF": "MARKET_POLICY_AVOID",
+      "ARMP": "LIQUIDITY_FILTER_FAIL",
+      "BHB": "US_MIN_PRICE_VOLUME_FAIL",
+      "BKTI": "MARKET_POLICY_AVOID",
+      "BRBS": "US_BASELINE_FILTER_FAIL",
+      "CATX": "MARKET_POLICY_AVOID",
+      "CIX": "LIQUIDITY_FILTER_FAIL",
+      "CMCL": "MARKET_POLICY_AVOID",
+      "CTGO": "MARKET_POLICY_AVOID",
+      "EAD": "MARKET_POLICY_AVOID",
+      "EIM": "MARKET_POLICY_AVOID",
+      "ELA": "US_MIN_PRICE_VOLUME_FAIL",
+      "ELLO": "LIQUIDITY_FILTER_FAIL",
+      "ERC": "LIQUIDITY_FILTER_FAIL",
+      "EVI": "LIQUIDITY_FILTER_FAIL",
+      "FAX": "MARKET_POLICY_AVOID",
+      "FJET": "MISSING_ANTIGRAV_SCORE",
+      "FLYX": "MARKET_POLICY_AVOID",
+      "GENC": "LIQUIDITY_FILTER_FAIL",
+      "GLDG": "PRECISION_GATE_TREND_MISMATCH",
+      "GLO": "LIQUIDITY_FILTER_FAIL",
+      "GRAF": "LIQUIDITY_FILTER_FAIL",
+      "GTE": "MARKET_POLICY_AVOID",
+      "HYLN": "MARKET_POLICY_AVOID",
+      "ITRG": "MARKET_POLICY_AVOID",
+      "LCTX": "US_BASELINE_FILTER_FAIL",
+      "LEGO": "FETCH_DATA_FAIL",
+      "LEGT": "US_MIN_PRICE_VOLUME_FAIL",
+      "LODE": "MARKET_POLICY_AVOID",
+      "MINE": "FETCH_DATA_FAIL",
+      "MPTI": "MARKET_POLICY_AVOID",
+      "NBH": "LIQUIDITY_FILTER_FAIL",
+      "NHS": "MARKET_POLICY_AVOID",
+      "NML": "MARKET_POLICY_AVOID",
+      "OBE": "MARKET_POLICY_AVOID",
+      "OZ": "US_MIN_PRICE_VOLUME_FAIL",
+      "PED": "US_MIN_PRICE_VOLUME_FAIL",
+      "PLG": "MARKET_POLICY_AVOID",
+      "QNC": "FETCH_DATA_FAIL",
+      "REI": "MARKET_POLICY_AVOID",
+      "RLGT": "LIQUIDITY_FILTER_FAIL",
+      "TII": "LIQUIDITY_FILTER_FAIL",
+      "UMAC": "MARKET_POLICY_AVOID",
+      "URG": "MARKET_POLICY_AVOID",
+      "VGZ": "PRECISION_GATE_TREND_MISMATCH",
+      "VKI": "MARKET_POLICY_AVOID",
+      "WRN": "MARKET_POLICY_AVOID"
+    },
+    "worker_error_count": 0
+  },
+  "execution_profile": "prod",
+  "gate_config": {
+    "us_hard_filter": {
+      "amex_rs_min": -5.0,
+      "min_alpha": 40.0,
+      "min_alpha_down": 55.0
+    },
+    "us_signal_window": {
+      "lookback": 10,
+      "min_hits": 1
+    }
+  },
+  "results_sorted": [
+    {
+      "1D Change": "+1.03%",
+      "AI Prob": "68.5%",
+      "Antigrav": 67,
+      "Clean Hit": "54.7%",
+      "Consecutive": "3 UP",
+      "Context": "-",
+      "Conviction": 61.0,
+      "Decision Score": 93.8,
+      "Entry(-2%)": "5.77",
+      "Hold": "3d",
+      "Name": "FTF",
+      "Position": "🌋 고점 (Peak)",
+      "RS vs SPY": "+1.8% vs SPY",
+      "Stop": "5.61 (-2.8%)",
+      "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🚀 Momentum",
+      "Surge": "-",
+      "Target": "5.94",
+      "Ticker": "FTF",
+      "Tier": "⭐T2",
+      "Trend": "DOWN",
+      "Volume": "✅ x1.9",
+      "WR": "50%",
+      "Whale": "85.0pts",
+      "_prob_5": 68.5,
+      "_prob_clean": 54.7,
+      "_tier_sort": 2
+    },
+    {
+      "1D Change": "+5.67%",
+      "AI Prob": "85.4%",
+      "Antigrav": 56,
+      "Clean Hit": "68.3%",
+      "Consecutive": "2 UP",
+      "Context": "-",
+      "Conviction": 64.0,
+      "Decision Score": 79.0,
+      "Entry(-2%)": "1.55",
+      "Hold": "3d",
+      "Name": "TRX",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+15.4% vs SPY",
+      "Stop": "1.48 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV | ⚡ Momentum",
+      "Surge": "-",
+      "Target": "1.68",
+      "Ticker": "TRX",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "✅ x2.2",
+      "WR": "35%",
+      "Whale": "70.0pts",
+      "_prob_5": 85.4,
+      "_prob_clean": 68.3,
+      "_tier_sort": 3
+    },
+    {
+      "1D Change": "+4.84%",
+      "AI Prob": "64.3%",
+      "Antigrav": 61,
+      "Clean Hit": "51.3%",
+      "Consecutive": "4 UP",
+      "Context": "-",
+      "Conviction": 60.3,
+      "Decision Score": 60.3,
+      "Entry(-2%)": "33.00",
+      "Hold": "3d",
+      "Name": "IDR",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+15.9% vs SPY",
+      "Stop": "31.35 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+      "Surge": "-",
+      "Target": "35.64",
+      "Ticker": "IDR",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "✅ x1.4",
+      "WR": "52%",
+      "Whale": "65.0pts",
+      "_prob_5": 64.3,
+      "_prob_clean": 51.3,
+      "_tier_sort": 3
+    }
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:34:56.648571+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-DA1A589A",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "scan_mode": "SWING",
+  "scan_result": {
+    "error_count": 0,
+    "results": [
+      {
+        "1D Change": "+4.84%",
+        "AI Prob": "64.3%",
+        "Antigrav": 61,
+        "Clean Hit": "51.3%",
+        "Consecutive": "4 UP",
+        "Context": "-",
+        "Conviction": 60.3,
+        "Decision Score": 60.3,
+        "Entry(-2%)": "33.00",
+        "Hold": "3d",
+        "Name": "IDR",
+        "Position": "💤 조정 (Resting)",
+        "RS vs SPY": "+15.9% vs SPY",
+        "Stop": "31.35 (-5.0%)",
+        "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+        "Surge": "-",
+        "Target": "35.64",
+        "Ticker": "IDR",
+        "Tier": "T3",
+        "Trend": "DOWN",
+        "Volume": "✅ x1.4",
+        "WR": "52%",
+        "Whale": "65.0pts",
+        "_prob_5": 64.3,
+        "_prob_clean": 51.3,
+        "_tier_sort": 3
+      },
+      {
+        "1D Change": "+5.67%",
+        "AI Prob": "85.4%",
+        "Antigrav": 56,
+        "Clean Hit": "68.3%",
+        "Consecutive": "2 UP",
+        "Context": "-",
+        "Conviction": 64.0,
+        "Decision Score": 79.0,
+        "Entry(-2%)": "1.55",
+        "Hold": "3d",
+        "Name": "TRX",
+        "Position": "💤 조정 (Resting)",
+        "RS vs SPY": "+15.4% vs SPY",
+        "Stop": "1.48 (-5.0%)",
+        "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV | ⚡ Momentum",
+        "Surge": "-",
+        "Target": "1.68",
+        "Ticker": "TRX",
+        "Tier": "T3",
+        "Trend": "DOWN",
+        "Volume": "✅ x2.2",
+        "WR": "35%",
+        "Whale": "70.0pts",
+        "_prob_5": 85.4,
+        "_prob_clean": 68.3,
+        "_tier_sort": 3
+      },
+      {
+        "1D Change": "+1.03%",
+        "AI Prob": "68.5%",
+        "Antigrav": 67,
+        "Clean Hit": "54.7%",
+        "Consecutive": "3 UP",
+        "Context": "-",
+        "Conviction": 61.0,
+        "Decision Score": 93.8,
+        "Entry(-2%)": "5.77",
+        "Hold": "3d",
+        "Name": "FTF",
+        "Position": "🌋 고점 (Peak)",
+        "RS vs SPY": "+1.8% vs SPY",
+        "Stop": "5.61 (-2.8%)",
+        "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🚀 Momentum",
+        "Surge": "-",
+        "Target": "5.94",
+        "Ticker": "FTF",
+        "Tier": "⭐T2",
+        "Trend": "DOWN",
+        "Volume": "✅ x1.9",
+        "WR": "50%",
+        "Whale": "85.0pts",
+        "_prob_5": 68.5,
+        "_prob_clean": 54.7,
+        "_tier_sort": 2
+      }
+    ],
+    "total_scans": 50
+  },
+  "strategy_family": "AMEX_MOONSHOT",
+  "warnings": []
+}

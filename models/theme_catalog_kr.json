@@ -1,0 +1,150 @@
+{
+  "version": "theme-catalog-kr-v1",
+  "market": "KR",
+  "updated_at": "2026-04-09T00:00:00Z",
+  "themes": [
+    {
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "aliases": ["반도체", "메모리", "파운드리", "HBM", "유리기판", "칩"],
+      "driver_categories": ["ECONOMY", "LIQUIDITY", "EARNINGS", "REGULATION"],
+      "news_keywords": ["반도체", "HBM", "메모리", "파운드리", "유리기판", "칩", "AI 서버"],
+      "disclosure_keywords": ["공급계약", "수주", "양산", "기술이전", "허가"],
+      "ticker_memberships": {
+        "005930.KS": 0.99,
+        "000660.KS": 0.99,
+        "086520.KQ": 0.92,
+        "247540.KQ": 0.9,
+        "000250.KQ": 0.74,
+        "141080.KQ": 0.8
+      }
+    },
+    {
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지",
+      "aliases": ["2차전지", "배터리", "양극재", "음극재", "전고체", "폐배터리", "리튬"],
+      "driver_categories": ["OIL", "FX", "ECONOMY", "EARNINGS"],
+      "news_keywords": ["2차전지", "배터리", "양극재", "폐배터리", "리튬", "전기차"],
+      "disclosure_keywords": ["공급계약", "수주", "증설"],
+      "ticker_memberships": {
+        "247540.KQ": 0.99,
+        "373220.KS": 0.97,
+        "005490.KS": 0.82,
+        "365340.KQ": 0.88,
+        "298380.KQ": 0.76
+      }
+    },
+    {
+      "theme_id": "bio",
+      "theme_name": "바이오",
+      "aliases": ["바이오", "신약", "임상", "항암", "의료기기", "mRNA", "ADC"],
+      "driver_categories": ["REGULATION", "EARNINGS", "ECONOMY"],
+      "news_keywords": ["바이오", "임상", "기술이전", "FDA", "허가", "ADC", "의료기기"],
+      "disclosure_keywords": ["임상", "품목허가", "기술이전", "승인", "특허"],
+      "ticker_memberships": {
+        "196170.KQ": 0.97,
+        "141080.KQ": 0.93,
+        "214370.KQ": 0.93,
+        "145020.KQ": 0.84,
+        "086450.KQ": 0.73
+      }
+    },
+    {
+      "theme_id": "robotics",
+      "theme_name": "로봇",
+      "aliases": ["로봇", "자동화", "협동로봇", "물류로봇"],
+      "driver_categories": ["ECONOMY", "LIQUIDITY", "EARNINGS"],
+      "news_keywords": ["로봇", "자동화", "협동로봇", "물류로봇"],
+      "disclosure_keywords": ["수주", "공급계약"],
+      "ticker_memberships": {
+        "277810.KQ": 0.94,
+        "086520.KQ": 0.62,
+        "196170.KQ": 0.55
+      }
+    },
+    {
+      "theme_id": "ai_datacenter",
+      "theme_name": "AI/데이터센터",
+      "aliases": ["AI", "데이터센터", "클라우드", "서버", "GPU"],
+      "driver_categories": ["ECONOMY", "LIQUIDITY", "EARNINGS", "RATES"],
+      "news_keywords": ["AI", "데이터센터", "GPU", "클라우드", "서버", "인공지능"],
+      "disclosure_keywords": ["수주", "공급계약", "증설"],
+      "ticker_memberships": {
+        "058470.KQ": 0.72,
+        "298380.KQ": 0.81,
+        "000660.KS": 0.7,
+        "005930.KS": 0.68
+      }
+    },
+    {
+      "theme_id": "defense",
+      "theme_name": "방산",
+      "aliases": ["방산", "미사일", "탄약", "군수", "무기"],
+      "driver_categories": ["GEOPOLITICS", "POLITICS", "EARNINGS"],
+      "news_keywords": ["방산", "미사일", "탄약", "군수", "수출", "지정학"],
+      "disclosure_keywords": ["공급계약", "단일판매"],
+      "ticker_memberships": {
+        "012450.KS": 0.99,
+        "000880.KS": 0.9
+      }
+    },
+    {
+      "theme_id": "shipbuilding",
+      "theme_name": "조선",
+      "aliases": ["조선", "LNG선", "선박", "해양플랜트"],
+      "driver_categories": ["OIL", "GEOPOLITICS", "EARNINGS"],
+      "news_keywords": ["조선", "LNG선", "선박", "해양플랜트"],
+      "disclosure_keywords": ["수주", "공급계약"],
+      "ticker_memberships": {
+        "009540.KS": 0.89,
+        "010140.KS": 0.85
+      }
+    },
+    {
+      "theme_id": "nuclear",
+      "theme_name": "원전",
+      "aliases": ["원전", "SMR", "원자력"],
+      "driver_categories": ["POLITICS", "REGULATION", "EARNINGS"],
+      "news_keywords": ["원전", "SMR", "원자력"],
+      "disclosure_keywords": ["수주", "공급계약", "승인"],
+      "ticker_memberships": {
+        "015760.KS": 0.77
+      }
+    },
+    {
+      "theme_id": "power_grid",
+      "theme_name": "전력기기",
+      "aliases": ["전력기기", "변압기", "전선", "전력설비"],
+      "driver_categories": ["ECONOMY", "LIQUIDITY", "EARNINGS"],
+      "news_keywords": ["전력기기", "변압기", "전선", "전력설비", "전력망"],
+      "disclosure_keywords": ["수주", "공급계약"],
+      "ticker_memberships": {
+        "010120.KS": 0.74
+      }
+    },
+    {
+      "theme_id": "oil_energy",
+      "theme_name": "정유/에너지",
+      "aliases": ["정유", "에너지", "원유", "LNG", "가스"],
+      "driver_categories": ["OIL", "GEOPOLITICS", "FX"],
+      "news_keywords": ["원유", "유가", "LNG", "정유", "에너지", "가스"],
+      "disclosure_keywords": ["공급계약"],
+      "ticker_memberships": {
+        "010950.KS": 0.8,
+        "267250.KQ": 0.84,
+        "024060.KQ": 0.83
+      }
+    },
+    {
+      "theme_id": "shipping",
+      "theme_name": "해운",
+      "aliases": ["해운", "운임", "컨테이너", "벌크"],
+      "driver_categories": ["OIL", "GEOPOLITICS", "ECONOMY"],
+      "news_keywords": ["해운", "운임", "컨테이너", "벌크"],
+      "disclosure_keywords": ["공급계약"],
+      "ticker_memberships": {
+        "011200.KS": 0.71
+      }
+    }
+  ]
+}

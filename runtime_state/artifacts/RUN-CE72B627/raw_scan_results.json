@@ -1,0 +1,1543 @@
+{
+  "applied_profile_defaults": {
+    "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "2.5",
+    "AG_AMEX_MOONSHOT_MAX_PRICE": "25",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA": "28",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "40",
+    "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "4.0",
+    "AG_AMEX_MOONSHOT_MIN_PRICE": "0.7",
+    "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "6.0",
+    "AG_AMEX_MOONSHOT_MIN_RS": "-12.0",
+    "AG_AMEX_MOONSHOT_MIN_SCORE": "62",
+    "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.8",
+    "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "78",
+    "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+    "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+    "AG_AMEX_MOONSHOT_SUB7_BONUS": "10.0",
+    "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "8.0",
+    "AG_AMEX_RED_MIN_CONVICTION": "56",
+    "AG_AMEX_SCAN_MIN_CLEAN_PROB": "38",
+    "AG_AMEX_SCAN_MIN_PROB": "42",
+    "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+    "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+    "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+    "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+    "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+    "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+    "AG_INTRADAY_US_MIN_VOLUME": "40000",
+    "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+    "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+    "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+    "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+    "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+    "AG_KOSPI_MIN_TURNOVER": "10000000000",
+    "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "diagnostics": {
+    "error_symbols": [],
+    "exception_symbols": [],
+    "executor_exception_count": 0,
+    "filtered_count": 45,
+    "filtered_symbols": [
+      "PHYS",
+      "PSLV",
+      "CBOE",
+      "IMO",
+      "BMNR",
+      "CEF",
+      "UEC",
+      "EQX",
+      "BTG",
+      "SIM",
+      "SEB",
+      "UTG",
+      "TCGL",
+      "NG",
+      "DNN",
+      "PRK",
+      "TGB",
+      "CLM",
+      "IE",
+      "NHC",
+      "CNL",
+      "USAS",
+      "SLSR",
+      "CET",
+      "HSLV",
+      "IAUX",
+      "CRF",
+      "TMP",
+      "VZLA",
+      "ASM",
+      "SLI",
+      "GROY",
+      "EVV",
+      "GMTL",
+      "REPX",
+      "NAK",
+      "NFGC",
+      "DC",
+      "GAU",
+      "BITW",
+      "ISOU",
+      "SPPP",
+      "TMQ",
+      "MTA",
+      "THM"
+    ],
+    "reject_details_by_symbol": {
+      "ASM": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.15,
+            "gap_pct": 4.43,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 78.3,
+            "price": 6.65,
+            "range_pct": 4.06,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.09
+          },
+          "conviction_score": 54.8,
+          "gate": "GREEN",
+          "prob_5": 74.4,
+          "prob_clean": 59.4,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "BITW": [
+        {
+          "ai_prob": 26.9,
+          "alpha_score": 18.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.3,
+            "gap_pct": 1.13,
+            "is_pre_surge": true,
+            "is_sub7": false,
+            "moonshot_score": 44.0,
+            "price": 45.04,
+            "range_pct": 1.05,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.76
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "BMNR": [
+        {
+          "reason": "US_BASELINE_FILTER_FAIL"
+        }
+      ],
+      "BTG": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.42,
+            "gap_pct": 3.97,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 76.9,
+            "price": 4.71,
+            "range_pct": 2.76,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.08
+          },
+          "conviction_score": 55.8,
+          "gate": "GREEN",
+          "prob_5": 73.4,
+          "prob_clean": 58.6,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "CBOE": [
+        {
+          "ai_prob": 26.7,
+          "alpha_score": 36.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.34,
+            "gap_pct": -0.37,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 28.0,
+            "price": 282.28,
+            "range_pct": 1.15,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.76
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "CEF": [
+        {
+          "ai_prob": 33.2,
+          "alpha_score": 35.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.4,
+            "gap_pct": 0.78,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 31.0,
+            "price": 48.06,
+            "range_pct": 0.89,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.9
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "CET": [
+        {
+          "ai_prob": 20.6,
+          "alpha_score": 12.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.08,
+            "gap_pct": 0.93,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 36.5,
+            "price": 50.13,
+            "range_pct": 0.5,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.15
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "CLM": [
+        {
+          "ai_prob": 17.6,
+          "alpha_score": 65.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.82,
+            "gap_pct": 0.41,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 35.2,
+            "price": 7.35,
+            "range_pct": 1.5,
+            "strategy_type": "MOMENTUM",
+            "volume_ratio": 1.55
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "CNL": [
+        {
+          "ai_prob": 18.5,
+          "alpha_score": 62.0,
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.56,
+            "gap_pct": 0.23,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 50.6,
+            "price": 18.015,
+            "range_pct": 3.69,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.03
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "CRF": [
+        {
+          "ai_prob": 18.6,
+          "alpha_score": 59.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.41,
+            "gap_pct": 0.72,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 31.6,
+            "price": 7.021,
+            "range_pct": 0.85,
+            "strategy_type": "MOMENTUM",
+            "volume_ratio": 1.3
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "DC": [
+        {
+          "ai_prob": 30.2,
+          "alpha_score": 48.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.48,
+            "gap_pct": 2.77,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 53.3,
+            "price": 5.21,
+            "range_pct": 2.78,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.94
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "DNN": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.56,
+            "gap_pct": 2.27,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 80.6,
+            "price": 3.8185,
+            "range_pct": 6.27,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.08
+          },
+          "conviction_score": 59.9,
+          "gate": "GREEN",
+          "prob_5": 76.0,
+          "prob_clean": 60.7,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "EQX": [
+        {
+          "ai_prob": 31.4,
+          "alpha_score": 54.0,
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.03,
+            "gap_pct": 2.21,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 61.1,
+            "price": 14.97,
+            "range_pct": 3.34,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.29
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "EVV": [
+        {
+          "ai_prob": 17.9,
+          "alpha_score": 24.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.27,
+            "gap_pct": -0.42,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 33.7,
+            "price": 9.415,
+            "range_pct": 0.42,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.35
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "GAU": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.19,
+            "gap_pct": 3.59,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 79.1,
+            "price": 2.605,
+            "range_pct": 3.45,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.28
+          },
+          "conviction_score": 55.0,
+          "gate": "GREEN",
+          "prob_5": 75.0,
+          "prob_clean": 59.9,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "GROY": [
+        {
+          "ai_prob": 20.1,
+          "alpha_score": 46.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.68,
+            "gap_pct": 3.35,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 57.1,
+            "price": 3.685,
+            "range_pct": 3.26,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.18
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "IAUX": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.32,
+            "gap_pct": 2.63,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 76.7,
+            "price": 1.585,
+            "range_pct": 4.42,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.86
+          },
+          "conviction_score": 58.4,
+          "gate": "GREEN",
+          "prob_5": 73.2,
+          "prob_clean": 58.5,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "IE": [
+        {
+          "ai_prob": 28.3,
+          "alpha_score": 50.0,
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.16,
+            "gap_pct": 2.12,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 54.8,
+            "price": 12.29,
+            "range_pct": 3.09,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.56
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "IMO": [
+        {
+          "ai_prob": 14.7,
+          "alpha_score": 36.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.97,
+            "gap_pct": -1.81,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 32.0,
+            "price": 129.17,
+            "range_pct": 2.32,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.19
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "ISOU": [
+        {
+          "ai_prob": 28.0,
+          "alpha_score": 61.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.84,
+            "gap_pct": 1.42,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 42.6,
+            "price": 11.215,
+            "range_pct": 5.52,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.02
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "MTA": [
+        {
+          "ai_prob": 31.8,
+          "alpha_score": 29.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.0,
+            "gap_pct": 3.17,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 49.9,
+            "price": 6.97,
+            "range_pct": 4.16,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.71
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "NAK": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": true,
+            "close_to_high_pct": 0.34,
+            "gap_pct": 3.57,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 85.7,
+            "price": 1.485,
+            "range_pct": 5.05,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.38
+          },
+          "conviction_score": 50.4,
+          "gate": "GREEN",
+          "prob_5": 79.7,
+          "prob_clean": 63.7,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "NFGC": [
+        {
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.0,
+            "gap_pct": 3.61,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 68.1,
+            "price": 2.098,
+            "range_pct": 6.57,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.45
+          },
+          "conviction_score": 47.5,
+          "gate": "GREEN",
+          "prob_5": 67.0,
+          "prob_clean": 53.5,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "NG": [
+        {
+          "ai_prob": 23.7,
+          "alpha_score": 41.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 3.74,
+            "gap_pct": 4.79,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 48.4,
+            "price": 9.35,
+            "range_pct": 5.88,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.7
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "NHC": [
+        {
+          "ai_prob": 23.4,
+          "alpha_score": 35.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.6,
+            "gap_pct": -0.34,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 36.0,
+            "price": 157.585,
+            "range_pct": 2.42,
+            "strategy_type": "MOMENTUM",
+            "volume_ratio": 1.62
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "PHYS": [
+        {
+          "ai_prob": 30.0,
+          "alpha_score": 41.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.19,
+            "gap_pct": 1.19,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 32.4,
+            "price": 35.96,
+            "range_pct": 0.7,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.16
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "PRK": [
+        {
+          "ai_prob": 7.6,
+          "alpha_score": 35.0,
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.05,
+            "gap_pct": 0.37,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 44.8,
+            "price": 164.2825,
+            "range_pct": 1.19,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.48
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "PSLV": [
+        {
+          "ai_prob": 22.7,
+          "alpha_score": 44.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.84,
+            "gap_pct": -0.25,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 31.3,
+            "price": 24.275,
+            "range_pct": 1.52,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.85
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "REPX": [
+        {
+          "ai_prob": 21.4,
+          "alpha_score": 40.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 3.36,
+            "gap_pct": -2.61,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 23.6,
+            "price": 34.82,
+            "range_pct": 5.2,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.99
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "SEB": [
+        {
+          "reason": "US_MIN_PRICE_VOLUME_FAIL"
+        }
+      ],
+      "SIM": [
+        {
+          "curr_price": 30.8,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "SIM",
+          "ticker": "SIM",
+          "turnover": 0.0
+        }
+      ],
+      "SLI": [
+        {
+          "ai_prob": 18.5,
+          "alpha_score": 0.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.99,
+            "gap_pct": 2.64,
+            "is_pre_surge": true,
+            "is_sub7": true,
+            "moonshot_score": 58.4,
+            "price": 3.52,
+            "range_pct": 3.27,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.27
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "SLSR": [
+        {
+          "ai_prob": 34.7,
+          "alpha_score": 59.0,
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.34,
+            "gap_pct": 3.38,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 57.3,
+            "price": 8.95,
+            "range_pct": 3.13,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 0.52
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "SPPP": [
+        {
+          "ai_prob": 14.5,
+          "alpha_score": 54.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.84,
+            "gap_pct": -0.13,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 52.9,
+            "price": 15.45,
+            "range_pct": 1.29,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 2.4
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "TGB": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.05,
+            "gap_pct": 3.41,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 80.9,
+            "price": 6.7818,
+            "range_pct": 3.39,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.31
+          },
+          "conviction_score": 59.3,
+          "gate": "GREEN",
+          "prob_5": 76.2,
+          "prob_clean": 60.9,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "THM": [
+        {
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.21,
+            "gap_pct": 3.48,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 84.1,
+            "price": 2.42,
+            "range_pct": 4.75,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.51
+          },
+          "conviction_score": 54.1,
+          "gate": "GREEN",
+          "prob_5": 78.6,
+          "prob_clean": 62.8,
+          "reason": "PRECISION_GATE_TREND_MISMATCH",
+          "tier_sort": 3
+        }
+      ],
+      "TMP": [
+        {
+          "ai_prob": 24.1,
+          "alpha_score": 38.0,
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": true,
+            "close_to_high_pct": 1.2,
+            "gap_pct": 0.03,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 53.8,
+            "price": 79.27,
+            "range_pct": 2.89,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.79
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "TMQ": [
+        {
+          "reason": "US_EARNINGS_RISK_BLOCK"
+        }
+      ],
+      "UEC": [
+        {
+          "ai_prob": 33.8,
+          "alpha_score": 63.0,
+          "amex_features": {
+            "breakout_10d": true,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.0,
+            "gap_pct": 3.33,
+            "is_pre_surge": false,
+            "is_sub7": false,
+            "moonshot_score": 54.3,
+            "price": 14.44,
+            "range_pct": 4.36,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.13
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "USAS": [
+        {
+          "ai_prob": 24.8,
+          "alpha_score": 14.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.27,
+            "gap_pct": 4.41,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 43.3,
+            "price": 5.525,
+            "range_pct": 3.98,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.12
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "UTG": [
+        {
+          "ai_prob": 7.8,
+          "alpha_score": 59.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.72,
+            "gap_pct": 0.56,
+            "is_pre_surge": true,
+            "is_sub7": false,
+            "moonshot_score": 55.3,
+            "price": 39.815,
+            "range_pct": 1.77,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.94
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "VZLA": [
+        {
+          "ai_prob": 23.4,
+          "alpha_score": 45.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.04,
+            "gap_pct": 3.03,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 51.1,
+            "price": 3.375,
+            "range_pct": 2.81,
+            "strategy_type": "REVERSAL",
+            "volume_ratio": 1.22
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ]
+    },
+    "reject_reason_counts": {
+      "FETCH_DATA_FAIL": 2,
+      "LIQUIDITY_FILTER_FAIL": 1,
+      "MARKET_POLICY_AVOID": 29,
+      "MISSING_ANTIGRAV_SCORE": 1,
+      "PRECISION_GATE_TREND_MISMATCH": 9,
+      "US_BASELINE_FILTER_FAIL": 1,
+      "US_EARNINGS_RISK_BLOCK": 1,
+      "US_MIN_PRICE_VOLUME_FAIL": 1
+    },
+    "reject_reasons_by_symbol": {
+      "ASM": "PRECISION_GATE_TREND_MISMATCH",
+      "BITW": "MARKET_POLICY_AVOID",
+      "BMNR": "US_BASELINE_FILTER_FAIL",
+      "BTG": "PRECISION_GATE_TREND_MISMATCH",
+      "CBOE": "MARKET_POLICY_AVOID",
+      "CEF": "MARKET_POLICY_AVOID",
+      "CET": "MARKET_POLICY_AVOID",
+      "CLM": "MARKET_POLICY_AVOID",
+      "CNL": "MARKET_POLICY_AVOID",
+      "CRF": "MARKET_POLICY_AVOID",
+      "DC": "MARKET_POLICY_AVOID",
+      "DNN": "PRECISION_GATE_TREND_MISMATCH",
+      "EQX": "MARKET_POLICY_AVOID",
+      "EVV": "MARKET_POLICY_AVOID",
+      "GAU": "PRECISION_GATE_TREND_MISMATCH",
+      "GMTL": "FETCH_DATA_FAIL",
+      "GROY": "MARKET_POLICY_AVOID",
+      "HSLV": "FETCH_DATA_FAIL",
+      "IAUX": "PRECISION_GATE_TREND_MISMATCH",
+      "IE": "MARKET_POLICY_AVOID",
+      "IMO": "MARKET_POLICY_AVOID",
+      "ISOU": "MARKET_POLICY_AVOID",
+      "MTA": "MARKET_POLICY_AVOID",
+      "NAK": "PRECISION_GATE_TREND_MISMATCH",
+      "NFGC": "PRECISION_GATE_TREND_MISMATCH",
+      "NG": "MARKET_POLICY_AVOID",
+      "NHC": "MARKET_POLICY_AVOID",
+      "PHYS": "MARKET_POLICY_AVOID",
+      "PRK": "MARKET_POLICY_AVOID",
+      "PSLV": "MARKET_POLICY_AVOID",
+      "REPX": "MARKET_POLICY_AVOID",
+      "SEB": "US_MIN_PRICE_VOLUME_FAIL",
+      "SIM": "LIQUIDITY_FILTER_FAIL",
+      "SLI": "MARKET_POLICY_AVOID",
+      "SLSR": "MARKET_POLICY_AVOID",
+      "SPPP": "MARKET_POLICY_AVOID",
+      "TCGL": "MISSING_ANTIGRAV_SCORE",
+      "TGB": "PRECISION_GATE_TREND_MISMATCH",
+      "THM": "PRECISION_GATE_TREND_MISMATCH",
+      "TMP": "MARKET_POLICY_AVOID",
+      "TMQ": "US_EARNINGS_RISK_BLOCK",
+      "UEC": "MARKET_POLICY_AVOID",
+      "USAS": "MARKET_POLICY_AVOID",
+      "UTG": "MARKET_POLICY_AVOID",
+      "VZLA": "MARKET_POLICY_AVOID"
+    },
+    "worker_error_count": 0
+  },
+  "execution_profile": "prod",
+  "gate_config": {
+    "us_hard_filter": {
+      "amex_rs_min": -5.0,
+      "min_alpha": 40.0,
+      "min_alpha_down": 55.0
+    },
+    "us_signal_window": {
+      "lookback": 10,
+      "min_hits": 1
+    }
+  },
+  "results_sorted": [
+    {
+      "1D Change": "+6.96%",
+      "AI Prob": "65.2%",
+      "Antigrav": 69,
+      "Clean Hit": "52.0%",
+      "Consecutive": "2 UP",
+      "Context": "-",
+      "Conviction": 63.9,
+      "Decision Score": 70.8,
+      "Entry(-2%)": "19.13",
+      "Hold": "3d",
+      "Name": "UUUU",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+9.4% vs SPY",
+      "Stop": "18.17 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV",
+      "Surge": "-",
+      "Target": "20.66",
+      "Ticker": "UUUU",
+      "Tier": "⭐T2",
+      "Trend": "DOWN",
+      "Volume": "✅ x2.4",
+      "WR": "49%",
+      "Whale": "70.0pts",
+      "_prob_5": 65.2,
+      "_prob_clean": 52.0,
+      "_tier_sort": 2
+    },
+    {
+      "1D Change": "+4.22%",
+      "AI Prob": "64.7%",
+      "Antigrav": 64,
+      "Clean Hit": "51.6%",
+      "Consecutive": "2 UP",
+      "Context": "-",
+      "Conviction": 62.9,
+      "Decision Score": 65.9,
+      "Entry(-2%)": "16.47",
+      "Hold": "3d",
+      "Name": "ORLA",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+26.2% vs SPY",
+      "Stop": "15.65 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+      "Surge": "-",
+      "Target": "17.79",
+      "Ticker": "ORLA",
+      "Tier": "⭐T2",
+      "Trend": "DOWN",
+      "Volume": "✅ x1.6",
+      "WR": "50%",
+      "Whale": "75.0pts",
+      "_prob_5": 64.7,
+      "_prob_clean": 51.6,
+      "_tier_sort": 2
+    },
+    {
+      "1D Change": "+4.71%",
+      "AI Prob": "76.2%",
+      "Antigrav": 58,
+      "Clean Hit": "60.9%",
+      "Consecutive": "2 UP",
+      "Context": "-",
+      "Conviction": 60.2,
+      "Decision Score": 65.6,
+      "Entry(-2%)": "4.25",
+      "Hold": "3d",
+      "Name": "NEWP",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+20.9% vs SPY",
+      "Stop": "4.04 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV | ⚡ Momentum",
+      "Surge": "-",
+      "Target": "4.59",
+      "Ticker": "NEWP",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "✅ x1.3",
+      "WR": "51%",
+      "Whale": "55.0pts",
+      "_prob_5": 76.2,
+      "_prob_clean": 60.9,
+      "_tier_sort": 3
+    },
+    {
+      "1D Change": "+1.41%",
+      "AI Prob": "69.6%",
+      "Antigrav": 61,
+      "Clean Hit": "55.5%",
+      "Consecutive": "2 UP",
+      "Context": "-",
+      "Conviction": 62.4,
+      "Decision Score": 65.0,
+      "Entry(-2%)": "5.29",
+      "Hold": "3d",
+      "Name": "GGN",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+8.8% vs SPY",
+      "Stop": "5.02 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV",
+      "Surge": "-",
+      "Target": "5.65",
+      "Ticker": "GGN",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "⚠️ x1.0",
+      "WR": "54%",
+      "Whale": "70.0pts",
+      "_prob_5": 69.6,
+      "_prob_clean": 55.5,
+      "_tier_sort": 3
+    },
+    {
+      "1D Change": "+4.93%",
+      "AI Prob": "64.1%",
+      "Antigrav": 61,
+      "Clean Hit": "51.1%",
+      "Consecutive": "2 UP",
+      "Context": "-",
+      "Conviction": 60.8,
+      "Decision Score": 59.7,
+      "Entry(-2%)": "11.04",
+      "Hold": "3d",
+      "Name": "SVM",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+19.4% vs SPY",
+      "Stop": "10.49 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+      "Surge": "-",
+      "Target": "11.93",
+      "Ticker": "SVM",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "✅ x1.4",
+      "WR": "54%",
+      "Whale": "70.0pts",
+      "_prob_5": 64.1,
+      "_prob_clean": 51.1,
+      "_tier_sort": 3
+    }
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:37:59.893668+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-CE72B627",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "scan_mode": "SWING",
+  "scan_result": {
+    "error_count": 0,
+    "results": [
+      {
+        "1D Change": "+4.22%",
+        "AI Prob": "64.7%",
+        "Antigrav": 64,
+        "Clean Hit": "51.6%",
+        "Consecutive": "2 UP",
+        "Context": "-",
+        "Conviction": 62.9,
+        "Decision Score": 65.9,
+        "Entry(-2%)": "16.47",
+        "Hold": "3d",
+        "Name": "ORLA",
+        "Position": "💤 조정 (Resting)",
+        "RS vs SPY": "+26.2% vs SPY",
+        "Stop": "15.65 (-5.0%)",
+        "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+        "Surge": "-",
+        "Target": "17.79",
+        "Ticker": "ORLA",
+        "Tier": "⭐T2",
+        "Trend": "DOWN",
+        "Volume": "✅ x1.6",
+        "WR": "50%",
+        "Whale": "75.0pts",
+        "_prob_5": 64.7,
+        "_prob_clean": 51.6,
+        "_tier_sort": 2
+      },
+      {
+        "1D Change": "+6.96%",
+        "AI Prob": "65.2%",
+        "Antigrav": 69,
+        "Clean Hit": "52.0%",
+        "Consecutive": "2 UP",
+        "Context": "-",
+        "Conviction": 63.9,
+        "Decision Score": 70.8,
+        "Entry(-2%)": "19.13",
+        "Hold": "3d",
+        "Name": "UUUU",
+        "Position": "💤 조정 (Resting)",
+        "RS vs SPY": "+9.4% vs SPY",
+        "Stop": "18.17 (-5.0%)",
+        "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV",
+        "Surge": "-",
+        "Target": "20.66",
+        "Ticker": "UUUU",
+        "Tier": "⭐T2",
+        "Trend": "DOWN",
+        "Volume": "✅ x2.4",
+        "WR": "49%",
+        "Whale": "70.0pts",
+        "_prob_5": 65.2,
+        "_prob_clean": 52.0,
+        "_tier_sort": 2
+      },
+      {
+        "1D Change": "+4.93%",
+        "AI Prob": "64.1%",
+        "Antigrav": 61,
+        "Clean Hit": "51.1%",
+        "Consecutive": "2 UP",
+        "Context": "-",
+        "Conviction": 60.8,
+        "Decision Score": 59.7,
+        "Entry(-2%)": "11.04",
+        "Hold": "3d",
+        "Name": "SVM",
+        "Position": "💤 조정 (Resting)",
+        "RS vs SPY": "+19.4% vs SPY",
+        "Stop": "10.49 (-5.0%)",
+        "Strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+        "Surge": "-",
+        "Target": "11.93",
+        "Ticker": "SVM",
+        "Tier": "T3",
+        "Trend": "DOWN",
+        "Volume": "✅ x1.4",
+        "WR": "54%",
+        "Whale": "70.0pts",
+        "_prob_5": 64.1,
+        "_prob_clean": 51.1,
+        "_tier_sort": 3
+      },
+      {
+        "1D Change": "+1.41%",
+        "AI Prob": "69.6%",
+        "Antigrav": 61,
+        "Clean Hit": "55.5%",
+        "Consecutive": "2 UP",
+        "Context": "-",
+        "Conviction": 62.4,
+        "Decision Score": 65.0,
+        "Entry(-2%)": "5.29",
+        "Hold": "3d",
+        "Name": "GGN",
+        "Position": "💤 조정 (Resting)",
+        "RS vs SPY": "+8.8% vs SPY",
+        "Stop": "5.02 (-5.0%)",
+        "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV",
+        "Surge": "-",
+        "Target": "5.65",
+        "Ticker": "GGN",
+        "Tier": "T3",
+        "Trend": "DOWN",
+        "Volume": "⚠️ x1.0",
+        "WR": "54%",
+        "Whale": "70.0pts",
+        "_prob_5": 69.6,
+        "_prob_clean": 55.5,
+        "_tier_sort": 3
+      },
+      {
+        "1D Change": "+4.71%",
+        "AI Prob": "76.2%",
+        "Antigrav": 58,
+        "Clean Hit": "60.9%",
+        "Consecutive": "2 UP",
+        "Context": "-",
+        "Conviction": 60.2,
+        "Decision Score": 65.6,
+        "Entry(-2%)": "4.25",
+        "Hold": "3d",
+        "Name": "NEWP",
+        "Position": "💤 조정 (Resting)",
+        "RS vs SPY": "+20.9% vs SPY",
+        "Stop": "4.04 (-5.0%)",
+        "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV | ⚡ Momentum",
+        "Surge": "-",
+        "Target": "4.59",
+        "Ticker": "NEWP",
+        "Tier": "T3",
+        "Trend": "DOWN",
+        "Volume": "✅ x1.3",
+        "WR": "51%",
+        "Whale": "55.0pts",
+        "_prob_5": 76.2,
+        "_prob_clean": 60.9,
+        "_tier_sort": 3
+      }
+    ],
+    "total_scans": 50
+  },
+  "strategy_family": "AMEX_MOONSHOT",
+  "warnings": []
+}

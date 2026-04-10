@@ -1,0 +1,772 @@
+{
+  "applied_profile_defaults": {},
+  "diagnostics": {
+    "error_symbols": [],
+    "exception_symbols": [],
+    "executor_exception_count": 0,
+    "filtered_count": 50,
+    "filtered_symbols": [
+      "OPTT",
+      "XPL",
+      "XTNT",
+      "PMI",
+      "IOR",
+      "LUD",
+      "GLV",
+      "TGEN",
+      "ZONE",
+      "CEV",
+      "BATL",
+      "PTHS",
+      "MHH",
+      "SLND",
+      "RYDE",
+      "FSI",
+      "FSP",
+      "IBO",
+      "OPHC",
+      "AGIG",
+      "BDL",
+      "DDC",
+      "GPUS",
+      "CTM",
+      "JAGU",
+      "GNS",
+      "BRIA",
+      "OSTX",
+      "UAVS",
+      "OTH",
+      "TRT",
+      "BCHT",
+      "WYY",
+      "SACH",
+      "SRXH",
+      "AXIL",
+      "MGLD",
+      "CVU",
+      "LGL",
+      "APT",
+      "BHM",
+      "INDO",
+      "FCO",
+      "MPU",
+      "NBY",
+      "KNRX",
+      "GRF",
+      "REED",
+      "EONR",
+      "ZDGE"
+    ],
+    "reject_details_by_symbol": {
+      "AGIG": [
+        {
+          "curr_price": 1.38,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "AGIG",
+          "ticker": "AGIG",
+          "turnover": 968958.84
+        }
+      ],
+      "APT": [
+        {
+          "curr_price": 4.56,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "APT",
+          "ticker": "APT",
+          "turnover": 217901.65
+        }
+      ],
+      "AXIL": [
+        {
+          "curr_price": 7.08,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "AXIL",
+          "ticker": "AXIL",
+          "turnover": 99723.29
+        }
+      ],
+      "BATL": [
+        {
+          "ai_prob": 21.5,
+          "alpha_score": 8.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 4.28,
+            "gap_pct": -5.64,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 42.1,
+            "price": 3.7399,
+            "range_pct": 10.7,
+            "strategy_type": "WAIT",
+            "volume_ratio": 1.45
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "BCHT": [
+        {
+          "curr_price": 1.88,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "BCHT",
+          "ticker": "BCHT",
+          "turnover": 172846.62
+        }
+      ],
+      "BDL": [
+        {
+          "curr_price": 31.0,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "BDL",
+          "ticker": "BDL",
+          "turnover": 26195.0
+        }
+      ],
+      "BHM": [
+        {
+          "curr_price": 11.73,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "BHM",
+          "ticker": "BHM",
+          "turnover": 142538.99
+        }
+      ],
+      "BRIA": [
+        {
+          "curr_price": 1.84,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "BRIA",
+          "ticker": "BRIA",
+          "turnover": 7334.21
+        }
+      ],
+      "CEV": [
+        {
+          "curr_price": 10.12,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "CEV",
+          "ticker": "CEV",
+          "turnover": 144482.17
+        }
+      ],
+      "CTM": [
+        {
+          "curr_price": 0.67,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "CTM",
+          "ticker": "CTM",
+          "turnover": 928241.71
+        }
+      ],
+      "CVU": [
+        {
+          "curr_price": 3.56,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "CVU",
+          "ticker": "CVU",
+          "turnover": 580278.45
+        }
+      ],
+      "DDC": [
+        {
+          "curr_price": 2.0,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "DDC",
+          "ticker": "DDC",
+          "turnover": 111432.3
+        }
+      ],
+      "EONR": [
+        {
+          "curr_price": 0.8,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "EONR",
+          "ticker": "EONR",
+          "turnover": 52926929.08
+        }
+      ],
+      "FCO": [
+        {
+          "curr_price": 3.19,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "FCO",
+          "ticker": "FCO",
+          "turnover": 481333.12
+        }
+      ],
+      "FSI": [
+        {
+          "curr_price": 5.28,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "FSI",
+          "ticker": "FSI",
+          "turnover": 76403.1
+        }
+      ],
+      "FSP": [
+        {
+          "curr_price": 0.63,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "FSP",
+          "ticker": "FSP",
+          "turnover": 425332.38
+        }
+      ],
+      "GLV": [
+        {
+          "curr_price": 5.9,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "GLV",
+          "ticker": "GLV",
+          "turnover": 194519.7
+        }
+      ],
+      "GNS": [
+        {
+          "curr_price": 0.37,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "GNS",
+          "ticker": "GNS",
+          "turnover": 541208.65
+        }
+      ],
+      "GPUS": [
+        {
+          "curr_price": 0.15,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "GPUS",
+          "ticker": "GPUS",
+          "turnover": 1783882.19
+        }
+      ],
+      "GRF": [
+        {
+          "curr_price": 10.26,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "GRF",
+          "ticker": "GRF",
+          "turnover": 13081.5
+        }
+      ],
+      "IBO": [
+        {
+          "curr_price": 0.59,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "IBO",
+          "ticker": "IBO",
+          "turnover": 6702656.44
+        }
+      ],
+      "INDO": [
+        {
+          "ai_prob": 36.7,
+          "alpha_score": 16.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 0.0,
+            "gap_pct": -4.36,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 38.3,
+            "price": 3.39,
+            "range_pct": 4.29,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.66
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "IOR": [
+        {
+          "curr_price": 18.34,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "IOR",
+          "ticker": "IOR",
+          "turnover": 11369.67
+        }
+      ],
+      "LGL": [
+        {
+          "curr_price": 6.95,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "LGL",
+          "ticker": "LGL",
+          "turnover": 32681.43
+        }
+      ],
+      "LUD": [
+        {
+          "curr_price": 3.19,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "LUD",
+          "ticker": "LUD",
+          "turnover": 592724.05
+        }
+      ],
+      "MGLD": [
+        {
+          "curr_price": 1.14,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "MGLD",
+          "ticker": "MGLD",
+          "turnover": 23873.76
+        }
+      ],
+      "MHH": [
+        {
+          "curr_price": 5.89,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "MHH",
+          "ticker": "MHH",
+          "turnover": 66818.48
+        }
+      ],
+      "MPU": [
+        {
+          "curr_price": 0.76,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "MPU",
+          "ticker": "MPU",
+          "turnover": 28991.58
+        }
+      ],
+      "NBY": [
+        {
+          "reason": "US_BASELINE_FILTER_FAIL"
+        }
+      ],
+      "OPHC": [
+        {
+          "curr_price": 5.15,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "OPHC",
+          "ticker": "OPHC",
+          "turnover": 143507.47
+        }
+      ],
+      "OPTT": [
+        {
+          "curr_price": 0.36,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "OPTT",
+          "ticker": "OPTT",
+          "turnover": 3178899.48
+        }
+      ],
+      "OSTX": [
+        {
+          "curr_price": 1.38,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "OSTX",
+          "ticker": "OSTX",
+          "turnover": 806889.87
+        }
+      ],
+      "PTHS": [
+        {
+          "curr_price": 21.01,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "PTHS",
+          "ticker": "PTHS",
+          "turnover": 77743.2
+        }
+      ],
+      "REED": [
+        {
+          "curr_price": 3.59,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "REED",
+          "ticker": "REED",
+          "turnover": 205377.56
+        }
+      ],
+      "RYDE": [
+        {
+          "curr_price": 0.55,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "RYDE",
+          "ticker": "RYDE",
+          "turnover": 433236.44
+        }
+      ],
+      "SACH": [
+        {
+          "curr_price": 1.02,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "SACH",
+          "ticker": "SACH",
+          "turnover": 252002.8
+        }
+      ],
+      "SLND": [
+        {
+          "ai_prob": 23.7,
+          "alpha_score": 37.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 2.56,
+            "gap_pct": 6.92,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 45.6,
+            "price": 1.365,
+            "range_pct": 6.59,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.52
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "SRXH": [
+        {
+          "curr_price": 0.14,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "SRXH",
+          "ticker": "SRXH",
+          "turnover": 3503825.17
+        }
+      ],
+      "TGEN": [
+        {
+          "ai_prob": 29.5,
+          "alpha_score": 29.0,
+          "amex_features": {
+            "breakout_10d": false,
+            "breakout_20d": false,
+            "close_to_high_pct": 1.1,
+            "gap_pct": 2.34,
+            "is_pre_surge": false,
+            "is_sub7": true,
+            "moonshot_score": 53.0,
+            "price": 2.72,
+            "range_pct": 4.78,
+            "strategy_type": "WAIT",
+            "volume_ratio": 0.44
+          },
+          "policy": {
+            "ai_min": 5,
+            "alpha_min": 75,
+            "avg_5d_pct": -1.9785067638158298,
+            "mode": "avoid",
+            "objective": 18.448716180920854,
+            "samples": 32,
+            "win_5d_pct": 46.875
+          },
+          "reason": "MARKET_POLICY_AVOID"
+        }
+      ],
+      "TRT": [
+        {
+          "curr_price": 5.84,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "TRT",
+          "ticker": "TRT",
+          "turnover": 378434.81
+        }
+      ],
+      "UAVS": [
+        {
+          "curr_price": 0.93,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "UAVS",
+          "ticker": "UAVS",
+          "turnover": 3143455.52
+        }
+      ],
+      "WYY": [
+        {
+          "curr_price": 5.0,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "WYY",
+          "ticker": "WYY",
+          "turnover": 154658.73
+        }
+      ],
+      "XPL": [
+        {
+          "curr_price": 0.88,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "XPL",
+          "ticker": "XPL",
+          "turnover": 431427.24
+        }
+      ],
+      "XTNT": [
+        {
+          "curr_price": 0.56,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "XTNT",
+          "ticker": "XTNT",
+          "turnover": 74978.8
+        }
+      ],
+      "ZDGE": [
+        {
+          "curr_price": 3.03,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "ZDGE",
+          "ticker": "ZDGE",
+          "turnover": 249684.49
+        }
+      ],
+      "ZONE": [
+        {
+          "curr_price": 0.34,
+          "liquidity_market": "US",
+          "min_price": 1.0,
+          "min_turnover": 1000000.0,
+          "stage": "liquidity_gate",
+          "stock_name": "ZONE",
+          "ticker": "ZONE",
+          "turnover": 908607.67
+        }
+      ]
+    },
+    "reject_reason_counts": {
+      "FETCH_DATA_FAIL": 1,
+      "LIQUIDITY_FILTER_FAIL": 41,
+      "MARKET_POLICY_AVOID": 4,
+      "MISSING_ANTIGRAV_SCORE": 3,
+      "US_BASELINE_FILTER_FAIL": 1
+    },
+    "reject_reasons_by_symbol": {
+      "AGIG": "LIQUIDITY_FILTER_FAIL",
+      "APT": "LIQUIDITY_FILTER_FAIL",
+      "AXIL": "LIQUIDITY_FILTER_FAIL",
+      "BATL": "MARKET_POLICY_AVOID",
+      "BCHT": "LIQUIDITY_FILTER_FAIL",
+      "BDL": "LIQUIDITY_FILTER_FAIL",
+      "BHM": "LIQUIDITY_FILTER_FAIL",
+      "BRIA": "LIQUIDITY_FILTER_FAIL",
+      "CEV": "LIQUIDITY_FILTER_FAIL",
+      "CTM": "LIQUIDITY_FILTER_FAIL",
+      "CVU": "LIQUIDITY_FILTER_FAIL",
+      "DDC": "LIQUIDITY_FILTER_FAIL",
+      "EONR": "LIQUIDITY_FILTER_FAIL",
+      "FCO": "LIQUIDITY_FILTER_FAIL",
+      "FSI": "LIQUIDITY_FILTER_FAIL",
+      "FSP": "LIQUIDITY_FILTER_FAIL",
+      "GLV": "LIQUIDITY_FILTER_FAIL",
+      "GNS": "LIQUIDITY_FILTER_FAIL",
+      "GPUS": "LIQUIDITY_FILTER_FAIL",
+      "GRF": "LIQUIDITY_FILTER_FAIL",
+      "IBO": "LIQUIDITY_FILTER_FAIL",
+      "INDO": "MARKET_POLICY_AVOID",
+      "IOR": "LIQUIDITY_FILTER_FAIL",
+      "JAGU": "FETCH_DATA_FAIL",
+      "KNRX": "MISSING_ANTIGRAV_SCORE",
+      "LGL": "LIQUIDITY_FILTER_FAIL",
+      "LUD": "LIQUIDITY_FILTER_FAIL",
+      "MGLD": "LIQUIDITY_FILTER_FAIL",
+      "MHH": "LIQUIDITY_FILTER_FAIL",
+      "MPU": "LIQUIDITY_FILTER_FAIL",
+      "NBY": "US_BASELINE_FILTER_FAIL",
+      "OPHC": "LIQUIDITY_FILTER_FAIL",
+      "OPTT": "LIQUIDITY_FILTER_FAIL",
+      "OSTX": "LIQUIDITY_FILTER_FAIL",
+      "OTH": "MISSING_ANTIGRAV_SCORE",
+      "PMI": "MISSING_ANTIGRAV_SCORE",
+      "PTHS": "LIQUIDITY_FILTER_FAIL",
+      "REED": "LIQUIDITY_FILTER_FAIL",
+      "RYDE": "LIQUIDITY_FILTER_FAIL",
+      "SACH": "LIQUIDITY_FILTER_FAIL",
+      "SLND": "MARKET_POLICY_AVOID",
+      "SRXH": "LIQUIDITY_FILTER_FAIL",
+      "TGEN": "MARKET_POLICY_AVOID",
+      "TRT": "LIQUIDITY_FILTER_FAIL",
+      "UAVS": "LIQUIDITY_FILTER_FAIL",
+      "WYY": "LIQUIDITY_FILTER_FAIL",
+      "XPL": "LIQUIDITY_FILTER_FAIL",
+      "XTNT": "LIQUIDITY_FILTER_FAIL",
+      "ZDGE": "LIQUIDITY_FILTER_FAIL",
+      "ZONE": "LIQUIDITY_FILTER_FAIL"
+    },
+    "worker_error_count": 0
+  },
+  "execution_profile": "prod",
+  "gate_config": {
+    "us_hard_filter": {
+      "amex_rs_min": -5.0,
+      "min_alpha": 40.0,
+      "min_alpha_down": 55.0
+    },
+    "us_signal_window": {
+      "lookback": 10,
+      "min_hits": 1
+    }
+  },
+  "results_sorted": [],
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:35:49.803146+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-8D2A41D3",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "scan_mode": "SWING",
+  "scan_result": {
+    "error_count": 0,
+    "results": [],
+    "total_scans": 50
+  },
+  "strategy_family": "AMEX_MOONSHOT",
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: LIQUIDITY_FILTER_FAIL (41).",
+      "severity": "warning"
+    }
+  ]
+}

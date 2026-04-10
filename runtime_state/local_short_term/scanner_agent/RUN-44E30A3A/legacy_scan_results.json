@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "20",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "30",
+      "AG_US_SIGNAL_LOOKBACK": "20",
+      "AG_US_SIGNAL_MIN_HITS": "0"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 0,
+      "filtered_symbols": [],
+      "reject_details_by_symbol": {},
+      "reject_reason_counts": {},
+      "reject_reasons_by_symbol": {},
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "dev",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 20.0,
+        "min_alpha_down": 30.0
+      },
+      "us_signal_window": {
+        "lookback": 20,
+        "min_hits": 0
+      }
+    },
+    "macro_ctx": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_SOFTENING"
+      ],
+      "krw": 1518.0999755859375,
+      "krw_change_1d": 0.65,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 30,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.27,
+      "tnx": 4.334000110626221,
+      "tnx_change_1d": -2.39,
+      "vix": 30.079999923706055,
+      "vix_change_1d": -3.12
+    },
+    "market": "NASDAQ",
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": NaN,
+      "kospi_chg": NaN,
+      "msg": "시장 정상: KOSPI +nan% / KOSDAQ +nan% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6651<6803)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "total_scans": 3,
+    "warnings": []
+  },
+  "results": [
+    {
+      "1D Change": "+1.73%",
+      "Antigrav": 38,
+      "Consecutive": "1 UP",
+      "Context": "-",
+      "Decision Score": 45.8,
+      "Entry(-2%)": "198.72",
+      "Hold": "3d",
+      "Name": "AMZN",
+      "Position": "📉 바닥 (Bottom)",
+      "RS vs SPY": "-0.8% vs SPY",
+      "Stop": "188.79 (-5.0%)",
+      "Strategy": "🚀 Momentum",
+      "Surge": "-",
+      "Target": "209.26",
+      "Ticker": "AMZN",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "⚠️ x0.9",
+      "WR": "52%",
+      "Whale": "60.0pts",
+      "_prob_5": 0.0,
+      "_prob_clean": 0.0,
+      "_tier_sort": 3
+    },
+    {
+      "1D Change": "-0.47%",
+      "Antigrav": 33,
+      "Consecutive": "3 DOWN",
+      "Context": "-",
+      "Decision Score": 31.8,
+      "Entry(-2%)": "163.40",
+      "Hold": "3d",
+      "Name": "NVDA",
+      "Position": "📉 바닥 (Bottom)",
+      "RS vs SPY": "-3.4% vs SPY",
+      "Stop": "155.23 (-5.0%)",
+      "Strategy": "🚀 Momentum",
+      "Surge": "-",
+      "Target": "173.31",
+      "Ticker": "NVDA",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "⚠️ x1.1",
+      "WR": "61%",
+      "Whale": "40.0pts",
+      "_prob_5": 0.0,
+      "_prob_clean": 0.0,
+      "_tier_sort": 3
+    },
+    {
+      "1D Change": "-1.05%",
+      "Antigrav": 36,
+      "Consecutive": "2 DOWN",
+      "Context": "-",
+      "Decision Score": 25.6,
+      "Entry(-2%)": "241.27",
+      "Hold": "3d",
+      "Name": "AAPL",
+      "Position": "📉 바닥 (Bottom)",
+      "RS vs SPY": "+1.8% vs SPY",
+      "Stop": "231.21 (-4.2%)",
+      "Strategy": "🚀 Momentum",
+      "Surge": "-",
+      "Target": "251.32",
+      "Ticker": "AAPL",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "⚠️ x0.7",
+      "WR": "52%",
+      "Whale": "35.0pts",
+      "_prob_5": 0.0,
+      "_prob_clean": 0.0,
+      "_tier_sort": 3
+    }
+  ]
+}

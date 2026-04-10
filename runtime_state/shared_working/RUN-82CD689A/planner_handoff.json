@@ -1,0 +1,180 @@
+{
+  "avoid_list": [],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "message": "Planner attached bear-market exception leaders from rejected candidates for follow-up tracking.",
+      "severity": "warning"
+    },
+    {
+      "code": "MARKET_POLICY_WATCHLIST_ONLY",
+      "message": "Planner downgraded active recommendations to watchlist-only because learned policy for NASDAQ/GREEN is avoid.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-01T15:12:41.427871+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-02",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T15:12:30.299769+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-82CD689A",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "watchlist": [
+    "NVDA",
+    "GOOGL",
+    "GOOG",
+    "TSLA",
+    "ASML",
+    "MU",
+    "AMD",
+    "AMAT",
+    "LRCX",
+    "INTC"
+  ],
+  "watchlist_meta": [
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "NVIDIA Corp",
+      "ticker": "NVDA"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Alphabet Inc Class A",
+      "ticker": "GOOGL"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Alphabet Inc Class C",
+      "ticker": "GOOG"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Tesla Inc",
+      "ticker": "TSLA"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "ASML Holding NV ADR",
+      "ticker": "ASML"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Micron Technology Inc",
+      "ticker": "MU"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Advanced Micro Devices Inc",
+      "ticker": "AMD"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Applied Materials Inc",
+      "ticker": "AMAT"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Lam Research Corp",
+      "ticker": "LRCX"
+    },
+    {
+      "expires_at": "2026-04-03T15:12:48.117558+00:00",
+      "generated_at": "2026-04-01T15:12:48.117558+00:00",
+      "horizon_days": 2,
+      "market_gate": "GREEN",
+      "policy_avg_5d_pct": -1.98,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 46.88,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "Intel Corp",
+      "ticker": "INTC"
+    }
+  ]
+}

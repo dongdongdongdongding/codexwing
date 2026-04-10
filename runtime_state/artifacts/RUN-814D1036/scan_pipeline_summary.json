@@ -1,0 +1,34 @@
+{
+  "artifact_dir": "runtime_state/artifacts/RUN-814D1036",
+  "error_count": 0,
+  "executor_exception_count": 0,
+  "filtered_count": 5,
+  "manifest_paths": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-814D1036/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-814D1036/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-814D1036/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-814D1036/market_context_handoff.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-814D1036/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-814D1036/postmortem_report.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-814D1036/realized_outcomes.json",
+    "run_manifest": "runtime_state/shared_working/RUN-814D1036/run_manifest.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-814D1036/scanner_handoff.json"
+  },
+  "market": "NASDAQ",
+  "reject_reason_counts": {
+    "US_HARD_FILTER_TREND_ALPHA": 2,
+    "US_SIGNAL_WINDOW_FAIL": 3
+  },
+  "result_count": 0,
+  "run_id": "RUN-814D1036",
+  "scanner_input_path": "runtime_state/local_short_term/scanner_agent/RUN-814D1036/legacy_scan_results.json",
+  "total_scans": 5,
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: US_SIGNAL_WINDOW_FAIL (3).",
+      "severity": "warning"
+    }
+  ],
+  "worker_error_count": 0
+}

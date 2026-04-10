@@ -1,0 +1,1124 @@
+{
+  "candidates": [],
+  "produced_at": "2026-04-01T14:40:24.818300+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:40:24.817566+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-AAA84FC1",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "summary": {
+    "applied_profile_defaults": {},
+    "candidate_count": 0,
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 36,
+      "filtered_symbols": [
+        "CHOW",
+        "KAPA",
+        "FISK",
+        "PMNT",
+        "AWX",
+        "IHT",
+        "TOVX",
+        "CVR",
+        "DSS",
+        "AMS",
+        "MWG",
+        "MYND",
+        "MSN",
+        "YCBD",
+        "AMBO",
+        "SYNX",
+        "CANF",
+        "HCWC",
+        "MITQ",
+        "MI",
+        "AMZE",
+        "SOAR",
+        "AIM",
+        "AZTR",
+        "GBR",
+        "SBEV",
+        "MTNB",
+        "ITP",
+        "NCL",
+        "PW",
+        "CPHI",
+        "BQ",
+        "CLDI",
+        "VTAK",
+        "DXF",
+        "OGEN"
+      ],
+      "reject_details_by_symbol": {
+        "AIM": [
+          {
+            "curr_price": 0.57,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "AIM",
+            "ticker": "AIM",
+            "turnover": 5665440.74
+          }
+        ],
+        "AMBO": [
+          {
+            "curr_price": 2.27,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "AMBO",
+            "ticker": "AMBO",
+            "turnover": 31026.12
+          }
+        ],
+        "AMS": [
+          {
+            "curr_price": 1.34,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "AMS",
+            "ticker": "AMS",
+            "turnover": 22310.88
+          }
+        ],
+        "AMZE": [
+          {
+            "curr_price": 0.15,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "AMZE",
+            "ticker": "AMZE",
+            "turnover": 238549.0
+          }
+        ],
+        "AWX": [
+          {
+            "curr_price": 2.6,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "AWX",
+            "ticker": "AWX",
+            "turnover": 12567.63
+          }
+        ],
+        "AZTR": [
+          {
+            "curr_price": 0.24,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "AZTR",
+            "ticker": "AZTR",
+            "turnover": 8446341.13
+          }
+        ],
+        "BQ": [
+          {
+            "curr_price": 0.79,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "BQ",
+            "ticker": "BQ",
+            "turnover": 82895.28
+          }
+        ],
+        "CANF": [
+          {
+            "curr_price": 3.07,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "CANF",
+            "ticker": "CANF",
+            "turnover": 377946.14
+          }
+        ],
+        "CLDI": [
+          {
+            "curr_price": 0.24,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "CLDI",
+            "ticker": "CLDI",
+            "turnover": 141985.94
+          }
+        ],
+        "CPHI": [
+          {
+            "curr_price": 0.6,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "CPHI",
+            "ticker": "CPHI",
+            "turnover": 16042.75
+          }
+        ],
+        "CVR": [
+          {
+            "curr_price": 9.95,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "CVR",
+            "ticker": "CVR",
+            "turnover": 31108.84
+          }
+        ],
+        "DSS": [
+          {
+            "curr_price": 0.87,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "DSS",
+            "ticker": "DSS",
+            "turnover": 20192.55
+          }
+        ],
+        "DXF": [
+          {
+            "curr_price": 0.83,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "DXF",
+            "ticker": "DXF",
+            "turnover": 54553.53
+          }
+        ],
+        "FISK": [
+          {
+            "curr_price": 4.9,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "FISK",
+            "ticker": "FISK",
+            "turnover": 6713.0
+          }
+        ],
+        "GBR": [
+          {
+            "curr_price": 0.88,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "GBR",
+            "ticker": "GBR",
+            "turnover": 1590068.81
+          }
+        ],
+        "HCWC": [
+          {
+            "curr_price": 0.25,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "HCWC",
+            "ticker": "HCWC",
+            "turnover": 179657.48
+          }
+        ],
+        "IHT": [
+          {
+            "curr_price": 1.05,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "IHT",
+            "ticker": "IHT",
+            "turnover": 7645.59
+          }
+        ],
+        "ITP": [
+          {
+            "curr_price": 0.19,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "ITP",
+            "ticker": "ITP",
+            "turnover": 26263.43
+          }
+        ],
+        "KAPA": [
+          {
+            "curr_price": 0.57,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "KAPA",
+            "ticker": "KAPA",
+            "turnover": 81019.61
+          }
+        ],
+        "MI": [
+          {
+            "curr_price": 0.33,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "MI",
+            "ticker": "MI",
+            "turnover": 1434857.09
+          }
+        ],
+        "MITQ": [
+          {
+            "curr_price": 0.55,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "MITQ",
+            "ticker": "MITQ",
+            "turnover": 20637.92
+          }
+        ],
+        "MSN": [
+          {
+            "curr_price": 0.38,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "MSN",
+            "ticker": "MSN",
+            "turnover": 8479.12
+          }
+        ],
+        "MTNB": [
+          {
+            "curr_price": 0.5,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "MTNB",
+            "ticker": "MTNB",
+            "turnover": 11502.78
+          }
+        ],
+        "MWG": [
+          {
+            "curr_price": 1.63,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "MWG",
+            "ticker": "MWG",
+            "turnover": 16244.42
+          }
+        ],
+        "MYND": [
+          {
+            "curr_price": 0.35,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "MYND",
+            "ticker": "MYND",
+            "turnover": 5238.19
+          }
+        ],
+        "NCL": [
+          {
+            "curr_price": 0.15,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "NCL",
+            "ticker": "NCL",
+            "turnover": 28357.08
+          }
+        ],
+        "OGEN": [
+          {
+            "curr_price": 0.57,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "OGEN",
+            "ticker": "OGEN",
+            "turnover": 165394.32
+          }
+        ],
+        "PMNT": [
+          {
+            "curr_price": 0.24,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "PMNT",
+            "ticker": "PMNT",
+            "turnover": 866787.68
+          }
+        ],
+        "PW": [
+          {
+            "curr_price": 0.8,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "PW",
+            "ticker": "PW",
+            "turnover": 19773.34
+          }
+        ],
+        "SBEV": [
+          {
+            "curr_price": 0.36,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "SBEV",
+            "ticker": "SBEV",
+            "turnover": 520837.59
+          }
+        ],
+        "SOAR": [
+          {
+            "curr_price": 0.23,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "SOAR",
+            "ticker": "SOAR",
+            "turnover": 1270643.21
+          }
+        ],
+        "SYNX": [
+          {
+            "curr_price": 0.98,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "SYNX",
+            "ticker": "SYNX",
+            "turnover": 3987648.43
+          }
+        ],
+        "TOVX": [
+          {
+            "curr_price": 0.2,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "TOVX",
+            "ticker": "TOVX",
+            "turnover": 3446615.49
+          }
+        ],
+        "VTAK": [
+          {
+            "curr_price": 0.99,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "VTAK",
+            "ticker": "VTAK",
+            "turnover": 3165274.27
+          }
+        ],
+        "YCBD": [
+          {
+            "curr_price": 0.71,
+            "liquidity_market": "US",
+            "min_price": 1.0,
+            "min_turnover": 1000000.0,
+            "stage": "liquidity_gate",
+            "stock_name": "YCBD",
+            "ticker": "YCBD",
+            "turnover": 380212.46
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "LIQUIDITY_FILTER_FAIL": 35,
+        "MISSING_ANTIGRAV_SCORE": 1
+      },
+      "reject_reasons_by_symbol": {
+        "AIM": "LIQUIDITY_FILTER_FAIL",
+        "AMBO": "LIQUIDITY_FILTER_FAIL",
+        "AMS": "LIQUIDITY_FILTER_FAIL",
+        "AMZE": "LIQUIDITY_FILTER_FAIL",
+        "AWX": "LIQUIDITY_FILTER_FAIL",
+        "AZTR": "LIQUIDITY_FILTER_FAIL",
+        "BQ": "LIQUIDITY_FILTER_FAIL",
+        "CANF": "LIQUIDITY_FILTER_FAIL",
+        "CHOW": "MISSING_ANTIGRAV_SCORE",
+        "CLDI": "LIQUIDITY_FILTER_FAIL",
+        "CPHI": "LIQUIDITY_FILTER_FAIL",
+        "CVR": "LIQUIDITY_FILTER_FAIL",
+        "DSS": "LIQUIDITY_FILTER_FAIL",
+        "DXF": "LIQUIDITY_FILTER_FAIL",
+        "FISK": "LIQUIDITY_FILTER_FAIL",
+        "GBR": "LIQUIDITY_FILTER_FAIL",
+        "HCWC": "LIQUIDITY_FILTER_FAIL",
+        "IHT": "LIQUIDITY_FILTER_FAIL",
+        "ITP": "LIQUIDITY_FILTER_FAIL",
+        "KAPA": "LIQUIDITY_FILTER_FAIL",
+        "MI": "LIQUIDITY_FILTER_FAIL",
+        "MITQ": "LIQUIDITY_FILTER_FAIL",
+        "MSN": "LIQUIDITY_FILTER_FAIL",
+        "MTNB": "LIQUIDITY_FILTER_FAIL",
+        "MWG": "LIQUIDITY_FILTER_FAIL",
+        "MYND": "LIQUIDITY_FILTER_FAIL",
+        "NCL": "LIQUIDITY_FILTER_FAIL",
+        "OGEN": "LIQUIDITY_FILTER_FAIL",
+        "PMNT": "LIQUIDITY_FILTER_FAIL",
+        "PW": "LIQUIDITY_FILTER_FAIL",
+        "SBEV": "LIQUIDITY_FILTER_FAIL",
+        "SOAR": "LIQUIDITY_FILTER_FAIL",
+        "SYNX": "LIQUIDITY_FILTER_FAIL",
+        "TOVX": "LIQUIDITY_FILTER_FAIL",
+        "VTAK": "LIQUIDITY_FILTER_FAIL",
+        "YCBD": "LIQUIDITY_FILTER_FAIL"
+      },
+      "worker_error_count": 0
+    },
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 40.0,
+        "min_alpha_down": 55.0
+      },
+      "us_signal_window": {
+        "lookback": 10,
+        "min_hits": 1
+      }
+    },
+    "input_meta": {
+      "applied_profile_defaults": {},
+      "diagnostics": {
+        "error_symbols": [],
+        "exception_symbols": [],
+        "executor_exception_count": 0,
+        "filtered_count": 36,
+        "filtered_symbols": [
+          "CHOW",
+          "KAPA",
+          "FISK",
+          "PMNT",
+          "AWX",
+          "IHT",
+          "TOVX",
+          "CVR",
+          "DSS",
+          "AMS",
+          "MWG",
+          "MYND",
+          "MSN",
+          "YCBD",
+          "AMBO",
+          "SYNX",
+          "CANF",
+          "HCWC",
+          "MITQ",
+          "MI",
+          "AMZE",
+          "SOAR",
+          "AIM",
+          "AZTR",
+          "GBR",
+          "SBEV",
+          "MTNB",
+          "ITP",
+          "NCL",
+          "PW",
+          "CPHI",
+          "BQ",
+          "CLDI",
+          "VTAK",
+          "DXF",
+          "OGEN"
+        ],
+        "reject_details_by_symbol": {
+          "AIM": [
+            {
+              "curr_price": 0.57,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "AIM",
+              "ticker": "AIM",
+              "turnover": 5665440.74
+            }
+          ],
+          "AMBO": [
+            {
+              "curr_price": 2.27,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "AMBO",
+              "ticker": "AMBO",
+              "turnover": 31026.12
+            }
+          ],
+          "AMS": [
+            {
+              "curr_price": 1.34,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "AMS",
+              "ticker": "AMS",
+              "turnover": 22310.88
+            }
+          ],
+          "AMZE": [
+            {
+              "curr_price": 0.15,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "AMZE",
+              "ticker": "AMZE",
+              "turnover": 238549.0
+            }
+          ],
+          "AWX": [
+            {
+              "curr_price": 2.6,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "AWX",
+              "ticker": "AWX",
+              "turnover": 12567.63
+            }
+          ],
+          "AZTR": [
+            {
+              "curr_price": 0.24,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "AZTR",
+              "ticker": "AZTR",
+              "turnover": 8446341.13
+            }
+          ],
+          "BQ": [
+            {
+              "curr_price": 0.79,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "BQ",
+              "ticker": "BQ",
+              "turnover": 82895.28
+            }
+          ],
+          "CANF": [
+            {
+              "curr_price": 3.07,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "CANF",
+              "ticker": "CANF",
+              "turnover": 377946.14
+            }
+          ],
+          "CLDI": [
+            {
+              "curr_price": 0.24,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "CLDI",
+              "ticker": "CLDI",
+              "turnover": 141985.94
+            }
+          ],
+          "CPHI": [
+            {
+              "curr_price": 0.6,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "CPHI",
+              "ticker": "CPHI",
+              "turnover": 16042.75
+            }
+          ],
+          "CVR": [
+            {
+              "curr_price": 9.95,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "CVR",
+              "ticker": "CVR",
+              "turnover": 31108.84
+            }
+          ],
+          "DSS": [
+            {
+              "curr_price": 0.87,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "DSS",
+              "ticker": "DSS",
+              "turnover": 20192.55
+            }
+          ],
+          "DXF": [
+            {
+              "curr_price": 0.83,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "DXF",
+              "ticker": "DXF",
+              "turnover": 54553.53
+            }
+          ],
+          "FISK": [
+            {
+              "curr_price": 4.9,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "FISK",
+              "ticker": "FISK",
+              "turnover": 6713.0
+            }
+          ],
+          "GBR": [
+            {
+              "curr_price": 0.88,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "GBR",
+              "ticker": "GBR",
+              "turnover": 1590068.81
+            }
+          ],
+          "HCWC": [
+            {
+              "curr_price": 0.25,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "HCWC",
+              "ticker": "HCWC",
+              "turnover": 179657.48
+            }
+          ],
+          "IHT": [
+            {
+              "curr_price": 1.05,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "IHT",
+              "ticker": "IHT",
+              "turnover": 7645.59
+            }
+          ],
+          "ITP": [
+            {
+              "curr_price": 0.19,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "ITP",
+              "ticker": "ITP",
+              "turnover": 26263.43
+            }
+          ],
+          "KAPA": [
+            {
+              "curr_price": 0.57,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "KAPA",
+              "ticker": "KAPA",
+              "turnover": 81019.61
+            }
+          ],
+          "MI": [
+            {
+              "curr_price": 0.33,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "MI",
+              "ticker": "MI",
+              "turnover": 1434857.09
+            }
+          ],
+          "MITQ": [
+            {
+              "curr_price": 0.55,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "MITQ",
+              "ticker": "MITQ",
+              "turnover": 20637.92
+            }
+          ],
+          "MSN": [
+            {
+              "curr_price": 0.38,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "MSN",
+              "ticker": "MSN",
+              "turnover": 8479.12
+            }
+          ],
+          "MTNB": [
+            {
+              "curr_price": 0.5,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "MTNB",
+              "ticker": "MTNB",
+              "turnover": 11502.78
+            }
+          ],
+          "MWG": [
+            {
+              "curr_price": 1.63,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "MWG",
+              "ticker": "MWG",
+              "turnover": 16244.42
+            }
+          ],
+          "MYND": [
+            {
+              "curr_price": 0.35,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "MYND",
+              "ticker": "MYND",
+              "turnover": 5238.19
+            }
+          ],
+          "NCL": [
+            {
+              "curr_price": 0.15,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "NCL",
+              "ticker": "NCL",
+              "turnover": 28357.08
+            }
+          ],
+          "OGEN": [
+            {
+              "curr_price": 0.57,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "OGEN",
+              "ticker": "OGEN",
+              "turnover": 165394.32
+            }
+          ],
+          "PMNT": [
+            {
+              "curr_price": 0.24,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "PMNT",
+              "ticker": "PMNT",
+              "turnover": 866787.68
+            }
+          ],
+          "PW": [
+            {
+              "curr_price": 0.8,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "PW",
+              "ticker": "PW",
+              "turnover": 19773.34
+            }
+          ],
+          "SBEV": [
+            {
+              "curr_price": 0.36,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "SBEV",
+              "ticker": "SBEV",
+              "turnover": 520837.59
+            }
+          ],
+          "SOAR": [
+            {
+              "curr_price": 0.23,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "SOAR",
+              "ticker": "SOAR",
+              "turnover": 1270643.21
+            }
+          ],
+          "SYNX": [
+            {
+              "curr_price": 0.98,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "SYNX",
+              "ticker": "SYNX",
+              "turnover": 3987648.43
+            }
+          ],
+          "TOVX": [
+            {
+              "curr_price": 0.2,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "TOVX",
+              "ticker": "TOVX",
+              "turnover": 3446615.49
+            }
+          ],
+          "VTAK": [
+            {
+              "curr_price": 0.99,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "VTAK",
+              "ticker": "VTAK",
+              "turnover": 3165274.27
+            }
+          ],
+          "YCBD": [
+            {
+              "curr_price": 0.71,
+              "liquidity_market": "US",
+              "min_price": 1.0,
+              "min_turnover": 1000000.0,
+              "stage": "liquidity_gate",
+              "stock_name": "YCBD",
+              "ticker": "YCBD",
+              "turnover": 380212.46
+            }
+          ]
+        },
+        "reject_reason_counts": {
+          "LIQUIDITY_FILTER_FAIL": 35,
+          "MISSING_ANTIGRAV_SCORE": 1
+        },
+        "reject_reasons_by_symbol": {
+          "AIM": "LIQUIDITY_FILTER_FAIL",
+          "AMBO": "LIQUIDITY_FILTER_FAIL",
+          "AMS": "LIQUIDITY_FILTER_FAIL",
+          "AMZE": "LIQUIDITY_FILTER_FAIL",
+          "AWX": "LIQUIDITY_FILTER_FAIL",
+          "AZTR": "LIQUIDITY_FILTER_FAIL",
+          "BQ": "LIQUIDITY_FILTER_FAIL",
+          "CANF": "LIQUIDITY_FILTER_FAIL",
+          "CHOW": "MISSING_ANTIGRAV_SCORE",
+          "CLDI": "LIQUIDITY_FILTER_FAIL",
+          "CPHI": "LIQUIDITY_FILTER_FAIL",
+          "CVR": "LIQUIDITY_FILTER_FAIL",
+          "DSS": "LIQUIDITY_FILTER_FAIL",
+          "DXF": "LIQUIDITY_FILTER_FAIL",
+          "FISK": "LIQUIDITY_FILTER_FAIL",
+          "GBR": "LIQUIDITY_FILTER_FAIL",
+          "HCWC": "LIQUIDITY_FILTER_FAIL",
+          "IHT": "LIQUIDITY_FILTER_FAIL",
+          "ITP": "LIQUIDITY_FILTER_FAIL",
+          "KAPA": "LIQUIDITY_FILTER_FAIL",
+          "MI": "LIQUIDITY_FILTER_FAIL",
+          "MITQ": "LIQUIDITY_FILTER_FAIL",
+          "MSN": "LIQUIDITY_FILTER_FAIL",
+          "MTNB": "LIQUIDITY_FILTER_FAIL",
+          "MWG": "LIQUIDITY_FILTER_FAIL",
+          "MYND": "LIQUIDITY_FILTER_FAIL",
+          "NCL": "LIQUIDITY_FILTER_FAIL",
+          "OGEN": "LIQUIDITY_FILTER_FAIL",
+          "PMNT": "LIQUIDITY_FILTER_FAIL",
+          "PW": "LIQUIDITY_FILTER_FAIL",
+          "SBEV": "LIQUIDITY_FILTER_FAIL",
+          "SOAR": "LIQUIDITY_FILTER_FAIL",
+          "SYNX": "LIQUIDITY_FILTER_FAIL",
+          "TOVX": "LIQUIDITY_FILTER_FAIL",
+          "VTAK": "LIQUIDITY_FILTER_FAIL",
+          "YCBD": "LIQUIDITY_FILTER_FAIL"
+        },
+        "worker_error_count": 0
+      },
+      "error_count": 0,
+      "execution_profile": "prod",
+      "gate_config": {
+        "us_hard_filter": {
+          "amex_rs_min": -5.0,
+          "min_alpha": 40.0,
+          "min_alpha_down": 55.0
+        },
+        "us_signal_window": {
+          "lookback": 10,
+          "min_hits": 1
+        }
+      },
+      "macro_ctx": {
+        "flags": [
+          "VIX_ELEVATED"
+        ],
+        "krw": 1507.3599853515625,
+        "krw_change_1d": -0.58,
+        "macro_multiplier": 1.0,
+        "macro_penalty": 0,
+        "macro_risk_score": 10,
+        "macro_state": "NORMAL",
+        "spy_change_1d": 0.66,
+        "tnx": 4.321000099182129,
+        "tnx_change_1d": 0.23,
+        "vix": 24.559999465942383,
+        "vix_change_1d": -2.73
+      },
+      "market": "AMEX",
+      "market_gate": {
+        "gate": "GREEN",
+        "kosdaq_chg": 6.061444728151452,
+        "kospi_chg": 8.436291186282054,
+        "live_mode": false,
+        "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+      },
+      "regime": {
+        "desc": "하락장 (현재<6620<6789)",
+        "emoji": "🔴",
+        "regime": "BEAR"
+      },
+      "scan_mode": "SWING",
+      "strategy_family": "AMEX_MOONSHOT",
+      "total_scans": 36,
+      "warnings": [
+        {
+          "code": "ZERO_RESULT_ALL_FILTERED",
+          "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: LIQUIDITY_FILTER_FAIL (35).",
+          "severity": "warning"
+        }
+      ]
+    },
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 6.061444728151452,
+      "kospi_chg": 8.436291186282054,
+      "live_mode": false,
+      "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6620<6789)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "source": "scanner_agent_input",
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: LIQUIDITY_FILTER_FAIL (35).",
+        "severity": "warning"
+      }
+    ],
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

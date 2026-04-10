@@ -1,0 +1,12 @@
+{
+  "results": [
+    {
+      "Ticker": "005930.KS",
+      "Name": "삼성전자",
+      "Decision Score": 88,
+      "Antigrav": 80,
+      "Strategy": "test"
+    }
+  ],
+  "meta": {}
+}

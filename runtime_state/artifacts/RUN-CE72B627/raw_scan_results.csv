@@ -1,0 +1,6 @@
+Tier,_tier_sort,Ticker,Name,Antigrav,Whale,Trend,1D Change,Consecutive,RS vs SPY,Entry(-2%),Target,Stop,Hold,Volume,Strategy,Surge,WR,AI Prob,Clean Hit,Conviction,Position,Context,_prob_5,_prob_clean,Decision Score
+⭐T2,2,UUUU,UUUU,69,70.0pts,DOWN,+6.96%,2 UP,+9.4% vs SPY,19.13,20.66,18.17 (-5.0%),3d,✅ x2.4,🚀 AMEX Moonshot | 🎣 RSI_DIV,-,49%,65.2%,52.0%,63.9,💤 조정 (Resting),-,65.2,52.0,70.8
+⭐T2,2,ORLA,ORLA,64,75.0pts,DOWN,+4.22%,2 UP,+26.2% vs SPY,16.47,17.79,15.65 (-5.0%),3d,✅ x1.6,🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum,-,50%,64.7%,51.6%,62.9,💤 조정 (Resting),-,64.7,51.6,65.9
+T3,3,NEWP,NEWP,58,55.0pts,DOWN,+4.71%,2 UP,+20.9% vs SPY,4.25,4.59,4.04 (-5.0%),3d,✅ x1.3,🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV | ⚡ Momentum,-,51%,76.2%,60.9%,60.2,💤 조정 (Resting),-,76.2,60.9,65.6
+T3,3,GGN,GGN,61,70.0pts,DOWN,+1.41%,2 UP,+8.8% vs SPY,5.29,5.65,5.02 (-5.0%),3d,⚠️ x1.0,🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV,-,54%,69.6%,55.5%,62.4,💤 조정 (Resting),-,69.6,55.5,65.0
+T3,3,SVM,SVM,61,70.0pts,DOWN,+4.93%,2 UP,+19.4% vs SPY,11.04,11.93,10.49 (-5.0%),3d,✅ x1.4,🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum,-,54%,64.1%,51.1%,60.8,💤 조정 (Resting),-,64.1,51.1,59.7

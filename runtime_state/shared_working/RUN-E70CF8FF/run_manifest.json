@@ -1,0 +1,16 @@
+{
+  "code_version": "test",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-E70CF8FF/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-E70CF8FF/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-E70CF8FF/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-E70CF8FF/market_context_handoff.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-E70CF8FF/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-E70CF8FF/postmortem_report.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-E70CF8FF/scanner_handoff.json"
+  },
+  "market": "KR",
+  "model_version": "test",
+  "run_id": "RUN-E70CF8FF",
+  "strategy_version": "test"
+}

@@ -1,0 +1,57 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json",
+    "outcome_health.json",
+    "profile_diagnostics.json"
+  ],
+  "failure_summary": "No critical pre-outcome failure. Postmortem generated as a preventive trace.",
+  "likely_causes": [
+    "Sample size is small; confidence may be overstated.",
+    "Stale pending/expired outcomes are accumulating, indicating weak closure policy and degraded feedback loop. (delta_vs_prev: pending=-249, expired=+221)"
+  ],
+  "produced_at": "2026-04-05T15:23:46.156505+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-06",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-05T15:23:34.535718+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-F7A9E957",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-04-05T15:23:46.156223+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-F7A9E957",
+      "status": "open",
+      "ticket_id": "TKT-FAFDF273",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-04-05T15:23:46.156501+00:00",
+      "hypothesis": "High expired ratio suggests horizon policy and follow-up cadence are misaligned with current execution flow.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "outcome updater + planner fallback policy",
+      "priority": "medium",
+      "requested_change": "Tighten fallback admission/horizon rules, enforce daily closure review, and escalate stale backlog thresholds. Delta evidence: pending=-249, expired=+221, base_run=RUN-83ADC7AC.",
+      "run_id": "RUN-F7A9E957",
+      "status": "open",
+      "ticket_id": "TKT-A386F9A9",
+      "title": "Reduce stale outcome backlog and fallback expiry"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 12,
+    "reason": "KR_HARD_FILTER_FAIL"
+  },
+  "current_total_scans": 20,
+  "fallback_watchlist": {
+    "applied": false,
+    "considered_dev_runs": 0,
+    "source_profile": "dev",
+    "source_run_id": null,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 10,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-03-31T07:53:48.034083+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 13,
+  "history_window_runs_seen": 50,
+  "market": "KOSDAQ",
+  "near_miss_watchlist": {
+    "applied": true,
+    "considered_filtered_symbols": 2,
+    "tickers": [
+      "950160.KQ",
+      "028300.KQ"
+    ],
+    "watchlist_meta": [
+      {
+        "alpha_score": 44.0,
+        "conviction_score": 50.7,
+        "expires_at": "2026-04-02T07:53:48.036294+00:00",
+        "generated_at": "2026-03-31T07:53:48.036294+00:00",
+        "horizon_days": 2,
+        "prob_5": 37.3,
+        "prob_clean": 31.9,
+        "real_trend": "",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "precision_gate_red_market",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "ticker": "950160.KQ"
+      },
+      {
+        "alpha_score": 40.0,
+        "conviction_score": 0.0,
+        "expires_at": "2026-04-02T07:53:48.036294+00:00",
+        "generated_at": "2026-03-31T07:53:48.036294+00:00",
+        "horizon_days": 2,
+        "prob_5": 0.0,
+        "prob_clean": 0.0,
+        "real_trend": "DOWN",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "kr_hard_filter_fail",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "ticker": "028300.KQ"
+      }
+    ]
+  },
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 60,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 60,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    },
+    "prod": {
+      "filtered_count": 230,
+      "result_count": 0,
+      "runs": 12,
+      "top_reject_reason": {
+        "count": 69,
+        "reason": "LIQUIDITY_FILTER_FAIL"
+      },
+      "total_scans": 232,
+      "weighted_filtered_rate_pct": 99.14,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 12
+    }
+  },
+  "run_id": "RUN-62451D58",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 0,
+    "mode": "favorable",
+    "policy": {
+      "ai_min": 0,
+      "alpha_min": 50,
+      "avg_5d_pct": 15.92069454956051,
+      "mode": "favorable",
+      "objective": 118.19013941446921,
+      "samples": 24,
+      "win_5d_pct": 66.66666666666666
+    },
+    "total_rejects": 15,
+    "watchlist_count": 2
+  }
+}

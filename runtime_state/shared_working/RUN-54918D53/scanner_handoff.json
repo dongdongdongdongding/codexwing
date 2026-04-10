@@ -1,0 +1,131 @@
+{
+  "candidates": [],
+  "produced_at": "2026-03-31T09:25:24.129511+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-31T09:25:24.129227+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-54918D53",
+    "strategy_version": "exception-ui-check"
+  },
+  "summary": {
+    "candidate_count": 0,
+    "diagnostics": {
+      "filtered_count": 3,
+      "reject_details_by_symbol": {
+        "086450.KQ": [
+          {
+            "alpha_score": 56,
+            "conviction_score": 63,
+            "prob_5": 39,
+            "prob_clean": 31,
+            "real_trend": "UP",
+            "stock_name": "동국제약",
+            "ticker": "086450.KQ",
+            "tier_sort": 3
+          }
+        ],
+        "241520.KQ": [
+          {
+            "alpha_score": 48,
+            "ml_prob": 36,
+            "pf": 1.8,
+            "real_trend": "UP",
+            "stock_name": "DSC인베스트먼트",
+            "ticker": "241520.KQ",
+            "tier_sort": 3,
+            "wr": 55
+          }
+        ],
+        "347700.KQ": [
+          {
+            "alpha_score": 47,
+            "ml_prob": 34,
+            "pf": 1.5,
+            "real_trend": "UP",
+            "stock_name": "스피어",
+            "ticker": "347700.KQ",
+            "tier_sort": 3,
+            "wr": 52
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "KR_HARD_FILTER_FAIL": 2,
+        "PRECISION_GATE_T3_LOW_ML_SUPPORT": 1
+      },
+      "reject_reasons_by_symbol": {
+        "086450.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "241520.KQ": "KR_HARD_FILTER_FAIL",
+        "347700.KQ": "KR_HARD_FILTER_FAIL"
+      }
+    },
+    "execution_profile": "prod",
+    "input_meta": {
+      "diagnostics": {
+        "filtered_count": 3,
+        "reject_details_by_symbol": {
+          "086450.KQ": [
+            {
+              "alpha_score": 56,
+              "conviction_score": 63,
+              "prob_5": 39,
+              "prob_clean": 31,
+              "real_trend": "UP",
+              "stock_name": "동국제약",
+              "ticker": "086450.KQ",
+              "tier_sort": 3
+            }
+          ],
+          "241520.KQ": [
+            {
+              "alpha_score": 48,
+              "ml_prob": 36,
+              "pf": 1.8,
+              "real_trend": "UP",
+              "stock_name": "DSC인베스트먼트",
+              "ticker": "241520.KQ",
+              "tier_sort": 3,
+              "wr": 55
+            }
+          ],
+          "347700.KQ": [
+            {
+              "alpha_score": 47,
+              "ml_prob": 34,
+              "pf": 1.5,
+              "real_trend": "UP",
+              "stock_name": "스피어",
+              "ticker": "347700.KQ",
+              "tier_sort": 3,
+              "wr": 52
+            }
+          ]
+        },
+        "reject_reason_counts": {
+          "KR_HARD_FILTER_FAIL": 2,
+          "PRECISION_GATE_T3_LOW_ML_SUPPORT": 1
+        },
+        "reject_reasons_by_symbol": {
+          "086450.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+          "241520.KQ": "KR_HARD_FILTER_FAIL",
+          "347700.KQ": "KR_HARD_FILTER_FAIL"
+        }
+      },
+      "execution_profile": "prod",
+      "market_gate": {
+        "gate": "RED"
+      },
+      "source": "scanner_agent_input",
+      "total_scans": 3
+    },
+    "market_gate": {
+      "gate": "RED"
+    },
+    "source": "scanner_agent_input",
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

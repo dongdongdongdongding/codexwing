@@ -1,0 +1,94 @@
+{
+  "avoid_list": [],
+  "decisions": [
+    {
+      "confidence": 0.75,
+      "decision": "PRIORITY_WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 1,
+      "rationale": [
+        "scanner_score=80.0",
+        "rank=1",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#298380.KQ",
+      "stock_name": "에이비엘바이오",
+      "ticker": "298380.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.703,
+      "decision": "WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 2,
+      "rationale": [
+        "scanner_score=70.6",
+        "rank=2",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#141080.KQ",
+      "stock_name": "리가켐바이오",
+      "ticker": "141080.KQ",
+      "warnings": []
+    },
+    {
+      "confidence": 0.699,
+      "decision": "WATCHLIST",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 3,
+      "rationale": [
+        "scanner_score=69.7",
+        "rank=3",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#058470.KQ",
+      "stock_name": "리노공업",
+      "ticker": "058470.KQ",
+      "warnings": []
+    }
+  ],
+  "global_warnings": [
+    {
+      "code": "LOW_QUALITY_INPUT",
+      "message": "Planner confidence reduced due to weak candidate ratio.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-01T02:28:50.670637+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-01T02:28:47.191431+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-62EEA6F4",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "watchlist": [
+    "298380.KQ",
+    "141080.KQ",
+    "058470.KQ"
+  ],
+  "watchlist_meta": []
+}

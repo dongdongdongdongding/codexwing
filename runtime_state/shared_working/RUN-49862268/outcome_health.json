@@ -1,0 +1,29 @@
+{
+  "delta_vs_prev_run": {
+    "base_generated_at": "2026-03-31T09:25:27.573232+00:00",
+    "base_run_id": "RUN-54918D53",
+    "expired": 0,
+    "fallback_expired": 0,
+    "fallback_pending": 0,
+    "fallback_resolved": 0,
+    "fallback_total": 0,
+    "outcomes_total": 3,
+    "pending": 3,
+    "resolved": 0
+  },
+  "expired": 0,
+  "expired_rate": 0.0,
+  "fallback_expired": 0,
+  "fallback_expired_rate": 0.0,
+  "fallback_pending": 0,
+  "fallback_resolved": 0,
+  "fallback_total": 0,
+  "generated_at": "2026-03-31T09:30:47.886572+00:00",
+  "market": "KOSDAQ",
+  "outcomes_total": 13,
+  "pending": 13,
+  "resolved": 0,
+  "run_id": "RUN-49862268",
+  "runs_with_outcomes": 4,
+  "window_runs": 29
+}

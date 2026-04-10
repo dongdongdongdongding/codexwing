@@ -1,0 +1,60 @@
+{
+  "outcomes": [
+    {
+      "alpha_score": null,
+      "base_trade_date": "2026-04-09",
+      "decision": "WATCHLIST_ONLY",
+      "decision_bucket": "watchlist",
+      "decision_score": 66.5,
+      "entry_reference_price": 421000.0,
+      "horizon": "T+2D",
+      "latest_return_pct": -2.137767,
+      "latest_trade_date": "2026-04-10",
+      "market": "KOSPI",
+      "outcome_label": null,
+      "outcome_recorded_at": null,
+      "performance_updated_at": "2026-04-10T09:34:42.640382+00:00",
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 63.6,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "primary_theme": "2차전지",
+      "priority_rank": 1,
+      "prob_5": 30.0,
+      "prob_clean": 27.0,
+      "real_trend": "UP",
+      "realized_return_pct": null,
+      "recommended_at": "2026-04-09T10:34:02.090335+00:00",
+      "return_1d_pct": -2.137767,
+      "run_id": "RUN-BB782D22",
+      "scan_mode": "INTRADAY",
+      "secondary_themes": [
+        "자동차",
+        "친환경/에너지"
+      ],
+      "source_ref": "planner_handoff.watchlist_meta#373220.KS",
+      "status": "PENDING",
+      "stock_name": "LG에너지솔루션",
+      "strategy_family": "KR_CORE",
+      "theme_inference_status": "inferred",
+      "theme_routing_path": "core_only",
+      "theme_source": "stock_master",
+      "ticker": "373220.KS"
+    }
+  ],
+  "produced_at": "2026-04-09T10:34:04.443090+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T10:34:02.090335+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-BB782D22",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "summary": {
+    "pending_count": 1,
+    "performance_last_updated_at": "2026-04-10T09:34:42.641580+00:00",
+    "resolved_count": 0
+  }
+}

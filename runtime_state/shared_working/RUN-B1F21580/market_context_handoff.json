@@ -1,0 +1,103 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1508.5799560546875,
+      "krw_change_1d": -0.5,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.65,
+      "tnx": 4.322000026702881,
+      "tnx_change_1d": 0.26,
+      "vix": 24.6200008392334,
+      "vix_change_1d": -2.5
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "반도체",
+      "방산",
+      "에너지"
+    ],
+    "key_insight": "최근 헤드라인이 혼재되어 있어 섹터 선택이 중요합니다. (US)",
+    "market_sentiment": "MIXED",
+    "raw": {
+      "beneficiary_keywords": [
+        "rally",
+        "rebound",
+        "surge"
+      ],
+      "beneficiary_sectors": [
+        "반도체",
+        "방산",
+        "에너지"
+      ],
+      "key_insight": "최근 헤드라인이 혼재되어 있어 섹터 선택이 중요합니다. (US)",
+      "market_sentiment": "MIXED",
+      "raw_headlines": [
+        "[Tue, 31 Mar 2026 20:34:48 GMT] Stock market today: Dow soars 1,000 points, S&P 500 and Nasdaq surge in upbeat end to brutal quarter - Yahoo Finance",
+        "[Wed, 01 Apr 2026 14:13:00 GMT] Stocks are higher to start the month as optimism around Iran war ending grows: Live updates - CNBC",
+        "[Wed, 01 Apr 2026 14:05:00 GMT] Stock Market Today: Dow Advances on Hopes for Quick End to War — Live Updates - WSJ",
+        "[Wed, 01 Apr 2026 12:30:54 GMT] 5 Things to Know Before the Stock Market Opens - Investopedia",
+        "[Wed, 01 Apr 2026 12:09:19 GMT] The stock market rebound, Nike's recovery questions, 'Project Hail Mary' and more in Morning Squawk - CNBC",
+        "[Fri, 27 Mar 2026 00:00:00 GMT] Economic conditions outlook, March 2026 - McKinsey & Company",
+        "[Tue, 31 Mar 2026 00:00:00 GMT] India’s Reckoning: Geopolitics, trade, and India’s development strategy - Hinrich Foundation",
+        "[Wed, 18 Mar 2026 07:00:00 GMT] AI, energy and geopolitics: Leadership's triple transition challenge - The World Economic Forum",
+        "[Mon, 30 Mar 2026 09:02:59 GMT] Market Mayhem: Geopolitics and War Shake Global Economy - Devdiscourse",
+        "[Wed, 01 Apr 2026 09:41:25 GMT] The strategic paradox of energy geopolitics: Political Economy of oil, gas wars amid civilisational rivalries - The Times of India",
+        "[Tue, 31 Mar 2026 20:34:48 GMT] Stock market today: Dow soars 1,000 points, S&P 500 and Nasdaq surge in upbeat end to brutal quarter - Yahoo Finance",
+        "[Wed, 01 Apr 2026 13:12:09 GMT] Stock market today: Dow S&P 500, Nasdaq futures climb as deescalation talk in Iran sparks rally to close out Q1 - Yahoo Finance",
+        "[Wed, 01 Apr 2026 14:06:14 GMT] Stock market today: Dow S&P 500, Nasdaq climb as deescalation talk in Iran extends rally - Yahoo Finance",
+        "[Wed, 01 Apr 2026 13:34:19 GMT] Dow surges 1,100 points, S&P 500 posts best day since May as hopes grow for end of Iran war: Live updates - CNBC",
+        "[Wed, 01 Apr 2026 03:46:00 GMT] Stock Market News, March 31, 2026: Nasdaq Leads Rally Built on Hope the Iran War May End Soon - WSJ"
+      ],
+      "sentiment_score": 8,
+      "source": "rss_rule_based",
+      "themes": [],
+      "timestamp": "2026-04-01 23:34",
+      "victim_keywords": [
+        "war"
+      ],
+      "victim_sectors": [
+        "소비재",
+        "수출민감주"
+      ]
+    },
+    "sentiment_score": 8,
+    "source": "rss_rule_based",
+    "status": "live_intel",
+    "victim_sectors": [
+      "소비재",
+      "수출민감주"
+    ]
+  },
+  "produced_at": "2026-04-01T14:34:53.561026+00:00",
+  "regime": {
+    "market": "AMEX",
+    "market_group": "US",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:34:45.653368+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-B1F21580",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "warnings": []
+}

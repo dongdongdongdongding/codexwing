@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planner_handoff.schema.json",
+  "title": "PlannerHandoff",
+  "type": "object",
+  "required": ["run_context", "decisions", "watchlist", "watchlist_meta", "avoid_list", "global_warnings", "produced_at"],
+  "properties": {
+    "run_context": {"type": "object"},
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "priority_rank", "decision", "confidence", "rationale", "evidence_refs", "warnings"],
+        "properties": {
+          "ticker": {"type": "string"},
+          "priority_rank": {"type": "integer"},
+          "decision": {"type": "string"},
+          "confidence": {"type": "number"},
+          "stock_name": {"type": ["string", "null"]},
+          "scan_mode": {"type": ["string", "null"]},
+          "strategy_family": {"type": ["string", "null"]},
+          "decision_score": {"type": ["number", "null"]},
+          "prob_5": {"type": ["number", "null"]},
+          "prob_clean": {"type": ["number", "null"]},
+          "real_trend": {"type": ["string", "null"]},
+          "phase25_variant": {"type": ["string", "null"]},
+          "phase25_prob": {"type": ["number", "null"]},
+          "phase25_shadow_variant": {"type": ["string", "null"]},
+          "phase25_shadow_prob": {"type": ["number", "null"]},
+          "phase25_recommended_threshold": {"type": ["number", "null"]},
+          "expected_edge_score": {"type": ["number", "null"]},
+          "expected_return_1d_pct": {"type": ["number", "null"]},
+          "expected_return_3d_pct": {"type": ["number", "null"]},
+          "primary_theme": {"type": ["string", "null"]},
+          "theme_source": {"type": ["string", "null"]},
+          "theme_inference_status": {"type": ["string", "null"]},
+          "secondary_themes": {"type": ["array", "null"], "items": {"type": "string"}},
+          "theme_routing_path": {"type": ["string", "null"]},
+          "theme_rationale": {"type": "array", "items": {"type": "string"}},
+          "theme_risk": {"type": "array", "items": {"type": "string"}},
+          "rationale": {"type": "array", "items": {"type": "string"}},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "warnings": {"type": "array", "items": {"type": "object"}},
+          "realized_outcome_ref": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "watchlist": {"type": "array", "items": {"type": "string"}},
+    "watchlist_meta": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "source_profile", "risk_label", "generated_at", "expires_at", "horizon_days", "reason"],
+        "properties": {
+          "ticker": {"type": "string"},
+          "source_profile": {"type": "string"},
+          "source_run_id": {"type": ["string", "null"]},
+          "risk_label": {"type": "string"},
+          "generated_at": {"type": "string"},
+          "expires_at": {"type": "string"},
+          "horizon_days": {"type": "integer"},
+          "reason": {"type": "string"},
+          "stock_name": {"type": ["string", "null"]},
+          "alpha_score": {"type": ["number", "null"]},
+          "decision_score": {"type": ["number", "null"]},
+          "prob_5": {"type": ["number", "null"]},
+          "prob_clean": {"type": ["number", "null"]},
+          "real_trend": {"type": ["string", "null"]},
+          "entry_reference_price": {"type": ["number", "null"]},
+          "phase25_variant": {"type": ["string", "null"]},
+          "phase25_prob": {"type": ["number", "null"]},
+          "phase25_shadow_variant": {"type": ["string", "null"]},
+          "phase25_shadow_prob": {"type": ["number", "null"]},
+          "phase25_recommended_threshold": {"type": ["number", "null"]},
+          "expected_edge_score": {"type": ["number", "null"]},
+          "expected_return_1d_pct": {"type": ["number", "null"]},
+          "expected_return_3d_pct": {"type": ["number", "null"]},
+          "primary_theme": {"type": ["string", "null"]},
+          "theme_source": {"type": ["string", "null"]},
+          "theme_inference_status": {"type": ["string", "null"]},
+          "secondary_themes": {"type": ["array", "null"], "items": {"type": "string"}},
+          "theme_routing_path": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "avoid_list": {"type": "array", "items": {"type": "string"}},
+    "global_warnings": {"type": "array", "items": {"type": "object"}},
+    "produced_at": {"type": "string"}
+  }
+}

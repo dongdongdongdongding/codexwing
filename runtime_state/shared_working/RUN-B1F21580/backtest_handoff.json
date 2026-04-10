@@ -1,0 +1,150 @@
+{
+  "calibration": {
+    "confidence_penalty": 0.08,
+    "reason": "Confidence penalized by realized trade count in sampled real backtests.",
+    "status": "mixed",
+    "trade_sample_bucket": "medium"
+  },
+  "diagnostics": {
+    "candidate_count": 5,
+    "expectancy_proxy": 0.319,
+    "mode": "quantstrategy_backtest_sampled",
+    "real_backtest": {
+      "avg_trades_per_ticker": 7.8,
+      "coverage_ratio": 1.0,
+      "low_trade_ratio": 0.0,
+      "mean_profit_factor": 3.054,
+      "mean_total_return_pct": 1.762,
+      "mean_win_rate_pct": 50.614,
+      "sample_rows": [
+        {
+          "profit_factor": 0.24,
+          "ticker": "UUUU",
+          "total_return_pct": -40.04,
+          "total_trades": 7,
+          "win_rate_pct": 33.33
+        },
+        {
+          "profit_factor": 2.95,
+          "ticker": "ORLA",
+          "total_return_pct": 19.92,
+          "total_trades": 9,
+          "win_rate_pct": 64.29
+        },
+        {
+          "profit_factor": 1.79,
+          "ticker": "NEWP",
+          "total_return_pct": 15.44,
+          "total_trades": 7,
+          "win_rate_pct": 50.0
+        },
+        {
+          "profit_factor": 0.48,
+          "ticker": "GGN",
+          "total_return_pct": -9.92,
+          "total_trades": 11,
+          "win_rate_pct": 45.45
+        },
+        {
+          "profit_factor": 9.81,
+          "ticker": "SVM",
+          "total_return_pct": 23.41,
+          "total_trades": 5,
+          "win_rate_pct": 60.0
+        }
+      ],
+      "selected_tickers": 5,
+      "tested_tickers": 5,
+      "total_trades_sum": 39
+    },
+    "sample_size_bucket": "small",
+    "score_stats": {
+      "max": 73.1,
+      "mean": 65.94,
+      "median": 65.6,
+      "min": 59.6,
+      "std": 4.287
+    },
+    "weak_candidate_ratio": 0.0
+  },
+  "produced_at": "2026-04-01T14:34:52.448396+00:00",
+  "regime_sensitivity": {
+    "benchmark": "SPY",
+    "errors": [],
+    "slices": [
+      {
+        "avg_pnl_pct": 6.895,
+        "days": 27,
+        "end": "2025-10-09",
+        "n_trades": 7,
+        "profit_factor": 5.63,
+        "regime": "BULL",
+        "start": "2025-09-03",
+        "win_rate_pct": 85.7
+      },
+      {
+        "avg_pnl_pct": 0.0,
+        "days": 23,
+        "end": "2026-04-01",
+        "n_trades": 0,
+        "profit_factor": 0.0,
+        "regime": "BEAR",
+        "start": "2026-03-02",
+        "win_rate_pct": 0.0
+      }
+    ],
+    "source": "backtest_framework._backtest_period + market_data provider",
+    "status": "low_sample",
+    "summary": {
+      "best_regime_by_avg_pnl": "BULL",
+      "data_ready_ticker_count": 5,
+      "generated_at": "2026-04-01T14:34:52.448254Z",
+      "min_tradeful_regimes": 2,
+      "regimes_tested": 2,
+      "regimes_with_trades": 1,
+      "selected_tickers": [
+        "UUUU",
+        "ORLA",
+        "NEWP",
+        "GGN",
+        "SVM"
+      ],
+      "ticker_count": 5,
+      "total_trades": 7,
+      "worst_regime_by_avg_pnl": "BULL"
+    },
+    "windows": {
+      "BEAR": {
+        "days": 23,
+        "end": "2026-04-01",
+        "start": "2026-03-02"
+      },
+      "BULL": {
+        "days": 27,
+        "end": "2025-10-09",
+        "start": "2025-09-03"
+      }
+    }
+  },
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:34:45.653368+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-B1F21580",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "warnings": [
+    {
+      "code": "REAL_BACKTEST_PARTIAL",
+      "message": "Sampled real backtests executed for 5 tickers (selected=5).",
+      "severity": "info"
+    },
+    {
+      "code": "REGIME_BACKTEST_LOW_SAMPLE",
+      "message": "Regime diagnostics exist but trade depth is low (total_trades=7).",
+      "severity": "warning"
+    }
+  ]
+}

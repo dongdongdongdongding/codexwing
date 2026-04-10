@@ -1,0 +1,189 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1510.5400390625,
+      "krw_change_1d": 0.09,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.09,
+      "tnx": 4.313000202178955,
+      "tnx_change_1d": -0.14,
+      "vix": 23.8700008392334,
+      "vix_change_1d": -2.73
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "바이오 (선별적)"
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 1,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": -3,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "key_insight": "코스닥 시장은 특정 바이오 종목의 호재에도 불구하고, 다른 종목의 위기, 이차전지 리스크, 대형주로의 자금 이탈 현상이 겹치며 극심한 종목 차별화 장세를 보이고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "description": "고액자산가들이 코스닥 일부 종목을 매도하고 코스피 대형 반도체주를 매수하는 자금 이동이 관측되어 코스닥 시장의 수급에 부정적입니다.",
+        "evidence": "30억 이상 고액자산가, 삼성전자·SK하이닉스 집중 매수 / ‘의외’, 30억 자산가들 ‘이 주식들’ 다 팔았다",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "EARNINGS",
+        "description": "특정 바이오 기업의 대규모 기술 수출 계약은 긍정적이나, SK온 관련 평가손실 등 일부 기업의 리스크는 부정적 요인입니다.",
+        "evidence": "'41조' 역대급 잭팟 터졌다 / SK이노, 커지는 SK온 리스크…PRS계약 평가손실 5814억",
+        "market_impact": 1,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "기술수출",
+        "잭팟"
+      ],
+      "beneficiary_sectors": [
+        "바이오 (선별적)"
+      ],
+      "cross_asset_signals": [],
+      "driver_scores": {
+        "EARNINGS": 1,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": -3,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "'41조' 역대급 잭팟 터졌다…K바이오 '대반전' 쓴 비결",
+        "[돈이 보이는 경제] '천당' 갔다 '지옥' 간 삼천당제약…흔들리는 바...",
+        "에코프로비엠 앞 '전환사채 암초'",
+        "‘의외’, 30억 자산가들 ‘이 주식들’ 다 팔았다…삼전 등 반도체주..."
+      ],
+      "key_insight": "코스닥 시장은 특정 바이오 종목의 호재에도 불구하고, 다른 종목의 위기, 이차전지 리스크, 대형주로의 자금 이탈 현상이 겹치며 극심한 종목 차별화 장세를 보이고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "description": "고액자산가들이 코스닥 일부 종목을 매도하고 코스피 대형 반도체주를 매수하는 자금 이동이 관측되어 코스닥 시장의 수급에 부정적입니다.",
+          "evidence": "30억 이상 고액자산가, 삼성전자·SK하이닉스 집중 매수 / ‘의외’, 30억 자산가들 ‘이 주식들’ 다 팔았다",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "EARNINGS",
+          "description": "특정 바이오 기업의 대규모 기술 수출 계약은 긍정적이나, SK온 관련 평가손실 등 일부 기업의 리스크는 부정적 요인입니다.",
+          "evidence": "'41조' 역대급 잭팟 터졌다 / SK이노, 커지는 SK온 리스크…PRS계약 평가손실 5814억",
+          "market_impact": 1,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Naver Stock] 196170.KQ [0] '41조' 역대급 잭팟 터졌다…K바이오 '대반전' 쓴 비결 | 네이버증권",
+        "[Naver Stock] 196170.KQ [0] 30억 이상 고액자산가, 삼성전자·SK하이닉스 집중 매수 | 네이버증권",
+        "[Naver Stock] 196170.KQ [0] [돈이 보이는 경제] '천당' 갔다 '지옥' 간 삼천당제약…흔들리는 바... | 네이버증권",
+        "[Naver Stock] 086520.KQ [0] '20만→118만→60만원' 롤러코스터 같은 주가…삼천당제약 무슨 일? | 네이버증권",
+        "[Naver Stock] 086520.KQ [0] SK이노, 커지는 SK온 리스크…PRS계약 평가손실 5814억 [시그널] | 네이버증권",
+        "[Naver Stock] 086520.KQ [0] 올1Q 45개 그룹총수 주식재산 10조 뛰었다는데…OCI 이우현 증가율 1위 | 네이버증권",
+        "[Naver Stock] 247540.KQ [0] 에코프로비엠 앞 '전환사채 암초' | 네이버증권",
+        "[Naver Stock] 247540.KQ [0] SK이노, 커지는 SK온 리스크…PRS계약 평가손실 5814억 [시그널] | 네이버증권",
+        "[Naver Stock] 247540.KQ [0] 34만원→4만원→16만원…바닥잡고 올라온 이차전지 ‘이곳’ [K주식, ... | 네이버증권",
+        "[Naver Stock] 000250.KQ [+3] [바이오문해력]개발력 만큼 '지배구조·사람' 보는 이유 | 네이버증권",
+        "[Naver Stock] 000250.KQ [-4] 128만 → 64만…위기의 ‘황제주’ 삼천당제약, 6일 기자회견으로 승... | 네이버증권",
+        "[Naver Stock] 277810.KQ [0] 대전 떠나는 '황금알 기업'…일자리·세수 기반 동반 '흔들' | 네이버증권",
+        "[Naver Stock] 298380.KQ [0] ‘의외’, 30억 자산가들 ‘이 주식들’ 다 팔았다…삼전 등 반도체주... | 네이버증권",
+        "[Naver Stock] 298380.KQ [0] [알아BIO] \"삼천당 아닌 황천당?\"…각종 논란 두고 '시끌시끌' | 네이버증권",
+        "[Naver Stock] 058470.KQ [0] 한달 새 -19%…'안전공식' 버린 연금개미 뛰어든 곳은 | 네이버증권"
+      ],
+      "risk_flags": [
+        "개별 종목 리스크 심화",
+        "바이오 섹터 변동성 확대",
+        "수급 이탈 가능성",
+        "전환사채 오버행"
+      ],
+      "sentiment_score": -15,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "알테오젠의 '41조' 규모 기술수출 성공과 삼천당제약의 주가 급락 및 위기설이 동시에 부각되며, 개별 기업의 성과에 따라 희비가 엇갈리고 있습니다.",
+          "impact": "MIXED",
+          "theme": "K-바이오 섹터 내 극심한 차별화"
+        },
+        {
+          "description": "일부 종목의 주가 반등에도 불구하고, 에코프로비엠의 전환사채 물량 부담과 같은 잠재적 리스크가 여전히 존재합니다.",
+          "impact": "NEGATIVE",
+          "theme": "이차전지 섹터의 불확실성"
+        }
+      ],
+      "timestamp": "2026-04-06 01:40",
+      "victim_keywords": [
+        "전환사채",
+        "주가급락",
+        "리스크",
+        "평가손실",
+        "논란"
+      ],
+      "victim_sectors": [
+        "바이오 (선별적)",
+        "이차전지"
+      ]
+    },
+    "risk_flags": [
+      "개별 종목 리스크 심화",
+      "바이오 섹터 변동성 확대",
+      "수급 이탈 가능성",
+      "전환사채 오버행"
+    ],
+    "sentiment_score": -15,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "바이오 (선별적)",
+      "이차전지"
+    ]
+  },
+  "produced_at": "2026-04-05T16:43:10.034956+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-06",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-05T16:43:06.528573+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-8F08BDD1",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

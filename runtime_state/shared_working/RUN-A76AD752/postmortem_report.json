@@ -1,0 +1,54 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json"
+  ],
+  "failure_summary": "No critical pre-outcome failure. Postmortem generated as a preventive trace.",
+  "likely_causes": [
+    "Sample size is small; confidence may be overstated.",
+    "Market/news context is placeholder and should be wired before high-conviction automation."
+  ],
+  "produced_at": "2026-03-30T13:09:05.453565+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-30",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-30T13:09:05.452110+00:00",
+    "market": "US",
+    "model_version": "legacy",
+    "run_id": "RUN-A76AD752",
+    "strategy_version": "bridge-smoke-v12"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-03-30T13:09:05.453552+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-A76AD752",
+      "status": "open",
+      "ticket_id": "TKT-B0265162",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-03-30T13:09:05.453561+00:00",
+      "hypothesis": "Missing regime/news overlay can cause false positives in weak markets.",
+      "owner_agent": "market_news_context_agent",
+      "owner_module": "modules/macro_scheduler.py + modules/market_intelligence.py",
+      "priority": "high",
+      "requested_change": "Populate market_context_handoff with live macro/news scores and suppression flags.",
+      "run_id": "RUN-A76AD752",
+      "status": "open",
+      "ticket_id": "TKT-66181137",
+      "title": "Wire live market context into handoff"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "feature_cols": [
+    "RSI",
+    "MACD_norm",
+    "MACD_cross",
+    "BB_pct",
+    "MA20_gap",
+    "MA50_gap",
+    "MA_cross",
+    "Vol_ratio",
+    "ATR_pct",
+    "ROC_1",
+    "ROC_3",
+    "ROC_5",
+    "TechScore",
+    "Mkt_ROC_20",
+    "Sector_ROC_20"
+  ],
+  "confidence_threshold": 0.9000000000000004,
+  "avg_cv_precision": 0.8106,
+  "pos_rate": 0.278,
+  "trained_at": "2026-03-20 11:58"
+}

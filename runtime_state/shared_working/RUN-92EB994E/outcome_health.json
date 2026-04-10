@@ -1,0 +1,29 @@
+{
+  "delta_vs_prev_run": {
+    "base_generated_at": "2026-04-01T14:10:44.358802+00:00",
+    "base_run_id": "RUN-37BD67D6",
+    "expired": 0,
+    "fallback_expired": 0,
+    "fallback_pending": 0,
+    "fallback_resolved": 0,
+    "fallback_total": 0,
+    "outcomes_total": 6,
+    "pending": 6,
+    "resolved": 0
+  },
+  "expired": 0,
+  "expired_rate": 0.0,
+  "fallback_expired": 0,
+  "fallback_expired_rate": 0.0,
+  "fallback_pending": 0,
+  "fallback_resolved": 0,
+  "fallback_total": 0,
+  "generated_at": "2026-04-01T14:11:56.293935+00:00",
+  "market": "AMEX",
+  "outcomes_total": 19,
+  "pending": 19,
+  "resolved": 0,
+  "run_id": "RUN-92EB994E",
+  "runs_with_outcomes": 3,
+  "window_runs": 6
+}

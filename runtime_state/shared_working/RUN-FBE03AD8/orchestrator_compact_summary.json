@@ -1,0 +1,33 @@
+{
+  "agents_executed": [
+    "scanner_agent",
+    "aggregation_agent",
+    "backtest_learning_agent",
+    "market_news_context_agent",
+    "pm_planner_agent"
+  ],
+  "market": "KOSDAQ",
+  "planner": {
+    "decision_count": 266,
+    "warning_codes": [
+      "LOW_QUALITY_INPUT"
+    ],
+    "watchlist_count": 1
+  },
+  "postmortem": {
+    "likely_causes": []
+  },
+  "run_id": "RUN-FBE03AD8",
+  "scanner": {
+    "candidate_count": 266,
+    "reject_reason_counts": {
+      "INTRADAY_FETCH_FAIL": 30,
+      "INTRADAY_MIN_PRICE_VOLUME_FAIL": 1204,
+      "INTRADAY_SETUP_WEAK": 218
+    },
+    "top_reject_reason": {}
+  },
+  "status": "completed",
+  "task_id": "TASK-A6DA72B3",
+  "task_kind": "scan_pipeline"
+}

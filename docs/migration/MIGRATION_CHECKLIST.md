@@ -1,0 +1,210 @@
+# Migration Checklist
+
+## Already Wired (This Stage)
+- [x] Project-level multi-agent rules in root `AGENTS.md`.
+- [x] Agent role docs in `agents/*.md`.
+- [x] Architecture analysis and staged migration plan document.
+- [x] Additive multi-agent scaffolding package (`multi_agent/`) for contracts, schemas, storage layers, agent interfaces, and PM workflows.
+- [x] Legacy scanner output bridge (`scanner_handoff.json`) from both `app.py` and `auto_bot.py`.
+- [x] Shared bridge wrapper in engine module (`modules/scanner_bridge.py`) to avoid UI/bot duplicate handoff logic.
+- [x] `ScannerAgent` now supports legacy results ingestion and emits real scanner handoff when input JSON is provided:
+  - accepts list payload or object payload (`results`/`rows`/`candidates`)
+  - reuses `multi_agent/workflows/legacy_export.py` conversion logic
+  - preserves placeholder mode only when input is missing/unreadable
+- [x] Scaffold runner now supports scanner input path:
+  - `python3 multi_agent/workflows/scaffold_run.py --market KR --scanner-input /abs/path/results.json`
+- [x] Scaffold runner now routes scanner output through legacy orchestration bridge:
+  - emits full trace set (`run_manifest.json`, `postmortem_report.json`, `improvement_tickets.json`, `realized_outcomes.json`)
+  - appends long-term JSONL traces via existing orchestration path
+- [x] Non-UI scanner pipeline added using shared scanner runtime:
+  - `multi_agent/workflows/non_ui_scan_pipeline.py`
+  - uses `run_parallel_scan(...)` + `scan_symbol_with_retry(...)` from `modules/scanner_runtime.py`
+  - writes scanner input into local short-term memory and executes `ScannerAgent` + legacy orchestration
+  - emits full downstream handoffs, postmortem, tickets, manifest, and artifacts
+- [x] Scanner reject-reason observability added for non-UI runs:
+  - `scan_symbol_with_retry(..., reject_reason_fn=...)` callback support
+  - `scan_pipeline_summary.json` includes `reject_reason_counts`
+  - zero-result warning now includes top reject reason
+- [x] Non-UI scanner execution profile layer added (`prod` / `dev`):
+  - profile defaults are applied without overriding explicit `AG_US_*` env values
+  - trace metadata now includes `execution_profile`, `applied_profile_defaults`, and `gate_config`
+- [x] Profile diagnostics report tool added for PM analysis:
+  - `multi_agent/tools/report_scan_profile_metrics.py`
+  - summarizes pass/filter rates and top reject reasons by execution profile
+- [x] Profile diagnostics DB report tool added:
+  - `multi_agent/tools/report_profile_diagnostics_db.py`
+  - summarizes prod/dev gap alerts and fallback-application runs from `agent_profile_diagnostics`
+- [x] Outcome health DB report tool added:
+  - `multi_agent/tools/report_outcome_health_db.py`
+  - summarizes `agent_outcome_health` rows and aggregate expiry/fallback rates
+- [x] Fallback outcome health DB report tool added:
+  - `multi_agent/tools/report_fallback_outcome_health_db.py`
+  - joins `agent_profile_diagnostics` + `agent_realized_outcomes` for fallback pending/resolved/expired/stale tracking
+- [x] Profile diagnostics JSON schema added:
+  - `multi_agent/schemas/profile_diagnostics.schema.json`
+- [x] PM postmortem now ingests profile diagnostics and auto-issues tickets on prod/dev divergence:
+  - emits `profile_diagnostics.json` per run
+  - adds profile-gap likely causes/evidence to `postmortem_report.json`
+  - creates targeted scanner/backtest tickets when prod starvation is detected against dev baseline
+- [x] Planner fallback policy wired for prod zero-result streak:
+  - when `prod_zero_streak_alert` is true and planner input is empty, fallback watchlist is sourced from recent `dev` run
+  - planner emits `FALLBACK_WATCHLIST_ENABLED` warning and records applied source in `profile_diagnostics.json`
+  - fallback watchlist now carries per-ticker metadata (`risk_label`, `generated_at`, `expires_at`, `horizon_days`, `source_run_id`)
+  - fallback watchlist entries are mirrored into `realized_outcomes.json` (`decision=FALLBACK_WATCHLIST`) for outcome tracking
+- [x] Legacy orchestration bridge that generates:
+  - `aggregation_handoff.json`
+  - `backtest_handoff.json` (proxy diagnostics)
+  - `market_context_handoff.json` (placeholder with warnings)
+  - `planner_handoff.json`
+  - `postmortem_report.json`
+  - `improvement_tickets.json`
+  - `run_manifest.json`
+- [x] Long-term memory append logs from orchestration:
+  - `runtime_state/long_term/runs/agent_runs.jsonl`
+  - `runtime_state/long_term/postmortems/postmortems.jsonl`
+  - `runtime_state/long_term/tickets/improvement_tickets.jsonl`
+- [x] Shared scanner candidate service (`modules/scanner_services.py`) wired into:
+  - `auto_bot.py` universe candidate evaluation
+  - `app.py` Excel-upload scan path
+  - `auto_bot.py` hourly active-signal evaluation
+- [x] `app.py` main scanner now uses shared pure helper blocks for:
+  - exhaustion/momentum context calculation
+  - liquidity gate function
+  - surge-tag probability composition
+- [x] `app.py` main scanner now uses shared output builders for:
+  - US result row + DB upsert payload assembly
+  - KR result row + DB upsert payload assembly
+- [x] `app.py` main scanner now uses shared classification helpers for:
+  - US/KR verdict labels
+  - US/KR tier rules
+  - US/KR hard alpha filters
+- [x] `app.py` main scanner now uses shared gating helpers for:
+  - US/KR baseline pass filters
+  - US strategy tag resolve / KR strategy tag resolve
+  - KR market-leader bypass detection
+  - US relative-strength vs SPY calculation
+  - KR sector gate application
+- [x] `app.py` main scanner now uses shared branch wrappers for:
+  - `evaluate_app_us_candidate(...)`
+  - `evaluate_app_kr_candidate(...)`
+- [x] `app.py` scan worker retry/backoff/runtime concerns extracted to:
+  - `modules/scanner_runtime.py`
+  - `scan_symbol_with_retry(...)`
+  - `SharedBackoffState`
+- [x] `app.py` scanner thread-pool execution loop extracted to:
+  - `run_parallel_scan(...)` in `modules/scanner_runtime.py`
+  - callback-based item reporting (`on_item`)
+- [x] `auto_bot.py` hourly active-scan core extracted to shared runtime helpers in `modules/scanner_runtime.py`:
+  - `resolve_hourly_market_candidates(...)`
+  - `fetch_hourly_regime_status(...)`
+  - `collect_hourly_signals(...)`
+  - `format_hourly_signal_message(...)`
+- [x] `auto_bot.py` universe candidate loop extracted to runtime helper:
+  - `collect_universe_scan_candidates(...)` in `modules/scanner_runtime.py`
+- [x] Legacy orchestration backtest handoff now supports bounded real-sample diagnostics with safe fallback:
+  - sampled `QuantStrategy.backtest()` per top candidates
+  - auto-fallback to proxy diagnostics when deps/data are unavailable
+  - env toggles: `AG_ENABLE_REAL_BACKTEST_HANDOFF`, `AG_REAL_BACKTEST_MAX_TICKERS`
+- [x] Optional DB sink adapters added for PM artifacts:
+  - `DBManager.save_agent_run_summary(...)`
+  - `DBManager.save_agent_postmortem(...)`
+  - `DBManager.save_agent_improvement_tickets(...)`
+  - `DBManager.save_agent_realized_outcomes(...)`
+  - `DBManager.save_agent_profile_diagnostics(...)`
+  - `DBManager.save_agent_outcome_health(...)`
+  - wired as non-blocking append path in legacy orchestration
+- [x] Supabase table bootstrap SQL added:
+  - `docs/migration/supabase_agent_tables.sql`
+  - includes `agent_realized_outcomes`, `agent_profile_diagnostics`, and `agent_outcome_health` tables
+- [x] Legacy scan sink table bootstrap included in same SQL:
+  - `market_scan_results` (required by `DBManager.upsert_scan_result(...)`)
+- [x] Legacy signal table bootstrap included in same SQL:
+  - `signals` (required by `DBManager.save_signal(...)` and `update_realized_outcomes.py` lookup path)
+- [x] Backfill utility script added for long-term memory JSONL → DB tables:
+  - `multi_agent/tools/backfill_agent_memory_to_db.py` (`--dry-run` supported)
+  - includes `profile_diagnostics/profile_diagnostics.jsonl` ingestion
+  - includes `outcome_health/outcome_health.jsonl` ingestion
+  - staged mode(`--limit`)에서도 FK 충돌을 피하기 위해 missing run-summary stub 자동 보강
+- [x] Market context handoff now attempts live macro/news enrichment with fallback:
+  - `modules.macro_scheduler.get_macro_context(...)` (when available)
+  - `modules.market_intelligence.get_market_intelligence(...)` (when available)
+  - placeholder/failure warnings preserved when deps or keys are unavailable
+- [x] Aggregation diagnostics extracted into agent runtime module and reused by orchestration:
+  - `multi_agent/agents/aggregation_runtime.py`
+  - `AggregationAgent` now reads `scanner_handoff.json` and emits computed aggregation output
+  - `legacy_orchestration` reuses the same aggregation builder (single source of truth)
+- [x] Backtest diagnostics builder extracted and shared:
+  - `multi_agent/agents/backtest_runtime.py`
+  - `BacktestLearningAgent` uses scanner/aggregation handoffs to emit computed output
+  - `legacy_orchestration` reuses the same backtest builder
+- [x] Backtest handoff upgraded with regime-sliced real diagnostics:
+  - uses `backtest_framework._backtest_period(...)` over latest regime windows (BULL/NEUTRAL/BEAR when available)
+  - benchmark-driven regime windows + sampled ticker universe from `modules.market_data` fallback provider
+  - emits slice metrics in `backtest_handoff.regime_sensitivity.slices`
+  - low trade-depth regimes are now explicit (`status=low_sample|low_sample_no_trades`, warning=`REGIME_BACKTEST_LOW_SAMPLE`)
+- [x] Market context builder extracted and shared:
+  - `multi_agent/agents/market_context_runtime.py`
+  - `MarketNewsContextAgent` and `legacy_orchestration` use the same builder
+- [x] Market context cache fallback added:
+  - writes last successful context snapshot to `runtime_state/long_term/context_cache/<market_group>.json`
+  - on macro/news fetch failure, reuses cached context with explicit warning codes
+- [x] Planner builder extracted and shared:
+  - `multi_agent/agents/planner_runtime.py`
+  - `PMPlannerAgent` and `legacy_orchestration` use the same builder
+- [x] Decision-to-outcome trace link added:
+  - `planner_handoff.decisions[].realized_outcome_ref` populated
+  - `realized_outcomes.json` placeholder emitted per run (`PENDING` records)
+- [x] Realized outcome updater job added:
+  - `multi_agent/tools/update_realized_outcomes.py`
+  - updates `runtime_state/shared_working/RUN-*/realized_outcomes.json` from `signals.result_3d`
+  - auto-expires overdue `PENDING` rows by horizon (`status=EXPIRED`) when DB lookup health check is available
+  - optional override flag for no-DB environments: `--allow-expire-without-db`
+  - upserts outcome rows into DB (`agent_realized_outcomes`) when DB is available
+  - supports `--dry-run`, `--resolve-all`, `--run-id`, `--refresh-signal-performance`
+  - appends update logs to `runtime_state/long_term/outcomes/realized_outcomes_updates.jsonl` when changes occur
+- [x] PM postmortem now reads recent outcome-health window and auto-issues stale-backlog ticket when expiry thresholds are exceeded:
+  - emits `outcome_health.json` per run
+  - appends long-term `runtime_state/long_term/outcome_health/outcome_health.jsonl`
+  - threshold envs: `AG_POSTMORTEM_EXPIRED_MIN`, `AG_POSTMORTEM_EXPIRED_RATE_MIN`, `AG_POSTMORTEM_FALLBACK_EXPIRED_MIN`
+- [x] Outcome updater is runnable as independent operations tool (no auto_bot dependency required):
+  - direct CLI: `multi_agent/tools/update_realized_outcomes.py`
+  - wrapper: `multi_agent/tools/run_outcome_updater.sh`
+  - monitoring: `multi_agent/tools/report_outcome_conversion.py`
+- [x] Cron-ready wrapper + monitoring report added:
+  - `multi_agent/tools/run_outcome_updater.sh`
+  - `multi_agent/tools/run_daily_ops.sh`
+  - `multi_agent/tools/report_outcome_conversion.py`
+  - conversion report now includes `expired_outcomes` and `closure_rate_pct`
+  - cron guide: `docs/migration/OUTCOME_UPDATER_CRON.md`
+  - full ops cron guide: `docs/migration/DAILY_OPS_CRON.md`
+- [x] Daily summary generator added:
+  - `multi_agent/workflows/daily_summary.py`
+  - `multi_agent/tools/build_daily_agent_summary.py`
+  - non-UI pipeline auto-emits `runtime_state/reports/daily/daily_summary_YYYY-MM-DD.json|md` (toggle: `AG_EMIT_DAILY_SUMMARY`)
+  - includes `delta_vs_prev_day` when previous daily summary exists
+- [x] Stale fallback alert hook added:
+  - `multi_agent/workflows/alerts.py`
+  - `multi_agent/tools/check_stale_fallback_alert.py`
+  - non-UI pipeline can emit webhook alerts for stale fallback pending overflow
+- [x] Supabase SQL dashboard query templates added:
+  - `docs/migration/agent_dashboard_queries.sql`
+
+## Still on Legacy Architecture
+- [ ] Streamlit-driven scanner orchestration still embedded in `app.py`.
+- [ ] Bot scheduler/wrapper orchestration still in `auto_bot.py` (core scan loops are runtime helper-backed).
+- [ ] `QuantStrategy` remains a broad monolith and is not yet split by bounded context.
+- [ ] Runtime decision traces are standardized in files, but not yet fully sourced from real backtest + live market context.
+- [ ] PM postmortem/ticket DB persistence is adapter-ready, but production table rollout/backfill is not completed.
+
+## Next Safe Moves
+1. Validate non-UI scanner pipeline in production network environment (ticker fetch + scan workers + DB write success rates).
+2. Upgrade sampled real backtest diagnostics to regime-sliced diagnostics sourced from `backtest_framework.py` artifacts.
+3. Add regime-sliced market context diagnostics (not just single snapshot) and link to realized outcomes.
+4. Roll out `docs/migration/supabase_agent_tables.sql` in production and verify adapter write success metrics.
+5. Run staged backfill in production (`--dry-run` then limited writes) and verify row integrity.
+6. In production env (with Supabase deps), verify `pending -> resolved` transitions and tune run cadence.
+
+## Guardrails
+- No deletion of core logic or models.
+- No destructive schema migration without backfill/rollback plan.
+- Preserve current runtime behavior before optimization.

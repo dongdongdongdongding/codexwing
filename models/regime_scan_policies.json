@@ -1,0 +1,174 @@
+{
+  "version": "2026-03-31-regime-scan-policy-v1",
+  "source": "runtime_state/reports/external_signals/signals_rows_enriched.csv",
+  "min_samples": 20,
+  "policies": {
+    "KOSDAQ": {
+      "BEAR": {
+        "alpha_min": 50,
+        "ai_min": 0,
+        "samples": 24,
+        "win_5d_pct": 66.66666666666666,
+        "avg_5d_pct": 15.92069454956051,
+        "objective": 118.19013941446921,
+        "mode": "favorable"
+      },
+      "BULL": {
+        "alpha_min": 25,
+        "ai_min": 0,
+        "samples": 143,
+        "win_5d_pct": 68.53146853146853,
+        "avg_5d_pct": 6.690194332757271,
+        "objective": 77.54327935609405,
+        "mode": "favorable"
+      },
+      "NEUTRAL": {
+        "alpha_min": 20,
+        "ai_min": 20,
+        "samples": 21,
+        "win_5d_pct": 42.857142857142854,
+        "avg_5d_pct": 2.703706035194082,
+        "objective": 38.76995874739898,
+        "mode": "avoid"
+      }
+    },
+    "KOSPI": {
+      "BEAR": {
+        "alpha_min": 45,
+        "ai_min": 35,
+        "samples": 3,
+        "win_5d_pct": 33.33333333333333,
+        "avg_5d_pct": 6.3555079577746865,
+        "objective": 50.35087312220677,
+        "mode": "avoid"
+      },
+      "BULL": {
+        "alpha_min": 20,
+        "ai_min": 0,
+        "samples": 855,
+        "win_5d_pct": 57.30994152046783,
+        "avg_5d_pct": 5.094580625478852,
+        "objective": 63.39337096365157,
+        "mode": "cautious"
+      },
+      "NEUTRAL": {
+        "alpha_min": 30,
+        "ai_min": 0,
+        "samples": 62,
+        "win_5d_pct": 32.25806451612903,
+        "avg_5d_pct": -2.5582409770364922,
+        "objective": 9.910730598688506,
+        "mode": "avoid"
+      }
+    },
+    "US": {
+      "BEAR": {
+        "alpha_min": 25,
+        "ai_min": 0,
+        "samples": 27,
+        "win_5d_pct": 11.11111111111111,
+        "avg_5d_pct": -4.5381955909451115,
+        "objective": -14.419866843614447,
+        "mode": "avoid"
+      },
+      "BULL": {
+        "alpha_min": 75,
+        "ai_min": 5,
+        "samples": 32,
+        "win_5d_pct": 46.875,
+        "avg_5d_pct": -1.9785067638158298,
+        "objective": 18.448716180920854,
+        "mode": "avoid"
+      },
+      "NEUTRAL": {
+        "alpha_min": 75,
+        "ai_min": 0,
+        "samples": 90,
+        "win_5d_pct": 26.666666666666668,
+        "avg_5d_pct": -3.843420450941782,
+        "objective": 1.849564411957756,
+        "mode": "avoid"
+      }
+    }
+  },
+  "summary": {
+    "KOSDAQ": {
+      "BEAR": {
+        "mode": "favorable",
+        "samples": 24,
+        "avg_5d_pct": 15.92,
+        "win_5d_pct": 66.67,
+        "alpha_min": 50.0,
+        "ai_min": 0.0
+      },
+      "BULL": {
+        "mode": "favorable",
+        "samples": 143,
+        "avg_5d_pct": 6.69,
+        "win_5d_pct": 68.53,
+        "alpha_min": 25.0,
+        "ai_min": 0.0
+      },
+      "NEUTRAL": {
+        "mode": "avoid",
+        "samples": 21,
+        "avg_5d_pct": 2.7,
+        "win_5d_pct": 42.86,
+        "alpha_min": 20.0,
+        "ai_min": 20.0
+      }
+    },
+    "KOSPI": {
+      "BEAR": {
+        "mode": "avoid",
+        "samples": 3,
+        "avg_5d_pct": 6.36,
+        "win_5d_pct": 33.33,
+        "alpha_min": 45.0,
+        "ai_min": 35.0
+      },
+      "BULL": {
+        "mode": "cautious",
+        "samples": 855,
+        "avg_5d_pct": 5.09,
+        "win_5d_pct": 57.31,
+        "alpha_min": 20.0,
+        "ai_min": 0.0
+      },
+      "NEUTRAL": {
+        "mode": "avoid",
+        "samples": 62,
+        "avg_5d_pct": -2.56,
+        "win_5d_pct": 32.26,
+        "alpha_min": 30.0,
+        "ai_min": 0.0
+      }
+    },
+    "US": {
+      "BEAR": {
+        "mode": "avoid",
+        "samples": 27,
+        "avg_5d_pct": -4.54,
+        "win_5d_pct": 11.11,
+        "alpha_min": 25.0,
+        "ai_min": 0.0
+      },
+      "BULL": {
+        "mode": "avoid",
+        "samples": 32,
+        "avg_5d_pct": -1.98,
+        "win_5d_pct": 46.88,
+        "alpha_min": 75.0,
+        "ai_min": 5.0
+      },
+      "NEUTRAL": {
+        "mode": "avoid",
+        "samples": 90,
+        "avg_5d_pct": -3.84,
+        "win_5d_pct": 26.67,
+        "alpha_min": 75.0,
+        "ai_min": 0.0
+      }
+    }
+  }
+}

@@ -1,0 +1,277 @@
+{
+  "candidates": [
+    {
+      "feature_snapshot": {
+        "antigrav": 88,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "GOOGL",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x1.3",
+        "whale": "91pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Breakout | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 100.0,
+      "score_breakdown": {
+        "antigrav": 88.0,
+        "decision_score": 100.0,
+        "whale_score": 91.0
+      },
+      "ticker": "GOOGL",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 85,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "AAPL",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "✅ x1.7",
+        "whale": "85pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Breakout | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 100.0,
+      "score_breakdown": {
+        "antigrav": 85.0,
+        "decision_score": 100.0,
+        "whale_score": 85.0
+      },
+      "ticker": "AAPL",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 88,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "NVDA",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.9",
+        "whale": "86pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Breakout | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 98.2,
+      "score_breakdown": {
+        "antigrav": 88.0,
+        "decision_score": 98.2,
+        "whale_score": 86.0
+      },
+      "ticker": "NVDA",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 68,
+        "position": "📈 Intraday Trend",
+        "stock_name": "AMZN",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x1.3",
+        "whale": "83pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Trend | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 80.7,
+      "score_breakdown": {
+        "antigrav": 68.0,
+        "decision_score": 80.7,
+        "whale_score": 83.0
+      },
+      "ticker": "AMZN",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 67,
+        "position": "📈 Intraday Trend",
+        "stock_name": "MSFT",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x1.2",
+        "whale": "78pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Trend | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 78.4,
+      "score_breakdown": {
+        "antigrav": 67.0,
+        "decision_score": 78.4,
+        "whale_score": 78.0
+      },
+      "ticker": "MSFT",
+      "warnings": []
+    }
+  ],
+  "produced_at": "2026-04-01T09:33:17.092940+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "orchestrated-us-research",
+    "created_at": "2026-04-01T09:33:17.092234+00:00",
+    "market": "NASDAQ",
+    "model_version": "research-baseline",
+    "run_id": "RUN-336DF94A",
+    "strategy_version": "us-research-v1"
+  },
+  "summary": {
+    "applied_profile_defaults": {
+      "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+      "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+      "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+      "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+      "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+      "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+      "AG_INTRADAY_US_MIN_VOLUME": "40000",
+      "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+      "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+      "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+      "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+      "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+      "AG_KOSPI_MIN_TURNOVER": "10000000000",
+      "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "40",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+      "AG_US_SIGNAL_LOOKBACK": "10",
+      "AG_US_SIGNAL_MIN_HITS": "1"
+    },
+    "candidate_count": 5,
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 0,
+      "filtered_symbols": [],
+      "reject_details_by_symbol": {},
+      "reject_reason_counts": {},
+      "reject_reasons_by_symbol": {},
+      "worker_error_count": 0
+    },
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 40.0,
+        "min_alpha_down": 55.0
+      },
+      "us_signal_window": {
+        "lookback": 10,
+        "min_hits": 1
+      }
+    },
+    "input_meta": {
+      "applied_profile_defaults": {
+        "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+        "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+        "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+        "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+        "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+        "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+        "AG_INTRADAY_US_MIN_VOLUME": "40000",
+        "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+        "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+        "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+        "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+        "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+        "AG_KOSPI_MIN_TURNOVER": "10000000000",
+        "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+        "AG_US_HARD_AMEX_RS_MIN": "-5",
+        "AG_US_HARD_MIN_ALPHA": "40",
+        "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+        "AG_US_SIGNAL_LOOKBACK": "10",
+        "AG_US_SIGNAL_MIN_HITS": "1"
+      },
+      "diagnostics": {
+        "error_symbols": [],
+        "exception_symbols": [],
+        "executor_exception_count": 0,
+        "filtered_count": 0,
+        "filtered_symbols": [],
+        "reject_details_by_symbol": {},
+        "reject_reason_counts": {},
+        "reject_reasons_by_symbol": {},
+        "worker_error_count": 0
+      },
+      "error_count": 0,
+      "execution_profile": "prod",
+      "gate_config": {
+        "us_hard_filter": {
+          "amex_rs_min": -5.0,
+          "min_alpha": 40.0,
+          "min_alpha_down": 55.0
+        },
+        "us_signal_window": {
+          "lookback": 10,
+          "min_hits": 1
+        }
+      },
+      "macro_ctx": {
+        "flags": [
+          "VIX_ELEVATED"
+        ],
+        "krw": 1506.8800048828125,
+        "krw_change_1d": -0.61,
+        "macro_multiplier": 1.0,
+        "macro_penalty": 0,
+        "macro_risk_score": 10,
+        "macro_state": "NORMAL",
+        "spy_change_1d": 2.91,
+        "tnx": 4.310999870300293,
+        "tnx_change_1d": -0.71,
+        "vix": 24.959999084472656,
+        "vix_change_1d": -1.15
+      },
+      "market": "NASDAQ",
+      "market_gate": {
+        "gate": "GREEN",
+        "kosdaq_chg": 6.061444728151452,
+        "kospi_chg": 8.436291186282054,
+        "live_mode": false,
+        "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+      },
+      "regime": {
+        "desc": "하락장 (현재<6635<6794)",
+        "emoji": "🔴",
+        "regime": "BEAR"
+      },
+      "scan_mode": "INTRADAY",
+      "strategy_family": "US_MAIN",
+      "total_scans": 5,
+      "warnings": []
+    },
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 6.061444728151452,
+      "kospi_chg": 8.436291186282054,
+      "live_mode": false,
+      "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6635<6794)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "source": "scanner_agent_input",
+    "warnings": [],
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

@@ -1,0 +1,35 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 2,
+    "reason": "MARKET_POLICY_AVOID"
+  },
+  "current_total_scans": 3,
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 2,
+    "prod_zero_streak_alert": false
+  },
+  "generated_at": "2026-03-31T07:04:43.718904+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 1,
+  "history_window_runs_seen": 40,
+  "market": "KOSPI",
+  "profile_summary": {
+    "prod": {
+      "filtered_count": 3,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 3,
+        "reason": "KR_HARD_FILTER_FAIL"
+      },
+      "total_scans": 3,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    }
+  },
+  "run_id": "RUN-5A48ACE3"
+}

@@ -1,0 +1,73 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 2,
+    "reason": "LIQUIDITY_FILTER_FAIL"
+  },
+  "current_total_scans": 4,
+  "fallback_watchlist": {
+    "applied": false,
+    "considered_dev_runs": 0,
+    "source_profile": "dev",
+    "source_run_id": null,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 10,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-03-31T07:24:45.678845+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 11,
+  "history_window_runs_seen": 48,
+  "market": "KOSDAQ",
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 60,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 60,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    },
+    "prod": {
+      "filtered_count": 206,
+      "result_count": 0,
+      "runs": 10,
+      "top_reject_reason": {
+        "count": 67,
+        "reason": "LIQUIDITY_FILTER_FAIL"
+      },
+      "total_scans": 208,
+      "weighted_filtered_rate_pct": 99.04,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 10
+    }
+  },
+  "run_id": "RUN-2DEC9974",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 0,
+    "mode": "favorable",
+    "policy": {
+      "ai_min": 0,
+      "alpha_min": 50,
+      "avg_5d_pct": 15.92069454956051,
+      "mode": "favorable",
+      "objective": 118.19013941446921,
+      "samples": 24,
+      "win_5d_pct": 66.66666666666666
+    },
+    "total_rejects": 4,
+    "watchlist_count": 0
+  }
+}

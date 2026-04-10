@@ -1,0 +1,47 @@
+{
+  "date": "2026-03-31",
+  "planner_summary": {
+    "prediction_guarantee": "not_guaranteed",
+    "ops_guarantee": "not_guaranteed_but_hardened",
+    "status": "risk_reduced"
+  },
+  "findings": [
+    "Phase18.2/Phase25/universal fallback stack is active.",
+    "Backtest ranking improved over legacy decision-score ranking.",
+    "KOSDAQ zero-result was driven first by bad universe quality, not prod/dev threshold drift.",
+    "After universe cleanup, reject reasons moved to intentional strategy filters."
+  ],
+  "evidence": {
+    "phase25_auc": 0.569,
+    "legacy_top20_avg_return_pct": -2.16,
+    "phase25_top20_avg_return_pct": 3.53,
+    "phase25_top20_win_gt0_pct": 60.0,
+    "green_prob30_avg_return_pct": 4.01,
+    "green_prob30_win_gt0_pct": 65.1,
+    "kosdaq_before_top_reject": "MISSING_ANTIGRAV_SCORE",
+    "kosdaq_after_top_reject": "KR_HARD_FILTER_FAIL"
+  },
+  "tickets": [
+    {
+      "ticket_id": "TKT-PM-KRX-UNIVERSE",
+      "owner_agent": "scanner_agent",
+      "priority": "high",
+      "status": "completed",
+      "requested_change": "Filter KRX universe by listing age, SPAC exclusion, code hygiene, and liquidity-aware ordering."
+    },
+    {
+      "ticket_id": "TKT-PM-KR-DIAGNOSTICS",
+      "owner_agent": "scanner_agent",
+      "priority": "high",
+      "status": "pending",
+      "requested_change": "Emit dedicated KR reject diagnostics report and trend-by-reason summary."
+    },
+    {
+      "ticket_id": "TKT-PM-LIVE-LABELS",
+      "owner_agent": "backtest_learning_agent",
+      "priority": "high",
+      "status": "pending",
+      "requested_change": "Increase realized outcome linkage and retrain Phase25 from stronger live labels."
+    }
+  ]
+}

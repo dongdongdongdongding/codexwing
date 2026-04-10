@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OrchestratorRequest",
+  "type": "object",
+  "required": [
+    "run_context",
+    "task_id",
+    "user_request",
+    "task_kind",
+    "requested_market",
+    "requested_agents",
+    "constraints",
+    "input_artifacts",
+    "produced_at"
+  ],
+  "properties": {
+    "run_context": {
+      "type": "object"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "user_request": {
+      "type": "string"
+    },
+    "task_kind": {
+      "type": "string"
+    },
+    "requested_market": {
+      "type": "string"
+    },
+    "requested_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "produced_at": {
+      "type": "string"
+    }
+  }
+}

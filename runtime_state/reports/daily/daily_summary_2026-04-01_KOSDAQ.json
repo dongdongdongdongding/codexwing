@@ -1,0 +1,1151 @@
+{
+  "delta_vs_prev_day": {
+    "base_date": "2026-03-31",
+    "bucket_exception_leader_total": 12,
+    "bucket_picked_total": -3,
+    "bucket_watchlist_total": -1,
+    "outcomes_closure_rate_pct": 0.0,
+    "outcomes_expired": 0,
+    "outcomes_pending": 8,
+    "outcomes_resolved": 0,
+    "outcomes_total": 8,
+    "total_candidates": 0,
+    "total_decisions": 0,
+    "total_fallback_watchlist_outcomes": 0,
+    "total_runs": -24,
+    "total_watchlist": 11
+  },
+  "generated_at": "2026-04-01T03:41:10.570001Z",
+  "market_counts": {
+    "KOSDAQ": 6
+  },
+  "outcome_bucket_breakdown": {
+    "exception_leader": {
+      "closure_rate_pct": 0.0,
+      "expired": 0,
+      "pending": 14,
+      "resolved": 0,
+      "total": 14
+    },
+    "picked": {
+      "closure_rate_pct": 0.0,
+      "expired": 0,
+      "pending": 1,
+      "resolved": 0,
+      "total": 1
+    },
+    "watchlist": {
+      "closure_rate_pct": 0.0,
+      "expired": 0,
+      "pending": 16,
+      "resolved": 0,
+      "total": 16
+    }
+  },
+  "outcomes": {
+    "closure_rate_pct": 0.0,
+    "expired": 0,
+    "pending": 31,
+    "resolved": 0,
+    "total": 31
+  },
+  "profile_counts": {
+    "prod": 3,
+    "unknown": 3
+  },
+  "return_bucket_breakdown": {
+    "exception_leader": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "2d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    },
+    "picked": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "2d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    },
+    "watchlist": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "2d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    }
+  },
+  "runs": [
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        }
+      },
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "KOSDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-0D8A0EC4",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 6,
+          "resolved": 0,
+          "total": 6
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 1,
+          "resolved": 0,
+          "total": 1
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        }
+      },
+      "candidate_count": 1,
+      "decision_count": 1,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "KOSDAQ",
+      "outcomes_total": 7,
+      "pending": 7,
+      "profile": "prod",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-202CA318",
+      "warning_codes": [
+        "REAL_BACKTEST_PARTIAL",
+        "REGIME_BACKTEST_LOW_SAMPLE",
+        "EXCEPTION_LEADERS_ENABLED"
+      ],
+      "watchlist_count": 7
+    },
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 2,
+          "resolved": 0,
+          "total": 2
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 8,
+          "resolved": 0,
+          "total": 8
+        }
+      },
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "KOSDAQ",
+      "outcomes_total": 10,
+      "pending": 10,
+      "profile": "prod",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-45B1BB3D",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT",
+        "FALLBACK_WATCHLIST_UNAVAILABLE",
+        "NEAR_MISS_WATCHLIST_ENABLED",
+        "EXCEPTION_LEADERS_ENABLED"
+      ],
+      "watchlist_count": 10
+    },
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 6,
+          "resolved": 0,
+          "total": 6
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 8,
+          "resolved": 0,
+          "total": 8
+        }
+      },
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "KOSDAQ",
+      "outcomes_total": 14,
+      "pending": 14,
+      "profile": "prod",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-5E363C3F",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT",
+        "FALLBACK_WATCHLIST_UNAVAILABLE",
+        "NEAR_MISS_WATCHLIST_ENABLED",
+        "EXCEPTION_LEADERS_ENABLED"
+      ],
+      "watchlist_count": 14
+    },
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        }
+      },
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "KOSDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-624C15B9",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        }
+      },
+      "candidate_count": 3,
+      "decision_count": 3,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "KOSDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-62EEA6F4",
+      "warning_codes": [
+        "REAL_BACKTEST_PARTIAL",
+        "REGIME_BACKTEST_LOW_SAMPLE",
+        "LOW_QUALITY_INPUT"
+      ],
+      "watchlist_count": 3
+    }
+  ],
+  "target_date": "2026-04-01",
+  "top_warning_codes": [
+    {
+      "code": "PROXY_BACKTEST_ONLY",
+      "count": 4
+    },
+    {
+      "code": "SMALL_SAMPLE",
+      "count": 4
+    },
+    {
+      "code": "EMPTY_PLANNER_INPUT",
+      "count": 4
+    },
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "count": 3
+    },
+    {
+      "code": "REAL_BACKTEST_PARTIAL",
+      "count": 2
+    },
+    {
+      "code": "REGIME_BACKTEST_LOW_SAMPLE",
+      "count": 2
+    },
+    {
+      "code": "NEWS_INTEL_FALLBACK",
+      "count": 2
+    },
+    {
+      "code": "FALLBACK_WATCHLIST_UNAVAILABLE",
+      "count": 2
+    },
+    {
+      "code": "NEAR_MISS_WATCHLIST_ENABLED",
+      "count": 2
+    },
+    {
+      "code": "LOW_QUALITY_INPUT",
+      "count": 1
+    }
+  ],
+  "total_candidates": 4,
+  "total_decisions": 4,
+  "total_fallback_watchlist_outcomes": 0,
+  "total_runs": 6,
+  "total_watchlist": 34
+}

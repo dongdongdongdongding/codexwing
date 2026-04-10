@@ -1,0 +1,22 @@
+{
+  "results": [],
+  "meta": {
+    "total_scans": 10,
+    "diagnostics": {
+      "reject_reason_counts": {
+        "TEST_REASON": 10
+      },
+      "reject_reasons_by_symbol": {
+        "005930.KS": "TEST_REASON"
+      },
+      "reject_details_by_symbol": {
+        "005930.KS": [
+          {
+            "alpha_score": 44,
+            "real_trend": "DOWN"
+          }
+        ]
+      }
+    }
+  }
+}

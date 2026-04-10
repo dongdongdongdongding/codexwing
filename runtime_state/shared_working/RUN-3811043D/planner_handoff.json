@@ -1,0 +1,2070 @@
+{
+  "avoid_list": [],
+  "decisions": [
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 1,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=1",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#196170.KQ",
+      "scan_mode": "",
+      "stock_name": "알테오젠",
+      "strategy_family": "",
+      "ticker": "196170.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 2,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=2",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#058470.KQ",
+      "scan_mode": "",
+      "stock_name": "리노공업",
+      "strategy_family": "",
+      "ticker": "058470.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 3,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=3",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#095340.KQ",
+      "scan_mode": "",
+      "stock_name": "ISC",
+      "strategy_family": "",
+      "ticker": "095340.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 4,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=4",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#043260.KQ",
+      "scan_mode": "",
+      "stock_name": "성호전자",
+      "strategy_family": "",
+      "ticker": "043260.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 5,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=5",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#036930.KQ",
+      "scan_mode": "",
+      "stock_name": "주성엔지니어링",
+      "strategy_family": "",
+      "ticker": "036930.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 6,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=6",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#218410.KQ",
+      "scan_mode": "",
+      "stock_name": "RFHIC",
+      "strategy_family": "",
+      "ticker": "218410.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 7,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=7",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#347700.KQ",
+      "scan_mode": "",
+      "stock_name": "스피어",
+      "strategy_family": "",
+      "ticker": "347700.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 8,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=8",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#010170.KQ",
+      "scan_mode": "",
+      "stock_name": "대한광통신",
+      "strategy_family": "",
+      "ticker": "010170.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 9,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=9",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#082920.KQ",
+      "scan_mode": "",
+      "stock_name": "비츠로셀",
+      "strategy_family": "",
+      "ticker": "082920.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 10,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=10",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#098460.KQ",
+      "scan_mode": "",
+      "stock_name": "고영",
+      "strategy_family": "",
+      "ticker": "098460.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 11,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=11",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#100790.KQ",
+      "scan_mode": "",
+      "stock_name": "미래에셋벤처투자",
+      "strategy_family": "",
+      "ticker": "100790.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 12,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=12",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#417200.KQ",
+      "scan_mode": "",
+      "stock_name": "LS머트리얼즈",
+      "strategy_family": "",
+      "ticker": "417200.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 13,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=13",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#189300.KQ",
+      "scan_mode": "",
+      "stock_name": "인텔리안테크",
+      "strategy_family": "",
+      "ticker": "189300.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 14,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=14",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#032500.KQ",
+      "scan_mode": "",
+      "stock_name": "케이엠더블유",
+      "strategy_family": "",
+      "ticker": "032500.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 15,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=15",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#027360.KQ",
+      "scan_mode": "",
+      "stock_name": "아주IB투자",
+      "strategy_family": "",
+      "ticker": "027360.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 16,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=16",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#014620.KQ",
+      "scan_mode": "",
+      "stock_name": "성광벤드",
+      "strategy_family": "",
+      "ticker": "014620.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 17,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=17",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#023160.KQ",
+      "scan_mode": "",
+      "stock_name": "태광",
+      "strategy_family": "",
+      "ticker": "023160.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 18,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=18",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#295310.KQ",
+      "scan_mode": "",
+      "stock_name": "에이치브이엠",
+      "strategy_family": "",
+      "ticker": "295310.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 19,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=19",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#050890.KQ",
+      "scan_mode": "",
+      "stock_name": "쏠리드",
+      "strategy_family": "",
+      "ticker": "050890.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 20,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=20",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#044490.KQ",
+      "scan_mode": "",
+      "stock_name": "태웅",
+      "strategy_family": "",
+      "ticker": "044490.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 21,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=21",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#033790.KQ",
+      "scan_mode": "",
+      "stock_name": "피노",
+      "strategy_family": "",
+      "ticker": "033790.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 22,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=22",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#327260.KQ",
+      "scan_mode": "",
+      "stock_name": "RF머트리얼즈",
+      "strategy_family": "",
+      "ticker": "327260.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 23,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=23",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#019210.KQ",
+      "scan_mode": "",
+      "stock_name": "와이지-원",
+      "strategy_family": "",
+      "ticker": "019210.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 24,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=24",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#037460.KQ",
+      "scan_mode": "",
+      "stock_name": "삼지전자",
+      "strategy_family": "",
+      "ticker": "037460.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 25,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=25",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#389260.KQ",
+      "scan_mode": "",
+      "stock_name": "대명에너지",
+      "strategy_family": "",
+      "ticker": "389260.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 26,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=26",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#230240.KQ",
+      "scan_mode": "",
+      "stock_name": "에치에프알",
+      "strategy_family": "",
+      "ticker": "230240.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 27,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=27",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#354320.KQ",
+      "scan_mode": "",
+      "stock_name": "알멕",
+      "strategy_family": "",
+      "ticker": "354320.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 28,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=28",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#018000.KQ",
+      "scan_mode": "",
+      "stock_name": "유니슨",
+      "strategy_family": "",
+      "ticker": "018000.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 29,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=29",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#073490.KQ",
+      "scan_mode": "",
+      "stock_name": "이노와이어리스",
+      "strategy_family": "",
+      "ticker": "073490.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 30,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=30",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#069540.KQ",
+      "scan_mode": "",
+      "stock_name": "빛과전자",
+      "strategy_family": "",
+      "ticker": "069540.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 31,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=31",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#234690.KQ",
+      "scan_mode": "",
+      "stock_name": "녹십자웰빙",
+      "strategy_family": "",
+      "ticker": "234690.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 32,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=32",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#282720.KQ",
+      "scan_mode": "",
+      "stock_name": "금양그린파워",
+      "strategy_family": "",
+      "ticker": "282720.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 33,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=33",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#065450.KQ",
+      "scan_mode": "",
+      "stock_name": "빅텍",
+      "strategy_family": "",
+      "ticker": "065450.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 34,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=34",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#037030.KQ",
+      "scan_mode": "",
+      "stock_name": "파워넷",
+      "strategy_family": "",
+      "ticker": "037030.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 35,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=35",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#412350.KQ",
+      "scan_mode": "",
+      "stock_name": "레이저쎌",
+      "strategy_family": "",
+      "ticker": "412350.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 36,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=36",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#100590.KQ",
+      "scan_mode": "",
+      "stock_name": "머큐리",
+      "strategy_family": "",
+      "ticker": "100590.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 37,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=37",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#067290.KQ",
+      "scan_mode": "",
+      "stock_name": "JW신약",
+      "strategy_family": "",
+      "ticker": "067290.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 38,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=38",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#062970.KQ",
+      "scan_mode": "",
+      "stock_name": "한국첨단소재",
+      "strategy_family": "",
+      "ticker": "062970.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 39,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=39",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#065440.KQ",
+      "scan_mode": "",
+      "stock_name": "이루온",
+      "strategy_family": "",
+      "ticker": "065440.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.95,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 100.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 40,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=100.0",
+        "rank=40",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#095910.KQ",
+      "scan_mode": "",
+      "stock_name": "에스에너지",
+      "strategy_family": "",
+      "ticker": "095910.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.934,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 96.8,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 41,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=96.8",
+        "rank=41",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#319400.KQ",
+      "scan_mode": "",
+      "stock_name": "현대무벡스",
+      "strategy_family": "",
+      "ticker": "319400.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.915,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 93.1,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 42,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=93.1",
+        "rank=42",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#080220.KQ",
+      "scan_mode": "",
+      "stock_name": "제주반도체",
+      "strategy_family": "",
+      "ticker": "080220.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.91,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 92.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 43,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=92.0",
+        "rank=43",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#046970.KQ",
+      "scan_mode": "",
+      "stock_name": "우리로",
+      "strategy_family": "",
+      "ticker": "046970.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.906,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 91.2,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 44,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=91.2",
+        "rank=44",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#099320.KQ",
+      "scan_mode": "",
+      "stock_name": "쎄트렉아이",
+      "strategy_family": "",
+      "ticker": "099320.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.906,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 91.2,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 45,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=91.2",
+        "rank=45",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#425040.KQ",
+      "scan_mode": "",
+      "stock_name": "티이엠씨",
+      "strategy_family": "",
+      "ticker": "425040.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.904,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 90.8,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 46,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=90.8",
+        "rank=46",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#214370.KQ",
+      "scan_mode": "",
+      "stock_name": "케어젠",
+      "strategy_family": "",
+      "ticker": "214370.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.902,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 90.4,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 47,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=90.4",
+        "rank=47",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#137950.KQ",
+      "scan_mode": "",
+      "stock_name": "제이씨케미칼",
+      "strategy_family": "",
+      "ticker": "137950.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.9,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 90.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 48,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=90.0",
+        "rank=48",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#178320.KQ",
+      "scan_mode": "",
+      "stock_name": "서진시스템",
+      "strategy_family": "",
+      "ticker": "178320.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.89,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 88.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 49,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=88.0",
+        "rank=49",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#274090.KQ",
+      "scan_mode": "",
+      "stock_name": "켄코아에어로스페이스",
+      "strategy_family": "",
+      "ticker": "274090.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.887,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 87.4,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 50,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=87.4",
+        "rank=50",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#115440.KQ",
+      "scan_mode": "",
+      "stock_name": "우리넷",
+      "strategy_family": "",
+      "ticker": "115440.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.875,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 85.1,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 51,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=85.1",
+        "rank=51",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#006910.KQ",
+      "scan_mode": "",
+      "stock_name": "보성파워텍",
+      "strategy_family": "",
+      "ticker": "006910.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.867,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 83.4,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 52,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=83.4",
+        "rank=52",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#368770.KQ",
+      "scan_mode": "",
+      "stock_name": "파이버프로",
+      "strategy_family": "",
+      "ticker": "368770.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.865,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 82.9,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 53,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=82.9",
+        "rank=53",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#393890.KQ",
+      "scan_mode": "",
+      "stock_name": "더블유씨피",
+      "strategy_family": "",
+      "ticker": "393890.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.863,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 82.5,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 54,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=82.5",
+        "rank=54",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#032820.KQ",
+      "scan_mode": "",
+      "stock_name": "우리기술",
+      "strategy_family": "",
+      "ticker": "032820.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.862,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 82.4,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 55,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=82.4",
+        "rank=55",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#403870.KQ",
+      "scan_mode": "",
+      "stock_name": "HPSP",
+      "strategy_family": "",
+      "ticker": "403870.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.86,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 82.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 56,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=82.0",
+        "rank=56",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#038500.KQ",
+      "scan_mode": "",
+      "stock_name": "삼표시멘트",
+      "strategy_family": "",
+      "ticker": "038500.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.857,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 81.5,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 57,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=81.5",
+        "rank=57",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#067310.KQ",
+      "scan_mode": "",
+      "stock_name": "하나마이크론",
+      "strategy_family": "",
+      "ticker": "067310.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.857,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 81.3,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 58,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=81.3",
+        "rank=58",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#038110.KQ",
+      "scan_mode": "",
+      "stock_name": "에코플라스틱",
+      "strategy_family": "",
+      "ticker": "038110.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.855,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 81.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 59,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=81.0",
+        "rank=59",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#089030.KQ",
+      "scan_mode": "",
+      "stock_name": "테크윙",
+      "strategy_family": "",
+      "ticker": "089030.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.853,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 80.6,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 60,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=80.6",
+        "rank=60",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#440110.KQ",
+      "scan_mode": "",
+      "stock_name": "파두",
+      "strategy_family": "",
+      "ticker": "440110.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.853,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 80.5,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 61,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=80.5",
+        "rank=61",
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: ⚡ High-Volume Breakout",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#090710.KQ",
+      "scan_mode": "",
+      "stock_name": "휴림로봇",
+      "strategy_family": "",
+      "ticker": "090710.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.84,
+      "decision": "WATCHLIST",
+      "decision_score": 78.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 62,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=78.0",
+        "rank=62",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#024060.KQ",
+      "scan_mode": "",
+      "stock_name": "흥구석유",
+      "strategy_family": "",
+      "ticker": "024060.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.839,
+      "decision": "WATCHLIST",
+      "decision_score": 77.8,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 63,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=77.8",
+        "rank=63",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#138080.KQ",
+      "scan_mode": "",
+      "stock_name": "오이솔루션",
+      "strategy_family": "",
+      "ticker": "138080.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.827,
+      "decision": "WATCHLIST",
+      "decision_score": 75.4,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 64,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=75.4",
+        "rank=64",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: SIDE"
+      ],
+      "real_trend": "SIDE",
+      "realized_outcome_ref": "realized_outcomes.json#086450.KQ",
+      "scan_mode": "",
+      "stock_name": "동국제약",
+      "strategy_family": "",
+      "ticker": "086450.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.8,
+      "decision": "WATCHLIST",
+      "decision_score": 70.0,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 65,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=70.0",
+        "rank=65",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#000250.KQ",
+      "scan_mode": "",
+      "stock_name": "삼천당제약",
+      "strategy_family": "",
+      "ticker": "000250.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.756,
+      "decision": "OBSERVE",
+      "decision_score": 61.2,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 66,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=61.2",
+        "rank=66",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#277810.KQ",
+      "scan_mode": "",
+      "stock_name": "레인보우로보틱스",
+      "strategy_family": "",
+      "ticker": "277810.KQ",
+      "warnings": []
+    },
+    {
+      "alpha_score": null,
+      "confidence": 0.754,
+      "decision": "OBSERVE",
+      "decision_score": 60.8,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 67,
+      "prob_5": null,
+      "prob_clean": null,
+      "rationale": [
+        "scanner_score=60.8",
+        "rank=67",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: DOWN"
+      ],
+      "real_trend": "DOWN",
+      "realized_outcome_ref": "realized_outcomes.json#240810.KQ",
+      "scan_mode": "",
+      "stock_name": "원익IPS",
+      "strategy_family": "",
+      "ticker": "240810.KQ",
+      "warnings": []
+    }
+  ],
+  "global_warnings": [
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "message": "Planner attached bear-market exception leaders from rejected candidates for follow-up tracking.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-03T01:15:50.473746+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-03",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-03T01:15:14.708867+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-3811043D",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "watchlist": [
+    "196170.KQ",
+    "058470.KQ",
+    "095340.KQ",
+    "043260.KQ",
+    "036930.KQ",
+    "218410.KQ",
+    "347700.KQ",
+    "010170.KQ",
+    "082920.KQ",
+    "098460.KQ",
+    "100790.KQ",
+    "417200.KQ",
+    "189300.KQ",
+    "032500.KQ",
+    "027360.KQ",
+    "014620.KQ",
+    "023160.KQ",
+    "295310.KQ",
+    "050890.KQ",
+    "044490.KQ"
+  ],
+  "watchlist_meta": [
+    {
+      "alpha_score": 0.0,
+      "conviction_score": 0.0,
+      "entry_reference_price": null,
+      "exception_score": 68.0,
+      "expires_at": "2026-04-06T01:15:51.349636+00:00",
+      "generated_at": "2026-04-03T01:15:51.349636+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 16.832072266712306,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 77.77777777777779,
+      "real_trend": "",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "intraday_setup_weak",
+      "risk_label": "EXCEPTION_LEADER",
+      "source_profile": "exception_leader",
+      "stock_name": "에코프로",
+      "ticker": "086520.KQ",
+      "tier_sort": 3
+    }
+  ]
+}

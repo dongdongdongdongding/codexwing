@@ -1,0 +1,82 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {},
+  "current_total_scans": 277,
+  "exception_leaders": {
+    "applied": false,
+    "considered_filtered_symbols": 0,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "fallback_watchlist": {
+    "applied": false,
+    "considered_dev_runs": 0,
+    "source_profile": "dev",
+    "source_run_id": null,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 10,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-03-31T09:00:39.608407+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 17,
+  "history_window_runs_seen": 54,
+  "market": "KOSDAQ",
+  "near_miss_watchlist": {
+    "applied": false,
+    "considered_filtered_symbols": 0,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 60,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 60,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    },
+    "prod": {
+      "filtered_count": 246,
+      "result_count": 0,
+      "runs": 16,
+      "top_reject_reason": {
+        "count": 73,
+        "reason": "KR_HARD_FILTER_FAIL"
+      },
+      "total_scans": 248,
+      "weighted_filtered_rate_pct": 99.19,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 16
+    }
+  },
+  "run_id": "RUN-4EBFA5AE",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 0,
+    "mode": "favorable",
+    "policy": {
+      "ai_min": 0,
+      "alpha_min": 50,
+      "avg_5d_pct": 15.92069454956051,
+      "mode": "favorable",
+      "objective": 118.19013941446921,
+      "samples": 24,
+      "win_5d_pct": 66.66666666666666
+    },
+    "total_rejects": 0,
+    "watchlist_count": 0
+  }
+}

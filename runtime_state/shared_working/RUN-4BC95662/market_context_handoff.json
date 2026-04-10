@@ -1,0 +1,703 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1481.2099609375,
+      "krw_change_1d": -1.2,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 2.55,
+      "tnx": 4.290999889373779,
+      "tnx_change_1d": -1.2,
+      "vix": 21.520000457763672,
+      "vix_change_1d": 2.28
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "AI",
+      "소프트웨어"
+    ],
+    "beneficiary_themes": [],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "원유 가격 상승은 국내 기업의 원가 부담을 높이고 인플레이션 우려를 자극해 증시에 부정적입니다.",
+        "direction": "UP",
+        "market_impact": -3
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": -2,
+      "FX": 0,
+      "GEOPOLITICS": -2,
+      "LIQUIDITY": 0,
+      "OIL": -3,
+      "POLITICS": 0,
+      "RATES": -3,
+      "REGULATION": 0
+    },
+    "headwind_themes": [
+      {
+        "confidence": 0.5,
+        "strength_score": 21.0,
+        "theme_id": "shipping",
+        "theme_name": "해운"
+      }
+    ],
+    "key_insight": "AI 기업의 IPO라는 개별 호재에도 불구하고, 금리 및 유가 상승과 같은 거시 경제적 악재가 시장 전반의 불확실성을 높이고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "RATES",
+        "description": "국고채 금리 상승은 성장주 비중이 높은 코스닥 시장의 밸류에이션에 부담으로 작용합니다.",
+        "evidence": "국고채 금리 일제히 상승…3년물 연 3.338%",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "OIL",
+        "description": "국제 유가 상승은 원자재 수입 의존도가 높은 국내 경제에 비용 인상 압력으로 작용합니다.",
+        "evidence": "불안한 휴전…국제유가 다시 오름세",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "신규 상장(IPO)은 시장에 새로운 투자 대안을 제공하고 관련 섹터로의 자금 유입을 촉진합니다.",
+        "evidence": "'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과",
+        "market_impact": 2,
+        "signal": "BULLISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "AI 마케팅",
+        "신규상장"
+      ],
+      "beneficiary_sectors": [
+        "AI",
+        "소프트웨어"
+      ],
+      "beneficiary_themes": [],
+      "company_event_bias": {
+        "대동금속": 4,
+        "디에이치엑스컴퍼니": -8,
+        "테라사이언스": -8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "원유 가격 상승은 국내 기업의 원가 부담을 높이고 인플레이션 우려를 자극해 증시에 부정적입니다.",
+          "direction": "UP",
+          "market_impact": -3
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "대동금속",
+          "event_score": 2,
+          "label": "무상증자",
+          "polarity": "POSITIVE",
+          "report_name": "권리락              (무상증자)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "테라사이언스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "디에이치엑스컴퍼니",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "대동금속",
+          "event_score": 2,
+          "label": "무상증자",
+          "polarity": "POSITIVE",
+          "report_name": "권리락              (무상증자)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "테라사이언스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "디에이치엑스컴퍼니",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": -2,
+        "FX": 0,
+        "GEOPOLITICS": -2,
+        "LIQUIDITY": 0,
+        "OIL": -3,
+        "POLITICS": 0,
+        "RATES": -3,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "국고채 금리 일제히 상승…3년물 연 3.338% | 연합뉴스",
+        "불안한 휴전…국제유가 다시 오름세 | 연합뉴스",
+        "'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과 | 연합뉴스",
+        "증시 불확실성 속 개미들 '공격형' vs '방어형' 투자전략 양분 | 연합뉴스"
+      ],
+      "headwind_themes": [
+        {
+          "confidence": 0.5,
+          "strength_score": 21.0,
+          "theme_id": "shipping",
+          "theme_name": "해운"
+        }
+      ],
+      "key_insight": "AI 기업의 IPO라는 개별 호재에도 불구하고, 금리 및 유가 상승과 같은 거시 경제적 악재가 시장 전반의 불확실성을 높이고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "RATES",
+          "description": "국고채 금리 상승은 성장주 비중이 높은 코스닥 시장의 밸류에이션에 부담으로 작용합니다.",
+          "evidence": "국고채 금리 일제히 상승…3년물 연 3.338%",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "OIL",
+          "description": "국제 유가 상승은 원자재 수입 의존도가 높은 국내 경제에 비용 인상 압력으로 작용합니다.",
+          "evidence": "불안한 휴전…국제유가 다시 오름세",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "신규 상장(IPO)은 시장에 새로운 투자 대안을 제공하고 관련 섹터로의 자금 유입을 촉진합니다.",
+          "evidence": "'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과",
+          "market_impact": 2,
+          "signal": "BULLISH"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[DART 20260409] 대동금속 - 권리락              (무상증자) | 전자공시",
+        "[DART 20260409] 테라사이언스 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[DART 20260409] 디에이치엑스컴퍼니 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260409] 경남제약 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260409] 유디엠텍 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260409] 인콘 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260409] 아시아경제 - 자기주식처분결과보고서 | 전자공시",
+        "[Thu, 9 Apr 2026 16:54:26 +0900] 'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과 | 연합뉴스",
+        "[Thu, 9 Apr 2026 16:49:02 +0900] 김윤덕 장관, 휴게소 운영실태 점검…\"불공정 행위 구조적 개혁\" | 연합뉴스",
+        "[Thu, 9 Apr 2026 16:41:05 +0900] 국고채 금리 일제히 상승…3년물 연 3.338% | 연합뉴스",
+        "[Thu, 9 Apr 2026 16:36:27 +0900] [표] 코스피 지수선물·옵션 시세표(9일)-3 | 연합뉴스",
+        "[Thu, 9 Apr 2026 16:36:20 +0900] [표] 코스피 지수선물·옵션 시세표(9일)-2 | 연합뉴스",
+        "[Thu, 9 Apr 2026 16:36:05 +0900] [표] 코스피 지수선물·옵션 시세표(9일)-1 | 연합뉴스",
+        "[Thu, 9 Apr 2026 16:35:59 +0900] 증시 불확실성 속 개미들 '공격형' vs '방어형' 투자전략 양분 | 연합뉴스",
+        "[Thu, 9 Apr 2026 16:21:25 +0900] 불안한 휴전…국제유가 다시 오름세 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "금리 상승",
+        "유가 상승",
+        "인플레이션 압력",
+        "증시 불확실성"
+      ],
+      "sentiment_score": -25,
+      "source": "gemini",
+      "theme_evidence": {
+        "ai_datacenter": [
+          "[Thu, 9 Apr 2026 16:54:26 +0900] 'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과 | 연합뉴스"
+        ],
+        "bio": [],
+        "defense": [],
+        "nuclear": [],
+        "oil_energy": [
+          "[Thu, 9 Apr 2026 16:21:25 +0900] 불안한 휴전…국제유가 다시 오름세 | 연합뉴스"
+        ],
+        "power_grid": [],
+        "robotics": [],
+        "secondary_battery": [],
+        "semiconductor": [],
+        "shipbuilding": [],
+        "shipping": []
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.5,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "OIL",
+            "GEOPOLITICS",
+            "ECONOMY"
+          ],
+          "evidence": [],
+          "strength_score": 21.0,
+          "theme_id": "shipping",
+          "theme_name": "해운",
+          "updated_at": "2026-04-09T08:02:34.981846+00:00",
+          "victim_keywords": [
+            "해운",
+            "운임",
+            "컨테이너",
+            "벌크"
+          ]
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.457,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "OIL",
+            "FX",
+            "ECONOMY",
+            "EARNINGS"
+          ],
+          "evidence": [],
+          "strength_score": 15.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-09T08:02:34.981198+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.457,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "OIL",
+            "GEOPOLITICS",
+            "EARNINGS"
+          ],
+          "evidence": [],
+          "strength_score": 15.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선",
+          "updated_at": "2026-04-09T08:02:34.981580+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.393,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "ECONOMY",
+            "LIQUIDITY",
+            "EARNINGS",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 6.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-09T08:02:34.981101+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.393,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "REGULATION",
+            "EARNINGS",
+            "ECONOMY"
+          ],
+          "evidence": [],
+          "strength_score": 6.0,
+          "theme_id": "bio",
+          "theme_name": "바이오",
+          "updated_at": "2026-04-09T08:02:34.981293+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.393,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "ECONOMY",
+            "LIQUIDITY",
+            "EARNINGS"
+          ],
+          "evidence": [],
+          "strength_score": 6.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇",
+          "updated_at": "2026-04-09T08:02:34.981354+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.393,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "GEOPOLITICS",
+            "POLITICS",
+            "EARNINGS"
+          ],
+          "evidence": [],
+          "strength_score": 6.0,
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "updated_at": "2026-04-09T08:02:34.981515+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.393,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "ECONOMY",
+            "LIQUIDITY",
+            "EARNINGS"
+          ],
+          "evidence": [],
+          "strength_score": 6.0,
+          "theme_id": "power_grid",
+          "theme_name": "전력기기",
+          "updated_at": "2026-04-09T08:02:34.981701+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.386,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "ECONOMY",
+            "LIQUIDITY",
+            "EARNINGS",
+            "RATES"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 16:54:26 +0900] 'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과 | 연합뉴스"
+          ],
+          "strength_score": 5.0,
+          "theme_id": "ai_datacenter",
+          "theme_name": "AI/데이터센터",
+          "updated_at": "2026-04-09T08:02:34.981440+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.386,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "OIL",
+            "GEOPOLITICS",
+            "FX"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 16:21:25 +0900] 불안한 휴전…국제유가 다시 오름세 | 연합뉴스"
+          ],
+          "strength_score": 5.0,
+          "theme_id": "oil_energy",
+          "theme_name": "정유/에너지",
+          "updated_at": "2026-04-09T08:02:34.981785+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.35,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "POLITICS",
+            "REGULATION",
+            "EARNINGS"
+          ],
+          "evidence": [],
+          "strength_score": 0.0,
+          "theme_id": "nuclear",
+          "theme_name": "원전",
+          "updated_at": "2026-04-09T08:02:34.981634+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "국고채 금리와 국제 유가 동반 상승으로 투자 심리 위축",
+          "impact": "NEGATIVE",
+          "theme": "매크로 불확실성 증대"
+        },
+        {
+          "description": "AI 마케팅 기업 매드업의 코스닥 상장 예비심사 통과",
+          "impact": "POSITIVE",
+          "theme": "AI 섹터 IPO 기대감"
+        }
+      ],
+      "timestamp": "2026-04-09 17:02",
+      "victim_keywords": [
+        "할인율",
+        "원가 부담"
+      ],
+      "victim_sectors": [
+        "성장주 전반",
+        "에너지 다소비 업종"
+      ]
+    },
+    "risk_flags": [
+      "금리 상승",
+      "유가 상승",
+      "인플레이션 압력",
+      "증시 불확실성"
+    ],
+    "sentiment_score": -25,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "ai_datacenter": [
+        "[Thu, 9 Apr 2026 16:54:26 +0900] 'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과 | 연합뉴스"
+      ],
+      "bio": [],
+      "defense": [],
+      "nuclear": [],
+      "oil_energy": [
+        "[Thu, 9 Apr 2026 16:21:25 +0900] 불안한 휴전…국제유가 다시 오름세 | 연합뉴스"
+      ],
+      "power_grid": [],
+      "robotics": [],
+      "secondary_battery": [],
+      "semiconductor": [],
+      "shipbuilding": [],
+      "shipping": []
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.5,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "OIL",
+          "GEOPOLITICS",
+          "ECONOMY"
+        ],
+        "evidence": [],
+        "strength_score": 21.0,
+        "theme_id": "shipping",
+        "theme_name": "해운",
+        "updated_at": "2026-04-09T08:02:34.981846+00:00",
+        "victim_keywords": [
+          "해운",
+          "운임",
+          "컨테이너",
+          "벌크"
+        ]
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.457,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "OIL",
+          "FX",
+          "ECONOMY",
+          "EARNINGS"
+        ],
+        "evidence": [],
+        "strength_score": 15.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-09T08:02:34.981198+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.457,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "OIL",
+          "GEOPOLITICS",
+          "EARNINGS"
+        ],
+        "evidence": [],
+        "strength_score": 15.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선",
+        "updated_at": "2026-04-09T08:02:34.981580+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.393,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "ECONOMY",
+          "LIQUIDITY",
+          "EARNINGS",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 6.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-09T08:02:34.981101+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.393,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "REGULATION",
+          "EARNINGS",
+          "ECONOMY"
+        ],
+        "evidence": [],
+        "strength_score": 6.0,
+        "theme_id": "bio",
+        "theme_name": "바이오",
+        "updated_at": "2026-04-09T08:02:34.981293+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.393,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "ECONOMY",
+          "LIQUIDITY",
+          "EARNINGS"
+        ],
+        "evidence": [],
+        "strength_score": 6.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇",
+        "updated_at": "2026-04-09T08:02:34.981354+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.393,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "GEOPOLITICS",
+          "POLITICS",
+          "EARNINGS"
+        ],
+        "evidence": [],
+        "strength_score": 6.0,
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "updated_at": "2026-04-09T08:02:34.981515+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.393,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "ECONOMY",
+          "LIQUIDITY",
+          "EARNINGS"
+        ],
+        "evidence": [],
+        "strength_score": 6.0,
+        "theme_id": "power_grid",
+        "theme_name": "전력기기",
+        "updated_at": "2026-04-09T08:02:34.981701+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.386,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "ECONOMY",
+          "LIQUIDITY",
+          "EARNINGS",
+          "RATES"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 16:54:26 +0900] 'AI 마케팅 기업' 매드업, 코스닥시장 상장 예심 통과 | 연합뉴스"
+        ],
+        "strength_score": 5.0,
+        "theme_id": "ai_datacenter",
+        "theme_name": "AI/데이터센터",
+        "updated_at": "2026-04-09T08:02:34.981440+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.386,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "OIL",
+          "GEOPOLITICS",
+          "FX"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 16:21:25 +0900] 불안한 휴전…국제유가 다시 오름세 | 연합뉴스"
+        ],
+        "strength_score": 5.0,
+        "theme_id": "oil_energy",
+        "theme_name": "정유/에너지",
+        "updated_at": "2026-04-09T08:02:34.981785+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.35,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "POLITICS",
+          "REGULATION",
+          "EARNINGS"
+        ],
+        "evidence": [],
+        "strength_score": 0.0,
+        "theme_id": "nuclear",
+        "theme_name": "원전",
+        "updated_at": "2026-04-09T08:02:34.981634+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": [
+      "성장주 전반",
+      "에너지 다소비 업종"
+    ]
+  },
+  "produced_at": "2026-04-09T08:02:39.174491+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "codex-theme",
+    "created_at": "2026-04-09T08:02:39.167289+00:00",
+    "market": "KOSDAQ",
+    "model_version": "phase25",
+    "run_id": "RUN-4BC95662",
+    "strategy_version": "theme-shadow-v1"
+  },
+  "warnings": []
+}

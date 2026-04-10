@@ -1,0 +1,11 @@
+{
+  "ATR_stop_mult": 2.0,
+  "ATR_target_mult": 2.0,
+  "Vol_mult": 1.2,
+  "alpha_threshold": 55.0,
+  "OOS_win_rate": 47.5,
+  "OOS_avg_pnl": 0.465,
+  "OOS_profit_factor": 1.37,
+  "OOS_total_trades": 278,
+  "computed_at": "2026-03-16 16:48"
+}

@@ -1,0 +1,397 @@
+{
+  "bucket_counts": {
+    "exception_leader": 0,
+    "picked": 0,
+    "watchlist": 10
+  },
+  "delta_vs_prev_day": {
+    "base_date": "2026-04-09",
+    "bucket_exception_leader_total": 0,
+    "bucket_picked_total": 0,
+    "bucket_watchlist_total": 10,
+    "outcomes_closure_rate_pct": 0.0,
+    "outcomes_expired": 0,
+    "outcomes_pending": 10,
+    "outcomes_resolved": 0,
+    "outcomes_total": 10,
+    "total_candidates": 105,
+    "total_decisions": 0,
+    "total_fallback_watchlist_outcomes": 0,
+    "total_runs": 1,
+    "total_watchlist": 10
+  },
+  "generated_at": "2026-04-10T09:37:31.777732Z",
+  "market": "NASDAQ",
+  "market_counts": {
+    "NASDAQ": 1
+  },
+  "outcome_bucket_breakdown": {
+    "exception_leader": {
+      "closure_rate_pct": 0.0,
+      "expired": 0,
+      "pending": 0,
+      "resolved": 0,
+      "total": 0
+    },
+    "picked": {
+      "closure_rate_pct": 0.0,
+      "expired": 0,
+      "pending": 0,
+      "resolved": 0,
+      "total": 0
+    },
+    "watchlist": {
+      "closure_rate_pct": 0.0,
+      "expired": 0,
+      "pending": 10,
+      "resolved": 0,
+      "total": 10
+    }
+  },
+  "outcome_status_counts": {
+    "closure_rate_pct": 0.0,
+    "expired": 0,
+    "pending": 10,
+    "resolved": 0,
+    "total": 10
+  },
+  "outcomes": {
+    "closure_rate_pct": 0.0,
+    "expired": 0,
+    "pending": 10,
+    "resolved": 0,
+    "total": 10
+  },
+  "profile_counts": {
+    "prod": 1
+  },
+  "return_bucket_breakdown": {
+    "exception_leader": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "2d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    },
+    "picked": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "2d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    },
+    "watchlist": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "2d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    }
+  },
+  "runs": [
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 10,
+          "resolved": 0,
+          "total": 10
+        }
+      },
+      "candidate_count": 105,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 10,
+      "pending": 10,
+      "profile": "prod",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "7d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "7d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "7d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-C13EBE12",
+      "warning_codes": [
+        "REAL_BACKTEST_PARTIAL",
+        "REGIME_BACKTEST_READY",
+        "NEWS_INTEL_FALLBACK",
+        "EXCEPTION_LEADERS_ENABLED",
+        "MARKET_POLICY_WATCHLIST_ONLY"
+      ],
+      "watchlist_count": 10
+    }
+  ],
+  "target_date": "2026-04-10",
+  "top_warning_codes": [
+    {
+      "code": "REAL_BACKTEST_PARTIAL",
+      "count": 1
+    },
+    {
+      "code": "REGIME_BACKTEST_READY",
+      "count": 1
+    },
+    {
+      "code": "NEWS_INTEL_FALLBACK",
+      "count": 1
+    },
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "count": 1
+    },
+    {
+      "code": "MARKET_POLICY_WATCHLIST_ONLY",
+      "count": 1
+    }
+  ],
+  "total_candidates": 105,
+  "total_decisions": 0,
+  "total_fallback_watchlist_outcomes": 0,
+  "total_runs": 1,
+  "total_watchlist": 10
+}

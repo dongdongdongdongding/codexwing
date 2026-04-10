@@ -1,0 +1,270 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1503.31005859375,
+      "krw_change_1d": -0.39,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.47,
+      "tnx": 4.335000038146973,
+      "tnx_change_1d": 0.51,
+      "vix": 24.170000076293945,
+      "vix_change_1d": 1.26
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "고배당주"
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 1,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": -5,
+      "OIL": -2,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 1
+    },
+    "key_insight": "정부의 '밸류업' 정책 기대감과 개별 기업들의 자금조달 및 재무 리스크 우려가 혼재된 시장 상황.",
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "description": "전환사채 및 유상증자 결정 공시가 다수 확인되어, 개별 기업들의 자금 조달 환경이 녹록지 않음을 시사함.",
+        "evidence": "케이이엠텍/이오플로우 - 전환사채권발행결정, 스피어 - 유상증자결정",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "REGULATION",
+        "description": "정부 주도의 '밸류업 프로그램'에 대한 기업들의 참여가 공시를 통해 확인되며 시장의 긍정적 요인으로 작용함.",
+        "evidence": "지난달 409개사 밸류업 계획 공시…고배당기업 공시 '쑥'",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "OIL",
+        "description": "고유가 상황이 정부 리포트에서 언급되며, 기업 비용 증가 및 국내 인플레이션 압력에 대한 우려를 자극함.",
+        "evidence": "기획처 \"해외 주요국도 고유가에 취약계층 지원 총력\"",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "밸류업",
+        "고배당"
+      ],
+      "beneficiary_sectors": [
+        "고배당주"
+      ],
+      "company_event_bias": {
+        "드림어스컴퍼니": -8,
+        "스코넥": -4,
+        "스피어": -8,
+        "이오플로우": -8,
+        "케이이엠텍": -8,
+        "휴먼테크놀로지": 4
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "휴먼테크놀로지",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[첨부정정]주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "케이이엠텍",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "스피어",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "이오플로우",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "드림어스컴퍼니",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정"
+        },
+        {
+          "category": "REGULATION",
+          "company": "스코넥",
+          "event_score": -2,
+          "label": "조회공시",
+          "polarity": "NEGATIVE",
+          "report_name": "조회공시요구(풍문또는보도)              (감사의견 비적정설)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "휴먼테크놀로지",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[첨부정정]주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "케이이엠텍",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 1,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": -5,
+        "OIL": -2,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 1
+      },
+      "evidence_headlines": [
+        "지난달 409개사 밸류업 계획 공시…고배당기업 공시 '쑥'",
+        "스코넥 - 조회공시요구(풍문또는보도) (감사의견 비적정설)",
+        "케이이엠텍 - [기재정정]주요사항보고서(전환사채권발행결정)",
+        "스피어 - 유상증자결정(종속회사의주요경영사항)"
+      ],
+      "key_insight": "정부의 '밸류업' 정책 기대감과 개별 기업들의 자금조달 및 재무 리스크 우려가 혼재된 시장 상황.",
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "description": "전환사채 및 유상증자 결정 공시가 다수 확인되어, 개별 기업들의 자금 조달 환경이 녹록지 않음을 시사함.",
+          "evidence": "케이이엠텍/이오플로우 - 전환사채권발행결정, 스피어 - 유상증자결정",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "REGULATION",
+          "description": "정부 주도의 '밸류업 프로그램'에 대한 기업들의 참여가 공시를 통해 확인되며 시장의 긍정적 요인으로 작용함.",
+          "evidence": "지난달 409개사 밸류업 계획 공시…고배당기업 공시 '쑥'",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "OIL",
+          "description": "고유가 상황이 정부 리포트에서 언급되며, 기업 비용 증가 및 국내 인플레이션 압력에 대한 우려를 자극함.",
+          "evidence": "기획처 \"해외 주요국도 고유가에 취약계층 지원 총력\"",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260407] 휴먼테크놀로지 - [첨부정정]주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260407] 케이이엠텍 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260407] 스피어 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+        "[DART 20260407] 이오플로우 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260407] 드림어스컴퍼니 - 소송등의판결ㆍ결정 | 전자공시",
+        "[DART 20260407] 디아이티 - 주요사항보고서(자기주식처분결정) | 전자공시",
+        "[DART 20260407] 스코넥 - 조회공시요구(풍문또는보도)              (감사의견 비적정설) | 전자공시",
+        "[Tue, 7 Apr 2026 14:52:06 +0900] [게시판] 캠코 \"AI·AR 활용해 토지 이용 변화 감지할 것\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 14:41:32 +0900] \"건설업, 지금이 근본적 대전환 위한 '골든타임'\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 14:40:52 +0900] \"해양수산부 부산시대, 북항 해양행정복합도시 조성해야\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 14:39:58 +0900] [게시판] 신한금융, 주요 자회사 이사회 내 소비자보호위원회 신설 | 연합뉴스",
+        "[Tue, 7 Apr 2026 14:39:35 +0900] 기획처 \"해외 주요국도 고유가에 취약계층 지원 총력\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 14:37:13 +0900] 지난달 409개사 밸류업 계획 공시…고배당기업 공시 '쑥' | 연합뉴스",
+        "[Tue, 7 Apr 2026 14:37:07 +0900] 안성시, 농가에 농자재 수급 안정화 적극 동참 당부 | 연합뉴스",
+        "[Tue, 7 Apr 2026 14:30:02 +0900] 한은, 프랑스 중앙은행과 디지털 자산·기후 변화 세미나 개최 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "개별기업 재무 리스크",
+        "주식가치 희석",
+        "감사의견 리스크",
+        "고유가"
+      ],
+      "sentiment_score": -15,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "다수 코스닥 기업이 전환사채 발행, 유상증자 등을 결정하며 자금 조달 필요성과 주식 가치 희석 우려가 부각됨.",
+          "impact": "NEGATIVE",
+          "theme": "기업 자금 조달 압박 및 재무 리스크"
+        },
+        {
+          "description": "지난달 409개사가 밸류업 계획을 공시하는 등 정부 정책에 따른 주주환원 기대감이 유효함.",
+          "impact": "POSITIVE",
+          "theme": "'밸류업 프로그램' 이행 확산"
+        }
+      ],
+      "timestamp": "2026-04-07 15:06",
+      "victim_keywords": [
+        "전환사채",
+        "유상증자",
+        "감사의견 비적정",
+        "소송"
+      ],
+      "victim_sectors": []
+    },
+    "risk_flags": [
+      "개별기업 재무 리스크",
+      "주식가치 희석",
+      "감사의견 리스크",
+      "고유가"
+    ],
+    "sentiment_score": -15,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-07T06:06:06.622843+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-07",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-07T06:04:45.618656+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-287BE929",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

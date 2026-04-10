@@ -1,0 +1,71 @@
+{
+  "current_profile": "dev",
+  "current_result_count": 1,
+  "current_top_reject_reason": {
+    "count": 17,
+    "reason": "MARKET_POLICY_AVOID"
+  },
+  "current_total_scans": 20,
+  "exception_leaders": {
+    "applied": false,
+    "considered_filtered_symbols": 19,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 0,
+    "prod_zero_streak_alert": false
+  },
+  "generated_at": "2026-04-09T16:55:40.885086+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 9,
+  "history_window_runs_seen": 80,
+  "market": "KOSPI",
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 65,
+      "result_count": 5,
+      "runs": 5,
+      "top_reject_reason": {
+        "count": 45,
+        "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT"
+      },
+      "total_scans": 70,
+      "weighted_filtered_rate_pct": 92.86,
+      "weighted_pass_rate_pct": 7.14,
+      "zero_result_runs": 0
+    },
+    "prod": {
+      "filtered_count": 15,
+      "result_count": 0,
+      "runs": 4,
+      "top_reject_reason": {
+        "count": 4,
+        "reason": "MARKET_POLICY_AVOID"
+      },
+      "total_scans": 15,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 4
+    }
+  },
+  "run_id": "RUN-2EE35F2A",
+  "watchlist_only_policy": {
+    "applied": true,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 17,
+    "mode": "avoid",
+    "policy": {
+      "ai_min": 35,
+      "alpha_min": 45,
+      "avg_5d_pct": 6.3555079577746865,
+      "mode": "avoid",
+      "objective": 50.35087312220677,
+      "samples": 3,
+      "win_5d_pct": 33.33333333333333
+    },
+    "total_rejects": 19,
+    "watchlist_count": 0
+  }
+}

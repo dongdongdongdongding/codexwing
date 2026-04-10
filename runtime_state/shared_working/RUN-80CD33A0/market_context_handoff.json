@@ -1,0 +1,624 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1480.6600341796875,
+      "krw_change_1d": -1.23,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 2.55,
+      "tnx": 4.290999889373779,
+      "tnx_change_1d": -1.2,
+      "vix": 21.459999084472656,
+      "vix_change_1d": 2.0
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "바이오",
+      "반도체 부품"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.486,
+        "strength_score": 19.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      },
+      {
+        "confidence": 0.486,
+        "strength_score": 19.0,
+        "theme_id": "defense",
+        "theme_name": "방산"
+      },
+      {
+        "confidence": 0.559,
+        "strength_score": 18.0,
+        "theme_id": "steel_materials",
+        "theme_name": "철강/금속/소재"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "유가 안정화 기대는 인플레이션 우려를 완화하여 KOSDAQ 시장에 긍정적인 영향을 미칩니다.",
+        "direction": "NEUTRAL",
+        "market_impact": 2
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 3,
+      "LIQUIDITY": -2,
+      "OIL": 2,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "headwind_themes": [],
+    "key_insight": "중동 휴전 가능성으로 인한 지정학적 리스크 완화가 유가 안정을 유도하며 KOSDAQ 시장의 투자 심리를 일부 개선하고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "중동 휴전 가능성 언급은 시장의 위험 회피 심리를 완화시키는 긍정적 요인으로 작용했습니다.",
+        "evidence": "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "OIL",
+        "description": "국제 유가 안정화 기대감은 KOSDAQ 시장 내 다수 기업의 원가 부담을 줄여 긍정적입니다.",
+        "evidence": "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려",
+        "market_impact": 2,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "EARNINGS",
+        "description": "개별 기업들의 계약 체결과 해지, 자금 조달 등 상이한 내용의 경영 활동이 공시되었습니다.",
+        "evidence": "넥스트바이오메디컬 일본 판권 계약, 다원시스 공급계약 해지",
+        "market_impact": 0,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "수출 계약",
+        "판권 확보",
+        "애프터마켓 급등"
+      ],
+      "beneficiary_sectors": [
+        "바이오",
+        "반도체 부품"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.486,
+          "strength_score": 19.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        },
+        {
+          "confidence": 0.486,
+          "strength_score": 19.0,
+          "theme_id": "defense",
+          "theme_name": "방산"
+        },
+        {
+          "confidence": 0.559,
+          "strength_score": 18.0,
+          "theme_id": "steel_materials",
+          "theme_name": "철강/금속/소재"
+        }
+      ],
+      "company_event_bias": {
+        "다원시스": -8,
+        "빌리언스": -8,
+        "엔피": 4,
+        "오성첨단소재": -8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "유가 안정화 기대는 인플레이션 우려를 완화하여 KOSDAQ 시장에 긍정적인 영향을 미칩니다.",
+          "direction": "NEUTRAL",
+          "market_impact": 2
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "엔피",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "증권신고서(합병)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "오성첨단소재",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "다원시스",
+          "event_score": -5,
+          "label": "계약해지",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약해지"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "빌리언스",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "엔피",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "증권신고서(합병)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "오성첨단소재",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "다원시스",
+          "event_score": -5,
+          "label": "계약해지",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약해지"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "빌리언스",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 3,
+        "LIQUIDITY": -2,
+        "OIL": 2,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스",
+        "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항 (NexsphereF 일본 독점 판권 계약) | 전자공시",
+        "아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "한화에어로스페이스, 풍산 방산부문 인수 검토 중단 | 연합뉴스"
+      ],
+      "headwind_themes": [],
+      "key_insight": "중동 휴전 가능성으로 인한 지정학적 리스크 완화가 유가 안정을 유도하며 KOSDAQ 시장의 투자 심리를 일부 개선하고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "중동 휴전 가능성 언급은 시장의 위험 회피 심리를 완화시키는 긍정적 요인으로 작용했습니다.",
+          "evidence": "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "OIL",
+          "description": "국제 유가 안정화 기대감은 KOSDAQ 시장 내 다수 기업의 원가 부담을 줄여 긍정적입니다.",
+          "evidence": "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려",
+          "market_impact": 2,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "EARNINGS",
+          "description": "개별 기업들의 계약 체결과 해지, 자금 조달 등 상이한 내용의 경영 활동이 공시되었습니다.",
+          "evidence": "넥스트바이오메디컬 일본 판권 계약, 다원시스 공급계약 해지",
+          "market_impact": 0,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시",
+        "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시",
+        "[DART 20260409] 빌리언스 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+        "[DART 20260409] 서울리거 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260409] 다원시스 - [기재정정]단일판매ㆍ공급계약해지 | 전자공시",
+        "[DART 20260409] 빌리언스 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "[Thu, 9 Apr 2026 19:13:21 +0900] 고려제강, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스",
+        "[Thu, 9 Apr 2026 18:11:48 +0900] 오성첨단소재 \"오성하이테크놀로지 주식 1천600억원에 추가취득\" | 연합뉴스",
+        "[Thu, 9 Apr 2026 18:00:01 +0900] 5급 국가공무원·외교관 후보자 1차 합격자 2천574명 | 연합뉴스",
+        "[Thu, 9 Apr 2026 18:00:00 +0900] [연합뉴스 이 시각 헤드라인] - 18:00 | 연합뉴스",
+        "[Thu, 9 Apr 2026 17:57:59 +0900] 한화에어로스페이스, 풍산 방산부문 인수 검토 중단 | 연합뉴스",
+        "[Thu, 9 Apr 2026 17:37:04 +0900] 우리운용, 美 단기채 공모주 펀드 순자산 3천억 돌파 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "개별 종목 변동성",
+        "기업 자금조달 리스크"
+      ],
+      "sentiment_score": 15,
+      "source": "gemini",
+      "theme_evidence": {
+        "bio": [
+          "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+        ],
+        "defense": [
+          "[Thu, 9 Apr 2026 17:57:59 +0900] 한화에어로스페이스, 풍산 방산부문 인수 검토 중단 | 연합뉴스"
+        ],
+        "eco_energy": [
+          "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+        ],
+        "finance": [
+          "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+        ],
+        "semiconductor": [
+          "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+        ],
+        "steel_materials": [
+          "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+          "[Thu, 9 Apr 2026 18:11:48 +0900] 오성첨단소재 \"오성하이테크놀로지 주식 1천600억원에 추가취득\" | 연합뉴스"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ],
+          "confidence": 0.486,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+          ],
+          "strength_score": 19.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-09T10:40:22.601920+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "미사일",
+            "군수",
+            "탄약",
+            "방산",
+            "무기"
+          ],
+          "confidence": 0.486,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "POLITICS"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 17:57:59 +0900] 한화에어로스페이스, 풍산 방산부문 인수 검토 중단 | 연합뉴스"
+          ],
+          "strength_score": 19.0,
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "updated_at": "2026-04-09T10:40:22.602058+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "철강/금속/소재",
+            "철강",
+            "금속",
+            "구리",
+            "알루미늄",
+            "화학"
+          ],
+          "confidence": 0.559,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+            "[Thu, 9 Apr 2026 18:11:48 +0900] 오성첨단소재 \"오성하이테크놀로지 주식 1천600억원에 추가취득\" | 연합뉴스"
+          ],
+          "strength_score": 18.0,
+          "theme_id": "steel_materials",
+          "theme_name": "철강/금속/소재",
+          "updated_at": "2026-04-09T10:40:22.601119+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.436,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+          ],
+          "strength_score": 12.0,
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "updated_at": "2026-04-09T10:40:22.601234+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-09T10:40:22.601389+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.379,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+          ],
+          "strength_score": 4.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-09T10:40:22.601556+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "중동 휴전 가능성이 제기되며 유가 안정 및 투자 심리 개선 기대감이 형성되었습니다.",
+          "impact": "POSITIVE",
+          "theme": "중동 지정학 리스크 완화 기대"
+        },
+        {
+          "description": "일본 독점 판권 계약 등 호재성 공시와 공급계약 해지, 주권매매거래정지 등 악재성 공시가 혼재되어 있습니다.",
+          "impact": "MIXED",
+          "theme": "개별 기업의 경영 활동"
+        }
+      ],
+      "timestamp": "2026-04-09 19:40",
+      "victim_keywords": [
+        "인수 중단"
+      ],
+      "victim_sectors": [
+        "방산"
+      ]
+    },
+    "risk_flags": [
+      "개별 종목 변동성",
+      "기업 자금조달 리스크"
+    ],
+    "sentiment_score": 15,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "bio": [
+        "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+      ],
+      "defense": [
+        "[Thu, 9 Apr 2026 17:57:59 +0900] 한화에어로스페이스, 풍산 방산부문 인수 검토 중단 | 연합뉴스"
+      ],
+      "eco_energy": [
+        "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+      ],
+      "finance": [
+        "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+      ],
+      "semiconductor": [
+        "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+      ],
+      "steel_materials": [
+        "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+        "[Thu, 9 Apr 2026 18:11:48 +0900] 오성첨단소재 \"오성하이테크놀로지 주식 1천600억원에 추가취득\" | 연합뉴스"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ],
+        "confidence": 0.486,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+        ],
+        "strength_score": 19.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-09T10:40:22.601920+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "미사일",
+          "군수",
+          "탄약",
+          "방산",
+          "무기"
+        ],
+        "confidence": 0.486,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "POLITICS"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 17:57:59 +0900] 한화에어로스페이스, 풍산 방산부문 인수 검토 중단 | 연합뉴스"
+        ],
+        "strength_score": 19.0,
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "updated_at": "2026-04-09T10:40:22.602058+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "철강/금속/소재",
+          "철강",
+          "금속",
+          "구리",
+          "알루미늄",
+          "화학"
+        ],
+        "confidence": 0.559,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+          "[Thu, 9 Apr 2026 18:11:48 +0900] 오성첨단소재 \"오성하이테크놀로지 주식 1천600억원에 추가취득\" | 연합뉴스"
+        ],
+        "strength_score": 18.0,
+        "theme_id": "steel_materials",
+        "theme_name": "철강/금속/소재",
+        "updated_at": "2026-04-09T10:40:22.601119+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.436,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+        ],
+        "strength_score": 12.0,
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "updated_at": "2026-04-09T10:40:22.601234+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-09T10:40:22.601389+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.379,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스"
+        ],
+        "strength_score": 4.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-09T10:40:22.601556+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": [
+      "방산"
+    ]
+  },
+  "produced_at": "2026-04-09T10:47:52.284822+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-09T10:47:48.194486+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-80CD33A0",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

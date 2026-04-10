@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OrchestratorReport",
+  "type": "object",
+  "required": [
+    "run_context",
+    "task_id",
+    "request_summary",
+    "assignments",
+    "shared_evidence",
+    "validation_checks",
+    "warnings",
+    "status",
+    "produced_at"
+  ],
+  "properties": {
+    "run_context": {
+      "type": "object"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "request_summary": {
+      "type": "object"
+    },
+    "assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step_id", "agent_name", "objective", "depends_on", "input_refs", "status", "notes"],
+        "properties": {
+          "step_id": { "type": "string" },
+          "agent_name": { "type": "string" },
+          "objective": { "type": "string" },
+          "depends_on": { "type": "array", "items": { "type": "string" } },
+          "input_refs": { "type": "array", "items": { "type": "string" } },
+          "output_ref": { "type": ["string", "null"] },
+          "status": { "type": "string" },
+          "notes": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "shared_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "validation_checks": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "status": {
+      "type": "string"
+    },
+    "produced_at": {
+      "type": "string"
+    }
+  }
+}

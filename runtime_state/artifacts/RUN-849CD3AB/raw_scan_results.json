@@ -1,0 +1,177 @@
+{
+  "applied_profile_defaults": {
+    "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "2.5",
+    "AG_AMEX_MOONSHOT_MAX_PRICE": "25",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA": "28",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "40",
+    "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "4.0",
+    "AG_AMEX_MOONSHOT_MIN_PRICE": "0.7",
+    "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "6.0",
+    "AG_AMEX_MOONSHOT_MIN_RS": "-12.0",
+    "AG_AMEX_MOONSHOT_MIN_SCORE": "62",
+    "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.8",
+    "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "78",
+    "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+    "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+    "AG_AMEX_MOONSHOT_SUB7_BONUS": "10.0",
+    "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "8.0",
+    "AG_AMEX_RED_MIN_CONVICTION": "56",
+    "AG_AMEX_SCAN_MIN_CLEAN_PROB": "38",
+    "AG_AMEX_SCAN_MIN_PROB": "42",
+    "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+    "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+    "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+    "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+    "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+    "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+    "AG_INTRADAY_US_MIN_VOLUME": "40000",
+    "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+    "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+    "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+    "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+    "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+    "AG_KOSPI_MIN_TURNOVER": "10000000000",
+    "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "diagnostics": {
+    "error_symbols": [],
+    "exception_symbols": [],
+    "executor_exception_count": 0,
+    "filtered_count": 5,
+    "filtered_symbols": [
+      "005930.KS",
+      "000660.KS",
+      "005380.KS",
+      "373220.KS",
+      "012450.KS"
+    ],
+    "reject_details_by_symbol": {
+      "000660.KS": [
+        {
+          "alpha_score": 71.0,
+          "conviction_score": 63.4,
+          "market_gate": "GREEN",
+          "pf": 1.36,
+          "position": "🚀 상승 (Rising)",
+          "prob_5": 30.0,
+          "prob_clean": 29.3,
+          "real_trend": "UP",
+          "stage": "precision_gate",
+          "stock_name": "SK하이닉스",
+          "strategy_type": "WAIT",
+          "ticker": "000660.KS",
+          "tier_sort": 3,
+          "wr": 49.25
+        }
+      ],
+      "005380.KS": [
+        {
+          "signal_hits": 0,
+          "signal_lookback": 10,
+          "stage": "signal_window",
+          "stock_name": "현대차",
+          "ticker": "005380.KS"
+        }
+      ],
+      "005930.KS": [
+        {
+          "alpha_score": 81.0,
+          "conviction_score": 66.7,
+          "market_gate": "GREEN",
+          "pf": 1.26,
+          "position": "🚀 상승 (Rising)",
+          "prob_5": 27.5,
+          "prob_clean": 30.8,
+          "real_trend": "UP",
+          "stage": "precision_gate",
+          "stock_name": "삼성전자",
+          "strategy_type": "WAIT",
+          "ticker": "005930.KS",
+          "tier_sort": 3,
+          "wr": 53.33
+        }
+      ],
+      "012450.KS": [
+        {
+          "alpha_score": 100.0,
+          "conviction_score": 76.9,
+          "market_gate": "GREEN",
+          "pf": 1.7,
+          "position": "🌋 고점 (Peak)",
+          "prob_5": 23.0,
+          "prob_clean": 32.8,
+          "real_trend": "UP",
+          "stage": "precision_gate",
+          "stock_name": "한화에어로스페이스",
+          "strategy_type": "WAIT",
+          "ticker": "012450.KS",
+          "tier_sort": 3,
+          "wr": 55.42
+        }
+      ],
+      "373220.KS": [
+        {
+          "is_market_leader": false,
+          "ml_prob": 20.0,
+          "pf": 0.59,
+          "signal_hits": 1,
+          "signal_lookback": 10,
+          "stage": "baseline_filter",
+          "stock_name": "LG에너지솔루션",
+          "strategy_type": "WAIT",
+          "ticker": "373220.KS",
+          "wr": 38.1
+        }
+      ]
+    },
+    "reject_reason_counts": {
+      "KR_BASELINE_FILTER_FAIL": 1,
+      "KR_SIGNAL_WINDOW_FAIL": 1,
+      "PRECISION_GATE_T3_LOW_ML_SUPPORT": 3
+    },
+    "reject_reasons_by_symbol": {
+      "000660.KS": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "005380.KS": "KR_SIGNAL_WINDOW_FAIL",
+      "005930.KS": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "012450.KS": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "373220.KS": "KR_BASELINE_FILTER_FAIL"
+    },
+    "worker_error_count": 0
+  },
+  "execution_profile": "prod",
+  "gate_config": {
+    "us_hard_filter": null,
+    "us_signal_window": null
+  },
+  "results_sorted": [],
+  "run_context": {
+    "as_of_date": "2026-04-07",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-07T13:57:24.184650+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-849CD3AB",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "scan_mode": "SWING",
+  "scan_result": {
+    "error_count": 0,
+    "results": [],
+    "total_scans": 5
+  },
+  "strategy_family": "KR_CORE",
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: PRECISION_GATE_T3_LOW_ML_SUPPORT (3).",
+      "severity": "warning"
+    }
+  ]
+}

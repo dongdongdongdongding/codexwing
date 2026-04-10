@@ -1,0 +1,643 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+      "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "3.0",
+      "AG_AMEX_MOONSHOT_MAX_PRICE": "30",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA": "22",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "34",
+      "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "3.0",
+      "AG_AMEX_MOONSHOT_MIN_PRICE": "0.5",
+      "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "5.0",
+      "AG_AMEX_MOONSHOT_MIN_RS": "-15.0",
+      "AG_AMEX_MOONSHOT_MIN_SCORE": "56",
+      "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.5",
+      "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "72",
+      "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+      "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "25",
+      "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+      "AG_AMEX_MOONSHOT_SUB7_BONUS": "8.0",
+      "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "6.0",
+      "AG_AMEX_RED_MIN_CONVICTION": "52",
+      "AG_AMEX_SCAN_MIN_CLEAN_PROB": "34",
+      "AG_AMEX_SCAN_MIN_PROB": "38",
+      "AG_INTRADAY_AMEX_MIN_TURNOVER": "300000",
+      "AG_INTRADAY_AMEX_MIN_VOLUME": "15000",
+      "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "200000000",
+      "AG_INTRADAY_KOSPI_MIN_TURNOVER": "500000000",
+      "AG_INTRADAY_KR_MIN_VOLUME": "15000",
+      "AG_INTRADAY_US_MIN_TURNOVER": "1000000",
+      "AG_INTRADAY_US_MIN_VOLUME": "30000",
+      "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "40",
+      "AG_KOSDAQ_MIN_TURNOVER": "5000000000",
+      "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "40",
+      "AG_KOSDAQ_RED_MIN_CONVICTION": "60",
+      "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "3000000000",
+      "AG_KOSPI_MIN_TURNOVER": "8000000000",
+      "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "8000000000",
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "20",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "30",
+      "AG_US_SIGNAL_LOOKBACK": "20",
+      "AG_US_SIGNAL_MIN_HITS": "0"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 17,
+      "filtered_symbols": [
+        "000660.KS",
+        "005380.KS",
+        "005930.KS",
+        "012450.KS",
+        "402340.KS",
+        "207940.KS",
+        "034020.KS",
+        "000270.KS",
+        "105560.KS",
+        "329180.KS",
+        "028260.KS",
+        "068270.KS",
+        "032830.KS",
+        "055550.KS",
+        "009150.KS",
+        "042660.KS",
+        "012330.KS"
+      ],
+      "reject_details_by_symbol": {
+        "000270.KS": [
+          {
+            "breakout": false,
+            "day_ret": -5.52,
+            "decision_score": 48.5,
+            "ema_fast": 157089.229,
+            "ema_slow": 155830.9478,
+            "intraday_ret": -5.4,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "기아",
+            "ticker": "000270.KS",
+            "vol_ratio": 3.63
+          }
+        ],
+        "000660.KS": [
+          {
+            "breakout": false,
+            "day_ret": -3.99,
+            "decision_score": 51.6,
+            "ema_fast": 1000101.1668,
+            "ema_slow": 972797.1786,
+            "intraday_ret": -1.63,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "SK하이닉스",
+            "ticker": "000660.KS",
+            "vol_ratio": 0.96
+          }
+        ],
+        "005380.KS": [
+          {
+            "breakout": false,
+            "day_ret": -3.65,
+            "decision_score": 41.9,
+            "ema_fast": 496880.5964,
+            "ema_slow": 491041.5083,
+            "intraday_ret": -4.22,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "현대차",
+            "ticker": "005380.KS",
+            "vol_ratio": 1.87
+          }
+        ],
+        "005930.KS": [
+          {
+            "breakout": false,
+            "day_ret": -2.97,
+            "decision_score": 34.9,
+            "ema_fast": 204564.242,
+            "ema_slow": 201566.1552,
+            "intraday_ret": -1.45,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "삼성전자",
+            "ticker": "005930.KS",
+            "vol_ratio": 0.7
+          }
+        ],
+        "009150.KS": [
+          {
+            "breakout": false,
+            "day_ret": -0.19,
+            "decision_score": 66.1,
+            "ema_fast": 513208.8811,
+            "ema_slow": 496556.5182,
+            "intraday_ret": 0.39,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "삼성전기",
+            "ticker": "009150.KS",
+            "vol_ratio": 0.55
+          }
+        ],
+        "012330.KS": [
+          {
+            "breakout": false,
+            "day_ret": -1.48,
+            "decision_score": 35.4,
+            "ema_fast": 403766.8048,
+            "ema_slow": 399615.7106,
+            "intraday_ret": -2.21,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "현대모비스",
+            "ticker": "012330.KS",
+            "vol_ratio": 1.04
+          }
+        ],
+        "012450.KS": [
+          {
+            "breakout": false,
+            "day_ret": -2.77,
+            "decision_score": 28.7,
+            "ema_fast": 1448230.9862,
+            "ema_slow": 1452325.5999,
+            "intraday_ret": -3.23,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "한화에어로스페이스",
+            "ticker": "012450.KS",
+            "vol_ratio": 0.62
+          }
+        ],
+        "028260.KS": [
+          {
+            "breakout": false,
+            "day_ret": -3.07,
+            "decision_score": 55.5,
+            "ema_fast": 301641.8775,
+            "ema_slow": 293369.509,
+            "intraday_ret": -1.64,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "삼성물산",
+            "ticker": "028260.KS",
+            "vol_ratio": 0.92
+          }
+        ],
+        "032830.KS": [
+          {
+            "breakout": true,
+            "day_ret": -4.58,
+            "decision_score": 53.8,
+            "ema_fast": 229603.4025,
+            "ema_slow": 229254.0038,
+            "intraday_ret": -2.35,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "삼성생명",
+            "ticker": "032830.KS",
+            "vol_ratio": 1.58
+          }
+        ],
+        "034020.KS": [
+          {
+            "breakout": false,
+            "day_ret": -0.89,
+            "decision_score": 54.3,
+            "ema_fast": 100107.9535,
+            "ema_slow": 99033.8586,
+            "intraday_ret": -0.2,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "두산에너빌리티",
+            "ticker": "034020.KS",
+            "vol_ratio": 0.61
+          }
+        ],
+        "042660.KS": [
+          {
+            "breakout": false,
+            "day_ret": -2.9,
+            "decision_score": 34.0,
+            "ema_fast": 124761.0064,
+            "ema_slow": 124648.2989,
+            "intraday_ret": -3.06,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "한화오션",
+            "ticker": "042660.KS",
+            "vol_ratio": 1.18
+          }
+        ],
+        "055550.KS": [
+          {
+            "breakout": false,
+            "day_ret": 0.62,
+            "decision_score": 64.8,
+            "ema_fast": 97187.9684,
+            "ema_slow": 95887.4127,
+            "intraday_ret": -0.21,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "신한지주",
+            "ticker": "055550.KS",
+            "vol_ratio": 1.1
+          }
+        ],
+        "068270.KS": [
+          {
+            "breakout": false,
+            "day_ret": -1.29,
+            "decision_score": 56.0,
+            "ema_fast": 200092.242,
+            "ema_slow": 199283.6321,
+            "intraday_ret": -1.53,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "셀트리온",
+            "ticker": "068270.KS",
+            "vol_ratio": 0.86
+          }
+        ],
+        "105560.KS": [
+          {
+            "breakout": false,
+            "day_ret": -1.34,
+            "decision_score": 54.9,
+            "ema_fast": 155272.3325,
+            "ema_slow": 153514.2845,
+            "intraday_ret": -5.1,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "KB금융",
+            "ticker": "105560.KS",
+            "vol_ratio": 0.76
+          }
+        ],
+        "207940.KS": [
+          {
+            "avg_turnover_5": 6204359800.0,
+            "avg_volume_5": 3891.4,
+            "curr_price": 1582000.0,
+            "curr_turnover": 7622076000.0,
+            "curr_volume": 4818.0,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 500000000.0,
+            "min_volume": 15000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "삼성바이오로직스",
+            "ticker": "207940.KS"
+          }
+        ],
+        "329180.KS": [
+          {
+            "breakout": false,
+            "day_ret": -2.18,
+            "decision_score": 43.2,
+            "ema_fast": 476066.1513,
+            "ema_slow": 475762.7318,
+            "intraday_ret": -3.48,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "HD현대중공업",
+            "ticker": "329180.KS",
+            "vol_ratio": 1.96
+          }
+        ],
+        "402340.KS": [
+          {
+            "breakout": false,
+            "day_ret": -2.43,
+            "decision_score": 52.1,
+            "ema_fast": 563147.0285,
+            "ema_slow": 544800.9265,
+            "intraday_ret": -1.57,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "SK스퀘어",
+            "ticker": "402340.KS",
+            "vol_ratio": 0.69
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "INTRADAY_MIN_PRICE_VOLUME_FAIL": 1,
+        "INTRADAY_SETUP_WEAK": 16
+      },
+      "reject_reasons_by_symbol": {
+        "000270.KS": "INTRADAY_SETUP_WEAK",
+        "000660.KS": "INTRADAY_SETUP_WEAK",
+        "005380.KS": "INTRADAY_SETUP_WEAK",
+        "005930.KS": "INTRADAY_SETUP_WEAK",
+        "009150.KS": "INTRADAY_SETUP_WEAK",
+        "012330.KS": "INTRADAY_SETUP_WEAK",
+        "012450.KS": "INTRADAY_SETUP_WEAK",
+        "028260.KS": "INTRADAY_SETUP_WEAK",
+        "032830.KS": "INTRADAY_SETUP_WEAK",
+        "034020.KS": "INTRADAY_SETUP_WEAK",
+        "042660.KS": "INTRADAY_SETUP_WEAK",
+        "055550.KS": "INTRADAY_SETUP_WEAK",
+        "068270.KS": "INTRADAY_SETUP_WEAK",
+        "105560.KS": "INTRADAY_SETUP_WEAK",
+        "207940.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "329180.KS": "INTRADAY_SETUP_WEAK",
+        "402340.KS": "INTRADAY_SETUP_WEAK"
+      },
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "dev",
+    "gate_config": {
+      "us_hard_filter": null,
+      "us_signal_window": null
+    },
+    "macro_ctx": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1478.969970703125,
+      "krw_change_1d": -1.34,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 2.55,
+      "tnx": 4.290999889373779,
+      "tnx_change_1d": -1.2,
+      "vix": 21.43000030517578,
+      "vix_change_1d": 1.85
+    },
+    "market": "KOSPI",
+    "market_gate": {
+      "gate": "YELLOW",
+      "kosdaq_chg": -1.2708148732573323,
+      "kospi_chg": -1.6063456924312138,
+      "live_mode": false,
+      "msg": "종가 시장 주의: KOSPI -1.61% / KOSDAQ -1.27% — 고확신 종목만 [daily / daily]",
+      "primary_chg": -1.6063456924312138,
+      "primary_label": "KOSPI",
+      "primary_session_date": "2026-04-09",
+      "primary_source": "daily",
+      "region": "KR",
+      "secondary_chg": -1.2708148732573323,
+      "secondary_label": "KOSDAQ",
+      "secondary_session_date": "2026-04-09",
+      "secondary_source": "daily",
+      "selected_market": "KOSPI",
+      "theme_exception_allowance": true
+    },
+    "regime": {
+      "desc": "상승장 (현재>5533>5503)",
+      "emoji": "🟢",
+      "regime": "BULL"
+    },
+    "scan_mode": "INTRADAY",
+    "strategy_family": "KR_CORE",
+    "total_scans": 20,
+    "warnings": []
+  },
+  "results": [
+    {
+      "AI확률": "54.2%",
+      "Antigrav": 79,
+      "Decision Score": 82.7,
+      "Tier": "⭐T2",
+      "_leader_metrics": {
+        "breakout_quality_score": 49.2,
+        "close_location_score": 80.6,
+        "expansion_potential_score": 46.0,
+        "leader_score": 71.3,
+        "scan_mode": "INTRADAY",
+        "theme_name": "금융",
+        "theme_rank": null,
+        "turnover_growth_5d": 0.522,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.5867
+      },
+      "_prob_5": 54.2,
+      "_prob_clean": 43.1,
+      "_routing_path": "core_only",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "금융",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.64,
+            "theme_name": "친환경/에너지",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "금융",
+        "routing_path": "core_only",
+        "secondary_themes": [],
+        "theme_direction": "NEUTRAL",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "THEME_LEADER_SCORE_HIGH",
+          "alias:증권",
+          "keyword:증권",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 0.0
+      },
+      "_tier_sort": 2,
+      "phase25_recommended_threshold": null,
+      "phase25_shadow_prob": null,
+      "phase25_shadow_variant": null,
+      "phase25_variant": null,
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.6",
+      "급등예측": "-",
+      "매수가(-2%)": "66,900",
+      "모델": "-",
+      "목표가(+3.5%)": "68,661",
+      "보유한도": "당일",
+      "손절가": "66,019 (-1.3%)",
+      "수급": "46점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "🚀 Intraday Breakout",
+      "전략": "⏱️ Intraday Breakout | 1H",
+      "전일비": "-0.89%",
+      "정밀확률": "43.1%",
+      "종목명": "미래에셋증권",
+      "추세": "UP",
+      "테마": "금융",
+      "티커": "006800.KS",
+      "확신도": 62.9
+    },
+    {
+      "AI확률": "48.4%",
+      "Antigrav": 68,
+      "Decision Score": 78.2,
+      "Tier": "⭐T2",
+      "_leader_metrics": {
+        "breakout_quality_score": 51.0,
+        "close_location_score": 84.4,
+        "expansion_potential_score": 55.3,
+        "leader_score": 75.0,
+        "scan_mode": "INTRADAY",
+        "theme_name": "2차전지",
+        "theme_rank": null,
+        "turnover_growth_5d": 1.117,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.9672
+      },
+      "_prob_5": 48.4,
+      "_prob_clean": 44.6,
+      "_routing_path": "core_only",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "2차전지",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.7,
+            "theme_name": "자동차",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "친환경/에너지",
+            "theme_source": "seed_catalog"
+          }
+        ],
+        "primary_theme": "2차전지",
+        "routing_path": "core_only",
+        "secondary_themes": [
+          "자동차",
+          "친환경/에너지"
+        ],
+        "theme_direction": "BENEFICIARY",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "THEME_LEADER_SCORE_HIGH",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 18.0
+      },
+      "_tier_sort": 2,
+      "phase25_recommended_threshold": null,
+      "phase25_shadow_prob": null,
+      "phase25_shadow_variant": null,
+      "phase25_variant": null,
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x1.0",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "419,500",
+      "모델": "-",
+      "목표가(+3.5%)": "429,689",
+      "보유한도": "당일",
+      "손절가": "414,405 (-1.2%)",
+      "수급": "78점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "전일비": "+4.09%",
+      "정밀확률": "44.6%",
+      "종목명": "LG에너지솔루션",
+      "추세": "UP",
+      "테마": "2차전지",
+      "티커": "373220.KS",
+      "확신도": 61.4
+    },
+    {
+      "AI확률": "48.0%",
+      "Antigrav": 66,
+      "Decision Score": 74.1,
+      "Tier": "⭐T2",
+      "_leader_metrics": {
+        "breakout_quality_score": 48.6,
+        "close_location_score": 75.3,
+        "expansion_potential_score": 50.6,
+        "leader_score": 71.1,
+        "scan_mode": "INTRADAY",
+        "theme_name": "2차전지",
+        "theme_rank": null,
+        "turnover_growth_5d": 0.7,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.8511
+      },
+      "_prob_5": 48.0,
+      "_prob_clean": 44.1,
+      "_routing_path": "core_only",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "2차전지",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.64,
+            "theme_name": "친환경/에너지",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "2차전지",
+        "routing_path": "core_only",
+        "secondary_themes": [],
+        "theme_direction": "BENEFICIARY",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "THEME_LEADER_SCORE_HIGH",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 18.0
+      },
+      "_tier_sort": 2,
+      "phase25_recommended_threshold": null,
+      "phase25_shadow_prob": null,
+      "phase25_shadow_variant": null,
+      "phase25_variant": null,
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.8",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "481,500",
+      "모델": "-",
+      "목표가(+3.5%)": "495,868",
+      "보유한도": "당일",
+      "손절가": "474,316 (-1.5%)",
+      "수급": "67점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "전일비": "+2.67%",
+      "정밀확률": "44.1%",
+      "종목명": "삼성SDI",
+      "추세": "UP",
+      "테마": "2차전지",
+      "티커": "006400.KS",
+      "확신도": 59.1
+    }
+  ]
+}

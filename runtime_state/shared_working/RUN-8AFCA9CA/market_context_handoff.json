@@ -1,0 +1,690 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1471.030029296875,
+      "krw_change_1d": -1.87,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.265999794006348,
+      "tnx_change_1d": -0.58,
+      "vix": 19.889999389648438,
+      "vix_change_1d": -5.47
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "2차전지",
+      "2차전지 장비",
+      "5G 통신장비",
+      "바이오/의료기기"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.601,
+        "strength_score": 24.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.573,
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "중동 휴전 및 유가 동결 고려로 국제유가 하향 안정화 기대",
+        "direction": "DOWN",
+        "market_impact": 2
+      },
+      {
+        "asset": "BRENT",
+        "description": "중동 휴전 및 유가 동결 고려로 국제유가 하향 안정화 기대",
+        "direction": "DOWN",
+        "market_impact": 2
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": -2,
+      "FX": 0,
+      "GEOPOLITICS": 3,
+      "LIQUIDITY": -3,
+      "OIL": 2,
+      "POLITICS": 0,
+      "RATES": -1,
+      "REGULATION": 0
+    },
+    "headwind_themes": [
+      {
+        "confidence": 0.479,
+        "strength_score": 18.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼"
+      }
+    ],
+    "key_insight": "코스닥은 2차전지 및 5G 테마의 강세와 중동 지정학적 리스크 완화로 인한 긍정적 요인이 있으나, 약한 미국 GDP 성장률과 금리 불확실성이 상존하며 개별 기업 이슈 또한 혼재되어 혼조세가 예상됩니다.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "중동전쟁 휴전 소식은 글로벌 지정학적 리스크 완화에 기여",
+        "evidence": "중동전쟁 휴전",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "OIL",
+        "description": "중동 휴전 고려한 유가 동결 언급은 유가 안정화 기대감 형성",
+        "evidence": "3차 석유 최고가격 '동결'…국제유가 등 고려",
+        "market_impact": 2,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "ECONOMY",
+        "description": "미국 4분기 GDP 성장률 둔화는 글로벌 경기 둔화 우려를 가중",
+        "evidence": "美 4분기 GDP 성장률 0.5% 그쳐",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "RATES",
+        "description": "미국 기준금리 정책에 대한 불확실성 지속",
+        "evidence": "기준금리 '안갯속'",
+        "market_impact": -1,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "2차전지",
+        "5G",
+        "통신장비",
+        "의료기기",
+        "바이오"
+      ],
+      "beneficiary_sectors": [
+        "2차전지",
+        "2차전지 장비",
+        "5G 통신장비",
+        "바이오/의료기기"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.601,
+          "strength_score": 24.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.573,
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크"
+        }
+      ],
+      "company_event_bias": {
+        "다원시스": -8,
+        "엔피": 4,
+        "오성첨단소재": -8,
+        "케이엠더블유": -8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "중동 휴전 및 유가 동결 고려로 국제유가 하향 안정화 기대",
+          "direction": "DOWN",
+          "market_impact": 2
+        },
+        {
+          "asset": "BRENT",
+          "description": "중동 휴전 및 유가 동결 고려로 국제유가 하향 안정화 기대",
+          "direction": "DOWN",
+          "market_impact": 2
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "엔피",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "증권신고서(합병)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "케이엠더블유",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(자기전환사채매도결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "오성첨단소재",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "다원시스",
+          "event_score": -5,
+          "label": "계약해지",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약해지"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "엔피",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "증권신고서(합병)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "케이엠더블유",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(자기전환사채매도결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "오성첨단소재",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "다원시스",
+          "event_score": -5,
+          "label": "계약해지",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약해지"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": -2,
+        "FX": 0,
+        "GEOPOLITICS": 3,
+        "LIQUIDITY": -3,
+        "OIL": 2,
+        "POLITICS": 0,
+        "RATES": -1,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "[주달 상승테마] 2차전지",
+        "[주달 핫테마] 5G",
+        "3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려",
+        "美 4분기 GDP 성장률 0.5% 그쳐 … 기준금리 '안갯속'"
+      ],
+      "headwind_themes": [
+        {
+          "confidence": 0.479,
+          "strength_score": 18.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼"
+        }
+      ],
+      "key_insight": "코스닥은 2차전지 및 5G 테마의 강세와 중동 지정학적 리스크 완화로 인한 긍정적 요인이 있으나, 약한 미국 GDP 성장률과 금리 불확실성이 상존하며 개별 기업 이슈 또한 혼재되어 혼조세가 예상됩니다.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "중동전쟁 휴전 소식은 글로벌 지정학적 리스크 완화에 기여",
+          "evidence": "중동전쟁 휴전",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "OIL",
+          "description": "중동 휴전 고려한 유가 동결 언급은 유가 안정화 기대감 형성",
+          "evidence": "3차 석유 최고가격 '동결'…국제유가 등 고려",
+          "market_impact": 2,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "ECONOMY",
+          "description": "미국 4분기 GDP 성장률 둔화는 글로벌 경기 둔화 우려를 가중",
+          "evidence": "美 4분기 GDP 성장률 0.5% 그쳐",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "RATES",
+          "description": "미국 기준금리 정책에 대한 불확실성 지속",
+          "evidence": "기준금리 '안갯속'",
+          "market_impact": -1,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시",
+        "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시",
+        "[DART 20260410] 케이엠더블유 - 주요사항보고서(자기전환사채매도결정) | 전자공시",
+        "[DART 20260409] 빌리언스 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+        "[DART 20260409] 서울리거 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260409] 다원시스 - [기재정정]단일판매ㆍ공급계약해지 | 전자공시",
+        "[Thu, 09 Apr 2026 23:07:12 +09:00] 美 4분기 GDP 성장률 0.5% 그쳐 … 기준금리 '안갯속' | 매일경제",
+        "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달",
+        "[주달 기대수익률] BGF그룹 | 주달",
+        "[주달 기대수익률] CCTV | 주달"
+      ],
+      "risk_flags": [
+        "글로벌 경기 둔화 우려",
+        "미국 기준금리 정책 불확실성",
+        "개별 기업 유동성 및 희석 위험"
+      ],
+      "sentiment_score": 20,
+      "source": "gemini",
+      "theme_evidence": {
+        "bio": [
+          "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+        ],
+        "eco_energy": [
+          "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+        ],
+        "finance": [
+          "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+        ],
+        "it_platform": [],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "steel_materials": [
+          "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시"
+        ],
+        "telecom": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.601,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 24.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-09T16:22:34.831833+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "통신/네트워크",
+            "통신",
+            "네트워크",
+            "5G",
+            "6G",
+            "안테나"
+          ],
+          "confidence": 0.573,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달",
+            "[주달 핫테마] 6G | 주달"
+          ],
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "updated_at": "2026-04-09T16:22:34.831241+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.479,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [],
+          "strength_score": 18.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "updated_at": "2026-04-09T16:22:34.830629+00:00",
+          "victim_keywords": [
+            "IT서비스/플랫폼",
+            "IT서비스",
+            "플랫폼",
+            "소프트웨어",
+            "SW",
+            "클라우드"
+          ]
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-09T16:22:34.830741+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-09T16:22:34.831615+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.407,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시"
+          ],
+          "strength_score": 8.0,
+          "theme_id": "steel_materials",
+          "theme_name": "철강/금속/소재",
+          "updated_at": "2026-04-09T16:22:34.830022+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.393,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+          ],
+          "strength_score": 6.0,
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "updated_at": "2026-04-09T16:22:34.830372+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "주달 상승테마로 언급되며 관련주 투자 심리 개선",
+          "impact": "POSITIVE",
+          "theme": "2차전지"
+        },
+        {
+          "description": "2차전지 산업 전반의 긍정적 모멘텀 확산",
+          "impact": "POSITIVE",
+          "theme": "2차전지 장비"
+        },
+        {
+          "description": "주달 핫테마로 주목받으며 관련 통신장비주 등에 기대감 형성",
+          "impact": "POSITIVE",
+          "theme": "5G"
+        }
+      ],
+      "timestamp": "2026-04-10 01:22",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "risk_flags": [
+      "글로벌 경기 둔화 우려",
+      "미국 기준금리 정책 불확실성",
+      "개별 기업 유동성 및 희석 위험"
+    ],
+    "sentiment_score": 20,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "bio": [
+        "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+      ],
+      "eco_energy": [
+        "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+      ],
+      "finance": [
+        "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+      ],
+      "it_platform": [],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "steel_materials": [
+        "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시"
+      ],
+      "telecom": [
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.601,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 24.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-09T16:22:34.831833+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "통신/네트워크",
+          "통신",
+          "네트워크",
+          "5G",
+          "6G",
+          "안테나"
+        ],
+        "confidence": 0.573,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "updated_at": "2026-04-09T16:22:34.831241+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.479,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [],
+        "strength_score": 18.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "updated_at": "2026-04-09T16:22:34.830629+00:00",
+        "victim_keywords": [
+          "IT서비스/플랫폼",
+          "IT서비스",
+          "플랫폼",
+          "소프트웨어",
+          "SW",
+          "클라우드"
+        ]
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260409] 엔피 - 증권신고서(합병) | 전자공시"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-09T16:22:34.830741+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-09T16:22:34.831615+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.407,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260409] 오성첨단소재 - 유상증자결정(종속회사의주요경영사항) | 전자공시"
+        ],
+        "strength_score": 8.0,
+        "theme_id": "steel_materials",
+        "theme_name": "철강/금속/소재",
+        "updated_at": "2026-04-09T16:22:34.830022+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.393,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[DART 20260409] 넥스트바이오메디컬 - 투자판단관련주요경영사항              (NexsphereF 일본 독점 판권 계약) | 전자공시"
+        ],
+        "strength_score": 6.0,
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "updated_at": "2026-04-09T16:22:34.830372+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-09T16:22:34.834997+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-09T16:21:14.949286+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-8AFCA9CA",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

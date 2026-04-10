@@ -1,0 +1,74 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_HIGH",
+      "KRW_WEAKNESS"
+    ],
+    "macro_multiplier": 0.85,
+    "macro_penalty": 5.0,
+    "macro_risk_score": 35.0,
+    "macro_state": "CAUTION",
+    "raw_context": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_WEAKNESS"
+      ],
+      "krw": 1533.3299560546875,
+      "krw_change_1d": 1.75,
+      "macro_multiplier": 0.85,
+      "macro_penalty": 5,
+      "macro_risk_score": 35,
+      "macro_state": "CAUTION",
+      "spy_change_1d": -0.33,
+      "tnx": 4.3420000076293945,
+      "tnx_change_1d": -2.21,
+      "vix": 28.850000381469727,
+      "vix_change_1d": -5.75
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "key_insight": "No intelligence available",
+    "market_sentiment": "NEUTRAL",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "key_insight": "No intelligence available",
+      "market_sentiment": "NEUTRAL",
+      "raw_headlines": [],
+      "sentiment_score": 0,
+      "source": "fallback",
+      "themes": [],
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "sentiment_score": 0,
+    "source": "fallback",
+    "status": "fallback_intel",
+    "victim_sectors": []
+  },
+  "produced_at": "2026-03-31T08:17:50.603374+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "CAUTION",
+    "support_score": 65.0
+  },
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-31T08:17:48.967759+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-09815FA4",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": [
+    {
+      "code": "NEWS_INTEL_FALLBACK",
+      "message": "News intelligence returned fallback payload.",
+      "severity": "warning"
+    }
+  ]
+}

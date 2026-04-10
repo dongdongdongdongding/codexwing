@@ -1,0 +1,17 @@
+{
+  "csv": "/Users/dongdong/Downloads/signals_rows.csv",
+  "outputs": {
+    "enriched": "runtime_state/reports/external_signals/signals_rows_enriched.csv",
+    "daily_regime_summary": "runtime_state/reports/external_signals/daily_regime_summary.csv",
+    "regime_performance_summary": "runtime_state/reports/external_signals/regime_performance_summary.csv",
+    "ticker_risk_policy": "runtime_state/reports/external_signals/ticker_risk_policy.csv",
+    "agent_summary_json": "runtime_state/reports/external_signals/agent_collaboration_summary.json",
+    "agent_report_md": "runtime_state/reports/external_signals/agent_collaboration_report.md"
+  },
+  "fetched_histories": 930,
+  "benchmarks": [
+    "^GSPC",
+    "^KQ11",
+    "^KS11"
+  ]
+}

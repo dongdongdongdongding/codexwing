@@ -1,0 +1,26 @@
+{
+  "date": "2026-03-31",
+  "executed_by": "improvement_agent",
+  "completed_changes": [
+    {
+      "area": "krx_universe_hygiene",
+      "status": "completed",
+      "details": [
+        "exclude SPAC-like names",
+        "exclude non-numeric KRX codes",
+        "filter recent listings by AG_KRX_MIN_LISTING_DAYS",
+        "prioritize liquid names using FDR Marcap/Amount/Volume"
+      ]
+    },
+    {
+      "area": "kr_reject_diagnostics",
+      "status": "completed",
+      "artifact": "multi_agent/tools/report_kr_reject_diagnostics.py"
+    }
+  ],
+  "remaining_actions": [
+    "collect live realized labels",
+    "re-tune KR hard filters only after RED-market runs and non-RED runs are separated",
+    "add automatic KR diagnostics artifact to daily ops"
+  ]
+}

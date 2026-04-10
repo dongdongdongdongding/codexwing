@@ -1,0 +1,1543 @@
+{
+  "applied_profile_defaults": {
+    "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "2.5",
+    "AG_AMEX_MOONSHOT_MAX_PRICE": "25",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA": "28",
+    "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "40",
+    "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "4.0",
+    "AG_AMEX_MOONSHOT_MIN_PRICE": "0.7",
+    "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "6.0",
+    "AG_AMEX_MOONSHOT_MIN_RS": "-12.0",
+    "AG_AMEX_MOONSHOT_MIN_SCORE": "62",
+    "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.8",
+    "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "78",
+    "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+    "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "20",
+    "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+    "AG_AMEX_MOONSHOT_SUB7_BONUS": "10.0",
+    "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "8.0",
+    "AG_AMEX_RED_MIN_CONVICTION": "56",
+    "AG_AMEX_SCAN_MIN_CLEAN_PROB": "38",
+    "AG_AMEX_SCAN_MIN_PROB": "42",
+    "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+    "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+    "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+    "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+    "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+    "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+    "AG_INTRADAY_US_MIN_VOLUME": "40000",
+    "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+    "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+    "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+    "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+    "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+    "AG_KOSPI_MIN_TURNOVER": "10000000000",
+    "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "diagnostics": {
+    "error_symbols": [],
+    "exception_symbols": [],
+    "executor_exception_count": 0,
+    "filtered_count": 13,
+    "filtered_symbols": [
+      "005930.KS",
+      "005380.KS",
+      "373220.KS",
+      "402340.KS",
+      "034020.KS",
+      "000270.KS",
+      "028260.KS",
+      "068270.KS",
+      "006400.KS",
+      "042660.KS",
+      "006800.KS",
+      "012330.KS",
+      "267260.KS"
+    ],
+    "reject_details_by_symbol": {
+      "000270.KS": [
+        {
+          "breakout": false,
+          "day_ret": -0.33,
+          "decision_score": 24.7,
+          "ema_fast": 153493.2861,
+          "ema_slow": 154396.3148,
+          "intraday_ret": -2.47,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "기아",
+          "ticker": "000270.KS",
+          "vol_ratio": 0.26
+        }
+      ],
+      "005380.KS": [
+        {
+          "breakout": false,
+          "day_ret": 0.61,
+          "decision_score": 48.2,
+          "ema_fast": 494204.4507,
+          "ema_slow": 491246.5938,
+          "intraday_ret": -1.31,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "현대차",
+          "ticker": "005380.KS",
+          "vol_ratio": 0.16
+        }
+      ],
+      "005930.KS": [
+        {
+          "breakout": false,
+          "day_ret": 2.21,
+          "decision_score": 65.0,
+          "ema_fast": 206768.2236,
+          "ema_slow": 203427.1416,
+          "intraday_ret": 0.0,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "삼성전자",
+          "ticker": "005930.KS",
+          "vol_ratio": 0.15
+        }
+      ],
+      "006400.KS": [
+        {
+          "breakout": false,
+          "day_ret": 0.42,
+          "decision_score": 63.2,
+          "ema_fast": 482012.0889,
+          "ema_slow": 473273.6849,
+          "intraday_ret": 0.1,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "삼성SDI",
+          "ticker": "006400.KS",
+          "vol_ratio": 0.04
+        }
+      ],
+      "006800.KS": [
+        {
+          "breakout": false,
+          "day_ret": -0.15,
+          "decision_score": 61.8,
+          "ema_fast": 66639.0918,
+          "ema_slow": 65849.9813,
+          "intraday_ret": -2.48,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "미래에셋증권",
+          "ticker": "006800.KS",
+          "vol_ratio": 0.24
+        }
+      ],
+      "012330.KS": [
+        {
+          "breakout": false,
+          "day_ret": 0.75,
+          "decision_score": 48.7,
+          "ema_fast": 403119.3608,
+          "ema_slow": 400394.143,
+          "intraday_ret": -1.11,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "현대모비스",
+          "ticker": "012330.KS",
+          "vol_ratio": 0.05
+        }
+      ],
+      "028260.KS": [
+        {
+          "breakout": false,
+          "day_ret": 1.83,
+          "decision_score": 59.3,
+          "ema_fast": 303886.3703,
+          "ema_slow": 296632.703,
+          "intraday_ret": -1.61,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "삼성물산",
+          "ticker": "028260.KS",
+          "vol_ratio": 0.04
+        }
+      ],
+      "034020.KS": [
+        {
+          "breakout": false,
+          "day_ret": -0.2,
+          "decision_score": 47.1,
+          "ema_fast": 99914.9904,
+          "ema_slow": 99221.4054,
+          "intraday_ret": -1.48,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "두산에너빌리티",
+          "ticker": "034020.KS",
+          "vol_ratio": 0.09
+        }
+      ],
+      "042660.KS": [
+        {
+          "breakout": false,
+          "day_ret": 0.16,
+          "decision_score": 24.8,
+          "ema_fast": 124312.7918,
+          "ema_slow": 124455.856,
+          "intraday_ret": -1.12,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "한화오션",
+          "ticker": "042660.KS",
+          "vol_ratio": 0.07
+        }
+      ],
+      "068270.KS": [
+        {
+          "breakout": false,
+          "day_ret": 0.55,
+          "decision_score": 58.0,
+          "ema_fast": 200442.5775,
+          "ema_slow": 199677.0794,
+          "intraday_ret": -1.23,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "셀트리온",
+          "ticker": "068270.KS",
+          "vol_ratio": 0.03
+        }
+      ],
+      "267260.KS": [
+        {
+          "breakout": false,
+          "day_ret": 1.72,
+          "decision_score": 58.6,
+          "ema_fast": 997184.5927,
+          "ema_slow": 971878.1391,
+          "intraday_ret": 1.0,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "HD현대일렉트릭",
+          "ticker": "267260.KS",
+          "vol_ratio": 0.2
+        }
+      ],
+      "373220.KS": [
+        {
+          "breakout": false,
+          "day_ret": -1.07,
+          "decision_score": 50.2,
+          "ema_fast": 415979.9524,
+          "ema_slow": 413250.0342,
+          "intraday_ret": -1.43,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "LG에너지솔루션",
+          "ticker": "373220.KS",
+          "vol_ratio": 0.04
+        }
+      ],
+      "402340.KS": [
+        {
+          "breakout": false,
+          "day_ret": 3.02,
+          "decision_score": 65.6,
+          "ema_fast": 571628.8488,
+          "ema_slow": 553688.3225,
+          "intraday_ret": -0.34,
+          "reason": "INTRADAY_SETUP_WEAK",
+          "stage": "intraday",
+          "stock_name": "SK스퀘어",
+          "ticker": "402340.KS",
+          "vol_ratio": 0.01
+        }
+      ]
+    },
+    "reject_reason_counts": {
+      "INTRADAY_SETUP_WEAK": 13
+    },
+    "reject_reasons_by_symbol": {
+      "000270.KS": "INTRADAY_SETUP_WEAK",
+      "005380.KS": "INTRADAY_SETUP_WEAK",
+      "005930.KS": "INTRADAY_SETUP_WEAK",
+      "006400.KS": "INTRADAY_SETUP_WEAK",
+      "006800.KS": "INTRADAY_SETUP_WEAK",
+      "012330.KS": "INTRADAY_SETUP_WEAK",
+      "028260.KS": "INTRADAY_SETUP_WEAK",
+      "034020.KS": "INTRADAY_SETUP_WEAK",
+      "042660.KS": "INTRADAY_SETUP_WEAK",
+      "068270.KS": "INTRADAY_SETUP_WEAK",
+      "267260.KS": "INTRADAY_SETUP_WEAK",
+      "373220.KS": "INTRADAY_SETUP_WEAK",
+      "402340.KS": "INTRADAY_SETUP_WEAK"
+    },
+    "worker_error_count": 0
+  },
+  "execution_profile": "prod",
+  "gate_config": {
+    "us_hard_filter": null,
+    "us_signal_window": null
+  },
+  "results_sorted": [
+    {
+      "AI확률": "37.8%",
+      "Antigrav": 86,
+      "Decision Score": 89.7,
+      "Tier": "🏆T1",
+      "_leader_metrics": {
+        "breakout_quality_score": 47.7,
+        "close_location_score": 61.5,
+        "expansion_potential_score": 42.3,
+        "leader_score": 55.1,
+        "scan_mode": "INTRADAY",
+        "theme_name": "방산",
+        "theme_rank": null,
+        "turnover_growth_5d": 0.737,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.1221
+      },
+      "_prob_5": 37.8,
+      "_prob_clean": 26.1,
+      "_routing_path": "core_only",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "방산",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "금융",
+            "theme_source": "keyword_fallback"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "건설/부동산",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "방산",
+        "routing_path": "core_only",
+        "secondary_themes": [],
+        "theme_direction": "NEUTRAL",
+        "theme_inference_status": "rule_inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "alias:방산",
+          "keyword:방산",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 0.0
+      },
+      "_tier_sort": 1,
+      "model_error": null,
+      "model_trace_status": "ok",
+      "phase25_prob": 13.2,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 54.2,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.1",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "1,498,000",
+      "모델": "phase25_kr_intraday_xgboost",
+      "목표가(+3.5%)": "1,535,800",
+      "보유한도": "당일",
+      "손절가": "1,479,100 (-1.3%)",
+      "수급": "62점 장중",
+      "승률": "-",
+      "시장맥락": "🔥 수혜",
+      "연속등락": "장중",
+      "위치": "🚀 Intraday Breakout",
+      "전략": "⏱️ Intraday Breakout | News Tailwind | 1H",
+      "전일비": "+4.24%",
+      "정밀확률": "26.1%",
+      "종목명": "한화에어로스페이스",
+      "추세": "UP",
+      "테마": "방산",
+      "티커": "012450.KS",
+      "확신도": 57.9
+    },
+    {
+      "AI확률": "33.5%",
+      "Antigrav": 72,
+      "Decision Score": 75.6,
+      "Tier": "⭐T2",
+      "_leader_metrics": {
+        "breakout_quality_score": 48.1,
+        "close_location_score": 88.0,
+        "expansion_potential_score": 47.1,
+        "leader_score": 47.9,
+        "scan_mode": "INTRADAY",
+        "theme_name": "반도체",
+        "theme_rank": null,
+        "turnover_growth_5d": 1.448,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.0448
+      },
+      "_prob_5": 33.5,
+      "_prob_clean": 27.1,
+      "_routing_path": "theme_shadow",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "반도체",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.7,
+            "theme_name": "통신/네트워크",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "방산",
+            "theme_source": "keyword_fallback"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "금융",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "반도체",
+        "routing_path": "theme_shadow",
+        "secondary_themes": [
+          "통신/네트워크"
+        ],
+        "theme_direction": "BENEFICIARY",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "THEME_BENEFICIARY",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 36.0
+      },
+      "_tier_sort": 2,
+      "model_error": null,
+      "model_trace_status": "ok",
+      "phase25_prob": 22.8,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 62.0,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.0",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "567,000",
+      "모델": "phase25_kr_intraday_xgboost",
+      "목표가(+3.5%)": "589,886",
+      "보유한도": "당일",
+      "손절가": "555,557 (-2.0%)",
+      "수급": "97점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "전일비": "+10.31%",
+      "정밀확률": "27.1%",
+      "종목명": "삼성전기",
+      "추세": "UP",
+      "테마": "반도체",
+      "티커": "009150.KS",
+      "확신도": 51.3
+    },
+    {
+      "AI확률": "31.0%",
+      "Antigrav": 68,
+      "Decision Score": 67.4,
+      "Tier": "⚡T3",
+      "_leader_metrics": {
+        "breakout_quality_score": 49.3,
+        "close_location_score": 87.5,
+        "expansion_potential_score": 41.9,
+        "leader_score": 67.4,
+        "scan_mode": "INTRADAY",
+        "theme_name": "반도체",
+        "theme_rank": null,
+        "turnover_growth_5d": 0.756,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.077
+      },
+      "_prob_5": 31.0,
+      "_prob_clean": 26.4,
+      "_routing_path": "theme_shadow",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "반도체",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.7,
+            "theme_name": "통신/네트워크",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "방산",
+            "theme_source": "keyword_fallback"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "금융",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "반도체",
+        "routing_path": "theme_shadow",
+        "secondary_themes": [
+          "통신/네트워크"
+        ],
+        "theme_direction": "BENEFICIARY",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "THEME_BENEFICIARY",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 36.0
+      },
+      "_tier_sort": 3,
+      "model_error": null,
+      "model_trace_status": "ok",
+      "phase25_prob": 14.7,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 47.2,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.1",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "1,035,000",
+      "모델": "phase25_kr_intraday_xgboost",
+      "목표가(+3.5%)": "1,063,157",
+      "보유한도": "당일",
+      "손절가": "1,020,921 (-1.4%)",
+      "수급": "58점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "전일비": "+3.66%",
+      "정밀확률": "26.4%",
+      "종목명": "SK하이닉스",
+      "추세": "UP",
+      "테마": "반도체",
+      "티커": "000660.KS",
+      "확신도": 46.9
+    },
+    {
+      "AI확률": "31.6%",
+      "Antigrav": 65,
+      "Decision Score": 65.5,
+      "Tier": "⚡T3",
+      "_leader_metrics": {
+        "breakout_quality_score": 47.3,
+        "close_location_score": 65.6,
+        "expansion_potential_score": 42.0,
+        "leader_score": 40.5,
+        "scan_mode": "INTRADAY",
+        "theme_name": "금융",
+        "theme_rank": null,
+        "turnover_growth_5d": 0.714,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.1125
+      },
+      "_prob_5": 31.6,
+      "_prob_clean": 26.8,
+      "_routing_path": "theme_shadow",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "금융",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "방산",
+            "theme_source": "keyword_fallback"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "건설/부동산",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "금융",
+        "routing_path": "theme_shadow",
+        "secondary_themes": [],
+        "theme_direction": "BENEFICIARY",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "THEME_BENEFICIARY",
+          "alias:금융",
+          "alias:은행",
+          "evidence:[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "evidence:[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제",
+          "keyword:금융",
+          "keyword:은행",
+          "seed_ticker_mapping"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 40.0
+      },
+      "_tier_sort": 3,
+      "model_error": null,
+      "model_trace_status": "ok",
+      "phase25_prob": 19.7,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 55.5,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.1",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "157,300",
+      "모델": "phase25_kr_intraday_xgboost",
+      "목표가(+3.5%)": "161,067",
+      "보유한도": "당일",
+      "손절가": "155,416 (-1.2%)",
+      "수급": "48점 장중",
+      "승률": "-",
+      "시장맥락": "🔥 수혜",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | News Tailwind | 1H",
+      "전일비": "+1.88%",
+      "정밀확률": "26.8%",
+      "종목명": "KB금융",
+      "추세": "UP",
+      "테마": "금융",
+      "티커": "105560.KS",
+      "확신도": 46.1
+    },
+    {
+      "AI확률": "32.0%",
+      "Antigrav": 65,
+      "Decision Score": 64.9,
+      "Tier": "⚡T3",
+      "_leader_metrics": {
+        "breakout_quality_score": 50.7,
+        "close_location_score": 88.0,
+        "expansion_potential_score": 43.2,
+        "leader_score": 43.1,
+        "scan_mode": "INTRADAY",
+        "theme_name": "금융",
+        "theme_rank": null,
+        "turnover_growth_5d": 0.881,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.0973
+      },
+      "_prob_5": 32.0,
+      "_prob_clean": 25.9,
+      "_routing_path": "theme_shadow",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "금융",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "방산",
+            "theme_source": "keyword_fallback"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "건설/부동산",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "금융",
+        "routing_path": "theme_shadow",
+        "secondary_themes": [],
+        "theme_direction": "BENEFICIARY",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "THEME_BENEFICIARY",
+          "alias:은행",
+          "evidence:[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "evidence:[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제",
+          "keyword:은행",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 40.0
+      },
+      "_tier_sort": 3,
+      "model_error": null,
+      "model_trace_status": "ok",
+      "phase25_prob": 20.7,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 55.8,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.1",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "98,800",
+      "모델": "phase25_kr_intraday_xgboost",
+      "목표가(+3.5%)": "101,089",
+      "보유한도": "당일",
+      "손절가": "97,656 (-1.2%)",
+      "수급": "48점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "전일비": "+1.86%",
+      "정밀확률": "25.9%",
+      "종목명": "신한지주",
+      "추세": "UP",
+      "테마": "금융",
+      "티커": "055550.KS",
+      "확신도": 45.4
+    },
+    {
+      "AI확률": "34.2%",
+      "Antigrav": 66,
+      "Decision Score": 62.2,
+      "Tier": "⚡T3",
+      "_leader_metrics": {
+        "breakout_quality_score": 47.3,
+        "close_location_score": 53.5,
+        "expansion_potential_score": 44.8,
+        "leader_score": 35.8,
+        "scan_mode": "INTRADAY",
+        "theme_name": "조선/해양",
+        "theme_rank": null,
+        "turnover_growth_5d": 1.161,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.0439
+      },
+      "_prob_5": 34.2,
+      "_prob_clean": 28.7,
+      "_routing_path": "core_only",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "조선/해양",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "방산",
+            "theme_source": "keyword_fallback"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "금융",
+            "theme_source": "keyword_fallback"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "건설/부동산",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "조선/해양",
+        "routing_path": "core_only",
+        "secondary_themes": [],
+        "theme_direction": "NEUTRAL",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 0.0
+      },
+      "_tier_sort": 3,
+      "model_error": null,
+      "model_trace_status": "ok",
+      "phase25_prob": 15.3,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 46.7,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.0",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "482,000",
+      "모델": "phase25_kr_intraday_xgboost",
+      "목표가(+3.5%)": "491,257",
+      "보유한도": "당일",
+      "손절가": "477,371 (-1.0%)",
+      "수급": "48점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "전일비": "+2.12%",
+      "정밀확률": "28.7%",
+      "종목명": "HD현대중공업",
+      "추세": "UP",
+      "테마": "조선/해양",
+      "티커": "329180.KS",
+      "확신도": 45.5
+    },
+    {
+      "AI확률": "30.6%",
+      "Antigrav": 66,
+      "Decision Score": 60.0,
+      "Tier": "⚡T3",
+      "_leader_metrics": {
+        "breakout_quality_score": 46.7,
+        "close_location_score": 60.0,
+        "expansion_potential_score": 42.9,
+        "leader_score": 35.8,
+        "scan_mode": "INTRADAY",
+        "theme_name": "건설/부동산",
+        "theme_rank": null,
+        "turnover_growth_5d": 0.878,
+        "turnover_rank_in_theme": null,
+        "turnover_ratio_vs_float_cap": 0.0765
+      },
+      "_prob_5": 30.6,
+      "_prob_clean": 27.7,
+      "_routing_path": "core_only",
+      "_theme_context": {
+        "is_spac": false,
+        "matched_themes": [
+          {
+            "confidence": 0.9,
+            "theme_name": "건설/부동산",
+            "theme_source": "stock_master"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "금융",
+            "theme_source": "seed_catalog"
+          },
+          {
+            "confidence": 0.72,
+            "theme_name": "방산",
+            "theme_source": "keyword_fallback"
+          }
+        ],
+        "primary_theme": "건설/부동산",
+        "routing_path": "core_only",
+        "secondary_themes": [
+          "금융"
+        ],
+        "theme_direction": "NEUTRAL",
+        "theme_inference_status": "inferred",
+        "theme_membership_confidence": 0.9,
+        "theme_reasons": [
+          "alias:건설",
+          "keyword:건설",
+          "seed_ticker_mapping",
+          "stock_master_primary"
+        ],
+        "theme_source": "stock_master",
+        "theme_strength_score": 0.0
+      },
+      "_tier_sort": 3,
+      "model_error": null,
+      "model_trace_status": "ok",
+      "phase25_prob": 11.9,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 46.0,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE",
+      "거래량": "⚠️ x0.1",
+      "급등예측": "📈 Trend Continuation",
+      "매수가(-2%)": "234,000",
+      "모델": "phase25_kr_intraday_xgboost",
+      "목표가(+3.5%)": "239,786",
+      "보유한도": "당일",
+      "손절가": "231,107 (-1.2%)",
+      "수급": "49점 장중",
+      "승률": "-",
+      "시장맥락": "-",
+      "연속등락": "장중",
+      "위치": "📈 Intraday Trend",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "전일비": "+2.18%",
+      "정밀확률": "27.7%",
+      "종목명": "삼성생명",
+      "추세": "UP",
+      "테마": "건설/부동산",
+      "티커": "032830.KS",
+      "확신도": 43.9
+    }
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-10T02:22:11.704104+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-5F106A12",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "scan_mode": "INTRADAY",
+  "scan_result": {
+    "error_count": 0,
+    "results": [
+      {
+        "AI확률": "31.0%",
+        "Antigrav": 68,
+        "Decision Score": 67.4,
+        "Tier": "⚡T3",
+        "_leader_metrics": {
+          "breakout_quality_score": 49.3,
+          "close_location_score": 87.5,
+          "expansion_potential_score": 41.9,
+          "leader_score": 67.4,
+          "scan_mode": "INTRADAY",
+          "theme_name": "반도체",
+          "theme_rank": null,
+          "turnover_growth_5d": 0.756,
+          "turnover_rank_in_theme": null,
+          "turnover_ratio_vs_float_cap": 0.077
+        },
+        "_prob_5": 31.0,
+        "_prob_clean": 26.4,
+        "_routing_path": "theme_shadow",
+        "_theme_context": {
+          "is_spac": false,
+          "matched_themes": [
+            {
+              "confidence": 0.9,
+              "theme_name": "반도체",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.7,
+              "theme_name": "통신/네트워크",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "방산",
+              "theme_source": "keyword_fallback"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "금융",
+              "theme_source": "keyword_fallback"
+            }
+          ],
+          "primary_theme": "반도체",
+          "routing_path": "theme_shadow",
+          "secondary_themes": [
+            "통신/네트워크"
+          ],
+          "theme_direction": "BENEFICIARY",
+          "theme_inference_status": "inferred",
+          "theme_membership_confidence": 0.9,
+          "theme_reasons": [
+            "THEME_BENEFICIARY",
+            "seed_ticker_mapping",
+            "stock_master_primary"
+          ],
+          "theme_source": "stock_master",
+          "theme_strength_score": 36.0
+        },
+        "_tier_sort": 3,
+        "model_error": null,
+        "model_trace_status": "ok",
+        "phase25_prob": 14.7,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 47.2,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_CORE",
+        "거래량": "⚠️ x0.1",
+        "급등예측": "📈 Trend Continuation",
+        "매수가(-2%)": "1,035,000",
+        "모델": "phase25_kr_intraday_xgboost",
+        "목표가(+3.5%)": "1,063,157",
+        "보유한도": "당일",
+        "손절가": "1,020,921 (-1.4%)",
+        "수급": "58점 장중",
+        "승률": "-",
+        "시장맥락": "-",
+        "연속등락": "장중",
+        "위치": "📈 Intraday Trend",
+        "전략": "⏱️ Intraday Trend | 1H",
+        "전일비": "+3.66%",
+        "정밀확률": "26.4%",
+        "종목명": "SK하이닉스",
+        "추세": "UP",
+        "테마": "반도체",
+        "티커": "000660.KS",
+        "확신도": 46.9
+      },
+      {
+        "AI확률": "37.8%",
+        "Antigrav": 86,
+        "Decision Score": 89.7,
+        "Tier": "🏆T1",
+        "_leader_metrics": {
+          "breakout_quality_score": 47.7,
+          "close_location_score": 61.5,
+          "expansion_potential_score": 42.3,
+          "leader_score": 55.1,
+          "scan_mode": "INTRADAY",
+          "theme_name": "방산",
+          "theme_rank": null,
+          "turnover_growth_5d": 0.737,
+          "turnover_rank_in_theme": null,
+          "turnover_ratio_vs_float_cap": 0.1221
+        },
+        "_prob_5": 37.8,
+        "_prob_clean": 26.1,
+        "_routing_path": "core_only",
+        "_theme_context": {
+          "is_spac": false,
+          "matched_themes": [
+            {
+              "confidence": 0.9,
+              "theme_name": "방산",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "금융",
+              "theme_source": "keyword_fallback"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "건설/부동산",
+              "theme_source": "keyword_fallback"
+            }
+          ],
+          "primary_theme": "방산",
+          "routing_path": "core_only",
+          "secondary_themes": [],
+          "theme_direction": "NEUTRAL",
+          "theme_inference_status": "rule_inferred",
+          "theme_membership_confidence": 0.9,
+          "theme_reasons": [
+            "alias:방산",
+            "keyword:방산",
+            "seed_ticker_mapping",
+            "stock_master_primary"
+          ],
+          "theme_source": "stock_master",
+          "theme_strength_score": 0.0
+        },
+        "_tier_sort": 1,
+        "model_error": null,
+        "model_trace_status": "ok",
+        "phase25_prob": 13.2,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 54.2,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_CORE",
+        "거래량": "⚠️ x0.1",
+        "급등예측": "📈 Trend Continuation",
+        "매수가(-2%)": "1,498,000",
+        "모델": "phase25_kr_intraday_xgboost",
+        "목표가(+3.5%)": "1,535,800",
+        "보유한도": "당일",
+        "손절가": "1,479,100 (-1.3%)",
+        "수급": "62점 장중",
+        "승률": "-",
+        "시장맥락": "🔥 수혜",
+        "연속등락": "장중",
+        "위치": "🚀 Intraday Breakout",
+        "전략": "⏱️ Intraday Breakout | News Tailwind | 1H",
+        "전일비": "+4.24%",
+        "정밀확률": "26.1%",
+        "종목명": "한화에어로스페이스",
+        "추세": "UP",
+        "테마": "방산",
+        "티커": "012450.KS",
+        "확신도": 57.9
+      },
+      {
+        "AI확률": "31.6%",
+        "Antigrav": 65,
+        "Decision Score": 65.5,
+        "Tier": "⚡T3",
+        "_leader_metrics": {
+          "breakout_quality_score": 47.3,
+          "close_location_score": 65.6,
+          "expansion_potential_score": 42.0,
+          "leader_score": 40.5,
+          "scan_mode": "INTRADAY",
+          "theme_name": "금융",
+          "theme_rank": null,
+          "turnover_growth_5d": 0.714,
+          "turnover_rank_in_theme": null,
+          "turnover_ratio_vs_float_cap": 0.1125
+        },
+        "_prob_5": 31.6,
+        "_prob_clean": 26.8,
+        "_routing_path": "theme_shadow",
+        "_theme_context": {
+          "is_spac": false,
+          "matched_themes": [
+            {
+              "confidence": 0.9,
+              "theme_name": "금융",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "방산",
+              "theme_source": "keyword_fallback"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "건설/부동산",
+              "theme_source": "keyword_fallback"
+            }
+          ],
+          "primary_theme": "금융",
+          "routing_path": "theme_shadow",
+          "secondary_themes": [],
+          "theme_direction": "BENEFICIARY",
+          "theme_inference_status": "inferred",
+          "theme_membership_confidence": 0.9,
+          "theme_reasons": [
+            "THEME_BENEFICIARY",
+            "alias:금융",
+            "alias:은행",
+            "evidence:[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+            "evidence:[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제",
+            "keyword:금융",
+            "keyword:은행",
+            "seed_ticker_mapping"
+          ],
+          "theme_source": "stock_master",
+          "theme_strength_score": 40.0
+        },
+        "_tier_sort": 3,
+        "model_error": null,
+        "model_trace_status": "ok",
+        "phase25_prob": 19.7,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 55.5,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_CORE",
+        "거래량": "⚠️ x0.1",
+        "급등예측": "📈 Trend Continuation",
+        "매수가(-2%)": "157,300",
+        "모델": "phase25_kr_intraday_xgboost",
+        "목표가(+3.5%)": "161,067",
+        "보유한도": "당일",
+        "손절가": "155,416 (-1.2%)",
+        "수급": "48점 장중",
+        "승률": "-",
+        "시장맥락": "🔥 수혜",
+        "연속등락": "장중",
+        "위치": "📈 Intraday Trend",
+        "전략": "⏱️ Intraday Trend | News Tailwind | 1H",
+        "전일비": "+1.88%",
+        "정밀확률": "26.8%",
+        "종목명": "KB금융",
+        "추세": "UP",
+        "테마": "금융",
+        "티커": "105560.KS",
+        "확신도": 46.1
+      },
+      {
+        "AI확률": "34.2%",
+        "Antigrav": 66,
+        "Decision Score": 62.2,
+        "Tier": "⚡T3",
+        "_leader_metrics": {
+          "breakout_quality_score": 47.3,
+          "close_location_score": 53.5,
+          "expansion_potential_score": 44.8,
+          "leader_score": 35.8,
+          "scan_mode": "INTRADAY",
+          "theme_name": "조선/해양",
+          "theme_rank": null,
+          "turnover_growth_5d": 1.161,
+          "turnover_rank_in_theme": null,
+          "turnover_ratio_vs_float_cap": 0.0439
+        },
+        "_prob_5": 34.2,
+        "_prob_clean": 28.7,
+        "_routing_path": "core_only",
+        "_theme_context": {
+          "is_spac": false,
+          "matched_themes": [
+            {
+              "confidence": 0.9,
+              "theme_name": "조선/해양",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "방산",
+              "theme_source": "keyword_fallback"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "금융",
+              "theme_source": "keyword_fallback"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "건설/부동산",
+              "theme_source": "keyword_fallback"
+            }
+          ],
+          "primary_theme": "조선/해양",
+          "routing_path": "core_only",
+          "secondary_themes": [],
+          "theme_direction": "NEUTRAL",
+          "theme_inference_status": "inferred",
+          "theme_membership_confidence": 0.9,
+          "theme_reasons": [
+            "seed_ticker_mapping",
+            "stock_master_primary"
+          ],
+          "theme_source": "stock_master",
+          "theme_strength_score": 0.0
+        },
+        "_tier_sort": 3,
+        "model_error": null,
+        "model_trace_status": "ok",
+        "phase25_prob": 15.3,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 46.7,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_CORE",
+        "거래량": "⚠️ x0.0",
+        "급등예측": "📈 Trend Continuation",
+        "매수가(-2%)": "482,000",
+        "모델": "phase25_kr_intraday_xgboost",
+        "목표가(+3.5%)": "491,257",
+        "보유한도": "당일",
+        "손절가": "477,371 (-1.0%)",
+        "수급": "48점 장중",
+        "승률": "-",
+        "시장맥락": "-",
+        "연속등락": "장중",
+        "위치": "📈 Intraday Trend",
+        "전략": "⏱️ Intraday Trend | 1H",
+        "전일비": "+2.12%",
+        "정밀확률": "28.7%",
+        "종목명": "HD현대중공업",
+        "추세": "UP",
+        "테마": "조선/해양",
+        "티커": "329180.KS",
+        "확신도": 45.5
+      },
+      {
+        "AI확률": "32.0%",
+        "Antigrav": 65,
+        "Decision Score": 64.9,
+        "Tier": "⚡T3",
+        "_leader_metrics": {
+          "breakout_quality_score": 50.7,
+          "close_location_score": 88.0,
+          "expansion_potential_score": 43.2,
+          "leader_score": 43.1,
+          "scan_mode": "INTRADAY",
+          "theme_name": "금융",
+          "theme_rank": null,
+          "turnover_growth_5d": 0.881,
+          "turnover_rank_in_theme": null,
+          "turnover_ratio_vs_float_cap": 0.0973
+        },
+        "_prob_5": 32.0,
+        "_prob_clean": 25.9,
+        "_routing_path": "theme_shadow",
+        "_theme_context": {
+          "is_spac": false,
+          "matched_themes": [
+            {
+              "confidence": 0.9,
+              "theme_name": "금융",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "방산",
+              "theme_source": "keyword_fallback"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "건설/부동산",
+              "theme_source": "keyword_fallback"
+            }
+          ],
+          "primary_theme": "금융",
+          "routing_path": "theme_shadow",
+          "secondary_themes": [],
+          "theme_direction": "BENEFICIARY",
+          "theme_inference_status": "inferred",
+          "theme_membership_confidence": 0.9,
+          "theme_reasons": [
+            "THEME_BENEFICIARY",
+            "alias:은행",
+            "evidence:[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+            "evidence:[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제",
+            "keyword:은행",
+            "seed_ticker_mapping",
+            "stock_master_primary"
+          ],
+          "theme_source": "stock_master",
+          "theme_strength_score": 40.0
+        },
+        "_tier_sort": 3,
+        "model_error": null,
+        "model_trace_status": "ok",
+        "phase25_prob": 20.7,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 55.8,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_CORE",
+        "거래량": "⚠️ x0.1",
+        "급등예측": "📈 Trend Continuation",
+        "매수가(-2%)": "98,800",
+        "모델": "phase25_kr_intraday_xgboost",
+        "목표가(+3.5%)": "101,089",
+        "보유한도": "당일",
+        "손절가": "97,656 (-1.2%)",
+        "수급": "48점 장중",
+        "승률": "-",
+        "시장맥락": "-",
+        "연속등락": "장중",
+        "위치": "📈 Intraday Trend",
+        "전략": "⏱️ Intraday Trend | 1H",
+        "전일비": "+1.86%",
+        "정밀확률": "25.9%",
+        "종목명": "신한지주",
+        "추세": "UP",
+        "테마": "금융",
+        "티커": "055550.KS",
+        "확신도": 45.4
+      },
+      {
+        "AI확률": "30.6%",
+        "Antigrav": 66,
+        "Decision Score": 60.0,
+        "Tier": "⚡T3",
+        "_leader_metrics": {
+          "breakout_quality_score": 46.7,
+          "close_location_score": 60.0,
+          "expansion_potential_score": 42.9,
+          "leader_score": 35.8,
+          "scan_mode": "INTRADAY",
+          "theme_name": "건설/부동산",
+          "theme_rank": null,
+          "turnover_growth_5d": 0.878,
+          "turnover_rank_in_theme": null,
+          "turnover_ratio_vs_float_cap": 0.0765
+        },
+        "_prob_5": 30.6,
+        "_prob_clean": 27.7,
+        "_routing_path": "core_only",
+        "_theme_context": {
+          "is_spac": false,
+          "matched_themes": [
+            {
+              "confidence": 0.9,
+              "theme_name": "건설/부동산",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "금융",
+              "theme_source": "seed_catalog"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "방산",
+              "theme_source": "keyword_fallback"
+            }
+          ],
+          "primary_theme": "건설/부동산",
+          "routing_path": "core_only",
+          "secondary_themes": [
+            "금융"
+          ],
+          "theme_direction": "NEUTRAL",
+          "theme_inference_status": "inferred",
+          "theme_membership_confidence": 0.9,
+          "theme_reasons": [
+            "alias:건설",
+            "keyword:건설",
+            "seed_ticker_mapping",
+            "stock_master_primary"
+          ],
+          "theme_source": "stock_master",
+          "theme_strength_score": 0.0
+        },
+        "_tier_sort": 3,
+        "model_error": null,
+        "model_trace_status": "ok",
+        "phase25_prob": 11.9,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 46.0,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_CORE",
+        "거래량": "⚠️ x0.1",
+        "급등예측": "📈 Trend Continuation",
+        "매수가(-2%)": "234,000",
+        "모델": "phase25_kr_intraday_xgboost",
+        "목표가(+3.5%)": "239,786",
+        "보유한도": "당일",
+        "손절가": "231,107 (-1.2%)",
+        "수급": "49점 장중",
+        "승률": "-",
+        "시장맥락": "-",
+        "연속등락": "장중",
+        "위치": "📈 Intraday Trend",
+        "전략": "⏱️ Intraday Trend | 1H",
+        "전일비": "+2.18%",
+        "정밀확률": "27.7%",
+        "종목명": "삼성생명",
+        "추세": "UP",
+        "테마": "건설/부동산",
+        "티커": "032830.KS",
+        "확신도": 43.9
+      },
+      {
+        "AI확률": "33.5%",
+        "Antigrav": 72,
+        "Decision Score": 75.6,
+        "Tier": "⭐T2",
+        "_leader_metrics": {
+          "breakout_quality_score": 48.1,
+          "close_location_score": 88.0,
+          "expansion_potential_score": 47.1,
+          "leader_score": 47.9,
+          "scan_mode": "INTRADAY",
+          "theme_name": "반도체",
+          "theme_rank": null,
+          "turnover_growth_5d": 1.448,
+          "turnover_rank_in_theme": null,
+          "turnover_ratio_vs_float_cap": 0.0448
+        },
+        "_prob_5": 33.5,
+        "_prob_clean": 27.1,
+        "_routing_path": "theme_shadow",
+        "_theme_context": {
+          "is_spac": false,
+          "matched_themes": [
+            {
+              "confidence": 0.9,
+              "theme_name": "반도체",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.7,
+              "theme_name": "통신/네트워크",
+              "theme_source": "stock_master"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "방산",
+              "theme_source": "keyword_fallback"
+            },
+            {
+              "confidence": 0.72,
+              "theme_name": "금융",
+              "theme_source": "keyword_fallback"
+            }
+          ],
+          "primary_theme": "반도체",
+          "routing_path": "theme_shadow",
+          "secondary_themes": [
+            "통신/네트워크"
+          ],
+          "theme_direction": "BENEFICIARY",
+          "theme_inference_status": "inferred",
+          "theme_membership_confidence": 0.9,
+          "theme_reasons": [
+            "THEME_BENEFICIARY",
+            "seed_ticker_mapping",
+            "stock_master_primary"
+          ],
+          "theme_source": "stock_master",
+          "theme_strength_score": 36.0
+        },
+        "_tier_sort": 2,
+        "model_error": null,
+        "model_trace_status": "ok",
+        "phase25_prob": 22.8,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 62.0,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_CORE",
+        "거래량": "⚠️ x0.0",
+        "급등예측": "📈 Trend Continuation",
+        "매수가(-2%)": "567,000",
+        "모델": "phase25_kr_intraday_xgboost",
+        "목표가(+3.5%)": "589,886",
+        "보유한도": "당일",
+        "손절가": "555,557 (-2.0%)",
+        "수급": "97점 장중",
+        "승률": "-",
+        "시장맥락": "-",
+        "연속등락": "장중",
+        "위치": "📈 Intraday Trend",
+        "전략": "⏱️ Intraday Trend | 1H",
+        "전일비": "+10.31%",
+        "정밀확률": "27.1%",
+        "종목명": "삼성전기",
+        "추세": "UP",
+        "테마": "반도체",
+        "티커": "009150.KS",
+        "확신도": 51.3
+      }
+    ],
+    "total_scans": 20
+  },
+  "strategy_family": "KR_CORE",
+  "warnings": []
+}

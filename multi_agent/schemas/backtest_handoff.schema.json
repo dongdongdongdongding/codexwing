@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "backtest_handoff.schema.json",
+  "title": "BacktestHandoff",
+  "type": "object",
+  "required": ["run_context", "diagnostics", "regime_sensitivity", "calibration", "warnings", "produced_at"],
+  "properties": {
+    "run_context": {"type": "object"},
+    "diagnostics": {"type": "object"},
+    "regime_sensitivity": {"type": "object"},
+    "calibration": {"type": "object"},
+    "warnings": {"type": "array", "items": {"type": "object"}},
+    "produced_at": {"type": "string"}
+  }
+}

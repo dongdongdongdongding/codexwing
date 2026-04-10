@@ -1,0 +1,221 @@
+{
+  "generated_at": "2026-04-10T05:08:44.012214+00:00",
+  "market": "KOSPI",
+  "theme_states": [
+    {
+      "theme_id": "finance",
+      "theme_name": "금융",
+      "direction": "BENEFICIARY",
+      "strength_score": 48.0,
+      "confidence": 0.773,
+      "driver_categories": [],
+      "evidence": [
+        "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+        "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+        "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+      ],
+      "beneficiary_keywords": [
+        "금융",
+        "은행",
+        "보험",
+        "증권",
+        "캐피탈",
+        "카드"
+      ],
+      "victim_keywords": [],
+      "updated_at": "2026-04-10T05:08:44.010593+00:00"
+    },
+    {
+      "theme_id": "it_platform",
+      "theme_name": "IT서비스/플랫폼",
+      "direction": "BENEFICIARY",
+      "strength_score": 37.0,
+      "confidence": 0.614,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "LIQUIDITY",
+        "RATES"
+      ],
+      "evidence": [
+        "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
+      ],
+      "beneficiary_keywords": [
+        "IT서비스/플랫폼",
+        "IT서비스",
+        "플랫폼",
+        "소프트웨어",
+        "SW",
+        "클라우드"
+      ],
+      "victim_keywords": [],
+      "updated_at": "2026-04-10T05:08:44.010410+00:00"
+    },
+    {
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "direction": "BENEFICIARY",
+      "strength_score": 27.0,
+      "confidence": 0.543,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "LIQUIDITY",
+        "REGULATION"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [
+        "반도체",
+        "메모리",
+        "HBM",
+        "낸드",
+        "DRAM",
+        "파운드리"
+      ],
+      "victim_keywords": [],
+      "updated_at": "2026-04-10T05:08:44.010958+00:00"
+    },
+    {
+      "theme_id": "robotics",
+      "theme_name": "로봇/자동화",
+      "direction": "BENEFICIARY",
+      "strength_score": 27.0,
+      "confidence": 0.543,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "LIQUIDITY"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [
+        "로봇/자동화",
+        "로봇",
+        "자동화",
+        "스마트팩토리",
+        "협동로봇",
+        "물류로봇"
+      ],
+      "victim_keywords": [],
+      "updated_at": "2026-04-10T05:08:44.011621+00:00"
+    },
+    {
+      "theme_id": "해운",
+      "theme_name": "해운",
+      "direction": "HEADWIND",
+      "strength_score": 21.0,
+      "confidence": 0.5,
+      "driver_categories": [
+        "ECONOMY",
+        "GEOPOLITICS",
+        "OIL"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [],
+      "victim_keywords": [
+        "운임",
+        "컨테이너",
+        "벌크",
+        "해운"
+      ],
+      "updated_at": "2026-04-10T05:08:44.011997+00:00"
+    },
+    {
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지",
+      "direction": "NEUTRAL",
+      "strength_score": 9.0,
+      "confidence": 0.414,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "FX",
+        "OIL"
+      ],
+      "evidence": [
+        "[주달 상승테마] 2차전지 | 주달"
+      ],
+      "beneficiary_keywords": [],
+      "victim_keywords": [],
+      "updated_at": "2026-04-10T05:08:44.011754+00:00"
+    },
+    {
+      "theme_id": "eco_energy",
+      "theme_name": "친환경/에너지",
+      "direction": "NEUTRAL",
+      "strength_score": 8.0,
+      "confidence": 0.407,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "FX",
+        "GEOPOLITICS",
+        "LIQUIDITY",
+        "OIL",
+        "POLITICS",
+        "REGULATION"
+      ],
+      "evidence": [
+        "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+      ],
+      "beneficiary_keywords": [],
+      "victim_keywords": [],
+      "updated_at": "2026-04-10T05:08:44.011522+00:00"
+    }
+  ],
+  "beneficiary_themes": [
+    {
+      "theme_id": "finance",
+      "theme_name": "금융",
+      "strength_score": 48.0,
+      "confidence": 0.773
+    },
+    {
+      "theme_id": "it_platform",
+      "theme_name": "IT서비스/플랫폼",
+      "strength_score": 37.0,
+      "confidence": 0.614
+    },
+    {
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "strength_score": 27.0,
+      "confidence": 0.543
+    },
+    {
+      "theme_id": "robotics",
+      "theme_name": "로봇/자동화",
+      "strength_score": 27.0,
+      "confidence": 0.543
+    }
+  ],
+  "headwind_themes": [
+    {
+      "theme_id": "해운",
+      "theme_name": "해운",
+      "strength_score": 21.0,
+      "confidence": 0.5
+    }
+  ],
+  "theme_evidence": {
+    "it_platform": [
+      "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
+    ],
+    "finance": [
+      "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+      "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+      "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+      "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+    ],
+    "semiconductor": [],
+    "eco_energy": [
+      "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+    ],
+    "robotics": [],
+    "secondary_battery": [
+      "[주달 상승테마] 2차전지 | 주달"
+    ],
+    "해운": []
+  },
+  "source": "gemini"
+}

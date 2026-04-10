@@ -1,0 +1,48 @@
+{
+  "action": "skip",
+  "collection_stats": {
+    "buckets": {
+      "exception_leader": 126,
+      "ignored": 36,
+      "picked": 1071,
+      "watchlist": 199
+    },
+    "markets": {
+      "AMEX": 71,
+      "KOSDAQ": 948,
+      "KOSPI": 339,
+      "KR": 1,
+      "NASDAQ": 72,
+      "US": 1
+    },
+    "runs_seen": 162,
+    "runs_with_outcomes": 77,
+    "statuses": {
+      "EXPIRED": 340,
+      "PENDING": 273,
+      "RESOLVED": 819
+    }
+  },
+  "commands": [],
+  "generated_at": "2026-04-07T13:30:43.418028+00:00",
+  "minimum_required_new_resolved": 10,
+  "minimum_required_total_resolved": 50,
+  "mode": "weekly",
+  "new_resolved_since_last_cycle": 0,
+  "reason": "insufficient_new_resolved",
+  "resolved_by_bucket": {
+    "exception_leader": 38,
+    "ignored": 35,
+    "picked": 587,
+    "watchlist": 159
+  },
+  "resolved_by_market": {
+    "AMEX": 70,
+    "KOSDAQ": 426,
+    "KOSPI": 254,
+    "KR": 1,
+    "NASDAQ": 67,
+    "US": 1
+  },
+  "total_resolved": 819
+}

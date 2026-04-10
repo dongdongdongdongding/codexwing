@@ -1,0 +1,751 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1480.8800048828125,
+      "krw_change_1d": 0.22,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.293000221252441,
+      "tnx_change_1d": 0.05,
+      "vix": 19.489999771118164,
+      "vix_change_1d": -7.37
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "2차전지",
+      "AI",
+      "농업기술"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.679,
+        "strength_score": 46.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼"
+      },
+      {
+        "confidence": 0.709,
+        "strength_score": 39.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.564,
+        "strength_score": 30.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      },
+      {
+        "confidence": 0.543,
+        "strength_score": 27.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체"
+      },
+      {
+        "confidence": 0.543,
+        "strength_score": 27.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화"
+      },
+      {
+        "confidence": 0.573,
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "description": "원/달러 환율 하락은 국내 증시에 긍정적이나 불안감은 여전.",
+        "direction": "DOWN",
+        "market_impact": 1
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": 2,
+      "FX": 1,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": 5,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 3,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+      "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+      "환율 1470원대 후퇴…동결 속 불안 여전",
+      "[주달 상승테마] 2차전지"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "KOSDAQ은 개별 기업 호재와 중앙은행의 완화적 스탠스, 외국인 매수세에 힘입어 긍정적 흐름을 보이나, 환율 불안감은 상존합니다.",
+    "macro_drivers": [
+      {
+        "category": "RATES",
+        "description": "한국은행 총재의 공급 충격에 대한 금리 인상 자제 시사 발언으로 시장 금리 부담 완화 기대.",
+        "evidence": "한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "외국인 투자자의 현선물 동반 순매수 전환으로 국내 증시 전반의 유동성 개선.",
+        "evidence": "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+        "market_impact": 4,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "FX",
+        "description": "원/달러 환율이 하락했으나 시장의 불안감은 여전하여 불확실성 상존.",
+        "evidence": "환율 1470원대 후퇴…동결 속 불안 여전",
+        "market_impact": 1,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "2차전지",
+        "AI",
+        "농업",
+        "스마트팜"
+      ],
+      "beneficiary_sectors": [
+        "2차전지",
+        "AI",
+        "농업기술"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.679,
+          "strength_score": 46.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼"
+        },
+        {
+          "confidence": 0.709,
+          "strength_score": 39.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.564,
+          "strength_score": 30.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        },
+        {
+          "confidence": 0.543,
+          "strength_score": 27.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체"
+        },
+        {
+          "confidence": 0.543,
+          "strength_score": 27.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화"
+        },
+        {
+          "confidence": 0.573,
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크"
+        }
+      ],
+      "company_event_bias": {
+        "디바이스": 8,
+        "레이저옵텍": -8,
+        "쓰리에이로직스": 8,
+        "캠시스": -8,
+        "한국정보인증": 6
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "description": "원/달러 환율 하락은 국내 증시에 긍정적이나 불안감은 여전.",
+          "direction": "DOWN",
+          "market_impact": 1
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "디바이스",
+          "event_score": 2,
+          "label": "무상증자",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(무상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "디바이스",
+          "event_score": 2,
+          "label": "무상증자",
+          "polarity": "POSITIVE",
+          "report_name": "주권매매거래정지              (무상증자)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "쓰리에이로직스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "레이저옵텍",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "캠시스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "한국정보인증",
+          "event_score": 3,
+          "label": "자사주",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(자기주식취득신탁계약체결결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "디바이스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "디바이스",
+          "event_score": 2,
+          "label": "무상증자",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(무상증자결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 2,
+        "ECONOMY": 2,
+        "FX": 1,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": 5,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 3,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+        "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+        "환율 1470원대 후퇴…동결 속 불안 여전",
+        "[주달 상승테마] 2차전지"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "KOSDAQ은 개별 기업 호재와 중앙은행의 완화적 스탠스, 외국인 매수세에 힘입어 긍정적 흐름을 보이나, 환율 불안감은 상존합니다.",
+      "macro_drivers": [
+        {
+          "category": "RATES",
+          "description": "한국은행 총재의 공급 충격에 대한 금리 인상 자제 시사 발언으로 시장 금리 부담 완화 기대.",
+          "evidence": "한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\"",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "외국인 투자자의 현선물 동반 순매수 전환으로 국내 증시 전반의 유동성 개선.",
+          "evidence": "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+          "market_impact": 4,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "FX",
+          "description": "원/달러 환율이 하락했으나 시장의 불안감은 여전하여 불확실성 상존.",
+          "evidence": "환율 1470원대 후퇴…동결 속 불안 여전",
+          "market_impact": 1,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+        "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시",
+        "[DART 20260410] 쓰리에이로직스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 레이저옵텍 - 유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모) | 전자공시",
+        "[DART 20260410] 캠시스 - 유상증자또는주식관련사채등의청약결과(자율공시) | 전자공시",
+        "[DART 20260410] 한국정보인증 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+        "[DART 20260410] 디바이스 - 단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+        "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제",
+        "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
+        "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ],
+      "risk_flags": [
+        "환율 불안",
+        "금리 정책 불확실성"
+      ],
+      "sentiment_score": 45,
+      "source": "gemini",
+      "theme_evidence": {
+        "eco_energy": [],
+        "game_content_ent": [
+          "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+        ],
+        "it_platform": [
+          "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+        ],
+        "robotics": [],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "semiconductor": [],
+        "telecom": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "IT서비스/플랫폼",
+            "IT서비스",
+            "플랫폼",
+            "소프트웨어",
+            "SW",
+            "클라우드"
+          ],
+          "confidence": 0.679,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [
+            "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+          ],
+          "strength_score": 46.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "updated_at": "2026-04-10T02:22:42.951637+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.709,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 39.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-10T02:22:42.952145+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ],
+          "confidence": 0.564,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 30.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-10T02:22:42.952049+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "반도체",
+            "메모리",
+            "HBM",
+            "낸드",
+            "DRAM",
+            "파운드리"
+          ],
+          "confidence": 0.543,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 27.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-10T02:22:42.951810+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "로봇/자동화",
+            "로봇",
+            "자동화",
+            "스마트팩토리",
+            "협동로봇",
+            "물류로봇"
+          ],
+          "confidence": 0.543,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY"
+          ],
+          "evidence": [],
+          "strength_score": 27.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "updated_at": "2026-04-10T02:22:42.952086+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "통신/네트워크",
+            "통신",
+            "네트워크",
+            "5G",
+            "6G",
+            "안테나"
+          ],
+          "confidence": 0.573,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달",
+            "[주달 핫테마] 6G | 주달"
+          ],
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "updated_at": "2026-04-10T02:22:42.951889+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "game_content_ent",
+          "theme_name": "게임/콘텐츠/엔터",
+          "updated_at": "2026-04-10T02:22:42.951943+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "주달 상승 테마로 언급되며 관련 종목에 긍정적 영향.",
+          "impact": "POSITIVE",
+          "theme": "2차전지"
+        },
+        {
+          "description": "누보가 AI 콘텐츠로 젊은 귀농인을 공략하며 관련 기술 및 산업에 관심 증대.",
+          "impact": "POSITIVE",
+          "theme": "AI 농업"
+        }
+      ],
+      "timestamp": "2026-04-10 11:22",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시",
+      "[DART 20260410] 쓰리에이로직스 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 레이저옵텍 - 유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모) | 전자공시",
+      "[DART 20260410] 캠시스 - 유상증자또는주식관련사채등의청약결과(자율공시) | 전자공시",
+      "[DART 20260410] 한국정보인증 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+      "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제",
+      "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
+      "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달",
+      "[주달 핫테마] 6G | 주달"
+    ],
+    "risk_flags": [
+      "환율 불안",
+      "금리 정책 불확실성"
+    ],
+    "sentiment_score": 45,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "eco_energy": [],
+      "game_content_ent": [
+        "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+      ],
+      "it_platform": [
+        "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+      ],
+      "robotics": [],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "semiconductor": [],
+      "telecom": [
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "IT서비스/플랫폼",
+          "IT서비스",
+          "플랫폼",
+          "소프트웨어",
+          "SW",
+          "클라우드"
+        ],
+        "confidence": 0.679,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [
+          "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+        ],
+        "strength_score": 46.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "updated_at": "2026-04-10T02:22:42.951637+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.709,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 39.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-10T02:22:42.952145+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ],
+        "confidence": 0.564,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 30.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-10T02:22:42.952049+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "반도체",
+          "메모리",
+          "HBM",
+          "낸드",
+          "DRAM",
+          "파운드리"
+        ],
+        "confidence": 0.543,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 27.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-10T02:22:42.951810+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "로봇/자동화",
+          "로봇",
+          "자동화",
+          "스마트팩토리",
+          "협동로봇",
+          "물류로봇"
+        ],
+        "confidence": 0.543,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY"
+        ],
+        "evidence": [],
+        "strength_score": 27.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "updated_at": "2026-04-10T02:22:42.952086+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "통신/네트워크",
+          "통신",
+          "네트워크",
+          "5G",
+          "6G",
+          "안테나"
+        ],
+        "confidence": 0.573,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "updated_at": "2026-04-10T02:22:42.951889+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[Fri, 10 Apr 2026 11:20:57 +09:00] “10평 농장 가능한가요” 농사도 알고리즘시대…누보, AI콘텐츠로 젊은 귀농인 공략 | 매일경제"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "game_content_ent",
+        "theme_name": "게임/콘텐츠/엔터",
+        "updated_at": "2026-04-10T02:22:42.951943+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-10T02:23:04.145032+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-10T02:23:03.083344+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-256FDC46",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,73 @@
+{
+  "avoid_list": [],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "EMPTY_PLANNER_INPUT",
+      "message": "Planner received no candidates from scanner handoff.",
+      "severity": "error"
+    },
+    {
+      "code": "FALLBACK_WATCHLIST_UNAVAILABLE",
+      "message": "Prod zero-result streak detected but no recent dev baseline watchlist was available.",
+      "severity": "warning"
+    },
+    {
+      "code": "NEAR_MISS_WATCHLIST_ENABLED",
+      "message": "Planner generated a watchlist from current-run near-miss candidates after zero active decisions.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-09T08:02:39.174512+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "codex-theme",
+    "created_at": "2026-04-09T08:02:39.167289+00:00",
+    "market": "KOSDAQ",
+    "model_version": "phase25",
+    "run_id": "RUN-4BC95662",
+    "strategy_version": "theme-shadow-v1"
+  },
+  "watchlist": [
+    "247540.KQ",
+    "086520.KQ"
+  ],
+  "watchlist_meta": [
+    {
+      "alpha_score": 43.0,
+      "conviction_score": 0.0,
+      "decision_score": 27.0,
+      "entry_reference_price": null,
+      "expires_at": "2026-04-11T08:02:40.031420+00:00",
+      "generated_at": "2026-04-09T08:02:40.031420+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "DOWN",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "에코프로비엠",
+      "ticker": "247540.KQ"
+    },
+    {
+      "alpha_score": 40.0,
+      "conviction_score": 0.0,
+      "decision_score": 24.0,
+      "entry_reference_price": null,
+      "expires_at": "2026-04-11T08:02:40.031420+00:00",
+      "generated_at": "2026-04-09T08:02:40.031420+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "DOWN",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "에코프로",
+      "ticker": "086520.KQ"
+    }
+  ]
+}

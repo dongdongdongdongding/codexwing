@@ -1,0 +1,19 @@
+{
+  "code_version": "non-ui-scan-v1",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-2047FD2D/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-2047FD2D/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-2047FD2D/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-2047FD2D/market_context_handoff.json",
+    "outcome_health": "runtime_state/shared_working/RUN-2047FD2D/outcome_health.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-2047FD2D/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-2047FD2D/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-2047FD2D/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-2047FD2D/realized_outcomes.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-2047FD2D/scanner_handoff.json"
+  },
+  "market": "KOSPI",
+  "model_version": "legacy",
+  "run_id": "RUN-2047FD2D",
+  "strategy_version": "legacy-cli-v1"
+}

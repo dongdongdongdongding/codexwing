@@ -1,0 +1,60 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 2,
+    "reason": "MARKET_POLICY_AVOID"
+  },
+  "current_total_scans": 4,
+  "fallback_watchlist": {
+    "applied": false,
+    "considered_dev_runs": 0,
+    "source_profile": "dev",
+    "source_run_id": null,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 3,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-03-31T07:13:05.414030+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 2,
+  "history_window_runs_seen": 41,
+  "market": "KOSPI",
+  "profile_summary": {
+    "prod": {
+      "filtered_count": 6,
+      "result_count": 0,
+      "runs": 2,
+      "top_reject_reason": {
+        "count": 3,
+        "reason": "KR_HARD_FILTER_FAIL"
+      },
+      "total_scans": 6,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 2
+    }
+  },
+  "run_id": "RUN-61E3B6D4",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 2,
+    "mode": "avoid",
+    "policy": {
+      "ai_min": 35,
+      "alpha_min": 45,
+      "avg_5d_pct": 6.3555079577746865,
+      "mode": "avoid",
+      "objective": 50.35087312220677,
+      "samples": 3,
+      "win_5d_pct": 33.33333333333333
+    },
+    "total_rejects": 4,
+    "watchlist_count": 0
+  }
+}

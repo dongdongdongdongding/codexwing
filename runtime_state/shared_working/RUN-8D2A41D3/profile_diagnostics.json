@@ -1,0 +1,72 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 41,
+    "reason": "LIQUIDITY_FILTER_FAIL"
+  },
+  "current_total_scans": 50,
+  "exception_leaders": {
+    "applied": false,
+    "considered_filtered_symbols": 50,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "fallback_watchlist": {
+    "applied": false,
+    "considered_dev_runs": 0,
+    "source_profile": "dev",
+    "source_run_id": null,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 4,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-04-01T14:36:02.846451+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 16,
+  "history_window_runs_seen": 75,
+  "market": "AMEX",
+  "near_miss_watchlist": {
+    "applied": false,
+    "considered_filtered_symbols": 50,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "profile_summary": {
+    "prod": {
+      "filtered_count": 474,
+      "result_count": 17,
+      "runs": 16,
+      "top_reject_reason": {
+        "count": 195,
+        "reason": "LIQUIDITY_FILTER_FAIL"
+      },
+      "total_scans": 491,
+      "weighted_filtered_rate_pct": 96.54,
+      "weighted_pass_rate_pct": 3.46,
+      "zero_result_runs": 11
+    }
+  },
+  "run_id": "RUN-8D2A41D3",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "GREEN",
+    "market_policy_avoid_count": 4,
+    "mode": "avoid",
+    "policy": {
+      "ai_min": 5,
+      "alpha_min": 75,
+      "avg_5d_pct": -1.9785067638158298,
+      "mode": "avoid",
+      "objective": 18.448716180920854,
+      "samples": 32,
+      "win_5d_pct": 46.875
+    },
+    "total_rejects": 50,
+    "watchlist_count": 0
+  }
+}

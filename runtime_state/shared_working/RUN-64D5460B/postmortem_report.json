@@ -1,0 +1,44 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json",
+    "outcome_health.json",
+    "profile_diagnostics.json"
+  ],
+  "failure_summary": "No critical pre-outcome failure. Postmortem generated as a preventive trace.",
+  "likely_causes": [
+    "Sample size is small; confidence may be overstated."
+  ],
+  "produced_at": "2026-04-01T07:04:10.976059+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T07:04:05.569374+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-64D5460B",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-04-01T07:04:10.976045+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-64D5460B",
+      "status": "open",
+      "ticket_id": "TKT-85469F91",
+      "title": "Strengthen small-sample safeguards"
+    }
+  ]
+}

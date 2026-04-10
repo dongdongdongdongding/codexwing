@@ -1,0 +1,273 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1476.4300537109375,
+      "krw_change_1d": -2.08,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 2.4,
+      "tnx": 4.265999794006348,
+      "tnx_change_1d": -1.77,
+      "vix": 21.18000030517578,
+      "vix_change_1d": -17.84
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "성장주",
+      "기술주",
+      "컨텐츠"
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 5,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 5,
+      "LIQUIDITY": -3,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "key_insight": "미-이란 휴전 소식이 지정학적 불확실성을 해소하며 시장 전반의 투자 심리를 강력하게 견인하고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "미-이란 휴전은 KOSDAQ과 같은 위험자산 시장의 투자 매력도를 높이는 가장 핵심적인 요인입니다.",
+        "evidence": "뉴욕증시, 미-이란 휴전에 상승 출발",
+        "market_impact": 5,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "EARNINGS",
+        "description": "큐라티스, 동성화인텍 등 개별 기업의 공급 계약 공시는 실적 개선 기대를 형성합니다.",
+        "evidence": "큐라티스 - 단일판매ㆍ공급계약체결",
+        "market_impact": 2,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "엔켐의 최대주주 주식담보 제공, BF랩스의 유상증자는 개별 종목의 잠재적 매도 물량(오버행) 우려를 자아냅니다.",
+        "evidence": "엔켐 - 최대주주변경을수반하는주식담보제공계약체결",
+        "market_impact": -1,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "BULLISH",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "위험자산",
+        "수출",
+        "공급계약"
+      ],
+      "beneficiary_sectors": [
+        "성장주",
+        "기술주",
+        "컨텐츠"
+      ],
+      "company_event_bias": {
+        "BF랩스": -8,
+        "동성화인텍": 8,
+        "엔켐": -4,
+        "엔피": 4,
+        "위지윅스튜디오": 4,
+        "컴투스": 4,
+        "큐라티스": 8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "엔켐",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "컴투스",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "회사합병결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "큐라티스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "동성화인텍",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "위지윅스튜디오",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "엔피",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "BF랩스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "엔켐",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "최대주주변경을수반하는주식담보제공계약체결"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 5,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 5,
+        "LIQUIDITY": -3,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "[Wed, 8 Apr 2026 22:46:22 +0900] 뉴욕증시, 미-이란 휴전에 상승 출발 | 연합뉴스",
+        "[DART 20260408] 큐라티스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260409] 위지윅스튜디오 - 주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260408] 엔켐 - 최대주주변경을수반하는주식담보제공계약체결 | 전자공시"
+      ],
+      "key_insight": "미-이란 휴전 소식이 지정학적 불확실성을 해소하며 시장 전반의 투자 심리를 강력하게 견인하고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "미-이란 휴전은 KOSDAQ과 같은 위험자산 시장의 투자 매력도를 높이는 가장 핵심적인 요인입니다.",
+          "evidence": "뉴욕증시, 미-이란 휴전에 상승 출발",
+          "market_impact": 5,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "EARNINGS",
+          "description": "큐라티스, 동성화인텍 등 개별 기업의 공급 계약 공시는 실적 개선 기대를 형성합니다.",
+          "evidence": "큐라티스 - 단일판매ㆍ공급계약체결",
+          "market_impact": 2,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "엔켐의 최대주주 주식담보 제공, BF랩스의 유상증자는 개별 종목의 잠재적 매도 물량(오버행) 우려를 자아냅니다.",
+          "evidence": "엔켐 - 최대주주변경을수반하는주식담보제공계약체결",
+          "market_impact": -1,
+          "signal": "BEARISH"
+        }
+      ],
+      "market_sentiment": "BULLISH",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[DART 20260408] 엔켐 - 최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[DART 20260408] 컴투스 - 회사합병결정(종속회사의주요경영사항) | 전자공시",
+        "[DART 20260408] 큐라티스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260408] 동성화인텍 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260409] 위지윅스튜디오 - 주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260409] 엔피 - 주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260409] BF랩스 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[Wed, 8 Apr 2026 22:46:22 +0900] 뉴욕증시, 미-이란 휴전에 상승 출발 | 연합뉴스",
+        "[Wed, 8 Apr 2026 21:16:40 +0900] 금융위, 삼성證 발행어음 사업 인가안 심의 | 연합뉴스",
+        "[Wed, 8 Apr 2026 20:22:28 +0900] 포스코도 하청 대한 사용자성 인정…하청노조간 교섭단위 분리(종합2보) | 연합뉴스",
+        "[Wed, 8 Apr 2026 19:33:31 +0900] 현대무벡스, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "[Wed, 8 Apr 2026 19:31:39 +0900] 공정위, 세방그룹 '계열사 일감 몰아주기' 의혹 조사 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:52:50 +0900] 상암 DMC 롯데몰 개발사업 본궤도…내년 착공·2030년 준공 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:40:51 +0900] 경복궁면세점, 인천공항 1터미널 입국장면세점 5년 더 운영 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:36:37 +0900] JW중외제약, 애프터마켓서 10%대 급등 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "개별 기업 자금 조달 리스크",
+        "최대주주 지분 변동성"
+      ],
+      "sentiment_score": 75,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "미국-이란 간 휴전 소식으로 투자 심리가 개선되고 위험자산 선호가 증가했습니다.",
+          "impact": "POSITIVE",
+          "theme": "중동 지정학 리스크 완화"
+        },
+        {
+          "description": "합병(컴투스, 위지윅스튜디오), 공급계약(큐라티스) 등 긍정적 소식과 최대주주 주식담보, 유상증자 등 잠재적 부담 요인이 혼재합니다.",
+          "impact": "MIXED",
+          "theme": "코스닥 기업 경영 활동"
+        }
+      ],
+      "timestamp": "2026-04-09 00:59",
+      "victim_keywords": [
+        "지정학적 리스크"
+      ],
+      "victim_sectors": [
+        "방산"
+      ]
+    },
+    "risk_flags": [
+      "개별 기업 자금 조달 리스크",
+      "최대주주 지분 변동성"
+    ],
+    "sentiment_score": 75,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "방산"
+    ]
+  },
+  "produced_at": "2026-04-08T16:02:29.720624+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-08T16:02:27.950677+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-4328396B",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,141 @@
+{
+  "assignments": [
+    {
+      "agent_name": "scanner_agent",
+      "depends_on": [],
+      "input_refs": [
+        "runtime_state/local_short_term/scanner_agent/RUN-336DF94A/legacy_scan_results.json"
+      ],
+      "notes": [],
+      "objective": "Generate or ingest scanner handoff with candidate reasons and structured traces.",
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/scanner_handoff.json",
+      "status": "completed",
+      "step_id": "step_scanner"
+    },
+    {
+      "agent_name": "aggregation_agent",
+      "depends_on": [
+        "step_scanner"
+      ],
+      "input_refs": [
+        "scanner_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Analyze concentration, common traits, and candidate quality.",
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/aggregation_handoff.json",
+      "status": "completed",
+      "step_id": "step_aggregation"
+    },
+    {
+      "agent_name": "backtest_learning_agent",
+      "depends_on": [
+        "step_scanner",
+        "step_aggregation"
+      ],
+      "input_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Validate current candidates with realistic diagnostics and regime sensitivity.",
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/backtest_handoff.json",
+      "status": "completed",
+      "step_id": "step_backtest"
+    },
+    {
+      "agent_name": "market_news_context_agent",
+      "depends_on": [],
+      "input_refs": [],
+      "notes": [],
+      "objective": "Assess current market regime, macro pressure, and news context.",
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/market_context_handoff.json",
+      "status": "completed",
+      "step_id": "step_market"
+    },
+    {
+      "agent_name": "pm_planner_agent",
+      "depends_on": [
+        "step_scanner",
+        "step_aggregation",
+        "step_backtest",
+        "step_market"
+      ],
+      "input_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Synthesize all evidence into final decisions, watchlists, and warnings.",
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/planner_handoff.json",
+      "status": "completed",
+      "step_id": "step_planner"
+    }
+  ],
+  "produced_at": "2026-04-01T09:33:20.113408+00:00",
+  "request_summary": {
+    "requested_agents": [
+      "scanner_agent",
+      "aggregation_agent",
+      "backtest_learning_agent",
+      "market_news_context_agent",
+      "pm_planner_agent"
+    ],
+    "requested_market": "NASDAQ",
+    "task_kind": "scan_pipeline",
+    "user_request": "Run full non-UI scan pipeline for NASDAQ and produce planner-ready outputs."
+  },
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "orchestrated-us-research",
+    "created_at": "2026-04-01T09:33:17.092234+00:00",
+    "market": "NASDAQ",
+    "model_version": "research-baseline",
+    "run_id": "RUN-336DF94A",
+    "strategy_version": "us-research-v1"
+  },
+  "shared_evidence": [
+    "runtime_state/shared_working/RUN-336DF94A/orchestrator_request.json",
+    "runtime_state/shared_working/RUN-336DF94A/scanner_handoff.json",
+    "runtime_state/shared_working/RUN-336DF94A/aggregation_handoff.json",
+    "runtime_state/shared_working/RUN-336DF94A/backtest_handoff.json",
+    "runtime_state/shared_working/RUN-336DF94A/market_context_handoff.json",
+    "runtime_state/shared_working/RUN-336DF94A/planner_handoff.json"
+  ],
+  "status": "completed",
+  "task_id": "TASK-30FBE909",
+  "validation_checks": [
+    {
+      "agent_name": "scanner_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/scanner_handoff.json",
+      "step_id": "step_scanner"
+    },
+    {
+      "agent_name": "aggregation_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/aggregation_handoff.json",
+      "step_id": "step_aggregation"
+    },
+    {
+      "agent_name": "backtest_learning_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/backtest_handoff.json",
+      "step_id": "step_backtest"
+    },
+    {
+      "agent_name": "market_news_context_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/market_context_handoff.json",
+      "step_id": "step_market"
+    },
+    {
+      "agent_name": "pm_planner_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-336DF94A/planner_handoff.json",
+      "step_id": "step_planner"
+    }
+  ],
+  "warnings": []
+}

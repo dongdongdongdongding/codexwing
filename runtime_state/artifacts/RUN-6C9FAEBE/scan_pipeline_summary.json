@@ -1,0 +1,46 @@
+{
+  "applied_profile_defaults": {
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "20",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "30",
+    "AG_US_SIGNAL_LOOKBACK": "20",
+    "AG_US_SIGNAL_MIN_HITS": "0"
+  },
+  "artifact_dir": "runtime_state/artifacts/RUN-6C9FAEBE",
+  "error_count": 0,
+  "execution_profile": "dev",
+  "executor_exception_count": 0,
+  "filtered_count": 1,
+  "gate_config": {
+    "us_hard_filter": {
+      "amex_rs_min": -5.0,
+      "min_alpha": 20.0,
+      "min_alpha_down": 30.0
+    },
+    "us_signal_window": {
+      "lookback": 20,
+      "min_hits": 0
+    }
+  },
+  "manifest_paths": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-6C9FAEBE/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-6C9FAEBE/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-6C9FAEBE/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-6C9FAEBE/market_context_handoff.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-6C9FAEBE/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-6C9FAEBE/postmortem_report.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-6C9FAEBE/realized_outcomes.json",
+    "run_manifest": "runtime_state/shared_working/RUN-6C9FAEBE/run_manifest.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-6C9FAEBE/scanner_handoff.json"
+  },
+  "market": "NASDAQ",
+  "reject_reason_counts": {
+    "US_HARD_FILTER_TREND_ALPHA": 1
+  },
+  "result_count": 4,
+  "run_id": "RUN-6C9FAEBE",
+  "scanner_input_path": "runtime_state/local_short_term/scanner_agent/RUN-6C9FAEBE/legacy_scan_results.json",
+  "total_scans": 5,
+  "warnings": [],
+  "worker_error_count": 0
+}

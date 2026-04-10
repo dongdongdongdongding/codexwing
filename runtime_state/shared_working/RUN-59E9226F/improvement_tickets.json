@@ -1,0 +1,64 @@
+{
+  "tickets": [
+    {
+      "created_at": "2026-03-30T16:32:40.017931+00:00",
+      "hypothesis": "Threshold coupling or upstream data fetch failures can collapse candidate output.",
+      "owner_agent": "scanner_agent",
+      "owner_module": "app.py|auto_bot.py scanner bridge",
+      "priority": "high",
+      "requested_change": "Add per-filter reject counters and surface them in scanner_trace.",
+      "run_id": "RUN-59E9226F",
+      "status": "open",
+      "ticket_id": "TKT-4F989B2F",
+      "title": "Investigate zero-candidate scan runs"
+    },
+    {
+      "created_at": "2026-03-30T16:32:40.017939+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-59E9226F",
+      "status": "open",
+      "ticket_id": "TKT-640359EF",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-03-30T16:32:40.017947+00:00",
+      "hypothesis": "Prod thresholds may be too strict relative to current regime and suppress viable candidates.",
+      "owner_agent": "scanner_agent",
+      "owner_module": "multi_agent/config/scan_profiles.py + modules/scanner_services.py",
+      "priority": "high",
+      "requested_change": "Compare prod/dev reject-reason distributions and retune prod thresholds with guardrails.",
+      "run_id": "RUN-59E9226F",
+      "status": "open",
+      "ticket_id": "TKT-CF36AA03",
+      "title": "Calibrate prod gate thresholds against observed profile gap"
+    },
+    {
+      "created_at": "2026-03-30T16:32:40.017952+00:00",
+      "hypothesis": "Threshold relaxation without regime validation can increase false positives.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics + threshold calibration",
+      "priority": "medium",
+      "requested_change": "Run regime-sliced backtests for candidate filters and attach calibration delta report.",
+      "run_id": "RUN-59E9226F",
+      "status": "open",
+      "ticket_id": "TKT-5C4C0F54",
+      "title": "Validate threshold changes with regime-sliced backtests"
+    },
+    {
+      "created_at": "2026-03-30T16:32:40.017957+00:00",
+      "hypothesis": "Fallback watchlist is now active but still needs explicit risk caps and expiry rules.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "planner policy / fallback mode",
+      "priority": "high",
+      "requested_change": "Enforce fallback expiry in outcome-tracking jobs and alert when stale fallback rows accumulate.",
+      "run_id": "RUN-59E9226F",
+      "status": "open",
+      "ticket_id": "TKT-982590B9",
+      "title": "Harden fallback watchlist governance in prod"
+    }
+  ]
+}

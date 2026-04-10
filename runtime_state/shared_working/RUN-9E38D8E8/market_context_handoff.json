@@ -1,0 +1,258 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_HIGH"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 25.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_HIGH"
+      ],
+      "krw": 1496.8900146484375,
+      "krw_change_1d": -0.82,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 25,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.47,
+      "tnx": 4.335000038146973,
+      "tnx_change_1d": 0.51,
+      "vix": 25.81999969482422,
+      "vix_change_1d": 6.83
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "반도체",
+      "전력설비"
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 5,
+      "ECONOMY": -1,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": -1,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "key_insight": "삼성전자의 기록적인 반도체 실적이 내수 경기 둔화 우려를 상쇄하며 KOSPI에 대한 강한 상승 동력으로 작용하고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "EARNINGS",
+        "description": "KOSPI 시총 1위 기업인 삼성전자의 기록적 실적은 지수 전체에 대한 투자 심리를 크게 개선시켰습니다.",
+        "evidence": "삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록",
+        "market_impact": 5,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "제2금융권의 대출 중단은 시장의 유동성 공급 감소 및 가계 부채 리스크 관리 강화 신호입니다.",
+        "evidence": "단위 농·축협 10일부터 비조합원 가계대출 중단",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "ECONOMY",
+        "description": "지역 창업 생태계의 자금 조달 어려움은 실물 경기 위축이 확산되고 있음을 시사합니다.",
+        "evidence": "강원창업보육센터협의회, 경기 위축으로 자금 확보 어려움",
+        "market_impact": -1,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "BULLISH",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "삼성전자",
+        "D램",
+        "낸드",
+        "메모리 반도체",
+        "일진전기",
+        "공급계약"
+      ],
+      "beneficiary_sectors": [
+        "반도체",
+        "전력설비"
+      ],
+      "company_event_bias": {
+        "미래에셋증권": 6,
+        "일진전기": 8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "일진전기",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결(자율공시)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "일진전기",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "미래에셋증권",
+          "event_score": 3,
+          "label": "자사주",
+          "polarity": "POSITIVE",
+          "report_name": "자기주식취득결과보고서"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "일진전기",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결(자율공시)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "일진전기",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "미래에셋증권",
+          "event_score": 3,
+          "label": "자사주",
+          "polarity": "POSITIVE",
+          "report_name": "자기주식취득결과보고서"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 5,
+        "ECONOMY": -1,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": -1,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록",
+        "단위 농·축협 10일부터 비조합원 가계대출 중단",
+        "일진전기 - 단일판매ㆍ공급계약체결(자율공시)"
+      ],
+      "key_insight": "삼성전자의 기록적인 반도체 실적이 내수 경기 둔화 우려를 상쇄하며 KOSPI에 대한 강한 상승 동력으로 작용하고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "EARNINGS",
+          "description": "KOSPI 시총 1위 기업인 삼성전자의 기록적 실적은 지수 전체에 대한 투자 심리를 크게 개선시켰습니다.",
+          "evidence": "삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록",
+          "market_impact": 5,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "제2금융권의 대출 중단은 시장의 유동성 공급 감소 및 가계 부채 리스크 관리 강화 신호입니다.",
+          "evidence": "단위 농·축협 10일부터 비조합원 가계대출 중단",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "ECONOMY",
+          "description": "지역 창업 생태계의 자금 조달 어려움은 실물 경기 위축이 확산되고 있음을 시사합니다.",
+          "evidence": "강원창업보육센터협의회, 경기 위축으로 자금 확보 어려움",
+          "market_impact": -1,
+          "signal": "BEARISH"
+        }
+      ],
+      "market_sentiment": "BULLISH",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[DART 20260407] 일진전기 - [기재정정]단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+        "[DART 20260407] 일진전기 - 단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+        "[DART 20260407] SK스퀘어 - 자기주식처분결과보고서 | 전자공시",
+        "[DART 20260407] 하이브 - 자기주식처분결과보고서 | 전자공시",
+        "[DART 20260407] 미래에셋증권 - 자기주식취득결과보고서 | 전자공시",
+        "[DART 20260407] 대동 - 자기주식처분결과보고서 | 전자공시",
+        "[DART 20260407] 인스코비 - 기타경영사항(자율공시) | 전자공시",
+        "[Tue, 7 Apr 2026 21:05:56 +0900] [인사] 재정경제부 | 연합뉴스",
+        "[Tue, 7 Apr 2026 19:54:06 +0900] 단위 농·축협 10일부터 비조합원 가계대출 중단 | 연합뉴스",
+        "[Tue, 7 Apr 2026 19:49:21 +0900] 삼천당제약, '핵심 특허 대만기업 보유설'에 \"100% 자사 소유\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 19:31:55 +0900] 솔루스첨단소재 \"룩셈부르크 계열사 주식 784억원에 추가취득\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:32:46 +0900] 삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록 | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:18:52 +0900] 포스코, 협력사 직원 7천명 정규직으로 '직접 고용'(종합) | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:18:38 +0900] 슈프리마, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:04:10 +0900] 강원창업보육센터협의회, 경기 위축으로 자금 확보 어려움 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "내수 경기 위축",
+        "가계 대출 축소",
+        "제2금융권 유동성"
+      ],
+      "sentiment_score": 70,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "삼성전자의 기록적인 메모리 반도체 매출은 KOSPI의 핵심 동력인 반도체 섹터의 강세를 증명합니다.",
+          "impact": "POSITIVE",
+          "theme": "반도체 업황 호조"
+        },
+        {
+          "description": "일부 금융기관의 가계대출 중단과 스타트업 자금난은 국내 실물 경제에 대한 우려를 반영합니다.",
+          "impact": "NEGATIVE",
+          "theme": "내수 유동성 및 경기 위축"
+        }
+      ],
+      "timestamp": "2026-04-07 21:33",
+      "victim_keywords": [
+        "농·축협",
+        "가계대출",
+        "창업"
+      ],
+      "victim_sectors": [
+        "금융 (2금융권)",
+        "내수소비재"
+      ]
+    },
+    "risk_flags": [
+      "내수 경기 위축",
+      "가계 대출 축소",
+      "제2금융권 유동성"
+    ],
+    "sentiment_score": 70,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "금융 (2금융권)",
+      "내수소비재"
+    ]
+  },
+  "produced_at": "2026-04-07T12:35:43.309381+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 75.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-07",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-07T12:35:38.538493+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-9E38D8E8",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

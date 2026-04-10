@@ -1,0 +1,189 @@
+{
+  "generated_at": "2026-04-10 11:55",
+  "intel_data": {
+    "beneficiary_keywords": [
+      "상승"
+    ],
+    "beneficiary_sectors": [],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.58,
+        "strength_score": 21.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      }
+    ],
+    "company_event_bias": {
+      "디바이스": 4,
+      "레이저옵텍": -6,
+      "쓰리에이로직스": 4,
+      "원텍": 3,
+      "캠시스": -6,
+      "한국정보인증": 3
+    },
+    "cross_asset_signals": [],
+    "disclosure_events": [
+      {
+        "category": "LIQUIDITY",
+        "company": "원텍",
+        "event_score": 3,
+        "label": "자사주",
+        "polarity": "POSITIVE",
+        "report_name": "주요사항보고서(자기주식취득신탁계약체결결정)"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "디바이스",
+        "event_score": 2,
+        "label": "무상증자",
+        "polarity": "POSITIVE",
+        "report_name": "주요사항보고서(무상증자결정)"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "디바이스",
+        "event_score": 2,
+        "label": "무상증자",
+        "polarity": "POSITIVE",
+        "report_name": "주권매매거래정지              (무상증자)"
+      },
+      {
+        "category": "EARNINGS",
+        "company": "쓰리에이로직스",
+        "event_score": 4,
+        "label": "수주/판매계약",
+        "polarity": "POSITIVE",
+        "report_name": "단일판매ㆍ공급계약체결"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "레이저옵텍",
+        "event_score": -6,
+        "label": "유상증자",
+        "polarity": "NEGATIVE",
+        "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모)"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "캠시스",
+        "event_score": -6,
+        "label": "유상증자",
+        "polarity": "NEGATIVE",
+        "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "한국정보인증",
+        "event_score": 3,
+        "label": "자사주",
+        "polarity": "POSITIVE",
+        "report_name": "주요사항보고서(자기주식취득신탁계약체결결정)"
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 1,
+      "ECONOMY": 0,
+      "FX": -2,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": 2,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": -2,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "[Fri, 10 Apr 2026 11:23:23 +0900] 코스피, 장중 5,900대 터치 후 2% 오름세 지속…코스닥도 상승 | 연합뉴스",
+      "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "KOSDAQ 기준 최근 헤드라인이 혼재되어 있어 섹터 선택이 중요합니다. | Gemini timeout, fallback mode active",
+    "macro_drivers": [
+      {
+        "category": "FX",
+        "description": "FX 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다.",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "RATES",
+        "description": "RATES 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다.",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "HIGH",
+    "raw_headlines": [
+      "[Fri, 10 Apr 2026 11:23:23 +0900] 코스피, 장중 5,900대 터치 후 2% 오름세 지속…코스닥도 상승 | 연합뉴스",
+      "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시",
+      "[DART 20260410] 쓰리에이로직스 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 레이저옵텍 - 유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모) | 전자공시",
+      "[DART 20260410] 캠시스 - 유상증자또는주식관련사채등의청약결과(자율공시) | 전자공시",
+      "[DART 20260410] 한국정보인증 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+      "[Fri, 10 Apr 2026 11:47:40 +0900] [속보] 한은총재 \"재임중 금리결정엔 후회 없어…서학개미 발언은 후회\" | 연합뉴스",
+      "[Fri, 10 Apr 2026 11:42:30 +0900] 국고채 금리 혼조세…3년물 장중 연 3.345% | 연합뉴스",
+      "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
+      "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달"
+    ],
+    "risk_flags": [
+      "FX",
+      "RATES"
+    ],
+    "sentiment_score": 8,
+    "source": "rss_rule_based_timeout",
+    "theme_evidence": {
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.58,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 21.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-10T02:55:10.104402+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "themes": [],
+    "timestamp": "2026-04-10 11:55",
+    "victim_keywords": [
+      "불안",
+      "충격"
+    ],
+    "victim_sectors": [
+      "성장주"
+    ]
+  },
+  "market": "KOSDAQ",
+  "run_id": "RUN-C75DBCA2"
+}

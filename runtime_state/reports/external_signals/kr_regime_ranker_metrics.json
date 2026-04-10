@@ -1,0 +1,44 @@
+{
+  "KOSDAQ:BEAR": {
+    "samples": 818,
+    "mae": 8.407136898408144,
+    "auc": 0.5070893791824025,
+    "test_samples": 246,
+    "enabled": false
+  },
+  "KOSDAQ:BULL": {
+    "samples": 164,
+    "mae": 9.304376746578265,
+    "auc": 0.8794567062818336,
+    "test_samples": 50,
+    "enabled": true
+  },
+  "KOSDAQ:NEUTRAL": {
+    "samples": 119,
+    "mae": 9.885063186755614,
+    "auc": 0.5102880658436214,
+    "test_samples": 36,
+    "enabled": false
+  },
+  "KOSPI:BEAR": {
+    "samples": 353,
+    "mae": 7.444575721858628,
+    "auc": 0.8844603672189878,
+    "test_samples": 106,
+    "enabled": true
+  },
+  "KOSPI:BULL": {
+    "samples": 909,
+    "mae": 6.911070489834729,
+    "auc": 0.9372666373819459,
+    "test_samples": 273,
+    "enabled": true
+  },
+  "KOSPI:NEUTRAL": {
+    "samples": 83,
+    "mae": 6.509006374953692,
+    "auc": 0.5238095238095237,
+    "test_samples": 25,
+    "enabled": false
+  }
+}

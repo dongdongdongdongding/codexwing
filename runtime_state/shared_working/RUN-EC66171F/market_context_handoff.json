@@ -1,0 +1,102 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_HIGH"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 25.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_HIGH"
+      ],
+      "krw": 1507.06005859375,
+      "krw_change_1d": -0.6,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 25,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 2.91,
+      "tnx": 4.310999870300293,
+      "tnx_change_1d": -0.71,
+      "vix": 25.25,
+      "vix_change_1d": -17.51
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "반도체",
+      "에너지"
+    ],
+    "key_insight": "최근 헤드라인이 혼재되어 있어 섹터 선택이 중요합니다. (KOSPI)",
+    "market_sentiment": "MIXED",
+    "raw": {
+      "beneficiary_keywords": [
+        "상승"
+      ],
+      "beneficiary_sectors": [
+        "반도체",
+        "에너지"
+      ],
+      "key_insight": "최근 헤드라인이 혼재되어 있어 섹터 선택이 중요합니다. (KOSPI)",
+      "market_sentiment": "MIXED",
+      "raw_headlines": [
+        "[Mon, 30 Mar 2026 08:51:59 GMT] 국내 증시 주도하는 ‘큰손 개미’는 서울 거주 50대 남성 - v.daum.net",
+        "[Wed, 01 Apr 2026 01:41:39 GMT] 3월 한 달 만에 840조 원 증발한 한국 증시, 진짜 괜찮은 거야? 📉💸 - 뉴닉",
+        "[Tue, 31 Mar 2026 09:44:19 GMT] KRX-홍콩 항셍지수회사, 공동지수 개발 ‘글로벌 투자 유치’ - 부산일보",
+        "[Sun, 22 Mar 2026 07:00:00 GMT] 韓증시에 드리운 '버블' 그림자…곳곳서 나오는 증시과열 경고음 - 연합뉴스",
+        "[Tue, 31 Mar 2026 07:18:16 GMT] \"한국 주식엔 손 안대…빛났던 韓 증시, 부진한 투자처로 밀려났다\" - 아시아경제",
+        "[Wed, 25 Mar 2026 15:14:06 GMT] [글로벌 포커스] 이란전쟁이 키운 지정학의 변동성 - v.daum.net",
+        "[Thu, 26 Mar 2026 16:06:49 GMT] 중동 지정학 긴장과 한국 경제: 외교와 군사력 사이의 딜레마 - 브랜드경제신문",
+        "[Thu, 25 Dec 2025 08:00:00 GMT] 성장 둔화에 자본시장發 위기, AI 변수까지…2026년 글로벌 경제 키워드는 - 뉴시안",
+        "[Thu, 12 Mar 2026 07:00:00 GMT] “에너지 가격과 지정학이 다시 흔든 세계 경제”…글로벌 시장, 새로운 불확실성 국면 진입 - 한국경제",
+        "[Fri, 13 Feb 2026 08:00:00 GMT] [랭킹뉴스] “지정학 충돌이 최대 리스크”…2026 세계경제포럼 보고서가 꼽은 글로벌 위험 순위 - 스타트업엔",
+        "[Tue, 31 Mar 2026 20:06:00 GMT] 되살아난 종전 가능성에 급등한 뉴욕 증시... 나스닥 3.8% 상승 - 조선일보",
+        "[Tue, 31 Mar 2026 21:09:45 GMT] 종전 낙관론에 뉴욕증시 10개월만에 최대폭 상승…나스닥 3.8%↑(종합) - 연합뉴스 한민족센터",
+        "[Tue, 31 Mar 2026 22:17:41 GMT] 종전 기대감에 뉴욕증시 상승…나스닥 3.8%↑ - 중소기업신문",
+        "[Tue, 31 Mar 2026 23:35:00 GMT] [뉴욕증시] 이란 종전 기대감에 급등…나스닥 3.8%↑ - 신아일보",
+        "[Tue, 31 Mar 2026 21:36:32 GMT] 뉴욕증시, 종전 기대감에 급등…나스닥 3.8%↑ - 여성신문"
+      ],
+      "sentiment_score": -8,
+      "source": "rss_rule_based",
+      "themes": [],
+      "timestamp": "2026-04-01 14:37",
+      "victim_keywords": [
+        "경고",
+        "긴장",
+        "리스크",
+        "전쟁"
+      ],
+      "victim_sectors": [
+        "소비재",
+        "수출민감주"
+      ]
+    },
+    "sentiment_score": -8,
+    "source": "rss_rule_based",
+    "status": "live_intel",
+    "victim_sectors": [
+      "소비재",
+      "수출민감주"
+    ]
+  },
+  "produced_at": "2026-04-01T05:37:03.954262+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 75.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T05:36:56.122073+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-EC66171F",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,57 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json",
+    "outcome_health.json",
+    "profile_diagnostics.json"
+  ],
+  "failure_summary": "Pre-outcome quality risk detected. See tickets for agent-specific fixes.",
+  "likely_causes": [
+    "Scanner produced zero candidates; filter or data pipeline mismatch is likely.",
+    "Sample size is small; confidence may be overstated."
+  ],
+  "produced_at": "2026-04-09T10:09:34.782880+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T10:09:29.492537+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-B59056DC",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-04-09T10:09:34.782847+00:00",
+      "hypothesis": "Threshold coupling or upstream data fetch failures can collapse candidate output.",
+      "owner_agent": "scanner_agent",
+      "owner_module": "app.py|auto_bot.py scanner bridge",
+      "priority": "high",
+      "requested_change": "Add per-filter reject counters and surface them in scanner_trace.",
+      "run_id": "RUN-B59056DC",
+      "status": "open",
+      "ticket_id": "TKT-09772F0C",
+      "title": "Investigate zero-candidate scan runs"
+    },
+    {
+      "created_at": "2026-04-09T10:09:34.782857+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-B59056DC",
+      "status": "open",
+      "ticket_id": "TKT-D57CA767",
+      "title": "Strengthen small-sample safeguards"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 3,
+    "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT"
+  },
+  "current_total_scans": 5,
+  "exception_leaders": {
+    "applied": true,
+    "considered_filtered_symbols": 5,
+    "tickers": [
+      "000250.KQ",
+      "086520.KQ",
+      "277810.KQ"
+    ],
+    "watchlist_meta": [
+      {
+        "alpha_score": 19.0,
+        "conviction_score": 33.7,
+        "entry_reference_price": null,
+        "exception_score": 76.0,
+        "expires_at": "2026-04-10T13:58:15.860739+00:00",
+        "generated_at": "2026-04-07T13:58:15.860739+00:00",
+        "horizon_days": 3,
+        "market_gate": "GREEN",
+        "prob_5": 19.2,
+        "prob_clean": 11.3,
+        "profile_adjustment": 22.0,
+        "profile_avg_5d_pct": 39.22344668249112,
+        "profile_confidence": 1.0,
+        "profile_policy": "POSITIVE",
+        "profile_signals": 9,
+        "profile_win_5d_pct": 100.0,
+        "real_trend": "UP",
+        "reason": "exception_leader_watchlist",
+        "regime": "BULL",
+        "reject_reason": "precision_gate_t3_low_ml_support",
+        "risk_label": "EXCEPTION_LEADER",
+        "source_profile": "exception_leader",
+        "stock_name": "삼천당제약",
+        "ticker": "000250.KQ",
+        "tier_sort": 3
+      },
+      {
+        "alpha_score": 19.0,
+        "conviction_score": 24.1,
+        "entry_reference_price": null,
+        "exception_score": 73.0,
+        "expires_at": "2026-04-10T13:58:15.860739+00:00",
+        "generated_at": "2026-04-07T13:58:15.860739+00:00",
+        "horizon_days": 3,
+        "market_gate": "GREEN",
+        "prob_5": 18.8,
+        "prob_clean": 26.2,
+        "profile_adjustment": 22.0,
+        "profile_avg_5d_pct": 16.832072266712306,
+        "profile_confidence": 1.0,
+        "profile_policy": "POSITIVE",
+        "profile_signals": 9,
+        "profile_win_5d_pct": 77.77777777777779,
+        "real_trend": "DOWN",
+        "reason": "exception_leader_watchlist",
+        "regime": "BULL",
+        "reject_reason": "precision_gate_t3_low_ml_support",
+        "risk_label": "EXCEPTION_LEADER",
+        "source_profile": "exception_leader",
+        "stock_name": "에코프로",
+        "ticker": "086520.KQ",
+        "tier_sort": 3
+      },
+      {
+        "alpha_score": 36.0,
+        "conviction_score": 29.1,
+        "entry_reference_price": null,
+        "exception_score": 68.0,
+        "expires_at": "2026-04-10T13:58:15.860739+00:00",
+        "generated_at": "2026-04-07T13:58:15.860739+00:00",
+        "horizon_days": 3,
+        "market_gate": "GREEN",
+        "prob_5": 21.7,
+        "prob_clean": 23.6,
+        "profile_adjustment": 22.0,
+        "profile_avg_5d_pct": 25.924452750348653,
+        "profile_confidence": 1.0,
+        "profile_policy": "POSITIVE",
+        "profile_signals": 9,
+        "profile_win_5d_pct": 100.0,
+        "real_trend": "DOWN",
+        "reason": "exception_leader_watchlist",
+        "regime": "BULL",
+        "reject_reason": "precision_gate_t3_low_ml_support",
+        "risk_label": "EXCEPTION_LEADER",
+        "source_profile": "exception_leader",
+        "stock_name": "레인보우로보틱스",
+        "ticker": "277810.KQ",
+        "tier_sort": 3
+      }
+    ]
+  },
+  "fallback_watchlist": {
+    "applied": false,
+    "considered_dev_runs": 0,
+    "source_profile": "dev",
+    "source_run_id": null,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 10,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-04-07T13:58:14.289496+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 20,
+  "history_window_runs_seen": 80,
+  "market": "KOSDAQ",
+  "near_miss_watchlist": {
+    "applied": true,
+    "considered_filtered_symbols": 5,
+    "tickers": [
+      "247540.KQ"
+    ],
+    "watchlist_meta": [
+      {
+        "alpha_score": 38.0,
+        "conviction_score": 0.0,
+        "decision_score": 22.0,
+        "entry_reference_price": null,
+        "expires_at": "2026-04-09T13:58:15.032228+00:00",
+        "generated_at": "2026-04-07T13:58:15.032228+00:00",
+        "horizon_days": 2,
+        "prob_5": 0.0,
+        "prob_clean": 0.0,
+        "real_trend": "DOWN",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "kr_hard_filter_fail",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "stock_name": "에코프로비엠",
+        "ticker": "247540.KQ"
+      }
+    ]
+  },
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 60,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 60,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    },
+    "prod": {
+      "filtered_count": 258,
+      "result_count": 3,
+      "runs": 19,
+      "top_reject_reason": {
+        "count": 73,
+        "reason": "KR_HARD_FILTER_FAIL"
+      },
+      "total_scans": 273,
+      "weighted_filtered_rate_pct": 94.51,
+      "weighted_pass_rate_pct": 1.1,
+      "zero_result_runs": 18
+    }
+  },
+  "run_id": "RUN-95944B60",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "GREEN",
+    "market_policy_avoid_count": 0,
+    "mode": "favorable",
+    "policy": {
+      "ai_min": 0,
+      "alpha_min": 25,
+      "avg_5d_pct": 6.690194332757271,
+      "mode": "favorable",
+      "objective": 77.54327935609405,
+      "samples": 143,
+      "win_5d_pct": 68.53146853146853
+    },
+    "total_rejects": 5,
+    "watchlist_count": 4
+  }
+}

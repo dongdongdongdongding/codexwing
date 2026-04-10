@@ -1,0 +1,16 @@
+{
+  "tickets": [
+    {
+      "created_at": "2026-04-01T02:07:58.915993+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-202CA318",
+      "status": "open",
+      "ticket_id": "TKT-DEBD0BFB",
+      "title": "Strengthen small-sample safeguards"
+    }
+  ]
+}

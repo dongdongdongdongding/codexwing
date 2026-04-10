@@ -1,0 +1,74 @@
+{
+  "avoid_list": [],
+  "decisions": [
+    {
+      "alpha_score": null,
+      "confidence": 0.885,
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_score": 87.1,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "phase25_prob": 2.4,
+      "phase25_recommended_threshold": 25.0,
+      "phase25_shadow_prob": 56.0,
+      "phase25_shadow_variant": "phase25_kr_swing_lightgbm",
+      "phase25_variant": "phase25_kr_swing_xgboost",
+      "primary_theme": "2차전지",
+      "priority_rank": 1,
+      "prob_5": 25.8,
+      "prob_clean": 34.6,
+      "rationale": [
+        "scanner_score=87.1",
+        "rank=1",
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세) | ThemeRoute | Ranker:30.1%",
+        "추세: UP",
+        "theme=2차전지"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#006400.KS",
+      "scan_mode": "SWING",
+      "secondary_themes": [],
+      "stock_name": "삼성SDI",
+      "strategy_family": "KR_CORE",
+      "theme_inference_status": "inferred",
+      "theme_rationale": [
+        "THEME_BENEFICIARY",
+        "THEME_LEADER_TOP1"
+      ],
+      "theme_risk": [],
+      "theme_routing_path": "theme_routed",
+      "theme_source": "stock_master",
+      "ticker": "006400.KS",
+      "warnings": []
+    }
+  ],
+  "global_warnings": [
+    {
+      "code": "THEME_ROUTE_PARTIAL_OVERRIDE",
+      "message": "Planner preserved 1 theme-routed leader candidate(s) despite watchlist-only policy because beneficiary theme leadership remained strong.",
+      "severity": "warning"
+    },
+    {
+      "code": "MARKET_POLICY_WATCHLIST_ONLY",
+      "message": "Planner downgraded active recommendations to watchlist-only because learned policy for KOSPI/RED is avoid.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-09T16:55:40.872290+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T16:55:39.589542+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-2EE35F2A",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "watchlist": [],
+  "watchlist_meta": []
+}

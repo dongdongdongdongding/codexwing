@@ -1,0 +1,239 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+      "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "3.0",
+      "AG_AMEX_MOONSHOT_MAX_PRICE": "30",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA": "22",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "34",
+      "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "3.0",
+      "AG_AMEX_MOONSHOT_MIN_PRICE": "0.5",
+      "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "5.0",
+      "AG_AMEX_MOONSHOT_MIN_RS": "-15.0",
+      "AG_AMEX_MOONSHOT_MIN_SCORE": "56",
+      "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.5",
+      "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "72",
+      "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+      "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "25",
+      "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+      "AG_AMEX_MOONSHOT_SUB7_BONUS": "8.0",
+      "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "6.0",
+      "AG_AMEX_RED_MIN_CONVICTION": "52",
+      "AG_AMEX_SCAN_MIN_CLEAN_PROB": "34",
+      "AG_AMEX_SCAN_MIN_PROB": "38",
+      "AG_INTRADAY_AMEX_MIN_TURNOVER": "300000",
+      "AG_INTRADAY_AMEX_MIN_VOLUME": "15000",
+      "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "200000000",
+      "AG_INTRADAY_KOSPI_MIN_TURNOVER": "500000000",
+      "AG_INTRADAY_KR_MIN_VOLUME": "15000",
+      "AG_INTRADAY_US_MIN_TURNOVER": "1000000",
+      "AG_INTRADAY_US_MIN_VOLUME": "30000",
+      "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "40",
+      "AG_KOSDAQ_MIN_TURNOVER": "5000000000",
+      "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "40",
+      "AG_KOSDAQ_RED_MIN_CONVICTION": "60",
+      "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "3000000000",
+      "AG_KOSPI_MIN_TURNOVER": "8000000000",
+      "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "8000000000",
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "20",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "30",
+      "AG_US_SIGNAL_LOOKBACK": "20",
+      "AG_US_SIGNAL_MIN_HITS": "0"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 5,
+      "filtered_symbols": [
+        "005930.KS",
+        "000660.KS",
+        "373220.KS",
+        "005380.KS",
+        "012450.KS"
+      ],
+      "reject_details_by_symbol": {
+        "000660.KS": [
+          {
+            "ai_prob": 18.9,
+            "alpha_score": 100.0,
+            "market_gate": "RED",
+            "mode": "avoid",
+            "pf": 1.36,
+            "policy": {
+              "ai_min": 35,
+              "alpha_min": 45,
+              "avg_5d_pct": 6.3555079577746865,
+              "mode": "avoid",
+              "objective": 50.35087312220677,
+              "samples": 3,
+              "win_5d_pct": 33.33333333333333
+            },
+            "real_trend": "UP",
+            "signal_hits": 2,
+            "stage": "market_policy",
+            "stock_name": "SK하이닉스",
+            "ticker": "000660.KS",
+            "wr": 49.25
+          }
+        ],
+        "005380.KS": [
+          {
+            "ai_prob": 25.4,
+            "alpha_score": 76.0,
+            "market_gate": "RED",
+            "mode": "avoid",
+            "pf": 1.13,
+            "policy": {
+              "ai_min": 35,
+              "alpha_min": 45,
+              "avg_5d_pct": 6.3555079577746865,
+              "mode": "avoid",
+              "objective": 50.35087312220677,
+              "samples": 3,
+              "win_5d_pct": 33.33333333333333
+            },
+            "real_trend": "DOWN",
+            "signal_hits": 1,
+            "stage": "market_policy",
+            "stock_name": "현대차",
+            "ticker": "005380.KS",
+            "wr": 40.28
+          }
+        ],
+        "005930.KS": [
+          {
+            "ai_prob": 26.1,
+            "alpha_score": 100.0,
+            "market_gate": "RED",
+            "mode": "avoid",
+            "pf": 1.32,
+            "policy": {
+              "ai_min": 35,
+              "alpha_min": 45,
+              "avg_5d_pct": 6.3555079577746865,
+              "mode": "avoid",
+              "objective": 50.35087312220677,
+              "samples": 3,
+              "win_5d_pct": 33.33333333333333
+            },
+            "real_trend": "UP",
+            "signal_hits": 3,
+            "stage": "market_policy",
+            "stock_name": "삼성전자",
+            "ticker": "005930.KS",
+            "wr": 53.33
+          }
+        ],
+        "012450.KS": [
+          {
+            "ai_prob": 25.5,
+            "alpha_score": 100.0,
+            "market_gate": "RED",
+            "mode": "avoid",
+            "pf": 1.68,
+            "policy": {
+              "ai_min": 35,
+              "alpha_min": 45,
+              "avg_5d_pct": 6.3555079577746865,
+              "mode": "avoid",
+              "objective": 50.35087312220677,
+              "samples": 3,
+              "win_5d_pct": 33.33333333333333
+            },
+            "real_trend": "UP",
+            "signal_hits": 5,
+            "stage": "market_policy",
+            "stock_name": "한화에어로스페이스",
+            "ticker": "012450.KS",
+            "wr": 55.09
+          }
+        ],
+        "373220.KS": [
+          {
+            "is_market_leader": false,
+            "ml_prob": 18.6,
+            "pf": 0.59,
+            "signal_hits": 1,
+            "signal_lookback": 10,
+            "stage": "baseline_filter",
+            "stock_name": "LG에너지솔루션",
+            "strategy_type": "WAIT",
+            "ticker": "373220.KS",
+            "wr": 38.1
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "KR_BASELINE_FILTER_FAIL": 1,
+        "MARKET_POLICY_AVOID": 4
+      },
+      "reject_reasons_by_symbol": {
+        "000660.KS": "MARKET_POLICY_AVOID",
+        "005380.KS": "MARKET_POLICY_AVOID",
+        "005930.KS": "MARKET_POLICY_AVOID",
+        "012450.KS": "MARKET_POLICY_AVOID",
+        "373220.KS": "KR_BASELINE_FILTER_FAIL"
+      },
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "dev",
+    "gate_config": {
+      "us_hard_filter": null,
+      "us_signal_window": null
+    },
+    "macro_ctx": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1473.22998046875,
+      "krw_change_1d": -1.73,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.269000053405762,
+      "tnx_change_1d": -0.51,
+      "vix": 20.110000610351562,
+      "vix_change_1d": -4.42
+    },
+    "market": "KOSPI",
+    "market_gate": {
+      "gate": "RED",
+      "kosdaq_chg": -1.3686900260625816,
+      "kospi_chg": -1.8241128255630894,
+      "live_mode": false,
+      "msg": "종가 하락장 경보: KOSPI -1.82% / KOSDAQ -1.37% — 신규 매수 자제 [hourly_fallback / hourly_fallback]",
+      "primary_chg": -1.8241128255630894,
+      "primary_label": "KOSPI",
+      "primary_session_date": "2026-04-09",
+      "primary_source": "hourly_fallback",
+      "region": "KR",
+      "secondary_chg": -1.3686900260625816,
+      "secondary_label": "KOSDAQ",
+      "secondary_session_date": "2026-04-09",
+      "secondary_source": "hourly_fallback",
+      "selected_market": "KOSPI",
+      "theme_exception_allowance": true
+    },
+    "regime": {
+      "desc": "상승장 (현재>5523>5487)",
+      "emoji": "🟢",
+      "regime": "BULL"
+    },
+    "scan_mode": "SWING",
+    "strategy_family": "KR_CORE",
+    "total_scans": 5,
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: MARKET_POLICY_AVOID (4).",
+        "severity": "warning"
+      }
+    ]
+  },
+  "results": []
+}

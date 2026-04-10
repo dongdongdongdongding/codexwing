@@ -1,0 +1,19 @@
+{
+  "code_version": "amex-moonshot-cycle",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-31555E01/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-31555E01/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-31555E01/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-31555E01/market_context_handoff.json",
+    "outcome_health": "runtime_state/shared_working/RUN-31555E01/outcome_health.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-31555E01/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-31555E01/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-31555E01/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-31555E01/realized_outcomes.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-31555E01/scanner_handoff.json"
+  },
+  "market": "AMEX",
+  "model_version": "amex-research-baseline",
+  "run_id": "RUN-31555E01",
+  "strategy_version": "amex-moonshot-v1"
+}

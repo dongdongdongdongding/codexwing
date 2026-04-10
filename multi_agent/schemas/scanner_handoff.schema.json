@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scanner_handoff.schema.json",
+  "title": "ScannerHandoff",
+  "type": "object",
+  "required": ["run_context", "candidates", "summary", "warnings", "produced_at"],
+  "properties": {
+    "run_context": {"type": "object"},
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "score", "reasons", "feature_snapshot", "score_breakdown", "warnings"],
+        "properties": {
+          "ticker": {"type": "string"},
+          "score": {"type": "number"},
+          "reasons": {"type": "array", "items": {"type": "string"}},
+          "feature_snapshot": {"type": "object"},
+          "score_breakdown": {"type": "object"},
+          "theme_context": {"type": "object"},
+          "leader_metrics": {"type": "object"},
+          "routing_path": {"type": "string"},
+          "warnings": {"type": "array", "items": {"type": "object"}}
+        }
+      }
+    },
+    "summary": {"type": "object"},
+    "warnings": {"type": "array", "items": {"type": "object"}},
+    "produced_at": {"type": "string"}
+  }
+}

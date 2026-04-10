@@ -1,0 +1,60 @@
+{
+  "action": "dataset_refresh",
+  "collection_stats": {
+    "buckets": {
+      "exception_leader": 202,
+      "ignored": 45,
+      "picked": 1427,
+      "watchlist": 280
+    },
+    "markets": {
+      "AMEX": 81,
+      "KOSDAQ": 1346,
+      "KOSPI": 443,
+      "KR": 1,
+      "NASDAQ": 82,
+      "US": 1
+    },
+    "runs_seen": 201,
+    "runs_with_outcomes": 113,
+    "statuses": {
+      "EXPIRED": 20,
+      "PENDING": 704,
+      "RESOLVED": 1230
+    }
+  },
+  "commands": [
+    {
+      "cmd": [
+        "python3",
+        "multi_agent/tools/export_scan_archive_learning_dataset.py"
+      ],
+      "finished_at": "2026-04-09T14:50:13.157671+00:00",
+      "ok": true,
+      "returncode": 0,
+      "started_at": "2026-04-09T14:50:06.018159+00:00",
+      "stderr_tail": "/Users/dongdong/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(",
+      "stdout_tail": "    \"outcome_status\",\n    \"phase25_recommended_threshold\",\n    \"phase25_shadow_prob\",\n    \"phase25_shadow_variant\",\n    \"phase25_variant\",\n    \"position\",\n    \"price_band\",\n    \"primary_theme\",\n    \"priority_rank\",\n    \"quality_flags\",\n    \"recommended_at\",\n    \"return_1d_pct\",\n    \"return_1h_pct\",\n    \"return_2d_pct\",\n    \"return_30m_pct\",\n    \"return_3d_pct\",\n    \"return_5d_pct\",\n    \"return_7d_pct\",\n    \"return_close_pct\",\n    \"run_id\",\n    \"scan_mode\",\n    \"secondary_themes\",\n    \"source_ref\",\n    \"stock_name\",\n    \"strategy\",\n    \"strategy_family\",\n    \"surge\",\n    \"tech_score\",\n    \"theme_inference_status\",\n    \"theme_routing_path\",\n    \"theme_source\",\n    \"ticker\",\n    \"tier\",\n    \"trend\",\n    \"validation_excluded\",\n    \"volume\",\n    \"whale_score\",\n    \"win_rate\"\n  ]\n}"
+    }
+  ],
+  "generated_at": "2026-04-09T14:50:13.157710+00:00",
+  "minimum_required_new_resolved": 20,
+  "mode": "nightly",
+  "new_resolved_since_last_cycle": 71,
+  "reason": "nightly_learning_dataset_refreshed",
+  "resolved_by_bucket": {
+    "exception_leader": 112,
+    "ignored": 35,
+    "picked": 900,
+    "watchlist": 183
+  },
+  "resolved_by_market": {
+    "AMEX": 71,
+    "KOSDAQ": 802,
+    "KOSPI": 283,
+    "KR": 1,
+    "NASDAQ": 72,
+    "US": 1
+  },
+  "total_resolved": 1230
+}

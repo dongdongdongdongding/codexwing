@@ -1,0 +1,54 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 2,
+      "label": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+      "share": 0.4
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "🚀 AMEX Moonshot | 🎣 RSI_DIV",
+      "share": 0.2
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV | ⚡ Momentum",
+      "share": 0.2
+    }
+  ],
+  "concentration": {
+    "candidate_count": 5,
+    "strategy_distribution": {
+      "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV": 1,
+      "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV | ⚡ Momentum": 1,
+      "🚀 AMEX Moonshot | 🎣 RSI_DIV": 1,
+      "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum": 2
+    },
+    "top_strategy": "🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum",
+    "top_strategy_share": 0.4,
+    "trend_distribution": {
+      "DOWN": 5
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "produced_at": "2026-04-01T14:34:50.476719+00:00",
+  "quality_notes": [
+    "Total candidates: 5",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: 🚀 AMEX Moonshot | 🎣 RSI_DIV | ⚡ Momentum (2/5)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:34:45.653368+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-B1F21580",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "warnings": []
+}

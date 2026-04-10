@@ -1,0 +1,34 @@
+{
+  "agents_executed": [
+    "scanner_agent",
+    "aggregation_agent",
+    "backtest_learning_agent",
+    "market_news_context_agent",
+    "pm_planner_agent"
+  ],
+  "market": "KOSPI",
+  "planner": {
+    "decision_count": 7,
+    "warning_codes": [],
+    "watchlist_count": 6
+  },
+  "postmortem": {
+    "likely_causes": []
+  },
+  "run_id": "RUN-9E38D8E8",
+  "scanner": {
+    "candidate_count": 7,
+    "reject_reason_counts": {
+      "KR_BASELINE_FILTER_FAIL": 25,
+      "KR_HARD_FILTER_FAIL": 15,
+      "KR_SIGNAL_WINDOW_FAIL": 27,
+      "LIQUIDITY_FILTER_FAIL": 4,
+      "PRECISION_GATE_T3_LOW_ML_SUPPORT": 80,
+      "PRECISION_GATE_TREND_MISMATCH": 3
+    },
+    "top_reject_reason": {}
+  },
+  "status": "completed",
+  "task_id": "TASK-25128C68",
+  "task_kind": "scan_pipeline"
+}

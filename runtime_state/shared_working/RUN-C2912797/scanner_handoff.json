@@ -1,0 +1,64 @@
+{
+  "candidates": [
+    {
+      "feature_snapshot": {
+        "alpha_score": null,
+        "antigrav": null,
+        "decision_score": 77.7,
+        "entry_reference_price": 100000,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 57.1,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "position": null,
+        "prob_5": "63.2%",
+        "prob_clean": null,
+        "real_trend": "UP",
+        "scan_mode": "INTRADAY",
+        "stock_name": "에코프로비엠",
+        "strategy_family": "KR_CORE",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": null,
+        "whale": null
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 77.7,
+      "score_breakdown": {
+        "antigrav": 0.0,
+        "decision_score": 77.7,
+        "whale_score": 0.0
+      },
+      "ticker": "247540.KQ",
+      "warnings": []
+    }
+  ],
+  "produced_at": "2026-04-07T14:33:20.550672+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-07",
+    "code_version": "verify-phase25-meta-synth-v2",
+    "created_at": "2026-04-07T14:33:20.550648+00:00",
+    "market": "KOSDAQ",
+    "model_version": "phase25-kr-intraday-xgb",
+    "run_id": "RUN-C2912797",
+    "strategy_version": "verify-phase25-meta-synthetic"
+  },
+  "summary": {
+    "candidate_count": 1,
+    "input_meta": {
+      "market_gate": {
+        "gate": "GREEN",
+        "msg": "test"
+      },
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_CORE"
+    },
+    "source": "synthetic-verify",
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

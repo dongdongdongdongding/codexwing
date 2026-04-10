@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "40",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+      "AG_US_SIGNAL_LOOKBACK": "10",
+      "AG_US_SIGNAL_MIN_HITS": "1"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 5,
+      "filtered_symbols": [
+        "AAPL",
+        "META",
+        "MSFT",
+        "NVDA",
+        "AMZN"
+      ],
+      "reject_details_by_symbol": {
+        "AAPL": [
+          {
+            "alpha_score": 36.0,
+            "hard_filter_cfg": {
+              "amex_rs_min": -5.0,
+              "min_alpha": 40.0,
+              "min_alpha_down": 55.0
+            },
+            "is_amex": false,
+            "real_trend": "DOWN",
+            "reason": "US_HARD_FILTER_TREND_ALPHA",
+            "rs_vs_spy": 1.79,
+            "strategy_type": "WAIT"
+          }
+        ],
+        "AMZN": [
+          {
+            "lookback": 10,
+            "min_hits": 1,
+            "reason": "US_SIGNAL_WINDOW_FAIL",
+            "signal_hits": 0
+          }
+        ],
+        "META": [
+          {
+            "lookback": 10,
+            "min_hits": 1,
+            "reason": "US_SIGNAL_WINDOW_FAIL",
+            "signal_hits": 0
+          }
+        ],
+        "MSFT": [
+          {
+            "alpha_score": 38.0,
+            "hard_filter_cfg": {
+              "amex_rs_min": -5.0,
+              "min_alpha": 40.0,
+              "min_alpha_down": 55.0
+            },
+            "is_amex": false,
+            "real_trend": "DOWN",
+            "reason": "US_HARD_FILTER_TREND_ALPHA",
+            "rs_vs_spy": -4.32,
+            "strategy_type": "WAIT"
+          }
+        ],
+        "NVDA": [
+          {
+            "lookback": 10,
+            "min_hits": 1,
+            "reason": "US_SIGNAL_WINDOW_FAIL",
+            "signal_hits": 0
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "US_HARD_FILTER_TREND_ALPHA": 2,
+        "US_SIGNAL_WINDOW_FAIL": 3
+      },
+      "reject_reasons_by_symbol": {
+        "AAPL": "US_HARD_FILTER_TREND_ALPHA",
+        "AMZN": "US_SIGNAL_WINDOW_FAIL",
+        "META": "US_SIGNAL_WINDOW_FAIL",
+        "MSFT": "US_HARD_FILTER_TREND_ALPHA",
+        "NVDA": "US_SIGNAL_WINDOW_FAIL"
+      },
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 40.0,
+        "min_alpha_down": 55.0
+      },
+      "us_signal_window": {
+        "lookback": 10,
+        "min_hits": 1
+      }
+    },
+    "macro_ctx": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_SOFTENING"
+      ],
+      "krw": 1517.6800537109375,
+      "krw_change_1d": 0.62,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 30,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.331999778747559,
+      "tnx_change_1d": -2.43,
+      "vix": 30.0,
+      "vix_change_1d": -3.38
+    },
+    "market": "NASDAQ",
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": NaN,
+      "kospi_chg": NaN,
+      "msg": "시장 정상: KOSPI +nan% / KOSDAQ +nan% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6652<6803)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "total_scans": 5,
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: US_SIGNAL_WINDOW_FAIL (3).",
+        "severity": "warning"
+      }
+    ]
+  },
+  "results": []
+}

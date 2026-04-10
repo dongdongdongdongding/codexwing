@@ -1,0 +1,291 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1479.4599609375,
+      "krw_change_1d": -1.88,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.04,
+      "tnx": 4.3429999351501465,
+      "tnx_change_1d": 0.18,
+      "vix": 20.530000686645508,
+      "vix_change_1d": -20.36
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "제약/바이오",
+      "건설",
+      "유통"
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": -4,
+      "LIQUIDITY": -2,
+      "OIL": -3,
+      "POLITICS": 1,
+      "RATES": 0,
+      "REGULATION": -1
+    },
+    "key_insight": "중동 지정학 리스크와 고유가 부담이 시장 전반을 압박하는 가운데, 일부 개별 기업의 호재가 지수 하단을 지지하는 혼조세를 보임.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "이란의 호르무즈 해협 통행료 추진 가능성은 원유 수입 및 수출 의존도가 높은 한국 증시에 직접적인 위협 요인.",
+        "evidence": "구윤철, 이란 호르무즈 통행료 추진에 \"현재는 지급 검토 안 해\"",
+        "market_impact": -4,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "OIL",
+        "description": "정부가 물류업계의 부담을 논의할 정도로 고유가가 KOSPI 기업들의 비용 부담을 가중시키고 있음.",
+        "evidence": "물류업계 만난 李대통령…'고유가 부담 추가대책' 검토 지시",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "POLITICS",
+        "description": "정부가 고유가 부담에 대한 대책을 검토하고 있어 시장 충격을 일부 완화할 가능성이 있음.",
+        "evidence": "물류업계 만난 李대통령…'고유가 부담 추가대책' 검토 지시",
+        "market_impact": 1,
+        "signal": "NEUTRAL"
+      },
+      {
+        "category": "EARNINGS",
+        "description": "JW중외제약 급등, 한화오션/삼호개발의 계약 정정 공시 등 개별 기업의 실적 관련 뉴스가 혼재.",
+        "evidence": "JW중외제약, 애프터마켓서 10%대 급등 | [기재정정]단일판매ㆍ공급계약체결",
+        "market_impact": 0,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "JW중외제약",
+        "롯데몰"
+      ],
+      "beneficiary_sectors": [
+        "제약/바이오",
+        "건설",
+        "유통"
+      ],
+      "company_event_bias": {
+        "삼호개발": 8,
+        "이엔플러스": -8,
+        "티케이지휴켐스": -8,
+        "한화오션": 8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "REGULATION",
+          "company": "이엔플러스",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정(일정금액이상의청구)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "티케이지휴켐스",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "이엔플러스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "삼호개발",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한화오션",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결(자율공시)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "이엔플러스",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정(일정금액이상의청구)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "티케이지휴켐스",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "이엔플러스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 2,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": -4,
+        "LIQUIDITY": -2,
+        "OIL": -3,
+        "POLITICS": 1,
+        "RATES": 0,
+        "REGULATION": -1
+      },
+      "evidence_headlines": [
+        "구윤철, 이란 호르무즈 통행료 추진에 \"현재는 지급 검토 안 해\"(종합)",
+        "물류업계 만난 李대통령…'고유가 부담 추가대책' 검토 지시",
+        "JW중외제약, 애프터마켓서 10%대 급등"
+      ],
+      "key_insight": "중동 지정학 리스크와 고유가 부담이 시장 전반을 압박하는 가운데, 일부 개별 기업의 호재가 지수 하단을 지지하는 혼조세를 보임.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "이란의 호르무즈 해협 통행료 추진 가능성은 원유 수입 및 수출 의존도가 높은 한국 증시에 직접적인 위협 요인.",
+          "evidence": "구윤철, 이란 호르무즈 통행료 추진에 \"현재는 지급 검토 안 해\"",
+          "market_impact": -4,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "OIL",
+          "description": "정부가 물류업계의 부담을 논의할 정도로 고유가가 KOSPI 기업들의 비용 부담을 가중시키고 있음.",
+          "evidence": "물류업계 만난 李대통령…'고유가 부담 추가대책' 검토 지시",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "POLITICS",
+          "description": "정부가 고유가 부담에 대한 대책을 검토하고 있어 시장 충격을 일부 완화할 가능성이 있음.",
+          "evidence": "물류업계 만난 李대통령…'고유가 부담 추가대책' 검토 지시",
+          "market_impact": 1,
+          "signal": "NEUTRAL"
+        },
+        {
+          "category": "EARNINGS",
+          "description": "JW중외제약 급등, 한화오션/삼호개발의 계약 정정 공시 등 개별 기업의 실적 관련 뉴스가 혼재.",
+          "evidence": "JW중외제약, 애프터마켓서 10%대 급등 | [기재정정]단일판매ㆍ공급계약체결",
+          "market_impact": 0,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[DART 20260408] JW홀딩스 - 투자판단관련주요경영사항(자회사의 주요경영사항) | 전자공시",
+        "[DART 20260408] JW중외제약 - 투자판단관련주요경영사항 | 전자공시",
+        "[DART 20260408] 이엔플러스 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+        "[DART 20260408] 티케이지휴켐스 - 주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260408] 이엔플러스 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[DART 20260408] 삼호개발 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260408] 한화오션 - [기재정정]단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+        "[Wed, 8 Apr 2026 18:52:50 +0900] 상암 DMC 롯데몰 개발사업 본궤도…내년 착공·2030년 준공 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:40:51 +0900] 경복궁면세점, 인천공항 1터미널 입국장면세점 5년 더 운영 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:36:37 +0900] JW중외제약, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:33:57 +0900] 물류업계 만난 李대통령…'고유가 부담 추가대책' 검토 지시 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:22:33 +0900] 구윤철, 이란 호르무즈 통행료 추진에 \"현재는 지급 검토 안 해\"(종합) | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:07:55 +0900] 계좌 13개로 시세조종 3천만원 부당이득…개인투자자 검찰 통보 | 연합뉴스",
+        "[Wed, 8 Apr 2026 18:00:00 +0900] [연합뉴스 이 시각 헤드라인] - 18:00 | 연합뉴스",
+        "[Wed, 8 Apr 2026 17:45:32 +0900] 포스코 협력사 7천명 직접고용 '파격'…노노갈등 해결 '숙제'(종합) | 연합뉴스"
+      ],
+      "risk_flags": [
+        "중동 지정학 리스크",
+        "호르무즈 해협",
+        "고유가",
+        "물류비용 증가"
+      ],
+      "sentiment_score": -25,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "이란의 호르무즈 해협 통행료 추진 가능성이 제기되어 유가 및 물류 불안정성을 높임.",
+          "impact": "NEGATIVE",
+          "theme": "중동 지정학 리스크"
+        },
+        {
+          "description": "정부가 물류업계의 부담 완화를 검토할 정도로 유가 상승이 실물 경제에 부담으로 작용.",
+          "impact": "NEGATIVE",
+          "theme": "고유가 부담"
+        },
+        {
+          "description": "JW중외제약 급등 등 긍정적 공시와 이엔플러스 유상증자 기재정정 등 부정적 공시가 혼재됨.",
+          "impact": "MIXED",
+          "theme": "개별 기업 모멘텀"
+        }
+      ],
+      "timestamp": "2026-04-08 19:05",
+      "victim_keywords": [
+        "물류업계"
+      ],
+      "victim_sectors": [
+        "물류"
+      ]
+    },
+    "risk_flags": [
+      "중동 지정학 리스크",
+      "호르무즈 해협",
+      "고유가",
+      "물류비용 증가"
+    ],
+    "sentiment_score": -25,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "물류"
+    ]
+  },
+  "produced_at": "2026-04-08T10:23:35.627863+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-08",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-08T10:23:32.648072+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-44E6C293",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

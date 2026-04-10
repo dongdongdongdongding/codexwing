@@ -1,0 +1,117 @@
+{
+  "current_profile": "dev",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 7,
+    "reason": "KR_HARD_FILTER_FAIL"
+  },
+  "current_total_scans": 10,
+  "exception_leaders": {
+    "applied": false,
+    "considered_filtered_symbols": 10,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 0,
+    "prod_zero_streak_alert": false
+  },
+  "generated_at": "2026-04-09T15:57:58.583693+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 24,
+  "history_window_runs_seen": 80,
+  "market": "KOSDAQ",
+  "near_miss_watchlist": {
+    "applied": true,
+    "considered_filtered_symbols": 10,
+    "tickers": [
+      "028300.KQ",
+      "058470.KQ"
+    ],
+    "watchlist_meta": [
+      {
+        "alpha_score": 59.0,
+        "conviction_score": 35.1,
+        "decision_score": 75.35,
+        "entry_reference_price": null,
+        "expires_at": "2026-04-11T15:57:59.333318+00:00",
+        "generated_at": "2026-04-09T15:57:59.333318+00:00",
+        "horizon_days": 2,
+        "prob_5": 18.8,
+        "prob_clean": 26.8,
+        "real_trend": "DOWN",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "precision_gate_red_market",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "stock_name": "HLB",
+        "ticker": "028300.KQ"
+      },
+      {
+        "alpha_score": 39.0,
+        "conviction_score": 0.0,
+        "decision_score": 31.0,
+        "entry_reference_price": null,
+        "expires_at": "2026-04-11T15:57:59.333318+00:00",
+        "generated_at": "2026-04-09T15:57:59.333318+00:00",
+        "horizon_days": 2,
+        "prob_5": 0.0,
+        "prob_clean": 0.0,
+        "real_trend": "UP",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "kr_hard_filter_fail",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "stock_name": "리노공업",
+        "ticker": "058470.KQ"
+      }
+    ]
+  },
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 101,
+      "result_count": 2,
+      "runs": 4,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 103,
+      "weighted_filtered_rate_pct": 98.06,
+      "weighted_pass_rate_pct": 1.94,
+      "zero_result_runs": 3
+    },
+    "prod": {
+      "filtered_count": 266,
+      "result_count": 5,
+      "runs": 20,
+      "top_reject_reason": {
+        "count": 73,
+        "reason": "KR_HARD_FILTER_FAIL"
+      },
+      "total_scans": 281,
+      "weighted_filtered_rate_pct": 94.66,
+      "weighted_pass_rate_pct": 1.78,
+      "zero_result_runs": 18
+    }
+  },
+  "run_id": "RUN-C2B54E57",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 0,
+    "mode": "favorable",
+    "policy": {
+      "ai_min": 0,
+      "alpha_min": 50,
+      "avg_5d_pct": 15.92069454956051,
+      "mode": "favorable",
+      "objective": 118.19013941446921,
+      "samples": 24,
+      "win_5d_pct": 66.66666666666666
+    },
+    "total_rejects": 10,
+    "watchlist_count": 2
+  }
+}

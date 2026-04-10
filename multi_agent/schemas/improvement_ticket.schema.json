@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "improvement_ticket.schema.json",
+  "title": "ImprovementTicket",
+  "type": "object",
+  "required": [
+    "ticket_id",
+    "run_id",
+    "owner_agent",
+    "owner_module",
+    "title",
+    "hypothesis",
+    "requested_change",
+    "priority",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "ticket_id": {"type": "string"},
+    "run_id": {"type": "string"},
+    "owner_agent": {"type": "string"},
+    "owner_module": {"type": "string"},
+    "title": {"type": "string"},
+    "hypothesis": {"type": "string"},
+    "requested_change": {"type": "string"},
+    "priority": {"type": "string"},
+    "status": {"type": "string"},
+    "created_at": {"type": "string"}
+  }
+}

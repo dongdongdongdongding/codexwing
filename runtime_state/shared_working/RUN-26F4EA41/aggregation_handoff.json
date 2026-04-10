@@ -1,0 +1,114 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 2,
+      "label": "⏱️ Intraday Trend | 1H",
+      "share": 0.667
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "⏱️ Intraday Breakout | 1H",
+      "share": 0.333
+    },
+    {
+      "breadth_score": 24.0,
+      "cluster_type": "theme",
+      "concentration_score": 75.0,
+      "leader_ticker": "373220.KS",
+      "member_count": 2,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "2차전지",
+      "theme_strength_score": 18.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 71.3,
+      "leader_ticker": "006800.KS",
+      "member_count": 1,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "금융",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 3,
+    "strategy_distribution": {
+      "⏱️ Intraday Breakout | 1H": 1,
+      "⏱️ Intraday Trend | 1H": 2
+    },
+    "theme_distribution": {
+      "2차전지": 2,
+      "금융": 1
+    },
+    "top_strategy": "⏱️ Intraday Trend | 1H",
+    "top_strategy_share": 0.667,
+    "trend_distribution": {
+      "UP": 3
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "373220.KS",
+      "member_count": 2,
+      "theme_name": "2차전지",
+      "theme_strength_score": 18.0,
+      "top_members": [
+        {
+          "leader_score": 75.0,
+          "score": 78.2,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 18.0,
+          "ticker": "373220.KS"
+        },
+        {
+          "leader_score": 71.1,
+          "score": 74.1,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 18.0,
+          "ticker": "006400.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "006800.KS",
+      "member_count": 1,
+      "theme_name": "금융",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 71.3,
+          "score": 82.7,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "006800.KS"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-09T10:10:47.068746+00:00",
+  "quality_notes": [
+    "Total candidates: 3",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: ⏱️ Intraday Trend | 1H (2/3)",
+    "Top theme cluster: 2차전지 (2/3)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T10:10:44.849985+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-26F4EA41",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,123 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1510.5699462890625,
+      "krw_change_1d": -0.37,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 1.05,
+      "tnx": 4.300999641418457,
+      "tnx_change_1d": -0.23,
+      "vix": 23.8799991607666,
+      "vix_change_1d": -5.43
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "기술 (Technology)",
+      "소비재 재량 (Consumer Discretionary)",
+      "항공 (Airlines)",
+      "여행 및 레저 (Travel & Leisure)",
+      "산업재 (Industrials)"
+    ],
+    "key_insight": "이란 전쟁 종식 기대감이 시장의 주요 불확실성을 해소하며 광범위한 위험자산 랠리를 촉발하고 있으며, 지정학적 리스크 완화가 글로벌 경제 활동 정상화 및 소비 회복에 대한 기대를 높이고 있다.",
+    "market_sentiment": "BULLISH",
+    "raw": {
+      "beneficiary_keywords": [
+        "소프트웨어",
+        "반도체",
+        "인터넷 서비스",
+        "항공사",
+        "호텔",
+        "리조트",
+        "자동차",
+        "글로벌 해운"
+      ],
+      "beneficiary_sectors": [
+        "기술 (Technology)",
+        "소비재 재량 (Consumer Discretionary)",
+        "항공 (Airlines)",
+        "여행 및 레저 (Travel & Leisure)",
+        "산업재 (Industrials)"
+      ],
+      "key_insight": "이란 전쟁 종식 기대감이 시장의 주요 불확실성을 해소하며 광범위한 위험자산 랠리를 촉발하고 있으며, 지정학적 리스크 완화가 글로벌 경제 활동 정상화 및 소비 회복에 대한 기대를 높이고 있다.",
+      "market_sentiment": "BULLISH",
+      "raw_headlines": [
+        "[Wed, 01 Apr 2026 14:39:00 GMT] Stock Market Today: Dow Advances on Hopes for Quick End to War — Live Updates - WSJ",
+        "[Wed, 01 Apr 2026 15:01:00 GMT] Stocks are higher to start the month as optimism around Iran war ending grows: Live updates - cnbc.com",
+        "[Wed, 01 Apr 2026 15:03:06 GMT] Stock market today: Dow S&P 500, Nasdaq climb as deescalation talk in Iran extends rally - Yahoo Finance",
+        "[Wed, 01 Apr 2026 14:10:38 GMT] Asian Stocks Set to Track US Rally on Iran Hopes: Markets Wrap - Bloomberg.com",
+        "[Wed, 01 Apr 2026 00:04:00 GMT] Stock Market Today: The Nasdaq Surges on Hopes Iran War Nears End - Barron's",
+        "[Tue, 31 Mar 2026 04:00:00 GMT] How Geopolitics Overran Globalization - Foreign Affairs",
+        "[Wed, 01 Apr 2026 07:46:52 GMT] Trade policy in times of geopolitical tension – what can Switzerland do? - SWI swissinfo.ch",
+        "[Fri, 27 Mar 2026 00:00:00 GMT] Economic conditions outlook, March 2026 - mckinsey.com",
+        "[Tue, 31 Mar 2026 00:00:00 GMT] India’s Reckoning: Geopolitics, trade, and India’s development strategy - Hinrich Foundation",
+        "[Wed, 18 Mar 2026 07:00:00 GMT] AI, energy and geopolitics: Leadership's triple transition challenge - The World Economic Forum",
+        "[Tue, 31 Mar 2026 20:34:48 GMT] Stock market today: Dow soars 1,000 points, S&P 500 and Nasdaq surge in upbeat end to brutal quarter - Yahoo Finance",
+        "[Wed, 01 Apr 2026 15:03:06 GMT] Stock market today: Dow S&P 500, Nasdaq climb as deescalation talk in Iran extends rally - Yahoo Finance",
+        "[Wed, 01 Apr 2026 15:12:00 GMT] Dow Gains After Trump Gives Hope Iran War Will End Soon - Barron's",
+        "[Wed, 01 Apr 2026 13:34:19 GMT] Dow surges 1,100 points, S&P 500 posts best day since May as hopes grow for end of Iran war: Live updates - cnbc.com",
+        "[Wed, 01 Apr 2026 03:46:00 GMT] Stock Market News, March 31, 2026: Nasdaq Leads Rally Built on Hope the Iran War May End Soon - WSJ"
+      ],
+      "sentiment_score": 90,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "이란 전쟁의 조기 종식 및 긴장 완화에 대한 낙관론이 글로벌 시장의 주요 지정학적 불확실성을 해소하고 위험 선호 심리를 강력하게 부양",
+          "impact": "POSITIVE",
+          "theme": "이란 전쟁 종식 기대감 및 지정학적 긴장 완화"
+        }
+      ],
+      "timestamp": "2026-04-02 00:44",
+      "victim_keywords": [
+        "무기",
+        "군수품",
+        "방산",
+        "원유생산",
+        "정유사",
+        "가스"
+      ],
+      "victim_sectors": [
+        "방위산업 (Defense)",
+        "에너지 (Energy)"
+      ]
+    },
+    "sentiment_score": 90,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "방위산업 (Defense)",
+      "에너지 (Energy)"
+    ]
+  },
+  "produced_at": "2026-04-01T15:44:19.667523+00:00",
+  "regime": {
+    "market": "AMEX",
+    "market_group": "US",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-02",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T15:43:44.412235+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-3FCF15D8",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "warnings": []
+}

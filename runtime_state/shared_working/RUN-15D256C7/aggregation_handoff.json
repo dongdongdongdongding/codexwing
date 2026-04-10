@@ -1,0 +1,155 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 4,
+      "label": "⏱️ Intraday Trend | 1H",
+      "share": 0.8
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "⏱️ Intraday Breakout | 1H",
+      "share": 0.2
+    },
+    {
+      "breadth_score": 36.0,
+      "cluster_type": "theme",
+      "concentration_score": 97.2,
+      "leader_ticker": "095340.KQ",
+      "member_count": 3,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "반도체",
+      "theme_strength_score": 27.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 85.9,
+      "leader_ticker": "039030.KQ",
+      "member_count": 1,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "로봇/자동화",
+      "theme_strength_score": 27.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 72.3,
+      "leader_ticker": "403870.KQ",
+      "member_count": 1,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "친환경/에너지",
+      "theme_strength_score": 33.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 5,
+    "strategy_distribution": {
+      "⏱️ Intraday Breakout | 1H": 1,
+      "⏱️ Intraday Trend | 1H": 4
+    },
+    "theme_distribution": {
+      "로봇/자동화": 1,
+      "반도체": 3,
+      "친환경/에너지": 1
+    },
+    "top_strategy": "⏱️ Intraday Trend | 1H",
+    "top_strategy_share": 0.8,
+    "trend_distribution": {
+      "UP": 5
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "095340.KQ",
+      "member_count": 3,
+      "theme_name": "반도체",
+      "theme_strength_score": 27.0,
+      "top_members": [
+        {
+          "leader_score": 97.2,
+          "score": 92.4,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 27.0,
+          "ticker": "095340.KQ"
+        },
+        {
+          "leader_score": 83.6,
+          "score": 86.3,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 27.0,
+          "ticker": "240810.KQ"
+        },
+        {
+          "leader_score": 72.3,
+          "score": 75.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 27.0,
+          "ticker": "058470.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "039030.KQ",
+      "member_count": 1,
+      "theme_name": "로봇/자동화",
+      "theme_strength_score": 27.0,
+      "top_members": [
+        {
+          "leader_score": 85.9,
+          "score": 98.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 27.0,
+          "ticker": "039030.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "403870.KQ",
+      "member_count": 1,
+      "theme_name": "친환경/에너지",
+      "theme_strength_score": 33.0,
+      "top_members": [
+        {
+          "leader_score": 72.3,
+          "score": 68.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 33.0,
+          "ticker": "403870.KQ"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-10T02:50:13.410928+00:00",
+  "quality_notes": [
+    "Total candidates: 5",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: ⏱️ Intraday Trend | 1H (4/5)",
+    "Top theme cluster: 반도체 (3/5)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-10T02:50:08.901554+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-15D256C7",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": [
+    {
+      "code": "STRATEGY_CONCENTRATION",
+      "message": "Candidates are concentrated in one strategy tag (⏱️ Intraday Trend | 1H).",
+      "severity": "warning"
+    }
+  ]
+}

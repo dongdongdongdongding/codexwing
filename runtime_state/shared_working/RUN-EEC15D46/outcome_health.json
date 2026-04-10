@@ -1,0 +1,29 @@
+{
+  "delta_vs_prev_run": {
+    "base_generated_at": "2026-04-01T15:12:49.714131+00:00",
+    "base_run_id": "RUN-82CD689A",
+    "expired": 0,
+    "fallback_expired": 0,
+    "fallback_pending": 0,
+    "fallback_resolved": 0,
+    "fallback_total": 0,
+    "outcomes_total": 7,
+    "pending": 7,
+    "resolved": 0
+  },
+  "expired": 0,
+  "expired_rate": 0.0,
+  "fallback_expired": 0,
+  "fallback_expired_rate": 0.0,
+  "fallback_pending": 15,
+  "fallback_resolved": 0,
+  "fallback_total": 15,
+  "generated_at": "2026-04-01T16:04:10.978859+00:00",
+  "market": "NASDAQ",
+  "outcomes_total": 63,
+  "pending": 63,
+  "resolved": 0,
+  "run_id": "RUN-EEC15D46",
+  "runs_with_outcomes": 13,
+  "window_runs": 32
+}

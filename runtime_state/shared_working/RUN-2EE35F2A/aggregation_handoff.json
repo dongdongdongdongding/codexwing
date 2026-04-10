@@ -1,0 +1,78 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "🚀 Momentum | ⚡ 단기과열(강세) | ThemeRoute | Ranker:30.1%",
+      "share": 1.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 80.7,
+      "leader_ticker": "006400.KS",
+      "member_count": 1,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "2차전지",
+      "theme_strength_score": 24.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 1,
+    "strategy_distribution": {
+      "🚀 Momentum | ⚡ 단기과열(강세) | ThemeRoute | Ranker:30.1%": 1
+    },
+    "theme_distribution": {
+      "2차전지": 1
+    },
+    "top_strategy": "🚀 Momentum | ⚡ 단기과열(강세) | ThemeRoute | Ranker:30.1%",
+    "top_strategy_share": 1.0,
+    "trend_distribution": {
+      "UP": 1
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "006400.KS",
+      "member_count": 1,
+      "theme_name": "2차전지",
+      "theme_strength_score": 24.0,
+      "top_members": [
+        {
+          "leader_score": 80.7,
+          "score": 87.1,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 24.0,
+          "ticker": "006400.KS"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-09T16:55:40.490640+00:00",
+  "quality_notes": [
+    "Total candidates: 1",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: 🚀 Momentum | ⚡ 단기과열(강세) | ThemeRoute | Ranker:30.1% (1/1)",
+    "Top theme cluster: 2차전지 (1/1)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T16:55:39.589542+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-2EE35F2A",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": [
+    {
+      "code": "STRATEGY_CONCENTRATION",
+      "message": "Candidates are concentrated in one strategy tag (🚀 Momentum | ⚡ 단기과열(강세) | ThemeRoute | Ranker:30.1%).",
+      "severity": "warning"
+    }
+  ]
+}

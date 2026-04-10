@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-04-10T09:37:41.351057+00:00",
+  "market": "AMEX",
+  "runs_considered": 1,
+  "rows_considered": 10,
+  "excluded_runs": [
+    "RUN-31555E01",
+    "RUN-37BD67D6",
+    "RUN-3FCF15D8",
+    "RUN-47117367",
+    "RUN-4DDB8F37",
+    "RUN-58E4793B",
+    "RUN-6EA55EBB",
+    "RUN-773F18E1",
+    "RUN-879A78F9",
+    "RUN-87E8A5C8",
+    "RUN-8D2A41D3",
+    "RUN-92EB994E",
+    "RUN-AAA84FC1",
+    "RUN-B1F21580",
+    "RUN-B96BF526",
+    "RUN-BA948993",
+    "RUN-CE72B627",
+    "RUN-DA1A589A",
+    "RUN-DEAABE00",
+    "RUN-E094BE7B",
+    "RUN-FCBF4309",
+    "RUN-FD3548E5"
+  ],
+  "buckets": {
+    "picked": {
+      "1d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      }
+    },
+    "watchlist": {
+      "1d": {
+        "samples": 10,
+        "n": 10,
+        "avg_return_pct": 1.5444,
+        "win_rate_pct": 60.0
+      },
+      "3d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      }
+    },
+    "exception_leader": {
+      "1d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "samples": 0,
+        "n": 0,
+        "avg_return_pct": 0.0,
+        "win_rate_pct": 0.0
+      }
+    }
+  }
+}

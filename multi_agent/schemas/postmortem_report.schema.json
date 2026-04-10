@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "postmortem_report.schema.json",
+  "title": "PostmortemReport",
+  "type": "object",
+  "required": [
+    "run_context",
+    "scope",
+    "failure_summary",
+    "likely_causes",
+    "evidence_refs",
+    "decisions_reviewed",
+    "tickets",
+    "produced_at"
+  ],
+  "properties": {
+    "run_context": {"type": "object"},
+    "scope": {"type": "string"},
+    "failure_summary": {"type": "string"},
+    "likely_causes": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "decisions_reviewed": {"type": "array", "items": {"type": "string"}},
+    "tickets": {"type": "array", "items": {"$ref": "improvement_ticket.schema.json"}},
+    "produced_at": {"type": "string"}
+  }
+}

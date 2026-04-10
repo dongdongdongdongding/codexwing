@@ -1,0 +1,74 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_HIGH",
+      "KRW_SOFTENING"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 30.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_SOFTENING"
+      ],
+      "krw": 1519.0799560546875,
+      "krw_change_1d": 0.71,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 30,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.45,
+      "tnx": 4.335999965667725,
+      "tnx_change_1d": -2.34,
+      "vix": 29.920000076293945,
+      "vix_change_1d": -3.64
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "key_insight": "No intelligence available",
+    "market_sentiment": "NEUTRAL",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "key_insight": "No intelligence available",
+      "market_sentiment": "NEUTRAL",
+      "raw_headlines": [],
+      "sentiment_score": 0,
+      "source": "fallback",
+      "themes": [],
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "sentiment_score": 0,
+    "source": "fallback",
+    "status": "fallback_intel",
+    "victim_sectors": []
+  },
+  "produced_at": "2026-03-30T15:12:38.958275+00:00",
+  "regime": {
+    "market": "NASDAQ",
+    "market_group": "US",
+    "status": "NORMAL",
+    "support_score": 70.0
+  },
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-03-30T15:12:21.963024+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-FE975C58",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "warnings": [
+    {
+      "code": "NEWS_INTEL_FALLBACK",
+      "message": "News intelligence returned fallback payload.",
+      "severity": "warning"
+    }
+  ]
+}

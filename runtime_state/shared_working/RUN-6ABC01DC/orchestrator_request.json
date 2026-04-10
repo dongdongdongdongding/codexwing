@@ -1,0 +1,31 @@
+{
+  "constraints": [
+    "Preserve proven core logic.",
+    "Prefer structured outputs and auditable traces.",
+    "Do not rely on hidden reasoning as final evidence."
+  ],
+  "input_artifacts": [
+    "runtime_state/local_short_term/orchestrator_bridge/BRIDGE-9E2B0846/legacy_scan_results.json"
+  ],
+  "produced_at": "2026-04-10T03:10:55.263324+00:00",
+  "requested_agents": [
+    "scanner_agent",
+    "aggregation_agent",
+    "backtest_learning_agent",
+    "market_news_context_agent",
+    "pm_planner_agent"
+  ],
+  "requested_market": "KOSDAQ",
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-10T03:10:55.263312+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-6ABC01DC",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "task_id": "TASK-F66C21FD",
+  "task_kind": "scan_pipeline",
+  "user_request": "Run full scan pipeline from scanner bridge input and synthesize planner-ready outputs."
+}

@@ -1,0 +1,40 @@
+{
+  "tickets": [
+    {
+      "created_at": "2026-03-31T08:04:23.185895+00:00",
+      "hypothesis": "Threshold coupling or upstream data fetch failures can collapse candidate output.",
+      "owner_agent": "scanner_agent",
+      "owner_module": "app.py|auto_bot.py scanner bridge",
+      "priority": "high",
+      "requested_change": "Add per-filter reject counters and surface them in scanner_trace.",
+      "run_id": "RUN-67F112B6",
+      "status": "open",
+      "ticket_id": "TKT-931B0C6B",
+      "title": "Investigate zero-candidate scan runs"
+    },
+    {
+      "created_at": "2026-03-31T08:04:23.185906+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-67F112B6",
+      "status": "open",
+      "ticket_id": "TKT-F3A1F58B",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-03-31T08:04:23.185916+00:00",
+      "hypothesis": "Fallback watchlist is now active but still needs explicit risk caps and expiry rules.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "planner policy / fallback mode",
+      "priority": "high",
+      "requested_change": "Enforce fallback expiry in outcome-tracking jobs and alert when stale fallback rows accumulate.",
+      "run_id": "RUN-67F112B6",
+      "status": "open",
+      "ticket_id": "TKT-DBBEB37D",
+      "title": "Harden fallback watchlist governance in prod"
+    }
+  ]
+}

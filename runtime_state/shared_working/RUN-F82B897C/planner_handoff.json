@@ -1,0 +1,56 @@
+{
+  "avoid_list": [],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "EMPTY_PLANNER_INPUT",
+      "message": "Planner received no candidates from scanner handoff.",
+      "severity": "error"
+    },
+    {
+      "code": "FALLBACK_WATCHLIST_ENABLED",
+      "message": "Prod zero-result streak detected. Applied fallback watchlist from dev baseline (source_run=RUN-BB782D22).",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-09T17:08:08.934510+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "local",
+    "created_at": "2026-04-09T17:08:08.927878+00:00",
+    "market": "KOSPI",
+    "model_version": "phase25",
+    "run_id": "RUN-F82B897C",
+    "strategy_version": "phase25"
+  },
+  "watchlist": [
+    "373220.KS"
+  ],
+  "watchlist_meta": [
+    {
+      "expires_at": "2026-04-12T17:08:09.740825+00:00",
+      "generated_at": "2026-04-09T17:08:09.740825+00:00",
+      "horizon_days": 3,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 63.6,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "primary_theme": "2차전지",
+      "reason": "prod_zero_streak_alert",
+      "risk_label": "HIGH_RISK_FALLBACK",
+      "scan_mode": "INTRADAY",
+      "secondary_themes": [
+        "자동차",
+        "친환경/에너지"
+      ],
+      "source_profile": "dev",
+      "source_run_id": "RUN-BB782D22",
+      "stock_name": "LG에너지솔루션",
+      "strategy_family": "KR_CORE",
+      "theme_inference_status": "inferred",
+      "theme_routing_path": "core_only",
+      "theme_source": "stock_master",
+      "ticker": "373220.KS"
+    }
+  ]
+}

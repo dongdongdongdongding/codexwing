@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-03-31T16:25:30+09:00",
+  "source_artifacts": [
+    "runtime_state/reports/external_signals/signals_rows_enriched.csv",
+    "runtime_state/shared_working/RUN-2DEC9974/scanner_handoff.json",
+    "runtime_state/shared_working/RUN-6DBB680B/scanner_handoff.json"
+  ],
+  "changes_applied": {
+    "market_aware_liquidity_filter": {
+      "us_min_turnover": 1000000,
+      "kospi_min_turnover": 10000000000,
+      "kosdaq_min_turnover": 7000000000
+    },
+    "kosdaq_red_precision_relax": {
+      "red_min_conviction": 64,
+      "alpha_relax_floor": 45
+    },
+    "kosdaq_bear_hard_filter": {
+      "downtrend_min_alpha": 45
+    },
+    "reject_observability": true
+  },
+  "external_label_findings": {
+    "kosdaq_bear_alpha_ge_45": {
+      "samples": 31,
+      "avg_5d_pct": 15.31,
+      "win_5d_pct": 70.97
+    },
+    "kosdaq_bear_alpha_ge_40": {
+      "samples": 33,
+      "avg_5d_pct": 14.64,
+      "win_5d_pct": 69.70
+    },
+    "kosdaq_bull_alpha_ge_25": {
+      "samples": 143,
+      "avg_5d_pct": 6.69,
+      "win_5d_pct": 68.53
+    }
+  },
+  "runtime_findings": {
+    "run_id": "RUN-2DEC9974",
+    "reject_reason_counts": {
+      "LIQUIDITY_FILTER_FAIL": 2,
+      "KR_HARD_FILTER_FAIL": 1,
+      "PRECISION_GATE_RED_MARKET": 1
+    },
+    "reject_details": {
+      "266870.KQ": {
+        "curr_price": 201.0,
+        "turnover": 3388176.6,
+        "min_turnover": 7000000000.0
+      },
+      "347860.KQ": {
+        "curr_price": 1789.0,
+        "turnover": 550729248.55,
+        "min_turnover": 7000000000.0
+      },
+      "214150.KQ": {
+        "alpha_score": 42.0,
+        "real_trend": "DOWN",
+        "hard_filter_floor": 45.0
+      },
+      "137950.KQ": {
+        "alpha_score": 49.0,
+        "conviction_score": 45.9,
+        "prob_5": 36.7,
+        "prob_clean": 18.0,
+        "tier_sort": 3
+      }
+    }
+  },
+  "interpretation": [
+    "Current KOSDAQ zero-result behavior is no longer a hidden system failure. The remaining blocks are mostly explainable risk controls.",
+    "Lowering KOSDAQ liquidity thresholds slightly would not rescue the sampled failures because the blocked names are far below the turnover floor, not marginal misses.",
+    "The KOSDAQ BEAR hard-filter relax to alpha>=45 is supported by external labeled outcomes and is now wired in safely.",
+    "The remaining precision-gate block in RED market still looks justified for weak T3 / low-clean-prob setups."
+  ],
+  "next_actions": [
+    "Add KOSDAQ tradable-universe prefilter based on recent turnover before deep scan evaluation.",
+    "Prioritize liquid KOSDAQ names inside the scanner input universe instead of spending scan budget on sub-scale names.",
+    "Accumulate realized outcomes and re-estimate KOSDAQ RED precision thresholds with live labels."
+  ]
+}

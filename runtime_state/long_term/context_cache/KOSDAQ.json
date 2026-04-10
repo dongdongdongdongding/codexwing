@@ -1,0 +1,392 @@
+{
+  "generated_at": "2026-04-10T03:22:54.653096+00:00",
+  "market": "KOSDAQ",
+  "market_group": "KR",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "macro_overlay": {
+    "status": "live_macro",
+    "macro_state": "NORMAL",
+    "macro_risk_score": 0.0,
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "flags": [],
+    "raw_context": {
+      "macro_state": "NORMAL",
+      "macro_risk_score": 0,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "flags": [],
+      "vix": 19.489999771118164,
+      "vix_change_1d": -7.37,
+      "tnx": 4.293000221252441,
+      "tnx_change_1d": 0.05,
+      "krw": 1479.8800048828125,
+      "krw_change_1d": NaN,
+      "spy_change_1d": 0.58
+    }
+  },
+  "news_impact": {
+    "status": "live_intel",
+    "market_sentiment": "NEUTRAL",
+    "sentiment_score": 0,
+    "headline_count": 15,
+    "evidence_headlines": [
+      "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
+      "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시"
+    ],
+    "raw_headlines": [
+      "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
+      "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+      "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시",
+      "[DART 20260410] 쓰리에이로직스 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 레이저옵텍 - 유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모) | 전자공시",
+      "[DART 20260410] 캠시스 - 유상증자또는주식관련사채등의청약결과(자율공시) | 전자공시",
+      "[Fri, 10 Apr 2026 11:42:30 +0900] 국고채 금리 혼조세…3년물 장중 연 3.345% | 연합뉴스",
+      "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
+      "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달",
+      "[주달 핫테마] 6G | 주달"
+    ],
+    "beneficiary_sectors": [],
+    "victim_sectors": [
+      "성장주"
+    ],
+    "theme_states": [
+      {
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "direction": "BENEFICIARY",
+        "strength_score": 21.0,
+        "confidence": 0.58,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T03:22:54.651520+00:00"
+      },
+      {
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "direction": "BENEFICIARY",
+        "strength_score": 20.0,
+        "confidence": 0.573,
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "beneficiary_keywords": [
+          "통신/네트워크",
+          "통신",
+          "네트워크",
+          "5G",
+          "6G",
+          "안테나"
+        ],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T03:22:54.650800+00:00"
+      }
+    ],
+    "beneficiary_themes": [
+      {
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "strength_score": 21.0,
+        "confidence": 0.58
+      },
+      {
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "strength_score": 20.0,
+        "confidence": 0.573
+      }
+    ],
+    "headwind_themes": [],
+    "theme_evidence": {
+      "telecom": [
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ]
+    },
+    "macro_drivers": [
+      {
+        "category": "FX",
+        "signal": "BEARISH",
+        "market_impact": -2,
+        "description": "FX 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+      },
+      {
+        "category": "RATES",
+        "signal": "BEARISH",
+        "market_impact": -2,
+        "description": "RATES 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+      }
+    ],
+    "driver_scores": {
+      "GEOPOLITICS": 0,
+      "OIL": 0,
+      "FX": -2,
+      "RATES": -2,
+      "POLITICS": 0,
+      "ECONOMY": 0,
+      "LIQUIDITY": 1,
+      "EARNINGS": 1,
+      "REGULATION": -1
+    },
+    "cross_asset_signals": [],
+    "risk_flags": [
+      "FX",
+      "RATES"
+    ],
+    "news_quality": "HIGH",
+    "key_insight": "시장 헤드라인 부족 | Gemini timeout, fallback mode active",
+    "source": "rss_rule_based_timeout",
+    "model": "",
+    "raw": {
+      "market_sentiment": "NEUTRAL",
+      "sentiment_score": 0,
+      "themes": [],
+      "macro_drivers": [
+        {
+          "category": "FX",
+          "signal": "BEARISH",
+          "market_impact": -2,
+          "description": "FX 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+        },
+        {
+          "category": "RATES",
+          "signal": "BEARISH",
+          "market_impact": -2,
+          "description": "RATES 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+        }
+      ],
+      "driver_scores": {
+        "GEOPOLITICS": 0,
+        "OIL": 0,
+        "FX": -2,
+        "RATES": -2,
+        "POLITICS": 0,
+        "ECONOMY": 0,
+        "LIQUIDITY": 1,
+        "EARNINGS": 1,
+        "REGULATION": -1
+      },
+      "cross_asset_signals": [],
+      "risk_flags": [
+        "FX",
+        "RATES"
+      ],
+      "news_quality": "HIGH",
+      "beneficiary_sectors": [],
+      "victim_sectors": [
+        "성장주"
+      ],
+      "beneficiary_keywords": [
+        "상승"
+      ],
+      "victim_keywords": [
+        "불안",
+        "충격"
+      ],
+      "key_insight": "시장 헤드라인 부족 | Gemini timeout, fallback mode active",
+      "evidence_headlines": [
+        "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
+        "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+        "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+        "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시"
+      ],
+      "raw_headlines": [
+        "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
+        "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+        "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
+        "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시",
+        "[DART 20260410] 쓰리에이로직스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 레이저옵텍 - 유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모) | 전자공시",
+        "[DART 20260410] 캠시스 - 유상증자또는주식관련사채등의청약결과(자율공시) | 전자공시",
+        "[Fri, 10 Apr 2026 11:42:30 +0900] 국고채 금리 혼조세…3년물 장중 연 3.345% | 연합뉴스",
+        "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
+        "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ],
+      "source": "rss_rule_based_timeout",
+      "timestamp": "2026-04-10 12:22",
+      "disclosure_events": [
+        {
+          "company": "디에이치엑스컴퍼니",
+          "report_name": "조회공시요구(현저한시황변동)에대한답변(미확정)",
+          "event_score": -2,
+          "category": "REGULATION",
+          "label": "조회공시",
+          "polarity": "NEGATIVE"
+        },
+        {
+          "company": "원텍",
+          "report_name": "주요사항보고서(자기주식취득신탁계약체결결정)",
+          "event_score": 3,
+          "category": "LIQUIDITY",
+          "label": "자사주",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "디바이스",
+          "report_name": "주요사항보고서(무상증자결정)",
+          "event_score": 2,
+          "category": "LIQUIDITY",
+          "label": "무상증자",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "디바이스",
+          "report_name": "주권매매거래정지              (무상증자)",
+          "event_score": 2,
+          "category": "LIQUIDITY",
+          "label": "무상증자",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "쓰리에이로직스",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "레이저옵텍",
+          "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모)",
+          "event_score": -6,
+          "category": "LIQUIDITY",
+          "label": "유상증자",
+          "polarity": "NEGATIVE"
+        },
+        {
+          "company": "캠시스",
+          "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)",
+          "event_score": -6,
+          "category": "LIQUIDITY",
+          "label": "유상증자",
+          "polarity": "NEGATIVE"
+        }
+      ],
+      "company_event_bias": {
+        "디에이치엑스컴퍼니": -2,
+        "원텍": 3,
+        "디바이스": 4,
+        "쓰리에이로직스": 4,
+        "레이저옵텍": -6,
+        "캠시스": -6
+      },
+      "theme_states": [
+        {
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "direction": "BENEFICIARY",
+          "strength_score": 21.0,
+          "confidence": 0.58,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T03:22:54.651520+00:00"
+        },
+        {
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "direction": "BENEFICIARY",
+          "strength_score": 20.0,
+          "confidence": 0.573,
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달",
+            "[주달 핫테마] 6G | 주달"
+          ],
+          "beneficiary_keywords": [
+            "통신/네트워크",
+            "통신",
+            "네트워크",
+            "5G",
+            "6G",
+            "안테나"
+          ],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T03:22:54.650800+00:00"
+        }
+      ],
+      "beneficiary_themes": [
+        {
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "strength_score": 21.0,
+          "confidence": 0.58
+        },
+        {
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "strength_score": 20.0,
+          "confidence": 0.573
+        }
+      ],
+      "headwind_themes": [],
+      "theme_evidence": {
+        "telecom": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ]
+      },
+      "headline_count": 15
+    }
+  }
+}

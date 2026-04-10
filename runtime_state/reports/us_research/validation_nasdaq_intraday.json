@@ -1,0 +1,107 @@
+{
+  "decision_bucket_counts": {
+    "unknown": 10
+  },
+  "generated_at": "2026-04-01T09:38:13.722508+00:00",
+  "horizons": {
+    "1d": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "1h": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "30m": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "3d": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "5d": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "close": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    }
+  },
+  "market": "NASDAQ",
+  "market_type_filter": "US",
+  "moonshot": {
+    "avg_max_return_pct": 0.0,
+    "best_horizon_counts": {
+      "unknown": 10
+    },
+    "hit_rates": {
+      ">100%": 0.0,
+      ">20%": 0.0,
+      ">50%": 0.0
+    },
+    "median_max_return_pct": 0.0,
+    "samples": 0
+  },
+  "rows": 10,
+  "scan_mode": "INTRADAY",
+  "strategy_family": "US_MAIN",
+  "strategy_family_counts": {
+    "US_MAIN": 10
+  }
+}

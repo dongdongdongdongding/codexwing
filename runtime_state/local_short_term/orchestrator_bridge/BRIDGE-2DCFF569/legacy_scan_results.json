@@ -1,0 +1,17 @@
+{
+  "results": [],
+  "meta": {
+    "total_scans": 0,
+    "diagnostics": {
+      "reject_reason_counts": {}
+    },
+    "execution_profile": "prod",
+    "market_gate": {
+      "gate": "RED"
+    },
+    "regime": {
+      "regime": "BEAR"
+    },
+    "warnings": []
+  }
+}

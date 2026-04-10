@@ -1,0 +1,405 @@
+{
+  "scanner_agent": {
+    "rows_loaded": 3167,
+    "unique_tickers": 933,
+    "markets": {
+      "KOSPI": 1414,
+      "KOSDAQ": 1179,
+      "US": 574
+    },
+    "signal_types": {
+      "BUY": 1932,
+      "WEB_SCAN": 1074,
+      "DETECTED": 135,
+      "STRONG BUY": 25,
+      "TEST": 1
+    }
+  },
+  "market_context_agent": {
+    "daily_regimes": [
+      {
+        "market": "KOSDAQ",
+        "regime": "BEAR",
+        "days": 17
+      },
+      {
+        "market": "KOSDAQ",
+        "regime": "BULL",
+        "days": 25
+      },
+      {
+        "market": "KOSDAQ",
+        "regime": "NEUTRAL",
+        "days": 18
+      },
+      {
+        "market": "KOSDAQ",
+        "regime": "UNKNOWN",
+        "days": 1
+      },
+      {
+        "market": "KOSPI",
+        "regime": "BEAR",
+        "days": 14
+      },
+      {
+        "market": "KOSPI",
+        "regime": "BULL",
+        "days": 30
+      },
+      {
+        "market": "KOSPI",
+        "regime": "NEUTRAL",
+        "days": 16
+      },
+      {
+        "market": "KOSPI",
+        "regime": "UNKNOWN",
+        "days": 1
+      },
+      {
+        "market": "US",
+        "regime": "BEAR",
+        "days": 12
+      },
+      {
+        "market": "US",
+        "regime": "BULL",
+        "days": 6
+      },
+      {
+        "market": "US",
+        "regime": "NEUTRAL",
+        "days": 45
+      },
+      {
+        "market": "US",
+        "regime": "UNKNOWN",
+        "days": 1
+      }
+    ]
+  },
+  "backtest_learning_agent": {
+    "1d_avg_return_pct": 2.3523736067927565,
+    "1d_win_rate_pct": 64.38038436050364,
+    "2d_avg_return_pct": 1.454199775209885,
+    "2d_win_rate_pct": 60.73558648111332,
+    "3d_avg_return_pct": 1.0361881905031969,
+    "3d_win_rate_pct": 55.93108018555335,
+    "5d_avg_return_pct": 1.8573081413261514,
+    "5d_win_rate_pct": 50.06626905235255
+  },
+  "aggregation_agent": {
+    "stable_tickers_top15": [
+      {
+        "ticker": "AAPL",
+        "stock_name": "Apple Inc",
+        "signals": 33,
+        "avg_5d_pct": -4.6704913037280384,
+        "win_5d_pct": 3.0303030303030303,
+        "adaptive_stop_pct": 5.898946846056918,
+        "safe_take_profit_pct": 8.258525584479685
+      },
+      {
+        "ticker": "AMGN",
+        "stock_name": "Amgen Inc",
+        "signals": 24,
+        "avg_5d_pct": -2.557824859629068,
+        "win_5d_pct": 0.0,
+        "adaptive_stop_pct": 4.726753304636366,
+        "safe_take_profit_pct": 6.617454626490913
+      },
+      {
+        "ticker": "ADI",
+        "stock_name": "Analog Devices Inc",
+        "signals": 24,
+        "avg_5d_pct": -7.621045197338776,
+        "win_5d_pct": 0.0,
+        "adaptive_stop_pct": 9.830931934802667,
+        "safe_take_profit_pct": 13.763304708723734
+      },
+      {
+        "ticker": "AMAT",
+        "stock_name": "Applied Materials Inc",
+        "signals": 24,
+        "avg_5d_pct": -10.752412584021442,
+        "win_5d_pct": 0.0,
+        "adaptive_stop_pct": 14.126978271149875,
+        "safe_take_profit_pct": 19.777769579609824
+      },
+      {
+        "ticker": "009150.KS",
+        "stock_name": "삼성전기",
+        "signals": 18,
+        "avg_5d_pct": 28.57635851258604,
+        "win_5d_pct": 76.47058823529412,
+        "adaptive_stop_pct": 14.378029079159926,
+        "safe_take_profit_pct": 33.46828347314946
+      },
+      {
+        "ticker": "000660.KS",
+        "stock_name": "SK하이닉스",
+        "signals": 18,
+        "avg_5d_pct": 13.266061268354198,
+        "win_5d_pct": 72.22222222222221,
+        "adaptive_stop_pct": 5.690715883668903,
+        "safe_take_profit_pct": 21.25426286042724
+      },
+      {
+        "ticker": "066570.KS",
+        "stock_name": "LG전자",
+        "signals": 18,
+        "avg_5d_pct": 12.598265371048512,
+        "win_5d_pct": 76.47058823529412,
+        "adaptive_stop_pct": 5.1548307184145346,
+        "safe_take_profit_pct": 27.218430034129693
+      },
+      {
+        "ticker": "006400.KS",
+        "stock_name": "삼성SDI",
+        "signals": 18,
+        "avg_5d_pct": 12.07585740914169,
+        "win_5d_pct": 76.47058823529412,
+        "adaptive_stop_pct": 6.605392156862746,
+        "safe_take_profit_pct": 20.44954369749857
+      },
+      {
+        "ticker": "402340.KS",
+        "stock_name": "SK스퀘어",
+        "signals": 18,
+        "avg_5d_pct": 10.703501204384642,
+        "win_5d_pct": 77.77777777777779,
+        "adaptive_stop_pct": 7.31713780918728,
+        "safe_take_profit_pct": 20.191323692992217
+      },
+      {
+        "ticker": "006800.KS",
+        "stock_name": "미래에셋증권",
+        "signals": 18,
+        "avg_5d_pct": 10.334301155330026,
+        "win_5d_pct": 66.66666666666666,
+        "adaptive_stop_pct": 7.071921076999788,
+        "safe_take_profit_pct": 22.68181818181818
+      },
+      {
+        "ticker": "034730.KS",
+        "stock_name": "SK",
+        "signals": 18,
+        "avg_5d_pct": 9.696977232729916,
+        "win_5d_pct": 70.58823529411765,
+        "adaptive_stop_pct": 5.476793248945148,
+        "safe_take_profit_pct": 15.942249035009588
+      },
+      {
+        "ticker": "032830.KS",
+        "stock_name": "삼성생명",
+        "signals": 18,
+        "avg_5d_pct": 7.685148547892218,
+        "win_5d_pct": 76.47058823529412,
+        "adaptive_stop_pct": 4.88421052631579,
+        "safe_take_profit_pct": 26.277372262773714
+      },
+      {
+        "ticker": "105560.KS",
+        "stock_name": "KB금융",
+        "signals": 18,
+        "avg_5d_pct": -3.8693355601383153,
+        "win_5d_pct": 5.555555555555555,
+        "adaptive_stop_pct": 4.2942942942942945,
+        "safe_take_profit_pct": 7.027027027027027
+      },
+      {
+        "ticker": "055550.KS",
+        "stock_name": "신한지주",
+        "signals": 18,
+        "avg_5d_pct": -4.147757130299757,
+        "win_5d_pct": 0.0,
+        "adaptive_stop_pct": 4.4878048780487845,
+        "safe_take_profit_pct": 6.9810568295114654
+      },
+      {
+        "ticker": "086790.KS",
+        "stock_name": "하나금융지주",
+        "signals": 18,
+        "avg_5d_pct": -5.2572650814474935,
+        "win_5d_pct": 0.0,
+        "adaptive_stop_pct": 4.33729216152019,
+        "safe_take_profit_pct": 7.097387173396674
+      }
+    ]
+  },
+  "pm_planner_agent": {
+    "best_regimes_5d": [
+      {
+        "market": "KOSDAQ",
+        "regime": "BULL",
+        "signals": 164,
+        "tickers": 36,
+        "avg_1d_pct": 2.597359688738159,
+        "win_1d_pct": 67.07317073170732,
+        "avg_2d_pct": 0.3562042106826095,
+        "win_2d_pct": 54.87804878048781,
+        "avg_3d_pct": -0.3663049849272309,
+        "win_3d_pct": 56.09756097560976,
+        "avg_5d_pct": 5.865632108288248,
+        "win_5d_pct": 64.02439024390245
+      },
+      {
+        "market": "KOSPI",
+        "regime": "BULL",
+        "signals": 909,
+        "tickers": 107,
+        "avg_1d_pct": 4.338906728800114,
+        "win_1d_pct": 76.45764576457645,
+        "avg_2d_pct": 3.549886322847483,
+        "win_2d_pct": 69.96699669966998,
+        "avg_3d_pct": 1.651604350786874,
+        "win_3d_pct": 60.286028602860284,
+        "avg_5d_pct": 5.421131269633208,
+        "win_5d_pct": 59.625962596259626
+      },
+      {
+        "market": "KOSDAQ",
+        "regime": "BEAR",
+        "signals": 896,
+        "tickers": 434,
+        "avg_1d_pct": 3.328670413542342,
+        "win_1d_pct": 66.62591687041565,
+        "avg_2d_pct": 2.781901769236047,
+        "win_2d_pct": 63.691931540342296,
+        "avg_3d_pct": 2.735639252132462,
+        "win_3d_pct": 60.757946210268955,
+        "avg_5d_pct": 2.45955847320429,
+        "win_5d_pct": 52.567237163814184
+      },
+      {
+        "market": "KOSPI",
+        "regime": "BEAR",
+        "signals": 422,
+        "tickers": 348,
+        "avg_1d_pct": 0.12390259326939097,
+        "win_1d_pct": 62.03966005665722,
+        "avg_2d_pct": -1.3563335363774536,
+        "win_2d_pct": 65.72237960339945,
+        "avg_3d_pct": 1.1032132923188125,
+        "win_3d_pct": 65.72237960339945,
+        "avg_5d_pct": 2.198764983096523,
+        "win_5d_pct": 66.85552407932012
+      },
+      {
+        "market": "KOSPI",
+        "regime": "NEUTRAL",
+        "signals": 83,
+        "tickers": 83,
+        "avg_1d_pct": 0.7461349734861344,
+        "win_1d_pct": 55.42168674698795,
+        "avg_2d_pct": 2.3248070765730042,
+        "win_2d_pct": 61.44578313253012,
+        "avg_3d_pct": 3.5529460630099985,
+        "win_3d_pct": 57.831325301204814,
+        "avg_5d_pct": -2.0543887571107984,
+        "win_5d_pct": 30.120481927710845
+      },
+      {
+        "market": "US",
+        "regime": "BULL",
+        "signals": 215,
+        "tickers": 57,
+        "avg_1d_pct": -0.2640372926112952,
+        "win_1d_pct": 40.46511627906977,
+        "avg_2d_pct": -0.3533730914498831,
+        "win_2d_pct": 53.02325581395348,
+        "avg_3d_pct": -1.730547114065749,
+        "win_3d_pct": 43.25581395348837,
+        "avg_5d_pct": -3.203337453935042,
+        "win_5d_pct": 32.55813953488372
+      }
+    ],
+    "worst_regimes_5d": [
+      {
+        "market": "US",
+        "regime": "BEAR",
+        "signals": 63,
+        "tickers": 38,
+        "avg_1d_pct": 0.7529116917927504,
+        "win_1d_pct": 68.25396825396825,
+        "avg_2d_pct": 1.2789301503323234,
+        "win_2d_pct": 50.79365079365079,
+        "avg_3d_pct": 0.2643914924197572,
+        "win_3d_pct": 53.96825396825397,
+        "avg_5d_pct": -6.119293326831652,
+        "win_5d_pct": 12.698412698412698
+      },
+      {
+        "market": "US",
+        "regime": "NEUTRAL",
+        "signals": 294,
+        "tickers": 66,
+        "avg_1d_pct": -0.5238119279499767,
+        "win_1d_pct": 48.97959183673469,
+        "avg_2d_pct": -1.993222079427884,
+        "win_2d_pct": 37.07482993197279,
+        "avg_3d_pct": -3.108570327817716,
+        "win_3d_pct": 30.952380952380953,
+        "avg_5d_pct": -4.8908666107373175,
+        "win_5d_pct": 21.08843537414966
+      },
+      {
+        "market": "KOSDAQ",
+        "regime": "NEUTRAL",
+        "signals": 119,
+        "tickers": 66,
+        "avg_1d_pct": 0.539885811032574,
+        "win_1d_pct": 45.378151260504204,
+        "avg_2d_pct": -2.5617497995268463,
+        "win_2d_pct": 40.33613445378151,
+        "avg_3d_pct": 0.27924823377160096,
+        "win_3d_pct": 44.537815126050425,
+        "avg_5d_pct": -3.2759395534816806,
+        "win_5d_pct": 27.73109243697479
+      },
+      {
+        "market": "US",
+        "regime": "BULL",
+        "signals": 215,
+        "tickers": 57,
+        "avg_1d_pct": -0.2640372926112952,
+        "win_1d_pct": 40.46511627906977,
+        "avg_2d_pct": -0.3533730914498831,
+        "win_2d_pct": 53.02325581395348,
+        "avg_3d_pct": -1.730547114065749,
+        "win_3d_pct": 43.25581395348837,
+        "avg_5d_pct": -3.203337453935042,
+        "win_5d_pct": 32.55813953488372
+      },
+      {
+        "market": "KOSPI",
+        "regime": "NEUTRAL",
+        "signals": 83,
+        "tickers": 83,
+        "avg_1d_pct": 0.7461349734861344,
+        "win_1d_pct": 55.42168674698795,
+        "avg_2d_pct": 2.3248070765730042,
+        "win_2d_pct": 61.44578313253012,
+        "avg_3d_pct": 3.5529460630099985,
+        "win_3d_pct": 57.831325301204814,
+        "avg_5d_pct": -2.0543887571107984,
+        "win_5d_pct": 30.120481927710845
+      },
+      {
+        "market": "KOSPI",
+        "regime": "BEAR",
+        "signals": 422,
+        "tickers": 348,
+        "avg_1d_pct": 0.12390259326939097,
+        "win_1d_pct": 62.03966005665722,
+        "avg_2d_pct": -1.3563335363774536,
+        "win_2d_pct": 65.72237960339945,
+        "avg_3d_pct": 1.1032132923188125,
+        "win_3d_pct": 65.72237960339945,
+        "avg_5d_pct": 2.198764983096523,
+        "win_5d_pct": 66.85552407932012
+      }
+    ]
+  }
+}

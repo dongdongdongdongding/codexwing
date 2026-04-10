@@ -1,0 +1,397 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+      "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "2.5",
+      "AG_AMEX_MOONSHOT_MAX_PRICE": "25",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA": "28",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "40",
+      "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "4.0",
+      "AG_AMEX_MOONSHOT_MIN_PRICE": "0.7",
+      "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "6.0",
+      "AG_AMEX_MOONSHOT_MIN_RS": "-12.0",
+      "AG_AMEX_MOONSHOT_MIN_SCORE": "62",
+      "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.8",
+      "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "78",
+      "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+      "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "20",
+      "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+      "AG_AMEX_MOONSHOT_SUB7_BONUS": "10.0",
+      "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "8.0",
+      "AG_AMEX_RED_MIN_CONVICTION": "56",
+      "AG_AMEX_SCAN_MIN_CLEAN_PROB": "38",
+      "AG_AMEX_SCAN_MIN_PROB": "42",
+      "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+      "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+      "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+      "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+      "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+      "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+      "AG_INTRADAY_US_MIN_VOLUME": "40000",
+      "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+      "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+      "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+      "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+      "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+      "AG_KOSPI_MIN_TURNOVER": "10000000000",
+      "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "40",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+      "AG_US_SIGNAL_LOOKBACK": "10",
+      "AG_US_SIGNAL_MIN_HITS": "1"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 9,
+      "filtered_symbols": [
+        "IMO",
+        "CBOE",
+        "PHYS",
+        "PSLV",
+        "EQX",
+        "CEF",
+        "BMNR",
+        "UEC",
+        "ORLA"
+      ],
+      "reject_details_by_symbol": {
+        "BMNR": [
+          {
+            "reason": "US_BASELINE_FILTER_FAIL"
+          }
+        ],
+        "CBOE": [
+          {
+            "ai_prob": 26.1,
+            "alpha_score": 39.0,
+            "amex_features": {
+              "breakout_10d": false,
+              "breakout_20d": false,
+              "close_to_high_pct": 0.7,
+              "gap_pct": -0.37,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 28.0,
+              "price": 281.375,
+              "range_pct": 1.2,
+              "strategy_type": "WAIT",
+              "volume_ratio": 0.82
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "CEF": [
+          {
+            "ai_prob": 40.3,
+            "alpha_score": 41.0,
+            "amex_features": {
+              "breakout_10d": false,
+              "breakout_20d": false,
+              "close_to_high_pct": 0.18,
+              "gap_pct": 0.78,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 37.4,
+              "price": 48.485,
+              "range_pct": 1.55,
+              "strategy_type": "REVERSAL",
+              "volume_ratio": 0.67
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "EQX": [
+          {
+            "ai_prob": 35.8,
+            "alpha_score": 59.0,
+            "amex_features": {
+              "breakout_10d": true,
+              "breakout_20d": false,
+              "close_to_high_pct": 0.03,
+              "gap_pct": 2.21,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 60.5,
+              "price": 15.235,
+              "range_pct": 5.02,
+              "strategy_type": "REVERSAL",
+              "volume_ratio": 1.01
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "IMO": [
+          {
+            "ai_prob": 15.2,
+            "alpha_score": 48.0,
+            "amex_features": {
+              "breakout_10d": false,
+              "breakout_20d": false,
+              "close_to_high_pct": 0.86,
+              "gap_pct": -1.81,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 30.8,
+              "price": 129.31,
+              "range_pct": 2.32,
+              "strategy_type": "WAIT",
+              "volume_ratio": 1.11
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "ORLA": [
+          {
+            "ai_prob": 37.1,
+            "alpha_score": 61.0,
+            "amex_features": {
+              "breakout_10d": true,
+              "breakout_20d": false,
+              "close_to_high_pct": 0.06,
+              "gap_pct": 2.67,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 61.7,
+              "price": 17.32,
+              "range_pct": 6.12,
+              "strategy_type": "WAIT",
+              "volume_ratio": 1.35
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "PHYS": [
+          {
+            "ai_prob": 15.2,
+            "alpha_score": 48.0,
+            "amex_features": {
+              "breakout_10d": false,
+              "breakout_20d": false,
+              "close_to_high_pct": 0.01,
+              "gap_pct": 1.19,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 37.2,
+              "price": 36.2577,
+              "range_pct": 1.32,
+              "strategy_type": "REVERSAL",
+              "volume_ratio": 0.93
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "PSLV": [
+          {
+            "ai_prob": 23.3,
+            "alpha_score": 49.0,
+            "amex_features": {
+              "breakout_10d": false,
+              "breakout_20d": false,
+              "close_to_high_pct": 0.01,
+              "gap_pct": -0.25,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 38.1,
+              "price": 24.5976,
+              "range_pct": 1.99,
+              "strategy_type": "REVERSAL",
+              "volume_ratio": 0.68
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ],
+        "UEC": [
+          {
+            "ai_prob": 25.0,
+            "alpha_score": 59.0,
+            "amex_features": {
+              "breakout_10d": true,
+              "breakout_20d": false,
+              "close_to_high_pct": 2.3,
+              "gap_pct": 3.33,
+              "is_pre_surge": false,
+              "is_sub7": false,
+              "moonshot_score": 48.5,
+              "price": 14.13,
+              "range_pct": 4.56,
+              "strategy_type": "WAIT",
+              "volume_ratio": 0.89
+            },
+            "policy": {
+              "ai_min": 5,
+              "alpha_min": 75,
+              "avg_5d_pct": -1.9785067638158298,
+              "mode": "avoid",
+              "objective": 18.448716180920854,
+              "samples": 32,
+              "win_5d_pct": 46.875
+            },
+            "reason": "MARKET_POLICY_AVOID"
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "MARKET_POLICY_AVOID": 8,
+        "US_BASELINE_FILTER_FAIL": 1
+      },
+      "reject_reasons_by_symbol": {
+        "BMNR": "US_BASELINE_FILTER_FAIL",
+        "CBOE": "MARKET_POLICY_AVOID",
+        "CEF": "MARKET_POLICY_AVOID",
+        "EQX": "MARKET_POLICY_AVOID",
+        "IMO": "MARKET_POLICY_AVOID",
+        "ORLA": "MARKET_POLICY_AVOID",
+        "PHYS": "MARKET_POLICY_AVOID",
+        "PSLV": "MARKET_POLICY_AVOID",
+        "UEC": "MARKET_POLICY_AVOID"
+      },
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 40.0,
+        "min_alpha_down": 55.0
+      },
+      "us_signal_window": {
+        "lookback": 10,
+        "min_hits": 1
+      }
+    },
+    "macro_ctx": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1511.4200439453125,
+      "krw_change_1d": -0.31,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 1.02,
+      "tnx": 4.302999973297119,
+      "tnx_change_1d": -0.19,
+      "vix": 23.889999389648438,
+      "vix_change_1d": -5.39
+    },
+    "market": "AMEX",
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 5.674884400802028,
+      "kosdaq_session_date": "2026-04-01",
+      "kosdaq_source": "hourly_fallback",
+      "kospi_chg": 7.574149047316273,
+      "kospi_session_date": "2026-04-01",
+      "kospi_source": "hourly_fallback",
+      "live_mode": false,
+      "msg": "종가 시장 정상: KOSPI +7.57% / KOSDAQ +5.67% — 스캔 조건 양호 [hourly_fallback / hourly_fallback]"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6621<6790)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "scan_mode": "SWING",
+    "strategy_family": "AMEX_MOONSHOT",
+    "total_scans": 10,
+    "warnings": []
+  },
+  "results": [
+    {
+      "1D Change": "+5.74%",
+      "AI Prob": "74.4%",
+      "Antigrav": 62,
+      "Clean Hit": "59.4%",
+      "Consecutive": "2 UP",
+      "Context": "-",
+      "Conviction": 61.4,
+      "Decision Score": 69.4,
+      "Entry(-2%)": "4.69",
+      "Hold": "3d",
+      "Name": "BTG",
+      "Position": "💤 조정 (Resting)",
+      "RS vs SPY": "+13.9% vs SPY",
+      "Stop": "4.46 (-5.0%)",
+      "Strategy": "🚀 AMEX Moonshot | Sub-$7 | 🎣 RSI_DIV",
+      "Surge": "-",
+      "Target": "5.07",
+      "Ticker": "BTG",
+      "Tier": "⭐T2",
+      "Trend": "DOWN",
+      "Volume": "⚠️ x1.0",
+      "WR": "51%",
+      "Whale": "55.0pts",
+      "_prob_5": 74.4,
+      "_prob_clean": 59.4,
+      "_tier_sort": 2
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "candidates": [
+    {
+      "feature_snapshot": {
+        "antigrav": 70,
+        "position": "🚀 상승 (Rising)",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ 1.0",
+        "whale": "85.0점 🔥 가속매수"
+      },
+      "reasons": [
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세)",
+        "추세: UP"
+      ],
+      "score": 115.0,
+      "score_breakdown": {
+        "antigrav": 70.0,
+        "decision_score": 115.0,
+        "whale_score": 85.0
+      },
+      "ticker": "098070.KQ",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 70,
+        "position": "🚀 상승 (Rising)",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ 0.6",
+        "whale": "85.0점 🔥 가속매수"
+      },
+      "reasons": [
+        "전략: 🚀 Momentum",
+        "추세: UP"
+      ],
+      "score": 83.3,
+      "score_breakdown": {
+        "antigrav": 70.0,
+        "decision_score": 83.3,
+        "whale_score": 85.0
+      },
+      "ticker": "476060.KQ",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 82,
+        "position": "🌋 고점 (Peak)",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "✅ 8.8",
+        "whale": "15.0점 🔻 가속매도"
+      },
+      "reasons": [
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세)",
+        "추세: UP"
+      ],
+      "score": 83.9,
+      "score_breakdown": {
+        "antigrav": 82.0,
+        "decision_score": 83.9,
+        "whale_score": 15.0
+      },
+      "ticker": "289080.KQ",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 77,
+        "position": "🌋 고점 (Peak)",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "✅ 4.1",
+        "whale": "76.0점 🔥 가속매수"
+      },
+      "reasons": [
+        "전략: 🚀 Momentum | ⚡ 단기과열(강세)",
+        "추세: UP"
+      ],
+      "score": 97.4,
+      "score_breakdown": {
+        "antigrav": 77.0,
+        "decision_score": 97.4,
+        "whale_score": 76.0
+      },
+      "ticker": "137950.KQ",
+      "warnings": []
+    }
+  ],
+  "produced_at": "2026-03-30T22:56:36.775431+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-30T22:56:36.775333+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-22964100",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "summary": {
+    "candidate_count": 4,
+    "source": "legacy_streamlit_scanner",
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

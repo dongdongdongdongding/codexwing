@@ -1,0 +1,107 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 11,
+    "reason": "MARKET_POLICY_AVOID"
+  },
+  "current_total_scans": 12,
+  "exception_leaders": {
+    "applied": false,
+    "considered_filtered_symbols": 12,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "fallback_watchlist": {
+    "applied": true,
+    "considered_dev_runs": 1,
+    "source_profile": "dev",
+    "source_run_id": "RUN-BB782D22",
+    "tickers": [
+      "373220.KS"
+    ],
+    "watchlist_meta": [
+      {
+        "expires_at": "2026-04-12T17:08:09.740825+00:00",
+        "generated_at": "2026-04-09T17:08:09.740825+00:00",
+        "horizon_days": 3,
+        "phase25_recommended_threshold": 60.0,
+        "phase25_shadow_prob": 63.6,
+        "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+        "phase25_variant": "phase25_kr_intraday_xgboost",
+        "primary_theme": "2차전지",
+        "reason": "prod_zero_streak_alert",
+        "risk_label": "HIGH_RISK_FALLBACK",
+        "scan_mode": "INTRADAY",
+        "secondary_themes": [
+          "자동차",
+          "친환경/에너지"
+        ],
+        "source_profile": "dev",
+        "source_run_id": "RUN-BB782D22",
+        "stock_name": "LG에너지솔루션",
+        "strategy_family": "KR_CORE",
+        "theme_inference_status": "inferred",
+        "theme_routing_path": "core_only",
+        "theme_source": "stock_master",
+        "ticker": "373220.KS"
+      }
+    ]
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 5,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-04-09T17:08:08.949598+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 10,
+  "history_window_runs_seen": 80,
+  "market": "KOSPI",
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 70,
+      "result_count": 5,
+      "runs": 6,
+      "top_reject_reason": {
+        "count": 45,
+        "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT"
+      },
+      "total_scans": 75,
+      "weighted_filtered_rate_pct": 93.33,
+      "weighted_pass_rate_pct": 6.67,
+      "zero_result_runs": 1
+    },
+    "prod": {
+      "filtered_count": 15,
+      "result_count": 0,
+      "runs": 4,
+      "top_reject_reason": {
+        "count": 4,
+        "reason": "MARKET_POLICY_AVOID"
+      },
+      "total_scans": 15,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 4
+    }
+  },
+  "run_id": "RUN-F82B897C",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 11,
+    "mode": "avoid",
+    "policy": {
+      "ai_min": 35,
+      "alpha_min": 45,
+      "avg_5d_pct": 6.3555079577746865,
+      "mode": "avoid",
+      "objective": 50.35087312220677,
+      "samples": 3,
+      "win_5d_pct": 33.33333333333333
+    },
+    "total_rejects": 12,
+    "watchlist_count": 1
+  }
+}

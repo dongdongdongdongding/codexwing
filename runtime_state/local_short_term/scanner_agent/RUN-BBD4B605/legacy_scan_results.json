@@ -1,0 +1,489 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_AMEX_MOONSHOT_BREAKOUT_LOOKBACK": "20",
+      "AG_AMEX_MOONSHOT_MAX_CLOSE_TO_HIGH_PCT": "2.5",
+      "AG_AMEX_MOONSHOT_MAX_PRICE": "25",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA": "28",
+      "AG_AMEX_MOONSHOT_MIN_ALPHA_DOWN": "40",
+      "AG_AMEX_MOONSHOT_MIN_DAY_CHANGE": "4.0",
+      "AG_AMEX_MOONSHOT_MIN_PRICE": "0.7",
+      "AG_AMEX_MOONSHOT_MIN_RANGE_PCT": "6.0",
+      "AG_AMEX_MOONSHOT_MIN_RS": "-12.0",
+      "AG_AMEX_MOONSHOT_MIN_SCORE": "62",
+      "AG_AMEX_MOONSHOT_MIN_VOLUME_RATIO": "1.8",
+      "AG_AMEX_MOONSHOT_POLICY_OVERRIDE_SCORE": "78",
+      "AG_AMEX_MOONSHOT_PREFERRED_MAX_PRICE": "7.0",
+      "AG_AMEX_MOONSHOT_SIGNAL_LOOKBACK": "20",
+      "AG_AMEX_MOONSHOT_SIGNAL_MIN_HITS": "0",
+      "AG_AMEX_MOONSHOT_SUB7_BONUS": "10.0",
+      "AG_AMEX_MOONSHOT_SUB7_BREAKOUT_BONUS": "8.0",
+      "AG_AMEX_RED_MIN_CONVICTION": "56",
+      "AG_AMEX_SCAN_MIN_CLEAN_PROB": "38",
+      "AG_AMEX_SCAN_MIN_PROB": "42",
+      "AG_INTRADAY_AMEX_MIN_TURNOVER": "400000",
+      "AG_INTRADAY_AMEX_MIN_VOLUME": "20000",
+      "AG_INTRADAY_KOSDAQ_MIN_TURNOVER": "300000000",
+      "AG_INTRADAY_KOSPI_MIN_TURNOVER": "700000000",
+      "AG_INTRADAY_KR_MIN_VOLUME": "20000",
+      "AG_INTRADAY_US_MIN_TURNOVER": "1500000",
+      "AG_INTRADAY_US_MIN_VOLUME": "40000",
+      "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+      "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+      "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+      "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+      "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+      "AG_KOSPI_MIN_TURNOVER": "10000000000",
+      "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "40",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+      "AG_US_SIGNAL_LOOKBACK": "10",
+      "AG_US_SIGNAL_MIN_HITS": "1"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 20,
+      "filtered_symbols": [
+        "086520.KQ",
+        "247540.KQ",
+        "196170.KQ",
+        "277810.KQ",
+        "000250.KQ",
+        "298380.KQ",
+        "950160.KQ",
+        "058470.KQ",
+        "028300.KQ",
+        "141080.KQ",
+        "087010.KQ",
+        "240810.KQ",
+        "039030.KQ",
+        "310210.KQ",
+        "095340.KQ",
+        "214370.KQ",
+        "403870.KQ",
+        "108490.KQ",
+        "263750.KQ",
+        "032820.KQ"
+      ],
+      "reject_details_by_symbol": {
+        "000250.KQ": [
+          {
+            "alpha_score": 41.0,
+            "conviction_score": 45.3,
+            "market_gate": "GREEN",
+            "pf": 1.36,
+            "position": "➡️ 중립 (Neutral)",
+            "prob_5": 16.7,
+            "prob_clean": 17.9,
+            "real_trend": "UP",
+            "stage": "precision_gate",
+            "stock_name": "삼천당제약",
+            "strategy_type": "WAIT",
+            "ticker": "000250.KQ",
+            "tier_sort": 3,
+            "wr": 48.91
+          }
+        ],
+        "028300.KQ": [
+          {
+            "alpha_score": 76.0,
+            "conviction_score": 52.7,
+            "market_gate": "GREEN",
+            "pf": 1.8,
+            "position": "🌋 고점 (Peak)",
+            "prob_5": 16.6,
+            "prob_clean": 23.1,
+            "real_trend": "DOWN",
+            "stage": "precision_gate",
+            "stock_name": "HLB",
+            "strategy_type": "WAIT",
+            "ticker": "028300.KQ",
+            "tier_sort": 3,
+            "wr": 56.73
+          }
+        ],
+        "032820.KQ": [
+          {
+            "alpha_score": 42.0,
+            "conviction_score": 56.4,
+            "market_gate": "GREEN",
+            "pf": 1.65,
+            "position": "🚀 상승 (Rising)",
+            "prob_5": 24.3,
+            "prob_clean": 37.2,
+            "real_trend": "UP",
+            "stage": "precision_gate",
+            "stock_name": "우리기술",
+            "strategy_type": "WAIT",
+            "ticker": "032820.KQ",
+            "tier_sort": 3,
+            "wr": 45.24
+          }
+        ],
+        "039030.KQ": [
+          {
+            "alpha_score": 73.0,
+            "conviction_score": 69.0,
+            "market_gate": "GREEN",
+            "pf": 1.19,
+            "position": "🚀 상승 (Rising)",
+            "prob_5": 16.5,
+            "prob_clean": 29.0,
+            "real_trend": "UP",
+            "stage": "precision_gate",
+            "stock_name": "이오테크닉스",
+            "strategy_type": "WAIT",
+            "ticker": "039030.KQ",
+            "tier_sort": 3,
+            "wr": 51.08
+          }
+        ],
+        "058470.KQ": [
+          {
+            "alpha_score": 60.0,
+            "conviction_score": 61.8,
+            "market_gate": "GREEN",
+            "pf": 1.46,
+            "position": "🚀 상승 (Rising)",
+            "prob_5": 20.4,
+            "prob_clean": 28.7,
+            "real_trend": "UP",
+            "stage": "precision_gate",
+            "stock_name": "리노공업",
+            "strategy_type": "WAIT",
+            "ticker": "058470.KQ",
+            "tier_sort": 3,
+            "wr": 47.69
+          }
+        ],
+        "086520.KQ": [
+          {
+            "alpha_score": 63.0,
+            "conviction_score": 41.2,
+            "market_gate": "GREEN",
+            "pf": 1.68,
+            "position": "💤 조정 (Resting)",
+            "prob_5": 20.2,
+            "prob_clean": 28.9,
+            "real_trend": "DOWN",
+            "stage": "precision_gate",
+            "stock_name": "에코프로",
+            "strategy_type": "WAIT",
+            "ticker": "086520.KQ",
+            "tier_sort": 3,
+            "wr": 51.96
+          }
+        ],
+        "087010.KQ": [
+          {
+            "alpha_score": 41.0,
+            "conviction_score": 45.9,
+            "market_gate": "GREEN",
+            "pf": 1.5,
+            "position": "🚀 상승 (Rising)",
+            "prob_5": 17.8,
+            "prob_clean": 29.3,
+            "real_trend": "UP",
+            "stage": "precision_gate",
+            "stock_name": "펩트론",
+            "strategy_type": "WAIT",
+            "ticker": "087010.KQ",
+            "tier_sort": 3,
+            "wr": 51.64
+          }
+        ],
+        "095340.KQ": [
+          {
+            "alpha_score": 78.0,
+            "conviction_score": 61.0,
+            "market_gate": "GREEN",
+            "pf": 1.31,
+            "position": "🌋 고점 (Peak)",
+            "prob_5": 14.5,
+            "prob_clean": 18.1,
+            "real_trend": "UP",
+            "stage": "precision_gate",
+            "stock_name": "ISC",
+            "strategy_type": "WAIT",
+            "ticker": "095340.KQ",
+            "tier_sort": 3,
+            "wr": 43.38
+          }
+        ],
+        "108490.KQ": [
+          {
+            "alpha_score": 46.0,
+            "market_gate": "GREEN",
+            "market_type": "KR",
+            "ml_prob": 23.0,
+            "pf": 1.19,
+            "real_trend": "DOWN",
+            "signal_hits": 2,
+            "signal_lookback": 10,
+            "stage": "hard_filter",
+            "stock_name": "로보티즈",
+            "strategy_type": "WAIT",
+            "ticker": "108490.KQ",
+            "tier_sort": 3,
+            "wr": 48.12
+          }
+        ],
+        "141080.KQ": [
+          {
+            "alpha_score": 23.0,
+            "market_gate": "GREEN",
+            "market_type": "KR",
+            "ml_prob": 17.0,
+            "pf": 1.36,
+            "real_trend": "UP",
+            "signal_hits": 1,
+            "signal_lookback": 10,
+            "stage": "hard_filter",
+            "stock_name": "리가켐바이오",
+            "strategy_type": "REVERSAL",
+            "ticker": "141080.KQ",
+            "tier_sort": 3,
+            "wr": 50.78
+          }
+        ],
+        "196170.KQ": [
+          {
+            "signal_hits": 0,
+            "signal_lookback": 10,
+            "stage": "signal_window",
+            "stock_name": "알테오젠",
+            "ticker": "196170.KQ"
+          }
+        ],
+        "214370.KQ": [
+          {
+            "alpha_score": 31.0,
+            "market_gate": "GREEN",
+            "market_type": "KR",
+            "ml_prob": 19.9,
+            "pf": 1.82,
+            "real_trend": "DOWN",
+            "signal_hits": 1,
+            "signal_lookback": 10,
+            "stage": "hard_filter",
+            "stock_name": "케어젠",
+            "strategy_type": "WAIT",
+            "ticker": "214370.KQ",
+            "tier_sort": 3,
+            "wr": 56.0
+          }
+        ],
+        "240810.KQ": [
+          {
+            "is_market_leader": false,
+            "ml_prob": 26.0,
+            "pf": 0.74,
+            "signal_hits": 1,
+            "signal_lookback": 10,
+            "stage": "baseline_filter",
+            "stock_name": "원익IPS",
+            "strategy_type": "WAIT",
+            "ticker": "240810.KQ",
+            "wr": 36.89
+          }
+        ],
+        "247540.KQ": [
+          {
+            "alpha_score": 67.0,
+            "conviction_score": 48.7,
+            "market_gate": "GREEN",
+            "pf": 1.27,
+            "position": "💤 조정 (Resting)",
+            "prob_5": 18.5,
+            "prob_clean": 26.9,
+            "real_trend": "DOWN",
+            "stage": "precision_gate",
+            "stock_name": "에코프로비엠",
+            "strategy_type": "WAIT",
+            "ticker": "247540.KQ",
+            "tier_sort": 2,
+            "wr": 50.93
+          }
+        ],
+        "263750.KQ": [
+          {
+            "alpha_score": 41.0,
+            "conviction_score": 54.4,
+            "market_gate": "GREEN",
+            "pf": 0.8,
+            "position": "🚀 상승 (Rising)",
+            "prob_5": 19.3,
+            "prob_clean": 26.2,
+            "real_trend": "UP",
+            "stage": "precision_gate",
+            "stock_name": "펄어비스",
+            "strategy_type": "WAIT",
+            "ticker": "263750.KQ",
+            "tier_sort": 3,
+            "wr": 48.72
+          }
+        ],
+        "277810.KQ": [
+          {
+            "alpha_score": 60.0,
+            "conviction_score": 40.0,
+            "market_gate": "GREEN",
+            "pf": 1.86,
+            "position": "💤 조정 (Resting)",
+            "prob_5": 17.7,
+            "prob_clean": 32.3,
+            "real_trend": "DOWN",
+            "stage": "precision_gate",
+            "stock_name": "레인보우로보틱스",
+            "strategy_type": "WAIT",
+            "ticker": "277810.KQ",
+            "tier_sort": 3,
+            "wr": 48.25
+          }
+        ],
+        "298380.KQ": [
+          {
+            "signal_hits": 0,
+            "signal_lookback": 10,
+            "stage": "signal_window",
+            "stock_name": "에이비엘바이오",
+            "ticker": "298380.KQ"
+          }
+        ],
+        "310210.KQ": [
+          {
+            "alpha_score": 12.0,
+            "market_gate": "GREEN",
+            "market_type": "KR",
+            "ml_prob": 16.2,
+            "pf": 1.2,
+            "real_trend": "UP",
+            "signal_hits": 2,
+            "signal_lookback": 10,
+            "stage": "hard_filter",
+            "stock_name": "보로노이",
+            "strategy_type": "WAIT",
+            "ticker": "310210.KQ",
+            "tier_sort": 3,
+            "wr": 53.19
+          }
+        ],
+        "403870.KQ": [
+          {
+            "alpha_score": 39.0,
+            "market_gate": "GREEN",
+            "market_type": "KR",
+            "ml_prob": 19.5,
+            "pf": 1.19,
+            "real_trend": "UP",
+            "signal_hits": 2,
+            "signal_lookback": 10,
+            "stage": "hard_filter",
+            "stock_name": "HPSP",
+            "strategy_type": "WAIT",
+            "ticker": "403870.KQ",
+            "tier_sort": 3,
+            "wr": 44.94
+          }
+        ],
+        "950160.KQ": [
+          {
+            "signal_hits": 0,
+            "signal_lookback": 10,
+            "stage": "signal_window",
+            "stock_name": "코오롱티슈진",
+            "ticker": "950160.KQ"
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "KR_BASELINE_FILTER_FAIL": 1,
+        "KR_HARD_FILTER_FAIL": 5,
+        "KR_SIGNAL_WINDOW_FAIL": 3,
+        "PRECISION_GATE_T3_LOW_ML_SUPPORT": 10,
+        "PRECISION_GATE_TREND_MISMATCH": 1
+      },
+      "reject_reasons_by_symbol": {
+        "000250.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "028300.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "032820.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "039030.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "058470.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "086520.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "087010.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "095340.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "108490.KQ": "KR_HARD_FILTER_FAIL",
+        "141080.KQ": "KR_HARD_FILTER_FAIL",
+        "196170.KQ": "KR_SIGNAL_WINDOW_FAIL",
+        "214370.KQ": "KR_HARD_FILTER_FAIL",
+        "240810.KQ": "KR_BASELINE_FILTER_FAIL",
+        "247540.KQ": "PRECISION_GATE_TREND_MISMATCH",
+        "263750.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "277810.KQ": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+        "298380.KQ": "KR_SIGNAL_WINDOW_FAIL",
+        "310210.KQ": "KR_HARD_FILTER_FAIL",
+        "403870.KQ": "KR_HARD_FILTER_FAIL",
+        "950160.KQ": "KR_SIGNAL_WINDOW_FAIL"
+      },
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": null,
+      "us_signal_window": null
+    },
+    "macro_ctx": {
+      "flags": [],
+      "krw": 1480.0999755859375,
+      "krw_change_1d": 0.17,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.293000221252441,
+      "tnx_change_1d": 0.05,
+      "vix": 19.489999771118164,
+      "vix_change_1d": -7.37
+    },
+    "market": "KOSDAQ",
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 1.6872513257405959,
+      "kospi_chg": 2.1389898331520345,
+      "live_mode": true,
+      "msg": "장중 시장 정상: KOSPI +2.14% / KOSDAQ +1.69% — 스캔 조건 양호 [hourly_live / hourly_live]",
+      "primary_chg": 2.1389898331520345,
+      "primary_label": "KOSPI",
+      "primary_session_date": "2026-04-10",
+      "primary_source": "hourly_live",
+      "region": "KR",
+      "secondary_chg": 1.6872513257405959,
+      "secondary_label": "KOSDAQ",
+      "secondary_session_date": "2026-04-10",
+      "secondary_source": "hourly_live",
+      "selected_market": "KOSDAQ",
+      "theme_exception_allowance": false
+    },
+    "regime": {
+      "desc": "하락장 (현재<1107<1122)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "scan_mode": "SWING",
+    "strategy_family": "KR_CORE",
+    "total_scans": 20,
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: PRECISION_GATE_T3_LOW_ML_SUPPORT (10).",
+        "severity": "warning"
+      }
+    ]
+  },
+  "results": []
+}

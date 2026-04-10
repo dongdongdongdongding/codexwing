@@ -1,0 +1,671 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1478.6700439453125,
+      "krw_change_1d": 0.07,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.58,
+      "tnx": 4.293000221252441,
+      "tnx_change_1d": 0.05,
+      "vix": 19.489999771118164,
+      "vix_change_1d": -7.37
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.716,
+        "strength_score": 40.0,
+        "theme_id": "finance",
+        "theme_name": "금융"
+      },
+      {
+        "confidence": 0.687,
+        "strength_score": 36.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.543,
+        "strength_score": 27.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼"
+      },
+      {
+        "confidence": 0.521,
+        "strength_score": 24.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체"
+      },
+      {
+        "confidence": 0.521,
+        "strength_score": 24.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      },
+      {
+        "confidence": 0.521,
+        "strength_score": 24.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화"
+      }
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": 2,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": 4,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 1,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+      "[속보] 한은, 7연속 기준금리 동결…연 2.50%",
+      "이창용 총재의 마지막 기준금리…2.5%·7연속 동결로 마무리"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "외국인 투자심리 개선과 금리 안정화가 코스피 상승을 견인하며 시장에 긍정적인 분위기를 조성.",
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "description": "외국인 투자자의 현물 및 선물 동반 순매수가 코스피 상승의 주요 동력으로 작용",
+        "evidence": "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+        "market_impact": 4,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "RATES",
+        "description": "한국은행의 기준금리 7연속 동결은 시장에 금리 관련 불확실성을 제거하고 안정감을 제공",
+        "evidence": "한은, 7연속 기준금리 동결…연 2.50%",
+        "market_impact": 1,
+        "signal": "NEUTRAL"
+      }
+    ],
+    "market_sentiment": "BULLISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "외국인 순매수",
+        "코스피 상승",
+        "금리 동결"
+      ],
+      "beneficiary_sectors": [],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.716,
+          "strength_score": 40.0,
+          "theme_id": "finance",
+          "theme_name": "금융"
+        },
+        {
+          "confidence": 0.687,
+          "strength_score": 36.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.543,
+          "strength_score": 27.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼"
+        },
+        {
+          "confidence": 0.521,
+          "strength_score": 24.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체"
+        },
+        {
+          "confidence": 0.521,
+          "strength_score": 24.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        },
+        {
+          "confidence": 0.521,
+          "strength_score": 24.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화"
+        }
+      ],
+      "company_event_bias": {
+        "자이에스앤디": 8,
+        "한화에어로스페이스": 8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "자이에스앤디",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한화에어로스페이스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "자이에스앤디",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "한화에어로스페이스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 2,
+        "ECONOMY": 2,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": 4,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 1,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+        "[속보] 한은, 7연속 기준금리 동결…연 2.50%",
+        "이창용 총재의 마지막 기준금리…2.5%·7연속 동결로 마무리"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "외국인 투자심리 개선과 금리 안정화가 코스피 상승을 견인하며 시장에 긍정적인 분위기를 조성.",
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "description": "외국인 투자자의 현물 및 선물 동반 순매수가 코스피 상승의 주요 동력으로 작용",
+          "evidence": "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+          "market_impact": 4,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "RATES",
+          "description": "한국은행의 기준금리 7연속 동결은 시장에 금리 관련 불확실성을 제거하고 안정감을 제공",
+          "evidence": "한은, 7연속 기준금리 동결…연 2.50%",
+          "market_impact": 1,
+          "signal": "NEUTRAL"
+        }
+      ],
+      "market_sentiment": "BULLISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+        "[DART 20260410] 자이에스앤디 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 한화에어로스페이스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260409] 남광토건 - 투자판단관련주요경영사항 | 전자공시",
+        "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시",
+        "[DART 20260410] 한솔홈데코 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[DART 20260410] 미래에셋증권 - 일괄신고추가서류(파생결합증권-주가연계증권) | 전자공시",
+        "[Fri, 10 Apr 2026 09:55:11 +0900] [속보] 한은, 7연속 기준금리 동결…연 2.50% | 한국경제",
+        "[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제",
+        "[Fri, 10 Apr 2026 09:52:05 +09:00] 이창용 총재의 마지막 기준금리…2.5%·7연속 동결로 마무리 | 매일경제",
+        "[Fri, 10 Apr 2026 09:50:36 +0900] [속보] 한은, 기준금리 7연속 동결…연 2.50% | 한국경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "risk_flags": [],
+      "sentiment_score": 60,
+      "source": "gemini",
+      "theme_evidence": {
+        "eco_energy": [],
+        "finance": [
+          "[DART 20260410] 미래에셋증권 - 일괄신고추가서류(파생결합증권-주가연계증권) | 전자공시",
+          "[DART 20260410] 한솔홈데코 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제"
+        ],
+        "it_platform": [],
+        "robotics": [],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "semiconductor": [],
+        "steel_materials": [
+          "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "confidence": 0.716,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260410] 미래에셋증권 - 일괄신고추가서류(파생결합증권-주가연계증권) | 전자공시",
+            "[DART 20260410] 한솔홈데코 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+            "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+            "[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제"
+          ],
+          "strength_score": 40.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-10T01:59:30.300951+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.687,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 36.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-10T01:59:30.301933+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "IT서비스/플랫폼",
+            "IT서비스",
+            "플랫폼",
+            "소프트웨어",
+            "SW",
+            "클라우드"
+          ],
+          "confidence": 0.543,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [],
+          "strength_score": 27.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "updated_at": "2026-04-10T01:59:30.300839+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "반도체",
+            "메모리",
+            "HBM",
+            "낸드",
+            "DRAM",
+            "파운드리"
+          ],
+          "confidence": 0.521,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 24.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-10T01:59:30.301243+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ],
+          "confidence": 0.521,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 24.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-10T01:59:30.301731+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "로봇/자동화",
+            "로봇",
+            "자동화",
+            "스마트팩토리",
+            "협동로봇",
+            "물류로봇"
+          ],
+          "confidence": 0.521,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY"
+          ],
+          "evidence": [],
+          "strength_score": 24.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "updated_at": "2026-04-10T01:59:30.301813+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "steel_materials",
+          "theme_name": "철강/금속/소재",
+          "updated_at": "2026-04-10T01:59:30.300482+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "외국인 투자자의 현물 및 선물 동반 순매수 전환으로 코스피 상승 견인",
+          "impact": "POSITIVE",
+          "theme": "외국인 투자심리 개선"
+        },
+        {
+          "description": "한국은행의 7연속 기준금리 동결로 시장의 금리 관련 불확실성 감소",
+          "impact": "NEUTRAL",
+          "theme": "금리 안정화"
+        }
+      ],
+      "timestamp": "2026-04-10 10:59",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+      "[DART 20260410] 자이에스앤디 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 한화에어로스페이스 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260409] 남광토건 - 투자판단관련주요경영사항 | 전자공시",
+      "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시",
+      "[DART 20260410] 한솔홈데코 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+      "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+      "[DART 20260410] 미래에셋증권 - 일괄신고추가서류(파생결합증권-주가연계증권) | 전자공시",
+      "[Fri, 10 Apr 2026 09:55:11 +0900] [속보] 한은, 7연속 기준금리 동결…연 2.50% | 한국경제",
+      "[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제",
+      "[Fri, 10 Apr 2026 09:52:05 +09:00] 이창용 총재의 마지막 기준금리…2.5%·7연속 동결로 마무리 | 매일경제",
+      "[Fri, 10 Apr 2026 09:50:36 +0900] [속보] 한은, 기준금리 7연속 동결…연 2.50% | 한국경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달"
+    ],
+    "risk_flags": [],
+    "sentiment_score": 60,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "eco_energy": [],
+      "finance": [
+        "[DART 20260410] 미래에셋증권 - 일괄신고추가서류(파생결합증권-주가연계증권) | 전자공시",
+        "[DART 20260410] 한솔홈데코 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제"
+      ],
+      "it_platform": [],
+      "robotics": [],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "semiconductor": [],
+      "steel_materials": [
+        "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "confidence": 0.716,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260410] 미래에셋증권 - 일괄신고추가서류(파생결합증권-주가연계증권) | 전자공시",
+          "[DART 20260410] 한솔홈데코 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "[Fri, 10 Apr 2026 09:54:56 +09:00] “쓰는 돈, 모으는 돈 따로 관리”…하나은행 모임통장 출시 | 매일경제"
+        ],
+        "strength_score": 40.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-10T01:59:30.300951+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.687,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 36.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-10T01:59:30.301933+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "IT서비스/플랫폼",
+          "IT서비스",
+          "플랫폼",
+          "소프트웨어",
+          "SW",
+          "클라우드"
+        ],
+        "confidence": 0.543,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [],
+        "strength_score": 27.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "updated_at": "2026-04-10T01:59:30.300839+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "반도체",
+          "메모리",
+          "HBM",
+          "낸드",
+          "DRAM",
+          "파운드리"
+        ],
+        "confidence": 0.521,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 24.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-10T01:59:30.301243+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ],
+        "confidence": 0.521,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 24.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-10T01:59:30.301731+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "로봇/자동화",
+          "로봇",
+          "자동화",
+          "스마트팩토리",
+          "협동로봇",
+          "물류로봇"
+        ],
+        "confidence": 0.521,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY"
+        ],
+        "evidence": [],
+        "strength_score": 24.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "updated_at": "2026-04-10T01:59:30.301813+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "steel_materials",
+        "theme_name": "철강/금속/소재",
+        "updated_at": "2026-04-10T01:59:30.300482+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-10T01:59:30.304177+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-10T01:58:27.274623+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-FB280ABB",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

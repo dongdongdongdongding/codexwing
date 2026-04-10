@@ -1,0 +1,762 @@
+{
+  "generated_at": "2026-04-10T05:08:44.014082+00:00",
+  "market": "KOSPI",
+  "market_group": "KR",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "macro_overlay": {
+    "status": "live_macro",
+    "macro_state": "NORMAL",
+    "macro_risk_score": 0.0,
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "flags": [],
+    "raw_context": {
+      "macro_state": "NORMAL",
+      "macro_risk_score": 0,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "flags": [],
+      "vix": 19.489999771118164,
+      "vix_change_1d": -7.37,
+      "tnx": 4.293000221252441,
+      "tnx_change_1d": 0.05,
+      "krw": 1480.219970703125,
+      "krw_change_1d": NaN,
+      "spy_change_1d": 0.58
+    }
+  },
+  "news_impact": {
+    "status": "live_intel",
+    "market_sentiment": "MIXED",
+    "sentiment_score": 20,
+    "headline_count": 15,
+    "evidence_headlines": [
+      "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+      "한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향”",
+      "여야, 농어민 고유가 부담 완화 예산 2천억 반영",
+      "한화에어로스페이스 - 단일판매ㆍ공급계약체결"
+    ],
+    "raw_headlines": [
+      "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+      "[Fri, 10 Apr 2026 13:05:12 +09:00] 한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향” | 매일경제",
+      "[DART 20260410] HJ중공업 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 자이에스앤디 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 한화에어로스페이스 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+      "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+      "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+      "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+      "[Fri, 10 Apr 2026 13:59:26 +0900] 퇴임 앞둔 이창용 한은총재 \"금리 결정 잘해왔다고 생각\" | 연합뉴스",
+      "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제",
+      "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스",
+      "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달"
+    ],
+    "beneficiary_sectors": [
+      "조선",
+      "건설",
+      "방산"
+    ],
+    "victim_sectors": [],
+    "theme_states": [
+      {
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "direction": "BENEFICIARY",
+        "strength_score": 48.0,
+        "confidence": 0.773,
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+          "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+          "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+        ],
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T05:08:44.010593+00:00"
+      },
+      {
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "direction": "BENEFICIARY",
+        "strength_score": 37.0,
+        "confidence": 0.614,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [
+          "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
+        ],
+        "beneficiary_keywords": [
+          "IT서비스/플랫폼",
+          "IT서비스",
+          "플랫폼",
+          "소프트웨어",
+          "SW",
+          "클라우드"
+        ],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T05:08:44.010410+00:00"
+      },
+      {
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "direction": "BENEFICIARY",
+        "strength_score": 27.0,
+        "confidence": 0.543,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "반도체",
+          "메모리",
+          "HBM",
+          "낸드",
+          "DRAM",
+          "파운드리"
+        ],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T05:08:44.010958+00:00"
+      },
+      {
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "direction": "BENEFICIARY",
+        "strength_score": 27.0,
+        "confidence": 0.543,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "로봇/자동화",
+          "로봇",
+          "자동화",
+          "스마트팩토리",
+          "협동로봇",
+          "물류로봇"
+        ],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T05:08:44.011621+00:00"
+      },
+      {
+        "theme_id": "해운",
+        "theme_name": "해운",
+        "direction": "HEADWIND",
+        "strength_score": 21.0,
+        "confidence": 0.5,
+        "driver_categories": [
+          "ECONOMY",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [],
+        "victim_keywords": [
+          "운임",
+          "컨테이너",
+          "벌크",
+          "해운"
+        ],
+        "updated_at": "2026-04-10T05:08:44.011997+00:00"
+      },
+      {
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "direction": "NEUTRAL",
+        "strength_score": 9.0,
+        "confidence": 0.414,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달"
+        ],
+        "beneficiary_keywords": [],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T05:08:44.011754+00:00"
+      },
+      {
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "direction": "NEUTRAL",
+        "strength_score": 8.0,
+        "confidence": 0.407,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+        ],
+        "beneficiary_keywords": [],
+        "victim_keywords": [],
+        "updated_at": "2026-04-10T05:08:44.011522+00:00"
+      }
+    ],
+    "beneficiary_themes": [
+      {
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "strength_score": 48.0,
+        "confidence": 0.773
+      },
+      {
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "strength_score": 37.0,
+        "confidence": 0.614
+      },
+      {
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "strength_score": 27.0,
+        "confidence": 0.543
+      },
+      {
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "strength_score": 27.0,
+        "confidence": 0.543
+      }
+    ],
+    "headwind_themes": [
+      {
+        "theme_id": "해운",
+        "theme_name": "해운",
+        "strength_score": 21.0,
+        "confidence": 0.5
+      }
+    ],
+    "theme_evidence": {
+      "it_platform": [
+        "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
+      ],
+      "finance": [
+        "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+        "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+        "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+      ],
+      "semiconductor": [],
+      "eco_energy": [
+        "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+      ],
+      "robotics": [],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달"
+      ],
+      "해운": []
+    },
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "signal": "BULLISH",
+        "market_impact": 4,
+        "description": "외국인 현선물 동반 순매수로 코스피가 장중 5900을 돌파",
+        "evidence": "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파"
+      },
+      {
+        "category": "FX",
+        "signal": "BEARISH",
+        "market_impact": -3,
+        "description": "한은 총재가 환율 상승 요인으로 외국인 주식 매도와 중동 사태를 언급",
+        "evidence": "한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향”"
+      },
+      {
+        "category": "GEOPOLITICS",
+        "signal": "BEARISH",
+        "market_impact": -4,
+        "description": "중동 사태가 환율에 큰 영향을 미치고 있어 시장 불확실성 증대",
+        "evidence": "한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향”"
+      },
+      {
+        "category": "OIL",
+        "signal": "BEARISH",
+        "market_impact": -3,
+        "description": "농어민 고유가 부담 완화 예산 반영은 유가 상승 압력이 지속됨을 시사",
+        "evidence": "여야, 농어민 고유가 부담 완화 예산 2천억 반영"
+      },
+      {
+        "category": "POLITICS",
+        "signal": "POSITIVE",
+        "market_impact": 1,
+        "description": "정부가 농어민 고유가 부담 완화를 위한 예산 2천억을 반영하여 특정 부문 지원",
+        "evidence": "여야, 농어민 고유가 부담 완화 예산 2천억 반영"
+      },
+      {
+        "category": "EARNINGS",
+        "signal": "BULLISH",
+        "market_impact": 2,
+        "description": "HJ중공업, 자이에스앤디, 한화에어로스페이스 등 다수 기업의 단일판매 계약 체결 공시",
+        "evidence": "HJ중공업 - 단일판매ㆍ공급계약체결 외 다수"
+      }
+    ],
+    "driver_scores": {
+      "GEOPOLITICS": -4,
+      "OIL": -3,
+      "FX": -3,
+      "RATES": 0,
+      "POLITICS": 1,
+      "ECONOMY": 0,
+      "LIQUIDITY": 4,
+      "EARNINGS": 5,
+      "REGULATION": 0
+    },
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "direction": "UP",
+        "market_impact": -3,
+        "description": "외국인 주식 매도 및 중동 사태로 인한 환율 상승 압력"
+      }
+    ],
+    "risk_flags": [
+      "중동 지정학 리스크",
+      "고유가 부담",
+      "환율 변동성"
+    ],
+    "news_quality": "MEDIUM",
+    "key_insight": "코스피는 외국인 투자자 유입과 기업 계약 체결 소식으로 상승세를 보였으나, 중동 지정학적 리스크와 고유가 부담이 환율에 영향을 미치며 시장의 잠재적 하방 압력으로 작용하고 있습니다.",
+    "source": "gemini",
+    "model": "gemini-2.5-flash",
+    "raw": {
+      "market_sentiment": "MIXED",
+      "sentiment_score": 20,
+      "themes": [
+        {
+          "theme": "외국인 투자자 유입",
+          "impact": "POSITIVE",
+          "description": "외국인 현선물 동반 순매수로 코스피 상승 견인"
+        },
+        {
+          "theme": "중동 지정학 리스크",
+          "impact": "NEGATIVE",
+          "description": "한은 총재가 환율에 미치는 중동 사태의 영향을 언급"
+        },
+        {
+          "theme": "고유가 부담",
+          "impact": "NEGATIVE",
+          "description": "농어민 고유가 부담 완화를 위한 정부 예산 반영"
+        },
+        {
+          "theme": "기업 계약 체결",
+          "impact": "POSITIVE",
+          "description": "다수 기업의 단일판매·공급계약 체결 공시"
+        }
+      ],
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "signal": "BULLISH",
+          "market_impact": 4,
+          "description": "외국인 현선물 동반 순매수로 코스피가 장중 5900을 돌파",
+          "evidence": "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파"
+        },
+        {
+          "category": "FX",
+          "signal": "BEARISH",
+          "market_impact": -3,
+          "description": "한은 총재가 환율 상승 요인으로 외국인 주식 매도와 중동 사태를 언급",
+          "evidence": "한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향”"
+        },
+        {
+          "category": "GEOPOLITICS",
+          "signal": "BEARISH",
+          "market_impact": -4,
+          "description": "중동 사태가 환율에 큰 영향을 미치고 있어 시장 불확실성 증대",
+          "evidence": "한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향”"
+        },
+        {
+          "category": "OIL",
+          "signal": "BEARISH",
+          "market_impact": -3,
+          "description": "농어민 고유가 부담 완화 예산 반영은 유가 상승 압력이 지속됨을 시사",
+          "evidence": "여야, 농어민 고유가 부담 완화 예산 2천억 반영"
+        },
+        {
+          "category": "POLITICS",
+          "signal": "POSITIVE",
+          "market_impact": 1,
+          "description": "정부가 농어민 고유가 부담 완화를 위한 예산 2천억을 반영하여 특정 부문 지원",
+          "evidence": "여야, 농어민 고유가 부담 완화 예산 2천억 반영"
+        },
+        {
+          "category": "EARNINGS",
+          "signal": "BULLISH",
+          "market_impact": 2,
+          "description": "HJ중공업, 자이에스앤디, 한화에어로스페이스 등 다수 기업의 단일판매 계약 체결 공시",
+          "evidence": "HJ중공업 - 단일판매ㆍ공급계약체결 외 다수"
+        }
+      ],
+      "driver_scores": {
+        "GEOPOLITICS": -4,
+        "OIL": -3,
+        "FX": -3,
+        "RATES": 0,
+        "POLITICS": 1,
+        "ECONOMY": 0,
+        "LIQUIDITY": 4,
+        "EARNINGS": 5,
+        "REGULATION": 0
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "direction": "UP",
+          "market_impact": -3,
+          "description": "외국인 주식 매도 및 중동 사태로 인한 환율 상승 압력"
+        }
+      ],
+      "risk_flags": [
+        "중동 지정학 리스크",
+        "고유가 부담",
+        "환율 변동성"
+      ],
+      "news_quality": "MEDIUM",
+      "beneficiary_sectors": [
+        "조선",
+        "건설",
+        "방산"
+      ],
+      "victim_sectors": [],
+      "beneficiary_keywords": [
+        "외국인 순매수",
+        "계약체결",
+        "방위산업"
+      ],
+      "victim_keywords": [],
+      "key_insight": "코스피는 외국인 투자자 유입과 기업 계약 체결 소식으로 상승세를 보였으나, 중동 지정학적 리스크와 고유가 부담이 환율에 영향을 미치며 시장의 잠재적 하방 압력으로 작용하고 있습니다.",
+      "evidence_headlines": [
+        "외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파",
+        "한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향”",
+        "여야, 농어민 고유가 부담 완화 예산 2천억 반영",
+        "한화에어로스페이스 - 단일판매ㆍ공급계약체결"
+      ],
+      "raw_headlines": [
+        "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
+        "[Fri, 10 Apr 2026 13:05:12 +09:00] 한은 총재 “현재 환율은…외국인 주식 매도와 중동 사태가 큰 영향” | 매일경제",
+        "[DART 20260410] HJ중공업 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 자이에스앤디 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 한화에어로스페이스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+        "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+        "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+        "[Fri, 10 Apr 2026 13:59:26 +0900] 퇴임 앞둔 이창용 한은총재 \"금리 결정 잘해왔다고 생각\" | 연합뉴스",
+        "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제",
+        "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스",
+        "[Fri, 10 Apr 2026 11:11:45 +09:00] 농협은행, NH투자증권과 의기투합…기금형 퇴직연금 준비 착수 | 매일경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달"
+      ],
+      "headline_count": 15,
+      "source": "gemini",
+      "model": "gemini-2.5-flash",
+      "timestamp": "2026-04-10 14:08",
+      "disclosure_events": [
+        {
+          "company": "HJ중공업",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "자이에스앤디",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "한화에어로스페이스",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "HJ중공업",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "자이에스앤디",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "한화에어로스페이스",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        }
+      ],
+      "company_event_bias": {
+        "HJ중공업": 8,
+        "자이에스앤디": 8,
+        "한화에어로스페이스": 8
+      },
+      "theme_states": [
+        {
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "direction": "BENEFICIARY",
+          "strength_score": 48.0,
+          "confidence": 0.773,
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+            "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+            "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+            "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+          ],
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T05:08:44.010593+00:00"
+        },
+        {
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "direction": "BENEFICIARY",
+          "strength_score": 37.0,
+          "confidence": 0.614,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [
+            "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
+          ],
+          "beneficiary_keywords": [
+            "IT서비스/플랫폼",
+            "IT서비스",
+            "플랫폼",
+            "소프트웨어",
+            "SW",
+            "클라우드"
+          ],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T05:08:44.010410+00:00"
+        },
+        {
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "direction": "BENEFICIARY",
+          "strength_score": 27.0,
+          "confidence": 0.543,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "반도체",
+            "메모리",
+            "HBM",
+            "낸드",
+            "DRAM",
+            "파운드리"
+          ],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T05:08:44.010958+00:00"
+        },
+        {
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "direction": "BENEFICIARY",
+          "strength_score": 27.0,
+          "confidence": 0.543,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "로봇/자동화",
+            "로봇",
+            "자동화",
+            "스마트팩토리",
+            "협동로봇",
+            "물류로봇"
+          ],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T05:08:44.011621+00:00"
+        },
+        {
+          "theme_id": "해운",
+          "theme_name": "해운",
+          "direction": "HEADWIND",
+          "strength_score": 21.0,
+          "confidence": 0.5,
+          "driver_categories": [
+            "ECONOMY",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [],
+          "victim_keywords": [
+            "운임",
+            "컨테이너",
+            "벌크",
+            "해운"
+          ],
+          "updated_at": "2026-04-10T05:08:44.011997+00:00"
+        },
+        {
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "direction": "NEUTRAL",
+          "strength_score": 9.0,
+          "confidence": 0.414,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달"
+          ],
+          "beneficiary_keywords": [],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T05:08:44.011754+00:00"
+        },
+        {
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "direction": "NEUTRAL",
+          "strength_score": 8.0,
+          "confidence": 0.407,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+          ],
+          "beneficiary_keywords": [],
+          "victim_keywords": [],
+          "updated_at": "2026-04-10T05:08:44.011522+00:00"
+        }
+      ],
+      "beneficiary_themes": [
+        {
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "strength_score": 48.0,
+          "confidence": 0.773
+        },
+        {
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "strength_score": 37.0,
+          "confidence": 0.614
+        },
+        {
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "strength_score": 27.0,
+          "confidence": 0.543
+        },
+        {
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "strength_score": 27.0,
+          "confidence": 0.543
+        }
+      ],
+      "headwind_themes": [
+        {
+          "theme_id": "해운",
+          "theme_name": "해운",
+          "strength_score": 21.0,
+          "confidence": 0.5
+        }
+      ],
+      "theme_evidence": {
+        "it_platform": [
+          "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
+        ],
+        "finance": [
+          "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
+          "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
+          "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
+          "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+        ],
+        "semiconductor": [],
+        "eco_energy": [
+          "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+        ],
+        "robotics": [],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달"
+        ],
+        "해운": []
+      }
+    }
+  }
+}

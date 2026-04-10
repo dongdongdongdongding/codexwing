@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-03-31T16:13:30+09:00",
+  "summary": {
+    "us_watchlist_only_validation": true,
+    "kr_policy_split_validation": true
+  },
+  "runs": [
+    {
+      "run_id": "RUN-08CDC5E4",
+      "market": "NASDAQ",
+      "result": "planner_watchlist_only",
+      "details": {
+        "decisions": 0,
+        "watchlist": ["AAPL"],
+        "warning_codes": ["LOW_QUALITY_INPUT", "MARKET_POLICY_WATCHLIST_ONLY"],
+        "policy_mode": "avoid",
+        "market_gate": "GREEN",
+        "realized_outcome_decision": "WATCHLIST_ONLY"
+      }
+    },
+    {
+      "run_id": "RUN-61E3B6D4",
+      "market": "KOSPI",
+      "result": "scanner_rejected_before_planner",
+      "details": {
+        "result_count": 0,
+        "reject_reason_counts": {
+          "KR_SIGNAL_WINDOW_FAIL": 1,
+          "MARKET_POLICY_AVOID": 2,
+          "KR_BASELINE_FILTER_FAIL": 1
+        },
+        "interpretation": "KOSPI current bucket behaves as avoid/cautious boundary and active candidates did not survive scanner filters."
+      }
+    },
+    {
+      "run_id": "RUN-C95E8EF1",
+      "market": "KOSDAQ",
+      "result": "non_avoid_scanner_block",
+      "details": {
+        "result_count": 0,
+        "reject_reason_counts": {
+          "LIQUIDITY_FILTER_FAIL": 2,
+          "KR_HARD_FILTER_FAIL": 1,
+          "PRECISION_GATE_RED_MARKET": 1
+        },
+        "interpretation": "KOSDAQ current bucket was not rejected by market-policy avoid; blocks came from liquidity, hard-filter, and precision gating."
+      }
+    }
+  ],
+  "conclusion": [
+    "Planner watchlist-only mode is working for learned avoid buckets without destroying upstream scanner logic.",
+    "KR policy split is behaving differently by market: KOSPI showed market-policy avoidance, while KOSDAQ remained governed by quality/risk gates instead of blanket policy rejection."
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 2,
+    "reason": "KR_HARD_FILTER_FAIL"
+  },
+  "current_total_scans": 3,
+  "exception_leaders": {
+    "applied": true,
+    "considered_filtered_symbols": 3,
+    "tickers": [
+      "086450.KQ",
+      "241520.KQ",
+      "347700.KQ"
+    ],
+    "watchlist_meta": [
+      {
+        "alpha_score": 56.0,
+        "conviction_score": 63.0,
+        "exception_score": 97.8,
+        "expires_at": "2026-04-03T09:25:27.549504+00:00",
+        "generated_at": "2026-03-31T09:25:27.549504+00:00",
+        "horizon_days": 3,
+        "market_gate": "RED",
+        "prob_5": 39.0,
+        "prob_clean": 31.0,
+        "profile_adjustment": 8.8,
+        "profile_avg_5d_pct": 0.3882418191902381,
+        "profile_confidence": 0.602,
+        "profile_policy": "POSITIVE",
+        "profile_signals": 3,
+        "profile_win_5d_pct": 100.0,
+        "real_trend": "UP",
+        "reason": "exception_leader_watchlist",
+        "regime": "BEAR",
+        "reject_reason": "precision_gate_t3_low_ml_support",
+        "risk_label": "EXCEPTION_LEADER",
+        "source_profile": "exception_leader",
+        "stock_name": "동국제약",
+        "ticker": "086450.KQ",
+        "tier_sort": 3
+      },
+      {
+        "alpha_score": 48.0,
+        "conviction_score": 0.0,
+        "exception_score": 94.0,
+        "expires_at": "2026-04-03T09:25:27.549504+00:00",
+        "generated_at": "2026-03-31T09:25:27.549504+00:00",
+        "horizon_days": 3,
+        "market_gate": "RED",
+        "prob_5": 0.0,
+        "prob_clean": 0.0,
+        "profile_adjustment": 22.0,
+        "profile_avg_5d_pct": 37.44343891402715,
+        "profile_confidence": 0.602,
+        "profile_policy": "POSITIVE",
+        "profile_signals": 3,
+        "profile_win_5d_pct": 100.0,
+        "real_trend": "UP",
+        "reason": "exception_leader_watchlist",
+        "regime": "BEAR",
+        "reject_reason": "kr_hard_filter_fail",
+        "risk_label": "EXCEPTION_LEADER",
+        "source_profile": "exception_leader",
+        "stock_name": "DSC인베스트먼트",
+        "ticker": "241520.KQ",
+        "tier_sort": 3
+      },
+      {
+        "alpha_score": 47.0,
+        "conviction_score": 0.0,
+        "exception_score": 94.0,
+        "expires_at": "2026-04-03T09:25:27.549504+00:00",
+        "generated_at": "2026-03-31T09:25:27.549504+00:00",
+        "horizon_days": 3,
+        "market_gate": "RED",
+        "prob_5": 0.0,
+        "prob_clean": 0.0,
+        "profile_adjustment": 22.0,
+        "profile_avg_5d_pct": 55.1304347826087,
+        "profile_confidence": 0.602,
+        "profile_policy": "POSITIVE",
+        "profile_signals": 3,
+        "profile_win_5d_pct": 100.0,
+        "real_trend": "UP",
+        "reason": "exception_leader_watchlist",
+        "regime": "BEAR",
+        "reject_reason": "kr_hard_filter_fail",
+        "risk_label": "EXCEPTION_LEADER",
+        "source_profile": "exception_leader",
+        "stock_name": "스피어",
+        "ticker": "347700.KQ",
+        "tier_sort": 3
+      }
+    ]
+  },
+  "fallback_watchlist": {
+    "applied": false,
+    "considered_dev_runs": 0,
+    "source_profile": "dev",
+    "source_run_id": null,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 10,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-03-31T09:25:25.720662+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 17,
+  "history_window_runs_seen": 54,
+  "market": "KOSDAQ",
+  "near_miss_watchlist": {
+    "applied": true,
+    "considered_filtered_symbols": 3,
+    "tickers": [
+      "086450.KQ",
+      "241520.KQ",
+      "347700.KQ"
+    ],
+    "watchlist_meta": [
+      {
+        "alpha_score": 56.0,
+        "conviction_score": 63.0,
+        "expires_at": "2026-04-02T09:25:26.495423+00:00",
+        "generated_at": "2026-03-31T09:25:26.495423+00:00",
+        "horizon_days": 2,
+        "prob_5": 39.0,
+        "prob_clean": 31.0,
+        "real_trend": "UP",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "precision_gate_t3_low_ml_support",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "stock_name": "동국제약",
+        "ticker": "086450.KQ"
+      },
+      {
+        "alpha_score": 48.0,
+        "conviction_score": 0.0,
+        "expires_at": "2026-04-02T09:25:26.495423+00:00",
+        "generated_at": "2026-03-31T09:25:26.495423+00:00",
+        "horizon_days": 2,
+        "prob_5": 0.0,
+        "prob_clean": 0.0,
+        "real_trend": "UP",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "kr_hard_filter_fail",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "stock_name": "DSC인베스트먼트",
+        "ticker": "241520.KQ"
+      },
+      {
+        "alpha_score": 47.0,
+        "conviction_score": 0.0,
+        "expires_at": "2026-04-02T09:25:26.495423+00:00",
+        "generated_at": "2026-03-31T09:25:26.495423+00:00",
+        "horizon_days": 2,
+        "prob_5": 0.0,
+        "prob_clean": 0.0,
+        "real_trend": "UP",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "kr_hard_filter_fail",
+        "risk_label": "WATCHLIST_ONLY",
+        "source_profile": "current_run_near_miss",
+        "stock_name": "스피어",
+        "ticker": "347700.KQ"
+      }
+    ]
+  },
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 60,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 60,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    },
+    "prod": {
+      "filtered_count": 246,
+      "result_count": 0,
+      "runs": 16,
+      "top_reject_reason": {
+        "count": 73,
+        "reason": "KR_HARD_FILTER_FAIL"
+      },
+      "total_scans": 248,
+      "weighted_filtered_rate_pct": 99.19,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 16
+    }
+  },
+  "run_id": "RUN-54918D53",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 0,
+    "mode": "favorable",
+    "policy": {
+      "ai_min": 0,
+      "alpha_min": 50,
+      "avg_5d_pct": 15.92069454956051,
+      "mode": "favorable",
+      "objective": 118.19013941446921,
+      "samples": 24,
+      "win_5d_pct": 66.66666666666666
+    },
+    "total_rejects": 3,
+    "watchlist_count": 3
+  }
+}

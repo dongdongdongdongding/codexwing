@@ -1,0 +1,48 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 52,
+    "reason": "LIQUIDITY_FILTER_FAIL"
+  },
+  "current_total_scans": 60,
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 2,
+    "prod_zero_streak_alert": false
+  },
+  "generated_at": "2026-03-31T06:01:52.475661+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 2,
+  "history_window_runs_seen": 35,
+  "market": "KOSDAQ",
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 60,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 60,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    },
+    "prod": {
+      "filtered_count": 60,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 60,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    }
+  },
+  "run_id": "RUN-F07340DF"
+}

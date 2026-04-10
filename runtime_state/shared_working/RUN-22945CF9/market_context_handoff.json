@@ -1,0 +1,78 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1511.699951171875,
+      "krw_change_1d": -0.29,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 1.12,
+      "tnx": 4.309000015258789,
+      "tnx_change_1d": -0.05,
+      "vix": 23.579999923706055,
+      "vix_change_1d": -6.61
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "key_insight": "전쟁으로 인한 지정학적 리스크가 KOSDAQ 액티브 ETF의 수익률을 패시브 대비 저조하게 만들고 있음.",
+    "market_sentiment": "BEARISH",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "evidence_headlines": [
+        "전쟁 암초 만난 '코스닥 액티브 ETF'…수익률 패시브 밀렸다"
+      ],
+      "key_insight": "전쟁으로 인한 지정학적 리스크가 KOSDAQ 액티브 ETF의 수익률을 패시브 대비 저조하게 만들고 있음.",
+      "market_sentiment": "BEARISH",
+      "raw_headlines": [
+        "[Tue, 31 Mar 2026 21:00:00 GMT] 전쟁 암초 만난 '코스닥 액티브 ETF'…수익률 패시브 밀렸다 - 뉴스1 | 뉴스1"
+      ],
+      "sentiment_score": -50,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "전쟁으로 인한 지정학적 리스크가 KOSDAQ 액티브 ETF의 성과에 부정적 영향을 미침.",
+          "impact": "NEGATIVE",
+          "theme": "지정학적 리스크"
+        }
+      ],
+      "timestamp": "2026-04-02 01:23",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "sentiment_score": -50,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-01T16:23:59.564714+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-02",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T16:23:43.374197+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-22945CF9",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

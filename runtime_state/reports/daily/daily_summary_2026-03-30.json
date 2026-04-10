@@ -1,0 +1,194 @@
+{
+  "generated_at": "2026-03-30T16:52:15.042275Z",
+  "market_counts": {
+    "NASDAQ": 8
+  },
+  "outcomes": {
+    "closure_rate_pct": 0.0,
+    "expired": 0,
+    "pending": 0,
+    "resolved": 0,
+    "total": 0
+  },
+  "profile_counts": {
+    "unknown": 8
+  },
+  "runs": [
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-06EE282C",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-2AE8F572",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-6EEEC218",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-88352438",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-B85AD87C",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-EBB77D99",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-EC598A1B",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    },
+    {
+      "candidate_count": 0,
+      "decision_count": 0,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "NASDAQ",
+      "outcomes_total": 0,
+      "pending": 0,
+      "profile": "unknown",
+      "resolved": 0,
+      "run_id": "RUN-F284C0A8",
+      "warning_codes": [
+        "PROXY_BACKTEST_ONLY",
+        "SMALL_SAMPLE",
+        "NEWS_INTEL_FALLBACK",
+        "EMPTY_PLANNER_INPUT"
+      ],
+      "watchlist_count": 0
+    }
+  ],
+  "target_date": "2026-03-30",
+  "top_warning_codes": [
+    {
+      "code": "PROXY_BACKTEST_ONLY",
+      "count": 8
+    },
+    {
+      "code": "SMALL_SAMPLE",
+      "count": 8
+    },
+    {
+      "code": "NEWS_INTEL_FALLBACK",
+      "count": 8
+    },
+    {
+      "code": "EMPTY_PLANNER_INPUT",
+      "count": 8
+    }
+  ],
+  "total_candidates": 0,
+  "total_decisions": 0,
+  "total_fallback_watchlist_outcomes": 0,
+  "total_runs": 8,
+  "total_watchlist": 0
+}

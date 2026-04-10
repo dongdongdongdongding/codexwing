@@ -1,0 +1,286 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 209,
+      "label": "⏱️ Intraday Trend | 1H",
+      "share": 0.786
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 53,
+      "label": "⏱️ Intraday Breakout | 1H",
+      "share": 0.199
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 2,
+      "label": "⏱️ Intraday Trend | News Tailwind | 1H",
+      "share": 0.008
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "490470.KQ",
+      "member_count": 51,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "반도체",
+      "theme_strength_score": 24.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "088800.KQ",
+      "member_count": 37,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 20.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 93.3,
+      "leader_ticker": "228670.KQ",
+      "member_count": 26,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 74.0,
+      "leader_ticker": "473980.KQ",
+      "member_count": 17,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "IT서비스/플랫폼",
+      "theme_strength_score": 36.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 96.6,
+      "leader_ticker": "053260.KQ",
+      "member_count": 15,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 266,
+    "strategy_distribution": {
+      "⏱️ Intraday Breakout | 1H": 53,
+      "⏱️ Intraday Breakout | News Headwind | 1H": 1,
+      "⏱️ Intraday Breakout | News Tailwind | 1H": 1,
+      "⏱️ Intraday Trend | 1H": 209,
+      "⏱️ Intraday Trend | News Tailwind | 1H": 2
+    },
+    "theme_distribution": {
+      "2차전지": 8,
+      "IT서비스/플랫폼": 17,
+      "건설/부동산": 1,
+      "게임/콘텐츠/엔터": 6,
+      "금융": 14,
+      "로봇/자동화": 4,
+      "바이오/헬스케어": 26,
+      "반도체": 51,
+      "소비재/유통": 5,
+      "자동차": 5,
+      "철강/금속/소재": 15,
+      "친환경/에너지": 10,
+      "통신/네트워크": 37
+    },
+    "top_strategy": "⏱️ Intraday Trend | 1H",
+    "top_strategy_share": 0.786,
+    "trend_distribution": {
+      "DOWN": 1,
+      "SIDE": 15,
+      "UP": 250
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "490470.KQ",
+      "member_count": 51,
+      "theme_name": "반도체",
+      "theme_strength_score": 24.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 24.0,
+          "ticker": "490470.KQ"
+        },
+        {
+          "leader_score": 100.0,
+          "score": 94.3,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 24.0,
+          "ticker": "095340.KQ"
+        },
+        {
+          "leader_score": 97.3,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 24.0,
+          "ticker": "357780.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "088800.KQ",
+      "member_count": 37,
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 20.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 96.6,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 20.0,
+          "ticker": "088800.KQ"
+        },
+        {
+          "leader_score": 97.8,
+          "score": 97.3,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 20.0,
+          "ticker": "050890.KQ"
+        },
+        {
+          "leader_score": 87.4,
+          "score": 93.4,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 20.0,
+          "ticker": "100590.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "228670.KQ",
+      "member_count": 26,
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 93.3,
+          "score": 100.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "228670.KQ"
+        },
+        {
+          "leader_score": 77.7,
+          "score": 100.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "217730.KQ"
+        },
+        {
+          "leader_score": 71.8,
+          "score": 92.9,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "054670.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "473980.KQ",
+      "member_count": 17,
+      "theme_name": "IT서비스/플랫폼",
+      "theme_strength_score": 36.0,
+      "top_members": [
+        {
+          "leader_score": 74.0,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "473980.KQ"
+        },
+        {
+          "leader_score": 71.7,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "052400.KQ"
+        },
+        {
+          "leader_score": 71.7,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "463020.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "053260.KQ",
+      "member_count": 15,
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 96.6,
+          "score": 95.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "053260.KQ"
+        },
+        {
+          "leader_score": 89.5,
+          "score": 100.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "104480.KQ"
+        },
+        {
+          "leader_score": 81.8,
+          "score": 100.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "013030.KQ"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-10T03:22:23.536326+00:00",
+  "quality_notes": [
+    "Total candidates: 266",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: ⏱️ Intraday Trend | 1H (209/266)",
+    "Top theme cluster: 반도체 (51/266)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-10T03:21:50.754236+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-FBE03AD8",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": [
+    {
+      "code": "STRATEGY_CONCENTRATION",
+      "message": "Candidates are concentrated in one strategy tag (⏱️ Intraday Trend | 1H).",
+      "severity": "warning"
+    }
+  ]
+}

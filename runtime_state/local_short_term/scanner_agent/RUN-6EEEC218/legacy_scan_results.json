@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 5,
+      "filtered_symbols": [
+        "AAPL",
+        "META",
+        "MSFT",
+        "NVDA",
+        "AMZN"
+      ],
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "macro_ctx": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_SOFTENING"
+      ],
+      "krw": 1519.6800537109375,
+      "krw_change_1d": 0.75,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 30,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.27,
+      "tnx": 4.345999717712402,
+      "tnx_change_1d": -2.12,
+      "vix": 29.959999084472656,
+      "vix_change_1d": -3.51
+    },
+    "market": "NASDAQ",
+    "market_gate": {
+      "gate": "RED",
+      "kosdaq_chg": -3.0188049725972466,
+      "kospi_chg": -2.970659512339114,
+      "msg": "하락장 경보: KOSPI -2.97% / KOSDAQ -3.02% — 신규 매수 자제"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6651<6803)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "total_scans": 5,
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime.",
+        "severity": "warning"
+      }
+    ]
+  },
+  "results": []
+}

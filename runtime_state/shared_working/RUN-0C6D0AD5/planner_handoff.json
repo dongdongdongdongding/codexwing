@@ -1,0 +1,177 @@
+{
+  "avoid_list": [
+    "058470.KQ"
+  ],
+  "decisions": [
+    {
+      "alpha_score": null,
+      "confidence": 0.823,
+      "decision": "AVOID",
+      "decision_score": 74.5,
+      "entry_reference_price": null,
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "expected_edge_score": -9.02,
+      "expected_return_1d_pct": -0.99,
+      "expected_return_3d_pct": -1.39,
+      "phase25_prob": 8.7,
+      "phase25_recommended_threshold": 60.0,
+      "phase25_shadow_prob": 29.7,
+      "phase25_shadow_variant": "phase25_kr_intraday_histgb",
+      "phase25_variant": "phase25_kr_intraday_xgboost",
+      "primary_theme": "반도체",
+      "priority_rank": 1,
+      "prob_5": 34.7,
+      "prob_clean": 33.0,
+      "rationale": [
+        "scanner_score=74.5",
+        "rank=1",
+        "전략: ⏱️ Intraday Trend | 1H",
+        "추세: UP",
+        "theme=반도체",
+        "phase25_gate=8.7<60.0"
+      ],
+      "real_trend": "UP",
+      "realized_outcome_ref": "realized_outcomes.json#058470.KQ",
+      "scan_mode": "INTRADAY",
+      "secondary_themes": [],
+      "stock_name": "리노공업",
+      "strategy_family": "KR_CORE",
+      "theme_inference_status": "inferred",
+      "theme_rationale": [
+        "THEME_BENEFICIARY",
+        "THEME_LEADER_TOP1"
+      ],
+      "theme_risk": [
+        "PHASE25_BELOW_THRESHOLD_HARD"
+      ],
+      "theme_routing_path": "theme_shadow",
+      "theme_source": "stock_master",
+      "ticker": "058470.KQ",
+      "warnings": []
+    }
+  ],
+  "global_warnings": [
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "message": "Planner attached bear-market exception leaders from rejected candidates for follow-up tracking.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-10T03:02:16.610311+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-10T03:02:13.541420+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-0C6D0AD5",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "watchlist": [
+    "000250.KQ",
+    "086520.KQ",
+    "277810.KQ"
+  ],
+  "watchlist_meta": [
+    {
+      "alpha_score": 0.0,
+      "conviction_score": 0.0,
+      "entry_reference_price": null,
+      "exception_score": 68.0,
+      "expires_at": "2026-04-13T03:02:17.548709+00:00",
+      "generated_at": "2026-04-10T03:02:17.548709+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "primary_theme": "바이오/헬스케어",
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 39.22344668249112,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 100.0,
+      "real_trend": "",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "intraday_setup_weak",
+      "risk_label": "EXCEPTION_LEADER",
+      "secondary_themes": [],
+      "source_profile": "exception_leader",
+      "stock_name": "삼천당제약",
+      "theme_inference_status": "inferred",
+      "theme_source": "stock_master",
+      "ticker": "000250.KQ",
+      "tier_sort": 3
+    },
+    {
+      "alpha_score": 0.0,
+      "conviction_score": 0.0,
+      "entry_reference_price": null,
+      "exception_score": 68.0,
+      "expires_at": "2026-04-13T03:02:17.548709+00:00",
+      "generated_at": "2026-04-10T03:02:17.548709+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "primary_theme": "2차전지",
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 16.832072266712306,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 77.77777777777779,
+      "real_trend": "",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "intraday_setup_weak",
+      "risk_label": "EXCEPTION_LEADER",
+      "secondary_themes": [
+        "철강/금속/소재"
+      ],
+      "source_profile": "exception_leader",
+      "stock_name": "에코프로",
+      "theme_inference_status": "inferred",
+      "theme_source": "stock_master",
+      "ticker": "086520.KQ",
+      "tier_sort": 3
+    },
+    {
+      "alpha_score": 0.0,
+      "conviction_score": 0.0,
+      "entry_reference_price": 596000.0,
+      "exception_score": 68.0,
+      "expires_at": "2026-04-13T03:02:17.548709+00:00",
+      "generated_at": "2026-04-10T03:02:17.548709+00:00",
+      "horizon_days": 3,
+      "market_gate": "GREEN",
+      "primary_theme": "로봇/자동화",
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "profile_adjustment": 22.0,
+      "profile_avg_5d_pct": 25.924452750348653,
+      "profile_confidence": 1.0,
+      "profile_policy": "POSITIVE",
+      "profile_signals": 9,
+      "profile_win_5d_pct": 100.0,
+      "real_trend": "",
+      "reason": "exception_leader_watchlist",
+      "regime": "BULL",
+      "reject_reason": "intraday_min_price_volume_fail",
+      "risk_label": "EXCEPTION_LEADER",
+      "secondary_themes": [],
+      "source_profile": "exception_leader",
+      "stock_name": "레인보우로보틱스",
+      "theme_inference_status": "inferred",
+      "theme_source": "stock_master",
+      "ticker": "277810.KQ",
+      "tier_sort": 3
+    }
+  ]
+}

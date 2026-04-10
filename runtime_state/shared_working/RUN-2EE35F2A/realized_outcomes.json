@@ -1,0 +1,57 @@
+{
+  "outcomes": [
+    {
+      "alpha_score": null,
+      "base_trade_date": "2026-04-10",
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_bucket": "picked",
+      "decision_score": 87.1,
+      "entry_reference_price": 481000.0,
+      "horizon": "T+3D",
+      "latest_return_pct": 0.0,
+      "latest_trade_date": "2026-04-10",
+      "market": "KOSPI",
+      "outcome_label": null,
+      "outcome_recorded_at": null,
+      "performance_updated_at": "2026-04-10T09:31:17.693922+00:00",
+      "phase25_prob": 2.4,
+      "phase25_recommended_threshold": 25.0,
+      "phase25_shadow_prob": 56.0,
+      "phase25_shadow_variant": "phase25_kr_swing_lightgbm",
+      "phase25_variant": "phase25_kr_swing_xgboost",
+      "primary_theme": "2차전지",
+      "priority_rank": 1,
+      "prob_5": 25.8,
+      "prob_clean": 34.6,
+      "real_trend": "UP",
+      "realized_return_pct": null,
+      "recommended_at": "2026-04-09T16:55:39.589542+00:00",
+      "run_id": "RUN-2EE35F2A",
+      "scan_mode": "SWING",
+      "secondary_themes": [],
+      "source_ref": "planner_handoff.json#006400.KS",
+      "status": "PENDING",
+      "stock_name": "삼성SDI",
+      "strategy_family": "KR_CORE",
+      "theme_inference_status": "inferred",
+      "theme_routing_path": "theme_routed",
+      "theme_source": "stock_master",
+      "ticker": "006400.KS"
+    }
+  ],
+  "produced_at": "2026-04-09T16:55:41.820433+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T16:55:39.589542+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-2EE35F2A",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "summary": {
+    "pending_count": 1,
+    "performance_last_updated_at": "2026-04-10T09:31:17.693931+00:00",
+    "resolved_count": 0
+  }
+}

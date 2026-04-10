@@ -1,0 +1,154 @@
+{
+  "avoid_list": [],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "EMPTY_PLANNER_INPUT",
+      "message": "Planner received no candidates from scanner handoff.",
+      "severity": "error"
+    },
+    {
+      "code": "FALLBACK_WATCHLIST_UNAVAILABLE",
+      "message": "Prod zero-result streak detected but no recent dev baseline watchlist was available.",
+      "severity": "warning"
+    },
+    {
+      "code": "NEAR_MISS_WATCHLIST_ENABLED",
+      "message": "Planner generated a watchlist from current-run near-miss candidates after zero active decisions.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-01T14:09:05.590163+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "orchestrated-us-research",
+    "created_at": "2026-04-01T14:09:03.064338+00:00",
+    "market": "AMEX",
+    "model_version": "research-baseline",
+    "run_id": "RUN-6EA55EBB",
+    "strategy_version": "us-research-v1"
+  },
+  "watchlist": [
+    "UEC",
+    "ORLA",
+    "EQX",
+    "BTG",
+    "IMO",
+    "PSLV",
+    "PHYS"
+  ],
+  "watchlist_meta": [
+    {
+      "alpha_score": 65.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:05.986351+00:00",
+      "generated_at": "2026-04-01T14:09:05.986351+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Uranium Energy Corp",
+      "ticker": "UEC"
+    },
+    {
+      "alpha_score": 60.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:05.986351+00:00",
+      "generated_at": "2026-04-01T14:09:05.986351+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Orla Mining Ltd",
+      "ticker": "ORLA"
+    },
+    {
+      "alpha_score": 57.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:05.986351+00:00",
+      "generated_at": "2026-04-01T14:09:05.986351+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Equinox Gold Corp",
+      "ticker": "EQX"
+    },
+    {
+      "alpha_score": 47.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:05.986351+00:00",
+      "generated_at": "2026-04-01T14:09:05.986351+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "B2Gold Corp",
+      "ticker": "BTG"
+    },
+    {
+      "alpha_score": 44.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:05.986351+00:00",
+      "generated_at": "2026-04-01T14:09:05.986351+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Imperial Oil Ltd",
+      "ticker": "IMO"
+    },
+    {
+      "alpha_score": 44.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:05.986351+00:00",
+      "generated_at": "2026-04-01T14:09:05.986351+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Sprott Physical Silver Trust USD",
+      "ticker": "PSLV"
+    },
+    {
+      "alpha_score": 41.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:05.986351+00:00",
+      "generated_at": "2026-04-01T14:09:05.986351+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Sprott Physical Gold Trust USD",
+      "ticker": "PHYS"
+    }
+  ]
+}

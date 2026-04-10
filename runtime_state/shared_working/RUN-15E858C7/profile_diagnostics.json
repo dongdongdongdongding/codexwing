@@ -1,0 +1,102 @@
+{
+  "current_profile": "dev",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 3,
+    "reason": "KR_HARD_FILTER_FAIL"
+  },
+  "current_total_scans": 5,
+  "exception_leaders": {
+    "applied": false,
+    "considered_filtered_symbols": 5,
+    "tickers": [],
+    "watchlist_meta": []
+  },
+  "flags": {
+    "prod_dev_gap": false,
+    "prod_zero_streak": 0,
+    "prod_zero_streak_alert": false
+  },
+  "generated_at": "2026-04-09T16:57:02.359842+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 25,
+  "history_window_runs_seen": 80,
+  "market": "KOSDAQ",
+  "near_miss_watchlist": {
+    "applied": true,
+    "considered_filtered_symbols": 5,
+    "tickers": [
+      "247540.KQ"
+    ],
+    "watchlist_meta": [
+      {
+        "alpha_score": 41.0,
+        "conviction_score": 27.1,
+        "decision_score": 51.88,
+        "entry_reference_price": null,
+        "expires_at": "2026-04-11T16:57:03.145336+00:00",
+        "generated_at": "2026-04-09T16:57:03.145336+00:00",
+        "horizon_days": 2,
+        "primary_theme": "2차전지",
+        "prob_5": 18.6,
+        "prob_clean": 27.9,
+        "real_trend": "DOWN",
+        "reason": "near_miss_watchlist",
+        "reject_reason": "precision_gate_red_market",
+        "risk_label": "WATCHLIST_ONLY",
+        "secondary_themes": [],
+        "source_profile": "current_run_near_miss",
+        "stock_name": "에코프로비엠",
+        "theme_inference_status": "inferred",
+        "theme_source": "stock_master",
+        "ticker": "247540.KQ"
+      }
+    ]
+  },
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 131,
+      "result_count": 3,
+      "runs": 7,
+      "top_reject_reason": {
+        "count": 49,
+        "reason": "MISSING_ANTIGRAV_SCORE"
+      },
+      "total_scans": 134,
+      "weighted_filtered_rate_pct": 97.76,
+      "weighted_pass_rate_pct": 2.24,
+      "zero_result_runs": 5
+    },
+    "prod": {
+      "filtered_count": 259,
+      "result_count": 5,
+      "runs": 18,
+      "top_reject_reason": {
+        "count": 72,
+        "reason": "KR_HARD_FILTER_FAIL"
+      },
+      "total_scans": 274,
+      "weighted_filtered_rate_pct": 94.53,
+      "weighted_pass_rate_pct": 1.82,
+      "zero_result_runs": 16
+    }
+  },
+  "run_id": "RUN-15E858C7",
+  "watchlist_only_policy": {
+    "applied": false,
+    "market_gate": "RED",
+    "market_policy_avoid_count": 0,
+    "mode": "favorable",
+    "policy": {
+      "ai_min": 0,
+      "alpha_min": 50,
+      "avg_5d_pct": 15.92069454956051,
+      "mode": "favorable",
+      "objective": 118.19013941446921,
+      "samples": 24,
+      "win_5d_pct": 66.66666666666666
+    },
+    "total_rejects": 5,
+    "watchlist_count": 1
+  }
+}

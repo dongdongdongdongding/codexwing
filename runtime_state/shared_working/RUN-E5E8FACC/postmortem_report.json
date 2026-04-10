@@ -1,0 +1,29 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json",
+    "outcome_health.json",
+    "profile_diagnostics.json"
+  ],
+  "failure_summary": "No critical pre-outcome failure. Postmortem generated as a preventive trace.",
+  "likely_causes": [],
+  "produced_at": "2026-03-30T17:16:10.051918+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-30T17:16:07.553227+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-E5E8FACC",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": []
+}

@@ -1,0 +1,48 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 109,
+      "label": "⏱️ Intraday Trend | 1H",
+      "share": 0.596
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 74,
+      "label": "⏱️ Intraday Breakout | 1H",
+      "share": 0.404
+    }
+  ],
+  "concentration": {
+    "candidate_count": 183,
+    "strategy_distribution": {
+      "⏱️ Intraday Breakout | 1H": 74,
+      "⏱️ Intraday Trend | 1H": 109
+    },
+    "top_strategy": "⏱️ Intraday Trend | 1H",
+    "top_strategy_share": 0.596,
+    "trend_distribution": {
+      "DOWN": 4,
+      "SIDE": 37,
+      "UP": 142
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "produced_at": "2026-04-01T06:40:35.448071+00:00",
+  "quality_notes": [
+    "Total candidates: 183",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: ⏱️ Intraday Trend | 1H (109/183)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T06:40:32.258536+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-3FEDE09B",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,91 @@
+{
+  "avoid_list": [],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "EMPTY_PLANNER_INPUT",
+      "message": "Planner received no candidates from scanner handoff.",
+      "severity": "error"
+    },
+    {
+      "code": "FALLBACK_WATCHLIST_UNAVAILABLE",
+      "message": "Prod zero-result streak detected but no recent dev baseline watchlist was available.",
+      "severity": "warning"
+    },
+    {
+      "code": "NEAR_MISS_WATCHLIST_ENABLED",
+      "message": "Planner generated a watchlist from current-run near-miss candidates after zero active decisions.",
+      "severity": "warning"
+    },
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "message": "Planner attached bear-market exception leaders from rejected candidates for follow-up tracking.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-03-31T09:25:25.711986+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-31T09:25:24.129227+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-54918D53",
+    "strategy_version": "exception-ui-check"
+  },
+  "watchlist": [
+    "086450.KQ",
+    "241520.KQ",
+    "347700.KQ"
+  ],
+  "watchlist_meta": [
+    {
+      "alpha_score": 56.0,
+      "conviction_score": 63.0,
+      "expires_at": "2026-04-02T09:25:26.495423+00:00",
+      "generated_at": "2026-03-31T09:25:26.495423+00:00",
+      "horizon_days": 2,
+      "prob_5": 39.0,
+      "prob_clean": 31.0,
+      "real_trend": "UP",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "precision_gate_t3_low_ml_support",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "동국제약",
+      "ticker": "086450.KQ"
+    },
+    {
+      "alpha_score": 48.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-02T09:25:26.495423+00:00",
+      "generated_at": "2026-03-31T09:25:26.495423+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "UP",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "kr_hard_filter_fail",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "DSC인베스트먼트",
+      "ticker": "241520.KQ"
+    },
+    {
+      "alpha_score": 47.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-02T09:25:26.495423+00:00",
+      "generated_at": "2026-03-31T09:25:26.495423+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "UP",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "kr_hard_filter_fail",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "스피어",
+      "ticker": "347700.KQ"
+    }
+  ]
+}

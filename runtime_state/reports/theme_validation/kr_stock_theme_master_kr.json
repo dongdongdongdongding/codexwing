@@ -1,0 +1,110 @@
+{
+  "market": "KR",
+  "source_path": "/Users/dongdong/Downloads/kospi_kosdaq_allstocks_structured.jsonl",
+  "records_loaded": 2660,
+  "market_counts": {
+    "KOSDAQ": 1820,
+    "KOSPI": 840
+  },
+  "primary_theme_distribution": {
+    "unclassified": 601,
+    "바이오/헬스케어": 350,
+    "철강/금속/소재": 287,
+    "금융": 217,
+    "자동차": 173,
+    "반도체": 172,
+    "IT서비스/플랫폼": 158,
+    "통신/네트워크": 130,
+    "소비재/유통": 127,
+    "건설/부동산": 120,
+    "게임/콘텐츠/엔터": 108,
+    "2차전지": 74,
+    "친환경/에너지": 55,
+    "로봇/자동화": 54,
+    "조선/해양": 28,
+    "방산": 6
+  },
+  "inference_status_distribution": {
+    "inferred": 1977,
+    "blank": 601,
+    "rule_inferred": 82
+  },
+  "rule_inferred_count": 82,
+  "unclassified_count": 601,
+  "spac_excluded_count": 91,
+  "seed_conflict_count": 12,
+  "seed_conflict_examples": [
+    {
+      "ticker": "247540.KQ",
+      "stock_name": "에코프로비엠",
+      "master_primary_theme": "2차전지",
+      "seed_theme": "반도체"
+    },
+    {
+      "ticker": "298380.KQ",
+      "stock_name": "에이비엘바이오",
+      "master_primary_theme": "바이오/헬스케어",
+      "seed_theme": "2차전지"
+    },
+    {
+      "ticker": "141080.KQ",
+      "stock_name": "리가켐바이오",
+      "master_primary_theme": "바이오/헬스케어",
+      "seed_theme": "반도체"
+    },
+    {
+      "ticker": "086520.KQ",
+      "stock_name": "에코프로",
+      "master_primary_theme": "2차전지",
+      "seed_theme": "반도체"
+    },
+    {
+      "ticker": "058470.KQ",
+      "stock_name": "리노공업",
+      "master_primary_theme": "반도체",
+      "seed_theme": "IT서비스/플랫폼"
+    },
+    {
+      "ticker": "000250.KQ",
+      "stock_name": "삼천당제약",
+      "master_primary_theme": "바이오/헬스케어",
+      "seed_theme": "반도체"
+    },
+    {
+      "ticker": "011200.KS",
+      "stock_name": "HMM",
+      "master_primary_theme": "자동차",
+      "seed_theme": "해운"
+    },
+    {
+      "ticker": "010120.KS",
+      "stock_name": "엘에스일렉트릭",
+      "master_primary_theme": "로봇/자동화",
+      "seed_theme": "친환경/에너지"
+    },
+    {
+      "ticker": "010140.KS",
+      "stock_name": "삼성중공업",
+      "master_primary_theme": "친환경/에너지",
+      "seed_theme": "조선/해양"
+    },
+    {
+      "ticker": "005490.KS",
+      "stock_name": "POSCO홀딩스",
+      "master_primary_theme": "철강/금속/소재",
+      "seed_theme": "2차전지"
+    },
+    {
+      "ticker": "010950.KS",
+      "stock_name": "S-Oil",
+      "master_primary_theme": "철강/금속/소재",
+      "seed_theme": "친환경/에너지"
+    },
+    {
+      "ticker": "000880.KS",
+      "stock_name": "한화",
+      "master_primary_theme": "통신/네트워크",
+      "seed_theme": "방산"
+    }
+  ]
+}

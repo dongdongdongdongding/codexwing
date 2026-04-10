@@ -1,0 +1,28 @@
+{
+  "tickets": [
+    {
+      "created_at": "2026-03-30T13:38:20.001404+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-EB3A5322",
+      "status": "open",
+      "ticket_id": "TKT-61E8F1E0",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-03-30T13:38:20.001412+00:00",
+      "hypothesis": "Missing or unstable regime/news overlay can cause false positives in weak markets.",
+      "owner_agent": "market_news_context_agent",
+      "owner_module": "modules/macro_scheduler.py + modules/market_intelligence.py",
+      "priority": "high",
+      "requested_change": "Raise macro/news data fetch reliability and reduce fallback/no-context frequency.",
+      "run_id": "RUN-EB3A5322",
+      "status": "open",
+      "ticket_id": "TKT-1B66E41E",
+      "title": "Stabilize live market context handoff"
+    }
+  ]
+}

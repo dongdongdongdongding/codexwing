@@ -1,0 +1,57 @@
+{
+  "outcomes": [
+    {
+      "alpha_score": null,
+      "base_trade_date": "2026-04-09",
+      "decision": "WATCHLIST_ONLY",
+      "decision_bucket": "watchlist",
+      "decision_score": 81.1,
+      "entry_reference_price": 1451000.0,
+      "horizon": "T+2D",
+      "latest_return_pct": 3.859407,
+      "latest_trade_date": "2026-04-10",
+      "market": "KOSPI",
+      "outcome_label": null,
+      "outcome_recorded_at": null,
+      "performance_updated_at": "2026-04-10T09:32:53.906464+00:00",
+      "phase25_recommended_threshold": null,
+      "phase25_shadow_prob": null,
+      "phase25_shadow_variant": "",
+      "phase25_variant": "",
+      "primary_theme": "방산",
+      "priority_rank": 1,
+      "prob_5": 23.8,
+      "prob_clean": 29.8,
+      "real_trend": "UP",
+      "realized_return_pct": null,
+      "recommended_at": "2026-04-09T10:53:39.912231+00:00",
+      "return_1d_pct": 3.859407,
+      "run_id": "RUN-5A25675D",
+      "scan_mode": "SWING",
+      "secondary_themes": [],
+      "source_ref": "planner_handoff.watchlist_meta#012450.KS",
+      "status": "PENDING",
+      "stock_name": "한화에어로스페이스",
+      "strategy_family": "KR_CORE",
+      "theme_inference_status": "rule_inferred",
+      "theme_routing_path": "theme_shadow",
+      "theme_source": "stock_master",
+      "ticker": "012450.KS"
+    }
+  ],
+  "produced_at": "2026-04-09T10:53:41.971041+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-09",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-04-09T10:53:39.912231+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-5A25675D",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "summary": {
+    "pending_count": 1,
+    "performance_last_updated_at": "2026-04-10T09:32:53.906497+00:00",
+    "resolved_count": 0
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "date": "2026-03-31",
+  "focus": "scanner ranking quality / model-weight calibration",
+  "dataset": "/tmp/all_scans_with_returns_v2.csv (recent labeled subset with decision_score)",
+  "findings": [
+    "Recent labeled scans showed legacy decision_score ranking underperformed badly.",
+    "Peak+Overheat+ML>=30 patterns were strong positive pockets.",
+    "Rising without volume expansion and RSI_DIV patterns were consistent weak pockets.",
+    "Historical ml_prob outliers above 100 existed in DB snapshots and needed sanitization."
+  ],
+  "recent_proxy_eval": {
+    "old_decision_top20_avg_return_pct": -2.16,
+    "old_decision_top20_win_gt0_pct": 35.0,
+    "old_decision_top20_win_gt5_pct": 0.0,
+    "new_proxy_top20_avg_return_pct": 6.15,
+    "new_proxy_top20_win_gt0_pct": 50.0,
+    "new_proxy_top20_win_gt5_pct": 50.0,
+    "new_proxy_top50_avg_return_pct": 2.98,
+    "new_proxy_top50_win_gt0_pct": 50.0,
+    "new_proxy_top50_win_gt5_pct": 36.0
+  },
+  "code_changes": [
+    "Reweighted decision_score toward alpha/model and away from whale over-dependence.",
+    "Added edge adjustment for Peak+Overheat+ModelConfirm and penalties for weak chase / RSI_DIV.",
+    "Reduced outdated F4-style bonus in rank adjustment.",
+    "Clamped ml_prob writes to 0..100 in DB manager."
+  ]
+}

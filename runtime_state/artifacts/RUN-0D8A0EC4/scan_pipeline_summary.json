@@ -1,0 +1,69 @@
+{
+  "applied_profile_defaults": {
+    "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+    "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+    "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+    "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+    "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+    "AG_KOSPI_MIN_TURNOVER": "10000000000",
+    "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "artifact_dir": "runtime_state/artifacts/RUN-0D8A0EC4",
+  "daily_summary_paths": {
+    "json_path": "runtime_state/reports/daily/daily_summary_2026-04-01.json",
+    "md_path": "runtime_state/reports/daily/daily_summary_2026-04-01.md"
+  },
+  "error_count": 0,
+  "execution_profile": "prod",
+  "executor_exception_count": 0,
+  "filtered_count": 5,
+  "gate_config": {
+    "us_hard_filter": null,
+    "us_signal_window": null
+  },
+  "manifest_paths": {
+    "ok": true,
+    "orchestrator_compact_summary": "runtime_state/shared_working/RUN-0D8A0EC4/orchestrator_compact_summary.json",
+    "orchestrator_report": "runtime_state/shared_working/RUN-0D8A0EC4/orchestrator_report.json",
+    "orchestrator_request": "runtime_state/shared_working/RUN-0D8A0EC4/orchestrator_request.json",
+    "run_id": "RUN-0D8A0EC4",
+    "shared_working_dir": "runtime_state/shared_working/RUN-0D8A0EC4",
+    "status": "completed",
+    "task_id": "TASK-88AECD8B"
+  },
+  "market": "KOSDAQ",
+  "reject_reason_counts": {
+    "INTRADAY_MIN_PRICE_VOLUME_FAIL": 5
+  },
+  "result_count": 0,
+  "run_id": "RUN-0D8A0EC4",
+  "scan_mode": "INTRADAY",
+  "scanner_input_path": "runtime_state/local_short_term/scanner_agent/RUN-0D8A0EC4/legacy_scan_results.json",
+  "stale_fallback_alert": {
+    "health": {
+      "generated_at": "2026-04-01T02:25:58.315962+00:00",
+      "market": "KOSDAQ",
+      "runs_considered": 34,
+      "sample_rows": [],
+      "stale_fallback_pending_count": 0
+    },
+    "reason": "below_threshold",
+    "sent": false,
+    "stale_count": 0,
+    "threshold": 3
+  },
+  "total_scans": 5,
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: INTRADAY_MIN_PRICE_VOLUME_FAIL (5).",
+      "severity": "warning"
+    }
+  ],
+  "worker_error_count": 0
+}

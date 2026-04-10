@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-04-10 02:07",
+  "intel_data": {
+    "beneficiary_keywords": [],
+    "beneficiary_sectors": [],
+    "beneficiary_themes": [],
+    "company_event_bias": {
+      "동성제약": -6,
+      "미래산업": -8,
+      "한신공영": 8
+    },
+    "cross_asset_signals": [],
+    "disclosure_events": [
+      {
+        "category": "EARNINGS",
+        "company": "한신공영",
+        "event_score": 4,
+        "label": "수주/판매계약",
+        "polarity": "POSITIVE",
+        "report_name": "단일판매ㆍ공급계약체결"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "미래산업",
+        "event_score": -6,
+        "label": "유상증자",
+        "polarity": "NEGATIVE",
+        "report_name": "유상증자또는주식관련사채등의발행결과(자율공시)"
+      },
+      {
+        "category": "EARNINGS",
+        "company": "한신공영",
+        "event_score": 4,
+        "label": "수주/판매계약",
+        "polarity": "POSITIVE",
+        "report_name": "[기재정정]단일판매ㆍ공급계약체결"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "동성제약",
+        "event_score": -6,
+        "label": "유상증자",
+        "polarity": "NEGATIVE",
+        "report_name": "유상증자또는주식관련사채등의발행결과(자율공시)"
+      },
+      {
+        "category": "LIQUIDITY",
+        "company": "미래산업",
+        "event_score": -6,
+        "label": "유상증자",
+        "polarity": "NEGATIVE",
+        "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": -3,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "JSON parse failed; fallback used for KOSPI",
+    "macro_drivers": [],
+    "market_sentiment": "NEUTRAL",
+    "model": "",
+    "news_quality": "LOW",
+    "raw_headlines": [
+      "[DART 20260409] 남광토건 - 투자판단관련주요경영사항 | 전자공시",
+      "[DART 20260409] 미원화학 - [기재정정]주식분할결정 | 전자공시",
+      "[DART 20260409] 한신공영 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260409] 미래산업 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+      "[DART 20260409] 한신공영 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260409] 동성제약 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+      "[DART 20260409] 미래산업 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+      "[Thu, 9 Apr 2026 19:30:25 +0900] 아이티엠반도체, 애프터마켓서 10%대 급등 | 연합뉴스",
+      "[Thu, 09 Apr 2026 23:07:12 +09:00] 美 4분기 GDP 성장률 0.5% 그쳐 … 기준금리 '안갯속' | 매일경제",
+      "[Thu, 9 Apr 2026 19:00:00 +0900] 3차 석유 최고가격 '동결'…중동전쟁 휴전·국제유가 등 고려 | 연합뉴스",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달",
+      "[주달 핫테마] 6G | 주달",
+      "[주달 기대수익률] BGF그룹 | 주달"
+    ],
+    "risk_flags": [],
+    "sentiment_score": 0,
+    "source": "fallback",
+    "theme_evidence": {},
+    "theme_states": [],
+    "themes": [],
+    "timestamp": "2026-04-10 02:07",
+    "victim_keywords": [],
+    "victim_sectors": []
+  },
+  "market": "KOSPI",
+  "run_id": "RUN-F82B897C"
+}

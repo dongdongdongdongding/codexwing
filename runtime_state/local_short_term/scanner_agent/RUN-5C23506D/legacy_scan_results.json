@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_KOSDAQ_BEAR_DOWN_MIN_ALPHA": "45",
+      "AG_KOSDAQ_MIN_TURNOVER": "7000000000",
+      "AG_KOSDAQ_RED_ALPHA_RELAX_FLOOR": "45",
+      "AG_KOSDAQ_RED_MIN_CONVICTION": "64",
+      "AG_KOSDAQ_UNIVERSE_MIN_AMOUNT": "5000000000",
+      "AG_KOSPI_MIN_TURNOVER": "10000000000",
+      "AG_KOSPI_UNIVERSE_MIN_AMOUNT": "12000000000",
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "40",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+      "AG_US_SIGNAL_LOOKBACK": "10",
+      "AG_US_SIGNAL_MIN_HITS": "1"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 1,
+      "filtered_symbols": [
+        "000250.KQ"
+      ],
+      "reject_details_by_symbol": {
+        "000250.KQ": [
+          {
+            "alpha_score": 30.0,
+            "market_gate": "RED",
+            "market_type": "KR",
+            "real_trend": "UP",
+            "ticker": "000250.KQ"
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "KR_HARD_FILTER_FAIL": 1
+      },
+      "reject_reasons_by_symbol": {
+        "000250.KQ": "KR_HARD_FILTER_FAIL"
+      },
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": null,
+      "us_signal_window": null
+    },
+    "macro_ctx": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_WEAKNESS"
+      ],
+      "krw": 1533.010009765625,
+      "krw_change_1d": 1.72,
+      "macro_multiplier": 0.85,
+      "macro_penalty": 5,
+      "macro_risk_score": 35,
+      "macro_state": "CAUTION",
+      "spy_change_1d": -0.33,
+      "tnx": 4.3420000076293945,
+      "tnx_change_1d": -2.21,
+      "vix": 28.850000381469727,
+      "vix_change_1d": -5.75
+    },
+    "market": "KOSDAQ",
+    "market_gate": {
+      "gate": "RED",
+      "kosdaq_chg": -4.937449236152261,
+      "kospi_chg": -4.260509201131393,
+      "msg": "하락장 경보: KOSPI -4.26% / KOSDAQ -4.94% — 신규 매수 자제"
+    },
+    "regime": {
+      "desc": "약세 (현재<MA50)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "total_scans": 1,
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: KR_HARD_FILTER_FAIL (1).",
+        "severity": "warning"
+      }
+    ]
+  },
+  "results": []
+}

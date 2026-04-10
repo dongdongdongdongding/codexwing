@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "error_count": 0,
+    "macro_ctx": {
+      "flags": [],
+      "krw": null,
+      "krw_change_1d": 0.0,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.0,
+      "tnx": null,
+      "tnx_change_1d": 0.0,
+      "vix": null,
+      "vix_change_1d": 0.0
+    },
+    "market": "NASDAQ",
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 0.0,
+      "kospi_chg": 0.0,
+      "msg": "시장 데이터 로딩 실패: 'NoneType' object is not subscriptable"
+    },
+    "regime": {
+      "desc": "Error",
+      "emoji": "🟡",
+      "regime": "NEUTRAL"
+    },
+    "total_scans": 0
+  },
+  "results": []
+}

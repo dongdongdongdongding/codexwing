@@ -1,0 +1,79 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1512.5699462890625,
+      "krw_change_1d": -0.23,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 1.09,
+      "tnx": 4.302999973297119,
+      "tnx_change_1d": -0.19,
+      "vix": 23.559999465942383,
+      "vix_change_1d": -6.69
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "key_insight": "No intelligence available",
+    "market_sentiment": "NEUTRAL",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "evidence_headlines": [],
+      "key_insight": "No intelligence available",
+      "market_sentiment": "NEUTRAL",
+      "raw_headlines": [
+        "[Mon, 30 Mar 2026 21:00:00 GMT] 외국인, 이달에만 코스피 32조 팔았는데…\"더 많이 팔 수도\" - 뉴시스 | 뉴시스",
+        "[Mon, 30 Mar 2026 01:30:25 GMT] 개인 vs 외국인·기관…코스피 5200선 수급 공방[장중시황] - v.daum.net | v.daum.net",
+        "[Mon, 30 Mar 2026 01:28:32 GMT] 개인 vs 외국인·기관…코스피 5200선 수급 공방[장중시황] - 뉴스1 | 뉴스1",
+        "[Fri, 27 Mar 2026 01:56:25 GMT] 코스피 외국인·기관 매도에 장중 5240선 급락세, 원/달러 환율 1508원 출발 - 비즈니스포스트 | 비즈니스포스트",
+        "[Wed, 25 Mar 2026 06:42:53 GMT] 코스피 1%대 상승…기관 매수 vs 외국인 이탈[마감시황] - 에너지경제신문 | 에너지경제신문"
+      ],
+      "sentiment_score": 0,
+      "source": "fallback",
+      "themes": [],
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "sentiment_score": 0,
+    "source": "fallback",
+    "status": "fallback_intel",
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-01T16:16:57.169914+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-02",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T16:16:28.357618+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-F6CB4E70",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": [
+    {
+      "code": "NEWS_INTEL_FALLBACK",
+      "message": "News intelligence returned fallback payload.",
+      "severity": "warning"
+    }
+  ]
+}

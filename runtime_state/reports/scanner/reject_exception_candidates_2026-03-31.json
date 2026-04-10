@@ -1,0 +1,130 @@
+{
+  "source_csv": "/Users/dongdong/Documents/2026-03-31T08-48_export.csv",
+  "regime": "BEAR",
+  "total_rejects": 277,
+  "exception_candidates": 24,
+  "top_candidates": [
+    {
+      "ticker": "086450.KQ",
+      "name": "동국제약",
+      "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "exception_score": 89.8,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;ALPHA_55_PLUS;CONVICTION_58_PLUS;PROB5_35_PLUS;CLEAN_25_PLUS;PRECISION_GATE_BORDERLINE"
+    },
+    {
+      "ticker": "170920.KQ",
+      "name": "엘티씨",
+      "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "exception_score": 82.8,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;ALPHA_45_PLUS;CONVICTION_58_PLUS;PROB5_35_PLUS;CLEAN_25_PLUS;PRECISION_GATE_BORDERLINE"
+    },
+    {
+      "ticker": "100790.KQ",
+      "name": "미래에셋벤처투자",
+      "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "exception_score": 77.0,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;ALPHA_45_PLUS;CONVICTION_58_PLUS;CLEAN_25_PLUS;PRECISION_GATE_BORDERLINE"
+    },
+    {
+      "ticker": "241520.KQ",
+      "name": "DSC인베스트먼트",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 76.0,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "347700.KQ",
+      "name": "스피어",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 76.0,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "361390.KQ",
+      "name": "제노코",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 73.9,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "289080.KQ",
+      "name": "SV인베스트먼트",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 73.5,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "083650.KQ",
+      "name": "비에이치아이",
+      "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "exception_score": 72.5,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;CONVICTION_58_PLUS;PROB5_35_PLUS;CLEAN_25_PLUS;PRECISION_GATE_BORDERLINE"
+    },
+    {
+      "ticker": "095340.KQ",
+      "name": "ISC",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 70.5,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "425040.KQ",
+      "name": "티이엠씨",
+      "reason": "PRECISION_GATE_T3_LOW_ML_SUPPORT",
+      "exception_score": 69.7,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;ALPHA_55_PLUS;CLEAN_25_PLUS"
+    },
+    {
+      "ticker": "073490.KQ",
+      "name": "이노와이어리스",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 69.2,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "010170.KQ",
+      "name": "대한광통신",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 67.9,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "178320.KQ",
+      "name": "서진시스템",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 58.0,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "050890.KQ",
+      "name": "쏠리드",
+      "reason": "KR_HARD_FILTER_FAIL",
+      "exception_score": 57.9,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;TREND_UP"
+    },
+    {
+      "ticker": "084370.KQ",
+      "name": "유진테크",
+      "reason": "KR_BASELINE_FILTER_FAIL",
+      "exception_score": 57.3,
+      "profile_policy": "POSITIVE",
+      "exception_reasons": "POSITIVE_BEAR_PROFILE;PROFILE_WINRATE_STRONG;PROFILE_EDGE_STRONG"
+    }
+  ],
+  "csv_path": "runtime_state/reports/scanner/reject_exception_candidates_2026-03-31.csv",
+  "md_path": "runtime_state/reports/scanner/reject_exception_candidates_2026-03-31.md"
+}

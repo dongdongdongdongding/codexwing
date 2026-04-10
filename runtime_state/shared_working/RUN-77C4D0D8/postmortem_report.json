@@ -1,0 +1,55 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json"
+  ],
+  "failure_summary": "Pre-outcome quality risk detected. See tickets for agent-specific fixes.",
+  "likely_causes": [
+    "Candidate quality is low under current thresholds or market pressure.",
+    "Sample size is small; confidence may be overstated."
+  ],
+  "produced_at": "2026-03-30T15:37:36.091130+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-03-30T15:37:17.305972+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-77C4D0D8",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-03-30T15:37:36.091108+00:00",
+      "hypothesis": "Ranking emphasis may over-weight technical score in weak regime.",
+      "owner_agent": "aggregation_agent",
+      "owner_module": "candidate quality diagnostics",
+      "priority": "medium",
+      "requested_change": "Add concentration-aware penalty and enforce diversity gate.",
+      "run_id": "RUN-77C4D0D8",
+      "status": "open",
+      "ticket_id": "TKT-D4C128D5",
+      "title": "Reduce weak candidate concentration"
+    },
+    {
+      "created_at": "2026-03-30T15:37:36.091120+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-77C4D0D8",
+      "status": "open",
+      "ticket_id": "TKT-A342592F",
+      "title": "Strengthen small-sample safeguards"
+    }
+  ]
+}

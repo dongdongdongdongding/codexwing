@@ -1,0 +1,56 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 22,
+      "label": "🚀 Momentum",
+      "share": 0.537
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 17,
+      "label": "🚀 Momentum | ⚡ 단기과열(강세)",
+      "share": 0.415
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "🎣 OBV_DIV",
+      "share": 0.024
+    }
+  ],
+  "concentration": {
+    "candidate_count": 41,
+    "strategy_distribution": {
+      "🎣 OBV_DIV": 1,
+      "🎣 SQUEEZE": 1,
+      "🚀 Momentum": 22,
+      "🚀 Momentum | ⚡ 단기과열(강세)": 17
+    },
+    "top_strategy": "🚀 Momentum",
+    "top_strategy_share": 0.537,
+    "trend_distribution": {
+      "DOWN": 4,
+      "NEUTRAL": 5,
+      "UP": 32
+    },
+    "weak_candidate_count": 3,
+    "weak_candidate_ratio": 0.073
+  },
+  "produced_at": "2026-03-30T17:16:07.560479+00:00",
+  "quality_notes": [
+    "Total candidates: 41",
+    "Weak-score candidates (<55): 3 (7.3%)",
+    "Top strategy cluster: 🚀 Momentum (22/41)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-30T17:16:07.553227+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-E5E8FACC",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

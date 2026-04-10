@@ -1,0 +1,25 @@
+{
+  "date": "2026-04-09",
+  "assessment": {
+    "improves_coverage": true,
+    "can_improve_returns": true,
+    "can_hurt_precision_if_uncontrolled": true,
+    "recommended_rollout": "shadow_then_additive_then_exception"
+  },
+  "success_metrics": [
+    "red_yellow_market_coverage_up",
+    "picked_avg_return_non_degrading",
+    "theme_routed_outperform_watchlist",
+    "theme_leader_top1_outperform_theme_average"
+  ],
+  "implemented_slice": [
+    "theme_catalog",
+    "theme_signal_engine",
+    "theme_leader_ranker",
+    "theme_router_shadow_mode",
+    "market_context_theme_fields",
+    "scanner_handoff_theme_fields",
+    "aggregation_theme_clusters",
+    "planner_theme_rationale"
+  ]
+}

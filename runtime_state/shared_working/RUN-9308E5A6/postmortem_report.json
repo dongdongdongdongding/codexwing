@@ -1,0 +1,55 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json"
+  ],
+  "failure_summary": "No critical pre-outcome failure. Postmortem generated as a preventive trace.",
+  "likely_causes": [
+    "Sample size is small; confidence may be overstated.",
+    "Market/news context is incomplete and should be stabilized before high-conviction automation."
+  ],
+  "produced_at": "2026-03-30T14:14:26.518249+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-30",
+    "code_version": "scaffold-v1",
+    "created_at": "2026-03-30T14:14:26.506022+00:00",
+    "market": "KR",
+    "model_version": "legacy",
+    "run_id": "RUN-9308E5A6",
+    "strategy_version": "legacy-compatible"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-03-30T14:14:26.518236+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-9308E5A6",
+      "status": "open",
+      "ticket_id": "TKT-6AFCAA20",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-03-30T14:14:26.518245+00:00",
+      "hypothesis": "Missing or unstable regime/news overlay can cause false positives in weak markets.",
+      "owner_agent": "market_news_context_agent",
+      "owner_module": "modules/macro_scheduler.py + modules/market_intelligence.py",
+      "priority": "high",
+      "requested_change": "Raise macro/news data fetch reliability and reduce fallback/no-context frequency.",
+      "run_id": "RUN-9308E5A6",
+      "status": "open",
+      "ticket_id": "TKT-B3894A9C",
+      "title": "Stabilize live market context handoff"
+    }
+  ]
+}

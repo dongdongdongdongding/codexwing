@@ -1,0 +1,61 @@
+{
+  "applied_profile_defaults": {
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "diagnostics": {
+    "error_symbols": [],
+    "exception_symbols": [],
+    "executor_exception_count": 0,
+    "filtered_count": 4,
+    "filtered_symbols": [
+      "266870.KQ",
+      "214150.KQ",
+      "347860.KQ",
+      "137950.KQ"
+    ],
+    "reject_details_by_symbol": {},
+    "reject_reason_counts": {
+      "KR_HARD_FILTER_FAIL": 1,
+      "LIQUIDITY_FILTER_FAIL": 2,
+      "PRECISION_GATE_RED_MARKET": 1
+    },
+    "reject_reasons_by_symbol": {
+      "137950.KQ": "PRECISION_GATE_RED_MARKET",
+      "214150.KQ": "KR_HARD_FILTER_FAIL",
+      "266870.KQ": "LIQUIDITY_FILTER_FAIL",
+      "347860.KQ": "LIQUIDITY_FILTER_FAIL"
+    },
+    "worker_error_count": 0
+  },
+  "execution_profile": "prod",
+  "gate_config": {
+    "us_hard_filter": null,
+    "us_signal_window": null
+  },
+  "results_sorted": [],
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-03-31T07:20:59.872781+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-8363C06A",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "scan_result": {
+    "error_count": 0,
+    "results": [],
+    "total_scans": 4
+  },
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: LIQUIDITY_FILTER_FAIL (2).",
+      "severity": "warning"
+    }
+  ]
+}

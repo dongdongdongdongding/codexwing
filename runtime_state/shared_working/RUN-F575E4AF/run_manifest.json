@@ -1,0 +1,18 @@
+{
+  "code_version": "non-ui-scan-v1",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-F575E4AF/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-F575E4AF/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-F575E4AF/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-F575E4AF/market_context_handoff.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-F575E4AF/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-F575E4AF/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-F575E4AF/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-F575E4AF/realized_outcomes.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-F575E4AF/scanner_handoff.json"
+  },
+  "market": "NASDAQ",
+  "model_version": "legacy",
+  "run_id": "RUN-F575E4AF",
+  "strategy_version": "legacy-cli-v1"
+}

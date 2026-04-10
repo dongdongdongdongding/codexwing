@@ -1,0 +1,38 @@
+{
+  "agents_executed": [
+    "scanner_agent",
+    "aggregation_agent",
+    "backtest_learning_agent",
+    "market_news_context_agent",
+    "pm_planner_agent"
+  ],
+  "market": "AMEX",
+  "planner": {
+    "decision_count": 5,
+    "warning_codes": [
+      "LOW_QUALITY_INPUT"
+    ],
+    "watchlist_count": 5
+  },
+  "postmortem": {
+    "likely_causes": []
+  },
+  "run_id": "RUN-CE72B627",
+  "scanner": {
+    "candidate_count": 5,
+    "reject_reason_counts": {
+      "FETCH_DATA_FAIL": 2,
+      "LIQUIDITY_FILTER_FAIL": 1,
+      "MARKET_POLICY_AVOID": 29,
+      "MISSING_ANTIGRAV_SCORE": 1,
+      "PRECISION_GATE_TREND_MISMATCH": 9,
+      "US_BASELINE_FILTER_FAIL": 1,
+      "US_EARNINGS_RISK_BLOCK": 1,
+      "US_MIN_PRICE_VOLUME_FAIL": 1
+    },
+    "top_reject_reason": {}
+  },
+  "status": "completed",
+  "task_id": "TASK-879B0FEB",
+  "task_kind": "scan_pipeline"
+}

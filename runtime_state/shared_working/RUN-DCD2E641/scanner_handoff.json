@@ -1,0 +1,237 @@
+{
+  "candidates": [
+    {
+      "feature_snapshot": {
+        "antigrav": 88,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "GOOG",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x1.4",
+        "whale": "92pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Breakout | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 100.0,
+      "score_breakdown": {
+        "antigrav": 88.0,
+        "decision_score": 100.0,
+        "whale_score": 92.0
+      },
+      "ticker": "GOOG",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "META",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x1.1",
+        "whale": "96pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Trend | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 84.1,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 84.1,
+        "whale_score": 96.0
+      },
+      "ticker": "META",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 70,
+        "position": "📈 Intraday Trend",
+        "stock_name": "AVGO",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x1.2",
+        "whale": "91pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Trend | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 82.9,
+      "score_breakdown": {
+        "antigrav": 70.0,
+        "decision_score": 82.9,
+        "whale_score": 91.0
+      },
+      "ticker": "AVGO",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 63,
+        "position": "📈 Intraday Trend",
+        "stock_name": "WMT",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "✅ x1.7",
+        "whale": "72pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Trend | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 78.2,
+      "score_breakdown": {
+        "antigrav": 63.0,
+        "decision_score": 78.2,
+        "whale_score": 72.0
+      },
+      "ticker": "WMT",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 69,
+        "position": "📈 Intraday Trend",
+        "stock_name": "TSLA",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "77pts"
+      },
+      "reasons": [
+        "Strategy: ⏱️ Intraday Trend | 1H",
+        "Surge: 📈 Trend Continuation",
+        "Trend: UP"
+      ],
+      "score": 76.6,
+      "score_breakdown": {
+        "antigrav": 69.0,
+        "decision_score": 76.6,
+        "whale_score": 77.0
+      },
+      "ticker": "TSLA",
+      "warnings": []
+    }
+  ],
+  "produced_at": "2026-04-01T09:33:22.282060+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "orchestrated-us-research",
+    "created_at": "2026-04-01T09:33:22.281452+00:00",
+    "market": "NASDAQ",
+    "model_version": "research-baseline",
+    "run_id": "RUN-DCD2E641",
+    "strategy_version": "us-research-v1"
+  },
+  "summary": {
+    "applied_profile_defaults": {},
+    "candidate_count": 5,
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 0,
+      "filtered_symbols": [],
+      "reject_details_by_symbol": {},
+      "reject_reason_counts": {},
+      "reject_reasons_by_symbol": {},
+      "worker_error_count": 0
+    },
+    "execution_profile": "prod",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 40.0,
+        "min_alpha_down": 55.0
+      },
+      "us_signal_window": {
+        "lookback": 10,
+        "min_hits": 1
+      }
+    },
+    "input_meta": {
+      "applied_profile_defaults": {},
+      "diagnostics": {
+        "error_symbols": [],
+        "exception_symbols": [],
+        "executor_exception_count": 0,
+        "filtered_count": 0,
+        "filtered_symbols": [],
+        "reject_details_by_symbol": {},
+        "reject_reason_counts": {},
+        "reject_reasons_by_symbol": {},
+        "worker_error_count": 0
+      },
+      "error_count": 0,
+      "execution_profile": "prod",
+      "gate_config": {
+        "us_hard_filter": {
+          "amex_rs_min": -5.0,
+          "min_alpha": 40.0,
+          "min_alpha_down": 55.0
+        },
+        "us_signal_window": {
+          "lookback": 10,
+          "min_hits": 1
+        }
+      },
+      "macro_ctx": {
+        "flags": [
+          "VIX_ELEVATED"
+        ],
+        "krw": 1506.8800048828125,
+        "krw_change_1d": -0.61,
+        "macro_multiplier": 1.0,
+        "macro_penalty": 0,
+        "macro_risk_score": 10,
+        "macro_state": "NORMAL",
+        "spy_change_1d": 2.91,
+        "tnx": 4.310999870300293,
+        "tnx_change_1d": -0.71,
+        "vix": 24.959999084472656,
+        "vix_change_1d": -1.15
+      },
+      "market": "NASDAQ",
+      "market_gate": {
+        "gate": "GREEN",
+        "kosdaq_chg": 6.061444728151452,
+        "kospi_chg": 8.436291186282054,
+        "live_mode": false,
+        "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+      },
+      "regime": {
+        "desc": "하락장 (현재<6635<6794)",
+        "emoji": "🔴",
+        "regime": "BEAR"
+      },
+      "scan_mode": "INTRADAY",
+      "strategy_family": "US_MAIN",
+      "total_scans": 5,
+      "warnings": []
+    },
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 6.061444728151452,
+      "kospi_chg": 8.436291186282054,
+      "live_mode": false,
+      "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6635<6794)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "source": "scanner_agent_input",
+    "warnings": [],
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

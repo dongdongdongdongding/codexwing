@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "profile_diagnostics.schema.json",
+  "title": "ProfileDiagnostics",
+  "type": "object",
+  "required": [
+    "run_id",
+    "market",
+    "current_profile",
+    "current_total_scans",
+    "current_result_count",
+    "current_top_reject_reason",
+    "profile_summary",
+    "flags",
+    "generated_at"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "market": {"type": "string"},
+    "current_profile": {"type": "string"},
+    "current_total_scans": {"type": "integer"},
+    "current_result_count": {"type": "integer"},
+    "current_top_reject_reason": {"type": "object"},
+    "profile_summary": {"type": "object"},
+    "flags": {
+      "type": "object",
+      "required": ["prod_dev_gap", "prod_zero_streak_alert", "prod_zero_streak"],
+      "properties": {
+        "prod_dev_gap": {"type": "boolean"},
+        "prod_zero_streak_alert": {"type": "boolean"},
+        "prod_zero_streak": {"type": "integer"}
+      }
+    },
+    "fallback_watchlist": {
+      "type": "object",
+      "properties": {
+        "applied": {"type": "boolean"},
+        "source_profile": {"type": "string"},
+        "source_run_id": {"type": ["string", "null"]},
+        "tickers": {"type": "array", "items": {"type": "string"}},
+        "watchlist_meta": {"type": "array", "items": {"type": "object"}},
+        "considered_dev_runs": {"type": "integer"}
+      }
+    },
+    "generated_at": {"type": "string"}
+  }
+}

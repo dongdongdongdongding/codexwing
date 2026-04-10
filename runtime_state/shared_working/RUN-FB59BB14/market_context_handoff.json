@@ -1,0 +1,287 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1503.9599609375,
+      "krw_change_1d": -0.35,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.31,
+      "tnx": 4.3429999351501465,
+      "tnx_change_1d": 0.7,
+      "vix": 24.84000015258789,
+      "vix_change_1d": 4.06
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "벤처캐피탈",
+      "증권"
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": -1,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": 0,
+      "OIL": 0,
+      "POLITICS": 1,
+      "RATES": 0,
+      "REGULATION": 1
+    },
+    "key_insight": "2조원 규모 벤처 펀드 조성 추진이 유동성 확대 기대를 형성하는 가운데, 차기 한은 총재 인사청문회가 통화정책의 주요 변수로 부상하고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "description": "2조원 규모의 벤처 펀드 조성 추진은 시장에 신규 자금 유입 기대를 높여 KOSPI에 긍정적입니다.",
+        "evidence": "금융투자업계, 2조원 규모 벤처시장 세컨더리 펀드 조성 추진",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "REGULATION",
+        "description": "거래소의 프리·애프터마켓 시행 준비는 거래 시간 확대를 통한 유동성 증대와 투자자 편의성 제고로 이어질 수 있습니다.",
+        "evidence": "거래소, 프리·애프터마켓 시행 앞두고 23주간 모의시장 운영",
+        "market_impact": 2,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "POLITICS",
+        "description": "차기 한은 총재 인사청문회 일정이 확정되어 통화정책 관련 불확실성이 해소되는 과정에 있습니다.",
+        "evidence": "국회, 신현송 한은 총재 후보자 인사청문회 15일 개최",
+        "market_impact": 1,
+        "signal": "NEUTRAL"
+      },
+      {
+        "category": "ECONOMY",
+        "description": "일본과 대만 기업의 전기버스 수출 협력은 KOSPI 내 관련 자동차 기업의 경쟁 심화 요인으로 작용할 수 있습니다.",
+        "evidence": "日미쓰비시후소·대만 폭스콘, 전기버스 호주·동남아 수출 추진",
+        "market_impact": -1,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "세컨더리 펀드",
+        "벤처 투자",
+        "시간외거래"
+      ],
+      "beneficiary_sectors": [
+        "벤처캐피탈",
+        "증권"
+      ],
+      "company_event_bias": {
+        "대양금속": -8,
+        "삼성중공업": -8,
+        "아세아제지": 6,
+        "코오롱": -8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "REGULATION",
+          "company": "삼성중공업",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의제기ㆍ신청(일정금액이상의청구)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "코오롱",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]유상증자또는주식관련사채등의발행결과(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "코오롱",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]유상증자또는주식관련사채등의발행결과(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "대양금속",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "코오롱",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자또는주식관련사채등의발행결과(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "아세아제지",
+          "event_score": 3,
+          "label": "자사주",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(자기주식취득신탁계약해지결정)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "삼성중공업",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의제기ㆍ신청(일정금액이상의청구)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "코오롱",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]유상증자또는주식관련사채등의발행결과(자율공시)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": -1,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": 0,
+        "OIL": 0,
+        "POLITICS": 1,
+        "RATES": 0,
+        "REGULATION": 1
+      },
+      "evidence_headlines": [
+        "금융투자업계, 2조원 규모 벤처시장 세컨더리 펀드 조성 추진 | 연합뉴스",
+        "국회, 신현송 한은 총재 후보자 인사청문회 15일 개최 | 연합뉴스",
+        "거래소, 프리·애프터마켓 시행 앞두고 23주간 모의시장 운영 | 연합뉴스",
+        "日미쓰비시후소·대만 폭스콘, 전기버스 호주·동남아 수출 추진 | 연합뉴스"
+      ],
+      "key_insight": "2조원 규모 벤처 펀드 조성 추진이 유동성 확대 기대를 형성하는 가운데, 차기 한은 총재 인사청문회가 통화정책의 주요 변수로 부상하고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "description": "2조원 규모의 벤처 펀드 조성 추진은 시장에 신규 자금 유입 기대를 높여 KOSPI에 긍정적입니다.",
+          "evidence": "금융투자업계, 2조원 규모 벤처시장 세컨더리 펀드 조성 추진",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "REGULATION",
+          "description": "거래소의 프리·애프터마켓 시행 준비는 거래 시간 확대를 통한 유동성 증대와 투자자 편의성 제고로 이어질 수 있습니다.",
+          "evidence": "거래소, 프리·애프터마켓 시행 앞두고 23주간 모의시장 운영",
+          "market_impact": 2,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "POLITICS",
+          "description": "차기 한은 총재 인사청문회 일정이 확정되어 통화정책 관련 불확실성이 해소되는 과정에 있습니다.",
+          "evidence": "국회, 신현송 한은 총재 후보자 인사청문회 15일 개최",
+          "market_impact": 1,
+          "signal": "NEUTRAL"
+        },
+        {
+          "category": "ECONOMY",
+          "description": "일본과 대만 기업의 전기버스 수출 협력은 KOSPI 내 관련 자동차 기업의 경쟁 심화 요인으로 작용할 수 있습니다.",
+          "evidence": "日미쓰비시후소·대만 폭스콘, 전기버스 호주·동남아 수출 추진",
+          "market_impact": -1,
+          "signal": "BEARISH"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[DART 20260406] 삼성중공업 - 소송등의제기ㆍ신청(일정금액이상의청구) | 전자공시",
+        "[DART 20260406] 코오롱 - [기재정정]유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+        "[DART 20260406] 코오롱 - [기재정정]유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+        "[DART 20260406] 대양금속 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260406] 코오롱 - 유상증자또는주식관련사채등의발행결과(자율공시) | 전자공시",
+        "[DART 20260406] 아세아제지 - 신탁계약해지결과보고서 | 전자공시",
+        "[DART 20260406] 아세아제지 - 주요사항보고서(자기주식취득신탁계약해지결정) | 전자공시",
+        "[Mon, 6 Apr 2026 22:04:24 +0900] 국회, 신현송 한은 총재 후보자 인사청문회 15일 개최 | 연합뉴스",
+        "[Mon, 6 Apr 2026 20:04:15 +0900] 금융투자업계, 2조원 규모 벤처시장 세컨더리 펀드 조성 추진 | 연합뉴스",
+        "[Mon, 6 Apr 2026 19:42:54 +0900] 삼천당제약, 애프터마켓서 10%대 급락 | 연합뉴스",
+        "[Mon, 6 Apr 2026 18:51:21 +0900] 거래소, 프리·애프터마켓 시행 앞두고 23주간 모의시장 운영 | 연합뉴스",
+        "[Mon, 6 Apr 2026 18:46:34 +0900] 또 점포 줄이는 우리은행…영업점·출장소 37곳 통폐합 | 연합뉴스",
+        "[Mon, 6 Apr 2026 18:16:21 +0900] 김윤덕 \"공시가격 산정, 큰 무리 없어…더 정교하도록 노력\" | 연합뉴스",
+        "[Mon, 6 Apr 2026 18:00:01 +0900] [연합뉴스 이 시각 헤드라인] - 18:00 | 연합뉴스",
+        "[Mon, 6 Apr 2026 17:54:48 +0900] 日미쓰비시후소·대만 폭스콘, 전기버스 호주·동남아 수출 추진 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "차기 한은 총재 리스크",
+        "통화정책 불확실성",
+        "글로벌 EV 경쟁 심화"
+      ],
+      "sentiment_score": 15,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "금융투자업계가 2조원 규모의 벤처 세컨더리 펀드 조성을 추진하며 관련 시장에 대한 투자 심리가 개선될 수 있습니다.",
+          "impact": "POSITIVE",
+          "theme": "벤처 시장 유동성 확대 기대"
+        },
+        {
+          "description": "차기 한국은행 총재 후보자의 인사청문회 일정이 확정되면서 향후 금리 정책 방향성에 대한 관망세가 형성될 수 있습니다.",
+          "impact": "MIXED",
+          "theme": "통화정책 불확실성"
+        }
+      ],
+      "timestamp": "2026-04-06 23:00",
+      "victim_keywords": [
+        "전기버스",
+        "영업점 축소"
+      ],
+      "victim_sectors": [
+        "자동차",
+        "은행"
+      ]
+    },
+    "risk_flags": [
+      "차기 한은 총재 리스크",
+      "통화정책 불확실성",
+      "글로벌 EV 경쟁 심화"
+    ],
+    "sentiment_score": 15,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "자동차",
+      "은행"
+    ]
+  },
+  "produced_at": "2026-04-06T14:00:42.535919+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-06",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-06T14:00:06.440472+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-FB59BB14",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

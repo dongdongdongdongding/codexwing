@@ -1,0 +1,115 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1511.989990234375,
+      "krw_change_1d": -0.27,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 1.15,
+      "tnx": 4.302999973297119,
+      "tnx_change_1d": -0.19,
+      "vix": 23.829999923706055,
+      "vix_change_1d": -5.62
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "로봇",
+      "2차전지",
+      "바이오"
+    ],
+    "key_insight": "코스닥은 지정학적 리스크로 인해 전반적인 압력을 받고 있으나, 외국인 투자자들은 로봇, 2차전지, 바이오 등 특정 성장 섹터로 자금을 이동하며 강한 모멘텀을 보이고 있다.",
+    "market_sentiment": "MIXED",
+    "raw": {
+      "beneficiary_keywords": [
+        "로봇주",
+        "2차전지주",
+        "바이오주",
+        "에코프로비엠",
+        "레인보우로보틱스"
+      ],
+      "beneficiary_sectors": [
+        "로봇",
+        "2차전지",
+        "바이오"
+      ],
+      "evidence_headlines": [
+        "전쟁 암초 만난 '코스닥 액티브 ETF'…수익률 패시브 밀렸다",
+        "'바이오 학회'와 '반도체 실적'의 충돌…4월 증시, 전고점 탈환 향한 분수령",
+        "[주간 코스닥 외국인] 에코프로비엠·레인보우로보틱스 쓸어 담았다... 로봇·2차전지 집중 매수",
+        "[코스닥 외국인] 로봇·바이오로 자금 이동...반도체는 차익실현"
+      ],
+      "key_insight": "코스닥은 지정학적 리스크로 인해 전반적인 압력을 받고 있으나, 외국인 투자자들은 로봇, 2차전지, 바이오 등 특정 성장 섹터로 자금을 이동하며 강한 모멘텀을 보이고 있다.",
+      "market_sentiment": "MIXED",
+      "raw_headlines": [
+        "[Tue, 31 Mar 2026 21:00:00 GMT] 전쟁 암초 만난 '코스닥 액티브 ETF'…수익률 패시브 밀렸다 - 뉴스1 | 뉴스1",
+        "[Sat, 28 Mar 2026 15:00:00 GMT] '바이오 학회'와 '반도체 실적'의 충돌…4월 증시, 전고점 탈환 향한 분수령 - 더페어 | 더페어",
+        "[Sat, 28 Mar 2026 02:05:44 GMT] [주간 코스닥 외국인] 에코프로비엠·레인보우로보틱스 쓸어 담았다... 로봇·2차전지 집중 매수 - pinpointnews.co.kr | pinpointnews.co.kr",
+        "[Fri, 27 Mar 2026 07:16:04 GMT] [코스닥 외국인] 로봇·바이오로 자금 이동...반도체는 차익실현 - pinpointnews.co.kr | pinpointnews.co.kr",
+        "[Tue, 24 Mar 2026 23:53:00 GMT] [AI MY 증시전망] 코스피 5600~5800선 테스트 가능…외국인 매도·지정학 리스크 변수 - 뉴스핌 | 뉴스핌"
+      ],
+      "sentiment_score": -10,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "전쟁 관련 요인으로 인해 코스닥 액티브 ETF의 수익률이 패시브에 밀림.",
+          "impact": "NEGATIVE",
+          "theme": "지정학적 리스크"
+        },
+        {
+          "description": "외국인이 로봇, 2차전지, 바이오 섹터에 자금을 집중 매수하며 긍정적 흐름 형성.",
+          "impact": "POSITIVE",
+          "theme": "성장 섹터 모멘텀"
+        },
+        {
+          "description": "바이오 학회와 반도체 실적이 충돌하는 가운데, 반도체는 차익실현 발생.",
+          "impact": "MIXED",
+          "theme": "섹터별 이벤트와 자금 재편"
+        }
+      ],
+      "timestamp": "2026-04-02 01:00",
+      "victim_keywords": [
+        "반도체주"
+      ],
+      "victim_sectors": [
+        "반도체"
+      ]
+    },
+    "sentiment_score": -10,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "반도체"
+    ]
+  },
+  "produced_at": "2026-04-01T16:03:32.491352+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-02",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T16:03:31.246076+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-B7CD42B3",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

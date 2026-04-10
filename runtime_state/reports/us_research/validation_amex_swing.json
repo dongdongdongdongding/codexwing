@@ -1,0 +1,313 @@
+{
+  "decision_bucket_counts": {
+    "unknown": 1,
+    "watchlist": 9
+  },
+  "generated_at": "2026-04-01T15:44:22.869391+00:00",
+  "horizons": {
+    "1d": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "1h": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "30m": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "3d": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "5d": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "7d": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    },
+    "close": {
+      "avg_return_pct": 0.0,
+      "hit_rates": {
+        ">10%": 0.0,
+        ">100%": 0.0,
+        ">20%": 0.0,
+        ">5%": 0.0,
+        ">50%": 0.0
+      },
+      "median_return_pct": 0.0,
+      "samples": 0,
+      "win_rate_pct": 0.0
+    }
+  },
+  "market": "AMEX",
+  "market_type_filter": "AMEX",
+  "moonshot": {
+    "avg_max_return_pct": 0.0,
+    "best_horizon_counts": {
+      "unknown": 10
+    },
+    "hit_rates": {
+      ">100%": 0.0,
+      ">20%": 0.0,
+      ">50%": 0.0
+    },
+    "median_max_return_pct": 0.0,
+    "samples": 0
+  },
+  "price_band_counts": {
+    "gt_15": 7,
+    "le_7": 3
+  },
+  "price_band_horizons": {
+    "gt_15": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    },
+    "le_7": {
+      "1d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "1h": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "30m": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "3d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "5d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "7d": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      },
+      "close": {
+        "avg_return_pct": 0.0,
+        "hit_rates": {
+          ">10%": 0.0,
+          ">100%": 0.0,
+          ">20%": 0.0,
+          ">5%": 0.0,
+          ">50%": 0.0
+        },
+        "median_return_pct": 0.0,
+        "samples": 0,
+        "win_rate_pct": 0.0
+      }
+    }
+  },
+  "rows": 10,
+  "scan_mode": "SWING",
+  "strategy_family": "AMEX_MOONSHOT",
+  "strategy_family_counts": {
+    "AMEX_MOONSHOT": 10
+  }
+}

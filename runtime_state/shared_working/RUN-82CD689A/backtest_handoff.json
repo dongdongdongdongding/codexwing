@@ -1,0 +1,150 @@
+{
+  "calibration": {
+    "confidence_penalty": 0.08,
+    "reason": "Confidence penalized by realized trade count in sampled real backtests.",
+    "status": "mixed",
+    "trade_sample_bucket": "medium"
+  },
+  "diagnostics": {
+    "candidate_count": 839,
+    "expectancy_proxy": 0.734,
+    "mode": "quantstrategy_backtest_sampled",
+    "real_backtest": {
+      "avg_trades_per_ticker": 6.8,
+      "coverage_ratio": 0.006,
+      "low_trade_ratio": 0.2,
+      "mean_profit_factor": 0.894,
+      "mean_total_return_pct": -3.69,
+      "mean_win_rate_pct": 41.286,
+      "sample_rows": [
+        {
+          "profit_factor": 1.1,
+          "ticker": "NVDA",
+          "total_return_pct": 0.26,
+          "total_trades": 5,
+          "win_rate_pct": 50.0
+        },
+        {
+          "profit_factor": 0.6,
+          "ticker": "GOOGL",
+          "total_return_pct": -5.41,
+          "total_trades": 9,
+          "win_rate_pct": 42.86
+        },
+        {
+          "profit_factor": 0.77,
+          "ticker": "GOOG",
+          "total_return_pct": -2.46,
+          "total_trades": 9,
+          "win_rate_pct": 42.86
+        },
+        {
+          "profit_factor": 1.54,
+          "ticker": "TSLA",
+          "total_return_pct": 1.85,
+          "total_trades": 2,
+          "win_rate_pct": 35.0
+        },
+        {
+          "profit_factor": 0.46,
+          "ticker": "ASML",
+          "total_return_pct": -12.69,
+          "total_trades": 9,
+          "win_rate_pct": 35.71
+        }
+      ],
+      "selected_tickers": 5,
+      "tested_tickers": 5,
+      "total_trades_sum": 34
+    },
+    "sample_size_bucket": "large",
+    "score_stats": {
+      "max": 100.0,
+      "mean": 86.698,
+      "median": 86.5,
+      "min": 61.3,
+      "std": 10.366
+    },
+    "weak_candidate_ratio": 0.0
+  },
+  "produced_at": "2026-04-01T15:12:40.061798+00:00",
+  "regime_sensitivity": {
+    "benchmark": "SPY",
+    "errors": [],
+    "slices": [
+      {
+        "avg_pnl_pct": 6.89,
+        "days": 27,
+        "end": "2025-10-09",
+        "n_trades": 1,
+        "profit_factor": 99.0,
+        "regime": "BULL",
+        "start": "2025-09-03",
+        "win_rate_pct": 100.0
+      },
+      {
+        "avg_pnl_pct": 0.0,
+        "days": 23,
+        "end": "2026-04-01",
+        "n_trades": 0,
+        "profit_factor": 0.0,
+        "regime": "BEAR",
+        "start": "2026-03-02",
+        "win_rate_pct": 0.0
+      }
+    ],
+    "source": "backtest_framework._backtest_period + market_data provider",
+    "status": "low_sample",
+    "summary": {
+      "best_regime_by_avg_pnl": "BULL",
+      "data_ready_ticker_count": 5,
+      "generated_at": "2026-04-01T15:12:40.061620Z",
+      "min_tradeful_regimes": 2,
+      "regimes_tested": 2,
+      "regimes_with_trades": 1,
+      "selected_tickers": [
+        "NVDA",
+        "GOOGL",
+        "GOOG",
+        "TSLA",
+        "ASML"
+      ],
+      "ticker_count": 5,
+      "total_trades": 1,
+      "worst_regime_by_avg_pnl": "BULL"
+    },
+    "windows": {
+      "BEAR": {
+        "days": 23,
+        "end": "2026-04-01",
+        "start": "2026-03-02"
+      },
+      "BULL": {
+        "days": 27,
+        "end": "2025-10-09",
+        "start": "2025-09-03"
+      }
+    }
+  },
+  "run_context": {
+    "as_of_date": "2026-04-02",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T15:12:30.299769+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-82CD689A",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": [
+    {
+      "code": "REAL_BACKTEST_PARTIAL",
+      "message": "Sampled real backtests executed for 5 tickers (selected=5).",
+      "severity": "info"
+    },
+    {
+      "code": "REGIME_BACKTEST_LOW_SAMPLE",
+      "message": "Regime diagnostics exist but trade depth is low (total_trades=1).",
+      "severity": "warning"
+    }
+  ]
+}

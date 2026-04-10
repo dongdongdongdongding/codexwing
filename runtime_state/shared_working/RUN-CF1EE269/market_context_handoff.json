@@ -1,0 +1,38 @@
+{
+  "macro_overlay": {
+    "note": "Wire modules/macro_scheduler.py for live regime overlay.",
+    "status": "not_wired"
+  },
+  "news_impact": {
+    "note": "Wire modules/market_intelligence.py and modules/news_analysis.py next.",
+    "status": "not_wired"
+  },
+  "produced_at": "2026-03-30T13:37:27.946789+00:00",
+  "regime": {
+    "market": "US",
+    "market_group": "US",
+    "status": "UNKNOWN",
+    "support_score": null
+  },
+  "run_context": {
+    "as_of_date": "2026-03-30",
+    "code_version": "scaffold-v1",
+    "created_at": "2026-03-30T13:37:27.944372+00:00",
+    "market": "US",
+    "model_version": "legacy",
+    "run_id": "RUN-CF1EE269",
+    "strategy_version": "legacy-compatible"
+  },
+  "warnings": [
+    {
+      "code": "MACRO_CONTEXT_FETCH_FAIL",
+      "message": "Macro context fetch failed: No module named 'yfinance'",
+      "severity": "warning"
+    },
+    {
+      "code": "NEWS_CONTEXT_FETCH_FAIL",
+      "message": "News context fetch failed: No module named 'feedparser'",
+      "severity": "warning"
+    }
+  ]
+}

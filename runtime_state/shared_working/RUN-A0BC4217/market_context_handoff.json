@@ -1,0 +1,137 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1510.5400390625,
+      "krw_change_1d": 0.09,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.09,
+      "tnx": 4.313000202178955,
+      "tnx_change_1d": -0.14,
+      "vix": 23.8700008392334,
+      "vix_change_1d": -2.73
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": 0,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "key_insight": "국내 석유 유통망 내부의 가격 갈등이 표면화되었으나, KOSDAQ 시장 전반에 미치는 영향은 미미합니다.",
+    "macro_drivers": [
+      {
+        "category": "OIL",
+        "description": "국내 석유 유통업계의 가격 갈등으로, 기술주 중심의 KOSDAQ 시장 전반에 미치는 영향은 제한적입니다.",
+        "evidence": "석유유통협회 \"최고가보다 도매 공급가 낮아져야\"",
+        "market_impact": 0,
+        "signal": "NEUTRAL"
+      }
+    ],
+    "market_sentiment": "NEUTRAL",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "cross_asset_signals": [],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": 0,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "석유유통협회 \"유통망 위기…최고가보다 도매 공급가 낮아져야\"(종합) | 연합뉴스",
+        "석유유통협회 \"도매 대리점 공급가, 최고가격보다 낮아져야\" | 연합뉴스"
+      ],
+      "key_insight": "국내 석유 유통망 내부의 가격 갈등이 표면화되었으나, KOSDAQ 시장 전반에 미치는 영향은 미미합니다.",
+      "macro_drivers": [
+        {
+          "category": "OIL",
+          "description": "국내 석유 유통업계의 가격 갈등으로, 기술주 중심의 KOSDAQ 시장 전반에 미치는 영향은 제한적입니다.",
+          "evidence": "석유유통협회 \"최고가보다 도매 공급가 낮아져야\"",
+          "market_impact": 0,
+          "signal": "NEUTRAL"
+        }
+      ],
+      "market_sentiment": "NEUTRAL",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Mon, 6 Apr 2026 00:05:00 +0900] 석유유통협회 \"유통망 위기…최고가보다 도매 공급가 낮아져야\"(종합) | 연합뉴스",
+        "[Mon, 6 Apr 2026 00:00:00 +0900] 석유유통협회 \"도매 대리점 공급가, 최고가격보다 낮아져야\" | 연합뉴스"
+      ],
+      "risk_flags": [
+        "에너지 유통망 리스크"
+      ],
+      "sentiment_score": 0,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "석유유통협회가 도매 공급가 인하를 요구하며 유통망의 수익성 악화를 주장했습니다.",
+          "impact": "NEGATIVE",
+          "theme": "국내 유류 유통망 마진 압박"
+        }
+      ],
+      "timestamp": "2026-04-06 01:32",
+      "victim_keywords": [
+        "석유유통",
+        "주유소"
+      ],
+      "victim_sectors": [
+        "석유 유통"
+      ]
+    },
+    "risk_flags": [
+      "에너지 유통망 리스크"
+    ],
+    "sentiment_score": 0,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "석유 유통"
+    ]
+  },
+  "produced_at": "2026-04-05T16:34:37.204490+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-06",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-05T16:34:34.399374+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-A0BC4217",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,19 @@
+{
+  "code_version": "orchestrated-us-research",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-47117367/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-47117367/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-47117367/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-47117367/market_context_handoff.json",
+    "outcome_health": "runtime_state/shared_working/RUN-47117367/outcome_health.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-47117367/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-47117367/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-47117367/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-47117367/realized_outcomes.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-47117367/scanner_handoff.json"
+  },
+  "market": "AMEX",
+  "model_version": "research-baseline",
+  "run_id": "RUN-47117367",
+  "strategy_version": "us-research-v1"
+}

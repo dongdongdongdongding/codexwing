@@ -1,0 +1,159 @@
+{
+  "avoid_list": [
+    "AMZN",
+    "NVDA",
+    "META",
+    "AAPL",
+    "MSFT"
+  ],
+  "decisions": [
+    {
+      "confidence": 0.579,
+      "decision": "AVOID",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 1,
+      "rationale": [
+        "scanner_score=45.8",
+        "rank=1",
+        "Strategy: 🚀 Momentum",
+        "Trend: DOWN"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#AMZN",
+      "ticker": "AMZN",
+      "warnings": [
+        {
+          "code": "LOW_DECISION_SCORE",
+          "message": "AMZN has low decision score (45.8).",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "confidence": 0.535,
+      "decision": "AVOID",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 2,
+      "rationale": [
+        "scanner_score=37.0",
+        "rank=2",
+        "Strategy: 🚀 Momentum",
+        "Trend: DOWN"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#NVDA",
+      "ticker": "NVDA",
+      "warnings": [
+        {
+          "code": "LOW_DECISION_SCORE",
+          "message": "NVDA has low decision score (37.0).",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "confidence": 0.518,
+      "decision": "AVOID",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 3,
+      "rationale": [
+        "scanner_score=33.6",
+        "rank=3",
+        "Strategy: 🚀 Momentum",
+        "Trend: DOWN"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#META",
+      "ticker": "META",
+      "warnings": [
+        {
+          "code": "LOW_DECISION_SCORE",
+          "message": "META has low decision score (33.6).",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "confidence": 0.503,
+      "decision": "AVOID",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 4,
+      "rationale": [
+        "scanner_score=30.6",
+        "rank=4",
+        "Strategy: 🚀 Momentum",
+        "Trend: DOWN"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#AAPL",
+      "ticker": "AAPL",
+      "warnings": [
+        {
+          "code": "LOW_DECISION_SCORE",
+          "message": "AAPL has low decision score (30.6).",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "confidence": 0.499,
+      "decision": "AVOID",
+      "evidence_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "priority_rank": 5,
+      "rationale": [
+        "scanner_score=29.8",
+        "rank=5",
+        "Strategy: 🚀 Momentum",
+        "Trend: DOWN"
+      ],
+      "realized_outcome_ref": "realized_outcomes.json#MSFT",
+      "ticker": "MSFT",
+      "warnings": [
+        {
+          "code": "LOW_DECISION_SCORE",
+          "message": "MSFT has low decision score (29.8).",
+          "severity": "warning"
+        }
+      ]
+    }
+  ],
+  "global_warnings": [
+    {
+      "code": "LOW_QUALITY_INPUT",
+      "message": "Planner confidence reduced due to weak candidate ratio.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-03-30T15:11:01.695117+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "non-ui-scan-v1",
+    "created_at": "2026-03-30T15:10:46.804579+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-E0463333",
+    "strategy_version": "legacy-cli-v1"
+  },
+  "watchlist": []
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "market_context_handoff.schema.json",
+  "title": "MarketContextHandoff",
+  "type": "object",
+  "required": ["run_context", "regime", "macro_overlay", "news_impact", "warnings", "produced_at"],
+  "properties": {
+    "run_context": {"type": "object"},
+    "regime": {"type": "object"},
+    "macro_overlay": {"type": "object"},
+    "news_impact": {"type": "object"},
+    "warnings": {"type": "array", "items": {"type": "object"}},
+    "produced_at": {"type": "string"}
+  }
+}

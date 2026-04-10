@@ -1,0 +1,67 @@
+{
+  "market": "KOSDAQ",
+  "runs_considered": 30,
+  "route_distribution": {
+    "core_only": 308
+  },
+  "theme_source_distribution": {
+    "stock_master": 3,
+    "unknown": 305
+  },
+  "theme_distribution": {
+    "반도체": 2,
+    "바이오/헬스케어": 1
+  },
+  "unclassified_ratio": 0.0,
+  "theme_routed_stock_master_ratio": 0.0,
+  "performance_by_route": {
+    "core_only": {
+      "status_counts": {
+        "PENDING": 418
+      },
+      "1d": {
+        "n": 343,
+        "avg_return_pct": -0.4444,
+        "win_rate": 39.94
+      }
+    }
+  },
+  "top_themes": [
+    {
+      "theme_name": "반도체",
+      "candidate_count": 2,
+      "leaders": [
+        {
+          "ticker": "095340.KQ",
+          "score": 71.3,
+          "theme_rank": 1,
+          "leader_score": 76.9,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "095340.KQ",
+          "score": 70.6,
+          "theme_rank": 1,
+          "leader_score": 76.9,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "바이오/헬스케어",
+      "candidate_count": 1,
+      "leaders": [
+        {
+          "ticker": "028300.KQ",
+          "score": 61.0,
+          "theme_rank": 1,
+          "leader_score": 73.6,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json",
+    "outcome_health.json",
+    "profile_diagnostics.json"
+  ],
+  "failure_summary": "No critical pre-outcome failure. Postmortem generated as a preventive trace.",
+  "likely_causes": [
+    "Sample size is small; confidence may be overstated.",
+    "Learned market policy downgraded planner to watchlist-only (AMEX/GREEN, mode=avoid)."
+  ],
+  "produced_at": "2026-04-01T14:29:53.553807+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "amex-moonshot-cycle",
+    "created_at": "2026-04-01T14:29:47.325742+00:00",
+    "market": "AMEX",
+    "model_version": "amex-research-baseline",
+    "run_id": "RUN-4DDB8F37",
+    "strategy_version": "amex-moonshot-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-04-01T14:29:53.553785+00:00",
+      "hypothesis": "Current run size is insufficient for stable inference.",
+      "owner_agent": "backtest_learning_agent",
+      "owner_module": "backtest diagnostics",
+      "priority": "medium",
+      "requested_change": "Attach sample-size penalty to planner confidence and show warning banner.",
+      "run_id": "RUN-4DDB8F37",
+      "status": "open",
+      "ticket_id": "TKT-C297F5E6",
+      "title": "Strengthen small-sample safeguards"
+    },
+    {
+      "created_at": "2026-04-01T14:29:53.553796+00:00",
+      "hypothesis": "Planner is suppressing active recommendations because the learned market/regime bucket is currently avoid.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "planner policy + regime scan policy",
+      "priority": "medium",
+      "requested_change": "Validate whether watchlist-only mode is appropriate for this market/regime bucket and retrain policy once more realized outcomes accumulate.",
+      "run_id": "RUN-4DDB8F37",
+      "status": "open",
+      "ticket_id": "TKT-E8B37983",
+      "title": "Review watchlist-only market policy coverage"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "candidates": [],
+  "produced_at": "2026-03-31T08:17:48.968332+00:00",
+  "run_context": {
+    "as_of_date": "2026-03-31",
+    "code_version": "bridge-v1",
+    "created_at": "2026-03-31T08:17:48.967759+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-09815FA4",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "summary": {
+    "candidate_count": 0,
+    "diagnostics": {
+      "reject_reason_counts": {}
+    },
+    "execution_profile": "prod",
+    "input_meta": {
+      "diagnostics": {
+        "reject_reason_counts": {}
+      },
+      "execution_profile": "prod",
+      "market_gate": {
+        "gate": "RED"
+      },
+      "regime": {
+        "regime": "BEAR"
+      },
+      "total_scans": 0,
+      "warnings": []
+    },
+    "market_gate": {
+      "gate": "RED"
+    },
+    "regime": {
+      "regime": "BEAR"
+    },
+    "source": "scanner_agent_input",
+    "warnings": [],
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

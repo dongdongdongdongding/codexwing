@@ -1,0 +1,4130 @@
+{
+  "candidates": [
+    {
+      "feature_snapshot": {
+        "antigrav": 82,
+        "position": "🟡 Reclaim",
+        "stock_name": "SK하이닉스",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.3",
+        "whale": "94점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 90.0,
+      "score_breakdown": {
+        "antigrav": 82.0,
+        "decision_score": 90.0,
+        "whale_score": 94.0
+      },
+      "ticker": "000660.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "삼성전자",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 100.0
+      },
+      "ticker": "005930.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "현대차",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "96점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 96.0
+      },
+      "ticker": "005380.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 84,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "LG에너지솔루션",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "54점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 88.8,
+      "score_breakdown": {
+        "antigrav": 84.0,
+        "decision_score": 88.8,
+        "whale_score": 54.0
+      },
+      "ticker": "373220.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "한화에어로스페이스",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "84점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 84.0
+      },
+      "ticker": "012450.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "두산에너빌리티",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "87점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 87.0
+      },
+      "ticker": "034020.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "기아",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "85점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 97.7,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 97.7,
+        "whale_score": 85.0
+      },
+      "ticker": "000270.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "KB금융",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "68점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 92.2,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 92.2,
+        "whale_score": 68.0
+      },
+      "ticker": "105560.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "셀트리온",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x1.0",
+        "whale": "78점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 95.7,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 95.7,
+        "whale_score": 78.0
+      },
+      "ticker": "068270.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "삼성물산",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "90점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 90.0
+      },
+      "ticker": "028260.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 89,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "신한지주",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "78점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 95.5,
+      "score_breakdown": {
+        "antigrav": 89.0,
+        "decision_score": 95.5,
+        "whale_score": 78.0
+      },
+      "ticker": "055550.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "한화오션",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "67점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 92.4,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 92.4,
+        "whale_score": 67.0
+      },
+      "ticker": "042660.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "미래에셋증권",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "90점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 90.0
+      },
+      "ticker": "006800.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "현대모비스",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "84점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 97.6,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 97.6,
+        "whale_score": 84.0
+      },
+      "ticker": "012330.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 87,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "삼성SDI",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "71점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 93.5,
+      "score_breakdown": {
+        "antigrav": 87.0,
+        "decision_score": 93.5,
+        "whale_score": 71.0
+      },
+      "ticker": "006400.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "삼성전기",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "92점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 92.0
+      },
+      "ticker": "009150.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 69,
+        "position": "📈 Intraday Trend",
+        "stock_name": "NAVER",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "77점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 76.5,
+      "score_breakdown": {
+        "antigrav": 69.0,
+        "decision_score": 76.5,
+        "whale_score": 77.0
+      },
+      "ticker": "035420.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 88,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "하나금융지주",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "76점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 94.2,
+      "score_breakdown": {
+        "antigrav": 88.0,
+        "decision_score": 94.2,
+        "whale_score": 76.0
+      },
+      "ticker": "086790.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "POSCO홀딩스",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "67점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 91.2,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 91.2,
+        "whale_score": 67.0
+      },
+      "ticker": "005490.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "HD한국조선해양",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "98점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 98.0
+      },
+      "ticker": "009540.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 78,
+        "position": "🟡 Reclaim",
+        "stock_name": "한국전력",
+        "surge": "-",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.3",
+        "whale": "62점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: SIDE"
+      ],
+      "score": 83.4,
+      "score_breakdown": {
+        "antigrav": 78.0,
+        "decision_score": 83.4,
+        "whale_score": 62.0
+      },
+      "ticker": "015760.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "한미반도체",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "91점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 91.0
+      },
+      "ticker": "042700.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "한화시스템",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "272210.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 84,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "우리금융지주",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "60점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 88.8,
+      "score_breakdown": {
+        "antigrav": 84.0,
+        "decision_score": 88.8,
+        "whale_score": 60.0
+      },
+      "ticker": "316140.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "삼성중공업",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 100.0
+      },
+      "ticker": "010140.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 78,
+        "position": "🟡 Reclaim",
+        "stock_name": "LG화학",
+        "surge": "-",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.4",
+        "whale": "65점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: SIDE"
+      ],
+      "score": 83.3,
+      "score_breakdown": {
+        "antigrav": 78.0,
+        "decision_score": 83.3,
+        "whale_score": 65.0
+      },
+      "ticker": "051910.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 87,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "카카오",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "75점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 93.8,
+      "score_breakdown": {
+        "antigrav": 87.0,
+        "decision_score": 93.8,
+        "whale_score": 75.0
+      },
+      "ticker": "035720.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "현대로템",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "064350.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 84,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "메리츠금융지주",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "59점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 89.0,
+      "score_breakdown": {
+        "antigrav": 84.0,
+        "decision_score": 89.0,
+        "whale_score": 59.0
+      },
+      "ticker": "138040.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 87,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "SK이노베이션",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "71점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 93.0,
+      "score_breakdown": {
+        "antigrav": 87.0,
+        "decision_score": 93.0,
+        "whale_score": 71.0
+      },
+      "ticker": "096770.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "HMM",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.8",
+        "whale": "74점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 93.8,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 93.8,
+        "whale_score": 74.0
+      },
+      "ticker": "011200.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "포스코퓨처엠",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "64점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 91.6,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 91.6,
+        "whale_score": 64.0
+      },
+      "ticker": "003670.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "LG전자",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "89점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.4,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.4,
+        "whale_score": 89.0
+      },
+      "ticker": "066570.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 81,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "KT&G",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "43점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 84.1,
+      "score_breakdown": {
+        "antigrav": 81.0,
+        "decision_score": 84.1,
+        "whale_score": 43.0
+      },
+      "ticker": "033780.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "한국항공우주",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "047810.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "현대건설",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 100.0
+      },
+      "ticker": "000720.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 84,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "SK텔레콤",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "63점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 89.8,
+      "score_breakdown": {
+        "antigrav": 84.0,
+        "decision_score": 89.8,
+        "whale_score": 63.0
+      },
+      "ticker": "017670.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "LIG넥스원",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "079550.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 84,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "KT",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "62점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 89.5,
+      "score_breakdown": {
+        "antigrav": 84.0,
+        "decision_score": 89.5,
+        "whale_score": 62.0
+      },
+      "ticker": "030200.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "포스코인터내셔널",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "82점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 97.6,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 97.6,
+        "whale_score": 82.0
+      },
+      "ticker": "047050.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 88,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "LG",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "78점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 94.7,
+      "score_breakdown": {
+        "antigrav": 88.0,
+        "decision_score": 94.7,
+        "whale_score": 78.0
+      },
+      "ticker": "003550.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "한국금융지주",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 100.0
+      },
+      "ticker": "071050.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 71,
+        "position": "📈 Intraday Trend",
+        "stock_name": "S-Oil",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "76점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 77.4,
+      "score_breakdown": {
+        "antigrav": 71.0,
+        "decision_score": 77.4,
+        "whale_score": 76.0
+      },
+      "ticker": "010950.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 84,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "카카오뱅크",
+        "surge": "-",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "65점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: UP"
+      ],
+      "score": 90.4,
+      "score_breakdown": {
+        "antigrav": 84.0,
+        "decision_score": 90.4,
+        "whale_score": 65.0
+      },
+      "ticker": "323410.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 82,
+        "position": "🟡 Reclaim",
+        "stock_name": "NH투자증권",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.3",
+        "whale": "85점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 90.0,
+      "score_breakdown": {
+        "antigrav": 82.0,
+        "decision_score": 90.0,
+        "whale_score": 85.0
+      },
+      "ticker": "005940.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "삼성증권",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "82점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 96.9,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 96.9,
+        "whale_score": 82.0
+      },
+      "ticker": "016360.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 70,
+        "position": "📈 Intraday Trend",
+        "stock_name": "대한항공",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "74점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 76.7,
+      "score_breakdown": {
+        "antigrav": 70.0,
+        "decision_score": 76.7,
+        "whale_score": 74.0
+      },
+      "ticker": "003490.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 70,
+        "position": "📈 Intraday Trend",
+        "stock_name": "한화",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "71점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 76.4,
+      "score_breakdown": {
+        "antigrav": 70.0,
+        "decision_score": 76.4,
+        "whale_score": 71.0
+      },
+      "ticker": "000880.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 70,
+        "position": "📈 Intraday Trend",
+        "stock_name": "HD현대마린솔루션",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "71점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 76.2,
+      "score_breakdown": {
+        "antigrav": 70.0,
+        "decision_score": 76.2,
+        "whale_score": 71.0
+      },
+      "ticker": "443060.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "LG이노텍",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "011070.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "이수페타시스",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 100.0
+      },
+      "ticker": "007660.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "대우건설",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "047040.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 87,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "유한양행",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "73점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 93.3,
+      "score_breakdown": {
+        "antigrav": 87.0,
+        "decision_score": 93.3,
+        "whale_score": 73.0
+      },
+      "ticker": "000100.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 68,
+        "position": "📈 Intraday Trend",
+        "stock_name": "SK바이오팜",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "68점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 74.0,
+      "score_breakdown": {
+        "antigrav": 68.0,
+        "decision_score": 74.0,
+        "whale_score": 68.0
+      },
+      "ticker": "326030.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 68,
+        "position": "📈 Intraday Trend",
+        "stock_name": "삼성E&A",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "63점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 73.7,
+      "score_breakdown": {
+        "antigrav": 68.0,
+        "decision_score": 73.7,
+        "whale_score": 63.0
+      },
+      "ticker": "028050.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "HD건설기계",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "267270.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "한전기술",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 100.0
+      },
+      "ticker": "052690.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "GS",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "71점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 92.4,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 92.4,
+        "whale_score": 71.0
+      },
+      "ticker": "078930.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "두산밥캣",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "99점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 99.0
+      },
+      "ticker": "241560.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 76,
+        "position": "🟡 Reclaim",
+        "stock_name": "엘앤에프",
+        "surge": "-",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.3",
+        "whale": "56점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: SIDE"
+      ],
+      "score": 81.1,
+      "score_breakdown": {
+        "antigrav": 76.0,
+        "decision_score": 81.1,
+        "whale_score": 56.0
+      },
+      "ticker": "066970.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 82,
+        "position": "🟡 Reclaim",
+        "stock_name": "LG씨엔에스",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.5",
+        "whale": "82점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 88.9,
+      "score_breakdown": {
+        "antigrav": 82.0,
+        "decision_score": 88.9,
+        "whale_score": 82.0
+      },
+      "ticker": "064400.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 86,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "LG디스플레이",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "73점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 93.3,
+      "score_breakdown": {
+        "antigrav": 86.0,
+        "decision_score": 93.3,
+        "whale_score": 73.0
+      },
+      "ticker": "034220.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "두산로보틱스",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.9",
+        "whale": "94점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 82.8,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 82.8,
+        "whale_score": 94.0
+      },
+      "ticker": "454910.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "대한전선",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 100.0
+      },
+      "ticker": "001440.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "에코프로머티",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "87점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 87.0
+      },
+      "ticker": "450080.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 88,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "현대제철",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "73점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 94.9,
+      "score_breakdown": {
+        "antigrav": 88.0,
+        "decision_score": 94.9,
+        "whale_score": 73.0
+      },
+      "ticker": "004020.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "대덕전자",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "353200.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 80,
+        "position": "🟡 Reclaim",
+        "stock_name": "산일전기",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.3",
+        "whale": "73점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 86.6,
+      "score_breakdown": {
+        "antigrav": 80.0,
+        "decision_score": 86.6,
+        "whale_score": 73.0
+      },
+      "ticker": "062040.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "한화생명",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.7",
+        "whale": "94점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.8,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.8,
+        "whale_score": 94.0
+      },
+      "ticker": "088350.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 58,
+        "position": "🔻 Weak",
+        "stock_name": "한화비전",
+        "surge": "-",
+        "trend": "DOWN",
+        "volume": "⚠️ x0.3",
+        "whale": "71점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "추세: DOWN"
+      ],
+      "score": 64.3,
+      "score_breakdown": {
+        "antigrav": 58.0,
+        "decision_score": 64.3,
+        "whale_score": 71.0
+      },
+      "ticker": "489790.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 70,
+        "position": "📈 Intraday Trend",
+        "stock_name": "한온시스템",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "75점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 76.4,
+      "score_breakdown": {
+        "antigrav": 70.0,
+        "decision_score": 76.4,
+        "whale_score": 75.0
+      },
+      "ticker": "018880.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "DB하이텍",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "95점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 95.0
+      },
+      "ticker": "000990.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 83,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "OCI홀딩스",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "51점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 88.2,
+      "score_breakdown": {
+        "antigrav": 83.0,
+        "decision_score": 88.2,
+        "whale_score": 51.0
+      },
+      "ticker": "010060.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 71,
+        "position": "📈 Intraday Trend",
+        "stock_name": "한올바이오파마",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "76점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 77.5,
+      "score_breakdown": {
+        "antigrav": 71.0,
+        "decision_score": 77.5,
+        "whale_score": 76.0
+      },
+      "ticker": "009420.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 89,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "이수스페셜티케미컬",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.6",
+        "whale": "83점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 96.5,
+      "score_breakdown": {
+        "antigrav": 89.0,
+        "decision_score": 96.5,
+        "whale_score": 83.0
+      },
+      "ticker": "457190.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "씨에스윈드",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "87점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 87.0
+      },
+      "ticker": "112610.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 71,
+        "position": "📈 Intraday Trend",
+        "stock_name": "풍산",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "78점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 77.4,
+      "score_breakdown": {
+        "antigrav": 71.0,
+        "decision_score": 77.4,
+        "whale_score": 78.0
+      },
+      "ticker": "103140.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "세아베스틸지주",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "001430.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 71,
+        "position": "📈 Intraday Trend",
+        "stock_name": "DN오토모티브",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "73점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 77.6,
+      "score_breakdown": {
+        "antigrav": 71.0,
+        "decision_score": 77.6,
+        "whale_score": 73.0
+      },
+      "ticker": "007340.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "GS건설",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "94점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 94.0
+      },
+      "ticker": "006360.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "코오롱인더",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.5",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "120110.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 82,
+        "position": "🟡 Reclaim",
+        "stock_name": "HJ중공업",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.3",
+        "whale": "92점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 90.0,
+      "score_breakdown": {
+        "antigrav": 82.0,
+        "decision_score": 90.0,
+        "whale_score": 92.0
+      },
+      "ticker": "097230.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 79,
+        "position": "🟡 Reclaim",
+        "stock_name": "한국카본",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.4",
+        "whale": "69점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 84.7,
+      "score_breakdown": {
+        "antigrav": 79.0,
+        "decision_score": 84.7,
+        "whale_score": 69.0
+      },
+      "ticker": "017960.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "LX인터내셔널",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "001120.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 64,
+        "position": "🟡 Reclaim",
+        "stock_name": "코리아써키트",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.1",
+        "whale": "84점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 72.0,
+      "score_breakdown": {
+        "antigrav": 64.0,
+        "decision_score": 72.0,
+        "whale_score": 84.0
+      },
+      "ticker": "007810.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 90,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "한화투자증권",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "89점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 98.0,
+      "score_breakdown": {
+        "antigrav": 90.0,
+        "decision_score": 98.0,
+        "whale_score": 89.0
+      },
+      "ticker": "003530.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "SK증권",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.3",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "001510.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "해성디에스",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "195870.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 65,
+        "position": "📈 Intraday Trend",
+        "stock_name": "대한해운",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.1",
+        "whale": "46점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 68.9,
+      "score_breakdown": {
+        "antigrav": 65.0,
+        "decision_score": 68.9,
+        "whale_score": 46.0
+      },
+      "ticker": "005880.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "대원전선",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.4",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "006340.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "한미글로벌",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.1",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "053690.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 75,
+        "position": "🚀 Intraday Breakout",
+        "stock_name": "알루코",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "39점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Breakout | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 76.0,
+      "score_breakdown": {
+        "antigrav": 75.0,
+        "decision_score": 76.0,
+        "whale_score": 39.0
+      },
+      "ticker": "001780.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 64,
+        "position": "🟡 Reclaim",
+        "stock_name": "경보제약",
+        "surge": "📈 Trend Continuation",
+        "trend": "SIDE",
+        "volume": "⚠️ x0.2",
+        "whale": "83점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: SIDE"
+      ],
+      "score": 72.0,
+      "score_breakdown": {
+        "antigrav": 64.0,
+        "decision_score": 72.0,
+        "whale_score": 83.0
+      },
+      "ticker": "214390.KS",
+      "warnings": []
+    },
+    {
+      "feature_snapshot": {
+        "antigrav": 72,
+        "position": "📈 Intraday Trend",
+        "stock_name": "광전자",
+        "surge": "📈 Trend Continuation",
+        "trend": "UP",
+        "volume": "⚠️ x0.2",
+        "whale": "100점 장중"
+      },
+      "reasons": [
+        "전략: ⏱️ Intraday Trend | 1H",
+        "급등예측: 📈 Trend Continuation",
+        "추세: UP"
+      ],
+      "score": 80.0,
+      "score_breakdown": {
+        "antigrav": 72.0,
+        "decision_score": 80.0,
+        "whale_score": 100.0
+      },
+      "ticker": "017900.KS",
+      "warnings": []
+    }
+  ],
+  "produced_at": "2026-04-01T05:36:56.123600+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T05:36:56.122073+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-EC66171F",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "summary": {
+    "candidate_count": 94,
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 50,
+      "filtered_symbols": [
+        "207940.KS",
+        "402340.KS",
+        "329180.KS",
+        "032830.KS",
+        "267260.KS",
+        "010130.KS",
+        "298040.KS",
+        "010120.KS",
+        "034730.KS",
+        "000810.KS",
+        "267250.KS",
+        "000150.KS",
+        "024110.KS",
+        "086280.KS",
+        "278470.KS",
+        "352820.KS",
+        "259960.KS",
+        "018260.KS",
+        "005830.KS",
+        "039490.KS",
+        "307950.KS",
+        "003230.KS",
+        "006260.KS",
+        "090430.KS",
+        "128940.KS",
+        "009830.KS",
+        "001040.KS",
+        "021240.KS",
+        "036570.KS",
+        "082740.KS",
+        "014680.KS",
+        "004170.KS",
+        "375500.KS",
+        "139480.KS",
+        "192820.KS",
+        "161890.KS",
+        "475150.KS",
+        "100090.KS",
+        "322000.KS",
+        "100840.KS",
+        "003280.KS",
+        "003000.KS",
+        "161000.KS",
+        "381970.KS",
+        "011930.KS",
+        "006110.KS",
+        "092220.KS",
+        "008350.KS",
+        "012200.KS",
+        "018470.KS"
+      ],
+      "reject_details_by_symbol": {
+        "000150.KS": [
+          {
+            "avg_turnover_5": 7025435789.24,
+            "avg_volume_5": 6308.62,
+            "curr_price": 1129000.0,
+            "curr_turnover": 3100372946.22,
+            "curr_volume": 2746.12,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "두산",
+            "ticker": "000150.KS"
+          }
+        ],
+        "000810.KS": [
+          {
+            "avg_turnover_5": 4568124337.64,
+            "avg_volume_5": 10120.54,
+            "curr_price": 456500.0,
+            "curr_turnover": 2538470688.22,
+            "curr_volume": 5560.72,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "삼성화재",
+            "ticker": "000810.KS"
+          }
+        ],
+        "001040.KS": [
+          {
+            "avg_turnover_5": 2485932257.15,
+            "avg_volume_5": 12511.76,
+            "curr_price": 202000.0,
+            "curr_turnover": 1370730985.77,
+            "curr_volume": 6785.8,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "CJ",
+            "ticker": "001040.KS"
+          }
+        ],
+        "003000.KS": [
+          {
+            "breakout": false,
+            "day_ret": 5.37,
+            "decision_score": 46.7,
+            "ema_fast": 7783.4893,
+            "ema_slow": 8061.1061,
+            "intraday_ret": 4.53,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "부광약품",
+            "ticker": "003000.KS",
+            "vol_ratio": 0.21
+          }
+        ],
+        "003230.KS": [
+          {
+            "avg_turnover_5": 20582224318.96,
+            "avg_volume_5": 15744.87,
+            "curr_price": 1312000.0,
+            "curr_turnover": 5854573594.81,
+            "curr_volume": 4462.33,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "삼양식품",
+            "ticker": "003230.KS"
+          }
+        ],
+        "003280.KS": [
+          {
+            "breakout": false,
+            "day_ret": -3.2,
+            "decision_score": 59.6,
+            "ema_fast": 3657.6342,
+            "ema_slow": 3499.369,
+            "intraday_ret": 2.65,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "흥아해운",
+            "ticker": "003280.KS",
+            "vol_ratio": 0.12
+          }
+        ],
+        "004170.KS": [
+          {
+            "avg_turnover_5": 2037432739.95,
+            "avg_volume_5": 6560.12,
+            "curr_price": 313000.0,
+            "curr_turnover": 837462699.77,
+            "curr_volume": 2675.6,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "신세계",
+            "ticker": "004170.KS"
+          }
+        ],
+        "005830.KS": [
+          {
+            "avg_turnover_5": 3086365951.81,
+            "avg_volume_5": 18414.6,
+            "curr_price": 168900.0,
+            "curr_turnover": 2608151959.03,
+            "curr_volume": 15441.99,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "DB손해보험",
+            "ticker": "005830.KS"
+          }
+        ],
+        "006110.KS": [
+          {
+            "breakout": false,
+            "day_ret": -14.05,
+            "decision_score": 50.0,
+            "ema_fast": 35330.7376,
+            "ema_slow": 34391.2765,
+            "intraday_ret": -3.22,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "삼아알미늄",
+            "ticker": "006110.KS",
+            "vol_ratio": 0.12
+          }
+        ],
+        "006260.KS": [
+          {
+            "avg_turnover_5": 5309581274.93,
+            "avg_volume_5": 18901.14,
+            "curr_price": 283000.0,
+            "curr_turnover": 1684611874.66,
+            "curr_volume": 5952.69,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "LS",
+            "ticker": "006260.KS"
+          }
+        ],
+        "008350.KS": [
+          {
+            "breakout": false,
+            "day_ret": -8.83,
+            "decision_score": 50.0,
+            "ema_fast": 1657.0185,
+            "ema_slow": 1605.0612,
+            "intraday_ret": -5.31,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "남선알미늄",
+            "ticker": "008350.KS",
+            "vol_ratio": 0.25
+          }
+        ],
+        "009830.KS": [
+          {
+            "breakout": false,
+            "day_ret": 0.13,
+            "decision_score": 36.3,
+            "ema_fast": 37620.0171,
+            "ema_slow": 37882.7149,
+            "intraday_ret": -1.18,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "한화솔루션",
+            "ticker": "009830.KS",
+            "vol_ratio": 0.1
+          }
+        ],
+        "010120.KS": [
+          {
+            "avg_turnover_5": 13409337065.62,
+            "avg_volume_5": 16896.52,
+            "curr_price": 805000.0,
+            "curr_turnover": 4438467328.08,
+            "curr_volume": 5513.62,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "LS ELECTRIC",
+            "ticker": "010120.KS"
+          }
+        ],
+        "010130.KS": [
+          {
+            "avg_turnover_5": 4166166537.08,
+            "avg_volume_5": 2743.49,
+            "curr_price": 1519000.0,
+            "curr_turnover": 1723193685.4,
+            "curr_volume": 1134.43,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "고려아연",
+            "ticker": "010130.KS"
+          }
+        ],
+        "011930.KS": [
+          {
+            "breakout": false,
+            "day_ret": 3.82,
+            "decision_score": 73.6,
+            "ema_fast": 2701.6064,
+            "ema_slow": 2670.7307,
+            "intraday_ret": 0.18,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "신성이엔지",
+            "ticker": "011930.KS",
+            "vol_ratio": 0.13
+          }
+        ],
+        "012200.KS": [
+          {
+            "breakout": false,
+            "day_ret": 13.42,
+            "decision_score": 80.0,
+            "ema_fast": 6250.9917,
+            "ema_slow": 6124.1359,
+            "intraday_ret": -1.4,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "계양전기",
+            "ticker": "012200.KS",
+            "vol_ratio": 0.16
+          }
+        ],
+        "014680.KS": [
+          {
+            "avg_turnover_5": 1938782895.34,
+            "avg_volume_5": 6886.9,
+            "curr_price": 284500.0,
+            "curr_turnover": 743828976.7,
+            "curr_volume": 2614.51,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "한솔케미칼",
+            "ticker": "014680.KS"
+          }
+        ],
+        "018260.KS": [
+          {
+            "avg_turnover_5": 2799769169.68,
+            "avg_volume_5": 18142.09,
+            "curr_price": 155500.0,
+            "curr_turnover": 2517152148.39,
+            "curr_volume": 16187.47,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "삼성에스디에스",
+            "ticker": "018260.KS"
+          }
+        ],
+        "018470.KS": [
+          {
+            "breakout": false,
+            "day_ret": -12.37,
+            "decision_score": 50.0,
+            "ema_fast": 1436.3398,
+            "ema_slow": 1404.4955,
+            "intraday_ret": 0.71,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "조일알미늄",
+            "ticker": "018470.KS",
+            "vol_ratio": 0.11
+          }
+        ],
+        "021240.KS": [
+          {
+            "breakout": false,
+            "day_ret": -1.23,
+            "decision_score": 33.5,
+            "ema_fast": 72181.5523,
+            "ema_slow": 72472.3164,
+            "intraday_ret": -0.69,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "코웨이",
+            "ticker": "021240.KS",
+            "vol_ratio": 0.41
+          }
+        ],
+        "024110.KS": [
+          {
+            "breakout": true,
+            "day_ret": 2.33,
+            "decision_score": 59.3,
+            "ema_fast": 21830.5179,
+            "ema_slow": 22033.0279,
+            "intraday_ret": -0.9,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "기업은행",
+            "ticker": "024110.KS",
+            "vol_ratio": 0.67
+          }
+        ],
+        "032830.KS": [
+          {
+            "breakout": false,
+            "day_ret": 7.08,
+            "decision_score": 80.2,
+            "ema_fast": 223228.1977,
+            "ema_slow": 220893.7717,
+            "intraday_ret": -0.44,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "삼성생명",
+            "ticker": "032830.KS",
+            "vol_ratio": 0.62
+          }
+        ],
+        "034730.KS": [
+          {
+            "avg_turnover_5": 6051323544.72,
+            "avg_volume_5": 19028.96,
+            "curr_price": 323500.0,
+            "curr_turnover": 3146935723.59,
+            "curr_volume": 9727.78,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "SK",
+            "ticker": "034730.KS"
+          }
+        ],
+        "036570.KS": [
+          {
+            "avg_turnover_5": 2539253576.12,
+            "avg_volume_5": 11150.14,
+            "curr_price": 228000.0,
+            "curr_turnover": 1304086880.61,
+            "curr_volume": 5719.68,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "엔씨소프트",
+            "ticker": "036570.KS"
+          }
+        ],
+        "039490.KS": [
+          {
+            "avg_turnover_5": 7137843276.16,
+            "avg_volume_5": 16488.39,
+            "curr_price": 438000.0,
+            "curr_turnover": 4169296880.81,
+            "curr_volume": 9518.94,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "키움증권",
+            "ticker": "039490.KS"
+          }
+        ],
+        "082740.KS": [
+          {
+            "breakout": false,
+            "day_ret": 2.06,
+            "decision_score": 44.8,
+            "ema_fast": 44440.0178,
+            "ema_slow": 44861.9941,
+            "intraday_ret": -1.33,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "한화엔진",
+            "ticker": "082740.KS",
+            "vol_ratio": 1.06
+          }
+        ],
+        "086280.KS": [
+          {
+            "avg_turnover_5": 3347300939.37,
+            "avg_volume_5": 15391.02,
+            "curr_price": 219500.0,
+            "curr_turnover": 2684723196.87,
+            "curr_volume": 12231.09,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "현대글로비스",
+            "ticker": "086280.KS"
+          }
+        ],
+        "090430.KS": [
+          {
+            "avg_turnover_5": 2165910980.7,
+            "avg_volume_5": 15345.16,
+            "curr_price": 142000.0,
+            "curr_turnover": 1723283403.52,
+            "curr_volume": 12135.8,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "아모레퍼시픽",
+            "ticker": "090430.KS"
+          }
+        ],
+        "092220.KS": [
+          {
+            "breakout": false,
+            "day_ret": 4.47,
+            "decision_score": 44.9,
+            "ema_fast": 1706.6611,
+            "ema_slow": 1734.0166,
+            "intraday_ret": 0.77,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "KEC",
+            "ticker": "092220.KS",
+            "vol_ratio": 0.06
+          }
+        ],
+        "100090.KS": [
+          {
+            "breakout": false,
+            "day_ret": 7.09,
+            "decision_score": 80.0,
+            "ema_fast": 28681.462,
+            "ema_slow": 28051.56,
+            "intraday_ret": -1.88,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "SK오션플랜트",
+            "ticker": "100090.KS",
+            "vol_ratio": 0.25
+          }
+        ],
+        "100840.KS": [
+          {
+            "breakout": false,
+            "day_ret": -4.03,
+            "decision_score": 28.0,
+            "ema_fast": 49492.2323,
+            "ema_slow": 49793.6979,
+            "intraday_ret": -4.96,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "SNT에너지",
+            "ticker": "100840.KS",
+            "vol_ratio": 0.26
+          }
+        ],
+        "128940.KS": [
+          {
+            "avg_turnover_5": 3509331589.59,
+            "avg_volume_5": 6396.43,
+            "curr_price": 553000.0,
+            "curr_turnover": 2256884947.94,
+            "curr_volume": 4081.17,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "한미약품",
+            "ticker": "128940.KS"
+          }
+        ],
+        "139480.KS": [
+          {
+            "avg_turnover_5": 1765940498.89,
+            "avg_volume_5": 18440.12,
+            "curr_price": 96900.0,
+            "curr_turnover": 648705294.44,
+            "curr_volume": 6694.59,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "이마트",
+            "ticker": "139480.KS"
+          }
+        ],
+        "161000.KS": [
+          {
+            "breakout": false,
+            "day_ret": 0.71,
+            "decision_score": 59.4,
+            "ema_fast": 14316.3857,
+            "ema_slow": 13786.8016,
+            "intraday_ret": -9.73,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "애경케미칼",
+            "ticker": "161000.KS",
+            "vol_ratio": 0.06
+          }
+        ],
+        "161890.KS": [
+          {
+            "breakout": false,
+            "day_ret": 2.36,
+            "decision_score": 70.7,
+            "ema_fast": 78117.9278,
+            "ema_slow": 78059.4705,
+            "intraday_ret": -0.26,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "한국콜마",
+            "ticker": "161890.KS",
+            "vol_ratio": 0.23
+          }
+        ],
+        "192820.KS": [
+          {
+            "avg_turnover_5": 2316350430.49,
+            "avg_volume_5": 11528.24,
+            "curr_price": 199600.0,
+            "curr_turnover": 759114852.43,
+            "curr_volume": 3803.18,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "코스맥스",
+            "ticker": "192820.KS"
+          }
+        ],
+        "207940.KS": [
+          {
+            "avg_turnover_5": 8849648977.43,
+            "avg_volume_5": 5678.17,
+            "curr_price": 1580000.0,
+            "curr_turnover": 4125108887.13,
+            "curr_volume": 2610.83,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "삼성바이오로직스",
+            "ticker": "207940.KS"
+          }
+        ],
+        "259960.KS": [
+          {
+            "avg_turnover_5": 4077490504.07,
+            "avg_volume_5": 15610.48,
+            "curr_price": 265000.0,
+            "curr_turnover": 2525032020.36,
+            "curr_volume": 9528.42,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "크래프톤",
+            "ticker": "259960.KS"
+          }
+        ],
+        "267250.KS": [
+          {
+            "avg_turnover_5": 4233135517.13,
+            "avg_volume_5": 17278.48,
+            "curr_price": 246500.0,
+            "curr_turnover": 2253845085.66,
+            "curr_volume": 9143.39,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "HD현대",
+            "ticker": "267250.KS"
+          }
+        ],
+        "267260.KS": [
+          {
+            "avg_turnover_5": 12516865512.92,
+            "avg_volume_5": 13819.0,
+            "curr_price": 912000.0,
+            "curr_turnover": 4686745564.61,
+            "curr_volume": 5138.98,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "HD현대일렉트릭",
+            "ticker": "267260.KS"
+          }
+        ],
+        "278470.KS": [
+          {
+            "breakout": false,
+            "day_ret": 3.48,
+            "decision_score": 73.0,
+            "ema_fast": 338764.9706,
+            "ema_slow": 333919.6577,
+            "intraday_ret": -1.16,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "에이피알",
+            "ticker": "278470.KS",
+            "vol_ratio": 0.29
+          }
+        ],
+        "298040.KS": [
+          {
+            "avg_turnover_5": 11212029460.7,
+            "avg_volume_5": 4262.27,
+            "curr_price": 2678000.0,
+            "curr_turnover": 7512747303.52,
+            "curr_volume": 2805.36,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "효성중공업",
+            "ticker": "298040.KS"
+          }
+        ],
+        "307950.KS": [
+          {
+            "avg_turnover_5": 2558646073.66,
+            "avg_volume_5": 6631.61,
+            "curr_price": 391500.0,
+            "curr_turnover": 1034749368.3,
+            "curr_volume": 2643.04,
+            "market_key": "KOSPI",
+            "min_price": 1000.0,
+            "min_turnover": 700000000.0,
+            "min_volume": 20000.0,
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "stage": "intraday",
+            "stock_name": "현대오토에버",
+            "ticker": "307950.KS"
+          }
+        ],
+        "322000.KS": [
+          {
+            "breakout": false,
+            "day_ret": -4.89,
+            "decision_score": 50.0,
+            "ema_fast": 136918.3924,
+            "ema_slow": 135556.3188,
+            "intraday_ret": -4.02,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "HD현대에너지솔루션",
+            "ticker": "322000.KS",
+            "vol_ratio": 0.06
+          }
+        ],
+        "329180.KS": [
+          {
+            "breakout": true,
+            "day_ret": -4.57,
+            "decision_score": 46.2,
+            "ema_fast": 452507.476,
+            "ema_slow": 467074.9415,
+            "intraday_ret": -1.64,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "HD현대중공업",
+            "ticker": "329180.KS",
+            "vol_ratio": 0.62
+          }
+        ],
+        "352820.KS": [
+          {
+            "breakout": true,
+            "day_ret": -3.16,
+            "decision_score": 47.7,
+            "ema_fast": 293122.9576,
+            "ema_slow": 297329.7178,
+            "intraday_ret": -4.74,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "하이브",
+            "ticker": "352820.KS",
+            "vol_ratio": 0.47
+          }
+        ],
+        "375500.KS": [
+          {
+            "breakout": false,
+            "day_ret": 5.28,
+            "decision_score": 76.6,
+            "ema_fast": 70434.4763,
+            "ema_slow": 68805.4935,
+            "intraday_ret": -1.24,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "DL이앤씨",
+            "ticker": "375500.KS",
+            "vol_ratio": 0.26
+          }
+        ],
+        "381970.KS": [
+          {
+            "breakout": false,
+            "day_ret": -15.45,
+            "decision_score": 33.3,
+            "ema_fast": 12199.6196,
+            "ema_slow": 12952.7466,
+            "intraday_ret": -17.89,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "케이카",
+            "ticker": "381970.KS",
+            "vol_ratio": 1.13
+          }
+        ],
+        "402340.KS": [
+          {
+            "breakout": false,
+            "day_ret": 6.3,
+            "decision_score": 48.6,
+            "ema_fast": 494427.4616,
+            "ema_slow": 503532.8773,
+            "intraday_ret": -1.18,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "SK스퀘어",
+            "ticker": "402340.KS",
+            "vol_ratio": 0.24
+          }
+        ],
+        "475150.KS": [
+          {
+            "breakout": false,
+            "day_ret": -2.0,
+            "decision_score": 32.0,
+            "ema_fast": 54529.3766,
+            "ema_slow": 54722.3173,
+            "intraday_ret": -2.35,
+            "reason": "INTRADAY_SETUP_WEAK",
+            "stage": "intraday",
+            "stock_name": "SK이터닉스",
+            "ticker": "475150.KS",
+            "vol_ratio": 0.1
+          }
+        ]
+      },
+      "reject_reason_counts": {
+        "INTRADAY_MIN_PRICE_VOLUME_FAIL": 25,
+        "INTRADAY_SETUP_WEAK": 25
+      },
+      "reject_reasons_by_symbol": {
+        "000150.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "000810.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "001040.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "003000.KS": "INTRADAY_SETUP_WEAK",
+        "003230.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "003280.KS": "INTRADAY_SETUP_WEAK",
+        "004170.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "005830.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "006110.KS": "INTRADAY_SETUP_WEAK",
+        "006260.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "008350.KS": "INTRADAY_SETUP_WEAK",
+        "009830.KS": "INTRADAY_SETUP_WEAK",
+        "010120.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "010130.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "011930.KS": "INTRADAY_SETUP_WEAK",
+        "012200.KS": "INTRADAY_SETUP_WEAK",
+        "014680.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "018260.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "018470.KS": "INTRADAY_SETUP_WEAK",
+        "021240.KS": "INTRADAY_SETUP_WEAK",
+        "024110.KS": "INTRADAY_SETUP_WEAK",
+        "032830.KS": "INTRADAY_SETUP_WEAK",
+        "034730.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "036570.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "039490.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "082740.KS": "INTRADAY_SETUP_WEAK",
+        "086280.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "090430.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "092220.KS": "INTRADAY_SETUP_WEAK",
+        "100090.KS": "INTRADAY_SETUP_WEAK",
+        "100840.KS": "INTRADAY_SETUP_WEAK",
+        "128940.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "139480.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "161000.KS": "INTRADAY_SETUP_WEAK",
+        "161890.KS": "INTRADAY_SETUP_WEAK",
+        "192820.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "207940.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "259960.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "267250.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "267260.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "278470.KS": "INTRADAY_SETUP_WEAK",
+        "298040.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "307950.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "322000.KS": "INTRADAY_SETUP_WEAK",
+        "329180.KS": "INTRADAY_SETUP_WEAK",
+        "352820.KS": "INTRADAY_SETUP_WEAK",
+        "375500.KS": "INTRADAY_SETUP_WEAK",
+        "381970.KS": "INTRADAY_SETUP_WEAK",
+        "402340.KS": "INTRADAY_SETUP_WEAK",
+        "475150.KS": "INTRADAY_SETUP_WEAK"
+      },
+      "worker_error_count": 0
+    },
+    "execution_profile": "prod",
+    "input_meta": {
+      "diagnostics": {
+        "error_symbols": [],
+        "exception_symbols": [],
+        "executor_exception_count": 0,
+        "filtered_count": 50,
+        "filtered_symbols": [
+          "207940.KS",
+          "402340.KS",
+          "329180.KS",
+          "032830.KS",
+          "267260.KS",
+          "010130.KS",
+          "298040.KS",
+          "010120.KS",
+          "034730.KS",
+          "000810.KS",
+          "267250.KS",
+          "000150.KS",
+          "024110.KS",
+          "086280.KS",
+          "278470.KS",
+          "352820.KS",
+          "259960.KS",
+          "018260.KS",
+          "005830.KS",
+          "039490.KS",
+          "307950.KS",
+          "003230.KS",
+          "006260.KS",
+          "090430.KS",
+          "128940.KS",
+          "009830.KS",
+          "001040.KS",
+          "021240.KS",
+          "036570.KS",
+          "082740.KS",
+          "014680.KS",
+          "004170.KS",
+          "375500.KS",
+          "139480.KS",
+          "192820.KS",
+          "161890.KS",
+          "475150.KS",
+          "100090.KS",
+          "322000.KS",
+          "100840.KS",
+          "003280.KS",
+          "003000.KS",
+          "161000.KS",
+          "381970.KS",
+          "011930.KS",
+          "006110.KS",
+          "092220.KS",
+          "008350.KS",
+          "012200.KS",
+          "018470.KS"
+        ],
+        "reject_details_by_symbol": {
+          "000150.KS": [
+            {
+              "avg_turnover_5": 7025435789.24,
+              "avg_volume_5": 6308.62,
+              "curr_price": 1129000.0,
+              "curr_turnover": 3100372946.22,
+              "curr_volume": 2746.12,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "두산",
+              "ticker": "000150.KS"
+            }
+          ],
+          "000810.KS": [
+            {
+              "avg_turnover_5": 4568124337.64,
+              "avg_volume_5": 10120.54,
+              "curr_price": 456500.0,
+              "curr_turnover": 2538470688.22,
+              "curr_volume": 5560.72,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "삼성화재",
+              "ticker": "000810.KS"
+            }
+          ],
+          "001040.KS": [
+            {
+              "avg_turnover_5": 2485932257.15,
+              "avg_volume_5": 12511.76,
+              "curr_price": 202000.0,
+              "curr_turnover": 1370730985.77,
+              "curr_volume": 6785.8,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "CJ",
+              "ticker": "001040.KS"
+            }
+          ],
+          "003000.KS": [
+            {
+              "breakout": false,
+              "day_ret": 5.37,
+              "decision_score": 46.7,
+              "ema_fast": 7783.4893,
+              "ema_slow": 8061.1061,
+              "intraday_ret": 4.53,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "부광약품",
+              "ticker": "003000.KS",
+              "vol_ratio": 0.21
+            }
+          ],
+          "003230.KS": [
+            {
+              "avg_turnover_5": 20582224318.96,
+              "avg_volume_5": 15744.87,
+              "curr_price": 1312000.0,
+              "curr_turnover": 5854573594.81,
+              "curr_volume": 4462.33,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "삼양식품",
+              "ticker": "003230.KS"
+            }
+          ],
+          "003280.KS": [
+            {
+              "breakout": false,
+              "day_ret": -3.2,
+              "decision_score": 59.6,
+              "ema_fast": 3657.6342,
+              "ema_slow": 3499.369,
+              "intraday_ret": 2.65,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "흥아해운",
+              "ticker": "003280.KS",
+              "vol_ratio": 0.12
+            }
+          ],
+          "004170.KS": [
+            {
+              "avg_turnover_5": 2037432739.95,
+              "avg_volume_5": 6560.12,
+              "curr_price": 313000.0,
+              "curr_turnover": 837462699.77,
+              "curr_volume": 2675.6,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "신세계",
+              "ticker": "004170.KS"
+            }
+          ],
+          "005830.KS": [
+            {
+              "avg_turnover_5": 3086365951.81,
+              "avg_volume_5": 18414.6,
+              "curr_price": 168900.0,
+              "curr_turnover": 2608151959.03,
+              "curr_volume": 15441.99,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "DB손해보험",
+              "ticker": "005830.KS"
+            }
+          ],
+          "006110.KS": [
+            {
+              "breakout": false,
+              "day_ret": -14.05,
+              "decision_score": 50.0,
+              "ema_fast": 35330.7376,
+              "ema_slow": 34391.2765,
+              "intraday_ret": -3.22,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "삼아알미늄",
+              "ticker": "006110.KS",
+              "vol_ratio": 0.12
+            }
+          ],
+          "006260.KS": [
+            {
+              "avg_turnover_5": 5309581274.93,
+              "avg_volume_5": 18901.14,
+              "curr_price": 283000.0,
+              "curr_turnover": 1684611874.66,
+              "curr_volume": 5952.69,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "LS",
+              "ticker": "006260.KS"
+            }
+          ],
+          "008350.KS": [
+            {
+              "breakout": false,
+              "day_ret": -8.83,
+              "decision_score": 50.0,
+              "ema_fast": 1657.0185,
+              "ema_slow": 1605.0612,
+              "intraday_ret": -5.31,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "남선알미늄",
+              "ticker": "008350.KS",
+              "vol_ratio": 0.25
+            }
+          ],
+          "009830.KS": [
+            {
+              "breakout": false,
+              "day_ret": 0.13,
+              "decision_score": 36.3,
+              "ema_fast": 37620.0171,
+              "ema_slow": 37882.7149,
+              "intraday_ret": -1.18,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "한화솔루션",
+              "ticker": "009830.KS",
+              "vol_ratio": 0.1
+            }
+          ],
+          "010120.KS": [
+            {
+              "avg_turnover_5": 13409337065.62,
+              "avg_volume_5": 16896.52,
+              "curr_price": 805000.0,
+              "curr_turnover": 4438467328.08,
+              "curr_volume": 5513.62,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "LS ELECTRIC",
+              "ticker": "010120.KS"
+            }
+          ],
+          "010130.KS": [
+            {
+              "avg_turnover_5": 4166166537.08,
+              "avg_volume_5": 2743.49,
+              "curr_price": 1519000.0,
+              "curr_turnover": 1723193685.4,
+              "curr_volume": 1134.43,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "고려아연",
+              "ticker": "010130.KS"
+            }
+          ],
+          "011930.KS": [
+            {
+              "breakout": false,
+              "day_ret": 3.82,
+              "decision_score": 73.6,
+              "ema_fast": 2701.6064,
+              "ema_slow": 2670.7307,
+              "intraday_ret": 0.18,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "신성이엔지",
+              "ticker": "011930.KS",
+              "vol_ratio": 0.13
+            }
+          ],
+          "012200.KS": [
+            {
+              "breakout": false,
+              "day_ret": 13.42,
+              "decision_score": 80.0,
+              "ema_fast": 6250.9917,
+              "ema_slow": 6124.1359,
+              "intraday_ret": -1.4,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "계양전기",
+              "ticker": "012200.KS",
+              "vol_ratio": 0.16
+            }
+          ],
+          "014680.KS": [
+            {
+              "avg_turnover_5": 1938782895.34,
+              "avg_volume_5": 6886.9,
+              "curr_price": 284500.0,
+              "curr_turnover": 743828976.7,
+              "curr_volume": 2614.51,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "한솔케미칼",
+              "ticker": "014680.KS"
+            }
+          ],
+          "018260.KS": [
+            {
+              "avg_turnover_5": 2799769169.68,
+              "avg_volume_5": 18142.09,
+              "curr_price": 155500.0,
+              "curr_turnover": 2517152148.39,
+              "curr_volume": 16187.47,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "삼성에스디에스",
+              "ticker": "018260.KS"
+            }
+          ],
+          "018470.KS": [
+            {
+              "breakout": false,
+              "day_ret": -12.37,
+              "decision_score": 50.0,
+              "ema_fast": 1436.3398,
+              "ema_slow": 1404.4955,
+              "intraday_ret": 0.71,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "조일알미늄",
+              "ticker": "018470.KS",
+              "vol_ratio": 0.11
+            }
+          ],
+          "021240.KS": [
+            {
+              "breakout": false,
+              "day_ret": -1.23,
+              "decision_score": 33.5,
+              "ema_fast": 72181.5523,
+              "ema_slow": 72472.3164,
+              "intraday_ret": -0.69,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "코웨이",
+              "ticker": "021240.KS",
+              "vol_ratio": 0.41
+            }
+          ],
+          "024110.KS": [
+            {
+              "breakout": true,
+              "day_ret": 2.33,
+              "decision_score": 59.3,
+              "ema_fast": 21830.5179,
+              "ema_slow": 22033.0279,
+              "intraday_ret": -0.9,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "기업은행",
+              "ticker": "024110.KS",
+              "vol_ratio": 0.67
+            }
+          ],
+          "032830.KS": [
+            {
+              "breakout": false,
+              "day_ret": 7.08,
+              "decision_score": 80.2,
+              "ema_fast": 223228.1977,
+              "ema_slow": 220893.7717,
+              "intraday_ret": -0.44,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "삼성생명",
+              "ticker": "032830.KS",
+              "vol_ratio": 0.62
+            }
+          ],
+          "034730.KS": [
+            {
+              "avg_turnover_5": 6051323544.72,
+              "avg_volume_5": 19028.96,
+              "curr_price": 323500.0,
+              "curr_turnover": 3146935723.59,
+              "curr_volume": 9727.78,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "SK",
+              "ticker": "034730.KS"
+            }
+          ],
+          "036570.KS": [
+            {
+              "avg_turnover_5": 2539253576.12,
+              "avg_volume_5": 11150.14,
+              "curr_price": 228000.0,
+              "curr_turnover": 1304086880.61,
+              "curr_volume": 5719.68,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "엔씨소프트",
+              "ticker": "036570.KS"
+            }
+          ],
+          "039490.KS": [
+            {
+              "avg_turnover_5": 7137843276.16,
+              "avg_volume_5": 16488.39,
+              "curr_price": 438000.0,
+              "curr_turnover": 4169296880.81,
+              "curr_volume": 9518.94,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "키움증권",
+              "ticker": "039490.KS"
+            }
+          ],
+          "082740.KS": [
+            {
+              "breakout": false,
+              "day_ret": 2.06,
+              "decision_score": 44.8,
+              "ema_fast": 44440.0178,
+              "ema_slow": 44861.9941,
+              "intraday_ret": -1.33,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "한화엔진",
+              "ticker": "082740.KS",
+              "vol_ratio": 1.06
+            }
+          ],
+          "086280.KS": [
+            {
+              "avg_turnover_5": 3347300939.37,
+              "avg_volume_5": 15391.02,
+              "curr_price": 219500.0,
+              "curr_turnover": 2684723196.87,
+              "curr_volume": 12231.09,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "현대글로비스",
+              "ticker": "086280.KS"
+            }
+          ],
+          "090430.KS": [
+            {
+              "avg_turnover_5": 2165910980.7,
+              "avg_volume_5": 15345.16,
+              "curr_price": 142000.0,
+              "curr_turnover": 1723283403.52,
+              "curr_volume": 12135.8,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "아모레퍼시픽",
+              "ticker": "090430.KS"
+            }
+          ],
+          "092220.KS": [
+            {
+              "breakout": false,
+              "day_ret": 4.47,
+              "decision_score": 44.9,
+              "ema_fast": 1706.6611,
+              "ema_slow": 1734.0166,
+              "intraday_ret": 0.77,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "KEC",
+              "ticker": "092220.KS",
+              "vol_ratio": 0.06
+            }
+          ],
+          "100090.KS": [
+            {
+              "breakout": false,
+              "day_ret": 7.09,
+              "decision_score": 80.0,
+              "ema_fast": 28681.462,
+              "ema_slow": 28051.56,
+              "intraday_ret": -1.88,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "SK오션플랜트",
+              "ticker": "100090.KS",
+              "vol_ratio": 0.25
+            }
+          ],
+          "100840.KS": [
+            {
+              "breakout": false,
+              "day_ret": -4.03,
+              "decision_score": 28.0,
+              "ema_fast": 49492.2323,
+              "ema_slow": 49793.6979,
+              "intraday_ret": -4.96,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "SNT에너지",
+              "ticker": "100840.KS",
+              "vol_ratio": 0.26
+            }
+          ],
+          "128940.KS": [
+            {
+              "avg_turnover_5": 3509331589.59,
+              "avg_volume_5": 6396.43,
+              "curr_price": 553000.0,
+              "curr_turnover": 2256884947.94,
+              "curr_volume": 4081.17,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "한미약품",
+              "ticker": "128940.KS"
+            }
+          ],
+          "139480.KS": [
+            {
+              "avg_turnover_5": 1765940498.89,
+              "avg_volume_5": 18440.12,
+              "curr_price": 96900.0,
+              "curr_turnover": 648705294.44,
+              "curr_volume": 6694.59,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "이마트",
+              "ticker": "139480.KS"
+            }
+          ],
+          "161000.KS": [
+            {
+              "breakout": false,
+              "day_ret": 0.71,
+              "decision_score": 59.4,
+              "ema_fast": 14316.3857,
+              "ema_slow": 13786.8016,
+              "intraday_ret": -9.73,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "애경케미칼",
+              "ticker": "161000.KS",
+              "vol_ratio": 0.06
+            }
+          ],
+          "161890.KS": [
+            {
+              "breakout": false,
+              "day_ret": 2.36,
+              "decision_score": 70.7,
+              "ema_fast": 78117.9278,
+              "ema_slow": 78059.4705,
+              "intraday_ret": -0.26,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "한국콜마",
+              "ticker": "161890.KS",
+              "vol_ratio": 0.23
+            }
+          ],
+          "192820.KS": [
+            {
+              "avg_turnover_5": 2316350430.49,
+              "avg_volume_5": 11528.24,
+              "curr_price": 199600.0,
+              "curr_turnover": 759114852.43,
+              "curr_volume": 3803.18,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "코스맥스",
+              "ticker": "192820.KS"
+            }
+          ],
+          "207940.KS": [
+            {
+              "avg_turnover_5": 8849648977.43,
+              "avg_volume_5": 5678.17,
+              "curr_price": 1580000.0,
+              "curr_turnover": 4125108887.13,
+              "curr_volume": 2610.83,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "삼성바이오로직스",
+              "ticker": "207940.KS"
+            }
+          ],
+          "259960.KS": [
+            {
+              "avg_turnover_5": 4077490504.07,
+              "avg_volume_5": 15610.48,
+              "curr_price": 265000.0,
+              "curr_turnover": 2525032020.36,
+              "curr_volume": 9528.42,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "크래프톤",
+              "ticker": "259960.KS"
+            }
+          ],
+          "267250.KS": [
+            {
+              "avg_turnover_5": 4233135517.13,
+              "avg_volume_5": 17278.48,
+              "curr_price": 246500.0,
+              "curr_turnover": 2253845085.66,
+              "curr_volume": 9143.39,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "HD현대",
+              "ticker": "267250.KS"
+            }
+          ],
+          "267260.KS": [
+            {
+              "avg_turnover_5": 12516865512.92,
+              "avg_volume_5": 13819.0,
+              "curr_price": 912000.0,
+              "curr_turnover": 4686745564.61,
+              "curr_volume": 5138.98,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "HD현대일렉트릭",
+              "ticker": "267260.KS"
+            }
+          ],
+          "278470.KS": [
+            {
+              "breakout": false,
+              "day_ret": 3.48,
+              "decision_score": 73.0,
+              "ema_fast": 338764.9706,
+              "ema_slow": 333919.6577,
+              "intraday_ret": -1.16,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "에이피알",
+              "ticker": "278470.KS",
+              "vol_ratio": 0.29
+            }
+          ],
+          "298040.KS": [
+            {
+              "avg_turnover_5": 11212029460.7,
+              "avg_volume_5": 4262.27,
+              "curr_price": 2678000.0,
+              "curr_turnover": 7512747303.52,
+              "curr_volume": 2805.36,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "효성중공업",
+              "ticker": "298040.KS"
+            }
+          ],
+          "307950.KS": [
+            {
+              "avg_turnover_5": 2558646073.66,
+              "avg_volume_5": 6631.61,
+              "curr_price": 391500.0,
+              "curr_turnover": 1034749368.3,
+              "curr_volume": 2643.04,
+              "market_key": "KOSPI",
+              "min_price": 1000.0,
+              "min_turnover": 700000000.0,
+              "min_volume": 20000.0,
+              "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+              "stage": "intraday",
+              "stock_name": "현대오토에버",
+              "ticker": "307950.KS"
+            }
+          ],
+          "322000.KS": [
+            {
+              "breakout": false,
+              "day_ret": -4.89,
+              "decision_score": 50.0,
+              "ema_fast": 136918.3924,
+              "ema_slow": 135556.3188,
+              "intraday_ret": -4.02,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "HD현대에너지솔루션",
+              "ticker": "322000.KS",
+              "vol_ratio": 0.06
+            }
+          ],
+          "329180.KS": [
+            {
+              "breakout": true,
+              "day_ret": -4.57,
+              "decision_score": 46.2,
+              "ema_fast": 452507.476,
+              "ema_slow": 467074.9415,
+              "intraday_ret": -1.64,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "HD현대중공업",
+              "ticker": "329180.KS",
+              "vol_ratio": 0.62
+            }
+          ],
+          "352820.KS": [
+            {
+              "breakout": true,
+              "day_ret": -3.16,
+              "decision_score": 47.7,
+              "ema_fast": 293122.9576,
+              "ema_slow": 297329.7178,
+              "intraday_ret": -4.74,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "하이브",
+              "ticker": "352820.KS",
+              "vol_ratio": 0.47
+            }
+          ],
+          "375500.KS": [
+            {
+              "breakout": false,
+              "day_ret": 5.28,
+              "decision_score": 76.6,
+              "ema_fast": 70434.4763,
+              "ema_slow": 68805.4935,
+              "intraday_ret": -1.24,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "DL이앤씨",
+              "ticker": "375500.KS",
+              "vol_ratio": 0.26
+            }
+          ],
+          "381970.KS": [
+            {
+              "breakout": false,
+              "day_ret": -15.45,
+              "decision_score": 33.3,
+              "ema_fast": 12199.6196,
+              "ema_slow": 12952.7466,
+              "intraday_ret": -17.89,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "케이카",
+              "ticker": "381970.KS",
+              "vol_ratio": 1.13
+            }
+          ],
+          "402340.KS": [
+            {
+              "breakout": false,
+              "day_ret": 6.3,
+              "decision_score": 48.6,
+              "ema_fast": 494427.4616,
+              "ema_slow": 503532.8773,
+              "intraday_ret": -1.18,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "SK스퀘어",
+              "ticker": "402340.KS",
+              "vol_ratio": 0.24
+            }
+          ],
+          "475150.KS": [
+            {
+              "breakout": false,
+              "day_ret": -2.0,
+              "decision_score": 32.0,
+              "ema_fast": 54529.3766,
+              "ema_slow": 54722.3173,
+              "intraday_ret": -2.35,
+              "reason": "INTRADAY_SETUP_WEAK",
+              "stage": "intraday",
+              "stock_name": "SK이터닉스",
+              "ticker": "475150.KS",
+              "vol_ratio": 0.1
+            }
+          ]
+        },
+        "reject_reason_counts": {
+          "INTRADAY_MIN_PRICE_VOLUME_FAIL": 25,
+          "INTRADAY_SETUP_WEAK": 25
+        },
+        "reject_reasons_by_symbol": {
+          "000150.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "000810.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "001040.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "003000.KS": "INTRADAY_SETUP_WEAK",
+          "003230.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "003280.KS": "INTRADAY_SETUP_WEAK",
+          "004170.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "005830.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "006110.KS": "INTRADAY_SETUP_WEAK",
+          "006260.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "008350.KS": "INTRADAY_SETUP_WEAK",
+          "009830.KS": "INTRADAY_SETUP_WEAK",
+          "010120.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "010130.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "011930.KS": "INTRADAY_SETUP_WEAK",
+          "012200.KS": "INTRADAY_SETUP_WEAK",
+          "014680.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "018260.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "018470.KS": "INTRADAY_SETUP_WEAK",
+          "021240.KS": "INTRADAY_SETUP_WEAK",
+          "024110.KS": "INTRADAY_SETUP_WEAK",
+          "032830.KS": "INTRADAY_SETUP_WEAK",
+          "034730.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "036570.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "039490.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "082740.KS": "INTRADAY_SETUP_WEAK",
+          "086280.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "090430.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "092220.KS": "INTRADAY_SETUP_WEAK",
+          "100090.KS": "INTRADAY_SETUP_WEAK",
+          "100840.KS": "INTRADAY_SETUP_WEAK",
+          "128940.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "139480.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "161000.KS": "INTRADAY_SETUP_WEAK",
+          "161890.KS": "INTRADAY_SETUP_WEAK",
+          "192820.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "207940.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "259960.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "267250.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "267260.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "278470.KS": "INTRADAY_SETUP_WEAK",
+          "298040.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "307950.KS": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+          "322000.KS": "INTRADAY_SETUP_WEAK",
+          "329180.KS": "INTRADAY_SETUP_WEAK",
+          "352820.KS": "INTRADAY_SETUP_WEAK",
+          "375500.KS": "INTRADAY_SETUP_WEAK",
+          "381970.KS": "INTRADAY_SETUP_WEAK",
+          "402340.KS": "INTRADAY_SETUP_WEAK",
+          "475150.KS": "INTRADAY_SETUP_WEAK"
+        },
+        "worker_error_count": 0
+      },
+      "execution_profile": "prod",
+      "market_gate": {
+        "gate": "GREEN",
+        "kosdaq_chg": 5.424449753816363,
+        "kospi_chg": 7.362321305658774,
+        "live_mode": true,
+        "msg": "장중 시장 정상: KOSPI +7.36% / KOSDAQ +5.42% — 스캔 조건 양호"
+      },
+      "regime": {
+        "desc": "횡보 (MA20과 MA50 사이)",
+        "emoji": "🟡",
+        "regime": "NEUTRAL"
+      },
+      "scan_mode": "INTRADAY",
+      "source": "scanner_agent_input",
+      "total_scans": 144,
+      "warnings": []
+    },
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": 5.424449753816363,
+      "kospi_chg": 7.362321305658774,
+      "live_mode": true,
+      "msg": "장중 시장 정상: KOSPI +7.36% / KOSDAQ +5.42% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "횡보 (MA20과 MA50 사이)",
+      "emoji": "🟡",
+      "regime": "NEUTRAL"
+    },
+    "source": "scanner_agent_input",
+    "warnings": [],
+    "weak_candidate_count": 0
+  },
+  "warnings": []
+}

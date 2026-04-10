@@ -1,0 +1,85 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1508.280029296875,
+      "krw_change_1d": -0.25,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.09,
+      "tnx": 4.313000202178955,
+      "tnx_change_1d": -0.14,
+      "vix": 23.8700008392334,
+      "vix_change_1d": -2.73
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "자동차 부품"
+    ],
+    "key_insight": "외인과 기관이 코스닥 시장에서 자동차 부품주인 휴림에이텍을 선별 매수하고 있음.",
+    "market_sentiment": "MIXED",
+    "raw": {
+      "beneficiary_keywords": [
+        "휴림에이텍",
+        "자동차 부품"
+      ],
+      "beneficiary_sectors": [
+        "자동차 부품"
+      ],
+      "evidence_headlines": [
+        "외인·기관 '삼성중공업·휴림에이텍' 선별 매수"
+      ],
+      "key_insight": "외인과 기관이 코스닥 시장에서 자동차 부품주인 휴림에이텍을 선별 매수하고 있음.",
+      "market_sentiment": "MIXED",
+      "raw_headlines": [
+        "[Thu, 02 Apr 2026 02:14:21 GMT] [특징주] 외인·기관 '삼성중공업·휴림에이텍' 선별 매수 - 뉴스티앤티 | 뉴스티앤티"
+      ],
+      "sentiment_score": 10,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "기관과 외국인 투자자가 코스닥 특정 종목을 선별적으로 매수하는 추세",
+          "impact": "POSITIVE",
+          "theme": "기관/외인 선별 매수"
+        }
+      ],
+      "timestamp": "2026-04-03 10:22",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "sentiment_score": 10,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-03T01:22:54.052277+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-03",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-03T01:22:21.365355+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-83ADC7AC",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

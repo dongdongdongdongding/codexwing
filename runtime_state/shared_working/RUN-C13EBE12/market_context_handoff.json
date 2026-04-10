@@ -1,0 +1,152 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1473.8900146484375,
+      "krw_change_1d": -1.68,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.6,
+      "tnx": 4.269000053405762,
+      "tnx_change_1d": -0.51,
+      "vix": 20.049999237060547,
+      "vix_change_1d": -4.71
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "beneficiary_themes": [],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": 0,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "Market intelligence error; fallback used for NASDAQ",
+    "macro_drivers": [],
+    "market_sentiment": "NEUTRAL",
+    "model": "",
+    "news_quality": "LOW",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "beneficiary_themes": [],
+      "company_event_bias": {},
+      "cross_asset_signals": [],
+      "disclosure_events": [],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": 0,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "Market intelligence error; fallback used for NASDAQ",
+      "macro_drivers": [],
+      "market_sentiment": "NEUTRAL",
+      "model": "",
+      "news_quality": "LOW",
+      "raw_headlines": [
+        "[Wed, 08 Apr 2026 16:28:25 GMT] Nasdaq: Tech-Heavy Index Leaps 3.5% as Ceasefire Reignites AI and Growth Stock Appetite - BBN Times | BBN Times",
+        "[Thu, 09 Apr 2026 16:43:20 GMT] The Strait of Hormuz is not open as Iran controls access after ceasefire, UAE oil CEO says | CNBC",
+        "[Thu, 09 Apr 2026 16:43:00 GMT] Retail investors sat out yesterday’s stock-market rally — and made this move instead | MarketWatch",
+        "[Thu, 09 Apr 2026 16:30:04 GMT] U.S. oil price jumps more than 3% as Iran controls access through Strait of Hormuz | CNBC",
+        "[Thu, 09 Apr 2026 13:05:03 GMT] Constellation Brands, U.S. maker of Modelo and Corona, withdraws 2028 guidance due to uncertainty | CNBC",
+        "[Wed, 08 Apr 2026 18:02:39 GMT] Delta CEO says airline will 'meaningfully' cut growth plans, sees $300 million boost from its refinery | CNBC",
+        "[2026-04-09T16:47:53Z] Neogen Corporation Q3 2026 Earnings Call Summary | Moby",
+        "[Thu, 09 Apr 2026 16:57:00 GMT] ‘I plan to exit corporate life’: I’m 50 and have $400,000. My wife is a teacher. Can I retire at 55? | MarketWatch",
+        "[Thu, 09 Apr 2026 16:47:32 GMT] Disney plans layoffs of as many as 1,000 employees | CNBC",
+        "[Thu, 09 Apr 2026 16:26:00 GMT] The average tax refund is over $3,500 — and you’ve get less than a week to file | MarketWatch",
+        "[Thu, 09 Apr 2026 16:25:38 GMT] Automatic U.S. military draft registration planned by December, filing shows | CNBC",
+        "[Thu, 09 Apr 2026 16:19:00 GMT] Only a handful of ships have passed through Hormuz, further testing fragile truce | MarketWatch",
+        "[Wed, 08 Apr 2026 18:26:37 GMT] Fed officials still foresee rate cut this year, despite war impacts, minutes show | CNBC",
+        "[2026-04-08T16:17:00Z] Major alcohol distributor shuts down operations, lays off over 500 workers | TheStreet",
+        "[Wed, 08 Apr 2026 15:07:38 GMT] Ray Dalio: Trump-Xi meeting to focus on trade, capital flows | CNBC"
+      ],
+      "risk_flags": [],
+      "sentiment_score": 0,
+      "source": "fallback",
+      "theme_evidence": {},
+      "theme_states": [],
+      "themes": [],
+      "timestamp": "2026-04-10 02:04",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Wed, 08 Apr 2026 16:28:25 GMT] Nasdaq: Tech-Heavy Index Leaps 3.5% as Ceasefire Reignites AI and Growth Stock Appetite - BBN Times | BBN Times",
+      "[Thu, 09 Apr 2026 16:43:20 GMT] The Strait of Hormuz is not open as Iran controls access after ceasefire, UAE oil CEO says | CNBC",
+      "[Thu, 09 Apr 2026 16:43:00 GMT] Retail investors sat out yesterday’s stock-market rally — and made this move instead | MarketWatch",
+      "[Thu, 09 Apr 2026 16:30:04 GMT] U.S. oil price jumps more than 3% as Iran controls access through Strait of Hormuz | CNBC",
+      "[Thu, 09 Apr 2026 13:05:03 GMT] Constellation Brands, U.S. maker of Modelo and Corona, withdraws 2028 guidance due to uncertainty | CNBC",
+      "[Wed, 08 Apr 2026 18:02:39 GMT] Delta CEO says airline will 'meaningfully' cut growth plans, sees $300 million boost from its refinery | CNBC",
+      "[2026-04-09T16:47:53Z] Neogen Corporation Q3 2026 Earnings Call Summary | Moby",
+      "[Thu, 09 Apr 2026 16:57:00 GMT] ‘I plan to exit corporate life’: I’m 50 and have $400,000. My wife is a teacher. Can I retire at 55? | MarketWatch",
+      "[Thu, 09 Apr 2026 16:47:32 GMT] Disney plans layoffs of as many as 1,000 employees | CNBC",
+      "[Thu, 09 Apr 2026 16:26:00 GMT] The average tax refund is over $3,500 — and you’ve get less than a week to file | MarketWatch",
+      "[Thu, 09 Apr 2026 16:25:38 GMT] Automatic U.S. military draft registration planned by December, filing shows | CNBC",
+      "[Thu, 09 Apr 2026 16:19:00 GMT] Only a handful of ships have passed through Hormuz, further testing fragile truce | MarketWatch",
+      "[Wed, 08 Apr 2026 18:26:37 GMT] Fed officials still foresee rate cut this year, despite war impacts, minutes show | CNBC",
+      "[2026-04-08T16:17:00Z] Major alcohol distributor shuts down operations, lays off over 500 workers | TheStreet",
+      "[Wed, 08 Apr 2026 15:07:38 GMT] Ray Dalio: Trump-Xi meeting to focus on trade, capital flows | CNBC"
+    ],
+    "risk_flags": [],
+    "sentiment_score": 0,
+    "source": "fallback",
+    "status": "fallback_intel",
+    "theme_evidence": {},
+    "theme_states": [],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-09T17:05:09.558003+00:00",
+  "regime": {
+    "market": "NASDAQ",
+    "market_group": "US",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-10",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-09T17:03:10.037632+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-C13EBE12",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": [
+    {
+      "code": "NEWS_INTEL_FALLBACK",
+      "message": "News intelligence returned fallback payload.",
+      "severity": "warning"
+    }
+  ]
+}

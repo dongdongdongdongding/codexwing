@@ -1,0 +1,135 @@
+{
+  "calibration": {
+    "confidence_penalty": 0.08,
+    "reason": "Confidence penalized by realized trade count in sampled real backtests.",
+    "status": "mixed",
+    "trade_sample_bucket": "medium"
+  },
+  "diagnostics": {
+    "candidate_count": 183,
+    "expectancy_proxy": 0.766,
+    "mode": "quantstrategy_backtest_sampled",
+    "real_backtest": {
+      "avg_trades_per_ticker": 5.2,
+      "coverage_ratio": 0.027,
+      "low_trade_ratio": 0.0,
+      "mean_profit_factor": 24.226,
+      "mean_total_return_pct": 19.638,
+      "mean_win_rate_pct": 54.77,
+      "sample_rows": [
+        {
+          "profit_factor": 10.14,
+          "ticker": "086520.KQ",
+          "total_return_pct": 32.01,
+          "total_trades": 3,
+          "win_rate_pct": 50.0
+        },
+        {
+          "profit_factor": 99.9,
+          "ticker": "247540.KQ",
+          "total_return_pct": 37.43,
+          "total_trades": 5,
+          "win_rate_pct": 70.0
+        },
+        {
+          "profit_factor": 1.71,
+          "ticker": "141080.KQ",
+          "total_return_pct": 11.66,
+          "total_trades": 8,
+          "win_rate_pct": 53.85
+        },
+        {
+          "profit_factor": 8.86,
+          "ticker": "087010.KQ",
+          "total_return_pct": 25.55,
+          "total_trades": 5,
+          "win_rate_pct": 60.0
+        },
+        {
+          "profit_factor": 0.52,
+          "ticker": "028300.KQ",
+          "total_return_pct": -8.46,
+          "total_trades": 5,
+          "win_rate_pct": 40.0
+        }
+      ],
+      "selected_tickers": 5,
+      "tested_tickers": 5,
+      "total_trades_sum": 26
+    },
+    "sample_size_bucket": "large",
+    "score_stats": {
+      "max": 100.0,
+      "mean": 88.321,
+      "median": 86.4,
+      "min": 61.1,
+      "std": 9.795
+    },
+    "weak_candidate_ratio": 0.0
+  },
+  "produced_at": "2026-04-01T06:40:37.023928+00:00",
+  "regime_sensitivity": {
+    "benchmark": "^KS11",
+    "errors": [],
+    "slices": [
+      {
+        "avg_pnl_pct": 4.097,
+        "days": 45,
+        "end": "2026-03-03",
+        "n_trades": 10,
+        "profit_factor": 2.72,
+        "regime": "BULL",
+        "start": "2025-12-22",
+        "win_rate_pct": 70.0
+      }
+    ],
+    "source": "backtest_framework._backtest_period + market_data provider",
+    "status": "low_sample",
+    "summary": {
+      "best_regime_by_avg_pnl": "BULL",
+      "data_ready_ticker_count": 5,
+      "generated_at": "2026-04-01T06:40:37.023751Z",
+      "min_tradeful_regimes": 2,
+      "regimes_tested": 1,
+      "regimes_with_trades": 1,
+      "selected_tickers": [
+        "086520.KQ",
+        "247540.KQ",
+        "141080.KQ",
+        "087010.KQ",
+        "028300.KQ"
+      ],
+      "ticker_count": 5,
+      "total_trades": 10,
+      "worst_regime_by_avg_pnl": "BULL"
+    },
+    "windows": {
+      "BULL": {
+        "days": 45,
+        "end": "2026-03-03",
+        "start": "2025-12-22"
+      }
+    }
+  },
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-01T06:40:32.258536+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-3FEDE09B",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": [
+    {
+      "code": "REAL_BACKTEST_PARTIAL",
+      "message": "Sampled real backtests executed for 5 tickers (selected=5).",
+      "severity": "info"
+    },
+    {
+      "code": "REGIME_BACKTEST_LOW_SAMPLE",
+      "message": "Regime diagnostics exist but trade depth is low (total_trades=10).",
+      "severity": "warning"
+    }
+  ]
+}

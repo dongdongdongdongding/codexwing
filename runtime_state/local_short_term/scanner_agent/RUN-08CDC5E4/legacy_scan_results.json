@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "applied_profile_defaults": {
+      "AG_US_HARD_AMEX_RS_MIN": "-5",
+      "AG_US_HARD_MIN_ALPHA": "20",
+      "AG_US_HARD_MIN_ALPHA_DOWN": "30",
+      "AG_US_SIGNAL_LOOKBACK": "20",
+      "AG_US_SIGNAL_MIN_HITS": "0"
+    },
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 0,
+      "filtered_symbols": [],
+      "reject_details_by_symbol": {},
+      "reject_reason_counts": {},
+      "reject_reasons_by_symbol": {},
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "execution_profile": "dev",
+    "gate_config": {
+      "us_hard_filter": {
+        "amex_rs_min": -5.0,
+        "min_alpha": 20.0,
+        "min_alpha_down": 30.0
+      },
+      "us_signal_window": {
+        "lookback": 20,
+        "min_hits": 0
+      }
+    },
+    "macro_ctx": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_SOFTENING"
+      ],
+      "krw": 1517.43994140625,
+      "krw_change_1d": 0.6,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 30,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.16,
+      "tnx": 4.329999923706055,
+      "tnx_change_1d": -2.48,
+      "vix": 30.219999313354492,
+      "vix_change_1d": -2.67
+    },
+    "market": "NASDAQ",
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": NaN,
+      "kospi_chg": NaN,
+      "msg": "시장 정상: KOSPI +nan% / KOSDAQ +nan% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6651<6803)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "total_scans": 1,
+    "warnings": []
+  },
+  "results": [
+    {
+      "1D Change": "-0.63%",
+      "Antigrav": 36,
+      "Consecutive": "2 DOWN",
+      "Context": "-",
+      "Decision Score": 25.6,
+      "Entry(-2%)": "242.29",
+      "Hold": "3d",
+      "Name": "AAPL",
+      "Position": "📉 바닥 (Bottom)",
+      "RS vs SPY": "+2.3% vs SPY",
+      "Stop": "232.22 (-4.2%)",
+      "Strategy": "🚀 Momentum",
+      "Surge": "-",
+      "Target": "252.35",
+      "Ticker": "AAPL",
+      "Tier": "T3",
+      "Trend": "DOWN",
+      "Volume": "⚠️ x0.7",
+      "WR": "52%",
+      "Whale": "35.0pts",
+      "_prob_5": 0.0,
+      "_prob_clean": 0.0,
+      "_tier_sort": 3
+    }
+  ]
+}

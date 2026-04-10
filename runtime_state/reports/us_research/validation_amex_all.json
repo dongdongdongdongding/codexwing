@@ -1,0 +1,10 @@
+{
+  "decision_bucket_counts": {},
+  "generated_at": "2026-04-01T09:32:44.103500+00:00",
+  "horizons": {},
+  "market": "AMEX",
+  "market_type_filter": "AMEX",
+  "rows": 0,
+  "scan_mode": "ALL",
+  "strategy_family": null
+}

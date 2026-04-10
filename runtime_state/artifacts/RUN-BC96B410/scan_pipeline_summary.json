@@ -1,0 +1,66 @@
+{
+  "applied_profile_defaults": {
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "artifact_dir": "runtime_state/artifacts/RUN-BC96B410",
+  "daily_summary_paths": {
+    "json_path": "runtime_state/reports/daily/daily_summary_2026-03-31.json",
+    "md_path": "runtime_state/reports/daily/daily_summary_2026-03-31.md"
+  },
+  "error_count": 0,
+  "execution_profile": "prod",
+  "executor_exception_count": 0,
+  "filtered_count": 60,
+  "gate_config": {
+    "us_hard_filter": null,
+    "us_signal_window": null
+  },
+  "manifest_paths": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-BC96B410/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-BC96B410/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-BC96B410/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-BC96B410/market_context_handoff.json",
+    "outcome_health": "runtime_state/shared_working/RUN-BC96B410/outcome_health.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-BC96B410/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-BC96B410/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-BC96B410/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-BC96B410/realized_outcomes.json",
+    "run_manifest": "runtime_state/shared_working/RUN-BC96B410/run_manifest.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-BC96B410/scanner_handoff.json"
+  },
+  "market": "KOSDAQ",
+  "reject_reason_counts": {
+    "FETCH_DATA_FAIL": 10,
+    "LIQUIDITY_FILTER_FAIL": 1,
+    "MISSING_ANTIGRAV_SCORE": 49
+  },
+  "result_count": 0,
+  "run_id": "RUN-BC96B410",
+  "scanner_input_path": "runtime_state/local_short_term/scanner_agent/RUN-BC96B410/legacy_scan_results.json",
+  "stale_fallback_alert": {
+    "health": {
+      "generated_at": "2026-03-31T05:56:09.673000+00:00",
+      "market": "KOSDAQ",
+      "runs_considered": 3,
+      "sample_rows": [],
+      "stale_fallback_pending_count": 0
+    },
+    "reason": "below_threshold",
+    "sent": false,
+    "stale_count": 0,
+    "threshold": 3
+  },
+  "total_scans": 60,
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: MISSING_ANTIGRAV_SCORE (49).",
+      "severity": "warning"
+    }
+  ],
+  "worker_error_count": 0
+}

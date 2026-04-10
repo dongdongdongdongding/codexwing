@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aggregation_handoff.schema.json",
+  "title": "AggregationHandoff",
+  "type": "object",
+  "required": ["run_context", "concentration", "clusters", "quality_notes", "warnings", "produced_at"],
+  "properties": {
+    "run_context": {"type": "object"},
+    "concentration": {"type": "object"},
+    "clusters": {"type": "array", "items": {"type": "object"}},
+    "leaderboard": {"type": "array", "items": {"type": "object"}},
+    "quality_notes": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "object"}},
+    "produced_at": {"type": "string"}
+  }
+}

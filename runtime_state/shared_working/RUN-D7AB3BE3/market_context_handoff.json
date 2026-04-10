@@ -1,0 +1,279 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_HIGH",
+      "VIX_RISING"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 30.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_HIGH",
+        "VIX_RISING"
+      ],
+      "krw": 1500.47998046875,
+      "krw_change_1d": -0.58,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 30,
+      "macro_state": "NORMAL",
+      "spy_change_1d": -0.69,
+      "tnx": 4.359000205993652,
+      "tnx_change_1d": 0.55,
+      "vix": 27.100000381469727,
+      "vix_change_1d": 12.12
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "반도체"
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 5,
+      "ECONOMY": -3,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": -5,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": -2
+    },
+    "key_insight": "반도체 대형주의 실적 호조가 시장을 견인하고 있으나, 일부 중소형 기업들의 유동성 및 거버넌스 리스크가 동시에 부각되며 시장 내 차별화가 심화되고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "EARNINGS",
+        "description": "반도체 섹터의 강력한 실적은 기술주 비중이 높은 KOSDAQ 지수에 긍정적인 파급 효과를 가집니다.",
+        "evidence": "삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록",
+        "market_impact": 5,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "일부 금융권의 대출 중단과 스타트업 자금난은 시장의 전반적인 유동성 위축 신호로 해석될 수 있습니다.",
+        "evidence": "단위 농·축협 10일부터 비조합원 가계대출 중단 | 강원창업보육센터협의회, 경기 위축으로 자금 확보 어려움",
+        "market_impact": -4,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "REGULATION",
+        "description": "최대주주 지분 관련 공시는 KOSDAQ 시장의 고질적인 거버넌스 리스크를 부각시킵니다.",
+        "evidence": "모아라이프플러스 등 다수 기업, 최대주주변경을수반하는주식담보제공계약체결 공시",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "메모리 반도체",
+        "D램",
+        "낸드"
+      ],
+      "beneficiary_sectors": [
+        "반도체"
+      ],
+      "company_event_bias": {
+        "넥스턴앤롤코리아": -4,
+        "모아라이프플러스": -4,
+        "수성웹툰": -4,
+        "스코넥": -8,
+        "아이티켐": -8,
+        "파라택시스이더리움": 4
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "모아라이프플러스",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "수성웹툰",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "넥스턴앤롤코리아",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "파라택시스이더리움",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "아이티켐",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(자기전환사채만기전취득결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "스코넥",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(자기전환사채만기전취득결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "모아라이프플러스",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "수성웹툰",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 5,
+        "ECONOMY": -3,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": -5,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": -2
+      },
+      "evidence_headlines": [
+        "삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록",
+        "단위 농·축협 10일부터 비조합원 가계대출 중단",
+        "강원창업보육센터협의회, 경기 위축으로 자금 확보 어려움",
+        "[DART] 모아라이프플러스 - [기재정정]최대주주변경을수반하는주식담보제공계약체결"
+      ],
+      "key_insight": "반도체 대형주의 실적 호조가 시장을 견인하고 있으나, 일부 중소형 기업들의 유동성 및 거버넌스 리스크가 동시에 부각되며 시장 내 차별화가 심화되고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "EARNINGS",
+          "description": "반도체 섹터의 강력한 실적은 기술주 비중이 높은 KOSDAQ 지수에 긍정적인 파급 효과를 가집니다.",
+          "evidence": "삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록",
+          "market_impact": 5,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "일부 금융권의 대출 중단과 스타트업 자금난은 시장의 전반적인 유동성 위축 신호로 해석될 수 있습니다.",
+          "evidence": "단위 농·축협 10일부터 비조합원 가계대출 중단 | 강원창업보육센터협의회, 경기 위축으로 자금 확보 어려움",
+          "market_impact": -4,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "REGULATION",
+          "description": "최대주주 지분 관련 공시는 KOSDAQ 시장의 고질적인 거버넌스 리스크를 부각시킵니다.",
+          "evidence": "모아라이프플러스 등 다수 기업, 최대주주변경을수반하는주식담보제공계약체결 공시",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[DART 20260407] 모아라이프플러스 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[DART 20260407] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[DART 20260407] 넥스턴앤롤코리아 - 최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[DART 20260407] 파라택시스이더리움 - 주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260407] 아이티켐 - 주요사항보고서(자기전환사채만기전취득결정) | 전자공시",
+        "[DART 20260407] 스코넥 - 주요사항보고서(자기전환사채만기전취득결정) | 전자공시",
+        "[DART 20260407] 메카로 - 주요사항보고서(자기주식처분결정) | 전자공시",
+        "[Tue, 7 Apr 2026 21:05:56 +0900] [인사] 재정경제부 | 연합뉴스",
+        "[Tue, 7 Apr 2026 19:54:06 +0900] 단위 농·축협 10일부터 비조합원 가계대출 중단 | 연합뉴스",
+        "[Tue, 7 Apr 2026 19:49:21 +0900] 삼천당제약, '핵심 특허 대만기업 보유설'에 \"100% 자사 소유\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 19:31:55 +0900] 솔루스첨단소재 \"룩셈부르크 계열사 주식 784억원에 추가취득\" | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:32:46 +0900] 삼성전자, 메모리 매출 504억달러…D램·낸드 동시 신기록 | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:18:52 +0900] 포스코, 협력사 직원 7천명 정규직으로 '직접 고용'(종합) | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:18:38 +0900] 슈프리마, 애프터마켓서 10%대 급등 | 연합뉴스",
+        "[Tue, 7 Apr 2026 18:04:10 +0900] 강원창업보육센터협의회, 경기 위축으로 자금 확보 어려움 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "중소형주 유동성 축소",
+        "한계기업 거버넌스 리스크",
+        "벤처 투자 위축"
+      ],
+      "sentiment_score": 25,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "삼성전자의 기록적인 메모리 반도체 매출은 KOSDAQ 내 관련 기술주에 긍정적 영향을 미칩니다.",
+          "impact": "POSITIVE",
+          "theme": "반도체 업황 호조"
+        },
+        {
+          "description": "일부 금융기관의 대출 중단과 스타트업 자금 조달난은 중소형주 중심의 KOSDAQ 시장에 부담으로 작용합니다.",
+          "impact": "NEGATIVE",
+          "theme": "중소형 기업 유동성 우려"
+        },
+        {
+          "description": "다수 KOSDAQ 상장사의 최대주주 변경을 수반하는 주식담보계약은 개별 기업의 재무 안정성에 대한 우려를 높입니다.",
+          "impact": "NEGATIVE",
+          "theme": "한계기업 거버넌스 리스크"
+        }
+      ],
+      "timestamp": "2026-04-07 23:23",
+      "victim_keywords": [
+        "스타트업",
+        "자금조달",
+        "주식담보대출"
+      ],
+      "victim_sectors": [
+        "스타트업/벤처"
+      ]
+    },
+    "risk_flags": [
+      "중소형주 유동성 축소",
+      "한계기업 거버넌스 리스크",
+      "벤처 투자 위축"
+    ],
+    "sentiment_score": 25,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "스타트업/벤처"
+    ]
+  },
+  "produced_at": "2026-04-07T14:23:10.846062+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 70.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-07",
+    "code_version": "verify-phase25-meta-v1",
+    "created_at": "2026-04-07T14:23:08.362170+00:00",
+    "market": "KOSDAQ",
+    "model_version": "phase25-kr-intraday-xgb",
+    "run_id": "RUN-D7AB3BE3",
+    "strategy_version": "verify-phase25-meta"
+  },
+  "warnings": []
+}

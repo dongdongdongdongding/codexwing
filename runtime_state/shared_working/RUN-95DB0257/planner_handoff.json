@@ -1,0 +1,183 @@
+{
+  "avoid_list": [
+    "010060.KS",
+    "017670.KS"
+  ],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "EXCEPTION_LEADERS_ENABLED",
+      "message": "Planner attached bear-market exception leaders from rejected candidates for follow-up tracking.",
+      "severity": "warning"
+    },
+    {
+      "code": "MARKET_POLICY_WATCHLIST_ONLY",
+      "message": "Planner downgraded active recommendations to watchlist-only because learned policy for KOSPI/RED is avoid.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-02T15:45:47.122277+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-03",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-02T15:45:40.853433+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-95DB0257",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "watchlist": [
+    "008350.KS",
+    "005010.KS",
+    "322000.KS",
+    "001120.KS",
+    "267250.KS",
+    "032830.KS",
+    "003000.KS",
+    "047050.KS",
+    "010060.KS",
+    "017670.KS"
+  ],
+  "watchlist_meta": [
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "남선알미늄",
+      "ticker": "008350.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "휴스틸",
+      "ticker": "005010.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "HD현대에너지솔루션",
+      "ticker": "322000.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "LX인터내셔널",
+      "ticker": "001120.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "HD현대",
+      "ticker": "267250.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "삼성생명",
+      "ticker": "032830.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "부광약품",
+      "ticker": "003000.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "포스코인터내셔널",
+      "ticker": "047050.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "OCI홀딩스",
+      "ticker": "010060.KS"
+    },
+    {
+      "expires_at": "2026-04-04T15:45:47.877310+00:00",
+      "generated_at": "2026-04-02T15:45:47.877310+00:00",
+      "horizon_days": 2,
+      "market_gate": "RED",
+      "policy_avg_5d_pct": 6.36,
+      "policy_mode": "avoid",
+      "policy_win_5d_pct": 33.33,
+      "reason": "market_policy_watchlist_only",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "learned_market_policy",
+      "stock_name": "SK텔레콤",
+      "ticker": "017670.KS"
+    }
+  ]
+}

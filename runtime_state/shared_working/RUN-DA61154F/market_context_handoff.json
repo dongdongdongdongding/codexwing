@@ -1,0 +1,281 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1472.510009765625,
+      "krw_change_1d": -2.34,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": NaN,
+      "tnx": 4.335000038146973,
+      "tnx_change_1d": 0.51,
+      "vix": 24.170000076293945,
+      "vix_change_1d": 1.26
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 5,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": -3,
+      "OIL": -2,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": -4
+    },
+    "key_insight": "코스닥 시장은 개별 기업의 계약 및 M&A 소식과 소송·자금조달 이슈가 혼재된 가운데, 고유가 및 플랫폼 규제라는 매크로 압박에 직면해 있음.",
+    "macro_drivers": [
+      {
+        "category": "EARNINGS",
+        "description": "일부 코스닥 기업들의 단일판매 및 공급계약 체결은 긍정적이나, 소송 및 자금조달 관련 불확실성도 상존함.",
+        "evidence": "피노, 케이씨에스 - 단일판매ㆍ공급계약체결 / 알엔투테크놀로지 - 소송등의판결",
+        "market_impact": 1,
+        "signal": "MIXED"
+      },
+      {
+        "category": "REGULATION",
+        "description": "플랫폼 시장의 불공정 행위에 대한 지속적인 감시 언급은 관련 기업들의 잠재적 리스크로 작용함.",
+        "evidence": "주병기 \"플랫폼 불공정 지속 감시…시장 공정해야 콘텐츠 성장\"",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "OIL",
+        "description": "뉴스 헤드라인에서 '고유가' 상황이 언급되어, 비용 증가에 따른 기업 수익성 악화 우려를 자극함.",
+        "evidence": "관세청, 고유가 틈탄 해상면세유 불법유통 37만리터 적발",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "유상증자 결정 및 신주발행금지 가처분 소송 등은 개별 기업의 자금 조달 및 지분 가치에 대한 우려를 야기함.",
+        "evidence": "지니틱스 - 유상증자결정 / 알엔투테크놀로지 - 신주발행금지가처분",
+        "market_impact": -1,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "company_event_bias": {
+        "로젠": 4,
+        "모다이노칩": 4,
+        "모아라이프플러스": -4,
+        "알엔투테크놀로지": -8,
+        "지니틱스": -8,
+        "케이씨에스": 8,
+        "피노": 8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "모다이노칩",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "피노",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "로젠",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[첨부정정]주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "알엔투테크놀로지",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정              (신주발행금지가처분)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "케이씨에스",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "지니틱스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "모아라이프플러스",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "모다이노칩",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]주요사항보고서(회사합병결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 5,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": -3,
+        "OIL": -2,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": -4
+      },
+      "evidence_headlines": [
+        "[DART 20260408] 피노 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260408] 알엔투테크놀로지 - 소송등의판결ㆍ결정 (신주발행금지가처분) | 전자공시",
+        "관세청, 고유가 틈탄 해상면세유 불법유통 37만리터 적발 | 연합뉴스",
+        "주병기 \"플랫폼 불공정 지속 감시…시장 공정해야 콘텐츠 성장\" | 연합뉴스"
+      ],
+      "key_insight": "코스닥 시장은 개별 기업의 계약 및 M&A 소식과 소송·자금조달 이슈가 혼재된 가운데, 고유가 및 플랫폼 규제라는 매크로 압박에 직면해 있음.",
+      "macro_drivers": [
+        {
+          "category": "EARNINGS",
+          "description": "일부 코스닥 기업들의 단일판매 및 공급계약 체결은 긍정적이나, 소송 및 자금조달 관련 불확실성도 상존함.",
+          "evidence": "피노, 케이씨에스 - 단일판매ㆍ공급계약체결 / 알엔투테크놀로지 - 소송등의판결",
+          "market_impact": 1,
+          "signal": "MIXED"
+        },
+        {
+          "category": "REGULATION",
+          "description": "플랫폼 시장의 불공정 행위에 대한 지속적인 감시 언급은 관련 기업들의 잠재적 리스크로 작용함.",
+          "evidence": "주병기 \"플랫폼 불공정 지속 감시…시장 공정해야 콘텐츠 성장\"",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "OIL",
+          "description": "뉴스 헤드라인에서 '고유가' 상황이 언급되어, 비용 증가에 따른 기업 수익성 악화 우려를 자극함.",
+          "evidence": "관세청, 고유가 틈탄 해상면세유 불법유통 37만리터 적발",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "유상증자 결정 및 신주발행금지 가처분 소송 등은 개별 기업의 자금 조달 및 지분 가치에 대한 우려를 야기함.",
+          "evidence": "지니틱스 - 유상증자결정 / 알엔투테크놀로지 - 신주발행금지가처분",
+          "market_impact": -1,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260408] 모다이노칩 - [기재정정]주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260408] 피노 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260408] 로젠 - [첨부정정]주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260408] 알엔투테크놀로지 - 소송등의판결ㆍ결정              (신주발행금지가처분) | 전자공시",
+        "[DART 20260408] 케이씨에스 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260408] 지니틱스 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[DART 20260407] 모아라이프플러스 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[Wed, 8 Apr 2026 15:02:11 +0900] SK증권, 한국IT복지진흥원과 업무협약…ESG 활동 확대 | 연합뉴스",
+        "[Wed, 8 Apr 2026 15:00:47 +0900] 관세청, 고유가 틈탄 해상면세유 불법유통 37만리터 적발 | 연합뉴스",
+        "[Wed, 8 Apr 2026 15:00:02 +0900] 주병기 \"플랫폼 불공정 지속 감시…시장 공정해야 콘텐츠 성장\" | 연합뉴스",
+        "[Wed, 8 Apr 2026 15:00:01 +0900] 우주청장 \"차장·임무본부 이원화 문제\"…조직 개편 예고 | 연합뉴스",
+        "[Wed, 8 Apr 2026 14:57:54 +0900] 춘천 레고랜드, 작년 손실 73% 감소…흑자 전환은 과제 | 연합뉴스",
+        "[Wed, 8 Apr 2026 14:55:41 +0900] 한국선급, 14개 분야 직원 47명 공개 채용 | 연합뉴스",
+        "[Wed, 8 Apr 2026 14:54:42 +0900] [게시판] LH, 14일 경기남부지역본부서 주택매입사업 설명회 | 연합뉴스",
+        "[Wed, 8 Apr 2026 14:48:26 +0900] [게시판] 여한구 통상교섭본부장, 주한 유럽기업 간담회 | 연합뉴스"
+      ],
+      "risk_flags": [
+        "플랫폼 규제 리스크",
+        "고유가",
+        "개별 기업 소송",
+        "지분가치 희석"
+      ],
+      "sentiment_score": -15,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "공급 계약, 합병 등 긍정적 공시와 소송, 유상증자 등 부정적 공시가 동시에 발생하며 종목별 차별화가 나타남.",
+          "impact": "MIXED",
+          "theme": "개별 기업 이벤트 혼재"
+        },
+        {
+          "description": "플랫폼 기업에 대한 불공정 행위 감시 언급으로 관련 산업에 대한 규제 리스크가 부각됨.",
+          "impact": "NEGATIVE",
+          "theme": "규제 환경 불확실성"
+        }
+      ],
+      "timestamp": "2026-04-08 15:07",
+      "victim_keywords": [
+        "플랫폼 기업"
+      ],
+      "victim_sectors": [
+        "플랫폼",
+        "콘텐츠"
+      ]
+    },
+    "risk_flags": [
+      "플랫폼 규제 리스크",
+      "고유가",
+      "개별 기업 소송",
+      "지분가치 희석"
+    ],
+    "sentiment_score": -15,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "플랫폼",
+      "콘텐츠"
+    ]
+  },
+  "produced_at": "2026-04-08T06:07:42.336736+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-08",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-08T06:06:30.729982+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-DA61154F",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

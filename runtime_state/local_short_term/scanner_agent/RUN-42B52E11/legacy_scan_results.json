@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "diagnostics": {
+      "error_symbols": [],
+      "exception_symbols": [],
+      "executor_exception_count": 0,
+      "filtered_count": 5,
+      "filtered_symbols": [
+        "AAPL",
+        "META",
+        "MSFT",
+        "NVDA",
+        "AMZN"
+      ],
+      "reject_reason_counts": {
+        "US_HARD_FILTER_FAIL": 2,
+        "US_SIGNAL_WINDOW_FAIL": 3
+      },
+      "reject_reasons_by_symbol": {
+        "AAPL": "US_HARD_FILTER_FAIL",
+        "AMZN": "US_SIGNAL_WINDOW_FAIL",
+        "META": "US_SIGNAL_WINDOW_FAIL",
+        "MSFT": "US_HARD_FILTER_FAIL",
+        "NVDA": "US_SIGNAL_WINDOW_FAIL"
+      },
+      "worker_error_count": 0
+    },
+    "error_count": 0,
+    "macro_ctx": {
+      "flags": [
+        "VIX_HIGH",
+        "KRW_SOFTENING"
+      ],
+      "krw": 1517.47998046875,
+      "krw_change_1d": 0.6,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 30,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.64,
+      "tnx": 4.340000152587891,
+      "tnx_change_1d": -2.25,
+      "vix": 30.09000015258789,
+      "vix_change_1d": -3.09
+    },
+    "market": "NASDAQ",
+    "market_gate": {
+      "gate": "GREEN",
+      "kosdaq_chg": NaN,
+      "kospi_chg": NaN,
+      "msg": "시장 정상: KOSPI +nan% / KOSDAQ +nan% — 스캔 조건 양호"
+    },
+    "regime": {
+      "desc": "하락장 (현재<6652<6803)",
+      "emoji": "🔴",
+      "regime": "BEAR"
+    },
+    "total_scans": 5,
+    "warnings": [
+      {
+        "code": "ZERO_RESULT_ALL_FILTERED",
+        "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: US_SIGNAL_WINDOW_FAIL (3).",
+        "severity": "warning"
+      }
+    ]
+  },
+  "results": []
+}

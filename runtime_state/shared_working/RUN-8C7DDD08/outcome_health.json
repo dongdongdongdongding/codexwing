@@ -1,0 +1,29 @@
+{
+  "delta_vs_prev_run": {
+    "base_generated_at": "2026-04-08T10:08:22.452659+00:00",
+    "base_run_id": "RUN-DC312B14",
+    "expired": 8,
+    "fallback_expired": 0,
+    "fallback_pending": 0,
+    "fallback_resolved": 0,
+    "fallback_total": 0,
+    "outcomes_total": 25,
+    "pending": 17,
+    "resolved": 0
+  },
+  "expired": 8,
+  "expired_rate": 0.0231,
+  "fallback_expired": 0,
+  "fallback_expired_rate": 0.0,
+  "fallback_pending": 0,
+  "fallback_resolved": 0,
+  "fallback_total": 0,
+  "generated_at": "2026-04-08T16:25:02.182736+00:00",
+  "market": "KOSPI",
+  "outcomes_total": 346,
+  "pending": 87,
+  "resolved": 251,
+  "run_id": "RUN-8C7DDD08",
+  "runs_with_outcomes": 12,
+  "window_runs": 16
+}

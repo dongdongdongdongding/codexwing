@@ -1,0 +1,54 @@
+{
+  "applied_profile_defaults": {
+    "AG_US_HARD_AMEX_RS_MIN": "-5",
+    "AG_US_HARD_MIN_ALPHA": "40",
+    "AG_US_HARD_MIN_ALPHA_DOWN": "55",
+    "AG_US_SIGNAL_LOOKBACK": "10",
+    "AG_US_SIGNAL_MIN_HITS": "1"
+  },
+  "artifact_dir": "runtime_state/artifacts/RUN-8F26EE6B",
+  "error_count": 0,
+  "execution_profile": "prod",
+  "executor_exception_count": 0,
+  "filtered_count": 5,
+  "gate_config": {
+    "us_hard_filter": {
+      "amex_rs_min": -5.0,
+      "min_alpha": 40.0,
+      "min_alpha_down": 55.0
+    },
+    "us_signal_window": {
+      "lookback": 10,
+      "min_hits": 1
+    }
+  },
+  "manifest_paths": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-8F26EE6B/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-8F26EE6B/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-8F26EE6B/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-8F26EE6B/market_context_handoff.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-8F26EE6B/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-8F26EE6B/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-8F26EE6B/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-8F26EE6B/realized_outcomes.json",
+    "run_manifest": "runtime_state/shared_working/RUN-8F26EE6B/run_manifest.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-8F26EE6B/scanner_handoff.json"
+  },
+  "market": "NASDAQ",
+  "reject_reason_counts": {
+    "US_HARD_FILTER_TREND_ALPHA": 3,
+    "US_SIGNAL_WINDOW_FAIL": 2
+  },
+  "result_count": 0,
+  "run_id": "RUN-8F26EE6B",
+  "scanner_input_path": "runtime_state/local_short_term/scanner_agent/RUN-8F26EE6B/legacy_scan_results.json",
+  "total_scans": 5,
+  "warnings": [
+    {
+      "code": "ZERO_RESULT_ALL_FILTERED",
+      "message": "All scanned symbols were filtered out. Check thresholds, data quality, and market regime. Top reject reason: US_HARD_FILTER_TREND_ALPHA (3).",
+      "severity": "warning"
+    }
+  ],
+  "worker_error_count": 0
+}

@@ -1,0 +1,74 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 3,
+    "reason": "US_HARD_FILTER_TREND_ALPHA"
+  },
+  "current_total_scans": 5,
+  "fallback_watchlist": {
+    "applied": true,
+    "considered_dev_runs": 1,
+    "source_profile": "dev",
+    "source_run_id": "RUN-77C4D0D8",
+    "tickers": [
+      "AMZN",
+      "META",
+      "NVDA",
+      "AAPL",
+      "MSFT"
+    ]
+  },
+  "flags": {
+    "prod_dev_gap": true,
+    "prod_zero_streak": 4,
+    "prod_zero_streak_alert": true
+  },
+  "generated_at": "2026-03-30T16:02:07.513348+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 20,
+  "history_window_runs_seen": 20,
+  "market": "NASDAQ",
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 1,
+      "result_count": 9,
+      "runs": 2,
+      "top_reject_reason": {
+        "count": 1,
+        "reason": "US_HARD_FILTER_TREND_ALPHA"
+      },
+      "total_scans": 10,
+      "weighted_filtered_rate_pct": 10.0,
+      "weighted_pass_rate_pct": 90.0,
+      "zero_result_runs": 0
+    },
+    "prod": {
+      "filtered_count": 15,
+      "result_count": 0,
+      "runs": 3,
+      "top_reject_reason": {
+        "count": 8,
+        "reason": "US_HARD_FILTER_TREND_ALPHA"
+      },
+      "total_scans": 15,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 3
+    },
+    "unknown": {
+      "filtered_count": 41,
+      "result_count": 10,
+      "runs": 15,
+      "top_reject_reason": {
+        "count": 9,
+        "reason": "US_SIGNAL_WINDOW_FAIL"
+      },
+      "total_scans": 53,
+      "weighted_filtered_rate_pct": 77.36,
+      "weighted_pass_rate_pct": 18.87,
+      "zero_result_runs": 11
+    }
+  },
+  "run_id": "RUN-A805FF84"
+}

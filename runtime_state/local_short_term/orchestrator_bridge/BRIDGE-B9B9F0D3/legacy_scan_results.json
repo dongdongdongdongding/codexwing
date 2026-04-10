@@ -1,0 +1,11 @@
+{
+  "results": [],
+  "meta": {
+    "total_scans": 0,
+    "diagnostics": {
+      "reject_reason_counts": {
+        "TEST": 1
+      }
+    }
+  }
+}

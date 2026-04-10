@@ -1,0 +1,5746 @@
+{
+  "results": [
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "214370.KQ",
+      "종목명": "케어젠",
+      "Antigrav": 64,
+      "수급": "100점 장중",
+      "추세": "SIDE",
+      "전일비": "+7.25%",
+      "연속등락": "장중",
+      "매수가(-2%)": "103,500",
+      "목표가(+3.5%)": "110,462",
+      "손절가": "100,019 (-3.4%)",
+      "보유한도": "당일",
+      "거래량": "✅ x2.9",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "52.6%",
+      "정밀확률": "49.8%",
+      "확신도": 70.9,
+      "위치": "🟡 Reclaim",
+      "_prob_5": 52.6,
+      "_prob_clean": 49.8,
+      "Decision Score": 92.0
+    },
+    {
+      "Tier": "⚡T3",
+      "_tier_sort": 3,
+      "티커": "084370.KQ",
+      "종목명": "유진테크",
+      "Antigrav": 55,
+      "수급": "75점 장중",
+      "추세": "SIDE",
+      "전일비": "+0.57%",
+      "연속등락": "장중",
+      "매수가(-2%)": "123,200",
+      "목표가(+3.5%)": "129,860",
+      "손절가": "119,870 (-2.7%)",
+      "보유한도": "당일",
+      "거래량": "✅ x1.8",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "-",
+      "승률": "-",
+      "AI확률": "48.1%",
+      "정밀확률": "43.7%",
+      "확신도": 57.6,
+      "위치": "🟡 Reclaim",
+      "_prob_5": 48.1,
+      "_prob_clean": 43.7,
+      "Decision Score": 71.6
+    },
+    {
+      "Tier": "⚡T3",
+      "_tier_sort": 3,
+      "티커": "082920.KQ",
+      "종목명": "비츠로셀",
+      "Antigrav": 62,
+      "수급": "55점 장중",
+      "추세": "UP",
+      "전일비": "-0.39%",
+      "연속등락": "장중",
+      "매수가(-2%)": "38,450",
+      "목표가(+3.5%)": "40,642",
+      "손절가": "37,354 (-2.9%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x1.0",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "49.5%",
+      "정밀확률": "42.8%",
+      "확신도": 56.1,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 49.5,
+      "_prob_clean": 42.8,
+      "Decision Score": 69.4
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "023160.KQ",
+      "종목명": "태광",
+      "Antigrav": 70,
+      "수급": "79점 장중",
+      "추세": "UP",
+      "전일비": "+5.50%",
+      "연속등락": "장중",
+      "매수가(-2%)": "37,400",
+      "목표가(+3.5%)": "39,859",
+      "손절가": "36,171 (-3.3%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.6",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "47.0%",
+      "정밀확률": "39.4%",
+      "확신도": 58.2,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 47.0,
+      "_prob_clean": 39.4,
+      "Decision Score": 77.0
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "368770.KQ",
+      "종목명": "파이버프로",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+8.29%",
+      "연속등락": "장중",
+      "매수가(-2%)": "23,500",
+      "목표가(+3.5%)": "25,380",
+      "손절가": "22,678 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x1.1",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "49.9%",
+      "정밀확률": "43.2%",
+      "확신도": 64.0,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 49.9,
+      "_prob_clean": 43.2,
+      "Decision Score": 84.8
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "033790.KQ",
+      "종목명": "피노",
+      "Antigrav": 90,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+14.25%",
+      "연속등락": "장중",
+      "매수가(-2%)": "8,980",
+      "목표가(+3.5%)": "9,698",
+      "손절가": "8,666 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "✅ x3.3",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Breakout | 1H",
+      "급등예측": "⚡ High-Volume Breakout",
+      "승률": "-",
+      "AI확률": "71.6%",
+      "정밀확률": "55.4%",
+      "확신도": 77.7,
+      "위치": "🚀 Intraday Breakout",
+      "_prob_5": 71.6,
+      "_prob_clean": 55.4,
+      "Decision Score": 100.0
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "019210.KQ",
+      "종목명": "와이지-원",
+      "Antigrav": 71,
+      "수급": "85점 장중",
+      "추세": "UP",
+      "전일비": "+6.03%",
+      "연속등락": "장중",
+      "매수가(-2%)": "13,360",
+      "목표가(+3.5%)": "14,297",
+      "손절가": "12,892 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.7",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "47.7%",
+      "정밀확률": "40.4%",
+      "확신도": 59.8,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 47.7,
+      "_prob_clean": 40.4,
+      "Decision Score": 79.3
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "037460.KQ",
+      "종목명": "삼지전자",
+      "Antigrav": 67,
+      "수급": "76점 장중",
+      "추세": "UP",
+      "전일비": "+2.98%",
+      "연속등락": "장중",
+      "매수가(-2%)": "27,650",
+      "목표가(+3.5%)": "29,411",
+      "손절가": "26,769 (-3.2%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x1.2",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "50.4%",
+      "정밀확률": "43.9%",
+      "확신도": 60.8,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 50.4,
+      "_prob_clean": 43.9,
+      "Decision Score": 77.6
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "389260.KQ",
+      "종목명": "대명에너지",
+      "Antigrav": 90,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+9.98%",
+      "연속등락": "장중",
+      "매수가(-2%)": "23,700",
+      "목표가(+3.5%)": "25,269",
+      "손절가": "22,916 (-3.3%)",
+      "보유한도": "당일",
+      "거래량": "✅ x1.8",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Breakout | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "66.7%",
+      "정밀확률": "48.9%",
+      "확신도": 74.5,
+      "위치": "🚀 Intraday Breakout",
+      "_prob_5": 66.7,
+      "_prob_clean": 48.9,
+      "Decision Score": 100.0
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "024060.KQ",
+      "종목명": "흥구석유",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+20.41%",
+      "연속등락": "장중",
+      "매수가(-2%)": "22,275",
+      "목표가(+3.5%)": "24,057",
+      "손절가": "21,495 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x1.2",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "50.4%",
+      "정밀확률": "44.0%",
+      "확신도": 64.8,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 50.4,
+      "_prob_clean": 44.0,
+      "Decision Score": 85.7
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "064290.KQ",
+      "종목명": "인텍플러스",
+      "Antigrav": 66,
+      "수급": "65점 장중",
+      "추세": "UP",
+      "전일비": "+2.63%",
+      "연속등락": "장중",
+      "매수가(-2%)": "21,450",
+      "목표가(+3.5%)": "23,166",
+      "손절가": "20,699 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.7",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "47.8%",
+      "정밀확률": "40.5%",
+      "확신도": 56.6,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 47.8,
+      "_prob_clean": 40.5,
+      "Decision Score": 72.7
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "091580.KQ",
+      "종목명": "상신이디피",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+6.88%",
+      "연속등락": "장중",
+      "매수가(-2%)": "20,500",
+      "목표가(+3.5%)": "21,700",
+      "손절가": "19,900 (-2.9%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x1.5",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "52.1%",
+      "정밀확률": "46.3%",
+      "확신도": 67.3,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 52.1,
+      "_prob_clean": 46.3,
+      "Decision Score": 88.3
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "042600.KQ",
+      "종목명": "새로닉스",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+7.86%",
+      "연속등락": "장중",
+      "매수가(-2%)": "17,420",
+      "목표가(+3.5%)": "18,695",
+      "손절가": "16,810 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "✅ x2.5",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "58.5%",
+      "정밀확률": "54.7%",
+      "확신도": 76.9,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 58.5,
+      "_prob_clean": 54.7,
+      "Decision Score": 99.1
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "065450.KQ",
+      "종목명": "빅텍",
+      "Antigrav": 90,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+30.01%",
+      "연속등락": "장중",
+      "매수가(-2%)": "6,260",
+      "목표가(+3.5%)": "6,706",
+      "손절가": "6,041 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "✅ x2.0",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Breakout | 1H",
+      "급등예측": "⚡ High-Volume Breakout",
+      "승률": "-",
+      "AI확률": "67.7%",
+      "정밀확률": "50.2%",
+      "확신도": 75.1,
+      "위치": "🚀 Intraday Breakout",
+      "_prob_5": 67.7,
+      "_prob_clean": 50.2,
+      "Decision Score": 100.0
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "049080.KQ",
+      "종목명": "기가레인",
+      "Antigrav": 90,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+29.92%",
+      "연속등락": "장중",
+      "매수가(-2%)": "2,045",
+      "목표가(+3.5%)": "2,209",
+      "손절가": "1,973 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "✅ x1.5",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Breakout | 1H",
+      "급등예측": "-",
+      "승률": "-",
+      "AI확률": "65.2%",
+      "정밀확률": "46.9%",
+      "확신도": 73.5,
+      "위치": "🚀 Intraday Breakout",
+      "_prob_5": 65.2,
+      "_prob_clean": 46.9,
+      "Decision Score": 100.0
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "038110.KQ",
+      "종목명": "에코플라스틱",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+10.61%",
+      "연속등락": "장중",
+      "매수가(-2%)": "4,065",
+      "목표가(+3.5%)": "4,390",
+      "손절가": "3,923 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.8",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "48.1%",
+      "정밀확률": "40.9%",
+      "확신도": 61.4,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 48.1,
+      "_prob_clean": 40.9,
+      "Decision Score": 81.9
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "138360.KQ",
+      "종목명": "앤로보틱스",
+      "Antigrav": 64,
+      "수급": "100점 장중",
+      "추세": "SIDE",
+      "전일비": "+11.11%",
+      "연속등락": "장중",
+      "매수가(-2%)": "2,030",
+      "목표가(+3.5%)": "2,192",
+      "손절가": "1,959 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.9",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "42.3%",
+      "정밀확률": "36.1%",
+      "확신도": 55.5,
+      "위치": "🟡 Reclaim",
+      "_prob_5": 42.3,
+      "_prob_clean": 36.1,
+      "Decision Score": 74.9
+    },
+    {
+      "Tier": "⚡T3",
+      "_tier_sort": 3,
+      "티커": "005860.KQ",
+      "종목명": "한일사료",
+      "Antigrav": 66,
+      "수급": "61점 장중",
+      "추세": "UP",
+      "전일비": "+2.46%",
+      "연속등락": "장중",
+      "매수가(-2%)": "3,960",
+      "목표가(+3.5%)": "4,156",
+      "손절가": "3,862 (-2.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.6",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "47.0%",
+      "정밀확률": "39.4%",
+      "확신도": 55.2,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 47.0,
+      "_prob_clean": 39.4,
+      "Decision Score": 70.9
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "000440.KQ",
+      "종목명": "중앙에너비스",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+9.64%",
+      "연속등락": "장중",
+      "매수가(-2%)": "24,450",
+      "목표가(+3.5%)": "26,327",
+      "손절가": "23,594 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.8",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "47.9%",
+      "정밀확률": "40.7%",
+      "확신도": 61.1,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 47.9,
+      "_prob_clean": 40.7,
+      "Decision Score": 81.6
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "137950.KQ",
+      "종목명": "제이씨케미칼",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+16.19%",
+      "연속등락": "장중",
+      "매수가(-2%)": "5,490",
+      "목표가(+3.5%)": "5,929",
+      "손절가": "5,298 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.9",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "48.9%",
+      "정밀확률": "41.9%",
+      "확신도": 62.5,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 48.9,
+      "_prob_clean": 41.9,
+      "Decision Score": 83.1
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "036630.KQ",
+      "종목명": "세종텔레콤",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+13.66%",
+      "연속등락": "장중",
+      "매수가(-2%)": "10,400",
+      "목표가(+3.5%)": "11,232",
+      "손절가": "10,036 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "✅ x6.1",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "59.0%",
+      "정밀확률": "55.4%",
+      "확신도": 77.7,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 59.0,
+      "_prob_clean": 55.4,
+      "Decision Score": 100.0
+    },
+    {
+      "Tier": "⚡T3",
+      "_tier_sort": 3,
+      "티커": "024740.KQ",
+      "종목명": "한일단조",
+      "Antigrav": 61,
+      "수급": "72점 장중",
+      "추세": "SIDE",
+      "전일비": "+4.26%",
+      "연속등락": "장중",
+      "매수가(-2%)": "2,940",
+      "목표가(+3.5%)": "3,175",
+      "손절가": "2,837 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.6",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "40.6%",
+      "정밀확률": "33.8%",
+      "확신도": 50.1,
+      "위치": "🟡 Reclaim",
+      "_prob_5": 40.6,
+      "_prob_clean": 33.8,
+      "Decision Score": 66.5
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "053050.KQ",
+      "종목명": "지에스이",
+      "Antigrav": 67,
+      "수급": "67점 장중",
+      "추세": "UP",
+      "전일비": "+3.30%",
+      "연속등락": "장중",
+      "매수가(-2%)": "2,815",
+      "목표가(+3.5%)": "2,944",
+      "손절가": "2,751 (-2.3%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.6",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "47.1%",
+      "정밀확률": "39.6%",
+      "확신도": 56.2,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 47.1,
+      "_prob_clean": 39.6,
+      "Decision Score": 72.8
+    },
+    {
+      "Tier": "⚡T3",
+      "_tier_sort": 3,
+      "티커": "037230.KQ",
+      "종목명": "한국팩키지",
+      "Antigrav": 64,
+      "수급": "85점 장중",
+      "추세": "SIDE",
+      "전일비": "+6.86%",
+      "연속등락": "장중",
+      "매수가(-2%)": "2,805",
+      "목표가(+3.5%)": "3,029",
+      "손절가": "2,707 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.5",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "40.6%",
+      "정밀확률": "33.8%",
+      "확신도": 52.8,
+      "위치": "🟡 Reclaim",
+      "_prob_5": 40.6,
+      "_prob_clean": 33.8,
+      "Decision Score": 71.7
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "215790.KQ",
+      "종목명": "이노인스트루먼트",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+18.24%",
+      "연속등락": "장중",
+      "매수가(-2%)": "1,102",
+      "목표가(+3.5%)": "1,190",
+      "손절가": "1,063 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "✅ x3.5",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "59.0%",
+      "정밀확률": "55.4%",
+      "확신도": 77.7,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 59.0,
+      "_prob_clean": 55.4,
+      "Decision Score": 100.0
+    },
+    {
+      "Tier": "⭐T2",
+      "_tier_sort": 2,
+      "티커": "013810.KQ",
+      "종목명": "스페코",
+      "Antigrav": 67,
+      "수급": "72점 장중",
+      "추세": "UP",
+      "전일비": "+3.27%",
+      "연속등락": "장중",
+      "매수가(-2%)": "2,845",
+      "목표가(+3.5%)": "3,019",
+      "손절가": "2,758 (-3.1%)",
+      "보유한도": "당일",
+      "거래량": "⚠️ x0.9",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "48.9%",
+      "정밀확률": "41.9%",
+      "확신도": 58.8,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 48.9,
+      "_prob_clean": 41.9,
+      "Decision Score": 75.7
+    },
+    {
+      "Tier": "🏆T1",
+      "_tier_sort": 1,
+      "티커": "123750.KQ",
+      "종목명": "알톤",
+      "Antigrav": 72,
+      "수급": "100점 장중",
+      "추세": "UP",
+      "전일비": "+11.55%",
+      "연속등락": "장중",
+      "매수가(-2%)": "2,705",
+      "목표가(+3.5%)": "2,921",
+      "손절가": "2,610 (-3.5%)",
+      "보유한도": "당일",
+      "거래량": "✅ x2.4",
+      "시장맥락": "-",
+      "전략": "⏱️ Intraday Trend | 1H",
+      "급등예측": "📈 Trend Continuation",
+      "승률": "-",
+      "AI확률": "57.6%",
+      "정밀확률": "53.5%",
+      "확신도": 75.6,
+      "위치": "📈 Intraday Trend",
+      "_prob_5": 57.6,
+      "_prob_clean": 53.5,
+      "Decision Score": 97.7
+    }
+  ],
+  "meta": {
+    "total_scans": 316,
+    "diagnostics": {
+      "filtered_count": 289,
+      "worker_error_count": 0,
+      "executor_exception_count": 0,
+      "filtered_symbols": [
+        "086520.KQ",
+        "247540.KQ",
+        "000250.KQ",
+        "196170.KQ",
+        "277810.KQ",
+        "298380.KQ",
+        "950160.KQ",
+        "058470.KQ",
+        "028300.KQ",
+        "141080.KQ",
+        "087010.KQ",
+        "240810.KQ",
+        "310210.KQ",
+        "095340.KQ",
+        "039030.KQ",
+        "108490.KQ",
+        "263750.KQ",
+        "226950.KQ",
+        "032820.KQ",
+        "214150.KQ",
+        "403870.KQ",
+        "043260.KQ",
+        "347850.KQ",
+        "214450.KQ",
+        "145020.KQ",
+        "237690.KQ",
+        "319400.KQ",
+        "357780.KQ",
+        "036930.KQ",
+        "083650.KQ",
+        "178320.KQ",
+        "140410.KQ",
+        "440110.KQ",
+        "068760.KQ",
+        "064760.KQ",
+        "257720.KQ",
+        "058610.KQ",
+        "005290.KQ",
+        "319660.KQ",
+        "218410.KQ",
+        "347700.KQ",
+        "035900.KQ",
+        "031980.KQ",
+        "030530.KQ",
+        "041510.KQ",
+        "099320.KQ",
+        "067310.KQ",
+        "131970.KQ",
+        "039200.KQ",
+        "222800.KQ",
+        "078600.KQ",
+        "098460.KQ",
+        "140860.KQ",
+        "089030.KQ",
+        "290650.KQ",
+        "475830.KQ",
+        "101490.KQ",
+        "085660.KQ",
+        "437730.KQ",
+        "323280.KQ",
+        "038500.KQ",
+        "010170.KQ",
+        "003380.KQ",
+        "060370.KQ",
+        "065350.KQ",
+        "232140.KQ",
+        "195940.KQ",
+        "100790.KQ",
+        "115180.KQ",
+        "417200.KQ",
+        "080220.KQ",
+        "445680.KQ",
+        "127120.KQ",
+        "082270.KQ",
+        "090710.KQ",
+        "466100.KQ",
+        "048410.KQ",
+        "086450.KQ",
+        "281740.KQ",
+        "131290.KQ",
+        "183300.KQ",
+        "189300.KQ",
+        "397030.KQ",
+        "166090.KQ",
+        "035760.KQ",
+        "096530.KQ",
+        "032500.KQ",
+        "174900.KQ",
+        "095610.KQ",
+        "137400.KQ",
+        "007390.KQ",
+        "124500.KQ",
+        "213420.KQ",
+        "052020.KQ",
+        "420770.KQ",
+        "293490.KQ",
+        "027360.KQ",
+        "295310.KQ",
+        "160190.KQ",
+        "036540.KQ",
+        "388720.KQ",
+        "089970.KQ",
+        "328130.KQ",
+        "014620.KQ",
+        "122870.KQ",
+        "476060.KQ",
+        "050890.KQ",
+        "056080.KQ",
+        "044490.KQ",
+        "222080.KQ",
+        "389470.KQ",
+        "161580.KQ",
+        "006730.KQ",
+        "241710.KQ",
+        "171090.KQ",
+        "126340.KQ",
+        "052400.KQ",
+        "074600.KQ",
+        "372320.KQ",
+        "348370.KQ",
+        "121600.KQ",
+        "036810.KQ",
+        "078160.KQ",
+        "348340.KQ",
+        "358570.KQ",
+        "365340.KQ",
+        "086900.KQ",
+        "009520.KQ",
+        "475960.KQ",
+        "033500.KQ",
+        "084110.KQ",
+        "425420.KQ",
+        "033100.KQ",
+        "399720.KQ",
+        "024850.KQ",
+        "348210.KQ",
+        "214430.KQ",
+        "015750.KQ",
+        "102710.KQ",
+        "448900.KQ",
+        "356860.KQ",
+        "200710.KQ",
+        "253590.KQ",
+        "025980.KQ",
+        "460930.KQ",
+        "060280.KQ",
+        "458870.KQ",
+        "336570.KQ",
+        "060250.KQ",
+        "383310.KQ",
+        "094170.KQ",
+        "327260.KQ",
+        "187660.KQ",
+        "272290.KQ",
+        "389650.KQ",
+        "252990.KQ",
+        "098070.KQ",
+        "045100.KQ",
+        "138080.KQ",
+        "042520.KQ",
+        "041190.KQ",
+        "215600.KQ",
+        "393890.KQ",
+        "077360.KQ",
+        "083450.KQ",
+        "079370.KQ",
+        "230240.KQ",
+        "006910.KQ",
+        "064260.KQ",
+        "338840.KQ",
+        "340570.KQ",
+        "078350.KQ",
+        "033640.KQ",
+        "107640.KQ",
+        "033160.KQ",
+        "117730.KQ",
+        "080580.KQ",
+        "084990.KQ",
+        "046120.KQ",
+        "041920.KQ",
+        "317330.KQ",
+        "018000.KQ",
+        "089890.KQ",
+        "290550.KQ",
+        "221800.KQ",
+        "114190.KQ",
+        "241520.KQ",
+        "354320.KQ",
+        "108860.KQ",
+        "092870.KQ",
+        "204620.KQ",
+        "217730.KQ",
+        "046970.KQ",
+        "234340.KQ",
+        "321550.KQ",
+        "049630.KQ",
+        "170920.KQ",
+        "073490.KQ",
+        "389500.KQ",
+        "069540.KQ",
+        "389020.KQ",
+        "304360.KQ",
+        "085910.KQ",
+        "365270.KQ",
+        "330860.KQ",
+        "462350.KQ",
+        "042370.KQ",
+        "088800.KQ",
+        "459510.KQ",
+        "243840.KQ",
+        "255220.KQ",
+        "160980.KQ",
+        "194480.KQ",
+        "200470.KQ",
+        "126600.KQ",
+        "078070.KQ",
+        "451760.KQ",
+        "322310.KQ",
+        "452280.KQ",
+        "012860.KQ",
+        "425040.KQ",
+        "361390.KQ",
+        "272110.KQ",
+        "123330.KQ",
+        "274090.KQ",
+        "289930.KQ",
+        "418550.KQ",
+        "036170.KQ",
+        "234690.KQ",
+        "226590.KQ",
+        "094820.KQ",
+        "211270.KQ",
+        "332570.KQ",
+        "474170.KQ",
+        "402490.KQ",
+        "264450.KQ",
+        "052710.KQ",
+        "388050.KQ",
+        "289080.KQ",
+        "242040.KQ",
+        "140670.KQ",
+        "432720.KQ",
+        "282720.KQ",
+        "039560.KQ",
+        "382800.KQ",
+        "456010.KQ",
+        "131030.KQ",
+        "232680.KQ",
+        "355150.KQ",
+        "008830.KQ",
+        "307180.KQ",
+        "475580.KQ",
+        "453450.KQ",
+        "321370.KQ",
+        "051980.KQ",
+        "388790.KQ",
+        "357880.KQ",
+        "192410.KQ",
+        "474610.KQ",
+        "131370.KQ",
+        "054920.KQ",
+        "037030.KQ",
+        "014970.KQ",
+        "100700.KQ",
+        "209640.KQ",
+        "101670.KQ",
+        "307930.KQ",
+        "115440.KQ",
+        "096350.KQ",
+        "331920.KQ",
+        "261780.KQ",
+        "412350.KQ",
+        "100590.KQ",
+        "128660.KQ",
+        "089230.KQ",
+        "065440.KQ",
+        "076610.KQ",
+        "078590.KQ",
+        "056360.KQ",
+        "062970.KQ",
+        "321260.KQ",
+        "452300.KQ",
+        "058110.KQ",
+        "148250.KQ",
+        "285800.KQ",
+        "023790.KQ",
+        "225430.KQ",
+        "322780.KQ",
+        "065420.KQ"
+      ],
+      "error_symbols": [],
+      "exception_symbols": [],
+      "reject_reason_counts": {
+        "INTRADAY_SETUP_WEAK": 262,
+        "INTRADAY_MIN_PRICE_VOLUME_FAIL": 27
+      },
+      "reject_reasons_by_symbol": {
+        "086520.KQ": "INTRADAY_SETUP_WEAK",
+        "247540.KQ": "INTRADAY_SETUP_WEAK",
+        "000250.KQ": "INTRADAY_SETUP_WEAK",
+        "196170.KQ": "INTRADAY_SETUP_WEAK",
+        "277810.KQ": "INTRADAY_SETUP_WEAK",
+        "298380.KQ": "INTRADAY_SETUP_WEAK",
+        "950160.KQ": "INTRADAY_SETUP_WEAK",
+        "058470.KQ": "INTRADAY_SETUP_WEAK",
+        "028300.KQ": "INTRADAY_SETUP_WEAK",
+        "141080.KQ": "INTRADAY_SETUP_WEAK",
+        "087010.KQ": "INTRADAY_SETUP_WEAK",
+        "240810.KQ": "INTRADAY_SETUP_WEAK",
+        "310210.KQ": "INTRADAY_SETUP_WEAK",
+        "095340.KQ": "INTRADAY_SETUP_WEAK",
+        "039030.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "108490.KQ": "INTRADAY_SETUP_WEAK",
+        "263750.KQ": "INTRADAY_SETUP_WEAK",
+        "226950.KQ": "INTRADAY_SETUP_WEAK",
+        "032820.KQ": "INTRADAY_SETUP_WEAK",
+        "214150.KQ": "INTRADAY_SETUP_WEAK",
+        "403870.KQ": "INTRADAY_SETUP_WEAK",
+        "043260.KQ": "INTRADAY_SETUP_WEAK",
+        "347850.KQ": "INTRADAY_SETUP_WEAK",
+        "214450.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "145020.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "237690.KQ": "INTRADAY_SETUP_WEAK",
+        "319400.KQ": "INTRADAY_SETUP_WEAK",
+        "357780.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "036930.KQ": "INTRADAY_SETUP_WEAK",
+        "083650.KQ": "INTRADAY_SETUP_WEAK",
+        "178320.KQ": "INTRADAY_SETUP_WEAK",
+        "140410.KQ": "INTRADAY_SETUP_WEAK",
+        "440110.KQ": "INTRADAY_SETUP_WEAK",
+        "068760.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "064760.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "257720.KQ": "INTRADAY_SETUP_WEAK",
+        "058610.KQ": "INTRADAY_SETUP_WEAK",
+        "005290.KQ": "INTRADAY_SETUP_WEAK",
+        "319660.KQ": "INTRADAY_SETUP_WEAK",
+        "218410.KQ": "INTRADAY_SETUP_WEAK",
+        "347700.KQ": "INTRADAY_SETUP_WEAK",
+        "035900.KQ": "INTRADAY_SETUP_WEAK",
+        "031980.KQ": "INTRADAY_SETUP_WEAK",
+        "030530.KQ": "INTRADAY_SETUP_WEAK",
+        "041510.KQ": "INTRADAY_SETUP_WEAK",
+        "099320.KQ": "INTRADAY_SETUP_WEAK",
+        "067310.KQ": "INTRADAY_SETUP_WEAK",
+        "131970.KQ": "INTRADAY_SETUP_WEAK",
+        "039200.KQ": "INTRADAY_SETUP_WEAK",
+        "222800.KQ": "INTRADAY_SETUP_WEAK",
+        "078600.KQ": "INTRADAY_SETUP_WEAK",
+        "098460.KQ": "INTRADAY_SETUP_WEAK",
+        "140860.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "089030.KQ": "INTRADAY_SETUP_WEAK",
+        "290650.KQ": "INTRADAY_SETUP_WEAK",
+        "475830.KQ": "INTRADAY_SETUP_WEAK",
+        "101490.KQ": "INTRADAY_SETUP_WEAK",
+        "085660.KQ": "INTRADAY_SETUP_WEAK",
+        "437730.KQ": "INTRADAY_SETUP_WEAK",
+        "323280.KQ": "INTRADAY_SETUP_WEAK",
+        "038500.KQ": "INTRADAY_SETUP_WEAK",
+        "010170.KQ": "INTRADAY_SETUP_WEAK",
+        "003380.KQ": "INTRADAY_SETUP_WEAK",
+        "060370.KQ": "INTRADAY_SETUP_WEAK",
+        "065350.KQ": "INTRADAY_SETUP_WEAK",
+        "232140.KQ": "INTRADAY_SETUP_WEAK",
+        "195940.KQ": "INTRADAY_SETUP_WEAK",
+        "100790.KQ": "INTRADAY_SETUP_WEAK",
+        "115180.KQ": "INTRADAY_SETUP_WEAK",
+        "417200.KQ": "INTRADAY_SETUP_WEAK",
+        "080220.KQ": "INTRADAY_SETUP_WEAK",
+        "445680.KQ": "INTRADAY_SETUP_WEAK",
+        "127120.KQ": "INTRADAY_SETUP_WEAK",
+        "082270.KQ": "INTRADAY_SETUP_WEAK",
+        "090710.KQ": "INTRADAY_SETUP_WEAK",
+        "466100.KQ": "INTRADAY_SETUP_WEAK",
+        "048410.KQ": "INTRADAY_SETUP_WEAK",
+        "086450.KQ": "INTRADAY_SETUP_WEAK",
+        "281740.KQ": "INTRADAY_SETUP_WEAK",
+        "131290.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "183300.KQ": "INTRADAY_SETUP_WEAK",
+        "189300.KQ": "INTRADAY_SETUP_WEAK",
+        "397030.KQ": "INTRADAY_SETUP_WEAK",
+        "166090.KQ": "INTRADAY_SETUP_WEAK",
+        "035760.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "096530.KQ": "INTRADAY_SETUP_WEAK",
+        "032500.KQ": "INTRADAY_SETUP_WEAK",
+        "174900.KQ": "INTRADAY_SETUP_WEAK",
+        "095610.KQ": "INTRADAY_SETUP_WEAK",
+        "137400.KQ": "INTRADAY_SETUP_WEAK",
+        "007390.KQ": "INTRADAY_SETUP_WEAK",
+        "124500.KQ": "INTRADAY_SETUP_WEAK",
+        "213420.KQ": "INTRADAY_SETUP_WEAK",
+        "052020.KQ": "INTRADAY_SETUP_WEAK",
+        "420770.KQ": "INTRADAY_SETUP_WEAK",
+        "293490.KQ": "INTRADAY_SETUP_WEAK",
+        "027360.KQ": "INTRADAY_SETUP_WEAK",
+        "295310.KQ": "INTRADAY_SETUP_WEAK",
+        "160190.KQ": "INTRADAY_SETUP_WEAK",
+        "036540.KQ": "INTRADAY_SETUP_WEAK",
+        "388720.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "089970.KQ": "INTRADAY_SETUP_WEAK",
+        "328130.KQ": "INTRADAY_SETUP_WEAK",
+        "014620.KQ": "INTRADAY_SETUP_WEAK",
+        "122870.KQ": "INTRADAY_SETUP_WEAK",
+        "476060.KQ": "INTRADAY_SETUP_WEAK",
+        "050890.KQ": "INTRADAY_SETUP_WEAK",
+        "056080.KQ": "INTRADAY_SETUP_WEAK",
+        "044490.KQ": "INTRADAY_SETUP_WEAK",
+        "222080.KQ": "INTRADAY_SETUP_WEAK",
+        "389470.KQ": "INTRADAY_SETUP_WEAK",
+        "161580.KQ": "INTRADAY_SETUP_WEAK",
+        "006730.KQ": "INTRADAY_SETUP_WEAK",
+        "241710.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "171090.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "126340.KQ": "INTRADAY_SETUP_WEAK",
+        "052400.KQ": "INTRADAY_SETUP_WEAK",
+        "074600.KQ": "INTRADAY_SETUP_WEAK",
+        "372320.KQ": "INTRADAY_SETUP_WEAK",
+        "348370.KQ": "INTRADAY_SETUP_WEAK",
+        "121600.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "036810.KQ": "INTRADAY_SETUP_WEAK",
+        "078160.KQ": "INTRADAY_SETUP_WEAK",
+        "348340.KQ": "INTRADAY_SETUP_WEAK",
+        "358570.KQ": "INTRADAY_SETUP_WEAK",
+        "365340.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "086900.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "009520.KQ": "INTRADAY_SETUP_WEAK",
+        "475960.KQ": "INTRADAY_SETUP_WEAK",
+        "033500.KQ": "INTRADAY_SETUP_WEAK",
+        "084110.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "425420.KQ": "INTRADAY_SETUP_WEAK",
+        "033100.KQ": "INTRADAY_SETUP_WEAK",
+        "399720.KQ": "INTRADAY_SETUP_WEAK",
+        "024850.KQ": "INTRADAY_SETUP_WEAK",
+        "348210.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "214430.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "015750.KQ": "INTRADAY_SETUP_WEAK",
+        "102710.KQ": "INTRADAY_SETUP_WEAK",
+        "448900.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "356860.KQ": "INTRADAY_SETUP_WEAK",
+        "200710.KQ": "INTRADAY_SETUP_WEAK",
+        "253590.KQ": "INTRADAY_SETUP_WEAK",
+        "025980.KQ": "INTRADAY_SETUP_WEAK",
+        "460930.KQ": "INTRADAY_SETUP_WEAK",
+        "060280.KQ": "INTRADAY_SETUP_WEAK",
+        "458870.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "336570.KQ": "INTRADAY_SETUP_WEAK",
+        "060250.KQ": "INTRADAY_SETUP_WEAK",
+        "383310.KQ": "INTRADAY_SETUP_WEAK",
+        "094170.KQ": "INTRADAY_SETUP_WEAK",
+        "327260.KQ": "INTRADAY_SETUP_WEAK",
+        "187660.KQ": "INTRADAY_SETUP_WEAK",
+        "272290.KQ": "INTRADAY_SETUP_WEAK",
+        "389650.KQ": "INTRADAY_SETUP_WEAK",
+        "252990.KQ": "INTRADAY_SETUP_WEAK",
+        "098070.KQ": "INTRADAY_SETUP_WEAK",
+        "045100.KQ": "INTRADAY_SETUP_WEAK",
+        "138080.KQ": "INTRADAY_SETUP_WEAK",
+        "042520.KQ": "INTRADAY_SETUP_WEAK",
+        "041190.KQ": "INTRADAY_SETUP_WEAK",
+        "215600.KQ": "INTRADAY_SETUP_WEAK",
+        "393890.KQ": "INTRADAY_SETUP_WEAK",
+        "077360.KQ": "INTRADAY_SETUP_WEAK",
+        "083450.KQ": "INTRADAY_SETUP_WEAK",
+        "079370.KQ": "INTRADAY_SETUP_WEAK",
+        "230240.KQ": "INTRADAY_SETUP_WEAK",
+        "006910.KQ": "INTRADAY_SETUP_WEAK",
+        "064260.KQ": "INTRADAY_SETUP_WEAK",
+        "338840.KQ": "INTRADAY_SETUP_WEAK",
+        "340570.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "078350.KQ": "INTRADAY_SETUP_WEAK",
+        "033640.KQ": "INTRADAY_SETUP_WEAK",
+        "107640.KQ": "INTRADAY_SETUP_WEAK",
+        "033160.KQ": "INTRADAY_SETUP_WEAK",
+        "117730.KQ": "INTRADAY_SETUP_WEAK",
+        "080580.KQ": "INTRADAY_SETUP_WEAK",
+        "084990.KQ": "INTRADAY_SETUP_WEAK",
+        "046120.KQ": "INTRADAY_SETUP_WEAK",
+        "041920.KQ": "INTRADAY_SETUP_WEAK",
+        "317330.KQ": "INTRADAY_SETUP_WEAK",
+        "018000.KQ": "INTRADAY_SETUP_WEAK",
+        "089890.KQ": "INTRADAY_SETUP_WEAK",
+        "290550.KQ": "INTRADAY_SETUP_WEAK",
+        "221800.KQ": "INTRADAY_SETUP_WEAK",
+        "114190.KQ": "INTRADAY_SETUP_WEAK",
+        "241520.KQ": "INTRADAY_SETUP_WEAK",
+        "354320.KQ": "INTRADAY_SETUP_WEAK",
+        "108860.KQ": "INTRADAY_SETUP_WEAK",
+        "092870.KQ": "INTRADAY_SETUP_WEAK",
+        "204620.KQ": "INTRADAY_SETUP_WEAK",
+        "217730.KQ": "INTRADAY_SETUP_WEAK",
+        "046970.KQ": "INTRADAY_SETUP_WEAK",
+        "234340.KQ": "INTRADAY_SETUP_WEAK",
+        "321550.KQ": "INTRADAY_SETUP_WEAK",
+        "049630.KQ": "INTRADAY_SETUP_WEAK",
+        "170920.KQ": "INTRADAY_SETUP_WEAK",
+        "073490.KQ": "INTRADAY_SETUP_WEAK",
+        "389500.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "069540.KQ": "INTRADAY_SETUP_WEAK",
+        "389020.KQ": "INTRADAY_SETUP_WEAK",
+        "304360.KQ": "INTRADAY_SETUP_WEAK",
+        "085910.KQ": "INTRADAY_SETUP_WEAK",
+        "365270.KQ": "INTRADAY_SETUP_WEAK",
+        "330860.KQ": "INTRADAY_SETUP_WEAK",
+        "462350.KQ": "INTRADAY_SETUP_WEAK",
+        "042370.KQ": "INTRADAY_SETUP_WEAK",
+        "088800.KQ": "INTRADAY_SETUP_WEAK",
+        "459510.KQ": "INTRADAY_SETUP_WEAK",
+        "243840.KQ": "INTRADAY_SETUP_WEAK",
+        "255220.KQ": "INTRADAY_SETUP_WEAK",
+        "160980.KQ": "INTRADAY_SETUP_WEAK",
+        "194480.KQ": "INTRADAY_SETUP_WEAK",
+        "200470.KQ": "INTRADAY_SETUP_WEAK",
+        "126600.KQ": "INTRADAY_SETUP_WEAK",
+        "078070.KQ": "INTRADAY_SETUP_WEAK",
+        "451760.KQ": "INTRADAY_SETUP_WEAK",
+        "322310.KQ": "INTRADAY_SETUP_WEAK",
+        "452280.KQ": "INTRADAY_SETUP_WEAK",
+        "012860.KQ": "INTRADAY_SETUP_WEAK",
+        "425040.KQ": "INTRADAY_SETUP_WEAK",
+        "361390.KQ": "INTRADAY_SETUP_WEAK",
+        "272110.KQ": "INTRADAY_SETUP_WEAK",
+        "123330.KQ": "INTRADAY_SETUP_WEAK",
+        "274090.KQ": "INTRADAY_SETUP_WEAK",
+        "289930.KQ": "INTRADAY_SETUP_WEAK",
+        "418550.KQ": "INTRADAY_SETUP_WEAK",
+        "036170.KQ": "INTRADAY_SETUP_WEAK",
+        "234690.KQ": "INTRADAY_SETUP_WEAK",
+        "226590.KQ": "INTRADAY_SETUP_WEAK",
+        "094820.KQ": "INTRADAY_SETUP_WEAK",
+        "211270.KQ": "INTRADAY_SETUP_WEAK",
+        "332570.KQ": "INTRADAY_SETUP_WEAK",
+        "474170.KQ": "INTRADAY_SETUP_WEAK",
+        "402490.KQ": "INTRADAY_SETUP_WEAK",
+        "264450.KQ": "INTRADAY_SETUP_WEAK",
+        "052710.KQ": "INTRADAY_SETUP_WEAK",
+        "388050.KQ": "INTRADAY_SETUP_WEAK",
+        "289080.KQ": "INTRADAY_SETUP_WEAK",
+        "242040.KQ": "INTRADAY_SETUP_WEAK",
+        "140670.KQ": "INTRADAY_SETUP_WEAK",
+        "432720.KQ": "INTRADAY_SETUP_WEAK",
+        "282720.KQ": "INTRADAY_SETUP_WEAK",
+        "039560.KQ": "INTRADAY_SETUP_WEAK",
+        "382800.KQ": "INTRADAY_SETUP_WEAK",
+        "456010.KQ": "INTRADAY_SETUP_WEAK",
+        "131030.KQ": "INTRADAY_SETUP_WEAK",
+        "232680.KQ": "INTRADAY_SETUP_WEAK",
+        "355150.KQ": "INTRADAY_SETUP_WEAK",
+        "008830.KQ": "INTRADAY_SETUP_WEAK",
+        "307180.KQ": "INTRADAY_SETUP_WEAK",
+        "475580.KQ": "INTRADAY_SETUP_WEAK",
+        "453450.KQ": "INTRADAY_SETUP_WEAK",
+        "321370.KQ": "INTRADAY_SETUP_WEAK",
+        "051980.KQ": "INTRADAY_SETUP_WEAK",
+        "388790.KQ": "INTRADAY_SETUP_WEAK",
+        "357880.KQ": "INTRADAY_SETUP_WEAK",
+        "192410.KQ": "INTRADAY_SETUP_WEAK",
+        "474610.KQ": "INTRADAY_SETUP_WEAK",
+        "131370.KQ": "INTRADAY_SETUP_WEAK",
+        "054920.KQ": "INTRADAY_SETUP_WEAK",
+        "037030.KQ": "INTRADAY_SETUP_WEAK",
+        "014970.KQ": "INTRADAY_SETUP_WEAK",
+        "100700.KQ": "INTRADAY_SETUP_WEAK",
+        "209640.KQ": "INTRADAY_SETUP_WEAK",
+        "101670.KQ": "INTRADAY_SETUP_WEAK",
+        "307930.KQ": "INTRADAY_SETUP_WEAK",
+        "115440.KQ": "INTRADAY_SETUP_WEAK",
+        "096350.KQ": "INTRADAY_SETUP_WEAK",
+        "331920.KQ": "INTRADAY_SETUP_WEAK",
+        "261780.KQ": "INTRADAY_SETUP_WEAK",
+        "412350.KQ": "INTRADAY_SETUP_WEAK",
+        "100590.KQ": "INTRADAY_SETUP_WEAK",
+        "128660.KQ": "INTRADAY_SETUP_WEAK",
+        "089230.KQ": "INTRADAY_SETUP_WEAK",
+        "065440.KQ": "INTRADAY_SETUP_WEAK",
+        "076610.KQ": "INTRADAY_SETUP_WEAK",
+        "078590.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "056360.KQ": "INTRADAY_SETUP_WEAK",
+        "062970.KQ": "INTRADAY_SETUP_WEAK",
+        "321260.KQ": "INTRADAY_SETUP_WEAK",
+        "452300.KQ": "INTRADAY_SETUP_WEAK",
+        "058110.KQ": "INTRADAY_SETUP_WEAK",
+        "148250.KQ": "INTRADAY_SETUP_WEAK",
+        "285800.KQ": "INTRADAY_SETUP_WEAK",
+        "023790.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "225430.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "322780.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+        "065420.KQ": "INTRADAY_MIN_PRICE_VOLUME_FAIL"
+      },
+      "reject_details_by_symbol": {
+        "086520.KQ": [
+          {
+            "ticker": "086520.KQ",
+            "stock_name": "에코프로",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.1,
+            "breakout": false,
+            "vol_ratio": 0.81,
+            "intraday_ret": -6.75,
+            "day_ret": -5.94,
+            "ema_fast": 144363.9723,
+            "ema_slow": 145868.0697
+          }
+        ],
+        "247540.KQ": [
+          {
+            "ticker": "247540.KQ",
+            "stock_name": "에코프로비엠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.7,
+            "breakout": false,
+            "vol_ratio": 1.27,
+            "intraday_ret": -4.15,
+            "day_ret": -4.27,
+            "ema_fast": 197364.6876,
+            "ema_slow": 198856.6306
+          }
+        ],
+        "000250.KQ": [
+          {
+            "ticker": "000250.KQ",
+            "stock_name": "삼천당제약",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 3.74,
+            "intraday_ret": -30.0,
+            "day_ret": -24.97,
+            "ema_fast": 695447.781,
+            "ema_slow": 797461.5694
+          }
+        ],
+        "196170.KQ": [
+          {
+            "ticker": "196170.KQ",
+            "stock_name": "알테오젠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.4,
+            "breakout": false,
+            "vol_ratio": 1.04,
+            "intraday_ret": -4.97,
+            "day_ret": -4.97,
+            "ema_fast": 350061.5275,
+            "ema_slow": 354035.2395
+          }
+        ],
+        "277810.KQ": [
+          {
+            "ticker": "277810.KQ",
+            "stock_name": "레인보우로보틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.3,
+            "breakout": false,
+            "vol_ratio": 0.93,
+            "intraday_ret": -10.5,
+            "day_ret": -4.45,
+            "ema_fast": 550138.1893,
+            "ema_slow": 552294.9762
+          }
+        ],
+        "298380.KQ": [
+          {
+            "ticker": "298380.KQ",
+            "stock_name": "에이비엘바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 45.7,
+            "breakout": false,
+            "vol_ratio": 2.37,
+            "intraday_ret": -12.6,
+            "day_ret": -13.42,
+            "ema_fast": 165967.8833,
+            "ema_slow": 170433.632
+          }
+        ],
+        "950160.KQ": [
+          {
+            "ticker": "950160.KQ",
+            "stock_name": "코오롱티슈진",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.1,
+            "breakout": false,
+            "vol_ratio": 1.01,
+            "intraday_ret": -9.7,
+            "day_ret": -8.86,
+            "ema_fast": 102554.2165,
+            "ema_slow": 106728.9496
+          }
+        ],
+        "058470.KQ": [
+          {
+            "ticker": "058470.KQ",
+            "stock_name": "리노공업",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.1,
+            "breakout": false,
+            "vol_ratio": 1.41,
+            "intraday_ret": -6.38,
+            "day_ret": -4.75,
+            "ema_fast": 100206.4509,
+            "ema_slow": 100668.7057
+          }
+        ],
+        "028300.KQ": [
+          {
+            "ticker": "028300.KQ",
+            "stock_name": "HLB",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.0,
+            "breakout": false,
+            "vol_ratio": 1.3,
+            "intraday_ret": -5.08,
+            "day_ret": -5.61,
+            "ema_fast": 51589.5236,
+            "ema_slow": 51975.4031
+          }
+        ],
+        "141080.KQ": [
+          {
+            "ticker": "141080.KQ",
+            "stock_name": "리가켐바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 4.4,
+            "intraday_ret": -13.14,
+            "day_ret": -13.98,
+            "ema_fast": 187808.8616,
+            "ema_slow": 194317.7822
+          }
+        ],
+        "087010.KQ": [
+          {
+            "ticker": "087010.KQ",
+            "stock_name": "펩트론",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 42.5,
+            "breakout": false,
+            "vol_ratio": 2.05,
+            "intraday_ret": -10.26,
+            "day_ret": -10.55,
+            "ema_fast": 288256.6489,
+            "ema_slow": 294299.9927
+          }
+        ],
+        "240810.KQ": [
+          {
+            "ticker": "240810.KQ",
+            "stock_name": "원익IPS",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.5,
+            "breakout": false,
+            "vol_ratio": 1.25,
+            "intraday_ret": -7.63,
+            "day_ret": -7.23,
+            "ema_fast": 112716.1922,
+            "ema_slow": 114223.7706
+          }
+        ],
+        "310210.KQ": [
+          {
+            "ticker": "310210.KQ",
+            "stock_name": "보로노이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 40.2,
+            "breakout": false,
+            "vol_ratio": 1.82,
+            "intraday_ret": -12.3,
+            "day_ret": -14.75,
+            "ema_fast": 287357.7368,
+            "ema_slow": 298444.7322
+          }
+        ],
+        "095340.KQ": [
+          {
+            "ticker": "095340.KQ",
+            "stock_name": "ISC",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.0,
+            "breakout": false,
+            "vol_ratio": 1.1,
+            "intraday_ret": -11.32,
+            "day_ret": -12.33,
+            "ema_fast": 240197.7176,
+            "ema_slow": 244212.0992
+          }
+        ],
+        "039030.KQ": [
+          {
+            "ticker": "039030.KQ",
+            "stock_name": "이오테크닉스",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 397500.0,
+            "curr_volume": 16970.0,
+            "avg_volume_5": 11631.6,
+            "curr_turnover": 6745575000.0,
+            "avg_turnover_5": 4754493600.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "108490.KQ": [
+          {
+            "ticker": "108490.KQ",
+            "stock_name": "로보티즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.5,
+            "breakout": false,
+            "vol_ratio": 0.75,
+            "intraday_ret": -10.64,
+            "day_ret": -5.79,
+            "ema_fast": 260692.5312,
+            "ema_slow": 258114.3909
+          }
+        ],
+        "263750.KQ": [
+          {
+            "ticker": "263750.KQ",
+            "stock_name": "펄어비스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.41,
+            "intraday_ret": -9.0,
+            "day_ret": -9.13,
+            "ema_fast": 67692.7308,
+            "ema_slow": 67250.5585
+          }
+        ],
+        "226950.KQ": [
+          {
+            "ticker": "226950.KQ",
+            "stock_name": "올릭스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 42.6,
+            "breakout": false,
+            "vol_ratio": 2.06,
+            "intraday_ret": -12.71,
+            "day_ret": -13.18,
+            "ema_fast": 184381.4509,
+            "ema_slow": 188072.6411
+          }
+        ],
+        "032820.KQ": [
+          {
+            "ticker": "032820.KQ",
+            "stock_name": "우리기술",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.38,
+            "intraday_ret": -12.42,
+            "day_ret": -9.05,
+            "ema_fast": 20844.9205,
+            "ema_slow": 21452.5875
+          }
+        ],
+        "214150.KQ": [
+          {
+            "ticker": "214150.KQ",
+            "stock_name": "클래시스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.2,
+            "breakout": false,
+            "vol_ratio": 0.92,
+            "intraday_ret": -5.65,
+            "day_ret": -5.65,
+            "ema_fast": 52865.8052,
+            "ema_slow": 53042.8207
+          }
+        ],
+        "403870.KQ": [
+          {
+            "ticker": "403870.KQ",
+            "stock_name": "HPSP",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.6,
+            "breakout": false,
+            "vol_ratio": 1.26,
+            "intraday_ret": -10.01,
+            "day_ret": -9.0,
+            "ema_fast": 42025.7006,
+            "ema_slow": 42942.7411
+          }
+        ],
+        "043260.KQ": [
+          {
+            "ticker": "043260.KQ",
+            "stock_name": "성호전자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.51,
+            "intraday_ret": -11.46,
+            "day_ret": -10.16,
+            "ema_fast": 44305.569,
+            "ema_slow": 44149.6974
+          }
+        ],
+        "347850.KQ": [
+          {
+            "ticker": "347850.KQ",
+            "stock_name": "디앤디파마텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.0,
+            "breakout": false,
+            "vol_ratio": 0.9,
+            "intraday_ret": -11.71,
+            "day_ret": -9.62,
+            "ema_fast": 70920.0261,
+            "ema_slow": 71949.6897
+          }
+        ],
+        "214450.KQ": [
+          {
+            "ticker": "214450.KQ",
+            "stock_name": "파마리서치",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 288500.0,
+            "curr_volume": 12991.0,
+            "avg_volume_5": 13478.8,
+            "curr_turnover": 3747903500.0,
+            "avg_turnover_5": 3964551900.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "145020.KQ": [
+          {
+            "ticker": "145020.KQ",
+            "stock_name": "휴젤",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 241000.0,
+            "curr_volume": 6675.0,
+            "avg_volume_5": 5569.4,
+            "curr_turnover": 1608675000.0,
+            "avg_turnover_5": 1363195400.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "237690.KQ": [
+          {
+            "ticker": "237690.KQ",
+            "stock_name": "에스티팜",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.3,
+            "breakout": false,
+            "vol_ratio": 1.63,
+            "intraday_ret": -7.2,
+            "day_ret": -7.92,
+            "ema_fast": 145670.5531,
+            "ema_slow": 148143.9748
+          }
+        ],
+        "319400.KQ": [
+          {
+            "ticker": "319400.KQ",
+            "stock_name": "현대무벡스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 41.0,
+            "breakout": false,
+            "vol_ratio": 0.99,
+            "intraday_ret": -11.77,
+            "day_ret": 0.58,
+            "ema_fast": 26470.9875,
+            "ema_slow": 26079.5325
+          }
+        ],
+        "357780.KQ": [
+          {
+            "ticker": "357780.KQ",
+            "stock_name": "솔브레인",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 371000.0,
+            "curr_volume": 8469.0,
+            "avg_volume_5": 6229.8,
+            "curr_turnover": 3141999000.0,
+            "avg_turnover_5": 2348077400.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "036930.KQ": [
+          {
+            "ticker": "036930.KQ",
+            "stock_name": "주성엔지니어링",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.4,
+            "breakout": false,
+            "vol_ratio": 0.94,
+            "intraday_ret": -8.68,
+            "day_ret": -7.98,
+            "ema_fast": 62075.4248,
+            "ema_slow": 63514.2076
+          }
+        ],
+        "083650.KQ": [
+          {
+            "ticker": "083650.KQ",
+            "stock_name": "비에이치아이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.7,
+            "breakout": false,
+            "vol_ratio": 1.67,
+            "intraday_ret": -10.76,
+            "day_ret": -10.04,
+            "ema_fast": 93168.0129,
+            "ema_slow": 94726.3706
+          }
+        ],
+        "178320.KQ": [
+          {
+            "ticker": "178320.KQ",
+            "stock_name": "서진시스템",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.6,
+            "breakout": false,
+            "vol_ratio": 0.82,
+            "intraday_ret": -3.21,
+            "day_ret": -2.8,
+            "ema_fast": 45911.8695,
+            "ema_slow": 45406.3199
+          }
+        ],
+        "140410.KQ": [
+          {
+            "ticker": "140410.KQ",
+            "stock_name": "메지온",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.6,
+            "breakout": false,
+            "vol_ratio": 1.36,
+            "intraday_ret": -6.96,
+            "day_ret": -5.82,
+            "ema_fast": 86564.5692,
+            "ema_slow": 87961.9887
+          }
+        ],
+        "440110.KQ": [
+          {
+            "ticker": "440110.KQ",
+            "stock_name": "파두",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.2,
+            "breakout": false,
+            "vol_ratio": 0.62,
+            "intraday_ret": -10.37,
+            "day_ret": -8.68,
+            "ema_fast": 49862.5544,
+            "ema_slow": 50389.1531
+          }
+        ],
+        "068760.KQ": [
+          {
+            "ticker": "068760.KQ",
+            "stock_name": "셀트리온제약",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 54500.0,
+            "curr_volume": 15857.0,
+            "avg_volume_5": 15064.6,
+            "curr_turnover": 864206500.0,
+            "avg_turnover_5": 832268540.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "064760.KQ": [
+          {
+            "ticker": "064760.KQ",
+            "stock_name": "티씨케이",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 210500.0,
+            "curr_volume": 12109.0,
+            "avg_volume_5": 9151.6,
+            "curr_turnover": 2548944500.0,
+            "avg_turnover_5": 1978295600.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "257720.KQ": [
+          {
+            "ticker": "257720.KQ",
+            "stock_name": "실리콘투",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.7,
+            "breakout": false,
+            "vol_ratio": 1.27,
+            "intraday_ret": -5.04,
+            "day_ret": -4.1,
+            "ema_fast": 39461.0126,
+            "ema_slow": 39243.1934
+          }
+        ],
+        "058610.KQ": [
+          {
+            "ticker": "058610.KQ",
+            "stock_name": "에스피지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.5,
+            "breakout": false,
+            "vol_ratio": 1.05,
+            "intraday_ret": -11.98,
+            "day_ret": -5.42,
+            "ema_fast": 110168.7559,
+            "ema_slow": 110171.798
+          }
+        ],
+        "005290.KQ": [
+          {
+            "ticker": "005290.KQ",
+            "stock_name": "동진쎄미켐",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.4,
+            "breakout": false,
+            "vol_ratio": 1.34,
+            "intraday_ret": -5.99,
+            "day_ret": -5.5,
+            "ema_fast": 46500.2103,
+            "ema_slow": 46476.7554
+          }
+        ],
+        "319660.KQ": [
+          {
+            "ticker": "319660.KQ",
+            "stock_name": "피에스케이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.7,
+            "breakout": false,
+            "vol_ratio": 0.87,
+            "intraday_ret": -8.36,
+            "day_ret": -7.83,
+            "ema_fast": 82431.9842,
+            "ema_slow": 82647.5868
+          }
+        ],
+        "218410.KQ": [
+          {
+            "ticker": "218410.KQ",
+            "stock_name": "RFHIC",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.6,
+            "breakout": false,
+            "vol_ratio": 0.76,
+            "intraday_ret": -13.59,
+            "day_ret": -9.32,
+            "ema_fast": 86837.6651,
+            "ema_slow": 85478.5411
+          }
+        ],
+        "347700.KQ": [
+          {
+            "ticker": "347700.KQ",
+            "stock_name": "스피어",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.8,
+            "breakout": false,
+            "vol_ratio": 1.28,
+            "intraday_ret": -16.0,
+            "day_ret": -9.67,
+            "ema_fast": 46664.7461,
+            "ema_slow": 47198.1899
+          }
+        ],
+        "035900.KQ": [
+          {
+            "ticker": "035900.KQ",
+            "stock_name": "JYP Ent.",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.0,
+            "breakout": false,
+            "vol_ratio": 1.3,
+            "intraday_ret": -5.71,
+            "day_ret": -6.31,
+            "ema_fast": 60766.917,
+            "ema_slow": 61773.9927
+          }
+        ],
+        "031980.KQ": [
+          {
+            "ticker": "031980.KQ",
+            "stock_name": "피에스케이홀딩스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.8,
+            "breakout": false,
+            "vol_ratio": 1.48,
+            "intraday_ret": -12.09,
+            "day_ret": -12.57,
+            "ema_fast": 101599.8892,
+            "ema_slow": 101976.0362
+          }
+        ],
+        "030530.KQ": [
+          {
+            "ticker": "030530.KQ",
+            "stock_name": "원익홀딩스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.0,
+            "breakout": false,
+            "vol_ratio": 0.7,
+            "intraday_ret": -13.3,
+            "day_ret": -7.52,
+            "ema_fast": 27945.2004,
+            "ema_slow": 28279.3298
+          }
+        ],
+        "041510.KQ": [
+          {
+            "ticker": "041510.KQ",
+            "stock_name": "에스엠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 41.5,
+            "breakout": false,
+            "vol_ratio": 1.95,
+            "intraday_ret": -6.22,
+            "day_ret": -5.9,
+            "ema_fast": 86491.4558,
+            "ema_slow": 88095.1551
+          }
+        ],
+        "099320.KQ": [
+          {
+            "ticker": "099320.KQ",
+            "stock_name": "쎄트렉아이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 42.1,
+            "breakout": false,
+            "vol_ratio": 0.97,
+            "intraday_ret": -2.77,
+            "day_ret": 1.21,
+            "ema_fast": 178756.845,
+            "ema_slow": 177095.1958
+          }
+        ],
+        "067310.KQ": [
+          {
+            "ticker": "067310.KQ",
+            "stock_name": "하나마이크론",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.3,
+            "breakout": false,
+            "vol_ratio": 1.13,
+            "intraday_ret": -8.75,
+            "day_ret": -7.4,
+            "ema_fast": 28999.1855,
+            "ema_slow": 29484.8745
+          }
+        ],
+        "131970.KQ": [
+          {
+            "ticker": "131970.KQ",
+            "stock_name": "두산테스나",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.4,
+            "breakout": false,
+            "vol_ratio": 1.24,
+            "intraday_ret": -7.96,
+            "day_ret": -6.97,
+            "ema_fast": 97986.9877,
+            "ema_slow": 100054.5127
+          }
+        ],
+        "039200.KQ": [
+          {
+            "ticker": "039200.KQ",
+            "stock_name": "오스코텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 43.1,
+            "breakout": false,
+            "vol_ratio": 2.11,
+            "intraday_ret": -8.7,
+            "day_ret": -9.89,
+            "ema_fast": 50092.8917,
+            "ema_slow": 51161.5234
+          }
+        ],
+        "222800.KQ": [
+          {
+            "ticker": "222800.KQ",
+            "stock_name": "심텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.0,
+            "breakout": false,
+            "vol_ratio": 1.0,
+            "intraday_ret": -10.54,
+            "day_ret": -8.68,
+            "ema_fast": 50103.2232,
+            "ema_slow": 51113.8203
+          }
+        ],
+        "078600.KQ": [
+          {
+            "ticker": "078600.KQ",
+            "stock_name": "대주전자재료",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.4,
+            "breakout": false,
+            "vol_ratio": 0.84,
+            "intraday_ret": -8.93,
+            "day_ret": -8.78,
+            "ema_fast": 120283.1706,
+            "ema_slow": 123788.8654
+          }
+        ],
+        "098460.KQ": [
+          {
+            "ticker": "098460.KQ",
+            "stock_name": "고영",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.6,
+            "breakout": false,
+            "vol_ratio": 0.86,
+            "intraday_ret": -7.66,
+            "day_ret": -5.82,
+            "ema_fast": 26567.3603,
+            "ema_slow": 26608.0354
+          }
+        ],
+        "140860.KQ": [
+          {
+            "ticker": "140860.KQ",
+            "stock_name": "파크시스템스",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 241000.0,
+            "curr_volume": 4735.0,
+            "avg_volume_5": 5129.8,
+            "curr_turnover": 1141135000.0,
+            "avg_turnover_5": 1269142200.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "089030.KQ": [
+          {
+            "ticker": "089030.KQ",
+            "stock_name": "테크윙",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.3,
+            "breakout": false,
+            "vol_ratio": 0.93,
+            "intraday_ret": -9.46,
+            "day_ret": -8.64,
+            "ema_fast": 47011.9142,
+            "ema_slow": 48018.5585
+          }
+        ],
+        "290650.KQ": [
+          {
+            "ticker": "290650.KQ",
+            "stock_name": "엘앤씨바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.0,
+            "breakout": false,
+            "vol_ratio": 1.4,
+            "intraday_ret": -9.43,
+            "day_ret": -7.11,
+            "ema_fast": 67445.2906,
+            "ema_slow": 68624.1343
+          }
+        ],
+        "475830.KQ": [
+          {
+            "ticker": "475830.KQ",
+            "stock_name": "오름테라퓨틱",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.6,
+            "breakout": false,
+            "vol_ratio": 1.06,
+            "intraday_ret": -12.58,
+            "day_ret": -10.88,
+            "ema_fast": 81559.9284,
+            "ema_slow": 87428.8501
+          }
+        ],
+        "101490.KQ": [
+          {
+            "ticker": "101490.KQ",
+            "stock_name": "에스앤에스텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.8,
+            "breakout": false,
+            "vol_ratio": 1.68,
+            "intraday_ret": -8.88,
+            "day_ret": -8.22,
+            "ema_fast": 78531.2188,
+            "ema_slow": 79775.3179
+          }
+        ],
+        "085660.KQ": [
+          {
+            "ticker": "085660.KQ",
+            "stock_name": "차바이오텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.4,
+            "breakout": false,
+            "vol_ratio": 1.34,
+            "intraday_ret": -7.01,
+            "day_ret": -6.81,
+            "ema_fast": 18072.2635,
+            "ema_slow": 18316.681
+          }
+        ],
+        "437730.KQ": [
+          {
+            "ticker": "437730.KQ",
+            "stock_name": "삼현",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 64.7,
+            "breakout": false,
+            "vol_ratio": 0.98,
+            "intraday_ret": -11.44,
+            "day_ret": 1.44,
+            "ema_fast": 49841.9117,
+            "ema_slow": 49083.6433
+          }
+        ],
+        "323280.KQ": [
+          {
+            "ticker": "323280.KQ",
+            "stock_name": "태성",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.9,
+            "breakout": false,
+            "vol_ratio": 1.19,
+            "intraday_ret": -12.71,
+            "day_ret": -8.85,
+            "ema_fast": 53314.6048,
+            "ema_slow": 54157.3594
+          }
+        ],
+        "038500.KQ": [
+          {
+            "ticker": "038500.KQ",
+            "stock_name": "삼표시멘트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.39,
+            "intraday_ret": -9.04,
+            "day_ret": -8.21,
+            "ema_fast": 14654.3515,
+            "ema_slow": 15132.7311
+          }
+        ],
+        "010170.KQ": [
+          {
+            "ticker": "010170.KQ",
+            "stock_name": "대한광통신",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 77.2,
+            "breakout": false,
+            "vol_ratio": 0.68,
+            "intraday_ret": -1.1,
+            "day_ret": 5.21,
+            "ema_fast": 9859.267,
+            "ema_slow": 9360.0049
+          }
+        ],
+        "003380.KQ": [
+          {
+            "ticker": "003380.KQ",
+            "stock_name": "하림지주",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.8,
+            "breakout": false,
+            "vol_ratio": 0.88,
+            "intraday_ret": -6.83,
+            "day_ret": -6.32,
+            "ema_fast": 13858.9837,
+            "ema_slow": 14055.7749
+          }
+        ],
+        "060370.KQ": [
+          {
+            "ticker": "060370.KQ",
+            "stock_name": "LS마린솔루션",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.9,
+            "breakout": false,
+            "vol_ratio": 1.29,
+            "intraday_ret": -5.54,
+            "day_ret": -4.61,
+            "ema_fast": 29395.8565,
+            "ema_slow": 29512.2718
+          }
+        ],
+        "065350.KQ": [
+          {
+            "ticker": "065350.KQ",
+            "stock_name": "신성델타테크",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 37.4,
+            "breakout": false,
+            "vol_ratio": 1.54,
+            "intraday_ret": -9.2,
+            "day_ret": -7.94,
+            "ema_fast": 55100.381,
+            "ema_slow": 55998.8517
+          }
+        ],
+        "232140.KQ": [
+          {
+            "ticker": "232140.KQ",
+            "stock_name": "와이씨",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.8,
+            "breakout": false,
+            "vol_ratio": 0.98,
+            "intraday_ret": -9.65,
+            "day_ret": -9.31,
+            "ema_fast": 17543.3564,
+            "ema_slow": 17912.6468
+          }
+        ],
+        "195940.KQ": [
+          {
+            "ticker": "195940.KQ",
+            "stock_name": "HK이노엔",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.6,
+            "breakout": false,
+            "vol_ratio": 1.46,
+            "intraday_ret": -6.2,
+            "day_ret": -6.39,
+            "ema_fast": 48755.3455,
+            "ema_slow": 49642.6781
+          }
+        ],
+        "100790.KQ": [
+          {
+            "ticker": "100790.KQ",
+            "stock_name": "미래에셋벤처투자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.41,
+            "intraday_ret": -12.16,
+            "day_ret": -9.36,
+            "ema_fast": 26823.8328,
+            "ema_slow": 27559.481
+          }
+        ],
+        "115180.KQ": [
+          {
+            "ticker": "115180.KQ",
+            "stock_name": "큐리언트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 42.7,
+            "breakout": false,
+            "vol_ratio": 2.07,
+            "intraday_ret": -12.36,
+            "day_ret": -12.03,
+            "ema_fast": 37023.5236,
+            "ema_slow": 38029.2543
+          }
+        ],
+        "417200.KQ": [
+          {
+            "ticker": "417200.KQ",
+            "stock_name": "LS머트리얼즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.33,
+            "intraday_ret": -6.76,
+            "day_ret": -6.32,
+            "ema_fast": 19861.3708,
+            "ema_slow": 19763.9011
+          }
+        ],
+        "080220.KQ": [
+          {
+            "ticker": "080220.KQ",
+            "stock_name": "제주반도체",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.9,
+            "breakout": false,
+            "vol_ratio": 1.08,
+            "intraday_ret": -5.6,
+            "day_ret": -2.94,
+            "ema_fast": 38856.9663,
+            "ema_slow": 38708.2437
+          }
+        ],
+        "445680.KQ": [
+          {
+            "ticker": "445680.KQ",
+            "stock_name": "큐리옥스바이오시스템즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.1,
+            "breakout": false,
+            "vol_ratio": 0.61,
+            "intraday_ret": -13.58,
+            "day_ret": -14.17,
+            "ema_fast": 81155.1346,
+            "ema_slow": 90612.6417
+          }
+        ],
+        "127120.KQ": [
+          {
+            "ticker": "127120.KQ",
+            "stock_name": "제이에스링크",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 40.6,
+            "breakout": false,
+            "vol_ratio": 1.31,
+            "intraday_ret": -2.15,
+            "day_ret": -1.27,
+            "ema_fast": 39205.8493,
+            "ema_slow": 38859.1124
+          }
+        ],
+        "082270.KQ": [
+          {
+            "ticker": "082270.KQ",
+            "stock_name": "젬백스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 47.2,
+            "breakout": false,
+            "vol_ratio": 2.52,
+            "intraday_ret": -13.82,
+            "day_ret": -12.54,
+            "ema_fast": 32021.1439,
+            "ema_slow": 33995.7561
+          }
+        ],
+        "090710.KQ": [
+          {
+            "ticker": "090710.KQ",
+            "stock_name": "휴림로봇",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.31,
+            "intraday_ret": -11.99,
+            "day_ret": -5.66,
+            "ema_fast": 10810.1443,
+            "ema_slow": 11173.6565
+          }
+        ],
+        "466100.KQ": [
+          {
+            "ticker": "466100.KQ",
+            "stock_name": "클로봇",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.8,
+            "breakout": false,
+            "vol_ratio": 0.88,
+            "intraday_ret": -13.75,
+            "day_ret": -4.69,
+            "ema_fast": 52028.2304,
+            "ema_slow": 51640.7029
+          }
+        ],
+        "048410.KQ": [
+          {
+            "ticker": "048410.KQ",
+            "stock_name": "현대바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.4,
+            "breakout": false,
+            "vol_ratio": 0.84,
+            "intraday_ret": -6.61,
+            "day_ret": -7.41,
+            "ema_fast": 13450.278,
+            "ema_slow": 13677.2284
+          }
+        ],
+        "086450.KQ": [
+          {
+            "ticker": "086450.KQ",
+            "stock_name": "동국제약",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 50.0,
+            "breakout": false,
+            "vol_ratio": 0.33,
+            "intraday_ret": -2.83,
+            "day_ret": -7.26,
+            "ema_fast": 27746.8701,
+            "ema_slow": 26567.1793
+          }
+        ],
+        "281740.KQ": [
+          {
+            "ticker": "281740.KQ",
+            "stock_name": "레이크머티리얼즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.9,
+            "breakout": false,
+            "vol_ratio": 0.89,
+            "intraday_ret": -8.32,
+            "day_ret": -8.32,
+            "ema_fast": 19536.1277,
+            "ema_slow": 19820.9744
+          }
+        ],
+        "131290.KQ": [
+          {
+            "ticker": "131290.KQ",
+            "stock_name": "티에스이",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 110700.0,
+            "curr_volume": 14735.0,
+            "avg_volume_5": 12967.2,
+            "curr_turnover": 1631164500.0,
+            "avg_turnover_5": 1471158840.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "183300.KQ": [
+          {
+            "ticker": "183300.KQ",
+            "stock_name": "코미코",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 56.7,
+            "breakout": false,
+            "vol_ratio": 0.91,
+            "intraday_ret": -4.74,
+            "day_ret": -2.18,
+            "ema_fast": 118778.7199,
+            "ema_slow": 115871.4882
+          }
+        ],
+        "189300.KQ": [
+          {
+            "ticker": "189300.KQ",
+            "stock_name": "인텔리안테크",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.1,
+            "breakout": false,
+            "vol_ratio": 0.91,
+            "intraday_ret": -8.72,
+            "day_ret": -5.59,
+            "ema_fast": 115814.9539,
+            "ema_slow": 117597.7179
+          }
+        ],
+        "397030.KQ": [
+          {
+            "ticker": "397030.KQ",
+            "stock_name": "에이프릴바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.6,
+            "breakout": false,
+            "vol_ratio": 1.46,
+            "intraday_ret": -12.63,
+            "day_ret": -10.78,
+            "ema_fast": 52818.4237,
+            "ema_slow": 55062.5019
+          }
+        ],
+        "166090.KQ": [
+          {
+            "ticker": "166090.KQ",
+            "stock_name": "하나머티리얼즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.6,
+            "breakout": false,
+            "vol_ratio": 1.16,
+            "intraday_ret": -10.05,
+            "day_ret": -10.6,
+            "ema_fast": 60942.8028,
+            "ema_slow": 61878.5987
+          }
+        ],
+        "035760.KQ": [
+          {
+            "ticker": "035760.KQ",
+            "stock_name": "CJ ENM",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 53600.0,
+            "curr_volume": 18666.0,
+            "avg_volume_5": 18480.0,
+            "curr_turnover": 1000497600.0,
+            "avg_turnover_5": 1000628580.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "096530.KQ": [
+          {
+            "ticker": "096530.KQ",
+            "stock_name": "씨젠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.8,
+            "breakout": false,
+            "vol_ratio": 1.28,
+            "intraday_ret": -3.91,
+            "day_ret": -4.33,
+            "ema_fast": 22442.621,
+            "ema_slow": 22544.5578
+          }
+        ],
+        "032500.KQ": [
+          {
+            "ticker": "032500.KQ",
+            "stock_name": "케이엠더블유",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.47,
+            "intraday_ret": -8.94,
+            "day_ret": -8.16,
+            "ema_fast": 27619.0806,
+            "ema_slow": 27875.4522
+          }
+        ],
+        "174900.KQ": [
+          {
+            "ticker": "174900.KQ",
+            "stock_name": "앱클론",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.6,
+            "breakout": false,
+            "vol_ratio": 0.86,
+            "intraday_ret": -7.97,
+            "day_ret": -6.6,
+            "ema_fast": 58914.3495,
+            "ema_slow": 60919.1051
+          }
+        ],
+        "095610.KQ": [
+          {
+            "ticker": "095610.KQ",
+            "stock_name": "테스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.0,
+            "breakout": false,
+            "vol_ratio": 0.8,
+            "intraday_ret": -10.33,
+            "day_ret": -7.73,
+            "ema_fast": 59163.9306,
+            "ema_slow": 59511.7651
+          }
+        ],
+        "137400.KQ": [
+          {
+            "ticker": "137400.KQ",
+            "stock_name": "피엔티",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.7,
+            "breakout": false,
+            "vol_ratio": 1.17,
+            "intraday_ret": -5.89,
+            "day_ret": -5.7,
+            "ema_fast": 48483.9567,
+            "ema_slow": 48974.0448
+          }
+        ],
+        "007390.KQ": [
+          {
+            "ticker": "007390.KQ",
+            "stock_name": "네이처셀",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.1,
+            "breakout": false,
+            "vol_ratio": 0.9,
+            "intraday_ret": -3.79,
+            "day_ret": -3.47,
+            "ema_fast": 17596.1356,
+            "ema_slow": 17696.8469
+          }
+        ],
+        "124500.KQ": [
+          {
+            "ticker": "124500.KQ",
+            "stock_name": "아이티센글로벌",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.51,
+            "intraday_ret": -7.98,
+            "day_ret": -5.12,
+            "ema_fast": 48281.2125,
+            "ema_slow": 48329.8364
+          }
+        ],
+        "213420.KQ": [
+          {
+            "ticker": "213420.KQ",
+            "stock_name": "덕산네오룩스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.3,
+            "breakout": false,
+            "vol_ratio": 1.43,
+            "intraday_ret": -11.7,
+            "day_ret": -11.7,
+            "ema_fast": 46574.3489,
+            "ema_slow": 48466.7966
+          }
+        ],
+        "052020.KQ": [
+          {
+            "ticker": "052020.KQ",
+            "stock_name": "에스티큐브",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.3,
+            "breakout": false,
+            "vol_ratio": 1.13,
+            "intraday_ret": -9.02,
+            "day_ret": -6.69,
+            "ema_fast": 16546.1081,
+            "ema_slow": 17132.8541
+          }
+        ],
+        "420770.KQ": [
+          {
+            "ticker": "420770.KQ",
+            "stock_name": "기가비스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 56.5,
+            "breakout": false,
+            "vol_ratio": 0.93,
+            "intraday_ret": -4.4,
+            "day_ret": -2.42,
+            "ema_fast": 85670.1579,
+            "ema_slow": 82887.795
+          }
+        ],
+        "293490.KQ": [
+          {
+            "ticker": "293490.KQ",
+            "stock_name": "카카오게임즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.6,
+            "breakout": false,
+            "vol_ratio": 1.16,
+            "intraday_ret": -5.2,
+            "day_ret": -4.97,
+            "ema_fast": 12059.5646,
+            "ema_slow": 12300.9498
+          }
+        ],
+        "027360.KQ": [
+          {
+            "ticker": "027360.KQ",
+            "stock_name": "아주IB투자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.38,
+            "intraday_ret": -11.64,
+            "day_ret": -8.41,
+            "ema_fast": 8812.8378,
+            "ema_slow": 8876.4517
+          }
+        ],
+        "295310.KQ": [
+          {
+            "ticker": "295310.KQ",
+            "stock_name": "에이치브이엠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.5,
+            "intraday_ret": -9.62,
+            "day_ret": -7.42,
+            "ema_fast": 85836.9106,
+            "ema_slow": 86751.9211
+          }
+        ],
+        "160190.KQ": [
+          {
+            "ticker": "160190.KQ",
+            "stock_name": "하이젠알앤엠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.4,
+            "breakout": false,
+            "vol_ratio": 1.04,
+            "intraday_ret": -11.98,
+            "day_ret": -8.45,
+            "ema_fast": 34478.541,
+            "ema_slow": 35452.8256
+          }
+        ],
+        "036540.KQ": [
+          {
+            "ticker": "036540.KQ",
+            "stock_name": "SFA반도체",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.9,
+            "breakout": false,
+            "vol_ratio": 1.49,
+            "intraday_ret": -6.79,
+            "day_ret": -4.33,
+            "ema_fast": 6312.4605,
+            "ema_slow": 6352.1758
+          }
+        ],
+        "388720.KQ": [
+          {
+            "ticker": "388720.KQ",
+            "stock_name": "유일로보틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 84500.0,
+            "curr_volume": 11367.0,
+            "avg_volume_5": 11168.6,
+            "curr_turnover": 960511500.0,
+            "avg_turnover_5": 966358220.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "089970.KQ": [
+          {
+            "ticker": "089970.KQ",
+            "stock_name": "브이엠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 42.2,
+            "breakout": false,
+            "vol_ratio": 1.91,
+            "intraday_ret": -4.96,
+            "day_ret": -3.48,
+            "ema_fast": 40530.9553,
+            "ema_slow": 41176.7257
+          }
+        ],
+        "328130.KQ": [
+          {
+            "ticker": "328130.KQ",
+            "stock_name": "루닛",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.0,
+            "breakout": false,
+            "vol_ratio": 1.2,
+            "intraday_ret": -6.54,
+            "day_ret": -7.46,
+            "ema_fast": 33457.5839,
+            "ema_slow": 33864.4502
+          }
+        ],
+        "014620.KQ": [
+          {
+            "ticker": "014620.KQ",
+            "stock_name": "성광벤드",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 61.5,
+            "breakout": false,
+            "vol_ratio": 1.03,
+            "intraday_ret": -4.16,
+            "day_ret": -0.42,
+            "ema_fast": 35883.2314,
+            "ema_slow": 35593.2942
+          }
+        ],
+        "122870.KQ": [
+          {
+            "ticker": "122870.KQ",
+            "stock_name": "와이지엔터테인먼트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.9,
+            "breakout": false,
+            "vol_ratio": 1.69,
+            "intraday_ret": -6.33,
+            "day_ret": -5.81,
+            "ema_fast": 51464.6054,
+            "ema_slow": 52555.9171
+          }
+        ],
+        "476060.KQ": [
+          {
+            "ticker": "476060.KQ",
+            "stock_name": "온코닉테라퓨틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.8,
+            "breakout": false,
+            "vol_ratio": 1.28,
+            "intraday_ret": -11.55,
+            "day_ret": -11.93,
+            "ema_fast": 21333.2382,
+            "ema_slow": 21880.1205
+          }
+        ],
+        "050890.KQ": [
+          {
+            "ticker": "050890.KQ",
+            "stock_name": "쏠리드",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 59.4,
+            "breakout": false,
+            "vol_ratio": 0.49,
+            "intraday_ret": -0.13,
+            "day_ret": 0.68,
+            "ema_fast": 14899.9653,
+            "ema_slow": 14502.0327
+          }
+        ],
+        "056080.KQ": [
+          {
+            "ticker": "056080.KQ",
+            "stock_name": "유진로봇",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.6,
+            "breakout": false,
+            "vol_ratio": 0.86,
+            "intraday_ret": -13.95,
+            "day_ret": -7.94,
+            "ema_fast": 24772.7056,
+            "ema_slow": 25194.6983
+          }
+        ],
+        "044490.KQ": [
+          {
+            "ticker": "044490.KQ",
+            "stock_name": "태웅",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.58,
+            "intraday_ret": -14.84,
+            "day_ret": -12.01,
+            "ema_fast": 46006.188,
+            "ema_slow": 47369.285
+          }
+        ],
+        "222080.KQ": [
+          {
+            "ticker": "222080.KQ",
+            "stock_name": "씨아이에스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.1,
+            "breakout": false,
+            "vol_ratio": 1.01,
+            "intraday_ret": -7.18,
+            "day_ret": -6.57,
+            "ema_fast": 11846.2422,
+            "ema_slow": 11997.1633
+          }
+        ],
+        "389470.KQ": [
+          {
+            "ticker": "389470.KQ",
+            "stock_name": "인벤티지랩",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 3.11,
+            "intraday_ret": -14.4,
+            "day_ret": -11.71,
+            "ema_fast": 65460.4573,
+            "ema_slow": 67867.661
+          }
+        ],
+        "161580.KQ": [
+          {
+            "ticker": "161580.KQ",
+            "stock_name": "필옵틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.6,
+            "breakout": false,
+            "vol_ratio": 1.26,
+            "intraday_ret": -8.13,
+            "day_ret": -7.56,
+            "ema_fast": 38485.3586,
+            "ema_slow": 38707.6397
+          }
+        ],
+        "006730.KQ": [
+          {
+            "ticker": "006730.KQ",
+            "stock_name": "서부T&D",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.4,
+            "breakout": false,
+            "vol_ratio": 1.24,
+            "intraday_ret": -6.0,
+            "day_ret": -6.21,
+            "ema_fast": 13071.3444,
+            "ema_slow": 13221.528
+          }
+        ],
+        "241710.KQ": [
+          {
+            "ticker": "241710.KQ",
+            "stock_name": "코스메카코리아",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 76900.0,
+            "curr_volume": 19022.0,
+            "avg_volume_5": 13214.0,
+            "curr_turnover": 1462791800.0,
+            "avg_turnover_5": 1017153780.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "171090.KQ": [
+          {
+            "ticker": "171090.KQ",
+            "stock_name": "선익시스템",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 79900.0,
+            "curr_volume": 14527.0,
+            "avg_volume_5": 18139.4,
+            "curr_turnover": 1160707300.0,
+            "avg_turnover_5": 1486950120.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "126340.KQ": [
+          {
+            "ticker": "126340.KQ",
+            "stock_name": "비나텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.6,
+            "breakout": false,
+            "vol_ratio": 1.26,
+            "intraday_ret": -7.07,
+            "day_ret": -5.15,
+            "ema_fast": 117657.2315,
+            "ema_slow": 117916.5225
+          }
+        ],
+        "052400.KQ": [
+          {
+            "ticker": "052400.KQ",
+            "stock_name": "코나아이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.6,
+            "breakout": false,
+            "vol_ratio": 1.66,
+            "intraday_ret": -3.86,
+            "day_ret": -4.03,
+            "ema_fast": 55298.9511,
+            "ema_slow": 55471.5383
+          }
+        ],
+        "074600.KQ": [
+          {
+            "ticker": "074600.KQ",
+            "stock_name": "원익QnC",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.3,
+            "breakout": false,
+            "vol_ratio": 0.63,
+            "intraday_ret": -8.45,
+            "day_ret": -8.02,
+            "ema_fast": 30809.0111,
+            "ema_slow": 31155.1784
+          }
+        ],
+        "372320.KQ": [
+          {
+            "ticker": "372320.KQ",
+            "stock_name": "큐로셀",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.57,
+            "intraday_ret": -11.56,
+            "day_ret": -6.47,
+            "ema_fast": 52486.2039,
+            "ema_slow": 52139.9561
+          }
+        ],
+        "348370.KQ": [
+          {
+            "ticker": "348370.KQ",
+            "stock_name": "엔켐",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.1,
+            "breakout": false,
+            "vol_ratio": 1.01,
+            "intraday_ret": -12.05,
+            "day_ret": -10.81,
+            "ema_fast": 37185.2313,
+            "ema_slow": 38675.5389
+          }
+        ],
+        "121600.KQ": [
+          {
+            "ticker": "121600.KQ",
+            "stock_name": "나노신소재",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 62500.0,
+            "curr_volume": 12142.0,
+            "avg_volume_5": 15324.6,
+            "curr_turnover": 758875000.0,
+            "avg_turnover_5": 986653220.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "036810.KQ": [
+          {
+            "ticker": "036810.KQ",
+            "stock_name": "에프에스티",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.5,
+            "breakout": false,
+            "vol_ratio": 1.35,
+            "intraday_ret": -9.62,
+            "day_ret": -9.04,
+            "ema_fast": 37110.6015,
+            "ema_slow": 37869.532
+          }
+        ],
+        "078160.KQ": [
+          {
+            "ticker": "078160.KQ",
+            "stock_name": "메디포스트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 3.16,
+            "intraday_ret": -14.5,
+            "day_ret": -12.53,
+            "ema_fast": 20300.7436,
+            "ema_slow": 21269.053
+          }
+        ],
+        "348340.KQ": [
+          {
+            "ticker": "348340.KQ",
+            "stock_name": "뉴로메카",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.7,
+            "breakout": false,
+            "vol_ratio": 1.07,
+            "intraday_ret": -12.54,
+            "day_ret": -6.83,
+            "ema_fast": 61940.3356,
+            "ema_slow": 62637.5244
+          }
+        ],
+        "358570.KQ": [
+          {
+            "ticker": "358570.KQ",
+            "stock_name": "지아이이노베이션",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 3.09,
+            "intraday_ret": -13.15,
+            "day_ret": -13.08,
+            "ema_fast": 12273.0256,
+            "ema_slow": 12780.386
+          }
+        ],
+        "365340.KQ": [
+          {
+            "ticker": "365340.KQ",
+            "stock_name": "성일하이텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 58700.0,
+            "curr_volume": 10247.0,
+            "avg_volume_5": 13000.2,
+            "curr_turnover": 601498900.0,
+            "avg_turnover_5": 783102500.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "086900.KQ": [
+          {
+            "ticker": "086900.KQ",
+            "stock_name": "메디톡스",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 99000.0,
+            "curr_volume": 10526.0,
+            "avg_volume_5": 9497.4,
+            "curr_turnover": 1042074000.0,
+            "avg_turnover_5": 948559360.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "009520.KQ": [
+          {
+            "ticker": "009520.KQ",
+            "stock_name": "포스코엠텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.44,
+            "intraday_ret": -4.92,
+            "day_ret": -4.18,
+            "ema_fast": 17561.3239,
+            "ema_slow": 17634.3661
+          }
+        ],
+        "475960.KQ": [
+          {
+            "ticker": "475960.KQ",
+            "stock_name": "토모큐브",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 39.7,
+            "breakout": false,
+            "vol_ratio": 1.77,
+            "intraday_ret": -8.92,
+            "day_ret": -8.13,
+            "ema_fast": 55080.3012,
+            "ema_slow": 55752.1193
+          }
+        ],
+        "033500.KQ": [
+          {
+            "ticker": "033500.KQ",
+            "stock_name": "동성화인텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.0,
+            "breakout": false,
+            "vol_ratio": 0.8,
+            "intraday_ret": -7.91,
+            "day_ret": -6.99,
+            "ema_fast": 23753.7059,
+            "ema_slow": 23755.7817
+          }
+        ],
+        "084110.KQ": [
+          {
+            "ticker": "084110.KQ",
+            "stock_name": "휴온스글로벌",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 55900.0,
+            "curr_volume": 13217.0,
+            "avg_volume_5": 15568.4,
+            "curr_turnover": 738830300.0,
+            "avg_turnover_5": 907390800.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "425420.KQ": [
+          {
+            "ticker": "425420.KQ",
+            "stock_name": "티에프이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.1,
+            "breakout": false,
+            "vol_ratio": 1.01,
+            "intraday_ret": -11.02,
+            "day_ret": -10.75,
+            "ema_fast": 60020.1763,
+            "ema_slow": 61387.2476
+          }
+        ],
+        "033100.KQ": [
+          {
+            "ticker": "033100.KQ",
+            "stock_name": "제룡전기",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.8,
+            "breakout": false,
+            "vol_ratio": 1.38,
+            "intraday_ret": -8.72,
+            "day_ret": -8.24,
+            "ema_fast": 44663.0075,
+            "ema_slow": 45370.544
+          }
+        ],
+        "399720.KQ": [
+          {
+            "ticker": "399720.KQ",
+            "stock_name": "가온칩스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 40.6,
+            "breakout": false,
+            "vol_ratio": 1.86,
+            "intraday_ret": -6.0,
+            "day_ret": -4.8,
+            "ema_fast": 60832.8216,
+            "ema_slow": 61078.3958
+          }
+        ],
+        "024850.KQ": [
+          {
+            "ticker": "024850.KQ",
+            "stock_name": "HLB이노베이션",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.1,
+            "breakout": false,
+            "vol_ratio": 1.21,
+            "intraday_ret": -5.85,
+            "day_ret": -4.76,
+            "ema_fast": 4523.2086,
+            "ema_slow": 4583.8182
+          }
+        ],
+        "348210.KQ": [
+          {
+            "ticker": "348210.KQ",
+            "stock_name": "넥스틴",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 63900.0,
+            "curr_volume": 10774.0,
+            "avg_volume_5": 10754.4,
+            "curr_turnover": 688458600.0,
+            "avg_turnover_5": 702981140.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "214430.KQ": [
+          {
+            "ticker": "214430.KQ",
+            "stock_name": "아이쓰리시스템",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 89800.0,
+            "curr_volume": 8122.0,
+            "avg_volume_5": 8488.2,
+            "curr_turnover": 729355600.0,
+            "avg_turnover_5": 781281340.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "015750.KQ": [
+          {
+            "ticker": "015750.KQ",
+            "stock_name": "성우하이텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.3,
+            "breakout": false,
+            "vol_ratio": 0.93,
+            "intraday_ret": -8.77,
+            "day_ret": -7.14,
+            "ema_fast": 8525.1839,
+            "ema_slow": 8632.7525
+          }
+        ],
+        "102710.KQ": [
+          {
+            "ticker": "102710.KQ",
+            "stock_name": "이엔에프테크놀로지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.2,
+            "breakout": false,
+            "vol_ratio": 1.32,
+            "intraday_ret": -9.0,
+            "day_ret": -9.0,
+            "ema_fast": 47906.7571,
+            "ema_slow": 48691.1554
+          }
+        ],
+        "448900.KQ": [
+          {
+            "ticker": "448900.KQ",
+            "stock_name": "한국피아이엠",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 110200.0,
+            "curr_volume": 11318.0,
+            "avg_volume_5": 14528.2,
+            "curr_turnover": 1247243600.0,
+            "avg_turnover_5": 1655103420.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "356860.KQ": [
+          {
+            "ticker": "356860.KQ",
+            "stock_name": "티엘비",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.48,
+            "intraday_ret": -9.87,
+            "day_ret": -10.62,
+            "ema_fast": 67565.3789,
+            "ema_slow": 68594.634
+          }
+        ],
+        "200710.KQ": [
+          {
+            "ticker": "200710.KQ",
+            "stock_name": "에이디테크놀로지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.3,
+            "breakout": false,
+            "vol_ratio": 0.93,
+            "intraday_ret": -7.92,
+            "day_ret": -7.56,
+            "ema_fast": 49233.1168,
+            "ema_slow": 50487.8755
+          }
+        ],
+        "253590.KQ": [
+          {
+            "ticker": "253590.KQ",
+            "stock_name": "네오셈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.1,
+            "breakout": false,
+            "vol_ratio": 1.11,
+            "intraday_ret": -10.34,
+            "day_ret": -9.17,
+            "ema_fast": 15109.0471,
+            "ema_slow": 15435.883
+          }
+        ],
+        "025980.KQ": [
+          {
+            "ticker": "025980.KQ",
+            "stock_name": "아난티",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.8,
+            "breakout": false,
+            "vol_ratio": 1.38,
+            "intraday_ret": -6.45,
+            "day_ret": -6.32,
+            "ema_fast": 6842.482,
+            "ema_slow": 6877.7634
+          }
+        ],
+        "460930.KQ": [
+          {
+            "ticker": "460930.KQ",
+            "stock_name": "현대힘스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.5,
+            "breakout": false,
+            "vol_ratio": 0.85,
+            "intraday_ret": -9.48,
+            "day_ret": -5.74,
+            "ema_fast": 18097.1566,
+            "ema_slow": 18300.3283
+          }
+        ],
+        "060280.KQ": [
+          {
+            "ticker": "060280.KQ",
+            "stock_name": "큐렉소",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.54,
+            "intraday_ret": -9.03,
+            "day_ret": -6.83,
+            "ema_fast": 15339.6363,
+            "ema_slow": 15595.4137
+          }
+        ],
+        "458870.KQ": [
+          {
+            "ticker": "458870.KQ",
+            "stock_name": "씨어스테크놀로지",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 48300.0,
+            "curr_volume": 18455.0,
+            "avg_volume_5": 14705.4,
+            "curr_turnover": 891376500.0,
+            "avg_turnover_5": 706623910.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "336570.KQ": [
+          {
+            "ticker": "336570.KQ",
+            "stock_name": "원텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.8,
+            "breakout": false,
+            "vol_ratio": 1.18,
+            "intraday_ret": -7.83,
+            "day_ret": -8.45,
+            "ema_fast": 7032.6854,
+            "ema_slow": 7078.6607
+          }
+        ],
+        "060250.KQ": [
+          {
+            "ticker": "060250.KQ",
+            "stock_name": "NHN KCP",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.5,
+            "breakout": false,
+            "vol_ratio": 1.35,
+            "intraday_ret": -8.01,
+            "day_ret": -7.39,
+            "ema_fast": 15599.7591,
+            "ema_slow": 15959.7338
+          }
+        ],
+        "383310.KQ": [
+          {
+            "ticker": "383310.KQ",
+            "stock_name": "에코프로에이치엔",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.8,
+            "breakout": false,
+            "vol_ratio": 0.68,
+            "intraday_ret": -5.83,
+            "day_ret": -6.14,
+            "ema_fast": 29698.808,
+            "ema_slow": 29975.5293
+          }
+        ],
+        "094170.KQ": [
+          {
+            "ticker": "094170.KQ",
+            "stock_name": "동운아나텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.4,
+            "breakout": false,
+            "vol_ratio": 0.74,
+            "intraday_ret": -8.44,
+            "day_ret": -9.73,
+            "ema_fast": 29920.3428,
+            "ema_slow": 30343.1503
+          }
+        ],
+        "327260.KQ": [
+          {
+            "ticker": "327260.KQ",
+            "stock_name": "RF머트리얼즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.55,
+            "intraday_ret": -7.63,
+            "day_ret": -7.11,
+            "ema_fast": 69298.3322,
+            "ema_slow": 68913.3876
+          }
+        ],
+        "187660.KQ": [
+          {
+            "ticker": "187660.KQ",
+            "stock_name": "페니트리움바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.54,
+            "intraday_ret": -14.71,
+            "day_ret": -12.35,
+            "ema_fast": 10776.4658,
+            "ema_slow": 11191.733
+          }
+        ],
+        "272290.KQ": [
+          {
+            "ticker": "272290.KQ",
+            "stock_name": "이녹스첨단소재",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.3,
+            "breakout": false,
+            "vol_ratio": 0.83,
+            "intraday_ret": -9.67,
+            "day_ret": -8.21,
+            "ema_fast": 29512.7044,
+            "ema_slow": 30043.7489
+          }
+        ],
+        "389650.KQ": [
+          {
+            "ticker": "389650.KQ",
+            "stock_name": "넥스트바이오메디컬",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 2.63,
+            "intraday_ret": -7.73,
+            "day_ret": -7.73,
+            "ema_fast": 70560.8778,
+            "ema_slow": 72748.829
+          }
+        ],
+        "252990.KQ": [
+          {
+            "ticker": "252990.KQ",
+            "stock_name": "샘씨엔에스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.8,
+            "breakout": false,
+            "vol_ratio": 0.88,
+            "intraday_ret": -8.12,
+            "day_ret": -7.56,
+            "ema_fast": 9440.4697,
+            "ema_slow": 9425.4778
+          }
+        ],
+        "098070.KQ": [
+          {
+            "ticker": "098070.KQ",
+            "stock_name": "한텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 39.8,
+            "breakout": false,
+            "vol_ratio": 0.73,
+            "intraday_ret": 0.42,
+            "day_ret": 1.26,
+            "ema_fast": 48442.9214,
+            "ema_slow": 48418.8173
+          }
+        ],
+        "045100.KQ": [
+          {
+            "ticker": "045100.KQ",
+            "stock_name": "한양이엔지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 37.7,
+            "breakout": false,
+            "vol_ratio": 1.57,
+            "intraday_ret": -11.31,
+            "day_ret": -8.66,
+            "ema_fast": 30050.8626,
+            "ema_slow": 30613.3715
+          }
+        ],
+        "138080.KQ": [
+          {
+            "ticker": "138080.KQ",
+            "stock_name": "오이솔루션",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 64.1,
+            "breakout": false,
+            "vol_ratio": 0.58,
+            "intraday_ret": -0.7,
+            "day_ret": -0.94,
+            "ema_fast": 42256.4704,
+            "ema_slow": 40551.3077
+          }
+        ],
+        "042520.KQ": [
+          {
+            "ticker": "042520.KQ",
+            "stock_name": "한스바이오메드",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.55,
+            "intraday_ret": -7.3,
+            "day_ret": -4.61,
+            "ema_fast": 36903.8158,
+            "ema_slow": 37254.9365
+          }
+        ],
+        "041190.KQ": [
+          {
+            "ticker": "041190.KQ",
+            "stock_name": "우리기술투자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 39.5,
+            "breakout": false,
+            "vol_ratio": 1.75,
+            "intraday_ret": -6.15,
+            "day_ret": -5.72,
+            "ema_fast": 6243.2752,
+            "ema_slow": 6314.2415
+          }
+        ],
+        "215600.KQ": [
+          {
+            "ticker": "215600.KQ",
+            "stock_name": "신라젠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.2,
+            "breakout": false,
+            "vol_ratio": 1.42,
+            "intraday_ret": -6.35,
+            "day_ret": -6.82,
+            "ema_fast": 3806.8929,
+            "ema_slow": 3855.9834
+          }
+        ],
+        "393890.KQ": [
+          {
+            "ticker": "393890.KQ",
+            "stock_name": "더블유씨피",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.39,
+            "intraday_ret": -7.25,
+            "day_ret": -7.07,
+            "ema_fast": 14754.3319,
+            "ema_slow": 14699.1705
+          }
+        ],
+        "077360.KQ": [
+          {
+            "ticker": "077360.KQ",
+            "stock_name": "덕산하이메탈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.6,
+            "breakout": false,
+            "vol_ratio": 1.16,
+            "intraday_ret": -9.03,
+            "day_ret": -9.12,
+            "ema_fast": 10760.3939,
+            "ema_slow": 10833.5807
+          }
+        ],
+        "083450.KQ": [
+          {
+            "ticker": "083450.KQ",
+            "stock_name": "GST",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.8,
+            "breakout": false,
+            "vol_ratio": 1.08,
+            "intraday_ret": -8.56,
+            "day_ret": -7.38,
+            "ema_fast": 25833.5708,
+            "ema_slow": 26128.6447
+          }
+        ],
+        "079370.KQ": [
+          {
+            "ticker": "079370.KQ",
+            "stock_name": "제우스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.6,
+            "intraday_ret": -6.92,
+            "day_ret": -6.2,
+            "ema_fast": 14946.8219,
+            "ema_slow": 15148.2051
+          }
+        ],
+        "230240.KQ": [
+          {
+            "ticker": "230240.KQ",
+            "stock_name": "에치에프알",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 64.2,
+            "breakout": false,
+            "vol_ratio": 0.46,
+            "intraday_ret": -0.88,
+            "day_ret": -0.88,
+            "ema_fast": 33743.5142,
+            "ema_slow": 32345.191
+          }
+        ],
+        "006910.KQ": [
+          {
+            "ticker": "006910.KQ",
+            "stock_name": "보성파워텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.6,
+            "breakout": false,
+            "vol_ratio": 0.66,
+            "intraday_ret": -11.15,
+            "day_ret": -9.84,
+            "ema_fast": 9509.1192,
+            "ema_slow": 9762.1556
+          }
+        ],
+        "064260.KQ": [
+          {
+            "ticker": "064260.KQ",
+            "stock_name": "다날",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.6,
+            "breakout": false,
+            "vol_ratio": 1.46,
+            "intraday_ret": -8.95,
+            "day_ret": -7.64,
+            "ema_fast": 5961.9859,
+            "ema_slow": 6090.0137
+          }
+        ],
+        "338840.KQ": [
+          {
+            "ticker": "338840.KQ",
+            "stock_name": "와이바이오로직스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 39.7,
+            "breakout": false,
+            "vol_ratio": 1.77,
+            "intraday_ret": -11.82,
+            "day_ret": -11.27,
+            "ema_fast": 29802.8514,
+            "ema_slow": 31004.4029
+          }
+        ],
+        "340570.KQ": [
+          {
+            "ticker": "340570.KQ",
+            "stock_name": "티앤엘",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 52800.0,
+            "curr_volume": 15735.0,
+            "avg_volume_5": 15393.4,
+            "curr_turnover": 830808000.0,
+            "avg_turnover_5": 816169080.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "078350.KQ": [
+          {
+            "ticker": "078350.KQ",
+            "stock_name": "한양디지텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.3,
+            "breakout": false,
+            "vol_ratio": 1.13,
+            "intraday_ret": -9.97,
+            "day_ret": -9.24,
+            "ema_fast": 29043.7463,
+            "ema_slow": 29552.7281
+          }
+        ],
+        "033640.KQ": [
+          {
+            "ticker": "033640.KQ",
+            "stock_name": "네패스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.7,
+            "breakout": false,
+            "vol_ratio": 0.67,
+            "intraday_ret": -8.4,
+            "day_ret": -8.63,
+            "ema_fast": 18881.5883,
+            "ema_slow": 18812.369
+          }
+        ],
+        "107640.KQ": [
+          {
+            "ticker": "107640.KQ",
+            "stock_name": "한중엔시에스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 37.4,
+            "breakout": false,
+            "vol_ratio": 1.54,
+            "intraday_ret": -8.87,
+            "day_ret": -8.13,
+            "ema_fast": 47067.565,
+            "ema_slow": 48424.957
+          }
+        ],
+        "033160.KQ": [
+          {
+            "ticker": "033160.KQ",
+            "stock_name": "엠케이전자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 52.4,
+            "breakout": false,
+            "vol_ratio": 0.8,
+            "intraday_ret": -3.59,
+            "day_ret": -3.79,
+            "ema_fast": 17975.623,
+            "ema_slow": 17476.6545
+          }
+        ],
+        "117730.KQ": [
+          {
+            "ticker": "117730.KQ",
+            "stock_name": "티로보틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 61.5,
+            "breakout": false,
+            "vol_ratio": 0.79,
+            "intraday_ret": -9.1,
+            "day_ret": 0.77,
+            "ema_fast": 18275.457,
+            "ema_slow": 18113.6931
+          }
+        ],
+        "080580.KQ": [
+          {
+            "ticker": "080580.KQ",
+            "stock_name": "오킨스전자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.8,
+            "breakout": false,
+            "vol_ratio": 0.88,
+            "intraday_ret": -11.42,
+            "day_ret": -10.39,
+            "ema_fast": 20017.9365,
+            "ema_slow": 20178.9578
+          }
+        ],
+        "084990.KQ": [
+          {
+            "ticker": "084990.KQ",
+            "stock_name": "헬릭스미스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 64.7,
+            "breakout": false,
+            "vol_ratio": 1.04,
+            "intraday_ret": -0.24,
+            "day_ret": 1.19,
+            "ema_fast": 8496.3472,
+            "ema_slow": 8333.1665
+          }
+        ],
+        "046120.KQ": [
+          {
+            "ticker": "046120.KQ",
+            "stock_name": "오르비텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.57,
+            "intraday_ret": -9.34,
+            "day_ret": -7.54,
+            "ema_fast": 11393.379,
+            "ema_slow": 11531.3259
+          }
+        ],
+        "041920.KQ": [
+          {
+            "ticker": "041920.KQ",
+            "stock_name": "메디아나",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.56,
+            "intraday_ret": -13.04,
+            "day_ret": -12.84,
+            "ema_fast": 19803.3075,
+            "ema_slow": 20230.4989
+          }
+        ],
+        "317330.KQ": [
+          {
+            "ticker": "317330.KQ",
+            "stock_name": "덕산테코피아",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.49,
+            "intraday_ret": -3.68,
+            "day_ret": -5.46,
+            "ema_fast": 18332.1156,
+            "ema_slow": 18213.4998
+          }
+        ],
+        "018000.KQ": [
+          {
+            "ticker": "018000.KQ",
+            "stock_name": "유니슨",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.1,
+            "breakout": false,
+            "vol_ratio": 0.5,
+            "intraday_ret": -2.06,
+            "day_ret": -1.47,
+            "ema_fast": 1486.8918,
+            "ema_slow": 1489.8634
+          }
+        ],
+        "089890.KQ": [
+          {
+            "ticker": "089890.KQ",
+            "stock_name": "코세스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.0,
+            "breakout": false,
+            "vol_ratio": 0.43,
+            "intraday_ret": -5.26,
+            "day_ret": -2.48,
+            "ema_fast": 21906.6702,
+            "ema_slow": 21633.6446
+          }
+        ],
+        "290550.KQ": [
+          {
+            "ticker": "290550.KQ",
+            "stock_name": "디케이티",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.5,
+            "breakout": false,
+            "vol_ratio": 0.89,
+            "intraday_ret": -7.06,
+            "day_ret": -3.21,
+            "ema_fast": 17985.6841,
+            "ema_slow": 18263.3309
+          }
+        ],
+        "221800.KQ": [
+          {
+            "ticker": "221800.KQ",
+            "stock_name": "유투바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.22,
+            "intraday_ret": -10.22,
+            "day_ret": -9.03,
+            "ema_fast": 21524.3058,
+            "ema_slow": 21418.2671
+          }
+        ],
+        "114190.KQ": [
+          {
+            "ticker": "114190.KQ",
+            "stock_name": "강원에너지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.15,
+            "intraday_ret": -6.08,
+            "day_ret": -6.72,
+            "ema_fast": 13977.3349,
+            "ema_slow": 13934.0374
+          }
+        ],
+        "241520.KQ": [
+          {
+            "ticker": "241520.KQ",
+            "stock_name": "DSC인베스트먼트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.8,
+            "breakout": false,
+            "vol_ratio": 0.88,
+            "intraday_ret": -10.14,
+            "day_ret": -8.99,
+            "ema_fast": 13215.2028,
+            "ema_slow": 13481.9554
+          }
+        ],
+        "354320.KQ": [
+          {
+            "ticker": "354320.KQ",
+            "stock_name": "알멕",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 51.9,
+            "breakout": false,
+            "vol_ratio": 0.27,
+            "intraday_ret": -3.74,
+            "day_ret": -3.05,
+            "ema_fast": 55046.9448,
+            "ema_slow": 53459.6805
+          }
+        ],
+        "108860.KQ": [
+          {
+            "ticker": "108860.KQ",
+            "stock_name": "셀바스AI",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.53,
+            "intraday_ret": -10.64,
+            "day_ret": -9.34,
+            "ema_fast": 12987.8073,
+            "ema_slow": 13445.0184
+          }
+        ],
+        "092870.KQ": [
+          {
+            "ticker": "092870.KQ",
+            "stock_name": "엑시콘",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.6,
+            "breakout": false,
+            "vol_ratio": 1.66,
+            "intraday_ret": -9.93,
+            "day_ret": -9.61,
+            "ema_fast": 26452.4766,
+            "ema_slow": 26905.0209
+          }
+        ],
+        "204620.KQ": [
+          {
+            "ticker": "204620.KQ",
+            "stock_name": "글로벌텍스프리",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 43.7,
+            "breakout": false,
+            "vol_ratio": 2.1,
+            "intraday_ret": -3.27,
+            "day_ret": -3.66,
+            "ema_fast": 4869.3215,
+            "ema_slow": 4878.3477
+          }
+        ],
+        "217730.KQ": [
+          {
+            "ticker": "217730.KQ",
+            "stock_name": "강스템바이오텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 56.0,
+            "breakout": false,
+            "vol_ratio": 0.4,
+            "intraday_ret": -1.26,
+            "day_ret": -0.99,
+            "ema_fast": 3518.7679,
+            "ema_slow": 3413.5833
+          }
+        ],
+        "046970.KQ": [
+          {
+            "ticker": "046970.KQ",
+            "stock_name": "우리로",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 45.2,
+            "breakout": false,
+            "vol_ratio": 2.32,
+            "intraday_ret": -20.53,
+            "day_ret": -18.36,
+            "ema_fast": 7555.3493,
+            "ema_slow": 7704.0987
+          }
+        ],
+        "234340.KQ": [
+          {
+            "ticker": "234340.KQ",
+            "stock_name": "헥토파이낸셜",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.57,
+            "intraday_ret": -9.64,
+            "day_ret": -9.27,
+            "ema_fast": 23268.459,
+            "ema_slow": 24079.4186
+          }
+        ],
+        "321550.KQ": [
+          {
+            "ticker": "321550.KQ",
+            "stock_name": "티움바이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.6,
+            "breakout": false,
+            "vol_ratio": 1.36,
+            "intraday_ret": -14.16,
+            "day_ret": -14.36,
+            "ema_fast": 11636.1212,
+            "ema_slow": 12015.8429
+          }
+        ],
+        "049630.KQ": [
+          {
+            "ticker": "049630.KQ",
+            "stock_name": "재영솔루텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.4,
+            "breakout": false,
+            "vol_ratio": 1.34,
+            "intraday_ret": -10.56,
+            "day_ret": -8.6,
+            "ema_fast": 2807.9399,
+            "ema_slow": 2838.0393
+          }
+        ],
+        "170920.KQ": [
+          {
+            "ticker": "170920.KQ",
+            "stock_name": "엘티씨",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.4,
+            "breakout": false,
+            "vol_ratio": 0.64,
+            "intraday_ret": -10.48,
+            "day_ret": -8.42,
+            "ema_fast": 30798.2036,
+            "ema_slow": 31361.5447
+          }
+        ],
+        "073490.KQ": [
+          {
+            "ticker": "073490.KQ",
+            "stock_name": "이노와이어리스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.3,
+            "breakout": false,
+            "vol_ratio": 0.46,
+            "intraday_ret": -3.41,
+            "day_ret": -3.86,
+            "ema_fast": 41803.2013,
+            "ema_slow": 41662.731
+          }
+        ],
+        "389500.KQ": [
+          {
+            "ticker": "389500.KQ",
+            "stock_name": "에스비비테크",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 47000.0,
+            "curr_volume": 15604.0,
+            "avg_volume_5": 17931.8,
+            "curr_turnover": 733388000.0,
+            "avg_turnover_5": 875966210.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "069540.KQ": [
+          {
+            "ticker": "069540.KQ",
+            "stock_name": "빛과전자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.4,
+            "breakout": false,
+            "vol_ratio": 0.52,
+            "intraday_ret": -9.43,
+            "day_ret": -3.82,
+            "ema_fast": 3062.4663,
+            "ema_slow": 3026.9539
+          }
+        ],
+        "389020.KQ": [
+          {
+            "ticker": "389020.KQ",
+            "stock_name": "자람테크놀로지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.7,
+            "breakout": false,
+            "vol_ratio": 0.77,
+            "intraday_ret": -12.5,
+            "day_ret": -12.5,
+            "ema_fast": 50347.044,
+            "ema_slow": 51571.3551
+          }
+        ],
+        "304360.KQ": [
+          {
+            "ticker": "304360.KQ",
+            "stock_name": "에스바이오메딕스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 3.78,
+            "intraday_ret": -12.27,
+            "day_ret": -11.96,
+            "ema_fast": 26083.8131,
+            "ema_slow": 27830.3975
+          }
+        ],
+        "085910.KQ": [
+          {
+            "ticker": "085910.KQ",
+            "stock_name": "네오티스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.6,
+            "intraday_ret": -14.73,
+            "day_ret": -9.09,
+            "ema_fast": 22761.8904,
+            "ema_slow": 22406.0363
+          }
+        ],
+        "365270.KQ": [
+          {
+            "ticker": "365270.KQ",
+            "stock_name": "큐라클",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.3,
+            "breakout": false,
+            "vol_ratio": 1.63,
+            "intraday_ret": -9.57,
+            "day_ret": -7.64,
+            "ema_fast": 14426.5087,
+            "ema_slow": 14806.1402
+          }
+        ],
+        "330860.KQ": [
+          {
+            "ticker": "330860.KQ",
+            "stock_name": "네패스아크",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.8,
+            "breakout": false,
+            "vol_ratio": 0.62,
+            "intraday_ret": -4.8,
+            "day_ret": -2.75,
+            "ema_fast": 25398.7568,
+            "ema_slow": 25063.3905
+          }
+        ],
+        "462350.KQ": [
+          {
+            "ticker": "462350.KQ",
+            "stock_name": "이노스페이스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.6,
+            "breakout": false,
+            "vol_ratio": 0.96,
+            "intraday_ret": -11.09,
+            "day_ret": -8.4,
+            "ema_fast": 15004.7167,
+            "ema_slow": 15211.5599
+          }
+        ],
+        "042370.KQ": [
+          {
+            "ticker": "042370.KQ",
+            "stock_name": "비츠로테크",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.2,
+            "breakout": false,
+            "vol_ratio": 0.82,
+            "intraday_ret": -8.53,
+            "day_ret": -7.46,
+            "ema_fast": 11386.1072,
+            "ema_slow": 11485.5514
+          }
+        ],
+        "088800.KQ": [
+          {
+            "ticker": "088800.KQ",
+            "stock_name": "에이스테크",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.22,
+            "intraday_ret": -12.24,
+            "day_ret": -10.21,
+            "ema_fast": 4015.1994,
+            "ema_slow": 4064.6422
+          }
+        ],
+        "459510.KQ": [
+          {
+            "ticker": "459510.KQ",
+            "stock_name": "나우로보틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 80.6,
+            "breakout": false,
+            "vol_ratio": 0.66,
+            "intraday_ret": -8.96,
+            "day_ret": 11.65,
+            "ema_fast": 21615.0673,
+            "ema_slow": 20578.476
+          }
+        ],
+        "243840.KQ": [
+          {
+            "ticker": "243840.KQ",
+            "stock_name": "신흥에스이씨",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.7,
+            "breakout": false,
+            "vol_ratio": 0.54,
+            "intraday_ret": -4.53,
+            "day_ret": -3.66,
+            "ema_fast": 7475.0422,
+            "ema_slow": 7431.8679
+          }
+        ],
+        "255220.KQ": [
+          {
+            "ticker": "255220.KQ",
+            "stock_name": "SG",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.7,
+            "breakout": false,
+            "vol_ratio": 0.77,
+            "intraday_ret": -8.74,
+            "day_ret": -7.51,
+            "ema_fast": 2682.1857,
+            "ema_slow": 2706.9681
+          }
+        ],
+        "160980.KQ": [
+          {
+            "ticker": "160980.KQ",
+            "stock_name": "싸이맥스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.5,
+            "breakout": false,
+            "vol_ratio": 0.85,
+            "intraday_ret": -11.27,
+            "day_ret": -5.71,
+            "ema_fast": 26078.6653,
+            "ema_slow": 25794.3848
+          }
+        ],
+        "194480.KQ": [
+          {
+            "ticker": "194480.KQ",
+            "stock_name": "데브시스터즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 36.9,
+            "breakout": false,
+            "vol_ratio": 1.49,
+            "intraday_ret": -14.26,
+            "day_ret": -15.36,
+            "ema_fast": 24651.3207,
+            "ema_slow": 26857.8618
+          }
+        ],
+        "200470.KQ": [
+          {
+            "ticker": "200470.KQ",
+            "stock_name": "에이팩트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.5,
+            "breakout": false,
+            "vol_ratio": 0.85,
+            "intraday_ret": -10.53,
+            "day_ret": -8.93,
+            "ema_fast": 6891.1357,
+            "ema_slow": 7045.9892
+          }
+        ],
+        "126600.KQ": [
+          {
+            "ticker": "126600.KQ",
+            "stock_name": "BGF에코머티리얼즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.19,
+            "intraday_ret": -9.16,
+            "day_ret": -10.38,
+            "ema_fast": 4555.7709,
+            "ema_slow": 4564.5788
+          }
+        ],
+        "078070.KQ": [
+          {
+            "ticker": "078070.KQ",
+            "stock_name": "유비쿼스홀딩스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.46,
+            "intraday_ret": -8.05,
+            "day_ret": -6.76,
+            "ema_fast": 15763.5705,
+            "ema_slow": 15807.3318
+          }
+        ],
+        "451760.KQ": [
+          {
+            "ticker": "451760.KQ",
+            "stock_name": "컨텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.9,
+            "breakout": false,
+            "vol_ratio": 0.79,
+            "intraday_ret": -13.04,
+            "day_ret": -10.44,
+            "ema_fast": 17756.6803,
+            "ema_slow": 18126.8212
+          }
+        ],
+        "322310.KQ": [
+          {
+            "ticker": "322310.KQ",
+            "stock_name": "오로스테크놀로지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.7,
+            "breakout": false,
+            "vol_ratio": 1.27,
+            "intraday_ret": -13.27,
+            "day_ret": -13.67,
+            "ema_fast": 29548.3496,
+            "ema_slow": 30348.6545
+          }
+        ],
+        "452280.KQ": [
+          {
+            "ticker": "452280.KQ",
+            "stock_name": "한선엔지니어링",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.8,
+            "breakout": false,
+            "vol_ratio": 0.88,
+            "intraday_ret": -11.82,
+            "day_ret": -6.67,
+            "ema_fast": 13783.6647,
+            "ema_slow": 13931.9897
+          }
+        ],
+        "012860.KQ": [
+          {
+            "ticker": "012860.KQ",
+            "stock_name": "모베이스전자",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.27,
+            "intraday_ret": -9.6,
+            "day_ret": -5.43,
+            "ema_fast": 3588.5854,
+            "ema_slow": 3562.5007
+          }
+        ],
+        "425040.KQ": [
+          {
+            "ticker": "425040.KQ",
+            "stock_name": "티이엠씨",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.27,
+            "intraday_ret": -8.75,
+            "day_ret": -8.27,
+            "ema_fast": 12575.5633,
+            "ema_slow": 12556.6313
+          }
+        ],
+        "361390.KQ": [
+          {
+            "ticker": "361390.KQ",
+            "stock_name": "제노코",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.2,
+            "breakout": false,
+            "vol_ratio": 0.92,
+            "intraday_ret": -10.67,
+            "day_ret": -9.48,
+            "ema_fast": 28379.2225,
+            "ema_slow": 29508.1044
+          }
+        ],
+        "272110.KQ": [
+          {
+            "ticker": "272110.KQ",
+            "stock_name": "케이엔제이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.6,
+            "breakout": false,
+            "vol_ratio": 1.16,
+            "intraday_ret": -10.53,
+            "day_ret": -9.24,
+            "ema_fast": 32734.145,
+            "ema_slow": 33416.7791
+          }
+        ],
+        "123330.KQ": [
+          {
+            "ticker": "123330.KQ",
+            "stock_name": "제닉",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 38.6,
+            "breakout": false,
+            "vol_ratio": 0.63,
+            "intraday_ret": 1.6,
+            "day_ret": 1.12,
+            "ema_fast": 32527.7267,
+            "ema_slow": 32214.2521
+          }
+        ],
+        "274090.KQ": [
+          {
+            "ticker": "274090.KQ",
+            "stock_name": "켄코아에어로스페이스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.6,
+            "breakout": false,
+            "vol_ratio": 0.96,
+            "intraday_ret": -18.36,
+            "day_ret": -15.16,
+            "ema_fast": 19480.9718,
+            "ema_slow": 20478.3706
+          }
+        ],
+        "289930.KQ": [
+          {
+            "ticker": "289930.KQ",
+            "stock_name": "웨이비스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 69.9,
+            "breakout": false,
+            "vol_ratio": 0.73,
+            "intraday_ret": -1.32,
+            "day_ret": 1.3,
+            "ema_fast": 19440.6849,
+            "ema_slow": 18961.7513
+          }
+        ],
+        "418550.KQ": [
+          {
+            "ticker": "418550.KQ",
+            "stock_name": "제이오",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.1,
+            "breakout": false,
+            "vol_ratio": 0.45,
+            "intraday_ret": -4.63,
+            "day_ret": -3.93,
+            "ema_fast": 8013.7876,
+            "ema_slow": 8027.1718
+          }
+        ],
+        "036170.KQ": [
+          {
+            "ticker": "036170.KQ",
+            "stock_name": "에이치엠넥스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.8,
+            "breakout": false,
+            "vol_ratio": 0.68,
+            "intraday_ret": -17.66,
+            "day_ret": -14.61,
+            "ema_fast": 4374.8077,
+            "ema_slow": 4825.6824
+          }
+        ],
+        "234690.KQ": [
+          {
+            "ticker": "234690.KQ",
+            "stock_name": "녹십자웰빙",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.9,
+            "breakout": false,
+            "vol_ratio": 0.55,
+            "intraday_ret": -7.3,
+            "day_ret": -3.55,
+            "ema_fast": 14006.264,
+            "ema_slow": 13873.7714
+          }
+        ],
+        "226590.KQ": [
+          {
+            "ticker": "226590.KQ",
+            "stock_name": "엠디바이스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.46,
+            "intraday_ret": -11.11,
+            "day_ret": -7.94,
+            "ema_fast": 23943.3393,
+            "ema_slow": 24725.5553
+          }
+        ],
+        "094820.KQ": [
+          {
+            "ticker": "094820.KQ",
+            "stock_name": "일진파워",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.1,
+            "breakout": false,
+            "vol_ratio": 1.01,
+            "intraday_ret": -8.52,
+            "day_ret": -7.79,
+            "ema_fast": 16575.9713,
+            "ema_slow": 16764.7902
+          }
+        ],
+        "211270.KQ": [
+          {
+            "ticker": "211270.KQ",
+            "stock_name": "AP위성",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 29.5,
+            "breakout": false,
+            "vol_ratio": 0.75,
+            "intraday_ret": -12.1,
+            "day_ret": -9.26,
+            "ema_fast": 16060.9745,
+            "ema_slow": 16450.8853
+          }
+        ],
+        "332570.KQ": [
+          {
+            "ticker": "332570.KQ",
+            "stock_name": "PS일렉트로닉스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.3,
+            "breakout": false,
+            "vol_ratio": 0.83,
+            "intraday_ret": -9.86,
+            "day_ret": -8.03,
+            "ema_fast": 5112.124,
+            "ema_slow": 5156.9129
+          }
+        ],
+        "474170.KQ": [
+          {
+            "ticker": "474170.KQ",
+            "stock_name": "루미르",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.46,
+            "intraday_ret": -12.22,
+            "day_ret": -9.39,
+            "ema_fast": 13705.3378,
+            "ema_slow": 14033.9101
+          }
+        ],
+        "402490.KQ": [
+          {
+            "ticker": "402490.KQ",
+            "stock_name": "그린리소스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.57,
+            "intraday_ret": -11.88,
+            "day_ret": -10.8,
+            "ema_fast": 13848.0336,
+            "ema_slow": 14200.2128
+          }
+        ],
+        "264450.KQ": [
+          {
+            "ticker": "264450.KQ",
+            "stock_name": "유비쿼스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.3,
+            "breakout": false,
+            "vol_ratio": 0.53,
+            "intraday_ret": -5.27,
+            "day_ret": -3.87,
+            "ema_fast": 15188.8253,
+            "ema_slow": 15317.1972
+          }
+        ],
+        "052710.KQ": [
+          {
+            "ticker": "052710.KQ",
+            "stock_name": "아모텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 55.9,
+            "breakout": false,
+            "vol_ratio": 0.78,
+            "intraday_ret": -4.34,
+            "day_ret": -1.93,
+            "ema_fast": 14841.0912,
+            "ema_slow": 14345.0016
+          }
+        ],
+        "388050.KQ": [
+          {
+            "ticker": "388050.KQ",
+            "stock_name": "지투파워",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.42,
+            "intraday_ret": -10.24,
+            "day_ret": -8.89,
+            "ema_fast": 11329.7623,
+            "ema_slow": 11450.8913
+          }
+        ],
+        "289080.KQ": [
+          {
+            "ticker": "289080.KQ",
+            "stock_name": "SV인베스트먼트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.25,
+            "intraday_ret": -11.38,
+            "day_ret": -11.81,
+            "ema_fast": 3819.8094,
+            "ema_slow": 3939.8103
+          }
+        ],
+        "242040.KQ": [
+          {
+            "ticker": "242040.KQ",
+            "stock_name": "나무기술",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.36,
+            "intraday_ret": -13.13,
+            "day_ret": -8.35,
+            "ema_fast": 5964.1465,
+            "ema_slow": 6037.6361
+          }
+        ],
+        "140670.KQ": [
+          {
+            "ticker": "140670.KQ",
+            "stock_name": "알에스오토메이션",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.9,
+            "breakout": false,
+            "vol_ratio": 1.19,
+            "intraday_ret": -11.83,
+            "day_ret": -7.72,
+            "ema_fast": 15964.978,
+            "ema_slow": 16253.0087
+          }
+        ],
+        "432720.KQ": [
+          {
+            "ticker": "432720.KQ",
+            "stock_name": "퀄리타스반도체",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.53,
+            "intraday_ret": -10.33,
+            "day_ret": -8.69,
+            "ema_fast": 14375.1443,
+            "ema_slow": 14582.5611
+          }
+        ],
+        "282720.KQ": [
+          {
+            "ticker": "282720.KQ",
+            "stock_name": "금양그린파워",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.2,
+            "intraday_ret": -5.04,
+            "day_ret": -4.77,
+            "ema_fast": 16584.4893,
+            "ema_slow": 16775.1386
+          }
+        ],
+        "039560.KQ": [
+          {
+            "ticker": "039560.KQ",
+            "stock_name": "다산네트웍스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.48,
+            "intraday_ret": -6.14,
+            "day_ret": -5.22,
+            "ema_fast": 4924.7132,
+            "ema_slow": 4982.16
+          }
+        ],
+        "382800.KQ": [
+          {
+            "ticker": "382800.KQ",
+            "stock_name": "지앤비에스 에코",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 61.9,
+            "breakout": false,
+            "vol_ratio": 0.92,
+            "intraday_ret": -0.98,
+            "day_ret": 0.33,
+            "ema_fast": 6147.3211,
+            "ema_slow": 5973.1864
+          }
+        ],
+        "456010.KQ": [
+          {
+            "ticker": "456010.KQ",
+            "stock_name": "아이씨티케이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 33.7,
+            "breakout": false,
+            "vol_ratio": 1.17,
+            "intraday_ret": -8.65,
+            "day_ret": -9.07,
+            "ema_fast": 14223.163,
+            "ema_slow": 14404.5265
+          }
+        ],
+        "131030.KQ": [
+          {
+            "ticker": "131030.KQ",
+            "stock_name": "옵투스제약",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 48.0,
+            "breakout": false,
+            "vol_ratio": 3.38,
+            "intraday_ret": -28.98,
+            "day_ret": -24.29,
+            "ema_fast": 12650.7563,
+            "ema_slow": 13833.5527
+          }
+        ],
+        "232680.KQ": [
+          {
+            "ticker": "232680.KQ",
+            "stock_name": "라온로보틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.7,
+            "breakout": false,
+            "vol_ratio": 0.67,
+            "intraday_ret": -10.52,
+            "day_ret": -5.15,
+            "ema_fast": 14819.2695,
+            "ema_slow": 14672.7573
+          }
+        ],
+        "355150.KQ": [
+          {
+            "ticker": "355150.KQ",
+            "stock_name": "코스텍시스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 40.1,
+            "breakout": false,
+            "vol_ratio": 1.01,
+            "intraday_ret": -5.25,
+            "day_ret": 0.0,
+            "ema_fast": 22817.2109,
+            "ema_slow": 22591.5793
+          }
+        ],
+        "008830.KQ": [
+          {
+            "ticker": "008830.KQ",
+            "stock_name": "대동기어",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.2,
+            "breakout": false,
+            "vol_ratio": 0.62,
+            "intraday_ret": -9.67,
+            "day_ret": -7.73,
+            "ema_fast": 19899.6906,
+            "ema_slow": 20061.0949
+          }
+        ],
+        "307180.KQ": [
+          {
+            "ticker": "307180.KQ",
+            "stock_name": "아이엘",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.45,
+            "intraday_ret": -11.12,
+            "day_ret": -8.35,
+            "ema_fast": 5148.2832,
+            "ema_slow": 5206.1462
+          }
+        ],
+        "475580.KQ": [
+          {
+            "ticker": "475580.KQ",
+            "stock_name": "에이럭스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.47,
+            "intraday_ret": -8.77,
+            "day_ret": -7.84,
+            "ema_fast": 13044.7182,
+            "ema_slow": 13278.3824
+          }
+        ],
+        "453450.KQ": [
+          {
+            "ticker": "453450.KQ",
+            "stock_name": "그리드위즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.6,
+            "breakout": false,
+            "vol_ratio": 0.74,
+            "intraday_ret": -2.68,
+            "day_ret": -0.91,
+            "ema_fast": 21974.5262,
+            "ema_slow": 21989.7054
+          }
+        ],
+        "321370.KQ": [
+          {
+            "ticker": "321370.KQ",
+            "stock_name": "센서뷰",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.41,
+            "intraday_ret": -14.57,
+            "day_ret": -11.19,
+            "ema_fast": 3387.6632,
+            "ema_slow": 3402.9413
+          }
+        ],
+        "051980.KQ": [
+          {
+            "ticker": "051980.KQ",
+            "stock_name": "중앙첨단소재",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 31.3,
+            "breakout": false,
+            "vol_ratio": 0.45,
+            "intraday_ret": -3.07,
+            "day_ret": -2.35,
+            "ema_fast": 1493.0528,
+            "ema_slow": 1507.4899
+          }
+        ],
+        "388790.KQ": [
+          {
+            "ticker": "388790.KQ",
+            "stock_name": "라이콤",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.41,
+            "intraday_ret": -12.01,
+            "day_ret": -8.45,
+            "ema_fast": 5490.048,
+            "ema_slow": 5444.2198
+          }
+        ],
+        "357880.KQ": [
+          {
+            "ticker": "357880.KQ",
+            "stock_name": "SKAI",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.5,
+            "breakout": false,
+            "vol_ratio": 0.85,
+            "intraday_ret": -9.76,
+            "day_ret": -9.5,
+            "ema_fast": 3189.1585,
+            "ema_slow": 3350.697
+          }
+        ],
+        "192410.KQ": [
+          {
+            "ticker": "192410.KQ",
+            "stock_name": "오늘이엔엠",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 79.4,
+            "breakout": false,
+            "vol_ratio": 0.36,
+            "intraday_ret": -0.76,
+            "day_ret": 6.68,
+            "ema_fast": 6284.4969,
+            "ema_slow": 5702.4704
+          }
+        ],
+        "474610.KQ": [
+          {
+            "ticker": "474610.KQ",
+            "stock_name": "RF시스템즈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.7,
+            "breakout": false,
+            "vol_ratio": 0.67,
+            "intraday_ret": -11.02,
+            "day_ret": -11.32,
+            "ema_fast": 10975.458,
+            "ema_slow": 10997.1878
+          }
+        ],
+        "131370.KQ": [
+          {
+            "ticker": "131370.KQ",
+            "stock_name": "알서포트",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 39.9,
+            "breakout": false,
+            "vol_ratio": 0.79,
+            "intraday_ret": 2.61,
+            "day_ret": 0.99,
+            "ema_fast": 2563.9748,
+            "ema_slow": 2572.4081
+          }
+        ],
+        "054920.KQ": [
+          {
+            "ticker": "054920.KQ",
+            "stock_name": "한컴위드",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.1,
+            "intraday_ret": -11.44,
+            "day_ret": -8.22,
+            "ema_fast": 4942.7828,
+            "ema_slow": 5013.6841
+          }
+        ],
+        "037030.KQ": [
+          {
+            "ticker": "037030.KQ",
+            "stock_name": "파워넷",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.16,
+            "intraday_ret": -9.64,
+            "day_ret": -10.71,
+            "ema_fast": 5386.372,
+            "ema_slow": 5409.3974
+          }
+        ],
+        "014970.KQ": [
+          {
+            "ticker": "014970.KQ",
+            "stock_name": "삼륭물산",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 46.8,
+            "breakout": false,
+            "vol_ratio": 0.72,
+            "intraday_ret": 3.42,
+            "day_ret": 4.78,
+            "ema_fast": 8664.1019,
+            "ema_slow": 8784.47
+          }
+        ],
+        "100700.KQ": [
+          {
+            "ticker": "100700.KQ",
+            "stock_name": "세운메디칼",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 71.4,
+            "breakout": false,
+            "vol_ratio": 0.15,
+            "intraday_ret": -0.19,
+            "day_ret": 2.69,
+            "ema_fast": 2664.5956,
+            "ema_slow": 2635.001
+          }
+        ],
+        "209640.KQ": [
+          {
+            "ticker": "209640.KQ",
+            "stock_name": "와이제이링크",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 35.8,
+            "breakout": false,
+            "vol_ratio": 1.38,
+            "intraday_ret": -14.0,
+            "day_ret": -11.29,
+            "ema_fast": 4287.3533,
+            "ema_slow": 4404.2399
+          }
+        ],
+        "101670.KQ": [
+          {
+            "ticker": "101670.KQ",
+            "stock_name": "하이드로리튬",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.15,
+            "intraday_ret": -8.13,
+            "day_ret": -6.22,
+            "ema_fast": 2132.6363,
+            "ema_slow": 2159.997
+          }
+        ],
+        "307930.KQ": [
+          {
+            "ticker": "307930.KQ",
+            "stock_name": "컴퍼니케이",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 34.7,
+            "breakout": false,
+            "vol_ratio": 1.05,
+            "intraday_ret": -12.29,
+            "day_ret": -2.88,
+            "ema_fast": 7584.9596,
+            "ema_slow": 7533.846
+          }
+        ],
+        "115440.KQ": [
+          {
+            "ticker": "115440.KQ",
+            "stock_name": "우리넷",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.56,
+            "intraday_ret": -16.32,
+            "day_ret": -12.15,
+            "ema_fast": 10839.3001,
+            "ema_slow": 11236.6068
+          }
+        ],
+        "096350.KQ": [
+          {
+            "ticker": "096350.KQ",
+            "stock_name": "대창솔루션",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 30.7,
+            "breakout": false,
+            "vol_ratio": 0.87,
+            "intraday_ret": -10.15,
+            "day_ret": -7.78,
+            "ema_fast": 3050.1946,
+            "ema_slow": 3140.7562
+          }
+        ],
+        "331920.KQ": [
+          {
+            "ticker": "331920.KQ",
+            "stock_name": "셀레믹스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 51.0,
+            "breakout": false,
+            "vol_ratio": 0.21,
+            "intraday_ret": -6.05,
+            "day_ret": -3.49,
+            "ema_fast": 12469.1923,
+            "ema_slow": 12035.249
+          }
+        ],
+        "261780.KQ": [
+          {
+            "ticker": "261780.KQ",
+            "stock_name": "차백신연구소",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.56,
+            "intraday_ret": -8.99,
+            "day_ret": -5.59,
+            "ema_fast": 3626.8481,
+            "ema_slow": 3748.1539
+          }
+        ],
+        "412350.KQ": [
+          {
+            "ticker": "412350.KQ",
+            "stock_name": "레이저쎌",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.49,
+            "intraday_ret": -6.89,
+            "day_ret": -6.53,
+            "ema_fast": 7478.4188,
+            "ema_slow": 7498.3241
+          }
+        ],
+        "100590.KQ": [
+          {
+            "ticker": "100590.KQ",
+            "stock_name": "머큐리",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.28,
+            "intraday_ret": -10.31,
+            "day_ret": -7.4,
+            "ema_fast": 5264.7609,
+            "ema_slow": 5343.398
+          }
+        ],
+        "128660.KQ": [
+          {
+            "ticker": "128660.KQ",
+            "stock_name": "피제이메탈",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 32.1,
+            "breakout": false,
+            "vol_ratio": 0.17,
+            "intraday_ret": -3.71,
+            "day_ret": -1.97,
+            "ema_fast": 3291.0242,
+            "ema_slow": 3308.4491
+          }
+        ],
+        "089230.KQ": [
+          {
+            "ticker": "089230.KQ",
+            "stock_name": "THE E&M",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 37.4,
+            "breakout": false,
+            "vol_ratio": 1.54,
+            "intraday_ret": -16.08,
+            "day_ret": -16.08,
+            "ema_fast": 2316.9117,
+            "ema_slow": 2540.0624
+          }
+        ],
+        "065440.KQ": [
+          {
+            "ticker": "065440.KQ",
+            "stock_name": "이루온",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 60.5,
+            "breakout": false,
+            "vol_ratio": 0.74,
+            "intraday_ret": -5.02,
+            "day_ret": 0.55,
+            "ema_fast": 2763.7493,
+            "ema_slow": 2625.6485
+          }
+        ],
+        "076610.KQ": [
+          {
+            "ticker": "076610.KQ",
+            "stock_name": "해성옵틱스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.59,
+            "intraday_ret": -8.92,
+            "day_ret": -7.57,
+            "ema_fast": 1419.829,
+            "ema_slow": 1478.8619
+          }
+        ],
+        "078590.KQ": [
+          {
+            "ticker": "078590.KQ",
+            "stock_name": "휴림에이텍",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 798.0,
+            "curr_volume": 1167226.0,
+            "avg_volume_5": 3378804.6,
+            "curr_turnover": 931446348.0,
+            "avg_turnover_5": 2827646122.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "056360.KQ": [
+          {
+            "ticker": "056360.KQ",
+            "stock_name": "코위버",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.27,
+            "intraday_ret": -8.63,
+            "day_ret": -13.35,
+            "ema_fast": 7062.4832,
+            "ema_slow": 6968.8397
+          }
+        ],
+        "062970.KQ": [
+          {
+            "ticker": "062970.KQ",
+            "stock_name": "한국첨단소재",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.7,
+            "breakout": false,
+            "vol_ratio": 0.67,
+            "intraday_ret": 1.97,
+            "day_ret": -13.52,
+            "ema_fast": 2705.3319,
+            "ema_slow": 2772.946
+          }
+        ],
+        "321260.KQ": [
+          {
+            "ticker": "321260.KQ",
+            "stock_name": "프로이천",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.14,
+            "intraday_ret": -6.53,
+            "day_ret": -6.34,
+            "ema_fast": 1896.1984,
+            "ema_slow": 1893.0609
+          }
+        ],
+        "452300.KQ": [
+          {
+            "ticker": "452300.KQ",
+            "stock_name": "캡스톤파트너스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.12,
+            "intraday_ret": -8.27,
+            "day_ret": -9.81,
+            "ema_fast": 3622.5144,
+            "ema_slow": 3722.0439
+          }
+        ],
+        "058110.KQ": [
+          {
+            "ticker": "058110.KQ",
+            "stock_name": "멕아이씨에스",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 28.0,
+            "breakout": false,
+            "vol_ratio": 0.14,
+            "intraday_ret": -11.95,
+            "day_ret": -11.67,
+            "ema_fast": 2934.0411,
+            "ema_slow": 2924.507
+          }
+        ],
+        "148250.KQ": [
+          {
+            "ticker": "148250.KQ",
+            "stock_name": "알엔투테크놀로지",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 67.7,
+            "breakout": false,
+            "vol_ratio": 0.45,
+            "intraday_ret": -8.36,
+            "day_ret": 0.83,
+            "ema_fast": 4208.5361,
+            "ema_slow": 3945.1851
+          }
+        ],
+        "285800.KQ": [
+          {
+            "ticker": "285800.KQ",
+            "stock_name": "진영",
+            "stage": "intraday",
+            "reason": "INTRADAY_SETUP_WEAK",
+            "decision_score": 42.6,
+            "breakout": false,
+            "vol_ratio": 0.5,
+            "intraday_ret": 2.47,
+            "day_ret": 3.3,
+            "ema_fast": 1776.1037,
+            "ema_slow": 1835.1264
+          }
+        ],
+        "023790.KQ": [
+          {
+            "ticker": "023790.KQ",
+            "stock_name": "동일스틸럭스",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 999.0,
+            "curr_volume": 569941.0,
+            "avg_volume_5": 1239346.4,
+            "curr_turnover": 569371059.0,
+            "avg_turnover_5": 1320704098.0,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "225430.KQ": [
+          {
+            "ticker": "225430.KQ",
+            "stock_name": "케이엠제약",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 784.0,
+            "curr_volume": 1050232.0,
+            "avg_volume_5": 1089389.0,
+            "curr_turnover": 823381888.0,
+            "avg_turnover_5": 930848571.8,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "322780.KQ": [
+          {
+            "ticker": "322780.KQ",
+            "stock_name": "코퍼스코리아",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 487.0,
+            "curr_volume": 5330845.0,
+            "avg_volume_5": 2235538.6,
+            "curr_turnover": 2596121515.0,
+            "avg_turnover_5": 1110738777.6,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ],
+        "065420.KQ": [
+          {
+            "ticker": "065420.KQ",
+            "stock_name": "에스아이리소스",
+            "stage": "intraday",
+            "reason": "INTRADAY_MIN_PRICE_VOLUME_FAIL",
+            "curr_price": 288.0,
+            "curr_volume": 8876042.0,
+            "avg_volume_5": 10298448.4,
+            "curr_turnover": 2556300096.0,
+            "avg_turnover_5": 2925322016.6,
+            "min_price": 1000.0,
+            "min_volume": 20000.0,
+            "min_turnover": 300000000.0,
+            "market_key": "KOSDAQ"
+          }
+        ]
+      }
+    },
+    "market_gate": {
+      "gate": "RED",
+      "region": "KR",
+      "selected_market": "KOSDAQ",
+      "primary_label": "KOSPI",
+      "secondary_label": "KOSDAQ",
+      "primary_chg": -5.68852061161156,
+      "secondary_chg": -6.877003311406482,
+      "msg": "종가 하락장 경보: KOSPI -5.69% / KOSDAQ -6.88% — 신규 매수 자제 [hourly_fallback / hourly_fallback]",
+      "live_mode": false,
+      "primary_source": "hourly_fallback",
+      "secondary_source": "hourly_fallback",
+      "primary_session_date": "2026-04-02",
+      "secondary_session_date": "2026-04-02",
+      "kospi_chg": -5.68852061161156,
+      "kosdaq_chg": -6.877003311406482
+    },
+    "regime": {
+      "regime": "NEUTRAL",
+      "emoji": "🟡",
+      "desc": "횡보 (MA20과 MA50 사이)"
+    },
+    "execution_profile": "prod",
+    "warnings": [],
+    "source": "scanner_agent_input",
+    "scan_mode": "INTRADAY"
+  }
+}

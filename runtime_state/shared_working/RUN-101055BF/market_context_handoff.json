@@ -1,0 +1,249 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1510.5400390625,
+      "krw_change_1d": 0.09,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.09,
+      "tnx": 4.313000202178955,
+      "tnx_change_1d": -0.14,
+      "vix": 23.8700008392334,
+      "vix_change_1d": -2.73
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 3,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 0,
+      "LIQUIDITY": -5,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": -3
+    },
+    "key_insight": "거시 경제 지표보다 개별 기업 단위의 자금 조달 및 상장 유지 관련 리스크가 시장의 주요 관심사로 부상하고 있음.",
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "description": "일부 코스닥 기업의 전환사채 및 유상증자 결정은 주주가치 희석과 자금 조달의 어려움을 시사함.",
+        "evidence": "레이저쎌 - 전환사채권발행결정, 유상증자결정",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "REGULATION",
+        "description": "관리종목 지정 우려는 상장 유지 불확실성을 높이는 직접적인 규제 리스크임.",
+        "evidence": "광진실업 - 기타시장안내(관리종목지정우려종목)",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "공급계약체결"
+      ],
+      "beneficiary_sectors": [],
+      "company_event_bias": {
+        "CNT85": 8,
+        "광진실업": -8,
+        "레이저쎌": -8,
+        "성호전자": 4,
+        "수성웹툰": -4,
+        "시큐레터": 8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "시큐레터",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "REGULATION",
+          "company": "광진실업",
+          "event_score": -6,
+          "label": "관리종목",
+          "polarity": "NEGATIVE",
+          "report_name": "기타시장안내(관리종목지정우려종목)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "수성웹툰",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "CNT85",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "레이저쎌",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "성호전자",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "합병등종료보고서(자산양수도)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "레이저쎌",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "시큐레터",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 3,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 0,
+        "LIQUIDITY": -5,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": -3
+      },
+      "evidence_headlines": [
+        "[DART 20260403] 레이저쎌 - 주요사항보고서(전환사채권발행결정)",
+        "[DART 20260403] 광진실업 - 기타시장안내(관리종목지정우려종목)",
+        "[DART 20260403] 레이저쎌 - 주요사항보고서(유상증자결정)",
+        "[Mon, 6 Apr 2026 00:05:00 +0900] 석유유통협회 \"유통망 위기…최고가보다 도매 공급가 낮아져야\"(종합) | 연합뉴스"
+      ],
+      "key_insight": "거시 경제 지표보다 개별 기업 단위의 자금 조달 및 상장 유지 관련 리스크가 시장의 주요 관심사로 부상하고 있음.",
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "description": "일부 코스닥 기업의 전환사채 및 유상증자 결정은 주주가치 희석과 자금 조달의 어려움을 시사함.",
+          "evidence": "레이저쎌 - 전환사채권발행결정, 유상증자결정",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "REGULATION",
+          "description": "관리종목 지정 우려는 상장 유지 불확실성을 높이는 직접적인 규제 리스크임.",
+          "evidence": "광진실업 - 기타시장안내(관리종목지정우려종목)",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260403] 시큐레터 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260403] 광진실업 - 기타시장안내(관리종목지정우려종목) | 전자공시",
+        "[DART 20260403] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[DART 20260403] CNT85 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260403] 레이저쎌 - 주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260403] 성호전자 - 합병등종료보고서(자산양수도) | 전자공시",
+        "[DART 20260403] 레이저쎌 - 주요사항보고서(유상증자결정) | 전자공시",
+        "[Mon, 6 Apr 2026 00:05:00 +0900] 석유유통협회 \"유통망 위기…최고가보다 도매 공급가 낮아져야\"(종합) | 연합뉴스",
+        "[Mon, 6 Apr 2026 00:00:00 +0900] 석유유통협회 \"도매 대리점 공급가, 최고가격보다 낮아져야\" | 연합뉴스"
+      ],
+      "risk_flags": [
+        "개별기업 펀더멘털 리스크",
+        "주주가치 희석",
+        "자금조달 압박",
+        "관리종목 지정"
+      ],
+      "sentiment_score": -30,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "전환사채 발행, 유상증자, 관리종목 지정 우려 등 일부 기업의 재무 및 지배구조 불안정성이 부각됨.",
+          "impact": "NEGATIVE",
+          "theme": "개별 기업 자금조달 및 지배구조 리스크"
+        },
+        {
+          "description": "석유유통협회가 도매 공급가 인하를 요구하며 관련 기업의 수익성 악화 우려가 제기됨.",
+          "impact": "NEGATIVE",
+          "theme": "국내 유류 유통시장 마진 압박"
+        }
+      ],
+      "timestamp": "2026-04-06 01:58",
+      "victim_keywords": [
+        "관리종목",
+        "전환사채",
+        "유상증자",
+        "최대주주변경"
+      ],
+      "victim_sectors": [
+        "석유 유통"
+      ]
+    },
+    "risk_flags": [
+      "개별기업 펀더멘털 리스크",
+      "주주가치 희석",
+      "자금조달 압박",
+      "관리종목 지정"
+    ],
+    "sentiment_score": -30,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "석유 유통"
+    ]
+  },
+  "produced_at": "2026-04-05T17:00:24.636095+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-06",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-05T17:00:21.870155+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-101055BF",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

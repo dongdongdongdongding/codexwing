@@ -1,0 +1,241 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "VIX_ELEVATED"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "VIX_ELEVATED"
+      ],
+      "krw": 1476.3800048828125,
+      "krw_change_1d": NaN,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 2.3,
+      "tnx": 4.265999794006348,
+      "tnx_change_1d": -1.77,
+      "vix": 20.950000762939453,
+      "vix_change_1d": -18.74
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "기술주",
+      "반도체"
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "유가 급락은 기술주 중심 나스닥의 인플레이션 압력 완화 및 기업 비용 절감 측면에서 매우 긍정적입니다.",
+        "direction": "DOWN",
+        "market_impact": 4
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 1,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 5,
+      "LIQUIDITY": 0,
+      "OIL": 4,
+      "POLITICS": -1,
+      "RATES": 3,
+      "REGULATION": 0
+    },
+    "key_insight": "이란과의 지정학적 긴장 완화가 유가 급락과 연준 금리 인하 기대를 동시에 촉발하며 나스닥 시장에 강력한 상승 동력을 제공하고 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "이란과의 휴전 합의가 시장 전반의 위험 회피 심리를 크게 완화시키며 기술주 중심의 시장 상승을 주도했습니다.",
+        "evidence": "Iran ceasefire in place; Hormuz Opens",
+        "market_impact": 5,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "OIL",
+        "description": "호르무즈 해협 통행 재개로 유가가 95달러 아래로 급락하며 인플레이션 우려를 완화시켰습니다.",
+        "evidence": "Oil Prices Dive As Hormuz Opens; Oil prices plunge below $95",
+        "market_impact": 4,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "RATES",
+        "description": "휴전 이후 시장은 연준의 연내 금리 인하 가능성을 다시 가격에 반영하기 시작했습니다.",
+        "evidence": "Markets shift back towards potential Fed rate cut this year",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "POLITICS",
+        "description": "트럼프의 관세 위협 발언과 휴전이 '취약하다'는 언급은 잠재적 불확실성으로 작용합니다.",
+        "evidence": "Trump threatens tariffs of 50%; JD Vance calls Iran ceasefire a 'fragile truce'",
+        "market_impact": -1,
+        "signal": "MIXED"
+      },
+      {
+        "category": "EARNINGS",
+        "description": "나스닥 상장사인 슈퍼 마이크로의 주가 급등은 긍정적이었으나, 시장 전반을 움직인 핵심 동력은 아니었습니다.",
+        "evidence": "Super Micro Jumps On Probe Plan",
+        "market_impact": 1,
+        "signal": "NEUTRAL"
+      }
+    ],
+    "market_sentiment": "BULLISH",
+    "news_quality": "HIGH",
+    "raw": {
+      "beneficiary_keywords": [
+        "기술 성장주",
+        "반도체 장비"
+      ],
+      "beneficiary_sectors": [
+        "기술주",
+        "반도체"
+      ],
+      "company_event_bias": {},
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "유가 급락은 기술주 중심 나스닥의 인플레이션 압력 완화 및 기업 비용 절감 측면에서 매우 긍정적입니다.",
+          "direction": "DOWN",
+          "market_impact": 4
+        }
+      ],
+      "disclosure_events": [],
+      "driver_scores": {
+        "EARNINGS": 1,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 5,
+        "LIQUIDITY": 0,
+        "OIL": 4,
+        "POLITICS": -1,
+        "RATES": 3,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "Stock Market Today: Dow Surges 1,300 Points After Ceasefire; Super Micro Jumps On Probe Plan (Live Coverage)",
+        "Oil prices plunge below $95 after Iran agrees to safe passage through Strait of Hormuz during ceasefire",
+        "Markets shift back towards potential Fed rate cut this year with Iran ceasefire in place"
+      ],
+      "key_insight": "이란과의 지정학적 긴장 완화가 유가 급락과 연준 금리 인하 기대를 동시에 촉발하며 나스닥 시장에 강력한 상승 동력을 제공하고 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "이란과의 휴전 합의가 시장 전반의 위험 회피 심리를 크게 완화시키며 기술주 중심의 시장 상승을 주도했습니다.",
+          "evidence": "Iran ceasefire in place; Hormuz Opens",
+          "market_impact": 5,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "OIL",
+          "description": "호르무즈 해협 통행 재개로 유가가 95달러 아래로 급락하며 인플레이션 우려를 완화시켰습니다.",
+          "evidence": "Oil Prices Dive As Hormuz Opens; Oil prices plunge below $95",
+          "market_impact": 4,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "RATES",
+          "description": "휴전 이후 시장은 연준의 연내 금리 인하 가능성을 다시 가격에 반영하기 시작했습니다.",
+          "evidence": "Markets shift back towards potential Fed rate cut this year",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "POLITICS",
+          "description": "트럼프의 관세 위협 발언과 휴전이 '취약하다'는 언급은 잠재적 불확실성으로 작용합니다.",
+          "evidence": "Trump threatens tariffs of 50%; JD Vance calls Iran ceasefire a 'fragile truce'",
+          "market_impact": -1,
+          "signal": "MIXED"
+        },
+        {
+          "category": "EARNINGS",
+          "description": "나스닥 상장사인 슈퍼 마이크로의 주가 급등은 긍정적이었으나, 시장 전반을 움직인 핵심 동력은 아니었습니다.",
+          "evidence": "Super Micro Jumps On Probe Plan",
+          "market_impact": 1,
+          "signal": "NEUTRAL"
+        }
+      ],
+      "market_sentiment": "BULLISH",
+      "news_quality": "HIGH",
+      "raw_headlines": [
+        "[Wed, 08 Apr 2026 14:25:55 GMT] Markets shift back towards potential Fed rate cut this year with Iran ceasefire in place | CNBC",
+        "[Wed, 08 Apr 2026 14:20:35 GMT] Delta CEO says airline will 'meaningfully' cut growth plans, sees $300 million boost from its refinery | CNBC",
+        "[Wed, 08 Apr 2026 14:15:00 GMT] Why SpaceX could trade like a meme stock after its blockbuster IPO | MarketWatch",
+        "[2026-04-08T14:10:38Z] Hispanic foods firm Teasdale eases debt “burden” with new owner | Just Food",
+        "[2026-04-08T14:06:46Z] Stock Market Today: Dow Surges 1,300 Points After Ceasefire; Super Micro Jumps On Probe Plan (Live Coverage) | Investor's Business Daily",
+        "[2026-04-08T13:58:25Z] Oil Prices Dive As Hormuz Opens; These S&P 500 Stocks Are 'Exhaling' | Investor's Business Daily",
+        "[2026-04-08T13:56:19Z] What Makes ExxonMobil (XOM) an Investment Bet? | Insider Monkey",
+        "[Wed, 08 Apr 2026 13:55:00 GMT] The U.S. government has found ‘alarming instances’ of nursing homes drugging residents and falsifying medical records | MarketWatch",
+        "[Wed, 08 Apr 2026 13:51:00 GMT] The $7 billion reason the Big Ten is dominating college sports | MarketWatch",
+        "[Wed, 08 Apr 2026 13:35:00 GMT] What the market is pricing for Fed and global central-bank interest rates after the cease-fire | MarketWatch",
+        "[Wed, 08 Apr 2026 12:48:40 GMT] Oil prices plunge below $95 after Iran agrees to safe passage through Strait of Hormuz during ceasefire | CNBC",
+        "[Wed, 08 Apr 2026 12:27:58 GMT] Ray Dalio: Trump-Xi meeting to focus on trade, capital flows | CNBC",
+        "[Wed, 08 Apr 2026 12:11:34 GMT] Trump threatens tariffs of 50% on countries 'supplying military weapons to Iran' | CNBC",
+        "[Wed, 08 Apr 2026 12:04:30 GMT] JD Vance calls Iran ceasefire a 'fragile truce' and says Trump is 'impatient to make progress' | CNBC",
+        "[Tue, 07 Apr 2026 21:24:47 GMT] Levi Strauss revenue jumps again, with DTC making up more than half of sales for the first time | CNBC"
+      ],
+      "risk_flags": [
+        "Ceasefire Fragility",
+        "Tariff Threats",
+        "US-Iran Tensions"
+      ],
+      "sentiment_score": 85,
+      "source": "gemini",
+      "themes": [
+        {
+          "description": "이란의 호르무즈 해협 안전 통행 보장 및 휴전 소식이 유가 급락과 시장의 위험 선호 심리 회복을 이끌었습니다.",
+          "impact": "POSITIVE",
+          "theme": "이란 휴전에 따른 지정학적 리스크 완화"
+        },
+        {
+          "description": "지정학적 리스크 완화와 유가 안정으로 시장은 연내 연준의 금리 인하 가능성을 다시 가격에 반영하고 있습니다.",
+          "impact": "POSITIVE",
+          "theme": "연준 금리 인하 기대감 재점화"
+        }
+      ],
+      "timestamp": "2026-04-08 23:29",
+      "victim_keywords": [
+        "원유",
+        "정유"
+      ],
+      "victim_sectors": [
+        "에너지"
+      ]
+    },
+    "risk_flags": [
+      "Ceasefire Fragility",
+      "Tariff Threats",
+      "US-Iran Tensions"
+    ],
+    "sentiment_score": 85,
+    "source": "gemini",
+    "status": "live_intel",
+    "victim_sectors": [
+      "에너지"
+    ]
+  },
+  "produced_at": "2026-04-08T14:29:54.678412+00:00",
+  "regime": {
+    "market": "NASDAQ",
+    "market_group": "US",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-08",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-08T14:28:14.134789+00:00",
+    "market": "NASDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-66F92E9F",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,137 @@
+{
+  "avoid_list": [],
+  "decisions": [],
+  "global_warnings": [
+    {
+      "code": "EMPTY_PLANNER_INPUT",
+      "message": "Planner received no candidates from scanner handoff.",
+      "severity": "error"
+    },
+    {
+      "code": "FALLBACK_WATCHLIST_UNAVAILABLE",
+      "message": "Prod zero-result streak detected but no recent dev baseline watchlist was available.",
+      "severity": "warning"
+    },
+    {
+      "code": "NEAR_MISS_WATCHLIST_ENABLED",
+      "message": "Planner generated a watchlist from current-run near-miss candidates after zero active decisions.",
+      "severity": "warning"
+    }
+  ],
+  "produced_at": "2026-04-01T14:09:19.388324+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-01",
+    "code_version": "orchestrated-us-research",
+    "created_at": "2026-04-01T14:09:16.932764+00:00",
+    "market": "AMEX",
+    "model_version": "research-baseline",
+    "run_id": "RUN-47117367",
+    "strategy_version": "us-research-v1"
+  },
+  "watchlist": [
+    "UUUU",
+    "UTG",
+    "DNN",
+    "NG",
+    "TGB",
+    "NHC"
+  ],
+  "watchlist_meta": [
+    {
+      "alpha_score": 69.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:19.788357+00:00",
+      "generated_at": "2026-04-01T14:09:19.788357+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Energy Fuels Inc",
+      "ticker": "UUUU"
+    },
+    {
+      "alpha_score": 62.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:19.788357+00:00",
+      "generated_at": "2026-04-01T14:09:19.788357+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Reaves Utility Income Closed Fund",
+      "ticker": "UTG"
+    },
+    {
+      "alpha_score": 45.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:19.788357+00:00",
+      "generated_at": "2026-04-01T14:09:19.788357+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Denison Mines Corp",
+      "ticker": "DNN"
+    },
+    {
+      "alpha_score": 44.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:19.788357+00:00",
+      "generated_at": "2026-04-01T14:09:19.788357+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "NovaGold Resources Inc",
+      "ticker": "NG"
+    },
+    {
+      "alpha_score": 39.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:19.788357+00:00",
+      "generated_at": "2026-04-01T14:09:19.788357+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "Taseko Mines Ltd",
+      "ticker": "TGB"
+    },
+    {
+      "alpha_score": 38.0,
+      "conviction_score": 0.0,
+      "expires_at": "2026-04-03T14:09:19.788357+00:00",
+      "generated_at": "2026-04-01T14:09:19.788357+00:00",
+      "horizon_days": 2,
+      "prob_5": 0.0,
+      "prob_clean": 0.0,
+      "real_trend": "",
+      "reason": "near_miss_watchlist",
+      "reject_reason": "market_policy_avoid",
+      "risk_label": "WATCHLIST_ONLY",
+      "source_profile": "current_run_near_miss",
+      "stock_name": "National Healthcare Corp",
+      "ticker": "NHC"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+Tier,_tier_sort,Ticker,Name,Antigrav,Whale,Trend,1D Change,Consecutive,RS vs SPY,Entry(-2%),Target,Stop,Hold,Volume,Strategy,Surge,WR,AI Prob,Clean Hit,Conviction,Position,Context,_prob_5,_prob_clean,Decision Score
+🏆T1,1,GOOGL,GOOGL,88,91pts,UP,+5.14%,Intraday,+3.4% intraday,287.57,291.88,285.26 (-0.8%),same-day,⚠️ x1.3,⏱️ Intraday Breakout | 1H,📈 Trend Continuation,-,63.6%,44.8%,72.4,🚀 Intraday Breakout,-,63.6,44.8,100.0
+🏆T1,1,AAPL,AAPL,85,85pts,UP,+2.94%,Intraday,+2.4% intraday,253.79,257.60,251.76 (-0.8%),same-day,✅ x1.7,⏱️ Intraday Breakout | 1H,📈 Trend Continuation,-,66.0%,47.9%,74.0,🚀 Intraday Breakout,-,66.0,47.9,100.0
+🏆T1,1,NVDA,NVDA,88,86pts,UP,+5.65%,Intraday,+4.4% intraday,174.38,177.72,172.71 (-1.0%),same-day,⚠️ x0.9,⏱️ Intraday Breakout | 1H,📈 Trend Continuation,-,61.4%,41.7%,70.0,🚀 Intraday Breakout,-,61.4,41.7,98.2
+⭐T2,2,AMZN,AMZN,68,83pts,UP,+3.68%,Intraday,+1.7% intraday,208.29,211.66,206.61 (-0.8%),same-day,⚠️ x1.3,⏱️ Intraday Trend | 1H,📈 Trend Continuation,-,51.4%,45.2%,63.0,📈 Intraday Trend,-,51.4,45.2,80.7
+⭐T2,2,MSFT,MSFT,67,78pts,UP,+3.18%,Intraday,+1.5% intraday,370.16,375.84,367.20 (-0.8%),same-day,⚠️ x1.2,⏱️ Intraday Trend | 1H,📈 Trend Continuation,-,50.6%,44.2%,61.3,📈 Intraday Trend,-,50.6,44.2,78.4

@@ -1,0 +1,306 @@
+{
+  "market": "KOSPI",
+  "runs_considered": 30,
+  "route_distribution": {
+    "theme_routed": 2,
+    "core_only": 347,
+    "theme_shadow": 3
+  },
+  "theme_source_distribution": {
+    "stock_master": 34,
+    "unknown": 318
+  },
+  "theme_distribution": {
+    "2차전지": 6,
+    "방산": 4,
+    "철강/금속/소재": 5,
+    "통신/네트워크": 2,
+    "바이오/헬스케어": 2,
+    "건설/부동산": 2,
+    "친환경/에너지": 2,
+    "소비재/유통": 2,
+    "금융": 3,
+    "반도체": 2,
+    "자동차": 2
+  },
+  "unclassified_ratio": 0.0057,
+  "theme_routed_stock_master_ratio": 1.0,
+  "performance_by_route": {
+    "core_only": {
+      "status_counts": {
+        "PENDING": 167,
+        "EXPIRED": 3,
+        "RESOLVED": 42
+      },
+      "1d": {
+        "n": 170,
+        "avg_return_pct": 1.6258,
+        "win_rate": 51.18
+      },
+      "3d": {
+        "n": 42,
+        "avg_return_pct": 3.8893,
+        "win_rate": 69.05
+      },
+      "5d": {
+        "n": 13,
+        "avg_return_pct": 16.6079,
+        "win_rate": 84.62
+      }
+    }
+  },
+  "top_themes": [
+    {
+      "theme_name": "2차전지",
+      "candidate_count": 6,
+      "leaders": [
+        {
+          "ticker": "006400.KS",
+          "score": 87.1,
+          "theme_rank": 1,
+          "leader_score": 80.7,
+          "routing_path": "theme_routed",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "373220.KS",
+          "score": 78.2,
+          "theme_rank": 1,
+          "leader_score": 75.0,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "373220.KS",
+          "score": 66.5,
+          "theme_rank": 1,
+          "leader_score": 73.6,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "철강/금속/소재",
+      "candidate_count": 5,
+      "leaders": [
+        {
+          "ticker": "001250.KS",
+          "score": 105.6,
+          "theme_rank": 1,
+          "leader_score": 98.7,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "005490.KS",
+          "score": 78.0,
+          "theme_rank": 2,
+          "leader_score": 80.4,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "120110.KS",
+          "score": 85.6,
+          "theme_rank": 1,
+          "leader_score": 79.0,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "방산",
+      "candidate_count": 4,
+      "leaders": [
+        {
+          "ticker": "012450.KS",
+          "score": 82.7,
+          "theme_rank": 1,
+          "leader_score": 76.4,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "012450.KS",
+          "score": 91.1,
+          "theme_rank": 1,
+          "leader_score": 72.0,
+          "routing_path": "theme_routed",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "012450.KS",
+          "score": 82.5,
+          "theme_rank": 1,
+          "leader_score": 71.5,
+          "routing_path": "theme_shadow",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "금융",
+      "candidate_count": 3,
+      "leaders": [
+        {
+          "ticker": "003030.KS",
+          "score": 74.6,
+          "theme_rank": 1,
+          "leader_score": 71.5,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "006800.KS",
+          "score": 82.7,
+          "theme_rank": 1,
+          "leader_score": 71.3,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "105560.KS",
+          "score": 29.9,
+          "theme_rank": 1,
+          "leader_score": 63.0,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "통신/네트워크",
+      "candidate_count": 2,
+      "leaders": [
+        {
+          "ticker": "034730.KS",
+          "score": 86.6,
+          "theme_rank": 1,
+          "leader_score": 73.2,
+          "routing_path": "theme_shadow",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "001440.KS",
+          "score": 38.1,
+          "theme_rank": 1,
+          "leader_score": 68.5,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "바이오/헬스케어",
+      "candidate_count": 2,
+      "leaders": [
+        {
+          "ticker": "278470.KS",
+          "score": 115.3,
+          "theme_rank": 1,
+          "leader_score": 86.2,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "278470.KS",
+          "score": 101.3,
+          "theme_rank": 1,
+          "leader_score": 69.4,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "건설/부동산",
+      "candidate_count": 2,
+      "leaders": [
+        {
+          "ticker": "047040.KS",
+          "score": 108.5,
+          "theme_rank": 1,
+          "leader_score": 87.2,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "047040.KS",
+          "score": 110.7,
+          "theme_rank": 1,
+          "leader_score": 85.2,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "친환경/에너지",
+      "candidate_count": 2,
+      "leaders": [
+        {
+          "ticker": "052690.KS",
+          "score": 65.8,
+          "theme_rank": 1,
+          "leader_score": 69.8,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "052690.KS",
+          "score": 47.3,
+          "theme_rank": 1,
+          "leader_score": 62.4,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "소비재/유통",
+      "candidate_count": 2,
+      "leaders": [
+        {
+          "ticker": "023530.KS",
+          "score": 60.1,
+          "theme_rank": 1,
+          "leader_score": 71.6,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "023530.KS",
+          "score": 49.6,
+          "theme_rank": 1,
+          "leader_score": 67.0,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "반도체",
+      "candidate_count": 2,
+      "leaders": [
+        {
+          "ticker": "011930.KS",
+          "score": 94.9,
+          "theme_rank": 1,
+          "leader_score": 70.1,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        },
+        {
+          "ticker": "011930.KS",
+          "score": 72.2,
+          "theme_rank": 1,
+          "leader_score": 64.2,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    }
+  ]
+}

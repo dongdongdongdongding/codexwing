@@ -1,0 +1,61 @@
+{
+  "current_profile": "prod",
+  "current_result_count": 0,
+  "current_top_reject_reason": {
+    "count": 3,
+    "reason": "US_HARD_FILTER_TREND_ALPHA"
+  },
+  "current_total_scans": 5,
+  "flags": {
+    "prod_dev_gap": true,
+    "prod_zero_streak": 2,
+    "prod_zero_streak_alert": false
+  },
+  "generated_at": "2026-03-30T15:41:34.503424+00:00",
+  "history_limit": 80,
+  "history_window_runs_considered": 18,
+  "history_window_runs_seen": 18,
+  "market": "NASDAQ",
+  "profile_summary": {
+    "dev": {
+      "filtered_count": 1,
+      "result_count": 9,
+      "runs": 2,
+      "top_reject_reason": {
+        "count": 1,
+        "reason": "US_HARD_FILTER_TREND_ALPHA"
+      },
+      "total_scans": 10,
+      "weighted_filtered_rate_pct": 10.0,
+      "weighted_pass_rate_pct": 90.0,
+      "zero_result_runs": 0
+    },
+    "prod": {
+      "filtered_count": 5,
+      "result_count": 0,
+      "runs": 1,
+      "top_reject_reason": {
+        "count": 3,
+        "reason": "US_SIGNAL_WINDOW_FAIL"
+      },
+      "total_scans": 5,
+      "weighted_filtered_rate_pct": 100.0,
+      "weighted_pass_rate_pct": 0.0,
+      "zero_result_runs": 1
+    },
+    "unknown": {
+      "filtered_count": 41,
+      "result_count": 10,
+      "runs": 15,
+      "top_reject_reason": {
+        "count": 9,
+        "reason": "US_SIGNAL_WINDOW_FAIL"
+      },
+      "total_scans": 53,
+      "weighted_filtered_rate_pct": 77.36,
+      "weighted_pass_rate_pct": 18.87,
+      "zero_result_runs": 11
+    }
+  },
+  "run_id": "RUN-9CEB9165"
+}
