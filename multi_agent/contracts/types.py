@@ -159,6 +159,15 @@ class PlannerDecision:
     quant_score_3d: Optional[float] = None
     selection_lane: str = ""
     target_horizon_days: int = 3
+    scanner_timeframe_profile: str = ""
+    kr_universe_role: str = ""
+    explosive_eligible: bool = False
+    explosive_gate_reasons: List[str] = field(default_factory=list)
+    continuation_eligible: bool = False
+    continuation_enabled: bool = False
+    continuation_prob_3d: Optional[float] = None
+    continuation_evidence: int = 0
+    continuation_gate_reasons: List[str] = field(default_factory=list)
     primary_theme: str = ""
     theme_source: str = ""
     theme_inference_status: str = ""

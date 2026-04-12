@@ -378,6 +378,27 @@ def build_planner_handoff(
         quant_score_1d = float(quant_meta.get("score_1d", score) or score)
         quant_score_3d = float(quant_meta.get("score_3d", score) or score)
         quant_lane = str(quant_meta.get("lane", "raw") or "raw")
+        scanner_timeframe_profile = str(
+            quant_meta.get("scanner_timeframe_profile")
+            or feature_snapshot.get("scanner_timeframe_profile")
+            or cand.get("scanner_timeframe_profile")
+            or ""
+        )
+        kr_universe_role = str(
+            quant_meta.get("kr_universe_role")
+            or feature_snapshot.get("kr_universe_role")
+            or cand.get("kr_universe_role")
+            or ""
+        )
+        explosive_eligible = bool(quant_meta.get("explosive_eligible", False))
+        explosive_gate_reasons = [
+            str(x) for x in list(quant_meta.get("explosive_gate_reasons", []) or []) if str(x).strip()
+        ]
+        continuation_eligible = bool(quant_meta.get("continuation_eligible", False))
+        continuation_enabled = bool(quant_meta.get("continuation_enabled", False))
+        continuation_prob_3d = float(quant_meta.get("continuation_prob_3d", 50.0) or 50.0)
+        continuation_evidence = int(quant_meta.get("continuation_evidence", 0) or 0)
+        continuation_gate_reasons = [str(x) for x in list(quant_meta.get("continuation_gate_reasons", []) or []) if str(x).strip()]
         basket_priority_score = float(basket_meta.get("score", score) or score)
         alpha_score = feature_snapshot.get("alpha_score")
         decision_score = feature_snapshot.get("decision_score", score)
@@ -408,8 +429,31 @@ def build_planner_handoff(
             f"active_lane={active_lane}",
             f"rank={idx}",
         ] + [str(x) for x in reasons[:3]]
+        if kr_universe_role:
+            rationale.append(f"kr_universe_role={kr_universe_role}")
+        if scanner_timeframe_profile:
+            rationale.append(f"scanner_timeframe_profile={scanner_timeframe_profile}")
+        rationale.append(f"explosive_eligible={str(explosive_eligible).lower()}")
+        rationale.append(f"continuation_eligible={str(continuation_eligible).lower()}")
+        rationale.append(f"continuation_enabled={str(continuation_enabled).lower()}")
+        rationale.append(f"continuation_prob_3d={continuation_prob_3d:.1f}")
+        rationale.append(f"continuation_evidence={continuation_evidence}")
         if quant_meta.get("reasons"):
             rationale.extend([f"quant_reason={str(x)}" for x in list(quant_meta.get("reasons", []))[:3]])
+        lane_overlay_1d = quant_meta.get("lane_overlay_1d", {}) if isinstance(quant_meta.get("lane_overlay_1d"), dict) else {}
+        lane_overlay_3d = quant_meta.get("lane_overlay_3d", {}) if isinstance(quant_meta.get("lane_overlay_3d"), dict) else {}
+        if lane_overlay_1d.get("enabled"):
+            rationale.append(
+                f"lane_overlay_1d={str(lane_overlay_1d.get('segment') or '')}:{float(lane_overlay_1d.get('prob_up', 0.0) or 0.0):.1f}"
+            )
+        if lane_overlay_3d.get("enabled"):
+            rationale.append(
+                f"lane_overlay_3d={str(lane_overlay_3d.get('segment') or '')}:{float(lane_overlay_3d.get('prob_up', 0.0) or 0.0):.1f}"
+            )
+        if explosive_gate_reasons:
+            rationale.extend([f"explosive_gate={str(x)}" for x in explosive_gate_reasons[:3]])
+        if continuation_gate_reasons:
+            rationale.extend([f"continuation_gate={str(x)}" for x in continuation_gate_reasons[:3]])
         theme_rationale: List[str] = []
         theme_risk: List[str] = []
         primary_theme = str(theme_context.get("primary_theme") or "").strip()
@@ -518,6 +562,15 @@ def build_planner_handoff(
             quant_score_3d=round(float(quant_score_3d), 3),
             selection_lane=quant_lane,
             target_horizon_days=1 if quant_lane == "1d" else 3,
+            scanner_timeframe_profile=scanner_timeframe_profile,
+            kr_universe_role=kr_universe_role,
+            explosive_eligible=explosive_eligible,
+            explosive_gate_reasons=explosive_gate_reasons,
+            continuation_eligible=continuation_eligible,
+            continuation_enabled=continuation_enabled,
+            continuation_prob_3d=round(float(continuation_prob_3d), 4),
+            continuation_evidence=continuation_evidence,
+            continuation_gate_reasons=continuation_gate_reasons,
             primary_theme=primary_theme,
             theme_source=str(theme_context.get("theme_source") or ""),
             theme_inference_status=str(theme_context.get("theme_inference_status") or ""),
@@ -553,6 +606,15 @@ def build_planner_handoff(
                     "selection_lane": quant_lane,
                     "active_lane": active_lane,
                     "target_horizon_days": 1 if quant_lane == "1d" else 3,
+                    "scanner_timeframe_profile": scanner_timeframe_profile or None,
+                    "kr_universe_role": kr_universe_role or None,
+                    "explosive_eligible": explosive_eligible,
+                    "explosive_gate_reasons": explosive_gate_reasons,
+                    "continuation_eligible": continuation_eligible,
+                    "continuation_enabled": continuation_enabled,
+                    "continuation_prob_3d": round(float(continuation_prob_3d), 4),
+                    "continuation_evidence": continuation_evidence,
+                    "continuation_gate_reasons": continuation_gate_reasons,
                     "expected_return_1d_pct": float(expected_return_1d_pct) if expected_return_1d_pct not in (None, "") else None,
                     "expected_return_3d_pct": float(expected_return_3d_pct) if expected_return_3d_pct not in (None, "") else None,
                     "primary_theme": primary_theme or None,

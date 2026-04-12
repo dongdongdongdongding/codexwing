@@ -455,6 +455,21 @@ def evaluate_intraday_candidate(
     stop_loss = close_now * (1.0 - stop_pct / 100.0)
     volume_badge = f"{'✅' if vol_ratio >= 1.5 else '⚠️'} x{vol_ratio:.1f}"
     news_tag = "🔥 수혜" if news_adj.get("is_beneficiary") else ("⚠️ 피해" if news_adj.get("is_victim") else "-")
+    kr_intraday_role = resolve_kr_universe_role(
+        scan_mode="INTRADAY",
+        real_trend=str(real_trend),
+        leader_signal={
+            "is_market_leader": bool(breakout and vol_ratio >= 1.5),
+            "leader_score": float(decision_score),
+            "breakout_quality_score": 100.0 if breakout else max(0.0, float(decision_score) - 20.0),
+            "close_location_score": max(0.0, min(100.0, 100.0 - abs(intraday_ret))),
+            "flow_consensus_buying": bool(vol_ratio >= 1.2 and intraday_ret >= 0.0),
+            "retail_dominant": False,
+        },
+        strategy_tag=str(strategy_tag),
+        surge_tag=str(surge_tag),
+    )
+    timeframe_profile = resolve_kr_timeframe_profile("INTRADAY", sym)
 
     if is_us:
         res_data = {
@@ -577,6 +592,10 @@ def evaluate_intraday_candidate(
             "테마": (theme_overlay.get("theme_context", {}) or {}).get("primary_theme", "-"),
             "scan_mode": "INTRADAY",
             "strategy_family": resolve_strategy_family("KR"),
+            "scanner_timeframe_profile": timeframe_profile,
+            "kr_universe_role": str(kr_intraday_role.get("role") or "EXPLOSIVE_LEADER"),
+            "explosive_leader_flag": bool(kr_intraday_role.get("explosive_leader_flag", True)),
+            "core_trend_flag": bool(kr_intraday_role.get("core_trend_flag", False)),
         }
         db_payload = {
             "ticker": sym,
@@ -611,6 +630,10 @@ def evaluate_intraday_candidate(
             "leader_metrics": theme_overlay.get("leader_metrics", {}),
             "routing_path": theme_overlay.get("routing_path", "core_only"),
             "theme_score_adjustment": round(float(theme_overlay.get("score_adjustment", 0.0) or 0.0), 2),
+            "scanner_timeframe_profile": timeframe_profile,
+            "kr_universe_role": str(kr_intraday_role.get("role") or "EXPLOSIVE_LEADER"),
+            "explosive_leader_flag": bool(kr_intraday_role.get("explosive_leader_flag", True)),
+            "core_trend_flag": bool(kr_intraday_role.get("core_trend_flag", False)),
             **_theme_flat_fields(theme_overlay.get("theme_context", {})),
         }
 
@@ -1945,6 +1968,10 @@ def build_kr_scan_outputs(
     expected_return_3d_pct: Optional[float] = None,
     scan_mode: str = "SWING",
     strategy_family: Optional[str] = None,
+    scanner_timeframe_profile: str = "",
+    kr_universe_role: str = "",
+    explosive_leader_flag: bool = False,
+    core_trend_flag: bool = False,
 ) -> Dict[str, Dict[str, Any]]:
     """Build KR scanner table row + DB payload with legacy field compatibility."""
     curr_fmt = "{:,.0f}"
@@ -1981,6 +2008,10 @@ def build_kr_scan_outputs(
         "Decision Score": decision_score,
         "scan_mode": str(scan_mode or "SWING").upper(),
         "strategy_family": strategy_family or resolve_strategy_family(m_type),
+        "scanner_timeframe_profile": scanner_timeframe_profile,
+        "kr_universe_role": kr_universe_role,
+        "explosive_leader_flag": bool(explosive_leader_flag),
+        "core_trend_flag": bool(core_trend_flag),
         "_theme_context": theme_context or {},
         "_leader_metrics": leader_metrics or {},
         "_routing_path": routing_path or "",
@@ -2020,6 +2051,10 @@ def build_kr_scan_outputs(
         "kospi_chg": round(float(kospi_chg), 2),
         "conviction_score": round(float(conviction_score), 1),
         "strategy_family": strategy_family or resolve_strategy_family(m_type),
+        "scanner_timeframe_profile": scanner_timeframe_profile,
+        "kr_universe_role": kr_universe_role,
+        "explosive_leader_flag": bool(explosive_leader_flag),
+        "core_trend_flag": bool(core_trend_flag),
         "phase25_prob": phase25_prob,
         "phase25_variant": phase25_variant,
         "phase25_shadow_variant": phase25_shadow_variant,
@@ -2136,6 +2171,73 @@ def _is_nan_like(value: Any) -> bool:
         return bool(value != value)
     except Exception:
         return False
+
+
+def resolve_kr_timeframe_profile(scan_mode: str, ticker: str) -> str:
+    mode = str(scan_mode or "SWING").upper()
+    sym = str(ticker or "").upper()
+    if mode == "INTRADAY":
+        return "INTRADAY_1H"
+    if sym.endswith(".KS") or sym.endswith(".KQ"):
+        return "DAILY_PRIMARY_WITH_1H_REFRESH"
+    return "DAILY_PRIMARY"
+
+
+def resolve_kr_universe_role(
+    *,
+    scan_mode: str,
+    real_trend: str,
+    leader_signal: Optional[Dict[str, Any]] = None,
+    strategy_tag: str = "",
+    surge_tag: str = "",
+) -> Dict[str, Any]:
+    leader = leader_signal if isinstance(leader_signal, dict) else {}
+    mode = str(scan_mode or "SWING").upper()
+    trend = str(real_trend or "").upper()
+    leader_score = float(leader.get("leader_score", 0.0) or 0.0)
+    breakout_quality = float(leader.get("breakout_quality_score", 0.0) or 0.0)
+    close_location = float(leader.get("close_location_score", 0.0) or 0.0)
+    flow_consensus = bool(leader.get("flow_consensus_buying", False))
+    retail_dominant = bool(leader.get("retail_dominant", False))
+    market_leader = bool(leader.get("is_market_leader", False))
+    text = f"{strategy_tag} | {surge_tag}".upper()
+
+    explosive = bool(
+        mode == "INTRADAY"
+        or market_leader
+        or "FLOWLEADER" in text
+        or "BREAKOUT" in text
+        or (
+            leader_score >= 72.0
+            and breakout_quality >= 42.0
+            and close_location >= 64.0
+            and flow_consensus
+        )
+    )
+    core = bool(
+        not explosive
+        and mode == "SWING"
+        and trend == "UP"
+        and not retail_dominant
+        and (
+            flow_consensus
+            or leader_score >= 58.0
+            or "THEMEROUTE" in text
+        )
+    )
+    role = "TRANSITIONAL"
+    if explosive:
+        role = "EXPLOSIVE_LEADER"
+    elif core:
+        role = "CORE_TREND"
+    elif trend != "UP" or retail_dominant:
+        role = "REJECT_RISK"
+
+    return {
+        "role": role,
+        "explosive_leader_flag": bool(explosive),
+        "core_trend_flag": bool(core),
+    }
 
 
 def evaluate_app_us_candidate(
@@ -2992,6 +3094,14 @@ def evaluate_app_kr_candidate(
         market_gate=str((market_gate or {}).get("gate", "GREEN")),
         theme_context=theme_overlay.get("theme_context", {}),
     )
+    timeframe_profile = resolve_kr_timeframe_profile("SWING", sym)
+    universe_role = resolve_kr_universe_role(
+        scan_mode="SWING",
+        real_trend=str(real_trend),
+        leader_signal=leader_signal,
+        strategy_tag=str(strategy_tag),
+        surge_tag=str(surge_tag),
+    )
 
     outputs = build_kr_scan_outputs(
         sym=sym,
@@ -3036,5 +3146,9 @@ def evaluate_app_kr_candidate(
         expected_return_3d_pct=expected_edge.get("expected_return_3d_pct"),
         scan_mode="SWING",
         strategy_family=getattr(qs, "strategy_family", None) or resolve_strategy_family(m_type),
+        scanner_timeframe_profile=timeframe_profile,
+        kr_universe_role=str(universe_role.get("role") or "TRANSITIONAL"),
+        explosive_leader_flag=bool(universe_role.get("explosive_leader_flag", False)),
+        core_trend_flag=bool(universe_role.get("core_trend_flag", False)),
     )
     return outputs
