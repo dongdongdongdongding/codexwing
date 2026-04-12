@@ -1,0 +1,238 @@
+{
+  "generated_at": "2026-04-10T13:27:00.547062+00:00",
+  "scanner_timeframe_audit": {
+    "swing_runtime_fetch": {
+      "scanner_runtime": "SWING path fetches 5y data via QuantStrategy.fetch_data(period='5y')",
+      "quant_strategy_interval": "default interval is 1d",
+      "live_refresh": "when live_mode_enabled, current daily bar is refreshed with 1h tape and projected volume",
+      "verdict": "daily-primary with intraday refresh, not pure daily-only"
+    },
+    "intraday_runtime_fetch": {
+      "scanner_runtime": "INTRADAY path fetches 60d with interval=1h",
+      "verdict": "explicit intraday engine"
+    }
+  },
+  "markets": {
+    "KOSPI": {
+      "rows": 5705,
+      "feature_coverage_gap_pct": {
+        "whale_score": 93.57,
+        "expected_edge_score": 96.62,
+        "expected_return_1d_pct": 96.62,
+        "expected_return_3d_pct": 96.62,
+        "primary_theme": 94.29,
+        "theme_routing_path": 95.3,
+        "phase25_variant": 94.64
+      },
+      "winner_profiles": {
+        "hit10": {
+          "rows": 741,
+          "decision_score_mean": 96.44,
+          "decision_score_median": 101.05,
+          "alpha_score_mean": 59.98,
+          "ml_prob_mean": 31.27,
+          "scan_mode_top": {
+            "SWING": 386,
+            "INTRADAY": 355
+          },
+          "decision_bucket_top": {
+            "picked": 378,
+            "watchlist": 315,
+            "exception_leader": 26,
+            "unknown": 22
+          },
+          "selection_lane_top": {
+            "3d": 386,
+            "1d": 355
+          },
+          "phase25_variant_top": {
+            "unknown": 740,
+            "phase25_kr_intraday_xgboost": 1
+          }
+        },
+        "win1d": {
+          "rows": 1571,
+          "decision_score_mean": 91.32,
+          "decision_score_median": 95.2,
+          "alpha_score_mean": 56.4,
+          "ml_prob_mean": 28.35,
+          "scan_mode_top": {
+            "SWING": 1029,
+            "INTRADAY": 542
+          },
+          "decision_bucket_top": {
+            "picked": 690,
+            "watchlist": 684,
+            "exception_leader": 131,
+            "unknown": 66
+          },
+          "selection_lane_top": {
+            "3d": 1029,
+            "1d": 542
+          },
+          "phase25_variant_top": {
+            "unknown": 1558,
+            "phase25_kr_intraday_xgboost": 13
+          }
+        },
+        "win3d": {
+          "rows": 1103,
+          "decision_score_mean": 98.3,
+          "decision_score_median": 103.37,
+          "alpha_score_mean": 53.95,
+          "ml_prob_mean": 30.46,
+          "scan_mode_top": {
+            "INTRADAY": 573,
+            "SWING": 530
+          },
+          "decision_bucket_top": {
+            "picked": 546,
+            "watchlist": 445,
+            "exception_leader": 79,
+            "unknown": 33
+          },
+          "selection_lane_top": {
+            "1d": 573,
+            "3d": 530
+          },
+          "phase25_variant_top": {
+            "unknown": 1103
+          }
+        }
+      }
+    },
+    "KOSDAQ": {
+      "rows": 14637,
+      "feature_coverage_gap_pct": {
+        "whale_score": 93.38,
+        "expected_edge_score": 96.34,
+        "expected_return_1d_pct": 96.34,
+        "expected_return_3d_pct": 96.34,
+        "primary_theme": 95.78,
+        "theme_routing_path": 96.32,
+        "phase25_variant": 92.83
+      },
+      "winner_profiles": {
+        "hit10": {
+          "rows": 1095,
+          "decision_score_mean": 85.6,
+          "decision_score_median": 84.9,
+          "alpha_score_mean": 41.77,
+          "ml_prob_mean": 29.69,
+          "scan_mode_top": {
+            "INTRADAY": 767,
+            "SWING": 328
+          },
+          "decision_bucket_top": {
+            "picked": 674,
+            "watchlist": 300,
+            "exception_leader": 121
+          },
+          "selection_lane_top": {
+            "1d": 767,
+            "3d": 328
+          },
+          "phase25_variant_top": {
+            "unknown": 1077,
+            "phase25_kr_intraday_xgboost": 18
+          }
+        },
+        "win1d": {
+          "rows": 3906,
+          "decision_score_mean": 84.92,
+          "decision_score_median": 82.8,
+          "alpha_score_mean": 35.83,
+          "ml_prob_mean": 27.51,
+          "scan_mode_top": {
+            "INTRADAY": 2797,
+            "SWING": 1109
+          },
+          "decision_bucket_top": {
+            "picked": 2161,
+            "watchlist": 1260,
+            "exception_leader": 482,
+            "unknown": 3
+          },
+          "selection_lane_top": {
+            "1d": 2797,
+            "3d": 1109
+          },
+          "phase25_variant_top": {
+            "unknown": 3789,
+            "phase25_kr_intraday_xgboost": 117
+          }
+        },
+        "win3d": {
+          "rows": 1917,
+          "decision_score_mean": 85.74,
+          "decision_score_median": 83.5,
+          "alpha_score_mean": 33.92,
+          "ml_prob_mean": 26.15,
+          "scan_mode_top": {
+            "INTRADAY": 1263,
+            "SWING": 654
+          },
+          "decision_bucket_top": {
+            "picked": 1114,
+            "watchlist": 541,
+            "exception_leader": 262
+          },
+          "selection_lane_top": {
+            "1d": 1263,
+            "3d": 654
+          },
+          "phase25_variant_top": {
+            "unknown": 1893,
+            "phase25_kr_intraday_xgboost": 24
+          }
+        }
+      }
+    }
+  },
+  "verdicts": [
+    "KOSPI 10%+ winners are split between SWING and INTRADAY, so a mixed-lane approach is defensible.",
+    "KOSDAQ 10%+ winners skew toward INTRADAY/1D lane, so daily-primary SWING alone is insufficient for explosive movers.",
+    "Current archive validation is materially weakened by missing factor coverage: whale/theme/expected-return/phase25 fields are absent in more than 90% of rows.",
+    "Current benchmark direction is partially right because lane separation helps, but it is still logically incomplete because the system scores with factors that historical validation barely records."
+  ],
+  "recommended_actions": [
+    {
+      "priority": 1,
+      "action": "Build KR dual-timeframe scanner inputs",
+      "detail": "Keep SWING on daily structure but attach hourly continuation/breakout confirmation for KR names instead of treating SWING as daily-only."
+    },
+    {
+      "priority": 2,
+      "action": "Persist factor traces end-to-end",
+      "detail": "Backfill or newly persist whale_score, theme_routing_path, expected_edge_score, expected_return_1d_pct, expected_return_3d_pct, and phase25 variant so validation can test the logic actually used by ranking."
+    },
+    {
+      "priority": 3,
+      "action": "Split KR into Core Trend / Explosive Leader / Reject universes",
+      "detail": "KOSDAQ explosive winners cluster in INTRADAY/1D lane; they should not be forced through the same thresholds as 3D continuation names."
+    },
+    {
+      "priority": 4,
+      "action": "Retune bucket semantics",
+      "detail": "Current picked bucket underperforms watchlist in archive-level realized returns, so picked thresholds and promotion rules are not logically aligned with realized edge."
+    }
+  ],
+  "evidence_highlights": {
+    "kospi_hit10_scan_mode_top": {
+      "SWING": 386,
+      "INTRADAY": 355
+    },
+    "kosdaq_hit10_scan_mode_top": {
+      "INTRADAY": 767,
+      "SWING": 328
+    },
+    "kospi_hit10_selection_lane_top": {
+      "3d": 386,
+      "1d": 355
+    },
+    "kosdaq_hit10_selection_lane_top": {
+      "1d": 767,
+      "3d": 328
+    }
+  }
+}

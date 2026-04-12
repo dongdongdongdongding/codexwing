@@ -1,8 +1,8 @@
 # KRX Quant Rerank Validation (KOSPI)
 
-- generated_at: 2026-04-10T10:00:19.486886+00:00
+- generated_at: 2026-04-10T14:49:28.082869+00:00
 - confidence_level: 98.00%
-- rows: 5715
+- rows: 5705
 - days: 10
 - active_lane: mixed
 

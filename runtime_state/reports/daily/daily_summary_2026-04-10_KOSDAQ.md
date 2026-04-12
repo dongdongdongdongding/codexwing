@@ -67,4 +67,4 @@
 - RUN-E01A56E7 | KOSDAQ | dev | cand=0 dec=0 out=0 (P=0, R=0, E=0)
 - RUN-FBE03AD8 | KOSDAQ | prod | cand=266 dec=266 out=272 (P=272, R=0, E=0)
 
-_Generated at: 2026-04-10T09:37:25.240633Z_
+_Generated at: 2026-04-10T14:37:31.338927Z_

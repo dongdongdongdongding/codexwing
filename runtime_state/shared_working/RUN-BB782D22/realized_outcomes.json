@@ -7,12 +7,14 @@
       "decision_bucket": "watchlist",
       "decision_score": 66.5,
       "entry_reference_price": 421000.0,
+      "expiry_horizon_days": 2,
+      "expiry_reason": "HORIZON_ELAPSED_NO_RESOLUTION",
       "horizon": "T+2D",
       "latest_return_pct": -2.137767,
       "latest_trade_date": "2026-04-10",
       "market": "KOSPI",
-      "outcome_label": null,
-      "outcome_recorded_at": null,
+      "outcome_label": "EXPIRED",
+      "outcome_recorded_at": "2026-04-11T14:30:11.616398+00:00",
       "performance_updated_at": "2026-04-10T09:34:42.640382+00:00",
       "phase25_recommended_threshold": 60.0,
       "phase25_shadow_prob": 63.6,
@@ -33,7 +35,7 @@
         "친환경/에너지"
       ],
       "source_ref": "planner_handoff.watchlist_meta#373220.KS",
-      "status": "PENDING",
+      "status": "EXPIRED",
       "stock_name": "LG에너지솔루션",
       "strategy_family": "KR_CORE",
       "theme_inference_status": "inferred",
@@ -53,8 +55,9 @@
     "strategy_version": "legacy-cli-v1"
   },
   "summary": {
-    "pending_count": 1,
-    "performance_last_updated_at": "2026-04-10T09:34:42.641580+00:00",
+    "expired_count": 1,
+    "last_updated_at": "2026-04-11T14:30:11.616408+00:00",
+    "pending_count": 0,
     "resolved_count": 0
   }
 }

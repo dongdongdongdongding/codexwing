@@ -20,7 +20,7 @@
     "total_runs": 1,
     "total_watchlist": 10
   },
-  "generated_at": "2026-04-10T09:37:31.777732Z",
+  "generated_at": "2026-04-10T14:37:38.898725Z",
   "market": "NASDAQ",
   "market_counts": {
     "NASDAQ": 1
@@ -152,9 +152,9 @@
     },
     "watchlist": {
       "1d": {
-        "avg_return_pct": 0.0,
-        "samples": 0,
-        "win_rate_pct": 0.0
+        "avg_return_pct": 2.6839,
+        "samples": 10,
+        "win_rate_pct": 80.0
       },
       "1h": {
         "avg_return_pct": 0.0,
@@ -314,9 +314,9 @@
         },
         "watchlist": {
           "1d": {
-            "avg_return_pct": 0.0,
-            "samples": 0,
-            "win_rate_pct": 0.0
+            "avg_return_pct": 2.6839,
+            "samples": 10,
+            "win_rate_pct": 80.0
           },
           "1h": {
             "avg_return_pct": 0.0,

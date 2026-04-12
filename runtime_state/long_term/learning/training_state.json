@@ -1,7 +1,7 @@
 {
-  "last_nightly_resolved_total": 1230,
-  "last_nightly_run_at": "2026-04-09T14:50:13.157710+00:00",
-  "last_weekly_resolved_total": 819,
-  "last_weekly_run_at": "2026-04-07T13:30:43.418028+00:00",
-  "last_weekly_train_at": "2026-04-07T13:15:22.711331+00:00"
+  "last_nightly_resolved_total": 1445,
+  "last_nightly_run_at": "2026-04-12T14:50:00.970577+00:00",
+  "last_weekly_resolved_total": 1445,
+  "last_weekly_run_at": "2026-04-12T00:00:24.958275+00:00",
+  "last_weekly_train_at": "2026-04-12T00:00:24.958275+00:00"
 }

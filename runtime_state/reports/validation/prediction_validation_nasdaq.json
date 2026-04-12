@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T09:37:34.926724+00:00",
+  "generated_at": "2026-04-12T14:37:48.653428+00:00",
   "market": "NASDAQ",
   "runs_considered": 17,
   "rows_considered": 39,
@@ -52,10 +52,10 @@
     },
     "watchlist": {
       "1d": {
-        "samples": 15,
-        "n": 15,
-        "avg_return_pct": 1.3062,
-        "win_rate_pct": 80.0
+        "samples": 25,
+        "n": 25,
+        "avg_return_pct": 1.6562,
+        "win_rate_pct": 84.0
       },
       "3d": {
         "samples": 5,

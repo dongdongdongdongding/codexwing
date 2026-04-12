@@ -7,12 +7,14 @@
       "decision_bucket": "watchlist",
       "decision_score": 27.0,
       "entry_reference_price": 206000.0,
+      "expiry_horizon_days": 2,
+      "expiry_reason": "HORIZON_ELAPSED_NO_RESOLUTION",
       "horizon": "T+2D",
       "latest_return_pct": -2.184466,
       "latest_trade_date": "2026-04-10",
       "market": "KOSDAQ",
-      "outcome_label": null,
-      "outcome_recorded_at": null,
+      "outcome_label": "EXPIRED",
+      "outcome_recorded_at": "2026-04-11T09:30:26.909470+00:00",
       "performance_updated_at": "2026-04-10T09:32:46.995448+00:00",
       "phase25_recommended_threshold": null,
       "phase25_shadow_prob": null,
@@ -28,7 +30,7 @@
       "run_id": "RUN-4BC95662",
       "scan_mode": "SWING",
       "source_ref": "planner_handoff.watchlist_meta#247540.KQ",
-      "status": "PENDING",
+      "status": "EXPIRED",
       "stock_name": "에코프로비엠",
       "strategy_family": "KR_CORE",
       "ticker": "247540.KQ"
@@ -40,12 +42,14 @@
       "decision_bucket": "watchlist",
       "decision_score": 24.0,
       "entry_reference_price": 148900.0,
+      "expiry_horizon_days": 2,
+      "expiry_reason": "HORIZON_ELAPSED_NO_RESOLUTION",
       "horizon": "T+2D",
       "latest_return_pct": -1.678979,
       "latest_trade_date": "2026-04-10",
       "market": "KOSDAQ",
-      "outcome_label": null,
-      "outcome_recorded_at": null,
+      "outcome_label": "EXPIRED",
+      "outcome_recorded_at": "2026-04-11T09:30:26.909524+00:00",
       "performance_updated_at": "2026-04-10T09:32:46.996000+00:00",
       "phase25_recommended_threshold": null,
       "phase25_shadow_prob": null,
@@ -61,7 +65,7 @@
       "run_id": "RUN-4BC95662",
       "scan_mode": "SWING",
       "source_ref": "planner_handoff.watchlist_meta#086520.KQ",
-      "status": "PENDING",
+      "status": "EXPIRED",
       "stock_name": "에코프로",
       "strategy_family": "KR_CORE",
       "ticker": "086520.KQ"
@@ -78,8 +82,9 @@
     "strategy_version": "theme-shadow-v1"
   },
   "summary": {
-    "pending_count": 2,
-    "performance_last_updated_at": "2026-04-10T09:32:46.996011+00:00",
+    "expired_count": 2,
+    "last_updated_at": "2026-04-11T09:30:26.909539+00:00",
+    "pending_count": 0,
     "resolved_count": 0
   }
 }

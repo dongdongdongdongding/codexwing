@@ -1,19 +1,42 @@
 {
-  "generated_at": "2026-04-10T05:08:44.012214+00:00",
+  "generated_at": "2026-04-12T13:25:55.885412+00:00",
   "market": "KOSPI",
   "theme_states": [
+    {
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "direction": "HEADWIND",
+      "strength_score": 33.0,
+      "confidence": 0.586,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "LIQUIDITY",
+        "REGULATION"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [],
+      "victim_keywords": [
+        "반도체",
+        "메모리",
+        "HBM",
+        "낸드",
+        "DRAM",
+        "파운드리"
+      ],
+      "updated_at": "2026-04-12T13:25:55.884773+00:00"
+    },
     {
       "theme_id": "finance",
       "theme_name": "금융",
       "direction": "BENEFICIARY",
-      "strength_score": 48.0,
-      "confidence": 0.773,
+      "strength_score": 28.0,
+      "confidence": 0.63,
       "driver_categories": [],
       "evidence": [
-        "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
-        "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
-        "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
-        "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+        "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
+        "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
+        "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
       ],
       "beneficiary_keywords": [
         "금융",
@@ -24,24 +47,69 @@
         "카드"
       ],
       "victim_keywords": [],
-      "updated_at": "2026-04-10T05:08:44.010593+00:00"
+      "updated_at": "2026-04-12T13:25:55.884579+00:00"
+    },
+    {
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지",
+      "direction": "HEADWIND",
+      "strength_score": 27.0,
+      "confidence": 0.543,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "FX",
+        "OIL"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [],
+      "victim_keywords": [
+        "2차전지",
+        "이차전지",
+        "배터리",
+        "양극재",
+        "음극재",
+        "전해액"
+      ],
+      "updated_at": "2026-04-12T13:25:55.885232+00:00"
+    },
+    {
+      "theme_id": "construction_realestate",
+      "theme_name": "건설/부동산",
+      "direction": "BENEFICIARY",
+      "strength_score": 24.0,
+      "confidence": 0.601,
+      "driver_categories": [],
+      "evidence": [
+        "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시"
+      ],
+      "beneficiary_keywords": [
+        "건설/부동산",
+        "건설",
+        "부동산",
+        "레미콘",
+        "시멘트",
+        "모듈러"
+      ],
+      "victim_keywords": [],
+      "updated_at": "2026-04-12T13:25:55.884827+00:00"
     },
     {
       "theme_id": "it_platform",
       "theme_name": "IT서비스/플랫폼",
-      "direction": "BENEFICIARY",
-      "strength_score": 37.0,
-      "confidence": 0.614,
+      "direction": "HEADWIND",
+      "strength_score": 24.0,
+      "confidence": 0.521,
       "driver_categories": [
         "EARNINGS",
         "ECONOMY",
         "LIQUIDITY",
         "RATES"
       ],
-      "evidence": [
-        "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
-      ],
-      "beneficiary_keywords": [
+      "evidence": [],
+      "beneficiary_keywords": [],
+      "victim_keywords": [
         "IT서비스/플랫폼",
         "IT서비스",
         "플랫폼",
@@ -49,46 +117,22 @@
         "SW",
         "클라우드"
       ],
-      "victim_keywords": [],
-      "updated_at": "2026-04-10T05:08:44.010410+00:00"
-    },
-    {
-      "theme_id": "semiconductor",
-      "theme_name": "반도체",
-      "direction": "BENEFICIARY",
-      "strength_score": 27.0,
-      "confidence": 0.543,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "LIQUIDITY",
-        "REGULATION"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "반도체",
-        "메모리",
-        "HBM",
-        "낸드",
-        "DRAM",
-        "파운드리"
-      ],
-      "victim_keywords": [],
-      "updated_at": "2026-04-10T05:08:44.010958+00:00"
+      "updated_at": "2026-04-12T13:25:55.884516+00:00"
     },
     {
       "theme_id": "robotics",
       "theme_name": "로봇/자동화",
-      "direction": "BENEFICIARY",
-      "strength_score": 27.0,
-      "confidence": 0.543,
+      "direction": "HEADWIND",
+      "strength_score": 24.0,
+      "confidence": 0.521,
       "driver_categories": [
         "EARNINGS",
         "ECONOMY",
         "LIQUIDITY"
       ],
       "evidence": [],
-      "beneficiary_keywords": [
+      "beneficiary_keywords": [],
+      "victim_keywords": [
         "로봇/자동화",
         "로봇",
         "자동화",
@@ -96,8 +140,38 @@
         "협동로봇",
         "물류로봇"
       ],
-      "victim_keywords": [],
-      "updated_at": "2026-04-10T05:08:44.011621+00:00"
+      "updated_at": "2026-04-12T13:25:55.885157+00:00"
+    },
+    {
+      "theme_id": "eco_energy",
+      "theme_name": "친환경/에너지",
+      "direction": "HEADWIND",
+      "strength_score": 22.0,
+      "confidence": 0.587,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "FX",
+        "GEOPOLITICS",
+        "LIQUIDITY",
+        "OIL",
+        "POLITICS",
+        "REGULATION"
+      ],
+      "evidence": [
+        "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
+        "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제"
+      ],
+      "beneficiary_keywords": [],
+      "victim_keywords": [
+        "친환경/에너지",
+        "친환경",
+        "에너지",
+        "태양광",
+        "풍력",
+        "수소"
+      ],
+      "updated_at": "2026-04-12T13:25:55.885105+00:00"
     },
     {
       "theme_id": "해운",
@@ -113,83 +187,92 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [
+        "벌크",
         "운임",
         "컨테이너",
-        "벌크",
         "해운"
       ],
-      "updated_at": "2026-04-10T05:08:44.011997+00:00"
+      "updated_at": "2026-04-12T13:25:55.885370+00:00"
     },
     {
-      "theme_id": "secondary_battery",
-      "theme_name": "2차전지",
+      "theme_id": "automobile",
+      "theme_name": "자동차",
       "direction": "NEUTRAL",
-      "strength_score": 9.0,
-      "confidence": 0.414,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "FX",
-        "OIL"
-      ],
+      "strength_score": 10.0,
+      "confidence": 0.421,
+      "driver_categories": [],
       "evidence": [
-        "[주달 상승테마] 2차전지 | 주달"
+        "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
       ],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "updated_at": "2026-04-10T05:08:44.011754+00:00"
+      "updated_at": "2026-04-12T13:25:55.884690+00:00"
     },
     {
-      "theme_id": "eco_energy",
-      "theme_name": "친환경/에너지",
+      "theme_id": "bio",
+      "theme_name": "바이오/헬스케어",
       "direction": "NEUTRAL",
-      "strength_score": 8.0,
-      "confidence": 0.407,
+      "strength_score": 5.0,
+      "confidence": 0.466,
       "driver_categories": [
         "EARNINGS",
         "ECONOMY",
-        "FX",
-        "GEOPOLITICS",
-        "LIQUIDITY",
-        "OIL",
-        "POLITICS",
         "REGULATION"
       ],
       "evidence": [
-        "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+        "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
+        "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스"
       ],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "updated_at": "2026-04-10T05:08:44.011522+00:00"
+      "updated_at": "2026-04-12T13:25:55.884405+00:00"
     }
   ],
   "beneficiary_themes": [
     {
       "theme_id": "finance",
       "theme_name": "금융",
-      "strength_score": 48.0,
-      "confidence": 0.773
+      "strength_score": 28.0,
+      "confidence": 0.63
+    },
+    {
+      "theme_id": "construction_realestate",
+      "theme_name": "건설/부동산",
+      "strength_score": 24.0,
+      "confidence": 0.601
+    }
+  ],
+  "headwind_themes": [
+    {
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "strength_score": 33.0,
+      "confidence": 0.586
+    },
+    {
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지",
+      "strength_score": 27.0,
+      "confidence": 0.543
     },
     {
       "theme_id": "it_platform",
       "theme_name": "IT서비스/플랫폼",
-      "strength_score": 37.0,
-      "confidence": 0.614
-    },
-    {
-      "theme_id": "semiconductor",
-      "theme_name": "반도체",
-      "strength_score": 27.0,
-      "confidence": 0.543
+      "strength_score": 24.0,
+      "confidence": 0.521
     },
     {
       "theme_id": "robotics",
       "theme_name": "로봇/자동화",
-      "strength_score": 27.0,
-      "confidence": 0.543
-    }
-  ],
-  "headwind_themes": [
+      "strength_score": 24.0,
+      "confidence": 0.521
+    },
+    {
+      "theme_id": "eco_energy",
+      "theme_name": "친환경/에너지",
+      "strength_score": 22.0,
+      "confidence": 0.587
+    },
     {
       "theme_id": "해운",
       "theme_name": "해운",
@@ -198,23 +281,30 @@
     }
   ],
   "theme_evidence": {
-    "it_platform": [
-      "[Fri, 10 Apr 2026 13:41:08 +09:00] 정부 보유 가상자산 유출 막는다...기관지갑 만들어 보안강화, 전담조직 설치 | 매일경제"
+    "bio": [
+      "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
+      "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스"
     ],
+    "it_platform": [],
     "finance": [
-      "[DART 20260410] 대신증권 - 투자설명서(일괄신고) | 전자공시",
-      "[DART 20260410] 삼성증권 - 일괄신고추가서류(파생결합사채-주가연계파생결합사채) | 전자공시",
-      "[DART 20260410] 유한양행 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시",
-      "[DART 20260410] 현대해상 - 임원ㆍ주요주주특정증권등소유상황보고서 | 전자공시"
+      "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
+      "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
+      "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+    ],
+    "automobile": [
+      "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
     ],
     "semiconductor": [],
+    "construction_realestate": [
+      "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시"
+    ],
     "eco_energy": [
-      "[Fri, 10 Apr 2026 13:26:47 +0900] [속보] 여야, 농어민 고유가 부담 완화 예산 2천억 반영 | 연합뉴스"
+      "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
+      "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제"
     ],
     "robotics": [],
-    "secondary_battery": [
-      "[주달 상승테마] 2차전지 | 주달"
-    ],
+    "secondary_battery": [],
     "해운": []
   },
   "source": "gemini"

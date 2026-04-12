@@ -1,7 +1,7 @@
 # Prediction Validation (KOSDAQ)
 
-- generated_at: 2026-04-10T09:37:28.346614+00:00
-- runs_considered: 71
+- generated_at: 2026-04-12T14:37:42.642641+00:00
+- runs_considered: 70
 - rows_considered: 1319
 - excluded_runs: 0
 

@@ -1,16 +1,16 @@
 # Retrain V2 Report
 
-- generated_at: `2026-04-07T22:30:17.830481`
-- rows_loaded: `2438`
-- backend: `rf`
+- generated_at: `2026-04-12T09:00:24.868636`
+- rows_loaded: `4254`
+- backend: `lgb`
 
 ## Segment Results
 - `phase25_global`: `trained`
-  rows=874 positives=129 auc=0.5116 acc=0.8137
-  best_th=0.40 picks=37 avg_return=+3.78% win_rate=51.4% hit_rate=21.6%
+  rows=1240 positives=259 auc=0.5022 acc=0.5323
+  best_th=0.60 picks=99 avg_return=+3.22% win_rate=60.6% hit_rate=35.4%
 - `phase25_kr_swing`: `trained`
-  rows=187 positives=40 auc=0.5210 acc=0.7895
-  best_th=0.30 picks=14 avg_return=+5.09% win_rate=64.3% hit_rate=28.6%
+  rows=263 positives=78 auc=0.6049 acc=0.5696
+  best_th=0.60 picks=21 avg_return=+8.03% win_rate=90.5% hit_rate=57.1%
 - `phase25_kr_intraday`: `trained`
-  rows=769 positives=207 auc=0.6147 acc=0.5628
-  best_th=0.60 picks=170 avg_return=+0.86% win_rate=51.2% hit_rate=52.9%
+  rows=1144 positives=377 auc=0.6005 acc=0.6250
+  best_th=0.60 picks=89 avg_return=+2.29% win_rate=62.9% hit_rate=62.9%

@@ -1,37 +1,37 @@
 {
   "bucket_counts": {
-    "exception_leader": 33,
+    "exception_leader": 36,
     "picked": 9,
-    "watchlist": 114
+    "watchlist": 131
   },
   "delta_vs_prev_day": {
     "base_date": "2026-04-09",
-    "bucket_exception_leader_total": 27,
+    "bucket_exception_leader_total": 30,
     "bucket_picked_total": 3,
-    "bucket_watchlist_total": 95,
+    "bucket_watchlist_total": 112,
     "outcomes_closure_rate_pct": 0.0,
     "outcomes_expired": 0,
-    "outcomes_pending": 125,
+    "outcomes_pending": 147,
     "outcomes_resolved": 0,
-    "outcomes_total": 125,
-    "total_candidates": 92,
-    "total_decisions": 112,
+    "outcomes_total": 147,
+    "total_candidates": 111,
+    "total_decisions": 131,
     "total_fallback_watchlist_outcomes": 1,
-    "total_runs": 0,
-    "total_watchlist": 63
+    "total_runs": 1,
+    "total_watchlist": 83
   },
-  "generated_at": "2026-04-10T09:37:18.531471Z",
+  "generated_at": "2026-04-10T14:37:23.697175Z",
   "market": "KOSPI",
   "market_counts": {
-    "KOSPI": 10
+    "KOSPI": 11
   },
   "outcome_bucket_breakdown": {
     "exception_leader": {
       "closure_rate_pct": 0.0,
       "expired": 0,
-      "pending": 33,
+      "pending": 36,
       "resolved": 0,
-      "total": 33
+      "total": 36
     },
     "picked": {
       "closure_rate_pct": 0.0,
@@ -43,28 +43,28 @@
     "watchlist": {
       "closure_rate_pct": 0.0,
       "expired": 0,
-      "pending": 114,
+      "pending": 131,
       "resolved": 0,
-      "total": 114
+      "total": 131
     }
   },
   "outcome_status_counts": {
     "closure_rate_pct": 0.0,
     "expired": 0,
-    "pending": 157,
+    "pending": 179,
     "resolved": 0,
-    "total": 157
+    "total": 179
   },
   "outcomes": {
     "closure_rate_pct": 0.0,
     "expired": 0,
-    "pending": 157,
+    "pending": 179,
     "resolved": 0,
-    "total": 157
+    "total": 179
   },
   "profile_counts": {
     "dev": 2,
-    "prod": 8
+    "prod": 9
   },
   "return_bucket_breakdown": {
     "exception_leader": {
@@ -533,6 +533,175 @@
         "EXCEPTION_LEADERS_ENABLED"
       ],
       "watchlist_count": 18
+    },
+    {
+      "bucket_breakdown": {
+        "exception_leader": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 3,
+          "resolved": 0,
+          "total": 3
+        },
+        "picked": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 0,
+          "resolved": 0,
+          "total": 0
+        },
+        "watchlist": {
+          "closure_rate_pct": 0.0,
+          "expired": 0,
+          "pending": 17,
+          "resolved": 0,
+          "total": 17
+        }
+      },
+      "candidate_count": 19,
+      "decision_count": 19,
+      "expired": 0,
+      "fallback_outcome_count": 0,
+      "market": "KOSPI",
+      "outcomes_total": 22,
+      "pending": 22,
+      "profile": "prod",
+      "resolved": 0,
+      "return_bucket_breakdown": {
+        "exception_leader": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "7d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "picked": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "7d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        },
+        "watchlist": {
+          "1d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "1h": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "2d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "30m": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "3d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "5d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "7d": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          },
+          "close": {
+            "avg_return_pct": 0.0,
+            "samples": 0,
+            "win_rate_pct": 0.0
+          }
+        }
+      },
+      "run_id": "RUN-491AA95A",
+      "warning_codes": [
+        "REAL_BACKTEST_PARTIAL",
+        "REGIME_BACKTEST_LOW_SAMPLE",
+        "EXCEPTION_LEADERS_ENABLED"
+      ],
+      "watchlist_count": 20
     },
     {
       "bucket_breakdown": {
@@ -1894,15 +2063,15 @@
   "top_warning_codes": [
     {
       "code": "REAL_BACKTEST_PARTIAL",
-      "count": 8
+      "count": 9
     },
     {
       "code": "REGIME_BACKTEST_LOW_SAMPLE",
-      "count": 8
+      "count": 9
     },
     {
       "code": "EXCEPTION_LEADERS_ENABLED",
-      "count": 7
+      "count": 8
     },
     {
       "code": "PROXY_BACKTEST_ONLY",
@@ -1933,9 +2102,9 @@
       "count": 1
     }
   ],
-  "total_candidates": 119,
-  "total_decisions": 119,
+  "total_candidates": 138,
+  "total_decisions": 138,
   "total_fallback_watchlist_outcomes": 1,
-  "total_runs": 10,
-  "total_watchlist": 93
+  "total_runs": 11,
+  "total_watchlist": 113
 }

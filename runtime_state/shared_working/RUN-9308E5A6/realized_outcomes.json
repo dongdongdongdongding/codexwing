@@ -6,14 +6,14 @@
       "decision_bucket": "watchlist",
       "entry_reference_price": 536.380005,
       "horizon": "T+3D",
-      "latest_return_pct": 17.153885,
-      "latest_trade_date": "2026-04-09",
+      "latest_return_pct": 17.427939,
+      "latest_trade_date": "2026-04-10",
       "local_resolution_horizon_days": 3,
       "local_resolution_metric": "return_3d_pct",
       "local_resolution_recorded_at": "2026-04-03T14:56:44.106471+00:00",
       "outcome_label": "WIN",
       "outcome_recorded_at": "2026-04-04T16:00:04.433146+00:00",
-      "performance_updated_at": "2026-04-10T09:33:56.823694+00:00",
+      "performance_updated_at": "2026-04-11T09:34:30.622750+00:00",
       "priority_rank": 1,
       "realized_return_pct": 7.099448,
       "recommended_at": "2026-03-30T14:14:26.506022+00:00",
@@ -46,7 +46,7 @@
     "expired_count": 0,
     "last_updated_at": "2026-04-10T02:23:31.312430+00:00",
     "pending_count": 0,
-    "performance_last_updated_at": "2026-04-10T09:33:56.823730+00:00",
+    "performance_last_updated_at": "2026-04-11T09:34:30.622788+00:00",
     "resolved_count": 1
   }
 }

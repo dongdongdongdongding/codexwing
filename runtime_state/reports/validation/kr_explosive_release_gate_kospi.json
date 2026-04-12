@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-04-10T13:47:57.496639+00:00",
+  "market": "KOSPI",
+  "confidence_level": 0.98,
+  "score_floor": 70,
+  "focus_topn": 20,
+  "release_ready": false,
+  "checks": [
+    {
+      "code": "ELIGIBLE_ROWS_MIN",
+      "passed": true,
+      "detail": "eligible_rows=221"
+    },
+    {
+      "code": "ELIGIBLE_DAYS_MIN",
+      "passed": false,
+      "detail": "eligible_days=3"
+    },
+    {
+      "code": "DELTA_AVG_1D_NON_NEGATIVE",
+      "passed": true,
+      "detail": "delta_avg_1d=+0.47%"
+    },
+    {
+      "code": "DELTA_POSITIVE_1D_NON_NEGATIVE",
+      "passed": false,
+      "detail": "delta_positive_1d=-3.33%p"
+    },
+    {
+      "code": "DELTA_HIT10_NON_NEGATIVE",
+      "passed": true,
+      "detail": "delta_hit10=+0.42%p"
+    },
+    {
+      "code": "AVG_1D_LOWER_POSITIVE",
+      "passed": true,
+      "detail": "eligible_avg_1d_lower=+1.44%"
+    },
+    {
+      "code": "AVG_3D_MEAN_NON_NEGATIVE",
+      "passed": true,
+      "detail": "eligible_avg_3d_mean=+0.00%"
+    }
+  ],
+  "summary": {
+    "rows": 3652,
+    "eligible_rows": 221,
+    "eligible_days": 3,
+    "eligible_rate": 0.060515,
+    "delta_avg_1d_pct": 0.465298,
+    "delta_avg_3d_pct": 0.0,
+    "delta_positive_1d": -0.033333,
+    "delta_positive_3d": 0.0,
+    "delta_hit10": 0.004166,
+    "eligible_avg_1d_mean": 1.4424,
+    "eligible_avg_1d_lower": 1.4424,
+    "eligible_avg_3d_mean": 0.0
+  }
+}

@@ -1,8 +1,8 @@
 # Prediction Validation (KOSPI)
 
-- generated_at: 2026-04-10T09:37:21.855487+00:00
-- runs_considered: 36
-- rows_considered: 583
+- generated_at: 2026-04-12T14:37:36.539510+00:00
+- runs_considered: 37
+- rows_considered: 605
 - excluded_runs: 0
 
 ## Buckets

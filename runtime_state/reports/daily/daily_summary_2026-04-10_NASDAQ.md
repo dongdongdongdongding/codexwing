@@ -15,7 +15,7 @@
 
 ## Return Performance
 - picked: 30m avg=+0.00% / win=0.0% / n=0 | 1h avg=+0.00% / win=0.0% / n=0 | close avg=+0.00% / win=0.0% / n=0 | 1d avg=+0.00% / win=0.0% / n=0 | 2d avg=+0.00% / win=0.0% / n=0 | 3d avg=+0.00% / win=0.0% / n=0 | 5d avg=+0.00% / win=0.0% / n=0 | 7d avg=+0.00% / win=0.0% / n=0
-- watchlist: 30m avg=+0.00% / win=0.0% / n=0 | 1h avg=+0.00% / win=0.0% / n=0 | close avg=+0.00% / win=0.0% / n=0 | 1d avg=+0.00% / win=0.0% / n=0 | 2d avg=+0.00% / win=0.0% / n=0 | 3d avg=+0.00% / win=0.0% / n=0 | 5d avg=+0.00% / win=0.0% / n=0 | 7d avg=+0.00% / win=0.0% / n=0
+- watchlist: 30m avg=+0.00% / win=0.0% / n=0 | 1h avg=+0.00% / win=0.0% / n=0 | close avg=+0.00% / win=0.0% / n=0 | 1d avg=+2.68% / win=80.0% / n=10 | 2d avg=+0.00% / win=0.0% / n=0 | 3d avg=+0.00% / win=0.0% / n=0 | 5d avg=+0.00% / win=0.0% / n=0 | 7d avg=+0.00% / win=0.0% / n=0
 - exception_leader: 30m avg=+0.00% / win=0.0% / n=0 | 1h avg=+0.00% / win=0.0% / n=0 | close avg=+0.00% / win=0.0% / n=0 | 1d avg=+0.00% / win=0.0% / n=0 | 2d avg=+0.00% / win=0.0% / n=0 | 3d avg=+0.00% / win=0.0% / n=0 | 5d avg=+0.00% / win=0.0% / n=0 | 7d avg=+0.00% / win=0.0% / n=0
 
 ## Delta vs Previous Day
@@ -50,4 +50,4 @@
 ## Run Breakdown
 - RUN-C13EBE12 | NASDAQ | prod | cand=105 dec=0 out=10 (P=10, R=0, E=0)
 
-_Generated at: 2026-04-10T09:37:31.777732Z_
+_Generated at: 2026-04-10T14:37:38.898725Z_

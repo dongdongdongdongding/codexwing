@@ -7,12 +7,14 @@
       "decision_bucket": "exception_leader",
       "decision_score": 68.0,
       "entry_reference_price": 504000.0,
+      "expiry_horizon_days": 3,
+      "expiry_reason": "HORIZON_ELAPSED_NO_RESOLUTION",
       "horizon": "T+3D",
       "latest_return_pct": 0.198413,
       "latest_trade_date": "2026-04-10",
       "market": "KOSDAQ",
-      "outcome_label": null,
-      "outcome_recorded_at": null,
+      "outcome_label": "EXPIRED",
+      "outcome_recorded_at": "2026-04-12T14:30:03.935763+00:00",
       "performance_updated_at": "2026-04-10T09:32:11.348346+00:00",
       "phase25_recommended_threshold": null,
       "phase25_shadow_prob": null,
@@ -28,7 +30,7 @@
       "run_id": "RUN-3BA34E06",
       "scan_mode": "INTRADAY",
       "source_ref": "planner_handoff.watchlist_meta#000250.KQ",
-      "status": "PENDING",
+      "status": "EXPIRED",
       "stock_name": "삼천당제약",
       "strategy_family": "KR_CORE",
       "ticker": "000250.KQ"
@@ -40,12 +42,14 @@
       "decision_bucket": "exception_leader",
       "decision_score": 58.5,
       "entry_reference_price": 579000.0,
+      "expiry_horizon_days": 3,
+      "expiry_reason": "HORIZON_ELAPSED_NO_RESOLUTION",
       "horizon": "T+3D",
       "latest_return_pct": 1.727116,
       "latest_trade_date": "2026-04-10",
       "market": "KOSDAQ",
-      "outcome_label": null,
-      "outcome_recorded_at": null,
+      "outcome_label": "EXPIRED",
+      "outcome_recorded_at": "2026-04-12T14:30:04.071564+00:00",
       "performance_updated_at": "2026-04-10T09:32:11.351434+00:00",
       "phase25_recommended_threshold": null,
       "phase25_shadow_prob": null,
@@ -61,7 +65,7 @@
       "run_id": "RUN-3BA34E06",
       "scan_mode": "INTRADAY",
       "source_ref": "planner_handoff.watchlist_meta#277810.KQ",
-      "status": "PENDING",
+      "status": "EXPIRED",
       "stock_name": "레인보우로보틱스",
       "strategy_family": "KR_CORE",
       "ticker": "277810.KQ"
@@ -78,8 +82,9 @@
     "strategy_version": "legacy-cli-v1"
   },
   "summary": {
-    "pending_count": 2,
-    "performance_last_updated_at": "2026-04-10T09:32:11.352407+00:00",
+    "expired_count": 2,
+    "last_updated_at": "2026-04-12T14:30:04.071622+00:00",
+    "pending_count": 0,
     "resolved_count": 0
   }
 }
