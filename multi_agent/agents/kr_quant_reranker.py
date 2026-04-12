@@ -93,6 +93,8 @@ def _collect_context(candidate: Dict[str, Any], run_market: str) -> Dict[str, An
     else:
         continuation_overlay = {"enabled": False, "score_adjustment": 0.0}
     market_name = str(run_market or "").upper()
+    # Compute explosive gate for context — used in scoring to penalize ineligible EXPLOSIVE_LEADER picks
+    explosive_gate_ctx = is_kr_explosive_leader_eligible(candidate, market_name)
     lane_overlay_1d = predict_lane_overlay(candidate, market_name, "1d")
     lane_overlay_3d = predict_lane_overlay(candidate, market_name, "3d")
 
@@ -136,6 +138,8 @@ def _collect_context(candidate: Dict[str, Any], run_market: str) -> Dict[str, An
         "phase25_shadow_prob": _safe_float(raw_phase25_shadow_prob, 0.0),
         "phase25_recommended_threshold": _safe_float(raw_phase25_recommended_threshold, 60.0),
         "has_phase25_shadow": _has_value(raw_phase25_shadow_prob),
+        "explosive_gate_eligible": bool(explosive_gate_ctx.get("eligible", False)),
+        "explosive_gate_reasons_ctx": list(explosive_gate_ctx.get("reasons", []) or []),
         "continuation_gate": continuation_gate if isinstance(continuation_gate, dict) else {},
         "continuation_overlay": continuation_overlay if isinstance(continuation_overlay, dict) else {},
         "lane_overlay_1d": lane_overlay_1d if isinstance(lane_overlay_1d, dict) else {},
@@ -260,7 +264,6 @@ def _score_horizon(
     continuation_eligible = bool(continuation_gate.get("eligible", False))
     continuation_overlay = context.get("continuation_overlay", {}) if isinstance(context.get("continuation_overlay"), dict) else {}
     continuation_enabled = bool(continuation_overlay.get("enabled", False))
-    continuation_prob = _safe_float(continuation_overlay.get("prob_up_3d"), 50.0)
     continuation_score_adjustment = _safe_float(continuation_overlay.get("score_adjustment"), 0.0)
     kr_universe_role = str(context.get("kr_universe_role") or "").upper()
     position = str(context.get("position") or "").lower()
@@ -268,6 +271,7 @@ def _score_horizon(
     phase25_shadow_prob = _safe_float(context.get("phase25_shadow_prob"), 0.0)
     phase25_recommended_threshold = _safe_float(context.get("phase25_recommended_threshold"), 60.0)
     has_phase25_shadow = bool(context.get("has_phase25_shadow", False))
+    explosive_gate_eligible = bool(context.get("explosive_gate_eligible", False))
     lane_overlay = (
         context.get("lane_overlay_1d", {}) if horizon == "1d" else context.get("lane_overlay_3d", {})
     ) if isinstance(context.get("lane_overlay_1d"), dict) and isinstance(context.get("lane_overlay_3d"), dict) else {}
@@ -300,6 +304,13 @@ def _score_horizon(
             _add(10.0 if market == "KOSPI" else 12.0, "SCAN_MODE_SWING_3D")
         elif scan_mode == "INTRADAY":
             _add(-8.0 if market == "KOSPI" else -14.0, "SCAN_MODE_INTRADAY_3D")
+
+    # KOSDAQ INTRADAY EXPLOSIVE_LEADER gate enforcement
+    # Analysis: 2166 gate-fail picks from April RUNs averaged -4.87% return, 12% win rate
+    # Gate failure = missing decision_score, ML score, or trend — stock not ready for explosive play
+    if market == "KOSDAQ" and scan_mode == "INTRADAY" and kr_universe_role == "EXPLOSIVE_LEADER":
+        if not explosive_gate_eligible:
+            _add(-12.0, "KOSDAQ_EXPLOSIVE_GATE_FAIL")
 
     if real_trend == "UP":
         _add(4.0, "TREND_UP")
