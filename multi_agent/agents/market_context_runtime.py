@@ -12,6 +12,7 @@ load_dotenv(".env.local")
 from multi_agent.contracts.types import MarketContextHandoff, RunContext, WarningItem
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
 from modules.theme_signal_engine import write_theme_cache
+from modules.kr_theme_momentum_fetcher import fetch_and_write_theme_momentum
 
 
 def _parse_float(value: Any) -> float:
@@ -219,6 +220,13 @@ def build_market_context_handoff(context: RunContext) -> MarketContextHandoff:
                 "source": str(intel.get("source", "unknown")),
             },
         )
+        # Enrich theme_cache with real-time Naver momentum (avg_change_pct per theme)
+        # No-op if Naver fetch fails — reranker gracefully skips momentum block when data absent
+        if str(market or "").upper() in {"KOSPI", "KOSDAQ", "KR"}:
+            try:
+                fetch_and_write_theme_momentum()
+            except Exception:
+                pass
     except Exception as e:
         warnings.append(
             WarningItem(

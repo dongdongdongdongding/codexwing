@@ -97,6 +97,8 @@ def build_theme_intelligence(market: str, intel_data: Dict[str, Any]) -> Dict[st
             "evidence": sorted(dict.fromkeys(evidence))[:4],
             "beneficiary_keywords": aliases[:6] if direction == "BENEFICIARY" else [],
             "victim_keywords": aliases[:6] if direction == "HEADWIND" else [],
+            "momentum_avg_change_pct": None,
+            "momentum_class": None,
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
         states.append(row)

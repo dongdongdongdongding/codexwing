@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 
 from modules.kr_lane_champion_ranker import predict_lane_overlay
 from modules.kosdaq_3d_continuation_ranker import predict_continuation_overlay
+from modules.theme_momentum_loader import load_theme_momentum_lookup, get_theme_momentum
 
 
 def _safe_float(value: Any, default: float = 0.0) -> float:
@@ -47,7 +48,7 @@ def _extract_feature(candidate: Dict[str, Any], *keys: str) -> Any:
     return None
 
 
-def _collect_context(candidate: Dict[str, Any], run_market: str) -> Dict[str, Any]:
+def _collect_context(candidate: Dict[str, Any], run_market: str, theme_momentum_lookup: Dict | None = None) -> Dict[str, Any]:
     feature_snapshot = candidate.get("feature_snapshot", {}) if isinstance(candidate.get("feature_snapshot"), dict) else {}
     theme_context = candidate.get("theme_context", {}) if isinstance(candidate.get("theme_context"), dict) else {}
     leader_metrics = candidate.get("leader_metrics", {}) if isinstance(candidate.get("leader_metrics"), dict) else {}
@@ -71,6 +72,7 @@ def _collect_context(candidate: Dict[str, Any], run_market: str) -> Dict[str, An
     raw_expected_return_3d_pct = _extract_feature(candidate, "expected_return_3d_pct")
     raw_theme_direction = theme_context.get("theme_direction")
     raw_theme_strength = theme_context.get("theme_strength_score")
+    raw_primary_theme = theme_context.get("primary_theme") or _extract_feature(candidate, "primary_theme")
     raw_leader_score = leader_metrics.get("kr_flow_leader_score", leader_metrics.get("leader_score"))
     raw_context_adjustment = leader_metrics.get("kr_context_adjustment", theme_context.get("context_score_adjustment"))
     raw_alpha_score = _extract_feature(candidate, "alpha_score")
@@ -97,6 +99,10 @@ def _collect_context(candidate: Dict[str, Any], run_market: str) -> Dict[str, An
     explosive_gate_ctx = is_kr_explosive_leader_eligible(candidate, market_name)
     lane_overlay_1d = predict_lane_overlay(candidate, market_name, "1d")
     lane_overlay_3d = predict_lane_overlay(candidate, market_name, "3d")
+
+    # Theme momentum: FDR avg_change_pct per theme (populated externally; None = no data)
+    _lookup = theme_momentum_lookup if isinstance(theme_momentum_lookup, dict) else {}
+    theme_momentum_pct, theme_momentum_class = get_theme_momentum(_lookup, raw_primary_theme)
 
     return {
         "feature_snapshot": feature_snapshot,
@@ -144,6 +150,9 @@ def _collect_context(candidate: Dict[str, Any], run_market: str) -> Dict[str, An
         "continuation_overlay": continuation_overlay if isinstance(continuation_overlay, dict) else {},
         "lane_overlay_1d": lane_overlay_1d if isinstance(lane_overlay_1d, dict) else {},
         "lane_overlay_3d": lane_overlay_3d if isinstance(lane_overlay_3d, dict) else {},
+        "theme_momentum_pct": theme_momentum_pct,
+        "theme_momentum_class": str(theme_momentum_class or "UNKNOWN"),
+        "has_theme_momentum": theme_momentum_pct is not None,
     }
 
 
@@ -272,6 +281,9 @@ def _score_horizon(
     phase25_recommended_threshold = _safe_float(context.get("phase25_recommended_threshold"), 60.0)
     has_phase25_shadow = bool(context.get("has_phase25_shadow", False))
     explosive_gate_eligible = bool(context.get("explosive_gate_eligible", False))
+    has_theme_momentum = bool(context.get("has_theme_momentum", False))
+    theme_momentum_pct = context.get("theme_momentum_pct")
+    theme_momentum_class = str(context.get("theme_momentum_class") or "UNKNOWN")
     lane_overlay = (
         context.get("lane_overlay_1d", {}) if horizon == "1d" else context.get("lane_overlay_3d", {})
     ) if isinstance(context.get("lane_overlay_1d"), dict) and isinstance(context.get("lane_overlay_3d"), dict) else {}
@@ -353,6 +365,38 @@ def _score_horizon(
     elif has_theme_direction and theme_direction == "HEADWIND":
         penalty = min(5.0 if horizon == "1d" else 5.5, 1.0 + theme_strength / (20.0 if horizon == "1d" else 18.0))
         _add(-penalty, f"THEME_HEADWIND_{horizon.upper()}")
+
+    # Theme momentum: real-time avg_change_pct of theme constituents (from FDR / ThemeMomentum)
+    # Amplifies BENEFICIARY or confirms HEADWIND based on actual intraday price movement.
+    # Data is populated externally into theme_cache; no-op when unavailable (has_theme_momentum=False).
+    if has_theme_momentum and theme_momentum_pct is not None:
+        m_pct = float(theme_momentum_pct)
+        if theme_direction == "BENEFICIARY":
+            if theme_momentum_class == "EXPLODING":
+                # Theme surging >2%: strong confirmation — add on top of beneficiary bonus
+                _add(3.0 if horizon == "1d" else 2.0, f"THEME_MOMENTUM_EXPLODING_{horizon.upper()}")
+            elif theme_momentum_class == "ACCELERATING":
+                # Theme up 0.5-2%: moderate confirmation
+                _add(1.5 if horizon == "1d" else 1.0, f"THEME_MOMENTUM_ACCELERATING_{horizon.upper()}")
+            elif m_pct <= -1.0:
+                # Theme down >1% despite BENEFICIARY label — label may be stale, penalize
+                _add(-3.0 if horizon == "1d" else -2.0, f"THEME_MOMENTUM_CONTRARIAN_{horizon.upper()}")
+            elif theme_momentum_class == "FADING":
+                # Theme slightly down (-0.5% to -1%): mild caution
+                _add(-1.5 if horizon == "1d" else -1.0, f"THEME_MOMENTUM_FADING_{horizon.upper()}")
+        elif theme_direction == "HEADWIND":
+            if theme_momentum_class == "FADING" or m_pct <= -2.0:
+                # Theme actively falling: confirmed headwind — reinforce penalty
+                _add(-2.0 if horizon == "1d" else -1.5, f"THEME_HEADWIND_CONFIRMED_{horizon.upper()}")
+            elif m_pct >= 1.0:
+                # Theme actually rising despite HEADWIND label — label may be stale, reduce penalty
+                _add(2.0 if horizon == "1d" else 1.5, f"THEME_HEADWIND_CONTRARIAN_{horizon.upper()}")
+        else:
+            # No direction label but momentum data exists — use momentum alone as weak signal
+            if theme_momentum_class == "EXPLODING":
+                _add(1.5 if horizon == "1d" else 1.0, f"THEME_MOMENTUM_PURE_UP_{horizon.upper()}")
+            elif m_pct <= -2.0:
+                _add(-1.5 if horizon == "1d" else -1.0, f"THEME_MOMENTUM_PURE_DOWN_{horizon.upper()}")
 
     if has_leader_score and leader_score >= 80.0:
         _add(5.0 if horizon == "1d" else 4.0, f"LEADER_SCORE_HIGH_{horizon.upper()}")
@@ -517,6 +561,9 @@ def _score_horizon(
     }
 
 
+_theme_momentum_cache: Dict[str, Any] = {}
+
+
 def compute_kr_quant_rerank(candidate: Dict[str, Any], run_market: str) -> Dict[str, Any]:
     market = str(run_market or "").upper()
     raw_score = _safe_float(candidate.get("score", _extract_feature(candidate, "decision_score", "score")), 50.0)
@@ -536,7 +583,9 @@ def compute_kr_quant_rerank(candidate: Dict[str, Any], run_market: str) -> Dict[
             "reasons": [],
         }
 
-    context = _collect_context(candidate, market)
+    if market not in _theme_momentum_cache:
+        _theme_momentum_cache[market] = load_theme_momentum_lookup(market)
+    context = _collect_context(candidate, market, theme_momentum_lookup=_theme_momentum_cache[market])
     rank_1d = _score_horizon(market=market, raw_score=raw_score, context=context, horizon="1d")
     rank_3d = _score_horizon(market=market, raw_score=raw_score, context=context, horizon="3d")
     scan_mode = str(context.get("scan_mode") or "").upper()
@@ -602,6 +651,8 @@ def compute_kr_quant_rerank(candidate: Dict[str, Any], run_market: str) -> Dict[
         "raw_score": round(raw_score, 2),
         "adjustments": list(primary.get("adjustments", [])),
         "reasons": list(primary.get("reasons", [])),
+        "theme_momentum_pct": context.get("theme_momentum_pct"),
+        "theme_momentum_class": context.get("theme_momentum_class", "UNKNOWN"),
     }
 
 
