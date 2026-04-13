@@ -844,7 +844,8 @@ def _fetch_global_headlines(market="KR", max_items=15):
     collected.extend(_fetch_dart_disclosures(market, max_items=max(4, max_items // 2)))
     if normalize_market_key(market) == "KR":
         collected.extend(_fetch_judal_theme_updates(market, max_items=max(4, max_items // 2)))
-    if normalize_market_key(market) == "KR" and len(collected) < max(4, max_items // 2):
+        # Always include Naver stock-linked headlines — these have the highest relevance scores
+        # and contain actual market direction signals (시장 상황, 코스피 방향 등)
         collected.extend(_collect_kr_stock_headlines(market))
     if not collected:
         collected = _collect(_fallback_headline_queries(market))
