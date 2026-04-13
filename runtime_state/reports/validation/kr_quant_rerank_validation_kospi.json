@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T14:49:28.082869+00:00",
+  "generated_at": "2026-04-13T02:44:05.599380+00:00",
   "market": "KOSPI",
   "confidence_level": 0.98,
   "rows": 5705,
@@ -58,9 +58,9 @@
         "topn": 5,
         "days": 11,
         "avg_1d_return_pct": {
-          "mean": 4.769375,
-          "lower": -0.578391,
-          "upper": 10.793637,
+          "mean": 3.709212,
+          "lower": -0.80851,
+          "upper": 9.296066,
           "samples": 6
         },
         "avg_3d_return_pct": {
@@ -94,7 +94,7 @@
           "samples": 2
         },
         "precision_hit_10pct": {
-          "mean": 0.109091,
+          "mean": 0.090909,
           "lower": 0.0,
           "upper": 0.363636,
           "samples": 11
@@ -150,9 +150,9 @@
         "topn": 5,
         "days": 11,
         "avg_1d_return_pct": {
-          "mean": 3.594602,
+          "mean": 2.534438,
           "lower": -2.503386,
-          "upper": 10.391473,
+          "upper": 9.023202,
           "samples": 6
         },
         "avg_3d_return_pct": {
@@ -186,20 +186,20 @@
           "samples": 2
         },
         "precision_hit_10pct": {
-          "mean": 0.109091,
+          "mean": 0.090909,
           "lower": 0.0,
           "upper": 0.363636,
           "samples": 11
         }
       },
       "delta": {
-        "avg_1d_return_pct": -2.038521,
+        "avg_1d_return_pct": -3.098684,
         "avg_3d_return_pct": -1.696615,
         "positive_1d": 0.027778,
         "positive_3d": -0.25,
         "avoid_down_1d": 0.027778,
         "avoid_down_3d": -0.25,
-        "precision_hit_10pct": 0.0
+        "precision_hit_10pct": -0.018182
       },
       "delta_1d_lane": {
         "avg_1d_return_pct": -2.038521,
@@ -211,13 +211,13 @@
         "precision_hit_10pct": 0.0
       },
       "delta_3d_lane": {
-        "avg_1d_return_pct": -3.213294,
+        "avg_1d_return_pct": -4.273458,
         "avg_3d_return_pct": -1.696615,
         "positive_1d": -0.083333,
         "positive_3d": -0.25,
         "avoid_down_1d": -0.083333,
         "avoid_down_3d": -0.25,
-        "precision_hit_10pct": 0.0
+        "precision_hit_10pct": -0.018182
       }
     },
     {
@@ -272,9 +272,9 @@
         "topn": 10,
         "days": 11,
         "avg_1d_return_pct": {
-          "mean": 7.203715,
+          "mean": 7.029214,
           "lower": 2.114243,
-          "upper": 13.096575,
+          "upper": 13.081643,
           "samples": 7
         },
         "avg_3d_return_pct": {
@@ -364,9 +364,9 @@
         "topn": 10,
         "days": 11,
         "avg_1d_return_pct": {
-          "mean": 6.340617,
-          "lower": 0.526143,
-          "upper": 12.79581,
+          "mean": 6.166115,
+          "lower": 0.463425,
+          "upper": 12.718216,
           "samples": 7
         },
         "avg_3d_return_pct": {
@@ -407,7 +407,7 @@
         }
       },
       "delta": {
-        "avg_1d_return_pct": 1.175503,
+        "avg_1d_return_pct": 1.001002,
         "avg_3d_return_pct": -3.784861,
         "positive_1d": 0.191326,
         "positive_3d": -0.041667,
@@ -425,7 +425,7 @@
         "precision_hit_10pct": -0.027273
       },
       "delta_3d_lane": {
-        "avg_1d_return_pct": 0.312405,
+        "avg_1d_return_pct": 0.137903,
         "avg_3d_return_pct": -4.06763,
         "positive_1d": 0.109693,
         "positive_3d": -0.083334,
@@ -486,9 +486,9 @@
         "topn": 20,
         "days": 11,
         "avg_1d_return_pct": {
-          "mean": 5.764328,
-          "lower": 0.773876,
-          "upper": 12.100393,
+          "mean": 5.851258,
+          "lower": 0.808981,
+          "upper": 12.142338,
           "samples": 7
         },
         "avg_3d_return_pct": {
@@ -578,8 +578,8 @@
         "topn": 20,
         "days": 11,
         "avg_1d_return_pct": {
-          "mean": 5.594111,
-          "lower": 0.503465,
+          "mean": 5.681041,
+          "lower": 0.503652,
           "upper": 12.013806,
           "samples": 7
         },
@@ -621,7 +621,7 @@
         }
       },
       "delta": {
-        "avg_1d_return_pct": -0.058631,
+        "avg_1d_return_pct": 0.028299,
         "avg_3d_return_pct": -0.379124,
         "positive_1d": 0.002518,
         "positive_3d": -0.05,
@@ -639,7 +639,7 @@
         "precision_hit_10pct": 0.0
       },
       "delta_3d_lane": {
-        "avg_1d_return_pct": -0.228848,
+        "avg_1d_return_pct": -0.141918,
         "avg_3d_return_pct": 0.06923,
         "positive_1d": 0.002518,
         "positive_3d": -0.03,

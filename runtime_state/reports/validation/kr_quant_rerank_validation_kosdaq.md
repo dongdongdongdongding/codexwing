@@ -1,6 +1,6 @@
 # KRX Quant Rerank Validation (KOSDAQ)
 
-- generated_at: 2026-04-10T14:49:43.866713+00:00
+- generated_at: 2026-04-13T10:49:24.806073+00:00
 - confidence_level: 98.00%
 - rows: 14637
 - days: 10

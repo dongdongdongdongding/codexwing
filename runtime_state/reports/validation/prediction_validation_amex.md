@@ -1,9 +1,9 @@
 # Prediction Validation (AMEX)
 
-- generated_at: 2026-04-12T14:37:54.564994+00:00
+- generated_at: 2026-04-13T09:38:58.437611+00:00
 - runs_considered: 1
 - rows_considered: 10
-- excluded_runs: 22
+- excluded_runs: 21
 
 ## Buckets
 - picked:

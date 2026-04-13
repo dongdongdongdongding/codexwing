@@ -1,6 +1,6 @@
 # Prediction Validation (NASDAQ)
 
-- generated_at: 2026-04-12T14:37:48.653428+00:00
+- generated_at: 2026-04-13T09:38:52.507383+00:00
 - runs_considered: 17
 - rows_considered: 39
 - excluded_runs: 18

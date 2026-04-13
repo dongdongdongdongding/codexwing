@@ -1,49 +1,10 @@
 {
-  "generated_at": "2026-04-12T14:37:31.657853+00:00",
+  "generated_at": "2026-04-13T09:38:35.576646+00:00",
   "market_filter": null,
   "runs_considered": 200,
-  "contaminated_runs": 42,
-  "db_synced_runs": 42,
+  "contaminated_runs": 41,
+  "db_synced_runs": 41,
   "runs": [
-    {
-      "market": "KOSPI",
-      "market_gate": {
-        "gate": "RED",
-        "kosdaq_chg": -1.3686900260625816,
-        "kospi_chg": -1.8241128255630894,
-        "live_mode": false,
-        "msg": "종가 하락장 경보: KOSPI -1.82% / KOSDAQ -1.37% — 신규 매수 자제 [hourly_fallback / hourly_fallback]",
-        "primary_chg": -1.8241128255630894,
-        "primary_label": "KOSPI",
-        "primary_session_date": "2026-04-09",
-        "primary_source": "hourly_fallback",
-        "region": "KR",
-        "secondary_chg": -1.3686900260625816,
-        "secondary_label": "KOSDAQ",
-        "secondary_session_date": "2026-04-09",
-        "secondary_source": "hourly_fallback",
-        "selected_market": "KOSPI",
-        "theme_exception_allowance": true
-      },
-      "quality_flags": [],
-      "validation_excluded": false,
-      "run_id": "RUN-2EE35F2A"
-    },
-    {
-      "market": "AMEX",
-      "market_gate": {
-        "gate": "GREEN",
-        "kosdaq_chg": 6.061444728151452,
-        "kospi_chg": 8.436291186282054,
-        "live_mode": false,
-        "msg": "종가 시장 정상: KOSPI +8.44% / KOSDAQ +6.06% — 스캔 조건 양호"
-      },
-      "quality_flags": [
-        "MARKET_GATE_KR_MESSAGE_ON_US_RUN"
-      ],
-      "validation_excluded": true,
-      "run_id": "RUN-31555E01"
-    },
     {
       "market": "KOSPI",
       "market_gate": {
@@ -742,6 +703,30 @@
       "quality_flags": [],
       "validation_excluded": false,
       "run_id": "RUN-603E605C"
+    },
+    {
+      "market": "KOSDAQ",
+      "market_gate": {
+        "gate": "YELLOW",
+        "kosdaq_chg": 0.2373930037331524,
+        "kospi_chg": -1.2564790138340205,
+        "live_mode": true,
+        "msg": "장중 시장 주의: KOSPI -1.26% / KOSDAQ +0.24% — 고확신 종목만 [hourly_live / hourly_live]",
+        "primary_chg": -1.2564790138340205,
+        "primary_label": "KOSPI",
+        "primary_session_date": "2026-04-13",
+        "primary_source": "hourly_live",
+        "region": "KR",
+        "secondary_chg": 0.2373930037331524,
+        "secondary_label": "KOSDAQ",
+        "secondary_session_date": "2026-04-13",
+        "secondary_source": "hourly_live",
+        "selected_market": "KOSDAQ",
+        "theme_exception_allowance": true
+      },
+      "quality_flags": [],
+      "validation_excluded": false,
+      "run_id": "RUN-605EC1F8"
     },
     {
       "market": "NASDAQ",
@@ -2055,6 +2040,30 @@
       "quality_flags": [],
       "validation_excluded": false,
       "run_id": "RUN-AEA7E634"
+    },
+    {
+      "market": "KOSPI",
+      "market_gate": {
+        "gate": "YELLOW",
+        "kosdaq_chg": 0.2501771614533236,
+        "kospi_chg": -1.3596138689620518,
+        "live_mode": true,
+        "msg": "장중 시장 주의: KOSPI -1.36% / KOSDAQ +0.25% — 고확신 종목만 [hourly_live / hourly_live]",
+        "primary_chg": -1.3596138689620518,
+        "primary_label": "KOSPI",
+        "primary_session_date": "2026-04-13",
+        "primary_source": "hourly_live",
+        "region": "KR",
+        "secondary_chg": 0.2501771614533236,
+        "secondary_label": "KOSDAQ",
+        "secondary_session_date": "2026-04-13",
+        "secondary_source": "hourly_live",
+        "selected_market": "KOSPI",
+        "theme_exception_allowance": true
+      },
+      "quality_flags": [],
+      "validation_excluded": false,
+      "run_id": "RUN-B1574481"
     },
     {
       "market": "AMEX",

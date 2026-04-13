@@ -1,10 +1,9 @@
 {
-  "generated_at": "2026-04-12T14:37:54.564994+00:00",
+  "generated_at": "2026-04-13T09:38:58.437611+00:00",
   "market": "AMEX",
   "runs_considered": 1,
   "rows_considered": 10,
   "excluded_runs": [
-    "RUN-31555E01",
     "RUN-37BD67D6",
     "RUN-3FCF15D8",
     "RUN-47117367",

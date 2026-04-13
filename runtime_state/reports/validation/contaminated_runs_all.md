@@ -1,12 +1,11 @@
 # Contaminated Runs (ALL)
 
-- generated_at: 2026-04-12T14:37:31.657853+00:00
+- generated_at: 2026-04-13T09:38:35.576646+00:00
 - runs_considered: 200
-- contaminated_runs: 42
-- db_synced_runs: 42
+- contaminated_runs: 41
+- db_synced_runs: 41
 
 ## Runs
-- RUN-31555E01: market=AMEX flags=['MARKET_GATE_KR_MESSAGE_ON_US_RUN']
 - RUN-336DF94A: market=NASDAQ flags=['MARKET_GATE_KR_MESSAGE_ON_US_RUN']
 - RUN-37BD67D6: market=AMEX flags=['MARKET_GATE_KR_MESSAGE_ON_US_RUN']
 - RUN-3AE0376B: market=NASDAQ flags=['MARKET_GATE_KR_MESSAGE_ON_US_RUN']
