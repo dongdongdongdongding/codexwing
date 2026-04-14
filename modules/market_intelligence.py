@@ -705,6 +705,7 @@ def _collect_kr_stock_headlines(market: str):
     scraper = NaverNewsScraper()
     now_ts = int(time.time())
     collected = []
+    seen_headlines: set = set()
     for ticker in tickers:
         try:
             payload = scraper.get_news_sentiment(ticker, days=2)
@@ -714,12 +715,22 @@ def _collect_kr_stock_headlines(market: str):
         lines = list(payload.get("titles", []) or [])
         if not lines:
             lines = [f"[0] {x}" for x in (payload.get("recent_titles", []) or [])]
-        for line in lines[:3]:
+        ticker_added = 0
+        for line in lines[:5]:
             clean = str(line or "").strip()
             if not clean:
                 continue
+            # Strip sentiment prefix like "[+3] " for dedup key
+            import re as _re
+            dedup_key = _re.sub(r"^\[[\+\-]?\d+\]\s*", "", clean).lower().strip()
+            if dedup_key in seen_headlines:
+                continue
+            seen_headlines.add(dedup_key)
             text = f"[Naver Stock] {ticker} {clean} | 네이버증권"
             collected.append((now_ts, text))
+            ticker_added += 1
+            if ticker_added >= 2:
+                break
     return collected
 
 

@@ -1203,6 +1203,29 @@ with tab1:
                 risk_flags = intel_data.get('risk_flags', [])
                 if risk_flags:
                     st.warning(f"리스크 플래그: {', '.join(risk_flags[:6])}")
+                # --- 테마 모멘텀 (Naver 실시간) ---
+                try:
+                    import json as _json
+                    from pathlib import Path as _Path
+                    _theme_cache_path = _Path("runtime_state/long_term/theme_cache/KR.json")
+                    if _theme_cache_path.exists():
+                        _tc = _json.loads(_theme_cache_path.read_text(encoding="utf-8"))
+                        _mom_updated = _tc.get("theme_momentum_updated_at")
+                        _states = [s for s in (_tc.get("theme_states") or []) if s.get("momentum_avg_change_pct") is not None]
+                        if _states:
+                            _mom_ts = _mom_updated[:16].replace("T", " ") if _mom_updated else "?"
+                            st.markdown(f"**테마 모멘텀** <span style='color:gray;font-size:0.8em'>Naver 실시간 · {_mom_ts}</span>", unsafe_allow_html=True)
+                            _class_icons = {"EXPLODING": "🔥", "ACCELERATING": "📈", "STEADY": "➡️", "FADING": "📉"}
+                            for _s in sorted(_states, key=lambda x: abs(x.get("momentum_avg_change_pct", 0)), reverse=True):
+                                _pct = _s["momentum_avg_change_pct"]
+                                _mc = _s.get("momentum_class") or ("EXPLODING" if _pct >= 2 else "ACCELERATING" if _pct >= 0.5 else "FADING" if _pct <= -0.5 else "STEADY")
+                                _icon = _class_icons.get(_mc, "➡️")
+                                _dir = _s.get("direction", "")
+                                _dir_tag = " 🟢수혜" if _dir == "BENEFICIARY" else " 🔴역풍" if _dir == "HEADWIND" else ""
+                                st.caption(f"{_icon} **{_s['theme_name']}** {_pct:+.2f}% [{_mc}]{_dir_tag}")
+                except Exception:
+                    pass
+
                 evidence = intel_data.get('evidence_headlines') or intel_data.get('raw_headlines') or []
                 if evidence:
                     st.markdown("**근거 헤드라인**")

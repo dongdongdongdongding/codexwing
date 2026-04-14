@@ -142,6 +142,43 @@ def write_theme_cache(market: str, payload: Dict[str, Any]) -> None:
     base.mkdir(parents=True, exist_ok=True)
     path = base / f"{market_key}.json"
     try:
-        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        # Merge new theme_states with existing ones so that two markets (KOSPI/KOSDAQ)
+        # sharing the same KR.json don't overwrite each other's findings.
+        existing_states: Dict[str, Any] = {}
+        if path.exists():
+            try:
+                existing = json.loads(path.read_text(encoding="utf-8"))
+                for row in (existing.get("theme_states") or []):
+                    tid = str(row.get("theme_id") or "").strip()
+                    if tid:
+                        existing_states[tid] = row
+            except Exception:
+                pass
+        # Incoming states take precedence (fresher intel), but keep existing entries
+        # not present in the new payload (other market's findings).
+        new_states = list(payload.get("theme_states") or [])
+        new_ids = {str(r.get("theme_id") or "").strip() for r in new_states if r.get("theme_id")}
+        for tid, row in existing_states.items():
+            if tid not in new_ids:
+                new_states.append(row)
+        # Preserve existing momentum data on new entries if not yet populated
+        new_id_map = {str(r.get("theme_id") or "").strip(): r for r in new_states if r.get("theme_id")}
+        for tid, row in existing_states.items():
+            if tid in new_id_map and row.get("momentum_avg_change_pct") is not None:
+                target = new_id_map[tid]
+                if target.get("momentum_avg_change_pct") is None:
+                    target["momentum_avg_change_pct"] = row["momentum_avg_change_pct"]
+                    target["momentum_class"] = row.get("momentum_class")
+        merged = dict(payload)
+        merged["theme_states"] = new_states
+        # Carry over momentum timestamp if present in existing
+        if path.exists():
+            try:
+                existing_full = json.loads(path.read_text(encoding="utf-8"))
+                if existing_full.get("theme_momentum_updated_at") and not merged.get("theme_momentum_updated_at"):
+                    merged["theme_momentum_updated_at"] = existing_full["theme_momentum_updated_at"]
+            except Exception:
+                pass
+        path.write_text(json.dumps(merged, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception:
         pass
