@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T03:22:54.653096+00:00",
+  "generated_at": "2026-04-16T07:27:52.668062+00:00",
   "market": "KOSDAQ",
   "market_group": "KR",
   "regime": {
@@ -21,264 +21,400 @@
       "macro_multiplier": 1.0,
       "macro_penalty": 0,
       "flags": [],
-      "vix": 19.489999771118164,
-      "vix_change_1d": -7.37,
-      "tnx": 4.293000221252441,
-      "tnx_change_1d": 0.05,
-      "krw": 1479.8800048828125,
+      "vix": 18.170000076293945,
+      "vix_change_1d": -1.03,
+      "tnx": 4.2820000648498535,
+      "tnx_change_1d": 0.61,
+      "krw": 1473.719970703125,
       "krw_change_1d": NaN,
-      "spy_change_1d": 0.58
+      "spy_change_1d": 0.79
     }
   },
   "news_impact": {
     "status": "live_intel",
-    "market_sentiment": "NEUTRAL",
-    "sentiment_score": 0,
+    "market_sentiment": "BULLISH",
+    "sentiment_score": 70,
     "headline_count": 15,
     "evidence_headlines": [
-      "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
-      "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
-      "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
-      "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시"
+      "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+      "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
+      "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+      "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스"
     ],
     "raw_headlines": [
-      "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
-      "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
-      "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
-      "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시",
-      "[DART 20260410] 쓰리에이로직스 - 단일판매ㆍ공급계약체결 | 전자공시",
-      "[DART 20260410] 레이저옵텍 - 유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모) | 전자공시",
-      "[DART 20260410] 캠시스 - 유상증자또는주식관련사채등의청약결과(자율공시) | 전자공시",
-      "[Fri, 10 Apr 2026 11:42:30 +0900] 국고채 금리 혼조세…3년물 장중 연 3.345% | 연합뉴스",
-      "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
-      "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
-      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
-      "[주달 상승테마] 2차전지 | 주달",
-      "[주달 상승테마] 2차전지 장비 | 주달",
-      "[주달 핫테마] 5G | 주달",
-      "[주달 핫테마] 6G | 주달"
+      "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+      "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
+      "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+      "[DART 20260416] 빛과전자 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+      "[DART 20260416] 감성코퍼레이션 - 주요사항보고서(회사분할결정) | 전자공시",
+      "[DART 20260416] 온코크로스 - [첨부정정]주요사항보고서(회사합병결정) | 전자공시",
+      "[DART 20260416] 티에스아이 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260416] 링크드 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260416] 엔알비 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260416] 뉴온 - [첨부정정]주요사항보고서(자기전환사채만기전취득결정) | 전자공시",
+      "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스",
+      "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스",
+      "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr",
+      "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
+      "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권"
     ],
     "beneficiary_sectors": [],
-    "victim_sectors": [
-      "성장주"
-    ],
+    "victim_sectors": [],
     "theme_states": [
       {
-        "theme_id": "secondary_battery",
-        "theme_name": "2차전지",
+        "theme_id": "finance",
+        "theme_name": "금융",
         "direction": "BENEFICIARY",
-        "strength_score": 21.0,
-        "confidence": 0.58,
+        "strength_score": 48.0,
+        "confidence": 0.773,
+        "driver_categories": [],
+        "evidence": [
+          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+          "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
+          "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+        ],
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": 2.9,
+        "momentum_class": "EXPLODING",
+        "updated_at": "2026-04-16T07:27:52.387396+00:00"
+      },
+      {
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "direction": "BENEFICIARY",
+        "strength_score": 39.0,
+        "confidence": 0.709,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+          "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+          "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
+        ],
+        "beneficiary_keywords": [
+          "바이오/헬스케어",
+          "바이오",
+          "헬스케어",
+          "의약",
+          "치료제",
+          "백신"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T07:27:52.386747+00:00"
+      },
+      {
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "direction": "BENEFICIARY",
+        "strength_score": 24.0,
+        "confidence": 0.521,
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "조선/해양",
+          "조선",
+          "선박",
+          "해양",
+          "LNG선",
+          "해양플랜트"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T07:27:52.389679+00:00"
+      },
+      {
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "direction": "BENEFICIARY",
+        "strength_score": 24.0,
+        "confidence": 0.521,
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "POLITICS"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "방산",
+          "미사일",
+          "탄약",
+          "군수",
+          "무기"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T07:27:52.389779+00:00"
+      },
+      {
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "direction": "BENEFICIARY",
+        "strength_score": 22.0,
+        "confidence": 0.507,
         "driver_categories": [
           "EARNINGS",
           "ECONOMY",
           "FX",
-          "OIL"
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
         ],
         "evidence": [
-          "[주달 상승테마] 2차전지 | 주달",
-          "[주달 상승테마] 2차전지 장비 | 주달"
+          "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
         ],
         "beneficiary_keywords": [
-          "2차전지",
-          "이차전지",
-          "배터리",
-          "양극재",
-          "음극재",
-          "전해액"
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
         ],
         "victim_keywords": [],
-        "updated_at": "2026-04-10T03:22:54.651520+00:00"
-      },
-      {
-        "theme_id": "telecom",
-        "theme_name": "통신/네트워크",
-        "direction": "BENEFICIARY",
-        "strength_score": 20.0,
-        "confidence": 0.573,
-        "driver_categories": [],
-        "evidence": [
-          "[주달 핫테마] 5G | 주달",
-          "[주달 핫테마] 6G | 주달"
-        ],
-        "beneficiary_keywords": [
-          "통신/네트워크",
-          "통신",
-          "네트워크",
-          "5G",
-          "6G",
-          "안테나"
-        ],
-        "victim_keywords": [],
-        "updated_at": "2026-04-10T03:22:54.650800+00:00"
+        "momentum_avg_change_pct": 2.55,
+        "momentum_class": "EXPLODING",
+        "updated_at": "2026-04-16T07:27:52.389275+00:00"
       }
     ],
     "beneficiary_themes": [
       {
-        "theme_id": "secondary_battery",
-        "theme_name": "2차전지",
-        "strength_score": 21.0,
-        "confidence": 0.58
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "strength_score": 48.0,
+        "confidence": 0.773
       },
       {
-        "theme_id": "telecom",
-        "theme_name": "통신/네트워크",
-        "strength_score": 20.0,
-        "confidence": 0.573
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "strength_score": 39.0,
+        "confidence": 0.709
+      },
+      {
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "strength_score": 24.0,
+        "confidence": 0.521
+      },
+      {
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "strength_score": 24.0,
+        "confidence": 0.521
+      },
+      {
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "strength_score": 22.0,
+        "confidence": 0.507
       }
     ],
     "headwind_themes": [],
     "theme_evidence": {
-      "telecom": [
-        "[주달 핫테마] 5G | 주달",
-        "[주달 핫테마] 6G | 주달"
+      "bio": [
+        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+        "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+        "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
       ],
-      "secondary_battery": [
-        "[주달 상승테마] 2차전지 | 주달",
-        "[주달 상승테마] 2차전지 장비 | 주달"
-      ]
+      "finance": [
+        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+        "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+        "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
+        "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+      ],
+      "eco_energy": [
+        "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
+      ],
+      "shipbuilding": [],
+      "defense": []
     },
     "macro_drivers": [
       {
-        "category": "FX",
-        "signal": "BEARISH",
-        "market_impact": -2,
-        "description": "FX 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+        "category": "GEOPOLITICS",
+        "signal": "BULLISH",
+        "market_impact": 4,
+        "description": "종전 기대감은 시장 전반의 투자 심리를 긍정적으로 이끌었습니다.",
+        "evidence": "“이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세"
       },
       {
-        "category": "RATES",
+        "category": "FX",
         "signal": "BEARISH",
-        "market_impact": -2,
-        "description": "RATES 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+        "market_impact": -1,
+        "description": "원/달러 환율의 소폭 상승은 원화 약세로 외국인 투자 심리에 부정적 영향을 줄 수 있습니다.",
+        "evidence": "원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원"
+      },
+      {
+        "category": "REGULATION",
+        "signal": "BEARISH",
+        "market_impact": -1,
+        "description": "개별 기업의 공시 관련 규제 심의로 인한 급락은 시장 전반의 규제 리스크 인식을 높일 수 있습니다.",
+        "evidence": "[특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감"
       }
     ],
     "driver_scores": {
-      "GEOPOLITICS": 0,
+      "GEOPOLITICS": 4,
       "OIL": 0,
-      "FX": -2,
-      "RATES": -2,
+      "FX": -1,
+      "RATES": 0,
       "POLITICS": 0,
       "ECONOMY": 0,
-      "LIQUIDITY": 1,
-      "EARNINGS": 1,
+      "LIQUIDITY": -2,
+      "EARNINGS": 4,
       "REGULATION": -1
     },
-    "cross_asset_signals": [],
-    "risk_flags": [
-      "FX",
-      "RATES"
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "direction": "UP",
+        "market_impact": -1,
+        "description": "원화 약세는 외국인 투자 심리에 부정적 영향을 줄 수 있습니다."
+      }
     ],
-    "news_quality": "HIGH",
-    "key_insight": "시장 헤드라인 부족 | Gemini timeout, fallback mode active",
-    "source": "rss_rule_based_timeout",
-    "model": "",
+    "risk_flags": [
+      "규제 심의 리스크",
+      "환율 변동성"
+    ],
+    "news_quality": "MEDIUM",
+    "key_insight": "코스닥 시장은 지정학적 긴장 완화 기대감에 힘입어 전반적인 강세를 보였으나, 개별 기업의 규제 리스크와 환율 변동성은 잠재적 하방 압력으로 작용했습니다.",
+    "source": "gemini",
+    "model": "gemini-2.5-flash",
     "raw": {
-      "market_sentiment": "NEUTRAL",
-      "sentiment_score": 0,
-      "themes": [],
+      "market_sentiment": "BULLISH",
+      "sentiment_score": 70,
+      "themes": [
+        {
+          "theme": "지정학적 긴장 완화 기대",
+          "impact": "POSITIVE",
+          "description": "종전 기대감으로 시장 전반의 투자 심리 개선"
+        }
+      ],
       "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "signal": "BULLISH",
+          "market_impact": 4,
+          "description": "종전 기대감은 시장 전반의 투자 심리를 긍정적으로 이끌었습니다.",
+          "evidence": "“이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세"
+        },
         {
           "category": "FX",
           "signal": "BEARISH",
-          "market_impact": -2,
-          "description": "FX 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+          "market_impact": -1,
+          "description": "원/달러 환율의 소폭 상승은 원화 약세로 외국인 투자 심리에 부정적 영향을 줄 수 있습니다.",
+          "evidence": "원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원"
         },
         {
-          "category": "RATES",
+          "category": "REGULATION",
           "signal": "BEARISH",
-          "market_impact": -2,
-          "description": "RATES 관련 헤드라인이 최근 시장에 부정적으로 작용 중입니다."
+          "market_impact": -1,
+          "description": "개별 기업의 공시 관련 규제 심의로 인한 급락은 시장 전반의 규제 리스크 인식을 높일 수 있습니다.",
+          "evidence": "[특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감"
         }
       ],
       "driver_scores": {
-        "GEOPOLITICS": 0,
+        "GEOPOLITICS": 4,
         "OIL": 0,
-        "FX": -2,
-        "RATES": -2,
+        "FX": -1,
+        "RATES": 0,
         "POLITICS": 0,
         "ECONOMY": 0,
-        "LIQUIDITY": 1,
-        "EARNINGS": 1,
+        "LIQUIDITY": -2,
+        "EARNINGS": 4,
         "REGULATION": -1
       },
-      "cross_asset_signals": [],
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "direction": "UP",
+          "market_impact": -1,
+          "description": "원화 약세는 외국인 투자 심리에 부정적 영향을 줄 수 있습니다."
+        }
+      ],
       "risk_flags": [
-        "FX",
-        "RATES"
+        "규제 심의 리스크",
+        "환율 변동성"
       ],
-      "news_quality": "HIGH",
+      "news_quality": "MEDIUM",
       "beneficiary_sectors": [],
-      "victim_sectors": [
-        "성장주"
-      ],
-      "beneficiary_keywords": [
-        "상승"
-      ],
-      "victim_keywords": [
-        "불안",
-        "충격"
-      ],
-      "key_insight": "시장 헤드라인 부족 | Gemini timeout, fallback mode active",
+      "victim_sectors": [],
+      "beneficiary_keywords": [],
+      "victim_keywords": [],
+      "key_insight": "코스닥 시장은 지정학적 긴장 완화 기대감에 힘입어 전반적인 강세를 보였으나, 개별 기업의 규제 리스크와 환율 변동성은 잠재적 하방 압력으로 작용했습니다.",
       "evidence_headlines": [
-        "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
-        "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
-        "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
-        "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시"
+        "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+        "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
+        "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+        "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스"
       ],
       "raw_headlines": [
-        "[DART 20260410] 디에이치엑스컴퍼니 - 조회공시요구(현저한시황변동)에대한답변(미확정) | 전자공시",
-        "[DART 20260410] 원텍 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
-        "[DART 20260410] 디바이스 - 주요사항보고서(무상증자결정) | 전자공시",
-        "[DART 20260410] 디바이스 - 주권매매거래정지              (무상증자) | 전자공시",
-        "[DART 20260410] 쓰리에이로직스 - 단일판매ㆍ공급계약체결 | 전자공시",
-        "[DART 20260410] 레이저옵텍 - 유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모) | 전자공시",
-        "[DART 20260410] 캠시스 - 유상증자또는주식관련사채등의청약결과(자율공시) | 전자공시",
-        "[Fri, 10 Apr 2026 11:42:30 +0900] 국고채 금리 혼조세…3년물 장중 연 3.345% | 연합뉴스",
-        "[Fri, 10 Apr 2026 11:18:43 +0900] [속보] 한은총재 \"공급충격 일시적이면 금리로 대응하지 않아\" | 한국경제",
-        "[Fri, 10 Apr 2026 10:27:51 +0900] 외국인 현·선물 동반 순매수 전환…코스피, 장중 5900 돌파 | 한국경제",
-        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
-        "[주달 상승테마] 2차전지 | 주달",
-        "[주달 상승테마] 2차전지 장비 | 주달",
-        "[주달 핫테마] 5G | 주달",
-        "[주달 핫테마] 6G | 주달"
+        "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+        "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
+        "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+        "[DART 20260416] 빛과전자 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260416] 감성코퍼레이션 - 주요사항보고서(회사분할결정) | 전자공시",
+        "[DART 20260416] 온코크로스 - [첨부정정]주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260416] 티에스아이 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260416] 링크드 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260416] 엔알비 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260416] 뉴온 - [첨부정정]주요사항보고서(자기전환사채만기전취득결정) | 전자공시",
+        "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스",
+        "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스",
+        "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr",
+        "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
+        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권"
       ],
-      "source": "rss_rule_based_timeout",
-      "timestamp": "2026-04-10 12:22",
+      "headline_count": 15,
+      "source": "gemini",
+      "model": "gemini-2.5-flash",
+      "timestamp": "2026-04-16 16:27",
       "disclosure_events": [
         {
-          "company": "디에이치엑스컴퍼니",
-          "report_name": "조회공시요구(현저한시황변동)에대한답변(미확정)",
-          "event_score": -2,
-          "category": "REGULATION",
-          "label": "조회공시",
+          "company": "빛과전자",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)",
+          "event_score": -5,
+          "category": "LIQUIDITY",
+          "label": "전환사채",
           "polarity": "NEGATIVE"
         },
         {
-          "company": "원텍",
-          "report_name": "주요사항보고서(자기주식취득신탁계약체결결정)",
-          "event_score": 3,
-          "category": "LIQUIDITY",
-          "label": "자사주",
-          "polarity": "POSITIVE"
-        },
-        {
-          "company": "디바이스",
-          "report_name": "주요사항보고서(무상증자결정)",
+          "company": "온코크로스",
+          "report_name": "[첨부정정]주요사항보고서(회사합병결정)",
           "event_score": 2,
-          "category": "LIQUIDITY",
-          "label": "무상증자",
+          "category": "EARNINGS",
+          "label": "합병",
           "polarity": "POSITIVE"
         },
         {
-          "company": "디바이스",
-          "report_name": "주권매매거래정지              (무상증자)",
-          "event_score": 2,
-          "category": "LIQUIDITY",
-          "label": "무상증자",
+          "company": "티에스아이",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
           "polarity": "POSITIVE"
         },
         {
-          "company": "쓰리에이로직스",
+          "company": "링크드",
           "report_name": "단일판매ㆍ공급계약체결",
           "event_score": 4,
           "category": "EARNINGS",
@@ -286,107 +422,235 @@
           "polarity": "POSITIVE"
         },
         {
-          "company": "레이저옵텍",
-          "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)              (주주배정후 실권주 일반공모)",
-          "event_score": -6,
+          "company": "엔알비",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "뉴온",
+          "report_name": "[첨부정정]주요사항보고서(자기전환사채만기전취득결정)",
+          "event_score": -5,
           "category": "LIQUIDITY",
-          "label": "유상증자",
+          "label": "전환사채",
           "polarity": "NEGATIVE"
         },
         {
-          "company": "캠시스",
-          "report_name": "유상증자또는주식관련사채등의청약결과(자율공시)",
-          "event_score": -6,
+          "company": "빛과전자",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)",
+          "event_score": -5,
           "category": "LIQUIDITY",
-          "label": "유상증자",
+          "label": "전환사채",
           "polarity": "NEGATIVE"
+        },
+        {
+          "company": "온코크로스",
+          "report_name": "[첨부정정]주요사항보고서(회사합병결정)",
+          "event_score": 2,
+          "category": "EARNINGS",
+          "label": "합병",
+          "polarity": "POSITIVE"
         }
       ],
       "company_event_bias": {
-        "디에이치엑스컴퍼니": -2,
-        "원텍": 3,
-        "디바이스": 4,
-        "쓰리에이로직스": 4,
-        "레이저옵텍": -6,
-        "캠시스": -6
+        "빛과전자": -8,
+        "온코크로스": 4,
+        "티에스아이": 8,
+        "링크드": 8,
+        "엔알비": 8,
+        "뉴온": -8
       },
       "theme_states": [
         {
-          "theme_id": "secondary_battery",
-          "theme_name": "2차전지",
+          "theme_id": "finance",
+          "theme_name": "금융",
           "direction": "BENEFICIARY",
-          "strength_score": 21.0,
-          "confidence": 0.58,
+          "strength_score": 48.0,
+          "confidence": 0.773,
+          "driver_categories": [],
+          "evidence": [
+            "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+            "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+            "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
+            "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+          ],
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": 2.9,
+          "momentum_class": "EXPLODING",
+          "updated_at": "2026-04-16T07:27:52.387396+00:00"
+        },
+        {
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "direction": "BENEFICIARY",
+          "strength_score": 39.0,
+          "confidence": 0.709,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+            "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+            "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
+          ],
+          "beneficiary_keywords": [
+            "바이오/헬스케어",
+            "바이오",
+            "헬스케어",
+            "의약",
+            "치료제",
+            "백신"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T07:27:52.386747+00:00"
+        },
+        {
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "direction": "BENEFICIARY",
+          "strength_score": 24.0,
+          "confidence": 0.521,
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "조선/해양",
+            "조선",
+            "선박",
+            "해양",
+            "LNG선",
+            "해양플랜트"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T07:27:52.389679+00:00"
+        },
+        {
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "direction": "BENEFICIARY",
+          "strength_score": 24.0,
+          "confidence": 0.521,
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "POLITICS"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "방산",
+            "미사일",
+            "탄약",
+            "군수",
+            "무기"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T07:27:52.389779+00:00"
+        },
+        {
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "direction": "BENEFICIARY",
+          "strength_score": 22.0,
+          "confidence": 0.507,
           "driver_categories": [
             "EARNINGS",
             "ECONOMY",
             "FX",
-            "OIL"
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
           ],
           "evidence": [
-            "[주달 상승테마] 2차전지 | 주달",
-            "[주달 상승테마] 2차전지 장비 | 주달"
+            "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
           ],
           "beneficiary_keywords": [
-            "2차전지",
-            "이차전지",
-            "배터리",
-            "양극재",
-            "음극재",
-            "전해액"
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
           ],
           "victim_keywords": [],
-          "updated_at": "2026-04-10T03:22:54.651520+00:00"
-        },
-        {
-          "theme_id": "telecom",
-          "theme_name": "통신/네트워크",
-          "direction": "BENEFICIARY",
-          "strength_score": 20.0,
-          "confidence": 0.573,
-          "driver_categories": [],
-          "evidence": [
-            "[주달 핫테마] 5G | 주달",
-            "[주달 핫테마] 6G | 주달"
-          ],
-          "beneficiary_keywords": [
-            "통신/네트워크",
-            "통신",
-            "네트워크",
-            "5G",
-            "6G",
-            "안테나"
-          ],
-          "victim_keywords": [],
-          "updated_at": "2026-04-10T03:22:54.650800+00:00"
+          "momentum_avg_change_pct": 2.55,
+          "momentum_class": "EXPLODING",
+          "updated_at": "2026-04-16T07:27:52.389275+00:00"
         }
       ],
       "beneficiary_themes": [
         {
-          "theme_id": "secondary_battery",
-          "theme_name": "2차전지",
-          "strength_score": 21.0,
-          "confidence": 0.58
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "strength_score": 48.0,
+          "confidence": 0.773
         },
         {
-          "theme_id": "telecom",
-          "theme_name": "통신/네트워크",
-          "strength_score": 20.0,
-          "confidence": 0.573
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "strength_score": 39.0,
+          "confidence": 0.709
+        },
+        {
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "strength_score": 24.0,
+          "confidence": 0.521
+        },
+        {
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "strength_score": 24.0,
+          "confidence": 0.521
+        },
+        {
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "strength_score": 22.0,
+          "confidence": 0.507
         }
       ],
       "headwind_themes": [],
       "theme_evidence": {
-        "telecom": [
-          "[주달 핫테마] 5G | 주달",
-          "[주달 핫테마] 6G | 주달"
+        "bio": [
+          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+          "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
+          "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
         ],
-        "secondary_battery": [
-          "[주달 상승테마] 2차전지 | 주달",
-          "[주달 상승테마] 2차전지 장비 | 주달"
-        ]
-      },
-      "headline_count": 15
+        "finance": [
+          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
+          "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
+          "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+        ],
+        "eco_energy": [
+          "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
+        ],
+        "shipbuilding": [],
+        "defense": []
+      }
     }
   }
 }

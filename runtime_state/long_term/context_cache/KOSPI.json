@@ -1,106 +1,81 @@
 {
-  "generated_at": "2026-04-12T13:25:55.886063+00:00",
+  "generated_at": "2026-04-16T05:27:04.009738+00:00",
   "market": "KOSPI",
   "market_group": "KR",
   "regime": {
     "market": "KOSPI",
     "market_group": "KR",
     "status": "NORMAL",
-    "support_score": 95.0
+    "support_score": 100.0
   },
   "macro_overlay": {
     "status": "live_macro",
     "macro_state": "NORMAL",
-    "macro_risk_score": 5.0,
+    "macro_risk_score": 0.0,
     "macro_multiplier": 1.0,
     "macro_penalty": 0.0,
-    "flags": [
-      "KRW_SOFTENING"
-    ],
+    "flags": [],
     "raw_context": {
       "macro_state": "NORMAL",
-      "macro_risk_score": 5,
+      "macro_risk_score": 0,
       "macro_multiplier": 1.0,
       "macro_penalty": 0,
-      "flags": [
-        "KRW_SOFTENING"
-      ],
-      "vix": 19.229999542236328,
-      "vix_change_1d": -1.33,
-      "tnx": 4.316999912261963,
-      "tnx_change_1d": 0.56,
-      "krw": 1482.699951171875,
-      "krw_change_1d": 0.64,
-      "spy_change_1d": -0.07
+      "flags": [],
+      "vix": 18.170000076293945,
+      "vix_change_1d": -1.03,
+      "tnx": 4.2820000648498535,
+      "tnx_change_1d": 0.61,
+      "krw": 1472.280029296875,
+      "krw_change_1d": NaN,
+      "spy_change_1d": 0.79
     }
   },
   "news_impact": {
     "status": "live_intel",
-    "market_sentiment": "BEARISH",
-    "sentiment_score": -65,
+    "market_sentiment": "BULLISH",
+    "sentiment_score": 85,
     "headline_count": 15,
     "evidence_headlines": [
-      "'월요일 두렵다' 협상 결렬에 코스피 '날벼락'?…전망 들어보니",
-      "고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용",
-      "[단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자'"
+      "반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀",
+      "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수",
+      "코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워",
+      "\"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까?"
     ],
     "raw_headlines": [
-      "[Sun, 12 Apr 2026 21:18:53 +0900] '월요일 두렵다' 협상 결렬에 코스피 '날벼락'?…전망 들어보니 | 한국경제",
-      "[DART 20260410] 에이프로젠 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
-      "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-      "[DART 20260410] 인스코비 - 주요사항보고서(유상증자결정) | 전자공시",
-      "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
-      "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시",
-      "[DART 20260410] 종근당홀딩스 - 단일판매ㆍ공급계약해지(자회사의 주요경영사항) | 전자공시",
-      "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
-      "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제",
-      "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제",
-      "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
-      "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
-      "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스",
-      "[Sun, 12 Apr 2026 11:00:03 +0900] 전남도, 기초생활수급자 8만9천가구에 생계비 5만원 지원 | 연합뉴스",
-      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr"
+      "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제",
+      "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
+      "[Naver Stock] 402340.KS [+2] 코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수 | 네이버증권",
+      "[Wed, 15 Apr 2026 17:00:05 +0900] [포토] 코스피 6000선 넘어 상승 마감 | 한국경제",
+      "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
+      "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
+      "[Naver Stock] 373220.KS [+3] 코스피, 6200선 재돌파… 미·이란 전쟁 낙폭 회복 중 | 네이버증권",
+      "[Naver Stock] 373220.KS [+3] 코스피, 종전 협상 낙관론에 오름폭 키워 장중 6,200선 재돌파 | 네이버증권",
+      "[Naver Stock] 402340.KS [+5] 코스피, 장중 6200선 돌파…코스닥도 상승 | 네이버증권",
+      "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권",
+      "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
+      "[Naver Stock] 207940.KS [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
+      "[Naver Stock] 034020.KS [+3] 코스피 장중 6200 돌파…295조 증시로 몰렸다 | 네이버증권",
+      "[DART 20260416] 한전기술 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260416] HD현대 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
     ],
-    "beneficiary_sectors": [],
-    "victim_sectors": [
-      "보험"
+    "beneficiary_sectors": [
+      "자동차",
+      "방산"
     ],
+    "victim_sectors": [],
     "theme_states": [
-      {
-        "theme_id": "semiconductor",
-        "theme_name": "반도체",
-        "direction": "HEADWIND",
-        "strength_score": 33.0,
-        "confidence": 0.586,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "LIQUIDITY",
-          "REGULATION"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [],
-        "victim_keywords": [
-          "반도체",
-          "메모리",
-          "HBM",
-          "낸드",
-          "DRAM",
-          "파운드리"
-        ],
-        "updated_at": "2026-04-12T13:25:55.884773+00:00"
-      },
       {
         "theme_id": "finance",
         "theme_name": "금융",
         "direction": "BENEFICIARY",
-        "strength_score": 28.0,
-        "confidence": 0.63,
+        "strength_score": 100.0,
+        "confidence": 0.95,
         "driver_categories": [],
         "evidence": [
-          "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
-          "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
-          "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+          "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
+          "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
+          "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
+          "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
         ],
         "beneficiary_keywords": [
           "금융",
@@ -111,107 +86,45 @@
           "카드"
         ],
         "victim_keywords": [],
-        "updated_at": "2026-04-12T13:25:55.884579+00:00"
+        "momentum_avg_change_pct": 2.94,
+        "momentum_class": "EXPLODING",
+        "updated_at": "2026-04-16T05:27:03.852875+00:00"
       },
       {
-        "theme_id": "secondary_battery",
-        "theme_name": "2차전지",
-        "direction": "HEADWIND",
-        "strength_score": 27.0,
-        "confidence": 0.543,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "FX",
-          "OIL"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [],
-        "victim_keywords": [
-          "2차전지",
-          "이차전지",
-          "배터리",
-          "양극재",
-          "음극재",
-          "전해액"
-        ],
-        "updated_at": "2026-04-12T13:25:55.885232+00:00"
-      },
-      {
-        "theme_id": "construction_realestate",
-        "theme_name": "건설/부동산",
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
         "direction": "BENEFICIARY",
-        "strength_score": 24.0,
-        "confidence": 0.601,
-        "driver_categories": [],
-        "evidence": [
-          "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-          "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시"
-        ],
-        "beneficiary_keywords": [
-          "건설/부동산",
-          "건설",
-          "부동산",
-          "레미콘",
-          "시멘트",
-          "모듈러"
-        ],
-        "victim_keywords": [],
-        "updated_at": "2026-04-12T13:25:55.884827+00:00"
-      },
-      {
-        "theme_id": "it_platform",
-        "theme_name": "IT서비스/플랫폼",
-        "direction": "HEADWIND",
-        "strength_score": 24.0,
-        "confidence": 0.521,
+        "strength_score": 49.0,
+        "confidence": 0.78,
         "driver_categories": [
           "EARNINGS",
           "ECONOMY",
           "LIQUIDITY",
-          "RATES"
+          "REGULATION"
         ],
-        "evidence": [],
-        "beneficiary_keywords": [],
-        "victim_keywords": [
-          "IT서비스/플랫폼",
-          "IT서비스",
-          "플랫폼",
-          "소프트웨어",
-          "SW",
-          "클라우드"
+        "evidence": [
+          "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
+          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
         ],
-        "updated_at": "2026-04-12T13:25:55.884516+00:00"
-      },
-      {
-        "theme_id": "robotics",
-        "theme_name": "로봇/자동화",
-        "direction": "HEADWIND",
-        "strength_score": 24.0,
-        "confidence": 0.521,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "LIQUIDITY"
+        "beneficiary_keywords": [
+          "반도체",
+          "메모리",
+          "HBM",
+          "낸드",
+          "DRAM",
+          "파운드리"
         ],
-        "evidence": [],
-        "beneficiary_keywords": [],
-        "victim_keywords": [
-          "로봇/자동화",
-          "로봇",
-          "자동화",
-          "스마트팩토리",
-          "협동로봇",
-          "물류로봇"
-        ],
-        "updated_at": "2026-04-12T13:25:55.885157+00:00"
+        "victim_keywords": [],
+        "momentum_avg_change_pct": 1.38,
+        "momentum_class": "ACCELERATING",
+        "updated_at": "2026-04-16T05:27:03.853297+00:00"
       },
       {
         "theme_id": "eco_energy",
         "theme_name": "친환경/에너지",
-        "direction": "HEADWIND",
-        "strength_score": 22.0,
-        "confidence": 0.587,
+        "direction": "BENEFICIARY",
+        "strength_score": 42.0,
+        "confidence": 0.65,
         "driver_categories": [
           "EARNINGS",
           "ECONOMY",
@@ -222,12 +135,8 @@
           "POLITICS",
           "REGULATION"
         ],
-        "evidence": [
-          "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
-          "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제"
-        ],
-        "beneficiary_keywords": [],
-        "victim_keywords": [
+        "evidence": [],
+        "beneficiary_keywords": [
           "친환경/에너지",
           "친환경",
           "에너지",
@@ -235,28 +144,186 @@
           "풍력",
           "수소"
         ],
-        "updated_at": "2026-04-12T13:25:55.885105+00:00"
+        "victim_keywords": [],
+        "momentum_avg_change_pct": 2.28,
+        "momentum_class": "EXPLODING",
+        "updated_at": "2026-04-16T05:27:03.853857+00:00"
+      },
+      {
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "direction": "BENEFICIARY",
+        "strength_score": 31.0,
+        "confidence": 0.571,
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "POLITICS"
+        ],
+        "evidence": [
+          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
+        ],
+        "beneficiary_keywords": [
+          "방산",
+          "미사일",
+          "탄약",
+          "군수",
+          "무기"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T05:27:03.854283+00:00"
+      },
+      {
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "direction": "BENEFICIARY",
+        "strength_score": 27.0,
+        "confidence": 0.543,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "IT서비스/플랫폼",
+          "IT서비스",
+          "플랫폼",
+          "소프트웨어",
+          "SW",
+          "클라우드"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T05:27:03.852696+00:00"
+      },
+      {
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "direction": "BENEFICIARY",
+        "strength_score": 27.0,
+        "confidence": 0.543,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "로봇/자동화",
+          "로봇",
+          "자동화",
+          "스마트팩토리",
+          "협동로봇",
+          "물류로봇"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T05:27:03.853943+00:00"
       },
       {
         "theme_id": "해운",
         "theme_name": "해운",
-        "direction": "HEADWIND",
-        "strength_score": 21.0,
-        "confidence": 0.5,
+        "direction": "BENEFICIARY",
+        "strength_score": 27.0,
+        "confidence": 0.543,
         "driver_categories": [
           "ECONOMY",
           "GEOPOLITICS",
           "OIL"
         ],
         "evidence": [],
-        "beneficiary_keywords": [],
-        "victim_keywords": [
+        "beneficiary_keywords": [
           "벌크",
           "운임",
           "컨테이너",
           "해운"
         ],
-        "updated_at": "2026-04-12T13:25:55.885370+00:00"
+        "victim_keywords": [],
+        "momentum_avg_change_pct": 1.17,
+        "momentum_class": "ACCELERATING",
+        "updated_at": "2026-04-16T05:27:03.854370+00:00"
+      },
+      {
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "direction": "BENEFICIARY",
+        "strength_score": 21.0,
+        "confidence": 0.5,
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "조선/해양",
+          "조선",
+          "선박",
+          "해양",
+          "LNG선",
+          "해양플랜트"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T05:27:03.854173+00:00"
+      },
+      {
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "direction": "BENEFICIARY",
+        "strength_score": 18.0,
+        "confidence": 0.479,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "바이오/헬스케어",
+          "바이오",
+          "헬스케어",
+          "의약",
+          "치료제",
+          "백신"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T05:27:03.852465+00:00"
+      },
+      {
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "direction": "BENEFICIARY",
+        "strength_score": 18.0,
+        "confidence": 0.479,
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T05:27:03.854071+00:00"
       },
       {
         "theme_id": "automobile",
@@ -266,392 +333,278 @@
         "confidence": 0.421,
         "driver_categories": [],
         "evidence": [
-          "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
         ],
         "beneficiary_keywords": [],
         "victim_keywords": [],
-        "updated_at": "2026-04-12T13:25:55.884690+00:00"
-      },
-      {
-        "theme_id": "bio",
-        "theme_name": "바이오/헬스케어",
-        "direction": "NEUTRAL",
-        "strength_score": 5.0,
-        "confidence": 0.466,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "REGULATION"
-        ],
-        "evidence": [
-          "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
-          "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스"
-        ],
-        "beneficiary_keywords": [],
-        "victim_keywords": [],
-        "updated_at": "2026-04-12T13:25:55.884405+00:00"
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-16T05:27:03.853113+00:00"
       }
     ],
     "beneficiary_themes": [
       {
         "theme_id": "finance",
         "theme_name": "금융",
-        "strength_score": 28.0,
-        "confidence": 0.63
+        "strength_score": 100.0,
+        "confidence": 0.95
       },
-      {
-        "theme_id": "construction_realestate",
-        "theme_name": "건설/부동산",
-        "strength_score": 24.0,
-        "confidence": 0.601
-      }
-    ],
-    "headwind_themes": [
       {
         "theme_id": "semiconductor",
         "theme_name": "반도체",
-        "strength_score": 33.0,
-        "confidence": 0.586
-      },
-      {
-        "theme_id": "secondary_battery",
-        "theme_name": "2차전지",
-        "strength_score": 27.0,
-        "confidence": 0.543
-      },
-      {
-        "theme_id": "it_platform",
-        "theme_name": "IT서비스/플랫폼",
-        "strength_score": 24.0,
-        "confidence": 0.521
-      },
-      {
-        "theme_id": "robotics",
-        "theme_name": "로봇/자동화",
-        "strength_score": 24.0,
-        "confidence": 0.521
+        "strength_score": 49.0,
+        "confidence": 0.78
       },
       {
         "theme_id": "eco_energy",
         "theme_name": "친환경/에너지",
-        "strength_score": 22.0,
-        "confidence": 0.587
+        "strength_score": 42.0,
+        "confidence": 0.65
+      },
+      {
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "strength_score": 31.0,
+        "confidence": 0.571
+      },
+      {
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "strength_score": 27.0,
+        "confidence": 0.543
+      },
+      {
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "strength_score": 27.0,
+        "confidence": 0.543
       },
       {
         "theme_id": "해운",
         "theme_name": "해운",
+        "strength_score": 27.0,
+        "confidence": 0.543
+      },
+      {
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
         "strength_score": 21.0,
         "confidence": 0.5
       }
     ],
+    "headwind_themes": [],
     "theme_evidence": {
-      "bio": [
-        "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
-        "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스"
-      ],
+      "bio": [],
       "it_platform": [],
       "finance": [
-        "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
-        "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
-        "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+        "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
+        "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
+        "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
+        "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
       ],
       "automobile": [
-        "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
       ],
-      "semiconductor": [],
-      "construction_realestate": [
-        "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-        "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시"
+      "semiconductor": [
+        "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
+        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
       ],
-      "eco_energy": [
-        "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
-        "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제"
-      ],
+      "eco_energy": [],
       "robotics": [],
       "secondary_battery": [],
+      "shipbuilding": [],
+      "defense": [
+        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
+      ],
       "해운": []
     },
     "macro_drivers": [
       {
+        "category": "GEOPOLITICS",
+        "signal": "BULLISH",
+        "market_impact": 5,
+        "description": "종전 협상 기대감으로 중동 전쟁 낙폭을 회복하며 코스피 상승을 주도.",
+        "evidence": "코스피, 종전 기대감에 6170선까지 상승…중동 전쟁 낙폭 메워"
+      },
+      {
         "category": "ECONOMY",
-        "signal": "BEARISH",
-        "market_impact": -4,
-        "description": "협상 결렬 소식이 KOSPI에 직접적인 부정적 영향을 미칠 것으로 예상됨.",
-        "evidence": "'월요일 두렵다' 협상 결렬에 코스피 '날벼락'?"
+        "signal": "BULLISH",
+        "market_impact": 4,
+        "description": "미국 증시의 훈풍이 코스피에 긍정적인 투자 심리를 제공.",
+        "evidence": "美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승"
       },
       {
-        "category": "OIL",
-        "signal": "BEARISH",
-        "market_impact": -3,
-        "description": "고유가 지속으로 인한 피해지원금 지급은 소비 부담을 완화하나, 근본적인 고유가 압박은 지속됨.",
-        "evidence": "고유가 피해지원금 27일부터 지급"
-      },
-      {
-        "category": "REGULATION",
-        "signal": "BEARISH",
-        "market_impact": -2,
-        "description": "자동차보험 적자 문제가 보험 산업 전반에 대한 우려를 키움.",
-        "evidence": "자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자'"
-      },
-      {
-        "category": "POLITICS",
-        "signal": "NEUTRAL",
-        "market_impact": 0,
-        "description": "이창용 총재의 G20 회의 참석은 글로벌 경제 논의의 일환으로, 현재 시장에 직접적인 영향은 없음.",
-        "evidence": "이창용, G20 재무장관·중앙은행 총재 회의 참석"
+        "category": "LIQUIDITY",
+        "signal": "BULLISH",
+        "market_impact": 3,
+        "description": "기관 투자자들의 대규모 매수가 코스피 상승에 직접적인 동력으로 작용.",
+        "evidence": "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수"
       }
     ],
     "driver_scores": {
-      "GEOPOLITICS": 0,
-      "OIL": -3,
+      "GEOPOLITICS": 5,
+      "OIL": 0,
       "FX": 0,
       "RATES": 0,
       "POLITICS": 0,
-      "ECONOMY": -4,
-      "LIQUIDITY": -2,
-      "EARNINGS": -2,
-      "REGULATION": -3
+      "ECONOMY": 4,
+      "LIQUIDITY": 3,
+      "EARNINGS": 2,
+      "REGULATION": 0
     },
-    "cross_asset_signals": [
-      {
-        "asset": "WTI",
-        "direction": "UP",
-        "market_impact": -3,
-        "description": "고유가 지속은 한국 경제에 부정적인 영향을 미침."
-      }
-    ],
-    "risk_flags": [
-      "협상 결렬",
-      "고유가",
-      "보험 산업 리스크",
-      "경제 불확실성"
-    ],
-    "news_quality": "MEDIUM",
-    "key_insight": "KOSPI는 협상 결렬로 인한 즉각적인 하방 압력과 고유가, 보험 산업의 구조적 문제로 인해 전반적인 불확실성이 높은 상황입니다.",
+    "cross_asset_signals": [],
+    "risk_flags": [],
+    "news_quality": "HIGH",
+    "key_insight": "중동 지정학적 리스크 완화 기대감과 글로벌 증시 강세에 힘입어 코스피가 주요 저항선을 돌파하며 상승세를 이어가고 있으며, 반도체에서 자동차, 방산으로의 순환매가 관찰됨.",
     "source": "gemini",
     "model": "gemini-2.5-flash",
     "raw": {
-      "market_sentiment": "BEARISH",
-      "sentiment_score": -65,
+      "market_sentiment": "BULLISH",
+      "sentiment_score": 85,
       "themes": [
         {
-          "theme": "시장 불확실성",
-          "impact": "NEGATIVE",
-          "description": "협상 결렬 소식으로 코스피에 대한 부정적 전망이 제기됨."
+          "theme": "중동 지정학 리스크 완화",
+          "impact": "POSITIVE",
+          "description": "미국-이란 종전 협상 기대감에 중동 전쟁 관련 낙폭을 회복하며 코스피 상승을 견인."
         },
         {
-          "theme": "고유가 및 정부 지원",
+          "theme": "글로벌 증시 강세",
+          "impact": "POSITIVE",
+          "description": "미국 S&P 및 나스닥의 사상 최고치 경신이 코스피에 긍정적인 영향을 미침."
+        },
+        {
+          "theme": "산업 순환매",
           "impact": "MIXED",
-          "description": "고유가로 인한 피해지원금 지급 예정이나, 고유가 자체는 경제에 부담."
-        },
-        {
-          "theme": "보험 산업 리스크",
-          "impact": "NEGATIVE",
-          "description": "자동차보험 적자의 주범으로 '나이롱환자' 문제가 지적됨."
+          "description": "반도체는 숨고르기 중이며, 자동차와 방산 섹터로의 순환매가 관찰됨."
         }
       ],
       "macro_drivers": [
         {
+          "category": "GEOPOLITICS",
+          "signal": "BULLISH",
+          "market_impact": 5,
+          "description": "종전 협상 기대감으로 중동 전쟁 낙폭을 회복하며 코스피 상승을 주도.",
+          "evidence": "코스피, 종전 기대감에 6170선까지 상승…중동 전쟁 낙폭 메워"
+        },
+        {
           "category": "ECONOMY",
-          "signal": "BEARISH",
-          "market_impact": -4,
-          "description": "협상 결렬 소식이 KOSPI에 직접적인 부정적 영향을 미칠 것으로 예상됨.",
-          "evidence": "'월요일 두렵다' 협상 결렬에 코스피 '날벼락'?"
+          "signal": "BULLISH",
+          "market_impact": 4,
+          "description": "미국 증시의 훈풍이 코스피에 긍정적인 투자 심리를 제공.",
+          "evidence": "美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승"
         },
         {
-          "category": "OIL",
-          "signal": "BEARISH",
-          "market_impact": -3,
-          "description": "고유가 지속으로 인한 피해지원금 지급은 소비 부담을 완화하나, 근본적인 고유가 압박은 지속됨.",
-          "evidence": "고유가 피해지원금 27일부터 지급"
-        },
-        {
-          "category": "REGULATION",
-          "signal": "BEARISH",
-          "market_impact": -2,
-          "description": "자동차보험 적자 문제가 보험 산업 전반에 대한 우려를 키움.",
-          "evidence": "자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자'"
-        },
-        {
-          "category": "POLITICS",
-          "signal": "NEUTRAL",
-          "market_impact": 0,
-          "description": "이창용 총재의 G20 회의 참석은 글로벌 경제 논의의 일환으로, 현재 시장에 직접적인 영향은 없음.",
-          "evidence": "이창용, G20 재무장관·중앙은행 총재 회의 참석"
+          "category": "LIQUIDITY",
+          "signal": "BULLISH",
+          "market_impact": 3,
+          "description": "기관 투자자들의 대규모 매수가 코스피 상승에 직접적인 동력으로 작용.",
+          "evidence": "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수"
         }
       ],
       "driver_scores": {
-        "GEOPOLITICS": 0,
-        "OIL": -3,
+        "GEOPOLITICS": 5,
+        "OIL": 0,
         "FX": 0,
         "RATES": 0,
         "POLITICS": 0,
-        "ECONOMY": -4,
-        "LIQUIDITY": -2,
-        "EARNINGS": -2,
-        "REGULATION": -3
+        "ECONOMY": 4,
+        "LIQUIDITY": 3,
+        "EARNINGS": 2,
+        "REGULATION": 0
       },
-      "cross_asset_signals": [
-        {
-          "asset": "WTI",
-          "direction": "UP",
-          "market_impact": -3,
-          "description": "고유가 지속은 한국 경제에 부정적인 영향을 미침."
-        }
+      "cross_asset_signals": [],
+      "risk_flags": [],
+      "news_quality": "HIGH",
+      "beneficiary_sectors": [
+        "자동차",
+        "방산"
       ],
-      "risk_flags": [
-        "협상 결렬",
-        "고유가",
-        "보험 산업 리스크",
-        "경제 불확실성"
+      "victim_sectors": [],
+      "beneficiary_keywords": [
+        "자동차",
+        "방산",
+        "방위산업"
       ],
-      "news_quality": "MEDIUM",
-      "beneficiary_sectors": [],
-      "victim_sectors": [
-        "보험"
-      ],
-      "beneficiary_keywords": [],
-      "victim_keywords": [
-        "보험사"
-      ],
-      "key_insight": "KOSPI는 협상 결렬로 인한 즉각적인 하방 압력과 고유가, 보험 산업의 구조적 문제로 인해 전반적인 불확실성이 높은 상황입니다.",
+      "victim_keywords": [],
+      "key_insight": "중동 지정학적 리스크 완화 기대감과 글로벌 증시 강세에 힘입어 코스피가 주요 저항선을 돌파하며 상승세를 이어가고 있으며, 반도체에서 자동차, 방산으로의 순환매가 관찰됨.",
       "evidence_headlines": [
-        "'월요일 두렵다' 협상 결렬에 코스피 '날벼락'?…전망 들어보니",
-        "고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용",
-        "[단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자'"
+        "반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀",
+        "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수",
+        "코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워",
+        "\"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까?"
       ],
       "raw_headlines": [
-        "[Sun, 12 Apr 2026 21:18:53 +0900] '월요일 두렵다' 협상 결렬에 코스피 '날벼락'?…전망 들어보니 | 한국경제",
-        "[DART 20260410] 에이프로젠 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
-        "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-        "[DART 20260410] 인스코비 - 주요사항보고서(유상증자결정) | 전자공시",
-        "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
-        "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시",
-        "[DART 20260410] 종근당홀딩스 - 단일판매ㆍ공급계약해지(자회사의 주요경영사항) | 전자공시",
-        "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
-        "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제",
-        "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제",
-        "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
-        "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
-        "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스",
-        "[Sun, 12 Apr 2026 11:00:03 +0900] 전남도, 기초생활수급자 8만9천가구에 생계비 5만원 지원 | 연합뉴스",
-        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr"
+        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제",
+        "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
+        "[Naver Stock] 402340.KS [+2] 코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수 | 네이버증권",
+        "[Wed, 15 Apr 2026 17:00:05 +0900] [포토] 코스피 6000선 넘어 상승 마감 | 한국경제",
+        "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
+        "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
+        "[Naver Stock] 373220.KS [+3] 코스피, 6200선 재돌파… 미·이란 전쟁 낙폭 회복 중 | 네이버증권",
+        "[Naver Stock] 373220.KS [+3] 코스피, 종전 협상 낙관론에 오름폭 키워 장중 6,200선 재돌파 | 네이버증권",
+        "[Naver Stock] 402340.KS [+5] 코스피, 장중 6200선 돌파…코스닥도 상승 | 네이버증권",
+        "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권",
+        "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
+        "[Naver Stock] 207940.KS [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
+        "[Naver Stock] 034020.KS [+3] 코스피 장중 6200 돌파…295조 증시로 몰렸다 | 네이버증권",
+        "[DART 20260416] 한전기술 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260416] HD현대 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
       ],
       "headline_count": 15,
       "source": "gemini",
       "model": "gemini-2.5-flash",
-      "timestamp": "2026-04-12 22:25",
+      "timestamp": "2026-04-16 14:27",
       "disclosure_events": [
         {
-          "company": "에이프로젠",
-          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)",
-          "event_score": -5,
-          "category": "LIQUIDITY",
-          "label": "전환사채",
-          "polarity": "NEGATIVE"
-        },
-        {
-          "company": "금호건설",
-          "report_name": "[기재정정]단일판매ㆍ공급계약체결",
+          "company": "한전기술",
+          "report_name": "단일판매ㆍ공급계약체결",
           "event_score": 4,
           "category": "EARNINGS",
           "label": "수주/판매계약",
           "polarity": "POSITIVE"
         },
         {
-          "company": "인스코비",
-          "report_name": "주요사항보고서(유상증자결정)",
-          "event_score": -6,
-          "category": "LIQUIDITY",
-          "label": "유상증자",
-          "polarity": "NEGATIVE"
-        },
-        {
-          "company": "SK증권",
-          "report_name": "소송등의판결ㆍ결정(자율공시:일정금액미만의청구)",
-          "event_score": -4,
-          "category": "REGULATION",
-          "label": "소송",
-          "polarity": "NEGATIVE"
-        },
-        {
-          "company": "대우건설",
-          "report_name": "단일판매ㆍ공급계약해지(자율공시)",
-          "event_score": -5,
+          "company": "HD현대",
+          "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)",
+          "event_score": 4,
           "category": "EARNINGS",
-          "label": "계약해지",
-          "polarity": "NEGATIVE"
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
         },
         {
-          "company": "종근당홀딩스",
-          "report_name": "단일판매ㆍ공급계약해지(자회사의 주요경영사항)",
-          "event_score": -5,
+          "company": "한전기술",
+          "report_name": "단일판매ㆍ공급계약체결",
+          "event_score": 4,
           "category": "EARNINGS",
-          "label": "계약해지",
-          "polarity": "NEGATIVE"
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
         },
         {
-          "company": "경보제약",
-          "report_name": "단일판매ㆍ공급계약해지",
-          "event_score": -5,
+          "company": "HD현대",
+          "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)",
+          "event_score": 4,
           "category": "EARNINGS",
-          "label": "계약해지",
-          "polarity": "NEGATIVE"
-        },
-        {
-          "company": "에이프로젠",
-          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)",
-          "event_score": -5,
-          "category": "LIQUIDITY",
-          "label": "전환사채",
-          "polarity": "NEGATIVE"
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
         }
       ],
       "company_event_bias": {
-        "에이프로젠": -8,
-        "금호건설": 8,
-        "인스코비": -8,
-        "SK증권": -8,
-        "대우건설": -8,
-        "종근당홀딩스": -8,
-        "경보제약": -8
+        "한전기술": 8,
+        "HD현대": 8
       },
       "theme_states": [
-        {
-          "theme_id": "semiconductor",
-          "theme_name": "반도체",
-          "direction": "HEADWIND",
-          "strength_score": 33.0,
-          "confidence": 0.586,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "LIQUIDITY",
-            "REGULATION"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [],
-          "victim_keywords": [
-            "반도체",
-            "메모리",
-            "HBM",
-            "낸드",
-            "DRAM",
-            "파운드리"
-          ],
-          "updated_at": "2026-04-12T13:25:55.884773+00:00"
-        },
         {
           "theme_id": "finance",
           "theme_name": "금융",
           "direction": "BENEFICIARY",
-          "strength_score": 28.0,
-          "confidence": 0.63,
+          "strength_score": 100.0,
+          "confidence": 0.95,
           "driver_categories": [],
           "evidence": [
-            "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
-            "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
-            "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+            "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
+            "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
+            "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
+            "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
           ],
           "beneficiary_keywords": [
             "금융",
@@ -662,107 +615,45 @@
             "카드"
           ],
           "victim_keywords": [],
-          "updated_at": "2026-04-12T13:25:55.884579+00:00"
+          "momentum_avg_change_pct": 2.94,
+          "momentum_class": "EXPLODING",
+          "updated_at": "2026-04-16T05:27:03.852875+00:00"
         },
         {
-          "theme_id": "secondary_battery",
-          "theme_name": "2차전지",
-          "direction": "HEADWIND",
-          "strength_score": 27.0,
-          "confidence": 0.543,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "FX",
-            "OIL"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [],
-          "victim_keywords": [
-            "2차전지",
-            "이차전지",
-            "배터리",
-            "양극재",
-            "음극재",
-            "전해액"
-          ],
-          "updated_at": "2026-04-12T13:25:55.885232+00:00"
-        },
-        {
-          "theme_id": "construction_realestate",
-          "theme_name": "건설/부동산",
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
           "direction": "BENEFICIARY",
-          "strength_score": 24.0,
-          "confidence": 0.601,
-          "driver_categories": [],
-          "evidence": [
-            "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-            "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시"
-          ],
-          "beneficiary_keywords": [
-            "건설/부동산",
-            "건설",
-            "부동산",
-            "레미콘",
-            "시멘트",
-            "모듈러"
-          ],
-          "victim_keywords": [],
-          "updated_at": "2026-04-12T13:25:55.884827+00:00"
-        },
-        {
-          "theme_id": "it_platform",
-          "theme_name": "IT서비스/플랫폼",
-          "direction": "HEADWIND",
-          "strength_score": 24.0,
-          "confidence": 0.521,
+          "strength_score": 49.0,
+          "confidence": 0.78,
           "driver_categories": [
             "EARNINGS",
             "ECONOMY",
             "LIQUIDITY",
-            "RATES"
+            "REGULATION"
           ],
-          "evidence": [],
-          "beneficiary_keywords": [],
-          "victim_keywords": [
-            "IT서비스/플랫폼",
-            "IT서비스",
-            "플랫폼",
-            "소프트웨어",
-            "SW",
-            "클라우드"
+          "evidence": [
+            "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
+            "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
           ],
-          "updated_at": "2026-04-12T13:25:55.884516+00:00"
-        },
-        {
-          "theme_id": "robotics",
-          "theme_name": "로봇/자동화",
-          "direction": "HEADWIND",
-          "strength_score": 24.0,
-          "confidence": 0.521,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "LIQUIDITY"
+          "beneficiary_keywords": [
+            "반도체",
+            "메모리",
+            "HBM",
+            "낸드",
+            "DRAM",
+            "파운드리"
           ],
-          "evidence": [],
-          "beneficiary_keywords": [],
-          "victim_keywords": [
-            "로봇/자동화",
-            "로봇",
-            "자동화",
-            "스마트팩토리",
-            "협동로봇",
-            "물류로봇"
-          ],
-          "updated_at": "2026-04-12T13:25:55.885157+00:00"
+          "victim_keywords": [],
+          "momentum_avg_change_pct": 1.38,
+          "momentum_class": "ACCELERATING",
+          "updated_at": "2026-04-16T05:27:03.853297+00:00"
         },
         {
           "theme_id": "eco_energy",
           "theme_name": "친환경/에너지",
-          "direction": "HEADWIND",
-          "strength_score": 22.0,
-          "confidence": 0.587,
+          "direction": "BENEFICIARY",
+          "strength_score": 42.0,
+          "confidence": 0.65,
           "driver_categories": [
             "EARNINGS",
             "ECONOMY",
@@ -773,12 +664,8 @@
             "POLITICS",
             "REGULATION"
           ],
-          "evidence": [
-            "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
-            "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제"
-          ],
-          "beneficiary_keywords": [],
-          "victim_keywords": [
+          "evidence": [],
+          "beneficiary_keywords": [
             "친환경/에너지",
             "친환경",
             "에너지",
@@ -786,28 +673,186 @@
             "풍력",
             "수소"
           ],
-          "updated_at": "2026-04-12T13:25:55.885105+00:00"
+          "victim_keywords": [],
+          "momentum_avg_change_pct": 2.28,
+          "momentum_class": "EXPLODING",
+          "updated_at": "2026-04-16T05:27:03.853857+00:00"
+        },
+        {
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "direction": "BENEFICIARY",
+          "strength_score": 31.0,
+          "confidence": 0.571,
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "POLITICS"
+          ],
+          "evidence": [
+            "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
+          ],
+          "beneficiary_keywords": [
+            "방산",
+            "미사일",
+            "탄약",
+            "군수",
+            "무기"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T05:27:03.854283+00:00"
+        },
+        {
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "direction": "BENEFICIARY",
+          "strength_score": 27.0,
+          "confidence": 0.543,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "IT서비스/플랫폼",
+            "IT서비스",
+            "플랫폼",
+            "소프트웨어",
+            "SW",
+            "클라우드"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T05:27:03.852696+00:00"
+        },
+        {
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "direction": "BENEFICIARY",
+          "strength_score": 27.0,
+          "confidence": 0.543,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "로봇/자동화",
+            "로봇",
+            "자동화",
+            "스마트팩토리",
+            "협동로봇",
+            "물류로봇"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T05:27:03.853943+00:00"
         },
         {
           "theme_id": "해운",
           "theme_name": "해운",
-          "direction": "HEADWIND",
-          "strength_score": 21.0,
-          "confidence": 0.5,
+          "direction": "BENEFICIARY",
+          "strength_score": 27.0,
+          "confidence": 0.543,
           "driver_categories": [
             "ECONOMY",
             "GEOPOLITICS",
             "OIL"
           ],
           "evidence": [],
-          "beneficiary_keywords": [],
-          "victim_keywords": [
+          "beneficiary_keywords": [
             "벌크",
             "운임",
             "컨테이너",
             "해운"
           ],
-          "updated_at": "2026-04-12T13:25:55.885370+00:00"
+          "victim_keywords": [],
+          "momentum_avg_change_pct": 1.17,
+          "momentum_class": "ACCELERATING",
+          "updated_at": "2026-04-16T05:27:03.854370+00:00"
+        },
+        {
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "direction": "BENEFICIARY",
+          "strength_score": 21.0,
+          "confidence": 0.5,
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "조선/해양",
+            "조선",
+            "선박",
+            "해양",
+            "LNG선",
+            "해양플랜트"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T05:27:03.854173+00:00"
+        },
+        {
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "direction": "BENEFICIARY",
+          "strength_score": 18.0,
+          "confidence": 0.479,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "바이오/헬스케어",
+            "바이오",
+            "헬스케어",
+            "의약",
+            "치료제",
+            "백신"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T05:27:03.852465+00:00"
+        },
+        {
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "direction": "BENEFICIARY",
+          "strength_score": 18.0,
+          "confidence": 0.479,
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T05:27:03.854071+00:00"
         },
         {
           "theme_id": "automobile",
@@ -817,109 +862,89 @@
           "confidence": 0.421,
           "driver_categories": [],
           "evidence": [
-            "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+            "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
           ],
           "beneficiary_keywords": [],
           "victim_keywords": [],
-          "updated_at": "2026-04-12T13:25:55.884690+00:00"
-        },
-        {
-          "theme_id": "bio",
-          "theme_name": "바이오/헬스케어",
-          "direction": "NEUTRAL",
-          "strength_score": 5.0,
-          "confidence": 0.466,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "REGULATION"
-          ],
-          "evidence": [
-            "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
-            "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스"
-          ],
-          "beneficiary_keywords": [],
-          "victim_keywords": [],
-          "updated_at": "2026-04-12T13:25:55.884405+00:00"
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-16T05:27:03.853113+00:00"
         }
       ],
       "beneficiary_themes": [
         {
           "theme_id": "finance",
           "theme_name": "금융",
-          "strength_score": 28.0,
-          "confidence": 0.63
+          "strength_score": 100.0,
+          "confidence": 0.95
         },
-        {
-          "theme_id": "construction_realestate",
-          "theme_name": "건설/부동산",
-          "strength_score": 24.0,
-          "confidence": 0.601
-        }
-      ],
-      "headwind_themes": [
         {
           "theme_id": "semiconductor",
           "theme_name": "반도체",
-          "strength_score": 33.0,
-          "confidence": 0.586
-        },
-        {
-          "theme_id": "secondary_battery",
-          "theme_name": "2차전지",
-          "strength_score": 27.0,
-          "confidence": 0.543
-        },
-        {
-          "theme_id": "it_platform",
-          "theme_name": "IT서비스/플랫폼",
-          "strength_score": 24.0,
-          "confidence": 0.521
-        },
-        {
-          "theme_id": "robotics",
-          "theme_name": "로봇/자동화",
-          "strength_score": 24.0,
-          "confidence": 0.521
+          "strength_score": 49.0,
+          "confidence": 0.78
         },
         {
           "theme_id": "eco_energy",
           "theme_name": "친환경/에너지",
-          "strength_score": 22.0,
-          "confidence": 0.587
+          "strength_score": 42.0,
+          "confidence": 0.65
+        },
+        {
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "strength_score": 31.0,
+          "confidence": 0.571
+        },
+        {
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "strength_score": 27.0,
+          "confidence": 0.543
+        },
+        {
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "strength_score": 27.0,
+          "confidence": 0.543
         },
         {
           "theme_id": "해운",
           "theme_name": "해운",
+          "strength_score": 27.0,
+          "confidence": 0.543
+        },
+        {
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
           "strength_score": 21.0,
           "confidence": 0.5
         }
       ],
+      "headwind_themes": [],
       "theme_evidence": {
-        "bio": [
-          "[DART 20260410] 경보제약 - 단일판매ㆍ공급계약해지 | 전자공시",
-          "[Sun, 12 Apr 2026 12:00:04 +0900] \"제약·바이오 공시, 알기 쉽게 써라\"…금감원, 공시개선 착수 | 연합뉴스"
-        ],
+        "bio": [],
         "it_platform": [],
         "finance": [
-          "[DART 20260410] SK증권 - 소송등의판결ㆍ결정(자율공시:일정금액미만의청구) | 전자공시",
-          "[Sun, 12 Apr 2026 12:00:11 +0900] 이창용, G20 재무장관·중앙은행 총재 회의 참석 | 연합뉴스",
-          "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+          "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
+          "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
+          "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
+          "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
         ],
         "automobile": [
-          "[Sun, 12 Apr 2026 17:53:20 +09:00] [단독] 자동차보험 적자 주범 … 병실 호캉스 누리는 '나이롱환자' | 매일경제"
+          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
         ],
-        "semiconductor": [],
-        "construction_realestate": [
-          "[DART 20260410] 금호건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-          "[DART 20260410] 대우건설 - 단일판매ㆍ공급계약해지(자율공시) | 전자공시"
+        "semiconductor": [
+          "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
+          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
         ],
-        "eco_energy": [
-          "[Sun, 12 Apr 2026 18:21:47 +0900] 고유가 피해지원금 27일부터 지급…K패스 환급은 4월분 소급 적용 | 한국경제",
-          "[Sun, 12 Apr 2026 19:45:16 +09:00] “최대 60만원, 난 얼마 받지?”…고유가피해지원금 27일부터 지급 | 매일경제"
-        ],
+        "eco_energy": [],
         "robotics": [],
         "secondary_battery": [],
+        "shipbuilding": [],
+        "defense": [
+          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
+        ],
         "해운": []
       }
     }
