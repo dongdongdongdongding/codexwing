@@ -77,7 +77,7 @@ def load_scan_archive() -> pd.DataFrame:
         raise SystemExit("Supabase client unavailable.")
 
     select_cols = (
-        "id,ticker,stock_name,created_at,market_type,scan_mode,strategy_family,"
+        "id,run_id,ticker,stock_name,created_at,market_type,scan_mode,strategy_family,"
         "priority_rank,decision,decision_bucket,outcome_status,"
         "alpha_score,tech_score,ml_prob,whale_score,trend,tier,volume,position,"
         "strategy,decision_score,fund_status,entry_reference_price,"
@@ -119,26 +119,34 @@ def load_scan_archive() -> pd.DataFrame:
         )
     ]
 
-    # Merge duplicate archive rows for the same recommendation key by taking
-    # the last non-null value per column. Outcome sync currently appends sparse
-    # rows with returns, while the initial scan row has richer feature values.
-    key_cols = ["run_id", "ticker", "scan_mode", "strategy_family", "priority_rank"]
-    key_cols = [col for col in key_cols if col in df.columns]
+    # Deduplicate: outcome sync appends rows each run rather than updating.
+    # Real unique key = (run_id OR scan_date) + ticker + scan_mode + priority_rank.
+    # Sort so the richest row (non-null returns, non-null features) comes last,
+    # then drop duplicates keeping last.
+    sort_cols = ["created_at", "id"] if "id" in df.columns else ["created_at"]
+    df = df.sort_values(sort_cols)
 
-    def _last_non_null(series: pd.Series):
-        non_null = series.dropna()
-        if not non_null.empty:
-            return non_null.iloc[-1]
-        return series.iloc[-1] if len(series) else None
+    # Build dedup key: run_id preferred, fallback to scan_date
+    if "run_id" in df.columns:
+        df["_dedup_run"] = df["run_id"].fillna(df["scan_date"].astype(str))
+    else:
+        df["_dedup_run"] = df["scan_date"].astype(str)
 
-    if key_cols:
-        df = (
-            df.sort_values(["created_at", "id"] if "id" in df.columns else ["created_at"])
-            .groupby(key_cols, dropna=False, as_index=False)
-            .agg(_last_non_null)
-        )
+    dedup_key = ["_dedup_run", "ticker", "scan_mode", "priority_rank"]
+    dedup_key = [c for c in dedup_key if c in df.columns]
 
-    print(f"\n✅ 총 {len(df):,} 레코드 로드 완료")
+    # For each group take last row (most complete, latest update with returns)
+    # but prefer rows that have return data — sort null-returns before non-null
+    return_present = df["return_3d_pct"].notna().astype(int)
+    df["_return_present"] = return_present
+    df = (
+        df.sort_values(sort_cols + ["_return_present"])
+        .drop_duplicates(subset=dedup_key, keep="last")
+        .drop(columns=["_dedup_run", "_return_present"])
+    )
+
+    before_count = len(rows)
+    print(f"\n✅ 총 {len(df):,} 레코드 (중복 제거 후, 원본 {before_count:,}행)")
     return df
 
 

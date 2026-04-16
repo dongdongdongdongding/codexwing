@@ -1688,14 +1688,15 @@ class QuantStrategy:
                             else:
                                 _marcap_band = 4
                         elif is_kr:
-                            # fallback: try pykrx if available
+                            # fallback: FDR StockListing has Marcap column
                             try:
-                                from pykrx import stock as _pykrx_stock
+                                import FinanceDataReader as _fdr
+                                _mkt = "KOSPI" if str(self.ticker).endswith(".KS") else "KOSDAQ"
+                                _listing = _fdr.StockListing(_mkt)
                                 _bare = str(self.ticker).replace(".KS", "").replace(".KQ", "")
-                                _today_str = pd.Timestamp.today().strftime("%Y%m%d")
-                                _mc = _pykrx_stock.get_market_cap_by_ticker(_today_str)
-                                if _bare in _mc.index:
-                                    _mc_val = float(_mc.loc[_bare, "시가총액"])
+                                _row = _listing[_listing["Code"] == _bare]
+                                if not _row.empty and "Marcap" in _row.columns:
+                                    _mc_val = float(_row["Marcap"].iloc[0])
                                     if _mc_val < 300_000_000_000:
                                         _marcap_band = 0
                                     elif _mc_val < 1_000_000_000_000:
@@ -2647,99 +2648,107 @@ class QuantStrategy:
         # 1. Determine Market Type
         is_kr = str(self.ticker).endswith('.KS') or str(self.ticker).endswith('.KQ')
         
-        # --- A. KOREAN MARKET (Naver Finance Web Scraper) ---
+        # --- A. KOREAN MARKET (pykrx primary + Naver fallback) ---
         if is_kr:
+            code = str(self.ticker).split('.')[0]
+            sum_inst, sum_for, sum_ret = 0.0, 0.0, 0.0
+            _flow_source = None
+
+            # pykrx investor flow API is unreliable on this env — skip directly to Naver
+
+            # Naver Finance HTML fallback
+            if _flow_source is None:
+                try:
+                    import requests
+                    from bs4 import BeautifulSoup
+                    import io
+
+                    url = f"https://finance.naver.com/item/frgn.naver?code={code}"
+                    headers = {"User-Agent": "Mozilla/5.0"}
+                    res_req = requests.get(url, headers=headers, timeout=5)
+                    soup = BeautifulSoup(res_req.text, "html.parser")
+                    tables = soup.find_all("table", {"class": "type2"})
+                    if len(tables) >= 2:
+                        df_html = pd.read_html(io.StringIO(str(tables[1])), header=1)[0]
+                        df_html = df_html.dropna(subset=['날짜'])
+                        df_html['Institution'] = pd.to_numeric(df_html['순매매량'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
+                        df_html['Foreigner'] = pd.to_numeric(df_html['순매매량.1'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
+                        recent = df_html.head(10)
+                        sum_inst = float(recent['Institution'].sum())
+                        sum_for = float(recent['Foreigner'].sum())
+                        sum_ret = -1 * (sum_inst + sum_for)
+                        _flow_source = 'naver'
+                except Exception:
+                    pass
+
+            if _flow_source is None:
+                res['reason'] = "Both pykrx and Naver scraper failed"
+                return res
+
+            res['foreigner'] = int(sum_for)
+            res['institution'] = int(sum_inst)
+            res['retail'] = int(sum_ret)
+            res['valid'] = True
+            res['type'] = 'KR'
+            res['flow_source'] = _flow_source
+
+            # Scoring (KR) — Proportional to actual flows
+            whale_flow = sum_inst + sum_for  # 기관 + 외인
+            total_abs = abs(sum_inst) + abs(sum_for) + abs(sum_ret)
+
+            score = 50  # Neutral baseline
+
+            if total_abs > 0:
+                # Whale dominance ratio: how much of total flow is whale?
+                whale_ratio = whale_flow / total_abs if total_abs > 0 else 0
+                # Range: -1 (pure retail) to +1 (pure whale)
+                score = 50 + int(whale_ratio * 50)
+                # Both inst AND foreign buying = strong consensus
+                if sum_inst > 0 and sum_for > 0:
+                    score += 5
+                # Penalty: If retail buying is 3x+ whale, it's clearly retail-driven
+                if abs(sum_ret) > abs(whale_flow) * 3 and sum_ret > 0:
+                    score = min(score, 40)
+
+            # Determine dominant investor type
+            if abs(sum_for) > abs(sum_inst) and abs(sum_for) > abs(sum_ret):
+                res['dominant'] = '외인'
+            elif abs(sum_inst) > abs(sum_for) and abs(sum_inst) > abs(sum_ret):
+                res['dominant'] = '기관'
+            else:
+                res['dominant'] = '개인'
+
+            # 3-Day Whale Trend Analysis (short-term acceleration/deceleration)
+            # For pykrx: recompute from flow df if available; for naver: use df_html
             try:
-                import requests
-                from bs4 import BeautifulSoup
-                import io
-                
-                code = str(self.ticker).split('.')[0]
-                url = f"https://finance.naver.com/item/frgn.naver?code={code}"
-                headers = {"User-Agent": "Mozilla/5.0"}
-                
-                res_req = requests.get(url, headers=headers, timeout=5)
-                soup = BeautifulSoup(res_req.text, "html.parser")
-                tables = soup.find_all("table", {"class": "type2"})
-                
-                if len(tables) >= 2:
-                    df_html = pd.read_html(io.StringIO(str(tables[1])), header=1)[0]
-                    df_html = df_html.dropna(subset=['날짜'])
-                    
-                    df_html['Institution'] = pd.to_numeric(df_html['순매매량'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
-                    df_html['Foreigner'] = pd.to_numeric(df_html['순매매량.1'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
-                    
-                    recent = df_html.head(10)
-                    sum_inst = recent['Institution'].sum()
-                    sum_for = recent['Foreigner'].sum()
-                    sum_ret = -1 * (sum_inst + sum_for) # Approximate retail flow
+                if _flow_source == 'pykrx' and '_flow_df' in dir():
+                    _r3 = _flow_df.tail(3)
+                    sum_inst_3d = float(_r3[_col_map['institution']].sum()) if 'institution' in _col_map else 0.0
+                    sum_for_3d = float(_r3[_col_map['foreigner']].sum()) if 'foreigner' in _col_map else 0.0
+                elif _flow_source == 'naver' and 'df_html' in dir():
+                    _r3 = df_html.head(3)
+                    sum_inst_3d = float(_r3['Institution'].sum())
+                    sum_for_3d = float(_r3['Foreigner'].sum())
                 else:
-                    res['reason'] = "Failed to parse Naver Finance HTML"
-                    return res
-                
-                res['foreigner'] = int(sum_for)
-                res['institution'] = int(sum_inst)
-                res['retail'] = int(sum_ret)
-                res['valid'] = True
-                res['type'] = 'KR'
-                
-                # Scoring (KR) — Proportional to actual flows
-                whale_flow = sum_inst + sum_for  # 기관 + 외인
-                total_abs = abs(sum_inst) + abs(sum_for) + abs(sum_ret)
-                
-                score = 50  # Neutral baseline
-                
-                if total_abs > 0:
-                    # Whale dominance ratio: how much of total flow is whale?
-                    whale_ratio = whale_flow / total_abs if total_abs > 0 else 0
-                    
-                    # Positive whale_ratio = institutions buying more than retail
-                    # Range: -1 (pure retail) to +1 (pure whale)
-                    score = 50 + int(whale_ratio * 50)
-                    
-                    # Extra: Both inst AND foreign buying = strong consensus
-                    if sum_inst > 0 and sum_for > 0:
-                        score += 5
-                        
-                    # Penalty: If retail buying is 3x+ whale, it's clearly retail-driven
-                    if abs(sum_ret) > abs(whale_flow) * 3 and sum_ret > 0:
-                        score = min(score, 40)  # Cap at 40 (retail dominant)
-                
-                # Determine dominant investor type
-                if abs(sum_for) > abs(sum_inst) and abs(sum_for) > abs(sum_ret):
-                    res['dominant'] = '외인'
-                elif abs(sum_inst) > abs(sum_for) and abs(sum_inst) > abs(sum_ret):
-                    res['dominant'] = '기관'
-                else:
-                    res['dominant'] = '개인'
-                
-                # [Phase E] 3-Day Whale Trend Analysis
-                recent_3d = df_html.head(3)
-                sum_inst_3d = recent_3d['Institution'].sum()
-                sum_for_3d = recent_3d['Foreigner'].sum()
+                    sum_inst_3d, sum_for_3d = 0.0, 0.0
                 whale_3d = sum_inst_3d + sum_for_3d
                 whale_10d_avg = whale_flow / 10 * 3  # Normalized to 3-day equivalent
-                
-                # Trend: Is whale buying accelerating or decelerating?
                 if whale_3d > 0 and whale_3d > whale_10d_avg:
-                    res['whale_trend'] = '🔥 가속매수'  # Accelerating buy
+                    res['whale_trend'] = '🔥 가속매수'
                     score += 5
                 elif whale_3d > 0:
-                    res['whale_trend'] = '↗ 순매수'  # Buying but slowing
+                    res['whale_trend'] = '↗ 순매수'
                 elif whale_3d < 0 and whale_3d < whale_10d_avg:
-                    res['whale_trend'] = '🔻 가속매도'  # Accelerating sell
+                    res['whale_trend'] = '🔻 가속매도'
                     score -= 10
                 else:
-                    res['whale_trend'] = '↘ 순매도'  # Selling but slowing
-                
-                # Confidence: Is this scan-time estimate reliable?
-                res['whale_confidence'] = '확정' if len(recent) >= 5 else '추정'
-                
-                res['whale_score'] = max(0, min(100, score))
-                return res
-            except Exception as e:
-                res['reason'] = f"PyKrx Error: {str(e)}"
-                return res
+                    res['whale_trend'] = '↘ 순매도'
+            except Exception:
+                pass
+
+            res['whale_confidence'] = '확정'
+            res['whale_score'] = max(0, min(100, score))
+            return res
 
         # --- B. US MARKET (Smart Money Flow Proxy via Price & Volume) ---
         else:

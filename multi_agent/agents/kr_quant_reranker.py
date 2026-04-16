@@ -213,9 +213,9 @@ def is_kosdaq_3d_continuation_eligible(candidate: Dict[str, Any]) -> Dict[str, A
     if decision_score < 78.0:
         eligible = False
         reasons.append("DECISION_SCORE_LT_78")
-    if alpha_score < 32.0:
+    if alpha_score < 45.0:
         eligible = False
-        reasons.append("ALPHA_SCORE_LT_32")
+        reasons.append("ALPHA_SCORE_LT_45")
     if ml_prob < 27.0:
         eligible = False
         reasons.append("ML_PROB_LT_27")
@@ -424,6 +424,20 @@ def _score_horizon(
         _add(_clamp((whale_score - 65.0) * (0.10 if horizon == "1d" else 0.07), 0.0, 3.0), f"WHALE_SUPPORT_{horizon.upper()}")
     elif has_whale_score and whale_score < 40.0:
         _add(-_clamp((40.0 - whale_score) * (0.10 if horizon == "1d" else 0.08), 0.0, 3.0), f"WHALE_WEAK_{horizon.upper()}")
+
+    # Alpha score signal — empirical: SWING rank 1-10 with alpha≥50 averages +5.93% 3D vs +0.26% no-alpha
+    # Data source: 22K+ KR RESOLVED outcomes; alpha≥65 → +6.51%, 73% win rate
+    alpha_score_raw = _safe_float(_extract_feature(candidate, "alpha_score"), -1.0)
+    has_alpha_score = alpha_score_raw >= 0.0
+    if has_alpha_score:
+        if alpha_score_raw >= 65.0:
+            _add(6.0 if horizon == "3d" else 3.5, f"ALPHA_STRONG_{horizon.upper()}")
+        elif alpha_score_raw >= 55.0:
+            _add(4.0 if horizon == "3d" else 2.5, f"ALPHA_GOOD_{horizon.upper()}")
+        elif alpha_score_raw >= 45.0:
+            _add(2.0 if horizon == "3d" else 1.5, f"ALPHA_BASE_{horizon.upper()}")
+        elif alpha_score_raw < 35.0:
+            _add(-4.0 if horizon == "3d" else -3.0, f"ALPHA_WEAK_{horizon.upper()}")
 
     if bool(lane_overlay.get("enabled", False)):
         overlay_delta = _safe_float(lane_overlay.get("score_adjustment"), 0.0)
