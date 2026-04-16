@@ -197,6 +197,13 @@ def run_learning_cycle(
                     PROJECT_ROOT,
                 )
             )
+            for _market in ("KOSPI", "KOSDAQ"):
+                commands.append(
+                    _run_command(
+                        ["python3", "multi_agent/tools/report_kr_walkforward_release_gate.py", "--market", _market],
+                        PROJECT_ROOT,
+                    )
+                )
             action = "dataset_refresh"
             reason = "nightly_learning_dataset_refreshed"
         report = {

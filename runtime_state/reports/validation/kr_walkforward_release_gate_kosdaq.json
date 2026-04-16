@@ -1,0 +1,182 @@
+{
+  "generated_at": "2026-04-16T15:02:04.531165+00:00",
+  "market": "KOSDAQ",
+  "confidence_level": 0.98,
+  "release_ready": false,
+  "lanes": {
+    "EXPLOSIVE_LEADER": {
+      "metrics": {
+        "lane": "EXPLOSIVE_LEADER",
+        "topn": 10,
+        "horizon": "1d",
+        "active_days": 5,
+        "total_rows": 42,
+        "avg_return": {
+          "mean": -0.380067,
+          "lower": -1.348381,
+          "upper": 0.572415,
+          "samples": 5
+        },
+        "positive_rate": {
+          "mean": 0.56,
+          "lower": 0.42,
+          "upper": 0.8,
+          "samples": 5
+        },
+        "avoid_down_rate": {
+          "mean": 0.58,
+          "lower": 0.42,
+          "upper": 0.82,
+          "samples": 5
+        },
+        "precision_hit10": {
+          "mean": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "samples": 5
+        }
+      },
+      "checks": [
+        {
+          "code": "EXPLOSIVE_LEADER_MIN_ACTIVE_DAYS",
+          "passed": true,
+          "detail": "active_days=5 (min=3)"
+        },
+        {
+          "code": "EXPLOSIVE_LEADER_AVG_1D_LOWER",
+          "passed": false,
+          "detail": "avg_1d_lower=-1.3484%"
+        },
+        {
+          "code": "EXPLOSIVE_LEADER_POSITIVE_1D_LOWER",
+          "passed": false,
+          "detail": "positive_1d_lower=42.00%"
+        },
+        {
+          "code": "EXPLOSIVE_LEADER_AVOID_DOWN_1D_LOWER",
+          "passed": false,
+          "detail": "avoid_down_1d_lower=42.00%"
+        },
+        {
+          "code": "EXPLOSIVE_LEADER_PRECISION_HIT10_LOWER",
+          "passed": true,
+          "detail": "precision_hit10_lower=0.00%"
+        }
+      ],
+      "passed": false
+    },
+    "CORE_TREND": {
+      "metrics": {
+        "lane": "CORE_TREND",
+        "topn": 5,
+        "horizon": "3d",
+        "active_days": 4,
+        "total_rows": 20,
+        "avg_return": {
+          "mean": -2.605948,
+          "lower": -11.741082,
+          "upper": 6.8262,
+          "samples": 4
+        },
+        "positive_rate": {
+          "mean": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "samples": 4
+        },
+        "avoid_down_rate": {
+          "mean": 0.5,
+          "lower": 0.0,
+          "upper": 1.0,
+          "samples": 4
+        },
+        "precision_hit10": {
+          "mean": 0.05,
+          "lower": 0.0,
+          "upper": 0.15,
+          "samples": 4
+        }
+      },
+      "checks": [
+        {
+          "code": "CORE_TREND_MIN_ACTIVE_DAYS",
+          "passed": true,
+          "detail": "active_days=4 (min=3)"
+        },
+        {
+          "code": "CORE_TREND_AVG_3D_LOWER",
+          "passed": false,
+          "detail": "avg_3d_lower=-11.7411%"
+        },
+        {
+          "code": "CORE_TREND_POSITIVE_3D_LOWER",
+          "passed": false,
+          "detail": "positive_3d_lower=0.00%"
+        },
+        {
+          "code": "CORE_TREND_AVOID_DOWN_3D_LOWER",
+          "passed": false,
+          "detail": "avoid_down_3d_lower=0.00%"
+        },
+        {
+          "code": "CORE_TREND_PRECISION_HIT10_LOWER",
+          "passed": true,
+          "detail": "precision_hit10_lower=0.00%"
+        }
+      ],
+      "passed": false
+    }
+  },
+  "all_checks": [
+    {
+      "code": "EXPLOSIVE_LEADER_MIN_ACTIVE_DAYS",
+      "passed": true,
+      "detail": "active_days=5 (min=3)"
+    },
+    {
+      "code": "EXPLOSIVE_LEADER_AVG_1D_LOWER",
+      "passed": false,
+      "detail": "avg_1d_lower=-1.3484%"
+    },
+    {
+      "code": "EXPLOSIVE_LEADER_POSITIVE_1D_LOWER",
+      "passed": false,
+      "detail": "positive_1d_lower=42.00%"
+    },
+    {
+      "code": "EXPLOSIVE_LEADER_AVOID_DOWN_1D_LOWER",
+      "passed": false,
+      "detail": "avoid_down_1d_lower=42.00%"
+    },
+    {
+      "code": "EXPLOSIVE_LEADER_PRECISION_HIT10_LOWER",
+      "passed": true,
+      "detail": "precision_hit10_lower=0.00%"
+    },
+    {
+      "code": "CORE_TREND_MIN_ACTIVE_DAYS",
+      "passed": true,
+      "detail": "active_days=4 (min=3)"
+    },
+    {
+      "code": "CORE_TREND_AVG_3D_LOWER",
+      "passed": false,
+      "detail": "avg_3d_lower=-11.7411%"
+    },
+    {
+      "code": "CORE_TREND_POSITIVE_3D_LOWER",
+      "passed": false,
+      "detail": "positive_3d_lower=0.00%"
+    },
+    {
+      "code": "CORE_TREND_AVOID_DOWN_3D_LOWER",
+      "passed": false,
+      "detail": "avoid_down_3d_lower=0.00%"
+    },
+    {
+      "code": "CORE_TREND_PRECISION_HIT10_LOWER",
+      "passed": true,
+      "detail": "precision_hit10_lower=0.00%"
+    }
+  ]
+}

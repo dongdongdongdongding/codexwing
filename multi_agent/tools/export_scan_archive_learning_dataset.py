@@ -247,17 +247,44 @@ def main() -> None:
     ]
     if not df.empty:
         available_return_cols = [col for col in return_cols if col in df.columns]
+        # Only assign labels when outcome is RESOLVED — PENDING/EXPIRED rows get NaN
+        # to prevent false-negative label bias (fillna(0) on missing returns = fabricated loss)
+        is_resolved = (
+            df["outcome_status"].fillna("").str.upper().eq("RESOLVED")
+            if "outcome_status" in df.columns
+            else pd.Series(True, index=df.index)
+        )
         if available_return_cols:
             numeric = df[available_return_cols].apply(pd.to_numeric, errors="coerce")
-            df["max_return_observed_pct"] = numeric.max(axis=1, skipna=True)
-            df["label_win_close"] = numeric.get("return_close_pct", pd.Series(index=df.index)).fillna(0).gt(0).astype(int)
-            df["label_win_1d"] = numeric.get("return_1d_pct", pd.Series(index=df.index)).fillna(0).gt(0).astype(int)
-            df["label_win_3d"] = numeric.get("return_3d_pct", pd.Series(index=df.index)).fillna(0).gt(0).astype(int)
-            df["label_hit_5pct"] = df["max_return_observed_pct"].fillna(0).ge(5).astype(int)
-            df["label_hit_10pct"] = df["max_return_observed_pct"].fillna(0).ge(10).astype(int)
-            df["label_hit_20pct"] = df["max_return_observed_pct"].fillna(0).ge(20).astype(int)
-            df["label_hit_50pct"] = df["max_return_observed_pct"].fillna(0).ge(50).astype(int)
-            df["label_hit_100pct"] = df["max_return_observed_pct"].fillna(0).ge(100).astype(int)
+            df["max_return_observed_pct"] = numeric.max(axis=1, skipna=True).where(is_resolved)
+
+            def _label(series: pd.Series, condition) -> pd.Series:
+                """Return 1/0 only for RESOLVED rows; NaN for others."""
+                result = condition.astype("Int8")  # nullable int
+                return result.where(is_resolved)
+
+            df["label_win_close"] = _label(numeric.get("return_close_pct", pd.Series(index=df.index)), numeric.get("return_close_pct", pd.Series(index=df.index)).gt(0))
+            df["label_win_1d"] = _label(numeric.get("return_1d_pct", pd.Series(index=df.index)), numeric.get("return_1d_pct", pd.Series(index=df.index)).gt(0))
+            df["label_win_3d"] = _label(numeric.get("return_3d_pct", pd.Series(index=df.index)), numeric.get("return_3d_pct", pd.Series(index=df.index)).gt(0))
+            df["label_hit_5pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(5))
+            df["label_hit_10pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(10))
+            df["label_hit_20pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(20))
+            df["label_hit_50pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(50))
+            df["label_hit_100pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(100))
+
+    # Derive marcap_band from stored marcap column if present
+    if not df.empty:
+        if "marcap_band" not in df.columns:
+            if "marcap" in df.columns:
+                mc = pd.to_numeric(df["marcap"], errors="coerce")
+                df["marcap_band"] = pd.cut(
+                    mc,
+                    bins=[0, 300e9, 1e12, 5e12, 20e12, float("inf")],
+                    labels=[0, 1, 2, 3, 4],
+                    right=False,
+                ).cat.add_categories([2]).fillna(2).astype(int)
+            else:
+                df["marcap_band"] = 2  # unknown — mid band default
 
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

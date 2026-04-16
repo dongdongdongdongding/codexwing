@@ -37,6 +37,8 @@ FEATURES_V5 = [
     'Consec_Up', 'Consec_Down', 'Gap_Pct', 'Vol_Spike',
     'RSI_x_Mom', 'Vol_x_ADX', 'MACD_x_OBV', 'VIX_x_RSI',
     'VIX_Level', 'VIX_Change', 'Market_Mom_20', 'Market_Vol',
+    # KR macro features (replaces US-centric SPY/VIX for KR models)
+    'KR_Market_Mom_20', 'KR_Market_Vol', 'KRW_Change_5d',
     'Earnings_Proximity', 'Surprise_Pct'
 ]
 
@@ -44,6 +46,16 @@ def _fetch_cross_asset_data():
     cross = {}
     symbols = {'VIX': '^VIX', 'DXY': 'DX-Y.NYB', 'SPY': 'SPY'}
     for name, sym in symbols.items():
+        try:
+            df = yf.download(sym, period="5y", progress=False)
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+            if not df.empty:
+                cross[name] = df['Close']
+        except: pass
+    # KR macro: KOSPI index and KRW/USD FX for KR model training
+    kr_symbols = {'KOSPI_IDX': '^KS11', 'KRWUSD': 'KRW=X'}
+    for name, sym in kr_symbols.items():
         try:
             df = yf.download(sym, period="5y", progress=False)
             if isinstance(df.columns, pd.MultiIndex):
@@ -126,12 +138,25 @@ def _build_features_v5(df, cross_asset):
         df['Market_Vol'] = spy.pct_change().rolling(20).std()
     else:
         df['Market_Mom_20'] = 0; df['Market_Vol'] = 0.01
-        
+
     df['Spy_Rel_Strength'] = df['Mom_20'] - df['Market_Mom_20']
-    
+
+    # KR macro: KOSPI index momentum and KRW/USD rate change
+    if 'KOSPI_IDX' in cross_asset:
+        kospi = cross_asset['KOSPI_IDX'].reindex(df.index, method='ffill')
+        df['KR_Market_Mom_20'] = kospi.pct_change(20).fillna(0)
+        df['KR_Market_Vol'] = kospi.pct_change().rolling(20).std().fillna(0.01)
+    else:
+        df['KR_Market_Mom_20'] = 0; df['KR_Market_Vol'] = 0.01
+    if 'KRWUSD' in cross_asset:
+        krw = cross_asset['KRWUSD'].reindex(df.index, method='ffill')
+        df['KRW_Change_5d'] = krw.pct_change(5).fillna(0)
+    else:
+        df['KRW_Change_5d'] = 0
+
     df['Earnings_Proximity'] = 0.5
     df['Surprise_Pct'] = 0.0
-    
+
     return df
 
 def create_t1_clean_label(df, target_pct, maf_pct, max_hold_days):

@@ -89,6 +89,12 @@ for MARKET in "${MARKETS[@]}"; do
   run_optional "report_prediction_validation:${MARKET}" \
     python3 multi_agent/tools/report_prediction_validation.py --limit-runs "${LIMIT_RUNS}" --market "${MARKET}"
 
+  if [[ "${MARKET}" == "KOSPI" || "${MARKET}" == "KOSDAQ" ]]; then
+    echo "[STEP] report_kr_walkforward_release_gate market=${MARKET}"
+    run_optional "report_kr_walkforward_release_gate:${MARKET}" \
+      python3 multi_agent/tools/report_kr_walkforward_release_gate.py --market "${MARKET}"
+  fi
+
   if [[ "${AG_STALE_FALLBACK_ALERT_ENABLE:-1}" == "1" ]]; then
     ALERT_ARGS=(
       --market "${MARKET}"

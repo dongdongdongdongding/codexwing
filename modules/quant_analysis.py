@@ -1599,6 +1599,49 @@ class QuantStrategy:
                     _is_overheat = int(_vf >= 2.5 or _trend10 >= 18 or _is_peak)
                     _is_momentum = int(_trend10 > 0 and _is_bottom == 0)
 
+                    # RSI divergence: price higher high but RSI lower high over last 14 bars
+                    _is_rsidiv = 0
+                    _is_obvdiv = 0
+                    try:
+                        if len(_closes) >= 14:
+                            _rsi_col = None
+                            for _c in ("RSI", "RSI_14", "Rsi"):
+                                if _c in self.df.columns:
+                                    _rsi_col = self.df[_c].astype(float)
+                                    break
+                            if _rsi_col is None and len(_closes) >= 14:
+                                _delta = _closes.diff()
+                                _gain = _delta.clip(lower=0).rolling(14).mean()
+                                _loss = (-_delta.clip(upper=0)).rolling(14).mean()
+                                _rs = _gain / _loss.replace(0, np.nan)
+                                _rsi_col = 100 - (100 / (1 + _rs))
+                            if _rsi_col is not None and len(_rsi_col.dropna()) >= 10:
+                                _w = 10
+                                _price_now = float(_closes.iloc[-1])
+                                _price_prev = float(_closes.iloc[-1 - _w])
+                                _rsi_now = float(_rsi_col.iloc[-1])
+                                _rsi_prev = float(_rsi_col.iloc[-1 - _w])
+                                if pd.notna(_rsi_now) and pd.notna(_rsi_prev):
+                                    _is_rsidiv = int(_price_now > _price_prev and _rsi_now < _rsi_prev)
+                    except Exception:
+                        pass
+                    try:
+                        if "OBV" in self.df.columns and len(self.df) >= 14:
+                            _obv = self.df["OBV"].astype(float)
+                        else:
+                            _sign = np.sign(_closes.diff().fillna(0))
+                            _obv = (_sign * _vols).cumsum()
+                        if len(_obv.dropna()) >= 10:
+                            _w = 10
+                            _price_now = float(_closes.iloc[-1])
+                            _price_prev = float(_closes.iloc[-1 - _w])
+                            _obv_now = float(_obv.iloc[-1])
+                            _obv_prev = float(_obv.iloc[-1 - _w])
+                            if pd.notna(_obv_now) and pd.notna(_obv_prev):
+                                _is_obvdiv = int(_price_now > _price_prev and _obv_now < _obv_prev)
+                    except Exception:
+                        pass
+
                     _surge = {}
                     try:
                         _surge = self.detect_pre_surge_signals() or {}
@@ -1626,6 +1669,48 @@ class QuantStrategy:
                     _is_sub7 = int(_entry_reference > 0 and _entry_reference <= 7.0)
                     _price_7_15 = int(_entry_reference > 7.0 and _entry_reference <= 15.0)
                     _price_gt15 = int(_entry_reference > 15.0)
+
+                    # Market cap band (KR only): use shares_outstanding * close price
+                    # Bands: 0=<300B, 1=300B~1T, 2=1T~5T, 3=5T~20T, 4=>=20T (KRW)
+                    _marcap_band = 2  # default mid
+                    try:
+                        if is_kr and "Shares" in self.df.columns and pd.notna(self.df["Shares"].iloc[-1]):
+                            _shares = float(self.df["Shares"].iloc[-1])
+                            _marcap_krw = _shares * _entry_reference
+                            if _marcap_krw < 300_000_000_000:
+                                _marcap_band = 0
+                            elif _marcap_krw < 1_000_000_000_000:
+                                _marcap_band = 1
+                            elif _marcap_krw < 5_000_000_000_000:
+                                _marcap_band = 2
+                            elif _marcap_krw < 20_000_000_000_000:
+                                _marcap_band = 3
+                            else:
+                                _marcap_band = 4
+                        elif is_kr:
+                            # fallback: try pykrx if available
+                            try:
+                                from pykrx import stock as _pykrx_stock
+                                _bare = str(self.ticker).replace(".KS", "").replace(".KQ", "")
+                                _today_str = pd.Timestamp.today().strftime("%Y%m%d")
+                                _mc = _pykrx_stock.get_market_cap_by_ticker(_today_str)
+                                if _bare in _mc.index:
+                                    _mc_val = float(_mc.loc[_bare, "시가총액"])
+                                    if _mc_val < 300_000_000_000:
+                                        _marcap_band = 0
+                                    elif _mc_val < 1_000_000_000_000:
+                                        _marcap_band = 1
+                                    elif _mc_val < 5_000_000_000_000:
+                                        _marcap_band = 2
+                                    elif _mc_val < 20_000_000_000_000:
+                                        _marcap_band = 3
+                                    else:
+                                        _marcap_band = 4
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+
                     _is_kospi = int(str(self.ticker).endswith(".KS"))
                     _is_kosdaq = int(str(self.ticker).endswith(".KQ") or (str(self.ticker).isdigit() and not _is_kospi))
                     _strategy_family = str(getattr(self, "strategy_family", "") or ("KR_CORE" if is_kr else "US_MAIN")).upper()
@@ -1635,10 +1720,10 @@ class QuantStrategy:
 
                     _p25_row = {
                         "alpha_score": round(_alpha_raw, 1),
-                        "tech_score": round(_alpha_raw, 1),
+                        # tech_score dropped: duplicate of alpha_score — removed from FEATURE_COLS
                         "ml_prob": round(_base_prob, 1),
-                        "whale_score": round(_whale_score, 1),
-                        "decision_score": _decision_proxy,
+                        # whale_score dropped: 0% fill in RESOLVED rows — removed from FEATURE_COLS
+                        # decision_score dropped: circular (alpha+ml→decision→ml input) — removed from FEATURE_COLS
                         "vol_float": _vf,
                         "vol_confirmed": int(_vf >= 1.2),
                         "vol_gt25x": int(_vf > 2.5),
@@ -1653,8 +1738,8 @@ class QuantStrategy:
                         "is_downtrend": _is_downtrend,
                         "is_sideways": _is_sideways,
                         "is_overheat": _is_overheat,
-                        "is_rsidiv": 0,
-                        "is_obvdiv": 0,
+                        "is_rsidiv": _is_rsidiv,
+                        "is_obvdiv": _is_obvdiv,
                         "is_momentum": _is_momentum,
                         "is_contract": _is_contract,
                         "is_breakout": _is_breakout,
@@ -1677,6 +1762,7 @@ class QuantStrategy:
                         "peak_x_highvol": int(_is_peak and _vf > 2.5),
                         "overheat_x_uptrend": int(_is_overheat and _is_uptrend),
                         "sub7_x_breakout": int(_is_sub7 and _is_breakout),
+                        "marcap_band": _marcap_band,
                     }
                     _p25_df = pd.DataFrame([_p25_row])
                     _p25_X = _p25_df.reindex(columns=p25_feats, fill_value=0).fillna(0)

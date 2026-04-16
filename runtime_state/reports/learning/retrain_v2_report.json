@@ -1,139 +1,139 @@
 {
-  "generated_at": "2026-04-12T09:00:24.868636",
-  "rows_loaded": 4254,
+  "generated_at": "2026-04-17T00:00:48.549634",
+  "rows_loaded": 5496,
   "backend": "lgb",
   "segments": [
     {
       "name": "phase25_global",
       "status": "trained",
-      "rows": 1240,
-      "positives": 259,
-      "negative": 981,
+      "rows": 1914,
+      "positives": 528,
+      "negative": 1386,
       "return_col": "return_3d_pct",
       "positive_threshold": 5.0,
-      "auc": 0.5021949078138718,
-      "accuracy": 0.532258064516129,
-      "positive_precision": 0.35074626865671643,
-      "positive_recall": 0.35074626865671643,
+      "auc": 0.5765524223788809,
+      "accuracy": 0.5078260869565218,
+      "positive_precision": 0.4439140811455847,
+      "positive_recall": 0.788135593220339,
       "recommended_probability_threshold": 0.6,
       "threshold_sweep": [
         {
           "threshold": 0.25,
-          "picks": 306,
-          "avg_return": 2.1146907777777777,
-          "win_rate": 58.496732026143796,
-          "hit_rate": 36.60130718954248
+          "picks": 563,
+          "avg_return": 6.277954772646536,
+          "win_rate": 75.13321492007104,
+          "hit_rate": 41.3854351687389
         },
         {
           "threshold": 0.3,
-          "picks": 290,
-          "avg_return": 2.0616594068965517,
-          "win_rate": 57.931034482758626,
-          "hit_rate": 35.51724137931034
+          "picks": 547,
+          "avg_return": 6.2395543948811705,
+          "win_rate": 75.3199268738574,
+          "hit_rate": 41.681901279707496
         },
         {
           "threshold": 0.35,
-          "picks": 267,
-          "avg_return": 2.4074998539325847,
-          "win_rate": 59.176029962546814,
-          "hit_rate": 37.07865168539326
+          "picks": 533,
+          "avg_return": 6.348600045028142,
+          "win_rate": 75.60975609756098,
+          "hit_rate": 42.40150093808631
         },
         {
           "threshold": 0.4,
-          "picks": 236,
-          "avg_return": 2.3326584322033894,
-          "win_rate": 57.20338983050848,
-          "hit_rate": 36.016949152542374
+          "picks": 497,
+          "avg_return": 6.365033770623743,
+          "win_rate": 75.0503018108652,
+          "hit_rate": 43.66197183098591
         },
         {
           "threshold": 0.45,
-          "picks": 172,
-          "avg_return": 2.531670476744186,
-          "win_rate": 62.2093023255814,
-          "hit_rate": 37.2093023255814
+          "picks": 452,
+          "avg_return": 6.704933079646017,
+          "win_rate": 75.0,
+          "hit_rate": 44.469026548672566
         },
         {
           "threshold": 0.5,
-          "picks": 134,
-          "avg_return": 2.4611323955223883,
-          "win_rate": 60.447761194029844,
-          "hit_rate": 35.07462686567165
+          "picks": 419,
+          "avg_return": 6.748620844868734,
+          "win_rate": 75.89498806682577,
+          "hit_rate": 44.39140811455847
         },
         {
           "threshold": 0.6,
-          "picks": 99,
-          "avg_return": 3.2164572121212127,
-          "win_rate": 60.60606060606061,
-          "hit_rate": 35.35353535353536
+          "picks": 320,
+          "avg_return": 7.18323595625,
+          "win_rate": 77.8125,
+          "hit_rate": 46.5625
         }
       ],
       "best_threshold_row": {
         "threshold": 0.6,
-        "picks": 99,
-        "avg_return": 3.2164572121212127,
-        "win_rate": 60.60606060606061,
-        "hit_rate": 35.35353535353536
+        "picks": 320,
+        "avg_return": 7.18323595625,
+        "win_rate": 77.8125,
+        "hit_rate": 46.5625
       },
       "feature_importance_top15": [
         {
-          "feature": "decision_score",
-          "importance": 1961.0
-        },
-        {
-          "feature": "whale_score",
-          "importance": 636.0
-        },
-        {
-          "feature": "vol_float",
-          "importance": 619.0
-        },
-        {
           "feature": "ml_prob",
-          "importance": 565.0
+          "importance": 1855.0
         },
         {
           "feature": "alpha_score",
-          "importance": 515.0
+          "importance": 1702.0
         },
         {
-          "feature": "tech_score",
-          "importance": 239.0
+          "feature": "vol_float",
+          "importance": 958.0
         },
         {
           "feature": "is_kosdaq",
-          "importance": 201.0
-        },
-        {
-          "feature": "is_amex",
-          "importance": 163.0
+          "importance": 237.0
         },
         {
           "feature": "is_kospi",
-          "importance": 153.0
-        },
-        {
-          "feature": "scan_intraday",
-          "importance": 146.0
-        },
-        {
-          "feature": "fam_amex_moonshot",
-          "importance": 93.0
+          "importance": 209.0
         },
         {
           "feature": "is_uptrend",
-          "importance": 76.0
+          "importance": 183.0
         },
         {
-          "feature": "vol_confirmed",
-          "importance": 57.0
+          "feature": "scan_intraday",
+          "importance": 178.0
+        },
+        {
+          "feature": "is_downtrend",
+          "importance": 140.0
+        },
+        {
+          "feature": "is_amex",
+          "importance": 101.0
+        },
+        {
+          "feature": "tier_t2",
+          "importance": 80.0
         },
         {
           "feature": "vol_08_18x",
-          "importance": 46.0
+          "importance": 54.0
+        },
+        {
+          "feature": "vol_confirmed",
+          "importance": 41.0
+        },
+        {
+          "feature": "tier_t1",
+          "importance": 41.0
+        },
+        {
+          "feature": "fam_kr_core",
+          "importance": 41.0
         },
         {
           "feature": "vol_lt05x",
-          "importance": 23.0
+          "importance": 28.0
         }
       ],
       "model_path": "models/phase25_model.pkl",
@@ -142,106 +142,98 @@
     {
       "name": "phase25_kr_swing",
       "status": "trained",
-      "rows": 263,
-      "positives": 78,
-      "negative": 185,
+      "rows": 402,
+      "positives": 132,
+      "negative": 270,
       "return_col": "return_3d_pct",
       "positive_threshold": 5.0,
-      "auc": 0.60487012987013,
-      "accuracy": 0.569620253164557,
-      "positive_precision": 0.5151515151515151,
-      "positive_recall": 0.4857142857142857,
-      "recommended_probability_threshold": 0.6,
+      "auc": 0.5972463768115942,
+      "accuracy": 0.5619834710743802,
+      "positive_precision": 0.45454545454545453,
+      "positive_recall": 0.7608695652173914,
+      "recommended_probability_threshold": 0.5,
       "threshold_sweep": [
         {
           "threshold": 0.25,
-          "picks": 58,
-          "avg_return": 5.809542206896551,
-          "win_rate": 82.75862068965517,
-          "hit_rate": 48.275862068965516
+          "picks": 108,
+          "avg_return": 4.011947518518518,
+          "win_rate": 71.29629629629629,
+          "hit_rate": 38.88888888888889
         },
         {
           "threshold": 0.3,
-          "picks": 53,
-          "avg_return": 6.067551339622641,
-          "win_rate": 83.01886792452831,
-          "hit_rate": 49.056603773584904
+          "picks": 93,
+          "avg_return": 4.663940688172043,
+          "win_rate": 75.26881720430107,
+          "hit_rate": 44.086021505376344
         },
         {
           "threshold": 0.35,
-          "picks": 47,
-          "avg_return": 5.497234191489361,
-          "win_rate": 85.1063829787234,
-          "hit_rate": 48.93617021276596
+          "picks": 91,
+          "avg_return": 4.844336934065934,
+          "win_rate": 76.92307692307693,
+          "hit_rate": 45.05494505494506
         },
         {
           "threshold": 0.4,
-          "picks": 47,
-          "avg_return": 5.497234191489361,
-          "win_rate": 85.1063829787234,
-          "hit_rate": 48.93617021276596
+          "picks": 86,
+          "avg_return": 4.699084034883721,
+          "win_rate": 76.74418604651163,
+          "hit_rate": 44.18604651162791
         },
         {
           "threshold": 0.45,
-          "picks": 45,
-          "avg_return": 5.645042977777779,
-          "win_rate": 84.44444444444444,
-          "hit_rate": 51.11111111111111
+          "picks": 78,
+          "avg_return": 4.980831461538462,
+          "win_rate": 78.2051282051282,
+          "hit_rate": 44.871794871794876
         },
         {
           "threshold": 0.5,
-          "picks": 33,
-          "avg_return": 6.586093090909091,
-          "win_rate": 87.87878787878788,
-          "hit_rate": 51.515151515151516
+          "picks": 77,
+          "avg_return": 5.013337376623377,
+          "win_rate": 77.92207792207793,
+          "hit_rate": 45.45454545454545
         },
         {
           "threshold": 0.6,
-          "picks": 21,
-          "avg_return": 8.034694190476191,
-          "win_rate": 90.47619047619048,
-          "hit_rate": 57.14285714285714
+          "picks": 68,
+          "avg_return": 4.9004343529411765,
+          "win_rate": 76.47058823529412,
+          "hit_rate": 45.588235294117645
         }
       ],
       "best_threshold_row": {
-        "threshold": 0.6,
-        "picks": 21,
-        "avg_return": 8.034694190476191,
-        "win_rate": 90.47619047619048,
-        "hit_rate": 57.14285714285714
+        "threshold": 0.5,
+        "picks": 77,
+        "avg_return": 5.013337376623377,
+        "win_rate": 77.92207792207793,
+        "hit_rate": 45.45454545454545
       },
       "feature_importance_top15": [
         {
-          "feature": "decision_score",
-          "importance": 427.0
-        },
-        {
-          "feature": "is_kospi",
-          "importance": 422.0
+          "feature": "ml_prob",
+          "importance": 933.0
         },
         {
           "feature": "alpha_score",
-          "importance": 146.0
+          "importance": 928.0
+        },
+        {
+          "feature": "is_kospi",
+          "importance": 374.0
+        },
+        {
+          "feature": "is_downtrend",
+          "importance": 177.0
         },
         {
           "feature": "is_uptrend",
-          "importance": 128.0
-        },
-        {
-          "feature": "ml_prob",
-          "importance": 119.0
+          "importance": 107.0
         },
         {
           "feature": "is_kosdaq",
-          "importance": 10.0
-        },
-        {
-          "feature": "tech_score",
-          "importance": 0.0
-        },
-        {
-          "feature": "whale_score",
-          "importance": 0.0
+          "importance": 78.0
         },
         {
           "feature": "vol_float",
@@ -270,6 +262,14 @@
         {
           "feature": "is_rising",
           "importance": 0.0
+        },
+        {
+          "feature": "is_peak",
+          "importance": 0.0
+        },
+        {
+          "feature": "is_resting",
+          "importance": 0.0
         }
       ],
       "model_path": "models/phase25_kr_swing.pkl",
@@ -278,133 +278,133 @@
     {
       "name": "phase25_kr_intraday",
       "status": "trained",
-      "rows": 1144,
-      "positives": 377,
-      "negative": 767,
+      "rows": 1616,
+      "positives": 660,
+      "negative": 956,
       "return_col": "return_1d_pct",
       "positive_threshold": 0.0,
-      "auc": 0.6005461682881038,
-      "accuracy": 0.625,
-      "positive_precision": 0.63,
-      "positive_recall": 0.4064516129032258,
-      "recommended_probability_threshold": 0.6,
+      "auc": 0.4943247809101468,
+      "accuracy": 0.5525773195876289,
+      "positive_precision": 0.5866336633663366,
+      "positive_recall": 0.8257839721254355,
+      "recommended_probability_threshold": 0.25,
       "threshold_sweep": [
         {
           "threshold": 0.25,
-          "picks": 111,
-          "avg_return": 2.0049968828828826,
-          "win_rate": 63.06306306306306,
-          "hit_rate": 63.06306306306306
+          "picks": 479,
+          "avg_return": 2.2297391043841337,
+          "win_rate": 54.90605427974948,
+          "hit_rate": 59.49895615866389
         },
         {
           "threshold": 0.3,
-          "picks": 106,
-          "avg_return": 2.269924452830188,
-          "win_rate": 65.09433962264151,
-          "hit_rate": 65.09433962264151
+          "picks": 471,
+          "avg_return": 2.1196355201698514,
+          "win_rate": 54.77707006369427,
+          "hit_rate": 59.023354564755834
         },
         {
           "threshold": 0.35,
-          "picks": 104,
-          "avg_return": 2.247412403846154,
-          "win_rate": 64.42307692307693,
-          "hit_rate": 64.42307692307693
+          "picks": 455,
+          "avg_return": 2.0217115780219777,
+          "win_rate": 55.16483516483517,
+          "hit_rate": 59.34065934065934
         },
         {
           "threshold": 0.4,
-          "picks": 104,
-          "avg_return": 2.247412403846154,
-          "win_rate": 64.42307692307693,
-          "hit_rate": 64.42307692307693
+          "picks": 455,
+          "avg_return": 2.0217115780219777,
+          "win_rate": 55.16483516483517,
+          "hit_rate": 59.34065934065934
         },
         {
           "threshold": 0.45,
-          "picks": 104,
-          "avg_return": 2.247412403846154,
-          "win_rate": 64.42307692307693,
-          "hit_rate": 64.42307692307693
+          "picks": 448,
+          "avg_return": 2.0597489486607143,
+          "win_rate": 55.58035714285714,
+          "hit_rate": 59.59821428571429
         },
         {
           "threshold": 0.5,
-          "picks": 100,
-          "avg_return": 2.09333876,
-          "win_rate": 63.0,
-          "hit_rate": 63.0
+          "picks": 404,
+          "avg_return": 1.9039680891089108,
+          "win_rate": 54.70297029702971,
+          "hit_rate": 58.66336633663366
         },
         {
           "threshold": 0.6,
-          "picks": 89,
-          "avg_return": 2.291597235955056,
-          "win_rate": 62.92134831460674,
-          "hit_rate": 62.92134831460674
+          "picks": 217,
+          "avg_return": 1.8796740230414746,
+          "win_rate": 53.45622119815668,
+          "hit_rate": 57.6036866359447
         }
       ],
       "best_threshold_row": {
-        "threshold": 0.6,
-        "picks": 89,
-        "avg_return": 2.291597235955056,
-        "win_rate": 62.92134831460674,
-        "hit_rate": 62.92134831460674
+        "threshold": 0.25,
+        "picks": 479,
+        "avg_return": 2.2297391043841337,
+        "win_rate": 54.90605427974948,
+        "hit_rate": 59.49895615866389
       },
       "feature_importance_top15": [
         {
-          "feature": "decision_score",
-          "importance": 1760.0
-        },
-        {
           "feature": "ml_prob",
-          "importance": 1032.0
+          "importance": 2427.0
         },
         {
           "feature": "vol_float",
-          "importance": 583.0
-        },
-        {
-          "feature": "whale_score",
-          "importance": 551.0
-        },
-        {
-          "feature": "is_kosdaq",
-          "importance": 301.0
-        },
-        {
-          "feature": "tech_score",
-          "importance": 285.0
+          "importance": 946.0
         },
         {
           "feature": "alpha_score",
-          "importance": 231.0
+          "importance": 844.0
         },
         {
-          "feature": "is_downtrend",
-          "importance": 95.0
+          "feature": "is_kosdaq",
+          "importance": 406.0
         },
         {
           "feature": "is_uptrend",
-          "importance": 74.0
+          "importance": 157.0
         },
         {
-          "feature": "vol_lt05x",
-          "importance": 53.0
+          "feature": "fam_kr_core",
+          "importance": 119.0
         },
         {
           "feature": "vol_08_18x",
-          "importance": 42.0
-        },
-        {
-          "feature": "vol_confirmed",
-          "importance": 17.0
-        },
-        {
-          "feature": "tier_t1",
-          "importance": 5.0
+          "importance": 85.0
         },
         {
           "feature": "tier_t2",
-          "importance": 2.0
+          "importance": 63.0
+        },
+        {
+          "feature": "vol_lt05x",
+          "importance": 61.0
+        },
+        {
+          "feature": "is_downtrend",
+          "importance": 57.0
+        },
+        {
+          "feature": "vol_confirmed",
+          "importance": 50.0
+        },
+        {
+          "feature": "tier_t1",
+          "importance": 17.0
         },
         {
           "feature": "vol_gt25x",
+          "importance": 0.0
+        },
+        {
+          "feature": "vol_18_25x",
+          "importance": 0.0
+        },
+        {
+          "feature": "is_rising",
           "importance": 0.0
         }
       ],

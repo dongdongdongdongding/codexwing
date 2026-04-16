@@ -216,15 +216,29 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df["overheat_x_uptrend"] = df["is_overheat"] * df["is_uptrend"]
     df["sub7_x_breakout"] = df["is_sub7"] * df["is_breakout"]
 
+    # Market cap band: derive from marcap (KRW) stored in archive, or default to mid (2)
+    if "marcap_band" in df.columns:
+        df["marcap_band"] = pd.to_numeric(df["marcap_band"], errors="coerce").fillna(2).astype(int)
+    elif "marcap" in df.columns:
+        mc = pd.to_numeric(df["marcap"], errors="coerce")
+        df["marcap_band"] = pd.cut(
+            mc,
+            bins=[0, 300e9, 1e12, 5e12, 20e12, float("inf")],
+            labels=[0, 1, 2, 3, 4],
+            right=False,
+        ).cat.add_categories([2]).fillna(2).astype(int)
+    else:
+        df["marcap_band"] = 2
+
     return df
 
 
 FEATURE_COLS = [
     "alpha_score",
-    "tech_score",
+    # "tech_score" removed: exact duplicate of alpha_score at inference time
     "ml_prob",
-    "whale_score",
-    "decision_score",
+    # "whale_score" removed: 0% fill rate in RESOLVED rows — always NaN→0 noise
+    # "decision_score" removed: circular reference (alpha*0.58 + ml_prob*0.32 → stored as feature for same model)
     "vol_float",
     "vol_confirmed",
     "vol_gt25x",
@@ -263,6 +277,7 @@ FEATURE_COLS = [
     "peak_x_highvol",
     "overheat_x_uptrend",
     "sub7_x_breakout",
+    "marcap_band",
 ]
 
 
@@ -278,6 +293,13 @@ class SegmentSpec:
     description: str
 
 
+def _is_resolved(df: pd.DataFrame) -> pd.Series:
+    """Only train on RESOLVED outcomes — PENDING rows have no real labels yet."""
+    if "outcome_status" in df.columns:
+        return df["outcome_status"].fillna("").str.upper().eq("RESOLVED")
+    return pd.Series(True, index=df.index)
+
+
 SEGMENTS = [
     SegmentSpec(
         name="phase25_global",
@@ -286,7 +308,7 @@ SEGMENTS = [
         positive_threshold=5.0,
         min_rows=300,
         min_positive=60,
-        filter_fn=lambda df: df["return_3d_pct"].notna(),
+        filter_fn=lambda df: _is_resolved(df) & df["return_3d_pct"].notna(),
         description="Global compatibility model using realized 3D >= +5%.",
     ),
     SegmentSpec(
@@ -296,7 +318,7 @@ SEGMENTS = [
         positive_threshold=5.0,
         min_rows=120,
         min_positive=25,
-        filter_fn=lambda df: df["market_subtype"].isin(["KOSPI", "KOSDAQ"]) & df["scan_mode"].eq("SWING") & df["return_3d_pct"].notna(),
+        filter_fn=lambda df: _is_resolved(df) & df["market_subtype"].isin(["KOSPI", "KOSDAQ"]) & df["scan_mode"].eq("SWING") & df["return_3d_pct"].notna(),
         description="KR swing model using realized 3D >= +5%.",
     ),
     SegmentSpec(
@@ -306,7 +328,7 @@ SEGMENTS = [
         positive_threshold=0.0,
         min_rows=150,
         min_positive=40,
-        filter_fn=lambda df: df["market_subtype"].isin(["KOSPI", "KOSDAQ"]) & df["scan_mode"].eq("INTRADAY") & df["return_1d_pct"].notna(),
+        filter_fn=lambda df: _is_resolved(df) & df["market_subtype"].isin(["KOSPI", "KOSDAQ"]) & df["scan_mode"].eq("INTRADAY") & df["return_1d_pct"].notna(),
         description="KR intraday model using next-day positive return.",
     ),
 ]
