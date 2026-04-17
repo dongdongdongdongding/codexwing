@@ -21,7 +21,10 @@ from modules.macro_scheduler import get_macro_context, macro_weather_text
 from modules.scanner_bridge import run_legacy_agent_bridge
 from modules.scanner_runtime import SharedBackoffState, run_parallel_scan, scan_symbol_with_retry
 from modules.scanner_services import evaluate_uploaded_candidate, normalize_uploaded_ticker
-from modules.scan_policy import compute_market_gate as compute_market_gate_live
+from modules.scan_policy import (
+    compute_market_gate as compute_market_gate_live,
+    compute_rank_adjustment as shared_compute_rank_adjustment,
+)
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -432,85 +435,19 @@ def compute_market_gate(market=None):
 
 
 def compute_rank_adjustment(real_trend, position, strategy_tag, tier, whale_score,
-                           vol_ratio, macro_ctx=None, consec_days=0):
-    """
-    Realized-outcome calibrated rank adjustment.
-    Recent labeled scans favored peak+overheat+expansion setups and punished
-    rising-without-expansion / RSI-divergence patterns.
-    """
-    rank_adjust = 0
-
-    is_peak    = bool(position and "Peak"    in position)
-    is_rising  = bool(position and "Rising"  in position)
-    is_resting = bool(position and "Resting" in position)
-    is_overheat = bool(strategy_tag and any(t in strategy_tag for t in ["과열", "Overheat", "Exhaustion"]))
-    is_rsidiv = bool(strategy_tag and "RSI_DIV" in strategy_tag)
-    is_obvdiv = bool(strategy_tag and "OBV_DIV" in strategy_tag)
-
-    # 1. Trend base
-    if real_trend == "UP":   rank_adjust += 5
-    elif real_trend == "DOWN": rank_adjust -= 10
-
-    # 2. Position — reduce blind chase premium, keep room for genuine breakouts
-    if is_rising:  rank_adjust += 2
-    if is_resting: rank_adjust += 1
-
-    # 3. Volume — expansion is good, but the old sweet-spot bonus was too generous.
-    if vol_ratio > 2.5:              rank_adjust += 8   # Strong breakout volume: was -6, now +8
-    elif 1.8 < vol_ratio <= 2.5:     rank_adjust += 4   # Moderate high volume is also good
-    elif 0.8 <= vol_ratio <= 1.8:    rank_adjust += 2
-    elif vol_ratio < 0.5:            rank_adjust -= 4   # No interest
-
-    # 4. Whale / Smart Money
-    if whale_score >= 70:   rank_adjust += 6
-    elif whale_score >= 55: rank_adjust += 4
-    elif whale_score >= 40: rank_adjust += 1
-
-    # 5. Legacy F4 still matters, but recent realized scans do not justify a giant bonus.
-    if (real_trend == "UP" and is_rising
-            and 0.8 <= vol_ratio <= 1.8
-            and whale_score >= 55):
-        rank_adjust += 6
-
-    # Persistent strength (consec_days): sustained momentum confirmation
-    if consec_days >= 5:   rank_adjust += 10
-    elif consec_days >= 3: rank_adjust += 5
-    elif consec_days >= 2: rank_adjust += 2
-
-    # 6. Overheat now gets a larger bonus: recent scans still favor momentum expansion.
-    if is_overheat:
-        rank_adjust += 10
-
-    # 7. Peak + high volume = explosive breakout
-    if is_peak and vol_ratio >= 2.0:
-        rank_adjust += 7
-
-    if is_peak and is_overheat and vol_ratio >= 2.5:
-        rank_adjust += 8
-
-    # 8. Only penalise extreme parabolic exhaustion (very tight condition)
-    if is_peak and is_overheat and vol_ratio >= 3.5 and real_trend != "UP":
-        rank_adjust -= 15   # True exhaustion: not in uptrend AND extreme vol+overheat
-
-    if is_rising and not is_overheat and vol_ratio <= 1.8:
-        rank_adjust -= 6
-
-    if is_rsidiv:
-        rank_adjust -= 8
-    elif is_obvdiv and not is_overheat:
-        rank_adjust -= 4
-
-    # 9. Tier bonus
-    if tier and tier.startswith('⚡'):  rank_adjust += 7
-    elif tier and tier.startswith('🏆'): rank_adjust += 5
-    elif tier and '⭐' in tier:          rank_adjust += 3  # T2 is best performing tier
-
-    # 8. Macro Overlay
-    if macro_ctx:
-        penalty = macro_ctx.get('macro_penalty', 0)
-        rank_adjust -= min(penalty, 8)
-
-    return rank_adjust
+                           vol_ratio, volume_confirmed=None, macro_ctx=None, consec_days=0):
+    """Delegate to the shared Decision Score v2 policy implementation."""
+    return shared_compute_rank_adjustment(
+        real_trend=real_trend,
+        position=position,
+        strategy_tag=strategy_tag,
+        tier=tier,
+        whale_score=whale_score,
+        vol_ratio=vol_ratio,
+        volume_confirmed=volume_confirmed,
+        macro_ctx=macro_ctx,
+        consec_days=consec_days,
+    )
 
 # --- Main Area ---
 st.title("🤖 AI Quant Trading Pro")
@@ -1377,36 +1314,119 @@ with tab1:
             
             df_results = pd.DataFrame(results)
 
+            # ── v3 스코어 enrichment (Phase 19) ──────────────────────────
+            # Meta-Quality 모델이 있으면 clean_hit_prob / expected_mae로 보정
+            # 모델 없으면 기본값으로 안전하게 동작
+            try:
+                from modules.meta_quality_ranker import predict_meta_quality
+                from modules.regime_classifier import classify_regime
+                from modules.regime_router import compute_v3_score_regime_aware, get_prob5_threshold
+                _regime_result = classify_regime(market)
+                _regime = _regime_result.get("regime", "UNKNOWN")
+                _enriched = []
+                for _row in results:
+                    _alpha  = float(_row.get("Antigrav") or _row.get("alpha_score") or 50)
+                    _whale  = float(_row.get("Whale") or _row.get("whale_score") or 50)
+                    _prob5  = float(_row.get("_prob_5") or _row.get("ml_prob") or 50)
+                    _probcl = float(_row.get("_prob_clean") or _prob5)
+                    _vol_r  = float(_row.get("Vol Ratio") or _row.get("vol_ratio") or 1.0)
+                    _volcfm = bool(_row.get("Vol Confirmed") or _row.get("volume_confirmed"))
+                    _trend  = str(_row.get("Trend") or _row.get("trend") or "")
+                    _real_trend = "UP" if "UP" in _trend.upper() else ("DOWN" if "DOWN" in _trend.upper() else "SIDE")
+                    _atr    = float(_row.get("_atr_pct") or 0)
+                    _p2ma20 = float(_row.get("_price_to_ma20") or 1.0)
+                    _p2ma50 = float(_row.get("_price_to_ma50") or 1.0)
+                    _mq = predict_meta_quality(
+                        alpha_score=_alpha, vol_ratio=_vol_r,
+                        atr_pct=_atr, price_to_ma20=_p2ma20, price_to_ma50=_p2ma50,
+                    )
+                    _v3 = compute_v3_score_regime_aware(
+                        prob_5=_prob5, prob_clean=_probcl,
+                        alpha_score=_alpha, whale_score=_whale,
+                        real_trend=_real_trend, volume_confirmed=_volcfm, vol_ratio=_vol_r,
+                        clean_hit_prob=_mq["clean_hit_prob"],
+                        fast_hit_prob=_mq["fast_hit_prob"],
+                        expected_mae_pct=_mq["expected_mae_pct"],
+                        regime=_regime,
+                    )
+                    _enriched.append({**_row, "v3_score": _v3["v3_score"], "v3_detail": _v3})
+                df_results = pd.DataFrame(_enriched)
+            except Exception:
+                pass  # enrichment 실패 시 원본 df_results 유지
+
             st.divider()
             try:
-                # Phase 17 Hybrid Ranking
-                df_results = df_results.sort_values(by=['Decision Score', 'Antigrav'], ascending=[False, False])
-                
-                # 1. Top Setups vs Raw Candidates
+                # Phase 18/19/20 Threshold + Top-K Hybrid Ranking (Regime + Mode Aware)
+                # SWING: v3_score 우선 정렬 (5d 수익 기반 캘리브레이션)
+                # INTRADAY: Decision Score 우선 정렬 (Codex tuned, 1d 휴리스틱 범위)
+                # prob5 임계값: scan_mode + regime 모두 반영
+                try:
+                    from modules.regime_router import get_prob5_threshold
+                    from modules.regime_classifier import classify_regime
+                    _rc = classify_regime(market)
+                    PROB5_THRESHOLD = get_prob5_threshold(_rc.get("regime", "UNKNOWN"), scan_mode)
+                except Exception:
+                    PROB5_THRESHOLD = 50.0 if scan_mode == "INTRADAY" else 58.0
+                TOP_K = 5
+                # INTRADAY: expected_return_1d_pct 우선 → fallback Decision Score
+                # (실증 데이터: DS 상위 Top5=36% vs expected_1d 상위 Top5=60%)
+                # SWING: v3_score(5d MAE/clean_hit 보정) 우선
+                if scan_mode == "INTRADAY":
+                    if 'expected_return_1d_pct' in df_results.columns:
+                        sort_col = 'expected_return_1d_pct'
+                        sort_secondary = 'Decision Score'
+                    else:
+                        sort_col = 'Decision Score'
+                        sort_secondary = 'Antigrav'
+                else:
+                    sort_col = 'v3_score' if 'v3_score' in df_results.columns else 'Decision Score'
+                    sort_secondary = 'Antigrav'
+                df_results = df_results.sort_values(
+                    by=[sort_col, sort_secondary], ascending=[False, False]
+                )
+
                 cols_to_drop = ['_tier_sort', '_prob_5', '_prob_clean']
-                top5 = df_results.head(5).copy()
-                top5 = top5.drop(columns=[col for col in cols_to_drop if col in top5.columns])
+                if '_prob_5' in df_results.columns:
+                    above = df_results[df_results['_prob_5'] >= PROB5_THRESHOLD]
+                    below = df_results[df_results['_prob_5'] < PROB5_THRESHOLD]
+                    shortage = max(0, TOP_K - len(above))
+                    top5 = pd.concat([above.head(TOP_K), below.head(shortage)]).head(TOP_K).copy()
+                    prob5_passed = min(len(above), TOP_K)
+                else:
+                    top5 = df_results.head(TOP_K).copy()
+                    prob5_passed = TOP_K
+
+                top5_idx = top5.index
+                top5_display = top5.drop(columns=[col for col in cols_to_drop if col in top5.columns])
+
+                _sort_label = "Decision Score" if scan_mode == "INTRADAY" else sort_col
+                threshold_caption = (
+                    f"AI 확률 {PROB5_THRESHOLD:.0f}% 이상 통과: **{prob5_passed}/{len(top5_display)}개** — "
+                    + ("전원 고확신 종목" if prob5_passed == len(top5_display)
+                       else f"{len(top5_display) - prob5_passed}개는 임계값 미달이나 {_sort_label} 순으로 보완")
+                )
+
                 if watchlist_only_mode:
                     st.markdown(
                         "### 📋 Top 5 Scanner Candidates "
                         + ("(Intraday)" if scan_mode == "INTRADAY" else "(Raw Scanner Score)")
                     )
                     st.caption("이 표는 스캐너 원시 후보입니다. 이번 런에서는 플래너가 매수 추천으로 승격하지 않았으므로 관찰용으로만 봐야 합니다.")
-                    st.dataframe(top5, width='stretch')
+                    st.dataframe(top5_display, width='stretch')
                 else:
                     st.markdown(
                         "### 🔥 Top 5 Actionable Setups "
                         + ("(Intraday)" if scan_mode == "INTRADAY" else "(Best Decision Score)")
                     )
-                    st.caption("AI 딥러닝 상승 확률과 펀더멘탈/수급 모멘텀(Antigravity)을 교차검증하여 가장 실전 수익 기대값이 높은 상위 5개 종목입니다.")
-                    st.dataframe(top5, width='stretch')
-                
+                    st.caption(threshold_caption)
+                    st.dataframe(top5_display, width='stretch')
+
                 st.divider()
-                
+
                 # 2. Remaining qualified setups
                 st.markdown("### 📋 Other Qualified Setups" if not watchlist_only_mode else "### 📋 Other Scanner Candidates")
-                if len(df_results) > 5:
-                    df_rest = df_results.iloc[5:].drop(columns=[col for col in cols_to_drop if col in df_results.columns])
+                df_rest = df_results[~df_results.index.isin(top5_idx)].drop(columns=[col for col in cols_to_drop if col in df_results.columns])
+                if not df_rest.empty:
                     st.dataframe(df_rest, width='stretch')
                 else:
                     st.info("Top 5 외에 추가 종목이 없습니다.")

@@ -1,0 +1,16 @@
+{
+  "market": "KOSPI",
+  "regime": "BULL",
+  "confidence": 0.7,
+  "multiplier": 1.1,
+  "signals": {
+    "vix": 17.94,
+    "current": 6206.14,
+    "ma20": 5633.76,
+    "ma50": 5613.73,
+    "vol_20d_pct": 3.675,
+    "volume_ratio_5d_20d": 0.857,
+    "ret_20d_pct": 14.81
+  },
+  "classified_at": "2026-04-17T02:17:48.462017+00:00"
+}

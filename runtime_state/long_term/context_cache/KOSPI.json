@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-16T05:27:04.009738+00:00",
+  "generated_at": "2026-04-17T02:17:15.297442+00:00",
   "market": "KOSPI",
   "market_group": "KR",
   "regime": {
@@ -21,61 +21,57 @@
       "macro_multiplier": 1.0,
       "macro_penalty": 0,
       "flags": [],
-      "vix": 18.170000076293945,
-      "vix_change_1d": -1.03,
-      "tnx": 4.2820000648498535,
-      "tnx_change_1d": 0.61,
-      "krw": 1472.280029296875,
+      "vix": 17.940000534057617,
+      "vix_change_1d": -1.27,
+      "tnx": 4.309000015258789,
+      "tnx_change_1d": 0.63,
+      "krw": 1479.239990234375,
       "krw_change_1d": NaN,
-      "spy_change_1d": 0.79
+      "spy_change_1d": 0.25
     }
   },
   "news_impact": {
     "status": "live_intel",
-    "market_sentiment": "BULLISH",
-    "sentiment_score": 85,
+    "market_sentiment": "BEARISH",
+    "sentiment_score": -40,
     "headline_count": 15,
     "evidence_headlines": [
-      "반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀",
-      "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수",
-      "코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워",
-      "\"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까?"
+      "코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓",
+      "코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세",
+      "코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태'"
     ],
     "raw_headlines": [
-      "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제",
-      "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
-      "[Naver Stock] 402340.KS [+2] 코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수 | 네이버증권",
-      "[Wed, 15 Apr 2026 17:00:05 +0900] [포토] 코스피 6000선 넘어 상승 마감 | 한국경제",
-      "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
-      "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
-      "[Naver Stock] 373220.KS [+3] 코스피, 6200선 재돌파… 미·이란 전쟁 낙폭 회복 중 | 네이버증권",
-      "[Naver Stock] 373220.KS [+3] 코스피, 종전 협상 낙관론에 오름폭 키워 장중 6,200선 재돌파 | 네이버증권",
-      "[Naver Stock] 402340.KS [+5] 코스피, 장중 6200선 돌파…코스닥도 상승 | 네이버증권",
-      "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권",
-      "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
-      "[Naver Stock] 207940.KS [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
-      "[Naver Stock] 034020.KS [+3] 코스피 장중 6200 돌파…295조 증시로 몰렸다 | 네이버증권",
-      "[DART 20260416] 한전기술 - 단일판매ㆍ공급계약체결 | 전자공시",
-      "[DART 20260416] HD현대 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+      "[Fri, 17 Apr 2026 11:08:19 +0900] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 한국경제",
+      "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+      "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+      "[Naver Stock] 373220.KS [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+      "[Naver Stock] 207940.KS [-3] 코스피, 외국인·기관 매도에 약세 [fn오전시황] | 네이버증권",
+      "[Thu, 16 Apr 2026 08:43:56 GMT] 코스피 6200선 회복…중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’ - 굿모닝경제 | 굿모닝경제",
+      "[Naver Stock] 373220.KS [-5] 코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태' | 네이버증권",
+      "[Fri, 17 Apr 2026 10:52:54 +0900] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 연합뉴스",
+      "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권",
+      "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+      "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+      "[Naver Stock] 402340.KS [+2] “전고점 부담 작용했나”…코스피, 상승 출발 후 6200선 공방 [이런국... | 네이버증권",
+      "[DART 20260417] 현대지에프홀딩스 - 자기주식취득결과보고서 | 전자공시",
+      "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시",
+      "[DART 20260417] HD현대중공업 - 단일판매ㆍ공급계약체결 | 전자공시"
     ],
-    "beneficiary_sectors": [
-      "자동차",
-      "방산"
-    ],
+    "beneficiary_sectors": [],
     "victim_sectors": [],
     "theme_states": [
       {
         "theme_id": "finance",
         "theme_name": "금융",
         "direction": "BENEFICIARY",
-        "strength_score": 100.0,
+        "strength_score": 86.0,
         "confidence": 0.95,
         "driver_categories": [],
         "evidence": [
-          "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
-          "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
-          "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
-          "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
+          "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+          "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+          "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+          "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
         ],
         "beneficiary_keywords": [
           "금융",
@@ -86,181 +82,24 @@
           "카드"
         ],
         "victim_keywords": [],
-        "momentum_avg_change_pct": 2.94,
-        "momentum_class": "EXPLODING",
-        "updated_at": "2026-04-16T05:27:03.852875+00:00"
-      },
-      {
-        "theme_id": "semiconductor",
-        "theme_name": "반도체",
-        "direction": "BENEFICIARY",
-        "strength_score": 49.0,
-        "confidence": 0.78,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "LIQUIDITY",
-          "REGULATION"
-        ],
-        "evidence": [
-          "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
-          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-        ],
-        "beneficiary_keywords": [
-          "반도체",
-          "메모리",
-          "HBM",
-          "낸드",
-          "DRAM",
-          "파운드리"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": 1.38,
-        "momentum_class": "ACCELERATING",
-        "updated_at": "2026-04-16T05:27:03.853297+00:00"
-      },
-      {
-        "theme_id": "eco_energy",
-        "theme_name": "친환경/에너지",
-        "direction": "BENEFICIARY",
-        "strength_score": 42.0,
-        "confidence": 0.65,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "FX",
-          "GEOPOLITICS",
-          "LIQUIDITY",
-          "OIL",
-          "POLITICS",
-          "REGULATION"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [
-          "친환경/에너지",
-          "친환경",
-          "에너지",
-          "태양광",
-          "풍력",
-          "수소"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": 2.28,
-        "momentum_class": "EXPLODING",
-        "updated_at": "2026-04-16T05:27:03.853857+00:00"
-      },
-      {
-        "theme_id": "defense",
-        "theme_name": "방산",
-        "direction": "BENEFICIARY",
-        "strength_score": 31.0,
-        "confidence": 0.571,
-        "driver_categories": [
-          "EARNINGS",
-          "GEOPOLITICS",
-          "POLITICS"
-        ],
-        "evidence": [
-          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-        ],
-        "beneficiary_keywords": [
-          "방산",
-          "미사일",
-          "탄약",
-          "군수",
-          "무기"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": null,
-        "momentum_class": null,
-        "updated_at": "2026-04-16T05:27:03.854283+00:00"
-      },
-      {
-        "theme_id": "it_platform",
-        "theme_name": "IT서비스/플랫폼",
-        "direction": "BENEFICIARY",
-        "strength_score": 27.0,
-        "confidence": 0.543,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "LIQUIDITY",
-          "RATES"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [
-          "IT서비스/플랫폼",
-          "IT서비스",
-          "플랫폼",
-          "소프트웨어",
-          "SW",
-          "클라우드"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": null,
-        "momentum_class": null,
-        "updated_at": "2026-04-16T05:27:03.852696+00:00"
-      },
-      {
-        "theme_id": "robotics",
-        "theme_name": "로봇/자동화",
-        "direction": "BENEFICIARY",
-        "strength_score": 27.0,
-        "confidence": 0.543,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "LIQUIDITY"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [
-          "로봇/자동화",
-          "로봇",
-          "자동화",
-          "스마트팩토리",
-          "협동로봇",
-          "물류로봇"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": null,
-        "momentum_class": null,
-        "updated_at": "2026-04-16T05:27:03.853943+00:00"
-      },
-      {
-        "theme_id": "해운",
-        "theme_name": "해운",
-        "direction": "BENEFICIARY",
-        "strength_score": 27.0,
-        "confidence": 0.543,
-        "driver_categories": [
-          "ECONOMY",
-          "GEOPOLITICS",
-          "OIL"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [
-          "벌크",
-          "운임",
-          "컨테이너",
-          "해운"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": 1.17,
-        "momentum_class": "ACCELERATING",
-        "updated_at": "2026-04-16T05:27:03.854370+00:00"
+        "momentum_avg_change_pct": -1.13,
+        "momentum_class": "FADING",
+        "updated_at": "2026-04-17T02:17:15.121555+00:00"
       },
       {
         "theme_id": "shipbuilding",
         "theme_name": "조선/해양",
         "direction": "BENEFICIARY",
-        "strength_score": 21.0,
-        "confidence": 0.5,
+        "strength_score": 18.0,
+        "confidence": 0.479,
         "driver_categories": [
           "EARNINGS",
           "GEOPOLITICS",
           "OIL"
         ],
-        "evidence": [],
+        "evidence": [
+          "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+        ],
         "beneficiary_keywords": [
           "조선/해양",
           "조선",
@@ -272,299 +111,160 @@
         "victim_keywords": [],
         "momentum_avg_change_pct": null,
         "momentum_class": null,
-        "updated_at": "2026-04-16T05:27:03.854173+00:00"
-      },
-      {
-        "theme_id": "bio",
-        "theme_name": "바이오/헬스케어",
-        "direction": "BENEFICIARY",
-        "strength_score": 18.0,
-        "confidence": 0.479,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "REGULATION"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [
-          "바이오/헬스케어",
-          "바이오",
-          "헬스케어",
-          "의약",
-          "치료제",
-          "백신"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": null,
-        "momentum_class": null,
-        "updated_at": "2026-04-16T05:27:03.852465+00:00"
-      },
-      {
-        "theme_id": "secondary_battery",
-        "theme_name": "2차전지",
-        "direction": "BENEFICIARY",
-        "strength_score": 18.0,
-        "confidence": 0.479,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "FX",
-          "OIL"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [
-          "2차전지",
-          "이차전지",
-          "배터리",
-          "양극재",
-          "음극재",
-          "전해액"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": null,
-        "momentum_class": null,
-        "updated_at": "2026-04-16T05:27:03.854071+00:00"
-      },
-      {
-        "theme_id": "automobile",
-        "theme_name": "자동차",
-        "direction": "NEUTRAL",
-        "strength_score": 10.0,
-        "confidence": 0.421,
-        "driver_categories": [],
-        "evidence": [
-          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-        ],
-        "beneficiary_keywords": [],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": null,
-        "momentum_class": null,
-        "updated_at": "2026-04-16T05:27:03.853113+00:00"
+        "updated_at": "2026-04-17T02:17:15.122759+00:00"
       }
     ],
     "beneficiary_themes": [
       {
         "theme_id": "finance",
         "theme_name": "금융",
-        "strength_score": 100.0,
+        "strength_score": 86.0,
         "confidence": 0.95
-      },
-      {
-        "theme_id": "semiconductor",
-        "theme_name": "반도체",
-        "strength_score": 49.0,
-        "confidence": 0.78
-      },
-      {
-        "theme_id": "eco_energy",
-        "theme_name": "친환경/에너지",
-        "strength_score": 42.0,
-        "confidence": 0.65
-      },
-      {
-        "theme_id": "defense",
-        "theme_name": "방산",
-        "strength_score": 31.0,
-        "confidence": 0.571
-      },
-      {
-        "theme_id": "it_platform",
-        "theme_name": "IT서비스/플랫폼",
-        "strength_score": 27.0,
-        "confidence": 0.543
-      },
-      {
-        "theme_id": "robotics",
-        "theme_name": "로봇/자동화",
-        "strength_score": 27.0,
-        "confidence": 0.543
-      },
-      {
-        "theme_id": "해운",
-        "theme_name": "해운",
-        "strength_score": 27.0,
-        "confidence": 0.543
       },
       {
         "theme_id": "shipbuilding",
         "theme_name": "조선/해양",
-        "strength_score": 21.0,
-        "confidence": 0.5
+        "strength_score": 18.0,
+        "confidence": 0.479
       }
     ],
     "headwind_themes": [],
     "theme_evidence": {
-      "bio": [],
-      "it_platform": [],
       "finance": [
-        "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
-        "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
-        "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
-        "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+        "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
       ],
-      "automobile": [
-        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-      ],
-      "semiconductor": [
-        "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
-        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-      ],
-      "eco_energy": [],
-      "robotics": [],
-      "secondary_battery": [],
-      "shipbuilding": [],
-      "defense": [
-        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-      ],
-      "해운": []
+      "shipbuilding": [
+        "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+      ]
     },
     "macro_drivers": [
       {
         "category": "GEOPOLITICS",
-        "signal": "BULLISH",
-        "market_impact": 5,
-        "description": "종전 협상 기대감으로 중동 전쟁 낙폭을 회복하며 코스피 상승을 주도.",
-        "evidence": "코스피, 종전 기대감에 6170선까지 상승…중동 전쟁 낙폭 메워"
-      },
-      {
-        "category": "ECONOMY",
-        "signal": "BULLISH",
-        "market_impact": 4,
-        "description": "미국 증시의 훈풍이 코스피에 긍정적인 투자 심리를 제공.",
-        "evidence": "美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승"
+        "signal": "MIXED",
+        "market_impact": 0,
+        "description": "미국-이란 종전 협상에 대한 기대와 우려가 공존하며 시장에 불확실성을 제공.",
+        "evidence": "美·이란 종전 협상 기대·우려 공존하며 약보합세"
       },
       {
         "category": "LIQUIDITY",
-        "signal": "BULLISH",
-        "market_impact": 3,
-        "description": "기관 투자자들의 대규모 매수가 코스피 상승에 직접적인 동력으로 작용.",
-        "evidence": "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수"
+        "signal": "BEARISH",
+        "market_impact": -4,
+        "description": "외국인 및 기관 투자자들의 순매도가 코스피 약세의 주요 원인.",
+        "evidence": "외국인·기관 매도에 약보합"
       }
     ],
     "driver_scores": {
-      "GEOPOLITICS": 5,
+      "GEOPOLITICS": 0,
       "OIL": 0,
       "FX": 0,
       "RATES": 0,
       "POLITICS": 0,
-      "ECONOMY": 4,
-      "LIQUIDITY": 3,
+      "ECONOMY": 0,
+      "LIQUIDITY": -3,
       "EARNINGS": 2,
       "REGULATION": 0
     },
     "cross_asset_signals": [],
-    "risk_flags": [],
+    "risk_flags": [
+      "외국인·기관 순매도",
+      "6200선 지지 불확실성",
+      "미국-이란 종전 협상 불확실성"
+    ],
     "news_quality": "HIGH",
-    "key_insight": "중동 지정학적 리스크 완화 기대감과 글로벌 증시 강세에 힘입어 코스피가 주요 저항선을 돌파하며 상승세를 이어가고 있으며, 반도체에서 자동차, 방산으로의 순환매가 관찰됨.",
+    "key_insight": "코스피는 외국인과 기관의 매도세로 약세를 보이며 6200선 지지 여부가 중요하며, 중동 지정학적 요인은 혼재된 영향을 미치고 있다.",
     "source": "gemini",
     "model": "gemini-2.5-flash",
     "raw": {
-      "market_sentiment": "BULLISH",
-      "sentiment_score": 85,
+      "market_sentiment": "BEARISH",
+      "sentiment_score": -40,
       "themes": [
         {
-          "theme": "중동 지정학 리스크 완화",
-          "impact": "POSITIVE",
-          "description": "미국-이란 종전 협상 기대감에 중동 전쟁 관련 낙폭을 회복하며 코스피 상승을 견인."
-        },
-        {
-          "theme": "글로벌 증시 강세",
-          "impact": "POSITIVE",
-          "description": "미국 S&P 및 나스닥의 사상 최고치 경신이 코스피에 긍정적인 영향을 미침."
-        },
-        {
-          "theme": "산업 순환매",
+          "theme": "중동 지정학 리스크",
           "impact": "MIXED",
-          "description": "반도체는 숨고르기 중이며, 자동차와 방산 섹터로의 순환매가 관찰됨."
+          "description": "미국-이란 종전 협상에 대한 기대와 우려가 공존하며 시장에 혼재된 영향을 미침."
         }
       ],
       "macro_drivers": [
         {
           "category": "GEOPOLITICS",
-          "signal": "BULLISH",
-          "market_impact": 5,
-          "description": "종전 협상 기대감으로 중동 전쟁 낙폭을 회복하며 코스피 상승을 주도.",
-          "evidence": "코스피, 종전 기대감에 6170선까지 상승…중동 전쟁 낙폭 메워"
-        },
-        {
-          "category": "ECONOMY",
-          "signal": "BULLISH",
-          "market_impact": 4,
-          "description": "미국 증시의 훈풍이 코스피에 긍정적인 투자 심리를 제공.",
-          "evidence": "美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승"
+          "signal": "MIXED",
+          "market_impact": 0,
+          "description": "미국-이란 종전 협상에 대한 기대와 우려가 공존하며 시장에 불확실성을 제공.",
+          "evidence": "美·이란 종전 협상 기대·우려 공존하며 약보합세"
         },
         {
           "category": "LIQUIDITY",
-          "signal": "BULLISH",
-          "market_impact": 3,
-          "description": "기관 투자자들의 대규모 매수가 코스피 상승에 직접적인 동력으로 작용.",
-          "evidence": "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수"
+          "signal": "BEARISH",
+          "market_impact": -4,
+          "description": "외국인 및 기관 투자자들의 순매도가 코스피 약세의 주요 원인.",
+          "evidence": "외국인·기관 매도에 약보합"
         }
       ],
       "driver_scores": {
-        "GEOPOLITICS": 5,
+        "GEOPOLITICS": 0,
         "OIL": 0,
         "FX": 0,
         "RATES": 0,
         "POLITICS": 0,
-        "ECONOMY": 4,
-        "LIQUIDITY": 3,
+        "ECONOMY": 0,
+        "LIQUIDITY": -3,
         "EARNINGS": 2,
         "REGULATION": 0
       },
       "cross_asset_signals": [],
-      "risk_flags": [],
+      "risk_flags": [
+        "외국인·기관 순매도",
+        "6200선 지지 불확실성",
+        "미국-이란 종전 협상 불확실성"
+      ],
       "news_quality": "HIGH",
-      "beneficiary_sectors": [
-        "자동차",
-        "방산"
-      ],
+      "beneficiary_sectors": [],
       "victim_sectors": [],
-      "beneficiary_keywords": [
-        "자동차",
-        "방산",
-        "방위산업"
+      "beneficiary_keywords": [],
+      "victim_keywords": [
+        "한화에어로"
       ],
-      "victim_keywords": [],
-      "key_insight": "중동 지정학적 리스크 완화 기대감과 글로벌 증시 강세에 힘입어 코스피가 주요 저항선을 돌파하며 상승세를 이어가고 있으며, 반도체에서 자동차, 방산으로의 순환매가 관찰됨.",
+      "key_insight": "코스피는 외국인과 기관의 매도세로 약세를 보이며 6200선 지지 여부가 중요하며, 중동 지정학적 요인은 혼재된 영향을 미치고 있다.",
       "evidence_headlines": [
-        "반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀",
-        "코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수",
-        "코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워",
-        "\"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까?"
+        "코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓",
+        "코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세",
+        "코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태'"
       ],
       "raw_headlines": [
-        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제",
-        "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
-        "[Naver Stock] 402340.KS [+2] 코스피, 종전 기대감에 6170선까지 상승…기관 3300억대 매수 | 네이버증권",
-        "[Wed, 15 Apr 2026 17:00:05 +0900] [포토] 코스피 6000선 넘어 상승 마감 | 한국경제",
-        "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
-        "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
-        "[Naver Stock] 373220.KS [+3] 코스피, 6200선 재돌파… 미·이란 전쟁 낙폭 회복 중 | 네이버증권",
-        "[Naver Stock] 373220.KS [+3] 코스피, 종전 협상 낙관론에 오름폭 키워 장중 6,200선 재돌파 | 네이버증권",
-        "[Naver Stock] 402340.KS [+5] 코스피, 장중 6200선 돌파…코스닥도 상승 | 네이버증권",
-        "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권",
-        "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
-        "[Naver Stock] 207940.KS [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
-        "[Naver Stock] 034020.KS [+3] 코스피 장중 6200 돌파…295조 증시로 몰렸다 | 네이버증권",
-        "[DART 20260416] 한전기술 - 단일판매ㆍ공급계약체결 | 전자공시",
-        "[DART 20260416] HD현대 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+        "[Fri, 17 Apr 2026 11:08:19 +0900] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 한국경제",
+        "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+        "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 373220.KS [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+        "[Naver Stock] 207940.KS [-3] 코스피, 외국인·기관 매도에 약세 [fn오전시황] | 네이버증권",
+        "[Thu, 16 Apr 2026 08:43:56 GMT] 코스피 6200선 회복…중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’ - 굿모닝경제 | 굿모닝경제",
+        "[Naver Stock] 373220.KS [-5] 코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태' | 네이버증권",
+        "[Fri, 17 Apr 2026 10:52:54 +0900] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 연합뉴스",
+        "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권",
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+        "[Naver Stock] 402340.KS [+2] “전고점 부담 작용했나”…코스피, 상승 출발 후 6200선 공방 [이런국... | 네이버증권",
+        "[DART 20260417] 현대지에프홀딩스 - 자기주식취득결과보고서 | 전자공시",
+        "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시",
+        "[DART 20260417] HD현대중공업 - 단일판매ㆍ공급계약체결 | 전자공시"
       ],
       "headline_count": 15,
       "source": "gemini",
       "model": "gemini-2.5-flash",
-      "timestamp": "2026-04-16 14:27",
+      "timestamp": "2026-04-17 11:17",
       "disclosure_events": [
         {
-          "company": "한전기술",
-          "report_name": "단일판매ㆍ공급계약체결",
-          "event_score": 4,
-          "category": "EARNINGS",
-          "label": "수주/판매계약",
+          "company": "현대지에프홀딩스",
+          "report_name": "자기주식취득결과보고서",
+          "event_score": 3,
+          "category": "LIQUIDITY",
+          "label": "자사주",
           "polarity": "POSITIVE"
         },
         {
-          "company": "HD현대",
+          "company": "HD한국조선해양",
           "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)",
           "event_score": 4,
           "category": "EARNINGS",
@@ -572,7 +272,7 @@
           "polarity": "POSITIVE"
         },
         {
-          "company": "한전기술",
+          "company": "HD현대중공업",
           "report_name": "단일판매ㆍ공급계약체결",
           "event_score": 4,
           "category": "EARNINGS",
@@ -580,8 +280,24 @@
           "polarity": "POSITIVE"
         },
         {
-          "company": "HD현대",
+          "company": "현대지에프홀딩스",
+          "report_name": "자기주식취득결과보고서",
+          "event_score": 3,
+          "category": "LIQUIDITY",
+          "label": "자사주",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "HD한국조선해양",
           "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "HD현대중공업",
+          "report_name": "단일판매ㆍ공급계약체결",
           "event_score": 4,
           "category": "EARNINGS",
           "label": "수주/판매계약",
@@ -589,22 +305,23 @@
         }
       ],
       "company_event_bias": {
-        "한전기술": 8,
-        "HD현대": 8
+        "현대지에프홀딩스": 6,
+        "HD한국조선해양": 8,
+        "HD현대중공업": 8
       },
       "theme_states": [
         {
           "theme_id": "finance",
           "theme_name": "금융",
           "direction": "BENEFICIARY",
-          "strength_score": 100.0,
+          "strength_score": 86.0,
           "confidence": 0.95,
           "driver_categories": [],
           "evidence": [
-            "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
-            "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
-            "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
-            "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
+            "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+            "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+            "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+            "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
           ],
           "beneficiary_keywords": [
             "금융",
@@ -615,181 +332,24 @@
             "카드"
           ],
           "victim_keywords": [],
-          "momentum_avg_change_pct": 2.94,
-          "momentum_class": "EXPLODING",
-          "updated_at": "2026-04-16T05:27:03.852875+00:00"
-        },
-        {
-          "theme_id": "semiconductor",
-          "theme_name": "반도체",
-          "direction": "BENEFICIARY",
-          "strength_score": 49.0,
-          "confidence": 0.78,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "LIQUIDITY",
-            "REGULATION"
-          ],
-          "evidence": [
-            "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
-            "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-          ],
-          "beneficiary_keywords": [
-            "반도체",
-            "메모리",
-            "HBM",
-            "낸드",
-            "DRAM",
-            "파운드리"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": 1.38,
-          "momentum_class": "ACCELERATING",
-          "updated_at": "2026-04-16T05:27:03.853297+00:00"
-        },
-        {
-          "theme_id": "eco_energy",
-          "theme_name": "친환경/에너지",
-          "direction": "BENEFICIARY",
-          "strength_score": 42.0,
-          "confidence": 0.65,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "FX",
-            "GEOPOLITICS",
-            "LIQUIDITY",
-            "OIL",
-            "POLITICS",
-            "REGULATION"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [
-            "친환경/에너지",
-            "친환경",
-            "에너지",
-            "태양광",
-            "풍력",
-            "수소"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": 2.28,
-          "momentum_class": "EXPLODING",
-          "updated_at": "2026-04-16T05:27:03.853857+00:00"
-        },
-        {
-          "theme_id": "defense",
-          "theme_name": "방산",
-          "direction": "BENEFICIARY",
-          "strength_score": 31.0,
-          "confidence": 0.571,
-          "driver_categories": [
-            "EARNINGS",
-            "GEOPOLITICS",
-            "POLITICS"
-          ],
-          "evidence": [
-            "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-          ],
-          "beneficiary_keywords": [
-            "방산",
-            "미사일",
-            "탄약",
-            "군수",
-            "무기"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": null,
-          "momentum_class": null,
-          "updated_at": "2026-04-16T05:27:03.854283+00:00"
-        },
-        {
-          "theme_id": "it_platform",
-          "theme_name": "IT서비스/플랫폼",
-          "direction": "BENEFICIARY",
-          "strength_score": 27.0,
-          "confidence": 0.543,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "LIQUIDITY",
-            "RATES"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [
-            "IT서비스/플랫폼",
-            "IT서비스",
-            "플랫폼",
-            "소프트웨어",
-            "SW",
-            "클라우드"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": null,
-          "momentum_class": null,
-          "updated_at": "2026-04-16T05:27:03.852696+00:00"
-        },
-        {
-          "theme_id": "robotics",
-          "theme_name": "로봇/자동화",
-          "direction": "BENEFICIARY",
-          "strength_score": 27.0,
-          "confidence": 0.543,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "LIQUIDITY"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [
-            "로봇/자동화",
-            "로봇",
-            "자동화",
-            "스마트팩토리",
-            "협동로봇",
-            "물류로봇"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": null,
-          "momentum_class": null,
-          "updated_at": "2026-04-16T05:27:03.853943+00:00"
-        },
-        {
-          "theme_id": "해운",
-          "theme_name": "해운",
-          "direction": "BENEFICIARY",
-          "strength_score": 27.0,
-          "confidence": 0.543,
-          "driver_categories": [
-            "ECONOMY",
-            "GEOPOLITICS",
-            "OIL"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [
-            "벌크",
-            "운임",
-            "컨테이너",
-            "해운"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": 1.17,
-          "momentum_class": "ACCELERATING",
-          "updated_at": "2026-04-16T05:27:03.854370+00:00"
+          "momentum_avg_change_pct": -1.13,
+          "momentum_class": "FADING",
+          "updated_at": "2026-04-17T02:17:15.121555+00:00"
         },
         {
           "theme_id": "shipbuilding",
           "theme_name": "조선/해양",
           "direction": "BENEFICIARY",
-          "strength_score": 21.0,
-          "confidence": 0.5,
+          "strength_score": 18.0,
+          "confidence": 0.479,
           "driver_categories": [
             "EARNINGS",
             "GEOPOLITICS",
             "OIL"
           ],
-          "evidence": [],
+          "evidence": [
+            "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+          ],
           "beneficiary_keywords": [
             "조선/해양",
             "조선",
@@ -801,151 +361,34 @@
           "victim_keywords": [],
           "momentum_avg_change_pct": null,
           "momentum_class": null,
-          "updated_at": "2026-04-16T05:27:03.854173+00:00"
-        },
-        {
-          "theme_id": "bio",
-          "theme_name": "바이오/헬스케어",
-          "direction": "BENEFICIARY",
-          "strength_score": 18.0,
-          "confidence": 0.479,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "REGULATION"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [
-            "바이오/헬스케어",
-            "바이오",
-            "헬스케어",
-            "의약",
-            "치료제",
-            "백신"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": null,
-          "momentum_class": null,
-          "updated_at": "2026-04-16T05:27:03.852465+00:00"
-        },
-        {
-          "theme_id": "secondary_battery",
-          "theme_name": "2차전지",
-          "direction": "BENEFICIARY",
-          "strength_score": 18.0,
-          "confidence": 0.479,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "FX",
-            "OIL"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [
-            "2차전지",
-            "이차전지",
-            "배터리",
-            "양극재",
-            "음극재",
-            "전해액"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": null,
-          "momentum_class": null,
-          "updated_at": "2026-04-16T05:27:03.854071+00:00"
-        },
-        {
-          "theme_id": "automobile",
-          "theme_name": "자동차",
-          "direction": "NEUTRAL",
-          "strength_score": 10.0,
-          "confidence": 0.421,
-          "driver_categories": [],
-          "evidence": [
-            "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-          ],
-          "beneficiary_keywords": [],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": null,
-          "momentum_class": null,
-          "updated_at": "2026-04-16T05:27:03.853113+00:00"
+          "updated_at": "2026-04-17T02:17:15.122759+00:00"
         }
       ],
       "beneficiary_themes": [
         {
           "theme_id": "finance",
           "theme_name": "금융",
-          "strength_score": 100.0,
+          "strength_score": 86.0,
           "confidence": 0.95
-        },
-        {
-          "theme_id": "semiconductor",
-          "theme_name": "반도체",
-          "strength_score": 49.0,
-          "confidence": 0.78
-        },
-        {
-          "theme_id": "eco_energy",
-          "theme_name": "친환경/에너지",
-          "strength_score": 42.0,
-          "confidence": 0.65
-        },
-        {
-          "theme_id": "defense",
-          "theme_name": "방산",
-          "strength_score": 31.0,
-          "confidence": 0.571
-        },
-        {
-          "theme_id": "it_platform",
-          "theme_name": "IT서비스/플랫폼",
-          "strength_score": 27.0,
-          "confidence": 0.543
-        },
-        {
-          "theme_id": "robotics",
-          "theme_name": "로봇/자동화",
-          "strength_score": 27.0,
-          "confidence": 0.543
-        },
-        {
-          "theme_id": "해운",
-          "theme_name": "해운",
-          "strength_score": 27.0,
-          "confidence": 0.543
         },
         {
           "theme_id": "shipbuilding",
           "theme_name": "조선/해양",
-          "strength_score": 21.0,
-          "confidence": 0.5
+          "strength_score": 18.0,
+          "confidence": 0.479
         }
       ],
       "headwind_themes": [],
       "theme_evidence": {
-        "bio": [],
-        "it_platform": [],
         "finance": [
-          "[Naver Stock] 000660.KS [+3] 미국-이란, 이대로 종전까지?...코스피 6,200선 돌파 | 네이버증권",
-          "[Naver Stock] 000660.KS [+3] 코스피, 33거래일 만에 6200 돌파…중동 전쟁 낙폭 메워 | 네이버증권",
-          "[Naver Stock] 012450.KS [+2] 종전 협상 기대 속 코스피, 6100선 상승 출발 | 네이버증권",
-          "[Naver Stock] 012450.KS [+3] \"사상 최고 경신한 S&P·나스닥\"…코스피도 6300 재돌파할까? | 네이버증권"
+          "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+          "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+          "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+          "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
         ],
-        "automobile": [
-          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-        ],
-        "semiconductor": [
-          "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
-          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-        ],
-        "eco_energy": [],
-        "robotics": [],
-        "secondary_battery": [],
-        "shipbuilding": [],
-        "defense": [
-          "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-        ],
-        "해운": []
+        "shipbuilding": [
+          "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+        ]
       }
     }
   }

@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-04-17T00:12:48.136343+00:00",
+  "recent_days": 20,
+  "segments": {
+    "KOSDAQ:SWING": {
+      "all_history": {
+        "baseline": {
+          "accuracy_gap_to_target_pct": -22.02,
+          "avg_return_pct": 0.2317,
+          "hit10_rate_pct": 13.1,
+          "hit5_rate_pct": 26.19,
+          "positive_rate_pct": 52.98,
+          "return_gap_to_target_pct": -14.7683,
+          "runs": 14
+        },
+        "delta": {
+          "avg_return_pct": 0.0,
+          "hit10_rate_pct": 0.0,
+          "hit5_rate_pct": 0.0,
+          "positive_rate_pct": 0.0
+        },
+        "overlay": {
+          "accuracy_gap_to_target_pct": -22.02,
+          "avg_return_pct": 0.2317,
+          "hit10_rate_pct": 13.1,
+          "hit5_rate_pct": 26.19,
+          "positive_rate_pct": 52.98,
+          "return_gap_to_target_pct": -14.7683,
+          "runs": 14
+        }
+      },
+      "continuation_reason_counts": {
+        "ALPHA_SCORE_LT_45": 2,
+        "DECISION_SCORE_LT_78": 16,
+        "ML_PROB_LT_27": 25
+      },
+      "feature_source_counts": {
+        "shared_working": 29
+      },
+      "market": "KOSDAQ",
+      "matched_rows": 29,
+      "matched_runs": 14,
+      "metric_column": "return_3d_pct",
+      "origin_counts": {
+        "OUTCOME_ONLY": 146,
+        "PLANNER": 33,
+        "SCANNER": 29
+      },
+      "overlay_reason_counts": {
+        "SEGMENT_KOSDAQ_SWING_DIVERGENCE_BONUS": 2,
+        "SEGMENT_KOSDAQ_SWING_LEADER_CONTEXT_BONUS": 1,
+        "SEGMENT_KOSDAQ_SWING_RISING_CLEAN_CONFIRM": 5,
+        "SEGMENT_KOSDAQ_SWING_T2_LOW_RANKER": 1,
+        "SEGMENT_KOSDAQ_SWING_T3_RISING_CLEAN_BONUS": 5,
+        "SEGMENT_KOSDAQ_SWING_WEAK_T2_PENALTY": 3
+      },
+      "quant_reason_counts": {
+        "KOSDAQ_QUANT_3D_RISING_BONUS": 5,
+        "KOSDAQ_QUANT_LATE_CHASE_PENALTY": 6,
+        "KOSDAQ_QUANT_T1_PEAK_FADE": 3
+      },
+      "recent_scan_dates": [
+        "2026-04-02",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-04-08",
+        "2026-04-09",
+        "2026-04-10",
+        "2026-04-13"
+      ],
+      "recent_window": {
+        "baseline": {
+          "accuracy_gap_to_target_pct": -22.02,
+          "avg_return_pct": 0.2317,
+          "hit10_rate_pct": 13.1,
+          "hit5_rate_pct": 26.19,
+          "positive_rate_pct": 52.98,
+          "return_gap_to_target_pct": -14.7683,
+          "runs": 14
+        },
+        "delta": {
+          "avg_return_pct": 0.0,
+          "hit10_rate_pct": 0.0,
+          "hit5_rate_pct": 0.0,
+          "positive_rate_pct": 0.0
+        },
+        "overlay": {
+          "accuracy_gap_to_target_pct": -22.02,
+          "avg_return_pct": 0.2317,
+          "hit10_rate_pct": 13.1,
+          "hit5_rate_pct": 26.19,
+          "positive_rate_pct": 52.98,
+          "return_gap_to_target_pct": -14.7683,
+          "runs": 14
+        }
+      },
+      "scan_mode": "SWING",
+      "scanner_origin_rows": 29,
+      "scanner_origin_runs": 14,
+      "supabase_rows": 208,
+      "supabase_runs": 27,
+      "unmatched_runs": []
+    }
+  },
+  "source": "supabase.market_scan_results + shared_working/scanner_handoff + bridge_fallback",
+  "targets": {
+    "high_conviction_avg_return_pct": 15.0,
+    "top5_accuracy_pct": 75.0
+  },
+  "topn": 5
+}

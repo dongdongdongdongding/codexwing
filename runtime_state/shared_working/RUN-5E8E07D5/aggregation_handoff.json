@@ -1,0 +1,334 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 13,
+      "label": "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:7.4% | ContextTailwind",
+      "share": 0.116
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 11,
+      "label": "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:7.4% | ContextTailwind",
+      "share": 0.098
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 10,
+      "label": "🚀 Momentum | Ranker:7.4% | ContextTailwind",
+      "share": 0.089
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "011790.KS",
+      "member_count": 17,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "229640.KS",
+      "member_count": 14,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "금융",
+      "theme_strength_score": 72.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 79.0,
+      "leader_ticker": "047040.KS",
+      "member_count": 9,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "건설/부동산",
+      "theme_strength_score": 8.0
+    },
+    {
+      "breadth_score": 96.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "096770.KS",
+      "member_count": 8,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 84.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "001440.KS",
+      "member_count": 7,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 112,
+    "strategy_distribution": {
+      "🎣 OBV_DIV | Ranker:5.7% | ContextTailwind": 1,
+      "🎣 OBV_DIV | Ranker:7.3% | ContextTailwind": 1,
+      "🎣 OBV_DIV | ⚡ 단기과열(강세) | Ranker:4.9% | ContextTailwind": 1,
+      "🎣 RSI_DIV | Ranker:7.4%": 2,
+      "🎣 RSI_DIV | Ranker:7.4% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | Profile:NEGATIVE | Ranker:20.7% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | Profile:NEGATIVE | Ranker:7.4% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | Profile:POSITIVE | Ranker:7.3% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | Profile:POSITIVE | Ranker:7.4% | ContextTailwind": 4,
+      "👑 주도주 하이패스 | Ranker:7.4% | ContextTailwind": 4,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Profile:NEGATIVE | Ranker:21.2% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Profile:NEGATIVE | Ranker:22.4% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:20.9% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:7.4% | ContextTailwind": 11,
+      "🚀 Momentum | Profile:NEGATIVE | Ranker:21.2% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:NEGATIVE | Ranker:21.8%": 1,
+      "🚀 Momentum | Profile:NEGATIVE | Ranker:22.9% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:NEGATIVE | Ranker:7.4% | ContextTailwind": 3,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:15.7% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:16.1%": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:16.1% | ContextTailwind": 2,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:16.8% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:18.7%": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:21.4% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:6.6% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:7.3%": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:7.4%": 2,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:7.6% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:7.7% | ContextTailwind": 3,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:8.4% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:8.9% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:4.7% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:4.8% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:4.9% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:5.1% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:6.0% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:6.1% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:6.6% | ContextTailwind": 2,
+      "🚀 Momentum | Ranker:7.4%": 5,
+      "🚀 Momentum | Ranker:7.4% | ContextTailwind": 10,
+      "🚀 Momentum | Ranker:7.9% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:NEGATIVE | Ranker:11.9% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:NEGATIVE | Ranker:21.2%": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:NEGATIVE | Ranker:7.7% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:11.7% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:16.1% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:18.7% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:7.3%": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:7.3% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:7.4% | ContextTailwind": 5,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:7.5% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:8.2% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:4.7% | ContextTailwind": 2,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:5.3% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:6.6% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:7.4%": 2,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:7.4% | ContextTailwind": 13
+    },
+    "theme_distribution": {
+      "2차전지": 6,
+      "IT서비스/플랫폼": 1,
+      "건설/부동산": 9,
+      "게임/콘텐츠/엔터": 2,
+      "금융": 14,
+      "로봇/자동화": 2,
+      "바이오/헬스케어": 8,
+      "반도체": 6,
+      "방산": 3,
+      "소비재/유통": 5,
+      "자동차": 4,
+      "조선/해양": 4,
+      "철강/금속/소재": 17,
+      "친환경/에너지": 7,
+      "통신/네트워크": 7
+    },
+    "top_strategy": "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:7.4% | ContextTailwind",
+    "top_strategy_share": 0.116,
+    "trend_distribution": {
+      "DOWN": 28,
+      "NEUTRAL": 17,
+      "UP": 67
+    },
+    "weak_candidate_count": 35,
+    "weak_candidate_ratio": 0.312
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "011790.KS",
+      "member_count": 17,
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 59.3,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "011790.KS"
+        },
+        {
+          "leader_score": 86.5,
+          "score": 51.4,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "010060.KS"
+        },
+        {
+          "leader_score": 86.4,
+          "score": 93.8,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "093370.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "229640.KS",
+      "member_count": 14,
+      "theme_name": "금융",
+      "theme_strength_score": 72.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 83.2,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 72.0,
+          "ticker": "229640.KS"
+        },
+        {
+          "leader_score": 92.6,
+          "score": 80.8,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 72.0,
+          "ticker": "402340.KS"
+        },
+        {
+          "leader_score": 88.3,
+          "score": 48.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 72.0,
+          "ticker": "001040.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "047040.KS",
+      "member_count": 9,
+      "theme_name": "건설/부동산",
+      "theme_strength_score": 8.0,
+      "top_members": [
+        {
+          "leader_score": 79.0,
+          "score": 44.6,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 8.0,
+          "ticker": "047040.KS"
+        },
+        {
+          "leader_score": 76.3,
+          "score": 99.2,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 8.0,
+          "ticker": "032830.KS"
+        },
+        {
+          "leader_score": 76.3,
+          "score": 74.9,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 8.0,
+          "ticker": "078930.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "096770.KS",
+      "member_count": 8,
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 82.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "096770.KS"
+        },
+        {
+          "leader_score": 100.0,
+          "score": 73.8,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "005690.KS"
+        },
+        {
+          "leader_score": 74.2,
+          "score": 86.7,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "278470.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "001440.KS",
+      "member_count": 7,
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 60.8,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "001440.KS"
+        },
+        {
+          "leader_score": 99.4,
+          "score": 86.5,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "000880.KS"
+        },
+        {
+          "leader_score": 73.1,
+          "score": 72.7,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "006260.KS"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-16T17:40:07.997876+00:00",
+  "quality_notes": [
+    "Total candidates: 112",
+    "Weak-score candidates (<55): 35 (31.2%)",
+    "Top strategy cluster: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:7.4% | ContextTailwind (13/112)",
+    "Top theme cluster: 철강/금속/소재 (17/112)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-17",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-16T17:40:07.934553+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-5E8E07D5",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

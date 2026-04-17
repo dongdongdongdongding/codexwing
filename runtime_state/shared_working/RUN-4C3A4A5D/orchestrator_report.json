@@ -1,0 +1,141 @@
+{
+  "assignments": [
+    {
+      "agent_name": "scanner_agent",
+      "depends_on": [],
+      "input_refs": [
+        "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/local_short_term/orchestrator_bridge/BRIDGE-F3FBF289/legacy_scan_results.json"
+      ],
+      "notes": [],
+      "objective": "Generate or ingest scanner handoff with candidate reasons and structured traces.",
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/scanner_handoff.json",
+      "status": "completed",
+      "step_id": "step_scanner"
+    },
+    {
+      "agent_name": "aggregation_agent",
+      "depends_on": [
+        "step_scanner"
+      ],
+      "input_refs": [
+        "scanner_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Analyze concentration, common traits, and candidate quality.",
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/aggregation_handoff.json",
+      "status": "completed",
+      "step_id": "step_aggregation"
+    },
+    {
+      "agent_name": "backtest_learning_agent",
+      "depends_on": [
+        "step_scanner",
+        "step_aggregation"
+      ],
+      "input_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Validate current candidates with realistic diagnostics and regime sensitivity.",
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/backtest_handoff.json",
+      "status": "completed",
+      "step_id": "step_backtest"
+    },
+    {
+      "agent_name": "market_news_context_agent",
+      "depends_on": [],
+      "input_refs": [],
+      "notes": [],
+      "objective": "Assess current market regime, macro pressure, and news context.",
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/market_context_handoff.json",
+      "status": "completed",
+      "step_id": "step_market"
+    },
+    {
+      "agent_name": "pm_planner_agent",
+      "depends_on": [
+        "step_scanner",
+        "step_aggregation",
+        "step_backtest",
+        "step_market"
+      ],
+      "input_refs": [
+        "scanner_handoff.json",
+        "aggregation_handoff.json",
+        "backtest_handoff.json",
+        "market_context_handoff.json"
+      ],
+      "notes": [],
+      "objective": "Synthesize all evidence into final decisions, watchlists, and warnings.",
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/planner_handoff.json",
+      "status": "completed",
+      "step_id": "step_planner"
+    }
+  ],
+  "produced_at": "2026-04-17T02:14:35.859690+00:00",
+  "request_summary": {
+    "requested_agents": [
+      "scanner_agent",
+      "aggregation_agent",
+      "backtest_learning_agent",
+      "market_news_context_agent",
+      "pm_planner_agent"
+    ],
+    "requested_market": "KR",
+    "task_kind": "scan_pipeline",
+    "user_request": "Run scaffold pipeline through the top-level orchestrator."
+  },
+  "run_context": {
+    "as_of_date": "2026-04-17",
+    "code_version": "scaffold-v1",
+    "created_at": "2026-04-17T02:14:02.439279+00:00",
+    "market": "KR",
+    "model_version": "legacy",
+    "run_id": "RUN-4C3A4A5D",
+    "strategy_version": "legacy-compatible"
+  },
+  "shared_evidence": [
+    "runtime_state/shared_working/RUN-4C3A4A5D/orchestrator_request.json",
+    "runtime_state/shared_working/RUN-4C3A4A5D/scanner_handoff.json",
+    "runtime_state/shared_working/RUN-4C3A4A5D/aggregation_handoff.json",
+    "runtime_state/shared_working/RUN-4C3A4A5D/backtest_handoff.json",
+    "runtime_state/shared_working/RUN-4C3A4A5D/market_context_handoff.json",
+    "runtime_state/shared_working/RUN-4C3A4A5D/planner_handoff.json"
+  ],
+  "status": "completed",
+  "task_id": "TASK-403325B8",
+  "validation_checks": [
+    {
+      "agent_name": "scanner_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/scanner_handoff.json",
+      "step_id": "step_scanner"
+    },
+    {
+      "agent_name": "aggregation_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/aggregation_handoff.json",
+      "step_id": "step_aggregation"
+    },
+    {
+      "agent_name": "backtest_learning_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/backtest_handoff.json",
+      "step_id": "step_backtest"
+    },
+    {
+      "agent_name": "market_news_context_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/market_context_handoff.json",
+      "step_id": "step_market"
+    },
+    {
+      "agent_name": "pm_planner_agent",
+      "exists": true,
+      "output_ref": "runtime_state/shared_working/RUN-4C3A4A5D/planner_handoff.json",
+      "step_id": "step_planner"
+    }
+  ],
+  "warnings": []
+}

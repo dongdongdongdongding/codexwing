@@ -1,130 +1,513 @@
 {
-  "generated_at": "2026-04-01T15:40:39.065007+00:00",
+  "generated_at": "2026-04-17T02:14:35.830047+00:00",
+  "market": "KR",
   "market_group": "KR",
   "regime": {
-    "market": "KOSDAQ",
+    "market": "KR",
     "market_group": "KR",
     "status": "NORMAL",
-    "support_score": 90.0
+    "support_score": 100.0
   },
   "macro_overlay": {
     "status": "live_macro",
     "macro_state": "NORMAL",
-    "macro_risk_score": 10.0,
+    "macro_risk_score": 0.0,
     "macro_multiplier": 1.0,
     "macro_penalty": 0.0,
-    "flags": [
-      "VIX_ELEVATED"
-    ],
+    "flags": [],
     "raw_context": {
       "macro_state": "NORMAL",
-      "macro_risk_score": 10,
+      "macro_risk_score": 0,
       "macro_multiplier": 1.0,
       "macro_penalty": 0,
-      "flags": [
-        "VIX_ELEVATED"
-      ],
-      "vix": 23.920000076293945,
-      "vix_change_1d": -5.27,
-      "tnx": 4.296999931335449,
-      "tnx_change_1d": -0.32,
-      "krw": 1511.3800048828125,
-      "krw_change_1d": -0.31,
-      "spy_change_1d": 1.07
+      "flags": [],
+      "vix": 17.940000534057617,
+      "vix_change_1d": -1.27,
+      "tnx": 4.309000015258789,
+      "tnx_change_1d": 0.63,
+      "krw": 1479.780029296875,
+      "krw_change_1d": NaN,
+      "spy_change_1d": 0.25
     }
   },
   "news_impact": {
     "status": "live_intel",
     "market_sentiment": "MIXED",
-    "sentiment_score": 40,
-    "beneficiary_sectors": [
-      "기술",
-      "항공",
-      "해운",
-      "유틸리티",
-      "통신",
-      "보험"
+    "sentiment_score": -25,
+    "headline_count": 15,
+    "evidence_headlines": [
+      "코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓",
+      "종전 기대감에 코스피 6220선 탈환… 블랙록 \"한국 증시 비중 확대\"",
+      "코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태'",
+      "[오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원"
     ],
+    "raw_headlines": [
+      "[Fri, 17 Apr 2026 11:08:19 +0900] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 한국경제",
+      "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+      "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+      "[Naver Stock] 373220.KS [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+      "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+      "[Thu, 16 Apr 2026 06:58:04 GMT] 종전 기대감에 코스피 6220선 탈환… 블랙록 \"한국 증시 비중 확대\" - 매일일보 | 매일일보",
+      "[Fri, 17 Apr 2026 00:30:00 GMT] 코스피·코스닥 '장초반 하락' - 네이트 | 네이트",
+      "[Thu, 16 Apr 2026 00:29:22 GMT] 중동 긴장 완화 기대 속 코스피·코스닥 동반 상승 출발 - 이지경제 | 이지경제",
+      "[Naver Stock] 373220.KS [-5] 코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태' | 네이버증권",
+      "[Naver Stock] 277810.KQ [+3] [오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원 | 네이버증권",
+      "[DART 20260417] 기가레인 - 단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+      "[DART 20260417] 기가레인 - 단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+      "[DART 20260417] 현대지에프홀딩스 - 자기주식취득결과보고서 | 전자공시",
+      "[DART 20260417] PS일렉트로닉스 - 주요사항보고서(자기주식취득신탁계약해지결정) | 전자공시",
+      "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+    ],
+    "beneficiary_sectors": [],
     "victim_sectors": [
-      "방위산업",
-      "원자재",
-      "한국 성장주",
-      "고위험 고밸류 주식"
+      "방산"
     ],
-    "key_insight": "글로벌 지정학적 긴장 완화가 위험자산 투자 심리를 개선시키고 있지만, 한국 증시는 국내 요인으로 인해 불확실성이 높아 경기방어주와 AI 관련 기술주에 대한 선별적 접근이 필요하다.",
+    "theme_states": [
+      {
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "direction": "BENEFICIARY",
+        "strength_score": 56.0,
+        "confidence": 0.83,
+        "driver_categories": [],
+        "evidence": [
+          "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+          "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+          "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+          "[Naver Stock] 277810.KQ [+3] [오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원 | 네이버증권"
+        ],
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": -1.28,
+        "momentum_class": "FADING",
+        "updated_at": "2026-04-17T02:14:35.711162+00:00"
+      },
+      {
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "direction": "BENEFICIARY",
+        "strength_score": 30.0,
+        "confidence": 0.564,
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [
+          "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+        ],
+        "beneficiary_keywords": [
+          "조선/해양",
+          "조선",
+          "선박",
+          "해양",
+          "LNG선",
+          "해양플랜트"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-17T02:14:35.711595+00:00"
+      },
+      {
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "direction": "BENEFICIARY",
+        "strength_score": 18.0,
+        "confidence": 0.479,
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "POLITICS"
+        ],
+        "evidence": [],
+        "beneficiary_keywords": [
+          "방산",
+          "미사일",
+          "탄약",
+          "군수",
+          "무기"
+        ],
+        "victim_keywords": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-17T02:14:35.711629+00:00"
+      }
+    ],
+    "beneficiary_themes": [
+      {
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "strength_score": 56.0,
+        "confidence": 0.83
+      },
+      {
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "strength_score": 30.0,
+        "confidence": 0.564
+      },
+      {
+        "theme_id": "defense",
+        "theme_name": "방산",
+        "strength_score": 18.0,
+        "confidence": 0.479
+      }
+    ],
+    "headwind_themes": [],
+    "theme_evidence": {
+      "finance": [
+        "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+        "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+        "[Naver Stock] 277810.KQ [+3] [오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원 | 네이버증권"
+      ],
+      "shipbuilding": [
+        "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+      ],
+      "defense": []
+    },
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "signal": "MIXED",
+        "market_impact": 3,
+        "description": "중동 긴장 완화 기대감으로 전일 코스피가 6220선을 탈환했습니다.",
+        "evidence": "종전 기대감에 코스피 6220선 탈환"
+      },
+      {
+        "category": "LIQUIDITY",
+        "signal": "BEARISH",
+        "market_impact": -4,
+        "description": "외국인과 기관의 순매도가 코스피 약세 및 6200선 위협의 원인입니다.",
+        "evidence": "코스피, 외국인·기관 매도에 약보합"
+      },
+      {
+        "category": "FX",
+        "signal": "BEARISH",
+        "market_impact": -3,
+        "description": "원/달러 환율이 1474.60원으로 원화 약세가 지속되고 있습니다.",
+        "evidence": "환율 1474.60원"
+      }
+    ],
+    "driver_scores": {
+      "GEOPOLITICS": 3,
+      "OIL": 0,
+      "FX": -3,
+      "RATES": 0,
+      "POLITICS": 0,
+      "ECONOMY": 0,
+      "LIQUIDITY": -2,
+      "EARNINGS": 3,
+      "REGULATION": 0
+    },
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "direction": "UP",
+        "market_impact": -3,
+        "description": "원/달러 환율 상승은 한국 증시에 부담으로 작용합니다."
+      }
+    ],
+    "risk_flags": [
+      "외국인/기관 순매도",
+      "원화 약세",
+      "코스피 6200선 지지력 약화"
+    ],
+    "news_quality": "HIGH",
+    "key_insight": "중동 긴장 완화 기대감으로 전일 상승했으나, 외국인과 기관의 매도세 및 원화 약세로 코스피 6200선이 위협받으며 조정 국면에 진입했습니다.",
     "source": "gemini",
+    "model": "gemini-2.5-flash",
     "raw": {
       "market_sentiment": "MIXED",
-      "sentiment_score": 40,
+      "sentiment_score": -25,
       "themes": [
         {
-          "theme": "중동 지정학적 긴장 완화 및 종전 기대감",
+          "theme": "중동 지정학 리스크 완화 기대",
           "impact": "POSITIVE",
-          "description": "미국-이란 전쟁 종전 기대감으로 글로벌 지정학적 불확실성 완화 및 뉴욕 증시 급등 견인."
+          "description": "중동 긴장 완화 기대감으로 전일 코스피가 상승했습니다."
         },
         {
-          "theme": "한국 증시 부진 및 불확실성 심화",
+          "theme": "외국인/기관 매도세",
           "impact": "NEGATIVE",
-          "description": "한국 증시의 버블 경고, 외국인 투자 유출, 높은 변동성으로 인한 투자 매력도 하락."
-        },
-        {
-          "theme": "글로벌 경제 성장 둔화 및 AI 변수",
-          "impact": "MIXED",
-          "description": "글로벌 경제 성장 둔화 우려와 자본시장 불안정 속 AI 기술의 새로운 성장 동력 잠재."
+          "description": "외국인과 기관의 순매도가 코스피 약세의 주요 원인입니다."
         }
       ],
-      "beneficiary_sectors": [
-        "기술",
-        "항공",
-        "해운",
-        "유틸리티",
-        "통신",
-        "보험"
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "signal": "MIXED",
+          "market_impact": 3,
+          "description": "중동 긴장 완화 기대감으로 전일 코스피가 6220선을 탈환했습니다.",
+          "evidence": "종전 기대감에 코스피 6220선 탈환"
+        },
+        {
+          "category": "LIQUIDITY",
+          "signal": "BEARISH",
+          "market_impact": -4,
+          "description": "외국인과 기관의 순매도가 코스피 약세 및 6200선 위협의 원인입니다.",
+          "evidence": "코스피, 외국인·기관 매도에 약보합"
+        },
+        {
+          "category": "FX",
+          "signal": "BEARISH",
+          "market_impact": -3,
+          "description": "원/달러 환율이 1474.60원으로 원화 약세가 지속되고 있습니다.",
+          "evidence": "환율 1474.60원"
+        }
       ],
+      "driver_scores": {
+        "GEOPOLITICS": 3,
+        "OIL": 0,
+        "FX": -3,
+        "RATES": 0,
+        "POLITICS": 0,
+        "ECONOMY": 0,
+        "LIQUIDITY": -2,
+        "EARNINGS": 3,
+        "REGULATION": 0
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "direction": "UP",
+          "market_impact": -3,
+          "description": "원/달러 환율 상승은 한국 증시에 부담으로 작용합니다."
+        }
+      ],
+      "risk_flags": [
+        "외국인/기관 순매도",
+        "원화 약세",
+        "코스피 6200선 지지력 약화"
+      ],
+      "news_quality": "HIGH",
+      "beneficiary_sectors": [],
       "victim_sectors": [
-        "방위산업",
-        "원자재",
-        "한국 성장주",
-        "고위험 고밸류 주식"
+        "방산"
       ],
-      "beneficiary_keywords": [
-        "반도체",
-        "AI",
-        "클라우드",
-        "항공사",
-        "해운사",
-        "전력",
-        "통신서비스",
-        "손해보험"
-      ],
+      "beneficiary_keywords": [],
       "victim_keywords": [
-        "방산기업",
-        "군수품",
-        "원유",
-        "천연가스",
-        "고PER 주식",
-        "바이오"
+        "한화에어로"
       ],
-      "key_insight": "글로벌 지정학적 긴장 완화가 위험자산 투자 심리를 개선시키고 있지만, 한국 증시는 국내 요인으로 인해 불확실성이 높아 경기방어주와 AI 관련 기술주에 대한 선별적 접근이 필요하다.",
+      "key_insight": "중동 긴장 완화 기대감으로 전일 상승했으나, 외국인과 기관의 매도세 및 원화 약세로 코스피 6200선이 위협받으며 조정 국면에 진입했습니다.",
+      "evidence_headlines": [
+        "코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓",
+        "종전 기대감에 코스피 6220선 탈환… 블랙록 \"한국 증시 비중 확대\"",
+        "코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태'",
+        "[오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원"
+      ],
       "raw_headlines": [
-        "[Tue, 31 Mar 2026 05:10:00 GMT] 3월 한 달 만에 840조 원 증발한 한국 증시, 진짜 괜찮은 거야? 📉💸 - 뉴닉",
-        "[Sun, 22 Mar 2026 07:00:00 GMT] 韓증시에 드리운 '버블' 그림자…곳곳서 나오는 증시과열 경고음 - 연합뉴스",
-        "[Tue, 31 Mar 2026 09:44:19 GMT] KRX-홍콩 항셍지수회사, 공동지수 개발 ‘글로벌 투자 유치’ - 부산일보",
-        "[Tue, 31 Mar 2026 07:18:16 GMT] \"한국 주식엔 손 안대…빛났던 韓 증시, 부진한 투자처로 밀려났다\" - 아시아경제",
-        "[Tue, 31 Mar 2026 00:06:51 GMT] 하나증권 \"증시 불확실성 확대에 경기방어주 부각, 한국전력 SK텔레콤 코리안리 투심 개선 전망\" - 비즈니스포스트",
-        "[Wed, 25 Mar 2026 15:14:06 GMT] [글로벌 포커스] 이란전쟁이 키운 지정학의 변동성 - v.daum.net",
-        "[Thu, 26 Mar 2026 16:06:49 GMT] 중동 지정학 긴장과 한국 경제: 외교와 군사력 사이의 딜레마 - 브랜드경제신문",
-        "[Thu, 25 Dec 2025 08:00:00 GMT] 성장 둔화에 자본시장發 위기, AI 변수까지…2026년 글로벌 경제 키워드는 - newsian.co.kr",
-        "[Thu, 12 Mar 2026 07:00:00 GMT] “에너지 가격과 지정학이 다시 흔든 세계 경제”…글로벌 시장, 새로운 불확실성 국면 진입 - 한국경제",
-        "[Tue, 22 Jul 2025 07:00:00 GMT] “지정학·경제 불확실성에 글로벌기업 이익 443조 날아가” - KBS 뉴스",
-        "[Tue, 31 Mar 2026 20:14:50 GMT] 되살아난 종전 가능성에 급등한 뉴욕 증시... 나스닥 3.8% 상승 - 조선일보",
-        "[Tue, 31 Mar 2026 21:36:32 GMT] 뉴욕증시, 종전 기대감에 급등…나스닥 3.8%↑ - 여성신문",
-        "[Tue, 31 Mar 2026 21:09:45 GMT] 종전 낙관론에 뉴욕증시 10개월만에 최대폭 상승…나스닥 3.8%↑(종합) - 연합뉴스 한민족센터",
-        "[Tue, 31 Mar 2026 22:17:41 GMT] 종전 기대감에 뉴욕증시 상승…나스닥 3.8%↑ - 중소기업신문",
-        "[Wed, 01 Apr 2026 09:16:09 GMT] 종전 기대감에 매수세로… 나스닥 3.8% 폭등 [美-이란 전쟁] - 파이낸셜뉴스"
+        "[Fri, 17 Apr 2026 11:08:19 +0900] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 한국경제",
+        "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+        "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 373220.KS [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+        "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+        "[Thu, 16 Apr 2026 06:58:04 GMT] 종전 기대감에 코스피 6220선 탈환… 블랙록 \"한국 증시 비중 확대\" - 매일일보 | 매일일보",
+        "[Fri, 17 Apr 2026 00:30:00 GMT] 코스피·코스닥 '장초반 하락' - 네이트 | 네이트",
+        "[Thu, 16 Apr 2026 00:29:22 GMT] 중동 긴장 완화 기대 속 코스피·코스닥 동반 상승 출발 - 이지경제 | 이지경제",
+        "[Naver Stock] 373220.KS [-5] 코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태' | 네이버증권",
+        "[Naver Stock] 277810.KQ [+3] [오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원 | 네이버증권",
+        "[DART 20260417] 기가레인 - 단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+        "[DART 20260417] 기가레인 - 단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+        "[DART 20260417] 현대지에프홀딩스 - 자기주식취득결과보고서 | 전자공시",
+        "[DART 20260417] PS일렉트로닉스 - 주요사항보고서(자기주식취득신탁계약해지결정) | 전자공시",
+        "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
       ],
+      "headline_count": 15,
       "source": "gemini",
-      "timestamp": "2026-04-02 00:37"
+      "model": "gemini-2.5-flash",
+      "timestamp": "2026-04-17 11:14",
+      "disclosure_events": [
+        {
+          "company": "기가레인",
+          "report_name": "단일판매ㆍ공급계약체결(자율공시)",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "기가레인",
+          "report_name": "단일판매ㆍ공급계약체결(자율공시)",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "현대지에프홀딩스",
+          "report_name": "자기주식취득결과보고서",
+          "event_score": 3,
+          "category": "LIQUIDITY",
+          "label": "자사주",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "PS일렉트로닉스",
+          "report_name": "주요사항보고서(자기주식취득신탁계약해지결정)",
+          "event_score": 3,
+          "category": "LIQUIDITY",
+          "label": "자사주",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "HD한국조선해양",
+          "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "기가레인",
+          "report_name": "단일판매ㆍ공급계약체결(자율공시)",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "기가레인",
+          "report_name": "단일판매ㆍ공급계약체결(자율공시)",
+          "event_score": 4,
+          "category": "EARNINGS",
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE"
+        },
+        {
+          "company": "현대지에프홀딩스",
+          "report_name": "자기주식취득결과보고서",
+          "event_score": 3,
+          "category": "LIQUIDITY",
+          "label": "자사주",
+          "polarity": "POSITIVE"
+        }
+      ],
+      "company_event_bias": {
+        "기가레인": 8,
+        "현대지에프홀딩스": 6,
+        "PS일렉트로닉스": 6,
+        "HD한국조선해양": 8
+      },
+      "theme_states": [
+        {
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "direction": "BENEFICIARY",
+          "strength_score": 56.0,
+          "confidence": 0.83,
+          "driver_categories": [],
+          "evidence": [
+            "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+            "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+            "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+            "[Naver Stock] 277810.KQ [+3] [오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원 | 네이버증권"
+          ],
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": -1.28,
+          "momentum_class": "FADING",
+          "updated_at": "2026-04-17T02:14:35.711162+00:00"
+        },
+        {
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "direction": "BENEFICIARY",
+          "strength_score": 30.0,
+          "confidence": 0.564,
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [
+            "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+          ],
+          "beneficiary_keywords": [
+            "조선/해양",
+            "조선",
+            "선박",
+            "해양",
+            "LNG선",
+            "해양플랜트"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-17T02:14:35.711595+00:00"
+        },
+        {
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "direction": "BENEFICIARY",
+          "strength_score": 18.0,
+          "confidence": 0.479,
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "POLITICS"
+          ],
+          "evidence": [],
+          "beneficiary_keywords": [
+            "방산",
+            "미사일",
+            "탄약",
+            "군수",
+            "무기"
+          ],
+          "victim_keywords": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-17T02:14:35.711629+00:00"
+        }
+      ],
+      "beneficiary_themes": [
+        {
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "strength_score": 56.0,
+          "confidence": 0.83
+        },
+        {
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "strength_score": 30.0,
+          "confidence": 0.564
+        },
+        {
+          "theme_id": "defense",
+          "theme_name": "방산",
+          "strength_score": 18.0,
+          "confidence": 0.479
+        }
+      ],
+      "headwind_themes": [],
+      "theme_evidence": {
+        "finance": [
+          "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+          "[Naver Stock] 005930.KS [-3] 코스피, 외국인·기관 매도에 약보합…한화에어로 5%대↓ | 네이버증권",
+          "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+          "[Naver Stock] 277810.KQ [+3] [오늘증시]코스피, 종전 기대감에 6220선 재돌파…환율 1474.60원 | 네이버증권"
+        ],
+        "shipbuilding": [
+          "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+        ],
+        "defense": []
+      }
     }
   }
 }

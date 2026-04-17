@@ -1,0 +1,553 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "KRW_SOFTENING"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 5.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "KRW_SOFTENING"
+      ],
+      "krw": 1487.81005859375,
+      "krw_change_1d": 0.99,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 5,
+      "macro_state": "NORMAL",
+      "spy_change_1d": -0.07,
+      "tnx": 4.316999912261963,
+      "tnx_change_1d": 0.56,
+      "vix": 19.229999542236328,
+      "vix_change_1d": -1.33
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "2차전지",
+      "2차전지 장비",
+      "로봇"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.601,
+        "strength_score": 24.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.573,
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "description": "원/달러 환율 상승은 국내 증시에 부담으로 작용",
+        "direction": "UP",
+        "market_impact": -3
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 5,
+      "ECONOMY": -2,
+      "FX": -3,
+      "GEOPOLITICS": -3,
+      "LIQUIDITY": -1,
+      "OIL": 0,
+      "POLITICS": -1,
+      "RATES": -2,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑",
+      "환율 1470원대 후퇴…동결 속 불안 여전",
+      "[주달 상승테마] 2차전지",
+      "로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "KOSDAQ은 지정학적 긴장과 원화 약세의 거시적 압력에 직면해 있으나, 2차전지 및 로봇 관련 테마는 긍정적인 모멘텀을 보인다.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "미국-이란 협상 결렬 소식으로 코스피 하락 및 시장 불안감 증폭",
+        "evidence": "코스피, 美·이란 협상 결렬에 장 초반 하락",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "FX",
+        "description": "환율 12원 상승 및 1470원대 유지로 원화 약세 지속",
+        "evidence": "환율 12원↑, 환율 1470원대 후퇴",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "ECONOMY",
+        "description": "금리 동결에도 불구하고 시장 내 불안감이 여전함을 시사",
+        "evidence": "동결 속 불안 여전",
+        "market_impact": -2,
+        "signal": "BEARISH"
+      }
+    ],
+    "market_sentiment": "BEARISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "2차전지",
+        "2차전지 장비",
+        "로봇"
+      ],
+      "beneficiary_sectors": [
+        "2차전지",
+        "2차전지 장비",
+        "로봇"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.601,
+          "strength_score": 24.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.573,
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크"
+        }
+      ],
+      "company_event_bias": {
+        "세보엠이씨": 8,
+        "시선AI": -8,
+        "씨앤지하이테크": 8,
+        "에스티아이": 8,
+        "와이씨": 8,
+        "파두": 8,
+        "핀텔": -4
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "description": "원/달러 환율 상승은 국내 증시에 부담으로 작용",
+          "direction": "UP",
+          "market_impact": -3
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "시선AI",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(자기전환사채매도결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "와이씨",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "에스티아이",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "POLITICS",
+          "company": "핀텔",
+          "event_score": -2,
+          "label": "최대주주변경",
+          "polarity": "NEGATIVE",
+          "report_name": "최대주주변경을수반하는주식양수도계약해제ㆍ취소등"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "씨앤지하이테크",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "파두",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "세보엠이씨",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결(자율공시)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "시선AI",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(자기전환사채매도결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 5,
+        "ECONOMY": -2,
+        "FX": -3,
+        "GEOPOLITICS": -3,
+        "LIQUIDITY": -1,
+        "OIL": 0,
+        "POLITICS": -1,
+        "RATES": -2,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑",
+        "환율 1470원대 후퇴…동결 속 불안 여전",
+        "[주달 상승테마] 2차전지",
+        "로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "KOSDAQ은 지정학적 긴장과 원화 약세의 거시적 압력에 직면해 있으나, 2차전지 및 로봇 관련 테마는 긍정적인 모멘텀을 보인다.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "미국-이란 협상 결렬 소식으로 코스피 하락 및 시장 불안감 증폭",
+          "evidence": "코스피, 美·이란 협상 결렬에 장 초반 하락",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "FX",
+          "description": "환율 12원 상승 및 1470원대 유지로 원화 약세 지속",
+          "evidence": "환율 12원↑, 환율 1470원대 후퇴",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "ECONOMY",
+          "description": "금리 동결에도 불구하고 시장 내 불안감이 여전함을 시사",
+          "evidence": "동결 속 불안 여전",
+          "market_impact": -2,
+          "signal": "BEARISH"
+        }
+      ],
+      "market_sentiment": "BEARISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260413] 시선AI - 주요사항보고서(자기전환사채매도결정) | 전자공시",
+        "[DART 20260413] 와이씨 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260413] 에스티아이 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260413] 핀텔 - 최대주주변경을수반하는주식양수도계약해제ㆍ취소등 | 전자공시",
+        "[DART 20260413] 씨앤지하이테크 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260413] 파두 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260413] 세보엠이씨 - [기재정정]단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+        "[Mon, 13 Apr 2026 11:46:05 +0900] 로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어 | 한국경제",
+        "[Mon, 13 Apr 2026 09:18:20 +0900] 코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑ | 한국경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달",
+        "[주달 기대수익률] BGF그룹 | 주달"
+      ],
+      "risk_flags": [
+        "지정학적 리스크",
+        "환율 변동성",
+        "경제 불확실성"
+      ],
+      "sentiment_score": -40,
+      "source": "gemini",
+      "theme_evidence": {
+        "it_platform": [
+          "[DART 20260413] 시선AI - 주요사항보고서(자기전환사채매도결정) | 전자공시"
+        ],
+        "robotics": [
+          "[Mon, 13 Apr 2026 11:46:05 +0900] 로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어 | 한국경제"
+        ],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "telecom": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.601,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 24.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-13T03:29:51.866689+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "통신/네트워크",
+            "통신",
+            "네트워크",
+            "5G",
+            "6G",
+            "안테나"
+          ],
+          "confidence": 0.573,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달",
+            "[주달 핫테마] 6G | 주달"
+          ],
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "updated_at": "2026-04-13T03:29:51.866088+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.464,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY"
+          ],
+          "evidence": [
+            "[Mon, 13 Apr 2026 11:46:05 +0900] 로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어 | 한국경제"
+          ],
+          "strength_score": 16.0,
+          "theme_id": "robotics",
+          "theme_name": "로봇/자동화",
+          "updated_at": "2026-04-13T03:29:51.866550+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.407,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [
+            "[DART 20260413] 시선AI - 주요사항보고서(자기전환사채매도결정) | 전자공시"
+          ],
+          "strength_score": 8.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "updated_at": "2026-04-13T03:29:51.865478+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "주달 상승테마로 언급되며 긍정적 투자 심리 형성",
+          "impact": "POSITIVE",
+          "theme": "2차전지"
+        },
+        {
+          "description": "주달 상승테마로 언급되며 긍정적 투자 심리 형성",
+          "impact": "POSITIVE",
+          "theme": "2차전지 장비"
+        },
+        {
+          "description": "로봇 기술 발전 소식으로 관련 섹터에 긍정적 영향 기대",
+          "impact": "POSITIVE",
+          "theme": "로봇/AI"
+        }
+      ],
+      "timestamp": "2026-04-13 12:29",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[DART 20260413] 시선AI - 주요사항보고서(자기전환사채매도결정) | 전자공시",
+      "[DART 20260413] 와이씨 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260413] 에스티아이 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260413] 핀텔 - 최대주주변경을수반하는주식양수도계약해제ㆍ취소등 | 전자공시",
+      "[DART 20260413] 씨앤지하이테크 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260413] 파두 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260413] 세보엠이씨 - [기재정정]단일판매ㆍ공급계약체결(자율공시) | 전자공시",
+      "[Mon, 13 Apr 2026 11:46:05 +0900] 로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어 | 한국경제",
+      "[Mon, 13 Apr 2026 09:18:20 +0900] 코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑ | 한국경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달",
+      "[주달 핫테마] 6G | 주달",
+      "[주달 기대수익률] BGF그룹 | 주달"
+    ],
+    "risk_flags": [
+      "지정학적 리스크",
+      "환율 변동성",
+      "경제 불확실성"
+    ],
+    "sentiment_score": -40,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "it_platform": [
+        "[DART 20260413] 시선AI - 주요사항보고서(자기전환사채매도결정) | 전자공시"
+      ],
+      "robotics": [
+        "[Mon, 13 Apr 2026 11:46:05 +0900] 로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어 | 한국경제"
+      ],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "telecom": [
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.601,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 24.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-13T03:29:51.866689+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "통신/네트워크",
+          "통신",
+          "네트워크",
+          "5G",
+          "6G",
+          "안테나"
+        ],
+        "confidence": 0.573,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "updated_at": "2026-04-13T03:29:51.866088+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.464,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY"
+        ],
+        "evidence": [
+          "[Mon, 13 Apr 2026 11:46:05 +0900] 로봇이 우사인 볼트급이네…단거리 달리기 초속 10m 넘어 | 한국경제"
+        ],
+        "strength_score": 16.0,
+        "theme_id": "robotics",
+        "theme_name": "로봇/자동화",
+        "updated_at": "2026-04-13T03:29:51.866550+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.407,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [
+          "[DART 20260413] 시선AI - 주요사항보고서(자기전환사채매도결정) | 전자공시"
+        ],
+        "strength_score": 8.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "updated_at": "2026-04-13T03:29:51.865478+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-13T03:29:51.869625+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 95.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-13",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-13T03:29:00.114287+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-605EC1F8",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

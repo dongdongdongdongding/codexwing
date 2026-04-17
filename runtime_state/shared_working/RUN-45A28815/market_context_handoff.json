@@ -1,0 +1,788 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "KRW_SOFTENING"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 5.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "KRW_SOFTENING"
+      ],
+      "krw": 1484.280029296875,
+      "krw_change_1d": 0.75,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 5,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.02,
+      "tnx": 4.321000099182129,
+      "tnx_change_1d": 0.09,
+      "vix": 19.93000030517578,
+      "vix_change_1d": 3.64
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "에너지",
+      "2차전지"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.573,
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "유가 급등은 인플레이션 압력 및 기업 비용 증가로 KOSPI에 부정적.",
+        "direction": "UP",
+        "market_impact": -5
+      },
+      {
+        "asset": "USD/KRW",
+        "description": "환율 상승은 외국인 투자자 이탈 및 수입 물가 상승으로 KOSPI에 부정적.",
+        "direction": "UP",
+        "market_impact": -4
+      },
+      {
+        "asset": "US10Y",
+        "description": "글로벌 채권 금리 상승은 주식 시장의 매력도를 낮춰 KOSPI에 부정적.",
+        "direction": "UP",
+        "market_impact": -3
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": -3,
+      "FX": -4,
+      "GEOPOLITICS": -5,
+      "LIQUIDITY": -1,
+      "OIL": -5,
+      "POLITICS": 0,
+      "RATES": -2,
+      "REGULATION": 1
+    },
+    "evidence_headlines": [
+      "美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락",
+      "환율 1470원대 후퇴…동결 속 불안 여전",
+      "반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"",
+      "거래소, 홍콩거래소와 반도체 공동지수 개발"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [
+      {
+        "confidence": 0.629,
+        "strength_score": 39.0,
+        "theme_id": "해운",
+        "theme_name": "해운"
+      },
+      {
+        "confidence": 0.614,
+        "strength_score": 37.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      },
+      {
+        "confidence": 0.521,
+        "strength_score": 24.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양"
+      }
+    ],
+    "key_insight": "중동 지정학적 리스크로 인한 고유가와 원화 약세가 KOSPI 전반에 하방 압력을 가하는 가운데, 일부 섹터는 공급망 불안과 기업별 이슈에 직면.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "호르무즈 봉쇄로 인한 유가 급등 및 중동발 공급망 리스크 고조.",
+        "evidence": "美 호르무즈 봉쇄에 유가 100弗 재진입, 반도체·약 원료 '브롬' 중동 의존도 98%",
+        "market_impact": -5,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "OIL",
+        "description": "유가 100달러 재진입으로 글로벌 주식 시장 전반에 하락 압력.",
+        "evidence": "美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락",
+        "market_impact": -5,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "FX",
+        "description": "원/달러 환율 1470원대 후퇴로 외국인 투자심리 위축 및 수입물가 상승 우려.",
+        "evidence": "환율 1470원대 후퇴…동결 속 불안 여전",
+        "market_impact": -4,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "ECONOMY",
+        "description": "글로벌 주식·채권 하락 및 환율 불안정으로 전반적인 경제 불확실성 증가.",
+        "evidence": "글로벌 주식·채권 하락, 동결 속 불안 여전",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "REGULATION",
+        "description": "거래소의 반도체 공동지수 개발은 해당 산업에 긍정적.",
+        "evidence": "거래소, 홍콩거래소와 반도체 공동지수 개발",
+        "market_impact": 1,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "EARNINGS",
+        "description": "일부 기업의 계약 해지 및 체결 소식 혼재.",
+        "evidence": "DL - 단일판매ㆍ공급계약해지, LS - 단일판매ㆍ공급계약체결",
+        "market_impact": 0,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "BEARISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "원유",
+        "정유",
+        "가스",
+        "2차전지",
+        "배터리"
+      ],
+      "beneficiary_sectors": [
+        "에너지",
+        "2차전지"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.573,
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크"
+        }
+      ],
+      "company_event_bias": {
+        "DL": -8,
+        "DL이앤씨": -8,
+        "LS": 8,
+        "엘에스일렉트릭": 8,
+        "진원생명과학": -8,
+        "코오롱": 4,
+        "코오롱인더": 4
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "유가 급등은 인플레이션 압력 및 기업 비용 증가로 KOSPI에 부정적.",
+          "direction": "UP",
+          "market_impact": -5
+        },
+        {
+          "asset": "USD/KRW",
+          "description": "환율 상승은 외국인 투자자 이탈 및 수입 물가 상승으로 KOSPI에 부정적.",
+          "direction": "UP",
+          "market_impact": -4
+        },
+        {
+          "asset": "US10Y",
+          "description": "글로벌 채권 금리 상승은 주식 시장의 매력도를 낮춰 KOSPI에 부정적.",
+          "direction": "UP",
+          "market_impact": -3
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "DL",
+          "event_score": -5,
+          "label": "계약해지",
+          "polarity": "NEGATIVE",
+          "report_name": "단일판매ㆍ공급계약해지(자회사의 주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "DL이앤씨",
+          "event_score": -5,
+          "label": "계약해지",
+          "polarity": "NEGATIVE",
+          "report_name": "단일판매ㆍ공급계약해지"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "진원생명과학",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "코오롱",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]주요사항보고서(회사합병결정)(자회사의 주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "코오롱인더",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "LS",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "엘에스일렉트릭",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "DL",
+          "event_score": -5,
+          "label": "계약해지",
+          "polarity": "NEGATIVE",
+          "report_name": "단일판매ㆍ공급계약해지(자회사의 주요경영사항)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 2,
+        "ECONOMY": -3,
+        "FX": -4,
+        "GEOPOLITICS": -5,
+        "LIQUIDITY": -1,
+        "OIL": -5,
+        "POLITICS": 0,
+        "RATES": -2,
+        "REGULATION": 1
+      },
+      "evidence_headlines": [
+        "美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락",
+        "환율 1470원대 후퇴…동결 속 불안 여전",
+        "반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"",
+        "거래소, 홍콩거래소와 반도체 공동지수 개발"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [
+        {
+          "confidence": 0.629,
+          "strength_score": 39.0,
+          "theme_id": "해운",
+          "theme_name": "해운"
+        },
+        {
+          "confidence": 0.614,
+          "strength_score": 37.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        },
+        {
+          "confidence": 0.521,
+          "strength_score": 24.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양"
+        }
+      ],
+      "key_insight": "중동 지정학적 리스크로 인한 고유가와 원화 약세가 KOSPI 전반에 하방 압력을 가하는 가운데, 일부 섹터는 공급망 불안과 기업별 이슈에 직면.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "호르무즈 봉쇄로 인한 유가 급등 및 중동발 공급망 리스크 고조.",
+          "evidence": "美 호르무즈 봉쇄에 유가 100弗 재진입, 반도체·약 원료 '브롬' 중동 의존도 98%",
+          "market_impact": -5,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "OIL",
+          "description": "유가 100달러 재진입으로 글로벌 주식 시장 전반에 하락 압력.",
+          "evidence": "美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락",
+          "market_impact": -5,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "FX",
+          "description": "원/달러 환율 1470원대 후퇴로 외국인 투자심리 위축 및 수입물가 상승 우려.",
+          "evidence": "환율 1470원대 후퇴…동결 속 불안 여전",
+          "market_impact": -4,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "ECONOMY",
+          "description": "글로벌 주식·채권 하락 및 환율 불안정으로 전반적인 경제 불확실성 증가.",
+          "evidence": "글로벌 주식·채권 하락, 동결 속 불안 여전",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "REGULATION",
+          "description": "거래소의 반도체 공동지수 개발은 해당 산업에 긍정적.",
+          "evidence": "거래소, 홍콩거래소와 반도체 공동지수 개발",
+          "market_impact": 1,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "EARNINGS",
+          "description": "일부 기업의 계약 해지 및 체결 소식 혼재.",
+          "evidence": "DL - 단일판매ㆍ공급계약해지, LS - 단일판매ㆍ공급계약체결",
+          "market_impact": 0,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "BEARISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[DART 20260413] DL - 단일판매ㆍ공급계약해지(자회사의 주요경영사항) | 전자공시",
+        "[DART 20260413] DL이앤씨 - 단일판매ㆍ공급계약해지 | 전자공시",
+        "[DART 20260413] 진원생명과학 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260413] 코오롱 - [기재정정]주요사항보고서(회사합병결정)(자회사의 주요경영사항) | 전자공시",
+        "[DART 20260413] 코오롱인더 - [기재정정]주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260413] LS - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시",
+        "[DART 20260413] 엘에스일렉트릭 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[Mon, 13 Apr 2026 22:23:21 +0900] 반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"(종합) | 연합뉴스",
+        "[Mon, 13 Apr 2026 18:04:18 +0900] 거래소, 홍콩거래소와 반도체 공동지수 개발 | 한국경제",
+        "[Mon, 13 Apr 2026 19:53:52 +0900] 美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락 | 한국경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ],
+      "risk_flags": [
+        "중동 지정학 리스크",
+        "고유가",
+        "원화 약세",
+        "글로벌 경기 둔화 우려",
+        "공급망 불안정"
+      ],
+      "sentiment_score": -70,
+      "source": "gemini",
+      "theme_evidence": {
+        "eco_energy": [
+          "[Mon, 13 Apr 2026 19:53:52 +0900] 美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락 | 한국경제"
+        ],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "semiconductor": [
+          "[Mon, 13 Apr 2026 18:04:18 +0900] 거래소, 홍콩거래소와 반도체 공동지수 개발 | 한국경제",
+          "[Mon, 13 Apr 2026 22:23:21 +0900] 반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"(종합) | 연합뉴스"
+        ],
+        "shipbuilding": [],
+        "telecom": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "해운": []
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.629,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "ECONOMY",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "strength_score": 39.0,
+          "theme_id": "해운",
+          "theme_name": "해운",
+          "updated_at": "2026-04-13T14:45:18.751735+00:00",
+          "victim_keywords": [
+            "벌크",
+            "운임",
+            "컨테이너",
+            "해운"
+          ]
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.614,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Mon, 13 Apr 2026 19:53:52 +0900] 美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락 | 한국경제"
+          ],
+          "strength_score": 37.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-13T14:45:18.751247+00:00",
+          "victim_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ]
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.521,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "strength_score": 24.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "updated_at": "2026-04-13T14:45:18.751609+00:00",
+          "victim_keywords": [
+            "조선/해양",
+            "조선",
+            "선박",
+            "해양",
+            "LNG선",
+            "해양플랜트"
+          ]
+        },
+        {
+          "beneficiary_keywords": [
+            "통신/네트워크",
+            "통신",
+            "네트워크",
+            "5G",
+            "6G",
+            "안테나"
+          ],
+          "confidence": 0.573,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달",
+            "[주달 핫테마] 6G | 주달"
+          ],
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "updated_at": "2026-04-13T14:45:18.750813+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.551,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Mon, 13 Apr 2026 18:04:18 +0900] 거래소, 홍콩거래소와 반도체 공동지수 개발 | 한국경제",
+            "[Mon, 13 Apr 2026 22:23:21 +0900] 반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"(종합) | 연합뉴스"
+          ],
+          "strength_score": 17.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-13T14:45:18.750584+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.473,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 6.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-13T14:45:18.751501+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "호르무즈 봉쇄로 유가 급등 및 반도체 원료 공급망 불안 야기.",
+          "impact": "NEGATIVE",
+          "theme": "중동 지정학 리스크"
+        },
+        {
+          "description": "유가 100달러 재진입으로 글로벌 주식·채권 시장 하락 압력.",
+          "impact": "NEGATIVE",
+          "theme": "고유가"
+        },
+        {
+          "description": "반도체·약 원료 '브롬'의 중동 의존도 98%로 공급망 취약성 부각.",
+          "impact": "NEGATIVE",
+          "theme": "공급망 불안정"
+        },
+        {
+          "description": "홍콩거래소와 반도체 공동지수 개발로 산업 성장 기대.",
+          "impact": "POSITIVE",
+          "theme": "반도체 산업 성장"
+        },
+        {
+          "description": "주간 상승 테마로 부각.",
+          "impact": "POSITIVE",
+          "theme": "2차전지"
+        },
+        {
+          "description": "환율 1470원대 후퇴 및 불안감 지속.",
+          "impact": "NEGATIVE",
+          "theme": "환율 변동성"
+        }
+      ],
+      "timestamp": "2026-04-13 23:45",
+      "victim_keywords": [
+        "건설",
+        "반도체 (원료)",
+        "항공사",
+        "해운사",
+        "수입"
+      ],
+      "victim_sectors": [
+        "건설",
+        "반도체",
+        "항공",
+        "해운",
+        "수입 의존 산업"
+      ]
+    },
+    "raw_headlines": [
+      "[DART 20260413] DL - 단일판매ㆍ공급계약해지(자회사의 주요경영사항) | 전자공시",
+      "[DART 20260413] DL이앤씨 - 단일판매ㆍ공급계약해지 | 전자공시",
+      "[DART 20260413] 진원생명과학 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
+      "[DART 20260413] 코오롱 - [기재정정]주요사항보고서(회사합병결정)(자회사의 주요경영사항) | 전자공시",
+      "[DART 20260413] 코오롱인더 - [기재정정]주요사항보고서(회사합병결정) | 전자공시",
+      "[DART 20260413] LS - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시",
+      "[DART 20260413] 엘에스일렉트릭 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[Mon, 13 Apr 2026 22:23:21 +0900] 반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"(종합) | 연합뉴스",
+      "[Mon, 13 Apr 2026 18:04:18 +0900] 거래소, 홍콩거래소와 반도체 공동지수 개발 | 한국경제",
+      "[Mon, 13 Apr 2026 19:53:52 +0900] 美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락 | 한국경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달",
+      "[주달 핫테마] 6G | 주달"
+    ],
+    "risk_flags": [
+      "중동 지정학 리스크",
+      "고유가",
+      "원화 약세",
+      "글로벌 경기 둔화 우려",
+      "공급망 불안정"
+    ],
+    "sentiment_score": -70,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "eco_energy": [
+        "[Mon, 13 Apr 2026 19:53:52 +0900] 美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락 | 한국경제"
+      ],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "semiconductor": [
+        "[Mon, 13 Apr 2026 18:04:18 +0900] 거래소, 홍콩거래소와 반도체 공동지수 개발 | 한국경제",
+        "[Mon, 13 Apr 2026 22:23:21 +0900] 반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"(종합) | 연합뉴스"
+      ],
+      "shipbuilding": [],
+      "telecom": [
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ],
+      "해운": []
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.629,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "ECONOMY",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "strength_score": 39.0,
+        "theme_id": "해운",
+        "theme_name": "해운",
+        "updated_at": "2026-04-13T14:45:18.751735+00:00",
+        "victim_keywords": [
+          "벌크",
+          "운임",
+          "컨테이너",
+          "해운"
+        ]
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.614,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Mon, 13 Apr 2026 19:53:52 +0900] 美 호르무즈 봉쇄에 유가 100弗 재진입…글로벌 주식·채권 하락 | 한국경제"
+        ],
+        "strength_score": 37.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-13T14:45:18.751247+00:00",
+        "victim_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ]
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.521,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "strength_score": 24.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "updated_at": "2026-04-13T14:45:18.751609+00:00",
+        "victim_keywords": [
+          "조선/해양",
+          "조선",
+          "선박",
+          "해양",
+          "LNG선",
+          "해양플랜트"
+        ]
+      },
+      {
+        "beneficiary_keywords": [
+          "통신/네트워크",
+          "통신",
+          "네트워크",
+          "5G",
+          "6G",
+          "안테나"
+        ],
+        "confidence": 0.573,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "updated_at": "2026-04-13T14:45:18.750813+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.551,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Mon, 13 Apr 2026 18:04:18 +0900] 거래소, 홍콩거래소와 반도체 공동지수 개발 | 한국경제",
+          "[Mon, 13 Apr 2026 22:23:21 +0900] 반도체·약 원료 '브롬' 중동 의존도 98%…\"공급망 대응 필요\"(종합) | 연합뉴스"
+        ],
+        "strength_score": 17.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-13T14:45:18.750584+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.473,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 6.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-13T14:45:18.751501+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": [
+      "건설",
+      "반도체",
+      "항공",
+      "해운",
+      "수입 의존 산업"
+    ]
+  },
+  "produced_at": "2026-04-13T14:45:18.754067+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 95.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-13",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-13T14:44:17.534522+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-45A28815",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

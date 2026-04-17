@@ -1,0 +1,19 @@
+{
+  "code_version": "bridge-v1",
+  "files": {
+    "aggregation_handoff": "runtime_state/shared_working/RUN-057BDADC/aggregation_handoff.json",
+    "backtest_handoff": "runtime_state/shared_working/RUN-057BDADC/backtest_handoff.json",
+    "improvement_tickets": "runtime_state/shared_working/RUN-057BDADC/improvement_tickets.json",
+    "market_context_handoff": "runtime_state/shared_working/RUN-057BDADC/market_context_handoff.json",
+    "outcome_health": "runtime_state/shared_working/RUN-057BDADC/outcome_health.json",
+    "planner_handoff": "runtime_state/shared_working/RUN-057BDADC/planner_handoff.json",
+    "postmortem_report": "runtime_state/shared_working/RUN-057BDADC/postmortem_report.json",
+    "profile_diagnostics": "runtime_state/shared_working/RUN-057BDADC/profile_diagnostics.json",
+    "realized_outcomes": "runtime_state/shared_working/RUN-057BDADC/realized_outcomes.json",
+    "scanner_handoff": "runtime_state/shared_working/RUN-057BDADC/scanner_handoff.json"
+  },
+  "market": "KOSPI",
+  "model_version": "legacy",
+  "run_id": "RUN-057BDADC",
+  "strategy_version": "legacy-ui-v1"
+}

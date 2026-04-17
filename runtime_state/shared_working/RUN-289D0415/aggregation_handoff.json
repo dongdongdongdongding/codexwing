@@ -1,0 +1,309 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 33,
+      "label": "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.9%",
+      "share": 0.252
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 21,
+      "label": "🚀 Momentum | Ranker:35.9%",
+      "share": 0.16
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 12,
+      "label": "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:35.9%",
+      "share": 0.092
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "114810.KQ",
+      "member_count": 28,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "반도체",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 90.9,
+      "leader_ticker": "095270.KQ",
+      "member_count": 23,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "331920.KQ",
+      "member_count": 18,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 36.0
+    },
+    {
+      "breadth_score": 100.0,
+      "cluster_type": "theme",
+      "concentration_score": 90.2,
+      "leader_ticker": "451760.KQ",
+      "member_count": 9,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "IT서비스/플랫폼",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 84.0,
+      "cluster_type": "theme",
+      "concentration_score": 87.2,
+      "leader_ticker": "452280.KQ",
+      "member_count": 7,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 131,
+    "strategy_distribution": {
+      "🎣 OBV_DIV | Ranker:35.9%": 1,
+      "🎣 OBV_DIV | Ranker:36.0%": 1,
+      "🎣 OBV_DIV | Ranker:43.3%": 3,
+      "🎣 OBV_DIV | ⚡ 단기과열(강세) | Ranker:35.9%": 1,
+      "🎣 OBV_DIV | ⚡ 단기과열(강세) | Ranker:43.3%": 1,
+      "🎣 RSI_DIV | Ranker:35.9% | ContextTailwind": 1,
+      "🎣 RSI_DIV | Ranker:43.3%": 1,
+      "🎣 RSI_DIV | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:37.0%": 1,
+      "🎣 RSI_DIV | ⚡ 단기과열(강세) | Ranker:35.9%": 2,
+      "👑 주도주 하이패스 | Ranker:35.9%": 1,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:35.9%": 12,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:35.9% | ContextTailwind": 2,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:36.0%": 2,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:43.2%": 2,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:43.3%": 2,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:43.3% | ContextTailwind": 2,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:43.5%": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:35.9%": 1,
+      "🚀 Momentum | Ranker:35.9%": 21,
+      "🚀 Momentum | Ranker:35.9% | ContextTailwind": 2,
+      "🚀 Momentum | Ranker:36.4%": 5,
+      "🚀 Momentum | Ranker:43.0%": 6,
+      "🚀 Momentum | Ranker:43.2%": 2,
+      "🚀 Momentum | Ranker:43.3%": 2,
+      "🚀 Momentum | Ranker:43.5%": 3,
+      "🚀 Momentum | Ranker:45.3%": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.9%": 33,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.9% | ContextTailwind": 7,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:36.0%": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:36.4%": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:43.0%": 2,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:43.0% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:43.2%": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:43.3%": 2,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:43.5%": 4
+    },
+    "theme_distribution": {
+      "2차전지": 7,
+      "IT서비스/플랫폼": 9,
+      "건설/부동산": 1,
+      "금융": 6,
+      "로봇/자동화": 3,
+      "바이오/헬스케어": 18,
+      "반도체": 28,
+      "소비재/유통": 3,
+      "자동차": 2,
+      "철강/금속/소재": 7,
+      "친환경/에너지": 1,
+      "통신/네트워크": 23
+    },
+    "top_strategy": "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.9%",
+    "top_strategy_share": 0.252,
+    "trend_distribution": {
+      "DOWN": 7,
+      "NEUTRAL": 6,
+      "UP": 118
+    },
+    "weak_candidate_count": 29,
+    "weak_candidate_ratio": 0.221
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "114810.KQ",
+      "member_count": 28,
+      "theme_name": "반도체",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 91.4,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "114810.KQ"
+        },
+        {
+          "leader_score": 100.0,
+          "score": 75.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "094170.KQ"
+        },
+        {
+          "leader_score": 100.0,
+          "score": 66.9,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "121600.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "095270.KQ",
+      "member_count": 23,
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 90.9,
+          "score": 90.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "095270.KQ"
+        },
+        {
+          "leader_score": 87.2,
+          "score": 86.3,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "361390.KQ"
+        },
+        {
+          "leader_score": 85.4,
+          "score": 76.8,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "474610.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "331920.KQ",
+      "member_count": 18,
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 36.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 97.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "331920.KQ"
+        },
+        {
+          "leader_score": 98.2,
+          "score": 60.2,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "095700.KQ"
+        },
+        {
+          "leader_score": 90.0,
+          "score": 97.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "028300.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "451760.KQ",
+      "member_count": 9,
+      "theme_name": "IT서비스/플랫폼",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 90.2,
+          "score": 97.5,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "451760.KQ"
+        },
+        {
+          "leader_score": 88.7,
+          "score": 49.6,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "203650.KQ"
+        },
+        {
+          "leader_score": 79.6,
+          "score": 51.7,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "052400.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "452280.KQ",
+      "member_count": 7,
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 87.2,
+          "score": 39.5,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "452280.KQ"
+        },
+        {
+          "leader_score": 85.3,
+          "score": 76.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "043260.KQ"
+        },
+        {
+          "leader_score": 82.6,
+          "score": 53.1,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "354320.KQ"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-17T01:42:13.101987+00:00",
+  "quality_notes": [
+    "Total candidates: 131",
+    "Weak-score candidates (<55): 29 (22.1%)",
+    "Top strategy cluster: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.9% (33/131)",
+    "Top theme cluster: 반도체 (28/131)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-17",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-17T01:41:38.042682+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-289D0415",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

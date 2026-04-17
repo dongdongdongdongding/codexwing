@@ -1,0 +1,659 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1470.27001953125,
+      "krw_change_1d": null,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.98,
+      "tnx": 4.295000076293945,
+      "tnx_change_1d": -0.05,
+      "vix": 18.290000915527344,
+      "vix_change_1d": -4.34
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.587,
+        "strength_score": 22.0,
+        "theme_id": "finance",
+        "theme_name": "금융"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "유가 상승은 글로벌 경제 성장 둔화 및 인플레이션 압력으로 시장에 부정적인 영향을 미칩니다.",
+        "direction": "UP",
+        "market_impact": -4
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": -2,
+      "FX": 0,
+      "GEOPOLITICS": -3,
+      "LIQUIDITY": 2,
+      "OIL": -4,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라",
+      "코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등",
+      "전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\""
+    ],
+    "headline_count": 15,
+    "headwind_themes": [
+      {
+        "confidence": 0.543,
+        "strength_score": 27.0,
+        "theme_id": "해운",
+        "theme_name": "해운"
+      },
+      {
+        "confidence": 0.5,
+        "strength_score": 21.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양"
+      },
+      {
+        "confidence": 0.479,
+        "strength_score": 18.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      }
+    ],
+    "key_insight": "코스닥은 상승 마감했으나, 전쟁으로 인한 고유가와 글로벌 경기 둔화 가능성이 주요 하방 리스크로 작용할 수 있습니다.",
+    "macro_drivers": [
+      {
+        "category": "OIL",
+        "description": "유가가 110달러를 넘을 경우 세계 경제 성장률이 크게 하락할 수 있다는 경고가 나왔습니다.",
+        "evidence": "유가 110弗 넘으면 세계 성장률 3.1→2%로 추락",
+        "market_impact": -4,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "GEOPOLITICS",
+        "description": "전쟁으로 인한 고물가 압력이 글로벌 경제에 부정적인 영향을 미칠 수 있습니다.",
+        "evidence": "전쟁發 고물가",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "외국인과 기관의 매수세가 코스피 시장 상승을 견인하며 전반적인 시장 분위기에 긍정적 영향을 주었습니다.",
+        "evidence": "외국인·기관 매수세에 6000 돌파",
+        "market_impact": 3,
+        "signal": "BULLISH"
+      }
+    ],
+    "market_sentiment": "MIXED",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.587,
+          "strength_score": 22.0,
+          "theme_id": "finance",
+          "theme_name": "금융"
+        }
+      ],
+      "company_event_bias": {
+        "본느": 6,
+        "엑스큐어": -8,
+        "유일에너테크": -8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "유가 상승은 글로벌 경제 성장 둔화 및 인플레이션 압력으로 시장에 부정적인 영향을 미칩니다.",
+          "direction": "UP",
+          "market_impact": -4
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "유일에너테크",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "본느",
+          "event_score": 3,
+          "label": "자사주",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(자기주식취득신탁계약체결결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "엑스큐어",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(전환사채권발행결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "유일에너테크",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "본느",
+          "event_score": 3,
+          "label": "자사주",
+          "polarity": "POSITIVE",
+          "report_name": "주요사항보고서(자기주식취득신탁계약체결결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "엑스큐어",
+          "event_score": -5,
+          "label": "전환사채",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(전환사채권발행결정)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": -2,
+        "FX": 0,
+        "GEOPOLITICS": -3,
+        "LIQUIDITY": 2,
+        "OIL": -4,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라",
+        "코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등",
+        "전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\""
+      ],
+      "headline_count": 15,
+      "headwind_themes": [
+        {
+          "confidence": 0.543,
+          "strength_score": 27.0,
+          "theme_id": "해운",
+          "theme_name": "해운"
+        },
+        {
+          "confidence": 0.5,
+          "strength_score": 21.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양"
+        },
+        {
+          "confidence": 0.479,
+          "strength_score": 18.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        }
+      ],
+      "key_insight": "코스닥은 상승 마감했으나, 전쟁으로 인한 고유가와 글로벌 경기 둔화 가능성이 주요 하방 리스크로 작용할 수 있습니다.",
+      "macro_drivers": [
+        {
+          "category": "OIL",
+          "description": "유가가 110달러를 넘을 경우 세계 경제 성장률이 크게 하락할 수 있다는 경고가 나왔습니다.",
+          "evidence": "유가 110弗 넘으면 세계 성장률 3.1→2%로 추락",
+          "market_impact": -4,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "GEOPOLITICS",
+          "description": "전쟁으로 인한 고물가 압력이 글로벌 경제에 부정적인 영향을 미칠 수 있습니다.",
+          "evidence": "전쟁發 고물가",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "외국인과 기관의 매수세가 코스피 시장 상승을 견인하며 전반적인 시장 분위기에 긍정적 영향을 주었습니다.",
+          "evidence": "외국인·기관 매수세에 6000 돌파",
+          "market_impact": 3,
+          "signal": "BULLISH"
+        }
+      ],
+      "market_sentiment": "MIXED",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Naver Stock] 196170.KQ [+2] ‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라 | 네이버증권",
+        "[Naver Stock] 298380.KQ [+6] [티타임]코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등 | 네이버증권",
+        "[DART 20260414] 사토시홀딩스 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260414] 유일에너테크 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[DART 20260414] 에코볼트 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260414] 본느 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+        "[DART 20260414] 엘컴텍 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+        "[DART 20260414] 상상인 - 신탁계약해지결과보고서 | 전자공시",
+        "[DART 20260414] 엑스큐어 - 주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[Tue, 14 Apr 2026 18:56:16 +0900] 피플바이오, 10억원 유상증자…김민수에 제3자배정 | 연합뉴스",
+        "[Tue, 14 Apr 2026 22:00:02 +0900] 만화가 편지 한 통에 도시가 '들썩'…동상 앞 외국인 '바글바글' | 한국경제",
+        "[Tue, 14 Apr 2026 22:00:00 +09:00] 전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\" | 매일경제",
+        "[Tue, 14 Apr 2026 22:00:00 +09:00] 정부, 15일부터 석화원료 수급 안정화 시행 … 정유사, 대체원유 두달치 1.2억배럴 확보 | 매일경제",
+        "[Tue, 14 Apr 2026 20:13:04 +0900] 국민연금, 환헤지 비율 10% → 15% 확대…30조 '환율 방어막' 친다 | 한국경제",
+        "[Tue, 14 Apr 2026 17:53:46 +09:00] 국민연금, 환율 구원투수로 … 전략적 환헤지 15%로 확대 | 매일경제"
+      ],
+      "risk_flags": [
+        "고유가",
+        "글로벌 경기 둔화",
+        "지정학적 리스크",
+        "인플레이션 압력"
+      ],
+      "sentiment_score": 20,
+      "source": "gemini",
+      "theme_evidence": {
+        "bio": [
+          "[Tue, 14 Apr 2026 18:56:16 +0900] 피플바이오, 10억원 유상증자…김민수에 제3자배정 | 연합뉴스"
+        ],
+        "eco_energy": [
+          "[Tue, 14 Apr 2026 22:00:00 +09:00] 전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\" | 매일경제",
+          "[Tue, 14 Apr 2026 22:00:00 +09:00] 정부, 15일부터 석화원료 수급 안정화 시행 … 정유사, 대체원유 두달치 1.2억배럴 확보 | 매일경제"
+        ],
+        "finance": [
+          "[Naver Stock] 196170.KQ [+2] ‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라 | 네이버증권",
+          "[Naver Stock] 298380.KQ [+6] [티타임]코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등 | 네이버증권"
+        ],
+        "secondary_battery": [],
+        "shipbuilding": [],
+        "해운": []
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.543,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "ECONOMY",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "momentum_avg_change_pct": -2.98,
+          "momentum_class": "FADING",
+          "strength_score": 27.0,
+          "theme_id": "해운",
+          "theme_name": "해운",
+          "updated_at": "2026-04-14T13:12:54.064869+00:00",
+          "victim_keywords": [
+            "벌크",
+            "운임",
+            "컨테이너",
+            "해운"
+          ]
+        },
+        {
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "confidence": 0.587,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[Naver Stock] 196170.KQ [+2] ‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라 | 네이버증권",
+            "[Naver Stock] 298380.KQ [+6] [티타임]코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등 | 네이버증권"
+          ],
+          "momentum_avg_change_pct": 2.93,
+          "momentum_class": "EXPLODING",
+          "strength_score": 22.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-14T13:12:54.063248+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.5,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 21.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "updated_at": "2026-04-14T13:12:54.064672+00:00",
+          "victim_keywords": [
+            "조선/해양",
+            "조선",
+            "선박",
+            "해양",
+            "LNG선",
+            "해양플랜트"
+          ]
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.479,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 18.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-14T13:12:54.064573+00:00",
+          "victim_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ]
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.364,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Tue, 14 Apr 2026 18:56:16 +0900] 피플바이오, 10억원 유상증자…김민수에 제3자배정 | 연합뉴스"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 2.0,
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "updated_at": "2026-04-14T13:12:54.062872+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.437,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Tue, 14 Apr 2026 22:00:00 +09:00] 전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\" | 매일경제",
+            "[Tue, 14 Apr 2026 22:00:00 +09:00] 정부, 15일부터 석화원료 수급 안정화 시행 … 정유사, 대체원유 두달치 1.2억배럴 확보 | 매일경제"
+          ],
+          "momentum_avg_change_pct": 1.59,
+          "momentum_class": "ACCELERATING",
+          "strength_score": 1.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-14T13:12:54.064332+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "코스닥 시장이 상승 마감했으며, 코스피는 외국인과 기관 매수세에 힘입어 급등했습니다.",
+          "impact": "POSITIVE",
+          "theme": "Market Rally"
+        },
+        {
+          "description": "전쟁으로 인한 고유가 및 고물가 압력이 글로벌 경제 성장을 둔화시킬 수 있다는 우려가 있습니다.",
+          "impact": "NEGATIVE",
+          "theme": "Global Economic Headwinds"
+        },
+        {
+          "description": "개별 기업들의 유상증자, 주권매매거래정지, 자기주식취득 등 다양한 기업 활동이 발생했습니다.",
+          "impact": "MIXED",
+          "theme": "Corporate Actions"
+        }
+      ],
+      "timestamp": "2026-04-14 22:12",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Naver Stock] 196170.KQ [+2] ‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라 | 네이버증권",
+      "[Naver Stock] 298380.KQ [+6] [티타임]코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등 | 네이버증권",
+      "[DART 20260414] 사토시홀딩스 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+      "[DART 20260414] 유일에너테크 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+      "[DART 20260414] 에코볼트 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+      "[DART 20260414] 본느 - 주요사항보고서(자기주식취득신탁계약체결결정) | 전자공시",
+      "[DART 20260414] 엘컴텍 - 주권매매거래정지              (주식의 병합, 분할 등 전자등록 변경, 말소) | 전자공시",
+      "[DART 20260414] 상상인 - 신탁계약해지결과보고서 | 전자공시",
+      "[DART 20260414] 엑스큐어 - 주요사항보고서(전환사채권발행결정) | 전자공시",
+      "[Tue, 14 Apr 2026 18:56:16 +0900] 피플바이오, 10억원 유상증자…김민수에 제3자배정 | 연합뉴스",
+      "[Tue, 14 Apr 2026 22:00:02 +0900] 만화가 편지 한 통에 도시가 '들썩'…동상 앞 외국인 '바글바글' | 한국경제",
+      "[Tue, 14 Apr 2026 22:00:00 +09:00] 전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\" | 매일경제",
+      "[Tue, 14 Apr 2026 22:00:00 +09:00] 정부, 15일부터 석화원료 수급 안정화 시행 … 정유사, 대체원유 두달치 1.2억배럴 확보 | 매일경제",
+      "[Tue, 14 Apr 2026 20:13:04 +0900] 국민연금, 환헤지 비율 10% → 15% 확대…30조 '환율 방어막' 친다 | 한국경제",
+      "[Tue, 14 Apr 2026 17:53:46 +09:00] 국민연금, 환율 구원투수로 … 전략적 환헤지 15%로 확대 | 매일경제"
+    ],
+    "risk_flags": [
+      "고유가",
+      "글로벌 경기 둔화",
+      "지정학적 리스크",
+      "인플레이션 압력"
+    ],
+    "sentiment_score": 20,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "bio": [
+        "[Tue, 14 Apr 2026 18:56:16 +0900] 피플바이오, 10억원 유상증자…김민수에 제3자배정 | 연합뉴스"
+      ],
+      "eco_energy": [
+        "[Tue, 14 Apr 2026 22:00:00 +09:00] 전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\" | 매일경제",
+        "[Tue, 14 Apr 2026 22:00:00 +09:00] 정부, 15일부터 석화원료 수급 안정화 시행 … 정유사, 대체원유 두달치 1.2억배럴 확보 | 매일경제"
+      ],
+      "finance": [
+        "[Naver Stock] 196170.KQ [+2] ‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라 | 네이버증권",
+        "[Naver Stock] 298380.KQ [+6] [티타임]코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등 | 네이버증권"
+      ],
+      "secondary_battery": [],
+      "shipbuilding": [],
+      "해운": []
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.543,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "ECONOMY",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "momentum_avg_change_pct": -2.98,
+        "momentum_class": "FADING",
+        "strength_score": 27.0,
+        "theme_id": "해운",
+        "theme_name": "해운",
+        "updated_at": "2026-04-14T13:12:54.064869+00:00",
+        "victim_keywords": [
+          "벌크",
+          "운임",
+          "컨테이너",
+          "해운"
+        ]
+      },
+      {
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "confidence": 0.587,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[Naver Stock] 196170.KQ [+2] ‘장중 6000피 터치’ 코스피, 5967.75 상승 마감…코스닥도 올라 | 네이버증권",
+          "[Naver Stock] 298380.KQ [+6] [티타임]코스피, 외국인·기관 매수세에 6000 돌파…3.64% 급등 | 네이버증권"
+        ],
+        "momentum_avg_change_pct": 2.93,
+        "momentum_class": "EXPLODING",
+        "strength_score": 22.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-14T13:12:54.063248+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.5,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 21.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "updated_at": "2026-04-14T13:12:54.064672+00:00",
+        "victim_keywords": [
+          "조선/해양",
+          "조선",
+          "선박",
+          "해양",
+          "LNG선",
+          "해양플랜트"
+        ]
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.479,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 18.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-14T13:12:54.064573+00:00",
+        "victim_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ]
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.364,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Tue, 14 Apr 2026 18:56:16 +0900] 피플바이오, 10억원 유상증자…김민수에 제3자배정 | 연합뉴스"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 2.0,
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "updated_at": "2026-04-14T13:12:54.062872+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.437,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Tue, 14 Apr 2026 22:00:00 +09:00] 전쟁發 고물가 …\"유가 110弗 넘으면 세계 성장률 3.1→2%로 추락\" | 매일경제",
+          "[Tue, 14 Apr 2026 22:00:00 +09:00] 정부, 15일부터 석화원료 수급 안정화 시행 … 정유사, 대체원유 두달치 1.2억배럴 확보 | 매일경제"
+        ],
+        "momentum_avg_change_pct": 1.59,
+        "momentum_class": "ACCELERATING",
+        "strength_score": 1.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-14T13:12:54.064332+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-14T13:12:54.317793+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-14",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-14T13:11:57.002574+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-362AD61D",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

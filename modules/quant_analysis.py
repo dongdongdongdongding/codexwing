@@ -1717,7 +1717,6 @@ class QuantStrategy:
                     _strategy_family = str(getattr(self, "strategy_family", "") or ("KR_CORE" if is_kr else "US_MAIN")).upper()
                     _base_prob = _safe_prob(res["5pct"] if res["5pct"] is not None else universal_prob, 50.0)
                     _clean_prob = _safe_prob(res["5pct_clean"] if res["5pct_clean"] is not None else _base_prob, _base_prob)
-                    _decision_proxy = round((_alpha_raw * 0.58) + (_whale_score * 0.10) + (_base_prob * 0.20) + (_clean_prob * 0.12), 1)
 
                     _p25_row = {
                         "alpha_score": round(_alpha_raw, 1),
@@ -1764,6 +1763,11 @@ class QuantStrategy:
                         "overheat_x_uptrend": int(_is_overheat and _is_uptrend),
                         "sub7_x_breakout": int(_is_sub7 and _is_breakout),
                         "marcap_band": _marcap_band,
+                        # Whale supply signals (binary) — for future ML training
+                        "whale_high": int(_whale_score >= 60),
+                        "whale_very_high": int(_whale_score >= 70),
+                        "whale_low": int(_whale_score <= 35),
+                        "whale_very_low": int(_whale_score <= 25),
                     }
                     _p25_df = pd.DataFrame([_p25_row])
                     _p25_X = _p25_df.reindex(columns=p25_feats, fill_value=0).fillna(0)
@@ -3281,7 +3285,19 @@ class QuantStrategy:
                     nlp_score = 0
             
             catalyst_bonus += nlp_score
-        
+
+        # --- CATALYST 8: Whale / Supply-Demand Explicit Bonus & Penalty ---
+        # whale_score already enters via base weighted formula (weight 0.25),
+        # but explicit thresholds create stronger signal discrimination.
+        if whale_score >= 70:
+            catalyst_bonus += 8   # Strong institutional conviction
+        elif whale_score >= 60:
+            catalyst_bonus += 5   # Solid institutional support
+        elif whale_score <= 25:
+            catalyst_bonus -= 15  # Active retail dumping / distribution
+        elif whale_score <= 35:
+            catalyst_bonus -= 8   # Retail-dominated, weak supply
+
         # Cap catalyst bonus (Allow deeper penalties for Death Penalty)
         catalyst_bonus = max(-60, min(25, catalyst_bonus))
         

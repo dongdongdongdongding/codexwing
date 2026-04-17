@@ -1,0 +1,35 @@
+{
+  "agents_executed": [
+    "scanner_agent",
+    "aggregation_agent",
+    "backtest_learning_agent",
+    "market_news_context_agent",
+    "pm_planner_agent"
+  ],
+  "market": "KR",
+  "planner": {
+    "decision_count": 131,
+    "warning_codes": [],
+    "watchlist_count": 20
+  },
+  "postmortem": {
+    "likely_causes": []
+  },
+  "run_id": "RUN-4C3A4A5D",
+  "scanner": {
+    "candidate_count": 131,
+    "reject_reason_counts": {
+      "FETCH_DATA_FAIL": 4,
+      "KR_BASELINE_FILTER_FAIL": 57,
+      "KR_HARD_FILTER_FAIL": 28,
+      "KR_SIGNAL_WINDOW_FAIL": 33,
+      "LIQUIDITY_FILTER_FAIL": 1374,
+      "MISSING_ANTIGRAV_SCORE": 34,
+      "PRECISION_GATE_TREND_MISMATCH": 57
+    },
+    "top_reject_reason": {}
+  },
+  "status": "completed",
+  "task_id": "TASK-403325B8",
+  "task_kind": "scan_pipeline"
+}

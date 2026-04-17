@@ -190,10 +190,11 @@ def compute_rank_adjustment(
     tier: str,
     whale_score: float,
     vol_ratio: float,
+    volume_confirmed: bool | None = None,
     macro_ctx: Dict[str, Any] | None = None,
     consec_days: int = 0,
 ) -> float:
-    """Rank adjustment with recent realized-outcome calibration."""
+    """Decision Score v2 rank adjustment favoring durable movers over late chases."""
     rank_adjust = 0.0
 
     is_peak = bool(position and "Peak" in position)
@@ -204,69 +205,65 @@ def compute_rank_adjustment(
     )
     is_rsidiv = bool(strategy_tag and "RSI_DIV" in strategy_tag)
     is_obvdiv = bool(strategy_tag and "OBV_DIV" in strategy_tag)
+    tier_text = str(tier or "")
+    volume_ok = bool(volume_confirmed) if volume_confirmed is not None else float(vol_ratio) >= 1.0
+    leader_context = bool(
+        strategy_tag
+        and any(tag in strategy_tag for tag in ("Profile:POSITIVE", "주도주 하이패스", "ContextTailwind"))
+    )
+    strong_peak_leader = bool(
+        is_peak
+        and is_overheat
+        and volume_ok
+        and float(vol_ratio) >= 2.5
+        and any(marker in tier_text for marker in ("T0", "T1"))
+        and (float(whale_score) >= 60.0 or leader_context)
+    )
 
     if real_trend == "UP":
-        rank_adjust += 5
+        rank_adjust += 6
     elif real_trend == "DOWN":
-        rank_adjust -= 10
+        rank_adjust -= 8
 
     if is_rising:
-        rank_adjust += 2
+        rank_adjust += 5
     if is_resting:
         rank_adjust += 1
 
-    if vol_ratio > 2.5:
-        rank_adjust += 8
-    elif 1.8 < vol_ratio <= 2.5:
-        rank_adjust += 4
-    elif 0.8 <= vol_ratio <= 1.8:
-        rank_adjust += 2
-    elif vol_ratio < 0.5:
-        rank_adjust -= 4
-
-    if whale_score >= 70:
-        rank_adjust += 6
-    elif whale_score >= 55:
-        rank_adjust += 4
-    elif whale_score >= 40:
-        rank_adjust += 1
-
-    if real_trend == "UP" and is_rising and 0.8 <= vol_ratio <= 1.8 and whale_score >= 55:
-        rank_adjust += 6
-
-    if consec_days >= 5:
-        rank_adjust += 10
-    elif consec_days >= 3:
-        rank_adjust += 5
-    elif consec_days >= 2:
-        rank_adjust += 2
+    if is_peak:
+        rank_adjust -= 10
 
     if is_overheat:
-        rank_adjust += 10
+        rank_adjust -= 8
 
-    if is_peak and vol_ratio >= 2.0:
-        rank_adjust += 7
+    if volume_ok:
+        rank_adjust += 4
+    else:
+        rank_adjust -= 5
 
-    if is_peak and is_overheat and vol_ratio >= 2.5:
-        rank_adjust += 8
+    if whale_score >= 60:
+        rank_adjust += 3
+    elif whale_score >= 50:
+        rank_adjust += 1
 
-    if is_peak and is_overheat and vol_ratio >= 3.5 and real_trend != "UP":
-        rank_adjust -= 15
+    if "T3" in tier_text:
+        rank_adjust -= 4
+    elif "T2" in tier_text:
+        rank_adjust += 5 if volume_ok else -3
+    elif any(marker in tier_text for marker in ("T0", "T1")):
+        rank_adjust += 5
 
-    if is_rising and (not is_overheat) and vol_ratio <= 1.8:
-        rank_adjust -= 6
+    if strong_peak_leader:
+        # Preserve room for genuine explosive leaders instead of flattening them as late chases.
+        rank_adjust += 12
+
+    if consec_days >= 3 and real_trend == "UP" and is_rising and volume_ok and not is_peak:
+        rank_adjust += 2
 
     if is_rsidiv:
         rank_adjust -= 8
     elif is_obvdiv and not is_overheat:
         rank_adjust -= 4
-
-    if tier and str(tier).startswith("⚡"):
-        rank_adjust += 7
-    elif tier and str(tier).startswith("🏆"):
-        rank_adjust += 5
-    elif tier and "⭐" in str(tier):
-        rank_adjust += 3
 
     if macro_ctx:
         penalty = float(macro_ctx.get("macro_penalty", 0) or 0)

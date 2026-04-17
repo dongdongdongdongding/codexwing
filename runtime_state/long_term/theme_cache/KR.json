@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-04-16T07:27:52.389941+00:00",
-  "market": "KOSDAQ",
+  "generated_at": "2026-04-17T02:17:15.123013+00:00",
+  "market": "KOSPI",
   "theme_states": [
     {
       "theme_id": "finance",
       "theme_name": "금융",
       "direction": "BENEFICIARY",
-      "strength_score": 48.0,
-      "confidence": 0.773,
+      "strength_score": 86.0,
+      "confidence": 0.95,
       "driver_categories": [],
       "evidence": [
-        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-        "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-        "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-        "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+        "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
       ],
       "beneficiary_keywords": [
         "금융",
@@ -24,52 +24,25 @@
         "카드"
       ],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.9,
-      "momentum_class": "EXPLODING",
-      "updated_at": "2026-04-16T07:27:52.387396+00:00",
+      "momentum_avg_change_pct": -1.11,
+      "momentum_class": "FADING",
+      "updated_at": "2026-04-17T02:17:15.121555+00:00",
       "momentum_naver_count": 10
-    },
-    {
-      "theme_id": "bio",
-      "theme_name": "바이오/헬스케어",
-      "direction": "BENEFICIARY",
-      "strength_score": 39.0,
-      "confidence": 0.709,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "REGULATION"
-      ],
-      "evidence": [
-        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-        "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-        "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
-      ],
-      "beneficiary_keywords": [
-        "바이오/헬스케어",
-        "바이오",
-        "헬스케어",
-        "의약",
-        "치료제",
-        "백신"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-16T07:27:52.386747+00:00"
     },
     {
       "theme_id": "shipbuilding",
       "theme_name": "조선/해양",
       "direction": "BENEFICIARY",
-      "strength_score": 24.0,
-      "confidence": 0.521,
+      "strength_score": 18.0,
+      "confidence": 0.479,
       "driver_categories": [
         "EARNINGS",
         "GEOPOLITICS",
         "OIL"
       ],
-      "evidence": [],
+      "evidence": [
+        "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+      ],
       "beneficiary_keywords": [
         "조선/해양",
         "조선",
@@ -81,14 +54,14 @@
       "victim_keywords": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "updated_at": "2026-04-16T07:27:52.389679+00:00"
+      "updated_at": "2026-04-17T02:17:15.122759+00:00"
     },
     {
       "theme_id": "defense",
       "theme_name": "방산",
       "direction": "BENEFICIARY",
-      "strength_score": 24.0,
-      "confidence": 0.521,
+      "strength_score": 18.0,
+      "confidence": 0.479,
       "driver_categories": [
         "EARNINGS",
         "GEOPOLITICS",
@@ -105,14 +78,75 @@
       "victim_keywords": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "updated_at": "2026-04-16T07:27:52.389779+00:00"
+      "updated_at": "2026-04-17T02:14:35.711629+00:00"
+    },
+    {
+      "theme_id": "bio",
+      "theme_name": "바이오/헬스케어",
+      "direction": "BENEFICIARY",
+      "strength_score": 33.0,
+      "confidence": 0.666,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "REGULATION"
+      ],
+      "evidence": [
+        "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+        "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
+      ],
+      "beneficiary_keywords": [
+        "바이오/헬스케어",
+        "바이오",
+        "헬스케어",
+        "의약",
+        "치료제",
+        "백신"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-04-17T01:42:44.093602+00:00"
+    },
+    {
+      "theme_id": "consumer_retail",
+      "theme_name": "소비재/유통",
+      "direction": "NEUTRAL",
+      "strength_score": 12.0,
+      "confidence": 0.436,
+      "driver_categories": [],
+      "evidence": [
+        "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
+      ],
+      "beneficiary_keywords": [],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-04-17T01:42:44.093994+00:00"
+    },
+    {
+      "theme_id": "construction_realestate",
+      "theme_name": "건설/부동산",
+      "direction": "NEUTRAL",
+      "strength_score": 10.0,
+      "confidence": 0.421,
+      "driver_categories": [],
+      "evidence": [
+        "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시"
+      ],
+      "beneficiary_keywords": [],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-04-17T01:33:43.298904+00:00"
     },
     {
       "theme_id": "eco_energy",
       "theme_name": "친환경/에너지",
-      "direction": "BENEFICIARY",
-      "strength_score": 22.0,
-      "confidence": 0.507,
+      "direction": "NEUTRAL",
+      "strength_score": 2.0,
+      "confidence": 0.364,
       "driver_categories": [
         "EARNINGS",
         "ECONOMY",
@@ -124,65 +158,57 @@
         "REGULATION"
       ],
       "evidence": [
-        "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
+        "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제"
       ],
-      "beneficiary_keywords": [
-        "친환경/에너지",
-        "친환경",
-        "에너지",
-        "태양광",
-        "풍력",
-        "수소"
-      ],
+      "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.55,
-      "momentum_class": "EXPLODING",
-      "updated_at": "2026-04-16T07:27:52.389275+00:00",
+      "momentum_avg_change_pct": -0.19,
+      "momentum_class": "STEADY",
+      "updated_at": "2026-04-17T01:33:43.299363+00:00",
       "momentum_naver_count": 12
     },
     {
-      "theme_id": "secondary_battery",
-      "theme_name": "2차전지",
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "direction": "BENEFICIARY",
+      "strength_score": 22.0,
+      "confidence": 0.507,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "LIQUIDITY",
+        "REGULATION"
+      ],
+      "evidence": [
+        "[Naver Stock] 402340.KS [+8] 코스피, 중동 전쟁 이후 처음으로 6200선 돌파…TSMC 호실적에 반도체... | 네이버증권"
+      ],
+      "beneficiary_keywords": [
+        "반도체",
+        "메모리",
+        "HBM",
+        "낸드",
+        "DRAM",
+        "파운드리"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": 0.48,
+      "momentum_class": "STEADY",
+      "updated_at": "2026-04-16T17:40:59.518812+00:00",
+      "momentum_naver_count": 8
+    },
+    {
+      "theme_id": "it_platform",
+      "theme_name": "IT서비스/플랫폼",
       "direction": "BENEFICIARY",
       "strength_score": 18.0,
       "confidence": 0.479,
       "driver_categories": [
         "EARNINGS",
         "ECONOMY",
-        "FX",
-        "OIL"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "2차전지",
-        "이차전지",
-        "배터리",
-        "양극재",
-        "음극재",
-        "전해액"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-16T07:27:21.587279+00:00"
-    },
-    {
-      "theme_id": "it_platform",
-      "theme_name": "IT서비스/플랫폼",
-      "direction": "BENEFICIARY",
-      "strength_score": 27.0,
-      "confidence": 0.623,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
         "LIQUIDITY",
         "RATES"
       ],
-      "evidence": [
-        "[Thu, 16 Apr 2026 14:02:17 +09:00] “물류센터에 AI 입힌다”… 중소기업에 최대 1억 지원 | 매일경제",
-        "[Thu, 16 Apr 2026 14:36:14 +0900] 고병원성 AI 특별방역기간 종료…위험지역은 '심각' 단계 유지 | 연합뉴스",
-        "[Thu, 16 Apr 2026 14:38:20 +0900] '미토스 쇼크'에 네카토·통신사 비상…AI 해킹 대응 총력 | 연합뉴스"
-      ],
+      "evidence": [],
       "beneficiary_keywords": [
         "IT서비스/플랫폼",
         "IT서비스",
@@ -194,7 +220,85 @@
       "victim_keywords": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "updated_at": "2026-04-16T05:47:15.778038+00:00"
+      "updated_at": "2026-04-16T17:40:59.518205+00:00"
+    },
+    {
+      "theme_id": "robotics",
+      "theme_name": "로봇/자동화",
+      "direction": "BENEFICIARY",
+      "strength_score": 18.0,
+      "confidence": 0.479,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "LIQUIDITY"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [
+        "로봇/자동화",
+        "로봇",
+        "자동화",
+        "스마트팩토리",
+        "협동로봇",
+        "물류로봇"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-04-16T17:40:59.519500+00:00"
+    },
+    {
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지",
+      "direction": "BENEFICIARY",
+      "strength_score": 34.0,
+      "confidence": 0.673,
+      "driver_categories": [
+        "EARNINGS",
+        "ECONOMY",
+        "FX",
+        "OIL"
+      ],
+      "evidence": [
+        "[DART 20260416] 하이드로리튬 - 주요사항보고서(자기주식처분결정) | 전자공시",
+        "[주달 상승테마] 2차전지 | 주달"
+      ],
+      "beneficiary_keywords": [
+        "2차전지",
+        "이차전지",
+        "배터리",
+        "양극재",
+        "음극재",
+        "전해액"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-04-16T17:31:24.539197+00:00"
+    },
+    {
+      "theme_id": "해운",
+      "theme_name": "해운",
+      "direction": "BENEFICIARY",
+      "strength_score": 21.0,
+      "confidence": 0.5,
+      "driver_categories": [
+        "ECONOMY",
+        "GEOPOLITICS",
+        "OIL"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [
+        "벌크",
+        "운임",
+        "컨테이너",
+        "해운"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": -2.34,
+      "momentum_class": "FADING",
+      "updated_at": "2026-04-16T17:31:24.539399+00:00",
+      "momentum_naver_count": 1
     },
     {
       "theme_id": "telecom",
@@ -213,85 +317,6 @@
       "updated_at": "2026-04-16T05:47:15.778826+00:00"
     },
     {
-      "theme_id": "semiconductor",
-      "theme_name": "반도체",
-      "direction": "BENEFICIARY",
-      "strength_score": 49.0,
-      "confidence": 0.78,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "LIQUIDITY",
-        "REGULATION"
-      ],
-      "evidence": [
-        "[Naver Stock] 207940.KS [+2] 美 증시 훈풍에도 반도체 '숨고르기'…코스피 장 초반 1%대 상승[개장... | 네이버증권",
-        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
-      ],
-      "beneficiary_keywords": [
-        "반도체",
-        "메모리",
-        "HBM",
-        "낸드",
-        "DRAM",
-        "파운드리"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": 1.63,
-      "momentum_class": "ACCELERATING",
-      "updated_at": "2026-04-16T05:27:03.853297+00:00",
-      "momentum_naver_count": 8
-    },
-    {
-      "theme_id": "robotics",
-      "theme_name": "로봇/자동화",
-      "direction": "BENEFICIARY",
-      "strength_score": 27.0,
-      "confidence": 0.543,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "LIQUIDITY"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "로봇/자동화",
-        "로봇",
-        "자동화",
-        "스마트팩토리",
-        "협동로봇",
-        "물류로봇"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-16T05:27:03.853943+00:00"
-    },
-    {
-      "theme_id": "해운",
-      "theme_name": "해운",
-      "direction": "BENEFICIARY",
-      "strength_score": 27.0,
-      "confidence": 0.543,
-      "driver_categories": [
-        "ECONOMY",
-        "GEOPOLITICS",
-        "OIL"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "벌크",
-        "운임",
-        "컨테이너",
-        "해운"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": 1.81,
-      "momentum_class": "ACCELERATING",
-      "updated_at": "2026-04-16T05:27:03.854370+00:00",
-      "momentum_naver_count": 1
-    },
-    {
       "theme_id": "automobile",
       "theme_name": "자동차",
       "direction": "NEUTRAL",
@@ -306,22 +331,6 @@
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "updated_at": "2026-04-16T05:27:03.853113+00:00"
-    },
-    {
-      "theme_id": "construction_realestate",
-      "theme_name": "건설/부동산",
-      "direction": "NEUTRAL",
-      "strength_score": 12.0,
-      "confidence": 0.436,
-      "driver_categories": [],
-      "evidence": [
-        "[DART 20260415] 현대건설 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시"
-      ],
-      "beneficiary_keywords": [],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-15T17:12:46.408415+00:00"
     },
     {
       "theme_id": "game_content_ent",
@@ -365,8 +374,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.37,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 1.74,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 10,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -380,8 +389,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.34,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 1.85,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 13,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -395,8 +404,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.02,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.14,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 7,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -410,8 +419,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -4.26,
-      "momentum_class": "FADING",
+      "momentum_avg_change_pct": -0.15,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 4,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -425,8 +434,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 3.13,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.09,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 6,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -440,8 +449,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 1.16,
-      "momentum_class": "ACCELERATING",
+      "momentum_avg_change_pct": -0.94,
+      "momentum_class": "FADING",
       "momentum_naver_count": 3,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -455,8 +464,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 0.29,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": 1.33,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -470,8 +479,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.98,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.14,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -485,8 +494,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 4.3,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -2.75,
+      "momentum_class": "FADING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -500,8 +509,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.3,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.4,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -515,8 +524,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 1.05,
-      "momentum_class": "ACCELERATING",
+      "momentum_avg_change_pct": -0.11,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -530,7 +539,7 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -0.55,
+      "momentum_avg_change_pct": -0.67,
       "momentum_class": "FADING",
       "momentum_naver_count": 6,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
@@ -545,8 +554,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 2.15,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.17,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 12,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -560,7 +569,7 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 1.52,
+      "momentum_avg_change_pct": 0.63,
       "momentum_class": "ACCELERATING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
@@ -575,8 +584,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 1.03,
-      "momentum_class": "ACCELERATING",
+      "momentum_avg_change_pct": 3.38,
+      "momentum_class": "EXPLODING",
       "momentum_naver_count": 3,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -590,8 +599,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 7.12,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -3.93,
+      "momentum_class": "FADING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     }
@@ -600,53 +609,28 @@
     {
       "theme_id": "finance",
       "theme_name": "금융",
-      "strength_score": 48.0,
-      "confidence": 0.773
-    },
-    {
-      "theme_id": "bio",
-      "theme_name": "바이오/헬스케어",
-      "strength_score": 39.0,
-      "confidence": 0.709
+      "strength_score": 86.0,
+      "confidence": 0.95
     },
     {
       "theme_id": "shipbuilding",
       "theme_name": "조선/해양",
-      "strength_score": 24.0,
-      "confidence": 0.521
-    },
-    {
-      "theme_id": "defense",
-      "theme_name": "방산",
-      "strength_score": 24.0,
-      "confidence": 0.521
-    },
-    {
-      "theme_id": "eco_energy",
-      "theme_name": "친환경/에너지",
-      "strength_score": 22.0,
-      "confidence": 0.507
+      "strength_score": 18.0,
+      "confidence": 0.479
     }
   ],
   "headwind_themes": [],
   "theme_evidence": {
-    "bio": [
-      "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-      "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-      "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
-    ],
     "finance": [
-      "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-      "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-      "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-      "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+      "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+      "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
+      "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+      "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
     ],
-    "eco_energy": [
-      "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
-    ],
-    "shipbuilding": [],
-    "defense": []
+    "shipbuilding": [
+      "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+    ]
   },
   "source": "gemini",
-  "theme_momentum_updated_at": "2026-04-16T07:27:52.667630+00:00"
+  "theme_momentum_updated_at": "2026-04-17T02:17:15.296993+00:00"
 }

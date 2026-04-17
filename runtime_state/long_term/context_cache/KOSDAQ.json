@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-16T07:27:52.668062+00:00",
+  "generated_at": "2026-04-17T01:42:44.426417+00:00",
   "market": "KOSDAQ",
   "market_group": "KR",
   "regime": {
@@ -21,58 +21,64 @@
       "macro_multiplier": 1.0,
       "macro_penalty": 0,
       "flags": [],
-      "vix": 18.170000076293945,
-      "vix_change_1d": -1.03,
-      "tnx": 4.2820000648498535,
-      "tnx_change_1d": 0.61,
-      "krw": 1473.719970703125,
+      "vix": 17.940000534057617,
+      "vix_change_1d": -1.27,
+      "tnx": 4.309000015258789,
+      "tnx_change_1d": 0.63,
+      "krw": 1479.3800048828125,
       "krw_change_1d": NaN,
-      "spy_change_1d": 0.79
+      "spy_change_1d": 0.25
     }
   },
   "news_impact": {
     "status": "live_intel",
-    "market_sentiment": "BULLISH",
-    "sentiment_score": 70,
+    "market_sentiment": "MIXED",
+    "sentiment_score": 10,
     "headline_count": 15,
     "evidence_headlines": [
-      "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-      "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
-      "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-      "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스"
+      "코스닥 바이오도 급등",
+      "외인·기관 순매도에 장중 약보합세",
+      "바이오시밀러 승인 간소화, 시장 재편",
+      "피플바이오 - [기재정정]주요사항보고서(유상증자결정)"
     ],
     "raw_headlines": [
-      "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-      "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
-      "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-      "[DART 20260416] 빛과전자 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
-      "[DART 20260416] 감성코퍼레이션 - 주요사항보고서(회사분할결정) | 전자공시",
-      "[DART 20260416] 온코크로스 - [첨부정정]주요사항보고서(회사합병결정) | 전자공시",
-      "[DART 20260416] 티에스아이 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-      "[DART 20260416] 링크드 - 단일판매ㆍ공급계약체결 | 전자공시",
-      "[DART 20260416] 엔알비 - 단일판매ㆍ공급계약체결 | 전자공시",
-      "[DART 20260416] 뉴온 - [첨부정정]주요사항보고서(자기전환사채만기전취득결정) | 전자공시",
-      "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스",
-      "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스",
-      "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr",
-      "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-      "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권"
+      "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+      "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+      "[Naver Stock] 086520.KQ [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+      "[Naver Stock] 086520.KQ [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+      "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+      "[DART 20260417] 대원미디어 - 자기주식처분결과보고서 | 전자공시",
+      "[DART 20260416] 셀루메드 - 투자판단관련주요경영사항              (경영지배인 선임의 건) | 전자공시",
+      "[DART 20260416] 지아이에스 - 주요사항보고서(자기전환사채매도결정) | 전자공시",
+      "[DART 20260416] 모아라이프플러스 - 주요사항보고서(전환사채권발행결정) | 전자공시",
+      "[DART 20260416] NPX - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260416] 링크드 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+      "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권",
+      "[Fri, 17 Apr 2026 10:34:36 +09:00] “서학개미가 달러 들고가 주식 쇼핑”…수출 잘 나가도 환율 급등 이유 찾았다 | 매일경제",
+      "[Fri, 17 Apr 2026 10:30:39 +09:00] “매일 이자 2배 받아가세요”…토스뱅크, 3개월간 신규고객에 우대금리 | 매일경제",
+      "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
     ],
-    "beneficiary_sectors": [],
-    "victim_sectors": [],
+    "beneficiary_sectors": [
+      "바이오 (대형사)",
+      "계약 체결 기업"
+    ],
+    "victim_sectors": [
+      "바이오 (중소형사)",
+      "유상증자/전환사채 발행 기업"
+    ],
     "theme_states": [
       {
         "theme_id": "finance",
         "theme_name": "금융",
         "direction": "BENEFICIARY",
-        "strength_score": 48.0,
-        "confidence": 0.773,
+        "strength_score": 50.0,
+        "confidence": 0.787,
         "driver_categories": [],
         "evidence": [
-          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-          "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-          "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-          "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+          "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+          "[Naver Stock] 086520.KQ [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+          "[Naver Stock] 086520.KQ [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
         ],
         "beneficiary_keywords": [
           "금융",
@@ -83,25 +89,25 @@
           "카드"
         ],
         "victim_keywords": [],
-        "momentum_avg_change_pct": 2.9,
-        "momentum_class": "EXPLODING",
-        "updated_at": "2026-04-16T07:27:52.387396+00:00"
+        "momentum_avg_change_pct": -1.26,
+        "momentum_class": "FADING",
+        "updated_at": "2026-04-17T01:42:44.093896+00:00"
       },
       {
         "theme_id": "bio",
         "theme_name": "바이오/헬스케어",
         "direction": "BENEFICIARY",
-        "strength_score": 39.0,
-        "confidence": 0.709,
+        "strength_score": 33.0,
+        "confidence": 0.666,
         "driver_categories": [
           "EARNINGS",
           "ECONOMY",
           "REGULATION"
         ],
         "evidence": [
-          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-          "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-          "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
+          "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+          "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+          "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
         ],
         "beneficiary_keywords": [
           "바이오/헬스케어",
@@ -114,45 +120,23 @@
         "victim_keywords": [],
         "momentum_avg_change_pct": null,
         "momentum_class": null,
-        "updated_at": "2026-04-16T07:27:52.386747+00:00"
-      },
-      {
-        "theme_id": "shipbuilding",
-        "theme_name": "조선/해양",
-        "direction": "BENEFICIARY",
-        "strength_score": 24.0,
-        "confidence": 0.521,
-        "driver_categories": [
-          "EARNINGS",
-          "GEOPOLITICS",
-          "OIL"
-        ],
-        "evidence": [],
-        "beneficiary_keywords": [
-          "조선/해양",
-          "조선",
-          "선박",
-          "해양",
-          "LNG선",
-          "해양플랜트"
-        ],
-        "victim_keywords": [],
-        "momentum_avg_change_pct": null,
-        "momentum_class": null,
-        "updated_at": "2026-04-16T07:27:52.389679+00:00"
+        "updated_at": "2026-04-17T01:42:44.093602+00:00"
       },
       {
         "theme_id": "defense",
         "theme_name": "방산",
         "direction": "BENEFICIARY",
-        "strength_score": 24.0,
-        "confidence": 0.521,
+        "strength_score": 28.0,
+        "confidence": 0.63,
         "driver_categories": [
           "EARNINGS",
           "GEOPOLITICS",
           "POLITICS"
         ],
-        "evidence": [],
+        "evidence": [
+          "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스",
+          "[Fri, 17 Apr 2026 10:34:36 +09:00] “서학개미가 달러 들고가 주식 쇼핑”…수출 잘 나가도 환율 급등 이유 찾았다 | 매일경제"
+        ],
         "beneficiary_keywords": [
           "방산",
           "미사일",
@@ -163,251 +147,242 @@
         "victim_keywords": [],
         "momentum_avg_change_pct": null,
         "momentum_class": null,
-        "updated_at": "2026-04-16T07:27:52.389779+00:00"
+        "updated_at": "2026-04-17T01:42:44.094979+00:00"
       },
       {
-        "theme_id": "eco_energy",
-        "theme_name": "친환경/에너지",
-        "direction": "BENEFICIARY",
-        "strength_score": 22.0,
-        "confidence": 0.507,
-        "driver_categories": [
-          "EARNINGS",
-          "ECONOMY",
-          "FX",
-          "GEOPOLITICS",
-          "LIQUIDITY",
-          "OIL",
-          "POLITICS",
-          "REGULATION"
-        ],
+        "theme_id": "consumer_retail",
+        "theme_name": "소비재/유통",
+        "direction": "NEUTRAL",
+        "strength_score": 12.0,
+        "confidence": 0.436,
+        "driver_categories": [],
         "evidence": [
-          "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
+          "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
         ],
-        "beneficiary_keywords": [
-          "친환경/에너지",
-          "친환경",
-          "에너지",
-          "태양광",
-          "풍력",
-          "수소"
-        ],
+        "beneficiary_keywords": [],
         "victim_keywords": [],
-        "momentum_avg_change_pct": 2.55,
-        "momentum_class": "EXPLODING",
-        "updated_at": "2026-04-16T07:27:52.389275+00:00"
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "updated_at": "2026-04-17T01:42:44.093994+00:00"
       }
     ],
     "beneficiary_themes": [
       {
         "theme_id": "finance",
         "theme_name": "금융",
-        "strength_score": 48.0,
-        "confidence": 0.773
+        "strength_score": 50.0,
+        "confidence": 0.787
       },
       {
         "theme_id": "bio",
         "theme_name": "바이오/헬스케어",
-        "strength_score": 39.0,
-        "confidence": 0.709
-      },
-      {
-        "theme_id": "shipbuilding",
-        "theme_name": "조선/해양",
-        "strength_score": 24.0,
-        "confidence": 0.521
+        "strength_score": 33.0,
+        "confidence": 0.666
       },
       {
         "theme_id": "defense",
         "theme_name": "방산",
-        "strength_score": 24.0,
-        "confidence": 0.521
-      },
-      {
-        "theme_id": "eco_energy",
-        "theme_name": "친환경/에너지",
-        "strength_score": 22.0,
-        "confidence": 0.507
+        "strength_score": 28.0,
+        "confidence": 0.63
       }
     ],
     "headwind_themes": [],
     "theme_evidence": {
       "bio": [
-        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-        "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-        "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
+        "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+        "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
       ],
       "finance": [
-        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-        "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-        "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-        "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+        "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+        "[Naver Stock] 086520.KQ [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+        "[Naver Stock] 086520.KQ [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
       ],
-      "eco_energy": [
-        "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
+      "consumer_retail": [
+        "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
       ],
-      "shipbuilding": [],
-      "defense": []
+      "defense": [
+        "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스",
+        "[Fri, 17 Apr 2026 10:34:36 +09:00] “서학개미가 달러 들고가 주식 쇼핑”…수출 잘 나가도 환율 급등 이유 찾았다 | 매일경제"
+      ]
     },
     "macro_drivers": [
       {
-        "category": "GEOPOLITICS",
-        "signal": "BULLISH",
-        "market_impact": 4,
-        "description": "종전 기대감은 시장 전반의 투자 심리를 긍정적으로 이끌었습니다.",
-        "evidence": "“이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세"
-      },
-      {
-        "category": "FX",
-        "signal": "BEARISH",
+        "category": "LIQUIDITY",
+        "signal": "MIXED",
         "market_impact": -1,
-        "description": "원/달러 환율의 소폭 상승은 원화 약세로 외국인 투자 심리에 부정적 영향을 줄 수 있습니다.",
-        "evidence": "원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원"
+        "description": "코스피 시장에서 기관·외국인 순매도가 관찰되어 전반적인 시장 유동성에 대한 우려가 있으나, 코스닥 바이오 섹터는 급등했습니다.",
+        "evidence": "외인·기관 순매도에 장중 약보합세"
       },
       {
         "category": "REGULATION",
-        "signal": "BEARISH",
+        "signal": "MIXED",
         "market_impact": -1,
-        "description": "개별 기업의 공시 관련 규제 심의로 인한 급락은 시장 전반의 규제 리스크 인식을 높일 수 있습니다.",
-        "evidence": "[특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감"
+        "description": "바이오시밀러 승인 간소화는 시장 재편을 가져올 것으로 예상되며, 이는 빅파마·대형사에 유리하게 작용할 수 있어 중소형 코스닥 바이오 기업에는 부정적일 수 있습니다.",
+        "evidence": "바이오시밀러 승인 간소화, 시장 재편"
+      },
+      {
+        "category": "EARNINGS",
+        "signal": "MIXED",
+        "market_impact": 0,
+        "description": "일부 코스닥 기업의 단일판매·공급계약 체결은 긍정적이나, 유상증자 및 전환사채 발행/매도 결정은 단기적으로 주가에 희석 효과를 줄 수 있습니다.",
+        "evidence": "단일판매ㆍ공급계약체결, 유상증자결정"
       }
     ],
     "driver_scores": {
-      "GEOPOLITICS": 4,
+      "GEOPOLITICS": 0,
       "OIL": 0,
-      "FX": -1,
+      "FX": 0,
       "RATES": 0,
       "POLITICS": 0,
       "ECONOMY": 0,
-      "LIQUIDITY": -2,
-      "EARNINGS": 4,
+      "LIQUIDITY": -4,
+      "EARNINGS": 2,
       "REGULATION": -1
     },
-    "cross_asset_signals": [
-      {
-        "asset": "USD/KRW",
-        "direction": "UP",
-        "market_impact": -1,
-        "description": "원화 약세는 외국인 투자 심리에 부정적 영향을 줄 수 있습니다."
-      }
-    ],
+    "cross_asset_signals": [],
     "risk_flags": [
-      "규제 심의 리스크",
-      "환율 변동성"
+      "코스피 기관/외국인 매도세",
+      "바이오시밀러 시장 재편에 따른 경쟁 심화",
+      "기업별 유상증자 및 전환사채 발행에 따른 희석 위험"
     ],
     "news_quality": "MEDIUM",
-    "key_insight": "코스닥 시장은 지정학적 긴장 완화 기대감에 힘입어 전반적인 강세를 보였으나, 개별 기업의 규제 리스크와 환율 변동성은 잠재적 하방 압력으로 작용했습니다.",
+    "key_insight": "코스닥 시장은 바이오 섹터의 전반적인 급등세에도 불구하고, 코스피의 기관/외국인 매도세와 바이오시밀러 규제 변화로 인한 시장 재편, 그리고 개별 기업들의 다양한 재무 활동으로 인해 혼조세를 보입니다.",
     "source": "gemini",
     "model": "gemini-2.5-flash",
     "raw": {
-      "market_sentiment": "BULLISH",
-      "sentiment_score": 70,
+      "market_sentiment": "MIXED",
+      "sentiment_score": 10,
       "themes": [
         {
-          "theme": "지정학적 긴장 완화 기대",
-          "impact": "POSITIVE",
-          "description": "종전 기대감으로 시장 전반의 투자 심리 개선"
+          "theme": "바이오 섹터 동향",
+          "impact": "MIXED",
+          "description": "코스닥 바이오 섹터가 급등했으나, 바이오시밀러 승인 간소화로 시장 재편이 예상되며 대형사 위주 수혜 가능성이 제기됩니다."
+        },
+        {
+          "theme": "기업별 재무 활동",
+          "impact": "MIXED",
+          "description": "일부 코스닥 기업은 단일판매·공급계약을 체결했으나, 다른 기업들은 유상증자, 자기주식 처분, 전환사채 발행/매도 등 재무 활동을 발표했습니다."
         }
       ],
       "macro_drivers": [
         {
-          "category": "GEOPOLITICS",
-          "signal": "BULLISH",
-          "market_impact": 4,
-          "description": "종전 기대감은 시장 전반의 투자 심리를 긍정적으로 이끌었습니다.",
-          "evidence": "“이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세"
-        },
-        {
-          "category": "FX",
-          "signal": "BEARISH",
+          "category": "LIQUIDITY",
+          "signal": "MIXED",
           "market_impact": -1,
-          "description": "원/달러 환율의 소폭 상승은 원화 약세로 외국인 투자 심리에 부정적 영향을 줄 수 있습니다.",
-          "evidence": "원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원"
+          "description": "코스피 시장에서 기관·외국인 순매도가 관찰되어 전반적인 시장 유동성에 대한 우려가 있으나, 코스닥 바이오 섹터는 급등했습니다.",
+          "evidence": "외인·기관 순매도에 장중 약보합세"
         },
         {
           "category": "REGULATION",
-          "signal": "BEARISH",
+          "signal": "MIXED",
           "market_impact": -1,
-          "description": "개별 기업의 공시 관련 규제 심의로 인한 급락은 시장 전반의 규제 리스크 인식을 높일 수 있습니다.",
-          "evidence": "[특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감"
+          "description": "바이오시밀러 승인 간소화는 시장 재편을 가져올 것으로 예상되며, 이는 빅파마·대형사에 유리하게 작용할 수 있어 중소형 코스닥 바이오 기업에는 부정적일 수 있습니다.",
+          "evidence": "바이오시밀러 승인 간소화, 시장 재편"
+        },
+        {
+          "category": "EARNINGS",
+          "signal": "MIXED",
+          "market_impact": 0,
+          "description": "일부 코스닥 기업의 단일판매·공급계약 체결은 긍정적이나, 유상증자 및 전환사채 발행/매도 결정은 단기적으로 주가에 희석 효과를 줄 수 있습니다.",
+          "evidence": "단일판매ㆍ공급계약체결, 유상증자결정"
         }
       ],
       "driver_scores": {
-        "GEOPOLITICS": 4,
+        "GEOPOLITICS": 0,
         "OIL": 0,
-        "FX": -1,
+        "FX": 0,
         "RATES": 0,
         "POLITICS": 0,
         "ECONOMY": 0,
-        "LIQUIDITY": -2,
-        "EARNINGS": 4,
+        "LIQUIDITY": -4,
+        "EARNINGS": 2,
         "REGULATION": -1
       },
-      "cross_asset_signals": [
-        {
-          "asset": "USD/KRW",
-          "direction": "UP",
-          "market_impact": -1,
-          "description": "원화 약세는 외국인 투자 심리에 부정적 영향을 줄 수 있습니다."
-        }
-      ],
+      "cross_asset_signals": [],
       "risk_flags": [
-        "규제 심의 리스크",
-        "환율 변동성"
+        "코스피 기관/외국인 매도세",
+        "바이오시밀러 시장 재편에 따른 경쟁 심화",
+        "기업별 유상증자 및 전환사채 발행에 따른 희석 위험"
       ],
       "news_quality": "MEDIUM",
-      "beneficiary_sectors": [],
-      "victim_sectors": [],
-      "beneficiary_keywords": [],
-      "victim_keywords": [],
-      "key_insight": "코스닥 시장은 지정학적 긴장 완화 기대감에 힘입어 전반적인 강세를 보였으나, 개별 기업의 규제 리스크와 환율 변동성은 잠재적 하방 압력으로 작용했습니다.",
+      "beneficiary_sectors": [
+        "바이오 (대형사)",
+        "계약 체결 기업"
+      ],
+      "victim_sectors": [
+        "바이오 (중소형사)",
+        "유상증자/전환사채 발행 기업"
+      ],
+      "beneficiary_keywords": [
+        "바이오",
+        "바이오시밀러 (대형)",
+        "단일판매",
+        "공급계약"
+      ],
+      "victim_keywords": [
+        "바이오시밀러 (중소형)",
+        "유상증자",
+        "전환사채",
+        "자기주식처분"
+      ],
+      "key_insight": "코스닥 시장은 바이오 섹터의 전반적인 급등세에도 불구하고, 코스피의 기관/외국인 매도세와 바이오시밀러 규제 변화로 인한 시장 재편, 그리고 개별 기업들의 다양한 재무 활동으로 인해 혼조세를 보입니다.",
       "evidence_headlines": [
-        "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-        "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
-        "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-        "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스"
+        "코스닥 바이오도 급등",
+        "외인·기관 순매도에 장중 약보합세",
+        "바이오시밀러 승인 간소화, 시장 재편",
+        "피플바이오 - [기재정정]주요사항보고서(유상증자결정)"
       ],
       "raw_headlines": [
-        "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-        "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권",
-        "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-        "[DART 20260416] 빛과전자 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시",
-        "[DART 20260416] 감성코퍼레이션 - 주요사항보고서(회사분할결정) | 전자공시",
-        "[DART 20260416] 온코크로스 - [첨부정정]주요사항보고서(회사합병결정) | 전자공시",
-        "[DART 20260416] 티에스아이 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
-        "[DART 20260416] 링크드 - 단일판매ㆍ공급계약체결 | 전자공시",
-        "[DART 20260416] 엔알비 - 단일판매ㆍ공급계약체결 | 전자공시",
-        "[DART 20260416] 뉴온 - [첨부정정]주요사항보고서(자기전환사채만기전취득결정) | 전자공시",
-        "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스",
-        "[Thu, 16 Apr 2026 16:18:20 +0900] 원/달러 환율 사흘 만에 상승…0.4원 오른 1,474.6원 | 연합뉴스",
-        "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr",
-        "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-        "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권"
+        "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+        "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+        "[Naver Stock] 086520.KQ [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 086520.KQ [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+        "[Naver Stock] 196170.KQ [-3] 6200 찍고 쉬어가는 코스피…외국인·기관 매도에 약세 | 네이버증권",
+        "[DART 20260417] 대원미디어 - 자기주식처분결과보고서 | 전자공시",
+        "[DART 20260416] 셀루메드 - 투자판단관련주요경영사항              (경영지배인 선임의 건) | 전자공시",
+        "[DART 20260416] 지아이에스 - 주요사항보고서(자기전환사채매도결정) | 전자공시",
+        "[DART 20260416] 모아라이프플러스 - 주요사항보고서(전환사채권발행결정) | 전자공시",
+        "[DART 20260416] NPX - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260416] 링크드 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시",
+        "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권",
+        "[Fri, 17 Apr 2026 10:34:36 +09:00] “서학개미가 달러 들고가 주식 쇼핑”…수출 잘 나가도 환율 급등 이유 찾았다 | 매일경제",
+        "[Fri, 17 Apr 2026 10:30:39 +09:00] “매일 이자 2배 받아가세요”…토스뱅크, 3개월간 신규고객에 우대금리 | 매일경제",
+        "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
       ],
       "headline_count": 15,
       "source": "gemini",
       "model": "gemini-2.5-flash",
-      "timestamp": "2026-04-16 16:27",
+      "timestamp": "2026-04-17 10:42",
       "disclosure_events": [
         {
-          "company": "빛과전자",
-          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)",
+          "company": "피플바이오",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)",
+          "event_score": -6,
+          "category": "LIQUIDITY",
+          "label": "유상증자",
+          "polarity": "NEGATIVE"
+        },
+        {
+          "company": "지아이에스",
+          "report_name": "주요사항보고서(자기전환사채매도결정)",
           "event_score": -5,
           "category": "LIQUIDITY",
           "label": "전환사채",
           "polarity": "NEGATIVE"
         },
         {
-          "company": "온코크로스",
-          "report_name": "[첨부정정]주요사항보고서(회사합병결정)",
-          "event_score": 2,
-          "category": "EARNINGS",
-          "label": "합병",
-          "polarity": "POSITIVE"
+          "company": "모아라이프플러스",
+          "report_name": "주요사항보고서(전환사채권발행결정)",
+          "event_score": -5,
+          "category": "LIQUIDITY",
+          "label": "전환사채",
+          "polarity": "NEGATIVE"
         },
         {
-          "company": "티에스아이",
-          "report_name": "[기재정정]단일판매ㆍ공급계약체결",
+          "company": "NPX",
+          "report_name": "단일판매ㆍ공급계약체결",
           "event_score": 4,
           "category": "EARNINGS",
           "label": "수주/판매계약",
@@ -415,66 +390,57 @@
         },
         {
           "company": "링크드",
-          "report_name": "단일판매ㆍ공급계약체결",
+          "report_name": "[기재정정]단일판매ㆍ공급계약체결",
           "event_score": 4,
           "category": "EARNINGS",
           "label": "수주/판매계약",
           "polarity": "POSITIVE"
         },
         {
-          "company": "엔알비",
-          "report_name": "단일판매ㆍ공급계약체결",
-          "event_score": 4,
-          "category": "EARNINGS",
-          "label": "수주/판매계약",
-          "polarity": "POSITIVE"
+          "company": "피플바이오",
+          "report_name": "[기재정정]주요사항보고서(유상증자결정)",
+          "event_score": -6,
+          "category": "LIQUIDITY",
+          "label": "유상증자",
+          "polarity": "NEGATIVE"
         },
         {
-          "company": "뉴온",
-          "report_name": "[첨부정정]주요사항보고서(자기전환사채만기전취득결정)",
+          "company": "지아이에스",
+          "report_name": "주요사항보고서(자기전환사채매도결정)",
           "event_score": -5,
           "category": "LIQUIDITY",
           "label": "전환사채",
           "polarity": "NEGATIVE"
         },
         {
-          "company": "빛과전자",
-          "report_name": "[기재정정]주요사항보고서(전환사채권발행결정)",
+          "company": "모아라이프플러스",
+          "report_name": "주요사항보고서(전환사채권발행결정)",
           "event_score": -5,
           "category": "LIQUIDITY",
           "label": "전환사채",
           "polarity": "NEGATIVE"
-        },
-        {
-          "company": "온코크로스",
-          "report_name": "[첨부정정]주요사항보고서(회사합병결정)",
-          "event_score": 2,
-          "category": "EARNINGS",
-          "label": "합병",
-          "polarity": "POSITIVE"
         }
       ],
       "company_event_bias": {
-        "빛과전자": -8,
-        "온코크로스": 4,
-        "티에스아이": 8,
-        "링크드": 8,
-        "엔알비": 8,
-        "뉴온": -8
+        "피플바이오": -8,
+        "지아이에스": -8,
+        "모아라이프플러스": -8,
+        "NPX": 8,
+        "링크드": 8
       },
       "theme_states": [
         {
           "theme_id": "finance",
           "theme_name": "금융",
           "direction": "BENEFICIARY",
-          "strength_score": 48.0,
-          "confidence": 0.773,
+          "strength_score": 50.0,
+          "confidence": 0.787,
           "driver_categories": [],
           "evidence": [
-            "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-            "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-            "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-            "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+            "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+            "[Naver Stock] 086520.KQ [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+            "[Naver Stock] 086520.KQ [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+            "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
           ],
           "beneficiary_keywords": [
             "금융",
@@ -485,25 +451,25 @@
             "카드"
           ],
           "victim_keywords": [],
-          "momentum_avg_change_pct": 2.9,
-          "momentum_class": "EXPLODING",
-          "updated_at": "2026-04-16T07:27:52.387396+00:00"
+          "momentum_avg_change_pct": -1.26,
+          "momentum_class": "FADING",
+          "updated_at": "2026-04-17T01:42:44.093896+00:00"
         },
         {
           "theme_id": "bio",
           "theme_name": "바이오/헬스케어",
           "direction": "BENEFICIARY",
-          "strength_score": 39.0,
-          "confidence": 0.709,
+          "strength_score": 33.0,
+          "confidence": 0.666,
           "driver_categories": [
             "EARNINGS",
             "ECONOMY",
             "REGULATION"
           ],
           "evidence": [
-            "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-            "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-            "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
+            "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+            "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+            "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
           ],
           "beneficiary_keywords": [
             "바이오/헬스케어",
@@ -516,45 +482,23 @@
           "victim_keywords": [],
           "momentum_avg_change_pct": null,
           "momentum_class": null,
-          "updated_at": "2026-04-16T07:27:52.386747+00:00"
-        },
-        {
-          "theme_id": "shipbuilding",
-          "theme_name": "조선/해양",
-          "direction": "BENEFICIARY",
-          "strength_score": 24.0,
-          "confidence": 0.521,
-          "driver_categories": [
-            "EARNINGS",
-            "GEOPOLITICS",
-            "OIL"
-          ],
-          "evidence": [],
-          "beneficiary_keywords": [
-            "조선/해양",
-            "조선",
-            "선박",
-            "해양",
-            "LNG선",
-            "해양플랜트"
-          ],
-          "victim_keywords": [],
-          "momentum_avg_change_pct": null,
-          "momentum_class": null,
-          "updated_at": "2026-04-16T07:27:52.389679+00:00"
+          "updated_at": "2026-04-17T01:42:44.093602+00:00"
         },
         {
           "theme_id": "defense",
           "theme_name": "방산",
           "direction": "BENEFICIARY",
-          "strength_score": 24.0,
-          "confidence": 0.521,
+          "strength_score": 28.0,
+          "confidence": 0.63,
           "driver_categories": [
             "EARNINGS",
             "GEOPOLITICS",
             "POLITICS"
           ],
-          "evidence": [],
+          "evidence": [
+            "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스",
+            "[Fri, 17 Apr 2026 10:34:36 +09:00] “서학개미가 달러 들고가 주식 쇼핑”…수출 잘 나가도 환율 급등 이유 찾았다 | 매일경제"
+          ],
           "beneficiary_keywords": [
             "방산",
             "미사일",
@@ -565,91 +509,65 @@
           "victim_keywords": [],
           "momentum_avg_change_pct": null,
           "momentum_class": null,
-          "updated_at": "2026-04-16T07:27:52.389779+00:00"
+          "updated_at": "2026-04-17T01:42:44.094979+00:00"
         },
         {
-          "theme_id": "eco_energy",
-          "theme_name": "친환경/에너지",
-          "direction": "BENEFICIARY",
-          "strength_score": 22.0,
-          "confidence": 0.507,
-          "driver_categories": [
-            "EARNINGS",
-            "ECONOMY",
-            "FX",
-            "GEOPOLITICS",
-            "LIQUIDITY",
-            "OIL",
-            "POLITICS",
-            "REGULATION"
-          ],
+          "theme_id": "consumer_retail",
+          "theme_name": "소비재/유통",
+          "direction": "NEUTRAL",
+          "strength_score": 12.0,
+          "confidence": 0.436,
+          "driver_categories": [],
           "evidence": [
-            "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
+            "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
           ],
-          "beneficiary_keywords": [
-            "친환경/에너지",
-            "친환경",
-            "에너지",
-            "태양광",
-            "풍력",
-            "수소"
-          ],
+          "beneficiary_keywords": [],
           "victim_keywords": [],
-          "momentum_avg_change_pct": 2.55,
-          "momentum_class": "EXPLODING",
-          "updated_at": "2026-04-16T07:27:52.389275+00:00"
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "updated_at": "2026-04-17T01:42:44.093994+00:00"
         }
       ],
       "beneficiary_themes": [
         {
           "theme_id": "finance",
           "theme_name": "금융",
-          "strength_score": 48.0,
-          "confidence": 0.773
+          "strength_score": 50.0,
+          "confidence": 0.787
         },
         {
           "theme_id": "bio",
           "theme_name": "바이오/헬스케어",
-          "strength_score": 39.0,
-          "confidence": 0.709
-        },
-        {
-          "theme_id": "shipbuilding",
-          "theme_name": "조선/해양",
-          "strength_score": 24.0,
-          "confidence": 0.521
+          "strength_score": 33.0,
+          "confidence": 0.666
         },
         {
           "theme_id": "defense",
           "theme_name": "방산",
-          "strength_score": 24.0,
-          "confidence": 0.521
-        },
-        {
-          "theme_id": "eco_energy",
-          "theme_name": "친환경/에너지",
-          "strength_score": 22.0,
-          "confidence": 0.507
+          "strength_score": 28.0,
+          "confidence": 0.63
         }
       ],
       "headwind_themes": [],
       "theme_evidence": {
         "bio": [
-          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-          "[Thu, 16 Apr 2026 16:03:32 +0900] [특징주] 삼천당제약, 거래소 공시위원회 심의에 9% 급락 마감(종합) | 연합뉴스",
-          "[Tue, 14 Apr 2026 22:30:00 GMT] ‘신라젠부터 삼천당제약까지’…반복되는 K-바이오 잔혹사 [옛날신문보기] - sisaon.co.kr | sisaon.co.kr"
+          "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
+          "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+          "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
         ],
         "finance": [
-          "[Naver Stock] 000250.KQ [-5] 삼천당제약, 거래소 공시위 심의에 9% 급락 마감 | 네이버증권",
-          "[Naver Stock] 196170.KQ [+2] 코스피, 2.21% 올라 6200선 안착…코스닥도 상승 | 네이버증권",
-          "[Naver Stock] 247540.KQ [+2] 코스피, 외인·기관 '쌍끌이' 사흘 연속 상승 마감…6200선 탈환 | 네이버증권",
-          "[Naver Stock] 298380.KQ [+2] “이제 곧 종전이다” 코스피, 6149.49 상승 출발…코스닥도 강세 | 네이버증권"
+          "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+          "[Naver Stock] 086520.KQ [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+          "[Naver Stock] 086520.KQ [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
         ],
-        "eco_energy": [
-          "[Thu, 16 Apr 2026 16:21:52 +0900] [동포의 창] 고려인協 \"고유가 지원금 제외는 명백한 차별\"…재고 청원 | 연합뉴스"
+        "consumer_retail": [
+          "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
         ],
-        "shipbuilding": [],
-        "defense": []
+        "defense": [
+          "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스",
+          "[Fri, 17 Apr 2026 10:34:36 +09:00] “서학개미가 달러 들고가 주식 쇼핑”…수출 잘 나가도 환율 급등 이유 찾았다 | 매일경제"
+        ]
       }
     }
   }

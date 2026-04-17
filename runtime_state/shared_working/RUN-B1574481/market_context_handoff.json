@@ -1,0 +1,564 @@
+{
+  "macro_overlay": {
+    "flags": [
+      "KRW_WEAKNESS"
+    ],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 10.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [
+        "KRW_WEAKNESS"
+      ],
+      "krw": 1488.3800048828125,
+      "krw_change_1d": 1.02,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 10,
+      "macro_state": "NORMAL",
+      "spy_change_1d": -0.07,
+      "tnx": 4.316999912261963,
+      "tnx_change_1d": 0.56,
+      "vix": 19.229999542236328,
+      "vix_change_1d": -1.33
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "2차전지",
+      "2차전지 장비"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.58,
+        "strength_score": 21.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.573,
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "description": "원화 약세는 외국인 자금 유출 우려를 높여 코스피에 부정적",
+        "direction": "UP",
+        "market_impact": -3
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": 0,
+      "FX": -3,
+      "GEOPOLITICS": -4,
+      "LIQUIDITY": -5,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": 0
+    },
+    "evidence_headlines": [
+      "코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑",
+      "[주달 상승테마] 2차전지",
+      "[주달 상승테마] 2차전지 장비"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [
+      {
+        "confidence": 0.564,
+        "strength_score": 30.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      }
+    ],
+    "key_insight": "미국-이란 협상 결렬로 인한 지정학적 리스크와 원화 약세가 코스피 시장의 주요 하락 요인으로 작용하고 있으며, 2차전지 관련 테마는 강세를 보임.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "미국-이란 협상 결렬로 중동 지정학적 리스크 고조",
+        "evidence": "美·이란 협상 결렬에 장 초반 하락",
+        "market_impact": -4,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "FX",
+        "description": "환율 12원 상승으로 원화 약세 심화",
+        "evidence": "환율 12원↑",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "일부 기업의 유상증자 결정은 개별 기업 유동성 확보 노력",
+        "evidence": "한국카본 - 유상증자결정, 한솔홀딩스 - 유상증자결정, 한솔테크닉스 - 유상증자결정",
+        "market_impact": -1,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "BEARISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "2차전지",
+        "배터리",
+        "양극재",
+        "음극재",
+        "분리막",
+        "전해액",
+        "장비"
+      ],
+      "beneficiary_sectors": [
+        "2차전지",
+        "2차전지 장비"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.58,
+          "strength_score": 21.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.573,
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크"
+        }
+      ],
+      "company_event_bias": {
+        "HD현대마린엔진": 8,
+        "아센디오": 8,
+        "한국카본": -8,
+        "한솔테크닉스": -8,
+        "한솔홀딩스": -8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "description": "원화 약세는 외국인 자금 유출 우려를 높여 코스피에 부정적",
+          "direction": "UP",
+          "market_impact": -3
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "한국카본",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "아센디오",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "HD현대마린엔진",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "한솔홀딩스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(유상증자결정)(자회사의 주요경영사항)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "한솔홀딩스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(유상증자결정)(자회사의 주요경영사항)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "한솔테크닉스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "한솔테크닉스",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "주요사항보고서(유상증자결정)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "한국카본",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "유상증자결정(종속회사의주요경영사항)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 2,
+        "ECONOMY": 0,
+        "FX": -3,
+        "GEOPOLITICS": -4,
+        "LIQUIDITY": -5,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": 0
+      },
+      "evidence_headlines": [
+        "코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑",
+        "[주달 상승테마] 2차전지",
+        "[주달 상승테마] 2차전지 장비"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [
+        {
+          "confidence": 0.564,
+          "strength_score": 30.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        }
+      ],
+      "key_insight": "미국-이란 협상 결렬로 인한 지정학적 리스크와 원화 약세가 코스피 시장의 주요 하락 요인으로 작용하고 있으며, 2차전지 관련 테마는 강세를 보임.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "미국-이란 협상 결렬로 중동 지정학적 리스크 고조",
+          "evidence": "美·이란 협상 결렬에 장 초반 하락",
+          "market_impact": -4,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "FX",
+          "description": "환율 12원 상승으로 원화 약세 심화",
+          "evidence": "환율 12원↑",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "일부 기업의 유상증자 결정은 개별 기업 유동성 확보 노력",
+          "evidence": "한국카본 - 유상증자결정, 한솔홀딩스 - 유상증자결정, 한솔테크닉스 - 유상증자결정",
+          "market_impact": -1,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "BEARISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Mon, 13 Apr 2026 09:18:20 +0900] 코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑ | 한국경제",
+        "[DART 20260413] 한국카본 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+        "[DART 20260413] 아센디오 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260413] HD현대마린엔진 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260413] 한솔홀딩스 - 주요사항보고서(유상증자결정)(자회사의 주요경영사항) | 전자공시",
+        "[DART 20260413] 한솔홀딩스 - 주요사항보고서(유상증자결정)(자회사의 주요경영사항) | 전자공시",
+        "[DART 20260413] 한솔테크닉스 - 주요사항보고서(유상증자결정) | 전자공시",
+        "[DART 20260413] 한솔테크닉스 - 주요사항보고서(유상증자결정) | 전자공시",
+        "[Mon, 13 Apr 2026 10:06:37 +09:00] 신한은행, 매달 올리브영 상품권 주는 제휴 통장 출시 | 매일경제",
+        "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달",
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달",
+        "[주달 기대수익률] BGF그룹 | 주달"
+      ],
+      "risk_flags": [
+        "중동 지정학 리스크",
+        "환율 변동성 확대"
+      ],
+      "sentiment_score": -60,
+      "source": "gemini",
+      "theme_evidence": {
+        "eco_energy": [],
+        "finance": [
+          "[Mon, 13 Apr 2026 10:06:37 +09:00] 신한은행, 매달 올리브영 상품권 주는 제휴 통장 출시 | 매일경제"
+        ],
+        "secondary_battery": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "telecom": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.564,
+          "direction": "HEADWIND",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [],
+          "strength_score": 30.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-13T03:21:00.284055+00:00",
+          "victim_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ]
+        },
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.58,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[주달 상승테마] 2차전지 | 주달",
+            "[주달 상승테마] 2차전지 장비 | 주달"
+          ],
+          "strength_score": 21.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-13T03:21:00.284248+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "통신/네트워크",
+            "통신",
+            "네트워크",
+            "5G",
+            "6G",
+            "안테나"
+          ],
+          "confidence": 0.573,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[주달 핫테마] 5G | 주달",
+            "[주달 핫테마] 6G | 주달"
+          ],
+          "strength_score": 20.0,
+          "theme_id": "telecom",
+          "theme_name": "통신/네트워크",
+          "updated_at": "2026-04-13T03:21:00.283730+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[Mon, 13 Apr 2026 10:06:37 +09:00] 신한은행, 매달 올리브영 상품권 주는 제휴 통장 출시 | 매일경제"
+          ],
+          "strength_score": 10.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-13T03:21:00.283283+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "주달 상승테마로 언급되며 긍정적 투자 심리 형성",
+          "impact": "POSITIVE",
+          "theme": "2차전지"
+        },
+        {
+          "description": "주달 상승테마로 언급되며 긍정적 투자 심리 형성",
+          "impact": "POSITIVE",
+          "theme": "2차전지 장비"
+        }
+      ],
+      "timestamp": "2026-04-13 12:21",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Mon, 13 Apr 2026 09:18:20 +0900] 코스피, 美·이란 협상 결렬에 장 초반 하락…환율 12원↑ | 한국경제",
+      "[DART 20260413] 한국카본 - 유상증자결정(종속회사의주요경영사항) | 전자공시",
+      "[DART 20260413] 아센디오 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260413] HD현대마린엔진 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260413] 한솔홀딩스 - 주요사항보고서(유상증자결정)(자회사의 주요경영사항) | 전자공시",
+      "[DART 20260413] 한솔홀딩스 - 주요사항보고서(유상증자결정)(자회사의 주요경영사항) | 전자공시",
+      "[DART 20260413] 한솔테크닉스 - 주요사항보고서(유상증자결정) | 전자공시",
+      "[DART 20260413] 한솔테크닉스 - 주요사항보고서(유상증자결정) | 전자공시",
+      "[Mon, 13 Apr 2026 10:06:37 +09:00] 신한은행, 매달 올리브영 상품권 주는 제휴 통장 출시 | 매일경제",
+      "[Fri, 10 Apr 2026 01:45:28 GMT] 환율 1470원대 후퇴…동결 속 불안 여전 - mstoday.co.kr | mstoday.co.kr",
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달",
+      "[주달 핫테마] 5G | 주달",
+      "[주달 핫테마] 6G | 주달",
+      "[주달 기대수익률] BGF그룹 | 주달"
+    ],
+    "risk_flags": [
+      "중동 지정학 리스크",
+      "환율 변동성 확대"
+    ],
+    "sentiment_score": -60,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "eco_energy": [],
+      "finance": [
+        "[Mon, 13 Apr 2026 10:06:37 +09:00] 신한은행, 매달 올리브영 상품권 주는 제휴 통장 출시 | 매일경제"
+      ],
+      "secondary_battery": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "telecom": [
+        "[주달 핫테마] 5G | 주달",
+        "[주달 핫테마] 6G | 주달"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.564,
+        "direction": "HEADWIND",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [],
+        "strength_score": 30.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-13T03:21:00.284055+00:00",
+        "victim_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ]
+      },
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.58,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[주달 상승테마] 2차전지 | 주달",
+          "[주달 상승테마] 2차전지 장비 | 주달"
+        ],
+        "strength_score": 21.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-13T03:21:00.284248+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "통신/네트워크",
+          "통신",
+          "네트워크",
+          "5G",
+          "6G",
+          "안테나"
+        ],
+        "confidence": 0.573,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[주달 핫테마] 5G | 주달",
+          "[주달 핫테마] 6G | 주달"
+        ],
+        "strength_score": 20.0,
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "updated_at": "2026-04-13T03:21:00.283730+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[Mon, 13 Apr 2026 10:06:37 +09:00] 신한은행, 매달 올리브영 상품권 주는 제휴 통장 출시 | 매일경제"
+        ],
+        "strength_score": 10.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-13T03:21:00.283283+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-13T03:21:00.288270+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 90.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-13",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-13T03:20:06.834531+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-B1574481",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

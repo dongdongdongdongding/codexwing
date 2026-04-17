@@ -91,6 +91,20 @@ over:
 - hidden logic
 - overly compressed implementations
 
+## Agent Coordination
+- Shared discussion thread: `swing-main-0to`
+- Read coordination context with `bd comments swing-main-0to`
+- Leave handoffs or collision warnings with `bd comment swing-main-0to "..."`
+- Keep the thread high-signal only. Use it for:
+  - shared-file collision warnings
+  - blockers or ownership ambiguity
+  - handoffs when stopping mid-task
+  - unusually long-running work that needs visibility
+- Do not log every normal step there. `bd` issue status and `bd close` should remain the primary source of work state.
+- If leaving a thread note, start with an explicit agent prefix such as `[Codex]` or `[Claude]`.
+- Acquire `bd merge-slot acquire` before conflict-prone edits or merge resolution
+- Release it with `bd merge-slot release` when the risky step is complete
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:full hash:f65d5d33 -->
 ## Issue Tracking with bd (beads)
 

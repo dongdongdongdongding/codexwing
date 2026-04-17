@@ -2,6 +2,46 @@
 
 This file provides instructions and context for AI coding agents working on this project.
 
+## Collaboration with Codex
+
+Codex is also an active collaborator in this repository. If you are Claude Code,
+assume Codex may be editing nearby files in parallel during the same work
+session.
+
+- Shared discussion thread: `swing-main-0to`
+  Use `bd comments swing-main-0to` to read context and
+  `bd comment swing-main-0to "..."` to leave notes for Codex.
+- Keep the thread high-signal only. Use it for file ownership warnings,
+  blockers, proposed handoffs, and "I am about to touch this file" notices
+  when the file is shared or conflict-prone.
+- Do not emit routine START/END/PROGRESS comments for every normal task.
+  Prefer issue status plus `bd close` for ordinary work tracking.
+- If you do leave a collaboration note, prefix it with `[Claude]` or `[Codex]`
+  because beads author names may not distinguish agents.
+- Suggested handoff comment template:
+  `STATUS: ...`
+  `FILES: ...`
+  `BLOCKERS: ...`
+  `NEXT: ...`
+- Treat existing unstaged or recently changed files as collaborator work unless
+  you are sure they are yours.
+- Coordinate work through `bd` first: run `bd prime`, inspect the issue, and
+  claim it before editing.
+- Before broad changes, check `git status --short` and keep your edit scope
+  tight to the files owned by the claimed issue.
+- Before conflict-prone work, acquire the merge slot with
+  `bd merge-slot acquire`. Release it with `bd merge-slot release` after merge,
+  branch-integration, or high-risk edits are done.
+- If you touch a file that Codex may also be changing, prefer small targeted
+  patches over full rewrites or sweeping reformatting.
+- Never overwrite, revert, or normalize another agent's work just to make your
+  change easier.
+- If ownership is unclear or edits overlap, leave a short handoff note in `bd`
+  and stop before creating a conflict.
+- When finishing, close completed issues promptly with `bd close`.
+- Only leave a thread handoff when another agent or the user would otherwise
+  miss important context.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 

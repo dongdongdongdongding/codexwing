@@ -1,0 +1,627 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1474.8900146484375,
+      "krw_change_1d": null,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.41,
+      "tnx": 4.2829999923706055,
+      "tnx_change_1d": 0.63,
+      "vix": 18.1299991607666,
+      "vix_change_1d": -1.25
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "바이오"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.859,
+        "strength_score": 60.0,
+        "theme_id": "finance",
+        "theme_name": "금융"
+      },
+      {
+        "confidence": 0.479,
+        "strength_score": 18.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      },
+      {
+        "confidence": 0.479,
+        "strength_score": 18.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양"
+      }
+    ],
+    "cross_asset_signals": [],
+    "driver_scores": {
+      "EARNINGS": 2,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 4,
+      "LIQUIDITY": -1,
+      "OIL": 0,
+      "POLITICS": -1,
+      "RATES": 0,
+      "REGULATION": -2
+    },
+    "evidence_headlines": [
+      "[Naver Stock] ... 코스닥 바이오도 급등",
+      "[Naver Stock] ... 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+      "[Naver Stock] ... 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황]",
+      "[Naver Stock] ... 코스닥도 강세"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "미국-이란 협상 기대감과 바이오 섹터 강세가 코스닥 시장의 상승을 주도하고 있음.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "미국-이란 협상 기대감이 시장 전반의 상승 동력으로 작용",
+        "evidence": "미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+        "market_impact": 4,
+        "signal": "BULLISH"
+      }
+    ],
+    "market_sentiment": "BULLISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "바이오"
+      ],
+      "beneficiary_sectors": [
+        "바이오"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.859,
+          "strength_score": 60.0,
+          "theme_id": "finance",
+          "theme_name": "금융"
+        },
+        {
+          "confidence": 0.479,
+          "strength_score": 18.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        },
+        {
+          "confidence": 0.479,
+          "strength_score": 18.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양"
+        }
+      ],
+      "company_event_bias": {
+        "알에프텍": -8,
+        "온코크로스": 4,
+        "제너셈": 8,
+        "제이엔케이글로벌": -8,
+        "파인테크닉스": -4,
+        "하이드로리튬": -8
+      },
+      "cross_asset_signals": [],
+      "disclosure_events": [
+        {
+          "category": "EARNINGS",
+          "company": "온코크로스",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "POLITICS",
+          "company": "파인테크닉스",
+          "event_score": -2,
+          "label": "최대주주변경",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식양수도계약체결"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "제너셈",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "알에프텍",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "하이드로리튬",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정(일정금액이상의청구)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "제이엔케이글로벌",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의제기ㆍ신청(경영권분쟁소송)              (주주총회결의 취소등 청구의 소)"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "온코크로스",
+          "event_score": 2,
+          "label": "합병",
+          "polarity": "POSITIVE",
+          "report_name": "[기재정정]주요사항보고서(회사합병결정)"
+        },
+        {
+          "category": "POLITICS",
+          "company": "파인테크닉스",
+          "event_score": -2,
+          "label": "최대주주변경",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식양수도계약체결"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 2,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 4,
+        "LIQUIDITY": -1,
+        "OIL": 0,
+        "POLITICS": -1,
+        "RATES": 0,
+        "REGULATION": -2
+      },
+      "evidence_headlines": [
+        "[Naver Stock] ... 코스닥 바이오도 급등",
+        "[Naver Stock] ... 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+        "[Naver Stock] ... 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황]",
+        "[Naver Stock] ... 코스닥도 강세"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "미국-이란 협상 기대감과 바이오 섹터 강세가 코스닥 시장의 상승을 주도하고 있음.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "미국-이란 협상 기대감이 시장 전반의 상승 동력으로 작용",
+          "evidence": "미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+          "market_impact": 4,
+          "signal": "BULLISH"
+        }
+      ],
+      "market_sentiment": "BULLISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+        "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+        "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+        "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+        "[Naver Stock] 950160.KQ [+2] 코스피, 트럼프 종전협상 시사에 6140대 상승 출발…코스닥도 올라 | 네이버증권",
+        "[DART 20260416] 온코크로스 - [기재정정]주요사항보고서(회사합병결정) | 전자공시",
+        "[DART 20260415] 유일에너테크 - 투자판단관련주요경영사항              (1차 부도 발생) | 전자공시",
+        "[DART 20260415] 파인테크닉스 - [기재정정]최대주주변경을수반하는주식양수도계약체결 | 전자공시",
+        "[DART 20260415] 제너셈 - 단일판매ㆍ공급계약체결 | 전자공시",
+        "[DART 20260415] 알에프텍 - [기재정정]유상증자결정(종속회사의주요경영사항) | 전자공시",
+        "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+        "[DART 20260415] 제이엔케이글로벌 - 소송등의제기ㆍ신청(경영권분쟁소송)              (주주총회결의 취소등 청구의 소) | 전자공시",
+        "[Wed, 15 Apr 2026 19:29:03 +0900] 신현송 \"최근 환율 상당히 높은 수준…역외 거래 영향 커\"(종합2보) | 연합뉴스",
+        "[Wed, 15 Apr 2026 18:00:10 +09:00] 한전, 베트남 원전 수주 본궤도 | 매일경제",
+        "[Wed, 15 Apr 2026 17:58:22 +0900] [마켓칼럼] \"위기의 증시, AI 혁신의 본고장으로 눈을 돌리자\" | 한국경제"
+      ],
+      "risk_flags": [],
+      "sentiment_score": 80,
+      "source": "gemini",
+      "theme_evidence": {
+        "bio": [
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "eco_energy": [
+          "[Wed, 15 Apr 2026 18:00:10 +09:00] 한전, 베트남 원전 수주 본궤도 | 매일경제"
+        ],
+        "finance": [
+          "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+          "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "it_platform": [
+          "[Wed, 15 Apr 2026 17:58:22 +0900] [마켓칼럼] \"위기의 증시, AI 혁신의 본고장으로 눈을 돌리자\" | 한국경제"
+        ],
+        "secondary_battery": [
+          "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시"
+        ],
+        "shipbuilding": []
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "confidence": 0.859,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+            "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+            "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+            "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+          ],
+          "momentum_avg_change_pct": 3.46,
+          "momentum_class": "EXPLODING",
+          "strength_score": 60.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-15T17:21:41.258358+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ],
+          "confidence": 0.479,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Wed, 15 Apr 2026 18:00:10 +09:00] 한전, 베트남 원전 수주 본궤도 | 매일경제"
+          ],
+          "momentum_avg_change_pct": 3.06,
+          "momentum_class": "EXPLODING",
+          "strength_score": 18.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-15T17:21:41.259371+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "조선/해양",
+            "조선",
+            "선박",
+            "해양",
+            "LNG선",
+            "해양플랜트"
+          ],
+          "confidence": 0.479,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 18.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "updated_at": "2026-04-15T17:21:41.259702+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.45,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 14.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-15T17:21:41.259603+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.443,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [
+            "[Wed, 15 Apr 2026 17:58:22 +0900] [마켓칼럼] \"위기의 증시, AI 혁신의 본고장으로 눈을 돌리자\" | 한국경제"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 13.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "updated_at": "2026-04-15T17:21:41.258212+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 10.0,
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "updated_at": "2026-04-15T17:21:41.257966+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "미국-이란 협상 기대감에 코스닥 시장 동반 상승",
+          "impact": "POSITIVE",
+          "theme": "중동 지정학적 긴장 완화 기대"
+        },
+        {
+          "description": "코스닥 내 바이오 종목들의 급등세 관찰",
+          "impact": "POSITIVE",
+          "theme": "바이오 섹터 강세"
+        }
+      ],
+      "timestamp": "2026-04-16 02:21",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+      "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+      "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+      "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+      "[Naver Stock] 950160.KQ [+2] 코스피, 트럼프 종전협상 시사에 6140대 상승 출발…코스닥도 올라 | 네이버증권",
+      "[DART 20260416] 온코크로스 - [기재정정]주요사항보고서(회사합병결정) | 전자공시",
+      "[DART 20260415] 유일에너테크 - 투자판단관련주요경영사항              (1차 부도 발생) | 전자공시",
+      "[DART 20260415] 파인테크닉스 - [기재정정]최대주주변경을수반하는주식양수도계약체결 | 전자공시",
+      "[DART 20260415] 제너셈 - 단일판매ㆍ공급계약체결 | 전자공시",
+      "[DART 20260415] 알에프텍 - [기재정정]유상증자결정(종속회사의주요경영사항) | 전자공시",
+      "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+      "[DART 20260415] 제이엔케이글로벌 - 소송등의제기ㆍ신청(경영권분쟁소송)              (주주총회결의 취소등 청구의 소) | 전자공시",
+      "[Wed, 15 Apr 2026 19:29:03 +0900] 신현송 \"최근 환율 상당히 높은 수준…역외 거래 영향 커\"(종합2보) | 연합뉴스",
+      "[Wed, 15 Apr 2026 18:00:10 +09:00] 한전, 베트남 원전 수주 본궤도 | 매일경제",
+      "[Wed, 15 Apr 2026 17:58:22 +0900] [마켓칼럼] \"위기의 증시, AI 혁신의 본고장으로 눈을 돌리자\" | 한국경제"
+    ],
+    "risk_flags": [],
+    "sentiment_score": 80,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "bio": [
+        "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+      ],
+      "eco_energy": [
+        "[Wed, 15 Apr 2026 18:00:10 +09:00] 한전, 베트남 원전 수주 본궤도 | 매일경제"
+      ],
+      "finance": [
+        "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+        "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+        "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+        "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+      ],
+      "it_platform": [
+        "[Wed, 15 Apr 2026 17:58:22 +0900] [마켓칼럼] \"위기의 증시, AI 혁신의 본고장으로 눈을 돌리자\" | 한국경제"
+      ],
+      "secondary_battery": [
+        "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시"
+      ],
+      "shipbuilding": []
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "confidence": 0.859,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+          "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "momentum_avg_change_pct": 3.46,
+        "momentum_class": "EXPLODING",
+        "strength_score": 60.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-15T17:21:41.258358+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ],
+        "confidence": 0.479,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Wed, 15 Apr 2026 18:00:10 +09:00] 한전, 베트남 원전 수주 본궤도 | 매일경제"
+        ],
+        "momentum_avg_change_pct": 3.06,
+        "momentum_class": "EXPLODING",
+        "strength_score": 18.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-15T17:21:41.259371+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "조선/해양",
+          "조선",
+          "선박",
+          "해양",
+          "LNG선",
+          "해양플랜트"
+        ],
+        "confidence": 0.479,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 18.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "updated_at": "2026-04-15T17:21:41.259702+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.45,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 14.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-15T17:21:41.259603+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.443,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [
+          "[Wed, 15 Apr 2026 17:58:22 +0900] [마켓칼럼] \"위기의 증시, AI 혁신의 본고장으로 눈을 돌리자\" | 한국경제"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 13.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "updated_at": "2026-04-15T17:21:41.258212+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 10.0,
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "updated_at": "2026-04-15T17:21:41.257966+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-15T17:21:41.550555+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-16",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-15T17:20:45.200286+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-58F093F2",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

@@ -1,0 +1,264 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 15,
+      "label": "⏱️ Intraday Trend | 1H",
+      "share": 0.714
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 4,
+      "label": "⏱️ Intraday Trend | News Tailwind | 1H",
+      "share": 0.19
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 2,
+      "label": "⏱️ Intraday Breakout | 1H",
+      "share": 0.095
+    },
+    {
+      "breadth_score": 36.0,
+      "cluster_type": "theme",
+      "concentration_score": 46.8,
+      "leader_ticker": "042660.KS",
+      "member_count": 3,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "조선/해양",
+      "theme_strength_score": 18.0
+    },
+    {
+      "breadth_score": 36.0,
+      "cluster_type": "theme",
+      "concentration_score": 42.3,
+      "leader_ticker": "000270.KS",
+      "member_count": 3,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "자동차",
+      "theme_strength_score": 10.0
+    },
+    {
+      "breadth_score": 36.0,
+      "cluster_type": "theme",
+      "concentration_score": 42.4,
+      "leader_ticker": "015760.KS",
+      "member_count": 3,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "친환경/에너지",
+      "theme_strength_score": 36.0
+    },
+    {
+      "breadth_score": 24.0,
+      "cluster_type": "theme",
+      "concentration_score": 67.4,
+      "leader_ticker": "005930.KS",
+      "member_count": 2,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "반도체",
+      "theme_strength_score": 43.0
+    },
+    {
+      "breadth_score": 24.0,
+      "cluster_type": "theme",
+      "concentration_score": 43.1,
+      "leader_ticker": "068270.KS",
+      "member_count": 2,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 21,
+    "strategy_distribution": {
+      "⏱️ Intraday Breakout | 1H": 2,
+      "⏱️ Intraday Trend | 1H": 15,
+      "⏱️ Intraday Trend | News Tailwind | 1H": 4
+    },
+    "theme_distribution": {
+      "게임/콘텐츠/엔터": 2,
+      "금융": 2,
+      "바이오/헬스케어": 2,
+      "반도체": 2,
+      "자동차": 3,
+      "조선/해양": 3,
+      "철강/금속/소재": 1,
+      "친환경/에너지": 3,
+      "통신/네트워크": 2
+    },
+    "top_strategy": "⏱️ Intraday Trend | 1H",
+    "top_strategy_share": 0.714,
+    "trend_distribution": {
+      "UP": 21
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "042660.KS",
+      "member_count": 3,
+      "theme_name": "조선/해양",
+      "theme_strength_score": 18.0,
+      "top_members": [
+        {
+          "leader_score": 46.8,
+          "score": 63.9,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 18.0,
+          "ticker": "042660.KS"
+        },
+        {
+          "leader_score": 46.0,
+          "score": 69.2,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 18.0,
+          "ticker": "034020.KS"
+        },
+        {
+          "leader_score": 38.7,
+          "score": 63.3,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 18.0,
+          "ticker": "329180.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "000270.KS",
+      "member_count": 3,
+      "theme_name": "자동차",
+      "theme_strength_score": 10.0,
+      "top_members": [
+        {
+          "leader_score": 42.3,
+          "score": 64.4,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 10.0,
+          "ticker": "000270.KS"
+        },
+        {
+          "leader_score": 36.1,
+          "score": 61.5,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 10.0,
+          "ticker": "064350.KS"
+        },
+        {
+          "leader_score": 35.7,
+          "score": 67.2,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 10.0,
+          "ticker": "005830.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "015760.KS",
+      "member_count": 3,
+      "theme_name": "친환경/에너지",
+      "theme_strength_score": 36.0,
+      "top_members": [
+        {
+          "leader_score": 42.4,
+          "score": 68.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "015760.KS"
+        },
+        {
+          "leader_score": 36.9,
+          "score": 81.3,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "052690.KS"
+        },
+        {
+          "leader_score": 36.3,
+          "score": 64.6,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 36.0,
+          "ticker": "010140.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "005930.KS",
+      "member_count": 2,
+      "theme_name": "반도체",
+      "theme_strength_score": 43.0,
+      "top_members": [
+        {
+          "leader_score": 67.4,
+          "score": 67.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 43.0,
+          "ticker": "005930.KS"
+        },
+        {
+          "leader_score": 41.2,
+          "score": 72.1,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 43.0,
+          "ticker": "009150.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "068270.KS",
+      "member_count": 2,
+      "theme_name": "바이오/헬스케어",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 43.1,
+          "score": 63.6,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "068270.KS"
+        },
+        {
+          "leader_score": 39.9,
+          "score": 64.6,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "096770.KS"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-16T05:26:33.466521+00:00",
+  "quality_notes": [
+    "Total candidates: 21",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: ⏱️ Intraday Trend | 1H (15/21)",
+    "Top theme cluster: 조선/해양 (3/21)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-16",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-16T05:26:02.375545+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-867DE516",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": [
+    {
+      "code": "STRATEGY_CONCENTRATION",
+      "message": "Candidates are concentrated in one strategy tag (⏱️ Intraday Trend | 1H).",
+      "severity": "warning"
+    }
+  ]
+}

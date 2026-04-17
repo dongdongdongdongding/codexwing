@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Any, Callable, Dict, Optional
 
+from multi_agent.agents.kr_quant_reranker import compute_kr_quant_rerank
 from modules import quant_analysis
 from modules.kr_regime_ranker import predict_rank_overlay
+from modules.kosdaq_3d_continuation_ranker import predict_continuation_overlay
 from modules.regime_market_policy import evaluate_market_policy
 from modules.regime_ticker_profiles import (
     apply_profile_to_setup,
@@ -454,6 +457,29 @@ def evaluate_intraday_candidate(
     target_price = close_now * (1.0 + target_pct / 100.0)
     stop_loss = close_now * (1.0 - stop_pct / 100.0)
     volume_badge = f"{'✅' if vol_ratio >= 1.5 else '⚠️'} x{vol_ratio:.1f}"
+    segment_overlay = compute_segment_score_overlay(
+        market_type=market_key,
+        scan_mode="INTRADAY",
+        position=str(position),
+        strategy_tag=str(strategy_tag),
+        tier=str(tier),
+        volume_badge=str(volume_badge),
+        whale_score=float(whale_score),
+        alpha_score=float(alpha_score),
+        prob_5=float(prob_5),
+        prob_clean=float(prob_clean),
+    )
+    decision_score = round(
+        _clamp_float(
+            float(decision_score) + float(segment_overlay.get("adjustment", 0.0) or 0.0),
+            0.0,
+            100.0,
+        ),
+        1,
+    )
+    conviction_score = round(_clamp_float((decision_score + prob_clean) / 2.0, 1.0, 99.0), 1)
+    tier = "🏆T1" if decision_score >= 85 else ("⭐T2" if decision_score >= 72 else "⚡T3")
+    tier_sort = 1 if decision_score >= 85 else (2 if decision_score >= 72 else 3)
     news_tag = "🔥 수혜" if news_adj.get("is_beneficiary") else ("⚠️ 피해" if news_adj.get("is_victim") else "-")
     kr_intraday_role = resolve_kr_universe_role(
         scan_mode="INTRADAY",
@@ -498,6 +524,7 @@ def evaluate_intraday_candidate(
             "Context": "🔥 Beneficiary" if news_adj.get("is_beneficiary") else ("⚠️ Impact" if news_adj.get("is_victim") else "-"),
             "_prob_5": prob_5,
             "_prob_clean": prob_clean,
+            "_segment_overlay": segment_overlay,
             "Decision Score": decision_score,
             "Model Variant": ml_pred.get("phase25_variant", "-"),
             "phase25_variant": ml_pred.get("phase25_variant"),
@@ -574,6 +601,7 @@ def evaluate_intraday_candidate(
             "위치": position,
             "_prob_5": prob_5,
             "_prob_clean": prob_clean,
+            "_segment_overlay": segment_overlay,
             "Decision Score": decision_score,
             "모델": ml_pred.get("phase25_variant", "-"),
             "phase25_variant": ml_pred.get("phase25_variant"),
@@ -1135,32 +1163,58 @@ def compute_score_edge_adjustment(
     whale_score: float,
     position: str,
     strategy_tag: str,
+    tier: Optional[str] = None,
     volume_ratio: float,
+    volume_confirmed: Optional[bool] = None,
 ) -> Dict[str, Any]:
-    """Apply small, auditable score edges backed by recent realized scan outcomes."""
+    """Apply small, auditable score edges that support durable continuation setups."""
     is_peak = "Peak" in str(position)
     is_rising = "Rising" in str(position)
     is_overheat = any(tag in str(strategy_tag) for tag in ["과열", "Overheat", "Exhaustion"])
     is_rsidiv = "RSI_DIV" in str(strategy_tag)
     is_obvdiv = "OBV_DIV" in str(strategy_tag)
+    tier_text = str(tier or "")
+    volume_ok = bool(volume_confirmed) if volume_confirmed is not None else float(volume_ratio) >= 1.0
+    leader_context = any(
+        tag in str(strategy_tag) for tag in ["Profile:POSITIVE", "주도주 하이패스", "ContextTailwind"]
+    )
+    strong_peak_leader = bool(
+        is_peak
+        and is_overheat
+        and volume_ok
+        and float(volume_ratio) >= 2.5
+        and any(marker in tier_text for marker in ("T0", "T1"))
+        and (float(alpha_score) >= 75.0 or float(whale_score) >= 60.0 or leader_context)
+    )
 
     adjustment = 0.0
     reasons: list[str] = []
 
-    if is_peak and is_overheat and float(prob_5) >= 30.0:
-        adjustment += 20.0
-        reasons.append("EDGE_PEAK_OVERHEAT_MODEL_CONFIRM")
-    elif is_peak and is_overheat:
-        adjustment += 10.0
-        reasons.append("EDGE_PEAK_OVERHEAT")
+    if is_peak and is_overheat:
+        if strong_peak_leader:
+            adjustment += 24.0
+            reasons.append("EDGE_PEAK_OVERHEAT_LEADER_CONTINUATION")
+        elif float(prob_5) >= 65.0:
+            adjustment -= 3.0
+            reasons.append("EDGE_PEAK_OVERHEAT_STRONG_MODEL_BUT_LATE")
+        else:
+            adjustment -= 6.0
+            reasons.append("EDGE_PEAK_OVERHEAT_LATE_CHASE")
+    elif is_peak:
+        adjustment -= 3.0
+        reasons.append("EDGE_PEAK_ENTRY_RISK")
 
-    if float(volume_ratio) >= 2.5 and is_overheat:
-        adjustment += 5.0
-        reasons.append("EDGE_VOLUME_EXPANSION")
+    if is_rising and volume_ok and not is_overheat:
+        adjustment += 3.0
+        reasons.append("EDGE_RISING_WITH_CONFIRMED_VOLUME")
 
-    if float(alpha_score) >= 75.0 and float(whale_score) >= 65.0 and float(volume_ratio) >= 2.5:
+    if volume_ok and float(alpha_score) >= 75.0 and float(whale_score) >= 65.0 and not is_peak:
         adjustment += 4.0
-        reasons.append("EDGE_ALPHA_WHALE_BREAKOUT")
+        reasons.append("EDGE_ALPHA_WHALE_CONTINUATION")
+
+    if (not volume_ok) and (is_peak or is_overheat):
+        adjustment -= 3.0
+        reasons.append("EDGE_WEAK_VOLUME_CONFIRMATION")
 
     if is_rsidiv:
         adjustment -= 10.0
@@ -1180,6 +1234,254 @@ def compute_score_edge_adjustment(
     return {
         "adjustment": round(adjustment, 1),
         "reasons": reasons,
+    }
+
+
+def compute_segment_score_overlay(
+    *,
+    market_type: str,
+    scan_mode: str,
+    position: str,
+    strategy_tag: str,
+    tier: str,
+    volume_badge: str,
+    whale_score: float,
+    alpha_score: float,
+    prob_5: float = 0.0,
+    prob_clean: float = 0.0,
+) -> Dict[str, Any]:
+    """Apply segment-specific rerank nudges for persistent observed failure modes."""
+    market = str(market_type or "").upper()
+    mode = str(scan_mode or "SWING").upper()
+    position_text = str(position or "")
+    strategy_text = str(strategy_tag or "")
+    tier_text = str(tier or "")
+    volume_text = str(volume_badge or "")
+    volume_ok = "✅" in volume_text
+    ranker_match = re.search(r"Ranker:(-?\d+(?:\.\d+)?)%", strategy_text)
+    ranker_prob = float(ranker_match.group(1)) if ranker_match else None
+
+    adjustment = 0.0
+    reasons: list[str] = []
+
+    if market == "KOSPI" and mode == "INTRADAY":
+        is_intraday_trend = "Intraday Trend" in position_text or "Intraday Trend" in strategy_text
+        is_intraday_breakout = "Intraday Breakout" in position_text or "Intraday Breakout" in strategy_text
+        if is_intraday_trend:
+            adjustment += 2.0
+            reasons.append("SEGMENT_KOSPI_INTRADAY_TREND_BONUS")
+        if is_intraday_breakout:
+            adjustment -= 12.0
+            reasons.append("SEGMENT_KOSPI_INTRADAY_BREAKOUT_PENALTY")
+        if "T2" in tier_text:
+            adjustment += 6.0
+            reasons.append("SEGMENT_KOSPI_INTRADAY_T2_BONUS")
+
+    if market == "KOSDAQ" and mode == "SWING":
+        is_overheat = "단기과열" in strategy_text or "Overheat" in strategy_text
+        is_rising = "Rising" in position_text or "상승" in position_text
+        is_divergence = "OBV_DIV" in strategy_text or "RSI_DIV" in strategy_text
+        is_leader = "주도주 하이패스" in strategy_text or "ContextTailwind" in strategy_text
+        if "T2" in tier_text and is_overheat and (ranker_prob is None or ranker_prob < 36.0):
+            adjustment -= 12.0
+            reasons.append("SEGMENT_KOSDAQ_SWING_HOT_T2_LOW_RANKER")
+        elif "T2" in tier_text and not volume_ok:
+            adjustment -= 8.0
+            reasons.append("SEGMENT_KOSDAQ_SWING_WEAK_T2_PENALTY")
+        elif "T2" in tier_text and volume_ok and (ranker_prob is None or ranker_prob < 36.0):
+            adjustment -= 4.0
+            reasons.append("SEGMENT_KOSDAQ_SWING_T2_LOW_RANKER")
+
+        if "T3" in tier_text and is_rising and float(prob_clean) >= 38.0:
+            adjustment += 8.0
+            reasons.append("SEGMENT_KOSDAQ_SWING_T3_RISING_CLEAN_BONUS")
+        if is_divergence and float(prob_clean) >= 35.0:
+            adjustment += 8.0
+            reasons.append("SEGMENT_KOSDAQ_SWING_DIVERGENCE_BONUS")
+        if is_leader and float(prob_clean) >= 28.0:
+            adjustment += 8.0
+            reasons.append("SEGMENT_KOSDAQ_SWING_LEADER_CONTEXT_BONUS")
+        if is_rising and float(prob_clean) >= 38.0 and ranker_prob is not None and ranker_prob >= 42.0:
+            adjustment += 4.0
+            reasons.append("SEGMENT_KOSDAQ_SWING_RISING_CLEAN_CONFIRM")
+
+    return {
+        "adjustment": round(adjustment, 1),
+        "reasons": reasons,
+    }
+
+
+def compute_kosdaq_continuation_signal(
+    *,
+    market_type: str,
+    scan_mode: str,
+    decision_score: float,
+    alpha_score: float,
+    prob_5: float,
+    real_trend: str,
+) -> Dict[str, Any]:
+    market = str(market_type or "").upper()
+    mode = str(scan_mode or "SWING").upper()
+    trend = str(real_trend or "").upper()
+    evidence = 0
+    if float(decision_score) >= 78.0:
+        evidence += 1
+    if float(alpha_score) >= 45.0:
+        evidence += 1
+    if float(prob_5) >= 27.0:
+        evidence += 1
+    if trend == "UP":
+        evidence += 1
+
+    reasons: list[str] = []
+    eligible = True
+    if market != "KOSDAQ":
+        eligible = False
+        reasons.append("MARKET_NOT_KOSDAQ")
+    if mode != "SWING":
+        eligible = False
+        reasons.append("SCAN_MODE_NOT_SWING")
+    if float(decision_score) < 78.0:
+        eligible = False
+        reasons.append("DECISION_SCORE_LT_78")
+    if float(alpha_score) < 45.0:
+        eligible = False
+        reasons.append("ALPHA_SCORE_LT_45")
+    if float(prob_5) < 27.0:
+        eligible = False
+        reasons.append("ML_PROB_LT_27")
+    if trend != "UP":
+        eligible = False
+        reasons.append("TREND_NOT_UP")
+
+    overlay = (
+        predict_continuation_overlay(
+            decision_score=decision_score,
+            alpha_score=alpha_score,
+            ml_prob=prob_5,
+            trend=trend,
+        )
+        if eligible
+        else {"enabled": False, "score_adjustment": 0.0}
+    )
+
+    return {
+        "eligible": bool(eligible),
+        "enabled": bool(overlay.get("enabled", False)),
+        "prob_up_3d": float(overlay.get("prob_up_3d", 50.0) or 50.0),
+        "score_adjustment": float(overlay.get("score_adjustment", 0.0) or 0.0),
+        "quality": float(overlay.get("quality", 0.0) or 0.0),
+        "evidence": int(evidence),
+        "reasons": reasons,
+        "metrics": overlay.get("metrics", {}),
+    }
+
+
+def compute_kosdaq_quant_signal(
+    *,
+    market_type: str,
+    scan_mode: str,
+    decision_score: float,
+    alpha_score: float,
+    whale_score: float,
+    prob_5: float,
+    prob_clean: float,
+    real_trend: str,
+    position: str,
+    strategy_tag: str,
+    tier: str,
+    routing_path: str = "",
+    expected_return_1d_pct: Optional[float] = None,
+    expected_return_3d_pct: Optional[float] = None,
+    theme_context: Optional[Dict[str, Any]] = None,
+    leader_metrics: Optional[Dict[str, Any]] = None,
+    kr_universe_role: str = "",
+    scanner_timeframe_profile: str = "",
+) -> Dict[str, Any]:
+    market = str(market_type or "").upper()
+    mode = str(scan_mode or "SWING").upper()
+    if market != "KOSDAQ" or mode != "SWING":
+        return {
+            "enabled": False,
+            "score_adjustment": 0.0,
+            "lane": "raw",
+            "score_3d": float(decision_score),
+            "role": str(kr_universe_role or "").upper() or "TRANSITIONAL",
+            "reasons": ["MARKET_OR_MODE_NOT_KOSDAQ_SWING"],
+            "quant_reasons": [],
+        }
+
+    candidate = {
+        "score": float(decision_score),
+        "decision_score": float(decision_score),
+        "alpha_score": float(alpha_score),
+        "whale_score": float(whale_score),
+        "prob_5": float(prob_5),
+        "prob_clean": float(prob_clean),
+        "real_trend": str(real_trend or "").upper(),
+        "trend": str(real_trend or "").upper(),
+        "position": str(position or ""),
+        "strategy": str(strategy_tag or ""),
+        "scan_mode": "SWING",
+        "routing_path": str(routing_path or ""),
+        "expected_return_1d_pct": expected_return_1d_pct,
+        "expected_return_3d_pct": expected_return_3d_pct,
+        "kr_universe_role": str(kr_universe_role or "").upper(),
+        "scanner_timeframe_profile": str(scanner_timeframe_profile or "").upper(),
+        "theme_context": theme_context if isinstance(theme_context, dict) else {},
+        "leader_metrics": leader_metrics if isinstance(leader_metrics, dict) else {},
+    }
+    quant_meta = compute_kr_quant_rerank(candidate, "KOSDAQ")
+    quant_score_3d = _safe_numeric(quant_meta.get("score_3d"), float(decision_score))
+    lane = str(quant_meta.get("lane", "raw") or "raw").lower()
+    role = str(quant_meta.get("kr_universe_role") or kr_universe_role or "").upper() or "TRANSITIONAL"
+    delta_3d = float(quant_score_3d) - float(decision_score)
+    position_text = str(position or "")
+    strategy_text = str(strategy_tag or "")
+    tier_text = str(tier or "")
+    is_peak = "Peak" in position_text
+    is_rising = "Rising" in position_text
+    is_overheat = any(tag in strategy_text for tag in ("단기과열", "Overheat", "과열"))
+
+    adjustment = 0.0
+    reasons: list[str] = []
+    if lane == "3d" and is_rising and float(prob_clean) >= 38.0 and delta_3d >= 0.25:
+        bonus = _clamp_float(max(4.0, float(delta_3d) * 0.75), 4.0, 10.0)
+        adjustment += float(bonus)
+        reasons.append("KOSDAQ_QUANT_3D_RISING_BONUS")
+
+    if (
+        float(delta_3d) <= -6.0
+        and (is_peak or is_overheat)
+        and any(marker in tier_text for marker in ("T1", "T2"))
+        and role != "EXPLOSIVE_LEADER"
+    ):
+        penalty = _clamp_float(float(delta_3d) * 0.55, -16.0, -4.0)
+        adjustment += float(penalty)
+        reasons.append("KOSDAQ_QUANT_LATE_CHASE_PENALTY")
+
+    if (
+        lane == "1d"
+        and role not in {"EXPLOSIVE_LEADER"}
+        and is_peak
+        and "T1" in tier_text
+        and float(prob_clean) < 25.0
+    ):
+        adjustment -= 4.0
+        reasons.append("KOSDAQ_QUANT_T1_PEAK_FADE")
+
+    return {
+        "enabled": bool(reasons),
+        "score_adjustment": round(float(adjustment), 2),
+        "lane": lane or "raw",
+        "score": _safe_numeric(quant_meta.get("score"), float(decision_score)),
+        "score_1d": _safe_numeric(quant_meta.get("score_1d"), float(decision_score)),
+        "score_3d": float(quant_score_3d),
+        "role": role,
+        "delta_3d": round(float(delta_3d), 2),
+        "continuation_prob_3d": _safe_numeric(quant_meta.get("continuation_prob_3d"), 50.0),
+        "reasons": reasons,
+        "quant_reasons": list(quant_meta.get("reasons", []) or []),
     }
 
 
@@ -1972,6 +2274,11 @@ def build_kr_scan_outputs(
     kr_universe_role: str = "",
     explosive_leader_flag: bool = False,
     core_trend_flag: bool = False,
+    continuation_eligible: bool = False,
+    continuation_enabled: bool = False,
+    continuation_prob_3d: Optional[float] = None,
+    continuation_evidence: int = 0,
+    continuation_gate_reasons: Optional[list[str]] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Build KR scanner table row + DB payload with legacy field compatibility."""
     curr_fmt = "{:,.0f}"
@@ -2012,6 +2319,11 @@ def build_kr_scan_outputs(
         "kr_universe_role": kr_universe_role,
         "explosive_leader_flag": bool(explosive_leader_flag),
         "core_trend_flag": bool(core_trend_flag),
+        "continuation_eligible": bool(continuation_eligible),
+        "continuation_enabled": bool(continuation_enabled),
+        "continuation_prob_3d": continuation_prob_3d,
+        "continuation_evidence": int(continuation_evidence),
+        "continuation_gate_reasons": list(continuation_gate_reasons or []),
         "_theme_context": theme_context or {},
         "_leader_metrics": leader_metrics or {},
         "_routing_path": routing_path or "",
@@ -2055,6 +2367,11 @@ def build_kr_scan_outputs(
         "kr_universe_role": kr_universe_role,
         "explosive_leader_flag": bool(explosive_leader_flag),
         "core_trend_flag": bool(core_trend_flag),
+        "continuation_eligible": bool(continuation_eligible),
+        "continuation_enabled": bool(continuation_enabled),
+        "continuation_prob_3d": continuation_prob_3d,
+        "continuation_evidence": int(continuation_evidence),
+        "continuation_gate_reasons": list(continuation_gate_reasons or []),
         "phase25_prob": phase25_prob,
         "phase25_variant": phase25_variant,
         "phase25_shadow_variant": phase25_shadow_variant,
@@ -2520,13 +2837,16 @@ def evaluate_app_us_candidate(
         return None
 
     volume_ratio = float(setup.get("Volume Ratio", 1.0) or 1.0)
+    volume_confirmed = bool(setup.get("Volume Confirmed"))
     edge_adjustment = compute_score_edge_adjustment(
         prob_5=float(prob_5),
         alpha_score=float(alpha_score),
         whale_score=float(whale_score),
         position=str(position),
         strategy_tag=str(strategy_tag),
+        tier=str(tier),
         volume_ratio=float(volume_ratio),
+        volume_confirmed=volume_confirmed,
     )
     decision_score = round(
         (float(alpha_score) * 0.58 + float(whale_score) * 0.10 + float(prob_5) * 0.20 + float(prob_clean) * 0.12)
@@ -2537,6 +2857,7 @@ def evaluate_app_us_candidate(
             tier,
             whale_score,
             float(volume_ratio),
+            volume_confirmed=volume_confirmed,
             macro_ctx=macro_ctx,
             consec_days=consec_days,
         ),
@@ -2981,13 +3302,16 @@ def evaluate_app_kr_candidate(
         return None
 
     volume_ratio = float(setup.get("Volume Ratio", 1.0) or 1.0)
+    volume_confirmed = bool(setup.get("Volume Confirmed"))
     edge_adjustment = compute_score_edge_adjustment(
         prob_5=float(prob_5),
         alpha_score=float(alpha_score),
         whale_score=float(whale_score),
         position=str(position),
         strategy_tag=str(strategy_tag),
+        tier=str(tier),
         volume_ratio=float(volume_ratio),
+        volume_confirmed=volume_confirmed,
     )
     decision_score = round(
         (float(alpha_score) * 0.58 + float(whale_score) * 0.10 + float(prob_5) * 0.20 + float(prob_clean) * 0.12)
@@ -2998,6 +3322,7 @@ def evaluate_app_kr_candidate(
             tier,
             whale_score,
             float(volume_ratio),
+            volume_confirmed=volume_confirmed,
             consec_days=consec_days,
         ),
         1,
@@ -3083,6 +3408,43 @@ def evaluate_app_kr_candidate(
         ),
         1,
     )
+    segment_overlay = compute_segment_score_overlay(
+        market_type="KOSPI" if str(sym).upper().endswith(".KS") else "KOSDAQ",
+        scan_mode="SWING",
+        position=str(position),
+        strategy_tag=str(strategy_tag),
+        tier=str(tier),
+        volume_badge=str(setup.get("Volume", "")),
+        whale_score=float(whale_score),
+        alpha_score=float(alpha_score),
+        prob_5=float(prob_5),
+        prob_clean=float(prob_clean),
+    )
+    decision_score = round(
+        _clamp_float(
+            float(decision_score) + float(segment_overlay.get("adjustment", 0.0) or 0.0),
+            0.0,
+            100.0,
+        ),
+        1,
+    )
+    continuation_signal = compute_kosdaq_continuation_signal(
+        market_type="KOSPI" if str(sym).upper().endswith(".KS") else "KOSDAQ",
+        scan_mode="SWING",
+        decision_score=float(decision_score),
+        alpha_score=float(alpha_score),
+        prob_5=float(prob_5),
+        real_trend=str(real_trend),
+    )
+    decision_score = round(
+        _clamp_float(
+            float(decision_score) + float(continuation_signal.get("score_adjustment", 0.0) or 0.0),
+            0.0,
+            100.0,
+        ),
+        1,
+    )
+    pre_quant_tier = "🏆T1" if decision_score >= 85 else ("⭐T2" if decision_score >= 72 else "⚡T3")
     expected_edge = compute_expected_edge_profile(
         prob_5=float(prob_5),
         prob_clean=float(prob_clean),
@@ -3102,6 +3464,36 @@ def evaluate_app_kr_candidate(
         strategy_tag=str(strategy_tag),
         surge_tag=str(surge_tag),
     )
+    quant_signal = compute_kosdaq_quant_signal(
+        market_type="KOSPI" if str(sym).upper().endswith(".KS") else "KOSDAQ",
+        scan_mode="SWING",
+        decision_score=float(decision_score),
+        alpha_score=float(alpha_score),
+        whale_score=float(whale_score),
+        prob_5=float(prob_5),
+        prob_clean=float(prob_clean),
+        real_trend=str(real_trend),
+        position=str(position),
+        strategy_tag=str(strategy_tag),
+        tier=str(pre_quant_tier),
+        routing_path=str(theme_overlay.get("routing_path", "core_only") or "core_only"),
+        expected_return_1d_pct=expected_edge.get("expected_return_1d_pct"),
+        expected_return_3d_pct=expected_edge.get("expected_return_3d_pct"),
+        theme_context=theme_overlay.get("theme_context", {}),
+        leader_metrics=leader_metrics,
+        kr_universe_role=str(universe_role.get("role") or "TRANSITIONAL"),
+        scanner_timeframe_profile=str(timeframe_profile),
+    )
+    decision_score = round(
+        _clamp_float(
+            float(decision_score) + float(quant_signal.get("score_adjustment", 0.0) or 0.0),
+            0.0,
+            100.0,
+        ),
+        1,
+    )
+    tier = "🏆T1" if decision_score >= 85 else ("⭐T2" if decision_score >= 72 else "⚡T3")
+    tier_sort = 1 if decision_score >= 85 else (2 if decision_score >= 72 else 3)
 
     outputs = build_kr_scan_outputs(
         sym=sym,
@@ -3150,5 +3542,13 @@ def evaluate_app_kr_candidate(
         kr_universe_role=str(universe_role.get("role") or "TRANSITIONAL"),
         explosive_leader_flag=bool(universe_role.get("explosive_leader_flag", False)),
         core_trend_flag=bool(universe_role.get("core_trend_flag", False)),
+        continuation_eligible=bool(continuation_signal.get("eligible", False)),
+        continuation_enabled=bool(continuation_signal.get("enabled", False)),
+        continuation_prob_3d=round(float(continuation_signal.get("prob_up_3d", 50.0) or 50.0), 4),
+        continuation_evidence=int(continuation_signal.get("evidence", 0) or 0),
+        continuation_gate_reasons=list(continuation_signal.get("reasons", []) or []),
     )
+    outputs["res_data"]["_segment_overlay"] = segment_overlay
+    outputs["res_data"]["_continuation_signal"] = continuation_signal
+    outputs["res_data"]["_quant_signal"] = quant_signal
     return outputs

@@ -1,0 +1,970 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1474.780029296875,
+      "krw_change_1d": null,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 1.22,
+      "tnx": 4.25600004196167,
+      "tnx_change_1d": -0.95,
+      "vix": 18.030000686645508,
+      "vix_change_1d": -1.8
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [
+      "바이오",
+      "전기차",
+      "배터리"
+    ],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.859,
+        "strength_score": 60.0,
+        "theme_id": "finance",
+        "theme_name": "금융"
+      },
+      {
+        "confidence": 0.68,
+        "strength_score": 35.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지"
+      },
+      {
+        "confidence": 0.601,
+        "strength_score": 24.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지"
+      },
+      {
+        "confidence": 0.594,
+        "strength_score": 23.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼"
+      },
+      {
+        "confidence": 0.5,
+        "strength_score": 21.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양"
+      },
+      {
+        "confidence": 0.5,
+        "strength_score": 21.0,
+        "theme_id": "해운",
+        "theme_name": "해운"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "WTI",
+        "description": "고유가가 K-배터리 섹터에 긍정적 영향을 미칠 것으로 예상됨.",
+        "direction": "UP",
+        "market_impact": 2
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 0,
+      "ECONOMY": 0,
+      "FX": 0,
+      "GEOPOLITICS": 5,
+      "LIQUIDITY": 1,
+      "OIL": 2,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": -3
+    },
+    "evidence_headlines": [
+      "외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등",
+      "미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+      "코스피·코스닥 미-이란 협상 기대에 동반 상승 마감",
+      "“올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "코스닥은 미-이란 협상 기대감과 외인·기관 매수세에 힘입어 강세를 보이며, 바이오 및 K-배터리 섹터가 특히 주목받고 있다.",
+    "macro_drivers": [
+      {
+        "category": "GEOPOLITICS",
+        "description": "미-이란 협상 기대감 및 종전 시사로 코스닥 시장이 동반 상승 마감.",
+        "evidence": "미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+        "market_impact": 5,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "LIQUIDITY",
+        "description": "외국인과 기관의 동반 매수세가 코스닥 시장 상승에 기여.",
+        "evidence": "외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등",
+        "market_impact": 4,
+        "signal": "BULLISH"
+      },
+      {
+        "category": "OIL",
+        "description": "고유가가 K-배터리 섹터의 재도약 요인으로 언급되며 코스닥에 간접적 긍정 영향.",
+        "evidence": "고유가·AI 타고 K-배터리 재도약",
+        "market_impact": 2,
+        "signal": "MIXED"
+      }
+    ],
+    "market_sentiment": "BULLISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [
+        "바이오",
+        "전기차",
+        "배터리"
+      ],
+      "beneficiary_sectors": [
+        "바이오",
+        "전기차",
+        "배터리"
+      ],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.859,
+          "strength_score": 60.0,
+          "theme_id": "finance",
+          "theme_name": "금융"
+        },
+        {
+          "confidence": 0.68,
+          "strength_score": 35.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지"
+        },
+        {
+          "confidence": 0.601,
+          "strength_score": 24.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지"
+        },
+        {
+          "confidence": 0.594,
+          "strength_score": 23.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼"
+        },
+        {
+          "confidence": 0.5,
+          "strength_score": 21.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양"
+        },
+        {
+          "confidence": 0.5,
+          "strength_score": 21.0,
+          "theme_id": "해운",
+          "theme_name": "해운"
+        }
+      ],
+      "company_event_bias": {
+        "루멘스": -4,
+        "수성웹툰": -4,
+        "알에프텍": -8,
+        "와이지-원": -4,
+        "제이엔케이글로벌": -8,
+        "하이드로리튬": -8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "WTI",
+          "description": "고유가가 K-배터리 섹터에 긍정적 영향을 미칠 것으로 예상됨.",
+          "direction": "UP",
+          "market_impact": 2
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "LIQUIDITY",
+          "company": "알에프텍",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "하이드로리튬",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정(일정금액이상의청구)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "제이엔케이글로벌",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의제기ㆍ신청(경영권분쟁소송)              (주주총회결의 취소등 청구의 소)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "루멘스",
+          "event_score": -2,
+          "label": "조회공시",
+          "polarity": "NEGATIVE",
+          "report_name": "조회공시요구(현저한시황변동)"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "와이지-원",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "수성웹툰",
+          "event_score": -2,
+          "label": "담보제공",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]최대주주변경을수반하는주식담보제공계약체결"
+        },
+        {
+          "category": "LIQUIDITY",
+          "company": "알에프텍",
+          "event_score": -6,
+          "label": "유상증자",
+          "polarity": "NEGATIVE",
+          "report_name": "[기재정정]유상증자결정(종속회사의주요경영사항)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "하이드로리튬",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정(일정금액이상의청구)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 0,
+        "ECONOMY": 0,
+        "FX": 0,
+        "GEOPOLITICS": 5,
+        "LIQUIDITY": 1,
+        "OIL": 2,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": -3
+      },
+      "evidence_headlines": [
+        "외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등",
+        "미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+        "코스피·코스닥 미-이란 협상 기대에 동반 상승 마감",
+        "“올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "코스닥은 미-이란 협상 기대감과 외인·기관 매수세에 힘입어 강세를 보이며, 바이오 및 K-배터리 섹터가 특히 주목받고 있다.",
+      "macro_drivers": [
+        {
+          "category": "GEOPOLITICS",
+          "description": "미-이란 협상 기대감 및 종전 시사로 코스닥 시장이 동반 상승 마감.",
+          "evidence": "미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세",
+          "market_impact": 5,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "LIQUIDITY",
+          "description": "외국인과 기관의 동반 매수세가 코스닥 시장 상승에 기여.",
+          "evidence": "외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등",
+          "market_impact": 4,
+          "signal": "BULLISH"
+        },
+        {
+          "category": "OIL",
+          "description": "고유가가 K-배터리 섹터의 재도약 요인으로 언급되며 코스닥에 간접적 긍정 영향.",
+          "evidence": "고유가·AI 타고 K-배터리 재도약",
+          "market_impact": 2,
+          "signal": "MIXED"
+        }
+      ],
+      "market_sentiment": "BULLISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+        "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+        "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+        "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+        "[Naver Stock] 950160.KQ [+2] 코스피, 트럼프 종전협상 시사에 6140대 상승 출발…코스닥도 올라 | 네이버증권",
+        "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제",
+        "[DART 20260415] 알에프텍 - [기재정정]유상증자결정(종속회사의주요경영사항) | 전자공시",
+        "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+        "[DART 20260415] 제이엔케이글로벌 - 소송등의제기ㆍ신청(경영권분쟁소송)              (주주총회결의 취소등 청구의 소) | 전자공시",
+        "[DART 20260415] 루멘스 - 조회공시요구(현저한시황변동) | 전자공시",
+        "[DART 20260415] 코칩 - 주요사항보고서(자기주식처분결정) | 전자공시",
+        "[DART 20260415] 와이지-원 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[DART 20260415] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+        "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제",
+        "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제"
+      ],
+      "risk_flags": [],
+      "sentiment_score": 85,
+      "source": "gemini",
+      "theme_evidence": {
+        "automobile": [
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "bio": [
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "construction_realestate": [
+          "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제"
+        ],
+        "eco_energy": [
+          "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제",
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "finance": [
+          "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+          "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "game_content_ent": [
+          "[DART 20260415] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시"
+        ],
+        "it_platform": [
+          "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제",
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "secondary_battery": [
+          "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "semiconductor": [
+          "[DART 20260415] 코칩 - 주요사항보고서(자기주식처분결정) | 전자공시",
+          "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제"
+        ],
+        "shipbuilding": [],
+        "해운": []
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "confidence": 0.859,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+            "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+            "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+            "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+          ],
+          "momentum_avg_change_pct": 3.46,
+          "momentum_class": "EXPLODING",
+          "strength_score": 60.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-15T08:52:58.112499+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "친환경/에너지",
+            "친환경",
+            "에너지",
+            "태양광",
+            "풍력",
+            "수소"
+          ],
+          "confidence": 0.68,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제",
+            "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+          ],
+          "momentum_avg_change_pct": 3.06,
+          "momentum_class": "EXPLODING",
+          "strength_score": 35.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-15T08:52:58.112906+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "2차전지",
+            "이차전지",
+            "배터리",
+            "양극재",
+            "음극재",
+            "전해액"
+          ],
+          "confidence": 0.601,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "OIL"
+          ],
+          "evidence": [
+            "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+            "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 24.0,
+          "theme_id": "secondary_battery",
+          "theme_name": "2차전지",
+          "updated_at": "2026-04-15T08:52:58.113003+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "IT서비스/플랫폼",
+            "IT서비스",
+            "플랫폼",
+            "소프트웨어",
+            "SW",
+            "클라우드"
+          ],
+          "confidence": 0.594,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "RATES"
+          ],
+          "evidence": [
+            "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제",
+            "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 23.0,
+          "theme_id": "it_platform",
+          "theme_name": "IT서비스/플랫폼",
+          "updated_at": "2026-04-15T08:52:58.112449+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "조선/해양",
+            "조선",
+            "선박",
+            "해양",
+            "LNG선",
+            "해양플랜트"
+          ],
+          "confidence": 0.5,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "EARNINGS",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 21.0,
+          "theme_id": "shipbuilding",
+          "theme_name": "조선/해양",
+          "updated_at": "2026-04-15T08:52:58.113042+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [
+            "벌크",
+            "운임",
+            "컨테이너",
+            "해운"
+          ],
+          "confidence": 0.5,
+          "direction": "BENEFICIARY",
+          "driver_categories": [
+            "ECONOMY",
+            "GEOPOLITICS",
+            "OIL"
+          ],
+          "evidence": [],
+          "momentum_avg_change_pct": 1.16,
+          "momentum_class": "ACCELERATING",
+          "strength_score": 21.0,
+          "theme_id": "해운",
+          "theme_name": "해운",
+          "updated_at": "2026-04-15T08:52:58.113111+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.53,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "LIQUIDITY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[DART 20260415] 코칩 - 주요사항보고서(자기주식처분결정) | 전자공시",
+            "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제"
+          ],
+          "momentum_avg_change_pct": 1.22,
+          "momentum_class": "ACCELERATING",
+          "strength_score": 14.0,
+          "theme_id": "semiconductor",
+          "theme_name": "반도체",
+          "updated_at": "2026-04-15T08:52:58.112643+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.436,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260415] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 12.0,
+          "theme_id": "game_content_ent",
+          "theme_name": "게임/콘텐츠/엔터",
+          "updated_at": "2026-04-15T08:52:58.112776+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 10.0,
+          "theme_id": "automobile",
+          "theme_name": "자동차",
+          "updated_at": "2026-04-15T08:52:58.112577+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 10.0,
+          "theme_id": "construction_realestate",
+          "theme_name": "건설/부동산",
+          "updated_at": "2026-04-15T08:52:58.112680+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.357,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 1.0,
+          "theme_id": "bio",
+          "theme_name": "바이오/헬스케어",
+          "updated_at": "2026-04-15T08:52:58.112360+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "미-이란 협상 기대감으로 코스닥 시장 전반의 상승세가 관찰됨.",
+          "impact": "POSITIVE",
+          "theme": "중동 지정학적 완화 기대"
+        },
+        {
+          "description": "코스닥 시장 내 바이오 섹터가 급등하며 시장 상승을 견인.",
+          "impact": "POSITIVE",
+          "theme": "코스닥 바이오 섹터 강세"
+        },
+        {
+          "description": "고유가 및 AI 트렌드에 힘입어 K-배터리 섹터의 반등이 예상됨.",
+          "impact": "POSITIVE",
+          "theme": "K-배터리 재도약 기대"
+        }
+      ],
+      "timestamp": "2026-04-15 17:52",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
+      "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+      "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+      "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+      "[Naver Stock] 950160.KQ [+2] 코스피, 트럼프 종전협상 시사에 6140대 상승 출발…코스닥도 올라 | 네이버증권",
+      "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제",
+      "[DART 20260415] 알에프텍 - [기재정정]유상증자결정(종속회사의주요경영사항) | 전자공시",
+      "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+      "[DART 20260415] 제이엔케이글로벌 - 소송등의제기ㆍ신청(경영권분쟁소송)              (주주총회결의 취소등 청구의 소) | 전자공시",
+      "[DART 20260415] 루멘스 - 조회공시요구(현저한시황변동) | 전자공시",
+      "[DART 20260415] 코칩 - 주요사항보고서(자기주식처분결정) | 전자공시",
+      "[DART 20260415] 와이지-원 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+      "[DART 20260415] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시",
+      "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제",
+      "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제"
+    ],
+    "risk_flags": [],
+    "sentiment_score": 85,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "automobile": [
+        "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+      ],
+      "bio": [
+        "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+      ],
+      "construction_realestate": [
+        "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제"
+      ],
+      "eco_energy": [
+        "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제",
+        "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+      ],
+      "finance": [
+        "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+        "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+        "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+        "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+      ],
+      "game_content_ent": [
+        "[DART 20260415] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시"
+      ],
+      "it_platform": [
+        "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제",
+        "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+      ],
+      "secondary_battery": [
+        "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+        "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+      ],
+      "semiconductor": [
+        "[DART 20260415] 코칩 - 주요사항보고서(자기주식처분결정) | 전자공시",
+        "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제"
+      ],
+      "shipbuilding": [],
+      "해운": []
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "confidence": 0.859,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[Naver Stock] 086520.KQ [+2] 미-이란 협상 기대감에 코스피 6000선 탈환…코스닥도 상승세 | 네이버증권",
+          "[Naver Stock] 196170.KQ [+2] 코스피·코스닥 미-이란 협상 기대에 동반 상승 마감 [시황] | 네이버증권",
+          "[Naver Stock] 277810.KQ [+2] 코스피, 종전 기대감에 6091.39 상승 마감…코스닥도 강세 | 네이버증권",
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "momentum_avg_change_pct": 3.46,
+        "momentum_class": "EXPLODING",
+        "strength_score": 60.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-15T08:52:58.112499+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "친환경/에너지",
+          "친환경",
+          "에너지",
+          "태양광",
+          "풍력",
+          "수소"
+        ],
+        "confidence": 0.68,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제",
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "momentum_avg_change_pct": 3.06,
+        "momentum_class": "EXPLODING",
+        "strength_score": 35.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-15T08:52:58.112906+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "2차전지",
+          "이차전지",
+          "배터리",
+          "양극재",
+          "음극재",
+          "전해액"
+        ],
+        "confidence": 0.601,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "OIL"
+        ],
+        "evidence": [
+          "[DART 20260415] 하이드로리튬 - 소송등의판결ㆍ결정(일정금액이상의청구) | 전자공시",
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 24.0,
+        "theme_id": "secondary_battery",
+        "theme_name": "2차전지",
+        "updated_at": "2026-04-15T08:52:58.113003+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "IT서비스/플랫폼",
+          "IT서비스",
+          "플랫폼",
+          "소프트웨어",
+          "SW",
+          "클라우드"
+        ],
+        "confidence": 0.594,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "RATES"
+        ],
+        "evidence": [
+          "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제",
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 23.0,
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "updated_at": "2026-04-15T08:52:58.112449+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "조선/해양",
+          "조선",
+          "선박",
+          "해양",
+          "LNG선",
+          "해양플랜트"
+        ],
+        "confidence": 0.5,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "EARNINGS",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 21.0,
+        "theme_id": "shipbuilding",
+        "theme_name": "조선/해양",
+        "updated_at": "2026-04-15T08:52:58.113042+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [
+          "벌크",
+          "운임",
+          "컨테이너",
+          "해운"
+        ],
+        "confidence": 0.5,
+        "direction": "BENEFICIARY",
+        "driver_categories": [
+          "ECONOMY",
+          "GEOPOLITICS",
+          "OIL"
+        ],
+        "evidence": [],
+        "momentum_avg_change_pct": 1.16,
+        "momentum_class": "ACCELERATING",
+        "strength_score": 21.0,
+        "theme_id": "해운",
+        "theme_name": "해운",
+        "updated_at": "2026-04-15T08:52:58.113111+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.53,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "LIQUIDITY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[DART 20260415] 코칩 - 주요사항보고서(자기주식처분결정) | 전자공시",
+          "[Wed, 15 Apr 2026 17:44:33 +0900] \"메타에 AI칩 공급\"…브로드컴 '들썩' | 한국경제"
+        ],
+        "momentum_avg_change_pct": 1.22,
+        "momentum_class": "ACCELERATING",
+        "strength_score": 14.0,
+        "theme_id": "semiconductor",
+        "theme_name": "반도체",
+        "updated_at": "2026-04-15T08:52:58.112643+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.436,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260415] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 12.0,
+        "theme_id": "game_content_ent",
+        "theme_name": "게임/콘텐츠/엔터",
+        "updated_at": "2026-04-15T08:52:58.112776+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[Wed, 15 Apr 2026 17:51:06 +09:00] “올해 전기차 캐즘 끝난다”… 고유가·AI 타고 K-배터리 재도약 | 매일경제"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 10.0,
+        "theme_id": "automobile",
+        "theme_name": "자동차",
+        "updated_at": "2026-04-15T08:52:58.112577+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[Wed, 15 Apr 2026 17:46:21 +0900] HD건설기계 신형 굴착기, 고유가에 인기 | 한국경제"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 10.0,
+        "theme_id": "construction_realestate",
+        "theme_name": "건설/부동산",
+        "updated_at": "2026-04-15T08:52:58.112680+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.357,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Naver Stock] 277810.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 1.0,
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "updated_at": "2026-04-15T08:52:58.112360+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-15T08:52:58.226532+00:00",
+  "regime": {
+    "market": "KOSDAQ",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-15",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-15T08:52:06.087927+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-2AC3866C",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

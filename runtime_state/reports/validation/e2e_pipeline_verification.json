@@ -1,0 +1,132 @@
+{
+  "verified_at": "2026-04-17T11:14:35.879906",
+  "market": "KR",
+  "run_id": "RUN-4C3A4A5D",
+  "pipeline_error": null,
+  "verdict": "PASS",
+  "handoffs": {
+    "scanner_handoff.json": {
+      "status": "OK",
+      "size_bytes": 2172314,
+      "keys": [
+        "candidates",
+        "produced_at",
+        "run_context",
+        "summary",
+        "warnings"
+      ],
+      "n_candidates": 131
+    },
+    "market_context_handoff.json": {
+      "status": "OK",
+      "size_bytes": 20554,
+      "keys": [
+        "macro_overlay",
+        "news_impact",
+        "produced_at",
+        "regime",
+        "run_context",
+        "warnings"
+      ],
+      "n_candidates": null
+    },
+    "aggregation_handoff.json": {
+      "status": "OK",
+      "size_bytes": 9361,
+      "keys": [
+        "clusters",
+        "concentration",
+        "leaderboard",
+        "produced_at",
+        "quality_notes",
+        "run_context",
+        "warnings"
+      ],
+      "n_candidates": null
+    },
+    "orchestrator_report.json": {
+      "status": "OK",
+      "size_bytes": 4698,
+      "keys": [
+        "assignments",
+        "produced_at",
+        "request_summary",
+        "run_context",
+        "shared_evidence",
+        "status",
+        "task_id",
+        "validation_checks"
+      ],
+      "n_candidates": null
+    },
+    "orchestrator_compact_summary.json": {
+      "status": "OK",
+      "size_bytes": 802,
+      "keys": [
+        "agents_executed",
+        "market",
+        "planner",
+        "postmortem",
+        "run_id",
+        "scanner",
+        "status",
+        "task_id"
+      ],
+      "n_candidates": null
+    },
+    "backtest_handoff.json": {
+      "status": "OK",
+      "size_bytes": 3523,
+      "keys": [
+        "calibration",
+        "diagnostics",
+        "produced_at",
+        "regime_sensitivity",
+        "run_context",
+        "warnings"
+      ],
+      "n_candidates": null
+    },
+    "planner_handoff.json": {
+      "status": "OK",
+      "size_bytes": 346416,
+      "keys": [
+        "avoid_list",
+        "decisions",
+        "global_warnings",
+        "produced_at",
+        "run_context",
+        "watchlist",
+        "watchlist_meta"
+      ],
+      "n_candidates": null
+    },
+    "postmortem_report.json": {
+      "status": "MISSING",
+      "size_bytes": 0,
+      "keys": []
+    }
+  },
+  "agents": [
+    {
+      "agent": "scanner_agent",
+      "status": "completed"
+    },
+    {
+      "agent": "aggregation_agent",
+      "status": "completed"
+    },
+    {
+      "agent": "backtest_learning_agent",
+      "status": "completed"
+    },
+    {
+      "agent": "market_news_context_agent",
+      "status": "completed"
+    },
+    {
+      "agent": "pm_planner_agent",
+      "status": "completed"
+    }
+  ]
+}

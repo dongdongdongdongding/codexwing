@@ -1,0 +1,16 @@
+{
+  "tickets": [
+    {
+      "created_at": "2026-04-15T03:46:17.172008+00:00",
+      "hypothesis": "High expired ratio suggests horizon policy and follow-up cadence are misaligned with current execution flow.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "outcome updater + planner fallback policy",
+      "priority": "high",
+      "requested_change": "Tighten fallback admission/horizon rules, enforce daily closure review, and escalate stale backlog thresholds. Delta evidence: pending=+0, expired=-12, base_run=RUN-362AD61D.",
+      "run_id": "RUN-EE5CE7CE",
+      "status": "open",
+      "ticket_id": "TKT-44F56514",
+      "title": "Reduce stale outcome backlog and fallback expiry"
+    }
+  ]
+}

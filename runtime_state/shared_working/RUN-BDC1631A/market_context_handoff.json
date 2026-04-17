@@ -1,0 +1,471 @@
+{
+  "macro_overlay": {
+    "flags": [],
+    "macro_multiplier": 1.0,
+    "macro_penalty": 0.0,
+    "macro_risk_score": 0.0,
+    "macro_state": "NORMAL",
+    "raw_context": {
+      "flags": [],
+      "krw": 1479.6800537109375,
+      "krw_change_1d": null,
+      "macro_multiplier": 1.0,
+      "macro_penalty": 0,
+      "macro_risk_score": 0,
+      "macro_state": "NORMAL",
+      "spy_change_1d": 0.25,
+      "tnx": 4.309000015258789,
+      "tnx_change_1d": 0.63,
+      "vix": 17.940000534057617,
+      "vix_change_1d": -1.27
+    },
+    "status": "live_macro"
+  },
+  "news_impact": {
+    "beneficiary_sectors": [],
+    "beneficiary_themes": [
+      {
+        "confidence": 0.95,
+        "strength_score": 86.0,
+        "theme_id": "finance",
+        "theme_name": "금융"
+      }
+    ],
+    "cross_asset_signals": [
+      {
+        "asset": "USD/KRW",
+        "description": "경상흑자에도 불구하고 치솟는 환율은 코스피에 부담으로 작용.",
+        "direction": "UP",
+        "market_impact": -3
+      }
+    ],
+    "driver_scores": {
+      "EARNINGS": 1,
+      "ECONOMY": 1,
+      "FX": -3,
+      "GEOPOLITICS": 2,
+      "LIQUIDITY": -4,
+      "OIL": 0,
+      "POLITICS": 0,
+      "RATES": 0,
+      "REGULATION": -1
+    },
+    "evidence_headlines": [
+      "코스피, 기관·외국인 순매도에 장중 약보합세",
+      "코스피, 외국인·기관 매도에 약세",
+      "코스피 6200선 회복…중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’",
+      "코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태'",
+      "사상 최대 경상흑자에도 치솟는 환율, 이런 이유가"
+    ],
+    "headline_count": 15,
+    "headwind_themes": [],
+    "key_insight": "코스피는 6200선에서 외국인과 기관의 매도세 및 치솟는 환율로 인해 하방 압력을 받고 있으며, 중동 종전 기대감 등 긍정적 요인에도 불구하고 전고점 부담에 직면해 있다.",
+    "macro_drivers": [
+      {
+        "category": "LIQUIDITY",
+        "description": "기관과 외국인의 순매도가 코스피 약세 및 6200선 위협의 주된 원인으로 작용.",
+        "evidence": "기관·외국인 순매도에 장중 약보합세, 외국인·기관 매도에 약세, 외인·기관 매도에 6200선 '위태'",
+        "market_impact": -4,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "GEOPOLITICS",
+        "description": "중동 종전 기대감이 외국인·기관의 쌍끌이 매수를 유도하며 코스피 회복에 긍정적 영향.",
+        "evidence": "중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’, 전쟁에도 오르는 코스피",
+        "market_impact": 2,
+        "signal": "MIXED"
+      },
+      {
+        "category": "FX",
+        "description": "사상 최대 경상흑자에도 치솟는 환율은 시장에 부담으로 작용.",
+        "evidence": "사상 최대 경상흑자에도 치솟는 환율",
+        "market_impact": -3,
+        "signal": "BEARISH"
+      },
+      {
+        "category": "ECONOMY",
+        "description": "사상 최대 경상흑자는 긍정적이나, 환율 상승과 함께 복합적인 시장 반응을 유발.",
+        "evidence": "사상 최대 경상흑자",
+        "market_impact": 1,
+        "signal": "BULLISH"
+      }
+    ],
+    "market_sentiment": "BEARISH",
+    "model": "gemini-2.5-flash",
+    "news_quality": "MEDIUM",
+    "raw": {
+      "beneficiary_keywords": [],
+      "beneficiary_sectors": [],
+      "beneficiary_themes": [
+        {
+          "confidence": 0.95,
+          "strength_score": 86.0,
+          "theme_id": "finance",
+          "theme_name": "금융"
+        }
+      ],
+      "company_event_bias": {
+        "DL": 8,
+        "고려아연": -8
+      },
+      "cross_asset_signals": [
+        {
+          "asset": "USD/KRW",
+          "description": "경상흑자에도 불구하고 치솟는 환율은 코스피에 부담으로 작용.",
+          "direction": "UP",
+          "market_impact": -3
+        }
+      ],
+      "disclosure_events": [
+        {
+          "category": "REGULATION",
+          "company": "고려아연",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "DL",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)"
+        },
+        {
+          "category": "REGULATION",
+          "company": "고려아연",
+          "event_score": -4,
+          "label": "소송",
+          "polarity": "NEGATIVE",
+          "report_name": "소송등의판결ㆍ결정"
+        },
+        {
+          "category": "EARNINGS",
+          "company": "DL",
+          "event_score": 4,
+          "label": "수주/판매계약",
+          "polarity": "POSITIVE",
+          "report_name": "단일판매ㆍ공급계약체결(자회사의 주요경영사항)"
+        }
+      ],
+      "driver_scores": {
+        "EARNINGS": 1,
+        "ECONOMY": 1,
+        "FX": -3,
+        "GEOPOLITICS": 2,
+        "LIQUIDITY": -4,
+        "OIL": 0,
+        "POLITICS": 0,
+        "RATES": 0,
+        "REGULATION": -1
+      },
+      "evidence_headlines": [
+        "코스피, 기관·외국인 순매도에 장중 약보합세",
+        "코스피, 외국인·기관 매도에 약세",
+        "코스피 6200선 회복…중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’",
+        "코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태'",
+        "사상 최대 경상흑자에도 치솟는 환율, 이런 이유가"
+      ],
+      "headline_count": 15,
+      "headwind_themes": [],
+      "key_insight": "코스피는 6200선에서 외국인과 기관의 매도세 및 치솟는 환율로 인해 하방 압력을 받고 있으며, 중동 종전 기대감 등 긍정적 요인에도 불구하고 전고점 부담에 직면해 있다.",
+      "macro_drivers": [
+        {
+          "category": "LIQUIDITY",
+          "description": "기관과 외국인의 순매도가 코스피 약세 및 6200선 위협의 주된 원인으로 작용.",
+          "evidence": "기관·외국인 순매도에 장중 약보합세, 외국인·기관 매도에 약세, 외인·기관 매도에 6200선 '위태'",
+          "market_impact": -4,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "GEOPOLITICS",
+          "description": "중동 종전 기대감이 외국인·기관의 쌍끌이 매수를 유도하며 코스피 회복에 긍정적 영향.",
+          "evidence": "중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’, 전쟁에도 오르는 코스피",
+          "market_impact": 2,
+          "signal": "MIXED"
+        },
+        {
+          "category": "FX",
+          "description": "사상 최대 경상흑자에도 치솟는 환율은 시장에 부담으로 작용.",
+          "evidence": "사상 최대 경상흑자에도 치솟는 환율",
+          "market_impact": -3,
+          "signal": "BEARISH"
+        },
+        {
+          "category": "ECONOMY",
+          "description": "사상 최대 경상흑자는 긍정적이나, 환율 상승과 함께 복합적인 시장 반응을 유발.",
+          "evidence": "사상 최대 경상흑자",
+          "market_impact": 1,
+          "signal": "BULLISH"
+        }
+      ],
+      "market_sentiment": "BEARISH",
+      "model": "gemini-2.5-flash",
+      "news_quality": "MEDIUM",
+      "raw_headlines": [
+        "[Naver Stock] 373220.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+        "[Naver Stock] 373220.KS [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+        "[Naver Stock] 012450.KS [-3] 코스피, 외국인·기관 매도에 약세 [fn오전시황] | 네이버증권",
+        "[Thu, 16 Apr 2026 08:43:56 GMT] 코스피 6200선 회복…중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’ - 굿모닝경제 | 굿모닝경제",
+        "[Fri, 17 Apr 2026 10:27:27 +0900] 부산은행, 코스피200지수 연동 정기예금 출시 | 연합뉴스",
+        "[Naver Stock] 402340.KS [-5] 코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태' | 네이버증권",
+        "[Fri, 17 Apr 2026 10:17:16 +0900] [K-VIBE] 전태수의 '웹 3.0' 이야기…전쟁에도 오르는 코스피, 그 이유 | 연합뉴스",
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피 200 추종 ‘Super ELS’ 출시 | 네이버증권",
+        "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+        "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+        "[Naver Stock] 402340.KS [+2] “전고점 부담 작용했나”…코스피, 상승 출발 후 6200선 공방 [이런국... | 네이버증권",
+        "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제",
+        "[DART 20260417] 고려아연 - 소송등의판결ㆍ결정 | 전자공시",
+        "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시",
+        "[DART 20260417] DL - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+      ],
+      "risk_flags": [
+        "외국인·기관 순매도 지속",
+        "코스피 6200선 지지력 약화",
+        "환율 급등 압력",
+        "전고점 저항",
+        "중동 지정학적 불확실성"
+      ],
+      "sentiment_score": -40,
+      "source": "gemini",
+      "theme_evidence": {
+        "construction_realestate": [
+          "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시"
+        ],
+        "eco_energy": [
+          "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제"
+        ],
+        "finance": [
+          "[Fri, 17 Apr 2026 10:27:27 +0900] 부산은행, 코스피200지수 연동 정기예금 출시 | 연합뉴스",
+          "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피 200 추종 ‘Super ELS’ 출시 | 네이버증권",
+          "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+          "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권"
+        ]
+      },
+      "theme_states": [
+        {
+          "beneficiary_keywords": [
+            "금융",
+            "은행",
+            "보험",
+            "증권",
+            "캐피탈",
+            "카드"
+          ],
+          "confidence": 0.95,
+          "direction": "BENEFICIARY",
+          "driver_categories": [],
+          "evidence": [
+            "[Fri, 17 Apr 2026 10:27:27 +0900] 부산은행, 코스피200지수 연동 정기예금 출시 | 연합뉴스",
+            "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피 200 추종 ‘Super ELS’ 출시 | 네이버증권",
+            "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+            "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권"
+          ],
+          "momentum_avg_change_pct": -1.25,
+          "momentum_class": "FADING",
+          "strength_score": 86.0,
+          "theme_id": "finance",
+          "theme_name": "금융",
+          "updated_at": "2026-04-17T01:33:43.298437+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.421,
+          "direction": "NEUTRAL",
+          "driver_categories": [],
+          "evidence": [
+            "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시"
+          ],
+          "momentum_avg_change_pct": null,
+          "momentum_class": null,
+          "strength_score": 10.0,
+          "theme_id": "construction_realestate",
+          "theme_name": "건설/부동산",
+          "updated_at": "2026-04-17T01:33:43.298904+00:00",
+          "victim_keywords": []
+        },
+        {
+          "beneficiary_keywords": [],
+          "confidence": 0.364,
+          "direction": "NEUTRAL",
+          "driver_categories": [
+            "EARNINGS",
+            "ECONOMY",
+            "FX",
+            "GEOPOLITICS",
+            "LIQUIDITY",
+            "OIL",
+            "POLITICS",
+            "REGULATION"
+          ],
+          "evidence": [
+            "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제"
+          ],
+          "momentum_avg_change_pct": -0.33,
+          "momentum_class": "STEADY",
+          "strength_score": 2.0,
+          "theme_id": "eco_energy",
+          "theme_name": "친환경/에너지",
+          "updated_at": "2026-04-17T01:33:43.299363+00:00",
+          "victim_keywords": []
+        }
+      ],
+      "themes": [
+        {
+          "description": "코스피 6200선 공방의 주요 원인으로 작용하며 매도세가 우세.",
+          "impact": "MIXED",
+          "theme": "기관/외국인 수급 변동성"
+        },
+        {
+          "description": "중동 종전 기대감에 외국인·기관의 쌍끌이 매수가 유입.",
+          "impact": "POSITIVE",
+          "theme": "중동 지정학적 기대"
+        },
+        {
+          "description": "코스피 및 코스피200 지수 연동 정기예금 및 ELS 상품 출시.",
+          "impact": "NEUTRAL",
+          "theme": "코스피 연동 금융상품 출시"
+        },
+        {
+          "description": "전쟁에도 코스피가 오르는 이유 중 하나로 웹 3.0 언급.",
+          "impact": "POSITIVE",
+          "theme": "웹 3.0 성장 기대"
+        }
+      ],
+      "timestamp": "2026-04-17 10:33",
+      "victim_keywords": [],
+      "victim_sectors": []
+    },
+    "raw_headlines": [
+      "[Naver Stock] 373220.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
+      "[Naver Stock] 373220.KS [-3] 6200선 찍고 숨 고르는 코스피…외국인·기관 순매도[개장시황] | 네이버증권",
+      "[Naver Stock] 012450.KS [-3] 코스피, 외국인·기관 매도에 약세 [fn오전시황] | 네이버증권",
+      "[Thu, 16 Apr 2026 08:43:56 GMT] 코스피 6200선 회복…중동 종전 기대에 외국인·기관 ‘쌍끌이 매수’ - 굿모닝경제 | 굿모닝경제",
+      "[Fri, 17 Apr 2026 10:27:27 +0900] 부산은행, 코스피200지수 연동 정기예금 출시 | 연합뉴스",
+      "[Naver Stock] 402340.KS [-5] 코스피, 장 초반 하락 전환…외인·기관 매도에 6200선 '위태' | 네이버증권",
+      "[Fri, 17 Apr 2026 10:17:16 +0900] [K-VIBE] 전태수의 '웹 3.0' 이야기…전쟁에도 오르는 코스피, 그 이유 | 연합뉴스",
+      "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피 200 추종 ‘Super ELS’ 출시 | 네이버증권",
+      "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+      "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+      "[Naver Stock] 402340.KS [+2] “전고점 부담 작용했나”…코스피, 상승 출발 후 6200선 공방 [이런국... | 네이버증권",
+      "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제",
+      "[DART 20260417] 고려아연 - 소송등의판결ㆍ결정 | 전자공시",
+      "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시",
+      "[DART 20260417] DL - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
+    ],
+    "risk_flags": [
+      "외국인·기관 순매도 지속",
+      "코스피 6200선 지지력 약화",
+      "환율 급등 압력",
+      "전고점 저항",
+      "중동 지정학적 불확실성"
+    ],
+    "sentiment_score": -40,
+    "source": "gemini",
+    "status": "live_intel",
+    "theme_evidence": {
+      "construction_realestate": [
+        "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시"
+      ],
+      "eco_energy": [
+        "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제"
+      ],
+      "finance": [
+        "[Fri, 17 Apr 2026 10:27:27 +0900] 부산은행, 코스피200지수 연동 정기예금 출시 | 연합뉴스",
+        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피 200 추종 ‘Super ELS’ 출시 | 네이버증권",
+        "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+        "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권"
+      ]
+    },
+    "theme_states": [
+      {
+        "beneficiary_keywords": [
+          "금융",
+          "은행",
+          "보험",
+          "증권",
+          "캐피탈",
+          "카드"
+        ],
+        "confidence": 0.95,
+        "direction": "BENEFICIARY",
+        "driver_categories": [],
+        "evidence": [
+          "[Fri, 17 Apr 2026 10:27:27 +0900] 부산은행, 코스피200지수 연동 정기예금 출시 | 연합뉴스",
+          "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피 200 추종 ‘Super ELS’ 출시 | 네이버증권",
+          "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
+          "[Naver Stock] 005380.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권"
+        ],
+        "momentum_avg_change_pct": -1.25,
+        "momentum_class": "FADING",
+        "strength_score": 86.0,
+        "theme_id": "finance",
+        "theme_name": "금융",
+        "updated_at": "2026-04-17T01:33:43.298437+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.421,
+        "direction": "NEUTRAL",
+        "driver_categories": [],
+        "evidence": [
+          "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시"
+        ],
+        "momentum_avg_change_pct": null,
+        "momentum_class": null,
+        "strength_score": 10.0,
+        "theme_id": "construction_realestate",
+        "theme_name": "건설/부동산",
+        "updated_at": "2026-04-17T01:33:43.298904+00:00",
+        "victim_keywords": []
+      },
+      {
+        "beneficiary_keywords": [],
+        "confidence": 0.364,
+        "direction": "NEUTRAL",
+        "driver_categories": [
+          "EARNINGS",
+          "ECONOMY",
+          "FX",
+          "GEOPOLITICS",
+          "LIQUIDITY",
+          "OIL",
+          "POLITICS",
+          "REGULATION"
+        ],
+        "evidence": [
+          "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제"
+        ],
+        "momentum_avg_change_pct": -0.33,
+        "momentum_class": "STEADY",
+        "strength_score": 2.0,
+        "theme_id": "eco_energy",
+        "theme_name": "친환경/에너지",
+        "updated_at": "2026-04-17T01:33:43.299363+00:00",
+        "victim_keywords": []
+      }
+    ],
+    "victim_sectors": []
+  },
+  "produced_at": "2026-04-17T01:33:43.455896+00:00",
+  "regime": {
+    "market": "KOSPI",
+    "market_group": "KR",
+    "status": "NORMAL",
+    "support_score": 100.0
+  },
+  "run_context": {
+    "as_of_date": "2026-04-17",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-17T01:32:39.280959+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-BDC1631A",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

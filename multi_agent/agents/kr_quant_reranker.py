@@ -123,6 +123,7 @@ def _collect_context(candidate: Dict[str, Any], run_market: str, theme_momentum_
         "theme_strength": _safe_float(raw_theme_strength, 0.0),
         "leader_score": _safe_float(raw_leader_score, 0.0),
         "context_adjustment": _safe_float(raw_context_adjustment, 0.0),
+        "alpha_score": _safe_float(raw_alpha_score, 0.0),
         "kr_universe_role": str(raw_kr_universe_role or "").upper(),
         "scanner_timeframe_profile": str(raw_scanner_timeframe_profile or "").upper(),
         "flow_consensus": bool(leader_metrics.get("kr_flow_consensus_buying", False)),
@@ -427,7 +428,7 @@ def _score_horizon(
 
     # Alpha score signal — empirical: SWING rank 1-10 with alpha≥50 averages +5.93% 3D vs +0.26% no-alpha
     # Data source: 22K+ KR RESOLVED outcomes; alpha≥65 → +6.51%, 73% win rate
-    alpha_score_raw = _safe_float(_extract_feature(candidate, "alpha_score"), -1.0)
+    alpha_score_raw = _safe_float(context.get("alpha_score"), -1.0)
     has_alpha_score = alpha_score_raw >= 0.0
     if has_alpha_score:
         if alpha_score_raw >= 65.0:

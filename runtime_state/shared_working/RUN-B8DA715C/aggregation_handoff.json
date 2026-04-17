@@ -1,0 +1,241 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 3,
+      "label": "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:6.6% | ContextTailwind",
+      "share": 0.2
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 2,
+      "label": "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:5.2% | ContextTailwind",
+      "share": 0.133
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "🚀 Momentum | Ranker:6.6% | ContextTailwind",
+      "share": 0.067
+    },
+    {
+      "breadth_score": 36.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "229640.KS",
+      "member_count": 3,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "금융",
+      "theme_strength_score": 66.0
+    },
+    {
+      "breadth_score": 24.0,
+      "cluster_type": "theme",
+      "concentration_score": 72.8,
+      "leader_ticker": "079550.KS",
+      "member_count": 2,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "방산",
+      "theme_strength_score": 21.0
+    },
+    {
+      "breadth_score": 24.0,
+      "cluster_type": "theme",
+      "concentration_score": 88.3,
+      "leader_ticker": "161000.KS",
+      "member_count": 2,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 75.9,
+      "leader_ticker": "028260.KS",
+      "member_count": 1,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "건설/부동산",
+      "theme_strength_score": 12.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 80.1,
+      "leader_ticker": "017670.KS",
+      "member_count": 1,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 15,
+    "strategy_distribution": {
+      "👑 주도주 하이패스 | Ranker:5.6% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:5.2% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:5.4% | ContextTailwind": 1,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:6.6% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:NEGATIVE | Ranker:20.4% | ContextTailwind": 1,
+      "🚀 Momentum | Profile:POSITIVE | Ranker:5.2% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:6.6% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:6.7% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:NEGATIVE | Ranker:6.9% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Profile:POSITIVE | Ranker:19.6% | ContextTailwind": 1,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:5.2% | ContextTailwind": 2,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:6.6% | ContextTailwind": 3
+    },
+    "theme_distribution": {
+      "건설/부동산": 1,
+      "게임/콘텐츠/엔터": 1,
+      "금융": 3,
+      "바이오/헬스케어": 1,
+      "반도체": 1,
+      "방산": 2,
+      "조선/해양": 1,
+      "철강/금속/소재": 2,
+      "친환경/에너지": 1,
+      "통신/네트워크": 1
+    },
+    "top_strategy": "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:6.6% | ContextTailwind",
+    "top_strategy_share": 0.2,
+    "trend_distribution": {
+      "DOWN": 3,
+      "UP": 12
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "229640.KS",
+      "member_count": 3,
+      "theme_name": "금융",
+      "theme_strength_score": 66.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 66.0,
+          "ticker": "229640.KS"
+        },
+        {
+          "leader_score": 78.5,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 66.0,
+          "ticker": "005940.KS"
+        },
+        {
+          "leader_score": 68.4,
+          "score": 89.5,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 66.0,
+          "ticker": "003530.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "079550.KS",
+      "member_count": 2,
+      "theme_name": "방산",
+      "theme_strength_score": 21.0,
+      "top_members": [
+        {
+          "leader_score": 72.8,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 21.0,
+          "ticker": "079550.KS"
+        },
+        {
+          "leader_score": 72.1,
+          "score": 84.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 21.0,
+          "ticker": "012450.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "161000.KS",
+      "member_count": 2,
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 88.3,
+          "score": 97.8,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "161000.KS"
+        },
+        {
+          "leader_score": 71.6,
+          "score": 100.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "006110.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "028260.KS",
+      "member_count": 1,
+      "theme_name": "건설/부동산",
+      "theme_strength_score": 12.0,
+      "top_members": [
+        {
+          "leader_score": 75.9,
+          "score": 89.2,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 12.0,
+          "ticker": "028260.KS"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "017670.KS",
+      "member_count": 1,
+      "theme_name": "통신/네트워크",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 80.1,
+          "score": 94.3,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "017670.KS"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-15T17:12:22.123230+00:00",
+  "quality_notes": [
+    "Total candidates: 15",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: 🚀 Momentum | ⚡ 단기과열(강세) | Ranker:6.6% | ContextTailwind (3/15)",
+    "Top theme cluster: 금융 (3/15)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-16",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-15T17:11:56.722055+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-B8DA715C",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

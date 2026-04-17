@@ -1,0 +1,44 @@
+{
+  "decisions_reviewed": [
+    "planner_handoff.decisions"
+  ],
+  "evidence_refs": [
+    "scanner_handoff.json",
+    "aggregation_handoff.json",
+    "backtest_handoff.json",
+    "market_context_handoff.json",
+    "planner_handoff.json",
+    "realized_outcomes.json",
+    "outcome_health.json",
+    "profile_diagnostics.json"
+  ],
+  "failure_summary": "No critical pre-outcome failure. Postmortem generated as a preventive trace.",
+  "likely_causes": [
+    "Stale pending/expired outcomes are accumulating, indicating weak closure policy and degraded feedback loop. (delta_vs_prev: pending=-28, expired=+38)"
+  ],
+  "produced_at": "2026-04-13T10:57:07.895462+00:00",
+  "run_context": {
+    "as_of_date": "2026-04-13",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-13T10:56:05.441878+00:00",
+    "market": "KOSPI",
+    "model_version": "legacy",
+    "run_id": "RUN-09AC7B9D",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "scope": "pre_outcome_quality_gate",
+  "tickets": [
+    {
+      "created_at": "2026-04-13T10:57:07.895455+00:00",
+      "hypothesis": "High expired ratio suggests horizon policy and follow-up cadence are misaligned with current execution flow.",
+      "owner_agent": "pm_planner_agent",
+      "owner_module": "outcome updater + planner fallback policy",
+      "priority": "high",
+      "requested_change": "Tighten fallback admission/horizon rules, enforce daily closure review, and escalate stale backlog thresholds. Delta evidence: pending=-28, expired=+38, base_run=RUN-B1574481.",
+      "run_id": "RUN-09AC7B9D",
+      "status": "open",
+      "ticket_id": "TKT-F28C16ED",
+      "title": "Reduce stale outcome backlog and fallback expiry"
+    }
+  ]
+}

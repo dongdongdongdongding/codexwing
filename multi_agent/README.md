@@ -97,6 +97,12 @@ Scanner Agent input without touching `app.py` execution semantics.
   - includes `expired_outcomes` and `closure_rate_pct` (resolved + expired)
 - Report scan profile diagnostics (`prod/dev` pass/filter and reject reasons):
   - `python3 multi_agent/tools/report_scan_profile_metrics.py --limit-runs 200 --market NASDAQ`
+- Report realized Top-N validation by segment (`market × scan_mode`):
+  - `python3 multi_agent/tools/report_segment_topn_validation.py --topn 5 --recent-days 20`
+- Report segment-specific rerank overlays against actual Supabase outcomes plus rich local bridge artifacts:
+  - `python3 multi_agent/tools/report_segment_overlay_proxy_validation.py --segments KOSPI:INTRADAY,KOSDAQ:SWING --topn 5 --recent-days 20`
+- Backfill missing `market_scan_results` feature columns from `shared_working/scanner_handoff` using `run_id+ticker`:
+  - `python3 multi_agent/tools/backfill_market_scan_features.py --market KOSDAQ --scan-mode SWING`
 - Report profile diagnostics from DB (`agent_profile_diagnostics`):
   - `python3 multi_agent/tools/report_profile_diagnostics_db.py --limit 50 --market NASDAQ`
 - Report outcome health from DB (`agent_outcome_health`):

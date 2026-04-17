@@ -1,0 +1,199 @@
+{
+  "clusters": [
+    {
+      "cluster_type": "strategy_tag",
+      "count": 6,
+      "label": "🚀 Momentum | Ranker:35.0% | ContextTailwind",
+      "share": 0.6
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 2,
+      "label": "👑 주도주 하이패스 | Ranker:35.0% | ContextTailwind",
+      "share": 0.2
+    },
+    {
+      "cluster_type": "strategy_tag",
+      "count": 1,
+      "label": "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:35.0% | ContextTailwind",
+      "share": 0.1
+    },
+    {
+      "breadth_score": 36.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "043260.KQ",
+      "member_count": 3,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 36.0,
+      "cluster_type": "theme",
+      "concentration_score": 97.3,
+      "leader_ticker": "356860.KQ",
+      "member_count": 3,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "반도체",
+      "theme_strength_score": 0.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 100.0,
+      "leader_ticker": "027360.KQ",
+      "member_count": 1,
+      "notes": [
+        "top_direction=BENEFICIARY"
+      ],
+      "theme_name": "금융",
+      "theme_strength_score": 22.0
+    },
+    {
+      "breadth_score": 12.0,
+      "cluster_type": "theme",
+      "concentration_score": 76.8,
+      "leader_ticker": "023900.KQ",
+      "member_count": 1,
+      "notes": [
+        "top_direction=NEUTRAL"
+      ],
+      "theme_name": "소비재/유통",
+      "theme_strength_score": 0.0
+    }
+  ],
+  "concentration": {
+    "candidate_count": 10,
+    "strategy_distribution": {
+      "👑 주도주 하이패스 | Ranker:35.0% | ContextTailwind": 2,
+      "👑 주도주 하이패스 | ⚡ 단기과열(강세) | Ranker:35.0% | ContextTailwind": 1,
+      "🚀 Momentum | Ranker:35.0% | ContextTailwind": 6,
+      "🚀 Momentum | ⚡ 단기과열(강세) | Ranker:35.0% | ContextTailwind": 1
+    },
+    "theme_distribution": {
+      "금융": 1,
+      "반도체": 3,
+      "소비재/유통": 1,
+      "철강/금속/소재": 3
+    },
+    "top_strategy": "🚀 Momentum | Ranker:35.0% | ContextTailwind",
+    "top_strategy_share": 0.6,
+    "trend_distribution": {
+      "UP": 10
+    },
+    "weak_candidate_count": 0,
+    "weak_candidate_ratio": 0.0
+  },
+  "leaderboard": [
+    {
+      "leader_ticker": "043260.KQ",
+      "member_count": 3,
+      "theme_name": "철강/금속/소재",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 100.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "043260.KQ"
+        },
+        {
+          "leader_score": 98.7,
+          "score": 98.1,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "019210.KQ"
+        },
+        {
+          "leader_score": 76.5,
+          "score": 94.8,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "104480.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "356860.KQ",
+      "member_count": 3,
+      "theme_name": "반도체",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 97.3,
+          "score": 81.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "356860.KQ"
+        },
+        {
+          "leader_score": 74.6,
+          "score": 100.0,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "064290.KQ"
+        },
+        {
+          "leader_score": 74.4,
+          "score": 88.7,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "420770.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "027360.KQ",
+      "member_count": 1,
+      "theme_name": "금융",
+      "theme_strength_score": 22.0,
+      "top_members": [
+        {
+          "leader_score": 100.0,
+          "score": 100.0,
+          "theme_direction": "BENEFICIARY",
+          "theme_strength_score": 22.0,
+          "ticker": "027360.KQ"
+        }
+      ]
+    },
+    {
+      "leader_ticker": "023900.KQ",
+      "member_count": 1,
+      "theme_name": "소비재/유통",
+      "theme_strength_score": 0.0,
+      "top_members": [
+        {
+          "leader_score": 76.8,
+          "score": 62.3,
+          "theme_direction": "NEUTRAL",
+          "theme_strength_score": 0.0,
+          "ticker": "023900.KQ"
+        }
+      ]
+    }
+  ],
+  "produced_at": "2026-04-14T13:12:26.582659+00:00",
+  "quality_notes": [
+    "Total candidates: 10",
+    "Weak-score candidates (<55): 0 (0.0%)",
+    "Top strategy cluster: 🚀 Momentum | Ranker:35.0% | ContextTailwind (6/10)",
+    "Top theme cluster: 철강/금속/소재 (3/10)"
+  ],
+  "run_context": {
+    "as_of_date": "2026-04-14",
+    "code_version": "bridge-v1",
+    "created_at": "2026-04-14T13:11:57.002574+00:00",
+    "market": "KOSDAQ",
+    "model_version": "legacy",
+    "run_id": "RUN-362AD61D",
+    "strategy_version": "legacy-ui-v1"
+  },
+  "warnings": []
+}

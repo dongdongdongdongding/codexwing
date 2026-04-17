@@ -187,34 +187,101 @@ def _backtest_period(data, start, end, atrs, atrt, volm, alpha_thr):
             target = entry + atr[i] * atrt
             cost_pct = COMMISSION * 2 * 100  # 수수료 %단위 (약 0.03%)
 
-            # 포워드 시뮬
+            # 포워드 시뮬 — 품질 라벨 포함
             exit_pnl = None
+            days_to_exit = HOLD_DAYS
+            stop_hit_first = False   # 손절선이 목표보다 먼저 터치됐는지
+            mae_pct = 0.0            # Maximum Adverse Excursion (%) — 보유 중 최대 낙폭
+            target_hit = False
+
             for j in range(i+1, min(i+1+HOLD_DAYS, n)):
+                bar_low_ret  = (lo[j] - entry) / entry * 100
+                bar_high_ret = (hi[j] - entry) / entry * 100
+                mae_pct = min(mae_pct, bar_low_ret)  # 누적 최대 낙폭
+
                 if lo[j] <= stop:
                     exit_pnl = (stop - entry) / entry * 100 - cost_pct
+                    days_to_exit = j - i
+                    stop_hit_first = True
                     break
                 elif hi[j] >= target:
                     exit_pnl = (target - entry) / entry * 100 - cost_pct
+                    days_to_exit = j - i
+                    target_hit = True
                     break
+
             if exit_pnl is None:
                 last = cl[min(i+HOLD_DAYS, n-1)]
                 exit_pnl = (last - entry) / entry * 100 - cost_pct
 
-            trades.append(exit_pnl)
+            # ── 매매 품질 라벨 ──────────────────────────────
+            is_win = exit_pnl > 0
+
+            # clean_hit: 목표 도달 + 보유 중 MAE가 -2% 미만 (손절 근처 없이 깔끔하게)
+            clean_hit = bool(target_hit and mae_pct > -2.0)
+
+            # dirty_hit: 목표 도달했지만 중간에 -2% 이상 낙폭 경험
+            dirty_hit = bool(target_hit and mae_pct <= -2.0)
+
+            # fast_hit: 1~3일 내 목표 도달
+            fast_hit = bool(target_hit and days_to_exit <= 3)
+
+            # late_hit: HOLD_DAYS 말미(4~5일째)에 목표 도달
+            late_hit = bool(target_hit and days_to_exit >= 4)
+
+            # stop_first: 손절선이 목표보다 먼저 터치됨
+            stop_first = stop_hit_first
+
+            # peak_chase_failure: 손절 + 진입가 대비 이미 고점(ATR 1.5배 이상 위에서 진입)
+            # 고점 추격 실패 = 손절 + 진입 시점 이미 ATR 범위를 크게 벗어난 경우
+            peak_chase_failure = bool(
+                stop_hit_first
+                and atr[i] > 0
+                and (close - m20[i]) / atr[i] > 1.5
+            )
+
+            trades.append({
+                # ── 결과 ──
+                "pnl":                exit_pnl,
+                "days_to_exit":       days_to_exit,
+                "mae_pct":            round(mae_pct, 3),
+                "clean_hit":          int(clean_hit),
+                "dirty_hit":          int(dirty_hit),
+                "fast_hit":           int(fast_hit),
+                "late_hit":           int(late_hit),
+                "stop_first":         int(stop_first),
+                "peak_chase_failure": int(peak_chase_failure),
+                # ── 진입 시점 피처 (Meta-Quality Model 훈련용) ──
+                "alpha_score":        round(float(ts[i]), 2),
+                "vol_ratio":          round(float(vr), 3),
+                "atr_pct":            round(float(atr[i] / close) * 100, 3) if close > 0 else 0.0,
+                "price_to_ma20":      round(float(close / m20[i]), 4) if m20[i] > 0 else 1.0,
+                "price_to_ma50":      round(float(close / m50[i]), 4) if m50[i] > 0 else 1.0,
+                "ticker":             ticker,
+            })
 
     if not trades:
         return {"n_trades": 0, "win_rate": 0, "avg_pnl": 0, "profit_factor": 0}
 
-    a = np.array(trades)
+    df_t = pd.DataFrame(trades)
+    a = df_t["pnl"].values
     w = a[a > 0]
     l = a[a <= 0]
     pf = w.sum() / (-l.sum()) if l.sum() != 0 else 99.0
 
     return {
-        "n_trades":      len(a),
-        "win_rate":      round((a > 0).mean() * 100, 1),
-        "avg_pnl":       round(float(a.mean()), 3),
-        "profit_factor": round(pf, 2),
+        "n_trades":            len(df_t),
+        "win_rate":            round((a > 0).mean() * 100, 1),
+        "avg_pnl":             round(float(a.mean()), 3),
+        "profit_factor":       round(pf, 2),
+        "avg_mae_pct":         round(float(df_t["mae_pct"].mean()), 3),
+        "clean_hit_rate":      round(float(df_t["clean_hit"].mean()) * 100, 1),
+        "dirty_hit_rate":      round(float(df_t["dirty_hit"].mean()) * 100, 1),
+        "fast_hit_rate":       round(float(df_t["fast_hit"].mean()) * 100, 1),
+        "late_hit_rate":       round(float(df_t["late_hit"].mean()) * 100, 1),
+        "stop_first_rate":     round(float(df_t["stop_first"].mean()) * 100, 1),
+        "peak_chase_fail_rate":round(float(df_t["peak_chase_failure"].mean()) * 100, 1),
+        "trades":              df_t.to_dict(orient="records"),
     }
 
 
@@ -323,19 +390,28 @@ def walk_forward_optimize(universe=None, total_years=2,
 
     # ── 종합 OOS 리포트 ───────────────────────────────────
     df_res = pd.DataFrame(all_val)
-    avg_wr  = df_res['win_rate'].mean()
-    avg_pnl = df_res['avg_pnl'].mean()
-    avg_pf  = df_res['profit_factor'].replace([99.0], np.nan).mean()
-    total_t = df_res['n_trades'].sum()
+    avg_wr       = df_res['win_rate'].mean()
+    avg_pnl      = df_res['avg_pnl'].mean()
+    avg_pf       = df_res['profit_factor'].replace([99.0], np.nan).mean()
+    total_t      = df_res['n_trades'].sum()
+    avg_clean    = df_res['clean_hit_rate'].mean() if 'clean_hit_rate' in df_res.columns else float('nan')
+    avg_stop     = df_res['stop_first_rate'].mean() if 'stop_first_rate' in df_res.columns else float('nan')
+    avg_peak_fail= df_res['peak_chase_fail_rate'].mean() if 'peak_chase_fail_rate' in df_res.columns else float('nan')
+    avg_mae      = df_res['avg_mae_pct'].mean() if 'avg_mae_pct' in df_res.columns else float('nan')
 
     print(f"\n{'='*60}")
     print(f"[3/3] Walk-Forward OOS 종합 결과")
     print(f"{'='*60}")
-    print(f"📊 OOS 평균 WIN RATE  : {avg_wr:.1f}%")
-    print(f"📊 OOS 평균 PnL       : {avg_pnl:.3f}%")
-    print(f"📊 OOS 평균 PF        : {avg_pf:.2f}")
-    print(f"📊 OOS 총 거래수      : {int(total_t)}")
-    print(f"🎯 80% 목표 갭        : {max(0, 80 - avg_wr):.1f}%p")
+    print(f"📊 OOS 평균 WIN RATE      : {avg_wr:.1f}%")
+    print(f"📊 OOS 평균 PnL           : {avg_pnl:.3f}%")
+    print(f"📊 OOS 평균 PF            : {avg_pf:.2f}")
+    print(f"📊 OOS 총 거래수          : {int(total_t)}")
+    print(f"🎯 80% 목표 갭            : {max(0, 80 - avg_wr):.1f}%p")
+    print(f"\n[Trade Quality Labels]")
+    print(f"  Clean Hit Rate          : {avg_clean:.1f}%  (손절 없이 깔끔하게 목표 도달)")
+    print(f"  Stop First Rate         : {avg_stop:.1f}%  (손절선 먼저 터치)")
+    print(f"  Peak Chase Fail Rate    : {avg_peak_fail:.1f}%  (고점 추격 후 손절)")
+    print(f"  Avg MAE                 : {avg_mae:.3f}%  (보유 중 평균 최대 낙폭)")
 
     # 최적 파라미터 (최빈값)
     def _mode(vals):
@@ -344,15 +420,19 @@ def walk_forward_optimize(universe=None, total_years=2,
         return float(m.iloc[0]) if len(m) > 0 else float(vals[0])
 
     optimal = {
-        "ATR_stop_mult":   _mode([p['ATR_stop_mult']   for p in best_params_list]),
-        "ATR_target_mult": _mode([p['ATR_target_mult'] for p in best_params_list]),
-        "Vol_mult":        _mode([p['Vol_mult']        for p in best_params_list]),
-        "alpha_threshold": _mode([p['alpha_threshold'] for p in best_params_list]),
-        "OOS_win_rate":    round(avg_wr, 1),
-        "OOS_avg_pnl":    round(avg_pnl, 3),
-        "OOS_profit_factor": round(avg_pf, 2) if not np.isnan(avg_pf) else 0,
-        "OOS_total_trades": int(total_t),
-        "computed_at":    datetime.now().strftime('%Y-%m-%d %H:%M'),
+        "ATR_stop_mult":        _mode([p['ATR_stop_mult']   for p in best_params_list]),
+        "ATR_target_mult":      _mode([p['ATR_target_mult'] for p in best_params_list]),
+        "Vol_mult":             _mode([p['Vol_mult']        for p in best_params_list]),
+        "alpha_threshold":      _mode([p['alpha_threshold'] for p in best_params_list]),
+        "OOS_win_rate":         round(avg_wr, 1),
+        "OOS_avg_pnl":          round(avg_pnl, 3),
+        "OOS_profit_factor":    round(avg_pf, 2) if not np.isnan(avg_pf) else 0,
+        "OOS_total_trades":     int(total_t),
+        "OOS_clean_hit_rate":   round(avg_clean, 1) if not np.isnan(avg_clean) else None,
+        "OOS_stop_first_rate":  round(avg_stop, 1) if not np.isnan(avg_stop) else None,
+        "OOS_peak_chase_fail":  round(avg_peak_fail, 1) if not np.isnan(avg_peak_fail) else None,
+        "OOS_avg_mae_pct":      round(avg_mae, 3) if not np.isnan(avg_mae) else None,
+        "computed_at":          datetime.now().strftime('%Y-%m-%d %H:%M'),
     }
 
     print(f"\n✅ 최종 권장 파라미터:")
