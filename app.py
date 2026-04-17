@@ -1389,8 +1389,17 @@ with tab1:
 
                 cols_to_drop = ['_tier_sort', '_prob_5', '_prob_clean']
                 if '_prob_5' in df_results.columns:
-                    above = df_results[df_results['_prob_5'] >= PROB5_THRESHOLD]
-                    below = df_results[df_results['_prob_5'] < PROB5_THRESHOLD]
+                    _prob_gate = df_results['_prob_5'] >= PROB5_THRESHOLD
+                    # 예상수익 음수 종목은 확률 통과해도 below로 내림
+                    # (expected_return 컬럼이 없으면 게이트 미적용)
+                    if 'expected_return_1d_pct' in df_results.columns and scan_mode == "INTRADAY":
+                        _exp_gate = df_results['expected_return_1d_pct'] >= 0
+                        _prob_gate = _prob_gate & _exp_gate
+                    elif 'expected_return_3d_pct' in df_results.columns and scan_mode != "INTRADAY":
+                        _exp_gate = df_results['expected_return_3d_pct'] >= 0
+                        _prob_gate = _prob_gate & _exp_gate
+                    above = df_results[_prob_gate]
+                    below = df_results[~_prob_gate]
                     shortage = max(0, TOP_K - len(above))
                     top5 = pd.concat([above.head(TOP_K), below.head(shortage)]).head(TOP_K).copy()
                     prob5_passed = min(len(above), TOP_K)
@@ -1409,22 +1418,41 @@ with tab1:
                 )
 
                 # ── 핵심 컬럼만 선택 + 한글 rename ────────────────────────
+                # 컬럼명은 KR/US/INTRADAY마다 다를 수 있어 여러 alias를 등록
                 _SCANNER_CORE_COLS = {
+                    # (raw_col_name): (한글명, 툴팁)
                     '종목명':        ('종목명',      None),
                     'Ticker':        ('코드',        None),
                     '티커':          ('코드',        None),
                     'Tier':          ('등급',        'T0=초강력 / T1=강력(승률71%) / T2=관심 / T3=참고'),
+                    # 현재가 — KR은 매수가(-2%)에 현재가 저장, US는 Entry(-2%)
+                    '매수가(-2%)':   ('현재가',      '스캔 시점 현재가 (진입 기준가. -2% 할인 전 원래 가격)'),
+                    'Entry(-2%)':    ('현재가',      '스캔 시점 현재가'),
+                    # 전일비 — KR swing/intraday 모두 '전일비' 키, US는 '1D Change'
+                    '전일비':        ('전일비(%)',   '스캔 당시 전일 종가 대비 등락률. 스캔 시점의 모멘텀을 보여줌'),
+                    '1D Change':     ('전일비(%)',   '스캔 당시 전일 종가 대비 등락률'),
+                    # 확률/스코어
+                    'AI확률':        ('AI확률',      'ML 모델이 예측한 5% 이상 달성 확률. 58% 이상이 진입 기준'),
                     'AI Prob':       ('AI확률',      'ML 모델이 예측한 5% 이상 달성 확률. 58% 이상이 진입 기준'),
                     'v3_score':      ('종합점수',    '추세·거래량·수급·리스크를 곱셈 공식으로 통합한 최종 순위 점수 (0~100). 높을수록 우선'),
                     'Decision Score':('Decision점수','Antigrav + AI확률 + 추세 + 수급을 가중 합산한 원시 스코어'),
                     'Antigrav':      ('Antigrav',    '기술적 모멘텀·섹터 강도·AI수익 기대치를 합산한 핵심 동력 지수 (0~100). 70+이면 강세 신호'),
+                    '수급':          ('수급',        '기관·외국인 수급 강도 (장중=당일 거래량 기반 추정)'),
                     'Whale':         ('수급점수',    '기관·외국인 수급 강도 지수 (0~100). 60 이상이면 수급 유입 신호'),
+                    # 추세/거래량
                     'Trend':         ('추세',        'UP=상승추세 / SIDE=횡보 / DOWN=하락추세. UP+거래량확인 조합이 최고 신호'),
+                    '추세':          ('추세',        'UP=상승추세 / SIDE=횡보 / DOWN=하락추세'),
                     'Vol Confirmed': ('거래량확인',  '평균 대비 1.5배 이상 거래량 + 방향 확인 여부. True이면 모멘텀 신뢰도 높음'),
-                    'expected_return_1d_pct': ('예상1D수익',  '스캐너가 예측하는 1일 기대수익률(%). 인트라데이 정렬 기준'),
-                    'expected_return_3d_pct': ('예상3D수익',  '스캐너가 예측하는 3일 기대수익률(%)'),
-                    'Position':      ('포지션',      '종목의 현재 가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
+                    '거래량':        ('거래량',      '평균 대비 거래량 배율 (✅=확인됨, ⚠️=미확인)'),
+                    # 예상수익
+                    'expected_return_1d_pct': ('예상1D(%)', '스캐너가 예측하는 1일 기대수익률(%). 인트라데이 정렬 기준'),
+                    'expected_return_3d_pct': ('예상3D(%)', '스캐너가 예측하는 3일 기대수익률(%)'),
+                    # 기타
+                    '위치':          ('포지션',      '가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
+                    'Position':      ('포지션',      '가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
+                    '전략':          ('전략',        '스캐너가 판단한 진입 전략 유형'),
                     'Strategy Tag':  ('전략',        '스캐너가 판단한 진입 전략 유형'),
+                    '테마':          ('대표테마',    '현재 시장에서 해당 종목이 속한 주도 테마'),
                     'primary_theme': ('대표테마',    '현재 시장에서 해당 종목이 속한 주도 테마'),
                 }
                 def _prep_scanner_df(df_in):
