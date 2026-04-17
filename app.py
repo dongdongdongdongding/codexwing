@@ -1388,11 +1388,29 @@ with tab1:
                 )
 
                 cols_to_drop = ['_tier_sort', '_prob_5', '_prob_clean']
+
+                # 거래량 확인 여부 — '거래량'(KR) 또는 'Volume'(US) 컬럼의 ✅/⚠️ 기호로 판단
+                def _vol_ok(row):
+                    for col in ('거래량', 'Volume'):
+                        v = str(row.get(col, ''))
+                        if '✅' in v: return True
+                        if '⚠️' in v: return False
+                    return True  # 컬럼 없으면 차단하지 않음
+
                 if '_prob_5' in df_results.columns:
-                    above = df_results[df_results['_prob_5'] >= PROB5_THRESHOLD]
-                    below = df_results[df_results['_prob_5'] < PROB5_THRESHOLD]
+                    _vol_mask = df_results.apply(_vol_ok, axis=1)
+                    # above: 확률 통과 AND 거래량 확인
+                    _prob_pass = df_results['_prob_5'] >= PROB5_THRESHOLD
+                    above = df_results[_prob_pass & _vol_mask]
+                    # below: 나머지 전체 (거래량 미확인 포함 — shortage 보완용)
+                    below = df_results[~_prob_pass | ~_vol_mask]
                     shortage = max(0, TOP_K - len(above))
-                    top5 = pd.concat([above.head(TOP_K), below.head(shortage)]).head(TOP_K).copy()
+                    # shortage 보완 시에도 거래량 확인 종목 우선
+                    below_sorted = pd.concat([
+                        below[_vol_mask.reindex(below.index, fill_value=False)],
+                        below[~_vol_mask.reindex(below.index, fill_value=True)],
+                    ])
+                    top5 = pd.concat([above.head(TOP_K), below_sorted.head(shortage)]).head(TOP_K).copy()
                     prob5_passed = min(len(above), TOP_K)
                 else:
                     top5 = df_results.head(TOP_K).copy()
