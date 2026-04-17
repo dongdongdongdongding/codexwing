@@ -518,10 +518,12 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🚀 Auto Market Scanner", "📊 Single Stock Analysis", "📂 Batch Analysis (Excel)", "🤖 Bot Dashboard", "🧪 Strategy Lab", "📚 Scan Archive"])
+tab1, tab2, tab3 = st.tabs(["🚀 스캐너", "📚 아카이브", "🔎 정밀분석"])
 
-# --- Tab 5: Strategy Lab (New) ---
-with tab5:
+# --- Strategy Lab (removed from UI) ---
+with tab1:  # dummy context reuse — strategy lab content removed
+    pass
+if False:
     # Keep lab self-contained: define regime label even when tab1 scanner was not run.
     lab_regime_status = "NEUTRAL"
     if macro_state in ["CRASH", "RISK_OFF"]:
@@ -810,8 +812,8 @@ with tab5:
                 except Exception as e:
                     st.error(f"Sim Error: {e}")
 
-# --- Tab 4: Bot Dashboard ---
-with tab4:
+# --- Bot Dashboard (removed from UI) ---
+if False:
     st.header("🤖 Automated Trading Bot Dashboard")
     st.caption("Live tracking of 24/7 automated signals and paper trading performance.")
     
@@ -841,8 +843,8 @@ with tab4:
         st.markdown("### Bot Status")
         st.success("✅ Bot is running (Smart Scheduler Active)")
 
-# --- Tab 3: Batch Analysis ---
-with tab3:
+# --- Batch Analysis (removed from UI) ---
+if False:
     st.header("📂 엑셀 일괄 진단 (Batch Deep Dive)")
     st.caption("여러 종목의 엑셀 파일을 업로드하여 AI 정밀 분석을 일괄 수행합니다.")
     
@@ -1007,7 +1009,7 @@ with tab3:
 
 # TAB 1: MARKET SCANNER
 with tab1:
-    st.header("📈 전종목 자동 스캔")
+    st.header("🚀 전종목 자동 스캔")
     col1, col2, col3, col4 = st.columns(4)
     market = col1.selectbox(
         "시장 선택 (Market)",
@@ -1406,28 +1408,64 @@ with tab1:
                        else f"{len(top5_display) - prob5_passed}개는 임계값 미달이나 {_sort_label} 순으로 보완")
                 )
 
+                # ── 핵심 컬럼만 선택 + 한글 rename ────────────────────────
+                _SCANNER_CORE_COLS = {
+                    '종목명':        ('종목명',      None),
+                    'Ticker':        ('코드',        None),
+                    '티커':          ('코드',        None),
+                    'Tier':          ('등급',        'T0=초강력 / T1=강력(승률71%) / T2=관심 / T3=참고'),
+                    'AI Prob':       ('AI확률',      'ML 모델이 예측한 5% 이상 달성 확률. 58% 이상이 진입 기준'),
+                    'v3_score':      ('종합점수',    '추세·거래량·수급·리스크를 곱셈 공식으로 통합한 최종 순위 점수 (0~100). 높을수록 우선'),
+                    'Decision Score':('Decision점수','Antigrav + AI확률 + 추세 + 수급을 가중 합산한 원시 스코어'),
+                    'Antigrav':      ('Antigrav',    '기술적 모멘텀·섹터 강도·AI수익 기대치를 합산한 핵심 동력 지수 (0~100). 70+이면 강세 신호'),
+                    'Whale':         ('수급점수',    '기관·외국인 수급 강도 지수 (0~100). 60 이상이면 수급 유입 신호'),
+                    'Trend':         ('추세',        'UP=상승추세 / SIDE=횡보 / DOWN=하락추세. UP+거래량확인 조합이 최고 신호'),
+                    'Vol Confirmed': ('거래량확인',  '평균 대비 1.5배 이상 거래량 + 방향 확인 여부. True이면 모멘텀 신뢰도 높음'),
+                    'expected_return_1d_pct': ('예상1D수익',  '스캐너가 예측하는 1일 기대수익률(%). 인트라데이 정렬 기준'),
+                    'expected_return_3d_pct': ('예상3D수익',  '스캐너가 예측하는 3일 기대수익률(%)'),
+                    'Position':      ('포지션',      '종목의 현재 가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
+                    'Strategy Tag':  ('전략',        '스캐너가 판단한 진입 전략 유형'),
+                    'primary_theme': ('대표테마',    '현재 시장에서 해당 종목이 속한 주도 테마'),
+                }
+                def _prep_scanner_df(df_in):
+                    """핵심 컬럼만 추출하고 한글로 rename."""
+                    present = [c for c in _SCANNER_CORE_COLS if c in df_in.columns]
+                    df_out = df_in[present].copy()
+                    df_out = df_out.rename(columns={c: _SCANNER_CORE_COLS[c][0] for c in present})
+                    return df_out
+
+                def _scanner_col_config(df_in):
+                    """column_config dict — 툴팁 포함."""
+                    cfg = {}
+                    for raw_col, (kr_name, tip) in _SCANNER_CORE_COLS.items():
+                        if raw_col in df_in.columns and tip:
+                            cfg[kr_name] = st.column_config.TextColumn(kr_name, help=tip)
+                    return cfg
+
+                _top5_kr = _prep_scanner_df(top5_display)
+                _rest_raw = df_results[~df_results.index.isin(top5_idx)].drop(
+                    columns=[col for col in cols_to_drop if col in df_results.columns]
+                )
+                _rest_kr = _prep_scanner_df(_rest_raw)
+
                 if watchlist_only_mode:
-                    st.markdown(
-                        "### 📋 Top 5 Scanner Candidates "
-                        + ("(Intraday)" if scan_mode == "INTRADAY" else "(Raw Scanner Score)")
-                    )
-                    st.caption("이 표는 스캐너 원시 후보입니다. 이번 런에서는 플래너가 매수 추천으로 승격하지 않았으므로 관찰용으로만 봐야 합니다.")
-                    st.dataframe(top5_display, width='stretch')
+                    st.markdown("### 📋 Top 5 후보" + (" (장중)" if scan_mode == "INTRADAY" else ""))
+                    st.caption("스캐너 원시 후보입니다. 플래너가 매수 추천으로 승격하지 않았으므로 관찰용입니다.")
+                    st.dataframe(_top5_kr, column_config=_scanner_col_config(top5_display),
+                                 use_container_width=True, hide_index=True)
                 else:
-                    st.markdown(
-                        "### 🔥 Top 5 Actionable Setups "
-                        + ("(Intraday)" if scan_mode == "INTRADAY" else "(Best Decision Score)")
-                    )
+                    st.markdown("### 🔥 Top 5 매수 후보" + (" (장중)" if scan_mode == "INTRADAY" else ""))
                     st.caption(threshold_caption)
-                    st.dataframe(top5_display, width='stretch')
+                    st.dataframe(_top5_kr, column_config=_scanner_col_config(top5_display),
+                                 use_container_width=True, hide_index=True)
 
                 st.divider()
 
                 # 2. Remaining qualified setups
-                st.markdown("### 📋 Other Qualified Setups" if not watchlist_only_mode else "### 📋 Other Scanner Candidates")
-                df_rest = df_results[~df_results.index.isin(top5_idx)].drop(columns=[col for col in cols_to_drop if col in df_results.columns])
-                if not df_rest.empty:
-                    st.dataframe(df_rest, width='stretch')
+                st.markdown("### 📋 추가 후보" if not watchlist_only_mode else "### 📋 기타 스캔 종목")
+                if not _rest_kr.empty:
+                    st.dataframe(_rest_kr, column_config=_scanner_col_config(_rest_raw),
+                                 use_container_width=True, hide_index=True)
                 else:
                     st.info("Top 5 외에 추가 종목이 없습니다.")
                 st.divider()
@@ -1442,66 +1480,52 @@ with tab1:
             st.warning("⚠️ 조건에 맞는 종목을 찾지 못했습니다.")
             _render_agent_bridge_status(bridge_info, market)
 
-    # --- Excel Upload Scanner (Phase 11) ---
+    # --- Excel Upload Scanner ---
     st.markdown("---")
-    st.header("📂 나만의 종목 스캔 (Excel Upload)")
-    st.caption("엑셀 파일을 업로드하면 해당 종목들만 집중 분석합니다. (필수 컬럼: 'Code' 또는 'Ticker')")
-    
-    u_file = st.file_uploader("Excel/CSV 파일 업로드", type=['xlsx', 'xls', 'csv'])
-    if u_file and st.button("파일 스캔 시작", type="primary"):
-        try:
-            if u_file.name.endswith('.csv'):
-                udf = pd.read_csv(u_file)
-            else:
-                udf = pd.read_excel(u_file)
-                
-            # Find Column
-            code_col = None
-            for c in udf.columns:
-                if c.lower() in ['code', 'ticker', 'symbol', '종목코드', '티커']:
-                    code_col = c
-                    break
-            
-            if not code_col:
-                st.error("❌ 'Code' 또는 'Ticker' 컬럼을 찾을 수 없습니다.")
-            else:
-                target_tickers = udf[code_col].astype(str).tolist()
-                st.info(f"📋 파일에서 {len(target_tickers)}개 종목을 확인했습니다. 스캔을 시작합니다...")
-                
-                u_progress = st.progress(0)
-                u_status = st.empty()
-                u_results = []
-                
-                for i, sym in enumerate(target_tickers):
-                    # Clean symbol
-                    sym = normalize_uploaded_ticker(sym)
-                    
-                    u_status.text(f"🔍 Analyzing {sym}...")
-                    u_progress.progress((i+1)/len(target_tickers))
-                    
-                    try:
-                        eval_result = evaluate_uploaded_candidate(ticker=sym, display_name=sym)
-                        if not eval_result:
+    with st.expander("📂 나만의 종목 스캔 (Excel 업로드)", expanded=False):
+        st.caption("엑셀 파일을 업로드하면 해당 종목들만 집중 분석합니다. (필수 컬럼: 'Code' 또는 'Ticker')")
+        u_file = st.file_uploader("Excel/CSV 파일 업로드", type=['xlsx', 'xls', 'csv'], key="excel_upload_scanner")
+        if u_file and st.button("파일 스캔 시작", type="primary"):
+            try:
+                if u_file.name.endswith('.csv'):
+                    udf = pd.read_csv(u_file)
+                else:
+                    udf = pd.read_excel(u_file)
+                code_col = None
+                for c in udf.columns:
+                    if c.lower() in ['code', 'ticker', 'symbol', '종목코드', '티커']:
+                        code_col = c
+                        break
+                if not code_col:
+                    st.error("❌ 'Code' 또는 'Ticker' 컬럼을 찾을 수 없습니다.")
+                else:
+                    target_tickers = udf[code_col].astype(str).tolist()
+                    st.info(f"📋 파일에서 {len(target_tickers)}개 종목을 확인했습니다. 스캔을 시작합니다...")
+                    u_progress = st.progress(0)
+                    u_status = st.empty()
+                    u_results = []
+                    for i, sym in enumerate(target_tickers):
+                        sym = normalize_uploaded_ticker(sym)
+                        u_status.text(f"🔍 Analyzing {sym}...")
+                        u_progress.progress((i+1)/len(target_tickers))
+                        try:
+                            eval_result = evaluate_uploaded_candidate(ticker=sym, display_name=sym)
+                            if not eval_result:
+                                continue
+                            u_results.append(eval_result["ui_row"])
+                            db = db_manager.DBManager()
+                            db.save_scan_result(eval_result["db_payload"])
+                        except Exception:
                             continue
+                    if u_results:
+                        st.success("✅ 파일 스캔 완료!")
+                        st.dataframe(pd.DataFrame(u_results), width='stretch')
+            except Exception as e:
+                st.error(f"파일 처리 중 오류 발생: {e}")
 
-                        u_results.append(eval_result["ui_row"])
-
-                        # DB Save
-                        db = db_manager.DBManager()
-                        db.save_scan_result(eval_result["db_payload"])
-                    except Exception:
-                        continue
-                    
-                if u_results:
-                    st.success("✅ 파일 스캔 완료!")
-                    st.dataframe(pd.DataFrame(u_results), width='stretch')
-                    
-        except Exception as e:
-            st.error(f"파일 처리 중 오류 발생: {e}")
-
-# TAB 2: SINGLE STOCK ANALYSIS
-with tab2:
-    st.header("🔎 종목 심층 분석 (Deep Dive)")
+# TAB 3: SINGLE STOCK ANALYSIS (정밀분석)
+with tab3:
+    st.header("🔎 정밀분석 — 종목 심층 분석")
     
     col_input, col_opt = st.columns([3, 1])
     ticker = col_input.text_input(
@@ -2295,11 +2319,11 @@ with tab2:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TAB 6: SCAN ARCHIVE  (Phase 19 P2)
+# TAB 2: SCAN ARCHIVE (아카이브)
 # ─────────────────────────────────────────────────────────────────────────────
-with tab6:
-    st.header("📚 Scan Archive — 복기 & 비교")
-    st.caption("날짜별 스캔 결과 복기. 같은 날 같은 티커는 최신 스캔 기준으로 표시됩니다.")
+with tab2:
+    st.header("📚 스캔 아카이브 — 복기 & 성과 확인")
+    st.caption("날짜별 스캔 결과 복기. 실제 수익률과 비교해 전략을 점검합니다. 같은 날 같은 티커는 최신 스캔 기준으로 표시됩니다.")
 
     try:
         from modules.db_manager import DBManager as _DBM
@@ -2473,65 +2497,61 @@ with tab6:
                     _day_df['최고 수익률(%)'] = _day_df['ticker'].map(_max_perf_map)
                     _day_df['현재 수익률(%)'] = _day_df['ticker'].map(_curr_perf_map)
 
-                _display_cols = [
-                    'tier','ticker','stock_name','market_type','scan_mode','primary_theme','theme_source','theme_inference_status','secondary_themes','theme_routing_path','validation_excluded','quality_flags','decision_bucket','decision','outcome_status','base_trade_date',
-                    'decision_score','alpha_score','ml_prob','whale_score','trend','volume','context','surge',
-                    'phase25_variant','phase25_shadow_variant','phase25_shadow_prob','phase25_recommended_threshold',
-                    'expected_edge_score','expected_return_1d_pct','expected_return_3d_pct',
-                    'win_rate','position','strategy','created_at_kst','return_30m_pct','return_1h_pct','return_close_pct',
-                    'return_1d_pct','return_2d_pct','return_3d_pct','return_5d_pct','return_7d_pct','latest_return_pct'
+                # ── 아카이브 핵심 컬럼 + 한글 rename + column_config 툴팁 ──
+                _ARCHIVE_COLS = [
+                    ('tier',                    '등급',       'T0=초강력 / T1=강력 / T2=관심 / T3=참고'),
+                    ('ticker',                  '코드',       None),
+                    ('stock_name',              '종목명',     None),
+                    ('market_type',             '시장',       'KOSPI / KOSDAQ / NASDAQ / AMEX'),
+                    ('scan_mode',               '모드',       'SWING=스윙(3~5일) / INTRADAY=장중(1일)'),
+                    ('decision_score',          'Decision점수','Antigrav + AI확률 + 추세 + 수급 가중 합산 스코어'),
+                    ('alpha_score',             'Antigrav',   '기술적 모멘텀·섹터 강도·AI기대수익 합산 동력 지수 (0~100). 70+이면 강세'),
+                    ('ml_prob',                 'AI확률(%)',  'ML 모델이 예측한 5% 이상 달성 확률. 58% 이상이 진입 기준'),
+                    ('whale_score',             '수급점수',   '기관·외국인 수급 강도 지수 (0~100). 60 이상이면 수급 유입 신호'),
+                    ('trend',                   '추세',       'UP=상승 / SIDE=횡보 / DOWN=하락'),
+                    ('position',                '포지션',     '가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
+                    ('primary_theme',           '대표테마',   '스캔 시점의 주도 테마'),
+                    ('outcome_status',          '성과상태',   '실현된 성과 (HIT=목표달성 / MISS=미달 / PENDING=미확인)'),
+                    ('decision',                'Planner판정','플래너가 최종 매수 추천했는지 여부'),
+                    ('expected_return_1d_pct',  '예상1D(%)',  '스캐너 예측 1일 기대수익률'),
+                    ('expected_return_3d_pct',  '예상3D(%)',  '스캐너 예측 3일 기대수익률'),
+                    ('return_1d_pct',           '1D실적(%)',  '스캔 다음날 실제 수익률'),
+                    ('return_3d_pct',           '3D실적(%)',  '스캔 3일 후 실제 수익률'),
+                    ('return_5d_pct',           '5D실적(%)',  '스캔 5일 후 실제 수익률'),
+                    ('return_7d_pct',           '7D실적(%)',  '스캔 7일 후 실제 수익률'),
+                    ('latest_return_pct',       '현재수익률(%)','가장 최근 측정된 실제 수익률'),
+                    ('created_at_kst',          '스캔시각',   '스캔이 실행된 한국 시간'),
                 ]
                 if (not _has_stored_returns) and _show_perf and '최고 수익률(%)' in _day_df.columns:
-                    _display_cols += ['최고 수익률(%)', '현재 수익률(%)']
-                _display_cols_exist = [c for c in _display_cols if c in _day_df.columns]
-                _show_df = _day_df[_display_cols_exist].rename(columns={
-                    'tier': 'Tier', 'market_type': '시장', 'decision_score': 'Decision', 'alpha_score': 'Antigrav', 'ml_prob': 'ML확률',
-                    'whale_score': '수급', 'trend': '추세', 'volume': '거래량', 'context': '시장맥락', 'surge': '급등예측', 'win_rate': '승률',
-                    'position': '위치', 'strategy': '전략', 'stock_name': '종목명', 'created_at_kst': '스캔시각',
-                    'base_trade_date': '기준거래일',
-                    'scan_mode': '스캔모드',
-                    'primary_theme': '대표테마',
-                    'theme_source': '테마출처',
-                    'theme_inference_status': '테마상태',
-                    'secondary_themes': '보조테마',
-                    'theme_routing_path': '테마경로',
-                    'validation_excluded': '검증제외',
-                    'quality_flags': '품질플래그',
-                    'phase25_variant': '주모델',
-                    'phase25_shadow_variant': '비교모델',
-                    'phase25_shadow_prob': '비교확률(%)',
-                    'phase25_recommended_threshold': '권장임계값(%)',
-                    'expected_edge_score': '예상엣지',
-                    'expected_return_1d_pct': '예상1D(%)',
-                    'expected_return_3d_pct': '예상3D(%)',
-                    'decision_bucket': '분류', 'decision': 'Planner판정', 'outcome_status': '성과상태',
-                    'return_30m_pct': '30분수익률(%)', 'return_1h_pct': '1시간수익률(%)', 'return_close_pct': '당일종가수익률(%)',
-                    'return_1d_pct': '1D수익률(%)', 'return_2d_pct': '2D수익률(%)', 'return_3d_pct': '3D수익률(%)',
-                    'return_5d_pct': '5D수익률(%)', 'return_7d_pct': '7D수익률(%)', 'latest_return_pct': '현재수익률(%)'
-                })
+                    _ARCHIVE_COLS += [
+                        ('최고 수익률(%)', '최고수익(%)', '스캔 이후 최고점 수익률 (yfinance 조회)'),
+                        ('현재 수익률(%)', '현재수익(%)', '현재 주가 기준 수익률 (yfinance 조회)'),
+                    ]
+
+                _arc_raw_cols = [c for c, _, _ in _ARCHIVE_COLS if c in _day_df.columns]
+                _arc_rename   = {c: kr for c, kr, _ in _ARCHIVE_COLS}
+                _arc_col_cfg  = {
+                    kr: st.column_config.NumberColumn(kr, help=tip, format="%.2f")
+                         if tip and any(kw in c for kw in ('pct', '수익')) else
+                         st.column_config.TextColumn(kr, help=tip) if tip else None
+                    for c, kr, tip in _ARCHIVE_COLS
+                }
+                _arc_col_cfg = {k: v for k, v in _arc_col_cfg.items() if v is not None}
+
+                _show_df = _day_df[_arc_raw_cols].rename(columns=_arc_rename)
+
                 # --- TOP 5 vs OTHERS SPLIT ---
                 st.divider()
-                st.markdown(f"### 🔥 Top 5 Actionable Setups ({_selected_date})")
-                
-                # Apply styling function
-                def _color_perf(val):
-                    if not isinstance(val, (int, float)): return ''
-                    return 'color:#4CAF50;font-weight:bold' if val > 0 else 'color:#FF5722;font-weight:bold' if val < 0 else ''
-                
+                st.markdown(f"### 🔥 Top 5 — {_selected_date}")
                 _top5 = _show_df.head(5).copy()
-                _styler_top5 = _top5.style
-                if '오늘 등락(%)' in _top5.columns:
-                    _styler_top5 = _styler_top5.applymap(_color_perf, subset=['오늘 등락(%)'])
-                st.dataframe(_styler_top5, width='stretch', hide_index=True)
-                
+                st.dataframe(_top5, column_config=_arc_col_cfg,
+                             use_container_width=True, hide_index=True)
+
                 st.divider()
-                st.markdown("### 📋 Other Qualified Setups")
+                st.markdown("### 📋 기타 후보")
                 if len(_show_df) > 5:
-                    _others = _show_df.iloc[5:].copy()
-                    _styler_others = _others.style
-                    if '오늘 등락(%)' in _others.columns:
-                        _styler_others = _styler_others.applymap(_color_perf, subset=['오늘 등락(%)'])
-                    st.dataframe(_styler_others, width='stretch', hide_index=True)
+                    st.dataframe(_show_df.iloc[5:].copy(), column_config=_arc_col_cfg,
+                                 use_container_width=True, hide_index=True)
                 else:
                     st.info("Top 5 외에 추가 종목이 없습니다.")
 
