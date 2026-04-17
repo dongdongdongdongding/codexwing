@@ -1389,17 +1389,8 @@ with tab1:
 
                 cols_to_drop = ['_tier_sort', '_prob_5', '_prob_clean']
                 if '_prob_5' in df_results.columns:
-                    _prob_gate = df_results['_prob_5'] >= PROB5_THRESHOLD
-                    # 예상수익 음수 종목은 확률 통과해도 below로 내림
-                    # (expected_return 컬럼이 없으면 게이트 미적용)
-                    if 'expected_return_1d_pct' in df_results.columns and scan_mode == "INTRADAY":
-                        _exp_gate = df_results['expected_return_1d_pct'] >= 0
-                        _prob_gate = _prob_gate & _exp_gate
-                    elif 'expected_return_3d_pct' in df_results.columns and scan_mode != "INTRADAY":
-                        _exp_gate = df_results['expected_return_3d_pct'] >= 0
-                        _prob_gate = _prob_gate & _exp_gate
-                    above = df_results[_prob_gate]
-                    below = df_results[~_prob_gate]
+                    above = df_results[df_results['_prob_5'] >= PROB5_THRESHOLD]
+                    below = df_results[df_results['_prob_5'] < PROB5_THRESHOLD]
                     shortage = max(0, TOP_K - len(above))
                     top5 = pd.concat([above.head(TOP_K), below.head(shortage)]).head(TOP_K).copy()
                     prob5_passed = min(len(above), TOP_K)
