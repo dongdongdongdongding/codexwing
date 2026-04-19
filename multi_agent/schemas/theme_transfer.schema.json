@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "theme_transfer.schema.json",
+  "title": "ThemeTransfer",
+  "type": "object",
+  "required": ["version", "source_market", "target_market", "generated_at", "edges"],
+  "properties": {
+    "version": {"type": "string"},
+    "source_market": {"type": "string"},
+    "target_market": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_theme_id", "target_theme_id", "relationship", "confidence"],
+        "properties": {
+          "source_theme_id": {"type": "string"},
+          "target_theme_id": {"type": "string"},
+          "relationship": {"type": "string"},
+          "confidence": {"type": "number"},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

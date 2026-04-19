@@ -115,6 +115,12 @@ Scanner Agent input without touching `app.py` execution semantics.
   - `python3 multi_agent/tools/build_daily_agent_summary.py --date 2026-03-31 --market NASDAQ`
   - output: `runtime_state/reports/daily/daily_summary_YYYY-MM-DD.json|md`
   - when previous-day summary exists, `delta_vs_prev_day` is auto-populated
+- Build official classification and theme membership artifacts:
+  - `python3 multi_agent/tools/build_theme_data_pipeline.py --market ALL`
+  - output:
+    - `runtime_state/long_term/instrument_master/{KR,US}.json`
+    - `runtime_state/long_term/theme_membership/{KR,US}.json`
+    - `runtime_state/reports/theme_validation/theme_data_pipeline_{kr,us}.json|md`
 - Check stale fallback pending and send webhook alert (optional):
   - `python3 multi_agent/tools/check_stale_fallback_alert.py --market NASDAQ --threshold 3 --dry-run`
   - webhook: `--webhook-url https://...` (or env var below)

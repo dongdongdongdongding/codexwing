@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "theme_membership.schema.json",
+  "title": "ThemeMembership",
+  "type": "object",
+  "required": ["version", "market", "generated_at", "record_count", "records"],
+  "properties": {
+    "version": {"type": "string"},
+    "market": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "record_count": {"type": "integer"},
+    "primary_source_distribution": {"type": "object"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "instrument_master_version": {"type": "string"},
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["symbol", "market", "primary_theme", "memberships", "official_classification"],
+        "properties": {
+          "symbol": {"type": "string"},
+          "market": {"type": "string"},
+          "market_scope": {"type": "string"},
+          "name": {"type": "string"},
+          "primary_theme": {"type": "string"},
+          "secondary_themes": {"type": "array", "items": {"type": "string"}},
+          "memberships": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["theme_id", "theme_name", "confidence", "theme_source", "theme_inference_status"],
+              "properties": {
+                "theme_id": {"type": "string"},
+                "theme_name": {"type": "string"},
+                "confidence": {"type": "number"},
+                "theme_source": {"type": "string"},
+                "theme_inference_status": {"type": "string"},
+                "reasons": {"type": "array", "items": {"type": "string"}},
+                "evidence": {"type": "array", "items": {"type": "string"}},
+                "driver_categories": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          },
+          "official_classification": {"type": "object"},
+          "generated_at": {"type": "string"}
+        }
+      }
+    }
+  }
+}

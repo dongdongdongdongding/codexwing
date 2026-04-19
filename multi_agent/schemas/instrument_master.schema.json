@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "instrument_master.schema.json",
+  "title": "InstrumentMaster",
+  "type": "object",
+  "required": ["version", "market", "generated_at", "record_count", "records"],
+  "properties": {
+    "version": {"type": "string"},
+    "market": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "record_count": {"type": "integer"},
+    "source_provider": {"type": "string"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "coverage": {"type": "object"},
+    "market_scope_counts": {"type": "object"},
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "symbol",
+          "name",
+          "market",
+          "market_scope",
+          "official_sector",
+          "official_industry",
+          "official_products",
+          "classification_source"
+        ],
+        "properties": {
+          "symbol": {"type": "string"},
+          "local_symbol": {"type": "string"},
+          "name": {"type": "string"},
+          "country": {"type": "string"},
+          "market": {"type": "string"},
+          "market_scope": {"type": "string"},
+          "exchange": {"type": "string"},
+          "instrument_type": {"type": "string"},
+          "official_sector": {"type": "string"},
+          "official_industry": {"type": "string"},
+          "official_products": {"type": "string"},
+          "industry_code": {"type": "string"},
+          "region": {"type": "string"},
+          "listing_date": {"type": "string"},
+          "company_homepage": {"type": "string"},
+          "classification_source": {"type": "string"},
+          "source_listings": {"type": "array", "items": {"type": "string"}},
+          "generated_at": {"type": "string"}
+        }
+      }
+    }
+  }
+}

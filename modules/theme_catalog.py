@@ -11,6 +11,7 @@ from modules.kr_stock_theme_master import (
     load_kr_stock_theme_master,
     normalize_theme_name,
 )
+from modules.theme_data_pipeline import build_catalog_from_membership_payload, get_theme_membership_record
 
 
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "models" / "theme_catalog_kr.json"
@@ -166,6 +167,9 @@ def _merge_theme_metadata(canonical: str, seed_meta: Dict[str, Dict[str, Any]]) 
 @lru_cache(maxsize=2)
 def load_theme_catalog(market: str = "KR") -> Dict[str, Any]:
     market_key = str(market or "KR").upper()
+    artifact_catalog = build_catalog_from_membership_payload(market_key)
+    if artifact_catalog.get("themes"):
+        return artifact_catalog
     if market_key not in {"KR", "KOSPI", "KOSDAQ"}:
         return {"version": "empty", "market": market_key, "themes": []}
 
@@ -276,6 +280,34 @@ def resolve_theme_memberships(
     joined = " ".join(texts)
 
     best: Dict[str, Dict[str, Any]] = {}
+
+    artifact_record = get_theme_membership_record(ticker_key, market_key)
+    if artifact_record:
+        artifact_memberships: List[Dict[str, Any]] = []
+        official = artifact_record.get("official_classification", {}) if isinstance(artifact_record.get("official_classification"), dict) else {}
+        for row in artifact_record.get("memberships", []) or []:
+            if not isinstance(row, dict):
+                continue
+            artifact_memberships.append(
+                {
+                    "theme_id": str(row.get("theme_id") or "").strip() or THEME_ID_MAP.get(str(row.get("theme_name") or "").strip(), "unclassified"),
+                    "theme_name": normalize_theme_name(row.get("theme_name")),
+                    "confidence": round(float(row.get("confidence", 0.0) or 0.0), 3),
+                    "reasons": list(row.get("reasons", []) or [])[:8],
+                    "driver_categories": list(row.get("driver_categories", []) or []),
+                    "theme_source": str(row.get("theme_source") or "theme_membership"),
+                    "theme_inference_status": str(row.get("theme_inference_status") or "artifact"),
+                    "secondary_themes": list(artifact_record.get("secondary_themes", []) or []),
+                    "is_spac": False,
+                    "official_sector": str(official.get("official_sector") or "").strip(),
+                    "official_industry": str(official.get("official_industry") or "").strip(),
+                    "official_products": str(official.get("official_products") or "").strip(),
+                    "classification_source": str(official.get("classification_source") or "").strip(),
+                }
+            )
+        artifact_memberships = [row for row in artifact_memberships if row.get("theme_name") and row.get("theme_name") != "unclassified"]
+        if artifact_memberships:
+            return artifact_memberships
 
     if market_key in {"KR", "KOSPI", "KOSDAQ"}:
         record = get_stock_theme_record(ticker_key)

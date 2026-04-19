@@ -1115,19 +1115,29 @@ class QuantStrategy:
             # --- [Phase 2] Volume Confirmation ---
             vol_current = self.df['Volume'].iloc[-1]
             vol_avg_20 = self.df['Volume'].rolling(20).mean().iloc[-1]
-            
+            vol_avg_5  = self.df['Volume'].rolling(5, min_periods=2).mean().iloc[-1]
+
             # If current volume is 0 (pre-market or data glitch) and we have enough data, use yesterday's
             if vol_current == 0 and len(self.df) >= 2:
                 vol_current = self.df['Volume'].iloc[-2]
                 vol_avg_20 = self.df['Volume'].rolling(20).mean().iloc[-2]
-                
+                vol_avg_5  = self.df['Volume'].rolling(5, min_periods=2).mean().iloc[-2]
+
             # --- Intraday Volume Projection ---
             # NOTE: Volume is already projected natively in fetch_data() Phase 10 update.
-            vol_current_projected = vol_current 
-            
-            _val = vol_avg_20 if pd.notna(vol_avg_20) and vol_avg_20 > 0 else 1.0
-            vol_ratio = vol_current_projected / _val
-            volume_confirmed = vol_ratio >= 1.2  # WFO 최적화: 1.5→1.2배
+            vol_current_projected = vol_current
+
+            # 20일 평균 대비 비율 (전체 맥락)
+            _val20 = vol_avg_20 if pd.notna(vol_avg_20) and vol_avg_20 > 0 else 1.0
+            vol_ratio = vol_current_projected / _val20
+            # 5일 평균 대비 비율 (최근 장세 반영)
+            _val5 = vol_avg_5 if pd.notna(vol_avg_5) and vol_avg_5 > 0 else _val20
+            vol_ratio_5d = vol_current_projected / _val5
+            # 거래량 확인: 20일 평균 대비 50% 이상 (최소 유동성 체크)
+            # vol_ratio >= 1.2는 "평균 이상 거래량" 신호이지만,
+            # 관세 쇼크 이후처럼 최근 고거래량이 평균을 끌어올린 경우 모든 종목이 미달되므로
+            # 최소 유동성(0.5x) 기준으로 변경 — 강한 거래량 신호는 vol_ratio 수치로 판단
+            volume_confirmed = vol_ratio >= 0.5 or vol_ratio_5d >= 0.8
             
             # --- [Phase 3] ATR-Based Dynamic Stop/Target (WFO V2 최적) ---
             # ATR(14) = Average True Range over 14 days

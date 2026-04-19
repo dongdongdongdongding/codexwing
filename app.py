@@ -5,7 +5,9 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="google.oauth2"
 warnings.filterwarnings("ignore", module="urllib3")
 
 import concurrent.futures
+import html
 import json
+import threading
 import streamlit as st
 import os
 from pathlib import Path
@@ -17,13 +19,19 @@ load_dotenv(".env.local")
 
 from modules import vision_analysis, quant_analysis, db_manager, news_analysis, market_intelligence
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
-from modules.macro_scheduler import get_macro_context, macro_weather_text
+from modules.macro_scheduler import get_macro_context
 from modules.scanner_bridge import run_legacy_agent_bridge
 from modules.scanner_runtime import SharedBackoffState, run_parallel_scan, scan_symbol_with_retry
 from modules.scanner_services import evaluate_uploaded_candidate, normalize_uploaded_ticker
 from modules.scan_policy import (
     compute_market_gate as compute_market_gate_live,
     compute_rank_adjustment as shared_compute_rank_adjustment,
+)
+from modules.ui_helpers import (
+    BackgroundScanState,
+    compute_progress_fraction,
+    format_volume_display,
+    resolve_display_price,
 )
 import pandas as pd
 import plotly.graph_objects as go
@@ -33,7 +41,12 @@ import traceback
 # [Phase 8] Global Backoff Synchronization for Rate Limits
 _SCAN_BACKOFF_STATE = SharedBackoffState()
 
-st.set_page_config(page_title="스윙 트레이딩 AI", layout="wide", page_icon="📈")
+st.set_page_config(
+    page_title="스윙 트레이딩 AI",
+    layout="wide",
+    page_icon="📈",
+    initial_sidebar_state="collapsed",
+)
 
 if "deep_dive_ticker" not in st.session_state:
     st.session_state["deep_dive_ticker"] = "AAPL"
@@ -109,8 +122,359 @@ def _return_metric(return_buckets, bucket, horizon, field="avg_return_pct"):
         return 0.0
 
 
+def _inject_toss_theme():
+    st.markdown(
+        """
+        <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        :root {
+          --bg: #f2f4f6;
+          --surface: rgba(255, 255, 255, 0.94);
+          --surface-strong: #ffffff;
+          --surface-soft: #f8fafc;
+          --line: #e5e8eb;
+          --text: #191f28;
+          --muted: #8b95a1;
+          --primary: #3182f6;
+          --primary-deep: #1b64da;
+          --primary-soft: #eaf2ff;
+          --good: #17b26a;
+          --warn: #ffb020;
+          --danger: #f04452;
+          --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+        }
+
+        html, body, [class*="css"] {
+          font-family: "Pretendard", "SUIT Variable", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        }
+
+        .stApp {
+          background:
+            radial-gradient(circle at top left, rgba(49, 130, 246, 0.10), transparent 28%),
+            radial-gradient(circle at top right, rgba(35, 180, 120, 0.08), transparent 24%),
+            linear-gradient(180deg, #f8fbff 0%, var(--bg) 18%, #eef2f6 100%);
+          color: var(--text);
+        }
+
+        [data-testid="stHeader"] {
+          background: rgba(248, 251, 255, 0.75);
+          backdrop-filter: blur(14px);
+        }
+
+        .block-container {
+          max-width: 1380px;
+          padding-top: 1.6rem;
+          padding-bottom: 3rem;
+        }
+
+        [data-testid="stSidebar"] {
+          background: linear-gradient(180deg, #fbfdff 0%, #f4f7fb 100%);
+          border-right: 1px solid rgba(229, 232, 235, 0.9);
+        }
+
+        [data-testid="collapsedControl"] {
+          display: none;
+        }
+
+        h1, h2, h3, h4 {
+          color: var(--text);
+          letter-spacing: -0.03em;
+        }
+
+        p, li, label, .stCaption, .stMarkdown {
+          color: var(--text);
+        }
+
+        div[data-testid="stMetric"] {
+          background: var(--surface);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          border-radius: 22px;
+          padding: 1rem 1.05rem;
+          box-shadow: var(--shadow);
+        }
+
+        div[data-testid="stMetricLabel"] {
+          color: var(--muted);
+          font-weight: 600;
+        }
+
+        div[data-testid="stMetricValue"] {
+          color: var(--text);
+          letter-spacing: -0.03em;
+        }
+
+        div[data-baseweb="select"] > div,
+        .stTextInput input,
+        .stTextArea textarea,
+        .stNumberInput input {
+          background: rgba(255, 255, 255, 0.96);
+          border: 1px solid var(--line);
+          border-radius: 16px;
+          min-height: 3rem;
+        }
+
+        div[data-baseweb="select"] > div:focus-within,
+        .stTextInput input:focus,
+        .stTextArea textarea:focus,
+        .stNumberInput input:focus {
+          border-color: rgba(49, 130, 246, 0.9);
+          box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.14);
+        }
+
+        .stButton > button,
+        button[kind="primary"] {
+          border-radius: 16px;
+          min-height: 3rem;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .stButton > button:hover,
+        button[kind="primary"]:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 14px 30px rgba(49, 130, 246, 0.18);
+        }
+
+        button[kind="primary"] {
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+          border: 0;
+        }
+
+        .stButton > button {
+          background: rgba(255, 255, 255, 0.98);
+          border: 1px solid var(--line);
+          color: var(--text);
+        }
+
+        .stButton > button:hover {
+          border-color: rgba(49, 130, 246, 0.45);
+          color: var(--primary-deep);
+        }
+
+        div[data-testid="stTabs"] {
+          margin-top: 0.75rem;
+        }
+
+        div[data-testid="stTabs"] button[role="tab"] {
+          border-radius: 999px;
+          border: 1px solid transparent;
+          background: rgba(255, 255, 255, 0.72);
+          color: var(--muted);
+          font-weight: 700;
+          padding: 0.8rem 1.15rem;
+        }
+
+        div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+          background: #ffffff;
+          color: var(--primary-deep);
+          border-color: rgba(49, 130, 246, 0.18);
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        div[data-testid="stExpander"] {
+          border: 1px solid var(--line);
+          border-radius: 22px;
+          background: var(--surface);
+          box-shadow: var(--shadow);
+          overflow: hidden;
+        }
+
+        div[data-testid="stDataFrame"],
+        div[data-testid="stTable"] {
+          border: 1px solid var(--line);
+          border-radius: 22px;
+          overflow: hidden;
+          background: var(--surface-strong);
+          box-shadow: var(--shadow);
+        }
+
+        .section-intro,
+        .status-banner,
+        .control-note {
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          box-shadow: var(--shadow);
+        }
+
+        .section-kicker {
+          color: var(--primary-deep);
+          font-weight: 800;
+          font-size: 0.82rem;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+
+        .section-title {
+          color: var(--text);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1.08;
+        }
+
+        .section-title {
+          margin: 0.28rem 0 0.55rem;
+          font-size: clamp(1.45rem, 1.8vw, 2rem);
+        }
+
+        .section-body,
+        .status-body,
+        .status-caption {
+          color: var(--muted);
+          line-height: 1.65;
+        }
+
+        .section-chip-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.55rem;
+          margin-top: 1rem;
+        }
+
+        .section-chip {
+          padding: 0.5rem 0.82rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.88);
+          border: 1px solid rgba(49, 130, 246, 0.12);
+          color: var(--primary-deep);
+          font-size: 0.88rem;
+          font-weight: 700;
+        }
+
+        .section-intro {
+          padding: 1.2rem 1.25rem;
+          margin: 0.35rem 0 1rem;
+          border-radius: 26px;
+          background: rgba(255, 255, 255, 0.9);
+        }
+
+        .status-banner {
+          padding: 1rem 1.15rem;
+          margin: 0.5rem 0 0.85rem;
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.92);
+        }
+
+        .status-banner.good {
+          background: linear-gradient(135deg, rgba(236, 251, 243, 0.96), rgba(255, 255, 255, 0.95));
+          border-color: rgba(23, 178, 106, 0.2);
+        }
+
+        .status-banner.caution {
+          background: linear-gradient(135deg, rgba(255, 248, 230, 0.96), rgba(255, 255, 255, 0.95));
+          border-color: rgba(255, 176, 32, 0.24);
+        }
+
+        .status-banner.risk,
+        .status-banner.danger {
+          background: linear-gradient(135deg, rgba(255, 241, 242, 0.97), rgba(255, 255, 255, 0.95));
+          border-color: rgba(240, 68, 82, 0.2);
+        }
+
+        .status-title {
+          color: var(--text);
+          font-size: 1rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          margin-bottom: 0.25rem;
+        }
+
+        .control-note {
+          padding: 0.95rem 1.1rem;
+          margin: 0.2rem 0 1rem;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.84);
+        }
+
+        .control-note strong {
+          display: block;
+          color: var(--text);
+          margin-bottom: 0.2rem;
+        }
+
+        .control-note span {
+          color: var(--muted);
+          line-height: 1.6;
+        }
+
+        @media (max-width: 980px) {
+          .block-container {
+            padding-top: 1rem;
+            padding-bottom: 2rem;
+          }
+
+          .section-intro,
+          .status-banner,
+          .control-note,
+          div[data-testid="stMetric"],
+          div[data-testid="stExpander"],
+          div[data-testid="stDataFrame"],
+          div[data-testid="stTable"] {
+            border-radius: 20px;
+          }
+
+          div[data-testid="stTabs"] button[role="tab"] {
+            padding: 0.72rem 0.92rem;
+          }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_section_intro(kicker, title, body, chips=None):
+    chip_html = ""
+    if chips:
+        chip_html = '<div class="section-chip-row">' + "".join(
+            f'<span class="section-chip">{html.escape(str(chip))}</span>'
+            for chip in chips
+            if str(chip).strip()
+        ) + "</div>"
+    st.markdown(
+        f"""
+        <section class="section-intro">
+          <div class="section-kicker">{html.escape(str(kicker))}</div>
+          <div class="section-title">{html.escape(str(title))}</div>
+          <div class="section-body">{html.escape(str(body))}</div>
+          {chip_html}
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_status_banner(title, body, tone="good", caption=None):
+    caption_html = (
+        f'<div class="status-caption" style="margin-top:0.45rem;">{html.escape(str(caption))}</div>'
+        if caption
+        else ""
+    )
+    st.markdown(
+        f"""
+        <section class="status-banner {html.escape(str(tone))}">
+          <div class="status-title">{html.escape(str(title))}</div>
+          <div class="status-body">{html.escape(str(body))}</div>
+          {caption_html}
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def _render_main_controls():
+    control_left, control_right = st.columns([1, 1])
+    refresh_macro = control_left.button("🔄 매크로 새로고침", use_container_width=True)
+    refresh_gate = control_right.button("🔄 마켓 게이트 새로고침", use_container_width=True)
+    return refresh_macro, refresh_gate
+
+
 def _render_daily_ops_overview():
-    st.markdown("### 일일 성과 요약")
+    _render_section_intro(
+        "Daily Pulse",
+        "일일 성과 요약",
+        "시장별 운영 상태와 수익률 측정값을 카드로 빠르게 훑을 수 있게 정리한 영역입니다.",
+        ["KOSPI", "KOSDAQ", "NASDAQ", "AMEX"],
+    )
     markets = ["KOSPI", "KOSDAQ", "NASDAQ", "AMEX"]
     cols = st.columns(len(markets))
     has_any = False
@@ -398,35 +762,315 @@ def _render_agent_bridge_status(bridge_info, market):
                 st.write(f"- {cause}")
 
 
-st.title("🚀 AI 스윙 트레이딩 봇 (Quant + Vision)")
-st.markdown("---")
-_render_daily_ops_overview()
+def _get_scan_state_snapshot():
+    state = st.session_state.get("scan_job_state")
+    if state is None:
+        return None
+    return state.snapshot()
+
+
+def _scan_is_running(snapshot=None):
+    snap = snapshot or _get_scan_state_snapshot()
+    return bool(snap and snap.get("status") in {"queued", "running"})
+
+
+def _start_market_scan_job(*, market, max_scan, scan_mode, engine_opt, is_advanced_engine):
+    if _scan_is_running():
+        return False
+
+    live_refresh = live_mode_enabled(market)
+    try:
+        st.session_state["macro_ctx"] = get_macro_context(
+            force_refresh=live_refresh,
+            market_group=normalize_market_key(market),
+        )
+    except Exception:
+        pass
+    st.session_state["market_gate"] = compute_market_gate(market)
+
+    scan_state = BackgroundScanState(
+        market=str(market),
+        scan_mode=str(scan_mode),
+        engine_label=str(engine_opt),
+        max_scan=int(max_scan or 0),
+    )
+    st.session_state["scan_job_state"] = scan_state
+
+    thread = threading.Thread(
+        target=_run_market_scan_job,
+        kwargs={
+            "scan_state": scan_state,
+            "market": market,
+            "max_scan": max_scan,
+            "scan_mode": scan_mode,
+            "engine_opt": engine_opt,
+            "is_advanced_engine": is_advanced_engine,
+            "macro_ctx": st.session_state.get("macro_ctx", {}),
+            "market_gate": st.session_state.get("market_gate", {}),
+        },
+        daemon=True,
+    )
+    st.session_state["scan_job_thread"] = thread
+    thread.start()
+    return True
+
+
+def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt, is_advanced_engine, macro_ctx, market_gate):
+    try:
+        scan_state.update(status="running", status_line="스캔 실행을 준비 중입니다.")
+        regime = quant_analysis.QuantStrategy.detect_market_regime(market)
+        scan_state.update(regime=regime or {})
+
+        tickers_dict = quant_analysis.QuantStrategy.get_market_tickers(market)
+        ticker_list = list(tickers_dict.keys())
+        planned_scan_count = len(ticker_list) if max_scan <= 0 else min(len(ticker_list), max_scan)
+        scan_state.update(
+            total_scans=planned_scan_count,
+            status_line=f"총 {len(ticker_list)}개 종목 중 {planned_scan_count}개를 스캔합니다.",
+        )
+
+        gemini_key = os.environ.get("GEMINI_API_KEY", "")
+        intel_data = market_intelligence.get_market_intelligence(market, gemini_key, force_refresh=True)
+        if isinstance(intel_data, dict):
+            scan_state.update(intel_data=intel_data)
+
+        is_us = market in ["NASDAQ", "S&P500", "AMEX"]
+        is_amex = market == "AMEX"
+        diagnostics = scan_state.scan_diagnostics
+        results = []
+
+        def scan_worker(sym):
+            def _on_reject(_sym, reason):
+                code = str(reason or "UNKNOWN")
+                counts = diagnostics["reject_reason_counts"]
+                counts[code] = int(counts.get(code, 0) or 0) + 1
+                diagnostics["reject_reasons_by_symbol"][_sym] = code
+
+            def _on_reject_detail(_sym, meta):
+                details = diagnostics["reject_details_by_symbol"]
+                if not isinstance(details.get(_sym), list):
+                    details[_sym] = []
+                if isinstance(meta, dict):
+                    details[_sym].append(meta)
+
+            return scan_symbol_with_retry(
+                sym=sym,
+                tickers_dict=tickers_dict,
+                is_us=bool(is_us),
+                is_amex=bool(is_amex),
+                is_advanced_engine=bool(is_advanced_engine),
+                r_status=str((regime or {}).get("regime", "NEUTRAL")),
+                intel_data=intel_data,
+                macro_ctx=macro_ctx,
+                market_gate=market_gate,
+                rank_adjustment_fn=compute_rank_adjustment,
+                news_adjustment_fn=market_intelligence.calculate_news_adjustment,
+                backoff_state=_SCAN_BACKOFF_STATE,
+                max_retries=2,
+                scan_mode=scan_mode,
+                reject_reason_fn=_on_reject,
+                reject_detail_fn=_on_reject_detail,
+            )
+
+        def _on_scan_item(i, total_scans, sym, data, exc):
+            scan_state.update(
+                completed_scans=i + 1,
+                current_symbol=sym,
+                progress=compute_progress_fraction(i + 1, total_scans),
+                status_line=f"스캔 진행 중... [{i + 1}/{total_scans}] {sym}",
+            )
+            if exc is not None:
+                diagnostics["executor_exception_count"] += 1
+                diagnostics["exception_symbols"].append(sym)
+                scan_state.append_log("error", f"❌ {sym} 실행 중 에러: {exc}")
+                return
+
+            if data:
+                if "error" in data:
+                    diagnostics["worker_error_count"] += 1
+                    diagnostics["error_symbols"].append(sym)
+                    scan_state.append_log("error", f"❌ {data['ticker']} 스캔 중 에러: {data['error']}")
+                else:
+                    results.append(data)
+                    scan_state.append_result(data)
+                    scan_state.append_log("info", f"✅ {data.get('종목명') or data.get('Ticker') or sym} 후보 반영")
+            else:
+                diagnostics["filtered_count"] += 1
+                diagnostics["filtered_symbols"].append(sym)
+
+        run_parallel_scan(
+            ticker_list=ticker_list,
+            max_scan=max_scan,
+            worker_fn=scan_worker,
+            max_workers=2,
+            on_item=_on_scan_item,
+        )
+
+        bridge_info = run_legacy_agent_bridge(
+            results=results,
+            market=market,
+            strategy_version="legacy-ui-v1",
+            model_version="legacy",
+            code_version="bridge-v1",
+            summary_overrides={
+                "total_scans": planned_scan_count,
+                "diagnostics": diagnostics,
+                "market_gate": market_gate,
+                "regime": regime,
+                "execution_profile": os.getenv("AG_SCAN_PROFILE", "prod"),
+                "warnings": [],
+                "source": "scanner_agent_input",
+                "scan_mode": scan_mode,
+            },
+            logger=lambda line: scan_state.append_log("info", line),
+        )
+
+        scan_state.update(
+            status="completed",
+            finished_at=date.today().toordinal(),
+            progress=1.0,
+            current_symbol="",
+            status_line="스캔이 완료되었습니다.",
+            bridge_info=bridge_info or {},
+            scan_diagnostics=diagnostics,
+        )
+    except Exception as exc:
+        scan_state.update(
+            status="failed",
+            error=str(exc),
+            status_line=f"스캔 실패: {exc}",
+        )
+        scan_state.append_log("error", f"❌ 스캔 실패: {exc}")
+
+
+def _render_market_intelligence_panel(intel_data, market):
+    if not isinstance(intel_data, dict) or not intel_data:
+        return
+    with st.expander(f"🧠 AI 시장 인텔리전스 ({intel_data.get('timestamp', '')})", expanded=True):
+        sent = intel_data.get('market_sentiment', 'NEUTRAL')
+        sent_icon = {'BULLISH': '🟢', 'BEARISH': '🔴', 'MIXED': '🟡', 'NEUTRAL': '⚪'}.get(sent, '⚪')
+        st.caption(f"Source: {intel_data.get('source', 'unknown')} | Market: {market}")
+        if str(intel_data.get('source', 'unknown')).startswith('fallback'):
+            st.warning("시장 뉴스 헤드라인을 충분히 수집하지 못해 fallback 인텔리전스를 사용 중입니다.")
+        st.markdown(f"**시장 분위기**: {sent_icon} **{sent}** (점수: {intel_data.get('sentiment_score', 0)})")
+        st.markdown(f"**핵심 인사이트**: {intel_data.get('key_insight', 'N/A')}")
+
+
+def _render_scan_results_snapshot(snapshot):
+    results = snapshot.get("results", [])
+    bridge_info = snapshot.get("bridge_info", {})
+    market = snapshot.get("market", "KOSPI")
+    if not results:
+        st.warning("⚠️ 조건에 맞는 종목을 찾지 못했습니다.")
+        _render_agent_bridge_status(bridge_info, market)
+        return
+
+    st.success(f"✅ 스캔 완료: {len(results)}개 후보가 유지되었습니다.")
+    st.caption(snapshot.get("status_line", ""))
+    _render_market_intelligence_panel(snapshot.get("intel_data", {}), market)
+
+    df_results = pd.DataFrame(results)
+    sort_col = "Decision Score" if "Decision Score" in df_results.columns else df_results.columns[0]
+    if sort_col in df_results.columns:
+        df_results = df_results.sort_values(sort_col, ascending=False, na_position="last")
+    st.dataframe(df_results, use_container_width=True, hide_index=True)
+    _render_agent_bridge_status(bridge_info, market)
+
+
+def _render_scan_job_panel():
+    snapshot = _get_scan_state_snapshot()
+    if not snapshot:
+        st.info("시장, 모드, 엔진을 고른 뒤 스캔을 시작하면 여기서 실시간 진행상태와 결과를 이어서 볼 수 있습니다.")
+        return
+
+    tone = "good"
+    if snapshot["status"] in {"queued", "running"}:
+        tone = "caution"
+    elif snapshot["status"] == "failed":
+        tone = "danger"
+
+    _render_status_banner(
+        f"스캔 상태 · {snapshot['status'].upper()}",
+        f"{snapshot.get('status_line', '')} · {snapshot.get('market', '')} · {snapshot.get('scan_mode', '')}",
+        tone=tone,
+        caption=f"진행률 {int(round(float(snapshot.get('progress', 0.0)) * 100))}% | 완료 {snapshot.get('completed_scans', 0)}/{snapshot.get('total_scans', 0)}",
+    )
+
+    st.progress(float(snapshot.get("progress", 0.0)))
+    if snapshot["status"] in {"queued", "running"}:
+        with st.expander("📝 진행 로그", expanded=True):
+            logs = snapshot.get("logs", [])
+            if logs:
+                for row in logs[-20:]:
+                    level = row.get("level")
+                    message = row.get("message", "")
+                    if level == "error":
+                        st.error(message)
+                    else:
+                        st.caption(message)
+            else:
+                st.caption("아직 기록된 로그가 없습니다.")
+    elif snapshot["status"] == "failed":
+        st.error(snapshot.get("error", "알 수 없는 오류"))
+    else:
+        _render_scan_results_snapshot(snapshot)
+
+
+def _render_scan_continuity_banner(active_tab):
+    snapshot = _get_scan_state_snapshot()
+    if not snapshot:
+        return
+
+    prev_tab = st.session_state.get("last_active_main_tab")
+    if _scan_is_running(snapshot) and prev_tab == "🚀 스캐너" and active_tab != "🚀 스캐너":
+        toast_key = f"{snapshot['job_id']}:{active_tab}:running"
+        if st.session_state.get("scan_nav_toast_key") != toast_key:
+            st.session_state["scan_nav_toast_key"] = toast_key
+            st.toast(
+                f"스캐너가 백그라운드에서 진행 중입니다. {snapshot.get('completed_scans', 0)}/{snapshot.get('total_scans', 0)} 완료",
+                icon="⏳",
+            )
+
+    status_key = f"{snapshot['job_id']}:{snapshot['status']}"
+    if snapshot["status"] == "completed" and st.session_state.get("scan_status_toast_key") != status_key:
+        st.session_state["scan_status_toast_key"] = status_key
+        st.toast("스캔이 완료되었습니다. 스캐너 탭에서 결과를 확인하세요.", icon="✅")
+
+    if _scan_is_running(snapshot) and active_tab != "🚀 스캐너":
+        _render_status_banner(
+            "스캐너가 계속 실행 중입니다",
+            snapshot.get("status_line", ""),
+            tone="caution",
+            caption=f"{snapshot.get('completed_scans', 0)}/{snapshot.get('total_scans', 0)} 완료",
+        )
+        if st.button("스캐너로 돌아가기", key="return_to_scanner"):
+            st.session_state["active_main_tab"] = "🚀 스캐너"
+            st.rerun()
+
+
+_inject_toss_theme()
+refresh_macro_clicked, refresh_gate_clicked = _render_main_controls()
 st.markdown("---")
 
-# Sidebar Settings
-st.sidebar.header("⚙️ 설정 (Settings)")
-api_key = st.sidebar.text_input("OpenAI API Key (Vision용)", type="password")
-if api_key:
-    os.environ["OPENAI_API_KEY"] = api_key
-    
-st.markdown("### Strategy Parameters")
-# --- Sidebar: Settings & Visual AI ---
-with st.sidebar:
-    st.header("⚙️ Settings")
-    api_key = st.text_input("OpenAI API Key (Optional)", type="password", help="Required only for Visual AI Analysis")
-    
-    st.markdown("---")
-    # Visual AI moved to Sidebar
-    with st.expander("📷 Visual AI Analysis (Image)"):
-        uploaded_file = st.file_uploader("Upload Chart", type=["jpg", "png", "jpeg"])
-        if uploaded_file is not None and api_key:
-            st.image(uploaded_file, caption="Uploaded Chart", width='stretch')
-            if st.button("Analyze Image"):
-                with st.spinner("AI is analyzing..."):
-                    result = vision_analysis.analyze_chart_image(uploaded_file, api_key)
-                    st.write(result)
-        elif uploaded_file:
-            st.warning("Enter API Key above.")
+with st.expander("보조 도구 · 차트 이미지 분석", expanded=False):
+    api_key = st.text_input(
+        "OpenAI API Key",
+        type="password",
+        help="차트 이미지 Vision 분석을 사용할 때만 필요합니다.",
+        key="main_openai_api_key",
+    )
+    if api_key:
+        os.environ["OPENAI_API_KEY"] = api_key
+    st.caption("이미지 기반 보조 분석 전용 설정입니다. 스캐너와 엔진 로직에는 영향을 주지 않습니다.")
+    uploaded_file = st.file_uploader("Upload Chart", type=["jpg", "png", "jpeg"], key="main_chart_upload")
+    if uploaded_file is not None and api_key:
+        st.image(uploaded_file, caption="Uploaded Chart", width='stretch')
+        if st.button("Analyze Image", key="main_image_analyze"):
+            with st.spinner("AI is analyzing..."):
+                result = vision_analysis.analyze_chart_image(uploaded_file, api_key)
+                st.write(result)
+    elif uploaded_file:
+        st.warning("Enter API Key above.")
 
 # --- Phase 25: Backtest-Calibrated Rank Adjustment ---
 def compute_market_gate(market=None):
@@ -449,9 +1093,6 @@ def compute_rank_adjustment(real_trend, position, strategy_tag, tier, whale_scor
         consec_days=consec_days,
     )
 
-# --- Main Area ---
-st.title("🤖 AI Quant Trading Pro")
-
 # --- Phase 34: Global Brain Initialization ---
 # Ensure Universal Model exists for Zero-Failure Analysis
 if 'universal_model_checked' not in st.session_state:
@@ -465,7 +1106,7 @@ if 'universal_model_checked' not in st.session_state:
         st.session_state['universal_model_checked'] = True
 
 # Phase 19: Live Macro Weather Dashboard
-if 'macro_ctx' not in st.session_state or st.sidebar.button("🔄 Macro 새로고침"):
+if 'macro_ctx' not in st.session_state or refresh_macro_clicked:
     with st.spinner("📡 실시간 매크로 지표 수집 중..."):
         try:
             st.session_state['macro_ctx'] = get_macro_context(force_refresh=True)
@@ -475,24 +1116,26 @@ if 'macro_ctx' not in st.session_state or st.sidebar.button("🔄 Macro 새로�
 macro_ctx = st.session_state.get('macro_ctx', {})
 macro_state = macro_ctx.get('macro_state', 'NORMAL')
 macro_risk  = macro_ctx.get('macro_risk_score', 0)
-_mc_colors  = {'NORMAL': ('#1a3a1a', '#4CAF50', '☀️'), 'CAUTION': ('#3a3010', '#FFC107', '⛅'), 'RISK_OFF': ('#3a1010', '#FF5722', '🌧️'), 'CRASH': ('#4a0000', '#FF1744', '🚨')}
-_bg, _col, _ico = _mc_colors.get(macro_state, _mc_colors['NORMAL'])
+_mc_icons = {'NORMAL': '☀️', 'CAUTION': '⛅', 'RISK_OFF': '🌧️', 'CRASH': '🚨'}
+_ico = _mc_icons.get(macro_state, _mc_icons['NORMAL'])
 
 vix_str = f"VIX {macro_ctx['vix']:.1f} ({macro_ctx['vix_change_1d']:+.1f}%)" if macro_ctx.get('vix') else "VIX N/A"
 tnx_str = f"10Y {macro_ctx['tnx']:.2f}%" if macro_ctx.get('tnx') else "10Y N/A"
-krw_str = f"KRW {macro_ctx['krw']:,.0f} ({macro_ctx['krw_change_1d']:+.2f}%)" if macro_ctx.get('krw') else ""
+krw_str = f"KRW {macro_ctx['krw']:,.0f} ({macro_ctx['krw_change_1d']:+.2f}%)" if macro_ctx.get('krw') else "KRW N/A"
 spy_str = f"SPY {macro_ctx.get('spy_change_1d', 0):+.2f}%"
-flags_str = " | ⚠️ " + ", ".join(macro_ctx.get('flags', [])) if macro_ctx.get('flags') else ""
-
-st.markdown(f"""
-<div style="padding:12px 18px; border-radius:10px; background:{_bg}; border:1px solid {_col}; margin-bottom:16px;">
-  <span style="font-size:1.1em; font-weight:bold; color:{_col};">{_ico} 매크로 날씨: {macro_state}</span>
-  <span style="font-size:0.85em; color:#ccc; margin-left:16px;">Risk Score {macro_risk}/100 &nbsp;|&nbsp; {vix_str} &nbsp;|&nbsp; {tnx_str} &nbsp;|&nbsp; {krw_str} &nbsp;|&nbsp; {spy_str}{flags_str}</span>
-  {'<br><span style="color:#FF8A80; font-size:0.8em;">⚠️ CRASH: 신규 매수 자제 — 매크로 쇼크 구간</span>' if macro_state == 'CRASH' else ''}
-  {'<br><span style="color:#FFCC80; font-size:0.8em;">🌧️ RISK_OFF 감지: Decision Score에 자동 페널티 적용 중</span>' if macro_state == 'RISK_OFF' else ''}
-  {'<br><span style="color:#FFF176; font-size:0.8em;">⛅ CAUTION: 매크로 주의 — 고확신 종목 위주로 선별하세요</span>' if macro_state == 'CAUTION' else ''}
-</div>
-""", unsafe_allow_html=True)
+flags_str = ", ".join(macro_ctx.get('flags', [])) if macro_ctx.get('flags') else ""
+macro_note = None
+if macro_state == "CRASH":
+    macro_note = "신규 매수 자제 구간입니다. 매크로 쇼크가 Decision Score에 직접 반영됩니다."
+elif macro_state == "RISK_OFF":
+    macro_note = "리스크 오프 감지로 방어적 필터와 페널티가 강화된 상태입니다."
+elif macro_state == "CAUTION":
+    macro_note = "주의 구간입니다. 고확신 후보 위주로 선별하는 보수적 해석이 유리합니다."
+macro_tone = {"NORMAL": "good", "CAUTION": "caution", "RISK_OFF": "risk", "CRASH": "danger"}.get(macro_state, "good")
+macro_body = f"Risk Score {macro_risk}/100 · {vix_str} · {tnx_str} · {krw_str} · {spy_str}"
+if flags_str:
+    macro_body += f" · Flags {flags_str}"
+_render_status_banner(f"{_ico} Macro Weather · {macro_state}", macro_body, tone=macro_tone, caption=macro_note)
 
 # --- Phase 25: Market Gate (KOSPI/KOSDAQ Daily Gate) ---
 # Backtest proved: bad market days have 3~33% win rate → must warn users
@@ -503,25 +1146,43 @@ if (
 ):
     st.session_state['market_gate'] = compute_market_gate(_selected_gate_market)
 _gate_info = st.session_state['market_gate']
-_gate_colors = {'GREEN': ('#1a3a1a', '#4CAF50'), 'YELLOW': ('#3a3010', '#FFC107'), 'RED': ('#3a0a0a', '#FF5252')}
-_gt_bg, _gt_col = _gate_colors.get(_gate_info['gate'], _gate_colors['GREEN'])
-st.sidebar.button(
-    "🔄 Market Gate 새로고침",
-    on_click=lambda: st.session_state.update({
-        'market_gate': compute_market_gate(st.session_state.get("selected_scan_market", "KOSPI"))
-    }),
+if refresh_gate_clicked:
+    st.session_state['market_gate'] = compute_market_gate(st.session_state.get("selected_scan_market", "KOSPI"))
+    _gate_info = st.session_state['market_gate']
+_render_status_banner(
+    f"📡 Market Gate · {_gate_info['gate']}",
+    _gate_info['msg'],
+    tone={"GREEN": "good", "YELLOW": "caution", "RED": "danger"}.get(_gate_info["gate"], "good"),
+    caption=f"선택 시장: {_selected_gate_market}",
 )
-st.markdown(f"""
-<div style="padding:10px 16px; border-radius:8px; background:{_gt_bg}; border:1px solid {_gt_col}; margin-bottom:12px;">
-  <span style="font-weight:bold; color:{_gt_col}; font-size:1.0em;">📡 Market Gate [{_gate_info['gate']}]</span>
-  <span style="color:#ccc; font-size:0.85em; margin-left:12px;">{_gate_info['msg']}</span>
-</div>
-""", unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["🚀 스캐너", "📚 아카이브", "🔎 정밀분석"])
+MAIN_TABS = ["🚀 스캐너", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
+if "active_main_tab" not in st.session_state:
+    st.session_state["active_main_tab"] = MAIN_TABS[0]
+active_main_tab = st.segmented_control(
+    "메인 탭",
+    MAIN_TABS,
+    key="active_main_tab",
+    selection_mode="single",
+    label_visibility="collapsed",
+)
+if active_main_tab is None:
+    active_main_tab = MAIN_TABS[0]
+
+
+@st.fragment(run_every=2)
+def _render_scan_continuity_fragment(active_tab_value):
+    _render_scan_continuity_banner(active_tab_value)
+
+
+_render_scan_continuity_fragment(active_main_tab)
+st.session_state["last_active_main_tab"] = active_main_tab
+
+if active_main_tab == "📈 성과":
+    _render_daily_ops_overview()
 
 # --- Strategy Lab (removed from UI) ---
-with tab1:  # dummy context reuse — strategy lab content removed
+if active_main_tab == "🚀 스캐너":  # dummy context reuse — strategy lab content removed
     pass
 if False:
     # Keep lab self-contained: define regime label even when tab1 scanner was not run.
@@ -1008,8 +1669,22 @@ if False:
             st.error(f"파일 처리 에러: {e}")
 
 # TAB 1: MARKET SCANNER
-with tab1:
-    st.header("🚀 전종목 자동 스캔")
+if active_main_tab == "🚀 스캐너":
+    _render_section_intro(
+        "Scanner",
+        "전종목 자동 스캔",
+        "시장, 스캔 모드, 엔진을 빠르게 고른 뒤 상위 후보를 바로 읽을 수 있도록 진입 화면을 단순화했습니다.",
+        ["Top 5 focus", "Market-aware gate", "Shared trace output"],
+    )
+    st.markdown(
+        """
+        <div class="control-note">
+          <strong>빠른 사용 흐름</strong>
+          <span>시장과 모드를 먼저 고르고, 엔진을 확인한 뒤 스캔을 실행하세요. 결과는 Top 5 후보와 추가 후보로 바로 나뉘어 보여집니다.</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     col1, col2, col3, col4 = st.columns(4)
     market = col1.selectbox(
         "시장 선택 (Market)",
@@ -1036,486 +1711,37 @@ with tab1:
     is_advanced_engine = "완전무결" in engine_opt
     st.markdown("---")
     
-    if st.button("시장 스캔 시작", type="primary"):
-        st.info(
-            "⏳ 데이터를 수집하고 분석하는 중입니다... "
-            + ("(장중 1시간봉 기준)" if scan_mode == "INTRADAY" else "(스윙 일봉 기준)")
-        )
-        live_refresh = live_mode_enabled(market)
-        intel_force_refresh = True
-        try:
-            st.session_state['macro_ctx'] = get_macro_context(
-                force_refresh=live_refresh,
-                market_group=normalize_market_key(market),
-            )
-        except Exception:
-            pass
-        st.session_state['market_gate'] = compute_market_gate(market)
-
-        # [Phase 4] Market Regime Detection
-        regime = quant_analysis.QuantStrategy.detect_market_regime(market)
-        r_status = regime.get('regime', 'NEUTRAL')
-        regime_label = f"{regime['emoji']} 시장 레짐: **{regime['regime']}** — {regime['desc']}"
-        
-        if regime['regime'] == 'BULL':
-            st.success(regime_label)
-        elif regime['regime'] == 'BEAR':
-            st.error(regime_label + " ⚠️ **하락장 — 스캔 결과 더욱 엄격히 필터링됩니다**")
-        else:
-            st.warning(regime_label)
-        
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        # Get Tickers (Returns Dict: {Ticker: Name})
-        tickers_dict = quant_analysis.QuantStrategy.get_market_tickers(market)
-        ticker_list = list(tickers_dict.keys())
-        planned_scan_count = len(ticker_list) if max_scan <= 0 else min(len(ticker_list), max_scan)
-        status_text.text(f"총 {len(ticker_list)}개 종목을 불러왔습니다. 이번 스캔 대상: {planned_scan_count}개")
-        
-        results = []
-        scan_diagnostics = {
-            "filtered_count": 0,
-            "worker_error_count": 0,
-            "executor_exception_count": 0,
-            "filtered_symbols": [],
-            "error_symbols": [],
-            "exception_symbols": [],
-            "reject_reason_counts": {},
-            "reject_reasons_by_symbol": {},
-            "reject_details_by_symbol": {},
-        }
-        stop_placeholder = st.empty()
-        
-        # --- Phase 40: Market Intelligence (Gemini LLM) ---
-        gemini_key = os.environ.get('GEMINI_API_KEY', '')
-        intel_data = market_intelligence.get_market_intelligence(market, gemini_key, force_refresh=intel_force_refresh)
-        
-        if intel_data:
-            with st.expander(f"🧠 AI 시장 인텔리전스 ({intel_data.get('timestamp', '')})", expanded=True):
-                sent = intel_data.get('market_sentiment', 'NEUTRAL')
-                sent_icon = {'BULLISH': '🟢', 'BEARISH': '🔴', 'MIXED': '🟡', 'NEUTRAL': '⚪'}.get(sent, '⚪')
-                st.caption(f"Source: {intel_data.get('source', 'unknown')} | Market: {market}")
-                if str(intel_data.get('source', 'unknown')).startswith('fallback'):
-                    st.warning("시장 뉴스 헤드라인을 충분히 수집하지 못해 fallback 인텔리전스를 사용 중입니다.")
-                st.markdown(f"**시장 분위기**: {sent_icon} **{sent}** (점수: {intel_data.get('sentiment_score', 0)})")
-                st.markdown(f"**핵심 인사이트**: {intel_data.get('key_insight', 'N/A')}")
-                
-                col_a, col_b = st.columns(2)
-                with col_a:
-                    ben = intel_data.get('beneficiary_sectors', [])
-                    if ben:
-                        st.success(f"🔥 수혜 섹터: {', '.join(ben)}")
-                with col_b:
-                    vic = intel_data.get('victim_sectors', [])
-                    if vic:
-                        st.error(f"⚠️ 피해 섹터: {', '.join(vic)}")
-                
-                themes = intel_data.get('themes', [])
-                if themes:
-                    for t in themes[:3]:
-                        impact_icon = {'POSITIVE': '📈', 'NEGATIVE': '📉', 'MIXED': '↔️'}.get(t.get('impact', ''), '📌')
-                        st.markdown(f"{impact_icon} **{t.get('theme', '')}**: {t.get('description', '')}")
-                macro_drivers = intel_data.get('macro_drivers', [])
-                if macro_drivers:
-                    st.markdown("**거시 드라이버**")
-                    for driver in macro_drivers[:5]:
-                        signal_icon = {
-                            'BULLISH': '📈',
-                            'BEARISH': '📉',
-                            'MIXED': '↔️',
-                            'NEUTRAL': '📌',
-                        }.get(str(driver.get('signal', 'NEUTRAL')).upper(), '📌')
-                        category = driver.get('category', 'UNKNOWN')
-                        impact = driver.get('market_impact', 0)
-                        desc = driver.get('description', '')
-                        st.markdown(f"{signal_icon} **{category}** ({impact:+}): {desc}")
-                cross_asset = intel_data.get('cross_asset_signals', [])
-                if cross_asset:
-                    st.markdown("**크로스애셋 시그널**")
-                    for item in cross_asset[:4]:
-                        asset = item.get('asset', 'N/A')
-                        direction = item.get('direction', 'N/A')
-                        impact = item.get('market_impact', 0)
-                        desc = item.get('description', '')
-                        st.caption(f"• {asset} {direction} ({impact:+}) — {desc}")
-                risk_flags = intel_data.get('risk_flags', [])
-                if risk_flags:
-                    st.warning(f"리스크 플래그: {', '.join(risk_flags[:6])}")
-                # --- 테마 모멘텀 (Naver 실시간) ---
-                try:
-                    import json as _json
-                    from pathlib import Path as _Path
-                    _theme_cache_path = _Path("runtime_state/long_term/theme_cache/KR.json")
-                    if _theme_cache_path.exists():
-                        _tc = _json.loads(_theme_cache_path.read_text(encoding="utf-8"))
-                        _mom_updated = _tc.get("theme_momentum_updated_at")
-                        _states = [s for s in (_tc.get("theme_states") or []) if s.get("momentum_avg_change_pct") is not None]
-                        if _states:
-                            _mom_ts = _mom_updated[:16].replace("T", " ") if _mom_updated else "?"
-                            st.markdown(f"**테마 모멘텀** <span style='color:gray;font-size:0.8em'>Naver 실시간 · {_mom_ts}</span>", unsafe_allow_html=True)
-                            _class_icons = {"EXPLODING": "🔥", "ACCELERATING": "📈", "STEADY": "➡️", "FADING": "📉"}
-                            for _s in sorted(_states, key=lambda x: abs(x.get("momentum_avg_change_pct", 0)), reverse=True):
-                                _pct = _s["momentum_avg_change_pct"]
-                                _mc = _s.get("momentum_class") or ("EXPLODING" if _pct >= 2 else "ACCELERATING" if _pct >= 0.5 else "FADING" if _pct <= -0.5 else "STEADY")
-                                _icon = _class_icons.get(_mc, "➡️")
-                                _dir = _s.get("direction", "")
-                                _dir_tag = " 🟢수혜" if _dir == "BENEFICIARY" else " 🔴역풍" if _dir == "HEADWIND" else ""
-                                st.caption(f"{_icon} **{_s['theme_name']}** {_pct:+.2f}% [{_mc}]{_dir_tag}")
-                except Exception:
-                    pass
-
-                evidence = intel_data.get('evidence_headlines') or intel_data.get('raw_headlines') or []
-                if evidence:
-                    st.markdown("**근거 헤드라인**")
-                    for line in evidence[:4]:
-                        st.caption(f"• {line}")
-        
-        # --- Parallel Processing Logic (Phase 26) ---
-        is_us = market in ["NASDAQ", "S&P500", "AMEX"]
-        is_amex = market == "AMEX"
-        
-        def scan_worker(sym):
-            def _on_reject(_sym, reason):
-                code = str(reason or "UNKNOWN")
-                counts = scan_diagnostics["reject_reason_counts"]
-                counts[code] = int(counts.get(code, 0) or 0) + 1
-                scan_diagnostics["reject_reasons_by_symbol"][_sym] = code
-
-            def _on_reject_detail(_sym, meta):
-                details = scan_diagnostics["reject_details_by_symbol"]
-                if not isinstance(details.get(_sym), list):
-                    details[_sym] = []
-                if isinstance(meta, dict):
-                    details[_sym].append(meta)
-
-            return scan_symbol_with_retry(
-                sym=sym,
-                tickers_dict=tickers_dict,
-                is_us=bool(is_us),
-                is_amex=bool(is_amex),
-                is_advanced_engine=bool(is_advanced_engine),
-                r_status=str(r_status),
-                intel_data=intel_data,
-                macro_ctx=st.session_state.get('macro_ctx'),
-                market_gate=st.session_state.get('market_gate', {}),
-                rank_adjustment_fn=compute_rank_adjustment,
-                news_adjustment_fn=market_intelligence.calculate_news_adjustment,
-                backoff_state=_SCAN_BACKOFF_STATE,
-                max_retries=2,
-                scan_mode=scan_mode,
-                reject_reason_fn=_on_reject,
-                reject_detail_fn=_on_reject_detail,
-            )
-
-        # Run in Threads
-        log_container = st.expander("📝 스캔 로그", expanded=True)
-        scan_ui_logs = []
-
-        def _on_scan_item(i, total_scans, sym, data, exc):
-            if exc is not None:
-                scan_diagnostics["executor_exception_count"] += 1
-                scan_diagnostics["exception_symbols"].append(sym)
-                scan_ui_logs.append(("error", f"❌ {sym} 실행 중 에러: {exc}"))
-            else:
-                if data:
-                    if "error" in data:
-                        scan_diagnostics["worker_error_count"] += 1
-                        scan_diagnostics["error_symbols"].append(sym)
-                        scan_ui_logs.append(("error", f"❌ {data['ticker']} 스캔 중 에러: {data['error']}"))
-                    else:
-                        results.append(data)
-                else:
-                    scan_diagnostics["filtered_count"] += 1
-                    scan_diagnostics["filtered_symbols"].append(sym)
-                    print(f"[{i+1}/{total_scans}] {sym} ... Checked (Filtered/Skipped)")
-
-        run_parallel_scan(
-            ticker_list=ticker_list,
-            max_scan=max_scan,
-            worker_fn=scan_worker,
-            max_workers=2,
-            on_item=_on_scan_item,
-        )
-
-        progress_bar.progress(1.0)
-        status_text.text("✅ 스캔 완료!")
-        with log_container:
-            if scan_ui_logs:
-                for level, line in scan_ui_logs[:100]:
-                    if level == "error":
-                        st.error(line)
-                    elif level == "warning":
-                        st.warning(line)
-                    else:
-                        st.caption(line)
-            else:
-                st.caption("실행 오류 없이 스캔이 완료되었습니다.")
-        bridge_info = run_legacy_agent_bridge(
-            results=results,
+    start_scan = st.button(
+        "시장 스캔 시작",
+        type="primary",
+        disabled=_scan_is_running(),
+    )
+    if start_scan:
+        if _start_market_scan_job(
             market=market,
-            strategy_version="legacy-ui-v1",
-            model_version="legacy",
-            code_version="bridge-v1",
-            summary_overrides={
-                "total_scans": planned_scan_count,
-                "diagnostics": scan_diagnostics,
-                "market_gate": st.session_state.get('market_gate', {}),
-                "regime": regime,
-                "execution_profile": os.getenv("AG_SCAN_PROFILE", "prod"),
-                "warnings": [],
-                "source": "scanner_agent_input",
-                "scan_mode": scan_mode,
-            },
-            logger=st.caption,
-        )
-        if not bridge_info.get("ok", False):
-            st.caption("⚠️ Agent bridge completed with warnings.")
-
-        if results:
-            st.caption(f"📡 선택 시장 게이트: {st.session_state.get('market_gate', {}).get('msg', '')}")
-            planner_payload = _load_json_safe(bridge_info.get("planner_handoff"))
-            planner_decisions = planner_payload.get("decisions", []) if isinstance(planner_payload.get("decisions"), list) else []
-            planner_warnings = planner_payload.get("global_warnings", []) if isinstance(planner_payload.get("global_warnings"), list) else []
-            planner_warning_codes = {str(w.get("code") or "") for w in planner_warnings if isinstance(w, dict)}
-            watchlist_only_mode = (
-                not planner_decisions
-                and (
-                    "MARKET_POLICY_WATCHLIST_ONLY" in planner_warning_codes
-                    or "FALLBACK_WATCHLIST_ENABLED" in planner_warning_codes
-                    or "EMPTY_PLANNER_INPUT" in planner_warning_codes
-                )
+            max_scan=max_scan,
+            scan_mode=scan_mode,
+            engine_opt=engine_opt,
+            is_advanced_engine=is_advanced_engine,
+        ):
+            st.toast(
+                "스캐너를 백그라운드에서 시작했습니다. 다른 탭으로 이동해도 진행상태가 유지됩니다.",
+                icon="🚀",
             )
+            st.session_state["scan_status_toast_key"] = None
+            st.rerun()
 
-            # --- Tier Summary ---
-            def _norm_tier(row):
-                return str(row.get('Tier', '') or '').strip()
+    snapshot = _get_scan_state_snapshot()
+    if _scan_is_running(snapshot):
+        st.info("스캔이 진행 중입니다. 다른 탭으로 이동해도 상태가 유지되고 완료 시 토스트로 알려드립니다.")
+    elif snapshot and snapshot.get("status") == "completed":
+        st.caption("이전 스캔 결과가 아래에 유지됩니다. 새 스캔을 시작하면 현재 결과를 교체합니다.")
 
-            t0_rows = [r for r in results if _norm_tier(r).startswith('⚡T0')]
-            t1_rows = [r for r in results if _norm_tier(r).startswith('🏆T1')]
-            t2_rows = [r for r in results if _norm_tier(r).startswith('⭐T2')]
-            t3_rows = [r for r in results if _norm_tier(r) in {'T3', '⚡T3'} or _norm_tier(r).endswith('T3')]
+    @st.fragment(run_every=2)
+    def _render_scanner_job_panel_fragment():
+        _render_scan_job_panel()
 
-            t0_count = len(t0_rows)
-            t1_count = len(t1_rows)
-            t2_count = len(t2_rows)
-            t3_count = len(t3_rows)
-            if watchlist_only_mode:
-                st.warning(
-                    "⚠️ 이번 결과는 스캐너 후보가 있었더라도 플래너가 `watchlist-only`로 내린 상태입니다. "
-                    "즉, 아래 종목들은 즉시 매수 추천이 아니라 관찰 후보로 봐야 합니다."
-                )
-                st.info(
-                    f"스캐너 후보 {len(results)}개 | ⚡T0: {t0_count} | 🏆T1: {t1_count} | ⭐T2: {t2_count} | T3: {t3_count}"
-                )
-            else:
-                st.success(f"💡 **{len(results)}개** 투자 기회 발견! — ⚡ T0초강력: **{t0_count}**개 | 🏆 T1: **{t1_count}**개 (승률71%) | ⭐ T2: **{t2_count}**개 | T3: {t3_count}개")
-                if t0_count > 0:
-                    t0_names = [str(r.get('종목명') or r.get('티커', 'Unknown')) for r in t0_rows]
-                    st.error(f"⚡ **초강력 매수 신호 {t0_count}개**: {', '.join(t0_names)} — 상한가/5%+ 이상 기대")
-            
-            df_results = pd.DataFrame(results)
-
-            # ── v3 스코어 enrichment (Phase 19) ──────────────────────────
-            # Meta-Quality 모델이 있으면 clean_hit_prob / expected_mae로 보정
-            # 모델 없으면 기본값으로 안전하게 동작
-            try:
-                from modules.meta_quality_ranker import predict_meta_quality
-                from modules.regime_classifier import classify_regime
-                from modules.regime_router import compute_v3_score_regime_aware, get_prob5_threshold
-                _regime_result = classify_regime(market)
-                _regime = _regime_result.get("regime", "UNKNOWN")
-                _enriched = []
-                for _row in results:
-                    _alpha  = float(_row.get("Antigrav") or _row.get("alpha_score") or 50)
-                    _whale  = float(_row.get("Whale") or _row.get("whale_score") or 50)
-                    _prob5  = float(_row.get("_prob_5") or _row.get("ml_prob") or 50)
-                    _probcl = float(_row.get("_prob_clean") or _prob5)
-                    _vol_r  = float(_row.get("Vol Ratio") or _row.get("vol_ratio") or 1.0)
-                    _volcfm = bool(_row.get("Vol Confirmed") or _row.get("volume_confirmed"))
-                    _trend  = str(_row.get("Trend") or _row.get("trend") or "")
-                    _real_trend = "UP" if "UP" in _trend.upper() else ("DOWN" if "DOWN" in _trend.upper() else "SIDE")
-                    _atr    = float(_row.get("_atr_pct") or 0)
-                    _p2ma20 = float(_row.get("_price_to_ma20") or 1.0)
-                    _p2ma50 = float(_row.get("_price_to_ma50") or 1.0)
-                    _mq = predict_meta_quality(
-                        alpha_score=_alpha, vol_ratio=_vol_r,
-                        atr_pct=_atr, price_to_ma20=_p2ma20, price_to_ma50=_p2ma50,
-                    )
-                    _v3 = compute_v3_score_regime_aware(
-                        prob_5=_prob5, prob_clean=_probcl,
-                        alpha_score=_alpha, whale_score=_whale,
-                        real_trend=_real_trend, volume_confirmed=_volcfm, vol_ratio=_vol_r,
-                        clean_hit_prob=_mq["clean_hit_prob"],
-                        fast_hit_prob=_mq["fast_hit_prob"],
-                        expected_mae_pct=_mq["expected_mae_pct"],
-                        regime=_regime,
-                    )
-                    _enriched.append({**_row, "v3_score": _v3["v3_score"], "v3_detail": _v3})
-                df_results = pd.DataFrame(_enriched)
-            except Exception:
-                pass  # enrichment 실패 시 원본 df_results 유지
-
-            st.divider()
-            try:
-                # Phase 18/19/20 Threshold + Top-K Hybrid Ranking (Regime + Mode Aware)
-                # SWING: v3_score 우선 정렬 (5d 수익 기반 캘리브레이션)
-                # INTRADAY: Decision Score 우선 정렬 (Codex tuned, 1d 휴리스틱 범위)
-                # prob5 임계값: scan_mode + regime 모두 반영
-                try:
-                    from modules.regime_router import get_prob5_threshold
-                    from modules.regime_classifier import classify_regime
-                    _rc = classify_regime(market)
-                    PROB5_THRESHOLD = get_prob5_threshold(_rc.get("regime", "UNKNOWN"), scan_mode)
-                except Exception:
-                    PROB5_THRESHOLD = 50.0 if scan_mode == "INTRADAY" else 58.0
-                TOP_K = 5
-                # INTRADAY: expected_return_1d_pct 우선 → fallback Decision Score
-                # (실증 데이터: DS 상위 Top5=36% vs expected_1d 상위 Top5=60%)
-                # SWING: v3_score(5d MAE/clean_hit 보정) 우선
-                if scan_mode == "INTRADAY":
-                    if 'expected_return_1d_pct' in df_results.columns:
-                        sort_col = 'expected_return_1d_pct'
-                        sort_secondary = 'Decision Score'
-                    else:
-                        sort_col = 'Decision Score'
-                        sort_secondary = 'Antigrav'
-                else:
-                    sort_col = 'v3_score' if 'v3_score' in df_results.columns else 'Decision Score'
-                    sort_secondary = 'Antigrav'
-                df_results = df_results.sort_values(
-                    by=[sort_col, sort_secondary], ascending=[False, False]
-                )
-
-                cols_to_drop = ['_tier_sort', '_prob_5', '_prob_clean']
-
-                # 거래량 확인 여부 — '거래량'(KR) 또는 'Volume'(US) 컬럼의 ✅/⚠️ 기호로 판단
-                def _vol_ok(row):
-                    for col in ('거래량', 'Volume'):
-                        v = str(row.get(col, ''))
-                        if '✅' in v: return True
-                        if '⚠️' in v: return False
-                    return True  # 컬럼 없으면 차단하지 않음
-
-                if '_prob_5' in df_results.columns:
-                    _vol_mask = df_results.apply(_vol_ok, axis=1)
-                    # above: 확률 통과 AND 거래량 확인
-                    _prob_pass = df_results['_prob_5'] >= PROB5_THRESHOLD
-                    above = df_results[_prob_pass & _vol_mask]
-                    # below: 나머지 전체 (거래량 미확인 포함 — shortage 보완용)
-                    below = df_results[~_prob_pass | ~_vol_mask]
-                    shortage = max(0, TOP_K - len(above))
-                    # shortage 보완 시에도 거래량 확인 종목 우선
-                    below_sorted = pd.concat([
-                        below[_vol_mask.reindex(below.index, fill_value=False)],
-                        below[~_vol_mask.reindex(below.index, fill_value=True)],
-                    ])
-                    top5 = pd.concat([above.head(TOP_K), below_sorted.head(shortage)]).head(TOP_K).copy()
-                    prob5_passed = min(len(above), TOP_K)
-                else:
-                    top5 = df_results.head(TOP_K).copy()
-                    prob5_passed = TOP_K
-
-                top5_idx = top5.index
-                top5_display = top5.drop(columns=[col for col in cols_to_drop if col in top5.columns])
-
-                _sort_label = "Decision Score" if scan_mode == "INTRADAY" else sort_col
-                threshold_caption = (
-                    f"AI 확률 {PROB5_THRESHOLD:.0f}% 이상 통과: **{prob5_passed}/{len(top5_display)}개** — "
-                    + ("전원 고확신 종목" if prob5_passed == len(top5_display)
-                       else f"{len(top5_display) - prob5_passed}개는 임계값 미달이나 {_sort_label} 순으로 보완")
-                )
-
-                # ── 핵심 컬럼만 선택 + 한글 rename ────────────────────────
-                # 컬럼명은 KR/US/INTRADAY마다 다를 수 있어 여러 alias를 등록
-                _SCANNER_CORE_COLS = {
-                    # (raw_col_name): (한글명, 툴팁)
-                    '종목명':        ('종목명',      None),
-                    'Ticker':        ('코드',        None),
-                    '티커':          ('코드',        None),
-                    'Tier':          ('등급',        'T0=초강력 / T1=강력(승률71%) / T2=관심 / T3=참고'),
-                    # 현재가 — KR은 매수가(-2%)에 현재가 저장, US는 Entry(-2%)
-                    '매수가(-2%)':   ('현재가',      '스캔 시점 현재가 (진입 기준가. -2% 할인 전 원래 가격)'),
-                    'Entry(-2%)':    ('현재가',      '스캔 시점 현재가'),
-                    # 전일비 — KR swing/intraday 모두 '전일비' 키, US는 '1D Change'
-                    '전일비':        ('전일비(%)',   '스캔 당시 전일 종가 대비 등락률. 스캔 시점의 모멘텀을 보여줌'),
-                    '1D Change':     ('전일비(%)',   '스캔 당시 전일 종가 대비 등락률'),
-                    # 확률/스코어
-                    'AI확률':        ('AI확률',      'ML 모델이 예측한 5% 이상 달성 확률. 58% 이상이 진입 기준'),
-                    'AI Prob':       ('AI확률',      'ML 모델이 예측한 5% 이상 달성 확률. 58% 이상이 진입 기준'),
-                    'v3_score':      ('종합점수',    '추세·거래량·수급·리스크를 곱셈 공식으로 통합한 최종 순위 점수 (0~100). 높을수록 우선'),
-                    'Decision Score':('Decision점수','Antigrav + AI확률 + 추세 + 수급을 가중 합산한 원시 스코어'),
-                    'Antigrav':      ('Antigrav',    '기술적 모멘텀·섹터 강도·AI수익 기대치를 합산한 핵심 동력 지수 (0~100). 70+이면 강세 신호'),
-                    '수급':          ('수급',        '기관·외국인 수급 강도 (장중=당일 거래량 기반 추정)'),
-                    'Whale':         ('수급점수',    '기관·외국인 수급 강도 지수 (0~100). 60 이상이면 수급 유입 신호'),
-                    # 추세/거래량
-                    'Trend':         ('추세',        'UP=상승추세 / SIDE=횡보 / DOWN=하락추세. UP+거래량확인 조합이 최고 신호'),
-                    '추세':          ('추세',        'UP=상승추세 / SIDE=횡보 / DOWN=하락추세'),
-                    'Vol Confirmed': ('거래량확인',  '평균 대비 1.5배 이상 거래량 + 방향 확인 여부. True이면 모멘텀 신뢰도 높음'),
-                    '거래량':        ('거래량',      '평균 대비 거래량 배율 (✅=확인됨, ⚠️=미확인)'),
-                    # 예상수익
-                    'expected_return_1d_pct': ('예상1D(%)', '스캐너가 예측하는 1일 기대수익률(%). 인트라데이 정렬 기준'),
-                    'expected_return_3d_pct': ('예상3D(%)', '스캐너가 예측하는 3일 기대수익률(%)'),
-                    # 기타
-                    '위치':          ('포지션',      '가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
-                    'Position':      ('포지션',      '가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
-                    '전략':          ('전략',        '스캐너가 판단한 진입 전략 유형'),
-                    'Strategy Tag':  ('전략',        '스캐너가 판단한 진입 전략 유형'),
-                    '테마':          ('대표테마',    '현재 시장에서 해당 종목이 속한 주도 테마'),
-                    'primary_theme': ('대표테마',    '현재 시장에서 해당 종목이 속한 주도 테마'),
-                }
-                def _prep_scanner_df(df_in):
-                    """핵심 컬럼만 추출하고 한글로 rename."""
-                    present = [c for c in _SCANNER_CORE_COLS if c in df_in.columns]
-                    df_out = df_in[present].copy()
-                    df_out = df_out.rename(columns={c: _SCANNER_CORE_COLS[c][0] for c in present})
-                    return df_out
-
-                def _scanner_col_config(df_in):
-                    """column_config dict — 툴팁 포함."""
-                    cfg = {}
-                    for raw_col, (kr_name, tip) in _SCANNER_CORE_COLS.items():
-                        if raw_col in df_in.columns and tip:
-                            cfg[kr_name] = st.column_config.TextColumn(kr_name, help=tip)
-                    return cfg
-
-                _top5_kr = _prep_scanner_df(top5_display)
-                _rest_raw = df_results[~df_results.index.isin(top5_idx)].drop(
-                    columns=[col for col in cols_to_drop if col in df_results.columns]
-                )
-                _rest_kr = _prep_scanner_df(_rest_raw)
-
-                if watchlist_only_mode:
-                    st.markdown("### 📋 Top 5 후보" + (" (장중)" if scan_mode == "INTRADAY" else ""))
-                    st.caption("스캐너 원시 후보입니다. 플래너가 매수 추천으로 승격하지 않았으므로 관찰용입니다.")
-                    st.dataframe(_top5_kr, column_config=_scanner_col_config(top5_display),
-                                 use_container_width=True, hide_index=True)
-                else:
-                    st.markdown("### 🔥 Top 5 매수 후보" + (" (장중)" if scan_mode == "INTRADAY" else ""))
-                    st.caption(threshold_caption)
-                    st.dataframe(_top5_kr, column_config=_scanner_col_config(top5_display),
-                                 use_container_width=True, hide_index=True)
-
-                st.divider()
-
-                # 2. Remaining qualified setups
-                st.markdown("### 📋 추가 후보" if not watchlist_only_mode else "### 📋 기타 스캔 종목")
-                if not _rest_kr.empty:
-                    st.dataframe(_rest_kr, column_config=_scanner_col_config(_rest_raw),
-                                 use_container_width=True, hide_index=True)
-                else:
-                    st.info("Top 5 외에 추가 종목이 없습니다.")
-                st.divider()
-                _render_agent_bridge_status(bridge_info, market)
-            except Exception as e:
-                # Fallback to old simple render
-                # print(f"Render format error: {e}")
-                st.dataframe(df_results, width='stretch')
-                st.divider()
-                _render_agent_bridge_status(bridge_info, market)
-        else:
-            st.warning("⚠️ 조건에 맞는 종목을 찾지 못했습니다.")
-            _render_agent_bridge_status(bridge_info, market)
+    _render_scanner_job_panel_fragment()
 
     # --- Excel Upload Scanner ---
     st.markdown("---")
@@ -1561,8 +1787,13 @@ with tab1:
                 st.error(f"파일 처리 중 오류 발생: {e}")
 
 # TAB 3: SINGLE STOCK ANALYSIS (정밀분석)
-with tab3:
-    st.header("🔎 정밀분석 — 종목 심층 분석")
+if active_main_tab == "🔎 정밀분석":
+    _render_section_intro(
+        "Deep Dive",
+        "종목 심층 분석",
+        "단일 종목의 가격 보드, 리스크, 액션 플랜, 예측 결과를 한 흐름으로 읽을 수 있는 분석 화면입니다.",
+        ["Single ticker", "Risk-aware", "Action plan"],
+    )
     
     col_input, col_opt = st.columns([3, 1])
     ticker = col_input.text_input(
@@ -1604,12 +1835,7 @@ with tab3:
                 # --- Price Board (Real-time Data) ---
                 st.markdown("### 📊 Market Data (매매 데이터)")
                 # Fetch Real-time Price explicitly
-                rt_price = qs.get_realtime_price()
-                if rt_price == 0: rt_price = latest['Close'] # Fallback
-                
-                # Check deviation
-                dev = ((rt_price - latest['Close']) / latest['Close']) * 100
-                dev_color = "normal" if abs(dev) < 1 else "off"
+                rt_price = resolve_display_price(qs.get_realtime_price(), latest.get('Close'))
                 
                 p1, p2, p3, p4, p5 = st.columns(5)
                 is_kr = ".KS" in ticker or ".KQ" in ticker
@@ -1623,7 +1849,7 @@ with tab3:
                 p2.metric("시가 (Open)", f"{currency}{p_fmt.format(latest['Open'])}")
                 p3.metric("고가 (High)", f"{currency}{p_fmt.format(latest['High'])}")
                 p4.metric("저가 (Low)", f"{currency}{p_fmt.format(latest['Low'])}")
-                p5.metric("거래량 (Vol)", f"{latest['Volume']:,}")
+                p5.metric("거래량 (Vol)", format_volume_display(latest.get('Volume')))
                 
                 st.divider()
 
@@ -2358,9 +2584,13 @@ with tab3:
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 2: SCAN ARCHIVE (아카이브)
 # ─────────────────────────────────────────────────────────────────────────────
-with tab2:
-    st.header("📚 스캔 아카이브 — 복기 & 성과 확인")
-    st.caption("날짜별 스캔 결과 복기. 실제 수익률과 비교해 전략을 점검합니다. 같은 날 같은 티커는 최신 스캔 기준으로 표시됩니다.")
+if active_main_tab == "📚 아카이브":
+    _render_section_intro(
+        "Archive",
+        "스캔 아카이브",
+        "날짜별 스캔 결과를 복기하고 실제 수익률과 비교해 전략 품질을 점검하는 영역입니다. 같은 날 같은 티커는 최신 스캔 기준으로 정리됩니다.",
+        ["Replay", "Outcome tracking", "Validation view"],
+    )
 
     try:
         from modules.db_manager import DBManager as _DBM

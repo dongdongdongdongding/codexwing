@@ -1,0 +1,134 @@
+{
+  "market": "KR",
+  "generated_at": "2026-04-19T07:14:25.362657+00:00",
+  "instrument_master_version": "instrument-master::KR::2026-04-19",
+  "theme_membership_version": "theme-membership::KR::2026-04-19",
+  "instrument_record_count": 2879,
+  "membership_record_count": 2879,
+  "official_coverage": {
+    "official_sector": 1930,
+    "official_industry": 2766,
+    "official_products": 2753
+  },
+  "primary_source_distribution": {
+    "unclassified": 804,
+    "official_text_match": 60,
+    "stock_master": 2014,
+    "seed_catalog": 1
+  },
+  "primary_theme_distribution": {
+    "unclassified": 804,
+    "바이오/헬스케어": 362,
+    "철강/금속/소재": 290,
+    "금융": 214,
+    "자동차": 174,
+    "IT서비스/플랫폼": 165,
+    "반도체": 165,
+    "통신/네트워크": 132,
+    "소비재/유통": 128,
+    "건설/부동산": 120,
+    "게임/콘텐츠/엔터": 106,
+    "2차전지": 75,
+    "친환경/에너지": 55,
+    "로봇/자동화": 53,
+    "조선/해양": 28
+  },
+  "high_conf_primary_ratio": 0.6999,
+  "warnings": [],
+  "samples": [
+    {
+      "symbol": "052960",
+      "name": "태양3C",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "059180",
+      "name": "엔더블유시",
+      "primary_theme": "통신/네트워크",
+      "top_membership": {
+        "theme_id": "telecom",
+        "theme_name": "통신/네트워크",
+        "confidence": 0.73,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_industry:통신",
+          "official_products:5G"
+        ],
+        "evidence": [
+          "official_industry:통신",
+          "official_products:5G"
+        ],
+        "driver_categories": []
+      }
+    },
+    {
+      "symbol": "066830",
+      "name": "제노텍",
+      "primary_theme": "바이오/헬스케어",
+      "top_membership": {
+        "theme_id": "bio",
+        "theme_name": "바이오/헬스케어",
+        "confidence": 0.688,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_products:의약",
+          "official_products:진단"
+        ],
+        "evidence": [
+          "official_products:의약",
+          "official_products:진단"
+        ],
+        "driver_categories": [
+          "REGULATION",
+          "EARNINGS",
+          "ECONOMY"
+        ]
+      }
+    },
+    {
+      "symbol": "076340",
+      "name": "지에이이노더스",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "086220",
+      "name": "광동헬스바이오",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "092590",
+      "name": "럭스피아",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "093510",
+      "name": "엔지브이아이",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "102950",
+      "name": "아하",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "103660",
+      "name": "씨앗",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "112190",
+      "name": "KC산업",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    }
+  ]
+}

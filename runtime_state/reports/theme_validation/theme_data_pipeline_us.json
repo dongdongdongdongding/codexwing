@@ -1,0 +1,93 @@
+{
+  "market": "US",
+  "generated_at": "2026-04-19T07:14:33.538029+00:00",
+  "instrument_master_version": "instrument-master::US::2026-04-19",
+  "theme_membership_version": "theme-membership::US::2026-04-19",
+  "instrument_record_count": 6909,
+  "membership_record_count": 6909,
+  "official_coverage": {
+    "official_sector": 503,
+    "official_industry": 6885,
+    "official_products": 0
+  },
+  "primary_source_distribution": {
+    "unclassified": 6837,
+    "official_text_match": 72
+  },
+  "primary_theme_distribution": {
+    "unclassified": 6837,
+    "소비재/유통": 26,
+    "자동차": 22,
+    "방산": 11,
+    "금융": 10,
+    "통신/네트워크": 2,
+    "반도체": 1
+  },
+  "high_conf_primary_ratio": 0.0,
+  "warnings": [
+    "US exchange listings are missing official sector for most symbols; only the S&P500 overlay supplies sector reliably.",
+    "US theme memberships are still mostly tentative because full-market sector coverage is weak outside the S&P500 overlay."
+  ],
+  "samples": [
+    {
+      "symbol": "A",
+      "name": "Agilent Technologies Inc",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AA",
+      "name": "Alcoa Corp",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACB",
+      "name": "Artius II Acquisition Inc",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACBR",
+      "name": "Artius II Acquisition Rights",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACBU",
+      "name": "Artius II Acquisition Units",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACG",
+      "name": "ATA Creativity Global ADR",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACI",
+      "name": "Armada Acquisition Corp III",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACIU",
+      "name": "Armada Acquisition III Units",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACO",
+      "name": "Abony Acquisition Corp I",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    },
+    {
+      "symbol": "AACOU",
+      "name": "Abony Acquisition I Units",
+      "primary_theme": "unclassified",
+      "top_membership": {}
+    }
+  ]
+}
