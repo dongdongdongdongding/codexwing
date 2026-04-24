@@ -1,0 +1,71 @@
+{
+  "snapshot_at": "2026-04-24T11:01:14Z",
+  "total_rows": 60593,
+  "with_run_id": 54951,
+  "scanner_full_rows": 113,
+  "scanner_partial_legacy_rows": 1887,
+  "scanner_null_run_rows": 1497,
+  "scanner_archive_outcome_stub_rows": 10746,
+  "rows_with_return_1d": 50993,
+  "rows_with_return_3d": 41778,
+  "training_complete_rows": 0,
+  "required_fields": [
+    "alpha_score",
+    "tech_score",
+    "ml_prob",
+    "whale_score",
+    "decision_score",
+    "volume_ratio",
+    "entry_reference_price"
+  ],
+  "baseline_before_fallback_merge": true,
+  "related_commit": "e7c23d4",
+  "related_issue": "swing-main-emp",
+  "per_origin_coverage_pct": {
+    "scanner_full": {
+      "total": 113,
+      "alpha_score": 100.0,
+      "tech_score": 100.0,
+      "ml_prob": 100.0,
+      "whale_score": 100.0,
+      "decision_score": 100.0,
+      "volume_ratio": 100.0,
+      "entry_reference_price": 0.0,
+      "return_3d_pct": 0.0,
+      "run_id": 0.0
+    },
+    "scanner_archive_outcome": {
+      "total": 10746,
+      "alpha_score": 100.0,
+      "tech_score": 0.3,
+      "ml_prob": 100.0,
+      "whale_score": 0.3,
+      "decision_score": 100.0,
+      "volume_ratio": 0.2,
+      "entry_reference_price": 100.0,
+      "return_3d_pct": 70.5,
+      "run_id": 100.0
+    },
+    "outcome_sync_partial": {
+      "total": 13250,
+      "alpha_score": 0.7,
+      "tech_score": 0.7,
+      "ml_prob": 28.8,
+      "whale_score": 0.7,
+      "decision_score": 36.8,
+      "volume_ratio": 0.0,
+      "entry_reference_price": 100.0,
+      "return_3d_pct": 86.2,
+      "run_id": 100.0
+    }
+  },
+  "structural_findings": [
+    "Scanner rows have features but no run_id/returns (worker writes before orchestrator assigns run_id).",
+    "Outcome-sync rows have run_id/returns but drop tech_score/whale_score/volume_ratio (never written by outcome path).",
+    "Result: training-complete rows (features + returns in one row) = 0.",
+    "Bug: build_kr_scan_outputs omitted entry_reference_price. Fixed in working tree; handoff to Codex via swing-main-0to.",
+    "Historical rescue infeasible: 113 scanner_full rows exist vs 60K+ outcomes — match window empty for old dates.",
+    "Forward fix: db_manager fallback merge (e7c23d4) UPDATEs scanner_full rows when outcome sync arrives, preserving all fields. Training-complete count should grow as new scans accumulate."
+  ],
+  "forward_plan": "Monitor training_complete_rows growth after e7c23d4 lands in production. Retrain model once >= 1000 complete rows accumulate (probably ~10-20 scan days at current rate)."
+}
