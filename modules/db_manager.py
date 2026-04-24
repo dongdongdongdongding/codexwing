@@ -69,6 +69,19 @@ class DBManager:
             return "KR"
         return "US"
 
+    def _resolve_submarket(self, market_value, market_type, ticker):
+        raw = str(market_value or "").upper()
+        if raw in {"KOSPI", "KOSDAQ"}:
+            return raw
+        mt = str(market_type or "").upper()
+        t = str(ticker or "").upper()
+        if mt in {"KR", "KOSPI", "KOSDAQ"} or t.endswith(".KS") or t.endswith(".KQ"):
+            if t.endswith(".KS"):
+                return "KOSPI"
+            if t.endswith(".KQ"):
+                return "KOSDAQ"
+        return None
+
     def _to_int_or_none(self, value):
         try:
             if value is None or value == "":
@@ -76,6 +89,56 @@ class DBManager:
             return int(float(value))
         except Exception:
             return None
+
+    def _to_float_or_none(self, value):
+        try:
+            if value is None or value == "":
+                return None
+            result = float(value)
+            if result != result:
+                return None
+            return result
+        except Exception:
+            return None
+
+    def _feature_quality_payload(self, data, origin="scanner_full"):
+        required = {
+            "alpha_score": data.get("alpha_score"),
+            "tech_score": data.get("tech_score"),
+            "ml_prob": data.get("ml_prob"),
+            "whale_score": data.get("whale_score"),
+            "trend": data.get("initial_trend") or data.get("trend") or data.get("real_trend"),
+            "volume_ratio": data.get("volume_ratio"),
+            "position": data.get("position"),
+            "tier": data.get("tier"),
+            "decision_score": data.get("decision_score"),
+            "entry_reference_price": data.get("entry_reference_price"),
+        }
+        missing = []
+        for key, value in required.items():
+            if isinstance(value, bool):
+                continue
+            if value is None:
+                missing.append(key)
+                continue
+            if isinstance(value, str) and value.strip().lower() in {"", "?", "nan", "none", "null", "unknown", "na", "n/a"}:
+                missing.append(key)
+        completeness = 1.0 if not required else (len(required) - len(missing)) / len(required)
+        reason = data.get("validation_excluded_reason")
+        if not reason and missing:
+            reason = "FEATURE_MISSING:" + ",".join(missing)
+        validation_excluded = data.get("validation_excluded")
+        if validation_excluded is None:
+            validation_excluded = bool(missing)
+        return {
+            "feature_origin": data.get("feature_origin") or origin,
+            "feature_quality": data.get("feature_quality") or ("complete" if not missing else "incomplete"),
+            "feature_completeness": data.get("feature_completeness") if data.get("feature_completeness") is not None else round(float(completeness), 4),
+            "feature_missing_fields": data.get("feature_missing_fields") if data.get("feature_missing_fields") is not None else missing,
+            "validation_excluded": bool(validation_excluded),
+            "validation_excluded_reason": reason,
+            "is_dummy_data": bool(data.get("is_dummy_data", False)),
+        }
     
     def save_signal(self, ticker, price, alpha_score, ai_prediction, signal_type="BUY", stock_name=None, 
                    entry_price=None, target_price=None, stop_loss=None):
@@ -201,40 +264,6 @@ class DBManager:
             print(f"Dashboard Fetch Error: {e}")
             return pd.DataFrame(), 0, 0
             
-    def save_scan_result(self, data):
-        """
-        Save comprehensive scan result (Sniper Mode) to 'market_scan_results' table.
-        Data keys: ticker, name, alpha_score, ml_prob, whale_score, fund_status, initial_trend, market_type
-        """
-        if not self.client: return
-        
-        try:
-            def _pct(value, default=0.0):
-                try:
-                    return max(0.0, min(100.0, float(value)))
-                except Exception:
-                    return float(default)
-
-            # Prepare payload
-            payload = {
-                "ticker": data.get('ticker'),
-                "stock_name": data.get('name'),
-                "alpha_score": int(data.get('alpha_score', 0)),
-                "tech_score": int(data.get('tech_score', 0)),
-                "ml_prob": _pct(data.get('ml_prob', 0)),
-                "whale_score": int(data.get('whale_score', 0)),
-                "fund_status": data.get('fund_status', 'Unknown'),
-                "trend": data.get('initial_trend'),
-                "market_type": data.get('market_type', 'US'), # Default to US if missing
-                "created_at": datetime.now().isoformat()
-            }
-            
-            self.client.table("market_scan_results").insert(payload).execute()
-            print(f"☁️ DB Saved: {data.get('name')} [{data.get('market_type')}]")
-            
-        except Exception as e:
-            print(f"⚠️ DB Save Error: {e}")
-
     def upsert_scan_result(self, data):
         """
         Upsert scan result — prevents duplicate rows for same ticker within same session.
@@ -245,81 +274,17 @@ class DBManager:
         if not self.client: return
 
         try:
-            def _pct(value, default=0.0):
-                try:
-                    return max(0.0, min(100.0, float(value)))
-                except Exception:
-                    return float(default)
+            from modules.db_schema import build_scan_result_payload, DEFAULT_FALLBACK_KEYS
 
             ticker = data.get('ticker')
-            payload = {
-                "ticker": ticker,
-                "stock_name": data.get('name'),
-                "alpha_score": int(data.get('alpha_score', 0)),
-                "tech_score": int(data.get('tech_score', 0)),
-                "ml_prob": _pct(data.get('ml_prob', 0)),
-                "whale_score": int(data.get('whale_score', 0)),
-                "fund_status": data.get('fund_status', 'Unknown'),
-                "trend": data.get('initial_trend'),
-                "market_type": data.get('market_type', 'US'),
+            feature_quality = self._feature_quality_payload(data, origin=data.get("feature_origin") or "scanner_full")
+            submarket = self._resolve_submarket(data.get('market'), data.get('market_type'), ticker)
+            overrides = {
+                "market": submarket,
                 "created_at": datetime.now().isoformat(),
-                "tier": data.get('tier', ''),
-                "volume": data.get('volume', ''),
-                "context": data.get('context', ''),
-                "surge": data.get('surge', ''),
-                "win_rate": data.get('win_rate', ''),
-                "position": data.get('position', ''),
-                "strategy": data.get('note', ''),
-                "decision_score": float(data.get('decision_score', 0)),
-                "strategy_family": data.get('strategy_family'),
-                "run_id": data.get('run_id'),
-                "scan_mode": data.get('scan_mode', 'SWING'),
-                "priority_rank": data.get('priority_rank'),
-                "decision": data.get('decision'),
-                "decision_bucket": data.get('decision_bucket'),
-                "outcome_status": data.get('outcome_status'),
-                "recommended_at": data.get('recommended_at'),
-                "outcome_recorded_at": data.get('outcome_recorded_at'),
-                "horizon": data.get('horizon'),
-                "base_trade_date": data.get('base_trade_date'),
-                "entry_reference_price": data.get('entry_reference_price'),
-                "latest_return_pct": data.get('latest_return_pct'),
-                "return_30m_pct": data.get('return_30m_pct'),
-                "return_1h_pct": data.get('return_1h_pct'),
-                "return_close_pct": data.get('return_close_pct'),
-                "return_1d_pct": data.get('return_1d_pct'),
-                "return_2d_pct": data.get('return_2d_pct'),
-                "return_3d_pct": data.get('return_3d_pct'),
-                "return_5d_pct": data.get('return_5d_pct'),
-                "return_7d_pct": data.get('return_7d_pct'),
-                "source_ref": data.get('source_ref'),
-                "phase25_variant": data.get('phase25_variant'),
-                "phase25_shadow_variant": data.get('phase25_shadow_variant'),
-                "phase25_shadow_prob": data.get('phase25_shadow_prob'),
-                "phase25_recommended_threshold": data.get('phase25_recommended_threshold'),
-                "expected_edge_score": data.get('expected_edge_score'),
-                "expected_return_1d_pct": data.get('expected_return_1d_pct'),
-                "expected_return_3d_pct": data.get('expected_return_3d_pct'),
-                "quant_priority_score": data.get('quant_priority_score'),
-                "quant_score_1d": data.get('quant_score_1d'),
-                "quant_score_3d": data.get('quant_score_3d'),
-                "selection_lane": data.get('selection_lane'),
-                "target_horizon_days": data.get('target_horizon_days'),
-                "scanner_timeframe_profile": data.get('scanner_timeframe_profile'),
-                "kr_universe_role": data.get('kr_universe_role'),
-                "explosive_eligible": data.get('explosive_eligible'),
-                "explosive_gate_reasons": data.get('explosive_gate_reasons'),
-                "continuation_eligible": data.get('continuation_eligible'),
-                "continuation_enabled": data.get('continuation_enabled'),
-                "continuation_prob_3d": data.get('continuation_prob_3d'),
-                "continuation_evidence": data.get('continuation_evidence'),
-                "continuation_gate_reasons": data.get('continuation_gate_reasons'),
-                "primary_theme": data.get('primary_theme'),
-                "theme_source": data.get('theme_source'),
-                "theme_inference_status": data.get('theme_inference_status'),
-                "secondary_themes": data.get('secondary_themes'),
-                "theme_routing_path": data.get('theme_routing_path') or data.get('routing_path'),
+                **feature_quality,
             }
+            payload = build_scan_result_payload(data, overrides=overrides, fallback_keys=DEFAULT_FALLBACK_KEYS)
             payload = self._filter_payload_to_existing_columns("market_scan_results", payload)
 
             # Delete the current run's row when run_id exists; otherwise fall back to same-day ticker dedupe.
@@ -634,68 +599,31 @@ class DBManager:
                 rec_dt = pd.Timestamp.utcnow()
             if getattr(rec_dt, "tzinfo", None) is None:
                 rec_dt = rec_dt.tz_localize("UTC")
-            payload = {
+            from modules.db_schema import build_scan_result_payload, DEFAULT_FALLBACK_KEYS
+            # Translate outcome-row keys → SCAN_RESULT_COLUMNS source-key conventions.
+            # Keep `row` intact; build a thin adapter dict.
+            schema_data = {
+                **row,
+                "name": row.get("stock_name") or row.get("resolved_stock_name") or ticker,
+                "note": row.get("source_ref"),                # strategy ← source_ref
+                "initial_trend": row.get("real_trend"),       # trend ← real_trend
+                "ml_prob": row.get("prob_5"),                 # ml_prob ← prob_5
+                "outcome_status": row.get("status"),          # outcome_status ← status
+                "volume": row.get("volume") if row.get("volume") is not None else row.get("volume_ratio"),
+            }
+            overrides = {
                 "run_id": run_id,
                 "market": row.get("market"),
-                "ticker": ticker,
-                "stock_name": row.get("stock_name") or row.get("resolved_stock_name") or ticker,
                 "market_type": self._archive_market_type(market, ticker),
-                "alpha_score": self._to_int_or_none(row.get("alpha_score")),
-                "ml_prob": self._to_int_or_none(row.get("prob_5")),
-                "trend": row.get("real_trend"),
-                "decision_score": row.get("decision_score"),
-                "strategy": row.get("source_ref"),
-                "scan_mode": row.get("scan_mode"),
-                "strategy_family": row.get("strategy_family"),
                 "created_at": recommended_at or rec_dt.isoformat(),
-                "priority_rank": int(row.get("priority_rank", 0) or 0),
-                "decision": row.get("decision"),
-                "decision_bucket": row.get("decision_bucket") or self._classify_decision_bucket(row.get("decision")),
-                "outcome_status": row.get("status"),
                 "recommended_at": recommended_at,
-                "outcome_recorded_at": row.get("outcome_recorded_at"),
-                "horizon": row.get("horizon"),
-                "base_trade_date": row.get("base_trade_date"),
-                "entry_reference_price": row.get("entry_reference_price"),
-                "latest_return_pct": row.get("latest_return_pct"),
-                "return_30m_pct": row.get("return_30m_pct"),
-                "return_1h_pct": row.get("return_1h_pct"),
-                "return_close_pct": row.get("return_close_pct"),
-                "return_1d_pct": row.get("return_1d_pct"),
-                "return_2d_pct": row.get("return_2d_pct"),
-                "return_3d_pct": row.get("return_3d_pct"),
-                "return_5d_pct": row.get("return_5d_pct"),
-                "return_7d_pct": row.get("return_7d_pct"),
-                "source_ref": row.get("source_ref"),
-                "quality_flags": row.get("quality_flags"),
-                "validation_excluded": row.get("validation_excluded"),
-                "phase25_variant": row.get("phase25_variant"),
-                "phase25_shadow_variant": row.get("phase25_shadow_variant"),
-                "phase25_shadow_prob": row.get("phase25_shadow_prob"),
-                "phase25_recommended_threshold": row.get("phase25_recommended_threshold"),
-                "expected_edge_score": row.get("expected_edge_score"),
-                "expected_return_1d_pct": row.get("expected_return_1d_pct"),
-                "expected_return_3d_pct": row.get("expected_return_3d_pct"),
-                "quant_priority_score": row.get("quant_priority_score"),
-                "quant_score_1d": row.get("quant_score_1d"),
-                "quant_score_3d": row.get("quant_score_3d"),
-                "selection_lane": row.get("selection_lane"),
-                "target_horizon_days": row.get("target_horizon_days"),
-                "scanner_timeframe_profile": row.get("scanner_timeframe_profile"),
-                "kr_universe_role": row.get("kr_universe_role"),
-                "explosive_eligible": row.get("explosive_eligible"),
-                "explosive_gate_reasons": row.get("explosive_gate_reasons"),
-                "continuation_eligible": row.get("continuation_eligible"),
-                "continuation_enabled": row.get("continuation_enabled"),
-                "continuation_prob_3d": row.get("continuation_prob_3d"),
-                "continuation_evidence": row.get("continuation_evidence"),
-                "continuation_gate_reasons": row.get("continuation_gate_reasons"),
-                "primary_theme": row.get("primary_theme"),
-                "theme_source": row.get("theme_source"),
-                "theme_inference_status": row.get("theme_inference_status"),
-                "secondary_themes": row.get("secondary_themes"),
-                "theme_routing_path": row.get("theme_routing_path") or row.get("routing_path"),
+                "priority_rank": int(row.get("priority_rank", 0) or 0),
+                "decision_bucket": row.get("decision_bucket") or self._classify_decision_bucket(row.get("decision")),
+                "is_dummy_data": bool(row.get("is_dummy_data", False)),
             }
+            payload = build_scan_result_payload(schema_data, overrides=overrides, fallback_keys=DEFAULT_FALLBACK_KEYS)
+            origin = "scanner_archive_outcome" if payload.get("alpha_score") is not None else "outcome_sync_partial"
+            payload.update(self._feature_quality_payload(payload, origin=origin))
             payload = self._filter_payload_to_existing_columns("market_scan_results", payload)
             if not payload:
                 continue
@@ -713,6 +641,27 @@ class DBManager:
                     .execute()
                 )
                 rows = existing.data or []
+                # Fallback: scanner_full row from the same scan session has run_id=NULL
+                # (worker writes before orchestrator generates run_id). Match by
+                # ticker+scan_mode+date so we can UPDATE that row instead of inserting a
+                # duplicate scanner_archive_outcome stub. Restrict to NULL-run scanner rows
+                # so we never re-merge into an already-bound row from a different session.
+                if not rows:
+                    scan_mode_val = row.get("scan_mode")
+                    rec_date = (recommended_at or rec_dt.isoformat())[:10]
+                    fallback_q = (
+                        self.client.table("market_scan_results")
+                        .select("id")
+                        .eq("ticker", ticker)
+                        .is_("run_id", "null")
+                        .gte("created_at", f"{rec_date}T00:00:00")
+                        .lte("created_at", f"{rec_date}T23:59:59.999999")
+                    )
+                    if scan_mode_val:
+                        fallback_q = fallback_q.eq("scan_mode", scan_mode_val)
+                    fallback_q = fallback_q.in_("feature_origin", ["scanner_full", "scanner_partial_legacy"])
+                    fallback = fallback_q.order("created_at", desc=True).limit(1).execute()
+                    rows = fallback.data or []
                 if rows:
                     row_id = rows[0].get("id")
                     existing_row = (
