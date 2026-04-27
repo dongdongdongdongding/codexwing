@@ -363,6 +363,30 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 _OHLCV_CACHE: Dict[str, "pd.DataFrame"] = {}
+_INDEX_CACHE: Dict[str, "pd.DataFrame"] = {}
+
+
+def _fetch_index_window(index_symbol: str, scan_dt: "datetime") -> Optional["pd.DataFrame"]:
+    """Fetch ~45 days of index OHLCV ending at scan_dt. Cached per (symbol, date)."""
+    try:
+        import yfinance as yf
+    except ImportError:
+        return None
+    cache_key = f"{index_symbol}|{scan_dt.date().isoformat()}"
+    if cache_key in _INDEX_CACHE:
+        return _INDEX_CACHE[cache_key]
+    end = scan_dt + timedelta(days=1)
+    start = scan_dt - timedelta(days=70)
+    try:
+        hist = yf.Ticker(index_symbol).history(start=start, end=end, auto_adjust=False)
+    except Exception:
+        _INDEX_CACHE[cache_key] = None
+        return None
+    if hist is None or hist.empty or len(hist) < 5:
+        _INDEX_CACHE[cache_key] = None
+        return None
+    _INDEX_CACHE[cache_key] = hist
+    return hist
 
 
 def _fetch_ohlcv_window(ticker: str, scan_dt: "datetime") -> Optional["pd.DataFrame"]:
@@ -420,7 +444,9 @@ def derive_ohlcv_features(df: pd.DataFrame, *, target_mask: Optional[pd.Series] 
     """
     horizons = ["prev_pct_change_1d", "prev_pct_change_5d", "gap_open_pct",
                 "volatility_5d", "volatility_20d", "obv_slope_5d",
-                "rsi_14", "atr_pct_14"]
+                "rsi_14", "atr_pct_14",
+                "kospi_index_5d_return", "kosdaq_index_5d_return",
+                "kosdaq_kospi_spread_5d"]
     for col in horizons:
         if col not in df.columns:
             df[col] = np.nan
@@ -501,6 +527,24 @@ def derive_ohlcv_features(df: pd.DataFrame, *, target_mask: Optional[pd.Series] 
                 atr = tr.rolling(14).mean().iloc[-1]
                 if pd.notna(atr) and last_close > 0:
                     df.at[idx, "atr_pct_14"] = round(float(atr) / last_close * 100, 4)
+            # Market regime: KOSPI/KOSDAQ index 5d returns and the spread between
+            # them. Index data shared across all KR rows for the same scan date,
+            # so cache hit rate is 1 fetch per unique scan_date per index.
+            kospi_hist = _fetch_index_window("^KS11", scan_dt)
+            kosdaq_hist = _fetch_index_window("^KQ11", scan_dt)
+            kospi_5d = kosdaq_5d = None
+            if kospi_hist is not None and len(kospi_hist) >= 6:
+                kc = pd.to_numeric(kospi_hist["Close"], errors="coerce").dropna()
+                if len(kc) >= 6:
+                    kospi_5d = round((float(kc.iloc[-1]) / float(kc.iloc[-6]) - 1) * 100, 4)
+                    df.at[idx, "kospi_index_5d_return"] = kospi_5d
+            if kosdaq_hist is not None and len(kosdaq_hist) >= 6:
+                qc = pd.to_numeric(kosdaq_hist["Close"], errors="coerce").dropna()
+                if len(qc) >= 6:
+                    kosdaq_5d = round((float(qc.iloc[-1]) / float(qc.iloc[-6]) - 1) * 100, 4)
+                    df.at[idx, "kosdaq_index_5d_return"] = kosdaq_5d
+            if kospi_5d is not None and kosdaq_5d is not None:
+                df.at[idx, "kosdaq_kospi_spread_5d"] = round(kosdaq_5d - kospi_5d, 4)
         except Exception:
             continue
         if verbose and processed % 200 == 0:
@@ -573,6 +617,14 @@ FEATURE_COLS = [
     "obv_slope_5d",
     "rsi_14",
     "atr_pct_14",
+    # Market regime indicators added 2026-04-28: KR index returns and the
+    # KOSDAQ-KOSPI spread. KOSDAQ swing is highly regime-dependent — the +5%
+    # threshold positive rate swings between fold 1 (val_win=0%) and fold 2
+    # (val_win=72%) precisely because KOSDAQ market regime changed between
+    # those time windows. These features tell the model what regime it's in.
+    "kospi_index_5d_return",
+    "kosdaq_index_5d_return",
+    "kosdaq_kospi_spread_5d",
     # "marcap_band" excluded: old archives did not persist real marcap reliably.
 ]
 
