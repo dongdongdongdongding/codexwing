@@ -24,7 +24,7 @@ import os
 import sys
 import warnings
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -362,6 +362,155 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+_OHLCV_CACHE: Dict[str, "pd.DataFrame"] = {}
+
+
+def _fetch_ohlcv_window(ticker: str, scan_dt: "datetime") -> Optional["pd.DataFrame"]:
+    """Fetch ~45 trading days ending at scan_dt for engineered features.
+
+    Cached per ticker for the full retrain run — many rows share the same
+    ticker. Pure pre-scan: never returns bars after scan_dt.
+    """
+    try:
+        import yfinance as yf
+    except ImportError:
+        return None
+    cache_key = f"{ticker}|{scan_dt.date().isoformat()}"
+    if cache_key in _OHLCV_CACHE:
+        return _OHLCV_CACHE[cache_key]
+    end = scan_dt + timedelta(days=1)
+    start = scan_dt - timedelta(days=70)
+    try:
+        hist = yf.Ticker(ticker).history(start=start, end=end, auto_adjust=False)
+    except Exception:
+        _OHLCV_CACHE[cache_key] = None
+        return None
+    if hist is None or hist.empty or len(hist) < 5:
+        _OHLCV_CACHE[cache_key] = None
+        return None
+    _OHLCV_CACHE[cache_key] = hist
+    return hist
+
+
+def _safe_ratio(num: float, den: float, default: float = 0.0) -> float:
+    try:
+        if den is None or den == 0:
+            return default
+        return float(num) / float(den)
+    except Exception:
+        return default
+
+
+def derive_ohlcv_features(df: pd.DataFrame, *, target_mask: Optional[pd.Series] = None,
+                            verbose: bool = True) -> pd.DataFrame:
+    """Add scan-time OHLCV-derived features to df.
+
+    All features are computed strictly from bars on or before scan_date — never
+    leaks future returns. Designed for KOSDAQ swing where the model collapsed
+    onto alpha_score (importance 489) because no leading indicators were in
+    FEATURE_COLS. Adds:
+      - prev_pct_change_1d / 5d  : trailing return over 1d / 5d (mean-reversion)
+      - gap_open_pct             : open vs prev close (overnight gap)
+      - volatility_5d / 20d      : stdev of daily returns (regime)
+      - obv_slope_5d             : OBV linear slope last 5 bars (accumulation)
+      - rsi_14                   : 14-day Wilder RSI (overbought/oversold)
+      - atr_pct_14               : 14-day ATR / close (volatility-normalized)
+
+    target_mask: only fetch OHLCV for these rows (cost control). Others get NaN.
+    """
+    horizons = ["prev_pct_change_1d", "prev_pct_change_5d", "gap_open_pct",
+                "volatility_5d", "volatility_20d", "obv_slope_5d",
+                "rsi_14", "atr_pct_14"]
+    for col in horizons:
+        if col not in df.columns:
+            df[col] = np.nan
+
+    if target_mask is None:
+        target_mask = pd.Series(True, index=df.index)
+
+    rows_to_process = df[target_mask & df["ticker"].notna() & df["scan_date"].notna()]
+    if rows_to_process.empty:
+        return df
+    if verbose:
+        print(f"  Fetching OHLCV for {len(rows_to_process):,} rows (cached per ticker+date)")
+
+    processed = 0
+    fetched = 0
+    failed = 0
+    for idx, row in rows_to_process.iterrows():
+        ticker = str(row["ticker"])
+        scan_d = row["scan_date"]
+        if hasattr(scan_d, "year"):
+            scan_dt = datetime(scan_d.year, scan_d.month, scan_d.day)
+        else:
+            try:
+                scan_dt = datetime.fromisoformat(str(scan_d)[:10])
+            except Exception:
+                failed += 1
+                continue
+        hist = _fetch_ohlcv_window(ticker, scan_dt)
+        processed += 1
+        if hist is None:
+            failed += 1
+            continue
+        fetched += 1
+        try:
+            closes = pd.to_numeric(hist["Close"], errors="coerce").dropna()
+            opens = pd.to_numeric(hist["Open"], errors="coerce").dropna()
+            highs = pd.to_numeric(hist["High"], errors="coerce")
+            lows = pd.to_numeric(hist["Low"], errors="coerce")
+            vols = pd.to_numeric(hist["Volume"], errors="coerce").fillna(0)
+            if len(closes) < 2:
+                continue
+            last_close = float(closes.iloc[-1])
+            prev_close = float(closes.iloc[-2])
+            df.at[idx, "prev_pct_change_1d"] = round((last_close / prev_close - 1) * 100, 4)
+            if len(closes) >= 6:
+                df.at[idx, "prev_pct_change_5d"] = round((last_close / float(closes.iloc[-6]) - 1) * 100, 4)
+            if len(opens) >= 1 and len(closes) >= 2:
+                last_open = float(opens.iloc[-1])
+                df.at[idx, "gap_open_pct"] = round((last_open / prev_close - 1) * 100, 4)
+            daily_ret = closes.pct_change().dropna()
+            if len(daily_ret) >= 5:
+                df.at[idx, "volatility_5d"] = round(float(daily_ret.tail(5).std()) * 100, 4)
+            if len(daily_ret) >= 20:
+                df.at[idx, "volatility_20d"] = round(float(daily_ret.tail(20).std()) * 100, 4)
+            if len(closes) >= 5:
+                close_diff = closes.diff().fillna(0)
+                obv = (np.sign(close_diff) * vols).cumsum()
+                obv_tail = obv.tail(5)
+                if len(obv_tail) >= 5 and obv_tail.std() > 0:
+                    x = np.arange(len(obv_tail))
+                    slope = float(np.polyfit(x, obv_tail.values, 1)[0])
+                    df.at[idx, "obv_slope_5d"] = round(slope / max(abs(obv_tail.mean()), 1e-9), 6)
+            if len(closes) >= 15:
+                delta = closes.diff().dropna()
+                gain = delta.clip(lower=0).rolling(14).mean()
+                loss = (-delta.clip(upper=0)).rolling(14).mean()
+                if loss.iloc[-1] > 0:
+                    rs = gain.iloc[-1] / loss.iloc[-1]
+                    df.at[idx, "rsi_14"] = round(100 - 100 / (1 + rs), 2)
+                else:
+                    df.at[idx, "rsi_14"] = 100.0
+            if len(closes) >= 15:
+                tr = pd.concat([
+                    (highs - lows).abs(),
+                    (highs - closes.shift(1)).abs(),
+                    (lows - closes.shift(1)).abs(),
+                ], axis=1).max(axis=1)
+                atr = tr.rolling(14).mean().iloc[-1]
+                if pd.notna(atr) and last_close > 0:
+                    df.at[idx, "atr_pct_14"] = round(float(atr) / last_close * 100, 4)
+        except Exception:
+            continue
+        if verbose and processed % 200 == 0:
+            print(f"    progress: {processed}/{len(rows_to_process)} fetched={fetched} failed={failed}")
+
+    if verbose:
+        print(f"  OHLCV done: fetched={fetched} failed={failed} cached_keys={len(_OHLCV_CACHE)}")
+    return df
+
+
 FEATURE_COLS = [
     "alpha_score",
     # "tech_score" removed: exact duplicate of alpha_score at inference time
@@ -413,6 +562,17 @@ FEATURE_COLS = [
     "peak_x_highvol",
     "overheat_x_uptrend",
     "sub7_x_breakout",
+    # OHLCV-derived leading indicators added 2026-04-28 to break alpha_score
+    # monoculture in KOSDAQ swing (alpha importance was 489 vs second-place 78).
+    # All computed strictly from bars on or before scan_date — no leakage.
+    "prev_pct_change_1d",
+    "prev_pct_change_5d",
+    "gap_open_pct",
+    "volatility_5d",
+    "volatility_20d",
+    "obv_slope_5d",
+    "rsi_14",
+    "atr_pct_14",
     # "marcap_band" excluded: old archives did not persist real marcap reliably.
 ]
 
@@ -1065,6 +1225,18 @@ def main():
 
     print("\n[2/3] 피처 엔지니어링...")
     df_feat = engineer_features(df)
+
+    # OHLCV-derived features for KR rows that will reach training. Cost-controlled
+    # to KR + RESOLVED + alpha-bearing rows so we don't pay yfinance for stubs
+    # that get filtered out anyway. Cached per (ticker, scan_date) so repeat
+    # tickers across days only fetch once per date.
+    if "market_subtype" in df_feat.columns:
+        kr_mask = df_feat["market_subtype"].isin(["KOSPI", "KOSDAQ"])
+        kr_mask &= df_feat.get("outcome_status", pd.Series(index=df_feat.index)).fillna("").str.upper().eq("RESOLVED")
+        kr_mask &= pd.to_numeric(df_feat.get("alpha_score", pd.Series(index=df_feat.index)), errors="coerce").notna()
+        if kr_mask.any():
+            print(f"  OHLCV feature derivation for {int(kr_mask.sum()):,} KR rows…")
+            df_feat = derive_ohlcv_features(df_feat, target_mask=kr_mask, verbose=True)
     print(f"  사용 가능한 피처: {[col for col in FEATURE_COLS if col in df_feat.columns]}")
 
     backend, _ = _choose_model_backend()
