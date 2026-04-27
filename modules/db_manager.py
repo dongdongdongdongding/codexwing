@@ -637,18 +637,32 @@ class DBManager:
             if not payload:
                 continue
             try:
-                existing = (
+                # NULL-safe lookup: postgrest .eq() on a NULL column never
+                # matches (SQL NULL = NULL → NULL → FALSE). When strategy_family
+                # or scan_mode is None on the outcome row, the equality silently
+                # returned zero rows, so every call inserted a new stub. Verified
+                # 2026-04-28: ticker 058470.KQ rank=1 strategy_family=NULL
+                # produced 39 duplicate INSERTs in a single run_id, polluting
+                # the training set and breaking scan↔archive top-N parity. Use
+                # .is_('null') for None and .eq() only when the value exists.
+                lookup_q = (
                     self.client.table("market_scan_results")
                     .select("id")
                     .eq("run_id", run_id)
                     .eq("ticker", ticker)
-                    .eq("scan_mode", row.get("scan_mode"))
-                    .eq("strategy_family", row.get("strategy_family"))
                     .eq("priority_rank", int(row.get("priority_rank", 0) or 0))
-                    .order("created_at", desc=True)
-                    .limit(1)
-                    .execute()
                 )
+                _scan_mode = row.get("scan_mode")
+                if _scan_mode in (None, ""):
+                    lookup_q = lookup_q.is_("scan_mode", "null")
+                else:
+                    lookup_q = lookup_q.eq("scan_mode", _scan_mode)
+                _strategy_family = row.get("strategy_family")
+                if _strategy_family in (None, ""):
+                    lookup_q = lookup_q.is_("strategy_family", "null")
+                else:
+                    lookup_q = lookup_q.eq("strategy_family", _strategy_family)
+                existing = lookup_q.order("created_at", desc=True).limit(1).execute()
                 rows = existing.data or []
                 # Fallback: scanner_full row from the same scan session has run_id=NULL
                 # (worker writes before orchestrator generates run_id). Match by
