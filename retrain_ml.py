@@ -179,8 +179,9 @@ def load_scan_archive() -> pd.DataFrame:
 
     df = base.reset_index().drop(columns=["_dedup_run", "_has_alpha", "_has_return"], errors="ignore")
 
+    df = _derive_features_from_archive(df)
     before_count = len(rows)
-    print(f"\n✅ 총 {len(df):,} 레코드 (중복 제거 후, 원본 {before_count:,}행)")
+    print(f"\n✅ 총 {len(df):,} 레코드 (중복 제거 후, 원본 {before_count:,}행) — derived {sum(c in df.columns for c in FEATURE_COLS)}/{len(FEATURE_COLS)} feature columns")
     return df
 
 
@@ -710,6 +711,9 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         "raw_auc": raw_auc,
         "cv_median_auc": cv_median_auc,
         "signal_direction": signal_direction,
+        "oos_auc": (oos_summary or {}).get("auc") if oos_summary else None,
+        "oos_win_rate_pct": (oos_summary or {}).get("win_rate_pct") if oos_summary else None,
+        "oos_avg_return_pct": (oos_summary or {}).get("avg_return_pct") if oos_summary else None,
         "segment": spec.name,
         "return_col": spec.return_col,
         "positive_threshold": spec.positive_threshold,
@@ -810,6 +814,141 @@ def _latest_existing_model_time(snapshot: List[Dict[str, Any]]) -> Optional[str]
     return max(mtimes) if mtimes else None
 
 
+def _derive_features_from_archive(df: pd.DataFrame) -> pd.DataFrame:
+    """Derive the FEATURE_COLS one-hot/bucket columns from archive raw fields.
+
+    The training CSV holds raw archive columns (tier, position, trend,
+    volume_ratio, market, scan_mode, strategy_family, decision_bucket,
+    entry_reference_price, surge, context, marcap_band, is_sub7, price_band)
+    while inference (modules/quant_analysis.py) derives 41 binary/bucket
+    features at runtime. Without this step, training sees only alpha_score +
+    is_sub7 (2/41), which produced raw_auc=0.473 on KOSDAQ swing — the model
+    had nothing to learn from.
+
+    Definitions here MUST mirror the inference derivation in quant_analysis.py
+    around lines 1604–1803. Any drift creates silent train/serve skew.
+    """
+    out = df.copy()
+
+    def _str_col(name: str, default: str = "") -> pd.Series:
+        s = out.get(name)
+        if s is None:
+            return pd.Series([default] * len(out), index=out.index, dtype=str)
+        return s.fillna(default).astype(str)
+
+    def _num_col(name: str) -> pd.Series:
+        s = out.get(name)
+        if s is None:
+            return pd.Series([float("nan")] * len(out), index=out.index, dtype=float)
+        return pd.to_numeric(s, errors="coerce")
+
+    tier = _str_col("tier")
+    position = _str_col("position")
+    trend = _str_col("trend").str.upper()
+    surge_text = _str_col("surge")
+    context_text = _str_col("context")
+    market = _str_col("market").str.upper()
+    market_type = _str_col("market_type").str.upper()
+    scan_mode = _str_col("scan_mode").str.upper()
+    strategy_family = _str_col("strategy_family").str.upper()
+    decision_bucket = _str_col("decision_bucket").str.lower()
+    price_band_str = _str_col("price_band").str.lower()
+    ticker = _str_col("ticker")
+
+    is_kospi_t = ticker.str.endswith(".KS")
+    is_kosdaq_t = ticker.str.endswith(".KQ") | (ticker.str.match(r"^\d+$") & ~is_kospi_t)
+
+    out["is_kospi"] = (is_kospi_t | (market == "KOSPI")).astype(int)
+    out["is_kosdaq"] = (is_kosdaq_t | (market == "KOSDAQ")).astype(int)
+    out["is_nasdaq"] = ((market_type != "KR") & (strategy_family != "AMEX_MOONSHOT")).astype(int)
+    out["is_amex"] = (strategy_family == "AMEX_MOONSHOT").astype(int)
+
+    out["scan_intraday"] = (scan_mode == "INTRADAY").astype(int)
+    out["scan_swing"] = (scan_mode == "SWING").astype(int)
+
+    out["fam_kr_core"] = (strategy_family == "KR_CORE").astype(int)
+    out["fam_us_main"] = (strategy_family == "US_MAIN").astype(int)
+    out["fam_amex_moonshot"] = (strategy_family == "AMEX_MOONSHOT").astype(int)
+
+    out["is_picked"] = (decision_bucket == "picked").astype(int)
+    out["is_watchlist"] = (decision_bucket == "watchlist").astype(int)
+    out["is_exception_leader"] = (decision_bucket == "exception_leader").astype(int)
+
+    out["is_rising"] = position.str.contains("Rising", na=False).astype(int)
+    out["is_peak"] = position.str.contains("Peak", na=False).astype(int)
+    out["is_resting"] = position.str.contains("Resting", na=False).astype(int)
+    out["is_bottom"] = position.str.contains("Bottom", na=False).astype(int)
+    out["is_sideways"] = (
+        (out["is_rising"] == 0)
+        & (out["is_peak"] == 0)
+        & (out["is_resting"] == 0)
+        & (out["is_bottom"] == 0)
+    ).astype(int)
+
+    out["is_uptrend"] = (trend == "UP").astype(int)
+    out["is_downtrend"] = (trend == "DOWN").astype(int)
+
+    out["tier_t0"] = tier.str.contains("T0", na=False).astype(int)
+    out["tier_t1"] = tier.str.contains("T1", na=False).astype(int)
+    out["tier_t2"] = tier.str.contains("T2", na=False).astype(int)
+
+    vr = _num_col("volume_ratio")
+    vc = out.get("volume_confirmed")
+    if vc is None:
+        vc_int = pd.Series([0] * len(out), index=out.index, dtype=int)
+    else:
+        vc_int = vc.map({True: 1, False: 0, "True": 1, "False": 0, 1: 1, 0: 0}).fillna(
+            (vr >= 1.2).astype(int)
+        ).astype(int)
+    out["vol_confirmed"] = vc_int
+    out["vol_gt25x"] = (vr > 2.5).fillna(False).astype(int)
+    out["vol_18_25x"] = ((vr > 1.8) & (vr <= 2.5)).fillna(False).astype(int)
+    out["vol_08_18x"] = ((vr >= 0.8) & (vr <= 1.8)).fillna(False).astype(int)
+    out["vol_lt05x"] = (vr < 0.5).fillna(False).astype(int)
+
+    out["is_overheat"] = ((vr >= 2.5).fillna(False) | (out["is_peak"] == 1)).astype(int)
+    out["is_momentum"] = ((out["is_uptrend"] == 1) & (out["is_bottom"] == 0)).astype(int)
+    out["is_breakout"] = (
+        surge_text.str.contains("Breakout", na=False)
+        | surge_text.str.contains("돌파", na=False)
+        | surge_text.str.contains("Continuation", na=False)
+        | (out["is_rising"] == 1)
+    ).astype(int)
+    out["is_contract"] = (
+        surge_text.str.contains("계약", na=False)
+        | surge_text.str.contains("수주", na=False)
+        | context_text.str.contains("계약", na=False)
+        | context_text.str.contains("수주", na=False)
+    ).astype(int)
+
+    out["is_rsidiv"] = pd.Series([0] * len(out), index=out.index, dtype=int)
+    out["is_obvdiv"] = pd.Series([0] * len(out), index=out.index, dtype=int)
+
+    fund_status = _str_col("fund_status").str.lower()
+    out["fund_positive"] = fund_status.str.contains("good|positive|pass|양호|통과|호재", regex=True, na=False).astype(int)
+
+    erp = _num_col("entry_reference_price")
+    is_sub7_csv = _num_col("is_sub7")
+    derived_sub7 = ((erp > 0) & (erp <= 7.0)).astype(int)
+    out["is_sub7"] = is_sub7_csv.fillna(derived_sub7).astype(int)
+    derived_715 = ((erp > 7.0) & (erp <= 15.0)).astype(int)
+    derived_gt15 = (erp > 15.0).astype(int)
+    out["price_7_15"] = derived_715
+    out["price_gt15"] = derived_gt15
+    pb_sub7 = price_band_str.eq("sub_7")
+    pb_715 = price_band_str.eq("p7_15") | price_band_str.eq("7_15")
+    pb_gt15 = price_band_str.eq("gt_15")
+    out.loc[pb_sub7, "is_sub7"] = 1
+    out.loc[pb_715, "price_7_15"] = 1
+    out.loc[pb_gt15, "price_gt15"] = 1
+
+    out["peak_x_highvol"] = ((out["is_peak"] == 1) & ((vr > 2.5).fillna(False))).astype(int)
+    out["overheat_x_uptrend"] = ((out["is_overheat"] == 1) & (out["is_uptrend"] == 1)).astype(int)
+    out["sub7_x_breakout"] = ((out["is_sub7"] == 1) & (out["is_breakout"] == 1)).astype(int)
+
+    return out
+
+
 def _load_from_csv(path: str) -> pd.DataFrame:
     """Load enriched scan archive from a flat CSV export (smoke-test path).
 
@@ -833,7 +972,8 @@ def _load_from_csv(path: str) -> pd.DataFrame:
             df.get("strategy_family", pd.Series(dtype=str)),
         )
     ]
-    print(f"  ✅ 총 {len(df):,} 레코드 (CSV)")
+    df = _derive_features_from_archive(df)
+    print(f"  ✅ 총 {len(df):,} 레코드 (CSV) — derived {sum(c in df.columns for c in FEATURE_COLS)}/{len(FEATURE_COLS)} feature columns")
     return df
 
 

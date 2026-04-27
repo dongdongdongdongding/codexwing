@@ -118,16 +118,19 @@ def _apply_phase25_reliability_gate(
     phase25_variant: str,
     phase25_signal_direction: str,
     phase25_raw_auc: float | None,
-    phase25_cv_median_auc: float | None,
+    phase25_oos_auc: float | None,
     rationale: List[str],
     theme_risk: List[str],
 ) -> str:
     """Refuse to publish picks from a Phase25 model that is statistically
-    unreliable. Triggers when the bundle reports signal_direction='uncertain'
-    (CV median in 0.45–0.55 gray zone) or when the bundle's raw_auc is below
-    0.50 (the model is at-or-below coin-flip on its own validation set).
-    Both cases route to AVOID — auto-detection of a usable inversion would have
-    set signal_direction='invert', not 'uncertain'.
+    unreliable. Triggers on any of:
+      - signal_direction='uncertain' (CV median fell in the 0.45–0.55 gray
+        zone, so the model is indistinguishable from a coin flip);
+      - bundle raw_auc < 0.50 (at-or-below coin-flip on its own val split);
+      - bundle oos_auc < 0.45 (held-out tail evaluation says the model
+        breaks under regime shift, even if val_auc looked fine — this
+        catches the KOSDAQ swing 2026-04-27 case where val_auc=0.69 but
+        OOS=0.32 with CV folds 0.26/0.78/0.28).
     """
     if not phase25_variant:
         return decision
@@ -139,6 +142,10 @@ def _apply_phase25_reliability_gate(
     elif phase25_raw_auc is not None and phase25_raw_auc < 0.50:
         theme_risk.append("PHASE25_RAW_AUC_BELOW_RANDOM")
         rationale.append(f"phase25_raw_auc={phase25_raw_auc:.3f}<0.50")
+        triggered = True
+    elif phase25_oos_auc is not None and phase25_oos_auc < 0.45:
+        theme_risk.append("PHASE25_OOS_AUC_REGIME_BREAK")
+        rationale.append(f"phase25_oos_auc={phase25_oos_auc:.3f}<0.45")
         triggered = True
     if triggered:
         return "AVOID"
@@ -501,10 +508,15 @@ def build_planner_handoff(
             phase25_raw_auc = float(feature_snapshot.get("phase25_raw_auc")) if feature_snapshot.get("phase25_raw_auc") is not None else None
         except Exception:
             phase25_raw_auc = None
+        # cv_median_auc is surfaced via feature_snapshot for downstream telemetry
+        # (outcome_health tracking, drift dashboards). The reliability gate uses
+        # raw_auc + oos_auc + signal_direction; cv_median collapses fold-level
+        # variance into a point estimate that hides the regime-break pattern OOS
+        # AUC catches directly.
         try:
-            phase25_cv_median_auc = float(feature_snapshot.get("phase25_cv_median_auc")) if feature_snapshot.get("phase25_cv_median_auc") is not None else None
+            phase25_oos_auc = float(feature_snapshot.get("phase25_oos_auc")) if feature_snapshot.get("phase25_oos_auc") is not None else None
         except Exception:
-            phase25_cv_median_auc = None
+            phase25_oos_auc = None
         expected_edge_score = feature_snapshot.get("expected_edge_score")
         expected_return_1d_pct = feature_snapshot.get("expected_return_1d_pct")
         expected_return_3d_pct = feature_snapshot.get("expected_return_3d_pct")
@@ -583,7 +595,7 @@ def build_planner_handoff(
             phase25_variant=phase25_variant,
             phase25_signal_direction=phase25_signal_direction,
             phase25_raw_auc=phase25_raw_auc,
-            phase25_cv_median_auc=phase25_cv_median_auc,
+            phase25_oos_auc=phase25_oos_auc,
             rationale=rationale,
             theme_risk=theme_risk,
         )

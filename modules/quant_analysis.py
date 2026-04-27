@@ -1846,9 +1846,11 @@ class QuantStrategy:
                     try:
                         res["phase25_raw_auc"] = float(p25_bundle.get("raw_auc")) if p25_bundle.get("raw_auc") is not None else None
                         res["phase25_cv_median_auc"] = float(p25_bundle.get("cv_median_auc")) if p25_bundle.get("cv_median_auc") is not None else None
+                        res["phase25_oos_auc"] = float(p25_bundle.get("oos_auc")) if p25_bundle.get("oos_auc") is not None else None
                     except Exception:
                         res["phase25_raw_auc"] = None
                         res["phase25_cv_median_auc"] = None
+                        res["phase25_oos_auc"] = None
                     if shadow_path:
                         res["phase25_shadow_variant"] = os.path.splitext(os.path.basename(shadow_path))[0]
                     res["phase25_recommended_threshold"] = float(p25_bundle.get("recommended_probability_threshold", 0.5) or 0.5) * 100.0
