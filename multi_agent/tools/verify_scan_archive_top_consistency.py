@@ -49,8 +49,20 @@ def _load_planner(run_dir: Path) -> Optional[Dict[str, Any]]:
         return None
 
 
-def _planner_top(payload: Dict[str, Any], n: int) -> List[Tuple[int, str]]:
+def _planner_top(payload: Dict[str, Any], n: int, bucket: Optional[str] = "picked") -> List[Tuple[int, str]]:
+    """Return [(rank, ticker)] for the requested decision bucket only.
+
+    Bucket namespaces are distinct in archive: picked rank=1 and
+    exception_leader rank=1 coexist legitimately. Earlier verify code mixed
+    them and produced false-positive 'rank mismatch' alarms.
+    """
     decisions = payload.get("decisions", []) or []
+    if bucket:
+        decisions = [
+            d for d in decisions
+            if str(d.get("decision_bucket") or "").lower() == bucket
+            or (bucket == "picked" and str(d.get("decision") or "").upper() in ("PICK", "BUY", "STRONG_BUY"))
+        ]
     items = [
         (int(d.get("priority_rank")), str(d.get("ticker")))
         for d in decisions
@@ -60,18 +72,19 @@ def _planner_top(payload: Dict[str, Any], n: int) -> List[Tuple[int, str]]:
     return items[:n]
 
 
-def _db_rows_for_run(db: DBManager, run_id: str) -> List[Dict[str, Any]]:
-    res = (
+def _db_rows_for_run(db: DBManager, run_id: str, bucket: Optional[str] = "picked") -> List[Dict[str, Any]]:
+    q = (
         db.client.table("market_scan_results")
         .select("ticker,priority_rank,alpha_score,decision,decision_bucket,feature_origin")
         .eq("run_id", run_id)
-        .order("priority_rank", desc=False)
-        .execute()
     )
+    if bucket:
+        q = q.eq("decision_bucket", bucket)
+    res = q.order("priority_rank", desc=False).execute()
     return res.data or []
 
 
-def _verify_run(db: DBManager, run_dir: Path, n: int) -> Dict[str, Any]:
+def _verify_run(db: DBManager, run_dir: Path, n: int, bucket: Optional[str] = "picked") -> Dict[str, Any]:
     payload = _load_planner(run_dir)
     if not payload:
         return {"run_dir": str(run_dir), "status": "no_planner_handoff"}
@@ -79,11 +92,11 @@ def _verify_run(db: DBManager, run_dir: Path, n: int) -> Dict[str, Any]:
     run_id = ctx.get("run_id") or run_dir.name
     market = ctx.get("market")
     scan_mode = ctx.get("scan_mode")
-    planner_top = _planner_top(payload, n)
+    planner_top = _planner_top(payload, n, bucket=bucket)
     if not planner_top:
-        return {"run_dir": str(run_dir), "run_id": run_id, "status": "empty_planner"}
+        return {"run_dir": str(run_dir), "run_id": run_id, "status": "empty_planner_for_bucket"}
 
-    db_rows = _db_rows_for_run(db, run_id)
+    db_rows = _db_rows_for_run(db, run_id, bucket=bucket)
     if not db_rows:
         return {
             "run_dir": str(run_dir),
@@ -140,6 +153,7 @@ def main() -> int:
     parser.add_argument("--shared-dir", default="runtime_state/shared_working")
     parser.add_argument("--top-n", type=int, default=10)
     parser.add_argument("--limit-runs", type=int, default=50)
+    parser.add_argument("--bucket", default="picked", help="decision_bucket to compare (default: picked). 'all' to mix.")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -159,10 +173,11 @@ def main() -> int:
         print("Supabase client unavailable.", file=sys.stderr)
         return 2
 
+    bucket = None if args.bucket == "all" else args.bucket
     results = []
     for d in run_dirs:
         try:
-            r = _verify_run(db, d, args.top_n)
+            r = _verify_run(db, d, args.top_n, bucket=bucket)
         except Exception as exc:
             r = {"run_dir": str(d), "status": "error", "error": str(exc)}
         results.append(r)
