@@ -10,6 +10,74 @@ from multi_agent.agents.kr_quant_reranker import (
 )
 
 
+# Phase25 quality-gate thresholds per (market, mode).
+# Each entry encodes:
+#   raw_buffer   — additive gap above bundle.recommended_threshold required for priority
+#   raw_floor    — absolute minimum raw_phase25_prob, overrides buffer when buffer fails
+#   clean_min    — minimum clean_prob (non-phase25 probability) required
+#   score_min    — minimum decision_score required
+# Floors are hard-coded minimums safe regardless of which threshold the model
+# happens to emit. Buffers scale with the model's calibrated threshold.
+# Values calibrated against archive top-pick win rates as of 2026-04-22.
+PHASE25_QUALITY_GATES: Dict[str, Dict[str, float]] = {
+    "KOSDAQ_SWING_PRIORITY":   {"raw_buffer": 12.0, "raw_floor": 37.0, "clean_min": 38.0, "score_min": 88.0},
+    "KOSPI_SWING_PRIORITY":    {"raw_buffer": 10.0, "raw_floor": 35.0, "clean_min": 35.0, "score_min": 86.0},
+    "KOSDAQ_INTRADAY_PRIORITY":{"raw_buffer": 12.0, "raw_floor": 72.0, "clean_min": 35.0, "score_min": 88.0},
+    "KOSDAQ_INTRADAY_WATCH":   {"raw_buffer":  0.0, "raw_floor": 60.0, "clean_min": 28.0, "score_min":  0.0},
+    "KOSPI_INTRADAY_PRIORITY": {"raw_buffer":  5.0, "raw_floor": 65.0, "clean_min": 32.0, "score_min": 84.0},
+}
+
+# Downgrade triggers: how far below recommended_threshold (raw prob) triggers
+# soft demote vs hard AVOID. Used by the KOSDAQ swing gate.
+PHASE25_DOWNGRADE_SOFT_GAP = 4.0
+PHASE25_DOWNGRADE_HARD_GAP = 8.0
+
+
+# Variant prefix helpers: 2026-04-25 segment split renamed
+# phase25_kr_swing → phase25_kospi_swing / phase25_kosdaq_swing (and intraday).
+# Old combined names are kept as fallbacks in modules/quant_analysis.py, so the
+# gates must recognize both forms or the per-market protection silently
+# disappears when the new bundles are loaded.
+_SWING_VARIANT_PREFIXES = (
+    "phase25_kr_swing",
+    "phase25_kospi_swing",
+    "phase25_kosdaq_swing",
+)
+_INTRADAY_VARIANT_PREFIXES = (
+    "phase25_kr_intraday",
+    "phase25_kospi_intraday",
+    "phase25_kosdaq_intraday",
+)
+
+
+def _is_swing_variant(variant: str | None) -> bool:
+    return any(str(variant or "").startswith(p) for p in _SWING_VARIANT_PREFIXES)
+
+
+def _is_intraday_variant(variant: str | None) -> bool:
+    return any(str(variant or "").startswith(p) for p in _INTRADAY_VARIANT_PREFIXES)
+
+
+def _gate_passes(raw_prob: float | None, clean_prob: float | None, score: float, recommended_threshold: float | None, gate_name: str) -> bool:
+    """Evaluate phase25 quality gate for the given (market, mode) key.
+
+    Returns True iff the candidate exceeds raw/clean/score thresholds for the
+    named gate. Missing (None) inputs never pass. Kept central so threshold
+    changes flow from config rather than scattered magic numbers.
+    """
+    gate = PHASE25_QUALITY_GATES.get(gate_name)
+    if gate is None or raw_prob is None or recommended_threshold is None:
+        return False
+    raw_needed = max(float(recommended_threshold) + gate["raw_buffer"], gate["raw_floor"])
+    if float(raw_prob) < raw_needed:
+        return False
+    if clean_prob is not None and float(clean_prob) < gate["clean_min"]:
+        return False
+    if gate["score_min"] > 0.0 and float(score) < gate["score_min"]:
+        return False
+    return True
+
+
 def _decision_from_score(score: float) -> str:
     if score >= 80:
         return "PRIORITY_WATCHLIST"
@@ -44,6 +112,39 @@ def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
 
+def _apply_phase25_reliability_gate(
+    *,
+    decision: str,
+    phase25_variant: str,
+    phase25_signal_direction: str,
+    phase25_raw_auc: float | None,
+    phase25_cv_median_auc: float | None,
+    rationale: List[str],
+    theme_risk: List[str],
+) -> str:
+    """Refuse to publish picks from a Phase25 model that is statistically
+    unreliable. Triggers when the bundle reports signal_direction='uncertain'
+    (CV median in 0.45–0.55 gray zone) or when the bundle's raw_auc is below
+    0.50 (the model is at-or-below coin-flip on its own validation set).
+    Both cases route to AVOID — auto-detection of a usable inversion would have
+    set signal_direction='invert', not 'uncertain'.
+    """
+    if not phase25_variant:
+        return decision
+    triggered = False
+    if phase25_signal_direction == "uncertain":
+        theme_risk.append("PHASE25_UNCERTAIN_DIRECTION")
+        rationale.append("phase25_uncertain_signal_direction")
+        triggered = True
+    elif phase25_raw_auc is not None and phase25_raw_auc < 0.50:
+        theme_risk.append("PHASE25_RAW_AUC_BELOW_RANDOM")
+        rationale.append(f"phase25_raw_auc={phase25_raw_auc:.3f}<0.50")
+        triggered = True
+    if triggered:
+        return "AVOID"
+    return decision
+
+
 def _apply_kosdaq_intraday_gate(
     *,
     decision: str,
@@ -58,7 +159,7 @@ def _apply_kosdaq_intraday_gate(
     if not (
         run_market == "KOSDAQ"
         and scan_mode.upper() == "INTRADAY"
-        and phase25_variant.startswith("phase25_kr_intraday")
+        and _is_intraday_variant(phase25_variant)
         and raw_phase25_prob is not None
         and recommended_threshold is not None
     ):
@@ -92,7 +193,7 @@ def _apply_kosdaq_swing_gate(
     if not (
         run_market == "KOSDAQ"
         and scan_mode.upper() == "SWING"
-        and phase25_variant.startswith("phase25_kr_swing")
+        and _is_swing_variant(phase25_variant)
         and raw_phase25_prob is not None
         and recommended_threshold is not None
     ):
@@ -105,10 +206,10 @@ def _apply_kosdaq_swing_gate(
     except Exception:
         clean_prob = None
 
-    if gap >= 8.0:
+    if gap >= PHASE25_DOWNGRADE_HARD_GAP:
         decision = "AVOID"
         theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_HARD")
-    elif gap >= 4.0:
+    elif gap >= PHASE25_DOWNGRADE_SOFT_GAP:
         decision = _decision_from_rank(max(0, _decision_rank(decision) - 1))
         theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_SOFT")
 
@@ -162,14 +263,10 @@ def _apply_kr_market_mode_quality_gate(
     # KOSDAQ swing is under probation until true-buy quality recovers.
     if market == "KOSDAQ" and mode == "SWING":
         high_conviction_exception = (
-            variant.startswith("phase25_kr_swing")
-            and raw_phase25_prob is not None
-            and recommended_threshold is not None
-            and raw_phase25_prob >= max(recommended_threshold + 12.0, 37.0)
-            and (clean_prob is not None and clean_prob >= 38.0)
+            _is_swing_variant(variant)
             and trend_up
             and route == "theme_routed"
-            and float(score) >= 88.0
+            and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSDAQ_SWING_PRIORITY")
         )
         if not high_conviction_exception:
             return _demote_to(
@@ -186,13 +283,9 @@ def _apply_kr_market_mode_quality_gate(
     # KOSPI swing has not earned priority status yet; only very strong model-backed setups may pass.
     if market == "KOSPI" and mode == "SWING" and _decision_rank(decision) >= 3:
         allow_priority = (
-            variant.startswith("phase25_kr_swing")
-            and raw_phase25_prob is not None
-            and recommended_threshold is not None
-            and raw_phase25_prob >= max(recommended_threshold + 10.0, 35.0)
-            and (clean_prob is not None and clean_prob >= 35.0)
+            _is_swing_variant(variant)
             and trend_up
-            and float(score) >= 86.0
+            and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSPI_SWING_PRIORITY")
         )
         if not allow_priority:
             return _demote_to(
@@ -204,13 +297,9 @@ def _apply_kr_market_mode_quality_gate(
     if market == "KOSDAQ" and mode == "INTRADAY":
         if _decision_rank(decision) >= 3:
             allow_priority = (
-                variant.startswith("phase25_kr_intraday")
-                and raw_phase25_prob is not None
-                and recommended_threshold is not None
-                and raw_phase25_prob >= max(recommended_threshold + 12.0, 72.0)
-                and (clean_prob is not None and clean_prob >= 35.0)
+                _is_intraday_variant(variant)
                 and trend_up
-                and float(score) >= 88.0
+                and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSDAQ_INTRADAY_PRIORITY")
             )
             if not allow_priority:
                 return _demote_to(
@@ -220,11 +309,8 @@ def _apply_kr_market_mode_quality_gate(
                 )
         if _decision_rank(decision) >= 2:
             keep_watch = (
-                variant.startswith("phase25_kr_intraday")
-                and raw_phase25_prob is not None
-                and recommended_threshold is not None
-                and raw_phase25_prob >= max(recommended_threshold, 60.0)
-                and (clean_prob is None or clean_prob >= 28.0)
+                _is_intraday_variant(variant)
+                and _gate_passes(raw_phase25_prob, clean_prob, 0.0, recommended_threshold, "KOSDAQ_INTRADAY_WATCH")
             )
             if not keep_watch:
                 return _demote_to(
@@ -235,13 +321,9 @@ def _apply_kr_market_mode_quality_gate(
 
     if market == "KOSPI" and mode == "INTRADAY" and _decision_rank(decision) >= 3:
         allow_priority = (
-            variant.startswith("phase25_kr_intraday")
-            and raw_phase25_prob is not None
-            and recommended_threshold is not None
-            and raw_phase25_prob >= max(recommended_threshold + 5.0, 65.0)
-            and (clean_prob is not None and clean_prob >= 32.0)
+            _is_intraday_variant(variant)
             and trend_up
-            and float(score) >= 84.0
+            and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSPI_INTRADAY_PRIORITY")
         )
         if not allow_priority:
             return _demote_to(
@@ -401,6 +483,7 @@ def build_planner_handoff(
         continuation_gate_reasons = [str(x) for x in list(quant_meta.get("continuation_gate_reasons", []) or []) if str(x).strip()]
         basket_priority_score = float(basket_meta.get("score", score) or score)
         alpha_score = feature_snapshot.get("alpha_score")
+        conviction_score = feature_snapshot.get("conviction_score")
         decision_score = feature_snapshot.get("decision_score", score)
         entry_reference_price = feature_snapshot.get("entry_reference_price") or feature_snapshot.get("현재가") or feature_snapshot.get("current_price")
         prob_5 = feature_snapshot.get("prob_5", feature_snapshot.get("_prob_5", feature_snapshot.get("ml_prob")))
@@ -413,6 +496,15 @@ def build_planner_handoff(
         phase25_shadow_variant = str(feature_snapshot.get("phase25_shadow_variant") or "")
         phase25_shadow_prob = feature_snapshot.get("phase25_shadow_prob")
         phase25_recommended_threshold = feature_snapshot.get("phase25_recommended_threshold")
+        phase25_signal_direction = str(feature_snapshot.get("phase25_signal_direction") or "").lower()
+        try:
+            phase25_raw_auc = float(feature_snapshot.get("phase25_raw_auc")) if feature_snapshot.get("phase25_raw_auc") is not None else None
+        except Exception:
+            phase25_raw_auc = None
+        try:
+            phase25_cv_median_auc = float(feature_snapshot.get("phase25_cv_median_auc")) if feature_snapshot.get("phase25_cv_median_auc") is not None else None
+        except Exception:
+            phase25_cv_median_auc = None
         expected_edge_score = feature_snapshot.get("expected_edge_score")
         expected_return_1d_pct = feature_snapshot.get("expected_return_1d_pct")
         expected_return_3d_pct = feature_snapshot.get("expected_return_3d_pct")
@@ -486,6 +578,15 @@ def build_planner_handoff(
         except Exception:
             recommended_threshold = None
 
+        decision = _apply_phase25_reliability_gate(
+            decision=decision,
+            phase25_variant=phase25_variant,
+            phase25_signal_direction=phase25_signal_direction,
+            phase25_raw_auc=phase25_raw_auc,
+            phase25_cv_median_auc=phase25_cv_median_auc,
+            rationale=rationale,
+            theme_risk=theme_risk,
+        )
         decision = _apply_kosdaq_intraday_gate(
             decision=decision,
             run_market=run_market,
@@ -534,6 +635,15 @@ def build_planner_handoff(
             theme_risk=theme_risk,
         )
 
+        if bool(feature_snapshot.get("inference_failed", False)):
+            target_rank = min(_decision_rank(decision), _decision_rank("OBSERVE"))
+            downgraded = _decision_from_rank(target_rank)
+            if downgraded != decision:
+                rationale.append("ML_INFERENCE_FAILED_DOWNGRADE")
+            decision = downgraded
+            if "ML_INFERENCE_FAILED" not in theme_risk:
+                theme_risk.append("ML_INFERENCE_FAILED")
+
         warning_items = _to_warning_items(cand.get("warnings"))
         decision_row = PlannerDecision(
             ticker=ticker,
@@ -542,6 +652,7 @@ def build_planner_handoff(
             decision=decision,
             confidence=round(confidence, 3),
             alpha_score=float(alpha_score) if alpha_score not in (None, "") else None,
+            conviction_score=float(conviction_score) if conviction_score not in (None, "") else None,
             decision_score=float(decision_score) if decision_score not in (None, "") else round(score, 3),
             entry_reference_price=float(entry_reference_price) if entry_reference_price not in (None, "") else None,
             prob_5=float(prob_5) if prob_5 not in (None, "") else None,

@@ -1400,6 +1400,7 @@ class QuantStrategy:
                 "accuracy": 0,
                 "type": "Fail",
                 "model_trace_status": "data_short",
+                "inference_failed": True,
             }
         
         try:
@@ -1487,6 +1488,7 @@ class QuantStrategy:
                     "accuracy": 0,
                     "type": "Fail",
                     "model_trace_status": "feature_build_fail",
+                    "inference_failed": True,
                 }
                 
             X_new = df_features[FEATURES_V5 + ['Spy_Rel_Strength']].iloc[[-1]].fillna(0)
@@ -1501,17 +1503,28 @@ class QuantStrategy:
             universal_prob = _compute_universal_prob(models_dir)
             
             # --- Phase 18.2 New Models ---
+            # Filter features per model's training schema; FEATURES_V5 has since
+            # grown (KR macro additions) and legacy models were fit on fewer cols.
+            def _align_features(clf_obj):
+                raw = getattr(clf_obj, 'feature_names_in_', None)
+                expected = list(raw) if raw is not None else []
+                if not expected:
+                    expected = FEATURES_V5 + ['Spy_Rel_Strength']
+                return df_features.reindex(columns=expected, fill_value=0).iloc[[-1]].fillna(0)
+
             model_5_path = os.path.join(models_dir, f'model_5pct_{suffix}.pkl')
             if os.path.exists(model_5_path):
                 clf_5 = joblib.load(model_5_path)
-                res['5pct'] = float(round(clf_5.predict_proba(X_new)[0][1] * 100, 1))
+                X_5 = _align_features(clf_5)
+                res['5pct'] = float(round(clf_5.predict_proba(X_5)[0][1] * 100, 1))
             else:
                 res['5pct'] = None
-                
+
             model_clean_path = os.path.join(models_dir, f'model_5pct_clean_{suffix}.pkl')
             if os.path.exists(model_clean_path):
                 clf_clean = joblib.load(model_clean_path)
-                res['5pct_clean'] = float(round(clf_clean.predict_proba(X_new)[0][1] * 100, 1))
+                X_clean = _align_features(clf_clean)
+                res['5pct_clean'] = float(round(clf_clean.predict_proba(X_clean)[0][1] * 100, 1))
             else:
                 res['5pct_clean'] = None
                 
@@ -1535,10 +1548,16 @@ class QuantStrategy:
 
                 scan_mode = str(getattr(self, "scan_mode", "SWING") or "SWING").strip().upper()
                 is_kr = str(self.ticker).endswith(".KS") or str(self.ticker).endswith(".KQ") or str(self.ticker).isdigit()
+                _is_kospi_ticker = str(self.ticker).endswith(".KS")
+                _is_kosdaq_ticker = str(self.ticker).endswith(".KQ") or (is_kr and not _is_kospi_ticker)
+                _market_tag = "kospi" if _is_kospi_ticker else ("kosdaq" if _is_kosdaq_ticker else None)
                 primary_candidates = []
                 shadow_candidates = []
                 if is_kr and scan_mode == "SWING":
-                    primary_candidates = [
+                    primary_candidates = []
+                    if _market_tag:
+                        primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_swing.pkl"))
+                    primary_candidates += [
                         os.path.join(models_dir, "phase25_kr_swing_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing.pkl"),
@@ -1549,7 +1568,10 @@ class QuantStrategy:
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
                     ]
                 elif is_kr and scan_mode == "INTRADAY":
-                    primary_candidates = [
+                    primary_candidates = []
+                    if _market_tag:
+                        primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_intraday.pkl"))
+                    primary_candidates += [
                         os.path.join(models_dir, "phase25_kr_intraday_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday_histgb.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday_lightgbm.pkl"),
@@ -1781,7 +1803,19 @@ class QuantStrategy:
                     }
                     _p25_df = pd.DataFrame([_p25_row])
                     _p25_X = _p25_df.reindex(columns=p25_feats, fill_value=0).fillna(0)
-                    _p25_prob = float(p25_model.predict_proba(_transform_with_optional_scaler(_p25_X, p25_scaler))[0][1] * 100)
+                    _p25_prob_raw = float(p25_model.predict_proba(_transform_with_optional_scaler(_p25_X, p25_scaler))[0][1] * 100)
+                    _p25_direction = str(p25_bundle.get("signal_direction", "normal") or "normal").lower()
+                    # 'uncertain' = CV median AUC inside 0.45–0.55 gray zone. The
+                    # model is statistically indistinguishable from a coin flip
+                    # so we collapse the contribution to neutral 50 — downstream
+                    # gates also see signal_direction='uncertain' and refuse to
+                    # publish picks.
+                    if _p25_direction == "uncertain":
+                        _p25_prob = 50.0
+                    elif _p25_direction == "invert":
+                        _p25_prob = 100.0 - _p25_prob_raw
+                    else:
+                        _p25_prob = _p25_prob_raw
 
                     _shadow_prob = None
                     if shadow_bundle is not None:
@@ -1790,9 +1824,16 @@ class QuantStrategy:
                             _shadow_scaler = shadow_bundle.get("scaler")
                             _shadow_feats = list(shadow_bundle.get("features", []))
                             _shadow_X = _p25_df.reindex(columns=_shadow_feats, fill_value=0).fillna(0)
-                            _shadow_prob = float(
+                            _shadow_prob_raw = float(
                                 _shadow_model.predict_proba(_transform_with_optional_scaler(_shadow_X, _shadow_scaler))[0][1] * 100
                             )
+                            _shadow_direction = str(shadow_bundle.get("signal_direction", "normal") or "normal").lower()
+                            if _shadow_direction == "uncertain":
+                                _shadow_prob = 50.0
+                            elif _shadow_direction == "invert":
+                                _shadow_prob = 100.0 - _shadow_prob_raw
+                            else:
+                                _shadow_prob = _shadow_prob_raw
                         except Exception:
                             _shadow_prob = None
 
@@ -1801,6 +1842,13 @@ class QuantStrategy:
                     if _shadow_prob is not None:
                         res["phase25_shadow_prob"] = round(_shadow_prob, 1)
                     res["phase25_variant"] = os.path.splitext(os.path.basename(p25_path or "phase25_model.pkl"))[0]
+                    res["phase25_signal_direction"] = _p25_direction
+                    try:
+                        res["phase25_raw_auc"] = float(p25_bundle.get("raw_auc")) if p25_bundle.get("raw_auc") is not None else None
+                        res["phase25_cv_median_auc"] = float(p25_bundle.get("cv_median_auc")) if p25_bundle.get("cv_median_auc") is not None else None
+                    except Exception:
+                        res["phase25_raw_auc"] = None
+                        res["phase25_cv_median_auc"] = None
                     if shadow_path:
                         res["phase25_shadow_variant"] = os.path.splitext(os.path.basename(shadow_path))[0]
                     res["phase25_recommended_threshold"] = float(p25_bundle.get("recommended_probability_threshold", 0.5) or 0.5) * 100.0
@@ -1821,6 +1869,13 @@ class QuantStrategy:
             res['regime'] = f"Phase25+18.2_{suffix.upper()}"
             res['accuracy'] = res['clean_prob']
             res['model_trace_status'] = "ok"
+            # inference_failed flags rows where NO scan-specific model produced a
+            # probability and we ended up on the universal-fallback or generic path.
+            # Downstream decision gates use this to exclude affected tickers from
+            # PICK — see modules/scanner_services.py and planner_runtime.
+            res['inference_failed'] = bool(
+                raw_prob is None and clean_prob is None and not res.get('phase25_prob')
+            )
             if raw_prob is None and clean_prob is None and universal_prob is not None:
                 res['type'] = "Universal Fallback ML"
                 res['regime'] = f"Universal_Fallback_{suffix.upper()}"
@@ -1850,6 +1905,7 @@ class QuantStrategy:
                 "type": "Fail",
                 "model_trace_status": "exception",
                 "model_error": f"{type(e).__name__}: {e}",
+                "inference_failed": True,
             }
 
     # --- Phase 8: Grand Synergy Report ---

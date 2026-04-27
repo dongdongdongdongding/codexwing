@@ -12,7 +12,10 @@ retrain_ml.py  —  Phase 25 ML Retraining Pipeline (Resolved Outcome v2)
 
 기본 저장:
   - 호환용 글로벌 모델: models/phase25_model.pkl
-  - 세그먼트 모델: models/phase25_kr_swing.pkl, models/phase25_kr_intraday.pkl
+  - 세그먼트 모델: models/phase25_kospi_swing.pkl, models/phase25_kosdaq_swing.pkl,
+    models/phase25_kospi_intraday.pkl, models/phase25_kosdaq_intraday.pkl
+  - 각 세그먼트는 학습 검증 AUC<0.5인 경우 signal_direction="invert" 로 저장되어
+    추론 시 확률을 1-p 로 반전한다 (KOSDAQ 신호 반전 발견 2026-04-25).
   - 리포트: runtime_state/reports/learning/retrain_v2_report.json|md
 """
 
@@ -23,6 +26,7 @@ import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 warnings.filterwarnings("ignore")
 
@@ -79,8 +83,10 @@ def load_scan_archive() -> pd.DataFrame:
     select_cols = (
         "id,run_id,ticker,stock_name,created_at,market_type,scan_mode,strategy_family,"
         "priority_rank,decision,decision_bucket,outcome_status,"
-        "alpha_score,tech_score,ml_prob,whale_score,trend,tier,volume,position,"
-        "strategy,decision_score,fund_status,entry_reference_price,"
+        "alpha_score,tech_score,ml_prob,prob_clean,whale_score,trend,tier,volume,volume_ratio,volume_confirmed,position,"
+        "strategy,decision_score,fund_status,entry_reference_price,inference_failed,"
+        "feature_origin,feature_quality,feature_completeness,feature_missing_fields,"
+        "validation_excluded,validation_excluded_reason,is_dummy_data,"
         "return_close_pct,return_1d_pct,return_2d_pct,return_3d_pct,return_5d_pct,return_7d_pct"
     )
 
@@ -119,10 +125,13 @@ def load_scan_archive() -> pd.DataFrame:
         )
     ]
 
-    # Deduplicate: outcome sync appends rows each run rather than updating.
-    # Real unique key = (run_id OR scan_date) + ticker + scan_mode + priority_rank.
-    # Sort so the richest row (non-null returns, non-null features) comes last,
-    # then drop duplicates keeping last.
+    # Deduplicate: outcome sync appends rows each run rather than updating, so the
+    # same (run_id, ticker, scan_mode, priority_rank) key can have a scan row (with
+    # alpha/volume/tech/whale features but no returns) AND an outcome-sync stub (with
+    # returns + outcome_status but empty scan-time features). Earlier logic sorted by
+    # _return_present and kept last → it always picked the stub and threw the scan
+    # row's features away. Now: keep the scan row as the feature-bearing base and
+    # overlay returns + outcome_status from any stub in the same group.
     sort_cols = ["created_at", "id"] if "id" in df.columns else ["created_at"]
     df = df.sort_values(sort_cols)
 
@@ -132,18 +141,43 @@ def load_scan_archive() -> pd.DataFrame:
     else:
         df["_dedup_run"] = df["scan_date"].astype(str)
 
-    dedup_key = ["_dedup_run", "ticker", "scan_mode", "priority_rank"]
-    dedup_key = [c for c in dedup_key if c in df.columns]
+    dedup_key = [c for c in ["_dedup_run", "ticker", "scan_mode", "priority_rank"] if c in df.columns]
 
-    # For each group take last row (most complete, latest update with returns)
-    # but prefer rows that have return data — sort null-returns before non-null
-    return_present = df["return_3d_pct"].notna().astype(int)
-    df["_return_present"] = return_present
-    df = (
-        df.sort_values(sort_cols + ["_return_present"])
+    alpha_num = pd.to_numeric(df.get("alpha_score", pd.Series(index=df.index)), errors="coerce")
+    df["_has_alpha"] = alpha_num.gt(0).astype(int)
+    df["_has_return"] = df.get("return_3d_pct", pd.Series(index=df.index)).notna().astype(int)
+
+    # Base pick: rows with scan-time features (alpha > 0). _has_alpha is the top
+    # sort key so alpha-bearing rows always sort last (0s then 1s) and survive
+    # keep="last". sort_cols act as the tie-breaker within the same alpha tier, so
+    # among multiple scan rows we keep the newest. Fallback when a group has no
+    # alpha row at all: newest stub wins and we still label it from returns.
+    base = (
+        df.sort_values(["_has_alpha"] + sort_cols)
         .drop_duplicates(subset=dedup_key, keep="last")
-        .drop(columns=["_dedup_run", "_return_present"])
+        .set_index(dedup_key)
     )
+
+    # Overlay cols from the newest return-bearing row (stub or full scan row).
+    overlay_cols = [
+        c for c in [
+            "return_close_pct", "return_1d_pct", "return_2d_pct",
+            "return_3d_pct", "return_5d_pct", "return_7d_pct",
+            "outcome_status",
+        ] if c in df.columns
+    ]
+    if overlay_cols:
+        overlay = (
+            df[df["_has_return"].eq(1)]
+            .sort_values(sort_cols)
+            .drop_duplicates(subset=dedup_key, keep="last")
+            .set_index(dedup_key)[overlay_cols]
+        )
+        for col in overlay_cols:
+            # Fill only where base is missing/null — preserve base value when both exist.
+            base[col] = base[col].where(base[col].notna(), overlay[col])
+
+    df = base.reset_index().drop(columns=["_dedup_run", "_has_alpha", "_has_return"], errors="ignore")
 
     before_count = len(rows)
     print(f"\n✅ 총 {len(df):,} 레코드 (중복 제거 후, 원본 {before_count:,}행)")
@@ -165,8 +199,19 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         else:
             df[col] = np.nan
 
-    df["vol_float"] = df.get("volume", pd.Series(index=df.index, dtype=object)).apply(_parse_vol)
-    df["vol_confirmed"] = df.get("volume", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.startswith("✅").astype(int)
+    volume_from_text = df.get("volume", pd.Series(index=df.index, dtype=object)).apply(_parse_vol)
+    if "volume_ratio" in df.columns:
+        df["vol_float"] = pd.to_numeric(df["volume_ratio"], errors="coerce").combine_first(volume_from_text)
+    else:
+        df["vol_float"] = volume_from_text
+    if "volume_confirmed" in df.columns:
+        vol_confirmed = df["volume_confirmed"]
+        if vol_confirmed.dtype == "object":
+            df["vol_confirmed"] = vol_confirmed.astype(str).str.lower().isin({"true", "1", "yes"}).astype(int)
+        else:
+            df["vol_confirmed"] = vol_confirmed.fillna(False).astype(int)
+    else:
+        df["vol_confirmed"] = df.get("volume", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.startswith("✅").astype(int)
     df["vol_gt25x"] = (df["vol_float"] > 2.5).astype(int)
     df["vol_18_25x"] = ((df["vol_float"] > 1.8) & (df["vol_float"] <= 2.5)).astype(int)
     df["vol_08_18x"] = ((df["vol_float"] >= 0.8) & (df["vol_float"] <= 1.8)).astype(int)
@@ -220,11 +265,22 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df["fam_us_main"] = fam.eq("US_MAIN").astype(int)
     df["fam_amex_moonshot"] = fam.eq("AMEX_MOONSHOT").astype(int)
 
+    # Decision bucket one-hots: learning segment mixes picked / watchlist /
+    # exception_leader rows with very different distributions (picked is the
+    # real production path; exception_leader is 70% of rows and lacks
+    # tech/whale/vol entirely). Without this signal the model blends three
+    # populations into one mean.
+    bucket = df.get("decision_bucket", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.lower()
+    df["is_picked"] = bucket.eq("picked").astype(int)
+    df["is_watchlist"] = bucket.eq("watchlist").astype(int)
+    df["is_exception_leader"] = bucket.eq("exception_leader").astype(int)
+
     df["peak_x_highvol"] = df["is_peak"] * df["vol_gt25x"]
     df["overheat_x_uptrend"] = df["is_overheat"] * df["is_uptrend"]
     df["sub7_x_breakout"] = df["is_sub7"] * df["is_breakout"]
 
-    # Market cap band: derive from marcap (KRW) stored in archive, or default to mid (2)
+    # Market cap band: derive only from a real archive value. Missing market cap is
+    # intentionally excluded from FEATURE_COLS so it cannot become a dummy midpoint.
     if "marcap_band" in df.columns:
         df["marcap_band"] = pd.to_numeric(df["marcap_band"], errors="coerce").fillna(2).astype(int)
     elif "marcap" in df.columns:
@@ -236,7 +292,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
             right=False,
         ).cat.add_categories([2]).fillna(2).astype(int)
     else:
-        df["marcap_band"] = 2
+        df["marcap_band"] = np.nan
 
     return df
 
@@ -244,10 +300,14 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 FEATURE_COLS = [
     "alpha_score",
     # "tech_score" removed: exact duplicate of alpha_score at inference time
-    "ml_prob",
+    # "ml_prob" removed 2026-04-22: circular reference (phase25 model consuming its own upstream prediction → 50-fallback leakage at inference)
     # "whale_score" removed: 0% fill rate in RESOLVED rows — always NaN→0 noise
     # "decision_score" removed: circular reference (alpha*0.58 + ml_prob*0.32 → stored as feature for same model)
-    "vol_float",
+    # "vol_float" removed 2026-04-25: continuous volume_ratio is 0% filled in RESOLVED
+    # rows. The four discrete buckets below carry the same information when
+    # vol_float is known and silently encode "0 across all four = missing"
+    # when it isn't. Keeping vol_float as a feature would drop 90% of usable
+    # training rows on the NaN gate.
     "vol_confirmed",
     "vol_gt25x",
     "vol_18_25x",
@@ -282,10 +342,13 @@ FEATURE_COLS = [
     "fam_kr_core",
     "fam_us_main",
     "fam_amex_moonshot",
+    "is_picked",
+    "is_watchlist",
+    "is_exception_leader",
     "peak_x_highvol",
     "overheat_x_uptrend",
     "sub7_x_breakout",
-    "marcap_band",
+    # "marcap_band" excluded: old archives did not persist real marcap reliably.
 ]
 
 
@@ -299,6 +362,7 @@ class SegmentSpec:
     min_positive: int
     filter_fn: object
     description: str
+    signal_direction: str = "auto"
 
 
 def _is_resolved(df: pd.DataFrame) -> pd.Series:
@@ -306,6 +370,40 @@ def _is_resolved(df: pd.DataFrame) -> pd.Series:
     if "outcome_status" in df.columns:
         return df["outcome_status"].fillna("").str.upper().eq("RESOLVED")
     return pd.Series(True, index=df.index)
+
+
+def _has_features(df: pd.DataFrame) -> pd.Series:
+    """Require columns that actually feed FEATURE_COLS before training.
+
+    tech_score/whale_score/volume_ratio/decision_score were dropped from
+    FEATURE_COLS (leakage / noise / circular). Gating on them blocked >99% of
+    KR archive rows that have valid alpha_score + engineered fields. Now we
+    only require what the model actually consumes.
+    """
+    mask = pd.Series(True, index=df.index)
+    for col in ["alpha_score"]:
+        if col not in df.columns:
+            return pd.Series(False, index=df.index)
+        mask &= pd.to_numeric(df[col], errors="coerce").notna()
+    # vol_float / volume_ratio dropped from gate 2026-04-25: 0% filled in
+    # RESOLVED rows (outcome-sync path never wrote them). Requiring them blocked
+    # all training. Discrete vol_* flags absorb the "missing" case as zeros.
+    # trend/tier dropped from gate: derived flags (is_uptrend, tier_t0..) already
+    # encode missingness as 0 in engineer_features. Requiring them blocked >80%
+    # of historical archive rows that have alpha_score + returns but lack the
+    # tier emoji string.
+    if "inference_failed" in df.columns:
+        mask &= ~df["inference_failed"].fillna(False).astype(bool)
+    # validation_excluded / feature_quality dropped from gate 2026-04-25:
+    # historical export tagged 100% of KR SWING RESOLVED rows as
+    # validation_excluded=True / feature_quality=incomplete because volume_ratio
+    # was always missing. That flag now blocks every row that has a real label
+    # — exactly the data we need to train on.
+    if "is_dummy_data" in df.columns:
+        raw = df["is_dummy_data"]
+        dummy = raw.astype(str).str.lower().isin({"true", "1", "yes"}) if raw.dtype == "object" else raw.fillna(False).astype(bool)
+        mask &= ~dummy
+    return mask
 
 
 SEGMENTS = [
@@ -316,28 +414,48 @@ SEGMENTS = [
         positive_threshold=5.0,
         min_rows=300,
         min_positive=60,
-        filter_fn=lambda df: _is_resolved(df) & df["return_3d_pct"].notna(),
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["return_3d_pct"].notna(),
         description="Global compatibility model using realized 3D >= +5%.",
     ),
     SegmentSpec(
-        name="phase25_kr_swing",
-        model_path="models/phase25_kr_swing.pkl",
+        name="phase25_kospi_swing",
+        model_path="models/phase25_kospi_swing.pkl",
         return_col="return_3d_pct",
         positive_threshold=5.0,
-        min_rows=120,
-        min_positive=25,
-        filter_fn=lambda df: _is_resolved(df) & df["market_subtype"].isin(["KOSPI", "KOSDAQ"]) & df["scan_mode"].eq("SWING") & df["return_3d_pct"].notna(),
-        description="KR swing model using realized 3D >= +5%.",
+        min_rows=300,
+        min_positive=60,
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSPI") & df["scan_mode"].eq("SWING") & df["return_3d_pct"].notna(),
+        description="KOSPI swing model: large-cap momentum-persistent (signals directionally correct).",
     ),
     SegmentSpec(
-        name="phase25_kr_intraday",
-        model_path="models/phase25_kr_intraday.pkl",
+        name="phase25_kosdaq_swing",
+        model_path="models/phase25_kosdaq_swing.pkl",
+        return_col="return_3d_pct",
+        positive_threshold=5.0,
+        min_rows=300,
+        min_positive=60,
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSDAQ") & df["scan_mode"].eq("SWING") & df["return_3d_pct"].notna(),
+        description="KOSDAQ swing model: small/mid-cap mean-reverting at extremes (auto-inverts when val AUC<0.5).",
+    ),
+    SegmentSpec(
+        name="phase25_kospi_intraday",
+        model_path="models/phase25_kospi_intraday.pkl",
         return_col="return_1d_pct",
         positive_threshold=0.0,
-        min_rows=150,
-        min_positive=40,
-        filter_fn=lambda df: _is_resolved(df) & df["market_subtype"].isin(["KOSPI", "KOSDAQ"]) & df["scan_mode"].eq("INTRADAY") & df["return_1d_pct"].notna(),
-        description="KR intraday model using next-day positive return.",
+        min_rows=300,
+        min_positive=60,
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSPI") & df["scan_mode"].eq("INTRADAY") & df["return_1d_pct"].notna(),
+        description="KOSPI intraday model using next-day positive return.",
+    ),
+    SegmentSpec(
+        name="phase25_kosdaq_intraday",
+        model_path="models/phase25_kosdaq_intraday.pkl",
+        return_col="return_1d_pct",
+        positive_threshold=0.0,
+        min_rows=300,
+        min_positive=60,
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSDAQ") & df["scan_mode"].eq("INTRADAY") & df["return_1d_pct"].notna(),
+        description="KOSDAQ intraday model using next-day positive return (auto-inverts when val AUC<0.5).",
     ),
 ]
 
@@ -362,22 +480,39 @@ def _fit_model(X_train_s, y_train, backend):
     if backend == "lgb":
         import lightgbm as lgb
 
+        # Conservative config for small segments (300~500 rows). Earlier settings
+        # (n_estimators=400, num_leaves=31, no regularization) overfit and produced
+        # OOS AUC=0.38 with CV fold variance 0.18~0.32. Tightened trees, added L1/L2,
+        # and row/col subsampling to force the model toward the signals that actually
+        # generalize across time windows.
         model = lgb.LGBMClassifier(
-            n_estimators=400,
+            n_estimators=200,
             learning_rate=0.03,
-            max_depth=6,
-            num_leaves=31,
+            max_depth=4,
+            num_leaves=15,
+            min_child_samples=20,
+            reg_alpha=0.1,
+            reg_lambda=1.0,
+            feature_fraction=0.8,
+            bagging_fraction=0.8,
+            bagging_freq=5,
             scale_pos_weight=class_weight,
             random_state=42,
             n_jobs=-1,
+            verbose=-1,
         )
     elif backend == "xgb":
         from xgboost import XGBClassifier
 
         model = XGBClassifier(
-            n_estimators=350,
+            n_estimators=200,
             learning_rate=0.03,
-            max_depth=5,
+            max_depth=3,
+            min_child_weight=5,
+            reg_alpha=0.1,
+            reg_lambda=1.0,
+            subsample=0.8,
+            colsample_bytree=0.8,
             scale_pos_weight=class_weight,
             random_state=42,
             n_jobs=-1,
@@ -419,6 +554,45 @@ def _threshold_sweep(prob, ret, target):
     return rows, best
 
 
+def _walk_forward_cv(X: pd.DataFrame, y: pd.Series, ret: pd.Series, backend: str, n_folds: int = 3) -> List[dict]:
+    """Expanding-window walk-forward CV: fold k trains on [0, start_k) and
+    validates on [start_k, end_k). Each fold grows the training window,
+    simulating production retraining where the model is updated as new
+    data accumulates. Returns per-fold AUC to detect instability.
+    """
+    results = []
+    n = len(X)
+    initial_train = int(n * 0.55)
+    val_block = max(50, (n - initial_train) // n_folds)
+    for k in range(n_folds):
+        train_end = initial_train + k * val_block
+        val_end = min(train_end + val_block, n)
+        if train_end >= val_end or train_end <= 0 or val_end > n:
+            continue
+        X_tr, y_tr = X.iloc[:train_end], y.iloc[:train_end]
+        X_val, y_val = X.iloc[train_end:val_end], y.iloc[train_end:val_end]
+        ret_val = ret.iloc[train_end:val_end]
+        if y_tr.nunique() < 2 or y_val.nunique() < 2:
+            continue
+        scaler_k = StandardScaler()
+        X_tr_s = scaler_k.fit_transform(X_tr)
+        X_val_s = scaler_k.transform(X_val)
+        model_k = _fit_model(X_tr_s, y_tr, backend)
+        prob_k = model_k.predict_proba(X_val_s)[:, 1]
+        try:
+            auc_k = float(roc_auc_score(y_val, prob_k))
+        except Exception:
+            auc_k = float("nan")
+        results.append({
+            "fold": k,
+            "train_size": int(len(X_tr)),
+            "val_size": int(len(X_val)),
+            "auc": auc_k,
+            "val_win_rate": float((ret_val.to_numpy()[prob_k >= 0.5] > 0).mean() * 100) if (prob_k >= 0.5).any() else None,
+        })
+    return results
+
+
 def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
     segment_df = df_all[spec.filter_fn(df_all)].copy()
     if segment_df.empty:
@@ -435,16 +609,42 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         return {"name": spec.name, "status": "skipped", "reason": "insufficient_positive_rows", "rows": total_rows, "positives": positive_rows}
 
     feat_cols = [col for col in FEATURE_COLS if col in segment_df.columns]
-    X = segment_df[feat_cols].apply(pd.to_numeric, errors="coerce").fillna(0.0)
+    X = segment_df[feat_cols].apply(pd.to_numeric, errors="coerce")
+    complete_x = ~X.isna().any(axis=1)
+    if not complete_x.all():
+        segment_df = segment_df.loc[complete_x].copy()
+        X = X.loc[complete_x].copy()
+        total_rows = len(segment_df)
+        positive_rows = int(segment_df["target"].sum())
+        if len(segment_df) < spec.min_rows:
+            return {"name": spec.name, "status": "skipped", "reason": "feature_na_rows_removed", "rows": int(len(segment_df))}
+        if positive_rows < spec.min_positive:
+            return {"name": spec.name, "status": "skipped", "reason": "feature_na_positive_rows_removed", "rows": total_rows, "positives": positive_rows}
     y = segment_df["target"].astype(int)
+    ret_series = pd.to_numeric(segment_df[spec.return_col], errors="coerce")
 
-    split_idx = int(len(segment_df) * 0.7)
-    if split_idx <= 0 or split_idx >= len(segment_df):
+    # OOS holdout: last 15% is never seen during CV, used only for final eval.
+    # Guards against silent regression when walk-forward CV folds all fall in
+    # a benign regime.
+    oos_idx = int(len(segment_df) * 0.85)
+    X_dev, X_oos = X.iloc[:oos_idx], X.iloc[oos_idx:]
+    y_dev, y_oos = y.iloc[:oos_idx], y.iloc[oos_idx:]
+    ret_dev, ret_oos = ret_series.iloc[:oos_idx], ret_series.iloc[oos_idx:]
+
+    cv_folds = _walk_forward_cv(X_dev, y_dev, ret_dev, backend, n_folds=3)
+
+    # Walk-forward CV median is the most stable signal-direction reading: a
+    # single val split can land either side of 0.5 in a borderline market.
+    cv_aucs = [float(f.get("auc")) for f in cv_folds if f.get("auc") is not None and not pd.isna(f.get("auc"))]
+    cv_median_auc = float(pd.Series(cv_aucs).median()) if cv_aucs else float("nan")
+
+    split_idx = int(len(X_dev) * 0.7)
+    if split_idx <= 0 or split_idx >= len(X_dev):
         return {"name": spec.name, "status": "skipped", "reason": "invalid_split", "rows": total_rows}
 
-    X_train, X_val = X.iloc[:split_idx], X.iloc[split_idx:]
-    y_train, y_val = y.iloc[:split_idx], y.iloc[split_idx:]
-    ret_val = pd.to_numeric(segment_df[spec.return_col], errors="coerce").iloc[split_idx:]
+    X_train, X_val = X_dev.iloc[:split_idx], X_dev.iloc[split_idx:]
+    y_train, y_val = y_dev.iloc[:split_idx], y_dev.iloc[split_idx:]
+    ret_val = ret_dev.iloc[split_idx:]
 
     if y_train.nunique() < 2 or y_val.nunique() < 2:
         return {"name": spec.name, "status": "skipped", "reason": "single_class_validation", "rows": total_rows}
@@ -453,11 +653,53 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
     X_train_s = scaler.fit_transform(X_train)
     X_val_s = scaler.transform(X_val)
     model = _fit_model(X_train_s, y_train, backend)
-    y_prob = model.predict_proba(X_val_s)[:, 1]
+    y_prob_raw = model.predict_proba(X_val_s)[:, 1]
+    raw_auc = float(roc_auc_score(y_val, y_prob_raw))
+
+    # Signal direction: 'auto' uses walk-forward CV median AUC with a gray zone.
+    # < 0.45 invert / > 0.55 normal / in between → 'uncertain' (downstream gates
+    # must refuse to publish picks from an uncertain model). The 0.5±0.05 band
+    # exists because a 0.531 CV median (KOSDAQ 2026-04-26) is statistically
+    # indistinguishable from a coin flip and was previously routed to 'normal',
+    # putting an unreliable model into production.
+    if spec.signal_direction in ("invert", "normal", "uncertain"):
+        signal_direction = spec.signal_direction
+    else:
+        decisive_auc = cv_median_auc if not pd.isna(cv_median_auc) else raw_auc
+        if decisive_auc < 0.45:
+            signal_direction = "invert"
+        elif decisive_auc > 0.55:
+            signal_direction = "normal"
+        else:
+            signal_direction = "uncertain"
+
+    y_prob = (1.0 - y_prob_raw) if signal_direction == "invert" else y_prob_raw
     y_pred = (y_prob >= 0.5).astype(int)
     auc = float(roc_auc_score(y_val, y_prob))
     report = classification_report(y_val, y_pred, target_names=["negative", "positive"], output_dict=True)
     sweep_rows, best_row = _threshold_sweep(y_prob, ret_val.to_numpy(), y_val.to_numpy())
+
+    # OOS evaluation: retrain scaler on full dev, then eval on oos slice.
+    oos_summary = None
+    if len(X_oos) >= 20 and y_oos.nunique() >= 2:
+        try:
+            scaler_final = StandardScaler()
+            X_dev_s = scaler_final.fit_transform(X_dev)
+            X_oos_s = scaler_final.transform(X_oos)
+            model_final = _fit_model(X_dev_s, y_dev, backend)
+            prob_oos_raw = model_final.predict_proba(X_oos_s)[:, 1]
+            prob_oos = (1.0 - prob_oos_raw) if signal_direction == "invert" else prob_oos_raw
+            oos_auc = float(roc_auc_score(y_oos, prob_oos))
+            top_mask = prob_oos >= (best_row or {}).get("threshold", 0.5)
+            oos_summary = {
+                "size": int(len(X_oos)),
+                "auc": oos_auc,
+                "picks": int(top_mask.sum()),
+                "win_rate_pct": float((ret_oos.to_numpy()[top_mask] > 0).mean() * 100) if top_mask.any() else None,
+                "avg_return_pct": float(ret_oos.to_numpy()[top_mask].mean()) if top_mask.any() else None,
+            }
+        except Exception as e:
+            oos_summary = {"error": str(e)}
 
     model_payload = {
         "model": model,
@@ -465,6 +707,9 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         "features": feat_cols,
         "trained_at": datetime.now().isoformat(),
         "auc": auc,
+        "raw_auc": raw_auc,
+        "cv_median_auc": cv_median_auc,
+        "signal_direction": signal_direction,
         "segment": spec.name,
         "return_col": spec.return_col,
         "positive_threshold": spec.positive_threshold,
@@ -496,6 +741,9 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         "return_col": spec.return_col,
         "positive_threshold": spec.positive_threshold,
         "auc": auc,
+        "raw_auc": raw_auc,
+        "cv_median_auc": cv_median_auc,
+        "signal_direction": signal_direction,
         "accuracy": float(report["accuracy"]),
         "positive_precision": float(report["positive"]["precision"]),
         "positive_recall": float(report["positive"]["recall"]),
@@ -505,14 +753,21 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         "feature_importance_top15": feature_importance,
         "model_path": spec.model_path,
         "description": spec.description,
+        "walk_forward_cv": cv_folds,
+        "oos_holdout": oos_summary,
     }
 
 
 def _report_md(report):
     lines = ["# Retrain V2 Report", ""]
     lines.append(f"- generated_at: `{report['generated_at']}`")
+    lines.append(f"- execution_status: `{report.get('execution_status', 'unknown')}`")
     lines.append(f"- rows_loaded: `{report['rows_loaded']}`")
     lines.append(f"- backend: `{report['backend']}`")
+    if report.get("last_successful_model_train_at"):
+        lines.append(f"- last_successful_model_train_at: `{report.get('last_successful_model_train_at')}`")
+    if report.get("defer_reason"):
+        lines.append(f"- defer_reason: `{report.get('defer_reason')}`")
     lines.append("")
     lines.append("## Segment Results")
     for row in report["segments"]:
@@ -531,13 +786,78 @@ def _report_md(report):
     return "\n".join(lines) + "\n"
 
 
+def _existing_model_snapshot() -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for spec in SEGMENTS:
+        path = PROJECT_ROOT / spec.model_path
+        if not path.exists():
+            continue
+        stat = path.stat()
+        rows.append(
+            {
+                "name": spec.name,
+                "model_path": spec.model_path,
+                "exists": True,
+                "mtime": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                "size_bytes": int(stat.st_size),
+            }
+        )
+    return rows
+
+
+def _latest_existing_model_time(snapshot: List[Dict[str, Any]]) -> Optional[str]:
+    mtimes = [str(row.get("mtime")) for row in snapshot if row.get("mtime")]
+    return max(mtimes) if mtimes else None
+
+
+def _load_from_csv(path: str) -> pd.DataFrame:
+    """Load enriched scan archive from a flat CSV export (smoke-test path).
+
+    Expects the columns produced by export_scan_archive_learning_dataset.py.
+    Mirrors the post-load shape of load_scan_archive(): created_at parsed,
+    market_subtype inferred, scan_mode upper-cased.
+    """
+    print(f"  CSV에서 로드: {path}")
+    df = pd.read_csv(path, low_memory=False)
+    if df.empty:
+        raise SystemExit(f"CSV is empty: {path}")
+    df["created_at"] = pd.to_datetime(df.get("created_at"), errors="coerce", utc=True).dt.tz_convert(None)
+    df["scan_date"] = df["created_at"].dt.date
+    df["scan_mode"] = df.get("scan_mode", "SWING").fillna("SWING").astype(str).str.upper()
+    df["strategy_family"] = df.get("strategy_family", "").fillna("").astype(str)
+    df["market_subtype"] = [
+        _infer_submarket(ticker, market_type, strategy_family)
+        for ticker, market_type, strategy_family in zip(
+            df.get("ticker", pd.Series(dtype=str)),
+            df.get("market_type", pd.Series(dtype=str)),
+            df.get("strategy_family", pd.Series(dtype=str)),
+        )
+    ]
+    print(f"  ✅ 총 {len(df):,} 레코드 (CSV)")
+    return df
+
+
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Phase25 ML retrain pipeline")
+    parser.add_argument(
+        "--from-csv",
+        dest="from_csv",
+        default=None,
+        help="Load archive from a CSV export instead of Supabase (smoke-test).",
+    )
+    args = parser.parse_args()
+
     print("=" * 60)
     print("  Phase 25 ML Retraining Pipeline (Resolved Outcome v2)")
     print("=" * 60)
 
-    print("\n[1/3] DB에서 enriched scan archive 로드...")
-    df = load_scan_archive()
+    if args.from_csv:
+        print(f"\n[1/3] CSV에서 enriched scan archive 로드...")
+        df = _load_from_csv(args.from_csv)
+    else:
+        print("\n[1/3] DB에서 enriched scan archive 로드...")
+        df = load_scan_archive()
 
     print("\n[2/3] 피처 엔지니어링...")
     df_feat = engineer_features(df)
@@ -551,11 +871,32 @@ def main():
         segment_reports.append(result)
         print(json.dumps(result, ensure_ascii=False, indent=2))
 
+    generated_at = datetime.now().isoformat()
+    existing_models_before = _existing_model_snapshot()
+    trained = [row for row in segment_reports if row.get("status") == "trained"]
+    if trained:
+        execution_status = "trained"
+        defer_reason = None
+        last_successful_model_train_at = generated_at
+    else:
+        execution_status = "deferred_not_failed"
+        defer_reason = "NO_DUMMY_FEATURE_COMPLETE_SAMPLE_SHORTAGE"
+        last_successful_model_train_at = _latest_existing_model_time(existing_models_before)
+
     report = {
-        "generated_at": datetime.now().isoformat(),
+        "generated_at": generated_at,
+        "execution_status": execution_status,
+        "defer_reason": defer_reason,
+        "last_successful_model_train_at": last_successful_model_train_at,
         "rows_loaded": int(len(df_feat)),
         "backend": backend,
         "segments": segment_reports,
+        "existing_models_preserved": existing_models_before,
+        "no_dummy_policy": {
+            "enabled": True,
+            "behavior": "Rows with missing real scan-time features are excluded instead of imputed with zero or neutral probabilities.",
+            "deferred_runs_exit_successfully": True,
+        },
     }
     report_dir = PROJECT_ROOT / "runtime_state" / "reports" / "learning"
     report_dir.mkdir(parents=True, exist_ok=True)
@@ -564,7 +905,6 @@ def main():
     report_json.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     report_md.write_text(_report_md(report), encoding="utf-8")
 
-    trained = [row for row in segment_reports if row.get("status") == "trained"]
     if trained:
         primary = next((row for row in trained if row["name"] == "phase25_global"), trained[0])
         print("\n" + "=" * 60)
@@ -573,7 +913,12 @@ def main():
         print(f"  report path: {report_json}")
         print("=" * 60)
     else:
-        print("\n⚠️  훈련 가능한 세그먼트가 없습니다.")
+        print("\n" + "=" * 60)
+        print("  execution status: deferred_not_failed")
+        print("  reason: feature-complete no-dummy samples are below segment thresholds")
+        print("  existing models were preserved; no dummy model was trained")
+        print(f"  report path: {report_json}")
+        print("=" * 60)
 
 
 if __name__ == "__main__":

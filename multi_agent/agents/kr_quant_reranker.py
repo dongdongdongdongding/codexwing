@@ -20,6 +20,26 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
         return float(default)
 
 
+_SWING_VARIANT_PREFIXES = (
+    "phase25_kr_swing",
+    "phase25_kospi_swing",
+    "phase25_kosdaq_swing",
+)
+_INTRADAY_VARIANT_PREFIXES = (
+    "phase25_kr_intraday",
+    "phase25_kospi_intraday",
+    "phase25_kosdaq_intraday",
+)
+
+
+def _is_swing_variant(variant: str | None) -> bool:
+    return any(str(variant or "").startswith(p) for p in _SWING_VARIANT_PREFIXES)
+
+
+def _is_intraday_variant(variant: str | None) -> bool:
+    return any(str(variant or "").startswith(p) for p in _INTRADAY_VARIANT_PREFIXES)
+
+
 def _has_value(value: Any) -> bool:
     if value is None:
         return False
@@ -114,9 +134,9 @@ def _collect_context(candidate: Dict[str, Any], run_market: str, theme_momentum_
         "routing_path": str(raw_routing_path or theme_context.get("routing_path") or "").lower(),
         "strategy_text": str(raw_strategy_text or ""),
         "context_text": str(raw_context_text or ""),
-        "prob_5": _safe_float(raw_prob_5, 50.0),
-        "prob_clean": _safe_float(raw_prob_clean, 50.0),
-        "whale_score": _safe_float(raw_whale_score, 50.0),
+        "prob_5": _safe_float(raw_prob_5, 0.0),
+        "prob_clean": _safe_float(raw_prob_clean, 0.0),
+        "whale_score": _safe_float(raw_whale_score, 0.0),
         "expected_return_1d_pct": raw_expected_return_1d_pct,
         "expected_return_3d_pct": raw_expected_return_3d_pct,
         "theme_direction": str(raw_theme_direction or "").upper(),
@@ -143,8 +163,9 @@ def _collect_context(candidate: Dict[str, Any], run_market: str, theme_momentum_
         "position": str(raw_position or "").lower(),
         "secondary_theme_count": int(raw_secondary_theme_count),
         "phase25_shadow_prob": _safe_float(raw_phase25_shadow_prob, 0.0),
-        "phase25_recommended_threshold": _safe_float(raw_phase25_recommended_threshold, 60.0),
+        "phase25_recommended_threshold": _safe_float(raw_phase25_recommended_threshold, 0.0),
         "has_phase25_shadow": _has_value(raw_phase25_shadow_prob),
+        "has_phase25_recommended_threshold": _has_value(raw_phase25_recommended_threshold),
         "explosive_gate_eligible": bool(explosive_gate_ctx.get("eligible", False)),
         "explosive_gate_reasons_ctx": list(explosive_gate_ctx.get("reasons", []) or []),
         "continuation_gate": continuation_gate if isinstance(continuation_gate, dict) else {},
@@ -174,7 +195,7 @@ def is_kr_explosive_leader_eligible(candidate: Dict[str, Any], market: str) -> D
 
     min_score = 70.0 if market_name == "KOSPI" else 85.0
     min_ml = 22.0 if market_name == "KOSPI" else 24.0
-    if phase25_variant.startswith("phase25_kr_intraday"):
+    if _is_intraday_variant(phase25_variant):
         min_score += 3.0
         min_ml += 2.0
 
@@ -247,9 +268,9 @@ def _score_horizon(
     routing_path = str(context.get("routing_path") or "").lower()
     strategy_text = str(context.get("strategy_text") or "")
     context_text = str(context.get("context_text") or "")
-    prob_5 = _safe_float(context.get("prob_5"), 50.0)
-    prob_clean = _safe_float(context.get("prob_clean"), 50.0)
-    whale_score = _safe_float(context.get("whale_score"), 50.0)
+    prob_5 = _safe_float(context.get("prob_5"), 0.0)
+    prob_clean = _safe_float(context.get("prob_clean"), 0.0)
+    whale_score = _safe_float(context.get("whale_score"), 0.0)
     expected_return_1d_pct = context.get("expected_return_1d_pct")
     expected_return_3d_pct = context.get("expected_return_3d_pct")
     theme_direction = str(context.get("theme_direction") or "").upper()
@@ -279,8 +300,9 @@ def _score_horizon(
     position = str(context.get("position") or "").lower()
     secondary_theme_count = int(context.get("secondary_theme_count", 0) or 0)
     phase25_shadow_prob = _safe_float(context.get("phase25_shadow_prob"), 0.0)
-    phase25_recommended_threshold = _safe_float(context.get("phase25_recommended_threshold"), 60.0)
+    phase25_recommended_threshold = _safe_float(context.get("phase25_recommended_threshold"), 0.0)
     has_phase25_shadow = bool(context.get("has_phase25_shadow", False))
+    has_phase25_recommended_threshold = bool(context.get("has_phase25_recommended_threshold", False))
     explosive_gate_eligible = bool(context.get("explosive_gate_eligible", False))
     has_theme_momentum = bool(context.get("has_theme_momentum", False))
     theme_momentum_pct = context.get("theme_momentum_pct")
@@ -330,9 +352,9 @@ def _score_horizon(
     elif real_trend == "DOWN":
         _add(-7.0, "TREND_DOWN")
 
-    if phase25_variant.startswith("phase25_kr_intraday"):
+    if _is_intraday_variant(phase25_variant):
         _add(-5.0 if horizon == "1d" else (-7.0 if market == "KOSPI" else -10.0), f"PHASE25_INTRADAY_{horizon.upper()}_PENALTY")
-    elif phase25_variant.startswith("phase25_kr_swing"):
+    elif _is_swing_variant(phase25_variant):
         _add(1.5 if horizon == "1d" else 3.0, f"PHASE25_SWING_{horizon.upper()}_PREMIUM")
 
     if has_expected_return_1d_pct:
@@ -445,8 +467,8 @@ def _score_horizon(
         segment_name = str(lane_overlay.get("segment") or "lane")
         _add(overlay_delta, f"LANE_CHAMPION_{segment_name.upper()}_{horizon.upper()}")
 
-    # KOSPI universe role differentiation: data shows CORE_TREND win=75%+, EXPLOSIVE_LEADER win=13%
-    # Apply bonus for confirmed CORE_TREND and penalty for EXPLOSIVE_LEADER without lane champion
+    # KOSPI universe role differentiation: archive data shows CORE_TREND win ≈ 60-66%, EXPLOSIVE_LEADER win ≈ 13%.
+    # Apply bonus for confirmed CORE_TREND and penalty for EXPLOSIVE_LEADER without lane champion.
     if market == "KOSPI":
         if kr_universe_role == "CORE_TREND":
             if horizon == "3d":
@@ -463,7 +485,7 @@ def _score_horizon(
 
     # Phase25 shadow model signal: phase25_kr_swing at threshold=0.6 achieves 90.5% win, 8.0% avg
     # Apply direct score adjustment when shadow model is present and above/below threshold
-    if has_phase25_shadow and scan_mode in {"SWING", ""}:
+    if has_phase25_shadow and has_phase25_recommended_threshold and scan_mode in {"SWING", ""}:
         if phase25_shadow_prob >= phase25_recommended_threshold:
             # Shadow model agrees with pick — strong confirmation
             excess = (phase25_shadow_prob - phase25_recommended_threshold) / 40.0  # normalize 0-1
@@ -581,7 +603,7 @@ _theme_momentum_cache: Dict[str, Any] = {}
 
 def compute_kr_quant_rerank(candidate: Dict[str, Any], run_market: str) -> Dict[str, Any]:
     market = str(run_market or "").upper()
-    raw_score = _safe_float(candidate.get("score", _extract_feature(candidate, "decision_score", "score")), 50.0)
+    raw_score = _safe_float(candidate.get("score", _extract_feature(candidate, "decision_score", "score")), 0.0)
     if market not in {"KOSPI", "KOSDAQ"}:
         return {
             "score": round(raw_score, 2),
@@ -591,7 +613,7 @@ def compute_kr_quant_rerank(candidate: Dict[str, Any], run_market: str) -> Dict[
             "raw_score": round(raw_score, 2),
             "continuation_eligible": False,
             "continuation_enabled": False,
-            "continuation_prob_3d": 50.0,
+            "continuation_prob_3d": None,
             "continuation_gate_reasons": [],
             "continuation_evidence": 0,
             "adjustments": [],
@@ -621,7 +643,7 @@ def compute_kr_quant_rerank(candidate: Dict[str, Any], run_market: str) -> Dict[
         ]
         if flag
     )
-    continuation_prob = _safe_float(context.get("continuation_overlay", {}).get("prob_up_3d"), 50.0)
+    continuation_prob = _safe_float(context.get("continuation_overlay", {}).get("prob_up_3d"), 0.0)
     continuation_gate_reasons = list(context.get("continuation_gate", {}).get("reasons", []) or [])
     role = str(context.get("kr_universe_role") or "").upper()
     timeframe_profile = str(context.get("scanner_timeframe_profile") or "").upper()
