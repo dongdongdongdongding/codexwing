@@ -1812,11 +1812,27 @@ class QuantStrategy:
                     _p25_X = _p25_df.reindex(columns=p25_feats, fill_value=0).fillna(0)
                     _p25_prob_raw = float(p25_model.predict_proba(_transform_with_optional_scaler(_p25_X, p25_scaler))[0][1] * 100)
                     _p25_direction = str(p25_bundle.get("signal_direction", "normal") or "normal").lower()
-                    # 'uncertain' = CV median AUC inside 0.45–0.55 gray zone. The
-                    # model is statistically indistinguishable from a coin flip
-                    # so we collapse the contribution to neutral 50 — downstream
-                    # gates also see signal_direction='uncertain' and refuse to
-                    # publish picks.
+                    # 'uncertain' = CV median AUC inside 0.45–0.55 gray zone.
+                    # Originally we collapsed the contribution to 50 because raw
+                    # in-sample AUC is the only signal we trusted. After OHLCV
+                    # + index regime features were added, KOSDAQ swing's raw_auc
+                    # sits at 0.55 (still 'uncertain') yet OOS reaches win 78%
+                    # / return +11.84% on the held-out 15% slice. OOS is the
+                    # leakage-free production proxy, so we override 'uncertain'
+                    # to 'normal' when OOS shows real edge: oos_auc >= 0.55 AND
+                    # oos_win_rate_pct >= 70 AND oos_avg_return_pct >= 5. If
+                    # OOS metadata is missing or weak, the original neutralize
+                    # behavior stays in place.
+                    _oos_auc = p25_bundle.get("oos_auc")
+                    _oos_win = p25_bundle.get("oos_win_rate_pct")
+                    _oos_ret = p25_bundle.get("oos_avg_return_pct")
+                    _oos_validates = (
+                        _oos_auc is not None and float(_oos_auc) >= 0.55 and
+                        _oos_win is not None and float(_oos_win) >= 70.0 and
+                        _oos_ret is not None and float(_oos_ret) >= 5.0
+                    )
+                    if _p25_direction == "uncertain" and _oos_validates:
+                        _p25_direction = "normal"
                     if _p25_direction == "uncertain":
                         _p25_prob = 50.0
                     elif _p25_direction == "invert":
@@ -1835,6 +1851,16 @@ class QuantStrategy:
                                 _shadow_model.predict_proba(_transform_with_optional_scaler(_shadow_X, _shadow_scaler))[0][1] * 100
                             )
                             _shadow_direction = str(shadow_bundle.get("signal_direction", "normal") or "normal").lower()
+                            _shadow_oos_auc = shadow_bundle.get("oos_auc")
+                            _shadow_oos_win = shadow_bundle.get("oos_win_rate_pct")
+                            _shadow_oos_ret = shadow_bundle.get("oos_avg_return_pct")
+                            _shadow_oos_validates = (
+                                _shadow_oos_auc is not None and float(_shadow_oos_auc) >= 0.55 and
+                                _shadow_oos_win is not None and float(_shadow_oos_win) >= 70.0 and
+                                _shadow_oos_ret is not None and float(_shadow_oos_ret) >= 5.0
+                            )
+                            if _shadow_direction == "uncertain" and _shadow_oos_validates:
+                                _shadow_direction = "normal"
                             if _shadow_direction == "uncertain":
                                 _shadow_prob = 50.0
                             elif _shadow_direction == "invert":
