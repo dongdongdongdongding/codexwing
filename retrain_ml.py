@@ -431,12 +431,12 @@ SEGMENTS = [
     SegmentSpec(
         name="phase25_kosdaq_swing",
         model_path="models/phase25_kosdaq_swing.pkl",
-        return_col="return_3d_pct",
+        return_col="return_5d_pct",
         positive_threshold=5.0,
         min_rows=300,
         min_positive=60,
-        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSDAQ") & df["scan_mode"].eq("SWING") & df["return_3d_pct"].notna(),
-        description="KOSDAQ swing model: small/mid-cap mean-reverting at extremes (auto-inverts when val AUC<0.5).",
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSDAQ") & df["scan_mode"].eq("SWING") & df["return_5d_pct"].notna(),
+        description="KOSDAQ swing model: small/mid-cap, mean-reverting at 3d (median +0.7%) but trends emerge at 5d (median +3.1%, mean +5.0%). Switched horizon 3d→5d so the model targets the timeframe where KOSDAQ surge signals actually materialize; 42% positive rate at +5% threshold is a balanced binary.",
     ),
     SegmentSpec(
         name="phase25_kospi_intraday",
