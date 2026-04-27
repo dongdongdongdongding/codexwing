@@ -988,6 +988,23 @@ def evaluate_active_signal_candidate(
         target_price = float(setup.get("Target Price", 0) or 0)
         stop_loss = float(setup.get("Stop Loss", 0) or 0)
 
+        # Per-segment exit policy override (2026-04-28). ATR-derived defaults
+        # produce ±2-3% targets that cap return at ~+5%; OOS sweep showed wider
+        # bands meet the 75%/+15% bar. Reference price = current close (which
+        # also seeds the limit-buy-at-(-2%) entry).
+        ref_close = float(latest["Close"])
+        if ref_close > 0:
+            if ticker.endswith(".KQ"):
+                # KOSDAQ swing: limit -2% entry, TP +10%, SL -10%, hold 5d
+                entry_price = round(ref_close * 0.98, 2)
+                target_price = round(entry_price * 1.10, 2)
+                stop_loss = round(entry_price * 0.90, 2)
+            elif ticker.endswith(".KS"):
+                # KOSPI swing: open entry, TP +20%, SL -5%, hold 5d
+                entry_price = round(ref_close, 2)
+                target_price = round(entry_price * 1.20, 2)
+                stop_loss = round(entry_price * 0.95, 2)
+
         currency = "$" if ticker.upper().isupper() and ".K" not in ticker else "₩"
         signal_data = {
             "score": score,

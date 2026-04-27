@@ -98,28 +98,49 @@ def _fetch_forward_bars(ticker: str, base_dt: datetime, days: int = 15) -> Optio
     return hist
 
 
-def _simulate_exit(hist: pd.DataFrame, base_close: float, tp: float, sl: float, hold: int) -> Tuple[float, str]:
+def _simulate_exit(hist: pd.DataFrame, base_close: float, tp: float, sl: float, hold: int,
+                    entry_offset_pct: float = -2.0) -> Tuple[float, str]:
     """Return (realized_return_pct, reason) for given policy.
 
-    Conservative same-bar: TP checked before SL on each bar (optimistic for TP).
+    Entry model: limit-buy at base_close * (1 + entry_offset_pct/100). Trigger
+    only if any subsequent bar's Low touches the limit (else NOT_FILLED). This
+    matches the production message which advertises 'Limit Buy @ -2%'. The
+    base_close passed in is the prior session's close (signal day).
+
+    Same-bar TP/SL: TP checked before SL on each bar (optimistic for TP).
     Hold exit at close on day index `hold-1` if neither TP nor SL hit.
     """
     if hist is None or hist.empty or base_close <= 0:
         return (0.0, "no_data")
-    tp_price = base_close * (1 + tp / 100.0)
-    sl_price = base_close * (1 + sl / 100.0)
+    entry_price = base_close * (1 + entry_offset_pct / 100.0)
+    tp_price = entry_price * (1 + tp / 100.0)
+    sl_price = entry_price * (1 + sl / 100.0)
     bars = hist.iloc[: hold + 1]
     if bars.empty:
         return (0.0, "no_bars")
-    for _, row in bars.iterrows():
-        h = float(row["High"])
-        low = float(row["Low"])
-        if h >= tp_price:
-            return ((tp_price / base_close - 1) * 100.0, "tp")
-        if low <= sl_price:
-            return ((sl_price / base_close - 1) * 100.0, "sl")
-    last_close = float(bars["Close"].iloc[min(hold - 1, len(bars) - 1)])
-    return ((last_close / base_close - 1) * 100.0, "hold")
+    filled = False
+    fill_idx = None
+    for i, (_, row) in enumerate(bars.iterrows()):
+        if not filled:
+            if float(row["Low"]) <= entry_price:
+                filled = True
+                fill_idx = i
+                # Same-bar after fill: check TP/SL on the rest of bar
+                if float(row["High"]) >= tp_price:
+                    return ((tp_price / entry_price - 1) * 100.0, "tp")
+                if float(row["Low"]) <= sl_price:
+                    return ((sl_price / entry_price - 1) * 100.0, "sl")
+            continue
+        # already filled, scan for TP/SL
+        if float(row["High"]) >= tp_price:
+            return ((tp_price / entry_price - 1) * 100.0, "tp")
+        if float(row["Low"]) <= sl_price:
+            return ((sl_price / entry_price - 1) * 100.0, "sl")
+    if not filled:
+        return (0.0, "not_filled")
+    last_idx = min(hold, len(bars) - 1)
+    last_close = float(bars["Close"].iloc[last_idx])
+    return ((last_close / entry_price - 1) * 100.0, "hold")
 
 
 def _sweep_segment(picks: pd.DataFrame, *, tp_grid, sl_grid, hold_grid, segment_name: str, verbose: bool = True) -> List[Dict[str, Any]]:
