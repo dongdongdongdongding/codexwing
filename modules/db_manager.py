@@ -576,12 +576,21 @@ class DBManager:
         """
         Sync run outcomes into market_scan_results so Scan Archive can show
         picked/watchlist/exception-leader classification and realized returns.
+
+        Pipeline integrity counters (printed at end of run):
+          - merged: outcome row matched a real scanner_full peer (good)
+          - inserted_stub: no scanner peer found, stub row written (bad — pollutes
+            training set with feature_origin=outcome_sync_partial)
+        Tracking these surfaces the silent regression pattern that produced 28K
+        NULL-alpha INTRADAY rows in 2026-04-01..08.
         """
         if not self.client:
             return 0
         if not outcomes:
             return 0
 
+        merged = 0
+        inserted_stub = 0
         updated = 0
         for row in outcomes:
             if not isinstance(row, dict):
@@ -651,7 +660,7 @@ class DBManager:
                     rec_date = (recommended_at or rec_dt.isoformat())[:10]
                     fallback_q = (
                         self.client.table("market_scan_results")
-                        .select("id")
+                        .select("id,feature_origin,alpha_score")
                         .eq("ticker", ticker)
                         .is_("run_id", "null")
                         .gte("created_at", f"{rec_date}T00:00:00")
@@ -659,9 +668,13 @@ class DBManager:
                     )
                     if scan_mode_val:
                         fallback_q = fallback_q.eq("scan_mode", scan_mode_val)
-                    fallback_q = fallback_q.in_("feature_origin", ["scanner_full", "scanner_partial_legacy"])
-                    fallback = fallback_q.order("created_at", desc=True).limit(1).execute()
-                    rows = fallback.data or []
+                    fallback = fallback_q.order("created_at", desc=True).limit(5).execute()
+                    candidates = fallback.data or []
+                    rows = [
+                        c for c in candidates
+                        if c.get("feature_origin") in ("scanner_full", "scanner_partial_legacy")
+                        or (c.get("feature_origin") is None and c.get("alpha_score") is not None)
+                    ][:1]
                 if rows:
                     row_id = rows[0].get("id")
                     existing_row = (
@@ -683,11 +696,17 @@ class DBManager:
                         merged_payload[key] = value
                     merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
                     self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                    merged += 1
                 else:
                     self.client.table("market_scan_results").insert(payload).execute()
+                    inserted_stub += 1
                 updated += 1
             except Exception as e:
                 print(f"Scan Archive Outcome Sync Error ({ticker}): {e}")
+        if inserted_stub:
+            print(f"⚠️ outcome_sync stub INSERTs: {inserted_stub} (no scanner_full peer; alpha_score will be NULL — these rows are excluded from training)")
+        if merged:
+            print(f"✅ outcome_sync merged into scanner peer: {merged}")
         return updated
 
     def update_run_quality_flags(self, run_id, market, quality_flags=None, validation_excluded=False):
