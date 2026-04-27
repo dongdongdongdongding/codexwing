@@ -135,7 +135,7 @@ def load_scan_archive() -> pd.DataFrame:
     sort_cols = ["created_at", "id"] if "id" in df.columns else ["created_at"]
     df = df.sort_values(sort_cols)
 
-    # Build dedup key: run_id preferred, fallback to scan_date
+    # Build dedup key: run_id preferred, fallback to scan_date.
     if "run_id" in df.columns:
         df["_dedup_run"] = df["run_id"].fillna(df["scan_date"].astype(str))
     else:
@@ -145,7 +145,15 @@ def load_scan_archive() -> pd.DataFrame:
 
     alpha_num = pd.to_numeric(df.get("alpha_score", pd.Series(index=df.index)), errors="coerce")
     df["_has_alpha"] = alpha_num.gt(0).astype(int)
-    df["_has_return"] = df.get("return_3d_pct", pd.Series(index=df.index)).notna().astype(int)
+    # _has_return: ANY return horizon present, not just 3d. Earlier check on
+    # return_3d_pct alone excluded outcome stubs that only carry 5d/7d returns
+    # (KOSDAQ SWING uses 5d label) — they then never made it into the overlay
+    # set so scanner peers stayed unlabeled.
+    return_horizons = [c for c in ("return_close_pct","return_1d_pct","return_2d_pct","return_3d_pct","return_5d_pct","return_7d_pct") if c in df.columns]
+    if return_horizons:
+        df["_has_return"] = df[return_horizons].notna().any(axis=1).astype(int)
+    else:
+        df["_has_return"] = 0
 
     # Base pick: rows with scan-time features (alpha > 0). _has_alpha is the top
     # sort key so alpha-bearing rows always sort last (0s then 1s) and survive
@@ -159,14 +167,21 @@ def load_scan_archive() -> pd.DataFrame:
     )
 
     # Overlay cols from the newest return-bearing row (stub or full scan row).
+    # Also overlay outcome_status from any RESOLVED stub — base may be a scanner
+    # row with outcome_status=NULL even though a sibling outcome-sync stub holds
+    # outcome_status='RESOLVED'. Without this overlay, _is_resolved() drops the
+    # row from training. Same for volume_ratio/volume_confirmed (outcome stubs
+    # carry the values that backfill produced, not the original scanner row).
     overlay_cols = [
         c for c in [
             "return_close_pct", "return_1d_pct", "return_2d_pct",
             "return_3d_pct", "return_5d_pct", "return_7d_pct",
             "outcome_status",
+            "volume_ratio", "volume_confirmed",
         ] if c in df.columns
     ]
     if overlay_cols:
+        # 1) Returns/outcome from any stub or scan row that carries them.
         overlay = (
             df[df["_has_return"].eq(1)]
             .sort_values(sort_cols)
@@ -174,10 +189,59 @@ def load_scan_archive() -> pd.DataFrame:
             .set_index(dedup_key)[overlay_cols]
         )
         for col in overlay_cols:
-            # Fill only where base is missing/null — preserve base value when both exist.
             base[col] = base[col].where(base[col].notna(), overlay[col])
+        # 2) outcome_status separately: any RESOLVED row in the group wins, even
+        # if that row had no return (e.g. EXPIRED stub overwritten by RESOLVED
+        # peer). This fixes the case where scanner_full row has outcome=NULL and
+        # outcome_sync_partial stub has outcome=RESOLVED but no peer was matched.
+        if "outcome_status" in df.columns:
+            resolved_overlay = (
+                df[df["outcome_status"].fillna("").str.upper().eq("RESOLVED")]
+                .sort_values(sort_cols)
+                .drop_duplicates(subset=dedup_key, keep="last")
+                .set_index(dedup_key)[["outcome_status"]]
+            )
+            base["outcome_status"] = base["outcome_status"].where(
+                base["outcome_status"].fillna("").str.upper().eq("RESOLVED"),
+                resolved_overlay["outcome_status"],
+            )
 
     df = base.reset_index().drop(columns=["_dedup_run", "_has_alpha", "_has_return"], errors="ignore")
+
+    # Cross-group fill on (ticker, scan_date, scan_mode, priority_rank): when an
+    # outcome_sync stub lives in run_id=A and the scanner_full peer lives in
+    # run_id=B, the dedup above leaves both as separate rows. Each is missing
+    # what the other has (alpha vs return/outcome). Without this pass, KOSDAQ
+    # SWING training set drops to ~530 rows even though the DB holds 9,560
+    # labeled candidates. We backfill missing fields cross-group, then drop
+    # rows that still have neither alpha nor returns.
+    cross_key = [c for c in ("ticker", "scan_date", "scan_mode", "priority_rank") if c in df.columns]
+    if cross_key:
+        cross_overlay_cols = [
+            c for c in (
+                "alpha_score", "tech_score", "ml_prob", "whale_score",
+                "tier", "trend", "position", "volume", "volume_ratio",
+                "volume_confirmed", "decision_score", "fund_status",
+                "return_close_pct", "return_1d_pct", "return_2d_pct",
+                "return_3d_pct", "return_5d_pct", "return_7d_pct",
+                "outcome_status", "feature_origin",
+            ) if c in df.columns
+        ]
+        if cross_overlay_cols:
+            sub_sort = [c for c in ("created_at", "id") if c in df.columns]
+            for col in cross_overlay_cols:
+                source_cols = cross_key + [col] + [c for c in sub_sort if c not in cross_key and c != col]
+                source = (
+                    df.loc[df[col].notna(), source_cols]
+                    .sort_values(sub_sort)
+                    .drop_duplicates(subset=cross_key, keep="last")
+                )
+                if source.empty:
+                    continue
+                lookup = source.set_index(cross_key)[col]
+                idx = pd.MultiIndex.from_frame(df[cross_key])
+                filler = lookup.reindex(idx).values
+                df[col] = df[col].where(df[col].notna(), filler)
 
     df = _derive_features_from_archive(df)
     before_count = len(rows)
