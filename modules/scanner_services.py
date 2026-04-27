@@ -33,6 +33,14 @@ def _clamp_float(value: float, low: float, high: float) -> float:
     return max(low, min(high, float(value)))
 
 
+# Exit rule defaults (archive backtest re-calibrated 2026-04-22, see runtime_state/reports/learning/exit_rule_sweep.json)
+# TP 15% / SL -10% / 5-day hold on KR swing top-picks: win=64.3%, avg=+3.53%.
+# Earlier SL=-3% caused 50% SL-hit rate and cut winners; loosening to -10% gains 20pp win rate.
+DEFAULT_EXIT_TP_PCT = _env_float("EXIT_RULE_TP_PCT", 15.0)
+DEFAULT_EXIT_SL_PCT = _env_float("EXIT_RULE_SL_PCT", -10.0)
+DEFAULT_EXIT_HOLD_DAYS = int(_env_float("EXIT_RULE_HOLD_DAYS", 5.0))
+
+
 def _safe_last(series: Any, default: float = 0.0) -> float:
     try:
         if series is None or len(series) == 0:
@@ -50,6 +58,51 @@ def _safe_numeric(value: Any, default: float = 0.0) -> float:
         return float(value)
     except Exception:
         return float(default)
+
+
+def _format_volume_ratio_badge(volume_ratio: Any, volume_confirmed: Any) -> str:
+    ratio = _safe_numeric(volume_ratio, 1.0)
+    return f"{'✅' if bool(volume_confirmed) else '⚠️'} x{ratio:.2f}"
+
+
+def _optional_float(value: Any) -> Optional[float]:
+    try:
+        if value in (None, "", "nan", "None", "null", "?"):
+            return None
+        result = float(str(value).replace("x", "").strip())
+        if result != result:
+            return None
+        return result
+    except Exception:
+        return None
+
+
+def _has_real_feature(value: Any) -> bool:
+    if isinstance(value, bool):
+        return True
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip().lower() not in {"", "?", "nan", "none", "null", "unknown", "na", "n/a"}
+    try:
+        result = float(value)
+        return result == result
+    except Exception:
+        return True
+
+
+def _scanner_feature_quality(origin: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+    missing = [key for key, value in fields.items() if not _has_real_feature(value)]
+    completeness = 1.0 if not fields else (len(fields) - len(missing)) / len(fields)
+    return {
+        "feature_origin": origin,
+        "feature_quality": "complete" if not missing else "incomplete",
+        "feature_completeness": round(float(completeness), 4),
+        "feature_missing_fields": missing,
+        "validation_excluded": bool(missing),
+        "validation_excluded_reason": None if not missing else "FEATURE_MISSING:" + ",".join(missing),
+        "is_dummy_data": False,
+    }
 
 
 def _theme_flat_fields(theme_context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
@@ -74,6 +127,7 @@ def compute_expected_edge_profile(
     scan_mode: str,
     market_gate: str,
     theme_context: Optional[Dict[str, Any]] = None,
+    inference_failed: bool = False,
 ) -> Dict[str, float]:
     theme_ctx = theme_context if isinstance(theme_context, dict) else {}
     direction = str(theme_ctx.get("theme_direction") or "").upper()
@@ -83,38 +137,49 @@ def compute_expected_edge_profile(
     gate = str(market_gate or "GREEN").upper()
     trend = str(real_trend or "").upper()
 
+    # Baselines recalibrated 2026-04-22 against KR archive after detecting
+    # corr(expected, realized) = -0.145 (inverse). Root causes: (1) prob_5/prob_clean
+    # were saturated at 50 due to ML fallback — now neutralized upstream when
+    # inference_failed=True, (2) decision_score anchor (65) was above observed
+    # median (~52) causing most rows to register negative edge. Anchors now
+    # align with realized median buckets (prob_clean>=50 archive hit5d≈0.55,
+    # prob_clean<50 hit5d≈0.48). Sign convention: higher prob_clean / UP trend /
+    # beneficiary theme → higher expected return.
+    if inference_failed:
+        prob_contrib = 0.0
+    else:
+        prob_contrib = (float(prob_clean) - 50.0) * 0.45 + (float(prob_5) - 50.0) * 0.25
     edge_score = (
-        (float(prob_5) - 50.0) * 0.42
-        + (float(prob_clean) - 50.0) * 0.55
-        + (float(decision_score) - 65.0) * 0.20
-        + (float(conviction_score) - 60.0) * 0.12
+        prob_contrib
+        + (float(decision_score) - 55.0) * 0.18
+        + (float(conviction_score) - 55.0) * 0.10
     )
     if trend == "UP":
-        edge_score += 4.0
+        edge_score += 3.0
     elif trend == "DOWN":
-        edge_score -= 6.0
+        edge_score -= 5.0
 
     if direction == "BENEFICIARY":
-        edge_score += min(4.5, strength / 20.0)
+        edge_score += min(3.5, strength / 22.0)
     elif direction == "HEADWIND":
-        edge_score -= min(5.0, strength / 18.0)
+        edge_score -= min(4.0, strength / 20.0)
 
     if route == "theme_routed":
-        edge_score += 2.0
+        edge_score += 1.5
     elif route == "theme_shadow":
-        edge_score += 0.7
+        edge_score += 0.5
 
     if gate == "RED":
-        edge_score -= 2.5
+        edge_score -= 2.0
     elif gate == "YELLOW":
-        edge_score -= 1.0
+        edge_score -= 0.8
 
-    mode_multiplier = 0.11 if mode == "INTRADAY" else 0.085
-    expected_1d = _clamp_float(edge_score * mode_multiplier, -4.0, 6.0)
+    mode_multiplier = 0.09 if mode == "INTRADAY" else 0.07
+    expected_1d = _clamp_float(edge_score * mode_multiplier, -3.5, 4.5)
     expected_3d = _clamp_float(
-        expected_1d * (1.55 if mode == "INTRADAY" else 1.95) + (0.45 if mode == "SWING" else 0.15),
-        -6.0,
-        10.0,
+        expected_1d * (1.45 if mode == "INTRADAY" else 1.8),
+        -5.5,
+        7.5,
     )
 
     return {
@@ -367,6 +432,7 @@ def evaluate_intraday_candidate(
 
     news_adj = news_adjustment_fn(stock_name, sym, "", intel_data)
     ml_pred = qs.get_ml_prediction() or {}
+    ml_inference_failed = bool(ml_pred.get("inference_failed", False))
     model_prob = float(ml_pred.get("prob", 50) or 50)
     model_clean_prob = float(ml_pred.get("clean_prob", model_prob) or model_prob)
     gate = str((market_gate or {}).get("gate", "GREEN")).upper()
@@ -376,14 +442,24 @@ def evaluate_intraday_candidate(
     breakout_points = 18.0 if breakout else 0.0
     volume_points = max(-4.0, min(16.0, (vol_ratio - 1.0) * 10.0))
     momentum_points = max(-8.0, min(14.0, day_ret * 2.0))
-    model_points = ((model_prob - 50.0) * 0.25) + ((model_clean_prob - 50.0) * 0.15)
+    # Neutralize ML contribution when inference failed — otherwise all affected
+    # tickers end up with model_prob=50 (fallback) and share identical scores,
+    # which is what drove the 2026-04-20 all-stocks-ml_prob=50 incident.
+    if ml_inference_failed:
+        model_points = 0.0
+    else:
+        model_points = ((model_prob - 50.0) * 0.25) + ((model_clean_prob - 50.0) * 0.15)
     score_raw = 52.0 + trend_points + breakout_points + volume_points + momentum_points + model_points + float(news_adj.get("score_adjustment", 0))
     decision_score = round(_clamp_float(score_raw - gate_penalty, 0.0, 100.0), 1)
     alpha_score = round(_clamp_float(45.0 + trend_points + breakout_points + momentum_points * 0.7, 0.0, 100.0), 1)
     heuristic_prob_5 = round(_clamp_float(35.0 + trend_points * 0.8 + breakout_points * 0.7 + volume_points * 0.6 - gate_penalty, 1.0, 99.0), 1)
     heuristic_prob_clean = round(_clamp_float(30.0 + trend_points * 0.7 + volume_points * 0.8 - gate_penalty, 1.0, 99.0), 1)
-    prob_5 = round(_clamp_float((heuristic_prob_5 * 0.55) + (model_prob * 0.45), 1.0, 99.0), 1)
-    prob_clean = round(_clamp_float((heuristic_prob_clean * 0.55) + (model_clean_prob * 0.45), 1.0, 99.0), 1)
+    if ml_inference_failed:
+        prob_5 = heuristic_prob_5
+        prob_clean = heuristic_prob_clean
+    else:
+        prob_5 = round(_clamp_float((heuristic_prob_5 * 0.55) + (model_prob * 0.45), 1.0, 99.0), 1)
+        prob_clean = round(_clamp_float((heuristic_prob_clean * 0.55) + (model_clean_prob * 0.45), 1.0, 99.0), 1)
     conviction_score = round(_clamp_float((decision_score + prob_clean) / 2.0, 1.0, 99.0), 1)
     theme_overlay = build_theme_overlay(
         sym=sym,
@@ -411,6 +487,7 @@ def evaluate_intraday_candidate(
         scan_mode="INTRADAY",
         market_gate=gate,
         theme_context=theme_overlay.get("theme_context", {}),
+        inference_failed=ml_inference_failed,
     )
 
     weak_setup = decision_score < 60 or (not breakout and vol_ratio < 1.15 and intraday_ret < 0.4)
@@ -534,9 +611,13 @@ def evaluate_intraday_candidate(
             "phase25_recommended_threshold": ml_pred.get("phase25_recommended_threshold"),
             "model_trace_status": ml_pred.get("model_trace_status"),
             "model_error": ml_pred.get("model_error"),
+            "inference_failed": bool(ml_pred.get("inference_failed", False)),
             "expected_edge_score": expected_edge.get("expected_edge_score"),
             "expected_return_1d_pct": expected_edge.get("expected_return_1d_pct"),
             "expected_return_3d_pct": expected_edge.get("expected_return_3d_pct"),
+            "target_tp_pct": 3.5,
+            "stop_sl_pct": -2.0,
+            "hold_days": 0,
             "_theme_context": theme_overlay.get("theme_context", {}),
             "_leader_metrics": theme_overlay.get("leader_metrics", {}),
             "_routing_path": theme_overlay.get("routing_path", "core_only"),
@@ -570,9 +651,13 @@ def evaluate_intraday_candidate(
             "phase25_recommended_threshold": ml_pred.get("phase25_recommended_threshold"),
             "model_trace_status": ml_pred.get("model_trace_status"),
             "model_error": ml_pred.get("model_error"),
+            "inference_failed": bool(ml_pred.get("inference_failed", False)),
             "expected_edge_score": expected_edge.get("expected_edge_score"),
             "expected_return_1d_pct": expected_edge.get("expected_return_1d_pct"),
             "expected_return_3d_pct": expected_edge.get("expected_return_3d_pct"),
+            "target_tp_pct": 3.5,
+            "stop_sl_pct": -2.0,
+            "hold_days": 0,
             **_theme_flat_fields(theme_overlay.get("theme_context", {})),
         }
     else:
@@ -611,9 +696,13 @@ def evaluate_intraday_candidate(
             "phase25_recommended_threshold": ml_pred.get("phase25_recommended_threshold"),
             "model_trace_status": ml_pred.get("model_trace_status"),
             "model_error": ml_pred.get("model_error"),
+            "inference_failed": bool(ml_pred.get("inference_failed", False)),
             "expected_edge_score": expected_edge.get("expected_edge_score"),
             "expected_return_1d_pct": expected_edge.get("expected_return_1d_pct"),
             "expected_return_3d_pct": expected_edge.get("expected_return_3d_pct"),
+            "target_tp_pct": 3.5,
+            "stop_sl_pct": -2.0,
+            "hold_days": 0,
             "_theme_context": theme_overlay.get("theme_context", {}),
             "_leader_metrics": theme_overlay.get("leader_metrics", {}),
             "_routing_path": theme_overlay.get("routing_path", "core_only"),
@@ -651,9 +740,13 @@ def evaluate_intraday_candidate(
             "phase25_recommended_threshold": ml_pred.get("phase25_recommended_threshold"),
             "model_trace_status": ml_pred.get("model_trace_status"),
             "model_error": ml_pred.get("model_error"),
+            "inference_failed": bool(ml_pred.get("inference_failed", False)),
             "expected_edge_score": expected_edge.get("expected_edge_score"),
             "expected_return_1d_pct": expected_edge.get("expected_return_1d_pct"),
             "expected_return_3d_pct": expected_edge.get("expected_return_3d_pct"),
+            "target_tp_pct": 3.5,
+            "stop_sl_pct": -2.0,
+            "hold_days": 0,
             "theme_context": theme_overlay.get("theme_context", {}),
             "leader_metrics": theme_overlay.get("leader_metrics", {}),
             "routing_path": theme_overlay.get("routing_path", "core_only"),
@@ -2125,6 +2218,7 @@ def build_us_scan_outputs(
     phase25_recommended_threshold: Optional[float] = None,
     model_trace_status: Optional[str] = None,
     model_error: Optional[str] = None,
+    inference_failed: bool = False,
     theme_context: Optional[Dict[str, Any]] = None,
     leader_metrics: Optional[Dict[str, Any]] = None,
     routing_path: str = "",
@@ -2137,8 +2231,30 @@ def build_us_scan_outputs(
 ) -> Dict[str, Dict[str, Any]]:
     """Build US scanner table row + DB payload with legacy field compatibility."""
     curr_fmt = "{:,.2f}"
-    volume_ratio = setup.get("Volume Ratio", "?")
-    volume_badge = f"{'✅' if setup.get('Volume Confirmed') else '⚠️'} x{volume_ratio}"
+    volume_ratio_value = _optional_float(setup.get("Volume Ratio"))
+    volume_confirmed = bool(setup.get("Volume Confirmed"))
+    volume_ratio_display = f"{volume_ratio_value:.2f}" if volume_ratio_value is not None else "?"
+    volume_badge = f"{'✅' if volume_confirmed else '⚠️'} x{volume_ratio_display}"
+    stored_prob_5 = None if inference_failed else round(float(prob_5), 1)
+    stored_prob_clean = None if inference_failed else round(float(prob_clean), 1)
+    feature_quality = _scanner_feature_quality(
+        "scanner_full",
+        {
+            "alpha_score": alpha_score,
+            "tech_score": tech_score,
+            "ml_prob": stored_prob_5,
+            "prob_clean": stored_prob_clean,
+            "whale_score": whale_score,
+            "trend": real_trend,
+            "volume_ratio": volume_ratio_value,
+            "position": position,
+            "tier": tier,
+            "decision_score": decision_score,
+            "entry_reference_price": setup.get("Entry Price"),
+        },
+    )
+    if inference_failed:
+        feature_quality["validation_excluded_reason"] = "ML_INFERENCE_FAILED"
 
     res_data = {
         "Tier": tier,
@@ -2180,17 +2296,27 @@ def build_us_scan_outputs(
         "phase25_recommended_threshold": phase25_recommended_threshold,
         "model_trace_status": model_trace_status,
         "model_error": model_error,
+        "inference_failed": bool(inference_failed),
+        "_feature_quality": dict(feature_quality),
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        "target_tp_pct": DEFAULT_EXIT_TP_PCT,
+        "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
+        "hold_days": DEFAULT_EXIT_HOLD_DAYS,
+        "TP": f"{DEFAULT_EXIT_TP_PCT:+.1f}%",
+        "SL": f"{DEFAULT_EXIT_SL_PCT:+.1f}%",
+        "보유일": f"{DEFAULT_EXIT_HOLD_DAYS}d",
     }
 
     db_payload = {
         "ticker": sym,
         "name": stock_name,
+        "scan_mode": str(scan_mode or "SWING").upper(),
         "alpha_score": int(alpha_score),
         "tech_score": int(tech_score),
-        "ml_prob": round(prob_5, 1),
+        "ml_prob": stored_prob_5,
+        "prob_clean": stored_prob_clean,
         "whale_score": int(whale_score),
         "fund_status": "US",
         "initial_trend": real_trend,
@@ -2200,6 +2326,8 @@ def build_us_scan_outputs(
         "verdict": verdict_label,
         "tier": tier,
         "volume": volume_badge,
+        "volume_ratio": volume_ratio_value,
+        "volume_confirmed": volume_confirmed,
         "context": news_tag,
         "surge": surge_tag,
         "win_rate": f"{wr:.0f}%",
@@ -2215,9 +2343,15 @@ def build_us_scan_outputs(
         "phase25_recommended_threshold": phase25_recommended_threshold,
         "model_trace_status": model_trace_status,
         "model_error": model_error,
+        "inference_failed": bool(inference_failed),
+        "entry_reference_price": _optional_float(setup.get("Entry Price")),
+        **feature_quality,
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        "target_tp_pct": DEFAULT_EXIT_TP_PCT,
+        "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
+        "hold_days": DEFAULT_EXIT_HOLD_DAYS,
         "theme_context": theme_context or {},
         "leader_metrics": leader_metrics or {},
         "routing_path": routing_path or "",
@@ -2254,6 +2388,10 @@ def build_kr_scan_outputs(
     verdict_label: str,
     market_gate: str,
     kospi_chg: float,
+    kosdaq_chg: float = 0.0,
+    regime_avg_chg: Optional[float] = None,
+    regime_volatility_20d: Optional[float] = None,
+    regime_breadth_pct: Optional[float] = None,
     phase25_variant: Optional[str] = None,
     phase25_prob: Optional[float] = None,
     phase25_shadow_variant: Optional[str] = None,
@@ -2261,6 +2399,7 @@ def build_kr_scan_outputs(
     phase25_recommended_threshold: Optional[float] = None,
     model_trace_status: Optional[str] = None,
     model_error: Optional[str] = None,
+    inference_failed: bool = False,
     theme_context: Optional[Dict[str, Any]] = None,
     leader_metrics: Optional[Dict[str, Any]] = None,
     routing_path: str = "",
@@ -2282,10 +2421,32 @@ def build_kr_scan_outputs(
 ) -> Dict[str, Dict[str, Any]]:
     """Build KR scanner table row + DB payload with legacy field compatibility."""
     curr_fmt = "{:,.0f}"
-    volume_ratio = setup.get("Volume Ratio", "?")
-    table_volume = f"{'✅' if setup.get('Volume Confirmed') else '⚠️'} {volume_ratio}"
-    db_volume = f"{'✅' if setup.get('Volume Confirmed') else '⚠️'} x{volume_ratio}"
+    volume_ratio_value = _optional_float(setup.get("Volume Ratio"))
+    volume_confirmed = bool(setup.get("Volume Confirmed"))
+    volume_ratio_display = f"{volume_ratio_value:.2f}" if volume_ratio_value is not None else "?"
+    table_volume = f"{'✅' if volume_confirmed else '⚠️'} {volume_ratio_display}"
+    db_volume = f"{'✅' if volume_confirmed else '⚠️'} x{volume_ratio_display}"
     context_text = news_tag if news_tag else "-"
+    stored_prob_5 = None if inference_failed else round(float(prob_5), 1)
+    stored_prob_clean = None if inference_failed else round(float(prob_clean), 1)
+    feature_quality = _scanner_feature_quality(
+        "scanner_full",
+        {
+            "alpha_score": alpha_score,
+            "tech_score": tech_score,
+            "ml_prob": stored_prob_5,
+            "prob_clean": stored_prob_clean,
+            "whale_score": whale_score,
+            "trend": real_trend,
+            "volume_ratio": volume_ratio_value,
+            "position": position,
+            "tier": tier,
+            "decision_score": decision_score,
+            "entry_reference_price": setup.get("Entry Price"),
+        },
+    )
+    if inference_failed:
+        feature_quality["validation_excluded_reason"] = "ML_INFERENCE_FAILED"
 
     res_data = {
         "Tier": tier,
@@ -2335,17 +2496,27 @@ def build_kr_scan_outputs(
         "phase25_recommended_threshold": phase25_recommended_threshold,
         "model_trace_status": model_trace_status,
         "model_error": model_error,
+        "inference_failed": bool(inference_failed),
+        "_feature_quality": dict(feature_quality),
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        "target_tp_pct": DEFAULT_EXIT_TP_PCT,
+        "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
+        "hold_days": DEFAULT_EXIT_HOLD_DAYS,
+        "TP": f"{DEFAULT_EXIT_TP_PCT:+.1f}%",
+        "SL": f"{DEFAULT_EXIT_SL_PCT:+.1f}%",
+        "보유일": f"{DEFAULT_EXIT_HOLD_DAYS}일",
     }
 
     db_payload = {
         "ticker": sym,
         "name": stock_name,
+        "scan_mode": str(scan_mode or "SWING").upper(),
         "alpha_score": int(alpha_score),
         "tech_score": int(tech_score),
-        "ml_prob": round(prob_5, 1),
+        "ml_prob": stored_prob_5,
+        "prob_clean": stored_prob_clean,
         "whale_score": int(whale_score),
         "fund_status": "Pass" if fund_ok else "Fail",
         "initial_trend": real_trend,
@@ -2355,12 +2526,18 @@ def build_kr_scan_outputs(
         "verdict": verdict_label,
         "tier": tier,
         "volume": db_volume,
+        "volume_ratio": volume_ratio_value,
+        "volume_confirmed": volume_confirmed,
         "context": context_text,
         "surge": surge_tag,
         "win_rate": f"{wr:.0f}%",
         "decision_score": decision_score,
         "market_gate": market_gate,
         "kospi_chg": round(float(kospi_chg), 2),
+        "kosdaq_chg": round(float(kosdaq_chg), 2),
+        "regime_avg_chg": None if regime_avg_chg is None else round(float(regime_avg_chg), 2),
+        "regime_volatility_20d": None if regime_volatility_20d is None else round(float(regime_volatility_20d), 2),
+        "regime_breadth_pct": None if regime_breadth_pct is None else round(float(regime_breadth_pct), 2),
         "conviction_score": round(float(conviction_score), 1),
         "strategy_family": strategy_family or resolve_strategy_family(m_type),
         "scanner_timeframe_profile": scanner_timeframe_profile,
@@ -2379,9 +2556,15 @@ def build_kr_scan_outputs(
         "phase25_recommended_threshold": phase25_recommended_threshold,
         "model_trace_status": model_trace_status,
         "model_error": model_error,
+        "inference_failed": bool(inference_failed),
+        "entry_reference_price": _optional_float(setup.get("Entry Price")),
+        **feature_quality,
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        "target_tp_pct": DEFAULT_EXIT_TP_PCT,
+        "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
+        "hold_days": DEFAULT_EXIT_HOLD_DAYS,
         "theme_context": theme_context or {},
         "leader_metrics": leader_metrics or {},
         "routing_path": routing_path or "",
@@ -2708,6 +2891,53 @@ def evaluate_app_us_candidate(
     tier = us_tier["tier"]
     tier_sort = int(us_tier["tier_sort"])
     ml_pred = qs.get_ml_prediction() or {}
+    ml_inference_failed = bool(ml_pred.get("inference_failed", False))
+
+    def _feature_reject_meta(stage: str, extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        volume_ratio = _safe_numeric(setup.get("Volume Ratio"), 1.0)
+        volume_confirmed = bool(setup.get("Volume Confirmed"))
+        payload = {
+            "ticker": sym,
+            "stock_name": stock_name,
+            "stage": stage,
+            "alpha_score": round(float(alpha_score), 2),
+            "tech_score": int(tech_score),
+            "whale_score": round(float(whale_score), 2),
+            "volume_ratio": round(float(volume_ratio), 3),
+            "volume_confirmed": bool(volume_confirmed),
+            "volume": _format_volume_ratio_badge(volume_ratio, volume_confirmed),
+            "real_trend": str(real_trend),
+            "tier": str(tier),
+            "tier_sort": int(tier_sort),
+            "ml_prob": round(float(ml_pred.get("prob", 50) or 50), 2),
+            "wr": round(float(wr), 2),
+            "pf": round(float(pf), 2),
+            "strategy_type": str(strategy_type),
+        }
+        if isinstance(extra, dict):
+            payload.update(extra)
+        return payload
+
+    if ml_inference_failed or not _has_real_feature(ml_pred.get("prob")):
+        _reject(
+            "ML_INFERENCE_FAILED" if ml_inference_failed else "ML_PROB_MISSING",
+            _feature_reject_meta(
+                "ml_inference",
+                {
+                    "feature_origin": "scanner_reject",
+                    "feature_quality": "incomplete",
+                    "feature_missing_fields": ["ml_prob"],
+                    "validation_excluded": True,
+                    "validation_excluded_reason": "ML_INFERENCE_FAILED" if ml_inference_failed else "ML_PROB_MISSING",
+                    "is_dummy_data": False,
+                    "model_trace_status": ml_pred.get("model_trace_status"),
+                    "model_error": ml_pred.get("model_error"),
+                    "ml_prob": None,
+                },
+            ),
+        )
+        return None
+
     pre_profile_overlay = resolve_ticker_profile_overlay(
         ticker=sym,
         market_type="AMEX" if is_amex else "US",
@@ -2754,26 +2984,22 @@ def evaluate_app_us_candidate(
     if market_policy.get("hard_reject") and not profile_supports_hard_filter_override(pre_profile_overlay) and not allow_amex_policy_override:
         _reject(
             str(market_policy.get("reason") or "MARKET_POLICY_AVOID"),
-            {
+            _feature_reject_meta("market_policy", {
                 "policy": market_policy.get("policy"),
-                "alpha_score": round(float(alpha_score), 2),
                 "ai_prob": round(float(ml_pred.get("prob", 50) or 50), 2),
                 "amex_features": amex_features if is_amex else None,
-            },
+            }),
         )
         return None
     if hard_reason is not None and not profile_supports_hard_filter_override(pre_profile_overlay) and not allow_amex_policy_override:
         _reject(
             hard_reason,
-            {
-                "alpha_score": round(float(alpha_score), 2),
-                "real_trend": str(real_trend),
+            _feature_reject_meta("hard_filter", {
                 "is_amex": bool(is_amex),
                 "rs_vs_spy": round(float(rs_vs_spy), 2),
-                "strategy_type": str(strategy_type),
                 "hard_filter_cfg": hard_gate_cfg,
                 "amex_features": amex_features if is_amex else None,
-            },
+            }),
         )
         return None
 
@@ -2825,14 +3051,13 @@ def evaluate_app_us_candidate(
     if precision_gate["hard_reject"]:
         _reject(
             str(precision_gate["reason"] or "US_PRECISION_GATE_FAIL"),
-            {
+            _feature_reject_meta("precision_gate", {
                 "conviction_score": float(conviction_score),
                 "prob_5": float(prob_5),
                 "prob_clean": float(prob_clean),
                 "gate": str((market_gate or {}).get("gate", "GREEN")),
-                "tier_sort": int(tier_sort),
                 "amex_features": amex_features if is_amex else None,
-            },
+            }),
         )
         return None
 
@@ -2908,6 +3133,7 @@ def evaluate_app_us_candidate(
         scan_mode="SWING",
         market_gate=str((market_gate or {}).get("gate", "GREEN")),
         theme_context=theme_overlay.get("theme_context", {}),
+        inference_failed=ml_inference_failed,
     )
 
     outputs = build_us_scan_outputs(
@@ -2943,6 +3169,7 @@ def evaluate_app_us_candidate(
         phase25_recommended_threshold=ml_pred.get("phase25_recommended_threshold"),
         model_trace_status=ml_pred.get("model_trace_status"),
         model_error=ml_pred.get("model_error"),
+        inference_failed=ml_inference_failed,
         theme_context=theme_overlay.get("theme_context", {}),
         leader_metrics=theme_overlay.get("leader_metrics", {}),
         routing_path=theme_overlay.get("routing_path", "core_only"),
@@ -3013,8 +3240,34 @@ def evaluate_app_kr_candidate(
     strategy_type = str(surge_data.get("strategy_type", "Wait"))
 
     ml_pred = qs.get_ml_prediction() or {}
-    ml_prob = float(ml_pred.get("prob", 50) or 50)
+    ml_inference_failed = bool(ml_pred.get("inference_failed", False))
     setup = qs.get_trade_setup()
+    if ml_inference_failed or not _has_real_feature(ml_pred.get("prob")):
+        volume_ratio = _optional_float(setup.get("Volume Ratio"))
+        volume_confirmed = bool(setup.get("Volume Confirmed"))
+        _reject_detail(
+            {
+                "ticker": sym,
+                "stock_name": stock_name,
+                "stage": "ml_inference",
+                "feature_origin": "scanner_reject",
+                "feature_quality": "incomplete",
+                "feature_missing_fields": ["ml_prob"],
+                "validation_excluded": True,
+                "validation_excluded_reason": "ML_INFERENCE_FAILED" if ml_inference_failed else "ML_PROB_MISSING",
+                "is_dummy_data": False,
+                "model_trace_status": ml_pred.get("model_trace_status"),
+                "model_error": ml_pred.get("model_error"),
+                "volume_ratio": None if volume_ratio is None else round(float(volume_ratio), 3),
+                "volume_confirmed": volume_confirmed,
+                "volume": None if volume_ratio is None else _format_volume_ratio_badge(volume_ratio, volume_confirmed),
+                "signal_hits": signal_hits,
+                "signal_lookback": signal_lookback,
+            }
+        )
+        _reject("ML_INFERENCE_FAILED" if ml_inference_failed else "ML_PROB_MISSING")
+        return None
+    ml_prob = float(ml_pred.get("prob"))
     whale_data = qs.get_investor_flows()
     whale_score = whale_data.get("whale_score", 0)
     real_trend = qs.get_real_trend()
@@ -3106,6 +3359,34 @@ def evaluate_app_kr_candidate(
     )
     tier = kr_tier["tier"]
     tier_sort = int(kr_tier["tier_sort"])
+
+    def _feature_reject_meta(stage: str, extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        volume_ratio = _safe_numeric(setup.get("Volume Ratio"), 1.0)
+        volume_confirmed = bool(setup.get("Volume Confirmed"))
+        payload = {
+            "ticker": sym,
+            "stock_name": stock_name,
+            "stage": stage,
+            "alpha_score": round(float(alpha_score), 2),
+            "tech_score": int(tech_score),
+            "whale_score": round(float(whale_score), 2),
+            "volume_ratio": round(float(volume_ratio), 3),
+            "volume_confirmed": bool(volume_confirmed),
+            "volume": _format_volume_ratio_badge(volume_ratio, volume_confirmed),
+            "real_trend": str(real_trend),
+            "tier": str(tier),
+            "tier_sort": int(tier_sort),
+            "ml_prob": round(float(ml_prob), 2),
+            "wr": round(float(wr), 2),
+            "pf": round(float(pf), 2),
+            "strategy_type": str(strategy_type),
+            "signal_hits": signal_hits,
+            "signal_lookback": signal_lookback,
+        }
+        if isinstance(extra, dict):
+            payload.update(extra)
+        return payload
+
     pre_profile_overlay = resolve_ticker_profile_overlay(
         ticker=sym,
         market_type=m_type,
@@ -3161,20 +3442,12 @@ def evaluate_app_kr_candidate(
     )
     if market_policy.get("hard_reject") and not profile_supports_hard_filter_override(pre_profile_overlay) and not theme_exception_strict and not leader_override_active:
         _reject_detail(
-            {
-                "ticker": sym,
-                "stock_name": stock_name,
-                "stage": "market_policy",
-                "alpha_score": round(float(alpha_score), 2),
+            _feature_reject_meta("market_policy", {
                 "ai_prob": round(float(ml_prob), 2),
                 "market_gate": str((market_gate or {}).get("gate", "GREEN")),
                 "policy": market_policy.get("policy"),
                 "mode": market_policy.get("mode"),
-                "wr": round(float(wr), 2),
-                "pf": round(float(pf), 2),
-                "real_trend": str(real_trend),
-                "signal_hits": signal_hits,
-            }
+            })
         )
         _reject(str(market_policy.get("reason") or "MARKET_POLICY_AVOID"))
         return None
@@ -3187,22 +3460,10 @@ def evaluate_app_kr_candidate(
     )
     if not kr_hard_filter_pass and not profile_supports_hard_filter_override(pre_profile_overlay) and not theme_exception_strict and not leader_override_active:
         _reject_detail(
-            {
-                "ticker": sym,
-                "stock_name": stock_name,
-                "stage": "hard_filter",
-                "alpha_score": round(float(alpha_score), 2),
-                "real_trend": str(real_trend),
+            _feature_reject_meta("hard_filter", {
                 "market_gate": str((market_gate or {}).get("gate", "GREEN")),
                 "market_type": m_type,
-                "wr": round(float(wr), 2),
-                "pf": round(float(pf), 2),
-                "strategy_type": str(strategy_type),
-                "signal_hits": signal_hits,
-                "signal_lookback": signal_lookback,
-                "tier_sort": int(tier_sort),
-                "ml_prob": round(float(ml_prob), 2),
-            }
+            })
         )
         _reject("KR_HARD_FILTER_FAIL")
         return None
@@ -3281,22 +3542,13 @@ def evaluate_app_kr_candidate(
     )
     if precision_gate["hard_reject"] and not theme_precision_override and not leader_precision_override:
         _reject_detail(
-            {
-                "ticker": sym,
-                "stock_name": stock_name,
-                "stage": "precision_gate",
+            _feature_reject_meta("precision_gate", {
                 "conviction_score": float(conviction_score),
                 "prob_5": float(prob_5),
                 "prob_clean": float(prob_clean),
-                "alpha_score": float(alpha_score),
                 "market_gate": str((market_gate or {}).get("gate", "GREEN")),
-                "tier_sort": int(tier_sort),
-                "real_trend": str(real_trend),
                 "position": str(position),
-                "wr": round(float(wr), 2),
-                "pf": round(float(pf), 2),
-                "strategy_type": str(strategy_type),
-            }
+            })
         )
         _reject(str(precision_gate["reason"] or "KR_PRECISION_GATE_FAIL"))
         return None
@@ -3455,6 +3707,7 @@ def evaluate_app_kr_candidate(
         scan_mode="SWING",
         market_gate=str((market_gate or {}).get("gate", "GREEN")),
         theme_context=theme_overlay.get("theme_context", {}),
+        inference_failed=ml_inference_failed,
     )
     timeframe_profile = resolve_kr_timeframe_profile("SWING", sym)
     universe_role = resolve_kr_universe_role(
@@ -3522,6 +3775,14 @@ def evaluate_app_kr_candidate(
         verdict_label=str(verdict_label),
         market_gate=str((market_gate or {}).get("gate", "GREEN")),
         kospi_chg=float((market_gate or {}).get("kospi_chg", 0.0)),
+        kosdaq_chg=float((market_gate or {}).get("kosdaq_chg", 0.0)),
+        regime_avg_chg=(
+            (float((market_gate or {}).get("primary_chg", 0.0) or 0.0)
+             + float((market_gate or {}).get("secondary_chg", 0.0) or 0.0)) / 2.0
+            if market_gate else None
+        ),
+        regime_volatility_20d=(market_gate or {}).get("volatility_20d"),
+        regime_breadth_pct=(market_gate or {}).get("breadth_pct"),
         phase25_prob=ml_pred.get("phase25_prob"),
         phase25_variant=ml_pred.get("phase25_variant"),
         phase25_shadow_variant=ml_pred.get("phase25_shadow_variant"),
@@ -3529,6 +3790,7 @@ def evaluate_app_kr_candidate(
         phase25_recommended_threshold=ml_pred.get("phase25_recommended_threshold"),
         model_trace_status=ml_pred.get("model_trace_status"),
         model_error=ml_pred.get("model_error"),
+        inference_failed=ml_inference_failed,
         theme_context=theme_overlay.get("theme_context", {}),
         leader_metrics=leader_metrics,
         routing_path=theme_overlay.get("routing_path", "core_only"),
