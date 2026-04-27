@@ -103,26 +103,42 @@ def _fetch_history(ticker: str, start: str, end: str) -> Optional[pd.DataFrame]:
         return None
 
 
+_INTRADAY_FETCH_FAILURES: Dict[str, int] = {"isoformat_parse": 0, "empty_response": 0, "other_exc": 0}
+
+
 def _fetch_intraday_history(ticker: str, start_dt: datetime, end_dt: datetime, interval: str = "30m") -> Optional[pd.DataFrame]:
+    """Fetch intraday bars. yfinance.history() rejects ISO 8601 strings with
+    'unconverted data remains: T00:00:00+00:00' — the prior implementation
+    passed start_dt.isoformat() and silently fell into the bare except below,
+    producing 0% intraday label fill across 9.7k+ RESOLVED rows. Pass the
+    datetime objects directly (yfinance accepts them) and surface the failure
+    mode so silent regressions cannot hide again.
+    """
     source_ticker = str(ticker or "").strip()
     if not source_ticker:
         return None
     try:
         hist = yf.Ticker(source_ticker).history(
-            start=start_dt.isoformat(),
-            end=end_dt.isoformat(),
+            start=start_dt,
+            end=end_dt,
             interval=interval,
             auto_adjust=False,
             timeout=10,
             prepost=False,
         )
         if hist is None or hist.empty:
+            _INTRADAY_FETCH_FAILURES["empty_response"] += 1
             return None
         hist = hist.copy()
         if hist.index.tz is None:
             hist.index = hist.index.tz_localize("UTC")
         return hist.sort_index()
-    except Exception:
+    except Exception as exc:
+        msg = str(exc)
+        if "unconverted data remains" in msg:
+            _INTRADAY_FETCH_FAILURES["isoformat_parse"] += 1
+        else:
+            _INTRADAY_FETCH_FAILURES["other_exc"] += 1
         return None
 
 
@@ -374,6 +390,7 @@ def run_update(shared_dir: Path, run_ids: List[str], limit_runs: int, dry_run: b
                 pass
         stats["run_stats"].append({"run_id": run_dir.name, "updated_rows": updated_rows, "changed": changed})
 
+    stats["intraday_fetch_failures"] = dict(_INTRADAY_FETCH_FAILURES)
     return stats
 
 

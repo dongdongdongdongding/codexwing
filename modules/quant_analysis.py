@@ -1207,16 +1207,23 @@ class QuantStrategy:
             }
             
         except Exception as e:
-            # Fallback
             print(f"Setup Error: {e}")
             c = self.df['Close'].iloc[-1]
+            try:
+                vol_recent = float(self.df['Volume'].tail(5).mean())
+                vol_baseline = float(self.df['Volume'].tail(20).mean())
+                vol_ratio_fallback = round(vol_recent / vol_baseline, 1) if vol_baseline > 0 else None
+            except Exception:
+                vol_ratio_fallback = None
             return {
                 "Entry Price": c,
                 "Entry Min": c,
                 "Entry Max": c,
                 "Stop Loss": c * 0.95,
                 "Target Price": c * 1.1,
-                "Risk/Reward": "1:2.0"
+                "Risk/Reward": "1:2.0",
+                "Volume Ratio": vol_ratio_fallback,
+                "Volume Confirmed": False,
             }
 
 
