@@ -186,6 +186,7 @@ def main() -> int:
 
     summary = Counter(r["status"] for r in results)
     checked = [r for r in results if r["status"] == "checked"]
+    empty_bucket = [r for r in results if r["status"] == "empty_planner_for_bucket"]
     perfect = [r for r in checked if not r["rank_mismatches"] and not r["planner_only"] and not r["db_only"]]
     rank_mismatch_runs = [r for r in checked if r["rank_mismatches"]]
     missing_db_rows = [r for r in checked if r["planner_only"]]
@@ -196,6 +197,7 @@ def main() -> int:
     ]
 
     print("\n=== Scan ↔ archive top-N consistency ===")
+    print(f"Bucket         : {bucket or 'ALL'}")
     print(f"Runs scanned   : {len(results)}")
     print(f"Status counts  : {dict(summary)}")
     print(f"Checked        : {len(checked)}")
@@ -204,6 +206,12 @@ def main() -> int:
     print(f"  planner-only : {len(missing_db_rows)} (rows in planner_handoff but not in DB)")
     print(f"  db-only      : {len(extra_db_rows)} (rows in DB but not in planner top-N)")
     print(f"  no scanner_full origin: {len(no_scanner_full)} (only stubs in DB)")
+    if bucket == "picked" and empty_bucket and not checked:
+        print(f"\n⚠️ FAIL-LOUD: every inspected run had ZERO picked decisions.")
+        print(f"   The model gate is publishing OBSERVE/AVOID only — no live")
+        print(f"   trading signal has been emitted. Until at least one run")
+        print(f"   yields picked rows, scan↔archive consistency is unverifiable.")
+        return 3
 
     for r in rank_mismatch_runs[:5]:
         print(f"\n[MISMATCH] {r['run_id']} ({r.get('market')}/{r.get('scan_mode')})")

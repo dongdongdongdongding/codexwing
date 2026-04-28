@@ -121,11 +121,16 @@ def _apply_phase25_reliability_gate(
     phase25_oos_auc: float | None,
     rationale: List[str],
     theme_risk: List[str],
+    phase25_oos_win_rate_pct: float | None = None,
+    phase25_oos_avg_return_pct: float | None = None,
 ) -> str:
     """Refuse to publish picks from a Phase25 model that is statistically
     unreliable. Triggers on any of:
-      - signal_direction='uncertain' (CV median fell in the 0.45–0.55 gray
-        zone, so the model is indistinguishable from a coin flip);
+      - signal_direction='uncertain' UNLESS OOS metrics validate the model
+        (oos_auc>=0.55, oos_win_rate>=70, oos_avg_return>=5). Mirrors the
+        bundle-load override in modules/quant_analysis.py — without this
+        mirror the bundle would publish probabilities normally but the
+        planner would still refuse to act on them.
       - bundle raw_auc < 0.50 (at-or-below coin-flip on its own val split);
       - bundle oos_auc < 0.45 (held-out tail evaluation says the model
         breaks under regime shift, even if val_auc looked fine — this
@@ -134,11 +139,19 @@ def _apply_phase25_reliability_gate(
     """
     if not phase25_variant:
         return decision
+    oos_validates = (
+        phase25_oos_auc is not None and phase25_oos_auc >= 0.55
+        and phase25_oos_win_rate_pct is not None and phase25_oos_win_rate_pct >= 70.0
+        and phase25_oos_avg_return_pct is not None and phase25_oos_avg_return_pct >= 5.0
+    )
     triggered = False
     if phase25_signal_direction == "uncertain":
-        theme_risk.append("PHASE25_UNCERTAIN_DIRECTION")
-        rationale.append("phase25_uncertain_signal_direction")
-        triggered = True
+        if oos_validates:
+            rationale.append("phase25_uncertain_overridden_by_oos")
+        else:
+            theme_risk.append("PHASE25_UNCERTAIN_DIRECTION")
+            rationale.append("phase25_uncertain_signal_direction")
+            triggered = True
     elif phase25_raw_auc is not None and phase25_raw_auc < 0.50:
         theme_risk.append("PHASE25_RAW_AUC_BELOW_RANDOM")
         rationale.append(f"phase25_raw_auc={phase25_raw_auc:.3f}<0.50")
@@ -517,6 +530,14 @@ def build_planner_handoff(
             phase25_oos_auc = float(feature_snapshot.get("phase25_oos_auc")) if feature_snapshot.get("phase25_oos_auc") is not None else None
         except Exception:
             phase25_oos_auc = None
+        try:
+            phase25_oos_win_rate_pct = float(feature_snapshot.get("phase25_oos_win_rate_pct")) if feature_snapshot.get("phase25_oos_win_rate_pct") is not None else None
+        except Exception:
+            phase25_oos_win_rate_pct = None
+        try:
+            phase25_oos_avg_return_pct = float(feature_snapshot.get("phase25_oos_avg_return_pct")) if feature_snapshot.get("phase25_oos_avg_return_pct") is not None else None
+        except Exception:
+            phase25_oos_avg_return_pct = None
         expected_edge_score = feature_snapshot.get("expected_edge_score")
         expected_return_1d_pct = feature_snapshot.get("expected_return_1d_pct")
         expected_return_3d_pct = feature_snapshot.get("expected_return_3d_pct")
@@ -596,6 +617,8 @@ def build_planner_handoff(
             phase25_signal_direction=phase25_signal_direction,
             phase25_raw_auc=phase25_raw_auc,
             phase25_oos_auc=phase25_oos_auc,
+            phase25_oos_win_rate_pct=phase25_oos_win_rate_pct,
+            phase25_oos_avg_return_pct=phase25_oos_avg_return_pct,
             rationale=rationale,
             theme_risk=theme_risk,
         )
