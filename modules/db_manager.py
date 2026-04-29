@@ -592,6 +592,12 @@ class DBManager:
         merged = 0
         inserted_stub = 0
         updated = 0
+        # Track row_ids already merged in this batch so the same NULL-run scanner
+        # row isn't claimed by two different outcomes. Without this, runs with
+        # 5-10 outcomes saw their later items fall through to a stale row,
+        # producing realized_outcomes_count - DB_count gaps of 3-8.
+        consumed_row_ids: set = set()
+        from datetime import timedelta as _td
         for row in outcomes:
             if not isinstance(row, dict):
                 continue
@@ -671,14 +677,20 @@ class DBManager:
                 # so we never re-merge into an already-bound row from a different session.
                 if not rows:
                     scan_mode_val = row.get("scan_mode")
-                    rec_date = (recommended_at or rec_dt.isoformat())[:10]
+                    # Tighten the fallback window: outcomes within the same
+                    # batch carry recommended_at within minutes of each other,
+                    # so use ±2h around this outcome rather than the whole
+                    # date. Wider windows let two outcomes claim the same
+                    # NULL-run scanner row.
+                    win_start = (rec_dt - _td(hours=2)).isoformat()
+                    win_end = (rec_dt + _td(hours=2)).isoformat()
                     fallback_q = (
                         self.client.table("market_scan_results")
                         .select("id,feature_origin,alpha_score")
                         .eq("ticker", ticker)
                         .is_("run_id", "null")
-                        .gte("created_at", f"{rec_date}T00:00:00")
-                        .lte("created_at", f"{rec_date}T23:59:59.999999")
+                        .gte("created_at", win_start)
+                        .lte("created_at", win_end)
                     )
                     if scan_mode_val:
                         fallback_q = fallback_q.eq("scan_mode", scan_mode_val)
@@ -686,11 +698,13 @@ class DBManager:
                     candidates = fallback.data or []
                     rows = [
                         c for c in candidates
-                        if c.get("feature_origin") in ("scanner_full", "scanner_partial_legacy")
-                        or (c.get("feature_origin") is None and c.get("alpha_score") is not None)
+                        if (c.get("feature_origin") in ("scanner_full", "scanner_partial_legacy")
+                            or (c.get("feature_origin") is None and c.get("alpha_score") is not None))
+                        and c.get("id") not in consumed_row_ids
                     ][:1]
                 if rows:
                     row_id = rows[0].get("id")
+                    consumed_row_ids.add(row_id)
                     existing_row = (
                         self.client.table("market_scan_results")
                         .select("*")
