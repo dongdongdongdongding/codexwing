@@ -55,7 +55,25 @@ def _planner_top(payload: Dict[str, Any], n: int, bucket: Optional[str] = "picke
     Bucket namespaces are distinct in archive: picked rank=1 and
     exception_leader rank=1 coexist legitimately. Earlier verify code mixed
     them and produced false-positive 'rank mismatch' alarms.
+
+    Special bucket 'watchlist_field': pulls from PlannerHandoff.watchlist (a
+    flat ticker list) and PlannerHandoff.watchlist_meta (with priority_rank).
+    Use this when the planner downgraded all active decisions to
+    watchlist-only via MARKET_POLICY_WATCHLIST_ONLY — the 'decisions' list is
+    empty but watchlist still carries the user-facing tickers.
     """
+    if bucket == "watchlist_field":
+        meta = payload.get("watchlist_meta") or []
+        items = [
+            (int(m.get("priority_rank") or i + 1), str(m.get("ticker")))
+            for i, m in enumerate(meta)
+            if m.get("ticker")
+        ]
+        if not items:
+            wl = payload.get("watchlist") or []
+            items = [(i + 1, str(t)) for i, t in enumerate(wl) if t]
+        items.sort(key=lambda x: x[0])
+        return items[:n]
     decisions = payload.get("decisions", []) or []
     if bucket:
         decisions = [
@@ -78,8 +96,11 @@ def _db_rows_for_run(db: DBManager, run_id: str, bucket: Optional[str] = "picked
         .select("ticker,priority_rank,alpha_score,decision,decision_bucket,feature_origin")
         .eq("run_id", run_id)
     )
-    if bucket:
-        q = q.eq("decision_bucket", bucket)
+    # 'watchlist_field' is the planner-side flat watchlist; on the DB side the
+    # corresponding rows live as decision_bucket='watchlist'.
+    db_bucket = "watchlist" if bucket == "watchlist_field" else bucket
+    if db_bucket:
+        q = q.eq("decision_bucket", db_bucket)
     res = q.order("priority_rank", desc=False).execute()
     return res.data or []
 
