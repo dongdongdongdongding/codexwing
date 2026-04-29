@@ -104,9 +104,16 @@ SCAN_RESULT_COLUMNS: tuple = (
 
     # Phase25 / model trace
     ("phase25_variant",                 "phase25_variant",                 _passthrough),
+    ("phase25_prob",                    "phase25_prob",                    _to_float_or_none),
+    ("phase25_signal_direction",        "phase25_signal_direction",        _passthrough),
+    ("phase25_raw_auc",                 "phase25_raw_auc",                 _to_float_or_none),
+    ("phase25_oos_auc",                 "phase25_oos_auc",                 _to_float_or_none),
+    ("phase25_oos_win_rate_pct",        "phase25_oos_win_rate_pct",        _to_float_or_none),
+    ("phase25_oos_avg_return_pct",      "phase25_oos_avg_return_pct",      _to_float_or_none),
     ("phase25_shadow_variant",          "phase25_shadow_variant",          _passthrough),
     ("phase25_shadow_prob",             "phase25_shadow_prob",             _to_float_or_none),
     ("phase25_recommended_threshold",   "phase25_recommended_threshold",   _to_float_or_none),
+    ("performance_updated_at",          "performance_updated_at",          _passthrough),
     ("inference_failed",                "inference_failed",                _passthrough),
     ("model_trace_status",              "model_trace_status",              _passthrough),
     ("model_error",                     "model_error",                     _passthrough),
