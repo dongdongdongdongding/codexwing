@@ -366,11 +366,35 @@ def _apply_expected_edge_gate(
     real_trend: str,
     rationale: List[str],
     theme_risk: List[str],
+    phase25_signal_direction: str = "",
+    phase25_oos_win_rate_pct: float | None = None,
+    phase25_oos_avg_return_pct: float | None = None,
 ) -> str:
     market = str(run_market or "").upper()
     mode = str(scan_mode or "").upper()
     trend_up = str(real_trend or "").upper() == "UP"
     if expected_return_1d_pct is None or expected_return_3d_pct is None:
+        return decision
+
+    # OOS-validated bypass: compute_expected_edge_profile uses phase18-era
+    # anchors (prob_5/prob_clean centered on 50), but phase25 swing models
+    # output ~25-35 prob with documented OOS win >=70 and OOS return >=5.
+    # Without this bypass, every phase25 candidate fails min_1d=0.9% even
+    # though the bundle's realized OOS metrics would clear it. Mirrors the
+    # OOS preserve in _apply_phase25_reliability_gate /
+    # _apply_watchlist_only_mode for policy consistency.
+    sig_dir = str(phase25_signal_direction or "").lower()
+    oos_validated = (
+        sig_dir == "normal"
+        and phase25_oos_win_rate_pct is not None
+        and float(phase25_oos_win_rate_pct) >= 70.0
+        and phase25_oos_avg_return_pct is not None
+        and float(phase25_oos_avg_return_pct) >= 5.0
+    )
+    if oos_validated and trend_up:
+        rationale.append(
+            f"expected_edge_overridden_by_oos:win={float(phase25_oos_win_rate_pct):.1f}%,ret={float(phase25_oos_avg_return_pct):.2f}%"
+        )
         return decision
 
     rank = _decision_rank(decision)
@@ -668,6 +692,9 @@ def build_planner_handoff(
             real_trend=real_trend,
             rationale=rationale,
             theme_risk=theme_risk,
+            phase25_signal_direction=phase25_signal_direction or "",
+            phase25_oos_win_rate_pct=phase25_oos_win_rate_pct,
+            phase25_oos_avg_return_pct=phase25_oos_avg_return_pct,
         )
 
         if bool(feature_snapshot.get("inference_failed", False)):

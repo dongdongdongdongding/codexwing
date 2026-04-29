@@ -27,11 +27,15 @@ from modules.scan_policy import (
     compute_market_gate as compute_market_gate_live,
     compute_rank_adjustment as shared_compute_rank_adjustment,
 )
+from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.ui_helpers import (
     BackgroundScanState,
+    build_top_candidate_rows,
+    build_watchlist_display_rows,
     compute_progress_fraction,
     format_volume_display,
     resolve_display_price,
+    should_auto_refresh_scan_panel,
 )
 import pandas as pd
 import plotly.graph_objects as go
@@ -397,6 +401,355 @@ def _inject_toss_theme():
           line-height: 1.6;
         }
 
+        .intel-highlight-list {
+          display: grid;
+          gap: 0.7rem;
+          margin: 0.55rem 0 1rem;
+        }
+
+        .intel-highlight-item {
+          display: flex;
+          gap: 0.7rem;
+          align-items: flex-start;
+          padding: 0.9rem 1rem;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.88);
+          border: 1px solid rgba(229, 232, 235, 0.9);
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        .intel-highlight-badge {
+          flex-shrink: 0;
+          min-width: 4.1rem;
+          padding: 0.25rem 0.6rem;
+          border-radius: 999px;
+          background: rgba(49, 130, 246, 0.1);
+          color: var(--primary-deep);
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-align: center;
+        }
+
+        .intel-highlight-text {
+          color: var(--text);
+          line-height: 1.55;
+          font-size: 0.95rem;
+        }
+
+        .intel-theme-card {
+          padding: 1rem 1.05rem;
+          margin-bottom: 0.8rem;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .intel-theme-card.good {
+          background: linear-gradient(135deg, rgba(236, 251, 243, 0.98), rgba(255, 255, 255, 0.96));
+          border-color: rgba(23, 178, 106, 0.18);
+        }
+
+        .intel-theme-card.risk {
+          background: linear-gradient(135deg, rgba(255, 241, 242, 0.98), rgba(255, 255, 255, 0.96));
+          border-color: rgba(240, 68, 82, 0.18);
+        }
+
+        .intel-theme-card.neutral {
+          background: linear-gradient(135deg, rgba(246, 248, 251, 0.98), rgba(255, 255, 255, 0.96));
+          border-color: rgba(139, 149, 161, 0.18);
+        }
+
+        .intel-theme-head {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.8rem;
+          align-items: center;
+          margin-bottom: 0.45rem;
+        }
+
+        .intel-theme-name {
+          color: var(--text);
+          font-size: 1rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+        }
+
+        .intel-theme-badge {
+          flex-shrink: 0;
+          border-radius: 999px;
+          padding: 0.28rem 0.7rem;
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .intel-theme-badge.good {
+          background: rgba(23, 178, 106, 0.12);
+          color: #118653;
+        }
+
+        .intel-theme-badge.risk {
+          background: rgba(240, 68, 82, 0.12);
+          color: #c2313d;
+        }
+
+        .intel-theme-badge.neutral {
+          background: rgba(139, 149, 161, 0.14);
+          color: #5f6b76;
+        }
+
+        .intel-theme-meta {
+          color: var(--muted);
+          font-size: 0.88rem;
+          line-height: 1.55;
+        }
+
+        .intel-theme-evidence {
+          margin-top: 0.65rem;
+          color: var(--text);
+          font-size: 0.9rem;
+          line-height: 1.55;
+        }
+
+        .intel-theme-evidence strong {
+          color: var(--primary-deep);
+          margin-right: 0.3rem;
+        }
+
+        .intel-subtle-card {
+          padding: 0.95rem 1rem;
+          margin-bottom: 0.75rem;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.84);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+        }
+
+        .intel-subtle-card strong {
+          display: block;
+          color: var(--text);
+          margin-bottom: 0.3rem;
+        }
+
+        .intel-subtle-card span {
+          color: var(--muted);
+          line-height: 1.55;
+        }
+
+        .top-intel-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.9rem;
+          margin: 0.45rem 0 1rem;
+        }
+
+        .top-intel-card {
+          padding: 1rem 1.05rem;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .top-intel-kicker {
+          color: var(--muted);
+          font-size: 0.78rem;
+          font-weight: 700;
+          margin-bottom: 0.3rem;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .top-intel-title {
+          color: var(--text);
+          font-size: 1.02rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          margin-bottom: 0.35rem;
+        }
+
+        .top-intel-body {
+          color: var(--text);
+          font-size: 0.94rem;
+          line-height: 1.6;
+        }
+
+        .top-intel-meta {
+          color: var(--muted);
+          font-size: 0.84rem;
+          line-height: 1.55;
+          margin-top: 0.5rem;
+        }
+
+        .intel-overview-shell {
+          margin: 0.55rem 0 1rem;
+        }
+
+        .intel-scoreline {
+          color: var(--text);
+          font-size: 1.05rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          margin-bottom: 0.7rem;
+        }
+
+        .intel-scoreline .muted {
+          color: var(--muted);
+          font-weight: 700;
+        }
+
+        .intel-insight-box {
+          padding: 1rem 1.1rem;
+          margin-bottom: 0.9rem;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+          color: var(--text);
+          line-height: 1.65;
+        }
+
+        .intel-signal-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.9rem;
+          margin: 0.6rem 0 1rem;
+        }
+
+        .intel-signal-card {
+          padding: 1rem 1.05rem;
+          border-radius: 22px;
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .intel-signal-card.good {
+          background: linear-gradient(135deg, rgba(236, 251, 243, 0.98), rgba(255, 255, 255, 0.96));
+          border-color: rgba(23, 178, 106, 0.18);
+        }
+
+        .intel-signal-card.risk {
+          background: linear-gradient(135deg, rgba(255, 241, 242, 0.98), rgba(255, 255, 255, 0.96));
+          border-color: rgba(240, 68, 82, 0.18);
+        }
+
+        .intel-signal-card.focus {
+          background: linear-gradient(135deg, rgba(239, 246, 255, 0.98), rgba(255, 255, 255, 0.96));
+          border-color: rgba(49, 130, 246, 0.18);
+        }
+
+        .intel-signal-title {
+          color: var(--muted);
+          font-size: 0.8rem;
+          font-weight: 700;
+          margin-bottom: 0.35rem;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .intel-signal-body {
+          color: var(--text);
+          font-size: 1rem;
+          font-weight: 800;
+          line-height: 1.55;
+        }
+
+        .intel-signal-meta {
+          margin-top: 0.35rem;
+          color: var(--muted);
+          font-size: 0.86rem;
+          line-height: 1.55;
+        }
+
+        .intel-momentum-grid {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 0.9rem;
+          margin: 0.85rem 0 1rem;
+        }
+
+        .intel-momentum-card {
+          padding: 1rem 1.05rem;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .intel-momentum-rank {
+          color: var(--muted);
+          font-size: 0.86rem;
+          font-weight: 700;
+          margin-bottom: 0.35rem;
+        }
+
+        .intel-momentum-theme {
+          color: var(--text);
+          font-size: 0.98rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          min-height: 2.4rem;
+        }
+
+        .intel-momentum-return {
+          color: var(--text);
+          font-size: 1.85rem;
+          font-weight: 800;
+          letter-spacing: -0.05em;
+          margin: 0.35rem 0 0.55rem;
+        }
+
+        .intel-momentum-return.pos { color: #118653; }
+        .intel-momentum-return.neg { color: #c2313d; }
+        .intel-momentum-return.neu { color: var(--text); }
+
+        .intel-momentum-chip {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.28rem 0.7rem;
+          border-radius: 999px;
+          background: rgba(23, 178, 106, 0.1);
+          color: #118653;
+          font-size: 0.82rem;
+          font-weight: 700;
+        }
+
+        .intel-momentum-meta {
+          margin-top: 0.55rem;
+          color: var(--muted);
+          font-size: 0.85rem;
+          line-height: 1.55;
+        }
+
+        .intel-catalyst-list {
+          display: grid;
+          gap: 0.7rem;
+          margin: 0.65rem 0 0.9rem;
+        }
+
+        .intel-catalyst-item {
+          padding: 0.95rem 1rem;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.88);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          color: var(--text);
+          line-height: 1.6;
+        }
+
+        .intel-headline-list {
+          display: grid;
+          gap: 0.7rem;
+          margin: 0.65rem 0 0.8rem;
+        }
+
+        .intel-headline-item {
+          padding: 0.95rem 1rem;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.84);
+          border: 1px solid rgba(229, 232, 235, 0.92);
+          color: var(--text);
+          line-height: 1.6;
+        }
+
         @media (max-width: 980px) {
           .block-container {
             padding-top: 1rem;
@@ -406,11 +759,21 @@ def _inject_toss_theme():
           .section-intro,
           .status-banner,
           .control-note,
+          .top-intel-card,
           div[data-testid="stMetric"],
           div[data-testid="stExpander"],
           div[data-testid="stDataFrame"],
           div[data-testid="stTable"] {
             border-radius: 20px;
+          }
+
+          .top-intel-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .intel-signal-grid,
+          .intel-momentum-grid {
+            grid-template-columns: 1fr;
           }
 
           div[data-testid="stTabs"] button[role="tab"] {
@@ -460,6 +823,370 @@ def _render_status_banner(title, body, tone="good", caption=None):
         """,
         unsafe_allow_html=True,
     )
+
+
+def _coerce_text_rows(value, *, limit=4):
+    rows = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            key_text = str(key or "").strip()
+            item_text = str(item or "").strip()
+            if key_text and item_text:
+                rows.append(f"{key_text}: {item_text}")
+            elif key_text:
+                rows.append(key_text)
+            elif item_text:
+                rows.append(item_text)
+    elif isinstance(value, list):
+        for item in value:
+            if isinstance(item, dict):
+                if item.get("label") and item.get("value"):
+                    rows.append(f"{item.get('label')}: {item.get('value')}")
+                    continue
+                if item.get("title") and item.get("summary"):
+                    rows.append(f"{item.get('title')}: {item.get('summary')}")
+                    continue
+                if item.get("signal") and item.get("value") is not None:
+                    rows.append(f"{item.get('signal')}: {item.get('value')}")
+                    continue
+                if item.get("theme_name") and item.get("strength_score") is not None:
+                    rows.append(f"{item.get('theme_name')} ({item.get('strength_score')})")
+                    continue
+                text = " · ".join(str(v).strip() for v in item.values() if str(v).strip())
+                if text:
+                    rows.append(text)
+            else:
+                text = str(item or "").strip()
+                if text:
+                    rows.append(text)
+    else:
+        text = str(value or "").strip()
+        if text:
+            rows.append(text)
+    deduped = []
+    for row in rows:
+        if row not in deduped:
+            deduped.append(row)
+    return deduped[:limit]
+
+
+def _theme_tone(direction):
+    direction_key = str(direction or "NEUTRAL").upper()
+    if direction_key == "BENEFICIARY":
+        return "good", "수혜"
+    if direction_key == "HEADWIND":
+        return "risk", "역풍"
+    return "neutral", "중립"
+
+
+def _render_intelligence_highlights(highlights):
+    if not highlights:
+        return
+    rows_html = []
+    for label, text in highlights:
+        label_text = html.escape(str(label or "").strip())
+        body_text = html.escape(str(text or "").strip())
+        if not body_text:
+            continue
+        rows_html.append(
+            f"""
+            <div class="intel-highlight-item">
+              <span class="intel-highlight-badge">{label_text}</span>
+              <div class="intel-highlight-text">{body_text}</div>
+            </div>
+            """
+        )
+    if rows_html:
+        st.markdown('<div class="intel-highlight-list">' + "".join(rows_html) + "</div>", unsafe_allow_html=True)
+
+
+def _render_theme_cards(theme_rows, *, empty_text, compact=False):
+    rows = theme_rows or []
+    if not rows:
+        st.caption(empty_text)
+        return
+    limit = 3 if compact else 6
+    for row in rows[:limit]:
+        if not isinstance(row, dict):
+            continue
+        tone, badge = _theme_tone(row.get("direction"))
+        strength = float(row.get("strength_score", 0.0) or 0.0)
+        confidence = float(row.get("confidence", 0.0) or 0.0)
+        momentum = str(row.get("momentum_class") or "").strip()
+        evidence_rows = _coerce_text_rows(row.get("evidence"), limit=2 if compact else 3)
+        evidence_text = " / ".join(evidence_rows) if evidence_rows else "아직 핵심 근거가 구조화되지 않았습니다."
+        meta_parts = [
+            f"강도 {strength:.1f}",
+            f"신뢰 {int(round(confidence * 100))}%",
+        ]
+        if momentum:
+            meta_parts.append(f"모멘텀 {momentum}")
+        if row.get("momentum_avg_change_pct") is not None:
+            try:
+                meta_parts.append(f"평균변화 {float(row.get('momentum_avg_change_pct')):+.2f}%")
+            except Exception:
+                pass
+        st.markdown(
+            f"""
+            <div class="intel-theme-card {tone}">
+              <div class="intel-theme-head">
+                <div class="intel-theme-name">{html.escape(str(row.get('theme_name') or '-'))}</div>
+                <div class="intel-theme-badge {tone}">{html.escape(badge)}</div>
+              </div>
+              <div class="intel-theme-meta">{html.escape(' · '.join(meta_parts))}</div>
+              <div class="intel-theme-evidence"><strong>핵심 근거</strong>{html.escape(evidence_text)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+def _build_intelligence_highlights(intel_data):
+    highlights = []
+    key_insight = str(intel_data.get("key_insight") or "").strip()
+    if key_insight:
+        highlights.append(("핵심", key_insight))
+    beneficiary = intel_data.get("beneficiary_themes") or []
+    headwind = intel_data.get("headwind_themes") or []
+    if beneficiary:
+        top_names = ", ".join(
+            str(row.get("theme_name") or "").strip()
+            for row in beneficiary[:3]
+            if str(row.get("theme_name") or "").strip()
+        )
+        if top_names:
+            highlights.append(("수혜", f"강하게 받쳐주는 테마는 {top_names} 입니다."))
+    if headwind:
+        top_names = ", ".join(
+            str(row.get("theme_name") or "").strip()
+            for row in headwind[:3]
+            if str(row.get("theme_name") or "").strip()
+        )
+        if top_names:
+            highlights.append(("역풍", f"부담 요인으로 보이는 테마는 {top_names} 입니다."))
+    else:
+        highlights.append(("역풍", "뚜렷한 역풍 테마는 아직 크게 보이지 않습니다."))
+    risk_rows = _coerce_text_rows(intel_data.get("risk_flags"), limit=2)
+    if risk_rows:
+        highlights.append(("리스크", " / ".join(risk_rows)))
+    macro_rows = _coerce_text_rows(intel_data.get("macro_drivers"), limit=2)
+    if macro_rows:
+        highlights.append(("매크로", " / ".join(macro_rows)))
+    return highlights[:5]
+
+
+def _theme_name_line(rows, limit=5):
+    names = []
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        name = str(row.get("theme_name") or "").strip()
+        if name and name not in names:
+            names.append(name)
+    return ", ".join(names[:limit])
+
+
+def _intelligence_driver_line(intel_data, *, positive=True, limit=3):
+    labels = []
+    for row in intel_data.get("macro_drivers", []) or []:
+        if not isinstance(row, dict):
+            continue
+        signal = str(row.get("signal") or "").upper()
+        impact = float(row.get("market_impact", 0) or 0)
+        if positive and signal in {"BULLISH", "MIXED"} and impact > 0:
+            labels.append(str(row.get("category") or "").strip())
+        elif (not positive) and signal in {"BEARISH", "MIXED"} and impact < 0:
+            labels.append(str(row.get("category") or "").strip())
+    deduped = []
+    for label in labels:
+        if label and label not in deduped:
+            deduped.append(label)
+    return ", ".join(deduped[:limit])
+
+
+def _intelligence_signal_line(intel_data, *, kind="beneficiary", limit=4):
+    if kind == "beneficiary":
+        theme_line = _theme_name_line(intel_data.get("beneficiary_themes") or [], limit=limit)
+        if theme_line:
+            return theme_line
+        sectors = [str(row).strip() for row in (intel_data.get("beneficiary_sectors") or []) if str(row).strip()]
+        if sectors:
+            return ", ".join(sectors[:limit])
+        driver_line = _intelligence_driver_line(intel_data, positive=True, limit=limit)
+        if driver_line:
+            return driver_line
+        return "수급/실적 버팀목 선별 구간"
+
+    theme_line = _theme_name_line(intel_data.get("headwind_themes") or [], limit=limit)
+    if theme_line:
+        return theme_line
+    sectors = [str(row).strip() for row in (intel_data.get("victim_sectors") or []) if str(row).strip()]
+    if sectors:
+        return ", ".join(sectors[:limit])
+    risks = [str(row).strip() for row in (intel_data.get("risk_flags") or []) if str(row).strip()]
+    if risks:
+        return ", ".join(risks[:limit])
+    driver_line = _intelligence_driver_line(intel_data, positive=False, limit=limit)
+    if driver_line:
+        return driver_line
+    return "과열 추격보다는 리스크 점검 우선"
+
+
+def _intelligence_tactical_line(intel_data):
+    evidence = _coerce_text_rows(intel_data.get("macro_drivers"), limit=1)
+    if evidence:
+        return evidence[0]
+    risk = _coerce_text_rows(intel_data.get("risk_flags"), limit=2)
+    if risk:
+        return f"핵심 경계 요인: {' / '.join(risk)}"
+    disclosure = intel_data.get("disclosure_events") or []
+    if disclosure and isinstance(disclosure[0], dict):
+        first = disclosure[0]
+        company = str(first.get("company") or "").strip()
+        label = str(first.get("label") or "").strip()
+        if company and label:
+            return f"{company} {label} 이슈가 단기 심리에 반영되고 있습니다."
+    return "시장 전반보다 선별 대응이 중요한 구간입니다."
+
+
+def _build_next_session_theme_line(theme_summary, intel_data):
+    candidates = []
+    for row in (theme_summary.get("rows", []) if isinstance(theme_summary, dict) else []):
+        if not isinstance(row, dict):
+            continue
+        avg_ret = row.get("avg_day_return_pct")
+        strength = float(row.get("strength_score", 0.0) or 0.0)
+        positive_ratio = float(row.get("positive_ratio", 0.0) or 0.0)
+        score = (float(avg_ret) if avg_ret is not None else -9.0) + (strength * 0.03) + (positive_ratio * 1.2)
+        candidates.append((score, str(row.get("theme_name") or "").strip()))
+    if not candidates:
+        return _theme_name_line(intel_data.get("beneficiary_themes") or [], limit=4) or "뚜렷한 선도 테마 없음"
+    deduped = []
+    for _, theme_name in sorted(candidates, reverse=True):
+        if theme_name and theme_name not in deduped:
+            deduped.append(theme_name)
+    return ", ".join(deduped[:4]) if deduped else "뚜렷한 선도 테마 없음"
+
+
+def _build_intelligence_catalysts(intel_data, theme_summary):
+    rows = []
+    top_theme_rows = (theme_summary.get("rows", []) if isinstance(theme_summary, dict) else [])[:3]
+    for row in top_theme_rows:
+        if not isinstance(row, dict):
+            continue
+        theme_name = str(row.get("theme_name") or "").strip()
+        avg_ret = row.get("avg_day_return_pct")
+        positive_ratio = row.get("positive_ratio")
+        industry = ", ".join(row.get("industry_samples", [])[:2]) if isinstance(row.get("industry_samples"), list) else ""
+        if theme_name and avg_ret is not None:
+            line = f"{theme_name}: 평균 {float(avg_ret):+.2f}%"
+            if positive_ratio is not None:
+                line += f", 양봉 비중 {int(round(float(positive_ratio) * 100))}%"
+            if industry:
+                line += f", 대표 업종 {industry}"
+            rows.append(line)
+    for event in intel_data.get("disclosure_events", []) or []:
+        if not isinstance(event, dict):
+            continue
+        company = str(event.get("company") or "").strip()
+        label = str(event.get("label") or "").strip()
+        report_name = str(event.get("report_name") or "").strip()
+        if company and label:
+            rows.append(f"{company}: {label} 이벤트 반영 ({report_name or '공시'})")
+        if len(rows) >= 5:
+            break
+    for row in intel_data.get("macro_drivers", []) or []:
+        if not isinstance(row, dict):
+            continue
+        desc = str(row.get("description") or "").strip()
+        if desc and desc not in rows:
+            rows.append(desc)
+        if len(rows) >= 5:
+            break
+    deduped = []
+    for row in rows:
+        if row not in deduped:
+            deduped.append(row)
+    return deduped[:5]
+
+
+def _render_intelligence_overview_dashboard(market, intel_data, theme_summary):
+    if not isinstance(intel_data, dict) or not intel_data:
+        return
+    sentiment = str(intel_data.get("market_sentiment", "NEUTRAL") or "NEUTRAL").upper()
+    sent_icon = {"BULLISH": "🟢", "BEARISH": "🔴", "MIXED": "🟡", "NEUTRAL": "⚪"}.get(sentiment, "⚪")
+    sent_score = int(float(intel_data.get("sentiment_score", 0) or 0))
+    key_insight = str(intel_data.get("key_insight") or "").strip() or "핵심 인사이트가 아직 구조화되지 않았습니다."
+    beneficiary_line = _theme_name_line(intel_data.get("beneficiary_themes") or [], limit=6) or "뚜렷한 수혜 테마 없음"
+    headwind_line = _theme_name_line(intel_data.get("headwind_themes") or [], limit=4) or "뚜렷한 피해 테마 없음"
+    next_session_line = _build_next_session_theme_line(theme_summary, intel_data)
+    source = str(intel_data.get("source", "unknown") or "unknown")
+    headline_count = int(intel_data.get("headline_count", 0) or 0)
+
+    st.markdown(
+        '<div class="intel-overview-shell">'
+        f'<div class="intel-scoreline">시장 분위기: {html.escape(sent_icon)} {html.escape(sentiment)} '
+        f'<span class="muted">(점수: {sent_score:+d} · 헤드라인 {headline_count} · {html.escape(source)})</span></div>'
+        f'<div class="intel-insight-box"><strong>핵심 인사이트:</strong> {html.escape(key_insight)}</div>'
+        '<div class="intel-signal-grid">'
+        f'<section class="intel-signal-card good"><div class="intel-signal-title">수혜 테마</div><div class="intel-signal-body">🔥 {html.escape(beneficiary_line)}</div><div class="intel-signal-meta">현재 시장에서 상대적으로 받쳐주는 테마 축입니다.</div></section>'
+        f'<section class="intel-signal-card risk"><div class="intel-signal-title">피해 테마</div><div class="intel-signal-body">⚠️ {html.escape(headwind_line)}</div><div class="intel-signal-meta">리스크 관리 시 먼저 체크할 부담 구간입니다.</div></section>'
+        f'<section class="intel-signal-card focus"><div class="intel-signal-title">내일 주도 예상</div><div class="intel-signal-body">🔮 {html.escape(next_session_line)}</div><div class="intel-signal-meta">LLM 테마 방향성과 당일 모멘텀 분포를 함께 반영했습니다.</div></section>'
+        '</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    momentum_rows = (theme_summary.get("rows", []) if isinstance(theme_summary, dict) else [])[:5]
+    if momentum_rows:
+        st.markdown("### 📊 테마 모멘텀 순위")
+        cards = []
+        for idx, row in enumerate(momentum_rows, start=1):
+            theme_name = str(row.get("theme_name") or "-")
+            avg_ret = row.get("avg_day_return_pct")
+            positive_ratio = row.get("positive_ratio")
+            direction = str(row.get("direction", "NEUTRAL") or "NEUTRAL").upper()
+            direction_icon = "🔥" if direction == "BENEFICIARY" else ("⚠️" if direction == "HEADWIND" else "➡️")
+            ret_class = "pos" if avg_ret is not None and float(avg_ret) > 0 else ("neg" if avg_ret is not None and float(avg_ret) < 0 else "neu")
+            ret_text = f"{float(avg_ret):+.2f}%" if avg_ret is not None else "-"
+            breadth_text = (
+                f"↑ 양봉 {int(round(float(positive_ratio) * 100))}%"
+                if positive_ratio is not None
+                else "브레드스 없음"
+            )
+            meta_parts = [
+                f"분류 {int(row.get('symbol_count', 0) or 0)}종목",
+                f"강도 {float(row.get('strength_score', 0.0) or 0.0):.1f}",
+            ]
+            if row.get("return_coverage"):
+                meta_parts.append(f"수익률커버 {int(row.get('return_coverage', 0))}")
+            cards.append(
+                f'<section class="intel-momentum-card"><div class="intel-momentum-rank">#{idx} {direction_icon}</div>'
+                f'<div class="intel-momentum-theme">{html.escape(theme_name)}</div>'
+                f'<div class="intel-momentum-return {ret_class}">{html.escape(ret_text)}</div>'
+                f'<span class="intel-momentum-chip">{html.escape(breadth_text)}</span>'
+                f'<div class="intel-momentum-meta">{html.escape(" · ".join(meta_parts))}</div></section>'
+            )
+        st.markdown('<div class="intel-momentum-grid">' + "".join(cards) + "</div>", unsafe_allow_html=True)
+
+    catalysts = _build_intelligence_catalysts(intel_data, theme_summary)
+    if catalysts:
+        st.markdown("### 🔥 핵심 촉매")
+        st.markdown(
+            '<div class="intel-catalyst-list">' + "".join(
+                f'<div class="intel-catalyst-item">{html.escape(str(row))}</div>' for row in catalysts
+            ) + "</div>",
+            unsafe_allow_html=True,
+        )
+
+    headline_rows = _coerce_text_rows(intel_data.get("evidence_headlines") or intel_data.get("raw_headlines"), limit=4)
+    if headline_rows:
+        st.markdown("### 📰 근거 헤드라인")
+        st.markdown(
+            '<div class="intel-headline-list">' + "".join(
+                f'<div class="intel-headline-item">{html.escape(str(row))}</div>' for row in headline_rows
+            ) + "</div>",
+            unsafe_allow_html=True,
+        )
 
 def _render_main_controls():
     control_left, control_right = st.columns([1, 1])
@@ -640,27 +1367,18 @@ def _render_agent_bridge_status(bridge_info, market):
 
     if watchlist:
         st.markdown("#### Watchlist Only")
-        watchlist_rows = []
-        meta_by_ticker = {}
-        for row in watchlist_meta:
-            if isinstance(row, dict):
-                meta_by_ticker[str(row.get("ticker", ""))] = row
-        for rank, ticker in enumerate(watchlist, start=1):
-            meta = meta_by_ticker.get(str(ticker), {})
-            watchlist_rows.append(
-                {
-                    "Rank": rank,
-                    "Ticker": ticker,
-                    "Name": meta.get("stock_name", ""),
-                    "Reason": meta.get("reason", ""),
-                    "Reject": meta.get("reject_reason", ""),
-                    "Alpha": meta.get("alpha_score", ""),
-                    "Conviction": meta.get("conviction_score", ""),
-                    "Prob5": meta.get("prob_5", ""),
-                    "Clean": meta.get("prob_clean", ""),
-                }
-            )
-        _watchlist_df = _coerce_numeric_display(pd.DataFrame(watchlist_rows), ["Alpha", "Conviction", "Prob5", "Clean"])
+        watchlist_rows, visible_numeric_fields = build_watchlist_display_rows(
+            watchlist,
+            watchlist_meta,
+            decisions,
+            scanner_payload=scanner_payload,
+        )
+        st.caption("Watchlist 표는 실제 planner/scanner 원천값만 표시합니다. 값이 없는 지표는 대체치로 채우지 않습니다.")
+        _watchlist_df = _coerce_numeric_display(pd.DataFrame(watchlist_rows), visible_numeric_fields)
+        ordered_columns = ["Rank", "Ticker", "Name", "Reason", "Reject"] + visible_numeric_fields
+        ordered_columns = [col for col in ordered_columns if col in _watchlist_df.columns]
+        if ordered_columns:
+            _watchlist_df = _watchlist_df[ordered_columns]
         st.dataframe(_watchlist_df, width='stretch')
         selected_watchlist_ticker = st.selectbox(
             "심층분석으로 넘길 Watchlist 종목",
@@ -744,15 +1462,23 @@ def _render_agent_bridge_status(bridge_info, market):
 
     with st.expander("PM / Planner Trace", expanded=False):
         if watchlist_policy:
-            st.write(
-                {
-                    "market": market,
-                    "watchlist_only_policy": watchlist_policy,
-                    "near_miss_watchlist": near_miss,
-                    "fallback_watchlist": fallback_watchlist,
-                    "exception_leaders": exception_leaders,
-                }
-            )
+            summary_rows = []
+            strict_gate = watchlist_policy.get("strict_gate") if isinstance(watchlist_policy, dict) else None
+            if strict_gate is not None:
+                summary_rows.append(f"watchlist_only_policy.strict_gate={strict_gate}")
+            near_miss_count = len(near_miss.get("tickers", []) or []) if isinstance(near_miss, dict) else 0
+            if near_miss_count:
+                summary_rows.append(f"near_miss_watchlist={near_miss_count}개")
+            fallback_count = len(fallback_watchlist.get("tickers", []) or []) if isinstance(fallback_watchlist, dict) else 0
+            if fallback_count:
+                summary_rows.append(f"fallback_watchlist={fallback_count}개")
+            exception_count = len(exception_leaders.get("watchlist_meta", []) or []) if isinstance(exception_leaders, dict) else 0
+            if exception_count:
+                summary_rows.append(f"exception_leaders={exception_count}개")
+            if summary_rows:
+                st.markdown("**Planner Summary**")
+                for row in summary_rows:
+                    st.caption(row)
         likely_causes = postmortem_payload.get("likely_causes", []) if isinstance(postmortem_payload.get("likely_causes"), list) else []
         if not likely_causes and isinstance(compact_postmortem.get("likely_causes"), list):
             likely_causes = compact_postmortem.get("likely_causes", [])
@@ -760,6 +1486,29 @@ def _render_agent_bridge_status(bridge_info, market):
             st.markdown("**Likely Causes**")
             for cause in likely_causes[:6]:
                 st.write(f"- {cause}")
+
+
+def _render_scan_top_candidates(results_df, bridge_info, market):
+    planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+    top_rows = build_top_candidate_rows(planner_payload, limit=5)
+
+    st.markdown("### 🔥 Top 5 매수 신호")
+    if top_rows:
+        st.caption(
+            "BUY/WATCHLIST 등급만 표시합니다. OBSERVE/AVOID는 매매 신호가 아니므로 제외됩니다. "
+            "Entry/TP/SL은 시장별 정책 (KOSPI 시가/+20/-5, KOSDAQ -2%limit/+10/-10) 입니다."
+        )
+        top_df = _coerce_numeric_display(
+            pd.DataFrame(top_rows),
+            ["Model Prob", "Gate Thr", "OOS Win %", "OOS Ret %"],
+        )
+        st.dataframe(top_df, use_container_width=True, hide_index=True)
+        return
+
+    st.info(
+        "현재 매수 신호 없음 — 시장 관망. 모든 후보가 OBSERVE/AVOID로 강등되었거나 "
+        "OOS 검증을 통과하지 못했습니다. Watchlist 표에서 감시 종목을 확인하세요."
+    )
 
 
 def _get_scan_state_snapshot():
@@ -943,17 +1692,420 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
         scan_state.append_log("error", f"❌ 스캔 실패: {exc}")
 
 
-def _render_market_intelligence_panel(intel_data, market):
+def _render_market_intelligence_panel(intel_data, market, *, compact=False):
+    if not isinstance(intel_data, dict) or not intel_data:
+        if compact:
+            st.caption("아직 불러온 시장 인텔리전스가 없습니다.")
+        return
+
+    sent = str(intel_data.get("market_sentiment", "NEUTRAL") or "NEUTRAL").upper()
+    sent_icon = {"BULLISH": "🟢", "BEARISH": "🔴", "MIXED": "🟡", "NEUTRAL": "⚪"}.get(sent, "⚪")
+    tone = {"BULLISH": "good", "BEARISH": "danger", "MIXED": "caution", "NEUTRAL": "good"}.get(sent, "good")
+    source = str(intel_data.get("source", "unknown") or "unknown")
+    display_origin = str(intel_data.get("_display_origin", "live") or "live")
+    timestamp = str(intel_data.get("timestamp", "") or "")
+    headline_count = int(intel_data.get("headline_count", 0) or 0)
+    theme_states = intel_data.get("theme_states") if isinstance(intel_data.get("theme_states"), list) else []
+    beneficiary = intel_data.get("beneficiary_themes") if isinstance(intel_data.get("beneficiary_themes"), list) else []
+    headwind = intel_data.get("headwind_themes") if isinstance(intel_data.get("headwind_themes"), list) else []
+
+    source_label = source
+    if display_origin == "cache":
+        source_label = f"{source} (cached)"
+    elif display_origin == "scan_snapshot":
+        source_label = f"{source} (scan snapshot)"
+
+    if headline_count <= 0:
+        st.warning("시장 헤드라인 수집이 제한되어 기본 인텔리전스를 사용 중입니다.")
+    elif source.startswith("rss_rule_based_rate_limited"):
+        st.info("LLM 호출 한도에 걸려 현재 헤드라인 기반 rule 인텔리전스를 사용 중입니다.")
+    elif source.startswith("rss_rule_based"):
+        st.info("현재 헤드라인을 기반으로 rule 인텔리전스를 사용 중입니다.")
+    elif source.startswith("fallback") or "error" in source:
+        st.warning("시장 인텔리전스 생성 중 오류가 있었지만, 수집된 헤드라인으로 분석을 이어가고 있습니다.")
+
+    beneficiary_line = _intelligence_signal_line(intel_data, kind="beneficiary", limit=4)
+    headwind_line = _intelligence_signal_line(intel_data, kind="headwind", limit=4)
+    tactical_line = _intelligence_tactical_line(intel_data)
+
+    if compact:
+        key_insight = str(intel_data.get("key_insight", "") or "").strip() or "아직 핵심 인사이트가 구조화되지 않았습니다."
+        meta = f"{market} · {source_label} · 헤드라인 {headline_count}"
+        if timestamp:
+            meta += f" · {timestamp}"
+        st.markdown(
+            f"""
+            <div class="top-intel-grid">
+              <section class="top-intel-card">
+                <div class="top-intel-kicker">Market Brief</div>
+                <div class="top-intel-title">{html.escape(sent_icon)} {html.escape(sent)}</div>
+                <div class="top-intel-body">{html.escape(key_insight)}</div>
+                <div class="top-intel-meta">{html.escape(meta)}</div>
+              </section>
+              <section class="top-intel-card">
+                <div class="top-intel-kicker">Tailwind</div>
+                <div class="top-intel-title">강세 축</div>
+                <div class="top-intel-body">{html.escape(beneficiary_line)}</div>
+                <div class="top-intel-meta">현재 시장에서 버티는 섹터/스타일 축입니다.</div>
+              </section>
+              <section class="top-intel-card">
+                <div class="top-intel-kicker">Risk</div>
+                <div class="top-intel-title">경계 축</div>
+                <div class="top-intel-body">{html.escape(headwind_line)}</div>
+                <div class="top-intel-meta">{html.escape(tactical_line)}</div>
+              </section>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
+
+    _render_status_banner(
+        f"🧠 {market} Intelligence · {sent_icon} {sent}",
+        str(intel_data.get("key_insight", "N/A") or "N/A"),
+        tone=tone,
+        caption=(f"Source {source_label} · Headlines {headline_count} · {timestamp}" if timestamp else f"Source {source_label} · Headlines {headline_count}"),
+    )
+
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("Sentiment", sent)
+    metric_cols[1].metric("Theme Count", len(theme_states))
+    metric_cols[2].metric("Beneficiary", len(beneficiary))
+    metric_cols[3].metric("Headwind", len(headwind) if headwind else 0, f"헤드라인 {headline_count}")
+
+    _render_intelligence_highlights(_build_intelligence_highlights(intel_data))
+
+    theme_col1, theme_col2 = st.columns(2)
+    with theme_col1:
+        st.markdown("#### 강세 테마")
+        _render_theme_cards(
+            beneficiary if beneficiary else [row for row in theme_states if str(row.get("direction", "")).upper() == "BENEFICIARY"],
+            empty_text="현재 뚜렷한 강세 테마가 많지 않습니다.",
+            compact=compact,
+        )
+    with theme_col2:
+        st.markdown("#### 약세 테마")
+        _render_theme_cards(
+            headwind if headwind else [row for row in theme_states if str(row.get("direction", "")).upper() == "HEADWIND"],
+            empty_text="현재 크게 눌리는 테마는 많지 않습니다.",
+            compact=compact,
+        )
+
+    neutral_rows = [row for row in theme_states if str(row.get("direction", "")).upper() == "NEUTRAL"]
+    if neutral_rows:
+        st.markdown("#### 관찰 테마")
+        _render_theme_cards(neutral_rows, empty_text="중립 관찰 테마가 없습니다.", compact=False)
+
+    support_col1, support_col2 = st.columns(2)
+    with support_col1:
+        risk_rows = _coerce_text_rows(intel_data.get("risk_flags"), limit=4)
+        macro_rows = _coerce_text_rows(intel_data.get("macro_drivers"), limit=4)
+        if risk_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>리스크 플래그</strong><span>'
+                + html.escape(" / ".join(risk_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+        if macro_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>매크로 드라이버</strong><span>'
+                + html.escape(" / ".join(macro_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+    with support_col2:
+        cross_rows = _coerce_text_rows(intel_data.get("cross_asset_signals"), limit=4)
+        disclosure_rows = _coerce_text_rows(intel_data.get("disclosure_events"), limit=3)
+        if cross_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>크로스애셋 신호</strong><span>'
+                + html.escape(" / ".join(cross_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+        if disclosure_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>공시 이벤트</strong><span>'
+                + html.escape(" / ".join(disclosure_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+
+
+def _render_intelligence_detail_sections(intel_data):
     if not isinstance(intel_data, dict) or not intel_data:
         return
-    with st.expander(f"🧠 AI 시장 인텔리전스 ({intel_data.get('timestamp', '')})", expanded=True):
-        sent = intel_data.get('market_sentiment', 'NEUTRAL')
-        sent_icon = {'BULLISH': '🟢', 'BEARISH': '🔴', 'MIXED': '🟡', 'NEUTRAL': '⚪'}.get(sent, '⚪')
-        st.caption(f"Source: {intel_data.get('source', 'unknown')} | Market: {market}")
-        if str(intel_data.get('source', 'unknown')).startswith('fallback'):
-            st.warning("시장 뉴스 헤드라인을 충분히 수집하지 못해 fallback 인텔리전스를 사용 중입니다.")
-        st.markdown(f"**시장 분위기**: {sent_icon} **{sent}** (점수: {intel_data.get('sentiment_score', 0)})")
-        st.markdown(f"**핵심 인사이트**: {intel_data.get('key_insight', 'N/A')}")
+    neutral_rows = [
+        row for row in (intel_data.get("theme_states") or [])
+        if isinstance(row, dict) and str(row.get("direction", "")).upper() == "NEUTRAL"
+    ]
+    if neutral_rows:
+        st.markdown("### 👀 관찰 테마")
+        _render_theme_cards(neutral_rows, empty_text="중립 관찰 테마가 없습니다.", compact=False)
+
+    support_col1, support_col2 = st.columns(2)
+    with support_col1:
+        risk_rows = _coerce_text_rows(intel_data.get("risk_flags"), limit=4)
+        macro_rows = _coerce_text_rows(intel_data.get("macro_drivers"), limit=4)
+        if risk_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>리스크 플래그</strong><span>'
+                + html.escape(" / ".join(risk_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+        if macro_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>매크로 드라이버</strong><span>'
+                + html.escape(" / ".join(macro_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+    with support_col2:
+        cross_rows = _coerce_text_rows(intel_data.get("cross_asset_signals"), limit=4)
+        disclosure_rows = _coerce_text_rows(intel_data.get("disclosure_events"), limit=4)
+        if cross_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>크로스애셋 신호</strong><span>'
+                + html.escape(" / ".join(cross_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+        if disclosure_rows:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>공시 이벤트</strong><span>'
+                + html.escape(" / ".join(disclosure_rows))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+
+
+def _render_top_intelligence_summary(market, intel_data):
+    if not isinstance(intel_data, dict) or not intel_data:
+        return
+    sentiment = str(intel_data.get("market_sentiment", "NEUTRAL") or "NEUTRAL").upper()
+    key_insight = str(intel_data.get("key_insight", "") or "").strip() or "아직 핵심 인사이트가 없습니다."
+    top_beneficiary = ", ".join(
+        str(row.get("theme_name") or "").strip()
+        for row in (intel_data.get("beneficiary_themes") or [])[:3]
+        if str(row.get("theme_name") or "").strip()
+    ) or "뚜렷한 강세 테마 없음"
+    top_headwind = ", ".join(
+        str(row.get("theme_name") or "").strip()
+        for row in (intel_data.get("headwind_themes") or [])[:3]
+        if str(row.get("theme_name") or "").strip()
+    ) or "뚜렷한 약세 테마 없음"
+    source = str(intel_data.get("source", "unknown") or "unknown")
+    display_origin = str(intel_data.get("_display_origin", "live") or "live")
+    timestamp = str(intel_data.get("timestamp", "") or "")
+    if display_origin == "cache":
+        source = f"{source} (cached)"
+    elif display_origin == "scan_snapshot":
+        source = f"{source} (scan snapshot)"
+    meta = f"{market} · {source}"
+    if timestamp:
+        meta += f" · {timestamp}"
+
+    st.markdown(
+        f"""
+        <div class="top-intel-grid">
+          <section class="top-intel-card">
+            <div class="top-intel-kicker">Market Mood</div>
+            <div class="top-intel-title">{html.escape(sentiment)}</div>
+            <div class="top-intel-body">{html.escape(key_insight)}</div>
+            <div class="top-intel-meta">{html.escape(meta)}</div>
+          </section>
+          <section class="top-intel-card">
+            <div class="top-intel-kicker">Beneficiary Themes</div>
+            <div class="top-intel-title">강세 테마</div>
+            <div class="top-intel-body">{html.escape(top_beneficiary)}</div>
+            <div class="top-intel-meta">현재 시장에서 상대적으로 받쳐주는 축입니다.</div>
+          </section>
+          <section class="top-intel-card">
+            <div class="top-intel-kicker">Headwind Themes</div>
+            <div class="top-intel-title">약세 테마</div>
+            <div class="top-intel-body">{html.escape(top_headwind)}</div>
+            <div class="top-intel-meta">리스크 관리 시 먼저 확인할 부담 축입니다.</div>
+          </section>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_theme_distribution_workspace(market, intel_data, summary=None):
+    summary = summary or build_theme_distribution_summary(market, intel_data=intel_data, top_n=12)
+    rows = summary.get("rows", [])
+    return_covered_symbols = sum(int(row.get("return_coverage", 0) or 0) for row in rows)
+    best_row = rows[0] if rows else {}
+    best_return = best_row.get("avg_day_return_pct")
+    _render_status_banner(
+        "테마 분포 맵",
+        f"총 {summary.get('total_symbols', 0)}개 종목 중 {summary.get('classified_symbols', 0)}개가 테마로 분류되었고, 그래프는 테마별 평균 당일 등락률 기준으로 집계됩니다.",
+        tone="good",
+        caption=(
+            f"분류율 {round(float(summary.get('classified_ratio', 0.0) or 0.0) * 100, 1)}%"
+            f" · 수익률 커버리지 {return_covered_symbols}개"
+            f" · 최고 테마 {summary.get('top_theme', 'unclassified')}"
+        ),
+    )
+    if not rows:
+        st.info("아직 테마 분포를 그릴 수 있을 만큼 분류된 종목 데이터가 없습니다.")
+        return
+
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("분류 종목", int(summary.get("classified_symbols", 0)))
+    metric_cols[1].metric("수익률 커버리지", int(return_covered_symbols))
+    metric_cols[2].metric("대분류 수", len(rows))
+    metric_cols[3].metric(
+        "Top Return",
+        f"{float(best_return):+.2f}%" if best_return is not None else "-",
+        str(best_row.get("theme_name", "unclassified")),
+    )
+
+    theme_df = pd.DataFrame(
+        [
+            {
+                "Theme": row.get("theme_name"),
+                "AvgReturnPct": float(row.get("avg_day_return_pct", 0.0) or 0.0),
+                "Coverage": int(row.get("return_coverage", 0)),
+                "Symbols": int(row.get("symbol_count", 0)),
+                "Confidence": round(float(row.get("avg_confidence", 0.0) or 0.0) * 100, 1),
+                "Strength": float(row.get("strength_score", 0.0) or 0.0),
+                "Direction": str(row.get("direction", "NEUTRAL") or "NEUTRAL"),
+                "Momentum": str(row.get("momentum_class", "") or ""),
+                "HasReturn": row.get("avg_day_return_pct") is not None,
+            }
+            for row in rows
+        ]
+    )
+    theme_df["BarColor"] = theme_df.apply(
+        lambda row: "#d0d5dd" if not bool(row["HasReturn"]) else ("#17b26a" if float(row["AvgReturnPct"]) >= 0 else "#f04452"),
+        axis=1,
+    )
+    fig = go.Figure(
+        go.Bar(
+            x=theme_df["AvgReturnPct"],
+            y=theme_df["Theme"],
+            orientation="h",
+            marker=dict(color=theme_df["BarColor"]),
+            customdata=theme_df[["Coverage", "Symbols", "Confidence", "Strength", "Momentum", "Direction"]],
+            hovertemplate=(
+                "<b>%{y}</b><br>평균 당일 등락률 %{x:+.2f}%"
+                "<br>수익률 커버리지 %{customdata[0]}개"
+                "<br>분류 종목수 %{customdata[1]}개"
+                "<br>평균 신뢰 %{customdata[2]}%"
+                "<br>강도 %{customdata[3]}"
+                "<br>모멘텀 %{customdata[4]}"
+                "<br>방향 %{customdata[5]}<extra></extra>"
+            ),
+        )
+    )
+    fig.update_layout(
+        height=460,
+        margin=dict(l=10, r=10, t=20, b=10),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        xaxis_title="평균 당일 등락률 (%)",
+        yaxis_title="테마 대분류",
+    )
+    fig.update_yaxes(categoryorder="array", categoryarray=list(reversed(theme_df["Theme"].tolist())))
+    fig.add_vline(x=0.0, line_width=1, line_dash="dash", line_color="#98a2b3")
+    st.plotly_chart(fig, use_container_width=True)
+
+    selected_theme = st.selectbox(
+        "테마 상세 보기",
+        options=[row.get("theme_name") for row in rows],
+        key=f"intelligence_theme_detail_{market}",
+    )
+    selected_row = next((row for row in rows if row.get("theme_name") == selected_theme), rows[0])
+
+    detail_col1, detail_col2 = st.columns([1.4, 1])
+    with detail_col1:
+        st.markdown(f"#### {selected_row.get('theme_name')} 상세 종목")
+        symbol_rows = selected_row.get("symbols", []) or []
+        if symbol_rows:
+            symbol_rows = sorted(
+                symbol_rows,
+                key=lambda row: (
+                    -9999.0 if row.get("day_return_pct") is None else float(row.get("day_return_pct", 0.0) or 0.0),
+                    float(row.get("confidence", 0.0) or 0.0),
+                ),
+                reverse=True,
+            )
+            detail_df = pd.DataFrame(
+                [
+                    {
+                        "Ticker": row.get("symbol"),
+                        "Name": row.get("name"),
+                        "1D Return %": round(float(row.get("day_return_pct", 0.0) or 0.0), 2) if row.get("day_return_pct") is not None else None,
+                        "Confidence": round(float(row.get("confidence", 0.0) or 0.0) * 100, 1),
+                        "Source": row.get("theme_source"),
+                        "Industry": row.get("official_industry"),
+                        "Products": row.get("official_products"),
+                    }
+                    for row in symbol_rows
+                ]
+            )
+            st.dataframe(detail_df, use_container_width=True, hide_index=True)
+        else:
+            st.caption("이 테마에 연결된 종목 상세가 아직 없습니다.")
+    with detail_col2:
+        st.markdown("#### 테마 해석")
+        st.markdown(
+            '<div class="intel-subtle-card"><strong>평균 당일 등락률</strong><span>'
+            + html.escape(
+                (
+                    f"{float(selected_row.get('avg_day_return_pct')):+.2f}%"
+                    if selected_row.get("avg_day_return_pct") is not None
+                    else "데이터 없음"
+                )
+            )
+            + '</span></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="intel-subtle-card"><strong>수익률 커버리지</strong><span>'
+            + html.escape(
+                f"{int(selected_row.get('return_coverage', 0))}/{int(selected_row.get('symbol_count', 0))} 종목"
+            )
+            + '</span></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="intel-subtle-card"><strong>방향/강도</strong><span>'
+            + html.escape(
+                f"{selected_row.get('direction', 'NEUTRAL')} · 강도 {selected_row.get('strength_score', 0)} · 모멘텀 {selected_row.get('momentum_class', '-') or '-'}"
+            )
+            + '</span></div>',
+            unsafe_allow_html=True,
+        )
+        source_mix = selected_row.get("source_mix", {}) or {}
+        if source_mix:
+            source_text = " / ".join(f"{key}:{value}" for key, value in source_mix.items())
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>분류 근거 소스</strong><span>'
+                + html.escape(source_text)
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+        industry_samples = selected_row.get("industry_samples", []) or []
+        if industry_samples:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>대표 업종</strong><span>'
+                + html.escape(" / ".join(industry_samples))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
+        product_samples = selected_row.get("product_samples", []) or []
+        if product_samples:
+            st.markdown(
+                '<div class="intel-subtle-card"><strong>대표 제품/사업</strong><span>'
+                + html.escape(" / ".join(product_samples))
+                + '</span></div>',
+                unsafe_allow_html=True,
+            )
 
 
 def _render_scan_results_snapshot(snapshot):
@@ -961,19 +2113,27 @@ def _render_scan_results_snapshot(snapshot):
     bridge_info = snapshot.get("bridge_info", {})
     market = snapshot.get("market", "KOSPI")
     if not results:
+        if isinstance(snapshot.get("intel_data"), dict) and snapshot.get("intel_data"):
+            _render_market_intelligence_panel(snapshot.get("intel_data", {}), market, compact=True)
         st.warning("⚠️ 조건에 맞는 종목을 찾지 못했습니다.")
         _render_agent_bridge_status(bridge_info, market)
         return
 
     st.success(f"✅ 스캔 완료: {len(results)}개 후보가 유지되었습니다.")
     st.caption(snapshot.get("status_line", ""))
-    _render_market_intelligence_panel(snapshot.get("intel_data", {}), market)
+    _render_market_intelligence_panel(snapshot.get("intel_data", {}), market, compact=True)
 
     df_results = pd.DataFrame(results)
     sort_col = "Decision Score" if "Decision Score" in df_results.columns else df_results.columns[0]
     if sort_col in df_results.columns:
         df_results = df_results.sort_values(sort_col, ascending=False, na_position="last")
-    st.dataframe(df_results, use_container_width=True, hide_index=True)
+    _render_scan_top_candidates(df_results, bridge_info, market)
+
+    if len(df_results) > 5:
+        with st.expander("추가 후보 보기", expanded=False):
+            st.dataframe(df_results.iloc[5:], use_container_width=True, hide_index=True)
+    else:
+        st.dataframe(df_results, use_container_width=True, hide_index=True)
     _render_agent_bridge_status(bridge_info, market)
 
 
@@ -997,6 +2157,9 @@ def _render_scan_job_panel():
     )
 
     st.progress(float(snapshot.get("progress", 0.0)))
+    if isinstance(snapshot.get("intel_data"), dict) and snapshot.get("intel_data"):
+        st.markdown("### 실시간 인텔리전스 요약")
+        _render_market_intelligence_panel(snapshot.get("intel_data", {}), snapshot.get("market", "KOSPI"), compact=True)
     if snapshot["status"] in {"queued", "running"}:
         with st.expander("📝 진행 로그", expanded=True):
             logs = snapshot.get("logs", [])
@@ -1014,6 +2177,47 @@ def _render_scan_job_panel():
         st.error(snapshot.get("error", "알 수 없는 오류"))
     else:
         _render_scan_results_snapshot(snapshot)
+
+
+def _render_intelligence_workspace():
+    _render_section_intro(
+        "Market Intelligence",
+        "테마 인텔리전스",
+        "시장 분위기, 강세·약세 테마, 핵심 리스크를 한 화면에서 읽을 수 있도록 정리한 전용 탭입니다.",
+        ["Theme view", "Core summary", "Readable evidence"],
+    )
+    selector_col, action_col = st.columns([4, 1])
+    intel_market = selector_col.selectbox(
+        "인텔리전스 시장",
+        ["KOSPI", "KOSDAQ", "NASDAQ", "S&P500", "AMEX"],
+        key="selected_intelligence_market",
+    )
+    refresh_intel = action_col.button("새로고침", key="refresh_intelligence_tab", use_container_width=True)
+
+    snapshot = _get_scan_state_snapshot()
+    snapshot_market = str(snapshot.get("market", "") or "") if snapshot else ""
+    if (
+        snapshot
+        and _scan_is_running(snapshot)
+        and snapshot_market == intel_market
+        and isinstance(snapshot.get("intel_data"), dict)
+        and snapshot.get("intel_data")
+    ):
+        intel_data = dict(snapshot.get("intel_data", {}))
+        intel_data["_display_origin"] = "scan_snapshot"
+    else:
+        intel_data = market_intelligence.get_market_intelligence(
+            intel_market,
+            os.environ.get("GEMINI_API_KEY", ""),
+            force_refresh=bool(refresh_intel),
+        )
+
+    theme_summary = build_theme_distribution_summary(intel_market, intel_data=intel_data, top_n=12)
+    _render_intelligence_overview_dashboard(intel_market, intel_data, theme_summary)
+    st.markdown("---")
+    _render_theme_distribution_workspace(intel_market, intel_data, summary=theme_summary)
+    st.markdown("---")
+    _render_intelligence_detail_sections(intel_data)
 
 
 def _render_scan_continuity_banner(active_tab):
@@ -1156,7 +2360,26 @@ _render_status_banner(
     caption=f"선택 시장: {_selected_gate_market}",
 )
 
-MAIN_TABS = ["🚀 스캐너", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
+_top_summary_market = st.session_state.get("selected_scan_market", "KOSPI")
+_top_snapshot = _get_scan_state_snapshot()
+if (
+    _top_snapshot
+    and _scan_is_running(_top_snapshot)
+    and str(_top_snapshot.get("market", "") or "").upper() == str(_top_summary_market).upper()
+    and isinstance(_top_snapshot.get("intel_data"), dict)
+    and _top_snapshot.get("intel_data")
+):
+    _top_intel_data = dict(_top_snapshot.get("intel_data", {}))
+    _top_intel_data["_display_origin"] = "scan_snapshot"
+else:
+    _top_intel_data = market_intelligence.get_market_intelligence(
+        _top_summary_market,
+        os.environ.get("GEMINI_API_KEY", ""),
+        force_refresh=False,
+    )
+_render_top_intelligence_summary(_top_summary_market, _top_intel_data)
+
+MAIN_TABS = ["🚀 스캐너", "🧠 인텔리전스", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
 if "active_main_tab" not in st.session_state:
     st.session_state["active_main_tab"] = MAIN_TABS[0]
 active_main_tab = st.segmented_control(
@@ -1180,6 +2403,9 @@ st.session_state["last_active_main_tab"] = active_main_tab
 
 if active_main_tab == "📈 성과":
     _render_daily_ops_overview()
+
+if active_main_tab == "🧠 인텔리전스":
+    _render_intelligence_workspace()
 
 # --- Strategy Lab (removed from UI) ---
 if active_main_tab == "🚀 스캐너":  # dummy context reuse — strategy lab content removed
@@ -1728,6 +2954,7 @@ if active_main_tab == "🚀 스캐너":
                 "스캐너를 백그라운드에서 시작했습니다. 다른 탭으로 이동해도 진행상태가 유지됩니다.",
                 icon="🚀",
             )
+            st.session_state["scan_nav_toast_key"] = None
             st.session_state["scan_status_toast_key"] = None
             st.rerun()
 
@@ -1741,7 +2968,10 @@ if active_main_tab == "🚀 스캐너":
     def _render_scanner_job_panel_fragment():
         _render_scan_job_panel()
 
-    _render_scanner_job_panel_fragment()
+    if should_auto_refresh_scan_panel(snapshot.get("status") if snapshot else ""):
+        _render_scanner_job_panel_fragment()
+    else:
+        _render_scan_job_panel()
 
     # --- Excel Upload Scanner ---
     st.markdown("---")
@@ -1777,7 +3007,10 @@ if active_main_tab == "🚀 스캐너":
                                 continue
                             u_results.append(eval_result["ui_row"])
                             db = db_manager.DBManager()
-                            db.save_scan_result(eval_result["db_payload"])
+                            upload_payload = dict(eval_result["db_payload"] or {})
+                            upload_payload.setdefault("scan_mode", "SWING")
+                            upload_payload.setdefault("feature_origin", "app_excel_upload")
+                            db.upsert_scan_result(upload_payload)
                         except Exception:
                             continue
                     if u_results:
