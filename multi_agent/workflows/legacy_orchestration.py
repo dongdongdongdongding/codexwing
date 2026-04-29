@@ -135,7 +135,13 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "scan_mode": str(getattr(dec, "scan_mode", "") or scan_mode).upper(),
                 "strategy_family": str(getattr(dec, "strategy_family", "") or strategy_family or "").upper() or None,
                 "alpha_score": getattr(dec, "alpha_score", None),
+                "tech_score": getattr(dec, "tech_score", None),
+                "conviction_score": getattr(dec, "conviction_score", None),
                 "decision_score": getattr(dec, "decision_score", None),
+                "whale_score": getattr(dec, "whale_score", None),
+                "volume": getattr(dec, "volume", None),
+                "volume_ratio": getattr(dec, "volume_ratio", None),
+                "volume_confirmed": getattr(dec, "volume_confirmed", None),
                 "prob_5": getattr(dec, "prob_5", None),
                 "prob_clean": getattr(dec, "prob_clean", None),
                 "real_trend": getattr(dec, "real_trend", ""),
@@ -227,7 +233,13 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "scan_mode": scan_mode,
                 "strategy_family": strategy_family or None,
                 "alpha_score": meta.get("alpha_score"),
+                "tech_score": meta.get("tech_score"),
+                "conviction_score": meta.get("conviction_score"),
                 "decision_score": meta.get("decision_score") or meta.get("exception_score") or meta.get("conviction_score"),
+                "whale_score": meta.get("whale_score"),
+                "volume": meta.get("volume"),
+                "volume_ratio": meta.get("volume_ratio"),
+                "volume_confirmed": meta.get("volume_confirmed"),
                 "prob_5": meta.get("prob_5"),
                 "prob_clean": meta.get("prob_clean"),
                 "real_trend": meta.get("real_trend"),
@@ -355,7 +367,13 @@ def _build_watchlist_only_meta(
                 "policy_win_5d_pct": round(win_5d_pct, 2),
                 "policy_avg_5d_pct": round(avg_5d_pct, 2),
                 "alpha_score": extra.get("alpha_score"),
+                "tech_score": extra.get("tech_score"),
+                "conviction_score": extra.get("conviction_score"),
                 "decision_score": extra.get("decision_score"),
+                "whale_score": extra.get("whale_score"),
+                "volume": extra.get("volume"),
+                "volume_ratio": extra.get("volume_ratio"),
+                "volume_confirmed": extra.get("volume_confirmed"),
                 "prob_5": extra.get("prob_5"),
                 "prob_clean": extra.get("prob_clean"),
                 "real_trend": extra.get("real_trend"),
@@ -420,6 +438,27 @@ def _apply_watchlist_only_mode(
             or phase25_threshold is None
             or (phase25_threshold - phase25_prob) <= 8.0
         )
+        # OOS-validated preserve: when the model bundle the user is about to
+        # trade was independently validated on the held-out 15% slice with
+        # production-quality stats, watchlist-only downgrade is stale (the
+        # learned policy was set when KOSDAQ swing was alpha-only at 50% win;
+        # it is no longer the current model). Mirror the same gate used by
+        # quant_analysis.py and planner_runtime: oos_win_rate>=70,
+        # oos_avg_return>=5, signal_direction='normal' (or upgraded from
+        # 'uncertain' via OOS).
+        oos_win = getattr(dec, "phase25_oos_win_rate_pct", None)
+        oos_ret = getattr(dec, "phase25_oos_avg_return_pct", None)
+        sig_dir = str(getattr(dec, "phase25_signal_direction", "") or "").lower()
+        oos_validated_preserve = (
+            sig_dir == "normal"
+            and oos_win is not None and _safe_float(oos_win) >= 70.0
+            and oos_ret is not None and _safe_float(oos_ret) >= 5.0
+            and decision_score >= 55.0
+            and real_trend == "UP"
+        )
+        if oos_validated_preserve:
+            preserved_decisions.append(dec)
+            continue
         if (
             routing_path in {"theme_exception_candidate", "theme_routed"}
             and theme_source == "stock_master"
@@ -443,7 +482,13 @@ def _apply_watchlist_only_mode(
         str(getattr(dec, "ticker", "") or ""): {
             "stock_name": str(getattr(dec, "stock_name", "") or ""),
             "alpha_score": getattr(dec, "alpha_score", None),
+            "tech_score": getattr(dec, "tech_score", None),
+            "conviction_score": getattr(dec, "conviction_score", None),
             "decision_score": getattr(dec, "decision_score", None),
+            "whale_score": getattr(dec, "whale_score", None),
+            "volume": getattr(dec, "volume", None),
+            "volume_ratio": getattr(dec, "volume_ratio", None),
+            "volume_confirmed": getattr(dec, "volume_confirmed", None),
             "prob_5": getattr(dec, "prob_5", None),
             "prob_clean": getattr(dec, "prob_clean", None),
             "real_trend": getattr(dec, "real_trend", ""),
@@ -725,6 +770,39 @@ def _safe_float(value: Any) -> float:
             return float(str(value).strip())
         except Exception:
             return 0.0
+
+
+def _detail_feature_fields(row: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(row, dict):
+        return {}
+    out: Dict[str, Any] = {}
+    if "tech_score" in row:
+        out["tech_score"] = round(_safe_float(row.get("tech_score")), 2)
+    if "whale_score" in row:
+        out["whale_score"] = round(_safe_float(row.get("whale_score")), 2)
+    if "volume_ratio" in row:
+        volume_ratio = _safe_float(row.get("volume_ratio"))
+        out["volume_ratio"] = round(volume_ratio, 3)
+        volume_confirmed = bool(row.get("volume_confirmed", False))
+        out["volume_confirmed"] = volume_confirmed
+        out["volume"] = row.get("volume") or f"{'✅' if volume_confirmed else '⚠️'} x{volume_ratio:.2f}"
+    elif row.get("volume") is not None:
+        out["volume"] = row.get("volume")
+    return out
+
+
+def _detail_has_feature(value: Any) -> bool:
+    if isinstance(value, bool):
+        return True
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip().lower() not in {"", "?", "nan", "none", "null", "unknown", "na", "n/a"}
+    try:
+        result = float(value)
+        return result == result
+    except Exception:
+        return True
 
 
 def _normalize_profile(value: Any) -> str:
@@ -1319,6 +1397,7 @@ def _collect_near_miss_watchlist_from_scanner_payload(
                         "stock_name": str(ticker_names.get(str(ticker).upper(), "") or ""),
                         "reason": reason.lower(),
                         "alpha_score": round(alpha_score, 2),
+                        **_detail_feature_fields(row),
                         "conviction_score": round(conviction_score, 2),
                         "prob_5": round(prob_5, 2),
                         "prob_clean": round(prob_clean, 2),
@@ -1356,9 +1435,14 @@ def _collect_near_miss_watchlist_from_scanner_payload(
                     "reason": "near_miss_watchlist",
                     "reject_reason": meta.get("reason"),
                     "alpha_score": meta.get("alpha_score"),
+                    "tech_score": meta.get("tech_score"),
                     "conviction_score": meta.get("conviction_score"),
                     "prob_5": meta.get("prob_5"),
                     "prob_clean": meta.get("prob_clean"),
+                    "whale_score": meta.get("whale_score"),
+                    "volume": meta.get("volume"),
+                    "volume_ratio": meta.get("volume_ratio"),
+                    "volume_confirmed": meta.get("volume_confirmed"),
                     "real_trend": meta.get("real_trend"),
                     "entry_reference_price": meta.get("entry_reference_price"),
                     "decision_score": meta.get("decision_score"),
@@ -1399,6 +1483,8 @@ def _collect_exception_leaders_from_scanner_payload(
     ticker_names = _resolve_ticker_names(market=context.market, tickers=list(reject_by_symbol.keys()))
 
     scored: List[Tuple[float, str, Dict[str, Any]]] = []
+    skipped_missing_features = 0
+    skipped_missing_feature_examples: List[Dict[str, Any]] = []
     for ticker_raw, reason_value in reject_by_symbol.items():
         ticker = str(ticker_raw or "").strip().upper()
         reason = str(reason_value or "").strip().upper()
@@ -1408,6 +1494,28 @@ def _collect_exception_leaders_from_scanner_payload(
         if not isinstance(detail_rows, list) or not detail_rows:
             detail_rows = [{}]
         detail = detail_rows[0] if isinstance(detail_rows[0], dict) else {}
+        required_detail = {
+            "alpha_score": detail.get("alpha_score"),
+            "tech_score": detail.get("tech_score"),
+            "whale_score": detail.get("whale_score"),
+            "volume_ratio": detail.get("volume_ratio"),
+            "prob_5": detail.get("prob_5"),
+            "prob_clean": detail.get("prob_clean"),
+            "real_trend": detail.get("real_trend"),
+            "tier_sort": detail.get("tier_sort"),
+        }
+        missing_detail = [key for key, value in required_detail.items() if not _detail_has_feature(value)]
+        if missing_detail:
+            skipped_missing_features += 1
+            if len(skipped_missing_feature_examples) < 8:
+                skipped_missing_feature_examples.append(
+                    {
+                        "ticker": ticker,
+                        "reject_reason": reason.lower(),
+                        "missing_fields": missing_detail,
+                    }
+                )
+            continue
 
         market = resolve_profile_market(context.market, ticker)
         profile = get_ticker_profile(ticker=ticker, market_type=market, market_gate=regime)
@@ -1467,6 +1575,7 @@ def _collect_exception_leaders_from_scanner_payload(
                     "reject_reason": reason.lower(),
                     "exception_score": round(exception_score, 1),
                     "alpha_score": round(alpha_score, 2),
+                    **_detail_feature_fields(detail),
                     "conviction_score": round(conviction_score, 2),
                     "prob_5": round(prob_5, 2),
                     "prob_clean": round(prob_clean, 2),
@@ -1504,6 +1613,8 @@ def _collect_exception_leaders_from_scanner_payload(
         "watchlist": watchlist,
         "watchlist_meta": watchlist_meta,
         "considered_filtered_symbols": len(reject_by_symbol),
+        "skipped_missing_features": skipped_missing_features,
+        "skipped_missing_feature_examples": skipped_missing_feature_examples,
     }
 
 
@@ -1670,6 +1781,8 @@ def run_legacy_orchestration(
             "tickers": [str(x) for x in ex_watch[:6]],
             "watchlist_meta": ex_meta[:6],
             "considered_filtered_symbols": int(exception_leaders.get("considered_filtered_symbols", 0) or 0),
+            "skipped_missing_features": int(exception_leaders.get("skipped_missing_features", 0) or 0),
+            "skipped_missing_feature_examples": list(exception_leaders.get("skipped_missing_feature_examples", []) or []),
         }
     else:
         profile_diagnostics["exception_leaders"] = {
@@ -1677,6 +1790,8 @@ def run_legacy_orchestration(
             "tickers": [],
             "watchlist_meta": [],
             "considered_filtered_symbols": int(exception_leaders.get("considered_filtered_symbols", 0) or 0),
+            "skipped_missing_features": int(exception_leaders.get("skipped_missing_features", 0) or 0),
+            "skipped_missing_feature_examples": list(exception_leaders.get("skipped_missing_feature_examples", []) or []),
         }
 
     watchlist_only_policy = _resolve_watchlist_only_policy(

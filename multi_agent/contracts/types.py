@@ -139,6 +139,7 @@ class PlannerDecision:
     confidence: float
     stock_name: str = ""
     alpha_score: Optional[float] = None
+    conviction_score: Optional[float] = None
     decision_score: Optional[float] = None
     entry_reference_price: Optional[float] = None
     prob_5: Optional[float] = None
@@ -151,6 +152,10 @@ class PlannerDecision:
     phase25_shadow_variant: str = ""
     phase25_shadow_prob: Optional[float] = None
     phase25_recommended_threshold: Optional[float] = None
+    phase25_signal_direction: str = ""
+    phase25_oos_auc: Optional[float] = None
+    phase25_oos_win_rate_pct: Optional[float] = None
+    phase25_oos_avg_return_pct: Optional[float] = None
     expected_edge_score: Optional[float] = None
     expected_return_1d_pct: Optional[float] = None
     expected_return_3d_pct: Optional[float] = None

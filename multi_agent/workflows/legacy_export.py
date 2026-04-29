@@ -33,6 +33,25 @@ def _extract_whale_num(row: Dict[str, Any]) -> float:
     whale = row.get("Whale") or row.get("수급") or row.get("whale_score")
     if whale is None:
         return 0.0
+
+
+def _pick_numeric(row: Dict[str, Any], *keys: str) -> float | None:
+    for key in keys:
+        if key not in row:
+            continue
+        value = row.get(key)
+        if value in (None, ""):
+            continue
+        if isinstance(value, str):
+            cleaned = value.replace("%", "").replace(",", "").strip()
+            if not cleaned:
+                continue
+            value = cleaned
+        try:
+            return float(value)
+        except Exception:
+            continue
+    return None
     s = str(whale)
     digits = "".join(ch for ch in s if (ch.isdigit() or ch == "."))
     try:
@@ -85,11 +104,12 @@ def build_scanner_handoff_from_legacy_results(
             "position": row.get("위치") or row.get("Position"),
             "volume": row.get("거래량") or row.get("Volume"),
             "surge": row.get("급등예측") or row.get("Surge"),
-            "alpha_score": row.get("alpha_score") or row.get("Alpha") or row.get("AI점수"),
+            "alpha_score": _pick_numeric(row, "alpha_score", "Alpha", "AI점수", "Antigrav"),
+            "conviction_score": _pick_numeric(row, "conviction_score", "Conviction", "확신도"),
             "decision_score": row.get("Decision Score") or row.get("decision_score"),
             "entry_reference_price": row.get("entry_reference_price") or row.get("현재가") or row.get("Current Price") or row.get("curr_price"),
-            "prob_5": row.get("prob_5") or row.get("_prob_5") or row.get("AI확률") or row.get("ml_prob"),
-            "prob_clean": row.get("prob_clean") or row.get("_prob_clean") or row.get("Clean Hit"),
+            "prob_5": _pick_numeric(row, "prob_5", "_prob_5", "AI확률", "ml_prob"),
+            "prob_clean": _pick_numeric(row, "prob_clean", "_prob_clean", "Clean Hit", "정밀확률"),
             "real_trend": row.get("real_trend") or row.get("추세") or row.get("Trend"),
             "strategy_family": row.get("strategy_family"),
             "scan_mode": row.get("scan_mode"),
@@ -98,6 +118,11 @@ def build_scanner_handoff_from_legacy_results(
             "phase25_shadow_variant": row.get("phase25_shadow_variant"),
             "phase25_shadow_prob": row.get("phase25_shadow_prob"),
             "phase25_recommended_threshold": row.get("phase25_recommended_threshold"),
+            "phase25_signal_direction": row.get("phase25_signal_direction"),
+            "phase25_raw_auc": row.get("phase25_raw_auc"),
+            "phase25_oos_auc": row.get("phase25_oos_auc"),
+            "phase25_oos_win_rate_pct": row.get("phase25_oos_win_rate_pct"),
+            "phase25_oos_avg_return_pct": row.get("phase25_oos_avg_return_pct"),
             "expected_edge_score": row.get("expected_edge_score"),
             "expected_return_1d_pct": row.get("expected_return_1d_pct"),
             "expected_return_3d_pct": row.get("expected_return_3d_pct"),
