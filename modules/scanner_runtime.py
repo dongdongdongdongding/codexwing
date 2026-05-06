@@ -71,6 +71,7 @@ def scan_symbol_with_retry(
     backoff_state: SharedBackoffState,
     max_retries: int = 2,
     scan_mode: str = "SWING",
+    run_id: Optional[str] = None,
     reject_reason_fn: Optional[Callable[[str, str], None]] = None,
     reject_detail_fn: Optional[Callable[[str, Dict[str, Any]], None]] = None,
 ) -> Optional[Dict[str, Any]]:
@@ -121,6 +122,8 @@ def scan_symbol_with_retry(
                 if not outputs:
                     return None
                 try:
+                    if run_id:
+                        outputs["db_payload"]["run_id"] = str(run_id)
                     db = _get_db_manager()
                     db.upsert_scan_result(outputs["db_payload"])
                 except Exception as e:
@@ -194,6 +197,8 @@ def scan_symbol_with_retry(
                 if not outputs:
                     return None
                 try:
+                    if run_id:
+                        outputs["db_payload"]["run_id"] = str(run_id)
                     db = _get_db_manager()
                     db.upsert_scan_result(outputs["db_payload"])
                 except Exception as e:
@@ -220,6 +225,8 @@ def scan_symbol_with_retry(
             if not outputs:
                 return None
             try:
+                if run_id:
+                    outputs["db_payload"]["run_id"] = str(run_id)
                 db = _get_db_manager()
                 db.upsert_scan_result(outputs["db_payload"])
             except Exception as e:

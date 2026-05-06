@@ -1617,6 +1617,7 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
                 backoff_state=_SCAN_BACKOFF_STATE,
                 max_retries=2,
                 scan_mode=scan_mode,
+                run_id=scan_state.run_id,
                 reject_reason_fn=_on_reject,
                 reject_detail_fn=_on_reject_detail,
             )
@@ -1670,7 +1671,9 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
                 "warnings": [],
                 "source": "scanner_agent_input",
                 "scan_mode": scan_mode,
+                "run_id": scan_state.run_id,
             },
+            run_id=scan_state.run_id,
             logger=lambda line: scan_state.append_log("info", line),
         )
 

@@ -279,6 +279,7 @@ class BackgroundScanState:
     scan_mode: str
     engine_label: str
     max_scan: int
+    run_id: str = field(default_factory=lambda: f"RUN-{uuid4().hex[:8].upper()}")
     job_id: str = field(default_factory=lambda: uuid4().hex[:10])
     status: str = "queued"
     started_at: float = field(default_factory=time.time)
@@ -329,6 +330,7 @@ class BackgroundScanState:
         with self._lock:
             return {
                 "job_id": self.job_id,
+                "run_id": self.run_id,
                 "market": self.market,
                 "scan_mode": self.scan_mode,
                 "engine_label": self.engine_label,

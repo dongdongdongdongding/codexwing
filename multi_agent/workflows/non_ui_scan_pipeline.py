@@ -271,6 +271,7 @@ def run_non_ui_scan_pipeline(
             backoff_state=backoff_state,
             max_retries=max_retries,
             scan_mode=str(scan_mode or "SWING").upper(),
+            run_id=run_id,
             reject_reason_fn=on_reject,
             reject_detail_fn=on_reject_detail,
         )

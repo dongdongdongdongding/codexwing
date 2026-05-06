@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List
 from uuid import uuid4
 
 from multi_agent.agents.orchestrator import OrchestratorAgent
+from multi_agent.contracts.types import RunContext
 from multi_agent.storage.memory_layers import MemoryManager
 
 
@@ -66,6 +67,7 @@ def run_legacy_agent_bridge(
     model_version: str = "legacy",
     code_version: str = "bridge-v1",
     summary_overrides: Dict[str, Any] | None = None,
+    run_id: str | None = None,
     logger: Callable[[str], None] | None = None,
 ) -> Dict[str, Any]:
     """Route legacy scanner output into the top-level orchestrator.
@@ -83,7 +85,7 @@ def run_legacy_agent_bridge(
         temp_input = temp_input_dir / "legacy_scan_results.json"
         payload = {
             "results": results,
-            "meta": summary_overrides or {},
+            "meta": {**(summary_overrides or {}), **({"run_id": str(run_id)} if run_id else {})},
         }
         with temp_input.open("w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=2)
@@ -107,7 +109,16 @@ def run_legacy_agent_bridge(
             code_version=code_version,
             scanner_input_path=temp_input_path,
         )
-        report_path = agent.run(memory=MemoryManager())
+        context = None
+        if run_id:
+            context = RunContext(
+                run_id=str(run_id),
+                market=market,
+                strategy_version=strategy_version,
+                model_version=model_version,
+                code_version=code_version,
+            )
+        report_path = agent.run(context=context, memory=MemoryManager())
         execution = dict(agent.last_execution or {})
         execution["orchestrator_report"] = str(report_path)
         info.update(execution)
