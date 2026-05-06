@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Optional
 
 from multi_agent.contracts.types import PlannerDecision, PlannerHandoff, RunContext, WarningItem
+from modules.horizon_policy import resolve_horizon_policy
 from multi_agent.agents.kr_quant_reranker import (
     compute_kr_basket_priority,
     compute_kr_quant_rerank,
@@ -242,7 +244,14 @@ def _apply_kosdaq_swing_gate(
         theme_risk.append("KOSDAQ_SWING_CLEAN_PROB_GUARD")
 
     if decision != original_decision:
-        rationale.append(f"phase25_swing_gate={raw_phase25_prob:.1f}<{recommended_threshold:.1f}")
+        reasons = []
+        if gap >= PHASE25_DOWNGRADE_SOFT_GAP:
+            reasons.append(f"phase25_prob={raw_phase25_prob:.1f}<threshold={recommended_threshold:.1f}")
+        if str(real_trend or "").upper() != "UP":
+            reasons.append(f"trend_guard={str(real_trend or '').upper() or 'UNKNOWN'}")
+        if clean_prob is not None and clean_prob < 28.0:
+            reasons.append(f"clean_prob={clean_prob:.1f}<28.0")
+        rationale.append("kosdaq_swing_gate:" + ",".join(reasons))
     return decision
 
 
@@ -357,7 +366,14 @@ def _apply_kr_market_mode_quality_gate(
             return "WATCHLIST"
         return decision
 
-    # KOSPI swing has not earned priority status yet; only very strong model-backed setups may pass.
+    # KOSPI swing priority guard relaxation (swing-main-0nr, 2026-05-06).
+    # Forward-validation over 30d showed gated rows had win_3d=69.4% / avg_3d=3.92%
+    # (n=1,228 with EXPECTED_EDGE_WATCH_GUARD combo) versus the passing baseline
+    # win_3d=62.1% / avg_3d=2.29% (n=29). The hard demote was net-negative — it
+    # blocked candidates that beat the picked baseline by 7pp. Relax to a soft
+    # note: keep the rationale/theme_risk markers so audits can still see the
+    # phase25 condition, but do not demote. Gated by env toggle so the previous
+    # behavior remains one flag away if a forward-week regression appears.
     if market == "KOSPI" and mode == "SWING" and _decision_rank(decision) >= 3:
         allow_priority = (
             _is_swing_variant(variant)
@@ -365,6 +381,11 @@ def _apply_kr_market_mode_quality_gate(
             and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSPI_SWING_PRIORITY")
         )
         if not allow_priority:
+            relax = os.getenv("AG_KOSPI_SWING_PRIORITY_GUARD_RELAX", "1").strip() not in ("0", "", "false", "False")
+            if relax:
+                theme_risk.append("KOSPI_SWING_PRIORITY_GUARD_SOFT")
+                rationale.append("priority_guard=KOSPI_SWING(soft)")
+                return decision
             return _demote_to(
                 2,
                 "KOSPI_SWING_PRIORITY_GUARD",
@@ -485,6 +506,23 @@ def _apply_expected_edge_gate(
         float(expected_return_1d_pct) < min_1d
         or float(expected_return_3d_pct) < min_3d
     ):
+        # KOSPI SWING relaxation (swing-main-0nr, 2026-05-06): gated rows had
+        # win_5d=75.4% / avg_5d=7.53% (n=345 EXPECTED_EDGE alone) and 74.6% /
+        # 7.92% in the EXPECTED_EDGE|KOSPI_SWING_PRIORITY combo (n=1,228) —
+        # both above the picked baseline (win_5d=72.4% / avg_5d=5.32%, n=29).
+        # KOSPI INTRADAY and KOSDAQ keep the hard demote because gated-row
+        # win-rates there (61.5% / 56.8%) sit at or below their baselines.
+        kospi_swing_relax = (
+            market == "KOSPI"
+            and mode == "SWING"
+            and os.getenv("AG_EXPECTED_EDGE_WATCH_GUARD_RELAX", "1").strip() not in ("0", "", "false", "False")
+        )
+        if kospi_swing_relax:
+            theme_risk.append("EXPECTED_EDGE_WATCH_GUARD_SOFT")
+            rationale.append(
+                f"expected_edge_watch_guard_soft={float(expected_return_1d_pct):.2f}/{float(expected_return_3d_pct):.2f}"
+            )
+            return decision
         theme_risk.append("EXPECTED_EDGE_WATCH_GUARD")
         rationale.append(
             f"expected_edge_watch_guard={float(expected_return_1d_pct):.2f}/{float(expected_return_3d_pct):.2f}"
@@ -622,6 +660,13 @@ def build_planner_handoff(
         expected_edge_score = feature_snapshot.get("expected_edge_score")
         expected_return_1d_pct = feature_snapshot.get("expected_return_1d_pct")
         expected_return_3d_pct = feature_snapshot.get("expected_return_3d_pct")
+        try:
+            target_horizon_days = int(feature_snapshot.get("phase25_target_horizon_days") or 0)
+        except Exception:
+            target_horizon_days = 0
+        if target_horizon_days <= 0:
+            policy_market = run_market if run_market in ("KOSPI", "KOSDAQ") else str(feature_snapshot.get("market") or run_market)
+            target_horizon_days = int(resolve_horizon_policy(policy_market, scan_mode).get("horizon_days") or (1 if quant_lane == "1d" else 3))
         reasons = cand.get("reasons", []) if isinstance(cand.get("reasons"), list) else []
         decision = _decision_from_score(score)
         confidence = _clamp((0.45 + (score / 200.0) - (weak_ratio * 0.1)), 0.05, 0.95)
@@ -803,7 +848,7 @@ def build_planner_handoff(
             quant_score_1d=round(float(quant_score_1d), 3),
             quant_score_3d=round(float(quant_score_3d), 3),
             selection_lane=quant_lane,
-            target_horizon_days=1 if quant_lane == "1d" else 3,
+            target_horizon_days=target_horizon_days,
             scanner_timeframe_profile=scanner_timeframe_profile,
             kr_universe_role=kr_universe_role,
             explosive_eligible=explosive_eligible,
@@ -847,7 +892,7 @@ def build_planner_handoff(
                     "quant_score_3d": round(float(quant_score_3d), 3),
                     "selection_lane": quant_lane,
                     "active_lane": active_lane,
-                    "target_horizon_days": 1 if quant_lane == "1d" else 3,
+                    "target_horizon_days": target_horizon_days,
                     "scanner_timeframe_profile": scanner_timeframe_profile or None,
                     "kr_universe_role": kr_universe_role or None,
                     "explosive_eligible": explosive_eligible,
