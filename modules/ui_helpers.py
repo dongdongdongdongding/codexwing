@@ -87,12 +87,18 @@ def build_watchlist_display_rows(
             candidate_by_ticker[ticker] = row
 
     rows: List[Dict[str, Any]] = []
-    # Reduced columns: drop Conviction (duplicates Decision Score under different
-    # smoothing), Prob5/Clean (phase18 era — phase25 prob already shown via
-    # Model Prob), Reject (always blank inside the watchlist), and the static
-    # 'planner_lane_watchlist' Reason text. Add the phase25 trio so the analyst
-    # can see at a glance which bundle, what gate, what OOS validation.
-    exact_numeric_fields = ["Alpha", "Decision Score", "Model Prob", "OOS Win %", "OOS Ret %"]
+    # Keep legacy planner fields visible when present. Phase25 fields are added
+    # after them, but not used as fabricated replacements for missing source data.
+    exact_numeric_fields = [
+        "Alpha",
+        "Conviction",
+        "Decision Score",
+        "Prob5",
+        "Clean",
+        "Model Prob",
+        "OOS Win %",
+        "OOS Ret %",
+    ]
     for rank, ticker in enumerate(watchlist or [], start=1):
         meta = meta_by_ticker.get(str(ticker), {})
         decision = decision_by_ticker.get(str(ticker), {})
@@ -110,6 +116,21 @@ def build_watchlist_display_rows(
             decision.get("decision_score"),
             feature_snapshot.get("decision_score"),
             candidate.get("score"),
+        )
+        conviction_value = _coalesce_value(
+            meta.get("conviction_score"),
+            decision.get("conviction_score"),
+            feature_snapshot.get("conviction_score"),
+        )
+        prob5_value = _coalesce_value(
+            meta.get("prob_5"),
+            decision.get("prob_5"),
+            feature_snapshot.get("prob_5"),
+        )
+        clean_value = _coalesce_value(
+            meta.get("prob_clean"),
+            decision.get("prob_clean"),
+            feature_snapshot.get("prob_clean"),
         )
         ph25_prob_value = _coalesce_value(
             meta.get("phase25_prob"),
@@ -145,7 +166,10 @@ def build_watchlist_display_rows(
                 "Decision": decision_label,
                 "Theme": primary_theme,
                 "Alpha": alpha_value,
+                "Conviction": conviction_value,
                 "Decision Score": decision_score_value,
+                "Prob5": prob5_value,
+                "Clean": clean_value,
                 "Model Prob": ph25_prob_value,
                 "OOS Win %": oos_win_value,
                 "OOS Ret %": oos_ret_value,
@@ -185,6 +209,8 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
 
     def _is_buy(row: Dict[str, Any]) -> bool:
         dec = str(row.get("decision", "") or "").upper().strip()
+        if not dec:
+            return _is_present(row.get("priority_rank")) or _is_present(row.get("decision_score"))
         return dec in BUY_GRADES
 
     candidates = [row for row in decisions if isinstance(row, dict) and _is_buy(row)]
