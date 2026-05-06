@@ -154,6 +154,8 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "expected_return_1d_pct": getattr(dec, "expected_return_1d_pct", None),
                 "expected_return_3d_pct": getattr(dec, "expected_return_3d_pct", None),
                 "selection_lane": getattr(dec, "selection_lane", "") or None,
+                "rationale": list(getattr(dec, "rationale", []) or []) or None,
+                "theme_risk": list(getattr(dec, "theme_risk", []) or []) or None,
                 "quant_priority_score": getattr(dec, "quant_priority_score", None),
                 "quant_score_1d": getattr(dec, "quant_score_1d", None),
                 "quant_score_3d": getattr(dec, "quant_score_3d", None),

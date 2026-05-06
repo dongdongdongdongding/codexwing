@@ -45,6 +45,24 @@ def _passthrough(value: Any) -> Any:
     return value
 
 
+def _to_str_list_or_none(value: Any) -> Optional[list]:
+    """Normalize rationale/theme_risk into a JSONB-friendly list of strings.
+
+    Planner emits these as List[str]. Tolerate single strings (older artifacts)
+    and drop empty/whitespace entries. Return None when the input is empty so
+    Supabase stores NULL rather than [].
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        s = value.strip()
+        return [s] if s else None
+    if isinstance(value, (list, tuple)):
+        cleaned = [str(item).strip() for item in value if item is not None and str(item).strip()]
+        return cleaned or None
+    return None
+
+
 # (db_column, source_key_in_data, coercer)
 # source_key=None means the column is computed/derived (caller must pass via overrides).
 SCAN_RESULT_COLUMNS: tuple = (
@@ -62,10 +80,12 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("prob_clean",                      "prob_clean",                      _to_float_or_none),
     ("whale_score",                     "whale_score",                     _to_int_or_none),
     ("decision_score",                  "decision_score",                  _to_float_or_none),
+    ("conviction_score",                "conviction_score",                _to_float_or_none),
 
     # Labels (string — keep NULL if missing; no 'Unknown' fabrication)
     ("fund_status",                     "fund_status",                     _passthrough),
     ("trend",                           "initial_trend",                   _passthrough),  # rename
+    ("verdict",                         "verdict",                         _passthrough),
     ("tier",                            "tier",                            _passthrough),
     ("volume",                          "volume",                          _passthrough),
     ("volume_ratio",                    "volume_ratio",                    _to_float_or_none),
@@ -91,6 +111,25 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("entry_reference_price",           "entry_reference_price",           _to_float_or_none),
     ("source_ref",                      "source_ref",                      _passthrough),
 
+    # Scanner lane / role trace
+    ("market_gate",                     "market_gate",                     _passthrough),
+    ("scanner_timeframe_profile",       "scanner_timeframe_profile",       _passthrough),
+    ("kr_universe_role",                "kr_universe_role",                _passthrough),
+    ("selection_lane",                  "selection_lane",                  _passthrough),
+
+    # Planner gate rationale (swing-main-h4x): JSONB lists from planner_handoff.json.
+    # Required by priority_watchlist_gap diagnostics so DB-only reports can name
+    # the gate cause without re-reading local RUN-* artifacts.
+    ("rationale",                       "rationale",                       _to_str_list_or_none),
+    ("theme_risk",                      "theme_risk",                      _to_str_list_or_none),
+    ("explosive_leader_flag",           "explosive_leader_flag",           _passthrough),
+    ("core_trend_flag",                 "core_trend_flag",                 _passthrough),
+    ("continuation_eligible",           "continuation_eligible",           _passthrough),
+    ("continuation_enabled",            "continuation_enabled",            _passthrough),
+    ("continuation_prob_3d",            "continuation_prob_3d",            _to_float_or_none),
+    ("continuation_evidence",           "continuation_evidence",           _to_int_or_none),
+    ("continuation_gate_reasons",       "continuation_gate_reasons",       _passthrough),
+
     # Returns (post-scan outcome sync)
     ("latest_return_pct",               "latest_return_pct",               _to_float_or_none),
     ("return_30m_pct",                  "return_30m_pct",                  _to_float_or_none),
@@ -113,6 +152,7 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("phase25_shadow_variant",          "phase25_shadow_variant",          _passthrough),
     ("phase25_shadow_prob",             "phase25_shadow_prob",             _to_float_or_none),
     ("phase25_recommended_threshold",   "phase25_recommended_threshold",   _to_float_or_none),
+    ("phase25_degraded",                "phase25_degraded",                _passthrough),
     ("performance_updated_at",          "performance_updated_at",          _passthrough),
     ("inference_failed",                "inference_failed",                _passthrough),
     ("model_trace_status",              "model_trace_status",              _passthrough),
@@ -129,10 +169,15 @@ SCAN_RESULT_COLUMNS: tuple = (
     # Regime
     ("regime_volatility_20d",           "regime_volatility_20d",           _to_float_or_none),
     ("regime_breadth_pct",              "regime_breadth_pct",              _to_float_or_none),
+    ("kospi_chg",                       "kospi_chg",                       _to_float_or_none),
     ("kosdaq_chg",                      "kosdaq_chg",                      _to_float_or_none),
     ("regime_avg_chg",                  "regime_avg_chg",                  _to_float_or_none),
 
     # Theme
+    ("theme_context",                   "theme_context",                   _passthrough),
+    ("leader_metrics",                  "leader_metrics",                  _passthrough),
+    ("routing_path",                    "routing_path",                    _passthrough),
+    ("theme_score_adjustment",          "theme_score_adjustment",          _to_float_or_none),
     ("primary_theme",                   "primary_theme",                   _passthrough),
     ("theme_source",                    "theme_source",                    _passthrough),
     ("theme_inference_status",          "theme_inference_status",          _passthrough),
