@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from multi_agent.contracts.types import PlannerDecision, PlannerHandoff, RunContext, WarningItem
 from multi_agent.agents.kr_quant_reranker import (
@@ -243,6 +243,63 @@ def _apply_kosdaq_swing_gate(
 
     if decision != original_decision:
         rationale.append(f"phase25_swing_gate={raw_phase25_prob:.1f}<{recommended_threshold:.1f}")
+    return decision
+
+
+def _apply_winner_pattern_filter(
+    *,
+    decision: str,
+    run_market: str,
+    scan_mode: str,
+    feature_snapshot: Dict[str, Any],
+    rationale: List[str],
+    theme_risk: List[str],
+) -> str:
+    """Winner-pattern univariate filter (added 2026-05-06).
+
+    Only acts on PRIORITY_WATCHLIST/WATCHLIST. Findings from
+    winner_pattern_research.json (FDR-replicated discovery→validation):
+
+    KOSPI swing (5d ≥+10%): rsi_14 ↑, prev_pct_change_5d ↑, is_downtrend == 0.
+      Demote one notch if rsi_14 < 50 AND prev_pct_change_5d < 0 — pure
+      mean-reversion candidates rarely close +10% on swing horizon.
+
+    KOSDAQ swing (5d ≥+10%): low-vol surge — volatility_20d ↓, atr_pct_14 ↓.
+      Demote one notch if both volatility_20d AND atr_pct_14 are above the
+      market-wide median ranges (vol_20d > 4.0% / atr > 5.0%) — high-vol
+      KOSDAQ candidates failed to surge in OOS data.
+    """
+    rank = _decision_rank(decision)
+    if rank < 2:
+        return decision
+    market = str(run_market or "").upper()
+    mode = str(scan_mode or "").upper()
+    if mode != "SWING":
+        return decision
+
+    def _safe(name: str) -> Optional[float]:
+        v = feature_snapshot.get(name)
+        if v in (None, ""):
+            return None
+        try:
+            return float(v)
+        except Exception:
+            return None
+
+    if market == "KOSPI":
+        rsi = _safe("rsi_14")
+        mom5 = _safe("prev_pct_change_5d")
+        if rsi is not None and mom5 is not None and rsi < 50.0 and mom5 < 0.0:
+            theme_risk.append("KOSPI_SWING_MOMENTUM_GUARD")
+            rationale.append(f"winner_pattern_kospi: rsi={rsi:.1f}<50 mom5={mom5:.2f}<0")
+            return _decision_from_rank(max(0, rank - 1))
+    elif market == "KOSDAQ":
+        vol20 = _safe("volatility_20d")
+        atr = _safe("atr_pct_14")
+        if vol20 is not None and atr is not None and vol20 > 4.0 and atr > 5.0:
+            theme_risk.append("KOSDAQ_SWING_LOW_VOL_GUARD")
+            rationale.append(f"winner_pattern_kosdaq: vol20={vol20:.2f}>4 atr={atr:.2f}>5")
+            return _decision_from_rank(max(0, rank - 1))
     return decision
 
 
@@ -665,6 +722,14 @@ def build_planner_handoff(
             recommended_threshold=recommended_threshold,
             prob_clean=prob_clean,
             real_trend=real_trend,
+            rationale=rationale,
+            theme_risk=theme_risk,
+        )
+        decision = _apply_winner_pattern_filter(
+            decision=decision,
+            run_market=run_market,
+            scan_mode=scan_mode,
+            feature_snapshot=feature_snapshot,
             rationale=rationale,
             theme_risk=theme_risk,
         )

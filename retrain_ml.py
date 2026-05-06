@@ -446,7 +446,8 @@ def derive_ohlcv_features(df: pd.DataFrame, *, target_mask: Optional[pd.Series] 
                 "volatility_5d", "volatility_20d", "obv_slope_5d",
                 "rsi_14", "atr_pct_14",
                 "kospi_index_5d_return", "kosdaq_index_5d_return",
-                "kosdaq_kospi_spread_5d"]
+                "kosdaq_kospi_spread_5d",
+                "kospi_momentum_score", "kosdaq_low_vol_score"]
     for col in horizons:
         if col not in df.columns:
             df[col] = np.nan
@@ -545,6 +546,18 @@ def derive_ohlcv_features(df: pd.DataFrame, *, target_mask: Optional[pd.Series] 
                     df.at[idx, "kosdaq_index_5d_return"] = kosdaq_5d
             if kospi_5d is not None and kosdaq_5d is not None:
                 df.at[idx, "kosdaq_kospi_spread_5d"] = round(kosdaq_5d - kospi_5d, 4)
+            # Composite scores from winner_pattern_research (2026-05-06).
+            # KOSPI swing winners are momentum-driven; KOSDAQ swing winners
+            # are low-vol surges. Both composites are computed for every row;
+            # is_kospi / is_kosdaq one-hots let the model use the right one.
+            rsi_v = df.at[idx, "rsi_14"]
+            mom5_v = df.at[idx, "prev_pct_change_5d"]
+            if pd.notna(rsi_v) and pd.notna(mom5_v):
+                df.at[idx, "kospi_momentum_score"] = round(float(rsi_v) + float(mom5_v) * 2.0, 4)
+            vol20_v = df.at[idx, "volatility_20d"]
+            atr_v = df.at[idx, "atr_pct_14"]
+            if pd.notna(vol20_v) and pd.notna(atr_v):
+                df.at[idx, "kosdaq_low_vol_score"] = round(-(float(vol20_v) + float(atr_v)), 4)
         except Exception:
             continue
         if verbose and processed % 200 == 0:
@@ -625,6 +638,14 @@ FEATURE_COLS = [
     "kospi_index_5d_return",
     "kosdaq_index_5d_return",
     "kosdaq_kospi_spread_5d",
+    # Composite features added 2026-05-06 from winner_pattern_research findings:
+    #   KOSPI swing winners (5d ≥+10%): rsi_14 ↑ AND prev_pct_change_5d ↑
+    #     replicated cohens_d 0.40/0.37 disc→val.
+    #   KOSDAQ swing winners (5d ≥+10%): volatility_20d ↓ AND atr_pct_14 ↓
+    #     (low-vol surge pattern), replicated d -0.47/-0.41.
+    # is_kospi/is_kosdaq one-hots route the model to the right composite.
+    "kospi_momentum_score",
+    "kosdaq_low_vol_score",
     # "marcap_band" excluded: old archives did not persist real marcap reliably.
 ]
 
