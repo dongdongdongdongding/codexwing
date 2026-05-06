@@ -153,6 +153,7 @@ class PlannerDecision:
     phase25_shadow_prob: Optional[float] = None
     phase25_recommended_threshold: Optional[float] = None
     phase25_signal_direction: str = ""
+    phase25_raw_auc: Optional[float] = None
     phase25_oos_auc: Optional[float] = None
     phase25_oos_win_rate_pct: Optional[float] = None
     phase25_oos_avg_return_pct: Optional[float] = None
