@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export PATH="$PATH:/Users/dongdong/.local/bin"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  scripts/issue
+  scripts/issue start [issue-id]
+  scripts/issue done|end [issue-id] [reason]
+  scripts/issue sync
+  scripts/issue log
+
+Mirrors the Claude /issue workflow for beads issue management.
+EOF
+}
+
+ready_json() {
+  bd ready --json
+}
+
+in_progress_json() {
+  bd list --status=in_progress --json
+}
+
+select_ready_issue() {
+  python3 -c '
+import json, sys
+issues = json.load(sys.stdin)
+if not issues:
+    sys.exit(1)
+p1 = [i for i in issues if i.get("priority") == 1]
+chosen = (p1 or issues)[0]
+print(chosen["id"])
+'
+}
+
+print_issue_summary() {
+  local label="$1"
+  local limit="$2"
+  python3 -c '
+import json, sys
+label = sys.argv[1]
+limit = int(sys.argv[2])
+issues = json.load(sys.stdin)
+print(label)
+if not issues:
+    print("  없음")
+    sys.exit(0)
+for issue in issues[:limit]:
+    assignee = issue.get("assignee")
+    suffix = f" @{assignee}" if assignee else ""
+    print("  {} P{} {}{}".format(issue.get("id"), issue.get("priority"), issue.get("title"), suffix))
+' "$label" "$limit"
+}
+
+show_status() {
+  bd status || true
+  echo
+  in_progress_json | print_issue_summary "진행 중:" 20
+  echo
+  ready_json | print_issue_summary "시작 가능 상위 5개:" 5
+  echo
+  echo '시작: `scripts/issue start <id>` | 완료: `scripts/issue end <id>`'
+}
+
+start_issue() {
+  local issue_id="${1:-}"
+  if [[ -z "$issue_id" ]]; then
+    issue_id="$(ready_json | select_ready_issue)"
+  fi
+
+  bd update "$issue_id" --claim --json
+  bd show "$issue_id"
+}
+
+end_issue() {
+  local issue_id="${1:-}"
+  shift || true
+
+  if [[ -z "$issue_id" ]]; then
+    in_progress_json | print_issue_summary "닫을 in_progress 이슈를 지정하세요:" 20
+    exit 2
+  fi
+
+  local reason="${*:-}"
+  if [[ -z "$reason" ]]; then
+    reason="$(git log -1 --pretty=%s 2>/dev/null || true)"
+  fi
+  if [[ -z "$reason" ]]; then
+    reason="Completed"
+  fi
+
+  bd close "$issue_id" --reason="$reason" --json
+  echo
+  ready_json | print_issue_summary "새로 시작 가능한 이슈:" 5
+}
+
+sync_issues() {
+  bd sync
+}
+
+log_issues() {
+  bd list --status=closed --json | python3 -c '
+import json, sys
+issues = json.load(sys.stdin)
+issues.sort(key=lambda i: i.get("updated_at") or i.get("closed_at") or "", reverse=True)
+for issue in issues[:5]:
+    when = issue.get("updated_at") or issue.get("closed_at") or "unknown"
+    print("{} {} {}".format(when, issue.get("id"), issue.get("title")))
+'
+}
+
+main() {
+  local cmd="${1:-}"
+  if [[ $# -gt 0 ]]; then
+    shift
+  fi
+
+  case "$cmd" in
+    "")
+      show_status
+      ;;
+    start)
+      start_issue "${1:-}"
+      ;;
+    done|end)
+      end_issue "$@"
+      ;;
+    sync)
+      sync_issues
+      ;;
+    log)
+      log_issues
+      ;;
+    -h|--help|help)
+      usage
+      ;;
+    *)
+      echo "Unknown command: $cmd" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+}
+
+main "$@"

@@ -105,6 +105,11 @@ over:
 - Acquire `bd merge-slot acquire` before conflict-prone edits or merge resolution
 - Release it with `bd merge-slot release` when the risky step is complete
 
+## Issue Shortcut
+- Claude's `/issue` workflow is mirrored for Codex through `scripts/issue`.
+- Use `scripts/issue` for status, `scripts/issue start <id>` to claim, `scripts/issue end <id> [reason]` to close, `scripts/issue sync` to sync, and `scripts/issue log` for recent closed issues.
+- If the user says `/issue ...` to Codex, interpret it as `scripts/issue ...`.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:full hash:f65d5d33 -->
 ## Issue Tracking with bd (beads)
 
