@@ -159,10 +159,15 @@ def main():
         payloads[name] = payload
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    # 2026-05-08: dedup 후 모든 boost 계열 auc<0.5 (random 미만). logistic만
+    # auc 0.525로 양수 학습. logistic도 저장해서 quant_analysis가 fallback
+    # 라우팅에서 시도할 수 있게 한다 — boost 모델만 저장하던 옛 정책은
+    # INTRADAY에서 무용지물 모델만 운영에 노출시킨다.
     model_save_map = {
         "xgboost": MODELS_DIR / "phase25_kr_intraday_xgboost.pkl",
         "lightgbm": MODELS_DIR / "phase25_kr_intraday_lightgbm.pkl",
         "histgb": MODELS_DIR / "phase25_kr_intraday_histgb.pkl",
+        "logistic": MODELS_DIR / "phase25_kr_intraday_logistic.pkl",
     }
     saved_models = {}
     for name, path in model_save_map.items():

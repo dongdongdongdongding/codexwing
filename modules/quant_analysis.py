@@ -1577,6 +1577,9 @@ class QuantStrategy:
                     primary_candidates = [
                         os.path.join(models_dir, "phase25_kr_swing_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
+                        # 2026-05-08: dedup 후 logistic이 best_avg 6.29% / win 58.6%로
+                        # boost 계열보다 약간 우수. xgboost/histgb 부재 시 fallback.
+                        os.path.join(models_dir, "phase25_kr_swing_logistic.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing.pkl"),
                         os.path.join(models_dir, "phase25_model.pkl"),
                     ]
@@ -1590,10 +1593,13 @@ class QuantStrategy:
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
                     ]
                 elif is_kr and scan_mode == "INTRADAY":
+                    # 2026-05-08: dedup 후 boost 계열 모두 auc<0.5 (random 미만).
+                    # logistic만 auc 0.525로 양수. logistic을 boost 다음 fallback에 둔다.
                     primary_candidates = [
                         os.path.join(models_dir, "phase25_kr_intraday_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday_histgb.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday_lightgbm.pkl"),
+                        os.path.join(models_dir, "phase25_kr_intraday_logistic.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday.pkl"),
                         os.path.join(models_dir, "phase25_model.pkl"),
                     ]

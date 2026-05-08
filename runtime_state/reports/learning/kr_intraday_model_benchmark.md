@@ -1,47 +1,47 @@
 # KR Intraday Model Benchmark
 
-- rows: `769`
-- positives(1D > 0%): `199`
-
-## xgboost
-- auc: `0.6117`
-- accuracy: `0.5931`
-- positive_precision: `0.5556`
-- positive_recall: `0.5660`
-- best_threshold: `0.60` | picks `79` | avg_return `+1.67%` | win `55.7%` | hit `55.7%`
-
-## histgb
-- auc: `0.6061`
-- accuracy: `0.5844`
-- positive_precision: `0.5463`
-- positive_recall: `0.5566`
-- best_threshold: `0.70` | picks `48` | avg_return `+1.43%` | win `58.3%` | hit `58.3%`
-
-## rf
-- auc: `0.6195`
-- accuracy: `0.5628`
-- positive_precision: `0.5138`
-- positive_recall: `0.8774`
-- best_threshold: `0.70` | picks `152` | avg_return `+1.07%` | win `52.0%` | hit `52.0%`
-
-## extratrees
-- auc: `0.6120`
-- accuracy: `0.5368`
-- positive_precision: `0.4975`
-- positive_recall: `0.9528`
-- best_threshold: `0.70` | picks `191` | avg_return `+0.73%` | win `50.3%` | hit `50.3%`
-
-## lightgbm
-- auc: `0.5951`
-- accuracy: `0.4545`
-- positive_precision: `0.4533`
-- positive_recall: `0.9151`
-- best_threshold: `0.65` | picks `208` | avg_return `+0.44%` | win `46.2%` | hit `46.2%`
+- rows: `2391`
+- positives(1D > 0%): `1035`
 
 ## logistic
-- auc: `0.4931`
-- accuracy: `0.4589`
-- positive_precision: `0.4589`
-- positive_recall: `1.0000`
-- best_threshold: `0.70` | picks `227` | avg_return `+0.38%` | win `45.8%` | hit `45.8%`
+- auc: `0.5253`
+- accuracy: `0.4624`
+- positive_precision: `0.4629`
+- positive_recall: `0.9701`
+- best_threshold: `0.70` | picks `38` | avg_return `+1.36%` | win `57.9%` | hit `57.9%`
+
+## extratrees
+- auc: `0.4830`
+- accuracy: `0.4916`
+- positive_precision: `0.4705`
+- positive_recall: `0.7395`
+- best_threshold: `0.40` | picks `535` | avg_return `+0.61%` | win `47.5%` | hit `47.5%`
+
+## rf
+- auc: `0.4818`
+- accuracy: `0.4833`
+- positive_precision: `0.4637`
+- positive_recall: `0.7066`
+- best_threshold: `0.40` | picks `535` | avg_return `+0.61%` | win `47.5%` | hit `47.5%`
+
+## histgb
+- auc: `0.4693`
+- accuracy: `0.4791`
+- positive_precision: `0.4603`
+- positive_recall: `0.6946`
+- best_threshold: `0.30` | picks `530` | avg_return `+0.59%` | win `47.2%` | hit `47.2%`
+
+## lightgbm
+- auc: `0.4714`
+- accuracy: `0.4875`
+- positive_precision: `0.4673`
+- positive_recall: `0.7275`
+- best_threshold: `0.40` | picks `532` | avg_return `+0.59%` | win `47.4%` | hit `47.4%`
+
+## xgboost
+- auc: `0.4776`
+- accuracy: `0.4791`
+- positive_precision: `0.4608`
+- positive_recall: `0.7036`
+- best_threshold: `0.30` | picks `538` | avg_return `+0.59%` | win `47.2%` | hit `47.2%`
 

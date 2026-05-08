@@ -1,47 +1,47 @@
 # KR Swing Model Benchmark
 
-- rows: `187`
-- positives(3D >= 5%): `40`
-
-## xgboost
-- auc: `0.6224`
-- accuracy: `0.7719`
-- positive_precision: `0.5000`
-- positive_recall: `0.0769`
-- best_threshold: `0.25` | picks `10` | avg_return `+7.82%` | win `80.0%` | hit `40.0%`
-
-## histgb
-- auc: `0.6897`
-- accuracy: `0.7719`
-- positive_precision: `0.0000`
-- positive_recall: `0.0000`
-- best_threshold: `0.20` | picks `14` | avg_return `+6.80%` | win `71.4%` | hit `50.0%`
-
-## lightgbm
-- auc: `0.6897`
-- accuracy: `0.7719`
-- positive_precision: `0.5000`
-- positive_recall: `0.5385`
-- best_threshold: `0.50` | picks `14` | avg_return `+6.80%` | win `71.4%` | hit `50.0%`
-
-## rf
-- auc: `0.5140`
-- accuracy: `0.7895`
-- positive_precision: `1.0000`
-- positive_recall: `0.0769`
-- best_threshold: `0.25` | picks `20` | avg_return `+4.33%` | win `70.0%` | hit `25.0%`
-
-## extratrees
-- auc: `0.4108`
-- accuracy: `0.7895`
-- positive_precision: `1.0000`
-- positive_recall: `0.0769`
-- best_threshold: `0.30` | picks `8` | avg_return `+3.55%` | win `62.5%` | hit `25.0%`
+- rows: `2380`
+- positives(3D >= 5%): `962`
 
 ## logistic
-- auc: `0.3794`
-- accuracy: `0.6842`
-- positive_precision: `0.1429`
-- positive_recall: `0.0769`
-- best_threshold: `0.20` | picks `16` | avg_return `+1.80%` | win `62.5%` | hit `12.5%`
+- auc: `0.5706`
+- accuracy: `0.5854`
+- positive_precision: `0.4303`
+- positive_recall: `0.4138`
+- best_threshold: `0.50` | picks `251` | avg_return `+6.29%` | win `58.6%` | hit `43.0%`
+
+## histgb
+- auc: `0.5641`
+- accuracy: `0.5714`
+- positive_precision: `0.4221`
+- positive_recall: `0.4674`
+- best_threshold: `0.50` | picks `289` | avg_return `+5.97%` | win `58.8%` | hit `42.2%`
+
+## lightgbm
+- auc: `0.5654`
+- accuracy: `0.5392`
+- positive_precision: `0.4071`
+- positive_recall: `0.5709`
+- best_threshold: `0.60` | picks `257` | avg_return `+5.82%` | win `58.8%` | hit `42.4%`
+
+## rf
+- auc: `0.5675`
+- accuracy: `0.5700`
+- positive_precision: `0.4196`
+- positive_recall: `0.4598`
+- best_threshold: `0.60` | picks `180` | avg_return `+5.78%` | win `55.0%` | hit `41.1%`
+
+## xgboost
+- auc: `0.5617`
+- accuracy: `0.5714`
+- positive_precision: `0.4176`
+- positive_recall: `0.4368`
+- best_threshold: `0.50` | picks `273` | avg_return `+5.72%` | win `57.5%` | hit `41.8%`
+
+## extratrees
+- auc: `0.5668`
+- accuracy: `0.5630`
+- positive_precision: `0.4141`
+- positive_recall: `0.4713`
+- best_threshold: `0.55` | picks `220` | avg_return `+5.68%` | win `57.7%` | hit `41.8%`
 

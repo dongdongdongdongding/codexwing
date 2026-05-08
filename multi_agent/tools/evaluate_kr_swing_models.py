@@ -25,13 +25,18 @@ from retrain_ml import FEATURE_COLS, engineer_features, load_scan_archive
 
 
 def build_segment() -> tuple[pd.DataFrame, list[str]]:
+    # 2026-05-08 (swing-main-4lm + 01i): return_3d_pct → return_5d_pct 변경.
+    # KOSPI SWING 학습 OOS auc 0.485 (random 미만)는 3d target이 노이즈로
+    # 학습 가능 신호를 못 만들어서. dedup 후 KOSPI SWING OBSERVE 5d win
+    # 67.6% / 7d 75.6% — 5d로 학습하면 운영 분포와 target 일치.
+    # KOSDAQ SWING은 horizon_policy에서 이미 5d.
     df = engineer_features(load_scan_archive())
     seg = df[
         df["market_subtype"].isin(["KOSPI", "KOSDAQ"])
         & df["scan_mode"].eq("SWING")
-        & df["return_3d_pct"].notna()
+        & df["return_5d_pct"].notna()
     ].copy()
-    seg["target"] = (pd.to_numeric(seg["return_3d_pct"], errors="coerce") >= 5.0).astype(int)
+    seg["target"] = (pd.to_numeric(seg["return_5d_pct"], errors="coerce") >= 5.0).astype(int)
     feat_cols = [col for col in FEATURE_COLS if col in seg.columns]
     return seg.sort_values("created_at").copy(), feat_cols
 
@@ -91,10 +96,10 @@ def fit_and_eval(name: str, model, X_train, X_val, y_train, y_val, returns_val, 
         "trained_at": datetime.now().isoformat(),
         "auc": auc,
         "segment": "phase25_kr_swing_benchmark",
-        "return_col": "return_3d_pct",
+        "return_col": "return_5d_pct",
         "positive_threshold": 5.0,
         "recommended_probability_threshold": (best or {}).get("threshold", 0.5),
-        "description": f"KR swing benchmark candidate ({name}) trained on realized 3D >= +5%.",
+        "description": f"KR swing benchmark candidate ({name}) trained on realized 5D >= +5%.",
         "benchmark_model": name,
         "benchmark_avg_return": (best or {}).get("avg_return"),
         "benchmark_win_rate": (best or {}).get("win_rate"),
@@ -107,7 +112,7 @@ def main():
     seg, feat_cols = build_segment()
     X = seg[feat_cols].apply(pd.to_numeric, errors="coerce").fillna(0.0)
     y = seg["target"].astype(int)
-    returns = pd.to_numeric(seg["return_3d_pct"], errors="coerce")
+    returns = pd.to_numeric(seg["return_5d_pct"], errors="coerce")
 
     split_idx = int(len(seg) * 0.7)
     X_train, X_val = X.iloc[:split_idx], X.iloc[split_idx:]
@@ -159,10 +164,13 @@ def main():
         payloads[name] = payload
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    # 2026-05-08 (5d 학습): logistic이 dedup 후 best_avg 6.29%로 boost 계열보다
+    # 약간 우수. logistic도 저장해 fallback 라우팅에서 사용 가능하게.
     model_save_map = {
         "xgboost": MODELS_DIR / "phase25_kr_swing_xgboost.pkl",
         "lightgbm": MODELS_DIR / "phase25_kr_swing_lightgbm.pkl",
         "histgb": MODELS_DIR / "phase25_kr_swing_histgb.pkl",
+        "logistic": MODELS_DIR / "phase25_kr_swing_logistic.pkl",
     }
     saved_models = {}
     for name, path in model_save_map.items():
