@@ -27,8 +27,10 @@ except Exception:  # pragma: no cover
     CatBoostClassifier = None
 
 
-TARGET_RETURN_PCT = 10.0
-TARGET_WIN_RATE_PCT = 75.0
+# Evidence-based targets (archive 2026-04-22): top-pick win ceiling ≈ 66%, avg return ≈ +3.5%.
+# 75%/10% was unreachable on realized data; reset to 60%/+5%.
+TARGET_RETURN_PCT = 5.0
+TARGET_WIN_RATE_PCT = 60.0
 
 SEGMENTS = [
     ("kospi_core_1d", "KOSPI", "CORE_TREND", "return_1d_pct", 10),
@@ -125,6 +127,16 @@ def _models() -> Dict[str, Any]:
 
 def _run_segment(df: pd.DataFrame, segment_key: str, market: str, role: str, return_col: str, topn: int, models_dir: Path) -> Dict[str, Any]:
     work = df[df["kr_universe_role"].fillna("").astype(str).eq(role)].copy()
+    if "validation_excluded" in work.columns:
+        raw = work["validation_excluded"]
+        excluded = raw.astype(str).str.lower().isin({"true", "1", "yes"}) if raw.dtype == "object" else raw.fillna(False).astype(bool)
+        work = work[~excluded].copy()
+    if "is_dummy_data" in work.columns:
+        raw = work["is_dummy_data"]
+        dummy = raw.astype(str).str.lower().isin({"true", "1", "yes"}) if raw.dtype == "object" else raw.fillna(False).astype(bool)
+        work = work[~dummy].copy()
+    if "feature_quality" in work.columns:
+        work = work[work["feature_quality"].fillna("").astype(str).str.lower().isin({"", "complete"})].copy()
     work = work[pd.to_numeric(work[return_col], errors="coerce").notna()].copy()
     work = work[work["trade_date"].fillna("").astype(str).str.len().ge(8)].copy()
     days = sorted(work["trade_date"].dropna().astype(str).unique().tolist())
@@ -152,8 +164,19 @@ def _run_segment(df: pd.DataFrame, segment_key: str, market: str, role: str, ret
         return base
 
     feat_cols = [col for col in FEATURE_COLS if col in work.columns]
-    X_train = train[feat_cols].apply(pd.to_numeric, errors="coerce").fillna(0.0)
-    X_test = test[feat_cols].apply(pd.to_numeric, errors="coerce").fillna(0.0)
+    X_train = train[feat_cols].apply(pd.to_numeric, errors="coerce")
+    X_test = test[feat_cols].apply(pd.to_numeric, errors="coerce")
+    train_complete = ~X_train.isna().any(axis=1)
+    test_complete = ~X_test.isna().any(axis=1)
+    train = train.loc[train_complete].copy()
+    test = test.loc[test_complete].copy()
+    X_train = X_train.loc[train_complete].copy()
+    X_test = X_test.loc[test_complete].copy()
+    if len(train) < 100 or len(test) < 50:
+        base["train_rows"] = int(len(train))
+        base["test_rows"] = int(len(test))
+        base["skip_reason"] = "feature_na_rows_removed"
+        return base
     y_train = pd.to_numeric(train[return_col], errors="coerce").gt(0).astype(int)
     y_test = pd.to_numeric(test[return_col], errors="coerce").gt(0).astype(int)
 

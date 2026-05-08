@@ -21,3 +21,4 @@ vaderSentiment
 feedparser
 scikit-learn
 openpyxl
+pytest

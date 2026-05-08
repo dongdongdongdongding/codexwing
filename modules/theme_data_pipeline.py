@@ -166,6 +166,61 @@ def _fetch_listing(name: str) -> pd.DataFrame:
     return fdr.StockListing(name)
 
 
+def _extract_day_return_pct(raw: Dict[str, Any]) -> float | None:
+    candidates = [
+        raw.get("ChagesRatio"),
+        raw.get("ChangesRatio"),
+        raw.get("ChangeRate"),
+        raw.get("change_rate"),
+    ]
+    for value in candidates:
+        try:
+            if value is None or pd.isna(value):
+                continue
+            return float(value)
+        except Exception:
+            continue
+    close_val = raw.get("Close")
+    prev_close = raw.get("PrevClose")
+    try:
+        if close_val is not None and prev_close not in (None, 0) and not pd.isna(close_val) and not pd.isna(prev_close):
+            return (float(close_val) / float(prev_close) - 1.0) * 100.0
+    except Exception:
+        pass
+    return None
+
+
+def build_market_day_return_map(market: str) -> Dict[str, float]:
+    market_input = str(market or "KR").upper()
+    canonical_market = normalize_market_key(market_input)
+    return_map: Dict[str, float] = {}
+    if fdr is None:
+        return return_map
+    listing_names: List[str]
+    if market_input in {"KOSPI", "KOSDAQ", "KONEX"}:
+        listing_names = [market_input]
+    elif canonical_market == "KR":
+        listing_names = ["KRX"]
+    else:
+        return return_map
+
+    for listing_name in listing_names:
+        try:
+            frame = _fetch_listing(listing_name)
+        except Exception:
+            continue
+        for raw in frame.to_dict(orient="records"):
+            code = _safe_text(raw.get("Code"))
+            if not code:
+                continue
+            scope = _safe_text(raw.get("Market")).upper()
+            symbol = _kr_symbol(code, scope)
+            day_return = _extract_day_return_pct(raw)
+            if symbol and day_return is not None:
+                return_map[symbol] = round(float(day_return), 4)
+    return return_map
+
+
 def _normalize_kr_record(raw: Dict[str, Any], source_listing: str) -> Dict[str, Any]:
     code = _safe_text(raw.get("Code"))
     market_scope = _safe_text(raw.get("Market")).upper()
@@ -702,6 +757,147 @@ def write_theme_data_validation_report(report: Dict[str, Any]) -> Dict[str, Path
             )
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return {"json": json_path, "md": md_path}
+
+
+def build_theme_distribution_summary(
+    market: str,
+    *,
+    membership_payload: Dict[str, Any] | None = None,
+    intel_data: Dict[str, Any] | None = None,
+    day_return_map: Dict[str, float] | None = None,
+    top_n: int = 12,
+) -> Dict[str, Any]:
+    market_input = str(market or "KR").upper()
+    canonical_market = normalize_market_key(market_input)
+    membership_payload = membership_payload or load_theme_membership_payload(canonical_market)
+    records = membership_payload.get("records", []) if isinstance(membership_payload, dict) else []
+    theme_state_lookup: Dict[str, Dict[str, Any]] = {}
+    if isinstance(intel_data, dict):
+        for row in intel_data.get("theme_states", []) or []:
+            if not isinstance(row, dict):
+                continue
+            theme_name = _safe_text(row.get("theme_name"))
+            theme_id = _safe_text(row.get("theme_id"))
+            if theme_name:
+                theme_state_lookup[theme_name] = row
+            if theme_id and theme_name and theme_id not in theme_state_lookup:
+                theme_state_lookup[theme_id] = row
+
+    filtered_records: List[Dict[str, Any]] = []
+    for row in records:
+        if not isinstance(row, dict):
+            continue
+        scope = _safe_text(row.get("market_scope")).upper()
+        if market_input in {"KOSPI", "KOSDAQ", "KONEX", "NASDAQ", "NYSE", "AMEX"} and scope != market_input:
+            continue
+        filtered_records.append(row)
+
+    grouped: Dict[str, Dict[str, Any]] = defaultdict(
+        lambda: {
+            "theme_name": "",
+            "symbol_count": 0,
+            "confidence_sum": 0.0,
+            "return_sum": 0.0,
+            "return_count": 0,
+            "positive_return_count": 0,
+            "negative_return_count": 0,
+            "symbols": [],
+            "sources": Counter(),
+            "industry_samples": [],
+            "product_samples": [],
+        }
+    )
+    day_return_map = day_return_map or build_market_day_return_map(market_input)
+    classified_symbols = 0
+    for row in filtered_records:
+        primary_theme = normalize_theme_name(row.get("primary_theme"))
+        if not primary_theme or primary_theme == "unclassified":
+            continue
+        symbol = _safe_text(row.get("symbol")).upper()
+        memberships = row.get("memberships", []) if isinstance(row.get("memberships"), list) else []
+        primary_membership = memberships[0] if memberships else {}
+        group = grouped[primary_theme]
+        group["theme_name"] = primary_theme
+        group["symbol_count"] += 1
+        group["confidence_sum"] += float(primary_membership.get("confidence", 0.0) or 0.0)
+        group["symbols"].append(
+            {
+                "symbol": symbol,
+                "name": _safe_text(row.get("name")),
+                "confidence": round(float(primary_membership.get("confidence", 0.0) or 0.0), 3),
+                "theme_source": _safe_text(primary_membership.get("theme_source")),
+                "official_industry": _safe_text((row.get("official_classification") or {}).get("official_industry")),
+                "official_products": _safe_text((row.get("official_classification") or {}).get("official_products")),
+                "day_return_pct": day_return_map.get(symbol),
+            }
+        )
+        group["sources"][_safe_text(primary_membership.get("theme_source")) or "unknown"] += 1
+        official = row.get("official_classification") if isinstance(row.get("official_classification"), dict) else {}
+        industry = _safe_text(official.get("official_industry"))
+        products = _safe_text(official.get("official_products"))
+        if industry and industry not in group["industry_samples"]:
+            group["industry_samples"].append(industry)
+        if products and products not in group["product_samples"]:
+            group["product_samples"].append(products)
+        day_return = day_return_map.get(symbol)
+        if day_return is not None:
+            group["return_sum"] += float(day_return)
+            group["return_count"] += 1
+            if float(day_return) > 0:
+                group["positive_return_count"] += 1
+            elif float(day_return) < 0:
+                group["negative_return_count"] += 1
+        classified_symbols += 1
+
+    distribution_rows: List[Dict[str, Any]] = []
+    for theme_name, group in grouped.items():
+        state = theme_state_lookup.get(theme_name, {})
+        avg_confidence = group["confidence_sum"] / max(group["symbol_count"], 1)
+        avg_day_return = group["return_sum"] / max(group["return_count"], 1) if group["return_count"] else None
+        symbols = sorted(group["symbols"], key=lambda row: (float(row.get("confidence", 0.0) or 0.0), row.get("symbol", "")), reverse=True)
+        distribution_rows.append(
+            {
+                "theme_name": theme_name,
+                "theme_id": _theme_id(theme_name),
+                "symbol_count": int(group["symbol_count"]),
+                "avg_confidence": round(avg_confidence, 3),
+                "avg_day_return_pct": round(float(avg_day_return), 4) if avg_day_return is not None else None,
+                "return_coverage": int(group["return_count"]),
+                "positive_ratio": round(group["positive_return_count"] / max(group["return_count"], 1), 4) if group["return_count"] else None,
+                "negative_ratio": round(group["negative_return_count"] / max(group["return_count"], 1), 4) if group["return_count"] else None,
+                "direction": _safe_text(state.get("direction")) or "NEUTRAL",
+                "strength_score": round(float(state.get("strength_score", 0.0) or 0.0), 1),
+                "momentum_class": _safe_text(state.get("momentum_class")),
+                "source_mix": dict(group["sources"]),
+                "industry_samples": group["industry_samples"][:3],
+                "product_samples": group["product_samples"][:3],
+                "symbols": symbols[:25],
+            }
+        )
+
+    distribution_rows.sort(
+        key=lambda row: (
+            -9999.0 if row.get("avg_day_return_pct") is None else float(row.get("avg_day_return_pct", 0.0) or 0.0),
+            float(row.get("strength_score", 0.0) or 0.0),
+            int(row.get("symbol_count", 0)),
+            row.get("theme_name", ""),
+        ),
+        reverse=True,
+    )
+    total_symbols = len(filtered_records)
+    unclassified_symbols = max(total_symbols - classified_symbols, 0)
+    top_theme = distribution_rows[0]["theme_name"] if distribution_rows else "unclassified"
+    return {
+        "market": market_input,
+        "canonical_market": canonical_market,
+        "total_symbols": total_symbols,
+        "classified_symbols": classified_symbols,
+        "unclassified_symbols": unclassified_symbols,
+        "classified_ratio": round(classified_symbols / max(total_symbols, 1), 4),
+        "top_theme": top_theme,
+        "rows": distribution_rows[:top_n],
+        "all_rows": distribution_rows,
+    }
 
 
 def refresh_theme_data_pipeline(market: str) -> Dict[str, Any]:

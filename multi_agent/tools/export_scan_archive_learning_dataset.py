@@ -244,6 +244,8 @@ def main() -> None:
         "return_3d_pct",
         "return_5d_pct",
         "return_7d_pct",
+        "return_14d_pct",
+        "return_30d_pct",
     ]
     if not df.empty:
         available_return_cols = [col for col in return_cols if col in df.columns]
@@ -257,6 +259,10 @@ def main() -> None:
         if available_return_cols:
             numeric = df[available_return_cols].apply(pd.to_numeric, errors="coerce")
             df["max_return_observed_pct"] = numeric.max(axis=1, skipna=True).where(is_resolved)
+            # Max drawdown across the observed horizon — needed for exit-rule
+            # (SL -3%) simulation: without this, SL triggers are inferred from
+            # close-only returns and understate actual stop-outs.
+            df["min_return_observed_pct"] = numeric.min(axis=1, skipna=True).where(is_resolved)
 
             def _label(series: pd.Series, condition) -> pd.Series:
                 """Return 1/0 only for RESOLVED rows; NaN for others."""
@@ -271,6 +277,9 @@ def main() -> None:
             df["label_hit_20pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(20))
             df["label_hit_50pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(50))
             df["label_hit_100pct"] = _label(df["max_return_observed_pct"], df["max_return_observed_pct"].ge(100))
+            # Exit-rule (SL -3%) trigger label — only RESOLVED rows.
+            df["label_stop_loss_3pct"] = _label(df["min_return_observed_pct"], df["min_return_observed_pct"].le(-3))
+            df["label_stop_loss_5pct"] = _label(df["min_return_observed_pct"], df["min_return_observed_pct"].le(-5))
 
     # Derive marcap_band from stored marcap column if present
     if not df.empty:

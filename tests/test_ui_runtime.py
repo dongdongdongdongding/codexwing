@@ -5,7 +5,15 @@ import pandas as pd
 
 from modules.quant_analysis import QuantStrategy
 from modules.scanner_runtime import run_parallel_scan
-from modules.ui_helpers import compute_progress_fraction, format_volume_display, resolve_display_price
+from modules.ui_helpers import (
+    build_signal_display_rows,
+    build_top_candidate_rows,
+    build_watchlist_display_rows,
+    compute_progress_fraction,
+    format_volume_display,
+    resolve_display_price,
+    should_auto_refresh_scan_panel,
+)
 
 
 class UIHelperTests(unittest.TestCase):
@@ -21,6 +29,71 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(resolve_display_price(None, 88.5), 88.5)
         self.assertEqual(format_volume_display(15320.2), "15,320")
         self.assertEqual(format_volume_display(None), "0")
+
+    def test_build_top_candidate_rows_sorts_by_priority_then_score(self):
+        rows = build_top_candidate_rows(
+            {
+                "decisions": [
+                    {"ticker": "BBB", "stock_name": "Beta", "priority_rank": 2, "decision_score": 91, "expected_return_1d_pct": 1.2},
+                    {"ticker": "AAA", "stock_name": "Alpha", "priority_rank": 1, "decision_score": 88, "expected_return_1d_pct": 0.8},
+                    {"ticker": "CCC", "stock_name": "Gamma", "priority_rank": 1, "decision_score": 95, "expected_return_1d_pct": 1.5},
+                ]
+            },
+            limit=2,
+        )
+        self.assertEqual([row["Ticker"] for row in rows], ["CCC", "AAA"])
+
+    def test_should_auto_refresh_scan_panel_only_for_live_states(self):
+        self.assertTrue(should_auto_refresh_scan_panel("queued"))
+        self.assertTrue(should_auto_refresh_scan_panel("running"))
+        self.assertFalse(should_auto_refresh_scan_panel("completed"))
+        self.assertFalse(should_auto_refresh_scan_panel("failed"))
+
+    def test_build_watchlist_display_rows_uses_only_exact_source_fields(self):
+        rows, visible = build_watchlist_display_rows(
+            watchlist=["005930.KS"],
+            watchlist_meta=[{"ticker": "005930.KS", "stock_name": "삼성전자", "reason": "planner_lane_watchlist"}],
+            decisions=[{"ticker": "005930.KS", "prob_5": 50.0, "prob_clean": 50.0, "decision_score": 88.0, "alpha_score": 81.0, "conviction_score": 64.0}],
+            scanner_payload={"candidates": [{"ticker": "005930.KS", "feature_snapshot": {"alpha_score": 79.0, "conviction_score": 63.0, "decision_score": 77.0}}]},
+        )
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["Alpha"], 81.0)
+        self.assertEqual(rows[0]["Conviction"], 64.0)
+        self.assertEqual(rows[0]["Decision Score"], 88.0)
+        self.assertEqual(rows[0]["Prob5"], 50.0)
+        self.assertEqual(rows[0]["Clean"], 50.0)
+        self.assertEqual(visible, ["Alpha", "Conviction", "Decision Score", "Prob5", "Clean"])
+
+    def test_build_signal_display_rows_keeps_core_scan_fields(self):
+        rows = build_signal_display_rows(
+            [
+                {
+                    "티커": "322310.KQ",
+                    "종목명": "오성첨단소재",
+                    "Tier": "T1",
+                    "전략": "Momentum",
+                    "정밀확률": "31.1%",
+                    "전일비": "-10.25%",
+                    "Decision Score": 99.1,
+                    "테마": "반도체",
+                    "추세": "UP",
+                }
+            ]
+        )
+
+        self.assertEqual(rows[0]["ticker"], "322310.KQ")
+        self.assertEqual(rows[0]["buy_signal"], "T1 · Momentum")
+        self.assertEqual(rows[0]["accuracy"], "31.1%")
+        self.assertEqual(rows[0]["day_change"], "-10.25%")
+        self.assertEqual(rows[0]["day_change_value"], -10.25)
+        self.assertEqual(rows[0]["score"], "99.1")
+
+    def test_build_signal_display_rows_does_not_fabricate_day_change(self):
+        rows = build_signal_display_rows([{"ticker": "005930.KS", "phase25_prob": 61.2, "return_1d_pct": 3.4}])
+
+        self.assertEqual(rows[0]["accuracy"], "61.2%")
+        self.assertEqual(rows[0]["day_change"], "-")
+        self.assertEqual(rows[0]["day_change_value"], None)
 
 
 class ScannerRuntimeTests(unittest.TestCase):

@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import html
 from datetime import datetime, timedelta
 
 # 키워드 사전 (가중치)
@@ -27,6 +28,11 @@ class NaverNewsScraper:
     def extract_code(self, ticker: str) -> str:
         """'005930.KS' -> '005930'"""
         return re.sub(r'[^0-9]', '', ticker)
+
+    @staticmethod
+    def _clean_title(title: str) -> str:
+        text = html.unescape(str(title or "")).strip()
+        return re.sub(r"\s+", " ", text)
         
     def get_news_sentiment(self, ticker: str, days: int = 3) -> dict:
         """
@@ -43,6 +49,8 @@ class NaverNewsScraper:
         neg_count = 0
         collected_titles = []
         recent_titles = []
+        headline_items = []
+        seen_titles = set()
         
         try:
             # 네이버 모바일 증권 API 활용 (JSON 반환)
@@ -64,14 +72,17 @@ class NaverNewsScraper:
             for group in data:
                 items = group.get('items', [])
                 for item in items:
-                    title_text = item.get('title', '')
+                    title_text = item.get('titleFull') or item.get('title', '')
                     date_str = item.get('datetime', '') # e.g. "202603161741"
+                    office_name = str(item.get("officeName", "") or "").strip()
+                    mobile_url = str(item.get("mobileNewsUrl", "") or "").strip()
                     
                     if not title_text or not date_str:
                         continue
                         
-                    # HTML 엔티티 제거 (&quot; 등)
-                    title_text = title_text.replace('&quot;', '"').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+                    title_text = self._clean_title(title_text)
+                    if not title_text:
+                        continue
                         
                     try:
                         news_date = datetime.strptime(date_str[:12], "%Y%m%d%H%M")
@@ -80,8 +91,11 @@ class NaverNewsScraper:
                     except:
                         pass
 
-                    recent_titles.append(title_text)
-                        
+                    dedup_key = title_text.lower()
+                    if dedup_key in seen_titles:
+                        continue
+                    seen_titles.add(dedup_key)
+
                     # 키워드 매칭
                     row_score = 0
                     for pos_kw, weight in POSITIVE_KEYWORDS.items():
@@ -93,11 +107,23 @@ class NaverNewsScraper:
                         if neg_kw in title_text:
                             row_score += weight
                             neg_count += 1
+
+                    headline_items.append(
+                        {
+                            "title": title_text,
+                            "datetime": date_str,
+                            "source": office_name,
+                            "url": mobile_url,
+                            "score": row_score,
+                        }
+                    )
                             
                     if row_score != 0:
                         score += row_score
                         collected_titles.append(f"[{row_score:+d}] {title_text}")
-                    
+            headline_items.sort(key=lambda row: str(row.get("datetime", "")), reverse=True)
+            recent_titles = [row.get("title") for row in headline_items[:8] if row.get("title")]
+
             # 점수 캡핑 (Max +15, Min -15)
             final_score = max(-15, min(15, score))
             
@@ -108,10 +134,11 @@ class NaverNewsScraper:
                 "neg_count": neg_count,
                 "titles": collected_titles[:5],  # 점수 반영된 상위 5개
                 "recent_titles": recent_titles[:8],  # 최근 기사 제목 원문
+                "headline_items": headline_items[:20],
             }
             
         except Exception as e:
-            return {"score": 0, "pos_count": 0, "neg_count": 0, "titles": [], "recent_titles": [], "msg": str(e)}
+            return {"score": 0, "pos_count": 0, "neg_count": 0, "titles": [], "recent_titles": [], "headline_items": [], "msg": str(e)}
 
 # 간단한 테스트
 if __name__ == "__main__":

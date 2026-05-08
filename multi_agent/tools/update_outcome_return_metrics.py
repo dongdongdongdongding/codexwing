@@ -15,7 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-HORIZONS = (1, 2, 3, 5, 7)
+HORIZONS = (1, 2, 3, 5, 7, 14, 30)
 INTRADAY_MINUTE_HORIZONS = ((30, "return_30m_pct"), (60, "return_1h_pct"))
 KR_TZ = ZoneInfo("Asia/Seoul")
 US_TZ = ZoneInfo("America/New_York")
@@ -297,13 +297,13 @@ def run_update(shared_dir: Path, run_ids: List[str], limit_runs: int, dry_run: b
                 {
                     "market": market,
                     "start": trade_date,
-                    "end": trade_date + timedelta(days=14),
+                    "end": trade_date + timedelta(days=40),
                 },
             )
             if trade_date < state["start"]:
                 state["start"] = trade_date
-            if trade_date + timedelta(days=14) > state["end"]:
-                state["end"] = trade_date + timedelta(days=14)
+            if trade_date + timedelta(days=40) > state["end"]:
+                state["end"] = trade_date + timedelta(days=40)
 
     history_map: Dict[str, pd.DataFrame] = {}
     for ticker, state in ticker_windows.items():
@@ -395,7 +395,7 @@ def run_update(shared_dir: Path, run_ids: List[str], limit_runs: int, dry_run: b
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Update realized outcome rows with 1/2/3/5 day return metrics.")
+    parser = argparse.ArgumentParser(description="Update realized outcome rows with 1/2/3/5/7/14/30 day return metrics.")
     parser.add_argument("--shared-dir", type=str, default="runtime_state/shared_working")
     parser.add_argument("--run-id", action="append", default=[])
     parser.add_argument("--limit-runs", type=int, default=200)

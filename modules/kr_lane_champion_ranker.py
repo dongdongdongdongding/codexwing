@@ -9,6 +9,8 @@ from typing import Any, Dict, Optional
 import joblib
 import pandas as pd
 
+from modules.inverted_signal_features import compute_low_prob_high_score_features
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODELS_DIR = PROJECT_ROOT / "models" / "kr_lane_champions"
@@ -23,9 +25,10 @@ CHAMPION_REGISTRY: Dict[str, Dict[str, Any]] = {
         "min_prob_edge": 0.10,
         "min_feature_evidence": 6,
     },
-    # KOSPI core 3D: switched from catboost (AUC=0.36) to lightgbm (AUC=0.72, win=90%, avg=8.8%) — activated
+    # KOSPI core 3D: 2026-05-08 swing-main-sl3 all-market archive rerun picked
+    # hist_gb (AUC=0.629, win=65%, avg=6.08%) after inverted-prob features.
     "kospi_core_3d": {
-        "path": MODELS_DIR / "kospi_core_3d__lightgbm.pkl",
+        "path": MODELS_DIR / "kospi_core_3d__hist_gb.pkl",
         "enabled": True,
         "deployment": "active",
         "max_abs_adjustment": 4.5,
@@ -143,6 +146,36 @@ def _get_feature(candidate: Dict[str, Any], key: str, default: Any = None) -> An
     return default
 
 
+def _feature_present(value: Any) -> bool:
+    if isinstance(value, bool):
+        return True
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip().lower() not in {"", "?", "nan", "none", "null", "unknown", "na", "n/a"}
+    try:
+        result = float(value)
+        return result == result
+    except Exception:
+        return True
+
+
+def _missing_required_features(candidate: Dict[str, Any]) -> list[str]:
+    checks = {
+        "alpha_score": _get_feature(candidate, "alpha_score"),
+        "tech_score": _get_feature(candidate, "tech_score"),
+        "ml_prob": _get_feature(candidate, "prob_5", _get_feature(candidate, "ml_prob")),
+        "whale_score": _get_feature(candidate, "whale_score"),
+        "decision_score": _get_feature(candidate, "decision_score", _get_feature(candidate, "score")),
+        "volume_ratio": _get_feature(candidate, "volume_ratio", _get_feature(candidate, "volume")),
+        "position": _get_feature(candidate, "position"),
+        "trend": _get_feature(candidate, "real_trend", _get_feature(candidate, "trend")),
+        "tier": _get_feature(candidate, "tier"),
+        "entry_reference_price": _get_feature(candidate, "entry_reference_price", _get_feature(candidate, "current_price")),
+    }
+    return [key for key, value in checks.items() if not _feature_present(value)]
+
+
 def _engineered_row(candidate: Dict[str, Any], market: str) -> Dict[str, Any]:
     market = _upper(market)
     role = _upper(_get_feature(candidate, "kr_universe_role"))
@@ -152,9 +185,11 @@ def _engineered_row(candidate: Dict[str, Any], market: str) -> Dict[str, Any]:
     alpha_score = _safe_float(_get_feature(candidate, "alpha_score"), 0.0)
     tech_score = _safe_float(_get_feature(candidate, "tech_score", alpha_score), alpha_score)
     ml_prob = _safe_float(_get_feature(candidate, "prob_5", _get_feature(candidate, "ml_prob")), 0.0)
+    prob_clean = _safe_float(_get_feature(candidate, "prob_clean", _get_feature(candidate, "_prob_clean")), 0.0)
+    phase25_prob = _safe_float(_get_feature(candidate, "phase25_prob"), 0.0)
     whale_score = _safe_float(_get_feature(candidate, "whale_score"), 0.0)
     decision_score = _safe_float(_get_feature(candidate, "decision_score", _get_feature(candidate, "score")), 0.0)
-    volume_multiple = _parse_volume_multiple(_get_feature(candidate, "volume"))
+    volume_multiple = _parse_volume_multiple(_get_feature(candidate, "volume_ratio", _get_feature(candidate, "volume")))
     position = _text(_get_feature(candidate, "position"))
     trend = _upper(_get_feature(candidate, "real_trend", _get_feature(candidate, "trend")))
     strategy = _text(_get_feature(candidate, "strategy"))
@@ -185,11 +220,22 @@ def _engineered_row(candidate: Dict[str, Any], market: str) -> Dict[str, Any]:
 
     expected_return_1d_pct = _safe_float(_get_feature(candidate, "expected_return_1d_pct"), 0.0)
     expected_return_3d_pct = _safe_float(_get_feature(candidate, "expected_return_3d_pct"), 0.0)
+    expected_edge_score = _safe_float(_get_feature(candidate, "expected_edge_score"), 0.0)
+    inverted_features = compute_low_prob_high_score_features(
+        alpha_score=alpha_score,
+        tech_score=tech_score,
+        ml_prob=ml_prob,
+        prob_clean=prob_clean,
+        phase25_prob=phase25_prob,
+        expected_edge_score=expected_edge_score,
+    )
 
     return {
         "alpha_score": alpha_score,
         "tech_score": tech_score,
         "ml_prob": ml_prob,
+        "prob_clean": prob_clean,
+        "phase25_prob": phase25_prob,
         "whale_score": whale_score,
         "decision_score": decision_score,
         "vol_float": volume_multiple,
@@ -232,7 +278,7 @@ def _engineered_row(candidate: Dict[str, Any], market: str) -> Dict[str, Any]:
         "sub7_x_breakout": int(is_sub7 and is_breakout),
         "phase25_shadow_prob": _safe_float(_get_feature(candidate, "phase25_shadow_prob"), 0.0),
         "phase25_recommended_threshold": _safe_float(_get_feature(candidate, "phase25_recommended_threshold"), 0.0),
-        "expected_edge_score": _safe_float(_get_feature(candidate, "expected_edge_score"), 0.0),
+        "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
         "target_horizon_days": _safe_float(_get_feature(candidate, "target_horizon_days", 1 if scan_mode == "INTRADAY" else 3), 3.0),
@@ -251,6 +297,7 @@ def _engineered_row(candidate: Dict[str, Any], market: str) -> Dict[str, Any]:
         "expected_return_gap_3d_1d": expected_return_3d_pct - expected_return_1d_pct,
         "decision_alpha_gap": decision_score - alpha_score,
         "ml_whale_combo": (ml_prob + whale_score) / 2.0,
+        **inverted_features,
         "scan_mode": scan_mode or "UNKNOWN",
         "strategy_family": strategy_family or "UNKNOWN",
         "phase25_variant": _text(_get_feature(candidate, "phase25_variant")) or "UNKNOWN",
@@ -282,6 +329,10 @@ def _feature_evidence_count(row: Dict[str, Any]) -> int:
         "expected_edge_score",
         "phase25_shadow_prob",
         "phase25_recommended_threshold",
+        "model_prob_available_count",
+        "low_model_prob_score",
+        "low_prob_high_score",
+        "expected_edge_inversion_score",
     ]
     strong_text = [
         "scan_mode",
@@ -357,6 +408,16 @@ def predict_lane_overlay(candidate: Dict[str, Any], market: str, horizon: str) -
     if not bundle:
         return {"enabled": False, "segment": segment, "score_adjustment": 0.0, "reason": "MODEL_NOT_FOUND"}
 
+    missing_features = _missing_required_features(candidate)
+    if missing_features:
+        return {
+            "enabled": False,
+            "segment": segment,
+            "score_adjustment": 0.0,
+            "deployment": deployment,
+            "reason": "FEATURE_MISSING:" + ",".join(missing_features),
+        }
+
     row = _engineered_row(candidate, market)
     feature_evidence = _feature_evidence_count(row)
     min_feature_evidence = int(registry.get("min_feature_evidence", 0) or 0)
@@ -381,7 +442,16 @@ def predict_lane_overlay(candidate: Dict[str, Any], market: str, horizon: str) -
                 metrics = dict(bundle.get("holdout_metrics", {}) or {})
             else:
                 features = list(bundle.get("features", []) or [])
-                X = pd.DataFrame([{col: row.get(col, 0.0) for col in features}]).apply(pd.to_numeric, errors="coerce").fillna(0.0)
+                X = pd.DataFrame([{col: row.get(col) for col in features}]).apply(pd.to_numeric, errors="coerce")
+                if X.isna().any(axis=None):
+                    missing = [col for col in features if X[col].isna().any()]
+                    return {
+                        "enabled": False,
+                        "segment": segment,
+                        "score_adjustment": 0.0,
+                        "deployment": deployment,
+                        "reason": "FEATURE_NA:" + ",".join(missing[:8]),
+                    }
                 prob = float(bundle["model"].predict_proba(X)[0][1])
                 metrics = dict(bundle.get("metrics", {}) or {})
     except Exception as exc:
@@ -411,7 +481,9 @@ def predict_lane_overlay(candidate: Dict[str, Any], market: str, horizon: str) -
         }
     max_abs = float(registry.get("max_abs_adjustment", 0.0) or 0.0)
     raw_adjustment = (prob - 0.5) * max_abs * 2.0
-    if avg_return > 0.0 and win_rate >= 75.0:
+    # Evidence-based bonus: archive top-pick win ceiling ≈ 66%, so the old 75% gate
+    # never fired. Reset to 60% to match the refreshed target (see train_kr_lane_model_suite.py).
+    if avg_return > 0.0 and win_rate >= 60.0:
         raw_adjustment += 0.8
     score_adjustment = max(-max_abs, min(max_abs, raw_adjustment * quality))
     return {

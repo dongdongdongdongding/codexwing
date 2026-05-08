@@ -16,16 +16,19 @@ import json
 import time
 import calendar
 import re
+import html
 import socket
 import feedparser
 import urllib.parse
 import urllib.request
+import urllib.error
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from dotenv import load_dotenv
 from urllib.parse import quote
 from datetime import datetime, timezone
 from modules.live_scan_context import context_ttl_seconds, normalize_market_key, KR_TZ, US_TZ, live_mode_enabled
 from modules.theme_signal_engine import build_theme_intelligence
+from modules.us_overnight_theme_lead import enrich_kr_intel_with_us_overnight_theme_lead
 
 try:
     from bs4 import BeautifulSoup
@@ -70,6 +73,18 @@ RULE_BASED_CATEGORY_HINTS = {
     "LIQUIDITY": ["유동성", "부양", "qt", "qe", "stimulus", "funding", "credit"],
     "EARNINGS": ["실적", "earnings", "guidance", "매출", "영업이익"],
     "REGULATION": ["규제", "승인", "fda", "공시", "contract", "계약", "임상", "license"],
+}
+
+DRIVER_LABELS = {
+    "GEOPOLITICS": "지정학",
+    "OIL": "유가",
+    "FX": "환율",
+    "RATES": "금리",
+    "POLITICS": "정책/정치",
+    "ECONOMY": "경기",
+    "LIQUIDITY": "수급/유동성",
+    "EARNINGS": "실적/수주",
+    "REGULATION": "규제/공시",
 }
 
 DART_KEY_DISCLOSURE_HINTS = [
@@ -136,6 +151,8 @@ def _build_rule_fallback_result(headlines, market, source: str, insight_suffix: 
     if insight_suffix:
         base = str(result.get("key_insight", "") or "").strip()
         result["key_insight"] = f"{base} | {insight_suffix}".strip(" |")
+    result = _finalize_intelligence_payload(result, headlines, market)
+    result = enrich_kr_intel_with_us_overnight_theme_lead(result, market=market)
     return result
 
 def _build_rule_based_intelligence(headlines, market):
@@ -223,13 +240,18 @@ def _build_rule_based_intelligence(headlines, market):
         victim.append("성장주")
 
     market_name = str(market or "시장")
-    insight = "시장 헤드라인 부족"
+    positive_drivers = [DRIVER_LABELS.get(category, category) for category, value in driver_scores.items() if value > 0]
+    negative_drivers = [DRIVER_LABELS.get(category, category) for category, value in driver_scores.items() if value < 0]
+    tailwind = ", ".join(positive_drivers[:2]) if positive_drivers else "선별적 수급"
+    headwind = ", ".join(negative_drivers[:2]) if negative_drivers else "뚜렷한 시스템 리스크 제한"
     if sentiment == "BULLISH":
-        insight = f"{market_name} 기준 최근 헤드라인은 위험선호 회복 쪽에 가깝습니다."
+        insight = f"{market_name}는 {tailwind}이 버팀목으로 작동하며 상방 우위가 유지되는 흐름입니다."
     elif sentiment == "BEARISH":
-        insight = f"{market_name} 기준 최근 헤드라인은 리스크오프 쪽으로 기울어 있습니다."
+        insight = f"{market_name}는 {headwind} 부담이 커지며 방어적 대응이 필요한 구간입니다."
     elif sentiment == "MIXED":
-        insight = f"{market_name} 기준 최근 헤드라인이 혼재되어 있어 섹터 선택이 중요합니다."
+        insight = f"{market_name}는 {tailwind}과 {headwind}이 엇갈려 추격보다 선별 대응이 중요한 장세입니다."
+    else:
+        insight = f"{market_name}는 뚜렷한 한 방향보다 개별 재료 소화에 가까운 흐름입니다."
 
     return {
         "market_sentiment": sentiment,
@@ -250,6 +272,146 @@ def _build_rule_based_intelligence(headlines, market):
         "source": "rss_rule_based",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
+
+
+def _headline_bucket(text: str, market: str) -> str:
+    body = str(text or "").strip()
+    lower = body.lower()
+    if body.startswith("[DART"):
+        return "disclosure"
+    if body.startswith("[주달"):
+        return "theme_feed"
+    macro_keywords = [
+        "코스피", "코스닥", "한국 증시", "증시", "외국인", "기관", "수급", "환율", "금리", "유가",
+        "나스닥", "nasdaq", "s&p", "dow", "treasury", "yield", "fed", "fomc", "inflation", "macro",
+    ]
+    company_keywords = ["특징주", "수주", "계약", "실적", "목표가", "upgrade", "downgrade", "guidance", "earnings"]
+    if any(token in lower for token in macro_keywords):
+        return "macro"
+    if any(token in lower for token in company_keywords):
+        return "company"
+    market_key = str(market or "").upper()
+    if market_key in {"KOSPI", "KOSDAQ", "KR"}:
+        if any(source in lower for source in ["sbs biz", "한국경제", "매일경제", "연합뉴스", "머니투데이", "이데일리"]):
+            return "macro"
+    return "general"
+
+
+def _select_balanced_headlines(collected, market: str, max_items: int):
+    ranked = []
+    seen = set()
+    for ts, text in collected or []:
+        line = str(text or "").strip()
+        if not line:
+            continue
+        dedup_key = line.lower()
+        if dedup_key in seen:
+            continue
+        seen.add(dedup_key)
+        relevance = _headline_relevance_score(line, market)
+        bucket = _headline_bucket(line, market)
+        if relevance <= 0 and bucket not in {"disclosure", "theme_feed"}:
+            continue
+        ranked.append((int(ts or 0), line, relevance, bucket))
+    ranked.sort(key=lambda item: (item[2], item[0]), reverse=True)
+
+    buckets = {"macro": [], "company": [], "disclosure": [], "theme_feed": [], "general": []}
+    for ts, line, relevance, bucket in ranked:
+        buckets.setdefault(bucket, []).append((ts, line, relevance))
+
+    market_key = str(market or "KOSPI").upper()
+    if market_key in {"KOSPI", "KOSDAQ", "KR"}:
+        quotas = [("macro", 6), ("company", 3), ("theme_feed", 2), ("disclosure", 2), ("general", 2)]
+        hard_caps = {"disclosure": 2, "theme_feed": 2}
+    else:
+        quotas = [("macro", 7), ("company", 4), ("general", 4), ("disclosure", 0), ("theme_feed", 0)]
+        hard_caps = {}
+
+    selected = []
+    selected_keys = set()
+    picked_by_bucket = {name: 0 for name in buckets}
+
+    def _take(line: str, bucket: str):
+        dedup_key = line.lower()
+        if dedup_key in selected_keys or len(selected) >= max_items:
+            return
+        selected.append(line)
+        selected_keys.add(dedup_key)
+        picked_by_bucket[bucket] = picked_by_bucket.get(bucket, 0) + 1
+
+    for bucket, quota in quotas:
+        for _, line, _ in buckets.get(bucket, [])[:quota]:
+            _take(line, bucket)
+            if len(selected) >= max_items:
+                break
+        if len(selected) >= max_items:
+            break
+
+    if len(selected) < max_items:
+        for _, line, _, bucket in ranked:
+            cap = hard_caps.get(bucket)
+            if cap is not None and picked_by_bucket.get(bucket, 0) >= cap:
+                continue
+            _take(line, bucket)
+            if len(selected) >= max_items:
+                break
+
+    return selected[:max_items]
+
+
+def _normalize_text_list(rows, limit: int = 6):
+    seen = set()
+    normalized = []
+    for row in rows or []:
+        text = str(row or "").strip()
+        if not text:
+            continue
+        key = text.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(text)
+        if len(normalized) >= limit:
+            break
+    return normalized
+
+
+def _ensure_market_lists(result):
+    beneficiary = _normalize_text_list(result.get("beneficiary_sectors"), limit=6)
+    victim = _normalize_text_list(result.get("victim_sectors"), limit=6)
+    driver_scores = result.get("driver_scores") if isinstance(result.get("driver_scores"), dict) else {}
+    if not beneficiary:
+        beneficiary = [
+            DRIVER_LABELS.get(category, category)
+            for category, value in driver_scores.items()
+            if int(value or 0) > 0
+        ][:4]
+    if not victim:
+        victim = [
+            DRIVER_LABELS.get(category, category)
+            for category, value in driver_scores.items()
+            if int(value or 0) < 0
+        ][:4]
+    result["beneficiary_sectors"] = beneficiary
+    result["victim_sectors"] = victim
+    result["beneficiary_keywords"] = _normalize_text_list(result.get("beneficiary_keywords"), limit=8)
+    result["victim_keywords"] = _normalize_text_list(result.get("victim_keywords"), limit=8)
+    result["risk_flags"] = _normalize_text_list(result.get("risk_flags"), limit=6)
+    evidence = _normalize_text_list(result.get("evidence_headlines"), limit=4)
+    if not evidence:
+        evidence = _normalize_text_list(result.get("raw_headlines"), limit=4)
+    result["evidence_headlines"] = evidence
+    return result
+
+
+def _finalize_intelligence_payload(result, headlines, market):
+    if not isinstance(result, dict):
+        return result
+    payload = dict(result)
+    payload["raw_headlines"] = _normalize_text_list(headlines or payload.get("raw_headlines"), limit=15)
+    payload["headline_count"] = int(payload.get("headline_count", len(payload["raw_headlines"])) or len(payload["raw_headlines"]))
+    payload = _ensure_market_lists(payload)
+    return payload
 
 
 def _extract_disclosure_signals(headlines):
@@ -304,6 +466,9 @@ def _extract_disclosure_signals(headlines):
 MARKET_INTEL_PROMPT = """당신은 시장별 뉴스를 근거로 요약하는 글로벌 매크로 전략가입니다.
 선택 시장은 {market} 입니다. 아래 헤드라인에서 실제로 보이는 정보만 사용해 JSON으로 정리하세요.
 반복적이고 추상적인 문구를 피하고, 선택 시장에 직접 연결되는 설명을 우선하세요.
+시장 전체를 움직이는 흐름을 우선하고, 개별 종목 공시(DART)는 보조 근거로만 사용하세요.
+핵심 인사이트는 반드시 "현재 버티는 축"과 "경계할 리스크"를 함께 담은 한 문장으로 작성하세요.
+수혜/피해 섹터와 키워드는 비워두지 말고, 명확한 섹터명이 없으면 거시/스타일 축(예: 반도체, 바이오, 성장주, 경기민감주, 방어주, 수급/유동성, 환율 민감주)으로라도 채우세요.
 
 [뉴스 헤드라인]
 {headlines}
@@ -543,10 +708,6 @@ def _headline_relevance_score(text: str, market: str) -> int:
         "유가": 2,
         "공시": 2,
         "전자공시": 2,
-        "한국경제": 1,
-        "매일경제": 1,
-        "연합뉴스": 1,
-        "주달": 1,
     }
     market_rules = {
         "KOSPI": {"코스피": 5, "반도체": 3, "자동차": 3, "은행": 2, "대형주": 2},
@@ -564,6 +725,16 @@ def _headline_relevance_score(text: str, market: str) -> int:
         if kw.lower() in body:
             score += weight
     return score
+
+
+def _normalize_headline_title(title: str, source: str = "") -> str:
+    text = html.unescape(str(title or "")).strip()
+    text = re.sub(r"\s+", " ", text)
+    src = str(source or "").strip()
+    if src:
+        escaped = re.escape(src)
+        text = re.sub(rf"\s*[-|]\s*{escaped}\s*$", "", text, flags=re.IGNORECASE)
+    return text.strip()
 
 
 def _network_timeout(name: str, default: float) -> float:
@@ -712,22 +883,29 @@ def _collect_kr_stock_headlines(market: str):
         except Exception as e:
             print(f"Naver stock news fetch error ({ticker}): {e}")
             continue
-        lines = list(payload.get("titles", []) or [])
-        if not lines:
-            lines = [f"[0] {x}" for x in (payload.get("recent_titles", []) or [])]
+        items = list(payload.get("headline_items", []) or [])
         ticker_added = 0
-        for line in lines[:5]:
-            clean = str(line or "").strip()
-            if not clean:
+        for item in items[:5]:
+            title = _normalize_headline_title(item.get("title"), item.get("source"))
+            if not title:
                 continue
-            # Strip sentiment prefix like "[+3] " for dedup key
-            import re as _re
-            dedup_key = _re.sub(r"^\[[\+\-]?\d+\]\s*", "", clean).lower().strip()
+            dedup_key = title.lower()
             if dedup_key in seen_headlines:
                 continue
             seen_headlines.add(dedup_key)
-            text = f"[Naver Stock] {ticker} {clean} | 네이버증권"
-            collected.append((now_ts, text))
+            source = str(item.get("source", "") or "네이버증권").strip()
+            date_str = str(item.get("datetime", "") or "").strip()
+            ts = now_ts
+            if date_str:
+                try:
+                    ts = int(datetime.strptime(date_str[:12], "%Y%m%d%H%M").timestamp())
+                except Exception:
+                    ts = now_ts
+            pub = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]} {date_str[8:10]}:{date_str[10:12]}" if len(date_str) >= 12 else ""
+            text = f"[{pub}] {title}" if pub else title
+            if source:
+                text = f"{text} | {source}"
+            collected.append((ts, text))
             ticker_added += 1
             if ticker_added >= 2:
                 break
@@ -773,7 +951,11 @@ def _fetch_global_headlines(market="KR", max_items=15):
                 feed = _parse_feed_url(url, timeout=query_timeout)
 
                 for entry in feed.entries[:per_query]:
-                    title = str(entry.get('title', '')).strip()
+                    source = ""
+                    source_meta = entry.get("source")
+                    if isinstance(source_meta, dict):
+                        source = str(source_meta.get("title", "")).strip()
+                    title = _normalize_headline_title(entry.get('title', ''), source)
                     if not title:
                         continue
                     dedup_key = title.lower()
@@ -781,10 +963,6 @@ def _fetch_global_headlines(market="KR", max_items=15):
                         continue
                     seen_titles.add(dedup_key)
                     pub = str(entry.get('published', '')).strip()
-                    source = ""
-                    source_meta = entry.get("source")
-                    if isinstance(source_meta, dict):
-                        source = str(source_meta.get("title", "")).strip()
                     ts = _entry_timestamp(entry)
                     if ts <= 0:
                         continue
@@ -806,7 +984,7 @@ def _fetch_global_headlines(market="KR", max_items=15):
             try:
                 feed = _parse_feed_url(url, timeout=feed_timeout)
                 for entry in feed.entries[:per_feed]:
-                    title = str(entry.get("title", "")).strip()
+                    title = _normalize_headline_title(entry.get("title", ""))
                     if not title:
                         continue
                     dedup_key = title.lower()
@@ -867,8 +1045,7 @@ def _fetch_global_headlines(market="KR", max_items=15):
         if normalize_market_key(market) == "KR":
             collected.extend(_collect_kr_stock_headlines(market))
 
-    collected.sort(key=lambda item: (_headline_relevance_score(item[1], market), item[0]), reverse=True)
-    headlines = [text for _, text in collected[:max_items]]
+    headlines = _select_balanced_headlines(collected, market, max_items=max_items)
     return headlines
 
 
@@ -887,12 +1064,19 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
     ttl = context_ttl_seconds(market_key, open_seconds=300, closed_seconds=1800)
     cache = _intelligence_cache.get(market_key, {'data': None, 'timestamp': 0, 'ttl': ttl})
     cache['ttl'] = ttl
+
+    def _attach_display_origin(result, origin: str):
+        if not isinstance(result, dict):
+            return result
+        payload = dict(result)
+        payload["_display_origin"] = str(origin or "live")
+        return payload
     
     # Check cache first
     now = time.time()
     if not force_refresh and cache['data'] and (now - cache['timestamp']) < cache['ttl']:
         print("📡 Market Intelligence: Using cached data")
-        return cache['data']
+        return _attach_display_origin(cache['data'], "cache")
     
     # Default fallback
     default_result = {
@@ -932,7 +1116,8 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
     if not headlines:
         print("⚠️ Market Intelligence: No headlines fetched")
         default_result['key_insight'] = f"No intelligence available ({market} headlines unavailable)"
-        return default_result
+        default_result = enrich_kr_intel_with_us_overnight_theme_lead(default_result, market=market)
+        return _attach_display_origin(default_result, "live")
 
     disclosure_meta = _extract_disclosure_signals(headlines)
     if disclosure_meta.get("disclosure_events"):
@@ -952,7 +1137,7 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
         cache['data'] = result
         cache['timestamp'] = now
         _intelligence_cache[market_key] = cache
-        return result
+        return _attach_display_origin(result, "live")
     
     # 2. Ask Gemini for Analysis
     try:
@@ -1008,6 +1193,15 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
                 response_payload = _run_gemini_http(model_name)
                 used_model = model_name
                 break
+            except urllib.error.HTTPError as e:
+                last_exc = e
+                if e.code == 429:
+                    break
+                if e.code in {400, 404}:
+                    continue
+                if e.code in {401, 403}:
+                    break
+                continue
             except TimeoutError as e:
                 last_exc = FuturesTimeoutError(str(e))
                 break
@@ -1033,12 +1227,19 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
         raw_text = ""
         try:
             candidates = response_payload.get("candidates", []) if isinstance(response_payload, dict) else []
-            if candidates and isinstance(candidates[0], dict):
-                content = candidates[0].get("content", {})
-                if isinstance(content, dict):
-                    parts = content.get("parts", [])
-                    if parts and isinstance(parts[0], dict):
-                        raw_text = str(parts[0].get("text") or "").strip()
+            for candidate in candidates:
+                if not isinstance(candidate, dict):
+                    continue
+                content = candidate.get("content", {})
+                if not isinstance(content, dict):
+                    continue
+                parts = content.get("parts", [])
+                if not isinstance(parts, list):
+                    continue
+                text_parts = [str(part.get("text") or "").strip() for part in parts if isinstance(part, dict) and str(part.get("text") or "").strip()]
+                if text_parts:
+                    raw_text = "\n".join(text_parts).strip()
+                    break
         except Exception:
             raw_text = ""
         if not raw_text:
@@ -1090,6 +1291,8 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
             result["disclosure_events"] = []
         result["disclosure_events"] = (disclosure_meta.get("disclosure_events", []) + result["disclosure_events"])[:8]
         result.update(build_theme_intelligence(market, result))
+        result = _finalize_intelligence_payload(result, headlines, market)
+        result = enrich_kr_intel_with_us_overnight_theme_lead(result, market=market)
 
         # Cache it
         cache['data'] = result
@@ -1099,7 +1302,7 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
         print(f"🧠 Market Intelligence[{used_model}]: {result.get('market_sentiment')} (Score: {result.get('sentiment_score')})")
         print(f"   Key Insight: {result.get('key_insight', 'N/A')}")
         
-        return result
+        return _attach_display_origin(result, "live")
     except FuturesTimeoutError:
         print("⚠️ Market Intelligence: Gemini request timed out, falling back to RSS rule-based mode")
         result = _build_rule_fallback_result(
@@ -1111,7 +1314,7 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
         cache['data'] = result
         cache['timestamp'] = now
         _intelligence_cache[market_key] = cache
-        return result
+        return _attach_display_origin(result, "live")
     except json.JSONDecodeError as e:
         print(f"⚠️ Market Intelligence JSON Parse Error: {e}")
         print(f"   Raw response: {raw_text[:200]}")
@@ -1124,9 +1327,21 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
         cache['data'] = result
         cache['timestamp'] = now
         _intelligence_cache[market_key] = cache
-        return result
+        return _attach_display_origin(result, "live")
     except Exception as e:
         err_text = str(e)
+        if isinstance(e, urllib.error.HTTPError) and getattr(e, "code", None) == 429:
+            print("⚠️ Market Intelligence: Gemini rate limit hit, falling back to headline-based rule mode")
+            result = _build_rule_fallback_result(
+                headlines,
+                market,
+                source="rss_rule_based_rate_limited",
+                insight_suffix="Gemini rate-limited; headline-based fallback active",
+            )
+            cache['data'] = result
+            cache['timestamp'] = now
+            _intelligence_cache[market_key] = cache
+            return _attach_display_origin(result, "live")
         if "API_KEY_INVALID" in err_text or "API key not valid" in err_text:
             warn_key = f"{market_key}:invalid_api_key"
             if warn_key not in _invalid_key_warned:
@@ -1141,7 +1356,7 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
             cache['data'] = result
             cache['timestamp'] = now
             _intelligence_cache[market_key] = cache
-            return result
+            return _attach_display_origin(result, "live")
         print(f"⚠️ Market Intelligence Error: {e}")
         result = _build_rule_fallback_result(
             headlines,
@@ -1152,7 +1367,7 @@ def get_market_intelligence(market="KOSPI", api_key=None, force_refresh=False):
         cache['data'] = result
         cache['timestamp'] = now
         _intelligence_cache[market_key] = cache
-        return result
+        return _attach_display_origin(result, "live")
 
 
 def calculate_news_adjustment(stock_name, ticker, sector_hint, intel_data):

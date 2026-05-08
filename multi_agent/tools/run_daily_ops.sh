@@ -64,6 +64,10 @@ echo "[STEP] update_outcome_return_metrics"
 run_optional "update_outcome_return_metrics" \
   python3 multi_agent/tools/update_outcome_return_metrics.py --limit-runs "${LIMIT_RUNS}"
 
+echo "[STEP] backfill_scanner_full_returns"
+run_optional "backfill_scanner_full_returns" \
+  python3 multi_agent/tools/backfill_scanner_full_returns.py --limit-runs "${BACKFILL_RETURN_LIMIT_RUNS:-1000}"
+
 echo "[STEP] report_outcome_conversion"
 run_optional "report_outcome_conversion" \
   python3 multi_agent/tools/report_outcome_conversion.py --limit-runs "${LIMIT_RUNS}"
@@ -112,5 +116,18 @@ for MARKET in "${MARKETS[@]}"; do
       python3 multi_agent/tools/check_stale_fallback_alert.py "${ALERT_ARGS[@]}"
   fi
 done
+
+if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
+  DRIFT_ARGS=()
+  if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
+    DRIFT_ARGS+=(--webhook-url "${AG_DRIFT_ALERT_WEBHOOK_URL}")
+  fi
+  if [[ "${AG_DRIFT_ALERT_DRY_RUN:-0}" == "1" ]]; then
+    DRIFT_ARGS+=(--dry-run)
+  fi
+  echo "[STEP] emit_daily_backtest ${DRIFT_ARGS[*]}"
+  run_optional "emit_daily_backtest" \
+    python3 multi_agent/tools/emit_daily_backtest.py "${DRIFT_ARGS[@]}"
+fi
 
 echo "[DONE] daily_ops completed"

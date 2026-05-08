@@ -89,6 +89,7 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("tier",                            "tier",                            _passthrough),
     ("volume",                          "volume",                          _passthrough),
     ("volume_ratio",                    "volume_ratio",                    _to_float_or_none),
+    ("day_return_pct",                  "day_return_pct",                  _to_float_or_none),
     ("volume_confirmed",                "volume_confirmed",                _passthrough),
     ("context",                         "context",                         _passthrough),
     ("surge",                           "surge",                           _passthrough),
@@ -140,6 +141,8 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("return_3d_pct",                   "return_3d_pct",                   _to_float_or_none),
     ("return_5d_pct",                   "return_5d_pct",                   _to_float_or_none),
     ("return_7d_pct",                   "return_7d_pct",                   _to_float_or_none),
+    ("return_14d_pct",                  "return_14d_pct",                  _to_float_or_none),
+    ("return_30d_pct",                  "return_30d_pct",                  _to_float_or_none),
 
     # Phase25 / model trace
     ("phase25_variant",                 "phase25_variant",                 _passthrough),
@@ -162,6 +165,11 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("expected_edge_score",             "expected_edge_score",             _to_float_or_none),
     ("expected_return_1d_pct",          "expected_return_1d_pct",          _to_float_or_none),
     ("expected_return_3d_pct",          "expected_return_3d_pct",          _to_float_or_none),
+    ("model_prob_available_count",      "model_prob_available_count",      _to_float_or_none),
+    ("model_prob_mean",                 "model_prob_mean",                 _to_float_or_none),
+    ("low_model_prob_score",            "low_model_prob_score",            _to_float_or_none),
+    ("low_prob_high_score",             "low_prob_high_score",             _to_float_or_none),
+    ("expected_edge_inversion_score",   "expected_edge_inversion_score",   _to_float_or_none),
     ("target_tp_pct",                   "target_tp_pct",                   _to_float_or_none),
     ("stop_sl_pct",                     "stop_sl_pct",                     _to_float_or_none),
     ("hold_days",                       "hold_days",                       _to_int_or_none),

@@ -133,6 +133,8 @@ def _get_local_horizon_return(outcome: Dict[str, Any]) -> Optional[Dict[str, Any
         3: "return_3d_pct",
         5: "return_5d_pct",
         7: "return_7d_pct",
+        14: "return_14d_pct",
+        30: "return_30d_pct",
     }
     metric_name = metric_map.get(horizon_days)
     if not metric_name:

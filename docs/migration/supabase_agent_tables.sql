@@ -149,7 +149,9 @@ alter table public.agent_realized_outcomes
   add column if not exists return_2d_pct double precision,
   add column if not exists return_3d_pct double precision,
   add column if not exists return_5d_pct double precision,
-  add column if not exists return_7d_pct double precision;
+  add column if not exists return_7d_pct double precision,
+  add column if not exists return_14d_pct double precision,
+  add column if not exists return_30d_pct double precision;
 
 create index if not exists idx_agent_realized_outcomes_decision_bucket
   on public.agent_realized_outcomes (decision_bucket);
@@ -181,6 +183,7 @@ create table if not exists public.market_scan_results (
   created_at timestamptz not null default now(),
   tier text,
   volume text,
+  day_return_pct double precision,
   context text,
   surge text,
   win_rate text,
@@ -211,6 +214,7 @@ alter table public.market_scan_results
   add column if not exists horizon text,
   add column if not exists base_trade_date date,
   add column if not exists entry_reference_price double precision,
+  add column if not exists day_return_pct double precision,
   add column if not exists latest_return_pct double precision,
   add column if not exists return_30m_pct double precision,
   add column if not exists return_1h_pct double precision,
@@ -220,6 +224,8 @@ alter table public.market_scan_results
   add column if not exists return_3d_pct double precision,
   add column if not exists return_5d_pct double precision,
   add column if not exists return_7d_pct double precision,
+  add column if not exists return_14d_pct double precision,
+  add column if not exists return_30d_pct double precision,
   add column if not exists source_ref text,
   add column if not exists phase25_variant text,
   add column if not exists phase25_shadow_variant text,
@@ -228,6 +234,11 @@ alter table public.market_scan_results
   add column if not exists expected_edge_score double precision,
   add column if not exists expected_return_1d_pct double precision,
   add column if not exists expected_return_3d_pct double precision,
+  add column if not exists model_prob_available_count double precision,
+  add column if not exists model_prob_mean double precision,
+  add column if not exists low_model_prob_score double precision,
+  add column if not exists low_prob_high_score double precision,
+  add column if not exists expected_edge_inversion_score double precision,
   add column if not exists primary_theme text,
   add column if not exists theme_source text,
   add column if not exists theme_inference_status text,

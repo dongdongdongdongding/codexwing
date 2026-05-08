@@ -28,6 +28,24 @@ watchlist_today.json
 model_registry.json
 .agents/
 
+# Runtime artifacts
+# Keep curated fixtures/reports only when intentionally force-added.
+runtime_state/shared_working/
+runtime_state/long_term/context_cache/
+runtime_state/long_term/orchestrator/
+runtime_state/long_term/outcomes/
+runtime_state/long_term/runs/
+runtime_state/reports/daily/
+runtime_state/reports/archive/
+runtime_state/reports/learning/smoke/
+runtime_state/reports/instrument_master/
+runtime_state/reports/data_health/
+runtime_state/reports/theme_validation/
+runtime_state/reports/validation/*.json
+runtime_state/reports/validation/*.md
+!runtime_state/reports/validation/supabase_scan_data_quality.json
+!runtime_state/reports/validation/supabase_scan_data_quality.md
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db

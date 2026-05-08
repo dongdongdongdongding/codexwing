@@ -54,6 +54,62 @@ def test_no_silent_drop_for_inferred_fields():
     assert payload["model_error"] == "timeout"
 
 
+def test_scanner_trace_fields_are_mapped_by_ssot():
+    payload = build_scan_result_payload(
+        {
+            "kospi_chg": 1.23,
+            "conviction_score": 72.5,
+            "market_gate": "GREEN",
+            "verdict": "BUY",
+            "scanner_timeframe_profile": "SWING_DAILY",
+            "kr_universe_role": "CORE_TREND",
+            "explosive_leader_flag": True,
+            "core_trend_flag": True,
+            "continuation_eligible": True,
+            "continuation_enabled": False,
+            "continuation_prob_3d": 63.25,
+            "continuation_evidence": "3",
+            "continuation_gate_reasons": ["volume_ok", "trend_ok"],
+            "phase25_degraded": True,
+            "theme_context": {"primary_theme": "semis"},
+            "leader_metrics": {"leader_score": 81.0},
+            "routing_path": "theme_routed",
+            "theme_score_adjustment": 2.5,
+            "model_prob_available_count": 3,
+            "model_prob_mean": 26.33,
+            "low_model_prob_score": 23.67,
+            "low_prob_high_score": 58.67,
+            "expected_edge_inversion_score": 3.6,
+        },
+        overrides={},
+        fallback_keys=DEFAULT_FALLBACK_KEYS,
+    )
+    assert payload["kospi_chg"] == 1.23
+    assert payload["conviction_score"] == 72.5
+    assert payload["market_gate"] == "GREEN"
+    assert payload["verdict"] == "BUY"
+    assert payload["scanner_timeframe_profile"] == "SWING_DAILY"
+    assert payload["kr_universe_role"] == "CORE_TREND"
+    assert payload["explosive_leader_flag"] is True
+    assert payload["core_trend_flag"] is True
+    assert payload["continuation_eligible"] is True
+    assert payload["continuation_enabled"] is False
+    assert payload["continuation_prob_3d"] == 63.25
+    assert payload["continuation_evidence"] == 3
+    assert payload["continuation_gate_reasons"] == ["volume_ok", "trend_ok"]
+    assert payload["phase25_degraded"] is True
+    assert payload["theme_context"] == {"primary_theme": "semis"}
+    assert payload["leader_metrics"] == {"leader_score": 81.0}
+    assert payload["routing_path"] == "theme_routed"
+    assert payload["theme_routing_path"] == "theme_routed"
+    assert payload["theme_score_adjustment"] == 2.5
+    assert payload["model_prob_available_count"] == 3.0
+    assert payload["model_prob_mean"] == 26.33
+    assert payload["low_model_prob_score"] == 23.67
+    assert payload["low_prob_high_score"] == 58.67
+    assert payload["expected_edge_inversion_score"] == 3.6
+
+
 def test_pct_clamp():
     payload = build_scan_result_payload({"ml_prob": 150}, overrides={})
     assert payload["ml_prob"] == 100.0

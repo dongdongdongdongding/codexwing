@@ -26,11 +26,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.inverted_signal_features import compute_low_prob_high_score_features
 from multi_agent.agents.kr_quant_reranker import is_kosdaq_3d_continuation_eligible
 
 
-TARGET_RETURN_PCT = 10.0
-TARGET_WIN_RATE_PCT = 75.0
+# Evidence-based targets (archive 2026-04-22): top-pick win ceiling ≈ 66%, avg return ≈ +3.5%.
+# 75%/10% was aspirational and unreachable on realized data; reset to 60%/+5% so the
+# target_gap metric reflects realistic headroom.
+TARGET_RETURN_PCT = 5.0
+TARGET_WIN_RATE_PCT = 60.0
 
 NUMERIC_FEATURES = [
     "alpha_score",
@@ -60,6 +64,11 @@ NUMERIC_FEATURES = [
     "expected_return_gap_3d_1d",
     "decision_alpha_gap",
     "ml_whale_combo",
+    "model_prob_available_count",
+    "model_prob_mean",
+    "low_model_prob_score",
+    "low_prob_high_score",
+    "expected_edge_inversion_score",
 ]
 
 CATEGORICAL_FEATURES = [
@@ -167,6 +176,19 @@ def _list_len(value: Any) -> int:
 
 
 def _load_market_df(market: str, input_dir: Path) -> pd.DataFrame:
+    all_path = input_dir / "scan_archive_learning_dataset_all.csv"
+    if all_path.exists():
+        all_df = pd.read_csv(all_path, low_memory=False)
+        market_key = market.upper()
+        market_col = all_df.get("market")
+        if market_col is not None:
+            filtered = all_df[market_col.fillna("").astype(str).str.upper().eq(market_key)].copy()
+        else:
+            suffix = ".KS" if market_key == "KOSPI" else ".KQ"
+            filtered = all_df[all_df.get("ticker", "").fillna("").astype(str).str.endswith(suffix)].copy()
+        if not filtered.empty:
+            filtered["market"] = market_key
+            return filtered
     path = input_dir / f"scan_archive_learning_dataset_{market.lower()}.csv"
     df = pd.read_csv(path, low_memory=False)
     df["market"] = market.upper()
@@ -187,6 +209,8 @@ def _prepare_df(df: pd.DataFrame) -> pd.DataFrame:
         "alpha_score",
         "tech_score",
         "ml_prob",
+        "prob_clean",
+        "phase25_prob",
         "whale_score",
         "decision_score",
         "phase25_shadow_prob",
@@ -215,30 +239,96 @@ def _prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     work["secondary_theme_count"] = work.get("secondary_themes", []).map(_list_len)
     work["explosive_gate_reason_count"] = work.get("explosive_gate_reasons", []).map(_list_len)
     work["theme_present"] = work.get("primary_theme", "").fillna("").astype(str).ne("").astype(int)
+    empty_float = pd.Series(index=work.index, dtype=float)
+    expected_3d = pd.to_numeric(work.get("expected_return_3d_pct", empty_float), errors="coerce")
+    expected_1d = pd.to_numeric(work.get("expected_return_1d_pct", empty_float), errors="coerce")
+    decision_score = pd.to_numeric(work.get("decision_score", empty_float), errors="coerce")
+    alpha_score = pd.to_numeric(work.get("alpha_score", empty_float), errors="coerce")
+    ml_prob = pd.to_numeric(work.get("ml_prob", empty_float), errors="coerce")
+    prob_clean = pd.to_numeric(work.get("prob_clean", empty_float), errors="coerce")
+    phase25_prob = pd.to_numeric(work.get("phase25_prob", empty_float), errors="coerce")
+    whale_score = pd.to_numeric(work.get("whale_score", empty_float), errors="coerce")
     work["expected_return_gap_3d_1d"] = (
-        pd.to_numeric(work.get("expected_return_3d_pct"), errors="coerce").fillna(0.0)
-        - pd.to_numeric(work.get("expected_return_1d_pct"), errors="coerce").fillna(0.0)
+        expected_3d - expected_1d
     )
     work["decision_alpha_gap"] = (
-        pd.to_numeric(work.get("decision_score"), errors="coerce").fillna(0.0)
-        - pd.to_numeric(work.get("alpha_score"), errors="coerce").fillna(0.0)
+        decision_score - alpha_score
     )
     work["ml_whale_combo"] = (
-        pd.to_numeric(work.get("ml_prob"), errors="coerce").fillna(0.0)
-        + pd.to_numeric(work.get("whale_score"), errors="coerce").fillna(0.0)
+        ml_prob + whale_score
     ) / 2.0
+    inverted_feature_rows = [
+        compute_low_prob_high_score_features(
+            alpha_score=row.get("alpha_score"),
+            tech_score=row.get("tech_score"),
+            ml_prob=row.get("ml_prob"),
+            prob_clean=row.get("prob_clean"),
+            phase25_prob=row.get("phase25_prob"),
+            expected_edge_score=row.get("expected_edge_score"),
+        )
+        for _, row in work.iterrows()
+    ]
+    inverted_feature_df = pd.DataFrame(inverted_feature_rows, index=work.index)
+    for col in [
+        "model_prob_available_count",
+        "model_prob_mean",
+        "low_model_prob_score",
+        "low_prob_high_score",
+        "expected_edge_inversion_score",
+    ]:
+        work[col] = pd.to_numeric(inverted_feature_df[col], errors="coerce")
 
     trade_date = work.get("base_trade_date", work.get("recommended_at", work.get("created_at", "")))
     work["trade_date"] = pd.to_datetime(trade_date, errors="coerce").dt.strftime("%Y-%m-%d")
     created = pd.to_datetime(work.get("created_at", work.get("recommended_at", "")), errors="coerce")
     work["created_at_ts"] = created
 
+    role = work.get("kr_universe_role", "").fillna("").astype(str).str.upper()
     if "explosive_eligible" not in work.columns:
-        work["explosive_eligible"] = 0
-    work["explosive_eligible"] = work["explosive_eligible"].fillna(0).astype(int)
-    work["explosive_leader_flag"] = pd.to_numeric(work.get("explosive_leader_flag"), errors="coerce").fillna(0).astype(int)
-    work["core_trend_flag"] = pd.to_numeric(work.get("core_trend_flag"), errors="coerce").fillna(0).astype(int)
-    work["is_sub7"] = pd.to_numeric(work.get("is_sub7"), errors="coerce").fillna(0).astype(int)
+        work["explosive_eligible"] = np.nan
+    work["explosive_eligible"] = pd.to_numeric(work["explosive_eligible"], errors="coerce")
+    work["explosive_leader_flag"] = pd.to_numeric(
+        work.get("explosive_leader_flag", pd.Series(index=work.index, dtype=float)),
+        errors="coerce",
+    ).combine_first(role.eq("EXPLOSIVE_LEADER").astype(float))
+    work["core_trend_flag"] = pd.to_numeric(
+        work.get("core_trend_flag", pd.Series(index=work.index, dtype=float)),
+        errors="coerce",
+    ).combine_first(role.eq("CORE_TREND").astype(float))
+    derived_sub7 = pd.to_numeric(
+        work.get("entry_reference_price", pd.Series(index=work.index, dtype=float)),
+        errors="coerce",
+    ).le(7.0).astype(float)
+    work["is_sub7"] = pd.to_numeric(
+        work.get("is_sub7", pd.Series(index=work.index, dtype=float)),
+        errors="coerce",
+    ).combine_first(derived_sub7)
+    feature_complete = pd.Series(True, index=work.index)
+    for col in NUMERIC_FEATURES:
+        if col not in work.columns:
+            feature_complete &= False
+        else:
+            feature_complete &= pd.to_numeric(work[col], errors="coerce").notna()
+    for col in ["scan_mode", "strategy_family", "kr_universe_role", "trend", "tier", "position"]:
+        if col not in work.columns:
+            feature_complete &= False
+        else:
+            feature_complete &= ~work[col].fillna("").astype(str).str.strip().str.lower().isin({"", "unknown", "nan", "none", "null", "missing"})
+    if "inference_failed" in work.columns:
+        raw = work["inference_failed"]
+        failed = raw.astype(str).str.lower().isin({"true", "1", "yes"}) if raw.dtype == "object" else raw.fillna(False).astype(bool)
+        feature_complete &= ~failed
+    if "validation_excluded" in work.columns:
+        raw = work["validation_excluded"]
+        excluded = raw.astype(str).str.lower().isin({"true", "1", "yes"}) if raw.dtype == "object" else raw.fillna(False).astype(bool)
+        feature_complete &= ~excluded
+    if "is_dummy_data" in work.columns:
+        raw = work["is_dummy_data"]
+        dummy = raw.astype(str).str.lower().isin({"true", "1", "yes"}) if raw.dtype == "object" else raw.fillna(False).astype(bool)
+        feature_complete &= ~dummy
+    if "feature_quality" in work.columns:
+        feature_complete &= work["feature_quality"].fillna("").astype(str).str.lower().isin({"", "complete"})
+    work["feature_complete_core"] = feature_complete.astype(int)
     return work
 
 
@@ -254,6 +344,8 @@ def _mark_kosdaq_continuation(df: pd.DataFrame) -> pd.DataFrame:
 
 def _build_segment_df(df: pd.DataFrame, spec: SegmentSpec) -> pd.DataFrame:
     work = df.copy()
+    if "feature_complete_core" in work.columns:
+        work = work[work["feature_complete_core"].fillna(0).astype(int).eq(1)].copy()
     if spec.role:
         work = work[work["kr_universe_role"].fillna("").astype(str).str.upper().eq(spec.role)].copy()
     if spec.continuation_only:

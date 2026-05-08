@@ -25,6 +25,7 @@ ADD COLUMN IF NOT EXISTS regime_avg_chg numeric;
 -- rows are marked so they cannot silently train as zero-filled examples.
 ALTER TABLE market_scan_results
 ADD COLUMN IF NOT EXISTS volume_ratio numeric,
+ADD COLUMN IF NOT EXISTS day_return_pct numeric,
 ADD COLUMN IF NOT EXISTS volume_confirmed boolean,
 ADD COLUMN IF NOT EXISTS prob_clean numeric,
 ADD COLUMN IF NOT EXISTS model_trace_status text,
@@ -81,3 +82,11 @@ ADD COLUMN IF NOT EXISTS theme_risk jsonb;
 CREATE UNIQUE INDEX IF NOT EXISTS market_scan_results_unique_pick
   ON market_scan_results (ticker, ((recommended_at AT TIME ZONE 'UTC')::date), market, scan_mode)
   WHERE market IS NOT NULL AND scan_mode IS NOT NULL;
+
+-- Added 2026-05-09. modules/db_schema.py SCAN_RESULT_COLUMNS에 conviction_score
+-- 매핑이 추가됐는데 (Codex 후속 작업) Supabase 컬럼은 빠져 있어 silent drop.
+-- conviction_score는 PlannerDecision/scanner_services에서 채워지는 신뢰도
+-- 점수로, archive→retrain 학습 feature로도 쓰임. 누락 시 NULL로 떨어져
+-- training set이 한 차원 잃는다.
+ALTER TABLE market_scan_results
+ADD COLUMN IF NOT EXISTS conviction_score numeric;

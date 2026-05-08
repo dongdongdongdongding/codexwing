@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import re
 import threading
 import time
 from dataclasses import dataclass, field
@@ -55,6 +56,117 @@ def _coalesce_value(*values: Any) -> Any:
         if _is_present(value):
             return value
     return ""
+
+
+def _coalesce_present(*values: Any) -> Any:
+    return _coalesce_value(*values)
+
+
+def _parse_percent_value(value: Any) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        numeric = float(value)
+        if math.isnan(numeric) or math.isinf(numeric):
+            return None
+        return numeric
+    text = str(value).strip()
+    if not text or text.lower() == "none":
+        return None
+    match = re.search(r"[-+]?\d+(?:\.\d+)?", text.replace(",", ""))
+    if not match:
+        return None
+    try:
+        return float(match.group(0))
+    except ValueError:
+        return None
+
+
+def _format_percent_label(value: Any) -> str:
+    numeric = _parse_percent_value(value)
+    if numeric is None:
+        return "-"
+    return f"{numeric:+.2f}%" if numeric < 0 else f"{numeric:.2f}%"
+
+
+def _format_accuracy_label(value: Any) -> str:
+    numeric = _parse_percent_value(value)
+    if numeric is None:
+        return "-"
+    return f"{numeric:.1f}%"
+
+
+def _format_score_label(value: Any) -> str:
+    numeric = _parse_percent_value(value)
+    if numeric is None:
+        return "-"
+    return f"{numeric:.1f}"
+
+
+def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = None) -> List[Dict[str, Any]]:
+    """Normalize scanner/archive rows into a compact decision list.
+
+    The UI intentionally exposes only actual source fields. It does not infer
+    missing day-change or accuracy values from unrelated return horizons.
+    """
+    normalized: List[Dict[str, Any]] = []
+    source_rows = rows or []
+    if limit is not None:
+        source_rows = source_rows[: max(int(limit or 0), 0)]
+
+    for rank, row in enumerate(source_rows, start=1):
+        if not isinstance(row, dict):
+            continue
+        ticker = str(_coalesce_present(row.get("ticker"), row.get("티커"), row.get("Ticker"), row.get("symbol")) or "").strip()
+        name = str(_coalesce_present(row.get("stock_name"), row.get("종목명"), row.get("Name"), row.get("name")) or "").strip()
+        decision = str(_coalesce_present(row.get("decision"), row.get("Decision"), row.get("decision_bucket")) or "").strip()
+        tier = str(_coalesce_present(row.get("tier"), row.get("Tier")) or "").strip()
+        strategy = str(_coalesce_present(row.get("strategy"), row.get("전략"), row.get("strategy_family")) or "").strip()
+        buy_signal = " · ".join(part for part in (decision, tier, strategy) if part) or "-"
+
+        accuracy_source = _coalesce_present(
+            row.get("정밀확률"),
+            row.get("prob_clean"),
+            row.get("_prob_clean"),
+            row.get("phase25_prob"),
+            row.get("ml_prob"),
+            row.get("AI확률"),
+            row.get("_prob_5"),
+        )
+        day_change_source = _coalesce_present(
+            row.get("전일비"),
+            row.get("day_return_pct"),
+            row.get("prev_pct_change"),
+            row.get("1D Change"),
+        )
+        score_source = _coalesce_present(row.get("decision_score"), row.get("Decision Score"), row.get("score"))
+        theme = str(_coalesce_present(row.get("primary_theme"), row.get("테마"), row.get("Theme")) or "").strip()
+        trend = str(_coalesce_present(row.get("trend"), row.get("추세"), row.get("Trend"), row.get("initial_trend")) or "").strip()
+        entry = str(_coalesce_present(row.get("매수가(-2%)"), row.get("Entry"), row.get("entry_reference_price")) or "").strip()
+        tp = str(_coalesce_present(row.get("TP"), row.get("target_tp_pct")) or "").strip()
+        sl = str(_coalesce_present(row.get("SL"), row.get("stop_sl_pct")) or "").strip()
+        latest_return = _coalesce_present(row.get("latest_return_pct"), row.get("return_1d_pct"), row.get("return_3d_pct"))
+
+        day_change_numeric = _parse_percent_value(day_change_source)
+        normalized.append(
+            {
+                "rank": rank,
+                "ticker": ticker,
+                "name": name,
+                "buy_signal": buy_signal,
+                "accuracy": _format_accuracy_label(accuracy_source),
+                "day_change": _format_percent_label(day_change_source),
+                "day_change_value": day_change_numeric,
+                "score": _format_score_label(score_source),
+                "theme": theme or "-",
+                "trend": trend or "-",
+                "entry": entry or "-",
+                "tp": tp or "-",
+                "sl": sl or "-",
+                "latest_return": _format_percent_label(latest_return),
+            }
+        )
+    return normalized
 
 
 def build_watchlist_display_rows(

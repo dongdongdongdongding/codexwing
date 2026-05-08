@@ -58,10 +58,16 @@ def _scan_and_save(df_tickers, market_name, market_code='US'):
     print(msg)
     send_telegram_message(msg)
     
+    def _save_universe_row(data):
+        payload = dict(data or {})
+        payload.setdefault("scan_mode", "SWING")
+        payload.setdefault("feature_origin", "auto_bot_universe")
+        db.upsert_scan_result(payload)
+
     candidates = collect_universe_scan_candidates(
         df_tickers=df_tickers,
         market_code=market_code,
-        save_scan_result_fn=db.save_scan_result,
+        save_scan_result_fn=_save_universe_row,
         logger=print,
     )
             

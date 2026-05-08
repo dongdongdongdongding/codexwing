@@ -22,6 +22,35 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from retrain_ml import FEATURE_COLS, engineer_features, load_scan_archive
+from modules.inverted_signal_features import compute_low_prob_high_score_features
+
+
+INVERTED_SIGNAL_FEATURES = [
+    "model_prob_available_count",
+    "model_prob_mean",
+    "low_model_prob_score",
+    "low_prob_high_score",
+    "expected_edge_inversion_score",
+]
+
+
+def add_inverted_signal_features(df: pd.DataFrame) -> pd.DataFrame:
+    work = df.copy()
+    rows = [
+        compute_low_prob_high_score_features(
+            alpha_score=row.get("alpha_score"),
+            tech_score=row.get("tech_score"),
+            ml_prob=row.get("ml_prob"),
+            prob_clean=row.get("prob_clean"),
+            phase25_prob=row.get("phase25_prob"),
+            expected_edge_score=row.get("expected_edge_score"),
+        )
+        for _, row in work.iterrows()
+    ]
+    feat_df = pd.DataFrame(rows, index=work.index)
+    for col in INVERTED_SIGNAL_FEATURES:
+        work[col] = pd.to_numeric(feat_df[col], errors="coerce").fillna(0.0)
+    return work
 
 
 def build_segment() -> tuple[pd.DataFrame, list[str]]:
@@ -30,14 +59,14 @@ def build_segment() -> tuple[pd.DataFrame, list[str]]:
     # 학습 가능 신호를 못 만들어서. dedup 후 KOSPI SWING OBSERVE 5d win
     # 67.6% / 7d 75.6% — 5d로 학습하면 운영 분포와 target 일치.
     # KOSDAQ SWING은 horizon_policy에서 이미 5d.
-    df = engineer_features(load_scan_archive())
+    df = add_inverted_signal_features(engineer_features(load_scan_archive()))
     seg = df[
         df["market_subtype"].isin(["KOSPI", "KOSDAQ"])
         & df["scan_mode"].eq("SWING")
         & df["return_5d_pct"].notna()
     ].copy()
     seg["target"] = (pd.to_numeric(seg["return_5d_pct"], errors="coerce") >= 5.0).astype(int)
-    feat_cols = [col for col in FEATURE_COLS if col in seg.columns]
+    feat_cols = [col for col in list(FEATURE_COLS) + INVERTED_SIGNAL_FEATURES if col in seg.columns]
     return seg.sort_values("created_at").copy(), feat_cols
 
 

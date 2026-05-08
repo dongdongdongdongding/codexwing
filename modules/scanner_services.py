@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, Optional
 from multi_agent.agents.kr_quant_reranker import compute_kr_quant_rerank
 from modules import quant_analysis
 from modules.kr_regime_ranker import predict_rank_overlay
+from modules.inverted_signal_features import compute_low_prob_high_score_features
 from modules.kosdaq_3d_continuation_ranker import predict_continuation_overlay
 from modules.regime_market_policy import evaluate_market_policy
 from modules.regime_ticker_profiles import (
@@ -728,6 +729,8 @@ def evaluate_intraday_candidate(
             "position": position,
             "tier": tier,
             "volume": volume_badge,
+            "volume_ratio": round(float(vol_ratio), 3),
+            "day_return_pct": round(float(day_ret), 2),
             "context": news_tag,
             "surge": surge_tag,
             "win_rate": "-",
@@ -2272,6 +2275,14 @@ def build_us_scan_outputs(
     )
     if inference_failed:
         feature_quality["validation_excluded_reason"] = "ML_INFERENCE_FAILED"
+    inverted_signal_features = compute_low_prob_high_score_features(
+        alpha_score=alpha_score,
+        tech_score=tech_score,
+        ml_prob=stored_prob_5,
+        prob_clean=stored_prob_clean,
+        phase25_prob=phase25_prob,
+        expected_edge_score=expected_edge_score,
+    )
 
     res_data = {
         "Tier": tier,
@@ -2323,6 +2334,7 @@ def build_us_scan_outputs(
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        **inverted_signal_features,
         "target_tp_pct": DEFAULT_EXIT_TP_PCT,
         "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
         "hold_days": DEFAULT_EXIT_HOLD_DAYS,
@@ -2349,6 +2361,7 @@ def build_us_scan_outputs(
         "tier": tier,
         "volume": volume_badge,
         "volume_ratio": volume_ratio_value,
+        "day_return_pct": round(float(prev_pct_change), 2),
         "volume_confirmed": volume_confirmed,
         "context": news_tag,
         "surge": surge_tag,
@@ -2371,6 +2384,7 @@ def build_us_scan_outputs(
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        **inverted_signal_features,
         "target_tp_pct": DEFAULT_EXIT_TP_PCT,
         "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
         "hold_days": DEFAULT_EXIT_HOLD_DAYS,
@@ -2474,6 +2488,14 @@ def build_kr_scan_outputs(
     )
     if inference_failed:
         feature_quality["validation_excluded_reason"] = "ML_INFERENCE_FAILED"
+    inverted_signal_features = compute_low_prob_high_score_features(
+        alpha_score=alpha_score,
+        tech_score=tech_score,
+        ml_prob=stored_prob_5,
+        prob_clean=stored_prob_clean,
+        phase25_prob=phase25_prob,
+        expected_edge_score=expected_edge_score,
+    )
 
     res_data = {
         "Tier": tier,
@@ -2533,6 +2555,7 @@ def build_kr_scan_outputs(
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        **inverted_signal_features,
         "target_tp_pct": DEFAULT_EXIT_TP_PCT,
         "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
         "hold_days": DEFAULT_EXIT_HOLD_DAYS,
@@ -2559,6 +2582,7 @@ def build_kr_scan_outputs(
         "tier": tier,
         "volume": db_volume,
         "volume_ratio": volume_ratio_value,
+        "day_return_pct": round(float(prev_pct_change), 2),
         "volume_confirmed": volume_confirmed,
         "context": context_text,
         "surge": surge_tag,
@@ -2594,6 +2618,7 @@ def build_kr_scan_outputs(
         "expected_edge_score": expected_edge_score,
         "expected_return_1d_pct": expected_return_1d_pct,
         "expected_return_3d_pct": expected_return_3d_pct,
+        **inverted_signal_features,
         "target_tp_pct": DEFAULT_EXIT_TP_PCT,
         "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
         "hold_days": DEFAULT_EXIT_HOLD_DAYS,

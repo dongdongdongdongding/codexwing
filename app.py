@@ -4,7 +4,6 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="google.auth")
 warnings.filterwarnings("ignore", category=FutureWarning, module="google.oauth2")
 warnings.filterwarnings("ignore", module="urllib3")
 
-import concurrent.futures
 import html
 import json
 import threading
@@ -30,6 +29,7 @@ from modules.scan_policy import (
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.ui_helpers import (
     BackgroundScanState,
+    build_signal_display_rows,
     build_top_candidate_compact_view,
     build_top_candidate_rows,
     build_watchlist_display_rows,
@@ -40,7 +40,6 @@ from modules.ui_helpers import (
 )
 import pandas as pd
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import traceback
 
 # [Phase 8] Global Backoff Synchronization for Rate Limits
@@ -751,6 +750,87 @@ def _inject_toss_theme():
           line-height: 1.6;
         }
 
+        .signal-list {
+          display: grid;
+          gap: 0.75rem;
+          margin: 0.7rem 0 1rem;
+        }
+
+        .signal-card {
+          display: grid;
+          grid-template-columns: minmax(0, 1.35fr) minmax(0, 2.25fr) repeat(2, minmax(7.2rem, 0.75fr));
+          gap: 0.85rem;
+          align-items: center;
+          padding: 0.95rem 1rem;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.94);
+          border: 1px solid rgba(229, 232, 235, 0.94);
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        .signal-identity {
+          min-width: 0;
+        }
+
+        .signal-rank {
+          color: var(--muted);
+          font-size: 0.78rem;
+          font-weight: 800;
+          margin-bottom: 0.2rem;
+        }
+
+        .signal-title {
+          color: var(--text);
+          font-size: 1rem;
+          font-weight: 850;
+          line-height: 1.25;
+          overflow-wrap: anywhere;
+        }
+
+        .signal-subtitle {
+          color: var(--muted);
+          font-size: 0.84rem;
+          line-height: 1.45;
+          margin-top: 0.18rem;
+          overflow-wrap: anywhere;
+        }
+
+        .signal-buy {
+          min-width: 0;
+          color: var(--text);
+          font-size: 0.94rem;
+          line-height: 1.45;
+          font-weight: 750;
+          overflow-wrap: anywhere;
+        }
+
+        .signal-metric {
+          padding: 0.72rem 0.78rem;
+          border-radius: 14px;
+          background: rgba(246, 248, 251, 0.9);
+          border: 1px solid rgba(229, 232, 235, 0.9);
+          min-width: 0;
+        }
+
+        .signal-metric-label {
+          color: var(--muted);
+          font-size: 0.75rem;
+          font-weight: 800;
+          margin-bottom: 0.18rem;
+        }
+
+        .signal-metric-value {
+          color: var(--text);
+          font-size: 1rem;
+          font-weight: 850;
+          line-height: 1.25;
+          overflow-wrap: anywhere;
+        }
+
+        .signal-metric-value.pos { color: #118653; }
+        .signal-metric-value.neg { color: #c2313d; }
+        .signal-metric-value.neu { color: var(--text); }
+
         @media (max-width: 980px) {
           .block-container {
             padding-top: 1rem;
@@ -773,7 +853,8 @@ def _inject_toss_theme():
           }
 
           .intel-signal-grid,
-          .intel-momentum-grid {
+          .intel-momentum-grid,
+          .signal-card {
             grid-template-columns: 1fr;
           }
 
@@ -1490,23 +1571,22 @@ def _render_agent_bridge_status(bridge_info, market):
 
 
 def _render_scan_top_candidates(results_df, bridge_info, market):
-    planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
-    view = build_top_candidate_compact_view(planner_payload, limit=5)
-    compact_rows = view.get("compact_rows", [])
-    detail_by_ticker = view.get("detail_by_ticker", {})
-
     st.markdown("### 🔥 Top 5 매수 신호")
-    if not compact_rows:
+    signal_rows = build_signal_display_rows(results_df.to_dict("records"), limit=5)
+    if not signal_rows:
         st.info(
             "현재 매수 신호 없음 — 시장 관망. 모든 후보가 OBSERVE/AVOID로 강등되었거나 "
             "OOS 검증을 통과하지 못했습니다. Watchlist 표에서 감시 종목을 확인하세요."
         )
         return
 
-    st.caption("표는 매수 결정에 필요한 핵심만. 종목 상세는 아래 선택해 펼쳐보세요.")
-    st.dataframe(pd.DataFrame(compact_rows), use_container_width=True, hide_index=True)
+    st.caption("핵심 판단값만 압축 표시합니다. 원천값이 없는 항목은 임의로 채우지 않습니다.")
+    _render_signal_card_list(signal_rows)
 
-    ticker_options = [str(r.get("Ticker", "") or "") for r in compact_rows if r.get("Ticker")]
+    planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+    view = build_top_candidate_compact_view(planner_payload, limit=5)
+    detail_by_ticker = view.get("detail_by_ticker", {})
+    ticker_options = [str(r.get("ticker", "") or "") for r in signal_rows if r.get("ticker")]
     if not ticker_options:
         return
 
@@ -1538,6 +1618,51 @@ def _render_scan_top_candidates(results_df, bridge_info, market):
         cols3[1].metric("TP", str(detail.get("TP", "") or "-"))
         cols3[2].metric("SL", str(detail.get("SL", "") or "-"))
         cols3[3].metric("Hold", str(detail.get("Hold", "") or "-"))
+
+
+def _render_signal_card_list(rows, *, empty_text="표시할 후보가 없습니다."):
+    if not rows:
+        st.info(empty_text)
+        return
+    for row in rows:
+        day_val = row.get("day_change_value")
+        if day_val is None:
+            day_delta = None
+        elif float(day_val) > 0:
+            day_delta = "상승"
+        elif float(day_val) < 0:
+            day_delta = "하락"
+        else:
+            day_delta = "보합"
+        name = str(row.get("name") or "").strip()
+        ticker = str(row.get("ticker") or "").strip()
+        subtitle_parts = [part for part in (row.get("theme"), row.get("trend")) if part and part != "-"]
+        subtitle = " · ".join(str(part) for part in subtitle_parts) or "-"
+        exit_parts = []
+        if row.get("entry") and row.get("entry") != "-":
+            exit_parts.append(f"Entry {row.get('entry')}")
+        if row.get("tp") and row.get("tp") != "-":
+            exit_parts.append(f"TP {row.get('tp')}")
+        if row.get("sl") and row.get("sl") != "-":
+            exit_parts.append(f"SL {row.get('sl')}")
+        buy_signal = str(row.get("buy_signal") or "-")
+
+        with st.container(border=True):
+            cols = st.columns([1.25, 2.3, 0.9, 0.9], vertical_alignment="center")
+            with cols[0]:
+                st.caption(f"#{row.get('rank') or '-'}")
+                st.markdown(f"**{ticker or '-'}**")
+                st.caption(name or subtitle)
+            with cols[1]:
+                st.markdown(f"**{buy_signal}**")
+                if exit_parts:
+                    st.caption(" · ".join(exit_parts))
+                if name and subtitle != "-":
+                    st.caption(subtitle)
+            with cols[2]:
+                st.metric("정확성", str(row.get("accuracy") or "-"))
+            with cols[3]:
+                st.metric("전일비", str(row.get("day_change") or "-"), day_delta)
 
 
 def _fmt_pct_or_dash(value):
@@ -2172,9 +2297,7 @@ def _render_scan_results_snapshot(snapshot):
 
     if len(df_results) > 5:
         with st.expander("추가 후보 보기", expanded=False):
-            st.dataframe(df_results.iloc[5:], use_container_width=True, hide_index=True)
-    else:
-        st.dataframe(df_results, use_container_width=True, hide_index=True)
+            _render_signal_card_list(build_signal_display_rows(df_results.iloc[5:].to_dict("records")))
     _render_agent_bridge_status(bridge_info, market)
 
 
@@ -2339,16 +2462,12 @@ def compute_rank_adjustment(real_trend, position, strategy_tag, tier, whale_scor
     )
 
 # --- Phase 34: Global Brain Initialization ---
-# Ensure Universal Model exists for Zero-Failure Analysis
+# UI must not train models as an import/runtime side effect.
 if 'universal_model_checked' not in st.session_state:
-    with st.spinner("🧠 Initializing Global AI Brain (Universal Model)..."):
-        model_path = "models/universal_rf.pkl"
-        if not os.path.exists(model_path):
-            st.warning("⚠️ Universal Model not found. Training now (this happens once)...")
-            qs_init = quant_analysis.QuantStrategy("^KS11")
-            qs_init.train_universal_model()
-            st.success("✅ Global Brain Activated!")
-        st.session_state['universal_model_checked'] = True
+    model_path = "models/universal_rf.pkl"
+    if not os.path.exists(model_path):
+        st.warning("Universal model is missing. Run `python3 train_global_brain.py` outside the UI before relying on universal RF fallback.")
+    st.session_state['universal_model_checked'] = True
 
 # Phase 19: Live Macro Weather Dashboard
 if 'macro_ctx' not in st.session_state or refresh_macro_clicked:
@@ -2447,493 +2566,6 @@ if active_main_tab == "📈 성과":
 
 if active_main_tab == "🧠 인텔리전스":
     _render_intelligence_workspace()
-
-# --- Strategy Lab (removed from UI) ---
-if active_main_tab == "🚀 스캐너":  # dummy context reuse — strategy lab content removed
-    pass
-if False:
-    # Keep lab self-contained: define regime label even when tab1 scanner was not run.
-    lab_regime_status = "NEUTRAL"
-    if macro_state in ["CRASH", "RISK_OFF"]:
-        lab_regime_status = "RISK_OFF"
-    elif macro_state == "NORMAL":
-        lab_regime_status = "RISK_ON"
-
-    st.header("🧪 Strategy Lab (Antigrav Experiment)")
-    st.caption("Phase 30: Advanced Metrics & Simulation Playground")
-    
-    st.info("이곳은 개발 중인 신규 알고리즘(Tech Score, RRG, Smart Exit)을 테스트하는 실험실입니다.")
-    
-    # Lab Input
-    lab_ticker = st.text_input("실험할 종목코드 (예: 005930, AAPL)", "")
-    
-    if lab_ticker:
-        if lab_ticker.isdigit() and len(lab_ticker) == 6:
-            lab_ticker = f"{lab_ticker}.KS"
-            
-        qs = quant_analysis.QuantStrategy(lab_ticker.upper())
-        if qs.fetch_data(period="1y"):
-            qs.calculate_indicators()
-            qs.check_signals()
-            
-            # 1. Tech Score Breakdown
-            st.subheader("1. Technical Confluence Score (V30)")
-            ts_val = qs.df['Antigrav_Score'].iloc[-1] if 'Antigrav_Score' in qs.df.columns else 0
-            
-            c1, c2 = st.columns(2)
-            c1.metric("Pro Tech Score", f"{ts_val:.0f}/100", help="RSI + MA + MACD + Bollinger")
-            
-            # Fakeout Check
-            open_p = qs.df['Open'].iloc[-1]
-            close_p = qs.df['Close'].iloc[-1]
-            high_p = qs.df['High'].iloc[-1]
-            if (high_p - max(open_p, close_p)) > abs(close_p - open_p) * 2:
-                 c1.warning("⚠️ Fakeout Warning: Long Upper Wick (-20pts)")
-            else:
-                 c1.success("✅ Candle Structure: Robust")
-                 
-            # 2. Smart Exit (Trailing Stop)
-            st.subheader("2. Smart Exit Simulation (ATR Trailing Stop)")
-            exit_sim = qs.calculate_trailing_stop()
-            estatus = exit_sim['status']
-            ecolor = "red" if "SELL" in estatus else "green"
-            
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Trailing Stop Price", f"{exit_sim['stop_price']:,.0f}")
-            c2.metric("Highest High (20d)", f"{exit_sim['highest_high']:,.0f}")
-            c3.markdown(f"Status: <span style='color:{ecolor}; font-weight:bold'>{estatus}</span>", unsafe_allow_html=True)
-            
-            st.divider()
-            
-            # 3. XGBoost Features
-            st.subheader("3. Advanced AI Features (XGBoost Inputs)")
-            f_cols = ['Vol_Change', 'Price_Gap', 'BB_Width', 'ROC_5']
-            
-            # Check if columns exist
-            avail_cols = [c for c in f_cols if c in qs.df.columns]
-            
-            if avail_cols:
-                feat_data = qs.df.iloc[-1][avail_cols]
-                
-                f1, f2, f3, f4 = st.columns(4)
-                if 'Vol_Change' in avail_cols:
-                    v_chg = feat_data['Vol_Change']
-                    f1.metric("Vol Change", f"{v_chg:.2f}x", delta="Spike" if v_chg > 1.5 else "Low")
-                if 'Price_Gap' in avail_cols:
-                    p_gap = feat_data['Price_Gap'] * 100
-                    f2.metric("Gap %", f"{p_gap:.2f}%", delta="Up" if p_gap > 0 else "Down")
-                if 'BB_Width' in avail_cols:
-                    bb_w = feat_data['BB_Width']
-                    f3.metric("BB Width", f"{bb_w:.2f}", help="Volatility (Low=Squeeze)")
-                if 'ROC_5' in avail_cols:
-                    roc = feat_data['ROC_5']
-                    f4.metric("ROC (5d)", f"{roc:.2f}%")
-            else:
-                st.info("⚠️ Features not calculated. Please ensure data fetch is complete.")
-                
-            st.divider()
-
-            # 4. Sector RRG (Visual)
-            st.subheader("4. Sector Rotation (RRG) - Trend Visualization")
-            sec_data = qs.get_sector_performance()
-            
-            if sec_data:
-                quad = sec_data.get('quadrant', 'Unknown')
-                rs_rat = sec_data.get('rs_ratio', 100)
-                rs_mom = sec_data.get('rs_mom', 100)
-                
-                # RRG Plotly Scatter
-                rrg_fig = go.Figure()
-                
-                # Background Quadrants
-                rrg_fig.add_shape(type="rect", x0=100, y0=100, x1=120, y1=120, fillcolor="rgba(0,255,0,0.1)", line_width=0, layer="below") # Leading
-                rrg_fig.add_shape(type="rect", x0=80, y0=100, x1=100, y1=120, fillcolor="rgba(0,0,255,0.1)", line_width=0, layer="below") # Improving
-                rrg_fig.add_shape(type="rect", x0=80, y0=80, x1=100, y1=100, fillcolor="rgba(255,0,0,0.1)", line_width=0, layer="below") # Lagging
-                rrg_fig.add_shape(type="rect", x0=100, y0=80, x1=120, y1=100, fillcolor="rgba(255,255,0,0.1)", line_width=0, layer="below") # Weakening
-                
-                # Axes
-                rrg_fig.add_vline(x=100, line_width=1, line_dash="solid", line_color="gray")
-                rrg_fig.add_hline(y=100, line_width=1, line_dash="solid", line_color="gray")
-                
-                # Point
-                rrg_fig.add_trace(go.Scatter(
-                    x=[rs_rat], y=[rs_mom],
-                    mode='markers+text',
-                    marker=dict(size=15, color='cyan', line=dict(width=2, color='white')),
-                    text=[lab_ticker], textposition="top center",
-                    name='Current'
-                ))
-                
-                rrg_fig.update_layout(
-                    title="Relative Rotation Graph (RRG)",
-                    xaxis_title="RS Ratio (Trend)",
-                    yaxis_title="RS Momentum (Velocity)",
-                    xaxis=dict(range=[80, 120]),
-                    yaxis=dict(range=[80, 120]),
-                    width=400, height=400,
-                    template="plotly_dark"
-                )
-                
-                c_rrg1, c_rrg2 = st.columns([2, 1])
-                with c_rrg1:
-                    st.plotly_chart(rrg_fig, width='stretch')
-                with c_rrg2:
-                    st.markdown(f"**Current: {quad}**")
-                    if quad == "Leading": st.success("🚀 주도주: 상승 추세 + 모멘텀 강함")
-                    elif quad == "Weakening": st.warning("⚠️ 약화: 추세는 좋으나 힘이 빠짐 (조정 가능성)")
-                    elif quad == "Lagging": st.error("❄️ 소외주: 추세 하락 + 모멘텀 약함")
-                    elif quad == "Improving": st.info("🌱 회복: 추세는 아직 약하나 모멘텀 살아남 (진입 관찰)")
-                    
-                    st.metric("Trend Strength", f"{rs_rat:.1f}")
-                    st.metric("Velocity", f"{rs_mom:.1f}")
-            else:
-                 st.write(sec_data)
-
-            st.divider()
-            
-            st.divider()
-
-            st.divider()
-
-            # 5. Integrated Antigravity Score (V30) - Realtime Logic
-            st.subheader("5. Integrated Antigravity Score (V30)")
-            
-            try:
-                # We use defaults for Lab demo if full AI not run yet
-                # In a real scenario, this would come from a full analysis run
-                val_alpha_v30 = qs.calculate_antigravity_score(
-                    win_rate=0.55, 
-                    profit_factor=1.5, 
-                    ai_return=0, 
-                    whale_score=50,
-                    sector_data=sec_data,
-                    macro_status=lab_regime_status
-                )
-                
-                val_col1, val_col2 = st.columns([1,3])
-                with val_col1:
-                    st.metric("Antigravity Score", f"{val_alpha_v30}/100", f"{lab_regime_status}")
-                with val_col2:
-                    if lab_regime_status == 'CRASH':
-                        st.error("⚠️ **CRASH DETECTED**: Score Capped at 50. DO NOT BUY.")
-                    elif lab_regime_status == 'RISK_OFF':
-                        st.warning("🛡️ **Bear Market**: Weights shifted to Whale/Quality. Momentum ignored.")
-                    elif lab_regime_status == 'RISK_ON':
-                        st.success("🚀 **Bull Market**: Aggressive Momentum Weights active.")
-                    else:
-                        st.info("⚖️ **Neutral Market**: Balanced Weighting.")
-            except Exception as e:
-                st.error(f"Calc Error: {e}")
-
-            st.divider()
-
-            # 6. Antigrav Trend Analysis (Visual)
-            st.subheader("6. Antigrav Trend Analysis (60 Days)")
-            
-            if 'Antigrav_Score' in qs.df.columns:
-                trend_df = qs.df[['Close', 'Antigrav_Score']].iloc[-60:].copy()
-                
-                # Dual Axis Chart
-                fig_trend = make_subplots(specs=[[{"secondary_y": True}]])
-                
-                fig_trend.add_trace(
-                    go.Scatter(x=trend_df.index, y=trend_df['Close'], name='Price', line=dict(color='gray', width=1)), 
-                    secondary_y=False
-                )
-                fig_trend.add_trace(
-                    go.Scatter(x=trend_df.index, y=trend_df['Antigrav_Score'], name='Antigrav Trend', line=dict(color='#00FFAA', width=2)), 
-                    secondary_y=True
-                )
-                
-                fig_trend.update_layout(
-                    title="Price vs Antigravity Score Correlation", 
-                    template="plotly_dark", 
-                    height=350,
-                    margin=dict(l=10, r=10, t=40, b=10),
-                    hovermode="x unified",
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-                )
-                fig_trend.update_yaxes(title_text="Price", secondary_y=False, showgrid=False)
-                fig_trend.update_yaxes(title_text="Antigravity Score", secondary_y=True, range=[0, 100], showgrid=True, gridcolor='rgba(128,128,128,0.2)')
-                
-                st.plotly_chart(fig_trend, width='stretch')
-                
-                # Correlation Insight
-                corr = trend_df['Close'].corr(trend_df['Antigrav_Score'])
-                if corr > 0.5: st.success(f"🔗 Strong Correlation ({corr:.2f}): Antigravity Score leads Price well.")
-                elif corr < -0.5: st.error(f"🔗 Inverse Correlation ({corr:.2f}): Score divergence detected.")
-                else: st.info(f"🔗 Low Correlation ({corr:.2f}): Score is independent of short-term price.")
-            
-            st.divider()
-            
-            # 7. Integrated Antigravity Score (Simulator)
-            st.subheader("7. Antigravity Score Simulator (가중치 실험)")
-            st.caption("🔍 나만의 전략에 맞춰 가중치를 조절해보세요.")
-            
-            col_sim1, col_sim2 = st.columns([1, 2])
-            
-            with col_sim1:
-                # Sliders
-                w_tech = st.slider("Technical", 0.0, 0.5, 0.2, 0.05)
-                w_whale = st.slider("Whale (S/D)", 0.0, 0.5, 0.2, 0.05)
-                w_ai = st.slider("AI Forecast", 0.0, 0.5, 0.2, 0.05)
-                w_sector = st.slider("Sector (RRG)", 0.0, 0.5, 0.1, 0.05)
-                
-            with col_sim2:
-                # Dynamic Calc
-                try:
-                    # Robust Fetch or Default
-                    wr_lab = 0.55 
-                    pf_lab = 1.5
-                    
-                    # 1. AI Return
-                    ai_ret_lab = locals().get('prophet_ret', locals().get('ai_return', 5.0))
-                    
-                    # 2. Whale Score
-                    whale_sc = 50
-                    w_data = locals().get('whale_data')
-                    w_dict = locals().get('whale')
-                    if isinstance(w_data, dict):
-                        whale_sc = w_data.get('whale_score', 50)
-                    elif isinstance(w_dict, dict):
-                        whale_sc = w_dict.get('whale_score', 50)
-                    
-                    # 3. Sector Score
-                    s_sector = 50
-                    if sec_data:
-                        q = sec_data.get('quadrant')
-                        if q == 'Leading': s_sector = 100
-                        elif q == 'Improving': s_sector = 80
-                        elif q == 'Weakening': s_sector = 40
-                        else: s_sector = 20
-                    
-                    # Component Scores
-                    s_tech = ts_val
-                    s_whale = whale_sc
-                    s_ai = float(min(100.0, max(0.0, float(ai_ret_lab * 5))))
-                    
-                    # Weighted Sum
-                    sim_score = (s_tech * w_tech) + (s_whale * w_whale) + (s_ai * w_ai) + (s_sector * w_sector)
-                    
-                    # Normalization
-                    w_sum = w_tech + w_whale + w_ai + w_sector
-                    if w_sum > 0:
-                        sim_score = sim_score / w_sum  # Normalize to 0-100 weighted average
-                    
-                    st.metric("Simulated Antigravity Score", f"{sim_score:.0f}/100")
-                    
-                    # Verdict
-                    if sim_score >= 80: st.success("🔥 POWER BUY (강력 매수)")
-                    elif sim_score >= 60: st.success("✅ BUY (매수)")
-                    elif sim_score >= 40: st.warning("✋ HOLD (관망)")
-                    else: st.error("🔻 SELL/AVOID (매도/회피)")
-                    
-                    # Breakdown Chart
-                    sim_data = pd.DataFrame({
-                        'Factor': ['Technical', 'Whale', 'AI', 'Sector'],
-                        'Contribution': [s_tech, s_whale, s_ai, s_sector] # Raw scores
-                    })
-                    # Show raw scores comparison
-                    st.caption("Factor Strength (0-100):")
-                    st.bar_chart(sim_data.set_index('Factor'))
-                    
-                except Exception as e:
-                    st.error(f"Sim Error: {e}")
-
-# --- Bot Dashboard (removed from UI) ---
-if False:
-    st.header("🤖 Automated Trading Bot Dashboard")
-    st.caption("Live tracking of 24/7 automated signals and paper trading performance.")
-    
-    from modules import db_manager
-    db = db_manager.DBManager()
-    
-    # Refresh Button
-    if st.button("🔄 Refresh Data"):
-        st.rerun()
-        
-    df_sig, win_rate, avg_prof = db.fetch_dashboard_data()
-    
-    if not df_sig.empty:
-        # Top Stats
-        k1, k2, k3 = st.columns(3)
-        k1.metric("Bot Win Rate (Paper)", f"{win_rate:.1f}%")
-        k2.metric("Avg Profit per Trade", f"{avg_prof:.2f}%")
-        k3.metric("Total Signals Generated", len(df_sig))
-        
-        st.subheader("📡 Live Signal Feed")
-        st.dataframe(
-            df_sig[['created_at', 'stock_name', 'ticker', 'signal_type', 'price', 'alpha_score', 'result_3d']],
-            width='stretch'
-        )
-    else:
-        st.info("No signals generated yet. The bot is scanning in the background...")
-        st.markdown("### Bot Status")
-        st.success("✅ Bot is running (Smart Scheduler Active)")
-
-# --- Batch Analysis (removed from UI) ---
-if False:
-    st.header("📂 엑셀 일괄 진단 (Batch Deep Dive)")
-    st.caption("여러 종목의 엑셀 파일을 업로드하여 AI 정밀 분석을 일괄 수행합니다.")
-    
-    uploaded_file = st.file_uploader("파일 업로드 (xlsx, csv)", type=['xlsx', 'csv'])
-    
-    if uploaded_file is not None:
-        try:
-            if uploaded_file.name.endswith('.csv'):
-                df_upload = pd.read_csv(uploaded_file)
-            else:
-                df_upload = pd.read_excel(uploaded_file)
-                
-            st.write("미리보기:", df_upload.head(3))
-            
-            # Column Selection
-            col_options = df_upload.columns.tolist()
-            default_ix = 0
-            if 'Ticker' in col_options: default_ix = col_options.index('Ticker')
-            elif 'Symbol' in col_options: default_ix = col_options.index('Symbol')
-            elif '종목코드' in col_options: default_ix = col_options.index('종목코드')
-            
-            ticker_col = st.selectbox("종목코드 컬럼 선택", col_options, index=default_ix)
-            
-            if st.button("🚀 일괄 분석 시작 (Deep Dive)", type="primary"):
-                tickers = df_upload[ticker_col].astype(str).tolist()
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                log_container = st.expander("📝 진행 상황 & 에러 로그", expanded=True)
-                results = []
-                
-                # --- Parallel Processing Logic (Phase 26) ---
-                def process_ticker(raw_ticker):
-                    try:
-                        ticker = raw_ticker.strip()
-                        if ticker.isdigit() and len(ticker) == 6:
-                            ticker = f"{ticker}.KS"
-                            
-                        # 1. Init Strategy
-                        qs = quant_analysis.QuantStrategy(ticker)
-                        if not qs.fetch_data(period="1y"):
-                            return None
-                            
-                        qs.calculate_indicators()
-                        qs.check_signals()
-                        
-                        if qs.df is None or qs.df.empty: return None
-                        
-                        latest = qs.df.iloc[-1]
-                        
-                        # 2. Tech & Fund
-                        fund_pass, _ = qs.check_fundamentals()
-                        whale = qs.get_investor_flows()  # Use real data (same as Deep Dive)
-                        rs = qs.get_relative_strength()
-                        
-                        # 3. News (Silent)
-                        n_score = 0
-                        try:
-                            na = news_analysis.NewsAnalyzer(ticker)
-                            nr = na.get_news_sentiment()
-                            n_score = nr.get('score', 0)
-                        except: pass
-                        
-                        # 4. Macro & Sector
-                        macro = qs.get_macro_metrics()
-                        sector_data = qs.get_sector_performance()
-                        
-                        # 5. AI Prediction
-                        ai_res = qs.predict_future(days=30, sentiment_score=n_score, macro_status=macro['status'])
-                        ai_ret = 0
-                        if ai_res and 'forecast' in ai_res:
-                            try:
-                                last_yhat = ai_res['forecast']['yhat'].iloc[-1]
-                                ai_ret = ((last_yhat - latest['Close']) / latest['Close']) * 100
-                            except: pass
-                            
-                        # 6. Backtest
-                        stats = qs.backtest()
-                        try: win_rate = float(stats.get('Win Rate','0').strip('%'))/100
-                        except: win_rate = 0
-                        try: prof_factor = float(stats.get('Profit Factor','0'))
-                        except: prof_factor = 0
-                        
-                        # 7. Global Brain ML Prediction
-                        ml_pred = qs.get_ml_prediction()
-                        ml_prob = ml_pred.get('prob', 50)
-                        ml_type = ml_pred.get('type', 'N/A')
-                        
-                        # 8. Antigrav & Verdict (V30 Unified)
-                        alpha = qs.calculate_antigravity_score(
-                            win_rate, prof_factor, ai_ret, 
-                            whale.get('whale_score',0),
-                            sector_data=sector_data,
-                            macro_status=macro['status']
-                        )
-                        
-                        curr_price = latest['Close']
-                        verdict = qs.get_final_verdict(curr_price, ai_res, alpha, macro['status'], rs.get('score',0))
-                        setup = qs.get_trade_setup()
-                        
-                        return {
-                            "Ticker": ticker,
-                            "Price": curr_price,
-                            "Decision": verdict['decision'],
-                            "Confidence": verdict['confidence'],
-                            "Antigravity Score": alpha,
-                            "AI Prob": f"{ml_prob:.1f}%",
-                            "AI Type": ml_type,
-                            "Sector Leader": "👑" if sector_data.get('is_leader') else "",
-                            "AI Return": f"{ai_ret:.1f}%",
-                            "Whale Score": whale.get('whale_score', 0),
-                            "Entry Zone": f"{setup.get('Entry Min',0):.0f}~{setup.get('Entry Max',0):.0f}",
-                            "Target": setup.get('Target Price', 0),
-                            "Risk/Reward": setup.get('Risk/Reward', 'N/A')
-                        }
-                    except Exception as e:
-                        return {"error": str(e), "ticker": ticker}
-
-                # Run in Threads
-                with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-                    futures = {executor.submit(process_ticker, t): t for t in tickers}
-                    
-                    for i, future in enumerate(concurrent.futures.as_completed(futures)):
-                        ticker = futures[future]
-                        try:
-                            data = future.result()
-                            if data:
-                                if "error" in data:
-                                    with log_container:
-                                        st.error(f"❌ {data['ticker']} 분석 실패: {data['error']}")
-                                        print(f"Error {data['ticker']}: {data['error']}")
-                                else:
-                                    results.append(data)
-                        except Exception as e:
-                             with log_container:
-                                st.error(f"❌ {ticker} 실행 중 에러: {e}")
-                        
-                        progress_bar.progress((i + 1) / len(tickers))
-                        status_text.text(f"Analyzing... [{i+1}/{len(tickers)}] {ticker} Completed")
-                    
-                st.success(f"✅ 분석 완료! ({len(results)}/{len(tickers)} 성공)")
-                
-                if results:
-                    df_res = pd.DataFrame(results)
-                    
-                    # Style the dataframe?
-                    # Color map for Decision
-                    def color_decision(val):
-                        color = 'white'
-                        if 'BUY' in val: color = '#90EE90' # Light Green
-                        elif 'SELL' in val: color = '#FFB6C1' # Light Red
-                        elif 'HOLD' in val: color = '#FFE4B5' # Moccasin
-                        return f'background-color: {color}; color: black'
-                        
-                    st.dataframe(df_res.style.applymap(color_decision, subset=['Decision']), width='stretch')
-                    
-                    # CSV Download
-                    csv = df_res.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 분석 결과 다운로드 (CSV)", csv, "deep_dive_batch_results.csv", "text/csv")
-
-        except Exception as e:
-            st.error(f"파일 처리 에러: {e}")
 
 # TAB 1: MARKET SCANNER
 if active_main_tab == "🚀 스캐너":
@@ -4038,61 +3670,15 @@ if active_main_tab == "📚 아카이브":
                     _day_df['최고 수익률(%)'] = _day_df['ticker'].map(_max_perf_map)
                     _day_df['현재 수익률(%)'] = _day_df['ticker'].map(_curr_perf_map)
 
-                # ── 아카이브 핵심 컬럼 + 한글 rename + column_config 툴팁 ──
-                _ARCHIVE_COLS = [
-                    ('tier',                    '등급',       'T0=초강력 / T1=강력 / T2=관심 / T3=참고'),
-                    ('ticker',                  '코드',       None),
-                    ('stock_name',              '종목명',     None),
-                    ('market_type',             '시장',       'KOSPI / KOSDAQ / NASDAQ / AMEX'),
-                    ('scan_mode',               '모드',       'SWING=스윙(3~5일) / INTRADAY=장중(1일)'),
-                    ('decision_score',          'Decision점수','Antigrav + AI확률 + 추세 + 수급 가중 합산 스코어'),
-                    ('alpha_score',             'Antigrav',   '기술적 모멘텀·섹터 강도·AI기대수익 합산 동력 지수 (0~100). 70+이면 강세'),
-                    ('ml_prob',                 'AI확률(%)',  'ML 모델이 예측한 5% 이상 달성 확률. 58% 이상이 진입 기준'),
-                    ('whale_score',             '수급점수',   '기관·외국인 수급 강도 지수 (0~100). 60 이상이면 수급 유입 신호'),
-                    ('trend',                   '추세',       'UP=상승 / SIDE=횡보 / DOWN=하락'),
-                    ('position',                '포지션',     '가격 위치 (Peak=천장권 / Rising=상승중 / Resting=눌림목)'),
-                    ('primary_theme',           '대표테마',   '스캔 시점의 주도 테마'),
-                    ('outcome_status',          '성과상태',   '실현된 성과 (HIT=목표달성 / MISS=미달 / PENDING=미확인)'),
-                    ('decision',                'Planner판정','플래너가 최종 매수 추천했는지 여부'),
-                    ('expected_return_1d_pct',  '예상1D(%)',  '스캐너 예측 1일 기대수익률'),
-                    ('expected_return_3d_pct',  '예상3D(%)',  '스캐너 예측 3일 기대수익률'),
-                    ('return_1d_pct',           '1D실적(%)',  '스캔 다음날 실제 수익률'),
-                    ('return_3d_pct',           '3D실적(%)',  '스캔 3일 후 실제 수익률'),
-                    ('return_5d_pct',           '5D실적(%)',  '스캔 5일 후 실제 수익률'),
-                    ('return_7d_pct',           '7D실적(%)',  '스캔 7일 후 실제 수익률'),
-                    ('latest_return_pct',       '현재수익률(%)','가장 최근 측정된 실제 수익률'),
-                    ('created_at_kst',          '스캔시각',   '스캔이 실행된 한국 시간'),
-                ]
-                if (not _has_stored_returns) and _show_perf and '최고 수익률(%)' in _day_df.columns:
-                    _ARCHIVE_COLS += [
-                        ('최고 수익률(%)', '최고수익(%)', '스캔 이후 최고점 수익률 (yfinance 조회)'),
-                        ('현재 수익률(%)', '현재수익(%)', '현재 주가 기준 수익률 (yfinance 조회)'),
-                    ]
-
-                _arc_raw_cols = [c for c, _, _ in _ARCHIVE_COLS if c in _day_df.columns]
-                _arc_rename   = {c: kr for c, kr, _ in _ARCHIVE_COLS}
-                _arc_col_cfg  = {
-                    kr: st.column_config.NumberColumn(kr, help=tip, format="%.2f")
-                         if tip and any(kw in c for kw in ('pct', '수익')) else
-                         st.column_config.TextColumn(kr, help=tip) if tip else None
-                    for c, kr, tip in _ARCHIVE_COLS
-                }
-                _arc_col_cfg = {k: v for k, v in _arc_col_cfg.items() if v is not None}
-
-                _show_df = _day_df[_arc_raw_cols].rename(columns=_arc_rename)
-
-                # --- TOP 5 vs OTHERS SPLIT ---
                 st.divider()
                 st.markdown(f"### 🔥 Top 5 — {_selected_date}")
-                _top5 = _show_df.head(5).copy()
-                st.dataframe(_top5, column_config=_arc_col_cfg,
-                             use_container_width=True, hide_index=True)
+                _archive_signal_rows = build_signal_display_rows(_day_df.to_dict("records"))
+                _render_signal_card_list(_archive_signal_rows[:5])
 
                 st.divider()
                 st.markdown("### 📋 기타 후보")
-                if len(_show_df) > 5:
-                    st.dataframe(_show_df.iloc[5:].copy(), column_config=_arc_col_cfg,
-                                 use_container_width=True, hide_index=True)
+                if len(_archive_signal_rows) > 5:
+                    _render_signal_card_list(_archive_signal_rows[5:])
                 else:
                     st.info("Top 5 외에 추가 종목이 없습니다.")
 

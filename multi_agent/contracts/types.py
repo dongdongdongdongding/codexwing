@@ -160,6 +160,15 @@ class PlannerDecision:
     expected_edge_score: Optional[float] = None
     expected_return_1d_pct: Optional[float] = None
     expected_return_3d_pct: Optional[float] = None
+    model_prob_available_count: Optional[float] = None
+    model_prob_mean: Optional[float] = None
+    low_model_prob_score: Optional[float] = None
+    low_prob_high_score: Optional[float] = None
+    expected_edge_inversion_score: Optional[float] = None
+    relative_rank_score: Optional[float] = None
+    relative_rank_pct: Optional[float] = None
+    regime_adjusted_grade: str = ""
+    relative_rank_model: str = ""
     quant_priority_score: Optional[float] = None
     quant_score_1d: Optional[float] = None
     quant_score_3d: Optional[float] = None

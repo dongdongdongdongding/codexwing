@@ -564,6 +564,8 @@ class DBManager:
                     "return_3d_pct": row.get("return_3d_pct"),
                     "return_5d_pct": row.get("return_5d_pct"),
                     "return_7d_pct": row.get("return_7d_pct"),
+                    "return_14d_pct": row.get("return_14d_pct"),
+                    "return_30d_pct": row.get("return_30d_pct"),
                     "quant_priority_score": row.get("quant_priority_score"),
                     "quant_score_1d": row.get("quant_score_1d"),
                     "quant_score_3d": row.get("quant_score_3d"),

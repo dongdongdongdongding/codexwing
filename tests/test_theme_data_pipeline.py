@@ -6,6 +6,7 @@ import pandas as pd
 from modules.theme_catalog import resolve_theme_memberships
 from modules.theme_data_pipeline import (
     build_catalog_from_membership_payload,
+    build_theme_distribution_summary,
     build_instrument_master_payload,
     build_theme_membership_payload,
 )
@@ -134,6 +135,74 @@ class ThemeResolutionTests(unittest.TestCase):
         self.assertEqual(rows[0]["theme_name"], "반도체")
         self.assertEqual(rows[0]["theme_source"], "stock_master")
         self.assertEqual(rows[0]["official_industry"], "반도체 제조업")
+
+
+class ThemeDistributionSummaryTests(unittest.TestCase):
+    def test_build_theme_distribution_summary_filters_market_scope_and_merges_theme_state(self):
+        membership_payload = {
+            "records": [
+                {
+                    "symbol": "005930.KS",
+                    "market_scope": "KOSPI",
+                    "name": "삼성전자",
+                    "primary_theme": "반도체",
+                    "memberships": [{"confidence": 0.95, "theme_source": "stock_master"}],
+                    "official_classification": {
+                        "official_industry": "반도체 제조업",
+                        "official_products": "메모리 반도체",
+                    },
+                },
+                {
+                    "symbol": "000660.KS",
+                    "market_scope": "KOSPI",
+                    "name": "SK하이닉스",
+                    "primary_theme": "반도체",
+                    "memberships": [{"confidence": 0.92, "theme_source": "stock_master"}],
+                    "official_classification": {
+                        "official_industry": "반도체 제조업",
+                        "official_products": "메모리 반도체",
+                    },
+                },
+                {
+                    "symbol": "247540.KQ",
+                    "market_scope": "KOSDAQ",
+                    "name": "에코프로비엠",
+                    "primary_theme": "2차전지",
+                    "memberships": [{"confidence": 0.90, "theme_source": "stock_master"}],
+                    "official_classification": {
+                        "official_industry": "축전지 제조업",
+                        "official_products": "양극재",
+                    },
+                },
+            ]
+        }
+        intel_data = {
+            "theme_states": [
+                {
+                    "theme_name": "반도체",
+                    "direction": "BENEFICIARY",
+                    "strength_score": 24.0,
+                    "momentum_class": "ACCELERATING",
+                }
+            ]
+        }
+        summary = build_theme_distribution_summary(
+            "KOSPI",
+            membership_payload=membership_payload,
+            intel_data=intel_data,
+            day_return_map={"005930.KS": 1.2, "000660.KS": -0.8},
+        )
+        self.assertEqual(summary["total_symbols"], 2)
+        self.assertEqual(summary["classified_symbols"], 2)
+        self.assertEqual(summary["rows"][0]["theme_name"], "반도체")
+        self.assertEqual(summary["rows"][0]["direction"], "BENEFICIARY")
+        self.assertEqual(summary["rows"][0]["symbol_count"], 2)
+        self.assertAlmostEqual(summary["rows"][0]["avg_day_return_pct"], 0.2, places=4)
+        self.assertEqual(summary["rows"][0]["return_coverage"], 2)
+        self.assertAlmostEqual(summary["rows"][0]["positive_ratio"], 0.5, places=4)
+        self.assertEqual(summary["rows"][0]["symbols"][0]["symbol"], "005930.KS")
+        self.assertIn("day_return_pct", summary["rows"][0]["symbols"][0])
+        self.assertEqual(len(summary["rows"][0]["symbols"]), 2)
 
 
 if __name__ == "__main__":

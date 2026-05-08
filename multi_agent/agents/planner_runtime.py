@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from multi_agent.contracts.types import PlannerDecision, PlannerHandoff, RunContext, WarningItem
 from modules.horizon_policy import resolve_horizon_policy
+from modules.inverted_signal_features import compute_low_prob_high_score_features
 from multi_agent.agents.kr_quant_reranker import (
     compute_kr_basket_priority,
     compute_kr_quant_rerank,
@@ -209,6 +210,9 @@ def _apply_kosdaq_swing_gate(
     recommended_threshold: float | None,
     prob_clean: Any,
     real_trend: str,
+    alpha_score: Any = None,
+    low_model_prob_score: float | None = None,
+    low_prob_high_score: float | None = None,
     rationale: List[str],
     theme_risk: List[str],
 ) -> str:
@@ -227,10 +231,38 @@ def _apply_kosdaq_swing_gate(
         clean_prob = float(prob_clean) if prob_clean not in (None, "") else None
     except Exception:
         clean_prob = None
+    try:
+        alpha = float(alpha_score) if alpha_score not in (None, "") else None
+    except Exception:
+        alpha = None
+
+    # 2026-05-08 swing-main-sl3: KR swing archive showed model probability is
+    # inverted in the current regime. Do not promote this to PRIORITY by itself,
+    # but also do not hard-AVOID a trend-up, high-alpha candidate solely because
+    # phase25 is low when the explicit inverted-prob features match validated
+    # subsets (low_model_prob_score>=25: win 66.37%, avg +6.14%).
+    inversion_override = (
+        str(real_trend or "").upper() == "UP"
+        and alpha is not None
+        and alpha >= 75.0
+        and low_model_prob_score is not None
+        and low_model_prob_score >= 25.0
+        and low_prob_high_score is not None
+        and low_prob_high_score >= 40.0
+    )
 
     if gap >= PHASE25_DOWNGRADE_HARD_GAP:
-        decision = "AVOID"
-        theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_HARD")
+        if inversion_override:
+            decision = _decision_from_rank(max(1, _decision_rank(decision) - 1))
+            theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE")
+            rationale.append(
+                "kosdaq_swing_inverted_prob_override:"
+                f"alpha={alpha:.1f},low_model={low_model_prob_score:.1f},"
+                f"low_prob_high={low_prob_high_score:.1f}"
+            )
+        else:
+            decision = "AVOID"
+            theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_HARD")
     elif gap >= PHASE25_DOWNGRADE_SOFT_GAP:
         decision = _decision_from_rank(max(0, _decision_rank(decision) - 1))
         theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_SOFT")
@@ -604,6 +636,100 @@ def _to_warning_items(raw_warnings: Any) -> List[WarningItem]:
     return items
 
 
+def _candidate_market(cand: Dict[str, Any], run_market: str) -> str:
+    feature_snapshot = cand.get("feature_snapshot", {}) if isinstance(cand.get("feature_snapshot"), dict) else {}
+    ticker = str(cand.get("ticker") or feature_snapshot.get("ticker") or "").upper()
+    market = str(feature_snapshot.get("market") or cand.get("market") or run_market or "").upper()
+    if ticker.endswith(".KS"):
+        return "KOSPI"
+    if ticker.endswith(".KQ"):
+        return "KOSDAQ"
+    if market in {"KOSPI", "KOSDAQ"}:
+        return market
+    return market or "UNKNOWN"
+
+
+def _candidate_feature_float(cand: Dict[str, Any], key: str) -> Optional[float]:
+    feature_snapshot = cand.get("feature_snapshot", {}) if isinstance(cand.get("feature_snapshot"), dict) else {}
+    for source in (feature_snapshot, cand):
+        value = source.get(key) if isinstance(source, dict) else None
+        if value in (None, ""):
+            continue
+        try:
+            return float(value)
+        except Exception:
+            continue
+    return None
+
+
+def _relative_rank_score(cand: Dict[str, Any], market: str) -> tuple[Optional[float], str]:
+    feature_snapshot = cand.get("feature_snapshot", {}) if isinstance(cand.get("feature_snapshot"), dict) else {}
+    if market == "KOSPI":
+        value = _candidate_feature_float(cand, "decision_score")
+        if value is None:
+            value = _candidate_feature_float(cand, "score")
+        return value, "kospi_decision_score_relative_v1"
+    if market == "KOSDAQ":
+        inverted = compute_low_prob_high_score_features(
+            alpha_score=_candidate_feature_float(cand, "alpha_score"),
+            tech_score=_candidate_feature_float(cand, "tech_score"),
+            ml_prob=_candidate_feature_float(cand, "prob_5") or _candidate_feature_float(cand, "ml_prob"),
+            prob_clean=_candidate_feature_float(cand, "prob_clean"),
+            phase25_prob=_candidate_feature_float(cand, "phase25_prob"),
+            expected_edge_score=_candidate_feature_float(cand, "expected_edge_score"),
+        )
+        low_model = _candidate_feature_float(cand, "low_model_prob_score")
+        low_prob_high = _candidate_feature_float(cand, "low_prob_high_score")
+        tech = _candidate_feature_float(cand, "tech_score")
+        alpha = _candidate_feature_float(cand, "alpha_score")
+        low_model = inverted["low_model_prob_score"] if low_model is None else low_model
+        low_prob_high = inverted["low_prob_high_score"] if low_prob_high is None else low_prob_high
+        pieces = [
+            (tech, 0.40),
+            (low_model, 0.40),
+            (low_prob_high, 0.20),
+        ]
+        total = sum(weight for value, weight in pieces if value is not None)
+        if total <= 0:
+            return None, "kosdaq_inverted_prob_relative_v1"
+        score = sum(float(value) * weight for value, weight in pieces if value is not None) / total
+        return score, "kosdaq_inverted_prob_relative_v1"
+    value = _candidate_feature_float(cand, "decision_score")
+    if value is None:
+        value = _candidate_feature_float(cand, "score")
+    return value, "generic_decision_score_relative_v1"
+
+
+def _grade_from_relative_pct(rank_pct: Optional[float]) -> str:
+    if rank_pct is None:
+        return ""
+    if rank_pct <= 0.15:
+        return "RELATIVE_PRIORITY"
+    if rank_pct <= 0.30:
+        return "RELATIVE_WATCHLIST"
+    return "RELATIVE_OBSERVE"
+
+
+def _attach_relative_ranks(candidates: List[Dict[str, Any]], run_market: str) -> None:
+    groups: Dict[str, List[Dict[str, Any]]] = {}
+    for cand in candidates:
+        market = _candidate_market(cand, run_market)
+        score, model = _relative_rank_score(cand, market)
+        cand["_relative_market"] = market
+        cand["_relative_rank_score"] = score
+        cand["_relative_rank_model"] = model
+        groups.setdefault(market, []).append(cand)
+
+    for rows in groups.values():
+        scored = [row for row in rows if row.get("_relative_rank_score") is not None]
+        scored.sort(key=lambda row: float(row.get("_relative_rank_score") or 0.0), reverse=True)
+        n = len(scored)
+        for pos, row in enumerate(scored, start=1):
+            rank_pct = float(pos - 1) / max(n - 1, 1)
+            row["_relative_rank_pct"] = round(rank_pct, 6)
+            row["_regime_adjusted_grade"] = _grade_from_relative_pct(rank_pct)
+
+
 def build_planner_handoff(
     context: RunContext,
     candidates: List[Dict[str, Any]],
@@ -618,6 +744,7 @@ def build_planner_handoff(
     active_lane = resolve_kr_active_lane(ranked_candidates, run_market)
     for cand in ranked_candidates:
         cand["_basket_priority"] = compute_kr_basket_priority(cand, run_market, active_lane)
+    _attach_relative_ranks(ranked_candidates, run_market)
 
     def _order_key(row: Dict[str, Any]) -> tuple[float, float, float]:
         basket_meta = row.get("_basket_priority", {}) if isinstance(row.get("_basket_priority"), dict) else {}
@@ -715,6 +842,33 @@ def build_planner_handoff(
         expected_edge_score = feature_snapshot.get("expected_edge_score")
         expected_return_1d_pct = feature_snapshot.get("expected_return_1d_pct")
         expected_return_3d_pct = feature_snapshot.get("expected_return_3d_pct")
+        inverted_signal_features = compute_low_prob_high_score_features(
+            alpha_score=alpha_score,
+            tech_score=feature_snapshot.get("tech_score"),
+            ml_prob=prob_5,
+            prob_clean=prob_clean,
+            phase25_prob=phase25_prob,
+            expected_edge_score=expected_edge_score,
+        )
+
+        def _snapshot_or_inverted_float(name: str) -> Optional[float]:
+            value = feature_snapshot.get(name, inverted_signal_features.get(name))
+            if value in (None, ""):
+                return None
+            try:
+                return float(value)
+            except Exception:
+                return None
+
+        model_prob_available_count = _snapshot_or_inverted_float("model_prob_available_count")
+        model_prob_mean = _snapshot_or_inverted_float("model_prob_mean")
+        low_model_prob_score = _snapshot_or_inverted_float("low_model_prob_score")
+        low_prob_high_score = _snapshot_or_inverted_float("low_prob_high_score")
+        expected_edge_inversion_score = _snapshot_or_inverted_float("expected_edge_inversion_score")
+        relative_rank_score = cand.get("_relative_rank_score")
+        relative_rank_pct = cand.get("_relative_rank_pct")
+        regime_adjusted_grade = str(cand.get("_regime_adjusted_grade") or "")
+        relative_rank_model = str(cand.get("_relative_rank_model") or "")
         try:
             target_horizon_days = int(feature_snapshot.get("phase25_target_horizon_days") or 0)
         except Exception:
@@ -760,6 +914,19 @@ def build_planner_handoff(
             rationale.extend([f"explosive_gate={str(x)}" for x in explosive_gate_reasons[:3]])
         if continuation_gate_reasons:
             rationale.extend([f"continuation_gate={str(x)}" for x in continuation_gate_reasons[:3]])
+        if low_model_prob_score is not None or low_prob_high_score is not None:
+            rationale.append(
+                "inverted_prob_features:"
+                f"available={float(model_prob_available_count or 0.0):.0f},"
+                f"mean={float(model_prob_mean or 0.0):.1f},"
+                f"low_model={float(low_model_prob_score or 0.0):.1f},"
+                f"low_prob_high={float(low_prob_high_score or 0.0):.1f}"
+            )
+        if regime_adjusted_grade:
+            rationale.append(
+                f"relative_rank={regime_adjusted_grade}:pct={float(relative_rank_pct or 0.0):.3f},"
+                f"score={float(relative_rank_score or 0.0):.1f},model={relative_rank_model}"
+            )
         theme_rationale: List[str] = []
         theme_risk: List[str] = []
         primary_theme = str(theme_context.get("primary_theme") or "").strip()
@@ -822,6 +989,9 @@ def build_planner_handoff(
             recommended_threshold=recommended_threshold,
             prob_clean=prob_clean,
             real_trend=real_trend,
+            alpha_score=alpha_score,
+            low_model_prob_score=low_model_prob_score,
+            low_prob_high_score=low_prob_high_score,
             rationale=rationale,
             theme_risk=theme_risk,
         )
@@ -915,6 +1085,15 @@ def build_planner_handoff(
             expected_edge_score=float(expected_edge_score) if expected_edge_score not in (None, "") else None,
             expected_return_1d_pct=float(expected_return_1d_pct) if expected_return_1d_pct not in (None, "") else None,
             expected_return_3d_pct=float(expected_return_3d_pct) if expected_return_3d_pct not in (None, "") else None,
+            model_prob_available_count=model_prob_available_count,
+            model_prob_mean=model_prob_mean,
+            low_model_prob_score=low_model_prob_score,
+            low_prob_high_score=low_prob_high_score,
+            expected_edge_inversion_score=expected_edge_inversion_score,
+            relative_rank_score=float(relative_rank_score) if relative_rank_score not in (None, "") else None,
+            relative_rank_pct=float(relative_rank_pct) if relative_rank_pct not in (None, "") else None,
+            regime_adjusted_grade=regime_adjusted_grade,
+            relative_rank_model=relative_rank_model,
             quant_priority_score=round(float(basket_priority_score), 3),
             quant_score_1d=round(float(quant_score_1d), 3),
             quant_score_3d=round(float(quant_score_3d), 3),
@@ -975,6 +1154,15 @@ def build_planner_handoff(
                     "continuation_gate_reasons": continuation_gate_reasons,
                     "expected_return_1d_pct": float(expected_return_1d_pct) if expected_return_1d_pct not in (None, "") else None,
                     "expected_return_3d_pct": float(expected_return_3d_pct) if expected_return_3d_pct not in (None, "") else None,
+                    "model_prob_available_count": model_prob_available_count,
+                    "model_prob_mean": model_prob_mean,
+                    "low_model_prob_score": low_model_prob_score,
+                    "low_prob_high_score": low_prob_high_score,
+                    "expected_edge_inversion_score": expected_edge_inversion_score,
+                    "relative_rank_score": float(relative_rank_score) if relative_rank_score not in (None, "") else None,
+                    "relative_rank_pct": float(relative_rank_pct) if relative_rank_pct not in (None, "") else None,
+                    "regime_adjusted_grade": regime_adjusted_grade or None,
+                    "relative_rank_model": relative_rank_model or None,
                     "primary_theme": primary_theme or None,
                     "theme_routing_path": str(cand.get("routing_path") or theme_context.get("routing_path") or ""),
                     "reason": "planner_lane_watchlist",

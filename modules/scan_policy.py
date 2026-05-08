@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from datetime import datetime
+from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
 from modules.market_data import get_history
+
+_BREADTH_CACHE: Dict[str, Tuple[datetime, float]] = {}
+_BREADTH_TTL_SECONDS = 900  # 15 minutes
 
 
 def _last_two_valid_closes(df: pd.DataFrame) -> tuple[float | None, float | None]:
@@ -114,6 +118,67 @@ def _gate_benchmarks(market: str) -> Dict[str, Any]:
     }
 
 
+def _compute_index_volatility_20d(symbol: str) -> float | None:
+    try:
+        hist = get_history(symbol, period="60d", interval="1d")
+        if hist is None or hist.empty or "Close" not in hist.columns:
+            return None
+        closes = pd.to_numeric(hist["Close"], errors="coerce").dropna()
+        if len(closes) < 10:
+            return None
+        returns = closes.pct_change().dropna().tail(20)
+        if returns.empty:
+            return None
+        return float(returns.std() * 100.0)
+    except Exception:
+        return None
+
+
+def _compute_kr_breadth_pct(region: str) -> Optional[float]:
+    """Percent of KOSPI+KOSDAQ constituents with positive daily returns.
+
+    Cached 15min. Uses FinanceDataReader StockListing (ChagesRatio).
+    Returns None on failure or non-KR regions.
+    """
+    if str(region or "").upper() != "KR":
+        return None
+    cache_key = "KR"
+    cached = _BREADTH_CACHE.get(cache_key)
+    if cached is not None:
+        ts, value = cached
+        if (datetime.utcnow() - ts).total_seconds() < _BREADTH_TTL_SECONDS:
+            return value
+    try:
+        import FinanceDataReader as fdr  # type: ignore
+        frames = []
+        for market in ("KOSPI", "KOSDAQ"):
+            try:
+                df = fdr.StockListing(market)
+            except Exception:
+                continue
+            if df is None or df.empty:
+                continue
+            frames.append(df)
+        if not frames:
+            return None
+        combined = pd.concat(frames, axis=0, ignore_index=True)
+        col = None
+        for candidate in ("ChagesRatio", "ChangesRatio", "등락률"):
+            if candidate in combined.columns:
+                col = candidate
+                break
+        if col is None:
+            return None
+        series = pd.to_numeric(combined[col], errors="coerce").dropna()
+        if series.empty:
+            return None
+        breadth = float((series > 0).sum() / len(series) * 100.0)
+        _BREADTH_CACHE[cache_key] = (datetime.utcnow(), breadth)
+        return breadth
+    except Exception:
+        return None
+
+
 def compute_market_gate(market: str = "KOSPI") -> Dict[str, Any]:
     """Market gate aligned to the selected market's regional benchmarks."""
     try:
@@ -127,6 +192,8 @@ def compute_market_gate(market: str = "KOSPI") -> Dict[str, Any]:
         primary_chg = float(primary_detail.get("change_pct", 0.0) or 0.0)
         secondary_chg = float(secondary_detail.get("change_pct", 0.0) or 0.0)
         avg_chg = (primary_chg + secondary_chg) / 2
+        volatility_20d = _compute_index_volatility_20d(primary_symbol)
+        breadth_pct = _compute_kr_breadth_pct(region)
         live_tag = "장중" if live_mode_enabled(region) else "종가"
         source_parts = [
             str(primary_detail.get("source") or "unknown"),
@@ -169,6 +236,9 @@ def compute_market_gate(market: str = "KOSPI") -> Dict[str, Any]:
             # Backward-compatible KR keys used by older summaries.
             "kospi_chg": primary_chg if primary_label == "KOSPI" else 0.0,
             "kosdaq_chg": secondary_chg if secondary_label == "KOSDAQ" else 0.0,
+            # Regime snapshot (2026-04-22): 20-day return std of primary index.
+            "volatility_20d": volatility_20d,
+            "breadth_pct": breadth_pct,
         }
     except Exception as exc:
         return {

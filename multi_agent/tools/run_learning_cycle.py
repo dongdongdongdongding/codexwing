@@ -13,6 +13,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+RETRAIN_REPORT_PATH = PROJECT_ROOT / "runtime_state" / "reports" / "learning" / "retrain_v2_report.json"
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -118,7 +119,7 @@ def _run_command(cmd: List[str], cwd: Path) -> Dict[str, Any]:
             text=True,
             timeout=60 * 60,
         )
-        return {
+        result = {
             "cmd": cmd,
             "returncode": int(proc.returncode),
             "stdout_tail": "\n".join(proc.stdout.splitlines()[-40:]),
@@ -127,6 +128,12 @@ def _run_command(cmd: List[str], cwd: Path) -> Dict[str, Any]:
             "finished_at": datetime.now(timezone.utc).isoformat(),
             "ok": proc.returncode == 0,
         }
+        if cmd and str(cmd[-1]).endswith("retrain_ml.py") and RETRAIN_REPORT_PATH.exists():
+            retrain_report = _load_json(RETRAIN_REPORT_PATH)
+            result["semantic_status"] = retrain_report.get("execution_status")
+            result["defer_reason"] = retrain_report.get("defer_reason")
+            result["last_successful_model_train_at"] = retrain_report.get("last_successful_model_train_at")
+        return result
     except Exception as e:
         return {
             "cmd": cmd,
@@ -241,7 +248,15 @@ def run_learning_cycle(
             )
             commands.append(_run_command(["python3", "retrain_ml.py"], PROJECT_ROOT))
             action = "weekly_retrain"
-            reason = "weekly_retrain_executed" if all(cmd.get("ok") for cmd in commands) else "weekly_retrain_failed"
+            retrain_cmd = next((cmd for cmd in commands if str((cmd.get("cmd") or [""])[-1]).endswith("retrain_ml.py")), {})
+            if all(cmd.get("ok") for cmd in commands):
+                reason = (
+                    "weekly_retrain_deferred_not_failed"
+                    if retrain_cmd.get("semantic_status") == "deferred_not_failed"
+                    else "weekly_retrain_executed"
+                )
+            else:
+                reason = "weekly_retrain_failed"
         report = {
             "mode": mode,
             "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -257,7 +272,11 @@ def run_learning_cycle(
             "commands": commands,
         }
         state["last_weekly_run_at"] = report["generated_at"]
-        if action == "weekly_retrain" and all(cmd.get("ok") for cmd in commands):
+        if (
+            action == "weekly_retrain"
+            and all(cmd.get("ok") for cmd in commands)
+            and retrain_cmd.get("semantic_status") != "deferred_not_failed"
+        ):
             state["last_weekly_resolved_total"] = total_resolved
             state["last_weekly_train_at"] = report["generated_at"]
 

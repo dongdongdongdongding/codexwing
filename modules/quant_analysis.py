@@ -44,6 +44,7 @@ except Exception as e:
 import pandas_ta_classic as ta
 import joblib # Phase 34: Universal Model Persistence
 import time
+from modules.inverted_signal_features import compute_low_prob_high_score_features
 from modules.live_scan_context import live_mode_enabled
 from modules.market_data import get_history
 
@@ -1539,8 +1540,8 @@ class QuantStrategy:
                 res['5pct_clean'] = None
                 
             # --- Phase 25 Model Overlay ---
-            # KR swing prefers the benchmark winner (XGBoost), keeps LightGBM
-            # as shadow comparison, and falls back to the generic v2 bundle.
+            # KR swing follows the latest benchmark order. Do not force a boost
+            # family model when the holdout evidence currently favors logistic.
             try:
                 phase25_load_errors = []
 
@@ -1566,20 +1567,15 @@ class QuantStrategy:
                 _market_tag = "kospi" if _is_kospi_ticker else ("kosdaq" if _is_kosdaq_ticker else None)
                 primary_candidates = []
                 shadow_candidates = []
-                # 2026-05-08 (swing-main-01i): horizon 진단 quintile 분석에서
-                # phase25_kospi_swing은 prob 정렬 효과 +0.6pp(무용), phase25_kosdaq_swing은
-                # -14.2pp(INVERTED). phase25_kospi_intraday는 insufficient_rows로 학습 실패,
-                # phase25_kosdaq_intraday는 raw_auc 0.27(랜덤 미만). 단일 segment 모델 4개 모두
-                # production에서 신호 못 만든다. 반면 phase25_kr_*_xgboost 통합 모델은 정렬
-                # +8~+15pp 작동. primary 순서를 통합 모델 우선으로 변경하고 단일 모델은
-                # 마지막 fallback으로만 둔다 (legacy 호환).
+                # 2026-05-08 (swing-main-01i/sl3): segment swing models were
+                # weak/inverted. The unified KR swing benchmark remains primary,
+                # but the current 5D holdout ranks logistic first by avg return.
                 if is_kr and scan_mode == "SWING":
                     primary_candidates = [
+                        os.path.join(models_dir, "phase25_kr_swing_logistic.pkl"),
+                        os.path.join(models_dir, "phase25_kr_swing_lightgbm.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
-                        # 2026-05-08: dedup 후 logistic이 best_avg 6.29% / win 58.6%로
-                        # boost 계열보다 약간 우수. xgboost/histgb 부재 시 fallback.
-                        os.path.join(models_dir, "phase25_kr_swing_logistic.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing.pkl"),
                         os.path.join(models_dir, "phase25_model.pkl"),
                     ]
@@ -1589,7 +1585,7 @@ class QuantStrategy:
                     if _market_tag:
                         primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_swing.pkl"))
                     shadow_candidates = [
-                        os.path.join(models_dir, "phase25_kr_swing_lightgbm.pkl"),
+                        os.path.join(models_dir, "phase25_kr_swing_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
                     ]
                 elif is_kr and scan_mode == "INTRADAY":
@@ -1840,6 +1836,16 @@ class QuantStrategy:
                         "whale_low": int(_whale_score <= 35),
                         "whale_very_low": int(_whale_score <= 25),
                     }
+                    _p25_row.update(
+                        compute_low_prob_high_score_features(
+                            alpha_score=_alpha_raw,
+                            tech_score=_alpha_raw,
+                            ml_prob=_base_prob,
+                            prob_clean=_clean_prob,
+                            phase25_prob=None,
+                            expected_edge_score=None,
+                        )
+                    )
                     _p25_df = pd.DataFrame([_p25_row])
                     _p25_X = _p25_df.reindex(columns=p25_feats, fill_value=0).fillna(0)
                     _p25_prob_raw = float(p25_model.predict_proba(_transform_with_optional_scaler(_p25_X, p25_scaler))[0][1] * 100)
