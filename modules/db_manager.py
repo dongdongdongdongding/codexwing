@@ -298,9 +298,37 @@ class DBManager:
                 delete_query = delete_query.gte("created_at", today_start)
             delete_query.execute()
 
-            # Now insert fresh
-            self.client.table("market_scan_results").insert(payload).execute()
-            print(f"☁️ DB Upserted: {data.get('name', ticker)} [{data.get('market_type')}]")
+            # 2026-05-08: market_scan_results_unique_pick (ticker, recommended_at::date,
+            # market, scan_mode) UNIQUE 인덱스가 active. 위 delete가 다른 run_id의
+            # 같은 (ticker, date, market, scan_mode) 행을 못 잡으면 INSERT가 23505로
+            # 실패. 그 경우 같은 키의 기존 행을 UPDATE로 보존.
+            try:
+                self.client.table("market_scan_results").insert(payload).execute()
+                print(f"☁️ DB Upserted: {data.get('name', ticker)} [{data.get('market_type')}]")
+            except Exception as ie:
+                if "23505" in str(ie) or "duplicate key" in str(ie):
+                    rec_at = payload.get("recommended_at") or payload.get("created_at")
+                    rec_date = str(rec_at)[:10] if rec_at else None
+                    market_val = payload.get("market")
+                    mode_val = payload.get("scan_mode")
+                    if rec_date and market_val and mode_val:
+                        existing = (
+                            self.client.table("market_scan_results")
+                            .select("id")
+                            .eq("ticker", ticker)
+                            .eq("market", market_val)
+                            .eq("scan_mode", mode_val)
+                            .gte("recommended_at", f"{rec_date}T00:00:00")
+                            .lte("recommended_at", f"{rec_date}T23:59:59.999")
+                            .limit(1)
+                            .execute()
+                        )
+                        if existing.data:
+                            row_id = existing.data[0]["id"]
+                            self.client.table("market_scan_results").update(payload).eq("id", row_id).execute()
+                            print(f"☁️ DB Upsert→Update on conflict: {ticker} id={row_id}")
+                            return
+                raise
 
         except Exception as e:
             print(f"⚠️ DB Upsert Error: {e}")
@@ -726,8 +754,50 @@ class DBManager:
                     self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
                     merged += 1
                 else:
-                    self.client.table("market_scan_results").insert(payload).execute()
-                    inserted_stub += 1
+                    # 2026-05-08 (swing-main-9un): UNIQUE 인덱스
+                    # market_scan_results_unique_pick on (ticker,
+                    # recommended_at::date, market, scan_mode)이 active.
+                    # outcome-sync 새 stub INSERT가 같은 키 기존 행과 충돌 시
+                    # UPDATE로 fallback. 이전엔 같은 키에 stub이 반복 INSERT되어
+                    # 73% 중복(max 237회)이 누적됐음.
+                    try:
+                        self.client.table("market_scan_results").insert(payload).execute()
+                        inserted_stub += 1
+                    except Exception as ie:
+                        if "23505" in str(ie) or "duplicate key" in str(ie):
+                            rec_date = str(payload.get("recommended_at") or "")[:10]
+                            market_val = payload.get("market")
+                            mode_val = payload.get("scan_mode")
+                            if rec_date and market_val and mode_val:
+                                conflict_existing = (
+                                    self.client.table("market_scan_results")
+                                    .select("*")
+                                    .eq("ticker", ticker)
+                                    .eq("market", market_val)
+                                    .eq("scan_mode", mode_val)
+                                    .gte("recommended_at", f"{rec_date}T00:00:00")
+                                    .lte("recommended_at", f"{rec_date}T23:59:59.999")
+                                    .limit(1)
+                                    .execute()
+                                )
+                                if conflict_existing.data:
+                                    cid = conflict_existing.data[0]["id"]
+                                    consumed_row_ids.add(cid)
+                                    existing_payload = dict(conflict_existing.data[0] or {})
+                                    merged_payload = dict(existing_payload)
+                                    for key, value in payload.items():
+                                        if value is None or (isinstance(value, str) and not value.strip()):
+                                            continue
+                                        merged_payload[key] = value
+                                    merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
+                                    self.client.table("market_scan_results").update(merged_payload).eq("id", cid).execute()
+                                    merged += 1
+                                else:
+                                    raise
+                            else:
+                                raise
+                        else:
+                            raise
                 updated += 1
             except Exception as e:
                 print(f"Scan Archive Outcome Sync Error ({ticker}): {e}")

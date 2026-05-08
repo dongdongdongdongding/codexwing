@@ -70,3 +70,14 @@ ADD COLUMN IF NOT EXISTS kr_universe_role text,
 ADD COLUMN IF NOT EXISTS selection_lane text,
 ADD COLUMN IF NOT EXISTS rationale jsonb,
 ADD COLUMN IF NOT EXISTS theme_risk jsonb;
+
+-- Added 2026-05-08 (swing-main-9un). 사전 분석에서 (ticker,
+-- recommended_at::date, market, scan_mode) 키로 73% 중복 발견 (max 237회).
+-- upsert_scan_archive_outcomes의 fallback 경로가 batch 간 중복 방지를
+-- 못 해 outcome-sync가 같은 후보를 반복 INSERT. dedup_market_scan_results.py
+-- 백필로 13,532행 제거 후 unique constraint 추가하여 재발 차단.
+-- 부분 인덱스: market 또는 scan_mode가 NULL인 행은 unique 검사에서 제외
+-- (legacy NULL row가 일부 존재).
+CREATE UNIQUE INDEX IF NOT EXISTS market_scan_results_unique_pick
+  ON market_scan_results (ticker, ((recommended_at AT TIME ZONE 'UTC')::date), market, scan_mode)
+  WHERE market IS NOT NULL AND scan_mode IS NOT NULL;
