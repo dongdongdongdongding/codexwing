@@ -31,6 +31,8 @@ model_registry.json
 # Runtime artifacts
 # Keep curated fixtures/reports only when intentionally force-added.
 runtime_state/shared_working/
+runtime_state/artifacts/
+runtime_state/local_short_term/
 runtime_state/long_term/context_cache/
 runtime_state/long_term/orchestrator/
 runtime_state/long_term/outcomes/
@@ -45,6 +47,12 @@ runtime_state/reports/validation/*.json
 runtime_state/reports/validation/*.md
 !runtime_state/reports/validation/supabase_scan_data_quality.json
 !runtime_state/reports/validation/supabase_scan_data_quality.md
+
+# Catboost training artifacts (학습 부산물, repo에 keep 의미 없음)
+catboost_info/
+
+# Local scheduler lock
+.claude/scheduled_tasks.lock
 
 # Beads / Dolt files (added by bd init)
 .dolt/
