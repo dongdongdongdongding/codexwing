@@ -735,7 +735,18 @@ def _has_features(df: pd.DataFrame) -> pd.Series:
     return mask
 
 
-SEGMENTS = [
+# 2026-05-08 (swing-main-01i): horizon 진단 quintile 분석 결과 단일-segment
+# 4개 모델은 모두 production에서 신호를 못 만든다 — phase25_kospi_swing 정렬
+# +0.6pp(무용), phase25_kosdaq_swing -14.2pp(INVERTED), phase25_kospi_intraday
+# 학습 표본 부족, phase25_kosdaq_intraday raw_auc 0.27(random 미만, 4월 inverted
+# 운영 사례). 통합 모델(phase25_kr_*_xgboost) 정렬 +8~+15pp 작동.
+# 환경변수 AG_PHASE25_DISABLE_SEGMENTS=0이면 옛 동작 복원 (rollback용).
+import os as _os_for_segments
+_DISABLE_SINGLE_SEGMENTS = _os_for_segments.getenv(
+    "AG_PHASE25_DISABLE_SEGMENTS", "1"
+).strip() not in ("0", "", "false", "False")
+
+_BASE_SEGMENTS = [
     SegmentSpec(
         name="phase25_global",
         model_path="models/phase25_model.pkl",
@@ -746,6 +757,9 @@ SEGMENTS = [
         filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["return_3d_pct"].notna(),
         description="Global compatibility model using realized 3D >= +5%.",
     ),
+]
+
+_SINGLE_SEGMENT_SPECS = [
     SegmentSpec(
         name="phase25_kospi_swing",
         model_path="models/phase25_kospi_swing.pkl",
@@ -787,6 +801,8 @@ SEGMENTS = [
         description="KOSDAQ intraday model using next-day positive return (auto-inverts when val AUC<0.5).",
     ),
 ]
+
+SEGMENTS = list(_BASE_SEGMENTS) + ([] if _DISABLE_SINGLE_SEGMENTS else list(_SINGLE_SEGMENT_SPECS))
 
 
 def _choose_model_backend():

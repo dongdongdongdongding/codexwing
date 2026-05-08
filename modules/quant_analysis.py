@@ -1508,6 +1508,9 @@ class QuantStrategy:
             models_dir = os.path.join(base_dir, 'models')
             res = {}
             universal_prob = _compute_universal_prob(models_dir)
+            phase25_trace_status = None
+            phase25_error = None
+            phase25_degraded = False
             
             # --- Phase 18.2 New Models ---
             # Filter features per model's training schema; FEATURES_V5 has since
@@ -1539,6 +1542,8 @@ class QuantStrategy:
             # KR swing prefers the benchmark winner (XGBoost), keeps LightGBM
             # as shadow comparison, and falls back to the generic v2 bundle.
             try:
+                phase25_load_errors = []
+
                 def _transform_with_optional_scaler(df_in, scaler_obj):
                     if scaler_obj is None:
                         return df_in.to_numpy(dtype=float)
@@ -1549,7 +1554,8 @@ class QuantStrategy:
                         if os.path.exists(cand):
                             try:
                                 return cand, joblib.load(cand)
-                            except Exception:
+                            except Exception as exc:
+                                phase25_load_errors.append(f"{os.path.basename(cand)}:{type(exc).__name__}:{exc}")
                                 continue
                     return None, None
 
@@ -1560,31 +1566,39 @@ class QuantStrategy:
                 _market_tag = "kospi" if _is_kospi_ticker else ("kosdaq" if _is_kosdaq_ticker else None)
                 primary_candidates = []
                 shadow_candidates = []
+                # 2026-05-08 (swing-main-01i): horizon 진단 quintile 분석에서
+                # phase25_kospi_swing은 prob 정렬 효과 +0.6pp(무용), phase25_kosdaq_swing은
+                # -14.2pp(INVERTED). phase25_kospi_intraday는 insufficient_rows로 학습 실패,
+                # phase25_kosdaq_intraday는 raw_auc 0.27(랜덤 미만). 단일 segment 모델 4개 모두
+                # production에서 신호 못 만든다. 반면 phase25_kr_*_xgboost 통합 모델은 정렬
+                # +8~+15pp 작동. primary 순서를 통합 모델 우선으로 변경하고 단일 모델은
+                # 마지막 fallback으로만 둔다 (legacy 호환).
                 if is_kr and scan_mode == "SWING":
-                    primary_candidates = []
-                    if _market_tag:
-                        primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_swing.pkl"))
-                    primary_candidates += [
+                    primary_candidates = [
                         os.path.join(models_dir, "phase25_kr_swing_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing.pkl"),
                         os.path.join(models_dir, "phase25_model.pkl"),
                     ]
+                    # 단일 segment(_market_tag) 모델은 quintile 분석상 무용/inverted라
+                    # primary 후보에서 제외. 통합 모델 4종 모두 부재 시에만 마지막
+                    # fallback으로 시도.
+                    if _market_tag:
+                        primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_swing.pkl"))
                     shadow_candidates = [
                         os.path.join(models_dir, "phase25_kr_swing_lightgbm.pkl"),
                         os.path.join(models_dir, "phase25_kr_swing_histgb.pkl"),
                     ]
                 elif is_kr and scan_mode == "INTRADAY":
-                    primary_candidates = []
-                    if _market_tag:
-                        primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_intraday.pkl"))
-                    primary_candidates += [
+                    primary_candidates = [
                         os.path.join(models_dir, "phase25_kr_intraday_xgboost.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday_histgb.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday_lightgbm.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday.pkl"),
                         os.path.join(models_dir, "phase25_model.pkl"),
                     ]
+                    if _market_tag:
+                        primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_intraday.pkl"))
                     shadow_candidates = [
                         os.path.join(models_dir, "phase25_kr_intraday_histgb.pkl"),
                         os.path.join(models_dir, "phase25_kr_intraday_lightgbm.pkl"),
@@ -1754,6 +1768,9 @@ class QuantStrategy:
                     _is_kospi = int(str(self.ticker).endswith(".KS"))
                     _is_kosdaq = int(str(self.ticker).endswith(".KQ") or (str(self.ticker).isdigit() and not _is_kospi))
                     _strategy_family = str(getattr(self, "strategy_family", "") or ("KR_CORE" if is_kr else "US_MAIN")).upper()
+                    _kr_role = str(getattr(self, "kr_universe_role", "") or "").upper()
+                    if not _kr_role and is_kr:
+                        _kr_role = "CORE_TREND" if _is_kospi else "EXPLOSIVE_LEADER"
                     _base_prob = _safe_prob(res["5pct"] if res["5pct"] is not None else universal_prob, 50.0)
                     _clean_prob = _safe_prob(res["5pct_clean"] if res["5pct_clean"] is not None else _base_prob, _base_prob)
 
@@ -1802,6 +1819,15 @@ class QuantStrategy:
                         "overheat_x_uptrend": int(_is_overheat and _is_uptrend),
                         "sub7_x_breakout": int(_is_sub7 and _is_breakout),
                         "marcap_band": _marcap_band,
+                        "marcap_micro": int(_marcap_band == 0),
+                        "marcap_small": int(_marcap_band == 1),
+                        "marcap_mid": int(_marcap_band == 2),
+                        "marcap_large": int(_marcap_band == 3),
+                        "marcap_mega": int(_marcap_band == 4),
+                        "role_core_trend": int(_kr_role == "CORE_TREND"),
+                        "role_explosive_leader": int(_kr_role == "EXPLOSIVE_LEADER"),
+                        "role_transitional": int(_kr_role == "TRANSITIONAL"),
+                        "role_reject_risk": int(_kr_role == "REJECT_RISK"),
                         # Whale supply signals (binary) — for future ML training
                         "whale_high": int(_whale_score >= 60),
                         "whale_very_high": int(_whale_score >= 70),
@@ -1882,19 +1908,34 @@ class QuantStrategy:
                         res["phase25_oos_auc"] = float(p25_bundle.get("oos_auc")) if p25_bundle.get("oos_auc") is not None else None
                         res["phase25_oos_win_rate_pct"] = float(p25_bundle.get("oos_win_rate_pct")) if p25_bundle.get("oos_win_rate_pct") is not None else None
                         res["phase25_oos_avg_return_pct"] = float(p25_bundle.get("oos_avg_return_pct")) if p25_bundle.get("oos_avg_return_pct") is not None else None
+                        res["phase25_target_horizon_days"] = int(p25_bundle.get("target_horizon_days") or 3)
                     except Exception:
                         res["phase25_raw_auc"] = None
                         res["phase25_cv_median_auc"] = None
                         res["phase25_oos_auc"] = None
                         res["phase25_oos_win_rate_pct"] = None
                         res["phase25_oos_avg_return_pct"] = None
+                        res["phase25_target_horizon_days"] = None
                     if shadow_path:
                         res["phase25_shadow_variant"] = os.path.splitext(os.path.basename(shadow_path))[0]
                     res["phase25_recommended_threshold"] = float(p25_bundle.get("recommended_probability_threshold", 0.5) or 0.5) * 100.0
                     res["prob"] = _blended
                 else:
+                    phase25_degraded = True
+                    if phase25_load_errors:
+                        phase25_trace_status = "phase25_load_fail"
+                        phase25_error = "; ".join(phase25_load_errors[:3])
+                    else:
+                        phase25_trace_status = "phase25_missing"
+                        phase25_error = (
+                            f"no_phase25_bundle_for ticker={self.ticker} "
+                            f"scan_mode={str(getattr(self, 'scan_mode', 'SWING') or 'SWING').upper()}"
+                        )
                     res["prob"] = _safe_prob(res["5pct"] if res["5pct"] is not None else universal_prob, 50.0)
-            except Exception:
+            except Exception as exc:
+                phase25_degraded = True
+                phase25_trace_status = "phase25_exception"
+                phase25_error = f"{type(exc).__name__}: {exc}"
                 res["prob"] = _safe_prob(res["5pct"] if res["5pct"] is not None else universal_prob, 50.0)
 
             raw_prob = res.get('5pct')
@@ -1907,7 +1948,10 @@ class QuantStrategy:
             res['signal'] = "STRONG_BUY" if res['prob'] >= 60 else ("BUY" if res['prob'] >= 55 else "NEUTRAL")
             res['regime'] = f"Phase25+18.2_{suffix.upper()}"
             res['accuracy'] = res['clean_prob']
-            res['model_trace_status'] = "ok"
+            res['model_trace_status'] = phase25_trace_status or "ok"
+            if phase25_error:
+                res['model_error'] = phase25_error
+            res['phase25_degraded'] = bool(phase25_degraded)
             # inference_failed flags rows where NO scan-specific model produced a
             # probability and we ended up on the universal-fallback or generic path.
             # Downstream decision gates use this to exclude affected tickers from
@@ -1918,9 +1962,10 @@ class QuantStrategy:
             if raw_prob is None and clean_prob is None and universal_prob is not None:
                 res['type'] = "Universal Fallback ML"
                 res['regime'] = f"Universal_Fallback_{suffix.upper()}"
-                res['model_trace_status'] = "universal_fallback"
+                if not phase25_trace_status:
+                    res['model_trace_status'] = "universal_fallback"
             else:
-                res['type'] = "Regime+Phase25 ML"
+                res['type'] = "Regime+Phase25 ML" if not phase25_degraded else "Regime ML + Phase25 Degraded"
             res['model_health'] = {
                 "phase18_ready": bool(os.path.exists(model_5_path) or os.path.exists(model_clean_path)),
                 "phase25_ready": bool(os.path.exists(os.path.join(models_dir, 'phase25_model.pkl'))),
