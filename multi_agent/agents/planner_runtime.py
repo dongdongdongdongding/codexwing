@@ -496,6 +496,23 @@ def _apply_expected_edge_gate(
         or not trend_up
         or float(score) < 84.0
     ):
+        # KOSPI SWING relaxation (2026-05-08): 0nr이 KOSPI_SWING_PRIORITY_GUARD
+        # 와 EXPECTED_EDGE_WATCH_GUARD를 풀었으나 같은 후보가 직후
+        # EXPECTED_EDGE_PRIORITY_GUARD에 동일하게 잡혀 KOSPI SWING
+        # PRIORITY_WATCHLIST 회복 0건 (5/7 RUN-114752B6 47/47 WATCHLIST 강등).
+        # EEPG와 EEWG는 동일 임계 함수에서 priority_*/min_* 만 다른
+        # 직렬 단계이므로 같은 패턴으로 KOSPI SWING 한정 soft note 적용.
+        kospi_swing_relax = (
+            market == "KOSPI"
+            and mode == "SWING"
+            and os.getenv("AG_EXPECTED_EDGE_PRIORITY_GUARD_RELAX", "1").strip() not in ("0", "", "false", "False")
+        )
+        if kospi_swing_relax:
+            theme_risk.append("EXPECTED_EDGE_PRIORITY_GUARD_SOFT")
+            rationale.append(
+                f"expected_edge_priority_guard_soft={float(expected_return_1d_pct):.2f}/{float(expected_return_3d_pct):.2f}"
+            )
+            return decision
         theme_risk.append("EXPECTED_EDGE_PRIORITY_GUARD")
         rationale.append(
             f"expected_edge_priority_guard={float(expected_return_1d_pct):.2f}/{float(expected_return_3d_pct):.2f}"

@@ -107,6 +107,34 @@ Both relaxations gate on environment toggles
 default `1` = relax). Setting either to `0` restores the previous behavior
 without redeployment.
 
+### 2026-05-08 follow-up — EXPECTED_EDGE_PRIORITY_GUARD also relaxed
+
+The first day after the 0nr change (RUN-114752B6, 2026-05-07) showed
+KOSPI_SWING_PRIORITY_GUARD_SOFT firing on 71 candidates and
+EXPECTED_EDGE_WATCH_GUARD_SOFT on 11, but PRIORITY_WATCHLIST recovery
+was still **zero**. All 47 KOSPI SWING priority-soft rows were caught
+immediately afterward by `EXPECTED_EDGE_PRIORITY_GUARD` (rank ≥ 3
+expected-return / score / trend gate) and demoted to WATCHLIST. The two
+guards stack serially, so relaxing only the upstream pair was a no-op
+in production.
+
+Forward validation by gate cause was attempted (E1/E2/E2c queries) but
+EXPECTED_EDGE_PRIORITY_GUARD only began landing in `theme_risk` from
+2026-05-06 (the day h4x persisted gate-rationale columns), so no
+3d/5d-resolved sample of meaningful size exists yet. Waiting two more
+weeks to fill the window keeps Stream A halted, so the same
+KOSPI-SWING-only soft-note pattern is applied to
+EXPECTED_EDGE_PRIORITY_GUARD: marker stays in `theme_risk` as
+`EXPECTED_EDGE_PRIORITY_GUARD_SOFT`, candidate keeps its original rank.
+Justification by analogy: EEWG (rank ≥ 2) and EEPG (rank ≥ 3) come
+from the same threshold function in `_apply_expected_edge_gate` —
+identical features, just stricter cutoffs — and the EEWG forward
+result was net-positive on KOSPI SWING.
+
+Toggle: `AG_EXPECTED_EDGE_PRIORITY_GUARD_RELAX` (default `1`). Setting
+to `0` restores the hard demote with no redeploy. Rollback fast if the
+7-day forward holdout fails the win/avg thresholds.
+
 ### Acceptance / monitoring
 
 - KOSPI SWING `PRIORITY_WATCHLIST` count over the 30-day rolling window must
