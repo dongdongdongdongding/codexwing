@@ -855,6 +855,7 @@ def build_planner_handoff(
             phase25_shadow_prob=float(phase25_shadow_prob) if phase25_shadow_prob not in (None, "") else None,
             phase25_recommended_threshold=float(phase25_recommended_threshold) if phase25_recommended_threshold not in (None, "") else None,
             phase25_signal_direction=phase25_signal_direction or "",
+            phase25_raw_auc=phase25_raw_auc,
             phase25_oos_auc=phase25_oos_auc,
             phase25_oos_win_rate_pct=phase25_oos_win_rate_pct,
             phase25_oos_avg_return_pct=phase25_oos_avg_return_pct,

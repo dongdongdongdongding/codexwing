@@ -41,6 +41,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.db_manager import DBManager
+from modules.horizon_policy import horizon_days_from_return_col, resolve_horizon_policy
 
 
 def _pct_float(value, default=0.0):
@@ -359,6 +360,26 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df["marcap_band"] = np.nan
 
+    marcap = pd.to_numeric(df["marcap_band"], errors="coerce")
+    df["marcap_micro"] = marcap.eq(0).fillna(False).astype(int)
+    df["marcap_small"] = marcap.eq(1).fillna(False).astype(int)
+    df["marcap_mid"] = marcap.eq(2).fillna(False).astype(int)
+    df["marcap_large"] = marcap.eq(3).fillna(False).astype(int)
+    df["marcap_mega"] = marcap.eq(4).fillna(False).astype(int)
+
+    role = df.get("kr_universe_role", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.upper()
+    role = role.where(role.ne(""))
+    role = role.fillna(
+        pd.Series(
+            np.where(df["is_kospi"].eq(1), "CORE_TREND", np.where(df["is_kosdaq"].eq(1), "EXPLOSIVE_LEADER", "")),
+            index=df.index,
+        )
+    )
+    df["role_core_trend"] = role.eq("CORE_TREND").astype(int)
+    df["role_explosive_leader"] = role.eq("EXPLOSIVE_LEADER").astype(int)
+    df["role_transitional"] = role.eq("TRANSITIONAL").astype(int)
+    df["role_reject_risk"] = role.eq("REJECT_RISK").astype(int)
+
     return df
 
 
@@ -604,6 +625,15 @@ FEATURE_COLS = [
     "is_sub7",
     "price_7_15",
     "price_gt15",
+    "marcap_micro",
+    "marcap_small",
+    "marcap_mid",
+    "marcap_large",
+    "marcap_mega",
+    "role_core_trend",
+    "role_explosive_leader",
+    "role_transitional",
+    "role_reject_risk",
     "is_kospi",
     "is_kosdaq",
     "is_nasdaq",
@@ -646,7 +676,8 @@ FEATURE_COLS = [
     # is_kospi/is_kosdaq one-hots route the model to the right composite.
     "kospi_momentum_score",
     "kosdaq_low_vol_score",
-    # "marcap_band" excluded: old archives did not persist real marcap reliably.
+    # marcap_band itself stays excluded; the model consumes explicit one-hot
+    # bands above so missing real market-cap data remains all-zero.
 ]
 
 
@@ -718,21 +749,21 @@ SEGMENTS = [
     SegmentSpec(
         name="phase25_kospi_swing",
         model_path="models/phase25_kospi_swing.pkl",
-        return_col="return_3d_pct",
+        return_col=str(resolve_horizon_policy("KOSPI", "SWING")["return_col"]),
         positive_threshold=5.0,
         min_rows=300,
         min_positive=60,
-        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSPI") & df["scan_mode"].eq("SWING") & df["return_3d_pct"].notna(),
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSPI") & df["scan_mode"].eq("SWING") & df[str(resolve_horizon_policy("KOSPI", "SWING")["return_col"])].notna(),
         description="KOSPI swing model: large-cap momentum-persistent (signals directionally correct).",
     ),
     SegmentSpec(
         name="phase25_kosdaq_swing",
         model_path="models/phase25_kosdaq_swing.pkl",
-        return_col="return_5d_pct",
+        return_col=str(resolve_horizon_policy("KOSDAQ", "SWING")["return_col"]),
         positive_threshold=5.0,
         min_rows=300,
         min_positive=60,
-        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSDAQ") & df["scan_mode"].eq("SWING") & df["return_5d_pct"].notna(),
+        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSDAQ") & df["scan_mode"].eq("SWING") & df[str(resolve_horizon_policy("KOSDAQ", "SWING")["return_col"])].notna(),
         description="KOSDAQ swing model: small/mid-cap, mean-reverting at 3d (median +0.7%) but trends emerge at 5d (median +3.1%, mean +5.0%). Switched horizon 3d→5d so the model targets the timeframe where KOSDAQ surge signals actually materialize; 42% positive rate at +5% threshold is a balanced binary.",
     ),
     SegmentSpec(
@@ -963,10 +994,20 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
     if spec.signal_direction in ("invert", "normal", "uncertain"):
         signal_direction = spec.signal_direction
     else:
-        decisive_auc = cv_median_auc if not pd.isna(cv_median_auc) else raw_auc
-        if decisive_auc < 0.45:
+        # 2026-05-08 강화: cv_median_auc 단독 결정은 KOSDAQ INTRADAY 사례에서
+        # 위험을 노출했다. raw_auc=0.274 / cv_median=0.579 일 때 normal로
+        # 분류돼 운영 AVOID로 4월 726행을 차단했고 forward 결과가 win 78%로
+        # 정확히 inverted였다. 두 지표가 크게 갈리면 모델 자체가 불안정한
+        # 신호이므로 둘 다 0.55를 넘어야 normal, 하나라도 0.45 미만이면
+        # invert, 나머지는 uncertain으로 한다. cv가 NaN이면 raw_auc로만 판정.
+        if pd.isna(cv_median_auc):
+            min_auc = max_auc = raw_auc
+        else:
+            min_auc = min(raw_auc, cv_median_auc)
+            max_auc = max(raw_auc, cv_median_auc)
+        if min_auc < 0.45:
             signal_direction = "invert"
-        elif decisive_auc > 0.55:
+        elif min_auc > 0.55:
             signal_direction = "normal"
         else:
             signal_direction = "uncertain"
@@ -1013,6 +1054,7 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         "oos_avg_return_pct": (oos_summary or {}).get("avg_return_pct") if oos_summary else None,
         "segment": spec.name,
         "return_col": spec.return_col,
+        "target_horizon_days": horizon_days_from_return_col(spec.return_col),
         "positive_threshold": spec.positive_threshold,
         "recommended_probability_threshold": (best_row or {}).get("threshold", 0.5),
         "description": spec.description,
@@ -1040,6 +1082,7 @@ def train_segment(df_all: pd.DataFrame, spec: SegmentSpec, backend: str):
         "positives": positive_rows,
         "negative": int(total_rows - positive_rows),
         "return_col": spec.return_col,
+        "target_horizon_days": horizon_days_from_return_col(spec.return_col),
         "positive_threshold": spec.positive_threshold,
         "auc": auc,
         "raw_auc": raw_auc,
@@ -1238,6 +1281,26 @@ def _derive_features_from_archive(df: pd.DataFrame) -> pd.DataFrame:
     out.loc[pb_sub7, "is_sub7"] = 1
     out.loc[pb_715, "price_7_15"] = 1
     out.loc[pb_gt15, "price_gt15"] = 1
+
+    marcap = _num_col("marcap_band")
+    out["marcap_micro"] = marcap.eq(0).fillna(False).astype(int)
+    out["marcap_small"] = marcap.eq(1).fillna(False).astype(int)
+    out["marcap_mid"] = marcap.eq(2).fillna(False).astype(int)
+    out["marcap_large"] = marcap.eq(3).fillna(False).astype(int)
+    out["marcap_mega"] = marcap.eq(4).fillna(False).astype(int)
+
+    kr_role = _str_col("kr_universe_role").str.upper()
+    kr_role = kr_role.where(kr_role.ne(""))
+    kr_role = kr_role.fillna(
+        pd.Series(
+            np.where(out["is_kospi"].eq(1), "CORE_TREND", np.where(out["is_kosdaq"].eq(1), "EXPLOSIVE_LEADER", "")),
+            index=out.index,
+        )
+    )
+    out["role_core_trend"] = (kr_role == "CORE_TREND").astype(int)
+    out["role_explosive_leader"] = (kr_role == "EXPLOSIVE_LEADER").astype(int)
+    out["role_transitional"] = (kr_role == "TRANSITIONAL").astype(int)
+    out["role_reject_risk"] = (kr_role == "REJECT_RISK").astype(int)
 
     out["peak_x_highvol"] = ((out["is_peak"] == 1) & ((vr > 2.5).fillna(False))).astype(int)
     out["overheat_x_uptrend"] = ((out["is_overheat"] == 1) & (out["is_uptrend"] == 1)).astype(int)
