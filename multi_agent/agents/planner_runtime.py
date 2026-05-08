@@ -312,6 +312,44 @@ def _apply_winner_pattern_filter(
     return decision
 
 
+def _apply_intraday_trend_strategy_gate(
+    *,
+    decision: str,
+    scan_mode: str,
+    strategy_text: str,
+    rationale: List[str],
+    theme_risk: List[str],
+) -> str:
+    """2026-05-08 (swing-main, horizon 진단 STEP 5b 후속).
+
+    INTRADAY scan_mode + scanner가 'Intraday Trend' 라벨을 붙이고 'Breakout'은
+    포함 안 된 후보는 dedup 후 PRIORITY_WATCHLIST 행에서 5d -3% 이하 손실
+    비율 42.8% (n=1262, bad 540 / ok 722). 같은 윈도우 'Intraday Breakout'은
+    16.2% (n=747)로 정상 분포. scanner_services.py L518에서 breakout=False
+    분기로 'Intraday Trend' 태그가 붙는데 forward 분포가 명백히 손실 편향.
+
+    PRIORITY 등급(rank>=3)에 도달한 후보 중 'Intraday Trend' 태그면 WATCHLIST로
+    한 단계 강등. AVOID로 보내지 않는 이유: 16.2%는 여전히 ok로 통과(완전한
+    제거는 표본 노이즈 위험). soft demote로 PRIORITY만 막는다.
+    AG_INTRADAY_TREND_DEMOTE=0이면 비활성.
+    """
+    if os.getenv("AG_INTRADAY_TREND_DEMOTE", "1").strip() in ("0", "", "false", "False"):
+        return decision
+    mode = str(scan_mode or "").upper()
+    if mode != "INTRADAY":
+        return decision
+    if _decision_rank(decision) < 3:
+        return decision
+    text = str(strategy_text or "")
+    if not text:
+        return decision
+    if "Intraday Trend" in text and "Breakout" not in text:
+        theme_risk.append("INTRADAY_TREND_PRIORITY_DEMOTE")
+        rationale.append("intraday_trend_priority_demote=42.8pct_bad_5d")
+        return "WATCHLIST"
+    return decision
+
+
 def _apply_kr_market_mode_quality_gate(
     *,
     decision: str,
@@ -822,6 +860,21 @@ def build_planner_handoff(
             phase25_signal_direction=phase25_signal_direction or "",
             phase25_oos_win_rate_pct=phase25_oos_win_rate_pct,
             phase25_oos_avg_return_pct=phase25_oos_avg_return_pct,
+        )
+        # 2026-05-08: Intraday Trend (breakout=False) 라벨 PRIORITY 격하.
+        # cand/feature_snapshot에서 strategy 텍스트 후보 수집.
+        _strategy_text = (
+            str(cand.get("strategy") or "")
+            or str(cand.get("note") or "")
+            or str(feature_snapshot.get("strategy") or "")
+            or str(feature_snapshot.get("note") or "")
+        )
+        decision = _apply_intraday_trend_strategy_gate(
+            decision=decision,
+            scan_mode=scan_mode,
+            strategy_text=_strategy_text,
+            rationale=rationale,
+            theme_risk=theme_risk,
         )
 
         if bool(feature_snapshot.get("inference_failed", False)):
