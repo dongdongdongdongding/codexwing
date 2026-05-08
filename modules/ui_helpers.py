@@ -308,6 +308,37 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
     return top_rows
 
 
+# 2026-05-08 (swing-main-r39): UI 단순화. Top-N 표는 매수 결정에 직접 필요한
+# 핵심 7컬럼만 노출하고, 11개 numeric 메타는 티커 선택 시 팝업에서 보게 한다.
+TOP_N_COMPACT_COLUMNS = (
+    "Rank", "Ticker", "Name", "Decision", "Entry", "TP", "SL",
+)
+
+
+def build_top_candidate_compact_view(planner_payload: Dict[str, Any], limit: int = 5) -> Dict[str, Any]:
+    """Top-N 표 + 상세 팝업용 데이터 분리.
+
+    Returns:
+        {
+            "compact_rows": [{Rank, Ticker, Name, Decision, Entry, TP, SL}, ...],
+            "detail_by_ticker": {ticker: <full row from build_top_candidate_rows>}
+        }
+
+    매수 결정에 즉시 필요한 7컬럼만 표에 노출. Theme/Trend/Model Prob/Gate Thr/
+    OOS Win/OOS Ret/SigDir/Hold는 detail_by_ticker로 분리해 클릭/select 시
+    expander나 dialog로 보여주도록 한다.
+    """
+    full = build_top_candidate_rows(planner_payload, limit=limit)
+    compact: List[Dict[str, Any]] = []
+    detail_by_ticker: Dict[str, Dict[str, Any]] = {}
+    for row in full:
+        compact.append({col: row.get(col) for col in TOP_N_COMPACT_COLUMNS if col in row})
+        ticker = str(row.get("Ticker", "") or "")
+        if ticker:
+            detail_by_ticker[ticker] = row
+    return {"compact_rows": compact, "detail_by_ticker": detail_by_ticker}
+
+
 @dataclass
 class BackgroundScanState:
     market: str

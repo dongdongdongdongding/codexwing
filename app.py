@@ -30,6 +30,7 @@ from modules.scan_policy import (
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.ui_helpers import (
     BackgroundScanState,
+    build_top_candidate_compact_view,
     build_top_candidate_rows,
     build_watchlist_display_rows,
     compute_progress_fraction,
@@ -1490,25 +1491,62 @@ def _render_agent_bridge_status(bridge_info, market):
 
 def _render_scan_top_candidates(results_df, bridge_info, market):
     planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
-    top_rows = build_top_candidate_rows(planner_payload, limit=5)
+    view = build_top_candidate_compact_view(planner_payload, limit=5)
+    compact_rows = view.get("compact_rows", [])
+    detail_by_ticker = view.get("detail_by_ticker", {})
 
     st.markdown("### 🔥 Top 5 매수 신호")
-    if top_rows:
-        st.caption(
-            "BUY/WATCHLIST 등급만 표시합니다. OBSERVE/AVOID는 매매 신호가 아니므로 제외됩니다. "
-            "Entry/TP/SL은 시장별 정책 (KOSPI 시가/+20/-5, KOSDAQ -2%limit/+10/-10) 입니다."
+    if not compact_rows:
+        st.info(
+            "현재 매수 신호 없음 — 시장 관망. 모든 후보가 OBSERVE/AVOID로 강등되었거나 "
+            "OOS 검증을 통과하지 못했습니다. Watchlist 표에서 감시 종목을 확인하세요."
         )
-        top_df = _coerce_numeric_display(
-            pd.DataFrame(top_rows),
-            ["Model Prob", "Gate Thr", "OOS Win %", "OOS Ret %"],
-        )
-        st.dataframe(top_df, use_container_width=True, hide_index=True)
         return
 
-    st.info(
-        "현재 매수 신호 없음 — 시장 관망. 모든 후보가 OBSERVE/AVOID로 강등되었거나 "
-        "OOS 검증을 통과하지 못했습니다. Watchlist 표에서 감시 종목을 확인하세요."
+    st.caption("표는 매수 결정에 필요한 핵심만. 종목 상세는 아래 선택해 펼쳐보세요.")
+    st.dataframe(pd.DataFrame(compact_rows), use_container_width=True, hide_index=True)
+
+    ticker_options = [str(r.get("Ticker", "") or "") for r in compact_rows if r.get("Ticker")]
+    if not ticker_options:
+        return
+
+    detail_key = f"top_n_detail_select_{market}_{planner_payload.get('produced_at', '')}"
+    selected = st.selectbox(
+        "종목 상세 보기",
+        options=ticker_options,
+        key=detail_key,
     )
+    detail = detail_by_ticker.get(str(selected) or "")
+    if not detail:
+        return
+
+    with st.expander(f"📊 {detail.get('Name','') or selected} ({selected}) 상세", expanded=True):
+        cols = st.columns(4)
+        cols[0].metric("Decision", str(detail.get("Decision", "") or "-"))
+        cols[1].metric("Theme", str(detail.get("Theme", "") or "-"))
+        cols[2].metric("Trend", str(detail.get("Trend", "") or "-"))
+        cols[3].metric("SigDir", str(detail.get("SigDir", "") or "-"))
+
+        cols2 = st.columns(4)
+        cols2[0].metric("Model Prob", _fmt_pct_or_dash(detail.get("Model Prob")))
+        cols2[1].metric("Gate Thr", _fmt_pct_or_dash(detail.get("Gate Thr")))
+        cols2[2].metric("OOS Win %", _fmt_pct_or_dash(detail.get("OOS Win %")))
+        cols2[3].metric("OOS Ret %", _fmt_pct_or_dash(detail.get("OOS Ret %")))
+
+        cols3 = st.columns(4)
+        cols3[0].metric("Entry", str(detail.get("Entry", "") or "-"))
+        cols3[1].metric("TP", str(detail.get("TP", "") or "-"))
+        cols3[2].metric("SL", str(detail.get("SL", "") or "-"))
+        cols3[3].metric("Hold", str(detail.get("Hold", "") or "-"))
+
+
+def _fmt_pct_or_dash(value):
+    if value is None or value == "":
+        return "-"
+    try:
+        return f"{float(value):.1f}"
+    except Exception:
+        return "-"
 
 
 def _get_scan_state_snapshot():
