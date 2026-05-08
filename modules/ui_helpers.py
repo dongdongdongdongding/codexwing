@@ -205,7 +205,7 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
     decisions = payload.get("decisions", []) if isinstance(payload.get("decisions"), list) else []
     watchlist_meta = payload.get("watchlist_meta", []) if isinstance(payload.get("watchlist_meta"), list) else []
 
-    BUY_GRADES = {"PICK", "BUY", "STRONG_BUY", "PRIORITY_WATCHLIST", "WATCHLIST", "WATCHLIST_ONLY"}
+    BUY_GRADES = {"PICK", "BUY", "STRONG_BUY", "PRIORITY_WATCHLIST", "WATCHLIST", "WATCHLIST_ONLY", "EXCEPTION_LEADER"}
 
     def _is_buy(row: Dict[str, Any]) -> bool:
         dec = str(row.get("decision", "") or "").upper().strip()
@@ -213,15 +213,50 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
             return _is_present(row.get("priority_rank")) or _is_present(row.get("decision_score"))
         return dec in BUY_GRADES
 
+    # 1) Pull EXCEPTION_LEADER from watchlist_meta. EL is attached as a
+    #    watchlist_meta entry with reason='exception_leader_watchlist' but never
+    #    appears in decisions[]. Production measurements (30d): EL win 75-100%,
+    #    avg 5-10% — better than the picked baseline. Surface them as a
+    #    first-class BUY signal in Top-N rather than only in a separate panel.
+    el_rows: List[Dict[str, Any]] = []
+    for meta in watchlist_meta:
+        if not isinstance(meta, dict):
+            continue
+        reason = str(meta.get("reason", "") or "").lower()
+        risk_label = str(meta.get("risk_label", "") or "").upper()
+        if reason == "exception_leader_watchlist" or risk_label == "EXCEPTION_LEADER":
+            row = dict(meta)
+            row["decision"] = "EXCEPTION_LEADER"
+            el_rows.append(row)
+
     candidates = [row for row in decisions if isinstance(row, dict) and _is_buy(row)]
     # If decisions list is empty (e.g. MARKET_POLICY_WATCHLIST_ONLY downgraded
     # everything), surface watchlist_meta entries as the user's actual picks.
-    if not candidates and watchlist_meta:
+    if not candidates and watchlist_meta and not el_rows:
         candidates = [row for row in watchlist_meta if isinstance(row, dict)]
+
+    # EL leads when present — better forward win/avg than picked baseline.
+    seen_tickers = {str(r.get("ticker", "") or "") for r in el_rows}
+    candidates = el_rows + [r for r in candidates if str(r.get("ticker", "") or "") not in seen_tickers]
+
+    def _decision_priority(dec: str) -> int:
+        """Lower number = higher in the table. EL first, then PRIORITY, etc."""
+        d = str(dec or "").upper()
+        order = {
+            "EXCEPTION_LEADER": 0,
+            "STRONG_BUY": 1,
+            "PICK": 1,
+            "BUY": 1,
+            "PRIORITY_WATCHLIST": 2,
+            "WATCHLIST": 3,
+            "WATCHLIST_ONLY": 4,
+        }
+        return order.get(d, 9)
 
     sorted_rows = sorted(
         candidates,
         key=lambda row: (
+            _decision_priority(row.get("decision")),
             int(row.get("priority_rank", 9999) or 9999),
             -float(row.get("decision_score", 0.0) or 0.0),
             str(row.get("ticker", "") or ""),
