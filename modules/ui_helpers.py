@@ -106,9 +106,11 @@ def _format_score_label(value: Any) -> str:
 def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = None) -> List[Dict[str, Any]]:
     """Normalize scanner/archive rows into a compact decision list.
 
-    The UI intentionally exposes only actual source fields. It does not infer
-    missing day-change or accuracy values from unrelated return horizons.
+    Card '정확성' = (decision × market × scan_mode) segment의 historical OOS
+    win rate. raw model score (phase25_prob, prob_clean, ml_prob)는
+    calibrated probability가 아니라 정렬용 score이므로 정확도로 표시 금지.
     """
+    from modules.segment_accuracy import lookup_segment_win_rate
     normalized: List[Dict[str, Any]] = []
     source_rows = rows or []
     if limit is not None:
@@ -124,14 +126,26 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         strategy = str(_coalesce_present(row.get("strategy"), row.get("전략"), row.get("strategy_family")) or "").strip()
         buy_signal = " · ".join(part for part in (decision, tier, strategy) if part) or "-"
 
+        # 카드 UI '정확성' 1순위: segment historical OOS win rate
+        # (decision × market × scan_mode 별 invariant, dedup 측정값).
+        # 2순위 phase25_oos_win_rate_pct (variant별 OOS win, segment lookup 부재 시).
+        # raw model scores (phase25_prob, prob_clean raw, ml_prob)는 calibrated
+        # probability가 아니므로 정확도 fallback에서 제외.
+        segment_win = lookup_segment_win_rate(
+            decision=row.get("decision") or row.get("Decision") or row.get("decision_bucket"),
+            market=row.get("market") or row.get("market_subtype"),
+            scan_mode=row.get("scan_mode") or row.get("Scan Mode"),
+            ticker=ticker,
+            horizon_days=5,
+        )
         accuracy_source = _coalesce_present(
             row.get("정밀확률"),
+            segment_win,
+            row.get("phase25_oos_win_rate_pct"),
             row.get("prob_clean"),
             row.get("_prob_clean"),
-            row.get("phase25_prob"),
-            row.get("ml_prob"),
             row.get("AI확률"),
-            row.get("_prob_5"),
+            row.get("ml_prob"),
         )
         day_change_source = _coalesce_present(
             row.get("전일비"),
@@ -347,21 +361,27 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
     if not candidates and watchlist_meta and not el_rows:
         candidates = [row for row in watchlist_meta if isinstance(row, dict)]
 
-    # EL leads when present — better forward win/avg than picked baseline.
+    # 2026-05-09 정책: 8:2 자본 배분에 따라 Stream A(PRIORITY/WATCHLIST/OBSERVE,
+    # 자본 80%)가 위, Stream B(EXCEPTION_LEADER, 자본 20%)가 아래.
+    # build_top_candidate_compact_view가 decision 라벨로 두 그룹 분리하므로
+    # 여기서는 EL을 candidates 끝에 합쳐 sorted 순서만 PRIORITY 우선으로 둠.
     seen_tickers = {str(r.get("ticker", "") or "") for r in el_rows}
-    candidates = el_rows + [r for r in candidates if str(r.get("ticker", "") or "") not in seen_tickers]
+    candidates = [r for r in candidates if str(r.get("ticker", "") or "") not in seen_tickers]
+    # EL을 합쳐서 sorted_rows에 같이 노출 (compact_view에서 stream A/B로 분리됨)
+    candidates = candidates + el_rows
 
     def _decision_priority(dec: str) -> int:
-        """Lower number = higher in the table. EL first, then PRIORITY, etc."""
+        """Lower number = higher. PRIORITY/WATCHLIST 위, EXCEPTION_LEADER 아래
+        (8:2 배분 — Stream A 안전 매매가 본진)."""
         d = str(dec or "").upper()
         order = {
-            "EXCEPTION_LEADER": 0,
-            "STRONG_BUY": 1,
-            "PICK": 1,
-            "BUY": 1,
-            "PRIORITY_WATCHLIST": 2,
-            "WATCHLIST": 3,
-            "WATCHLIST_ONLY": 4,
+            "STRONG_BUY": 0,
+            "PICK": 0,
+            "BUY": 0,
+            "PRIORITY_WATCHLIST": 1,
+            "WATCHLIST": 2,
+            "WATCHLIST_ONLY": 3,
+            "EXCEPTION_LEADER": 5,  # Stream B — Stream A 다음
         }
         return order.get(d, 9)
 
@@ -426,29 +446,68 @@ TOP_N_COMPACT_COLUMNS = (
     "Rank", "Ticker", "Name", "Decision", "Entry", "TP", "SL",
 )
 
+# Card '정확성' = segment historical OOS win rate (5d). 카드에 별도 컬럼.
+TOP_N_CARD_COLUMNS = (
+    "Rank", "Ticker", "Name", "Decision", "Accuracy", "Entry", "TP", "SL",
+)
+
 
 def build_top_candidate_compact_view(planner_payload: Dict[str, Any], limit: int = 5) -> Dict[str, Any]:
-    """Top-N 표 + 상세 팝업용 데이터 분리.
+    """Stream A (Top-N 안전 매매) + Stream B (EXCEPTION_LEADER 급등 잡기)
+    카드를 8:2 자본 배분 정책에 맞춰 분리 반환.
 
     Returns:
         {
-            "compact_rows": [{Rank, Ticker, Name, Decision, Entry, TP, SL}, ...],
-            "detail_by_ticker": {ticker: <full row from build_top_candidate_rows>}
+            "stream_a_rows": [{Rank, Ticker, Name, Decision, Entry, TP, SL, Accuracy}, ...]  # PRIORITY/WATCHLIST 위주
+            "stream_b_rows": [...]  # EXCEPTION_LEADER만
+            "detail_by_ticker": {ticker: <full row>},
+            "compact_rows": Stream A + B 합본 (legacy 호환)
         }
 
-    매수 결정에 즉시 필요한 7컬럼만 표에 노출. Theme/Trend/Model Prob/Gate Thr/
-    OOS Win/OOS Ret/SigDir/Hold는 detail_by_ticker로 분리해 클릭/select 시
-    expander나 dialog로 보여주도록 한다.
+    카드 정확성('Accuracy') = segment historical OOS win rate (5d, dedup 측정).
+    raw model score는 정확도로 노출 안 함.
     """
+    from modules.segment_accuracy import lookup_segment_win_rate
+
     full = build_top_candidate_rows(planner_payload, limit=limit)
-    compact: List[Dict[str, Any]] = []
+
+    def _augment(row: Dict[str, Any]) -> Dict[str, Any]:
+        ticker = str(row.get("Ticker", "") or "")
+        market_guess = "KOSPI" if ticker.endswith(".KS") else ("KOSDAQ" if ticker.endswith(".KQ") else None)
+        scan_mode_guess = "SWING"  # Top-N 카드 default; 호출자가 명시하면 override 가능
+        win = lookup_segment_win_rate(
+            decision=row.get("Decision"),
+            market=market_guess,
+            scan_mode=scan_mode_guess,
+            ticker=ticker,
+            horizon_days=5,
+        )
+        compact = {col: row.get(col) for col in TOP_N_COMPACT_COLUMNS if col in row}
+        compact["Accuracy"] = f"{win:.1f}%" if win is not None else "-"
+        return compact
+
+    stream_a_rows: List[Dict[str, Any]] = []
+    stream_b_rows: List[Dict[str, Any]] = []
     detail_by_ticker: Dict[str, Dict[str, Any]] = {}
     for row in full:
-        compact.append({col: row.get(col) for col in TOP_N_COMPACT_COLUMNS if col in row})
+        compact = _augment(row)
         ticker = str(row.get("Ticker", "") or "")
         if ticker:
             detail_by_ticker[ticker] = row
-    return {"compact_rows": compact, "detail_by_ticker": detail_by_ticker}
+        decision = str(row.get("Decision", "") or "").upper()
+        if decision == "EXCEPTION_LEADER":
+            stream_b_rows.append(compact)
+        else:
+            stream_a_rows.append(compact)
+
+    # legacy compat
+    compact_rows = stream_a_rows + stream_b_rows
+    return {
+        "stream_a_rows": stream_a_rows,
+        "stream_b_rows": stream_b_rows,
+        "compact_rows": compact_rows,
+        "detail_by_ticker": detail_by_ticker,
+    }
 
 
 @dataclass

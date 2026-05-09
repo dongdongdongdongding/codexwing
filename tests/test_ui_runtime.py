@@ -89,11 +89,27 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["score"], "99.1")
 
     def test_build_signal_display_rows_does_not_fabricate_day_change(self):
-        rows = build_signal_display_rows([{"ticker": "005930.KS", "phase25_prob": 61.2, "return_1d_pct": 3.4}])
-
-        self.assertEqual(rows[0]["accuracy"], "61.2%")
+        # 2026-05-09: phase25_prob은 raw score(0-100)로 calibrated probability가
+        # 아니다. 카드 '정확성' coalesce에서 제외함 — 사용자에게 모델 raw score를
+        # '정확도'로 보여주면 KOSPI SWING 35% / KOSDAQ SWING 12%처럼 오해 발생.
+        # 진짜 정확성 source: phase25_oos_win_rate_pct, prob_clean, ml_prob.
+        rows = build_signal_display_rows([{
+            "ticker": "005930.KS",
+            "phase25_prob": 61.2,             # raw score (사용 안 함)
+            "phase25_oos_win_rate_pct": 75.4,  # OOS holdout win rate
+            "return_1d_pct": 3.4,
+        }])
+        self.assertEqual(rows[0]["accuracy"], "75.4%")
         self.assertEqual(rows[0]["day_change"], "-")
         self.assertEqual(rows[0]["day_change_value"], None)
+
+    def test_build_signal_display_rows_ignores_raw_phase25_prob(self):
+        # phase25_prob 단독이면 accuracy는 None. raw score를 정확도로 표시 금지.
+        rows = build_signal_display_rows([{
+            "ticker": "005930.KS",
+            "phase25_prob": 35.7,             # KOSPI SWING 평균 raw score
+        }])
+        self.assertEqual(rows[0]["accuracy"], "-")
 
 
 class ScannerRuntimeTests(unittest.TestCase):
