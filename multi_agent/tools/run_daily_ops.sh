@@ -94,6 +94,11 @@ for MARKET in "${MARKETS[@]}"; do
     python3 multi_agent/tools/report_prediction_validation.py --limit-runs "${LIMIT_RUNS}" --market "${MARKET}"
 
   if [[ "${MARKET}" == "KOSPI" || "${MARKET}" == "KOSDAQ" ]]; then
+    echo "[STEP] build_paper_trade_ledger market=${MARKET}"
+    run_optional "build_paper_trade_ledger:${MARKET}" \
+      python3 multi_agent/tools/build_paper_trade_ledger.py --market "${MARKET}" --scan-mode SWING --topn "${PAPER_LEDGER_TOPN:-5}" \
+        --fee-bps "${PAPER_LEDGER_FEE_BPS:-0}" --slippage-bps "${PAPER_LEDGER_SLIPPAGE_BPS:-0}"
+
     echo "[STEP] report_kr_walkforward_release_gate market=${MARKET}"
     run_optional "report_kr_walkforward_release_gate:${MARKET}" \
       python3 multi_agent/tools/report_kr_walkforward_release_gate.py --market "${MARKET}"
