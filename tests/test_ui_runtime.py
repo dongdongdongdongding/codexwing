@@ -10,6 +10,7 @@ from modules.ui_helpers import (
     build_top_candidate_rows,
     build_watchlist_display_rows,
     compute_progress_fraction,
+    enrich_signal_rows_with_planner_trace,
     format_volume_display,
     resolve_display_price,
     should_auto_refresh_scan_panel,
@@ -115,6 +116,26 @@ class UIHelperTests(unittest.TestCase):
             "phase25_prob": 35.7,             # KOSPI SWING 평균 raw score
         }])
         self.assertEqual(rows[0]["accuracy"], "-")
+
+    def test_enrich_signal_rows_with_planner_trace_adds_loss_risk(self):
+        rows = enrich_signal_rows_with_planner_trace(
+            [{"ticker": "005930.KS", "Decision Score": 90.0}],
+            {
+                "decisions": [
+                    {
+                        "ticker": "005930.KS",
+                        "decision": "PRIORITY_WATCHLIST",
+                        "loss_risk_score": 42.5,
+                        "theme_risk": ["LOSS_RISK_SOFT_CAP"],
+                    }
+                ]
+            },
+        )
+        self.assertEqual(rows[0]["loss_risk_score"], 42.5)
+        self.assertEqual(rows[0]["theme_risk"], ["LOSS_RISK_SOFT_CAP"])
+        display = build_signal_display_rows(rows)
+        self.assertEqual(display[0]["loss_risk"], "42.5")
+        self.assertEqual(display[0]["risk_flags"], ["LOSS_RISK_SOFT_CAP"])
 
 
 class ScannerRuntimeTests(unittest.TestCase):

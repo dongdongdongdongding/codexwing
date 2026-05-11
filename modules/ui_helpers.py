@@ -177,6 +177,61 @@ def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[s
     }
 
 
+def enrich_signal_rows_with_planner_trace(
+    rows: List[Dict[str, Any]],
+    planner_payload: Dict[str, Any] | None,
+) -> List[Dict[str, Any]]:
+    """Attach planner risk trace to live scanner rows before UI normalization.
+
+    Live scan cards are rendered from raw scanner worker results, while
+    loss-risk is produced later by the planner handoff. Merge by ticker so the
+    operator sees the same risk trace in live scan cards as in archived rows.
+    """
+    payload = planner_payload if isinstance(planner_payload, dict) else {}
+    trace_by_ticker: Dict[str, Dict[str, Any]] = {}
+    for section in ("decisions", "watchlist_meta"):
+        for item in payload.get(section, []) or []:
+            if not isinstance(item, dict):
+                continue
+            ticker = str(item.get("ticker") or item.get("Ticker") or "").strip()
+            if not ticker:
+                continue
+            trace = trace_by_ticker.setdefault(ticker, {})
+            for key in (
+                "decision",
+                "decision_bucket",
+                "priority_rank",
+                "loss_risk_score",
+                "theme_risk",
+                "rationale",
+                "relative_rank_score",
+                "relative_rank_pct",
+                "relative_rank_model",
+            ):
+                if _is_present(item.get(key)):
+                    trace[key] = item.get(key)
+
+    enriched: List[Dict[str, Any]] = []
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        merged = dict(row)
+        ticker = str(
+            _coalesce_present(
+                merged.get("ticker"),
+                merged.get("티커"),
+                merged.get("Ticker"),
+                merged.get("symbol"),
+            )
+            or ""
+        ).strip()
+        for key, value in trace_by_ticker.get(ticker, {}).items():
+            if not _is_present(merged.get(key)):
+                merged[key] = value
+        enriched.append(merged)
+    return enriched
+
+
 def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = None) -> List[Dict[str, Any]]:
     """Normalize scanner/archive rows into a compact decision list.
 

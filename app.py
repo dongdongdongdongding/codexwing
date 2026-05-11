@@ -34,6 +34,7 @@ from modules.ui_helpers import (
     build_top_candidate_rows,
     build_watchlist_display_rows,
     compute_progress_fraction,
+    enrich_signal_rows_with_planner_trace,
     format_volume_display,
     resolve_display_price,
     should_auto_refresh_scan_panel,
@@ -828,7 +829,11 @@ def _render_scan_top_candidates(results_df, bridge_info, market):
     # 2026-05-09: 8:2 자본 배분에 따라 카드를 두 섹션으로 분리.
     # Stream A (안전 80%) = PRIORITY/WATCHLIST/OBSERVE 위주
     # Stream B (급등 20%) = EXCEPTION_LEADER만
-    raw_records = results_df.to_dict("records")
+    planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+    raw_records = enrich_signal_rows_with_planner_trace(
+        results_df.to_dict("records"),
+        planner_payload,
+    )
     streams = split_stream_records(raw_records)
     stream_a_records = streams["stream_a"]
     stream_b_records = streams["stream_b"]
@@ -869,7 +874,6 @@ def _render_scan_top_candidates(results_df, bridge_info, market):
         st.info("Stream B(EXCEPTION_LEADER) 후보 없음 — 시장에 surge 신호 부재.")
 
     # ─── 종목 상세 selectbox (둘 다 통합) ───
-    planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
     view = build_top_candidate_compact_view(planner_payload, limit=5)
     detail_by_ticker = view.get("detail_by_ticker", {})
     all_signal_rows = stream_a_rows + stream_b_rows
@@ -1604,7 +1608,12 @@ def _render_scan_results_snapshot(snapshot):
 
     if len(df_results) > 5:
         with st.expander("추가 후보 보기", expanded=False):
-            _render_signal_card_list(build_signal_display_rows(df_results.iloc[5:].to_dict("records")))
+            planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+            extra_records = enrich_signal_rows_with_planner_trace(
+                df_results.iloc[5:].to_dict("records"),
+                planner_payload,
+            )
+            _render_signal_card_list(build_signal_display_rows(extra_records))
     _render_agent_bridge_status(bridge_info, market)
 
 
