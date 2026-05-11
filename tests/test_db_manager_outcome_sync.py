@@ -67,7 +67,7 @@ def test_authoritative_row_prefers_planner_telemetry_over_newer_raw_row():
             "recommended_at": "2026-05-11T05:50:42+00:00",
             "priority_rank": 1,
             "decision_bucket": "picked",
-            "relative_rank_model": "kosdaq_floor_upside_relative_v3",
+            "relative_rank_model": "kosdaq_floor_win_relative_v4",
         },
     ]
 
@@ -79,7 +79,7 @@ def test_merge_non_empty_payload_preserves_existing_rank_when_raw_has_none():
     merged = db._merge_non_empty_payload(
         {
             "id": "planner",
-            "relative_rank_model": "kosdaq_floor_upside_relative_v3",
+            "relative_rank_model": "kosdaq_floor_win_relative_v4",
             "relative_rank_score": 54.7,
             "priority_rank": 1,
             "decision_bucket": "picked",
@@ -95,7 +95,7 @@ def test_merge_non_empty_payload_preserves_existing_rank_when_raw_has_none():
         },
     )
 
-    assert merged["relative_rank_model"] == "kosdaq_floor_upside_relative_v3"
+    assert merged["relative_rank_model"] == "kosdaq_floor_win_relative_v4"
     assert merged["relative_rank_score"] == 54.7
     assert merged["priority_rank"] == 1
     assert merged["decision_bucket"] == "picked"
@@ -126,17 +126,47 @@ def test_merge_non_empty_payload_clears_rank_for_planner_hard_risk_observe():
             "priority_rank": 18,
             "decision_bucket": "watchlist",
             "decision": "OBSERVE",
-            "relative_rank_model": "kospi_decision_score_relative_v1",
+            "relative_rank_model": "kospi_floor_win_relative_v2",
         },
         {
             "priority_rank": None,
             "decision_bucket": "watchlist",
             "decision": "OBSERVE",
-            "relative_rank_model": "kospi_decision_score_relative_v1",
+            "relative_rank_model": "kospi_floor_win_relative_v2",
             "loss_risk_score": 98.618,
         },
     )
 
     assert merged["priority_rank"] is None
     assert merged["decision_bucket"] == "watchlist"
-    assert merged["relative_rank_model"] == "kospi_decision_score_relative_v1"
+    assert merged["relative_rank_model"] == "kospi_floor_win_relative_v2"
+
+
+def test_merge_non_empty_payload_clears_stale_relative_rank_for_exception_leader():
+    db = DBManager.__new__(DBManager)
+    merged = db._merge_non_empty_payload(
+        {
+            "priority_rank": 2,
+            "decision_bucket": "exception_leader",
+            "decision": "EXCEPTION_LEADER",
+            "relative_rank_model": "kosdaq_floor_upside_relative_v3",
+            "relative_rank_score": 45.0,
+            "relative_rank_pct": 0.2,
+            "regime_adjusted_grade": "RELATIVE_WATCHLIST",
+        },
+        {
+            "priority_rank": 2,
+            "decision_bucket": "exception_leader",
+            "decision": "EXCEPTION_LEADER",
+            "relative_rank_model": None,
+            "relative_rank_score": None,
+            "relative_rank_pct": None,
+            "regime_adjusted_grade": None,
+        },
+    )
+
+    assert merged["priority_rank"] == 2
+    assert merged["relative_rank_model"] is None
+    assert merged["relative_rank_score"] is None
+    assert merged["relative_rank_pct"] is None
+    assert merged["regime_adjusted_grade"] is None

@@ -65,6 +65,54 @@ def test_exception_leader_collection_preserves_scanner_feature_fields(monkeypatc
     assert meta["kr_universe_role"] == "EXPLOSIVE_LEADER"
 
 
+def test_exception_leader_collection_skips_hard_loss_risk(monkeypatch):
+    monkeypatch.setattr(
+        "multi_agent.workflows.legacy_orchestration._resolve_ticker_names",
+        lambda market, tickers: {ticker: "Risk Co" for ticker in tickers},
+    )
+    monkeypatch.setattr(
+        "multi_agent.workflows.legacy_orchestration.get_ticker_profile",
+        lambda **kwargs: {},
+    )
+    context = RunContext(run_id="RUN-TEST", market="KOSDAQ")
+    scanner_payload = {
+        "summary": {
+            "input_meta": {"market_gate": {"gate": "GREEN"}},
+            "diagnostics": {
+                "reject_reasons_by_symbol": {"123450.KQ": "KR_HARD_FILTER_FAIL"},
+                "reject_details_by_symbol": {
+                    "123450.KQ": [
+                        {
+                            "ticker": "123450.KQ",
+                            "alpha_score": 99.0,
+                            "tech_score": 95,
+                            "whale_score": 80,
+                            "volume_ratio": 0.2,
+                            "volume_confirmed": False,
+                            "conviction_score": 95.0,
+                            "prob_5": 12.0,
+                            "prob_clean": 15.0,
+                            "real_trend": "DOWN",
+                            "tier_sort": 3,
+                            "position": "Peak",
+                            "tier": "T3",
+                        }
+                    ]
+                },
+            },
+        }
+    }
+
+    result = _collect_exception_leaders_from_scanner_payload(
+        scanner_payload=scanner_payload,
+        context=context,
+        max_watchlist=1,
+    )
+
+    assert result["watchlist"] == []
+    assert result["skipped_hard_loss_risk"] == 1
+
+
 def test_realized_outcome_placeholder_preserves_watchlist_feature_fields(monkeypatch):
     monkeypatch.setattr(
         "multi_agent.workflows.legacy_orchestration.get_stock_theme_record",
@@ -181,6 +229,29 @@ def test_realized_outcome_placeholder_excludes_hard_loss_risk_from_trade_rank():
     assert by_ticker["111111.KQ"]["priority_rank"] is None
     assert by_ticker["222222.KQ"]["decision_bucket"] == "watchlist"
     assert by_ticker["222222.KQ"]["priority_rank"] == 1
+
+
+def test_realized_outcome_placeholder_demotes_hard_risk_exception_meta():
+    context = RunContext(run_id="RUN-TEST", market="KOSPI")
+    planner_handoff = SimpleNamespace(
+        decisions=[],
+        watchlist=["111111.KS"],
+        watchlist_meta=[
+            {
+                "ticker": "111111.KS",
+                "stock_name": "Hard Exception",
+                "reason": "exception_leader_watchlist",
+                "loss_risk_score": 92.0,
+            }
+        ],
+    )
+
+    payload = _build_realized_outcomes_placeholder(context, planner_handoff, scanner_payload={})
+
+    row = payload["outcomes"][0]
+    assert row["decision"] == "OBSERVE"
+    assert row["decision_bucket"] == "watchlist"
+    assert row["priority_rank"] is None
 
 
 def test_relative_zero_pass_decisions_use_real_near_miss_meta():

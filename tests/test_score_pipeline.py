@@ -67,7 +67,7 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertAlmostEqual(decision.low_prob_high_score, 36.666667, places=6)
         self.assertIn("inverted_prob_features:", " ".join(decision.rationale))
         self.assertEqual(decision.regime_adjusted_grade, "RELATIVE_PRIORITY")
-        self.assertEqual(decision.relative_rank_model, "kospi_decision_score_relative_v1")
+        self.assertEqual(decision.relative_rank_model, "kospi_floor_win_relative_v2")
         self.assertEqual(decision.market_gate, "YELLOW")
         self.assertEqual(decision.scanner_timeframe_profile, "SWING_DAILY")
         self.assertEqual(decision.kr_universe_role, "CORE_TREND")
@@ -110,7 +110,7 @@ class ScorePipelineTests(unittest.TestCase):
         decision = planner.decisions[0]
         self.assertNotEqual(decision.decision, "AVOID")
         self.assertEqual(decision.regime_adjusted_grade, "RELATIVE_PRIORITY")
-        self.assertEqual(decision.relative_rank_model, "kosdaq_floor_upside_relative_v3")
+        self.assertEqual(decision.relative_rank_model, "kosdaq_floor_win_relative_v4")
         self.assertIn("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE", decision.theme_risk)
         self.assertIn("kosdaq_swing_inverted_prob_override", " ".join(decision.rationale))
 
@@ -158,7 +158,7 @@ class ScorePipelineTests(unittest.TestCase):
         )
 
         self.assertEqual(planner.decisions[0].ticker, "222222.KQ")
-        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_upside_relative_v3")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v4")
 
     def test_kosdaq_relative_ranking_penalizes_loss_risk(self):
         context = RunContext(run_id="RUN-KQ-FLOOR", market="KOSDAQ")
@@ -210,7 +210,59 @@ class ScorePipelineTests(unittest.TestCase):
         )
 
         self.assertEqual(planner.decisions[0].ticker, "444444.KQ")
-        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_upside_relative_v3")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v4")
+
+    def test_kospi_relative_ranking_penalizes_loss_risk(self):
+        context = RunContext(run_id="RUN-KS-FLOOR", market="KOSPI")
+        planner = build_planner_handoff(
+            context=context,
+            weak_ratio=0.0,
+            candidates=[
+                {
+                    "ticker": "111111.KS",
+                    "stock_name": "Risky KOSPI Chase",
+                    "score": 98.0,
+                    "feature_snapshot": {
+                        "market": "KOSPI",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 99.0,
+                        "tech_score": 90.0,
+                        "decision_score": 98.0,
+                        "prob_5": 12.0,
+                        "prob_clean": 15.0,
+                        "volume_ratio": 0.2,
+                        "volume_confirmed": False,
+                        "position": "Peak",
+                        "tier": "T3",
+                        "real_trend": "DOWN",
+                    },
+                },
+                {
+                    "ticker": "222222.KS",
+                    "stock_name": "Supported KOSPI",
+                    "score": 86.0,
+                    "feature_snapshot": {
+                        "market": "KOSPI",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 86.0,
+                        "tech_score": 75.0,
+                        "decision_score": 86.0,
+                        "prob_5": 42.0,
+                        "prob_clean": 42.0,
+                        "volume_ratio": 3.0,
+                        "volume_confirmed": True,
+                        "position": "Rising",
+                        "tier": "T1",
+                        "real_trend": "UP",
+                    },
+                },
+            ],
+        )
+
+        self.assertEqual(planner.decisions[0].ticker, "222222.KS")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kospi_floor_win_relative_v2")
 
     def test_kosdaq_relative_admission_promotes_soft_risk_when_no_tradeable_candidate(self):
         context = RunContext(run_id="RUN-KQ-ADMIT", market="KOSDAQ")

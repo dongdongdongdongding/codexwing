@@ -19,13 +19,20 @@ from multi_agent.agents.kr_quant_reranker import (
 )
 
 
-KOSDAQ_RELATIVE_RANK_MODEL = "kosdaq_floor_upside_relative_v3"
+KOSPI_RELATIVE_RANK_MODEL = "kospi_floor_win_relative_v2"
+KOSPI_RELATIVE_WEIGHTS = {
+    "decision_score": 0.55,
+    "volume_ratio": 0.20,
+    "loss_risk_score": -0.10,
+}
+
+KOSDAQ_RELATIVE_RANK_MODEL = "kosdaq_floor_win_relative_v4"
 KOSDAQ_RELATIVE_WEIGHTS = {
-    "tech_score": 0.25,
-    "volume_ratio": 0.30,
-    "prob_clean": 0.10,
+    "tech_score": 0.10,
+    "volume_ratio": 0.25,
+    "prob_clean": 0.20,
     "low_model_prob_score": 0.10,
-    "low_prob_high_score": 0.20,
+    "low_prob_high_score": 0.15,
     "loss_risk_score": -0.10,
 }
 
@@ -801,18 +808,24 @@ def _percentile_by_feature(rows: List[Dict[str, Any]], feature: str) -> Dict[int
     return out
 
 
-def _attach_kosdaq_relative_scores(rows: List[Dict[str, Any]]) -> None:
+def _attach_market_relative_scores(
+    rows: List[Dict[str, Any]],
+    *,
+    market: str,
+    weights: Dict[str, float],
+    model: str,
+) -> None:
     percentiles = {
         feature: _percentile_by_feature(rows, feature)
-        for feature in KOSDAQ_RELATIVE_WEIGHTS
+        for feature in weights
     }
-    thresholds = get_loss_risk_gate_thresholds("KOSDAQ")
-    soft_cap = float(thresholds.get("soft", 45.0))
+    thresholds = get_loss_risk_gate_thresholds(market)
+    soft_cap = float(thresholds.get("soft", 50.0))
     hard_cap = float(thresholds.get("hard", 65.0))
     for idx, row in enumerate(rows):
         total = 0.0
         score = 0.0
-        for feature, weight in KOSDAQ_RELATIVE_WEIGHTS.items():
+        for feature, weight in weights.items():
             feature_pct = percentiles.get(feature, {}).get(idx)
             if feature_pct is None:
                 feature_pct = 50.0
@@ -824,7 +837,7 @@ def _attach_kosdaq_relative_scores(rows: List[Dict[str, Any]]) -> None:
         loss_risk_score = _candidate_feature_float(row, "loss_risk_score")
         if loss_risk_score is None:
             loss_risk_score = compute_loss_risk_features(
-                market_subtype="KOSDAQ",
+                market_subtype=market,
                 alpha_score=_candidate_feature_float(row, "alpha_score"),
                 tech_score=_candidate_feature_float(row, "tech_score"),
                 whale_score=_candidate_feature_float(row, "whale_score"),
@@ -862,11 +875,29 @@ def _attach_kosdaq_relative_scores(rows: List[Dict[str, Any]]) -> None:
             ).get("loss_risk_score")
         if relative_score is not None and loss_risk_score is not None:
             if float(loss_risk_score) >= hard_cap:
-                relative_score = min(relative_score, 45.0)
+                relative_score = min(relative_score, 30.0)
             elif float(loss_risk_score) >= soft_cap:
                 relative_score = min(relative_score, 55.0)
         row["_relative_rank_score"] = relative_score
-        row["_relative_rank_model"] = KOSDAQ_RELATIVE_RANK_MODEL
+        row["_relative_rank_model"] = model
+
+
+def _attach_kospi_relative_scores(rows: List[Dict[str, Any]]) -> None:
+    _attach_market_relative_scores(
+        rows,
+        market="KOSPI",
+        weights=KOSPI_RELATIVE_WEIGHTS,
+        model=KOSPI_RELATIVE_RANK_MODEL,
+    )
+
+
+def _attach_kosdaq_relative_scores(rows: List[Dict[str, Any]]) -> None:
+    _attach_market_relative_scores(
+        rows,
+        market="KOSDAQ",
+        weights=KOSDAQ_RELATIVE_WEIGHTS,
+        model=KOSDAQ_RELATIVE_RANK_MODEL,
+    )
 
 
 def _relative_rank_score(cand: Dict[str, Any], market: str) -> tuple[Optional[float], str]:
@@ -875,7 +906,7 @@ def _relative_rank_score(cand: Dict[str, Any], market: str) -> tuple[Optional[fl
         value = _candidate_feature_float(cand, "decision_score")
         if value is None:
             value = _candidate_feature_float(cand, "score")
-        return value, "kospi_decision_score_relative_v1"
+        return value, KOSPI_RELATIVE_RANK_MODEL
     if market == "KOSDAQ":
         inverted = compute_low_prob_high_score_features(
             alpha_score=_candidate_feature_float(cand, "alpha_score"),
@@ -948,6 +979,8 @@ def _attach_relative_ranks(candidates: List[Dict[str, Any]], run_market: str) ->
         groups.setdefault(market, []).append(cand)
 
     for market, rows in groups.items():
+        if market == "KOSPI":
+            _attach_kospi_relative_scores(rows)
         if market == "KOSDAQ":
             _attach_kosdaq_relative_scores(rows)
         scored = [row for row in rows if row.get("_relative_rank_score") is not None]
@@ -982,7 +1015,7 @@ def build_planner_handoff(
         basket_score = float(basket_meta.get("score", quant_meta.get("score", row.get("score", 0.0))) or 0.0)
         quant_score = float(quant_meta.get("score", row.get("score", 0.0)) or 0.0)
         scanner_score = float(row.get("score", 0.0) or 0.0)
-        if run_market == "KOSDAQ":
+        if run_market in {"KOSPI", "KOSDAQ"}:
             return (relative_score, basket_score, quant_score, scanner_score)
         return (basket_score, quant_score, scanner_score)
 

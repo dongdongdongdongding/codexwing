@@ -51,21 +51,22 @@ FEATURES = [
 ]
 
 KOSPI_WEIGHTS = {
-    # Current evidence says KOSPI's legacy decision_score is still the most
-    # stable relative ranker. Keep it primary until richer OHLCV factors have
-    # higher fill and pass walk-forward validation.
-    "decision_score": 1.00,
+    # 2026-05-11 KR SWING floor/win grid: modestly improves 1/3/5/7d win
+    # and average return versus decision_score-only without worsening minima.
+    "decision_score": 0.55,
+    "volume_ratio": 0.20,
+    "loss_risk_score": -0.10,
 }
 
 KOSDAQ_WEIGHTS = {
-    # 2026-05-11 Supabase KR SWING grid search: rank objective tuned for
-    # floor defense plus upside capture. Compared with v2, rank1 5d median
-    # moved from negative to strongly positive while top5 max capture held.
-    "tech_score": 0.25,
-    "volume_ratio": 0.30,
-    "prob_clean": 0.10,
+    # 2026-05-11 KR SWING floor/win grid: improves 3/5/7d win and average
+    # return, keeps 3/5d minima stable, and improves 7d minimum. 1d remains
+    # a separate early-diagnostic horizon rather than the swing objective.
+    "tech_score": 0.10,
+    "volume_ratio": 0.25,
+    "prob_clean": 0.20,
     "low_model_prob_score": 0.10,
-    "low_prob_high_score": 0.20,
+    "low_prob_high_score": 0.15,
     "loss_risk_score": -0.10,
 }
 
@@ -172,7 +173,19 @@ def _add_relative_scores(df: pd.DataFrame) -> pd.DataFrame:
     work["relative_composite_score"] = float("nan")
     for (trade_date, market), group in work.groupby(["trade_date", "market"], dropna=False):
         weights = KOSPI_WEIGHTS if market == "KOSPI" else KOSDAQ_WEIGHTS
-        work.loc[group.index, "relative_composite_score"] = _composite_for_market(group, weights)
+        score = _composite_for_market(group, weights)
+        thresholds = {"KOSPI": {"soft": 50.0, "hard": 65.0}, "KOSDAQ": {"soft": 45.0, "hard": 65.0}}.get(
+            str(market),
+            {"soft": 58.0, "hard": 75.0},
+        )
+        if "loss_risk_score" in group.columns:
+            loss = pd.to_numeric(group["loss_risk_score"], errors="coerce")
+            score = score.mask(loss.ge(float(thresholds["hard"])), score.clip(upper=30.0))
+            score = score.mask(
+                loss.ge(float(thresholds["soft"])) & loss.lt(float(thresholds["hard"])),
+                score.clip(upper=55.0),
+            )
+        work.loc[group.index, "relative_composite_score"] = score
     work["relative_composite_rank"] = work.groupby(["trade_date", "market"])["relative_composite_score"].rank(pct=True, ascending=False)
     return work
 
@@ -186,6 +199,8 @@ def _metric(vals: pd.Series) -> Dict[str, Any]:
         "win_pct": round(float(clean.gt(0).mean() * 100.0), 2),
         "avg_pct": round(float(clean.mean()), 3),
         "median_pct": round(float(clean.median()), 3),
+        "max_pct": round(float(clean.max()), 3),
+        "min_pct": round(float(clean.min()), 3),
         "hit5_pct": round(float(clean.ge(5.0).mean() * 100.0), 2),
         "loss5_pct": round(float(clean.le(-5.0).mean() * 100.0), 2),
     }

@@ -182,14 +182,22 @@ class DBManager:
 
     def _merge_non_empty_payload(self, existing_payload, payload):
         merged_payload = dict(existing_payload or {})
+        planner_payload = self._has_planner_telemetry(payload or {})
         for key, value in (payload or {}).items():
             if (
                 key == "priority_rank"
                 and value is None
                 and (
                     str((payload or {}).get("decision_bucket") or "").lower() == "ignored"
-                    or self._has_planner_telemetry(payload or {})
+                    or planner_payload
                 )
+            ):
+                merged_payload[key] = None
+                continue
+            if (
+                planner_payload
+                and key in {"relative_rank_model", "relative_rank_score", "relative_rank_pct", "regime_adjusted_grade"}
+                and value is None
             ):
                 merged_payload[key] = None
                 continue

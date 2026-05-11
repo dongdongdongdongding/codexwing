@@ -256,13 +256,24 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
             decision_label = "WATCHLIST_ONLY"
         if watchlist_reason == "exception_leader_watchlist":
             decision_label = "EXCEPTION_LEADER"
+        loss_risk_score = meta.get("loss_risk_score")
+        loss_hard_cap = float(get_loss_risk_gate_thresholds(context.market).get("hard", 65.0))
+        try:
+            is_loss_hard_cap = loss_risk_score is not None and float(loss_risk_score) >= loss_hard_cap
+        except Exception:
+            is_loss_hard_cap = False
+        if is_loss_hard_cap:
+            decision_label = "OBSERVE"
+            archive_priority_rank = None
+        else:
+            archive_priority_rank = int(rank)
         rows.append(
             {
                 "run_id": context.run_id,
                 "market": context.market,
                 "ticker": ticker,
                 "stock_name": str(meta.get("stock_name", "") or ""),
-                "priority_rank": int(rank),
+                "priority_rank": archive_priority_rank,
                 "decision": decision_label,
                 "decision_bucket": classify_decision_bucket(decision_label),
                 "status": "PENDING",
@@ -1656,6 +1667,7 @@ def _collect_exception_leaders_from_scanner_payload(
 
     scored: List[Tuple[float, str, Dict[str, Any]]] = []
     skipped_missing_features = 0
+    skipped_hard_loss_risk = 0
     skipped_missing_feature_examples: List[Dict[str, Any]] = []
     for ticker_raw, reason_value in reject_by_symbol.items():
         ticker = str(ticker_raw or "").strip().upper()
@@ -1734,6 +1746,25 @@ def _collect_exception_leaders_from_scanner_payload(
         if exception_score < 28.0:
             continue
 
+        loss_risk_market = resolve_profile_market(context.market, ticker)
+        loss_risk = compute_loss_risk_features(
+            market_subtype=loss_risk_market,
+            alpha_score=alpha_score,
+            tech_score=detail.get("tech_score"),
+            whale_score=detail.get("whale_score"),
+            ml_prob=prob_5,
+            prob_clean=prob_clean,
+            volume_ratio=detail.get("volume_ratio"),
+            volume_confirmed=detail.get("volume_confirmed"),
+            position=detail.get("position"),
+            tier=detail.get("tier"),
+            trend=real_trend,
+        )
+        loss_risk_score = float(loss_risk.get("loss_risk_score", 0.0) or 0.0)
+        if loss_risk_score >= float(get_loss_risk_gate_thresholds(loss_risk_market).get("hard", 65.0)):
+            skipped_hard_loss_risk += 1
+            continue
+
         scored.append(
             (
                 float(exception_score),
@@ -1759,6 +1790,7 @@ def _collect_exception_leaders_from_scanner_payload(
                     "profile_signals": _safe_int((profile or {}).get("signals", 0)),
                     "profile_win_5d_pct": _safe_float((profile or {}).get("win_5d_pct", 0.0)),
                     "profile_avg_5d_pct": _safe_float((profile or {}).get("avg_5d_pct", 0.0)),
+                    "loss_risk_score": round(loss_risk_score, 3),
                     "market_gate": str(market_gate).upper(),
                     "regime": regime,
                     "entry_reference_price": entry_reference_price,
@@ -1786,6 +1818,7 @@ def _collect_exception_leaders_from_scanner_payload(
         "watchlist_meta": watchlist_meta,
         "considered_filtered_symbols": len(reject_by_symbol),
         "skipped_missing_features": skipped_missing_features,
+        "skipped_hard_loss_risk": skipped_hard_loss_risk,
         "skipped_missing_feature_examples": skipped_missing_feature_examples,
     }
 
