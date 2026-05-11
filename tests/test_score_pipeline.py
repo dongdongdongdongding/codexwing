@@ -212,6 +212,66 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(planner.decisions[0].ticker, "444444.KQ")
         self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_upside_relative_v3")
 
+    def test_kosdaq_relative_admission_promotes_soft_risk_when_no_tradeable_candidate(self):
+        context = RunContext(run_id="RUN-KQ-ADMIT", market="KOSDAQ")
+        planner = build_planner_handoff(
+            context=context,
+            weak_ratio=0.0,
+            candidates=[
+                {
+                    "ticker": "555555.KQ",
+                    "stock_name": "Hard Risk",
+                    "score": 98.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 99.0,
+                        "tech_score": 95.0,
+                        "decision_score": 98.0,
+                        "prob_5": 10.0,
+                        "prob_clean": 12.0,
+                        "volume_ratio": 0.2,
+                        "volume_confirmed": False,
+                        "position": "Peak",
+                        "tier": "T3",
+                        "real_trend": "DOWN",
+                    },
+                },
+                {
+                    "ticker": "666666.KQ",
+                    "stock_name": "Soft Relative",
+                    "score": 72.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 58.0,
+                        "tech_score": 65.0,
+                        "decision_score": 72.0,
+                        "prob_5": 50.0,
+                        "prob_clean": 50.0,
+                        "phase25_prob": 20.0,
+                        "phase25_recommended_threshold": 60.0,
+                        "phase25_signal_direction": "normal",
+                        "phase25_variant": "phase25_kosdaq_swing",
+                        "volume_ratio": 2.5,
+                        "volume_confirmed": True,
+                        "position": "Rising",
+                        "tier": "T1",
+                        "real_trend": "UP",
+                    },
+                },
+            ],
+        )
+
+        soft = next(dec for dec in planner.decisions if dec.ticker == "666666.KQ")
+        hard = next(dec for dec in planner.decisions if dec.ticker == "555555.KQ")
+        self.assertEqual(soft.decision, "WATCHLIST_ONLY")
+        self.assertGreaterEqual(float(hard.loss_risk_score or 0.0), 65.0)
+        self.assertIn("666666.KQ", planner.watchlist)
+        self.assertIn("kosdaq_relative_admission_floor", " ".join(soft.rationale))
+
 
 if __name__ == "__main__":
     unittest.main()

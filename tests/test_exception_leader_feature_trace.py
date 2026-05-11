@@ -145,6 +145,44 @@ def test_realized_outcome_placeholder_ranks_only_tradeable_decisions():
     assert by_ticker["222222.KQ"]["priority_rank"] == 1
 
 
+def test_realized_outcome_placeholder_excludes_hard_loss_risk_from_trade_rank():
+    context = RunContext(run_id="RUN-TEST", market="KOSDAQ")
+    planner_handoff = SimpleNamespace(
+        decisions=[
+            SimpleNamespace(
+                ticker="111111.KQ",
+                stock_name="Hard Risk Observe",
+                priority_rank=1,
+                decision="OBSERVE",
+                loss_risk_score=88.0,
+                target_horizon_days=3,
+                scan_mode="SWING",
+                strategy_family="KR_CORE",
+            ),
+            SimpleNamespace(
+                ticker="222222.KQ",
+                stock_name="Soft Watchlist",
+                priority_rank=2,
+                decision="WATCHLIST_ONLY",
+                loss_risk_score=40.0,
+                target_horizon_days=3,
+                scan_mode="SWING",
+                strategy_family="KR_CORE",
+            ),
+        ],
+        watchlist=[],
+        watchlist_meta=[],
+    )
+
+    payload = _build_realized_outcomes_placeholder(context, planner_handoff, scanner_payload={})
+
+    by_ticker = {row["ticker"]: row for row in payload["outcomes"]}
+    assert by_ticker["111111.KQ"]["decision_bucket"] == "watchlist"
+    assert by_ticker["111111.KQ"]["priority_rank"] is None
+    assert by_ticker["222222.KQ"]["decision_bucket"] == "watchlist"
+    assert by_ticker["222222.KQ"]["priority_rank"] == 1
+
+
 def test_relative_zero_pass_decisions_use_real_near_miss_meta():
     decisions = _build_relative_zero_pass_decisions(
         watchlist_meta=[

@@ -129,7 +129,13 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
         ticker = str(getattr(dec, "ticker", "UNKNOWN"))
         seen_tickers.add(ticker)
         decision_bucket = classify_decision_bucket(getattr(dec, "decision", "UNKNOWN"))
-        if decision_bucket == "ignored":
+        loss_risk_score = getattr(dec, "loss_risk_score", None)
+        loss_hard_cap = float(get_loss_risk_gate_thresholds(context.market).get("hard", 65.0))
+        try:
+            is_loss_hard_cap = loss_risk_score is not None and float(loss_risk_score) >= loss_hard_cap
+        except Exception:
+            is_loss_hard_cap = False
+        if decision_bucket == "ignored" or is_loss_hard_cap:
             archive_priority_rank = None
         else:
             trade_priority_rank += 1

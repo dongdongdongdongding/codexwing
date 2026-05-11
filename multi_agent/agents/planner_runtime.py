@@ -1455,6 +1455,67 @@ def build_planner_handoff(
         if decision == "AVOID":
             avoid_list.append(ticker)
 
+    if run_market == "KOSDAQ" and decisions:
+        hard_cap = float(get_loss_risk_gate_thresholds("KOSDAQ").get("hard", 65.0))
+        has_tradeable_below_hard = any(
+            dec.decision != "AVOID"
+            and dec.loss_risk_score is not None
+            and float(dec.loss_risk_score) < hard_cap
+            for dec in decisions
+        )
+    else:
+        hard_cap = 0.0
+        has_tradeable_below_hard = True
+
+    if run_market == "KOSDAQ" and decisions and not has_tradeable_below_hard:
+        relative_candidates = [
+            dec
+            for dec in decisions
+            if dec.relative_rank_model == KOSDAQ_RELATIVE_RANK_MODEL
+            and dec.loss_risk_score is not None
+            and float(dec.loss_risk_score) < hard_cap
+        ]
+        if relative_candidates:
+            promoted = sorted(
+                relative_candidates,
+                key=lambda dec: (
+                    float(dec.relative_rank_score or 0.0),
+                    -float(dec.loss_risk_score or 0.0),
+                ),
+                reverse=True,
+            )[0]
+            promoted.decision = "WATCHLIST_ONLY"
+            promoted.rationale.append("kosdaq_relative_admission_floor:no_tradeable_candidate")
+            if "KOSDAQ_RELATIVE_ADMISSION_FLOOR" not in promoted.theme_risk:
+                promoted.theme_risk.append("KOSDAQ_RELATIVE_ADMISSION_FLOOR")
+            if promoted.ticker in avoid_list:
+                avoid_list.remove(promoted.ticker)
+            if promoted.ticker not in watchlist:
+                watchlist.insert(0, promoted.ticker)
+                watchlist_meta.insert(
+                    0,
+                    {
+                        "ticker": promoted.ticker,
+                        "stock_name": promoted.stock_name,
+                        "decision": promoted.decision,
+                        "decision_score": promoted.decision_score,
+                        "tech_score": promoted.tech_score,
+                        "whale_score": promoted.whale_score,
+                        "volume": promoted.volume,
+                        "volume_ratio": promoted.volume_ratio,
+                        "volume_confirmed": promoted.volume_confirmed,
+                        "loss_risk_score": promoted.loss_risk_score,
+                        "relative_rank_score": promoted.relative_rank_score,
+                        "relative_rank_pct": promoted.relative_rank_pct,
+                        "regime_adjusted_grade": promoted.regime_adjusted_grade,
+                        "relative_rank_model": promoted.relative_rank_model,
+                        "market_gate": promoted.market_gate or None,
+                        "scanner_timeframe_profile": promoted.scanner_timeframe_profile or None,
+                        "kr_universe_role": promoted.kr_universe_role or None,
+                        "reason": "kosdaq_relative_admission_floor",
+                    },
+                )
+
     global_warnings: List[WarningItem] = []
     if not decisions:
         global_warnings.append(
