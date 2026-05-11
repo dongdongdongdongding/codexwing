@@ -117,3 +117,26 @@ def test_merge_non_empty_payload_clears_rank_zero_to_none_for_ignored():
     )
 
     assert merged["priority_rank"] is None
+
+
+def test_merge_non_empty_payload_clears_rank_for_planner_hard_risk_observe():
+    db = DBManager.__new__(DBManager)
+    merged = db._merge_non_empty_payload(
+        {
+            "priority_rank": 18,
+            "decision_bucket": "watchlist",
+            "decision": "OBSERVE",
+            "relative_rank_model": "kospi_decision_score_relative_v1",
+        },
+        {
+            "priority_rank": None,
+            "decision_bucket": "watchlist",
+            "decision": "OBSERVE",
+            "relative_rank_model": "kospi_decision_score_relative_v1",
+            "loss_risk_score": 98.618,
+        },
+    )
+
+    assert merged["priority_rank"] is None
+    assert merged["decision_bucket"] == "watchlist"
+    assert merged["relative_rank_model"] == "kospi_decision_score_relative_v1"

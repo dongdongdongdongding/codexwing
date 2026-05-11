@@ -186,7 +186,10 @@ class DBManager:
             if (
                 key == "priority_rank"
                 and value is None
-                and str((payload or {}).get("decision_bucket") or "").lower() == "ignored"
+                and (
+                    str((payload or {}).get("decision_bucket") or "").lower() == "ignored"
+                    or self._has_planner_telemetry(payload or {})
+                )
             ):
                 merged_payload[key] = None
                 continue
