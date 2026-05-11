@@ -248,7 +248,9 @@ alter table public.market_scan_results
   add column if not exists theme_source text,
   add column if not exists theme_inference_status text,
   add column if not exists secondary_themes jsonb,
-  add column if not exists theme_routing_path text;
+  add column if not exists theme_routing_path text,
+  add column if not exists rationale jsonb,
+  add column if not exists theme_risk jsonb;
 
 create index if not exists idx_market_scan_results_run_id
   on public.market_scan_results (run_id);

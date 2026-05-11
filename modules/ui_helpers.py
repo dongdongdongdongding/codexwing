@@ -103,6 +103,46 @@ def _format_score_label(value: Any) -> str:
     return f"{numeric:.1f}"
 
 
+def _format_risk_score_label(value: Any) -> str:
+    numeric = _parse_percent_value(value)
+    if numeric is None:
+        return "-"
+    return f"{numeric:.1f}"
+
+
+def _risk_level_label(value: Any) -> str:
+    numeric = _parse_percent_value(value)
+    if numeric is None:
+        return ""
+    if numeric >= 65:
+        return "높음"
+    if numeric >= 45:
+        return "주의"
+    return "낮음"
+
+
+def _coerce_text_list(value: Any, limit: int = 3) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        source = value
+    elif isinstance(value, tuple):
+        source = list(value)
+    else:
+        text = str(value).strip()
+        if not text or text.lower() == "none":
+            return []
+        source = re.split(r"[,/|]", text)
+    out: List[str] = []
+    for item in source:
+        text = str(item).strip()
+        if text and text.lower() != "none" and text not in out:
+            out.append(text)
+        if len(out) >= max(int(limit or 0), 0):
+            break
+    return out
+
+
 def is_exception_leader_row(rec: Dict[str, Any]) -> bool:
     """8:2 자본 배분 정책의 Stream B (EXCEPTION_LEADER) 분류 규칙.
 
@@ -199,6 +239,11 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
             row.get("1D Change"),
         )
         score_source = _coalesce_present(row.get("decision_score"), row.get("Decision Score"), row.get("score"))
+        loss_risk_source = _coalesce_present(row.get("loss_risk_score"), row.get("Loss Risk"))
+        risk_flags = _coerce_text_list(
+            _coalesce_present(row.get("theme_risk"), row.get("risk_flags"), row.get("rationale")),
+            limit=3,
+        )
         theme = str(_coalesce_present(row.get("primary_theme"), row.get("테마"), row.get("Theme")) or "").strip()
         trend = str(_coalesce_present(row.get("trend"), row.get("추세"), row.get("Trend"), row.get("initial_trend")) or "").strip()
         entry = str(_coalesce_present(row.get("매수가(-2%)"), row.get("Entry"), row.get("entry_reference_price")) or "").strip()
@@ -217,6 +262,9 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "day_change": _format_percent_label(day_change_source),
                 "day_change_value": day_change_numeric,
                 "score": _format_score_label(score_source),
+                "loss_risk": _format_risk_score_label(loss_risk_source),
+                "loss_risk_level": _risk_level_label(loss_risk_source),
+                "risk_flags": risk_flags,
                 "theme": theme or "-",
                 "trend": trend or "-",
                 "entry": entry or "-",
@@ -475,6 +523,8 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
                 "Gate Thr": (round(float(thr), 1) if thr not in (None, "") else None),
                 "OOS Win %": (round(float(oos_win), 1) if oos_win not in (None, "") else None),
                 "OOS Ret %": (round(float(oos_ret), 2) if oos_ret not in (None, "") else None),
+                "Loss Risk": (round(float(row.get("loss_risk_score")), 1) if row.get("loss_risk_score") not in (None, "") else None),
+                "Risk Flags": ", ".join(_coerce_text_list(row.get("theme_risk"), limit=5)),
                 "SigDir": sig_dir,
                 "Entry": policy["Entry"],
                 "TP": policy["TP"],

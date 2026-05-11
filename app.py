@@ -906,6 +906,10 @@ def _render_scan_top_candidates(results_df, bridge_info, market):
         cols3[2].metric("SL", str(detail.get("SL", "") or "-"))
         cols3[3].metric("Hold", str(detail.get("Hold", "") or "-"))
 
+        cols4 = st.columns(2)
+        cols4[0].metric("손실위험", _fmt_pct_or_dash(detail.get("Loss Risk")))
+        cols4[1].metric("리스크 플래그", str(detail.get("Risk Flags", "") or "-"))
+
 
 def _render_signal_card_list(rows, *, empty_text="표시할 후보가 없습니다."):
     if not rows:
@@ -933,6 +937,14 @@ def _render_signal_card_list(rows, *, empty_text="표시할 후보가 없습니�
         if row.get("sl") and row.get("sl") != "-":
             exit_parts.append(f"SL {row.get('sl')}")
         buy_signal = str(row.get("buy_signal") or "-")
+        risk_label = str(row.get("loss_risk") or "-")
+        risk_level = str(row.get("loss_risk_level") or "")
+        risk_flags = [str(flag) for flag in (row.get("risk_flags") or []) if str(flag).strip()]
+        risk_line = ""
+        if risk_label != "-":
+            risk_line = f"손실위험 {risk_label}" + (f" ({risk_level})" if risk_level else "")
+        if risk_flags:
+            risk_line = (risk_line + " · " if risk_line else "") + " / ".join(risk_flags[:3])
 
         with st.container(border=True):
             cols = st.columns([1.25, 2.3, 0.9, 0.9], vertical_alignment="center")
@@ -944,6 +956,8 @@ def _render_signal_card_list(rows, *, empty_text="표시할 후보가 없습니�
                 st.markdown(f"**{buy_signal}**")
                 if exit_parts:
                     st.caption(" · ".join(exit_parts))
+                if risk_line:
+                    st.caption(risk_line)
                 if name and subtitle != "-":
                     st.caption(subtitle)
             with cols[2]:

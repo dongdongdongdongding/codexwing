@@ -75,6 +75,8 @@ class UIHelperTests(unittest.TestCase):
                     "정밀확률": "31.1%",
                     "전일비": "-10.25%",
                     "Decision Score": 99.1,
+                    "loss_risk_score": 47.2,
+                    "theme_risk": ["LOSS_RISK_SOFT_CAP", "ENTRY_TIMING_RISK_HIGH"],
                     "테마": "반도체",
                     "추세": "UP",
                 }
@@ -87,6 +89,9 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["day_change"], "-10.25%")
         self.assertEqual(rows[0]["day_change_value"], -10.25)
         self.assertEqual(rows[0]["score"], "99.1")
+        self.assertEqual(rows[0]["loss_risk"], "47.2")
+        self.assertEqual(rows[0]["loss_risk_level"], "주의")
+        self.assertEqual(rows[0]["risk_flags"], ["LOSS_RISK_SOFT_CAP", "ENTRY_TIMING_RISK_HIGH"])
 
     def test_build_signal_display_rows_does_not_fabricate_day_change(self):
         # 2026-05-09: phase25_prob은 raw score(0-100)로 calibrated probability가
