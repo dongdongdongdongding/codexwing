@@ -1,4 +1,5 @@
 from multi_agent.tools.build_paper_trade_ledger import (
+    _db_payload,
     simulate_close_proxy_trade,
     summarize_ledger,
 )
@@ -61,3 +62,22 @@ def test_summarize_ledger_reports_rank_floor_and_upside():
     assert market["avg_pct"] == 1.0
     assert market["max_pct"] == 5.0
     assert market["min_pct"] == -3.0
+
+
+def test_db_payload_preserves_unresolved_and_json_warnings():
+    payload = _db_payload(
+        {
+            "trade_id": "RUN|005930.KS|2026-05-11|1",
+            "trade_status": "UNRESOLVED",
+            "gross_return_pct": None,
+            "net_return_pct": None,
+            "recommended_at": "",
+            "data_warnings": ["NO_RETURN_WITHIN_HOLD", ""],
+        }
+    )
+
+    assert payload["trade_status"] == "UNRESOLVED"
+    assert payload["gross_return_pct"] is None
+    assert payload["net_return_pct"] is None
+    assert payload["recommended_at"] is None
+    assert payload["data_warnings"] == ["NO_RETURN_WITHIN_HOLD"]

@@ -277,3 +277,49 @@ create index if not exists idx_signals_created_at
 
 create index if not exists idx_signals_ticker_created_at
   on public.signals (ticker, created_at desc);
+
+-- Real-data paper/live shadow execution ledger.
+-- This stores trade-like validation rows derived from actual recommendations
+-- and realized outcome columns. It does not fabricate broker fills.
+create table if not exists public.paper_trade_ledger (
+  trade_id text primary key,
+  ledger_mode text not null,
+  ticker text not null,
+  stock_name text,
+  market text,
+  scan_mode text,
+  run_id text,
+  priority_rank integer,
+  decision text,
+  decision_bucket text,
+  recommended_at timestamptz,
+  base_trade_date date,
+  entry_model text,
+  entry_reference_price double precision,
+  target_tp_pct double precision,
+  stop_sl_pct double precision,
+  hold_days integer,
+  exit_day integer,
+  exit_reason text,
+  trade_status text,
+  gross_return_pct double precision,
+  net_return_pct double precision,
+  fee_bps double precision,
+  slippage_bps double precision,
+  relative_rank_score double precision,
+  loss_risk_score double precision,
+  relative_rank_model text,
+  source_scan_result_id text,
+  data_warnings jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_paper_trade_ledger_market_status
+  on public.paper_trade_ledger (market, scan_mode, trade_status);
+
+create index if not exists idx_paper_trade_ledger_recommended_at
+  on public.paper_trade_ledger (recommended_at desc);
+
+create index if not exists idx_paper_trade_ledger_run_id
+  on public.paper_trade_ledger (run_id);

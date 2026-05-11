@@ -80,6 +80,17 @@ def _text(value: Any) -> str:
     return str(value).strip()
 
 
+def _none_if_empty(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        stripped = value.strip()
+        return stripped if stripped else None
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    return value
+
+
 def _is_excluded(series: pd.Series) -> pd.Series:
     if series.dtype == "object":
         return series.fillna("").astype(str).str.lower().isin({"true", "1", "yes"})
@@ -245,6 +256,34 @@ def build_ledger(
     return [simulate_close_proxy_trade(row, fee_bps=fee_bps, slippage_bps=slippage_bps) for row in rows]
 
 
+def _db_payload(row: Dict[str, Any]) -> Dict[str, Any]:
+    payload = {}
+    for key, value in row.items():
+        if key == "data_warnings":
+            payload[key] = [str(item) for item in (value or []) if str(item).strip()]
+            continue
+        payload[key] = _none_if_empty(value)
+    return payload
+
+
+def upsert_ledger_to_supabase(ledger: List[Dict[str, Any]], *, batch_size: int = 200) -> Dict[str, int]:
+    if not ledger:
+        return {"rows_seen": 0, "rows_upserted": 0}
+    from modules.db_manager import DBManager
+
+    db = DBManager()
+    if not getattr(db, "client", None):
+        raise SystemExit("Supabase client unavailable.")
+    rows_seen = 0
+    rows_upserted = 0
+    for start in range(0, len(ledger), max(1, int(batch_size))):
+        batch = [_db_payload(row) for row in ledger[start : start + max(1, int(batch_size))]]
+        rows_seen += len(batch)
+        db.client.table("paper_trade_ledger").upsert(batch, on_conflict="trade_id").execute()
+        rows_upserted += len(batch)
+    return {"rows_seen": rows_seen, "rows_upserted": rows_upserted}
+
+
 def _metrics(values: List[float]) -> Dict[str, Any]:
     clean = [float(v) for v in values if v is not None and math.isfinite(float(v))]
     if not clean:
@@ -347,6 +386,8 @@ def main() -> int:
     parser.add_argument("--topn", type=int, default=5)
     parser.add_argument("--fee-bps", type=float, default=0.0)
     parser.add_argument("--slippage-bps", type=float, default=0.0)
+    parser.add_argument("--write-db", action="store_true", help="Upsert ledger rows into Supabase paper_trade_ledger.")
+    parser.add_argument("--db-batch-size", type=int, default=200)
     parser.add_argument(
         "--exclude-validation-excluded",
         action="store_true",
@@ -363,6 +404,9 @@ def main() -> int:
     )
     ledger = build_ledger(rows.to_dict("records"), fee_bps=args.fee_bps, slippage_bps=args.slippage_bps)
     summary = summarize_ledger(ledger)
+    db_result = None
+    if args.write_db:
+        db_result = upsert_ledger_to_supabase(ledger, batch_size=int(args.db_batch_size))
     generated_at = datetime.now(timezone.utc).isoformat()
     report = {
         "generated_at": generated_at,
@@ -372,6 +416,7 @@ def main() -> int:
         "topn": int(args.topn),
         "fee_bps": float(args.fee_bps),
         "slippage_bps": float(args.slippage_bps),
+        "db_result": db_result,
         "summary": summary,
     }
 
@@ -386,7 +431,7 @@ def main() -> int:
     md_path.write_text(_markdown(report), encoding="utf-8")
     print(
         json.dumps(
-            {"csv_path": str(csv_path), "json_path": str(json_path), "md_path": str(md_path), **summary},
+            {"csv_path": str(csv_path), "json_path": str(json_path), "md_path": str(md_path), "db_result": db_result, **summary},
             ensure_ascii=False,
             indent=2,
             default=str,

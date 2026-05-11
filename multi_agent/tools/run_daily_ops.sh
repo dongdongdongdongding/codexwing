@@ -95,9 +95,13 @@ for MARKET in "${MARKETS[@]}"; do
 
   if [[ "${MARKET}" == "KOSPI" || "${MARKET}" == "KOSDAQ" ]]; then
     echo "[STEP] build_paper_trade_ledger market=${MARKET}"
+    PAPER_LEDGER_ARGS=(--market "${MARKET}" --scan-mode SWING --topn "${PAPER_LEDGER_TOPN:-5}"
+      --fee-bps "${PAPER_LEDGER_FEE_BPS:-0}" --slippage-bps "${PAPER_LEDGER_SLIPPAGE_BPS:-0}")
+    if [[ "${PAPER_LEDGER_WRITE_DB:-1}" == "1" ]]; then
+      PAPER_LEDGER_ARGS+=(--write-db)
+    fi
     run_optional "build_paper_trade_ledger:${MARKET}" \
-      python3 multi_agent/tools/build_paper_trade_ledger.py --market "${MARKET}" --scan-mode SWING --topn "${PAPER_LEDGER_TOPN:-5}" \
-        --fee-bps "${PAPER_LEDGER_FEE_BPS:-0}" --slippage-bps "${PAPER_LEDGER_SLIPPAGE_BPS:-0}"
+      python3 multi_agent/tools/build_paper_trade_ledger.py "${PAPER_LEDGER_ARGS[@]}"
 
     echo "[STEP] report_kr_walkforward_release_gate market=${MARKET}"
     run_optional "report_kr_walkforward_release_gate:${MARKET}" \
