@@ -45,6 +45,7 @@ import pandas_ta_classic as ta
 import joblib # Phase 34: Universal Model Persistence
 import time
 from modules.inverted_signal_features import compute_low_prob_high_score_features
+from modules.loss_risk_features import compute_loss_risk_features
 from modules.live_scan_context import live_mode_enabled
 from modules.market_data import get_history
 
@@ -1844,6 +1845,22 @@ class QuantStrategy:
                             prob_clean=_clean_prob,
                             phase25_prob=None,
                             expected_edge_score=None,
+                        )
+                    )
+                    _market_subtype = "KOSPI" if _is_kospi else ("KOSDAQ" if _is_kosdaq else "")
+                    _p25_row.update(
+                        compute_loss_risk_features(
+                            market_subtype=_market_subtype,
+                            alpha_score=_alpha_raw,
+                            tech_score=_alpha_raw,
+                            whale_score=_whale_score,
+                            ml_prob=_base_prob,
+                            prob_clean=_clean_prob,
+                            volume_ratio=_vf,
+                            volume_confirmed=(_vf >= 1.2),
+                            position=_position,
+                            tier=("T0" if _tier_t0 else "T1" if _tier_t1 else "T2" if _tier_t2 else ""),
+                            trend=("UP" if _is_uptrend else "DOWN"),
                         )
                     )
                     _p25_df = pd.DataFrame([_p25_row])

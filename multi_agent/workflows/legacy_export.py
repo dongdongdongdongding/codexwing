@@ -136,6 +136,7 @@ def build_scanner_handoff_from_legacy_results(
             "theme_context": row.get("_theme_context") or row.get("theme_context") or {},
             "leader_metrics": row.get("_leader_metrics") or row.get("leader_metrics") or {},
             "routing_path": row.get("_routing_path") or row.get("routing_path") or "",
+            "market_gate": row.get("market_gate"),
             "scanner_timeframe_profile": row.get("scanner_timeframe_profile"),
             "kr_universe_role": row.get("kr_universe_role"),
             "explosive_leader_flag": row.get("explosive_leader_flag"),

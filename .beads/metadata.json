@@ -2,6 +2,8 @@
   "database": "dolt",
   "backend": "dolt",
   "dolt_mode": "server",
+  "dolt_server_host": "127.0.0.1",
+  "dolt_server_port": 3308,
   "dolt_database": "swing_main",
   "project_id": "f5d0359d-84c8-4853-88c9-92951cf4ac36"
 }

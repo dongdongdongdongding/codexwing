@@ -101,6 +101,91 @@ class DBManager:
         except Exception:
             return None
 
+    def _is_outcome_sync_origin(self, feature_origin):
+        return str(feature_origin or "") in {"scanner_archive_outcome", "outcome_sync_partial"}
+
+    def _is_feature_rich_scan_row(self, row):
+        if not isinstance(row, dict):
+            return False
+        origin = str(row.get("feature_origin") or "")
+        if origin in {"scanner_full", "scanner_partial_legacy", "live_full_scan", "live_smoke_test"}:
+            return True
+        return bool(row.get("alpha_score") is not None and not self._is_outcome_sync_origin(origin))
+
+    def _feature_rich_row_score(self, row):
+        origin = str(row.get("feature_origin") or "")
+        origin_score = {
+            "scanner_full": 5,
+            "live_full_scan": 5,
+            "scanner_partial_legacy": 4,
+            "live_smoke_test": 3,
+        }.get(origin, 1)
+        alpha_present = 1 if row.get("alpha_score") is not None else 0
+        return (origin_score, alpha_present, str(row.get("created_at") or ""))
+
+    def _choose_feature_rich_peer(self, rows):
+        candidates = [r for r in (rows or []) if self._is_feature_rich_scan_row(r)]
+        if not candidates:
+            return None
+        return sorted(candidates, key=self._feature_rich_row_score, reverse=True)[0]
+
+    def _merge_non_empty_payload(self, existing_payload, payload):
+        merged_payload = dict(existing_payload or {})
+        for key, value in (payload or {}).items():
+            if value is None:
+                continue
+            if isinstance(value, str) and not value.strip():
+                continue
+            if (
+                key == "feature_origin"
+                and self._is_feature_rich_scan_row(merged_payload)
+                and self._is_outcome_sync_origin(value)
+            ):
+                continue
+            merged_payload[key] = value
+        return merged_payload
+
+    def _find_feature_rich_scan_peer(self, run_id, ticker, market, scan_mode, recommended_at=None):
+        if not self.client or not run_id or not ticker:
+            return None
+        try:
+            q = (
+                self.client.table("market_scan_results")
+                .select("id,run_id,ticker,market,scan_mode,feature_origin,alpha_score,created_at")
+                .eq("run_id", run_id)
+                .eq("ticker", ticker)
+            )
+            if market not in (None, ""):
+                q = q.eq("market", market)
+            if scan_mode in (None, ""):
+                q = q.is_("scan_mode", "null")
+            else:
+                q = q.eq("scan_mode", scan_mode)
+            rows = q.order("created_at", desc=True).limit(20).execute().data or []
+            peer = self._choose_feature_rich_peer(rows)
+            if peer:
+                return peer
+
+            if recommended_at:
+                rec_date = str(recommended_at)[:10]
+                if rec_date:
+                    q = (
+                        self.client.table("market_scan_results")
+                        .select("id,run_id,ticker,market,scan_mode,feature_origin,alpha_score,created_at")
+                        .eq("ticker", ticker)
+                        .gte("recommended_at", f"{rec_date}T00:00:00")
+                        .lte("recommended_at", f"{rec_date}T23:59:59.999")
+                    )
+                    if market not in (None, ""):
+                        q = q.eq("market", market)
+                    if scan_mode not in (None, ""):
+                        q = q.eq("scan_mode", scan_mode)
+                    rows = q.order("created_at", desc=True).limit(20).execute().data or []
+                    return self._choose_feature_rich_peer(rows)
+        except Exception:
+            return None
+        return None
+
     def _feature_quality_payload(self, data, origin="scanner_full"):
         required = {
             "alpha_score": data.get("alpha_score"),
@@ -571,6 +656,7 @@ class DBManager:
                     "quant_score_3d": row.get("quant_score_3d"),
                     "selection_lane": row.get("selection_lane"),
                     "target_horizon_days": row.get("target_horizon_days"),
+                    "market_gate": row.get("market_gate"),
                     "scanner_timeframe_profile": row.get("scanner_timeframe_profile"),
                     "kr_universe_role": row.get("kr_universe_role"),
                     "explosive_eligible": row.get("explosive_eligible"),
@@ -673,6 +759,17 @@ class DBManager:
             if not payload:
                 continue
             try:
+                feature_peer = self._find_feature_rich_scan_peer(
+                    run_id=run_id,
+                    ticker=ticker,
+                    market=payload.get("market") or row.get("market"),
+                    scan_mode=row.get("scan_mode") or payload.get("scan_mode"),
+                    recommended_at=payload.get("recommended_at") or recommended_at,
+                )
+                if feature_peer:
+                    rows = [feature_peer]
+                else:
+                    rows = []
                 # NULL-safe lookup: postgrest .eq() on a NULL column never
                 # matches (SQL NULL = NULL → NULL → FALSE). When strategy_family
                 # or scan_mode is None on the outcome row, the equality silently
@@ -681,25 +778,28 @@ class DBManager:
                 # produced 39 duplicate INSERTs in a single run_id, polluting
                 # the training set and breaking scan↔archive top-N parity. Use
                 # .is_('null') for None and .eq() only when the value exists.
-                lookup_q = (
-                    self.client.table("market_scan_results")
-                    .select("id")
-                    .eq("run_id", run_id)
-                    .eq("ticker", ticker)
-                    .eq("priority_rank", int(row.get("priority_rank", 0) or 0))
-                )
-                _scan_mode = row.get("scan_mode")
-                if _scan_mode in (None, ""):
-                    lookup_q = lookup_q.is_("scan_mode", "null")
-                else:
-                    lookup_q = lookup_q.eq("scan_mode", _scan_mode)
-                _strategy_family = row.get("strategy_family")
-                if _strategy_family in (None, ""):
-                    lookup_q = lookup_q.is_("strategy_family", "null")
-                else:
-                    lookup_q = lookup_q.eq("strategy_family", _strategy_family)
-                existing = lookup_q.order("created_at", desc=True).limit(1).execute()
-                rows = existing.data or []
+                if not rows:
+                    lookup_q = (
+                        self.client.table("market_scan_results")
+                        .select("id,feature_origin,alpha_score,created_at")
+                        .eq("run_id", run_id)
+                        .eq("ticker", ticker)
+                        .eq("priority_rank", int(row.get("priority_rank", 0) or 0))
+                    )
+                    _scan_mode = row.get("scan_mode")
+                    if _scan_mode in (None, ""):
+                        lookup_q = lookup_q.is_("scan_mode", "null")
+                    else:
+                        lookup_q = lookup_q.eq("scan_mode", _scan_mode)
+                    _strategy_family = row.get("strategy_family")
+                    if _strategy_family in (None, ""):
+                        lookup_q = lookup_q.is_("strategy_family", "null")
+                    else:
+                        lookup_q = lookup_q.eq("strategy_family", _strategy_family)
+                    existing = lookup_q.order("created_at", desc=True).limit(20).execute()
+                    existing_rows = existing.data or []
+                    feature_peer = self._choose_feature_rich_peer(existing_rows)
+                    rows = [feature_peer] if feature_peer else existing_rows[:1]
                 # Fallback: scanner_full row from the same scan session has run_id=NULL
                 # (worker writes before orchestrator generates run_id). Match by
                 # ticker+scan_mode+date so we can UPDATE that row instead of inserting a
@@ -745,15 +845,38 @@ class DBManager:
                     existing_payload = {}
                     if existing_row and getattr(existing_row, "data", None):
                         existing_payload = dict(existing_row.data[0] or {})
-                    merged_payload = dict(existing_payload)
-                    for key, value in payload.items():
-                        if value is None:
-                            continue
-                        if isinstance(value, str) and not value.strip():
-                            continue
-                        merged_payload[key] = value
+                    merged_payload = self._merge_non_empty_payload(existing_payload, payload)
                     merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
-                    self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                    try:
+                        self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                    except Exception as ue:
+                        if "23505" not in str(ue) and "duplicate key" not in str(ue):
+                            raise
+                        rec_date = str(payload.get("recommended_at") or "")[:10]
+                        market_val = payload.get("market")
+                        mode_val = payload.get("scan_mode")
+                        if not (rec_date and market_val and mode_val):
+                            raise
+                        conflict_existing = (
+                            self.client.table("market_scan_results")
+                            .select("*")
+                            .eq("ticker", ticker)
+                            .eq("market", market_val)
+                            .eq("scan_mode", mode_val)
+                            .gte("recommended_at", f"{rec_date}T00:00:00")
+                            .lte("recommended_at", f"{rec_date}T23:59:59.999")
+                            .neq("id", row_id)
+                            .limit(1)
+                            .execute()
+                        )
+                        if not conflict_existing.data:
+                            raise
+                        cid = conflict_existing.data[0]["id"]
+                        consumed_row_ids.add(cid)
+                        conflict_payload = dict(conflict_existing.data[0] or {})
+                        conflict_merged_payload = self._merge_non_empty_payload(conflict_payload, payload)
+                        conflict_merged_payload = self._filter_payload_to_existing_columns("market_scan_results", conflict_merged_payload)
+                        self.client.table("market_scan_results").update(conflict_merged_payload).eq("id", cid).execute()
                     merged += 1
                 else:
                     # 2026-05-08 (swing-main-9un): UNIQUE 인덱스
@@ -786,11 +909,7 @@ class DBManager:
                                     cid = conflict_existing.data[0]["id"]
                                     consumed_row_ids.add(cid)
                                     existing_payload = dict(conflict_existing.data[0] or {})
-                                    merged_payload = dict(existing_payload)
-                                    for key, value in payload.items():
-                                        if value is None or (isinstance(value, str) and not value.strip()):
-                                            continue
-                                        merged_payload[key] = value
+                                    merged_payload = self._merge_non_empty_payload(existing_payload, payload)
                                     merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
                                     self.client.table("market_scan_results").update(merged_payload).eq("id", cid).execute()
                                     merged += 1

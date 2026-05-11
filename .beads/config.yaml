@@ -53,4 +53,9 @@
 # - github.org
 # - github.repo
 
-dolt.shared-server: true
+dolt.shared-server: false
+dolt.auto-start: true
+
+dolt.port: 3308
+
+dolt.host: 127.0.0.1

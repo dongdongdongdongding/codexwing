@@ -103,6 +103,40 @@ def _format_score_label(value: Any) -> str:
     return f"{numeric:.1f}"
 
 
+def is_exception_leader_row(rec: Dict[str, Any]) -> bool:
+    """8:2 자본 배분 정책의 Stream B (EXCEPTION_LEADER) 분류 규칙.
+
+    Scanner / Archive / 기타 dataframe 출처 가 다 같은 기준으로 EL 을 판별하도록
+    공용 헬퍼로 추출. ``decision`` / ``Decision`` / ``decision_bucket`` 어느 쪽이
+    채워져 있어도 EL 을 정확히 잡고, decision 이 누락된 row 는 risk_label /
+    reason / reject_reason 으로 보조 판별한다.
+    """
+    if not isinstance(rec, dict):
+        return False
+    d = str(
+        rec.get("decision")
+        or rec.get("Decision")
+        or rec.get("decision_bucket")
+        or ""
+    ).upper().strip()
+    if d == "EXCEPTION_LEADER":
+        return True
+    rl = str(rec.get("risk_label") or "").upper().strip()
+    rs = str(rec.get("reason") or rec.get("reject_reason") or "").lower()
+    return rl == "EXCEPTION_LEADER" or "exception_leader" in rs
+
+
+def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """raw 후보 리스트를 Stream A (안전, 자본 80%) / Stream B (EXCEPTION_LEADER, 20%)
+    로 분리한다. 정렬 순서는 입력을 그대로 유지한다.
+    """
+    raw = list(records or [])
+    return {
+        "stream_a": [r for r in raw if isinstance(r, dict) and not is_exception_leader_row(r)],
+        "stream_b": [r for r in raw if isinstance(r, dict) and is_exception_leader_row(r)],
+    }
+
+
 def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = None) -> List[Dict[str, Any]]:
     """Normalize scanner/archive rows into a compact decision list.
 
@@ -126,11 +160,24 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         strategy = str(_coalesce_present(row.get("strategy"), row.get("전략"), row.get("strategy_family")) or "").strip()
         buy_signal = " · ".join(part for part in (decision, tier, strategy) if part) or "-"
 
-        # 카드 UI '정확성' 1순위: segment historical OOS win rate
-        # (decision × market × scan_mode 별 invariant, dedup 측정값).
-        # 2순위 phase25_oos_win_rate_pct (variant별 OOS win, segment lookup 부재 시).
-        # raw model scores (phase25_prob, prob_clean raw, ml_prob)는 calibrated
-        # probability가 아니므로 정확도 fallback에서 제외.
+        # 카드 UI '정확성' 일관화 (스캐너 ↔ 아카이브 같은 RUN/티커에 동일 값).
+        #
+        # coalesce 순서 — 양쪽 source 가 모두 보유한 키만 사용해서 결정성을 보장한다.
+        #   1) segment_win  : (decision × market × scan_mode) 별 historical OOS
+        #                     win rate. 표본 부족/미측정 segment 에선 None.
+        #   2) phase25_oos_win_rate_pct : variant 별 학습 시 OOS win rate.
+        #                     scanner res_data + archive DB 컬럼 양쪽 모두 같은 키로 보유.
+        #   3) prob_clean / _prob_clean : 모델 raw clean-hit 확률 (numeric).
+        #                     scanner 는 ``_prob_clean`` (UI dict), archive 는
+        #                     ``prob_clean`` (DB) 키로 보유 — 둘 다 같은 numeric.
+        #                     calibrated 확률은 아니지만 segment/variant OOS 가 모두
+        #                     None 일 때 빈 카드를 피하기 위한 마지막 fallback.
+        #
+        # 'accuracy' 로 노출하지 말아야 하는 키 (정렬용 raw score, 다른 의미):
+        #   - 정밀확률    : scanner-전용 문자열 포맷 (= prob_clean). DB numeric
+        #                  키가 없는 legacy/UI row 에서만 마지막 fallback 으로 사용
+        #                  해서 원천값을 비워 보이지 않게 한다.
+        #   - phase25_prob, AI확률, ml_prob : prob_5(5pct breakout) 계열로 의미 다름
         segment_win = lookup_segment_win_rate(
             decision=row.get("decision") or row.get("Decision") or row.get("decision_bucket"),
             market=row.get("market") or row.get("market_subtype"),
@@ -139,13 +186,11 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
             horizon_days=5,
         )
         accuracy_source = _coalesce_present(
-            row.get("정밀확률"),
             segment_win,
             row.get("phase25_oos_win_rate_pct"),
             row.get("prob_clean"),
             row.get("_prob_clean"),
-            row.get("AI확률"),
-            row.get("ml_prob"),
+            row.get("정밀확률"),
         )
         day_change_source = _coalesce_present(
             row.get("전일비"),

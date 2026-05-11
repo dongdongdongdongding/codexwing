@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.codex.swing.bd-dolt.keepalive</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/dongdong/Projects/codex_swing/swing-main/scripts/keep_bd_dolt_alive.sh</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <integer>60</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/dongdong/Projects/codex_swing/swing-main/.beads/bd-dolt-launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/dongdong/Projects/codex_swing/swing-main/.beads/bd-dolt-launchd.err.log</string>
+</dict>
+</plist>

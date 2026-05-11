@@ -11,17 +11,17 @@ import streamlit as st
 import os
 from pathlib import Path
 from datetime import date
-import yfinance as yf
 from dotenv import load_dotenv
 load_dotenv()
 load_dotenv(".env.local")
 
-from modules import vision_analysis, quant_analysis, db_manager, news_analysis, market_intelligence
+from modules import quant_analysis, db_manager, market_intelligence
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
 from modules.macro_scheduler import get_macro_context
 from modules.scanner_bridge import run_legacy_agent_bridge
 from modules.scanner_runtime import SharedBackoffState, run_parallel_scan, scan_symbol_with_retry
 from modules.scanner_services import evaluate_uploaded_candidate, normalize_uploaded_ticker
+from modules.segment_accuracy import get_segment_accuracy_snapshot
 from modules.scan_policy import (
     compute_market_gate as compute_market_gate_live,
     compute_rank_adjustment as shared_compute_rank_adjustment,
@@ -37,13 +37,17 @@ from modules.ui_helpers import (
     format_volume_display,
     resolve_display_price,
     should_auto_refresh_scan_panel,
+    split_stream_records,
 )
+from ui.theme import inject_theme as _inject_design_tokens
+from ui.components import compact_status_bar as _compact_status_bar
 import pandas as pd
 import plotly.graph_objects as go
 import traceback
 
 # [Phase 8] Global Backoff Synchronization for Rate Limits
 _SCAN_BACKOFF_STATE = SharedBackoffState()
+ENABLE_ADVANCED_UI = os.getenv("AG_UI_ADVANCED", "0").strip().lower() in {"1", "true", "yes", "on"}
 
 st.set_page_config(
     page_title="스윙 트레이딩 AI",
@@ -52,8 +56,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-if "deep_dive_ticker" not in st.session_state:
-    st.session_state["deep_dive_ticker"] = "AAPL"
 if "selected_scan_market" not in st.session_state:
     st.session_state["selected_scan_market"] = "KOSPI"
 
@@ -127,745 +129,8 @@ def _return_metric(return_buckets, bucket, horizon, field="avg_return_pct"):
 
 
 def _inject_toss_theme():
-    st.markdown(
-        """
-        <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-
-        :root {
-          --bg: #f2f4f6;
-          --surface: rgba(255, 255, 255, 0.94);
-          --surface-strong: #ffffff;
-          --surface-soft: #f8fafc;
-          --line: #e5e8eb;
-          --text: #191f28;
-          --muted: #8b95a1;
-          --primary: #3182f6;
-          --primary-deep: #1b64da;
-          --primary-soft: #eaf2ff;
-          --good: #17b26a;
-          --warn: #ffb020;
-          --danger: #f04452;
-          --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
-        }
-
-        html, body, [class*="css"] {
-          font-family: "Pretendard", "SUIT Variable", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-        }
-
-        .stApp {
-          background:
-            radial-gradient(circle at top left, rgba(49, 130, 246, 0.10), transparent 28%),
-            radial-gradient(circle at top right, rgba(35, 180, 120, 0.08), transparent 24%),
-            linear-gradient(180deg, #f8fbff 0%, var(--bg) 18%, #eef2f6 100%);
-          color: var(--text);
-        }
-
-        [data-testid="stHeader"] {
-          background: rgba(248, 251, 255, 0.75);
-          backdrop-filter: blur(14px);
-        }
-
-        .block-container {
-          max-width: 1380px;
-          padding-top: 1.6rem;
-          padding-bottom: 3rem;
-        }
-
-        [data-testid="stSidebar"] {
-          background: linear-gradient(180deg, #fbfdff 0%, #f4f7fb 100%);
-          border-right: 1px solid rgba(229, 232, 235, 0.9);
-        }
-
-        [data-testid="collapsedControl"] {
-          display: none;
-        }
-
-        h1, h2, h3, h4 {
-          color: var(--text);
-          letter-spacing: -0.03em;
-        }
-
-        p, li, label, .stCaption, .stMarkdown {
-          color: var(--text);
-        }
-
-        div[data-testid="stMetric"] {
-          background: var(--surface);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          border-radius: 22px;
-          padding: 1rem 1.05rem;
-          box-shadow: var(--shadow);
-        }
-
-        div[data-testid="stMetricLabel"] {
-          color: var(--muted);
-          font-weight: 600;
-        }
-
-        div[data-testid="stMetricValue"] {
-          color: var(--text);
-          letter-spacing: -0.03em;
-        }
-
-        div[data-baseweb="select"] > div,
-        .stTextInput input,
-        .stTextArea textarea,
-        .stNumberInput input {
-          background: rgba(255, 255, 255, 0.96);
-          border: 1px solid var(--line);
-          border-radius: 16px;
-          min-height: 3rem;
-        }
-
-        div[data-baseweb="select"] > div:focus-within,
-        .stTextInput input:focus,
-        .stTextArea textarea:focus,
-        .stNumberInput input:focus {
-          border-color: rgba(49, 130, 246, 0.9);
-          box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.14);
-        }
-
-        .stButton > button,
-        button[kind="primary"] {
-          border-radius: 16px;
-          min-height: 3rem;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .stButton > button:hover,
-        button[kind="primary"]:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 14px 30px rgba(49, 130, 246, 0.18);
-        }
-
-        button[kind="primary"] {
-          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
-          border: 0;
-        }
-
-        .stButton > button {
-          background: rgba(255, 255, 255, 0.98);
-          border: 1px solid var(--line);
-          color: var(--text);
-        }
-
-        .stButton > button:hover {
-          border-color: rgba(49, 130, 246, 0.45);
-          color: var(--primary-deep);
-        }
-
-        div[data-testid="stTabs"] {
-          margin-top: 0.75rem;
-        }
-
-        div[data-testid="stTabs"] button[role="tab"] {
-          border-radius: 999px;
-          border: 1px solid transparent;
-          background: rgba(255, 255, 255, 0.72);
-          color: var(--muted);
-          font-weight: 700;
-          padding: 0.8rem 1.15rem;
-        }
-
-        div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
-          background: #ffffff;
-          color: var(--primary-deep);
-          border-color: rgba(49, 130, 246, 0.18);
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-        }
-
-        div[data-testid="stExpander"] {
-          border: 1px solid var(--line);
-          border-radius: 22px;
-          background: var(--surface);
-          box-shadow: var(--shadow);
-          overflow: hidden;
-        }
-
-        div[data-testid="stDataFrame"],
-        div[data-testid="stTable"] {
-          border: 1px solid var(--line);
-          border-radius: 22px;
-          overflow: hidden;
-          background: var(--surface-strong);
-          box-shadow: var(--shadow);
-        }
-
-        .section-intro,
-        .status-banner,
-        .control-note {
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          box-shadow: var(--shadow);
-        }
-
-        .section-kicker {
-          color: var(--primary-deep);
-          font-weight: 800;
-          font-size: 0.82rem;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-        }
-
-        .section-title {
-          color: var(--text);
-          font-weight: 800;
-          letter-spacing: -0.04em;
-          line-height: 1.08;
-        }
-
-        .section-title {
-          margin: 0.28rem 0 0.55rem;
-          font-size: clamp(1.45rem, 1.8vw, 2rem);
-        }
-
-        .section-body,
-        .status-body,
-        .status-caption {
-          color: var(--muted);
-          line-height: 1.65;
-        }
-
-        .section-chip-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.55rem;
-          margin-top: 1rem;
-        }
-
-        .section-chip {
-          padding: 0.5rem 0.82rem;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.88);
-          border: 1px solid rgba(49, 130, 246, 0.12);
-          color: var(--primary-deep);
-          font-size: 0.88rem;
-          font-weight: 700;
-        }
-
-        .section-intro {
-          padding: 1.2rem 1.25rem;
-          margin: 0.35rem 0 1rem;
-          border-radius: 26px;
-          background: rgba(255, 255, 255, 0.9);
-        }
-
-        .status-banner {
-          padding: 1rem 1.15rem;
-          margin: 0.5rem 0 0.85rem;
-          border-radius: 24px;
-          background: rgba(255, 255, 255, 0.92);
-        }
-
-        .status-banner.good {
-          background: linear-gradient(135deg, rgba(236, 251, 243, 0.96), rgba(255, 255, 255, 0.95));
-          border-color: rgba(23, 178, 106, 0.2);
-        }
-
-        .status-banner.caution {
-          background: linear-gradient(135deg, rgba(255, 248, 230, 0.96), rgba(255, 255, 255, 0.95));
-          border-color: rgba(255, 176, 32, 0.24);
-        }
-
-        .status-banner.risk,
-        .status-banner.danger {
-          background: linear-gradient(135deg, rgba(255, 241, 242, 0.97), rgba(255, 255, 255, 0.95));
-          border-color: rgba(240, 68, 82, 0.2);
-        }
-
-        .status-title {
-          color: var(--text);
-          font-size: 1rem;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          margin-bottom: 0.25rem;
-        }
-
-        .control-note {
-          padding: 0.95rem 1.1rem;
-          margin: 0.2rem 0 1rem;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.84);
-        }
-
-        .control-note strong {
-          display: block;
-          color: var(--text);
-          margin-bottom: 0.2rem;
-        }
-
-        .control-note span {
-          color: var(--muted);
-          line-height: 1.6;
-        }
-
-        .intel-highlight-list {
-          display: grid;
-          gap: 0.7rem;
-          margin: 0.55rem 0 1rem;
-        }
-
-        .intel-highlight-item {
-          display: flex;
-          gap: 0.7rem;
-          align-items: flex-start;
-          padding: 0.9rem 1rem;
-          border-radius: 20px;
-          background: rgba(255, 255, 255, 0.88);
-          border: 1px solid rgba(229, 232, 235, 0.9);
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-        }
-
-        .intel-highlight-badge {
-          flex-shrink: 0;
-          min-width: 4.1rem;
-          padding: 0.25rem 0.6rem;
-          border-radius: 999px;
-          background: rgba(49, 130, 246, 0.1);
-          color: var(--primary-deep);
-          font-size: 0.78rem;
-          font-weight: 700;
-          text-align: center;
-        }
-
-        .intel-highlight-text {
-          color: var(--text);
-          line-height: 1.55;
-          font-size: 0.95rem;
-        }
-
-        .intel-theme-card {
-          padding: 1rem 1.05rem;
-          margin-bottom: 0.8rem;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.92);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
-        }
-
-        .intel-theme-card.good {
-          background: linear-gradient(135deg, rgba(236, 251, 243, 0.98), rgba(255, 255, 255, 0.96));
-          border-color: rgba(23, 178, 106, 0.18);
-        }
-
-        .intel-theme-card.risk {
-          background: linear-gradient(135deg, rgba(255, 241, 242, 0.98), rgba(255, 255, 255, 0.96));
-          border-color: rgba(240, 68, 82, 0.18);
-        }
-
-        .intel-theme-card.neutral {
-          background: linear-gradient(135deg, rgba(246, 248, 251, 0.98), rgba(255, 255, 255, 0.96));
-          border-color: rgba(139, 149, 161, 0.18);
-        }
-
-        .intel-theme-head {
-          display: flex;
-          justify-content: space-between;
-          gap: 0.8rem;
-          align-items: center;
-          margin-bottom: 0.45rem;
-        }
-
-        .intel-theme-name {
-          color: var(--text);
-          font-size: 1rem;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-        }
-
-        .intel-theme-badge {
-          flex-shrink: 0;
-          border-radius: 999px;
-          padding: 0.28rem 0.7rem;
-          font-size: 0.78rem;
-          font-weight: 800;
-        }
-
-        .intel-theme-badge.good {
-          background: rgba(23, 178, 106, 0.12);
-          color: #118653;
-        }
-
-        .intel-theme-badge.risk {
-          background: rgba(240, 68, 82, 0.12);
-          color: #c2313d;
-        }
-
-        .intel-theme-badge.neutral {
-          background: rgba(139, 149, 161, 0.14);
-          color: #5f6b76;
-        }
-
-        .intel-theme-meta {
-          color: var(--muted);
-          font-size: 0.88rem;
-          line-height: 1.55;
-        }
-
-        .intel-theme-evidence {
-          margin-top: 0.65rem;
-          color: var(--text);
-          font-size: 0.9rem;
-          line-height: 1.55;
-        }
-
-        .intel-theme-evidence strong {
-          color: var(--primary-deep);
-          margin-right: 0.3rem;
-        }
-
-        .intel-subtle-card {
-          padding: 0.95rem 1rem;
-          margin-bottom: 0.75rem;
-          border-radius: 20px;
-          background: rgba(255, 255, 255, 0.84);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-        }
-
-        .intel-subtle-card strong {
-          display: block;
-          color: var(--text);
-          margin-bottom: 0.3rem;
-        }
-
-        .intel-subtle-card span {
-          color: var(--muted);
-          line-height: 1.55;
-        }
-
-        .top-intel-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.9rem;
-          margin: 0.45rem 0 1rem;
-        }
-
-        .top-intel-card {
-          padding: 1rem 1.05rem;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.9);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
-        }
-
-        .top-intel-kicker {
-          color: var(--muted);
-          font-size: 0.78rem;
-          font-weight: 700;
-          margin-bottom: 0.3rem;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-
-        .top-intel-title {
-          color: var(--text);
-          font-size: 1.02rem;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          margin-bottom: 0.35rem;
-        }
-
-        .top-intel-body {
-          color: var(--text);
-          font-size: 0.94rem;
-          line-height: 1.6;
-        }
-
-        .top-intel-meta {
-          color: var(--muted);
-          font-size: 0.84rem;
-          line-height: 1.55;
-          margin-top: 0.5rem;
-        }
-
-        .intel-overview-shell {
-          margin: 0.55rem 0 1rem;
-        }
-
-        .intel-scoreline {
-          color: var(--text);
-          font-size: 1.05rem;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          margin-bottom: 0.7rem;
-        }
-
-        .intel-scoreline .muted {
-          color: var(--muted);
-          font-weight: 700;
-        }
-
-        .intel-insight-box {
-          padding: 1rem 1.1rem;
-          margin-bottom: 0.9rem;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.92);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
-          color: var(--text);
-          line-height: 1.65;
-        }
-
-        .intel-signal-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0.9rem;
-          margin: 0.6rem 0 1rem;
-        }
-
-        .intel-signal-card {
-          padding: 1rem 1.05rem;
-          border-radius: 22px;
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
-        }
-
-        .intel-signal-card.good {
-          background: linear-gradient(135deg, rgba(236, 251, 243, 0.98), rgba(255, 255, 255, 0.96));
-          border-color: rgba(23, 178, 106, 0.18);
-        }
-
-        .intel-signal-card.risk {
-          background: linear-gradient(135deg, rgba(255, 241, 242, 0.98), rgba(255, 255, 255, 0.96));
-          border-color: rgba(240, 68, 82, 0.18);
-        }
-
-        .intel-signal-card.focus {
-          background: linear-gradient(135deg, rgba(239, 246, 255, 0.98), rgba(255, 255, 255, 0.96));
-          border-color: rgba(49, 130, 246, 0.18);
-        }
-
-        .intel-signal-title {
-          color: var(--muted);
-          font-size: 0.8rem;
-          font-weight: 700;
-          margin-bottom: 0.35rem;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-
-        .intel-signal-body {
-          color: var(--text);
-          font-size: 1rem;
-          font-weight: 800;
-          line-height: 1.55;
-        }
-
-        .intel-signal-meta {
-          margin-top: 0.35rem;
-          color: var(--muted);
-          font-size: 0.86rem;
-          line-height: 1.55;
-        }
-
-        .intel-momentum-grid {
-          display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 0.9rem;
-          margin: 0.85rem 0 1rem;
-        }
-
-        .intel-momentum-card {
-          padding: 1rem 1.05rem;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.92);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
-        }
-
-        .intel-momentum-rank {
-          color: var(--muted);
-          font-size: 0.86rem;
-          font-weight: 700;
-          margin-bottom: 0.35rem;
-        }
-
-        .intel-momentum-theme {
-          color: var(--text);
-          font-size: 0.98rem;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          min-height: 2.4rem;
-        }
-
-        .intel-momentum-return {
-          color: var(--text);
-          font-size: 1.85rem;
-          font-weight: 800;
-          letter-spacing: -0.05em;
-          margin: 0.35rem 0 0.55rem;
-        }
-
-        .intel-momentum-return.pos { color: #118653; }
-        .intel-momentum-return.neg { color: #c2313d; }
-        .intel-momentum-return.neu { color: var(--text); }
-
-        .intel-momentum-chip {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.28rem 0.7rem;
-          border-radius: 999px;
-          background: rgba(23, 178, 106, 0.1);
-          color: #118653;
-          font-size: 0.82rem;
-          font-weight: 700;
-        }
-
-        .intel-momentum-meta {
-          margin-top: 0.55rem;
-          color: var(--muted);
-          font-size: 0.85rem;
-          line-height: 1.55;
-        }
-
-        .intel-catalyst-list {
-          display: grid;
-          gap: 0.7rem;
-          margin: 0.65rem 0 0.9rem;
-        }
-
-        .intel-catalyst-item {
-          padding: 0.95rem 1rem;
-          border-radius: 20px;
-          background: rgba(255, 255, 255, 0.88);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          color: var(--text);
-          line-height: 1.6;
-        }
-
-        .intel-headline-list {
-          display: grid;
-          gap: 0.7rem;
-          margin: 0.65rem 0 0.8rem;
-        }
-
-        .intel-headline-item {
-          padding: 0.95rem 1rem;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.84);
-          border: 1px solid rgba(229, 232, 235, 0.92);
-          color: var(--text);
-          line-height: 1.6;
-        }
-
-        .signal-list {
-          display: grid;
-          gap: 0.75rem;
-          margin: 0.7rem 0 1rem;
-        }
-
-        .signal-card {
-          display: grid;
-          grid-template-columns: minmax(0, 1.35fr) minmax(0, 2.25fr) repeat(2, minmax(7.2rem, 0.75fr));
-          gap: 0.85rem;
-          align-items: center;
-          padding: 0.95rem 1rem;
-          border-radius: 16px;
-          background: rgba(255, 255, 255, 0.94);
-          border: 1px solid rgba(229, 232, 235, 0.94);
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-        }
-
-        .signal-identity {
-          min-width: 0;
-        }
-
-        .signal-rank {
-          color: var(--muted);
-          font-size: 0.78rem;
-          font-weight: 800;
-          margin-bottom: 0.2rem;
-        }
-
-        .signal-title {
-          color: var(--text);
-          font-size: 1rem;
-          font-weight: 850;
-          line-height: 1.25;
-          overflow-wrap: anywhere;
-        }
-
-        .signal-subtitle {
-          color: var(--muted);
-          font-size: 0.84rem;
-          line-height: 1.45;
-          margin-top: 0.18rem;
-          overflow-wrap: anywhere;
-        }
-
-        .signal-buy {
-          min-width: 0;
-          color: var(--text);
-          font-size: 0.94rem;
-          line-height: 1.45;
-          font-weight: 750;
-          overflow-wrap: anywhere;
-        }
-
-        .signal-metric {
-          padding: 0.72rem 0.78rem;
-          border-radius: 14px;
-          background: rgba(246, 248, 251, 0.9);
-          border: 1px solid rgba(229, 232, 235, 0.9);
-          min-width: 0;
-        }
-
-        .signal-metric-label {
-          color: var(--muted);
-          font-size: 0.75rem;
-          font-weight: 800;
-          margin-bottom: 0.18rem;
-        }
-
-        .signal-metric-value {
-          color: var(--text);
-          font-size: 1rem;
-          font-weight: 850;
-          line-height: 1.25;
-          overflow-wrap: anywhere;
-        }
-
-        .signal-metric-value.pos { color: #118653; }
-        .signal-metric-value.neg { color: #c2313d; }
-        .signal-metric-value.neu { color: var(--text); }
-
-        @media (max-width: 980px) {
-          .block-container {
-            padding-top: 1rem;
-            padding-bottom: 2rem;
-          }
-
-          .section-intro,
-          .status-banner,
-          .control-note,
-          .top-intel-card,
-          div[data-testid="stMetric"],
-          div[data-testid="stExpander"],
-          div[data-testid="stDataFrame"],
-          div[data-testid="stTable"] {
-            border-radius: 20px;
-          }
-
-          .top-intel-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .intel-signal-grid,
-          .intel-momentum-grid,
-          .signal-card {
-            grid-template-columns: 1fr;
-          }
-
-          div[data-testid="stTabs"] button[role="tab"] {
-            padding: 0.72rem 0.92rem;
-          }
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    """디자인 토큰/CSS 주입. 실제 구현은 ui.theme.inject_theme."""
+    _inject_design_tokens()
 
 
 def _render_section_intro(kicker, title, body, chips=None):
@@ -1281,7 +546,7 @@ def _render_daily_ops_overview():
     _render_section_intro(
         "Daily Pulse",
         "일일 성과 요약",
-        "시장별 운영 상태와 수익률 측정값을 카드로 빠르게 훑을 수 있게 정리한 영역입니다.",
+        "시장별 운영 상태와 수익률을 시장당 한 카드에 모아 빠르게 훑을 수 있게 정리했습니다. 전체 표는 아래 ‘성과측정 상세’ 에서 확인하세요.",
         ["KOSPI", "KOSDAQ", "NASDAQ", "AMEX"],
     )
     markets = ["KOSPI", "KOSDAQ", "NASDAQ", "AMEX"]
@@ -1289,60 +554,48 @@ def _render_daily_ops_overview():
     has_any = False
     for col, market in zip(cols, markets):
         payload = _load_latest_daily_summary(market)
-        if not payload:
-            col.info(f"{market}\n\n요약 없음")
-            continue
-        has_any = True
-        outcomes = payload.get("outcomes", {}) if isinstance(payload.get("outcomes"), dict) else {}
-        buckets = payload.get("outcome_bucket_breakdown", {}) if isinstance(payload.get("outcome_bucket_breakdown"), dict) else {}
-        return_buckets = payload.get("return_bucket_breakdown", {}) if isinstance(payload.get("return_bucket_breakdown"), dict) else {}
-        picked = (buckets.get("picked", {}) if isinstance(buckets.get("picked"), dict) else {}).get("total", 0)
-        watchlist_bucket = (buckets.get("watchlist", {}) if isinstance(buckets.get("watchlist"), dict) else {}).get("total", 0)
-        exception_bucket = (
-            (buckets.get("exception_leader", {}) if isinstance(buckets.get("exception_leader"), dict) else {}).get("total", 0)
-        )
-        picked_30m = _return_metric(return_buckets, "picked", "30m")
-        picked_1h = _return_metric(return_buckets, "picked", "1h")
-        picked_close = _return_metric(return_buckets, "picked", "close")
-        col.metric(f"{market} Runs", int(payload.get("total_runs", 0) or 0))
-        col.caption(
-            f"Picked {int(picked or 0)} | "
-            f"Watchlist {int(watchlist_bucket or 0)} | "
-            f"Exception {int(exception_bucket or 0)} | "
-            f"30m {picked_30m:+.1f}% | "
-            f"1H {picked_1h:+.1f}% | "
-            f"Close {picked_close:+.1f}%"
-        )
-    if has_any:
-        st.markdown("#### 성과 상태 카드")
-        status_cols = st.columns(len(markets))
-        for col, market in zip(status_cols, markets):
-            payload = _load_latest_daily_summary(market)
+        with col.container(border=True):
+            st.markdown(f"#### {market}")
             if not payload:
-                col.info(f"{market}\n\n데이터 없음")
+                st.caption("요약 없음")
                 continue
+            has_any = True
             outcomes = payload.get("outcomes", {}) if isinstance(payload.get("outcomes"), dict) else {}
-            col.metric(f"{market} Pending", int(outcomes.get("pending", 0) or 0))
-            col.metric(f"{market} Resolved", int(outcomes.get("resolved", 0) or 0))
-            col.metric(f"{market} Expired", int(outcomes.get("expired", 0) or 0))
-
-        st.markdown("#### 장중 성과 카드")
-        intraday_cols = st.columns(len(markets))
-        for col, market in zip(intraday_cols, markets):
-            payload = _load_latest_daily_summary(market)
-            if not payload:
-                col.info(f"{market}\n\n데이터 없음")
-                continue
+            buckets = payload.get("outcome_bucket_breakdown", {}) if isinstance(payload.get("outcome_bucket_breakdown"), dict) else {}
             return_buckets = payload.get("return_bucket_breakdown", {}) if isinstance(payload.get("return_bucket_breakdown"), dict) else {}
+            picked = int((buckets.get("picked", {}) if isinstance(buckets.get("picked"), dict) else {}).get("total", 0) or 0)
+            watchlist_bucket = int((buckets.get("watchlist", {}) if isinstance(buckets.get("watchlist"), dict) else {}).get("total", 0) or 0)
+            exception_bucket = int(
+                (buckets.get("exception_leader", {}) if isinstance(buckets.get("exception_leader"), dict) else {}).get("total", 0) or 0
+            )
             picked_30m = _return_metric(return_buckets, "picked", "30m")
             picked_1h = _return_metric(return_buckets, "picked", "1h")
             picked_close = _return_metric(return_buckets, "picked", "close")
-            picked_30m_n = int(_return_metric(return_buckets, "picked", "30m", field="samples"))
-            picked_1h_n = int(_return_metric(return_buckets, "picked", "1h", field="samples"))
             picked_close_n = int(_return_metric(return_buckets, "picked", "close", field="samples"))
-            col.metric(f"{market} 30분", f"{picked_30m:+.2f}%", f"표본 {picked_30m_n}")
-            col.metric(f"{market} 1시간", f"{picked_1h:+.2f}%", f"표본 {picked_1h_n}")
-            col.metric(f"{market} 종가", f"{picked_close:+.2f}%", f"표본 {picked_close_n}")
+            picked_3d_win = _return_metric(return_buckets, "picked", "3d", field="win_rate_pct")
+            pending = int(outcomes.get("pending", 0) or 0)
+            resolved = int(outcomes.get("resolved", 0) or 0)
+
+            # 헤드라인 — Runs / 3D 승률
+            st.metric(
+                "Runs",
+                int(payload.get("total_runs", 0) or 0),
+                delta=f"3D 승률 {picked_3d_win:+.0f}%" if picked_3d_win else None,
+            )
+            # 분류 / 진행 상태
+            st.caption(
+                f"Picked {picked} · Watch {watchlist_bucket} · Exception {exception_bucket}\n"
+                f"Pending {pending} · Resolved {resolved}"
+            )
+            st.markdown(
+                f"<div class='detail-grid-hint' style='margin-top:0.4rem;'>"
+                f"30m <b>{picked_30m:+.2f}%</b> · 1H <b>{picked_1h:+.2f}%</b> · "
+                f"종가 <b>{picked_close:+.2f}%</b>"
+                f" <span style='color:var(--muted);'>(n={picked_close_n})</span>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+    if has_any:
         with st.expander("성과측정 상세", expanded=False):
             rows = []
             for market in markets:
@@ -1462,14 +715,15 @@ def _render_agent_bridge_status(bridge_info, market):
         if ordered_columns:
             _watchlist_df = _watchlist_df[ordered_columns]
         st.dataframe(_watchlist_df, width='stretch')
-        selected_watchlist_ticker = st.selectbox(
-            "심층분석으로 넘길 Watchlist 종목",
-            options=watchlist,
-            key=f"watchlist_select_{market}_{planner_payload.get('produced_at', '')}",
-        )
-        if st.button("선택 종목을 심층분석 입력값으로 사용", key=f"watchlist_open_{market}_{planner_payload.get('produced_at', '')}"):
-            st.session_state["deep_dive_ticker"] = selected_watchlist_ticker
-            st.info(f"심층분석 탭 입력값을 `{selected_watchlist_ticker}` 로 설정했습니다.")
+        if ENABLE_ADVANCED_UI:
+            selected_watchlist_ticker = st.selectbox(
+                "심층분석으로 넘길 Watchlist 종목",
+                options=watchlist,
+                key=f"watchlist_select_{market}_{planner_payload.get('produced_at', '')}",
+            )
+            if st.button("선택 종목을 심층분석 입력값으로 사용", key=f"watchlist_open_{market}_{planner_payload.get('produced_at', '')}"):
+                st.session_state["deep_dive_ticker"] = selected_watchlist_ticker
+                st.info(f"심층분석 탭 입력값을 `{selected_watchlist_ticker}` 로 설정했습니다.")
 
     if reject_counts:
         st.markdown("#### Reject Diagnostics")
@@ -1575,18 +829,9 @@ def _render_scan_top_candidates(results_df, bridge_info, market):
     # Stream A (안전 80%) = PRIORITY/WATCHLIST/OBSERVE 위주
     # Stream B (급등 20%) = EXCEPTION_LEADER만
     raw_records = results_df.to_dict("records")
-
-    def _is_el(rec):
-        d = str(rec.get("decision") or rec.get("Decision") or "").upper().strip()
-        if d == "EXCEPTION_LEADER":
-            return True
-        # decision 누락된 경우 reject_reason/risk_label으로 추정
-        rl = str(rec.get("risk_label") or "").upper().strip()
-        rs = str(rec.get("reason") or rec.get("reject_reason") or "").lower()
-        return rl == "EXCEPTION_LEADER" or "exception_leader" in rs
-
-    stream_a_records = [r for r in raw_records if not _is_el(r)]
-    stream_b_records = [r for r in raw_records if _is_el(r)]
+    streams = split_stream_records(raw_records)
+    stream_a_records = streams["stream_a"]
+    stream_b_records = streams["stream_b"]
 
     stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
     stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
@@ -2424,6 +1669,9 @@ def _render_intelligence_workspace():
             force_refresh=bool(refresh_intel),
         )
 
+    # Top intelligence summary (Market Mood / 강세 / 약세 카드) — L0 에서 옮겨옴
+    _render_top_intelligence_summary(intel_market, intel_data)
+
     theme_summary = build_theme_distribution_summary(intel_market, intel_data=intel_data, top_n=12)
     _render_intelligence_overview_dashboard(intel_market, intel_data, theme_summary)
     st.markdown("---")
@@ -2465,28 +1713,10 @@ def _render_scan_continuity_banner(active_tab):
 
 
 _inject_toss_theme()
-refresh_macro_clicked, refresh_gate_clicked = _render_main_controls()
-st.markdown("---")
-
-with st.expander("보조 도구 · 차트 이미지 분석", expanded=False):
-    api_key = st.text_input(
-        "OpenAI API Key",
-        type="password",
-        help="차트 이미지 Vision 분석을 사용할 때만 필요합니다.",
-        key="main_openai_api_key",
-    )
-    if api_key:
-        os.environ["OPENAI_API_KEY"] = api_key
-    st.caption("이미지 기반 보조 분석 전용 설정입니다. 스캐너와 엔진 로직에는 영향을 주지 않습니다.")
-    uploaded_file = st.file_uploader("Upload Chart", type=["jpg", "png", "jpeg"], key="main_chart_upload")
-    if uploaded_file is not None and api_key:
-        st.image(uploaded_file, caption="Uploaded Chart", width='stretch')
-        if st.button("Analyze Image", key="main_image_analyze"):
-            with st.spinner("AI is analyzing..."):
-                result = vision_analysis.analyze_chart_image(uploaded_file, api_key)
-                st.write(result)
-    elif uploaded_file:
-        st.warning("Enter API Key above.")
+# 새로고침 트리거는 L0 디테일 expander에서 받는다. 기본값은 미클릭.
+# 보조 도구 (차트 이미지 분석) 는 L0 에서 빠지고 🔎 정밀분석 탭 안으로 이동했다.
+refresh_macro_clicked = False
+refresh_gate_clicked = False
 
 # --- Phase 25: Backtest-Calibrated Rank Adjustment ---
 def compute_market_gate(market=None):
@@ -2509,21 +1739,14 @@ def compute_rank_adjustment(real_trend, position, strategy_tag, tier, whale_scor
         consec_days=consec_days,
     )
 
-# --- Phase 34: Global Brain Initialization ---
-# UI must not train models as an import/runtime side effect.
-if 'universal_model_checked' not in st.session_state:
-    model_path = "models/universal_rf.pkl"
-    if not os.path.exists(model_path):
-        st.warning("Universal model is missing. Run `python3 train_global_brain.py` outside the UI before relying on universal RF fallback.")
-    st.session_state['universal_model_checked'] = True
-
 # Phase 19: Live Macro Weather Dashboard
+# 첫 진입은 모듈 자체 10분 캐시(_macro_cache)에 위임 → 빠른 hit. 사용자가 명시적으로
+# 새로고침 버튼을 누른 경우에만 force_refresh=True 로 강제 fetch.
 if 'macro_ctx' not in st.session_state or refresh_macro_clicked:
-    with st.spinner("📡 실시간 매크로 지표 수집 중..."):
-        try:
-            st.session_state['macro_ctx'] = get_macro_context(force_refresh=True)
-        except Exception as _e:
-            st.session_state['macro_ctx'] = {'macro_state': 'NORMAL', 'macro_risk_score': 0, 'macro_penalty': 0, 'macro_multiplier': 1.0, 'flags': []}
+    try:
+        st.session_state['macro_ctx'] = get_macro_context(force_refresh=bool(refresh_macro_clicked))
+    except Exception:
+        st.session_state['macro_ctx'] = {'macro_state': 'NORMAL', 'macro_risk_score': 0, 'macro_penalty': 0, 'macro_multiplier': 1.0, 'flags': []}
 
 macro_ctx = st.session_state.get('macro_ctx', {})
 macro_state = macro_ctx.get('macro_state', 'NORMAL')
@@ -2547,7 +1770,6 @@ macro_tone = {"NORMAL": "good", "CAUTION": "caution", "RISK_OFF": "risk", "CRASH
 macro_body = f"Risk Score {macro_risk}/100 · {vix_str} · {tnx_str} · {krw_str} · {spy_str}"
 if flags_str:
     macro_body += f" · Flags {flags_str}"
-_render_status_banner(f"{_ico} Macro Weather · {macro_state}", macro_body, tone=macro_tone, caption=macro_note)
 
 # --- Phase 25: Market Gate (KOSPI/KOSDAQ Daily Gate) ---
 # Backtest proved: bad market days have 3~33% win rate → must warn users
@@ -2558,37 +1780,113 @@ if (
 ):
     st.session_state['market_gate'] = compute_market_gate(_selected_gate_market)
 _gate_info = st.session_state['market_gate']
-if refresh_gate_clicked:
-    st.session_state['market_gate'] = compute_market_gate(st.session_state.get("selected_scan_market", "KOSPI"))
-    _gate_info = st.session_state['market_gate']
-_render_status_banner(
-    f"📡 Market Gate · {_gate_info['gate']}",
-    _gate_info['msg'],
-    tone={"GREEN": "good", "YELLOW": "caution", "RED": "danger"}.get(_gate_info["gate"], "good"),
-    caption=f"선택 시장: {_selected_gate_market}",
-)
+_gate_tone_map = {"GREEN": "good", "YELLOW": "caution", "RED": "danger"}
+_gate_tone = _gate_tone_map.get(_gate_info["gate"], "good")
+try:
+    _segment_accuracy_snapshot = get_segment_accuracy_snapshot()
+except Exception as _segment_snapshot_error:
+    _segment_accuracy_snapshot = {
+        "source": "unavailable",
+        "source_status": "error",
+        "warning": str(_segment_snapshot_error),
+        "rows_loaded": 0,
+        "resolved_rows": 0,
+        "segment_count": 0,
+    }
+_data_source = str(_segment_accuracy_snapshot.get("source") or "unknown").upper()
+_data_status = str(_segment_accuracy_snapshot.get("source_status") or "unknown").upper()
+_data_rows = int(_segment_accuracy_snapshot.get("resolved_rows") or 0)
+_data_segments = int(_segment_accuracy_snapshot.get("segment_count") or 0)
+_data_tone = "good" if _data_status == "OK" and _data_rows > 0 else "caution"
 
-_top_summary_market = st.session_state.get("selected_scan_market", "KOSPI")
-_top_snapshot = _get_scan_state_snapshot()
-if (
-    _top_snapshot
-    and _scan_is_running(_top_snapshot)
-    and str(_top_snapshot.get("market", "") or "").upper() == str(_top_summary_market).upper()
-    and isinstance(_top_snapshot.get("intel_data"), dict)
-    and _top_snapshot.get("intel_data")
-):
-    _top_intel_data = dict(_top_snapshot.get("intel_data", {}))
-    _top_intel_data["_display_origin"] = "scan_snapshot"
-else:
-    _top_intel_data = market_intelligence.get_market_intelligence(
-        _top_summary_market,
-        os.environ.get("GEMINI_API_KEY", ""),
-        force_refresh=False,
+# === L0: 한 줄 컴팩트 상태바 (Market · Macro · Gate) ===
+_compact_status_bar([
+    {
+        "label": "MARKET",
+        "value": _selected_gate_market,
+        "meta": "스캐너 탭에서 변경",
+        "tone": "focus",
+    },
+    {
+        "label": "MACRO",
+        "value": f"{_ico} {macro_state}",
+        "meta": f"Risk {macro_risk}/100 · {vix_str}",
+        "tone": macro_tone,
+    },
+    {
+        "label": "GATE",
+        "value": f"{_gate_info['gate']}",
+        "meta": str(_gate_info.get("msg", "") or "")[:80],
+        "tone": _gate_tone,
+    },
+    {
+        "label": "DATA",
+        "value": f"{_data_source} · {_data_status}",
+        "meta": f"resolved {_data_rows:,} · segments {_data_segments}",
+        "tone": _data_tone,
+    },
+])
+
+# 디테일 + 새로고침 컨트롤은 expander 안으로 (사용 빈도 낮음)
+with st.expander("Macro / Gate 상세 · 새로고침", expanded=False):
+    detail_left, detail_right = st.columns([1, 1])
+    refresh_macro_clicked = detail_left.button(
+        "🔄 매크로 새로고침", use_container_width=True, key="refresh_macro_detail"
     )
-_render_top_intelligence_summary(_top_summary_market, _top_intel_data)
+    refresh_gate_clicked = detail_right.button(
+        "🔄 마켓 게이트 새로고침", use_container_width=True, key="refresh_gate_detail"
+    )
+    if refresh_macro_clicked:
+        with st.spinner("📡 실시간 매크로 지표 갱신 중..."):
+            try:
+                st.session_state['macro_ctx'] = get_macro_context(force_refresh=True)
+            except Exception:
+                pass
+        st.rerun()
+    if refresh_gate_clicked:
+        st.session_state['market_gate'] = compute_market_gate(_selected_gate_market)
+        st.rerun()
+    _render_status_banner(
+        f"{_ico} Macro Weather · {macro_state}",
+        macro_body,
+        tone=macro_tone,
+        caption=macro_note,
+    )
+    _render_status_banner(
+        f"📡 Market Gate · {_gate_info['gate']}",
+        _gate_info['msg'],
+        tone=_gate_tone,
+        caption=f"선택 시장: {_selected_gate_market}",
+    )
 
-MAIN_TABS = ["🚀 스캐너", "🧠 인텔리전스", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
+with st.expander("운영 데이터 상태 · 정확성 원천", expanded=False):
+    horizon_counts = _segment_accuracy_snapshot.get("horizon_counts", {})
+    if not isinstance(horizon_counts, dict):
+        horizon_counts = {}
+    latest_ts = _segment_accuracy_snapshot.get("latest_timestamp") or "-"
+    cols = st.columns(4)
+    cols[0].metric("정확성 원천", f"{_data_source}", _data_status)
+    cols[1].metric("누적 resolved", f"{_data_rows:,}")
+    cols[2].metric("측정 segment", f"{_data_segments:,}")
+    cols[3].metric("최신 데이터", str(latest_ts)[:10])
+    hcols = st.columns(6)
+    for idx, horizon in enumerate([1, 3, 5, 7, 14, 30]):
+        hcols[idx].metric(f"{horizon}D 표본", f"{int(horizon_counts.get(horizon, 0) or 0):,}")
+    warning = _segment_accuracy_snapshot.get("warning")
+    source_path = _segment_accuracy_snapshot.get("source_path")
+    if warning:
+        st.warning(f"Supabase 직접 조회 실패 또는 제한: {warning}. 표시값은 실제 archive 누적 데이터로 대체됩니다.")
+    if source_path:
+        st.caption(f"fallback archive: {source_path}")
+
+# 운영 기본 화면은 실제 매매 판단 흐름만 노출한다.
+# 연구/진단 도구는 AG_UI_ADVANCED=1 에서만 열어 UI 잡음을 줄인다.
+MAIN_TABS = ["🚀 스캐너", "📚 아카이브"]
+if ENABLE_ADVANCED_UI:
+    MAIN_TABS = ["🚀 스캐너", "🧠 인텔리전스", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
 if "active_main_tab" not in st.session_state:
+    st.session_state["active_main_tab"] = MAIN_TABS[0]
+elif st.session_state["active_main_tab"] not in MAIN_TABS:
     st.session_state["active_main_tab"] = MAIN_TABS[0]
 active_main_tab = st.segmented_control(
     "메인 탭",
@@ -2620,48 +1918,55 @@ if active_main_tab == "🚀 스캐너":
     _render_section_intro(
         "Scanner",
         "전종목 자동 스캔",
-        "시장, 스캔 모드, 엔진을 빠르게 고른 뒤 상위 후보를 바로 읽을 수 있도록 진입 화면을 단순화했습니다.",
+        "시장과 모드만 고르고 큰 버튼 한 번이면 바로 스캔이 시작됩니다. Top 5 후보가 가장 위에, 추가 후보는 그 아래에 나옵니다.",
         ["Top 5 focus", "Market-aware gate", "Shared trace output"],
     )
-    st.markdown(
-        """
-        <div class="control-note">
-          <strong>빠른 사용 흐름</strong>
-          <span>시장과 모드를 먼저 고르고, 엔진을 확인한 뒤 스캔을 실행하세요. 결과는 Top 5 후보와 추가 후보로 바로 나뉘어 보여집니다.</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    col1, col2, col3, col4 = st.columns(4)
-    market = col1.selectbox(
-        "시장 선택 (Market)",
+
+    # Row 1: 시장 (좌) · 모드 (우) — 두 핵심 결정만
+    col_market, col_mode = st.columns([1.4, 1])
+    market = col_market.selectbox(
+        "시장 선택",
         ["KOSPI", "KOSDAQ", "NASDAQ", "S&P500", "AMEX"],
         key="selected_scan_market",
     )
-    max_scan = col2.slider("스캔 개수 (0=전종목)", 0, 3500, 0)
-    scan_mode_label = col3.selectbox("스캔 모드", ["스윙", "장중"], index=0)
+    scan_mode_label = col_mode.radio(
+        "스캔 모드",
+        ["스윙", "장중"],
+        index=0,
+        horizontal=True,
+        key="scanner_mode_radio",
+    )
     scan_mode = "INTRADAY" if scan_mode_label == "장중" else "SWING"
-    col4.markdown(
-        "**🧠 Filter Mode**<br>"
-        + ("⏱️ Intraday Breakout / Trend" if scan_mode == "INTRADAY" else "🔥 Antigravity Score (Single Standard)"),
-        unsafe_allow_html=True,
+    _filter_caption = (
+        "⏱️ Intraday Breakout / Trend" if scan_mode == "INTRADAY"
+        else "🔥 Antigravity Score (Single Standard)"
     )
-    
-    st.markdown("---")
-    
-    engine_opt = st.radio(
-        "⚙️ 백테스트 & 분석 엔진 (Engine Mode)",
-        ["🚀 기본 엔진 (Legacy: T+0 종가 진입, 수수료 0%, 선형 거래량비례)", 
-         "🔬 완전무결 엔진 (V32.Flawless: T+1 시가 진입, 실전 슬리피지 적용, U-Shape 거래량 보정, 소표본 પે널티)"],
-        horizontal=True
-    )
-    is_advanced_engine = "완전무결" in engine_opt
-    st.markdown("---")
-    
-    start_scan = st.button(
-        "시장 스캔 시작",
+
+    # Row 2: Advanced 옵션 (스캔 개수) — 엔진은 V32.Flawless 단일화
+    # 기존 Legacy(T+0) 엔진은 실전 슬리피지/볼륨 보정이 없어 production 표준으로 부적합 → 제거.
+    engine_opt = "🔬 완전무결 엔진 (V32.Flawless: T+1 시가 진입, 실전 슬리피지 적용, U-Shape 거래량 보정, 소표본 패널티)"
+    is_advanced_engine = True
+    with st.expander("⚙️ 고급 옵션 · 스캔 개수", expanded=False):
+        max_scan = st.slider(
+            "스캔 개수 (0 = 전종목)",
+            0, 3500, 0,
+            key="scanner_max_scan_slider",
+        )
+
+    # Row 3: Primary CTA — 작은 caption 으로 현재 적용 모드 명시
+    cta_col, hint_col = st.columns([1.1, 1.4])
+    start_scan = cta_col.button(
+        "🚀 스캔 시작",
         type="primary",
+        use_container_width=True,
         disabled=_scan_is_running(),
+    )
+    hint_col.markdown(
+        f'<div class="control-note" style="margin:0;">'
+        f'<strong>적용 설정</strong>'
+        f'<span>{html.escape(market)} · {html.escape(scan_mode_label)} · {html.escape(_filter_caption)}</span>'
+        f'</div>',
+        unsafe_allow_html=True,
     )
     if start_scan:
         if _start_market_scan_job(
@@ -2694,54 +1999,57 @@ if active_main_tab == "🚀 스캐너":
     else:
         _render_scan_job_panel()
 
-    # --- Excel Upload Scanner ---
-    st.markdown("---")
-    with st.expander("📂 나만의 종목 스캔 (Excel 업로드)", expanded=False):
-        st.caption("엑셀 파일을 업로드하면 해당 종목들만 집중 분석합니다. (필수 컬럼: 'Code' 또는 'Ticker')")
-        u_file = st.file_uploader("Excel/CSV 파일 업로드", type=['xlsx', 'xls', 'csv'], key="excel_upload_scanner")
-        if u_file and st.button("파일 스캔 시작", type="primary"):
-            try:
-                if u_file.name.endswith('.csv'):
-                    udf = pd.read_csv(u_file)
-                else:
-                    udf = pd.read_excel(u_file)
-                code_col = None
-                for c in udf.columns:
-                    if c.lower() in ['code', 'ticker', 'symbol', '종목코드', '티커']:
-                        code_col = c
-                        break
-                if not code_col:
-                    st.error("❌ 'Code' 또는 'Ticker' 컬럼을 찾을 수 없습니다.")
-                else:
-                    target_tickers = udf[code_col].astype(str).tolist()
-                    st.info(f"📋 파일에서 {len(target_tickers)}개 종목을 확인했습니다. 스캔을 시작합니다...")
-                    u_progress = st.progress(0)
-                    u_status = st.empty()
-                    u_results = []
-                    for i, sym in enumerate(target_tickers):
-                        sym = normalize_uploaded_ticker(sym)
-                        u_status.text(f"🔍 Analyzing {sym}...")
-                        u_progress.progress((i+1)/len(target_tickers))
-                        try:
-                            eval_result = evaluate_uploaded_candidate(ticker=sym, display_name=sym)
-                            if not eval_result:
+    if ENABLE_ADVANCED_UI:
+        # --- Excel Upload Scanner ---
+        st.markdown("---")
+        with st.expander("📂 나만의 종목 스캔 (Excel 업로드)", expanded=False):
+            st.caption("엑셀 파일을 업로드하면 해당 종목들만 집중 분석합니다. (필수 컬럼: 'Code' 또는 'Ticker')")
+            u_file = st.file_uploader("Excel/CSV 파일 업로드", type=['xlsx', 'xls', 'csv'], key="excel_upload_scanner")
+            if u_file and st.button("파일 스캔 시작", type="primary"):
+                try:
+                    if u_file.name.endswith('.csv'):
+                        udf = pd.read_csv(u_file)
+                    else:
+                        udf = pd.read_excel(u_file)
+                    code_col = None
+                    for c in udf.columns:
+                        if c.lower() in ['code', 'ticker', 'symbol', '종목코드', '티커']:
+                            code_col = c
+                            break
+                    if not code_col:
+                        st.error("❌ 'Code' 또는 'Ticker' 컬럼을 찾을 수 없습니다.")
+                    else:
+                        target_tickers = udf[code_col].astype(str).tolist()
+                        st.info(f"📋 파일에서 {len(target_tickers)}개 종목을 확인했습니다. 스캔을 시작합니다...")
+                        u_progress = st.progress(0)
+                        u_status = st.empty()
+                        u_results = []
+                        for i, sym in enumerate(target_tickers):
+                            sym = normalize_uploaded_ticker(sym)
+                            u_status.text(f"🔍 Analyzing {sym}...")
+                            u_progress.progress((i+1)/len(target_tickers))
+                            try:
+                                eval_result = evaluate_uploaded_candidate(ticker=sym, display_name=sym)
+                                if not eval_result:
+                                    continue
+                                u_results.append(eval_result["ui_row"])
+                                db = db_manager.DBManager()
+                                upload_payload = dict(eval_result["db_payload"] or {})
+                                upload_payload.setdefault("scan_mode", "SWING")
+                                upload_payload.setdefault("feature_origin", "app_excel_upload")
+                                db.upsert_scan_result(upload_payload)
+                            except Exception:
                                 continue
-                            u_results.append(eval_result["ui_row"])
-                            db = db_manager.DBManager()
-                            upload_payload = dict(eval_result["db_payload"] or {})
-                            upload_payload.setdefault("scan_mode", "SWING")
-                            upload_payload.setdefault("feature_origin", "app_excel_upload")
-                            db.upsert_scan_result(upload_payload)
-                        except Exception:
-                            continue
-                    if u_results:
-                        st.success("✅ 파일 스캔 완료!")
-                        st.dataframe(pd.DataFrame(u_results), width='stretch')
-            except Exception as e:
-                st.error(f"파일 처리 중 오류 발생: {e}")
+                        if u_results:
+                            st.success("✅ 파일 스캔 완료!")
+                            st.dataframe(pd.DataFrame(u_results), width='stretch')
+                except Exception as e:
+                    st.error(f"파일 처리 중 오류 발생: {e}")
 
 # TAB 3: SINGLE STOCK ANALYSIS (정밀분석)
 if active_main_tab == "🔎 정밀분석":
+    from modules import news_analysis, vision_analysis
+
     _render_section_intro(
         "Deep Dive",
         "종목 심층 분석",
@@ -3530,9 +2838,32 @@ if active_main_tab == "🔎 정밀분석":
                      st.dataframe(qs.df.tail(20)[['Close', 'RSI', 'Signal']].style.format("{:.2f}"))
 
 
-                     
+
             else:
                 st.error(f"Could not load data for {ticker}")
+
+    # --- 보조 도구: 차트 이미지 Vision 분석 (정밀분석 탭 전용) ---
+    with st.expander("🖼️ 보조 도구 · 차트 이미지 분석", expanded=False):
+        api_key = st.text_input(
+            "OpenAI API Key",
+            type="password",
+            help="차트 이미지 Vision 분석을 사용할 때만 필요합니다.",
+            key="main_openai_api_key",
+        )
+        if api_key:
+            os.environ["OPENAI_API_KEY"] = api_key
+        st.caption("이미지 기반 보조 분석 전용 설정입니다. 스캐너와 엔진 로직에는 영향을 주지 않습니다.")
+        uploaded_file = st.file_uploader(
+            "Upload Chart", type=["jpg", "png", "jpeg"], key="main_chart_upload"
+        )
+        if uploaded_file is not None and api_key:
+            st.image(uploaded_file, caption="Uploaded Chart", width='stretch')
+            if st.button("Analyze Image", key="main_image_analyze"):
+                with st.spinner("AI is analyzing..."):
+                    result = vision_analysis.analyze_chart_image(uploaded_file, api_key)
+                    st.write(result)
+        elif uploaded_file:
+            st.warning("Enter API Key above.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -3719,16 +3050,38 @@ if active_main_tab == "📚 아카이브":
                     _day_df['현재 수익률(%)'] = _day_df['ticker'].map(_curr_perf_map)
 
                 st.divider()
-                st.markdown(f"### 🔥 Top 5 — {_selected_date}")
-                _archive_signal_rows = build_signal_display_rows(_day_df.to_dict("records"))
-                _render_signal_card_list(_archive_signal_rows[:5])
+                # 스캐너 결과와 동일한 Stream A/B 8:2 분리. decision_score 정렬은 위에서 마침.
+                _archive_records = _day_df.to_dict("records")
+                _archive_streams = split_stream_records(_archive_records)
+                _archive_stream_a = build_signal_display_rows(_archive_streams["stream_a"], limit=5)
+                _archive_stream_b = build_signal_display_rows(_archive_streams["stream_b"], limit=5)
+
+                st.markdown(f"### 🔥 Top 매수 신호 · Stream A (안전 매매, 자본 80%) — {_selected_date}")
+                if _archive_stream_a:
+                    _render_signal_card_list(_archive_stream_a, empty_text="Stream A 후보 없음.")
+                else:
+                    st.info("Stream A 후보 없음 — 게이트가 모두 demote.")
+
+                st.markdown("### 🚨 Surge Capture · Stream B (급등 잡기, 자본 20%)")
+                if _archive_stream_b:
+                    _render_signal_card_list(_archive_stream_b, empty_text="Stream B 후보 없음.")
+                else:
+                    st.info("Stream B(EXCEPTION_LEADER) 후보 없음 — 시장에 surge 신호 부재.")
 
                 st.divider()
-                st.markdown("### 📋 기타 후보")
-                if len(_archive_signal_rows) > 5:
-                    _render_signal_card_list(_archive_signal_rows[5:])
-                else:
-                    st.info("Top 5 외에 추가 종목이 없습니다.")
+                with st.expander("📋 기타 후보 (Top 5 외)", expanded=False):
+                    _seen_tickers = {
+                        str(r.get("ticker") or "") for r in (_archive_stream_a + _archive_stream_b)
+                    }
+                    _other_records = [
+                        r for r in _archive_records
+                        if str(r.get("ticker") or "") not in _seen_tickers
+                    ]
+                    _archive_other_rows = build_signal_display_rows(_other_records)
+                    if _archive_other_rows:
+                        _render_signal_card_list(_archive_other_rows)
+                    else:
+                        st.info("Top 5 외에 추가 종목이 없습니다.")
 
                 _perf_col = None
                 if 'return_7d_pct' in _day_df.columns:

@@ -6,6 +6,11 @@ from typing import Any, Dict, List, Optional
 from multi_agent.contracts.types import PlannerDecision, PlannerHandoff, RunContext, WarningItem
 from modules.horizon_policy import resolve_horizon_policy
 from modules.inverted_signal_features import compute_low_prob_high_score_features
+from modules.loss_risk_features import (
+    compute_loss_risk_features,
+    get_loss_risk_gate_thresholds,
+    get_loss_risk_soft_cap_decision,
+)
 from multi_agent.agents.kr_quant_reranker import (
     compute_kr_basket_priority,
     compute_kr_quant_rerank,
@@ -113,6 +118,54 @@ def _decision_from_rank(rank: int) -> str:
 
 def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
+
+
+def _resolve_market_gate(*sources: Dict[str, Any]) -> str:
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        value = source.get("market_gate")
+        if isinstance(value, dict):
+            gate = str(value.get("gate") or value.get("regime") or "").strip().upper()
+        else:
+            gate = str(value or "").strip().upper()
+        if gate:
+            return gate
+    return ""
+
+
+def _apply_loss_risk_gate(
+    *,
+    decision: str,
+    run_market: str,
+    scan_mode: str,
+    loss_risk_score: float,
+    loss_risk_flags: List[str],
+    rationale: List[str],
+    theme_risk: List[str],
+) -> str:
+    if str(scan_mode or "").upper() != "SWING" or str(run_market or "").upper() not in {"KOSPI", "KOSDAQ"}:
+        return decision
+    market = str(run_market or "").upper()
+    thresholds = get_loss_risk_gate_thresholds(market)
+    hard = float(thresholds["hard"])
+    soft = float(thresholds["soft"])
+    if loss_risk_score >= hard:
+        capped = _decision_from_rank(min(_decision_rank(decision), _decision_rank("OBSERVE")))
+        if capped != decision:
+            rationale.append(f"loss_risk_hard_cap:{loss_risk_score:.1f}")
+        decision = capped
+        theme_risk.append("LOSS_RISK_HARD_CAP")
+    elif loss_risk_score >= soft:
+        soft_cap_decision = get_loss_risk_soft_cap_decision(market)
+        capped = _decision_from_rank(min(_decision_rank(decision), _decision_rank(soft_cap_decision)))
+        if capped != decision:
+            rationale.append(f"loss_risk_soft_cap:{loss_risk_score:.1f}")
+        decision = capped
+        theme_risk.append("LOSS_RISK_SOFT_CAP")
+    if loss_risk_flags:
+        theme_risk.extend([flag for flag in loss_risk_flags if flag not in theme_risk])
+    return decision
 
 
 def _apply_phase25_reliability_gate(
@@ -793,6 +846,7 @@ def build_planner_handoff(
             or cand.get("kr_universe_role")
             or ""
         )
+        market_gate = _resolve_market_gate(quant_meta, feature_snapshot, cand)
         explosive_eligible = bool(quant_meta.get("explosive_eligible", False))
         explosive_gate_reasons = [
             str(x) for x in list(quant_meta.get("explosive_gate_reasons", []) or []) if str(x).strip()
@@ -804,12 +858,36 @@ def build_planner_handoff(
         continuation_gate_reasons = [str(x) for x in list(quant_meta.get("continuation_gate_reasons", []) or []) if str(x).strip()]
         basket_priority_score = float(basket_meta.get("score", score) or score)
         alpha_score = feature_snapshot.get("alpha_score")
+        tech_score = feature_snapshot.get("tech_score")
         conviction_score = feature_snapshot.get("conviction_score")
         decision_score = feature_snapshot.get("decision_score", score)
+        whale_score = feature_snapshot.get("whale_score")
+        volume = feature_snapshot.get("volume")
+        volume_ratio = feature_snapshot.get("volume_ratio")
+        volume_confirmed = feature_snapshot.get("volume_confirmed")
         entry_reference_price = feature_snapshot.get("entry_reference_price") or feature_snapshot.get("현재가") or feature_snapshot.get("current_price")
         prob_5 = feature_snapshot.get("prob_5", feature_snapshot.get("_prob_5", feature_snapshot.get("ml_prob")))
         prob_clean = feature_snapshot.get("prob_clean", feature_snapshot.get("_prob_clean"))
         real_trend = str(feature_snapshot.get("real_trend") or feature_snapshot.get("trend") or "")
+        loss_risk_features = compute_loss_risk_features(
+            market_subtype=run_market,
+            alpha_score=alpha_score,
+            tech_score=tech_score,
+            whale_score=whale_score,
+            ml_prob=prob_5,
+            prob_clean=prob_clean,
+            volume_ratio=volume_ratio,
+            volume_confirmed=volume_confirmed,
+            position=feature_snapshot.get("position") or cand.get("position") or "",
+            tier=feature_snapshot.get("tier") or cand.get("tier") or "",
+            trend=real_trend or feature_snapshot.get("trend") or cand.get("trend") or "",
+        )
+        loss_risk_score = float(loss_risk_features.get("loss_risk_score", 0.0) or 0.0)
+        loss_risk_flags = [
+            name.upper()
+            for name, value in loss_risk_features.items()
+            if name.endswith("_risk") and float(value or 0.0) >= 1.0
+        ]
         strategy_family = str(feature_snapshot.get("strategy_family") or "")
         scan_mode = str(feature_snapshot.get("scan_mode") or "")
         phase25_variant = str(feature_snapshot.get("phase25_variant") or "")
@@ -922,6 +1000,10 @@ def build_planner_handoff(
                 f"low_model={float(low_model_prob_score or 0.0):.1f},"
                 f"low_prob_high={float(low_prob_high_score or 0.0):.1f}"
             )
+        if loss_risk_score > 0:
+            rationale.append(f"loss_risk_score={loss_risk_score:.1f}")
+            if loss_risk_flags:
+                rationale.append("loss_risk_flags=" + ",".join(loss_risk_flags[:4]))
         if regime_adjusted_grade:
             rationale.append(
                 f"relative_rank={regime_adjusted_grade}:pct={float(relative_rank_pct or 0.0):.3f},"
@@ -1046,6 +1128,15 @@ def build_planner_handoff(
             rationale=rationale,
             theme_risk=theme_risk,
         )
+        decision = _apply_loss_risk_gate(
+            decision=decision,
+            run_market=run_market,
+            scan_mode=scan_mode,
+            loss_risk_score=loss_risk_score,
+            loss_risk_flags=loss_risk_flags,
+            rationale=rationale,
+            theme_risk=theme_risk,
+        )
 
         if bool(feature_snapshot.get("inference_failed", False)):
             target_rank = min(_decision_rank(decision), _decision_rank("OBSERVE"))
@@ -1064,8 +1155,13 @@ def build_planner_handoff(
             decision=decision,
             confidence=round(confidence, 3),
             alpha_score=float(alpha_score) if alpha_score not in (None, "") else None,
+            tech_score=float(tech_score) if tech_score not in (None, "") else None,
             conviction_score=float(conviction_score) if conviction_score not in (None, "") else None,
             decision_score=float(decision_score) if decision_score not in (None, "") else round(score, 3),
+            whale_score=float(whale_score) if whale_score not in (None, "") else None,
+            volume=volume,
+            volume_ratio=float(volume_ratio) if volume_ratio not in (None, "") else None,
+            volume_confirmed=bool(volume_confirmed) if volume_confirmed is not None else None,
             entry_reference_price=float(entry_reference_price) if entry_reference_price not in (None, "") else None,
             prob_5=float(prob_5) if prob_5 not in (None, "") else None,
             prob_clean=float(prob_clean) if prob_clean not in (None, "") else None,
@@ -1099,6 +1195,7 @@ def build_planner_handoff(
             quant_score_3d=round(float(quant_score_3d), 3),
             selection_lane=quant_lane,
             target_horizon_days=target_horizon_days,
+            market_gate=market_gate,
             scanner_timeframe_profile=scanner_timeframe_profile,
             kr_universe_role=kr_universe_role,
             explosive_eligible=explosive_eligible,
@@ -1137,12 +1234,18 @@ def build_planner_handoff(
                     "stock_name": stock_name,
                     "decision": decision,
                     "decision_score": float(decision_score) if decision_score not in (None, "") else None,
+                    "tech_score": float(tech_score) if tech_score not in (None, "") else None,
+                    "whale_score": float(whale_score) if whale_score not in (None, "") else None,
+                    "volume": volume,
+                    "volume_ratio": float(volume_ratio) if volume_ratio not in (None, "") else None,
+                    "volume_confirmed": bool(volume_confirmed) if volume_confirmed is not None else None,
                     "quant_priority_score": round(float(basket_priority_score), 3),
                     "quant_score_1d": round(float(quant_score_1d), 3),
                     "quant_score_3d": round(float(quant_score_3d), 3),
                     "selection_lane": quant_lane,
                     "active_lane": active_lane,
                     "target_horizon_days": target_horizon_days,
+                    "market_gate": market_gate or None,
                     "scanner_timeframe_profile": scanner_timeframe_profile or None,
                     "kr_universe_role": kr_universe_role or None,
                     "explosive_eligible": explosive_eligible,

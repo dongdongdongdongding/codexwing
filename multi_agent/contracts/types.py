@@ -139,8 +139,13 @@ class PlannerDecision:
     confidence: float
     stock_name: str = ""
     alpha_score: Optional[float] = None
+    tech_score: Optional[float] = None
     conviction_score: Optional[float] = None
     decision_score: Optional[float] = None
+    whale_score: Optional[float] = None
+    volume: Optional[Any] = None
+    volume_ratio: Optional[float] = None
+    volume_confirmed: Optional[bool] = None
     entry_reference_price: Optional[float] = None
     prob_5: Optional[float] = None
     prob_clean: Optional[float] = None
@@ -174,6 +179,7 @@ class PlannerDecision:
     quant_score_3d: Optional[float] = None
     selection_lane: str = ""
     target_horizon_days: int = 3
+    market_gate: str = ""
     scanner_timeframe_profile: str = ""
     kr_universe_role: str = ""
     explosive_eligible: bool = False

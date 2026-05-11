@@ -12,6 +12,7 @@ from multi_agent.agents.market_context_runtime import build_market_context_hando
 from multi_agent.agents.planner_runtime import build_planner_handoff
 from multi_agent.contracts.serialization import read_json, write_json
 from multi_agent.contracts.types import (
+    PlannerDecision,
     PostmortemReport,
     RunContext,
     WarningItem,
@@ -27,6 +28,11 @@ from multi_agent.storage.long_term_memory import (
 from multi_agent.workflows.postmortem import build_postmortem_report, create_improvement_ticket
 from multi_agent.workflows.outcome_buckets import classify_decision_bucket
 from modules.market_data import get_history
+from modules.loss_risk_features import (
+    compute_loss_risk_features,
+    get_loss_risk_gate_thresholds,
+    get_loss_risk_soft_cap_decision,
+)
 from modules.regime_market_policy import get_market_policy
 from modules.regime_ticker_profiles import compute_profile_adjustment, get_ticker_profile, resolve_profile_market, resolve_profile_regime
 from modules.kr_stock_theme_master import get_stock_theme_record
@@ -115,6 +121,7 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
     input_meta = scanner_summary.get("input_meta", {}) if isinstance(scanner_summary.get("input_meta"), dict) else {}
     scan_mode = str(input_meta.get("scan_mode") or scanner_summary.get("scan_mode") or "SWING").upper()
     strategy_family = str(input_meta.get("strategy_family") or scanner_summary.get("strategy_family") or "").upper()
+    scanner_market_gate = _resolve_scanner_market_gate(scanner_payload or {}) if isinstance(scanner_payload, dict) else ""
     decisions = getattr(planner_handoff, "decisions", []) or []
     seen_tickers: set[str] = set()
     for dec in decisions:
@@ -164,6 +171,7 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "quant_priority_score": getattr(dec, "quant_priority_score", None),
                 "quant_score_1d": getattr(dec, "quant_score_1d", None),
                 "quant_score_3d": getattr(dec, "quant_score_3d", None),
+                "market_gate": getattr(dec, "market_gate", "") or scanner_market_gate or None,
                 "scanner_timeframe_profile": getattr(dec, "scanner_timeframe_profile", "") or None,
                 "kr_universe_role": getattr(dec, "kr_universe_role", "") or None,
                 "explosive_eligible": getattr(dec, "explosive_eligible", False),
@@ -258,6 +266,7 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "expected_edge_score": meta.get("expected_edge_score"),
                 "expected_return_1d_pct": meta.get("expected_return_1d_pct"),
                 "expected_return_3d_pct": meta.get("expected_return_3d_pct"),
+                "market_gate": meta.get("market_gate") or scanner_market_gate or None,
                 "scanner_timeframe_profile": meta.get("scanner_timeframe_profile"),
                 "kr_universe_role": meta.get("kr_universe_role"),
                 "explosive_eligible": meta.get("explosive_eligible"),
@@ -783,6 +792,9 @@ def _detail_feature_fields(row: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(row, dict):
         return {}
     out: Dict[str, Any] = {}
+    for key in ("market_gate", "scanner_timeframe_profile", "kr_universe_role"):
+        if _detail_has_feature(row.get(key)):
+            out[key] = row.get(key)
     if "tech_score" in row:
         out["tech_score"] = round(_safe_float(row.get("tech_score")), 2)
     if "whale_score" in row:
@@ -862,6 +874,7 @@ def _enrich_tracking_meta(meta: Dict[str, Any], *, ticker: str, source_run_id: s
             "expected_edge_score",
             "expected_return_1d_pct",
             "expected_return_3d_pct",
+            "market_gate",
             "scanner_timeframe_profile",
             "kr_universe_role",
             "explosive_eligible",
@@ -1441,6 +1454,9 @@ def _collect_near_miss_watchlist_from_scanner_payload(
                     "horizon_days": 2,
                     "reason": "near_miss_watchlist",
                     "reject_reason": meta.get("reason"),
+                    "market_gate": meta.get("market_gate"),
+                    "scanner_timeframe_profile": meta.get("scanner_timeframe_profile"),
+                    "kr_universe_role": meta.get("kr_universe_role"),
                     "alpha_score": meta.get("alpha_score"),
                     "tech_score": meta.get("tech_score"),
                     "conviction_score": meta.get("conviction_score"),
@@ -1464,6 +1480,122 @@ def _collect_near_miss_watchlist_from_scanner_payload(
         "watchlist_meta": watchlist_meta,
         "considered_filtered_symbols": len(reject_by_symbol),
     }
+
+
+def _build_relative_zero_pass_decisions(
+    *,
+    watchlist_meta: List[Dict[str, Any]],
+    max_decisions: int = 5,
+) -> List[PlannerDecision]:
+    decisions: List[PlannerDecision] = []
+    seen: set[str] = set()
+    for meta in watchlist_meta:
+        if not isinstance(meta, dict):
+            continue
+        ticker = str(meta.get("ticker") or "").strip()
+        if not ticker or ticker in seen:
+            continue
+        seen.add(ticker)
+        alpha_score = _safe_float(meta.get("alpha_score"))
+        conviction_score = _safe_float(meta.get("conviction_score"))
+        decision_score = _safe_float(meta.get("decision_score"))
+        decision = "WATCHLIST" if max(alpha_score, conviction_score, decision_score) >= 50.0 else "OBSERVE"
+        confidence = max(0.35, min(0.72, conviction_score / 100.0 if conviction_score > 0 else decision_score / 180.0))
+        reject_reason = str(meta.get("reject_reason") or "").strip().lower()
+        market_gate = str(meta.get("market_gate") or "").strip().upper()
+        rationale = [
+            "relative_zero_pass_promotion",
+            "strict_filter_candidates_empty",
+            f"source_profile:{meta.get('source_profile') or 'current_run_near_miss'}",
+        ]
+        if reject_reason:
+            rationale.append(f"reject_reason:{reject_reason}")
+        if market_gate:
+            rationale.append(f"market_gate:{market_gate}")
+        loss_risk_market = "KOSPI" if ticker.endswith(".KS") else "KOSDAQ" if ticker.endswith(".KQ") else ""
+        loss_risk = compute_loss_risk_features(
+            market_subtype=loss_risk_market,
+            alpha_score=meta.get("alpha_score"),
+            tech_score=meta.get("tech_score"),
+            whale_score=meta.get("whale_score"),
+            ml_prob=meta.get("prob_5"),
+            prob_clean=meta.get("prob_clean"),
+            volume_ratio=meta.get("volume_ratio"),
+            volume_confirmed=meta.get("volume_confirmed"),
+            position=meta.get("position"),
+            tier=meta.get("tier"),
+            trend=meta.get("real_trend"),
+        )
+        loss_risk_score = float(loss_risk.get("loss_risk_score", 0.0) or 0.0)
+        loss_risk_flags = [
+            key.upper()
+            for key, value in loss_risk.items()
+            if key.endswith("_risk") and float(value or 0.0) >= 1.0
+        ]
+        if loss_risk_score > 0:
+            rationale.append(f"loss_risk_score={loss_risk_score:.1f}")
+        if loss_risk_flags:
+            rationale.append("loss_risk_flags=" + ",".join(loss_risk_flags[:4]))
+        thresholds = get_loss_risk_gate_thresholds(loss_risk_market)
+        if loss_risk_score >= thresholds["hard"]:
+            decision = "OBSERVE"
+        elif loss_risk_score >= thresholds["soft"]:
+            decision = get_loss_risk_soft_cap_decision(loss_risk_market)
+        decisions.append(
+            PlannerDecision(
+                ticker=ticker,
+                stock_name=str(meta.get("stock_name") or ""),
+                priority_rank=len(decisions) + 1,
+                decision=decision,
+                confidence=round(float(confidence), 3),
+                alpha_score=alpha_score if meta.get("alpha_score") not in (None, "") else None,
+                tech_score=_safe_float(meta.get("tech_score")) if meta.get("tech_score") not in (None, "") else None,
+                conviction_score=conviction_score if meta.get("conviction_score") not in (None, "") else None,
+                decision_score=decision_score if meta.get("decision_score") not in (None, "") else None,
+                whale_score=_safe_float(meta.get("whale_score")) if meta.get("whale_score") not in (None, "") else None,
+                volume=meta.get("volume"),
+                volume_ratio=_safe_float(meta.get("volume_ratio")) if meta.get("volume_ratio") not in (None, "") else None,
+                volume_confirmed=bool(meta.get("volume_confirmed")) if meta.get("volume_confirmed") is not None else None,
+                entry_reference_price=meta.get("entry_reference_price"),
+                prob_5=meta.get("prob_5"),
+                prob_clean=meta.get("prob_clean"),
+                real_trend=str(meta.get("real_trend") or ""),
+                strategy_family=str(meta.get("strategy_family") or "KR_CORE"),
+                scan_mode=str(meta.get("scan_mode") or "SWING"),
+                market_gate=market_gate,
+                scanner_timeframe_profile=str(meta.get("scanner_timeframe_profile") or ""),
+                kr_universe_role=str(meta.get("kr_universe_role") or ""),
+                target_horizon_days=max(1, _safe_int(meta.get("horizon_days", 2))),
+                primary_theme=str(meta.get("primary_theme") or ""),
+                theme_source=str(meta.get("theme_source") or ""),
+                theme_inference_status=str(meta.get("theme_inference_status") or ""),
+                secondary_themes=[
+                    str(x) for x in (meta.get("secondary_themes") or []) if str(x).strip()
+                ] if isinstance(meta.get("secondary_themes"), list) else [],
+                theme_routing_path=str(meta.get("theme_routing_path") or ""),
+                theme_risk=[
+                    "ZERO_STRICT_PASS_RELATIVE_CANDIDATE",
+                    f"REJECT_REASON_{reject_reason.upper()}" if reject_reason else "REJECT_REASON_UNKNOWN",
+                ] + loss_risk_flags,
+                rationale=rationale,
+                evidence_refs=[
+                    "scanner_handoff.json",
+                    "planner_handoff.watchlist_meta",
+                    "realized_outcomes.json",
+                ],
+                warnings=[
+                    WarningItem(
+                        code="RELATIVE_ZERO_PASS_PROMOTION",
+                        message="Strict scanner filters produced no decisions; this candidate was promoted from real current-run near-miss evidence.",
+                        severity="warning",
+                    )
+                ],
+                realized_outcome_ref=f"realized_outcomes.json#{ticker}",
+            )
+        )
+        if len(decisions) >= max_decisions:
+            break
+    return decisions
 
 
 def _collect_exception_leaders_from_scanner_payload(
@@ -1733,10 +1865,14 @@ def run_legacy_orchestration(
         if isinstance(nm_watch, list) and nm_watch:
             planner_handoff.watchlist = [str(x) for x in nm_watch[:8]]
             planner_handoff.watchlist_meta = list(nm.get("watchlist_meta", []))[:8]
+            planner_handoff.decisions = _build_relative_zero_pass_decisions(
+                watchlist_meta=planner_handoff.watchlist_meta,
+                max_decisions=5,
+            )
             planner_handoff.global_warnings.append(
                 WarningItem(
-                    code="NEAR_MISS_WATCHLIST_ENABLED",
-                    message="Planner generated a watchlist from current-run near-miss candidates after zero active decisions.",
+                    code="NEAR_MISS_RELATIVE_CANDIDATES_ENABLED",
+                    message="Planner generated ranked relative candidates from current-run near-miss evidence after zero strict-pass decisions.",
                     severity="warning",
                 )
             )
@@ -1744,6 +1880,7 @@ def run_legacy_orchestration(
                 "applied": True,
                 "tickers": planner_handoff.watchlist,
                 "watchlist_meta": planner_handoff.watchlist_meta,
+                "promoted_decisions": [d.ticker for d in planner_handoff.decisions],
                 "considered_filtered_symbols": int(nm.get("considered_filtered_symbols", 0) or 0),
             }
         else:

@@ -42,6 +42,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from modules.db_manager import DBManager
 from modules.horizon_policy import horizon_days_from_return_col, resolve_horizon_policy
+from modules.loss_risk_features import compute_loss_risk_features
 
 
 def _pct_float(value, default=0.0):
@@ -87,6 +88,7 @@ def load_scan_archive() -> pd.DataFrame:
         "alpha_score,tech_score,ml_prob,prob_clean,whale_score,trend,tier,volume,volume_ratio,volume_confirmed,position,"
         "strategy,decision_score,fund_status,entry_reference_price,inference_failed,"
         "feature_origin,feature_quality,feature_completeness,feature_missing_fields,"
+        "market_gate,scanner_timeframe_profile,kr_universe_role,selection_lane,rationale,theme_risk,"
         "validation_excluded,validation_excluded_reason,is_dummy_data,"
         "return_close_pct,return_1d_pct,return_2d_pct,return_3d_pct,return_5d_pct,return_7d_pct"
     )
@@ -221,8 +223,10 @@ def load_scan_archive() -> pd.DataFrame:
         cross_overlay_cols = [
             c for c in (
                 "alpha_score", "tech_score", "ml_prob", "whale_score",
+                "prob_clean",
                 "tier", "trend", "position", "volume", "volume_ratio",
                 "volume_confirmed", "decision_score", "fund_status",
+                "market_gate", "scanner_timeframe_profile", "kr_universe_role", "selection_lane",
                 "return_close_pct", "return_1d_pct", "return_2d_pct",
                 "return_3d_pct", "return_5d_pct", "return_7d_pct",
                 "outcome_status", "feature_origin",
@@ -379,6 +383,26 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df["role_explosive_leader"] = role.eq("EXPLOSIVE_LEADER").astype(int)
     df["role_transitional"] = role.eq("TRANSITIONAL").astype(int)
     df["role_reject_risk"] = role.eq("REJECT_RISK").astype(int)
+
+    risk_rows = [
+        compute_loss_risk_features(
+            market_subtype=row.get("market_subtype"),
+            alpha_score=row.get("alpha_score"),
+            tech_score=row.get("tech_score"),
+            whale_score=row.get("whale_score"),
+            ml_prob=row.get("ml_prob"),
+            prob_clean=row.get("prob_clean"),
+            volume_ratio=row.get("volume_ratio"),
+            volume_confirmed=row.get("volume_confirmed"),
+            position=row.get("position"),
+            tier=row.get("tier"),
+            trend=row.get("trend"),
+        )
+        for _, row in df.iterrows()
+    ]
+    risk_df = pd.DataFrame(risk_rows, index=df.index)
+    for col in LOSS_RISK_FEATURE_COLS:
+        df[col] = pd.to_numeric(risk_df[col], errors="coerce").fillna(0.0)
 
     return df
 
@@ -589,6 +613,24 @@ def derive_ohlcv_features(df: pd.DataFrame, *, target_mask: Optional[pd.Series] 
     return df
 
 
+LOSS_RISK_FEATURE_COLS = [
+    "alpha_prob_gap",
+    "tech_prob_gap",
+    "whale_prob_gap",
+    "model_prob_disagreement",
+    "low_prob_high_alpha_risk",
+    "clean_prob_high_alpha_risk",
+    "model_prob_disagreement_risk",
+    "weak_volume_high_alpha_risk",
+    "chase_low_prob_risk",
+    "kosdaq_tier_chase_risk",
+    "kosdaq_clean_chase_risk",
+    "uptrend_low_support_risk",
+    "missing_core_trace_risk",
+    "loss_risk_score",
+]
+
+
 FEATURE_COLS = [
     "alpha_score",
     # "tech_score" removed: exact duplicate of alpha_score at inference time
@@ -649,6 +691,7 @@ FEATURE_COLS = [
     "peak_x_highvol",
     "overheat_x_uptrend",
     "sub7_x_breakout",
+    *LOSS_RISK_FEATURE_COLS,
     # OHLCV-derived leading indicators added 2026-04-28 to break alpha_score
     # monoculture in KOSDAQ swing (alpha importance was 489 vs second-place 78).
     # All computed strictly from bars on or before scan_date — no leakage.
@@ -1321,6 +1364,27 @@ def _derive_features_from_archive(df: pd.DataFrame) -> pd.DataFrame:
     out["peak_x_highvol"] = ((out["is_peak"] == 1) & ((vr > 2.5).fillna(False))).astype(int)
     out["overheat_x_uptrend"] = ((out["is_overheat"] == 1) & (out["is_uptrend"] == 1)).astype(int)
     out["sub7_x_breakout"] = ((out["is_sub7"] == 1) & (out["is_breakout"] == 1)).astype(int)
+
+    market_subtype = np.where(out["is_kospi"].eq(1), "KOSPI", np.where(out["is_kosdaq"].eq(1), "KOSDAQ", market))
+    risk_rows = [
+        compute_loss_risk_features(
+            market_subtype=market_subtype[i],
+            alpha_score=out["alpha_score"].iloc[i] if "alpha_score" in out.columns else None,
+            tech_score=out["tech_score"].iloc[i] if "tech_score" in out.columns else None,
+            whale_score=out["whale_score"].iloc[i] if "whale_score" in out.columns else None,
+            ml_prob=out["ml_prob"].iloc[i] if "ml_prob" in out.columns else None,
+            prob_clean=out["prob_clean"].iloc[i] if "prob_clean" in out.columns else None,
+            volume_ratio=out["volume_ratio"].iloc[i] if "volume_ratio" in out.columns else None,
+            volume_confirmed=out["volume_confirmed"].iloc[i] if "volume_confirmed" in out.columns else None,
+            position=position.iloc[i],
+            tier=tier.iloc[i],
+            trend=trend.iloc[i],
+        )
+        for i in range(len(out))
+    ]
+    risk_df = pd.DataFrame(risk_rows, index=out.index)
+    for col in LOSS_RISK_FEATURE_COLS:
+        out[col] = pd.to_numeric(risk_df[col], errors="coerce").fillna(0.0)
 
     return out
 
