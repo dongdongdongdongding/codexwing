@@ -6,6 +6,7 @@ warnings.filterwarnings("ignore", module="urllib3")
 
 import html
 import json
+import math
 import threading
 import streamlit as st
 import os
@@ -27,6 +28,7 @@ from modules.scan_policy import (
     compute_rank_adjustment as shared_compute_rank_adjustment,
 )
 from modules.theme_data_pipeline import build_theme_distribution_summary
+from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.ui_helpers import (
     BackgroundScanState,
     build_signal_display_rows,
@@ -992,6 +994,139 @@ def _get_scan_state_snapshot():
     return state.snapshot()
 
 
+def _load_top_deep_reports(limit=500):
+    rows = []
+    warning = ""
+    try:
+        db = db_manager.DBManager()
+        if db.client:
+            res = (
+                db.client.table("scan_deep_reports")
+                .select("*")
+                .order("generated_at", desc=True)
+                .limit(int(limit or 500))
+                .execute()
+            )
+            rows = list(res.data or [])
+    except Exception as exc:
+        warning = str(exc)
+    if rows:
+        return rows, warning
+
+    local_rows = []
+    report_dir = Path("runtime_state/reports/top_deep")
+    if report_dir.exists():
+        for path in sorted(report_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[:100]:
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                if isinstance(payload, list):
+                    local_rows.extend([row for row in payload if isinstance(row, dict)])
+            except Exception:
+                continue
+    return local_rows[: int(limit or 500)], warning
+
+
+def _fmt_metric_pct(value):
+    if value in (None, ""):
+        return "-"
+    try:
+        return f"{float(value):+.2f}%"
+    except Exception:
+        return "-"
+
+
+def _fmt_metric_num(value, digits=1):
+    if value in (None, ""):
+        return "-"
+    try:
+        return f"{float(value):.{digits}f}"
+    except Exception:
+        return "-"
+
+
+def _render_top_deep_reports_page():
+    _render_section_intro(
+        "Top Deep Reports",
+        "Top 종목 자동 정밀분석",
+        "스캔 완료 시 Top 후보에 대해 생성된 실제 데이터 기반 분석 리포트를 날짜/스캔별로 조회합니다.",
+        ["Auto after scan", "Real data only", "Signal review"],
+    )
+    rows, warning = _load_top_deep_reports()
+    if warning:
+        st.warning(f"Supabase 조회 실패 또는 제한: {warning}. 로컬 리포트가 있으면 대체 표시합니다.")
+    if not rows:
+        st.info("아직 생성된 Top 정밀분석 리포트가 없습니다. 스캔을 1회 완료하면 자동 생성됩니다.")
+        return
+
+    df = pd.DataFrame(rows)
+    df["generated_at_dt"] = pd.to_datetime(df.get("generated_at"), errors="coerce", utc=True)
+    df["report_date"] = df["generated_at_dt"].dt.tz_convert("Asia/Seoul").dt.date
+    dates = sorted([d for d in df["report_date"].dropna().unique()], reverse=True)
+    col_date, col_run, col_size = st.columns([1.4, 2.2, 1])
+    selected_date = col_date.selectbox("날짜", dates, index=0)
+    day_df = df[df["report_date"] == selected_date].copy()
+    runs = list(day_df.sort_values("generated_at_dt", ascending=False)["run_id"].dropna().unique())
+    selected_run = col_run.selectbox("스캔 Run", runs, index=0)
+    page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=1)
+    run_df = day_df[day_df["run_id"] == selected_run].copy()
+    run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
+    run_df = run_df.sort_values(["rank", "generated_at_dt"], ascending=[True, False])
+    total = len(run_df)
+    max_page = max(1, math.ceil(total / int(page_size)))
+    page = st.number_input("페이지", min_value=1, max_value=max_page, value=1, step=1)
+    page_df = run_df.iloc[(int(page) - 1) * int(page_size): int(page) * int(page_size)]
+    st.caption(f"{selected_date} · `{selected_run}` · {total}건 · {page}/{max_page} 페이지")
+
+    for row in page_df.to_dict("records"):
+        price = row.get("price") if isinstance(row.get("price"), dict) else {}
+        news = row.get("news") if isinstance(row.get("news"), dict) else {}
+        prediction = row.get("prediction") if isinstance(row.get("prediction"), dict) else {}
+        trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+        theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+        title = f"#{int(row.get('rank') or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
+        with st.container(border=True):
+            st.markdown(f"### {title}")
+            st.caption(f"{row.get('signal_label') or '-'} · {row.get('decision') or '-'} · {theme.get('primary_theme') or '-'}")
+            c1, c2, c3, c4, c5 = st.columns(5)
+            c1.metric("매수점수", _fmt_metric_num(row.get("buy_score"), 1))
+            c2.metric("정확성", _fmt_metric_pct(row.get("accuracy")))
+            c3.metric("전일비", _fmt_metric_pct(row.get("day_change_pct")))
+            c4.metric("손실위험", _fmt_metric_num(row.get("loss_risk_score"), 1))
+            c5.metric("뉴스감성", _fmt_metric_num(news.get("sentiment_score"), 2))
+
+            p1, p2, p3, p4 = st.columns(4)
+            p1.metric("현재가", _fmt_metric_num(price.get("current_price"), 2))
+            p2.metric("거래량", f"{int(price.get('volume')):,}" if price.get("volume") is not None else "-")
+            p3.metric("거래량/20D", _fmt_metric_num(price.get("volume_ratio_20d"), 2))
+            p4.metric("차트추세", str(price.get("trend") or "-"))
+
+            e1, e2, e3, e4 = st.columns(4)
+            e1.metric("1D 기대", _fmt_metric_pct(prediction.get("expected_return_1d_pct")))
+            e2.metric("3D 기대", _fmt_metric_pct(prediction.get("expected_return_3d_pct")))
+            e3.metric("Entry", _fmt_metric_num(trade_plan.get("entry_reference_price"), 2))
+            e4.metric("TP/SL", f"{_fmt_metric_pct(trade_plan.get('target_tp_pct'))} / {_fmt_metric_pct(trade_plan.get('stop_sl_pct'))}")
+
+            ohlcv = price.get("ohlcv_tail") if isinstance(price.get("ohlcv_tail"), list) else []
+            if ohlcv:
+                chart_df = pd.DataFrame(ohlcv)
+                if "date" in chart_df and "close" in chart_df:
+                    st.line_chart(chart_df.set_index("date")[["close"]])
+
+            flags = row.get("risk_flags") if isinstance(row.get("risk_flags"), list) else []
+            rationale = row.get("rationale") if isinstance(row.get("rationale"), list) else []
+            if flags or rationale:
+                st.caption("리스크/판단 근거: " + " / ".join([str(x) for x in (flags + rationale)[:8]]))
+
+            headlines = news.get("headlines") if isinstance(news.get("headlines"), list) else []
+            if headlines:
+                with st.expander("뉴스/공시성 헤드라인", expanded=False):
+                    for item in headlines[:5]:
+                        st.caption(f"{_fmt_metric_num(item.get('score'), 2)} · {item.get('title')}")
+            warnings = row.get("data_warnings") if isinstance(row.get("data_warnings"), list) else []
+            if warnings:
+                st.caption("데이터 경고: " + " / ".join(str(x) for x in warnings[:5]))
+
+
 def _scan_is_running(snapshot=None):
     snap = snapshot or _get_scan_state_snapshot()
     return bool(snap and snap.get("status") in {"queued", "running"})
@@ -1150,6 +1285,30 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
             run_id=scan_state.run_id,
             logger=lambda line: scan_state.append_log("info", line),
         )
+        try:
+            planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+            deep_result = generate_and_store_top_deep_reports(
+                scan_rows=results,
+                planner_payload=planner_payload,
+                run_id=scan_state.run_id,
+                market=market,
+                scan_mode=scan_mode,
+                top_n=5,
+                write_db=os.getenv("AG_TOP_DEEP_WRITE_DB", "1") != "0",
+            )
+            if isinstance(bridge_info, dict):
+                bridge_info["top_deep_reports"] = deep_result
+            scan_state.append_log(
+                "info",
+                f"🔬 Top 정밀분석 리포트 {deep_result.get('count', 0)}건 생성: {deep_result.get('local_path', '')}",
+            )
+            db_warning = ((deep_result.get("db_result") or {}) if isinstance(deep_result, dict) else {}).get("warning")
+            if db_warning:
+                scan_state.append_log("warning", f"⚠️ Top 정밀분석 DB 저장 경고: {db_warning}")
+        except Exception as exc:
+            if isinstance(bridge_info, dict):
+                bridge_info.setdefault("errors", []).append(f"top_deep_report_failed:{exc}")
+            scan_state.append_log("error", f"❌ Top 정밀분석 리포트 생성 실패: {exc}")
 
         scan_state.update(
             status="completed",
@@ -1904,9 +2063,9 @@ with st.expander("운영 데이터 상태 · 정확성 원천", expanded=False):
 
 # 운영 기본 화면은 실제 매매 판단 흐름만 노출한다.
 # 연구/진단 도구는 AG_UI_ADVANCED=1 에서만 열어 UI 잡음을 줄인다.
-MAIN_TABS = ["🚀 스캐너", "📚 아카이브"]
+MAIN_TABS = ["🚀 스캐너", "🔬 Top 분석", "📚 아카이브"]
 if ENABLE_ADVANCED_UI:
-    MAIN_TABS = ["🚀 스캐너", "🧠 인텔리전스", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
+    MAIN_TABS = ["🚀 스캐너", "🔬 Top 분석", "🧠 인텔리전스", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
 if "active_main_tab" not in st.session_state:
     st.session_state["active_main_tab"] = MAIN_TABS[0]
 elif st.session_state["active_main_tab"] not in MAIN_TABS:
@@ -1932,6 +2091,9 @@ st.session_state["last_active_main_tab"] = active_main_tab
 
 if active_main_tab == "📈 성과":
     _render_daily_ops_overview()
+
+if active_main_tab == "🔬 Top 분석":
+    _render_top_deep_reports_page()
 
 if active_main_tab == "🧠 인텔리전스":
     _render_intelligence_workspace()

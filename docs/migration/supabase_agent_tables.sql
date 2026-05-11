@@ -325,3 +325,40 @@ create index if not exists idx_paper_trade_ledger_recommended_at
 
 create index if not exists idx_paper_trade_ledger_run_id
   on public.paper_trade_ledger (run_id);
+
+-- Auto-generated Top candidate deep analysis reports. One row per run/ticker.
+create table if not exists public.scan_deep_reports (
+  report_id text primary key,
+  report_version text not null,
+  run_id text not null,
+  market text,
+  scan_mode text,
+  rank integer,
+  ticker text not null,
+  stock_name text,
+  generated_at timestamptz not null default now(),
+  signal_label text,
+  decision text,
+  decision_bucket text,
+  buy_score double precision,
+  accuracy double precision,
+  day_change_pct double precision,
+  loss_risk_score double precision,
+  risk_flags jsonb default '[]'::jsonb,
+  rationale jsonb default '[]'::jsonb,
+  prediction jsonb default '{}'::jsonb,
+  trade_plan jsonb default '{}'::jsonb,
+  theme jsonb default '{}'::jsonb,
+  price jsonb default '{}'::jsonb,
+  news jsonb default '{}'::jsonb,
+  data_warnings jsonb default '[]'::jsonb
+);
+
+create index if not exists idx_scan_deep_reports_generated_at
+  on public.scan_deep_reports (generated_at desc);
+
+create index if not exists idx_scan_deep_reports_run_rank
+  on public.scan_deep_reports (run_id, rank);
+
+create index if not exists idx_scan_deep_reports_ticker_generated_at
+  on public.scan_deep_reports (ticker, generated_at desc);
