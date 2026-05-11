@@ -170,6 +170,7 @@ class PlannerDecision:
     low_model_prob_score: Optional[float] = None
     low_prob_high_score: Optional[float] = None
     expected_edge_inversion_score: Optional[float] = None
+    loss_risk_score: Optional[float] = None
     relative_rank_score: Optional[float] = None
     relative_rank_pct: Optional[float] = None
     regime_adjusted_grade: str = ""

@@ -110,7 +110,7 @@ class ScorePipelineTests(unittest.TestCase):
         decision = planner.decisions[0]
         self.assertNotEqual(decision.decision, "AVOID")
         self.assertEqual(decision.regime_adjusted_grade, "RELATIVE_PRIORITY")
-        self.assertEqual(decision.relative_rank_model, "kosdaq_tech_volume_inversion_relative_v2")
+        self.assertEqual(decision.relative_rank_model, "kosdaq_floor_upside_relative_v3")
         self.assertIn("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE", decision.theme_risk)
         self.assertIn("kosdaq_swing_inverted_prob_override", " ".join(decision.rationale))
 
@@ -158,7 +158,59 @@ class ScorePipelineTests(unittest.TestCase):
         )
 
         self.assertEqual(planner.decisions[0].ticker, "222222.KQ")
-        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_tech_volume_inversion_relative_v2")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_upside_relative_v3")
+
+    def test_kosdaq_relative_ranking_penalizes_loss_risk(self):
+        context = RunContext(run_id="RUN-KQ-FLOOR", market="KOSDAQ")
+        planner = build_planner_handoff(
+            context=context,
+            weak_ratio=0.0,
+            candidates=[
+                {
+                    "ticker": "333333.KQ",
+                    "stock_name": "Risky Chase",
+                    "score": 96.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 99.0,
+                        "tech_score": 93.0,
+                        "decision_score": 96.0,
+                        "prob_5": 15.0,
+                        "prob_clean": 18.0,
+                        "volume_ratio": 0.2,
+                        "volume_confirmed": False,
+                        "position": "Peak",
+                        "tier": "T3",
+                        "real_trend": "DOWN",
+                    },
+                },
+                {
+                    "ticker": "444444.KQ",
+                    "stock_name": "Supported Leader",
+                    "score": 84.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 88.0,
+                        "tech_score": 90.0,
+                        "decision_score": 84.0,
+                        "prob_5": 42.0,
+                        "prob_clean": 45.0,
+                        "volume_ratio": 3.5,
+                        "volume_confirmed": True,
+                        "position": "Rising",
+                        "tier": "T1",
+                        "real_trend": "UP",
+                    },
+                },
+            ],
+        )
+
+        self.assertEqual(planner.decisions[0].ticker, "444444.KQ")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_upside_relative_v3")
 
 
 if __name__ == "__main__":

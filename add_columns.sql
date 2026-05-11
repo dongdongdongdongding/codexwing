@@ -90,3 +90,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS market_scan_results_unique_pick
 -- training set이 한 차원 잃는다.
 ALTER TABLE market_scan_results
 ADD COLUMN IF NOT EXISTS conviction_score numeric;
+
+-- Added 2026-05-11 (swing-main-uo2). KOSDAQ top ranking is now selected by a
+-- floor-defense/upside-capture relative model. Persist the rank score, model
+-- version, grade, and loss-risk score so scan archive rows are auditable from
+-- Supabase without relying on local planner_handoff artifacts.
+ALTER TABLE market_scan_results
+ADD COLUMN IF NOT EXISTS loss_risk_score numeric,
+ADD COLUMN IF NOT EXISTS relative_rank_score numeric,
+ADD COLUMN IF NOT EXISTS relative_rank_pct numeric,
+ADD COLUMN IF NOT EXISTS regime_adjusted_grade text,
+ADD COLUMN IF NOT EXISTS relative_rank_model text;

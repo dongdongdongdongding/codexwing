@@ -19,12 +19,14 @@ from multi_agent.agents.kr_quant_reranker import (
 )
 
 
-KOSDAQ_RELATIVE_RANK_MODEL = "kosdaq_tech_volume_inversion_relative_v2"
+KOSDAQ_RELATIVE_RANK_MODEL = "kosdaq_floor_upside_relative_v3"
 KOSDAQ_RELATIVE_WEIGHTS = {
-    "tech_score": 0.40,
+    "tech_score": 0.25,
+    "volume_ratio": 0.30,
+    "prob_clean": 0.10,
     "low_model_prob_score": 0.10,
-    "low_prob_high_score": 0.10,
-    "volume_ratio": 0.20,
+    "low_prob_high_score": 0.20,
+    "loss_risk_score": -0.10,
 }
 
 
@@ -739,6 +741,44 @@ def _percentile_by_feature(rows: List[Dict[str, Any]], feature: str) -> Dict[int
                 expected_edge_score=_candidate_feature_float(row, "expected_edge_score"),
             )
             value = inverted.get(feature)
+        if value is None and feature == "loss_risk_score":
+            value = compute_loss_risk_features(
+                market_subtype=_candidate_market(row, ""),
+                alpha_score=_candidate_feature_float(row, "alpha_score"),
+                tech_score=_candidate_feature_float(row, "tech_score"),
+                whale_score=_candidate_feature_float(row, "whale_score"),
+                ml_prob=_candidate_feature_float(row, "prob_5") or _candidate_feature_float(row, "ml_prob"),
+                prob_clean=_candidate_feature_float(row, "prob_clean"),
+                volume_ratio=_candidate_feature_float(row, "volume_ratio"),
+                volume_confirmed=(
+                    row.get("feature_snapshot", {}).get("volume_confirmed")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("volume_confirmed")
+                ),
+                position=(
+                    row.get("feature_snapshot", {}).get("position")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("position")
+                )
+                or "",
+                tier=(
+                    row.get("feature_snapshot", {}).get("tier")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("tier")
+                )
+                or "",
+                trend=(
+                    row.get("feature_snapshot", {}).get("real_trend")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("real_trend")
+                )
+                or (
+                    row.get("feature_snapshot", {}).get("trend")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("trend")
+                )
+                or "",
+            ).get("loss_risk_score")
         if value is None:
             continue
         if not math.isfinite(float(value)):
@@ -761,11 +801,14 @@ def _percentile_by_feature(rows: List[Dict[str, Any]], feature: str) -> Dict[int
     return out
 
 
-def _attach_kosdaq_relative_v2_scores(rows: List[Dict[str, Any]]) -> None:
+def _attach_kosdaq_relative_scores(rows: List[Dict[str, Any]]) -> None:
     percentiles = {
         feature: _percentile_by_feature(rows, feature)
         for feature in KOSDAQ_RELATIVE_WEIGHTS
     }
+    thresholds = get_loss_risk_gate_thresholds("KOSDAQ")
+    soft_cap = float(thresholds.get("soft", 45.0))
+    hard_cap = float(thresholds.get("hard", 65.0))
     for idx, row in enumerate(rows):
         total = 0.0
         score = 0.0
@@ -773,9 +816,56 @@ def _attach_kosdaq_relative_v2_scores(rows: List[Dict[str, Any]]) -> None:
             feature_pct = percentiles.get(feature, {}).get(idx)
             if feature_pct is None:
                 feature_pct = 50.0
-            score += float(feature_pct) * abs(float(weight))
-            total += abs(float(weight))
-        row["_relative_rank_score"] = round(score / total, 4) if total > 0 else None
+            signed_weight = float(weight)
+            directional_pct = feature_pct if signed_weight >= 0 else 100.0 - feature_pct
+            score += float(directional_pct) * abs(signed_weight)
+            total += abs(signed_weight)
+        relative_score = round(score / total, 4) if total > 0 else None
+        loss_risk_score = _candidate_feature_float(row, "loss_risk_score")
+        if loss_risk_score is None:
+            loss_risk_score = compute_loss_risk_features(
+                market_subtype="KOSDAQ",
+                alpha_score=_candidate_feature_float(row, "alpha_score"),
+                tech_score=_candidate_feature_float(row, "tech_score"),
+                whale_score=_candidate_feature_float(row, "whale_score"),
+                ml_prob=_candidate_feature_float(row, "prob_5") or _candidate_feature_float(row, "ml_prob"),
+                prob_clean=_candidate_feature_float(row, "prob_clean"),
+                volume_ratio=_candidate_feature_float(row, "volume_ratio"),
+                volume_confirmed=(
+                    row.get("feature_snapshot", {}).get("volume_confirmed")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("volume_confirmed")
+                ),
+                position=(
+                    row.get("feature_snapshot", {}).get("position")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("position")
+                )
+                or "",
+                tier=(
+                    row.get("feature_snapshot", {}).get("tier")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("tier")
+                )
+                or "",
+                trend=(
+                    row.get("feature_snapshot", {}).get("real_trend")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("real_trend")
+                )
+                or (
+                    row.get("feature_snapshot", {}).get("trend")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("trend")
+                )
+                or "",
+            ).get("loss_risk_score")
+        if relative_score is not None and loss_risk_score is not None:
+            if float(loss_risk_score) >= hard_cap:
+                relative_score = min(relative_score, 45.0)
+            elif float(loss_risk_score) >= soft_cap:
+                relative_score = min(relative_score, 55.0)
+        row["_relative_rank_score"] = relative_score
         row["_relative_rank_model"] = KOSDAQ_RELATIVE_RANK_MODEL
 
 
@@ -802,13 +892,31 @@ def _relative_rank_score(cand: Dict[str, Any], market: str) -> tuple[Optional[fl
         low_model = inverted["low_model_prob_score"] if low_model is None else low_model
         low_prob_high = inverted["low_prob_high_score"] if low_prob_high is None else low_prob_high
         volume_ratio = _candidate_feature_float(cand, "volume_ratio")
+        prob_clean = _candidate_feature_float(cand, "prob_clean")
+        loss_risk = _candidate_feature_float(cand, "loss_risk_score")
+        if loss_risk is None:
+            loss_risk = compute_loss_risk_features(
+                market_subtype=market,
+                alpha_score=alpha,
+                tech_score=tech,
+                whale_score=_candidate_feature_float(cand, "whale_score"),
+                ml_prob=_candidate_feature_float(cand, "prob_5") or _candidate_feature_float(cand, "ml_prob"),
+                prob_clean=prob_clean,
+                volume_ratio=volume_ratio,
+                volume_confirmed=feature_snapshot.get("volume_confirmed") or cand.get("volume_confirmed"),
+                position=feature_snapshot.get("position") or cand.get("position") or "",
+                tier=feature_snapshot.get("tier") or cand.get("tier") or "",
+                trend=feature_snapshot.get("real_trend") or feature_snapshot.get("trend") or cand.get("trend") or "",
+            ).get("loss_risk_score")
         pieces = [
-            (tech, 0.40),
+            (tech, 0.25),
+            (volume_ratio, 0.30),
+            (prob_clean, 0.10),
             (low_model, 0.10),
-            (low_prob_high, 0.10),
-            (volume_ratio, 0.20),
+            (low_prob_high, 0.20),
+            (loss_risk, -0.10),
         ]
-        total = sum(weight for value, weight in pieces if value is not None)
+        total = sum(abs(weight) for value, weight in pieces if value is not None)
         if total <= 0:
             return None, KOSDAQ_RELATIVE_RANK_MODEL
         score = sum(float(value) * weight for value, weight in pieces if value is not None) / total
@@ -841,7 +949,7 @@ def _attach_relative_ranks(candidates: List[Dict[str, Any]], run_market: str) ->
 
     for market, rows in groups.items():
         if market == "KOSDAQ":
-            _attach_kosdaq_relative_v2_scores(rows)
+            _attach_kosdaq_relative_scores(rows)
         scored = [row for row in rows if row.get("_relative_rank_score") is not None]
         scored.sort(key=lambda row: float(row.get("_relative_rank_score") or 0.0), reverse=True)
         n = len(scored)
@@ -1257,6 +1365,7 @@ def build_planner_handoff(
             low_model_prob_score=low_model_prob_score,
             low_prob_high_score=low_prob_high_score,
             expected_edge_inversion_score=expected_edge_inversion_score,
+            loss_risk_score=loss_risk_score,
             relative_rank_score=float(relative_rank_score) if relative_rank_score not in (None, "") else None,
             relative_rank_pct=float(relative_rank_pct) if relative_rank_pct not in (None, "") else None,
             regime_adjusted_grade=regime_adjusted_grade,
@@ -1333,6 +1442,7 @@ def build_planner_handoff(
                     "low_model_prob_score": low_model_prob_score,
                     "low_prob_high_score": low_prob_high_score,
                     "expected_edge_inversion_score": expected_edge_inversion_score,
+                    "loss_risk_score": loss_risk_score,
                     "relative_rank_score": float(relative_rank_score) if relative_rank_score not in (None, "") else None,
                     "relative_rank_pct": float(relative_rank_pct) if relative_rank_pct not in (None, "") else None,
                     "regime_adjusted_grade": regime_adjusted_grade or None,
