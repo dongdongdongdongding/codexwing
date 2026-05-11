@@ -2,7 +2,7 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Load env variables
 load_dotenv()
@@ -129,9 +129,67 @@ class DBManager:
             return None
         return sorted(candidates, key=self._feature_rich_row_score, reverse=True)[0]
 
+    def _has_planner_telemetry(self, row):
+        if not isinstance(row, dict):
+            return False
+        for key in ("relative_rank_model", "relative_rank_score", "priority_rank", "decision_bucket", "decision"):
+            value = row.get(key)
+            if value is None:
+                continue
+            if isinstance(value, str) and not value.strip():
+                continue
+            return True
+        return False
+
+    def _authoritative_row_score(self, row):
+        return (
+            1 if self._has_planner_telemetry(row) else 0,
+            1 if self._is_feature_rich_scan_row(row) else 0,
+            1 if row.get("recommended_at") not in (None, "") else 0,
+            str(row.get("updated_at") or row.get("created_at") or ""),
+        )
+
+    def _choose_authoritative_scan_row(self, rows):
+        candidates = [r for r in (rows or []) if isinstance(r, dict) and r.get("id") is not None]
+        if not candidates:
+            return None
+        return sorted(candidates, key=self._authoritative_row_score, reverse=True)[0]
+
+    def _delete_shadow_scan_rows(self, run_id, ticker, keep_id):
+        if not self.client or not run_id or not ticker or keep_id is None:
+            return 0
+        try:
+            rows = (
+                self.client.table("market_scan_results")
+                .select("id,priority_rank,decision_bucket,decision,relative_rank_model")
+                .eq("run_id", run_id)
+                .eq("ticker", ticker)
+                .execute()
+                .data
+                or []
+            )
+            shadow_ids = [
+                r.get("id")
+                for r in rows
+                if r.get("id") != keep_id and not self._has_planner_telemetry(r)
+            ]
+            if not shadow_ids:
+                return 0
+            self.client.table("market_scan_results").delete().in_("id", shadow_ids).execute()
+            return len(shadow_ids)
+        except Exception:
+            return 0
+
     def _merge_non_empty_payload(self, existing_payload, payload):
         merged_payload = dict(existing_payload or {})
         for key, value in (payload or {}).items():
+            if (
+                key == "priority_rank"
+                and value is None
+                and str((payload or {}).get("decision_bucket") or "").lower() == "ignored"
+            ):
+                merged_payload[key] = None
+                continue
             if value is None:
                 continue
             if isinstance(value, str) and not value.strip():
@@ -364,17 +422,44 @@ class DBManager:
             ticker = data.get('ticker')
             feature_quality = self._feature_quality_payload(data, origin=data.get("feature_origin") or "scanner_full")
             submarket = self._resolve_submarket(data.get('market'), data.get('market_type'), ticker)
+            now_ts = datetime.now(timezone.utc).isoformat()
+            recommended_at = data.get("recommended_at") or now_ts
             overrides = {
                 "market": submarket,
-                "created_at": datetime.now().isoformat(),
+                "created_at": now_ts,
+                "recommended_at": recommended_at,
                 **feature_quality,
             }
             payload = build_scan_result_payload(data, overrides=overrides, fallback_keys=DEFAULT_FALLBACK_KEYS)
             payload = self._filter_payload_to_existing_columns("market_scan_results", payload)
 
-            # Delete the current run's row when run_id exists; otherwise fall back to same-day ticker dedupe.
+            # Same run+ticker should collapse into one authoritative archive row.
+            # Scanner workers may write before/after planner sync; merge instead
+            # of delete+insert so planner rank telemetry is never lost.
             from datetime import datetime as dt
             run_id = str(data.get("run_id") or "").strip()
+            if run_id:
+                existing = (
+                    self.client.table("market_scan_results")
+                    .select("*")
+                    .eq("run_id", run_id)
+                    .eq("ticker", ticker)
+                    .limit(20)
+                    .execute()
+                    .data
+                    or []
+                )
+                target = self._choose_authoritative_scan_row(existing)
+                if target:
+                    row_id = target["id"]
+                    merged_payload = self._merge_non_empty_payload(dict(target), payload)
+                    merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
+                    self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                    deleted = self._delete_shadow_scan_rows(run_id, ticker, row_id)
+                    suffix = f", shadows_deleted={deleted}" if deleted else ""
+                    print(f"☁️ DB Upsert→Merge: {data.get('name', ticker)} id={row_id}{suffix}")
+                    return
+
             delete_query = self.client.table("market_scan_results").delete().eq("ticker", ticker)
             if run_id:
                 delete_query = delete_query.eq("run_id", run_id)
@@ -748,7 +833,11 @@ class DBManager:
                 "market_type": self._archive_market_type(market, ticker),
                 "created_at": recommended_at or rec_dt.isoformat(),
                 "recommended_at": recommended_at,
-                "priority_rank": int(row.get("priority_rank", 0) or 0),
+                "priority_rank": (
+                    int(row.get("priority_rank"))
+                    if row.get("priority_rank") not in (None, "")
+                    else None
+                ),
                 "decision_bucket": row.get("decision_bucket") or self._classify_decision_bucket(row.get("decision")),
                 "is_dummy_data": bool(row.get("is_dummy_data", False)),
             }
@@ -849,6 +938,7 @@ class DBManager:
                     merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
                     try:
                         self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                        self._delete_shadow_scan_rows(run_id, ticker, row_id)
                     except Exception as ue:
                         if "23505" not in str(ue) and "duplicate key" not in str(ue):
                             raise
@@ -877,6 +967,7 @@ class DBManager:
                         conflict_merged_payload = self._merge_non_empty_payload(conflict_payload, payload)
                         conflict_merged_payload = self._filter_payload_to_existing_columns("market_scan_results", conflict_merged_payload)
                         self.client.table("market_scan_results").update(conflict_merged_payload).eq("id", cid).execute()
+                        self._delete_shadow_scan_rows(run_id, ticker, cid)
                     merged += 1
                 else:
                     # 2026-05-08 (swing-main-9un): UNIQUE 인덱스
@@ -912,6 +1003,7 @@ class DBManager:
                                     merged_payload = self._merge_non_empty_payload(existing_payload, payload)
                                     merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
                                     self.client.table("market_scan_results").update(merged_payload).eq("id", cid).execute()
+                                    self._delete_shadow_scan_rows(run_id, ticker, cid)
                                     merged += 1
                                 else:
                                     raise

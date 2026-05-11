@@ -109,6 +109,42 @@ def test_realized_outcome_placeholder_preserves_watchlist_feature_fields(monkeyp
     assert row["kr_universe_role"] == "EXPLOSIVE_LEADER"
 
 
+def test_realized_outcome_placeholder_ranks_only_tradeable_decisions():
+    context = RunContext(run_id="RUN-TEST", market="KOSDAQ")
+    planner_handoff = SimpleNamespace(
+        decisions=[
+            SimpleNamespace(
+                ticker="111111.KQ",
+                stock_name="Avoided",
+                priority_rank=1,
+                decision="AVOID",
+                target_horizon_days=3,
+                scan_mode="SWING",
+                strategy_family="KR_CORE",
+            ),
+            SimpleNamespace(
+                ticker="222222.KQ",
+                stock_name="Tradeable",
+                priority_rank=2,
+                decision="EXCEPTION_LEADER",
+                target_horizon_days=3,
+                scan_mode="SWING",
+                strategy_family="KR_CORE",
+            ),
+        ],
+        watchlist=[],
+        watchlist_meta=[],
+    )
+
+    payload = _build_realized_outcomes_placeholder(context, planner_handoff, scanner_payload={})
+
+    by_ticker = {row["ticker"]: row for row in payload["outcomes"]}
+    assert by_ticker["111111.KQ"]["decision_bucket"] == "ignored"
+    assert by_ticker["111111.KQ"]["priority_rank"] is None
+    assert by_ticker["222222.KQ"]["decision_bucket"] == "exception_leader"
+    assert by_ticker["222222.KQ"]["priority_rank"] == 1
+
+
 def test_relative_zero_pass_decisions_use_real_near_miss_meta():
     decisions = _build_relative_zero_pass_decisions(
         watchlist_meta=[

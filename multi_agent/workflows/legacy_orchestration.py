@@ -124,18 +124,25 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
     scanner_market_gate = _resolve_scanner_market_gate(scanner_payload or {}) if isinstance(scanner_payload, dict) else ""
     decisions = getattr(planner_handoff, "decisions", []) or []
     seen_tickers: set[str] = set()
+    trade_priority_rank = 0
     for dec in decisions:
         ticker = str(getattr(dec, "ticker", "UNKNOWN"))
         seen_tickers.add(ticker)
+        decision_bucket = classify_decision_bucket(getattr(dec, "decision", "UNKNOWN"))
+        if decision_bucket == "ignored":
+            archive_priority_rank = None
+        else:
+            trade_priority_rank += 1
+            archive_priority_rank = trade_priority_rank
         rows.append(
             {
                 "run_id": context.run_id,
                 "market": context.market,
                 "ticker": ticker,
                 "stock_name": str(getattr(dec, "stock_name", "") or ""),
-                "priority_rank": int(getattr(dec, "priority_rank", 0) or 0),
+                "priority_rank": archive_priority_rank,
                 "decision": str(getattr(dec, "decision", "UNKNOWN")),
-                "decision_bucket": classify_decision_bucket(getattr(dec, "decision", "UNKNOWN")),
+                "decision_bucket": decision_bucket,
                 "status": "PENDING",
                 "horizon": f"T+{int(getattr(dec, 'target_horizon_days', 3) or 3)}D",
                 "recommended_at": context.created_at,
