@@ -110,9 +110,55 @@ class ScorePipelineTests(unittest.TestCase):
         decision = planner.decisions[0]
         self.assertNotEqual(decision.decision, "AVOID")
         self.assertEqual(decision.regime_adjusted_grade, "RELATIVE_PRIORITY")
-        self.assertEqual(decision.relative_rank_model, "kosdaq_inverted_prob_relative_v1")
+        self.assertEqual(decision.relative_rank_model, "kosdaq_tech_volume_inversion_relative_v2")
         self.assertIn("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE", decision.theme_risk)
         self.assertIn("kosdaq_swing_inverted_prob_override", " ".join(decision.rationale))
+
+    def test_kosdaq_relative_ranking_prefers_volume_supported_tech_leader(self):
+        context = RunContext(run_id="RUN-KQ-RANK", market="KOSDAQ")
+        planner = build_planner_handoff(
+            context=context,
+            weak_ratio=0.0,
+            candidates=[
+                {
+                    "ticker": "111111.KQ",
+                    "stock_name": "Weak Volume",
+                    "score": 95.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 98.0,
+                        "tech_score": 80.0,
+                        "decision_score": 95.0,
+                        "prob_5": 45.0,
+                        "prob_clean": 40.0,
+                        "volume_ratio": 0.2,
+                        "real_trend": "UP",
+                    },
+                },
+                {
+                    "ticker": "222222.KQ",
+                    "stock_name": "Volume Leader",
+                    "score": 80.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 86.0,
+                        "tech_score": 100.0,
+                        "decision_score": 80.0,
+                        "prob_5": 45.0,
+                        "prob_clean": 40.0,
+                        "volume_ratio": 4.0,
+                        "real_trend": "UP",
+                    },
+                },
+            ],
+        )
+
+        self.assertEqual(planner.decisions[0].ticker, "222222.KQ")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_tech_volume_inversion_relative_v2")
 
 
 if __name__ == "__main__":

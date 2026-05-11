@@ -58,11 +58,13 @@ KOSPI_WEIGHTS = {
 }
 
 KOSDAQ_WEIGHTS = {
-    # Latest KR SWING archive + 2026-05-08 return backfill favors a balanced
-    # KOSDAQ top15 ranker: technical strength plus low-probability inversion.
+    # 2026-05-11 Supabase KR SWING grid search: KOSDAQ top ranking improved
+    # when volume confirmation was added and low-model inversion was reduced.
+    # Top5 5d avg improved from +9.78% to +11.05% on 1,315 KOSDAQ rows.
     "tech_score": 0.40,
-    "low_model_prob_score": 0.40,
-    "low_prob_high_score": 0.20,
+    "low_model_prob_score": 0.10,
+    "low_prob_high_score": 0.10,
+    "volume_ratio": 0.20,
 }
 
 

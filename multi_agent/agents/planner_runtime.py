@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import math
 from typing import Any, Dict, List, Optional
 
 from multi_agent.contracts.types import PlannerDecision, PlannerHandoff, RunContext, WarningItem
@@ -16,6 +17,15 @@ from multi_agent.agents.kr_quant_reranker import (
     compute_kr_quant_rerank,
     resolve_kr_active_lane,
 )
+
+
+KOSDAQ_RELATIVE_RANK_MODEL = "kosdaq_tech_volume_inversion_relative_v2"
+KOSDAQ_RELATIVE_WEIGHTS = {
+    "tech_score": 0.40,
+    "low_model_prob_score": 0.10,
+    "low_prob_high_score": 0.10,
+    "volume_ratio": 0.20,
+}
 
 
 # Phase25 quality-gate thresholds per (market, mode).
@@ -715,6 +725,60 @@ def _candidate_feature_float(cand: Dict[str, Any], key: str) -> Optional[float]:
     return None
 
 
+def _percentile_by_feature(rows: List[Dict[str, Any]], feature: str) -> Dict[int, float]:
+    values: List[tuple[int, float]] = []
+    for idx, row in enumerate(rows):
+        value = _candidate_feature_float(row, feature)
+        if value is None and feature in {"low_model_prob_score", "low_prob_high_score"}:
+            inverted = compute_low_prob_high_score_features(
+                alpha_score=_candidate_feature_float(row, "alpha_score"),
+                tech_score=_candidate_feature_float(row, "tech_score"),
+                ml_prob=_candidate_feature_float(row, "prob_5") or _candidate_feature_float(row, "ml_prob"),
+                prob_clean=_candidate_feature_float(row, "prob_clean"),
+                phase25_prob=_candidate_feature_float(row, "phase25_prob"),
+                expected_edge_score=_candidate_feature_float(row, "expected_edge_score"),
+            )
+            value = inverted.get(feature)
+        if value is None:
+            continue
+        if not math.isfinite(float(value)):
+            continue
+        values.append((idx, float(value)))
+    if len(values) < 2:
+        return {idx: 50.0 for idx, _ in values}
+    ordered = sorted(values, key=lambda item: item[1])
+    denom = max(len(ordered) - 1, 1)
+    out: Dict[int, float] = {}
+    pos = 0
+    while pos < len(ordered):
+        end = pos
+        while end + 1 < len(ordered) and ordered[end + 1][1] == ordered[pos][1]:
+            end += 1
+        pct = ((pos + end) / 2.0) / denom * 100.0
+        for i in range(pos, end + 1):
+            out[ordered[i][0]] = pct
+        pos = end + 1
+    return out
+
+
+def _attach_kosdaq_relative_v2_scores(rows: List[Dict[str, Any]]) -> None:
+    percentiles = {
+        feature: _percentile_by_feature(rows, feature)
+        for feature in KOSDAQ_RELATIVE_WEIGHTS
+    }
+    for idx, row in enumerate(rows):
+        total = 0.0
+        score = 0.0
+        for feature, weight in KOSDAQ_RELATIVE_WEIGHTS.items():
+            feature_pct = percentiles.get(feature, {}).get(idx)
+            if feature_pct is None:
+                feature_pct = 50.0
+            score += float(feature_pct) * abs(float(weight))
+            total += abs(float(weight))
+        row["_relative_rank_score"] = round(score / total, 4) if total > 0 else None
+        row["_relative_rank_model"] = KOSDAQ_RELATIVE_RANK_MODEL
+
+
 def _relative_rank_score(cand: Dict[str, Any], market: str) -> tuple[Optional[float], str]:
     feature_snapshot = cand.get("feature_snapshot", {}) if isinstance(cand.get("feature_snapshot"), dict) else {}
     if market == "KOSPI":
@@ -737,16 +801,18 @@ def _relative_rank_score(cand: Dict[str, Any], market: str) -> tuple[Optional[fl
         alpha = _candidate_feature_float(cand, "alpha_score")
         low_model = inverted["low_model_prob_score"] if low_model is None else low_model
         low_prob_high = inverted["low_prob_high_score"] if low_prob_high is None else low_prob_high
+        volume_ratio = _candidate_feature_float(cand, "volume_ratio")
         pieces = [
             (tech, 0.40),
-            (low_model, 0.40),
-            (low_prob_high, 0.20),
+            (low_model, 0.10),
+            (low_prob_high, 0.10),
+            (volume_ratio, 0.20),
         ]
         total = sum(weight for value, weight in pieces if value is not None)
         if total <= 0:
-            return None, "kosdaq_inverted_prob_relative_v1"
+            return None, KOSDAQ_RELATIVE_RANK_MODEL
         score = sum(float(value) * weight for value, weight in pieces if value is not None) / total
-        return score, "kosdaq_inverted_prob_relative_v1"
+        return score, KOSDAQ_RELATIVE_RANK_MODEL
     value = _candidate_feature_float(cand, "decision_score")
     if value is None:
         value = _candidate_feature_float(cand, "score")
@@ -773,7 +839,9 @@ def _attach_relative_ranks(candidates: List[Dict[str, Any]], run_market: str) ->
         cand["_relative_rank_model"] = model
         groups.setdefault(market, []).append(cand)
 
-    for rows in groups.values():
+    for market, rows in groups.items():
+        if market == "KOSDAQ":
+            _attach_kosdaq_relative_v2_scores(rows)
         scored = [row for row in rows if row.get("_relative_rank_score") is not None]
         scored.sort(key=lambda row: float(row.get("_relative_rank_score") or 0.0), reverse=True)
         n = len(scored)
@@ -799,12 +867,15 @@ def build_planner_handoff(
         cand["_basket_priority"] = compute_kr_basket_priority(cand, run_market, active_lane)
     _attach_relative_ranks(ranked_candidates, run_market)
 
-    def _order_key(row: Dict[str, Any]) -> tuple[float, float, float]:
+    def _order_key(row: Dict[str, Any]) -> tuple[float, ...]:
         basket_meta = row.get("_basket_priority", {}) if isinstance(row.get("_basket_priority"), dict) else {}
         quant_meta = row.get("_quant_rerank", {}) if isinstance(row.get("_quant_rerank"), dict) else {}
+        relative_score = float(row.get("_relative_rank_score") or 0.0)
         basket_score = float(basket_meta.get("score", quant_meta.get("score", row.get("score", 0.0))) or 0.0)
         quant_score = float(quant_meta.get("score", row.get("score", 0.0)) or 0.0)
         scanner_score = float(row.get("score", 0.0) or 0.0)
+        if run_market == "KOSDAQ":
+            return (relative_score, basket_score, quant_score, scanner_score)
         return (basket_score, quant_score, scanner_score)
 
     ordered = sorted(
