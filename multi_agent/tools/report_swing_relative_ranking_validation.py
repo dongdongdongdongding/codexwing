@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -12,6 +13,11 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from modules.loss_risk_features import compute_entry_timing_risk_features  # noqa: E402
+
 DEFAULT_ARCHIVE = ROOT / "runtime_state" / "reports" / "archive" / "scan_archive_learning_dataset_all.csv"
 DEFAULT_OUT_DIR = ROOT / "runtime_state" / "reports" / "validation"
 
@@ -43,6 +49,8 @@ FEATURES = [
     "low_model_prob_score",
     "low_prob_high_score",
     "expected_edge_score",
+    "loss_risk_score",
+    "entry_timing_risk_score",
     "volatility_20d",
     "atr_pct_14",
     "rsi_14",
@@ -63,11 +71,12 @@ KOSDAQ_WEIGHTS = {
     # return, keeps 3/5d minima stable, and improves 7d minimum. 1d remains
     # a separate early-diagnostic horizon rather than the swing objective.
     "tech_score": 0.10,
-    "volume_ratio": 0.25,
+    "volume_ratio": 0.22,
     "prob_clean": 0.20,
     "low_model_prob_score": 0.10,
     "low_prob_high_score": 0.15,
     "loss_risk_score": -0.10,
+    "entry_timing_risk_score": -0.04,
 }
 
 
@@ -139,6 +148,27 @@ def _add_inverted_features_if_missing(df: pd.DataFrame) -> pd.DataFrame:
                 work["low_prob_high_score"] = computed_low_high
             else:
                 work["low_prob_high_score"] = pd.to_numeric(work["low_prob_high_score"], errors="coerce").fillna(computed_low_high)
+    if "entry_timing_risk_score" not in work.columns:
+        work["entry_timing_risk_score"] = float("nan")
+    for idx, row in work.iterrows():
+        current = _safe_float(row.get("entry_timing_risk_score"))
+        if current is not None:
+            continue
+        computed = compute_entry_timing_risk_features(
+            market_subtype=row.get("market"),
+            expected_return_1d_pct=row.get("expected_return_1d_pct"),
+            expected_return_3d_pct=row.get("expected_return_3d_pct"),
+            expected_edge_score=row.get("expected_edge_score"),
+            prev_pct_change_1d=row.get("prev_pct_change_1d"),
+            prev_pct_change_5d=row.get("prev_pct_change_5d"),
+            volume_ratio=row.get("volume_ratio"),
+            prob_clean=row.get("prob_clean"),
+            loss_risk_score=row.get("loss_risk_score"),
+            position=row.get("position"),
+            tier=row.get("tier"),
+            trend=row.get("real_trend") or row.get("trend"),
+        )
+        work.at[idx, "entry_timing_risk_score"] = computed["entry_timing_risk_score"]
     return work
 
 

@@ -67,7 +67,7 @@ def test_authoritative_row_prefers_planner_telemetry_over_newer_raw_row():
             "recommended_at": "2026-05-11T05:50:42+00:00",
             "priority_rank": 1,
             "decision_bucket": "picked",
-            "relative_rank_model": "kosdaq_floor_win_relative_v4",
+            "relative_rank_model": "kosdaq_floor_win_relative_v5",
         },
     ]
 
@@ -79,7 +79,7 @@ def test_merge_non_empty_payload_preserves_existing_rank_when_raw_has_none():
     merged = db._merge_non_empty_payload(
         {
             "id": "planner",
-            "relative_rank_model": "kosdaq_floor_win_relative_v4",
+            "relative_rank_model": "kosdaq_floor_win_relative_v5",
             "relative_rank_score": 54.7,
             "priority_rank": 1,
             "decision_bucket": "picked",
@@ -95,7 +95,7 @@ def test_merge_non_empty_payload_preserves_existing_rank_when_raw_has_none():
         },
     )
 
-    assert merged["relative_rank_model"] == "kosdaq_floor_win_relative_v4"
+    assert merged["relative_rank_model"] == "kosdaq_floor_win_relative_v5"
     assert merged["relative_rank_score"] == 54.7
     assert merged["priority_rank"] == 1
     assert merged["decision_bucket"] == "picked"

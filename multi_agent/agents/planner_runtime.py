@@ -8,6 +8,7 @@ from multi_agent.contracts.types import PlannerDecision, PlannerHandoff, RunCont
 from modules.horizon_policy import resolve_horizon_policy
 from modules.inverted_signal_features import compute_low_prob_high_score_features
 from modules.loss_risk_features import (
+    compute_entry_timing_risk_features,
     compute_loss_risk_features,
     get_loss_risk_gate_thresholds,
     get_loss_risk_soft_cap_decision,
@@ -26,14 +27,15 @@ KOSPI_RELATIVE_WEIGHTS = {
     "loss_risk_score": -0.10,
 }
 
-KOSDAQ_RELATIVE_RANK_MODEL = "kosdaq_floor_win_relative_v4"
+KOSDAQ_RELATIVE_RANK_MODEL = "kosdaq_floor_win_relative_v5"
 KOSDAQ_RELATIVE_WEIGHTS = {
     "tech_score": 0.10,
-    "volume_ratio": 0.25,
+    "volume_ratio": 0.22,
     "prob_clean": 0.20,
     "low_model_prob_score": 0.10,
     "low_prob_high_score": 0.15,
     "loss_risk_score": -0.10,
+    "entry_timing_risk_score": -0.04,
 }
 
 
@@ -786,6 +788,70 @@ def _percentile_by_feature(rows: List[Dict[str, Any]], feature: str) -> Dict[int
                 )
                 or "",
             ).get("loss_risk_score")
+        if value is None and feature == "entry_timing_risk_score":
+            loss_risk = _candidate_feature_float(row, "loss_risk_score")
+            if loss_risk is None:
+                loss_risk = compute_loss_risk_features(
+                    market_subtype=_candidate_market(row, ""),
+                    alpha_score=_candidate_feature_float(row, "alpha_score"),
+                    tech_score=_candidate_feature_float(row, "tech_score"),
+                    whale_score=_candidate_feature_float(row, "whale_score"),
+                    ml_prob=_candidate_feature_float(row, "prob_5") or _candidate_feature_float(row, "ml_prob"),
+                    prob_clean=_candidate_feature_float(row, "prob_clean"),
+                    volume_ratio=_candidate_feature_float(row, "volume_ratio"),
+                    volume_confirmed=(
+                        row.get("feature_snapshot", {}).get("volume_confirmed")
+                        if isinstance(row.get("feature_snapshot"), dict)
+                        else row.get("volume_confirmed")
+                    ),
+                    position=(
+                        row.get("feature_snapshot", {}).get("position")
+                        if isinstance(row.get("feature_snapshot"), dict)
+                        else row.get("position")
+                    )
+                    or "",
+                    tier=(
+                        row.get("feature_snapshot", {}).get("tier")
+                        if isinstance(row.get("feature_snapshot"), dict)
+                        else row.get("tier")
+                    )
+                    or "",
+                    trend=(
+                        row.get("feature_snapshot", {}).get("real_trend")
+                        if isinstance(row.get("feature_snapshot"), dict)
+                        else row.get("trend")
+                    )
+                    or "",
+                ).get("loss_risk_score")
+            value = compute_entry_timing_risk_features(
+                market_subtype=_candidate_market(row, ""),
+                expected_return_1d_pct=_candidate_feature_float(row, "expected_return_1d_pct"),
+                expected_return_3d_pct=_candidate_feature_float(row, "expected_return_3d_pct"),
+                expected_edge_score=_candidate_feature_float(row, "expected_edge_score"),
+                prev_pct_change_1d=_candidate_feature_float(row, "prev_pct_change_1d"),
+                prev_pct_change_5d=_candidate_feature_float(row, "prev_pct_change_5d"),
+                volume_ratio=_candidate_feature_float(row, "volume_ratio"),
+                prob_clean=_candidate_feature_float(row, "prob_clean"),
+                loss_risk_score=loss_risk,
+                position=(
+                    row.get("feature_snapshot", {}).get("position")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("position")
+                )
+                or "",
+                tier=(
+                    row.get("feature_snapshot", {}).get("tier")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("tier")
+                )
+                or "",
+                trend=(
+                    row.get("feature_snapshot", {}).get("real_trend")
+                    if isinstance(row.get("feature_snapshot"), dict)
+                    else row.get("trend")
+                )
+                or "",
+            ).get("entry_timing_risk_score")
         if value is None:
             continue
         if not math.isfinite(float(value)):
@@ -939,13 +1005,30 @@ def _relative_rank_score(cand: Dict[str, Any], market: str) -> tuple[Optional[fl
                 tier=feature_snapshot.get("tier") or cand.get("tier") or "",
                 trend=feature_snapshot.get("real_trend") or feature_snapshot.get("trend") or cand.get("trend") or "",
             ).get("loss_risk_score")
+        entry_timing_risk = _candidate_feature_float(cand, "entry_timing_risk_score")
+        if entry_timing_risk is None:
+            entry_timing_risk = compute_entry_timing_risk_features(
+                market_subtype=market,
+                expected_return_1d_pct=_candidate_feature_float(cand, "expected_return_1d_pct"),
+                expected_return_3d_pct=_candidate_feature_float(cand, "expected_return_3d_pct"),
+                expected_edge_score=_candidate_feature_float(cand, "expected_edge_score"),
+                prev_pct_change_1d=_candidate_feature_float(cand, "prev_pct_change_1d"),
+                prev_pct_change_5d=_candidate_feature_float(cand, "prev_pct_change_5d"),
+                volume_ratio=volume_ratio,
+                prob_clean=prob_clean,
+                loss_risk_score=loss_risk,
+                position=feature_snapshot.get("position") or cand.get("position") or "",
+                tier=feature_snapshot.get("tier") or cand.get("tier") or "",
+                trend=feature_snapshot.get("real_trend") or feature_snapshot.get("trend") or cand.get("trend") or "",
+            ).get("entry_timing_risk_score")
         pieces = [
-            (tech, 0.25),
-            (volume_ratio, 0.30),
-            (prob_clean, 0.10),
+            (tech, 0.10),
+            (volume_ratio, 0.22),
+            (prob_clean, 0.20),
             (low_model, 0.10),
-            (low_prob_high, 0.20),
+            (low_prob_high, 0.15),
             (loss_risk, -0.10),
+            (entry_timing_risk, -0.04),
         ]
         total = sum(abs(weight) for value, weight in pieces if value is not None)
         if total <= 0:
@@ -1132,6 +1215,21 @@ def build_planner_handoff(
         expected_edge_score = feature_snapshot.get("expected_edge_score")
         expected_return_1d_pct = feature_snapshot.get("expected_return_1d_pct")
         expected_return_3d_pct = feature_snapshot.get("expected_return_3d_pct")
+        entry_timing_risk = compute_entry_timing_risk_features(
+            market_subtype=run_market,
+            expected_return_1d_pct=expected_return_1d_pct,
+            expected_return_3d_pct=expected_return_3d_pct,
+            expected_edge_score=expected_edge_score,
+            prev_pct_change_1d=feature_snapshot.get("prev_pct_change_1d"),
+            prev_pct_change_5d=feature_snapshot.get("prev_pct_change_5d"),
+            volume_ratio=volume_ratio,
+            prob_clean=prob_clean,
+            loss_risk_score=loss_risk_score,
+            position=feature_snapshot.get("position") or cand.get("position") or "",
+            tier=feature_snapshot.get("tier") or cand.get("tier") or "",
+            trend=real_trend or feature_snapshot.get("trend") or cand.get("trend") or "",
+        )
+        entry_timing_risk_score = float(entry_timing_risk.get("entry_timing_risk_score", 0.0) or 0.0)
         inverted_signal_features = compute_low_prob_high_score_features(
             alpha_score=alpha_score,
             tech_score=feature_snapshot.get("tech_score"),
@@ -1200,6 +1298,8 @@ def build_planner_handoff(
             rationale.append(
                 f"lane_overlay_3d={str(lane_overlay_3d.get('segment') or '')}:{float(lane_overlay_3d.get('prob_up', 0.0) or 0.0):.1f}"
             )
+        theme_rationale: List[str] = []
+        theme_risk: List[str] = []
         if explosive_gate_reasons:
             rationale.extend([f"explosive_gate={str(x)}" for x in explosive_gate_reasons[:3]])
         if continuation_gate_reasons:
@@ -1216,13 +1316,15 @@ def build_planner_handoff(
             rationale.append(f"loss_risk_score={loss_risk_score:.1f}")
             if loss_risk_flags:
                 rationale.append("loss_risk_flags=" + ",".join(loss_risk_flags[:4]))
+        if entry_timing_risk_score > 0:
+            rationale.append(f"entry_timing_risk_score={entry_timing_risk_score:.1f}")
+            if entry_timing_risk_score >= 45.0:
+                theme_risk.append("ENTRY_TIMING_RISK_HIGH")
         if regime_adjusted_grade:
             rationale.append(
                 f"relative_rank={regime_adjusted_grade}:pct={float(relative_rank_pct or 0.0):.3f},"
                 f"score={float(relative_rank_score or 0.0):.1f},model={relative_rank_model}"
             )
-        theme_rationale: List[str] = []
-        theme_risk: List[str] = []
         primary_theme = str(theme_context.get("primary_theme") or "").strip()
         theme_direction = str(theme_context.get("theme_direction") or "").upper()
         theme_strength = float(theme_context.get("theme_strength_score", 0.0) or 0.0)

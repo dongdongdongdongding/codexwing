@@ -110,7 +110,7 @@ class ScorePipelineTests(unittest.TestCase):
         decision = planner.decisions[0]
         self.assertNotEqual(decision.decision, "AVOID")
         self.assertEqual(decision.regime_adjusted_grade, "RELATIVE_PRIORITY")
-        self.assertEqual(decision.relative_rank_model, "kosdaq_floor_win_relative_v4")
+        self.assertEqual(decision.relative_rank_model, "kosdaq_floor_win_relative_v5")
         self.assertIn("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE", decision.theme_risk)
         self.assertIn("kosdaq_swing_inverted_prob_override", " ".join(decision.rationale))
 
@@ -158,7 +158,7 @@ class ScorePipelineTests(unittest.TestCase):
         )
 
         self.assertEqual(planner.decisions[0].ticker, "222222.KQ")
-        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v4")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v5")
 
     def test_kosdaq_relative_ranking_penalizes_loss_risk(self):
         context = RunContext(run_id="RUN-KQ-FLOOR", market="KOSDAQ")
@@ -210,7 +210,69 @@ class ScorePipelineTests(unittest.TestCase):
         )
 
         self.assertEqual(planner.decisions[0].ticker, "444444.KQ")
-        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v4")
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v5")
+
+    def test_kosdaq_relative_ranking_pushes_down_weak_entry_timing(self):
+        context = RunContext(run_id="RUN-KQ-ENTRY-TIMING", market="KOSDAQ")
+        planner = build_planner_handoff(
+            context=context,
+            weak_ratio=0.0,
+            candidates=[
+                {
+                    "ticker": "555555.KQ",
+                    "stock_name": "Delayed Swing Chase",
+                    "score": 94.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 92.0,
+                        "tech_score": 90.0,
+                        "decision_score": 94.0,
+                        "prob_5": 42.0,
+                        "prob_clean": 42.0,
+                        "volume_ratio": 1.4,
+                        "volume_confirmed": True,
+                        "expected_return_1d_pct": -0.8,
+                        "expected_return_3d_pct": 6.4,
+                        "expected_edge_score": -1.0,
+                        "prev_pct_change_1d": 8.0,
+                        "prev_pct_change_5d": 18.0,
+                        "position": "Rising",
+                        "tier": "T1",
+                        "real_trend": "UP",
+                    },
+                },
+                {
+                    "ticker": "666666.KQ",
+                    "stock_name": "Cleaner Entry",
+                    "score": 90.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 92.0,
+                        "tech_score": 90.0,
+                        "decision_score": 90.0,
+                        "prob_5": 42.0,
+                        "prob_clean": 42.0,
+                        "volume_ratio": 1.4,
+                        "volume_confirmed": True,
+                        "expected_return_1d_pct": 2.2,
+                        "expected_return_3d_pct": 5.2,
+                        "expected_edge_score": 3.0,
+                        "prev_pct_change_1d": 1.0,
+                        "prev_pct_change_5d": 4.0,
+                        "position": "Rising",
+                        "tier": "T1",
+                        "real_trend": "UP",
+                    },
+                },
+            ],
+        )
+
+        self.assertEqual(planner.decisions[0].ticker, "666666.KQ")
+        self.assertIn("entry_timing_risk_score=", " ".join(planner.decisions[1].rationale))
 
     def test_kospi_relative_ranking_penalizes_loss_risk(self):
         context = RunContext(run_id="RUN-KS-FLOOR", market="KOSPI")

@@ -1,4 +1,5 @@
 from modules.loss_risk_features import (
+    compute_entry_timing_risk_features,
     compute_loss_risk_features,
     get_loss_risk_gate_thresholds,
     get_loss_risk_soft_cap_decision,
@@ -81,3 +82,38 @@ def test_loss_risk_features_coerce_nan_to_safe_defaults():
 
     assert row["loss_risk_score"] == 10.0
     assert row["missing_core_trace_risk"] == 1.0
+
+
+def test_entry_timing_risk_flags_delayed_kosdaq_chase_setup():
+    risky = compute_entry_timing_risk_features(
+        market_subtype="KOSDAQ",
+        expected_return_1d_pct=-0.8,
+        expected_return_3d_pct=6.5,
+        expected_edge_score=-1.2,
+        prev_pct_change_1d=8.0,
+        prev_pct_change_5d=18.0,
+        volume_ratio=0.7,
+        prob_clean=32.0,
+        loss_risk_score=48.0,
+        position="🚀 상승 (Rising)",
+        tier="🏆T1",
+        trend="UP",
+    )
+    supported = compute_entry_timing_risk_features(
+        market_subtype="KOSDAQ",
+        expected_return_1d_pct=2.4,
+        expected_return_3d_pct=5.4,
+        expected_edge_score=4.0,
+        prev_pct_change_1d=1.0,
+        prev_pct_change_5d=4.0,
+        volume_ratio=2.2,
+        prob_clean=46.0,
+        loss_risk_score=12.0,
+        position="Rising",
+        tier="T1",
+        trend="UP",
+    )
+
+    assert risky["entry_timing_risk_score"] > supported["entry_timing_risk_score"] + 40.0
+    assert risky["negative_1d_edge_risk"] > 0
+    assert risky["delayed_swing_gap_risk"] > 0

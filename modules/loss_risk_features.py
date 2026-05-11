@@ -159,3 +159,79 @@ def compute_loss_risk_features(
         "missing_core_trace_risk": missing_core_trace,
         "loss_risk_score": round(float(loss_risk_score), 4),
     }
+
+
+def compute_entry_timing_risk_features(
+    *,
+    market_subtype: Any = "",
+    expected_return_1d_pct: Any = None,
+    expected_return_3d_pct: Any = None,
+    expected_edge_score: Any = None,
+    prev_pct_change_1d: Any = None,
+    prev_pct_change_5d: Any = None,
+    volume_ratio: Any = None,
+    prob_clean: Any = None,
+    loss_risk_score: Any = None,
+    position: Any = "",
+    tier: Any = "",
+    trend: Any = "",
+) -> Dict[str, float]:
+    """Scan-time entry timing risk used to rank, not delete, KR swing names.
+
+    The score targets the KOSDAQ pattern seen in validation: good 5-7d swing
+    upside but weak next-day behavior. It only uses features available at scan
+    time, so it remains auditable and safe for production ranking.
+    """
+    market = str(market_subtype or "").upper()
+    is_kosdaq = market == "KOSDAQ" or market.endswith(".KQ")
+    expected_1d = _to_float(expected_return_1d_pct, 0.0)
+    expected_3d = _to_float(expected_return_3d_pct, expected_1d)
+    edge = _to_float(expected_edge_score, 0.0)
+    prev_1d = _to_float(prev_pct_change_1d, 0.0)
+    prev_5d = _to_float(prev_pct_change_5d, prev_1d)
+    volume = _to_float(volume_ratio, 0.0)
+    clean = _to_float(prob_clean, 50.0)
+    loss_risk = _to_float(loss_risk_score, 0.0)
+    position_text = str(position or "")
+    tier_text = str(tier or "")
+    trend_text = str(trend or "").upper()
+
+    is_rising = "Rising" in position_text or "상승" in position_text
+    is_peak = "Peak" in position_text or "고점" in position_text
+    is_resting = "Resting" in position_text or "조정" in position_text
+    is_t1_t2 = "T1" in tier_text or "T2" in tier_text or "🏆" in tier_text or "⭐" in tier_text
+
+    negative_1d_edge = max(0.0, 1.0 - expected_1d)
+    delayed_swing_gap = max(0.0, expected_3d - expected_1d - 2.5)
+    chase_extension = max(0.0, prev_1d - 4.0) + max(0.0, prev_5d - 12.0) * 0.35
+    weak_volume = max(0.0, 1.2 - volume)
+    weak_probability = max(0.0, 42.0 - clean)
+    negative_edge = max(0.0, -edge)
+
+    kosdaq_multiplier = 1.25 if is_kosdaq else 0.85
+    timing_risk_score = (
+        negative_1d_edge * 10.0
+        + delayed_swing_gap * 4.0
+        + chase_extension * 2.2
+        + weak_volume * 8.0
+        + weak_probability * 0.45
+        + negative_edge * 3.0
+        + min(loss_risk, 80.0) * 0.22
+    ) * kosdaq_multiplier
+
+    if is_kosdaq and is_t1_t2 and (is_rising or is_peak) and expected_1d < 1.0:
+        timing_risk_score += 12.0
+    if is_kosdaq and is_peak and volume < 1.0:
+        timing_risk_score += 10.0
+    if trend_text == "DOWN" and expected_1d < 1.5:
+        timing_risk_score += 8.0
+    if is_resting and expected_3d > expected_1d + 4.0:
+        timing_risk_score += 4.0
+
+    return {
+        "entry_timing_risk_score": round(float(timing_risk_score), 4),
+        "negative_1d_edge_risk": round(float(negative_1d_edge), 4),
+        "delayed_swing_gap_risk": round(float(delayed_swing_gap), 4),
+        "chase_extension_risk": round(float(chase_extension), 4),
+        "weak_entry_volume_risk": round(float(weak_volume), 4),
+    }
