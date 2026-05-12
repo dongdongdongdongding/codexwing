@@ -1,6 +1,6 @@
 import unittest
 
-from multi_agent.agents.planner_runtime import build_planner_handoff
+from multi_agent.agents.planner_runtime import _apply_kospi_swing_edge_promotion, build_planner_handoff
 from multi_agent.contracts.types import RunContext
 from multi_agent.workflows.legacy_export import build_scanner_handoff_from_legacy_results
 
@@ -394,6 +394,21 @@ class ScorePipelineTests(unittest.TestCase):
         decision = planner.decisions[0]
         self.assertEqual(decision.decision, "PRIORITY_WATCHLIST")
         self.assertIn("kospi_swing_edge_promotion=", " ".join(decision.rationale))
+
+    def test_kospi_swing_score_promotion_uses_broad_5d_target_slice(self):
+        rationale = []
+
+        decision = _apply_kospi_swing_edge_promotion(
+            decision="OBSERVE",
+            run_market="KOSPI",
+            scan_mode="SWING",
+            expected_edge_score=None,
+            decision_score=95.0,
+            rationale=rationale,
+        )
+
+        self.assertEqual(decision, "PRIORITY_WATCHLIST")
+        self.assertIn("decision_score=95.00>=min95.00", " ".join(rationale))
 
     def test_kosdaq_relative_admission_promotes_soft_risk_when_no_tradeable_candidate(self):
         context = RunContext(run_id="RUN-KQ-ADMIT", market="KOSDAQ")

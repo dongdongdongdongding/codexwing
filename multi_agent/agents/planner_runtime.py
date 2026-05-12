@@ -699,15 +699,17 @@ def _apply_kospi_swing_edge_promotion(
     run_market: str,
     scan_mode: str,
     expected_edge_score: float | None,
+    decision_score: float | None = None,
     rationale: List[str],
 ) -> str:
-    """Promote KOSPI SWING candidates that clear the revised 5d swing target slice.
+    """Promote KOSPI SWING candidates that clear revised 5d target slices.
 
     2026-05-12 Supabase validation for KOSPI SWING resolved 5d rows showed
-    expected_edge_score >= 6.0 at win_5d 77.5% / avg_5d +9.25% (n=138),
-    comfortably above the revised operating target of win_5d >= 70% and
-    avg_5d >= +5%. Keep this KOSPI-only and let later loss/inference gates
-    demote unsafe rows.
+    expected_edge_score >= 5.0 at win_5d 76.1% / avg_5d +8.81% (n=159)
+    and expected_edge_score >= 5.0 OR decision_score >= 95.0 at win_5d
+    72.36% / avg_5d +7.87% (n=369). Both clear the revised operating target
+    of win_5d >= 70% and avg_5d >= +5%. Keep this KOSPI-only and let later
+    loss/inference gates demote unsafe rows.
     """
     market = str(run_market or "").upper()
     mode = str(scan_mode or "").upper()
@@ -724,14 +726,31 @@ def _apply_kospi_swing_edge_promotion(
     except Exception:
         edge = None
     if edge is None or not math.isfinite(edge):
-        return decision
+        edge = None
     try:
-        min_edge = float(os.getenv("AG_KOSPI_SWING_EDGE_PROMOTION_MIN", "6.0"))
+        min_edge = float(os.getenv("AG_KOSPI_SWING_EDGE_PROMOTION_MIN", "5.0"))
     except Exception:
-        min_edge = 6.0
-    if edge < min_edge:
+        min_edge = 5.0
+    try:
+        score = float(decision_score) if decision_score not in (None, "") else None
+    except Exception:
+        score = None
+    if score is not None and not math.isfinite(score):
+        score = None
+    try:
+        min_score = float(os.getenv("AG_KOSPI_SWING_SCORE_PROMOTION_MIN", "95.0"))
+    except Exception:
+        min_score = 95.0
+    edge_pass = edge is not None and edge >= min_edge
+    score_pass = score is not None and score >= min_score
+    if not (edge_pass or score_pass):
         return decision
-    rationale.append(f"kospi_swing_edge_promotion=edge={edge:.2f}>=min{min_edge:.2f}")
+    reason_parts = []
+    if edge_pass:
+        reason_parts.append(f"edge={edge:.2f}>=min{min_edge:.2f}")
+    if score_pass:
+        reason_parts.append(f"decision_score={score:.2f}>=min{min_score:.2f}")
+    rationale.append("kospi_swing_edge_promotion=" + ";".join(reason_parts))
     return "PRIORITY_WATCHLIST"
 
 
@@ -1490,6 +1509,7 @@ def build_planner_handoff(
             run_market=run_market,
             scan_mode=scan_mode,
             expected_edge_score=float(expected_edge_score) if expected_edge_score not in (None, "") else None,
+            decision_score=float(decision_score) if decision_score not in (None, "") else None,
             rationale=rationale,
         )
         # 2026-05-08: Intraday Trend (breakout=False) 라벨 PRIORITY 격하.
