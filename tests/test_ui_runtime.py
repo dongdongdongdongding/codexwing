@@ -14,6 +14,7 @@ from modules.ui_helpers import (
     format_volume_display,
     resolve_display_price,
     should_auto_refresh_scan_panel,
+    sort_signal_rows_by_planner_rank,
 )
 
 
@@ -136,6 +137,24 @@ class UIHelperTests(unittest.TestCase):
         display = build_signal_display_rows(rows)
         self.assertEqual(display[0]["loss_risk"], "42.5")
         self.assertEqual(display[0]["risk_flags"], ["LOSS_RISK_SOFT_CAP"])
+
+    def test_sort_signal_rows_by_planner_rank_uses_final_priority_before_raw_score(self):
+        rows = enrich_signal_rows_with_planner_trace(
+            [
+                {"ticker": "RAW1.KS", "score": 99.0},
+                {"ticker": "TOP1.KS", "score": 70.0},
+                {"ticker": "TOP2.KS", "score": 80.0},
+            ],
+            {
+                "decisions": [
+                    {"ticker": "TOP1.KS", "decision": "PRIORITY_WATCHLIST", "priority_rank": 1, "relative_rank_score": 60.0},
+                    {"ticker": "TOP2.KS", "decision": "WATCHLIST", "priority_rank": 2, "relative_rank_score": 55.0},
+                    {"ticker": "RAW1.KS", "decision": "WATCHLIST", "priority_rank": 3, "relative_rank_score": 40.0},
+                ]
+            },
+        )
+        sorted_rows = sort_signal_rows_by_planner_rank(rows)
+        self.assertEqual([row["ticker"] for row in sorted_rows], ["TOP1.KS", "TOP2.KS", "RAW1.KS"])
 
 
 class ScannerRuntimeTests(unittest.TestCase):

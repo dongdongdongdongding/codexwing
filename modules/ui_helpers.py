@@ -232,6 +232,65 @@ def enrich_signal_rows_with_planner_trace(
     return enriched
 
 
+def _display_rank_float(value: Any) -> float | None:
+    numeric = _parse_percent_value(value)
+    if numeric is None:
+        return None
+    return numeric
+
+
+def sort_signal_rows_by_planner_rank(
+    rows: List[Dict[str, Any]],
+    planner_payload: Dict[str, Any] | None = None,
+) -> List[Dict[str, Any]]:
+    """Sort signal rows by the final planner order used for trading.
+
+    ``Decision Score`` is a useful scanner/raw model value, but the actionable
+    top list must follow planner priority/relative-rank because that is where
+    loss-risk, market regime, and admission gates are applied.
+    """
+    payload = planner_payload if isinstance(planner_payload, dict) else {}
+    planner_order: Dict[str, int] = {}
+    for section in ("decisions", "watchlist_meta"):
+        for idx, item in enumerate(payload.get(section, []) or [], start=1):
+            if not isinstance(item, dict):
+                continue
+            ticker = str(_coalesce_present(item.get("ticker"), item.get("Ticker")) or "").strip()
+            if ticker and ticker not in planner_order:
+                planner_order[ticker] = idx
+
+    def _decision_priority(value: Any) -> int:
+        d = str(value or "").upper()
+        return {
+            "STRONG_BUY": 0,
+            "PICK": 0,
+            "BUY": 0,
+            "PRIORITY_WATCHLIST": 1,
+            "WATCHLIST": 2,
+            "WATCHLIST_ONLY": 3,
+            "EXCEPTION_LEADER": 4,
+        }.get(d, 9)
+
+    def _key(row: Dict[str, Any]) -> tuple:
+        ticker = str(
+            _coalesce_present(row.get("ticker"), row.get("티커"), row.get("Ticker"), row.get("symbol"))
+            or ""
+        ).strip()
+        priority = _display_rank_float(row.get("priority_rank"))
+        planner_idx = planner_order.get(ticker)
+        relative = _display_rank_float(row.get("relative_rank_score")) or 0.0
+        score = _display_rank_float(row.get("decision_score") or row.get("Decision Score") or row.get("score")) or 0.0
+        return (
+            int(priority) if priority is not None else int(planner_idx) if planner_idx is not None else 9999,
+            _decision_priority(row.get("decision") or row.get("Decision") or row.get("decision_bucket")),
+            -relative,
+            -score,
+            ticker,
+        )
+
+    return sorted([dict(row) for row in rows or [] if isinstance(row, dict)], key=_key)
+
+
 def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = None) -> List[Dict[str, Any]]:
     """Normalize scanner/archive rows into a compact decision list.
 

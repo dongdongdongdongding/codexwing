@@ -9,7 +9,7 @@ from typing import Any, Dict, List
 import pandas as pd
 import yfinance as yf
 
-from modules.ui_helpers import enrich_signal_rows_with_planner_trace
+from modules.ui_helpers import enrich_signal_rows_with_planner_trace, sort_signal_rows_by_planner_rank
 
 
 REPORT_VERSION = "top_deep_report_v1"
@@ -89,25 +89,8 @@ def _select_top_candidates(
     limit: int,
 ) -> List[Dict[str, Any]]:
     enriched = enrich_signal_rows_with_planner_trace(scan_rows, planner_payload)
-
-    def key(row: Dict[str, Any]) -> tuple:
-        decision = str(row.get("decision") or row.get("Decision") or "").upper()
-        decision_order = {
-            "STRONG_BUY": 0,
-            "PICK": 0,
-            "BUY": 0,
-            "PRIORITY_WATCHLIST": 1,
-            "WATCHLIST": 2,
-            "WATCHLIST_ONLY": 3,
-            "EXCEPTION_LEADER": 4,
-        }.get(decision, 9)
-        priority = _safe_int(row.get("priority_rank"))
-        rel = _safe_float(row.get("relative_rank_score")) or 0.0
-        decision_score = _safe_float(row.get("decision_score") or row.get("Decision Score") or row.get("score")) or 0.0
-        return (decision_order, priority if priority is not None else 9999, -rel, -decision_score, _ticker(row))
-
     rows = [row for row in enriched if _ticker(row)]
-    return sorted(rows, key=key)[: max(int(limit or 0), 0)]
+    return sort_signal_rows_by_planner_rank(rows, planner_payload)[: max(int(limit or 0), 0)]
 
 
 def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:

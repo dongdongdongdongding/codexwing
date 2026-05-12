@@ -41,6 +41,7 @@ from modules.ui_helpers import (
     resolve_display_price,
     should_auto_refresh_scan_panel,
     split_stream_records,
+    sort_signal_rows_by_planner_rank,
 )
 from ui.theme import inject_theme as _inject_design_tokens
 from ui.components import compact_status_bar as _compact_status_bar
@@ -836,6 +837,7 @@ def _render_scan_top_candidates(results_df, bridge_info, market):
         results_df.to_dict("records"),
         planner_payload,
     )
+    raw_records = sort_signal_rows_by_planner_rank(raw_records, planner_payload)
     streams = split_stream_records(raw_records)
     stream_a_records = streams["stream_a"]
     stream_b_records = streams["stream_b"]
@@ -1769,9 +1771,10 @@ def _render_scan_results_snapshot(snapshot):
         with st.expander("추가 후보 보기", expanded=False):
             planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
             extra_records = enrich_signal_rows_with_planner_trace(
-                df_results.iloc[5:].to_dict("records"),
+                df_results.to_dict("records"),
                 planner_payload,
             )
+            extra_records = sort_signal_rows_by_planner_rank(extra_records, planner_payload)[5:]
             _render_signal_card_list(build_signal_display_rows(extra_records))
     _render_agent_bridge_status(bridge_info, market)
 
