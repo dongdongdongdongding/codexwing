@@ -130,6 +130,62 @@ def _computed_complete_mask(frame: pd.DataFrame) -> pd.Series:
     return mask
 
 
+def _metadata_missing_fields_nonempty(frame: pd.DataFrame) -> pd.Series:
+    if "feature_missing_fields" not in frame.columns:
+        return pd.Series(False, index=frame.index)
+
+    def _nonempty(value: Any) -> bool:
+        if value is None:
+            return False
+        if isinstance(value, (list, tuple, set)):
+            return len(value) > 0
+        text = str(value).strip().lower()
+        return text not in {"", "[]", "none", "null", "nan"}
+
+    return frame["feature_missing_fields"].map(_nonempty).fillna(False).astype(bool)
+
+
+def _origin_quality_table(frame: pd.DataFrame) -> List[Dict[str, Any]]:
+    if frame.empty:
+        return []
+    work = frame.copy()
+    if "feature_origin" not in work.columns:
+        work["feature_origin"] = "UNKNOWN"
+    work["feature_origin"] = work["feature_origin"].fillna("UNKNOWN").astype(str)
+    rows: List[Dict[str, Any]] = []
+    for origin, group in work.groupby("feature_origin", dropna=False):
+        computed_complete = _computed_complete_mask(group)
+        if "feature_quality" in group.columns:
+            metadata_complete = group["feature_quality"].fillna("").astype(str).str.lower().eq("complete")
+        else:
+            metadata_complete = pd.Series(False, index=group.index)
+        if "validation_excluded" in group.columns:
+            validation_excluded = _bool_series(group["validation_excluded"])
+        else:
+            validation_excluded = pd.Series(False, index=group.index)
+        metadata_missing_fields = _metadata_missing_fields_nonempty(group)
+        false_missing_metadata = computed_complete & (
+            ~metadata_complete | validation_excluded | metadata_missing_fields
+        )
+        false_complete_metadata = metadata_complete & ~computed_complete
+        n = max(len(group), 1)
+        rows.append(
+            {
+                "feature_origin": str(origin),
+                "rows": int(len(group)),
+                "computed_complete_rows": int(computed_complete.sum()),
+                "computed_complete_rate_pct": round(float(computed_complete.mean() * 100.0), 3),
+                "metadata_complete_rows": int(metadata_complete.sum()),
+                "validation_excluded_rows": int(validation_excluded.sum()),
+                "metadata_false_missing_rows": int(false_missing_metadata.sum()),
+                "metadata_false_missing_rate_pct": round(float(false_missing_metadata.sum() / n * 100.0), 3),
+                "metadata_false_complete_rows": int(false_complete_metadata.sum()),
+                "missing_rates_pct": _missing_rates(group, REQUIRED_SCAN_COLUMNS),
+            }
+        )
+    return sorted(rows, key=lambda row: (-row["rows"], row["feature_origin"]))
+
+
 def _group_return_table(frame: pd.DataFrame, return_col: str) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     if return_col not in frame.columns:
@@ -209,6 +265,7 @@ def _build_report(df: pd.DataFrame) -> Dict[str, Any]:
             str(submarket): _missing_rates(group, REQUIRED_SCAN_COLUMNS)
             for submarket, group in kr_swing.groupby("submarket", dropna=False)
         },
+        "quality_by_feature_origin": _origin_quality_table(kr_swing),
         "returns_by_bucket": {
             col: _group_return_table(kr_swing, col)
             for col in ["return_1d_pct", "return_3d_pct", "return_5d_pct", "return_7d_pct"]
@@ -247,6 +304,16 @@ def _write_markdown(report: Dict[str, Any], md_path: Path) -> None:
     for key, value in missing.items():
         if float(value) > 0:
             lines.append(f"- {key}: `{value}%`")
+    lines.extend(["", "## Origin Quality", ""])
+    for row in report.get("quality_by_feature_origin", []) or []:
+        lines.append(
+            "- "
+            f"{row['feature_origin']}: rows={row['rows']}, "
+            f"computed_complete={row['computed_complete_rows']} ({row['computed_complete_rate_pct']}%), "
+            f"metadata_complete={row['metadata_complete_rows']}, "
+            f"validation_excluded={row['validation_excluded_rows']}, "
+            f"metadata_false_missing={row['metadata_false_missing_rows']} ({row['metadata_false_missing_rate_pct']}%)"
+        )
     lines.extend(["", "## Return Summary", ""])
     for col, rows in (report.get("returns_by_bucket", {}) or {}).items():
         lines.append(f"### {col} by bucket")
