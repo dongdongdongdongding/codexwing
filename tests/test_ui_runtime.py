@@ -6,6 +6,7 @@ import pandas as pd
 from modules.quant_analysis import QuantStrategy
 from modules.scanner_runtime import run_parallel_scan
 from modules.ui_helpers import (
+    build_live_cockpit_summary,
     build_signal_display_rows,
     build_top_candidate_rows,
     build_watchlist_display_rows,
@@ -117,6 +118,19 @@ class UIHelperTests(unittest.TestCase):
             "phase25_prob": 35.7,             # KOSPI SWING 평균 raw score
         }])
         self.assertEqual(rows[0]["accuracy"], "-")
+
+    def test_build_live_cockpit_summary_surfaces_validated_policy(self):
+        summary = build_live_cockpit_summary(
+            [{"ticker": "005930.KS"}],
+            [{"ticker": "000660.KS"}],
+            market="KOSPI",
+            strict_quality_gate=True,
+        )
+
+        self.assertEqual(summary["actionable_count"], 2)
+        self.assertEqual(summary["quality_gate"], "ON")
+        self.assertEqual(summary["policy"], "exception_leader OR edge>=5")
+        self.assertEqual(summary["validated_win"], "77.95%")
 
     def test_enrich_signal_rows_with_planner_trace_adds_loss_risk(self):
         rows = enrich_signal_rows_with_planner_trace(

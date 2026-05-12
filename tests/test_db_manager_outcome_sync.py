@@ -1,3 +1,5 @@
+import json
+
 from modules.db_manager import DBManager
 
 
@@ -84,6 +86,49 @@ def test_merge_non_empty_payload_recomputes_stale_quality_metadata():
     assert merged["feature_missing_fields"] == []
     assert merged["validation_excluded"] is False
     assert merged["validation_excluded_reason"] is None
+
+
+def test_incomplete_live_scan_result_is_quarantined_not_saved(tmp_path, monkeypatch):
+    db = DBManager.__new__(DBManager)
+    quarantine_path = tmp_path / "scan_feature_quarantine.jsonl"
+    monkeypatch.setenv("AG_SCAN_FEATURE_QUARANTINE_PATH", str(quarantine_path))
+    monkeypatch.setenv("AG_STRICT_SCAN_QUALITY_GATE", "1")
+    data = {
+        "ticker": "005930.KS",
+        "name": "Samsung",
+        "market": "KOSPI",
+        "market_type": "KR",
+        "scan_mode": "SWING",
+        "alpha_score": 82,
+        "ml_prob": 61.0,
+        "decision": "PRIORITY_WATCHLIST",
+        "decision_bucket": "watchlist",
+        "run_id": "RUN-QUALITY-GATE",
+    }
+    quality = db._feature_quality_payload(data, origin="scanner_full")
+
+    assert db._should_block_incomplete_scan_result(data, quality) is True
+    row = db._write_scan_feature_quarantine(data, quality, "KOSPI", "2026-05-12T13:00:00+00:00")
+
+    assert "tech_score" in row["feature_missing_fields"]
+    assert "volume_ratio" in row["feature_missing_fields"]
+    saved = json.loads(quarantine_path.read_text(encoding="utf-8").strip())
+    assert saved["ticker"] == "005930.KS"
+    assert saved["validation_excluded_reason"].startswith("FEATURE_MISSING:")
+
+
+def test_quality_gate_allows_outcome_sync_partial_rows(monkeypatch):
+    db = DBManager.__new__(DBManager)
+    monkeypatch.setenv("AG_STRICT_SCAN_QUALITY_GATE", "1")
+    data = {
+        "ticker": "005930.KS",
+        "feature_origin": "outcome_sync_partial",
+        "return_5d_pct": 6.2,
+    }
+    quality = db._feature_quality_payload(data, origin="outcome_sync_partial")
+
+    assert quality["validation_excluded"] is True
+    assert db._should_block_incomplete_scan_result(data, quality) is False
 
 
 def test_authoritative_row_prefers_planner_telemetry_over_newer_raw_row():

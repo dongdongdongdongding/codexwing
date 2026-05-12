@@ -31,6 +31,7 @@ from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.ui_helpers import (
     BackgroundScanState,
+    build_live_cockpit_summary,
     build_signal_display_rows,
     build_top_candidate_compact_view,
     build_top_candidate_rows,
@@ -844,6 +845,25 @@ def _render_scan_top_candidates(results_df, bridge_info, market):
 
     stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
     stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
+    cockpit = build_live_cockpit_summary(
+        stream_a_rows,
+        stream_b_rows,
+        market=market,
+        strict_quality_gate=str(os.getenv("AG_STRICT_SCAN_QUALITY_GATE", "1")).strip().lower()
+        not in {"0", "", "false", "no", "off"},
+    )
+
+    st.markdown("### 운영 콕핏")
+    cockpit_cols = st.columns(5)
+    cockpit_cols[0].metric("실행 후보", f"{cockpit['actionable_count']}")
+    cockpit_cols[1].metric("Stream A", f"{cockpit['stream_a_count']}")
+    cockpit_cols[2].metric("Stream B", f"{cockpit['stream_b_count']}")
+    cockpit_cols[3].metric("데이터 게이트", cockpit["quality_gate"])
+    cockpit_cols[4].metric("검증 승률", cockpit["validated_win"])
+    st.caption(
+        f"{cockpit['market']} live policy: {cockpit['policy']} | "
+        f"5D target return: {cockpit['validated_return']} | {cockpit['sample']}"
+    )
 
     if not stream_a_rows and not stream_b_rows:
         st.markdown("### 🔥 매수 신호")

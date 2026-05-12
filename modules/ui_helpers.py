@@ -177,6 +177,50 @@ def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[s
     }
 
 
+def build_live_cockpit_summary(
+    stream_a_rows: List[Dict[str, Any]],
+    stream_b_rows: List[Dict[str, Any]],
+    *,
+    market: str,
+    strict_quality_gate: bool = True,
+) -> Dict[str, Any]:
+    """Summarize the live trading cockpit in operator-facing terms."""
+    market_key = str(market or "").upper()
+    policies = {
+        "KOSPI": {
+            "policy": "exception_leader OR edge>=5",
+            "validated_win": "77.95%",
+            "validated_return": "+8.80%",
+            "sample": "n=254",
+        },
+        "KOSDAQ": {
+            "policy": "exception_leader AND trend=UP",
+            "validated_win": "80.00%",
+            "validated_return": "+13.81% MFE",
+            "sample": "n=65",
+        },
+    }
+    policy = policies.get(
+        market_key,
+        {
+            "policy": "segment policy",
+            "validated_win": "-",
+            "validated_return": "-",
+            "sample": "-",
+        },
+    )
+    stream_a_count = len(stream_a_rows or [])
+    stream_b_count = len(stream_b_rows or [])
+    return {
+        "market": market_key or "-",
+        "actionable_count": stream_a_count + stream_b_count,
+        "stream_a_count": stream_a_count,
+        "stream_b_count": stream_b_count,
+        "quality_gate": "ON" if strict_quality_gate else "OFF",
+        **policy,
+    }
+
+
 def enrich_signal_rows_with_planner_trace(
     rows: List[Dict[str, Any]],
     planner_payload: Dict[str, Any] | None,

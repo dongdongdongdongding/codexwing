@@ -12,6 +12,20 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from multi_agent.agents.kr_quant_reranker import is_kr_explosive_leader_eligible
+from modules.db_schema import REQUIRED_FEATURE_FIELDS_FOR_TRAINING
+
+
+RETURN_COLS = [
+    "return_30m_pct",
+    "return_1h_pct",
+    "return_close_pct",
+    "return_1d_pct",
+    "return_3d_pct",
+    "return_5d_pct",
+    "return_7d_pct",
+    "return_14d_pct",
+    "return_30d_pct",
+]
 
 
 def _infer_decision_bucket(df: pd.DataFrame) -> pd.Series:
@@ -170,12 +184,70 @@ def _infer_explosive_eligibility(df: pd.DataFrame, market: str) -> tuple[pd.Seri
     return inferred_flag, inferred_reasons
 
 
+def _truthy_false_or_missing(series: pd.Series) -> pd.Series:
+    text = series.fillna("").astype(str).str.strip().str.lower()
+    return text.isin({"", "0", "false", "none", "null", "no"})
+
+
+def _apply_quality_tier(df: pd.DataFrame, quality_tier: str) -> pd.DataFrame:
+    """Filter exported learning data by objective data-quality tier.
+
+    GOLD is the training-safe dataset: resolved outcome, not dummy, not
+    validation-excluded, complete feature metadata, and all required training
+    features present. SILVER keeps resolved non-dummy rows for diagnostics even
+    if old feature metadata is incomplete. ALL preserves historical behavior.
+    """
+    if df.empty:
+        return df
+    tier = str(quality_tier or "ALL").upper()
+    if tier == "ALL":
+        result = df.copy()
+        result["learning_quality_tier"] = "all"
+        return result
+
+    mask = pd.Series(True, index=df.index)
+    if "outcome_status" in df.columns:
+        mask &= df["outcome_status"].fillna("").astype(str).str.upper().eq("RESOLVED")
+    else:
+        available_returns = [col for col in RETURN_COLS if col in df.columns]
+        mask &= df[available_returns].notna().any(axis=1) if available_returns else False
+
+    if "is_dummy_data" in df.columns:
+        mask &= _truthy_false_or_missing(df["is_dummy_data"])
+
+    if tier == "GOLD":
+        if "validation_excluded" in df.columns:
+            mask &= _truthy_false_or_missing(df["validation_excluded"])
+        else:
+            mask &= False
+        if "feature_quality" in df.columns:
+            mask &= df["feature_quality"].fillna("").astype(str).str.lower().eq("complete")
+        else:
+            mask &= False
+        for col in REQUIRED_FEATURE_FIELDS_FOR_TRAINING:
+            if col in df.columns:
+                mask &= df[col].notna()
+            else:
+                mask &= False
+        result = df.loc[mask].copy()
+        result["learning_quality_tier"] = "gold"
+        return result
+
+    if tier == "SILVER":
+        result = df.loc[mask].copy()
+        result["learning_quality_tier"] = "silver"
+        return result
+
+    raise ValueError(f"unsupported quality_tier: {quality_tier}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export enriched scan archive dataset for backtest/model learning.")
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--market", choices=["ALL", "KOSPI", "KOSDAQ", "NASDAQ", "AMEX"], default="ALL")
     parser.add_argument("--scan-mode", choices=["ALL", "SWING", "INTRADAY"], default="ALL")
     parser.add_argument("--strategy-family", default=None)
+    parser.add_argument("--quality-tier", choices=["ALL", "GOLD", "SILVER"], default="ALL")
     parser.add_argument("--output-dir", type=str, default="runtime_state/reports/archive")
     args = parser.parse_args()
 
@@ -236,19 +308,8 @@ def main() -> None:
             df["price_band"] = _price_band(df["entry_reference_price"])
             df["is_sub7"] = (df["price_band"] == "le_7").astype(int)
 
-    return_cols = [
-        "return_30m_pct",
-        "return_1h_pct",
-        "return_close_pct",
-        "return_1d_pct",
-        "return_3d_pct",
-        "return_5d_pct",
-        "return_7d_pct",
-        "return_14d_pct",
-        "return_30d_pct",
-    ]
     if not df.empty:
-        available_return_cols = [col for col in return_cols if col in df.columns]
+        available_return_cols = [col for col in RETURN_COLS if col in df.columns]
         # Only assign labels when outcome is RESOLVED — PENDING/EXPIRED rows get NaN
         # to prevent false-negative label bias (fillna(0) on missing returns = fabricated loss)
         is_resolved = (
@@ -295,6 +356,9 @@ def main() -> None:
             else:
                 df["marcap_band"] = 2  # unknown — mid band default
 
+    if not df.empty:
+        df = _apply_quality_tier(df, args.quality_tier)
+
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     suffix_parts = [market.lower()]
@@ -302,6 +366,8 @@ def main() -> None:
         suffix_parts.append(str(args.scan_mode).lower())
     if args.strategy_family:
         suffix_parts.append(str(args.strategy_family).lower())
+    if str(args.quality_tier).upper() != "ALL":
+        suffix_parts.append(str(args.quality_tier).lower())
     suffix = "_".join([part for part in suffix_parts if part and part != "all"]) or "all"
     csv_path = out_dir / f"scan_archive_learning_dataset_{suffix}.csv"
     json_path = out_dir / f"scan_archive_learning_dataset_{suffix}.json"
@@ -321,6 +387,7 @@ def main() -> None:
                 "market": market,
                 "scan_mode": str(args.scan_mode).upper(),
                 "strategy_family": args.strategy_family,
+                "quality_tier": str(args.quality_tier).upper(),
                 "columns": sorted(df.columns.tolist()) if not df.empty else [],
             },
             ensure_ascii=False,

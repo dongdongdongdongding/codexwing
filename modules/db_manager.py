@@ -1,4 +1,6 @@
 import os
+import json
+from pathlib import Path
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import pandas as pd
@@ -311,6 +313,57 @@ class DBManager:
             "validation_excluded_reason": reason,
             "is_dummy_data": bool(data.get("is_dummy_data", False)),
         }
+
+    def _strict_scan_quality_gate_enabled(self):
+        return str(os.getenv("AG_STRICT_SCAN_QUALITY_GATE", "1")).strip().lower() not in {"0", "", "false", "no", "off"}
+
+    def _quality_gate_applies_to_origin(self, origin):
+        origin_text = str(origin or "scanner_full").strip().lower()
+        if not origin_text:
+            origin_text = "scanner_full"
+        return not (
+            origin_text.startswith("outcome_sync")
+            or origin_text in {"scanner_archive_outcome", "archive_outcome"}
+        )
+
+    def _scan_feature_quarantine_path(self):
+        configured = os.getenv("AG_SCAN_FEATURE_QUARANTINE_PATH")
+        if configured:
+            return Path(configured)
+        return Path("runtime_state/reports/data_quality/scan_feature_quarantine.jsonl")
+
+    def _write_scan_feature_quarantine(self, data, feature_quality, market, recommended_at):
+        path = self._scan_feature_quarantine_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        row = {
+            "recorded_at": datetime.now(timezone.utc).isoformat(),
+            "ticker": data.get("ticker"),
+            "stock_name": data.get("name") or data.get("stock_name"),
+            "market": market,
+            "market_type": data.get("market_type"),
+            "scan_mode": data.get("scan_mode"),
+            "run_id": data.get("run_id"),
+            "decision": data.get("decision"),
+            "decision_bucket": data.get("decision_bucket"),
+            "recommended_at": recommended_at,
+            "feature_origin": feature_quality.get("feature_origin"),
+            "feature_quality": feature_quality.get("feature_quality"),
+            "feature_completeness": feature_quality.get("feature_completeness"),
+            "feature_missing_fields": feature_quality.get("feature_missing_fields") or [],
+            "validation_excluded_reason": feature_quality.get("validation_excluded_reason"),
+        }
+        with path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+        return row
+
+    def _should_block_incomplete_scan_result(self, data, feature_quality):
+        if not self._strict_scan_quality_gate_enabled():
+            return False
+        if data.get("allow_incomplete_scan_result") is True:
+            return False
+        if not feature_quality.get("validation_excluded"):
+            return False
+        return self._quality_gate_applies_to_origin(feature_quality.get("feature_origin"))
     
     def save_signal(self, ticker, price, alpha_score, ai_prediction, signal_type="BUY", stock_name=None, 
                    entry_price=None, target_price=None, stop_loss=None):
@@ -453,6 +506,11 @@ class DBManager:
             submarket = self._resolve_submarket(data.get('market'), data.get('market_type'), ticker)
             now_ts = datetime.now(timezone.utc).isoformat()
             recommended_at = data.get("recommended_at") or now_ts
+            if self._should_block_incomplete_scan_result(data, feature_quality):
+                quarantined = self._write_scan_feature_quarantine(data, feature_quality, submarket, recommended_at)
+                missing = ",".join(quarantined.get("feature_missing_fields") or [])
+                print(f"⛔ DB Upsert blocked by feature quality gate: {ticker} missing={missing}")
+                return 0
             overrides = {
                 "market": submarket,
                 "created_at": now_ts,
