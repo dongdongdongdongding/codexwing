@@ -1160,7 +1160,23 @@ def build_planner_handoff(
         volume = feature_snapshot.get("volume")
         volume_ratio = feature_snapshot.get("volume_ratio")
         volume_confirmed = feature_snapshot.get("volume_confirmed")
-        entry_reference_price = feature_snapshot.get("entry_reference_price") or feature_snapshot.get("현재가") or feature_snapshot.get("current_price")
+        entry_reference_price = (
+            feature_snapshot.get("entry_reference_price")
+            or feature_snapshot.get("entry_price")
+            or feature_snapshot.get("Entry Price")
+            or feature_snapshot.get("Entry(-2%)")
+            or feature_snapshot.get("매수가(-2%)")
+            or feature_snapshot.get("현재가")
+            or feature_snapshot.get("Current Price")
+            or feature_snapshot.get("current_price")
+            or feature_snapshot.get("curr_price")
+            or feature_snapshot.get("price")
+        )
+        if entry_reference_price not in (None, ""):
+            try:
+                entry_reference_price = float(str(entry_reference_price).replace(",", "").replace("%", "").strip())
+            except Exception:
+                entry_reference_price = None
         prob_5 = feature_snapshot.get("prob_5", feature_snapshot.get("_prob_5", feature_snapshot.get("ml_prob")))
         prob_clean = feature_snapshot.get("prob_clean", feature_snapshot.get("_prob_clean"))
         real_trend = str(feature_snapshot.get("real_trend") or feature_snapshot.get("trend") or "")

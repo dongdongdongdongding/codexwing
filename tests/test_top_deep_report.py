@@ -22,7 +22,14 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
         }
 
         reports = build_top_deep_reports(
-            scan_rows=[{"ticker": "005930.KS", "stock_name": "삼성전자", "Decision Score": 88.0}],
+            scan_rows=[
+                {
+                    "ticker": "005930.KS",
+                    "stock_name": "삼성전자",
+                    "Decision Score": 88.0,
+                    "매수가(-2%)": "73,200",
+                }
+            ],
             planner_payload={
                 "decisions": [
                     {
@@ -55,5 +62,6 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["trade_plan"]["stop_sl_pct"] is not None
     assert report["trade_plan"]["hold_days"] is not None
     assert report["trade_plan"]["entry_policy"]
+    assert report["trade_plan"]["entry_reference_price"] == 73200.0
     assert report["price"]["trend"] == "UP"
     assert report["news"]["headlines"][0]["title"] == "real headline"

@@ -18,6 +18,7 @@ class ScorePipelineTests(unittest.TestCase):
                     "AI확률": "55.0%",
                     "정밀확률": "48.0%",
                     "추세": "UP",
+                    "매수가(-2%)": "73,200",
                     "scan_mode": "SWING",
                 }
             ],
@@ -28,6 +29,7 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(snap["conviction_score"], 84.1)
         self.assertEqual(snap["prob_5"], 55.0)
         self.assertEqual(snap["prob_clean"], 48.0)
+        self.assertEqual(snap["entry_reference_price"], 73200.0)
 
     def test_planner_handoff_preserves_alpha_and_conviction_scores(self):
         planner = build_planner_handoff(
@@ -75,6 +77,37 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(serialized["market_gate"], "YELLOW")
         self.assertEqual(serialized["scanner_timeframe_profile"], "SWING_DAILY")
         self.assertEqual(serialized["kr_universe_role"], "CORE_TREND")
+
+    def test_planner_handoff_uses_entry_price_as_reference_price_fallback(self):
+        planner = build_planner_handoff(
+            context=RunContext(run_id="RUN-TEST", market="KOSDAQ"),
+            weak_ratio=0.1,
+            candidates=[
+                {
+                    "ticker": "322310.KQ",
+                    "score": 88.0,
+                    "reasons": ["entry fallback"],
+                    "feature_snapshot": {
+                        "stock_name": "오로스테크놀로지",
+                        "alpha_score": 88.0,
+                        "tech_score": 80.0,
+                        "conviction_score": 74.0,
+                        "decision_score": 88.0,
+                        "entry_price": "12,340",
+                        "prob_5": 56.0,
+                        "prob_clean": 51.0,
+                        "phase25_prob": 65.0,
+                        "phase25_recommended_threshold": 55.0,
+                        "real_trend": "UP",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                    },
+                    "warnings": [],
+                }
+            ],
+        )
+
+        self.assertEqual(planner.decisions[0].entry_reference_price, 12340.0)
 
     def test_kosdaq_swing_low_prob_override_prevents_hard_avoid(self):
         planner = build_planner_handoff(

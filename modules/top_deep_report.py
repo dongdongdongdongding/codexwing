@@ -28,6 +28,8 @@ def _present(value: Any) -> bool:
 
 def _safe_float(value: Any) -> float | None:
     try:
+        if isinstance(value, str):
+            value = value.replace(",", "").replace("%", "").strip()
         numeric = float(value)
     except (TypeError, ValueError):
         return None
@@ -240,7 +242,32 @@ def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str) -> Di
             entry_policy = "-2% limit" if str(ticker).upper().endswith(".KQ") else "open/reference"
     return {
         "entry_policy": entry_policy,
-        "entry_reference_price": _safe_float(trace.get("entry_reference_price") or row.get("entry_reference_price")),
+        "entry_reference_price": _safe_float(
+            _first_present(
+                trace,
+                "entry_reference_price",
+                "entry_price",
+                "Entry Price",
+                "Entry(-2%)",
+                "매수가(-2%)",
+                "Current Price",
+                "현재가",
+                "curr_price",
+                "price",
+            )
+            or _first_present(
+                row,
+                "entry_reference_price",
+                "entry_price",
+                "Entry Price",
+                "Entry(-2%)",
+                "매수가(-2%)",
+                "Current Price",
+                "현재가",
+                "curr_price",
+                "price",
+            )
+        ),
         "target_tp_pct": tp,
         "stop_sl_pct": sl,
         "hold_days": hold,

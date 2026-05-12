@@ -44,22 +44,22 @@ _REFERENCE_PRICE_CACHE: Dict[str, float | None] = {}
 def _resolve_detail_price(detail: Dict[str, Any]) -> float | None:
     if not isinstance(detail, dict):
         return None
-    for key in ["entry_reference_price", "curr_price", "price", "close"]:
+    for key in ["entry_reference_price", "entry_price", "Entry Price", "Entry(-2%)", "매수가(-2%)", "curr_price", "price", "close"]:
         value = detail.get(key)
         if value is not None:
             try:
-                return float(value)
+                return float(str(value).replace(",", "").strip())
             except Exception:
                 pass
     for nested_key in ["amex_features", "intraday_setup"]:
         nested = detail.get(nested_key)
         if not isinstance(nested, dict):
             continue
-        for key in ["price", "curr_price", "close"]:
+        for key in ["entry_reference_price", "entry_price", "price", "curr_price", "close"]:
             value = nested.get(key)
             if value is not None:
                 try:
-                    return float(value)
+                    return float(str(value).replace(",", "").strip())
                 except Exception:
                     pass
     return None

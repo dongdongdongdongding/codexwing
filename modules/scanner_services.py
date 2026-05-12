@@ -763,6 +763,7 @@ def evaluate_intraday_candidate(
 
     db_payload["scan_mode"] = "INTRADAY"
     db_payload["entry_price"] = round(entry_price, 6)
+    db_payload["entry_reference_price"] = round(entry_price, 6)
     db_payload["target_price"] = round(target_price, 6)
     db_payload["stop_loss"] = round(stop_loss, 6)
     db_payload["r_status"] = str(r_status)
