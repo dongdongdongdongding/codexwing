@@ -1,11 +1,11 @@
 ---
 name: issue
-description: Beads 이슈 상태 관리. Claude /issue와 같은 start, done/end, sync, log 흐름을 Codex에서 실행한다.
+description: Beads 이슈 상태 관리. Codex에서 start, done/end, sync, log 흐름을 실행한다.
 argument-hint: "[start|done|end|sync|log] [issue-id] [reason]"
 allowed-tools: Bash
 ---
 
-이 프로젝트의 Beads 이슈 상태를 관리한다. Claude의 `/issue` 워크플로와 동일한 공통 래퍼를 사용한다.
+이 프로젝트의 Beads 이슈 상태를 관리한다. Codex는 공통 래퍼인 `scripts/issue`를 사용한다.
 
 인자: $ARGUMENTS
 

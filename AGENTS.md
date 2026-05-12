@@ -101,12 +101,12 @@ over:
   - handoffs when stopping mid-task
   - unusually long-running work that needs visibility
 - Do not log every normal step there. `bd` issue status and `bd close` should remain the primary source of work state.
-- If leaving a thread note, start with an explicit agent prefix such as `[Codex]` or `[Claude]`.
+- If leaving a thread note, start with the explicit agent prefix `[Codex]`.
 - Acquire `bd merge-slot acquire` before conflict-prone edits or merge resolution
 - Release it with `bd merge-slot release` when the risky step is complete
 
 ## Issue Shortcut
-- Claude's `/issue` workflow is mirrored for Codex through `scripts/issue`.
+- Codex uses `scripts/issue` as the project issue shortcut for beads.
 - Use `scripts/issue` for status, `scripts/issue start <id>` to claim, `scripts/issue end <id> [reason]` to close, `scripts/issue sync` to sync, and `scripts/issue log` for recent closed issues.
 - If the user says `/issue ...` to Codex, interpret it as `scripts/issue ...`.
 

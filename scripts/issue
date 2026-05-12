@@ -12,7 +12,7 @@ Usage:
   scripts/issue sync
   scripts/issue log
 
-Mirrors the Claude /issue workflow for beads issue management.
+Codex issue shortcut for beads issue management.
 EOF
 }
 
