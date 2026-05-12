@@ -134,6 +134,16 @@ def _slice_masks(df: pd.DataFrame) -> List[Tuple[str, pd.Series]]:
         masks.append((f"edge_ge_{edge}", df["expected_edge_score"].ge(edge)))
     for score in [80, 85, 90, 95]:
         masks.append((f"decision_score_ge_{score}", df["decision_score"].ge(score)))
+    for loss in [30, 40, 50, 60]:
+        masks.append((f"loss_risk_le_{loss}", df["loss_risk_score"].le(loss)))
+    for volume in [1.5, 2, 3, 5]:
+        masks.append((f"volume_ratio_ge_{volume}", df["volume_ratio"].ge(volume)))
+    for prob in [45, 50, 55, 60]:
+        masks.append((f"prob_clean_ge_{prob}", df["prob_clean"].ge(prob)))
+    for alpha in [75, 80, 85, 90]:
+        masks.append((f"alpha_ge_{alpha}", df["alpha_score"].ge(alpha)))
+    for whale in [50, 60, 70, 80]:
+        masks.append((f"whale_ge_{whale}", df["whale_score"].ge(whale)))
     for edge in [5, 6, 7, 8]:
         for score in [85, 90, 95]:
             masks.append(
@@ -170,6 +180,27 @@ def _slice_masks(df: pd.DataFrame) -> List[Tuple[str, pd.Series]]:
             ),
         ]
     )
+    base_masks = [
+        ("exception_leader", df["decision_bucket"].eq("exception_leader")),
+        ("rank_top5", df["priority_rank"].between(1, 5, inclusive="both")),
+        ("rank_top3", df["priority_rank"].between(1, 3, inclusive="both")),
+        ("edge_ge_8", df["expected_edge_score"].ge(8)),
+        ("score_ge_95", df["decision_score"].ge(95)),
+    ]
+    risk_masks = []
+    for loss in [30, 40, 50, 60]:
+        risk_masks.append((f"loss_le_{loss}", df["loss_risk_score"].le(loss)))
+    for volume in [2, 3, 5]:
+        risk_masks.append((f"volume_ge_{volume}", df["volume_ratio"].ge(volume)))
+    for prob in [50, 55, 60]:
+        risk_masks.append((f"prob_clean_ge_{prob}", df["prob_clean"].ge(prob)))
+    for alpha in [80, 85, 90]:
+        risk_masks.append((f"alpha_ge_{alpha}", df["alpha_score"].ge(alpha)))
+    for whale in [60, 70, 80]:
+        risk_masks.append((f"whale_ge_{whale}", df["whale_score"].ge(whale)))
+    for base_name, base_mask in base_masks:
+        for risk_name, risk_mask in risk_masks:
+            masks.append((f"{base_name}__{risk_name}", base_mask & risk_mask))
     return masks
 
 
