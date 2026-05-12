@@ -396,7 +396,7 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(decision.decision, "PRIORITY_WATCHLIST")
         self.assertIn("kospi_swing_edge_promotion=", " ".join(decision.rationale))
 
-    def test_kospi_swing_score_promotion_uses_broad_5d_target_slice(self):
+    def test_kospi_swing_score_only_promotion_is_off_by_default(self):
         rationale = []
 
         decision = _apply_kospi_swing_edge_promotion(
@@ -407,6 +407,22 @@ class ScorePipelineTests(unittest.TestCase):
             decision_score=95.0,
             rationale=rationale,
         )
+
+        self.assertEqual(decision, "OBSERVE")
+        self.assertEqual(rationale, [])
+
+    def test_kospi_swing_score_promotion_can_be_enabled_for_research(self):
+        rationale = []
+
+        with patch.dict("os.environ", {"AG_KOSPI_SWING_SCORE_PROMOTION": "1"}):
+            decision = _apply_kospi_swing_edge_promotion(
+                decision="OBSERVE",
+                run_market="KOSPI",
+                scan_mode="SWING",
+                expected_edge_score=None,
+                decision_score=95.0,
+                rationale=rationale,
+            )
 
         self.assertEqual(decision, "PRIORITY_WATCHLIST")
         self.assertIn("decision_score=95.00>=min95.00", " ".join(rationale))
