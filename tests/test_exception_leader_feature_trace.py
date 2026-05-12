@@ -63,6 +63,9 @@ def test_exception_leader_collection_preserves_scanner_feature_fields(monkeypatc
     assert meta["market_gate"] == "GREEN"
     assert meta["scanner_timeframe_profile"] == "SWING_DAILY"
     assert meta["kr_universe_role"] == "EXPLOSIVE_LEADER"
+    assert meta["horizon_days"] == 5
+    assert meta["target_tp_pct"] == 5.0
+    assert meta["hold_days"] == 5
 
 
 def test_exception_leader_collection_skips_hard_loss_risk(monkeypatch):
@@ -113,6 +116,53 @@ def test_exception_leader_collection_skips_hard_loss_risk(monkeypatch):
     assert result["skipped_hard_loss_risk"] == 1
 
 
+def test_kosdaq_swing_exception_leader_requires_up_trend(monkeypatch):
+    monkeypatch.setattr(
+        "multi_agent.workflows.legacy_orchestration._resolve_ticker_names",
+        lambda market, tickers: {ticker: "Neutral Co" for ticker in tickers},
+    )
+    monkeypatch.setattr(
+        "multi_agent.workflows.legacy_orchestration.get_ticker_profile",
+        lambda **kwargs: {},
+    )
+    context = RunContext(run_id="RUN-TEST", market="KOSDAQ")
+    scanner_payload = {
+        "summary": {
+            "input_meta": {"market_gate": {"gate": "GREEN"}, "scan_mode": "SWING"},
+            "diagnostics": {
+                "reject_reasons_by_symbol": {"123450.KQ": "KR_HARD_FILTER_FAIL"},
+                "reject_details_by_symbol": {
+                    "123450.KQ": [
+                        {
+                            "ticker": "123450.KQ",
+                            "alpha_score": 90.0,
+                            "tech_score": 80,
+                            "whale_score": 75,
+                            "volume_ratio": 2.5,
+                            "volume_confirmed": True,
+                            "conviction_score": 85.0,
+                            "prob_5": 52.0,
+                            "prob_clean": 49.0,
+                            "real_trend": "NEUTRAL",
+                            "tier_sort": 1,
+                            "position": "Rising",
+                            "tier": "T1",
+                        }
+                    ]
+                },
+            },
+        }
+    }
+
+    result = _collect_exception_leaders_from_scanner_payload(
+        scanner_payload=scanner_payload,
+        context=context,
+        max_watchlist=1,
+    )
+
+    assert result["watchlist"] == []
+
+
 def test_realized_outcome_placeholder_preserves_watchlist_feature_fields(monkeypatch):
     monkeypatch.setattr(
         "multi_agent.workflows.legacy_orchestration.get_stock_theme_record",
@@ -155,6 +205,7 @@ def test_realized_outcome_placeholder_preserves_watchlist_feature_fields(monkeyp
     assert row["market_gate"] == "GREEN"
     assert row["scanner_timeframe_profile"] == "SWING_DAILY"
     assert row["kr_universe_role"] == "EXPLOSIVE_LEADER"
+    assert row["target_horizon_days"] == 3
 
 
 def test_realized_outcome_placeholder_ranks_only_tradeable_decisions():

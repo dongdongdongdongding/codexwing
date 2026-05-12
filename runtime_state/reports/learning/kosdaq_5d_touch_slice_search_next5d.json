@@ -1,0 +1,4373 @@
+{
+  "generated_at": "2026-05-12T12:12:39.026130+00:00",
+  "rows_loaded": 1947,
+  "rows_labeled": 1700,
+  "include_signal_day": false,
+  "min_n": 30,
+  "feature_origin_counts": {
+    "outcome_sync_partial": 278,
+    "scanner_partial_legacy": 387,
+    "scanner_archive_outcome": 970,
+    "scanner_full": 65
+  },
+  "baseline": {
+    "slice": "all_labeled",
+    "n": 1700,
+    "touch_5pct_5d_pct": 67.176,
+    "avg_mfe_5d_high_pct": 12.1816,
+    "median_mfe_5d_high_pct": 8.0533,
+    "avg_return_5d_close_pct": 2.7995,
+    "win_close_5d_pct": 42.765
+  },
+  "target_pass_slices": [
+    {
+      "slice": "tier=⭐T2 AND alpha_score>=90",
+      "n": 45,
+      "touch_5pct_5d_pct": 84.444,
+      "avg_mfe_5d_high_pct": 16.8984,
+      "median_mfe_5d_high_pct": 9.744,
+      "avg_return_5d_close_pct": 8.2039,
+      "win_close_5d_pct": 62.222
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=3",
+      "n": 55,
+      "touch_5pct_5d_pct": 83.636,
+      "avg_mfe_5d_high_pct": 19.9841,
+      "median_mfe_5d_high_pct": 11.0368,
+      "avg_return_5d_close_pct": 1.2568,
+      "win_close_5d_pct": 47.273
+    },
+    {
+      "slice": "decision_bucket=ignored AND position=🚀 상승 (Rising)",
+      "n": 35,
+      "touch_5pct_5d_pct": 82.857,
+      "avg_mfe_5d_high_pct": 14.3412,
+      "median_mfe_5d_high_pct": 11.3846,
+      "avg_return_5d_close_pct": 4.965,
+      "win_close_5d_pct": 68.571
+    },
+    {
+      "slice": "decision_bucket=ignored AND tier=🏆T1",
+      "n": 34,
+      "touch_5pct_5d_pct": 82.353,
+      "avg_mfe_5d_high_pct": 16.9847,
+      "median_mfe_5d_high_pct": 11.1881,
+      "avg_return_5d_close_pct": 7.4041,
+      "win_close_5d_pct": 61.765
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND decision_score>=95",
+      "n": 62,
+      "touch_5pct_5d_pct": 82.258,
+      "avg_mfe_5d_high_pct": 14.3418,
+      "median_mfe_5d_high_pct": 10.2877,
+      "avg_return_5d_close_pct": 6.6037,
+      "win_close_5d_pct": 70.968
+    },
+    {
+      "slice": "tier=⭐T2 AND expected_edge_score>=8",
+      "n": 39,
+      "touch_5pct_5d_pct": 82.051,
+      "avg_mfe_5d_high_pct": 17.761,
+      "median_mfe_5d_high_pct": 12.3921,
+      "avg_return_5d_close_pct": 8.7481,
+      "win_close_5d_pct": 56.41
+    },
+    {
+      "slice": "trend=DOWN AND theme_routing_path=core_only",
+      "n": 72,
+      "touch_5pct_5d_pct": 81.944,
+      "avg_mfe_5d_high_pct": 17.2214,
+      "median_mfe_5d_high_pct": 11.9993,
+      "avg_return_5d_close_pct": 10.6612,
+      "win_close_5d_pct": 65.278
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=2",
+      "n": 44,
+      "touch_5pct_5d_pct": 81.818,
+      "avg_mfe_5d_high_pct": 21.4617,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 1.6954,
+      "win_close_5d_pct": 47.727
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=70",
+      "n": 38,
+      "touch_5pct_5d_pct": 81.579,
+      "avg_mfe_5d_high_pct": 11.8815,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.3936,
+      "win_close_5d_pct": 57.895
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 48,
+      "touch_5pct_5d_pct": 81.25,
+      "avg_mfe_5d_high_pct": 14.3675,
+      "median_mfe_5d_high_pct": 11.3834,
+      "avg_return_5d_close_pct": 5.7047,
+      "win_close_5d_pct": 64.583
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 37,
+      "touch_5pct_5d_pct": 81.081,
+      "avg_mfe_5d_high_pct": 14.4661,
+      "median_mfe_5d_high_pct": 11.3846,
+      "avg_return_5d_close_pct": 4.2652,
+      "win_close_5d_pct": 54.054
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=95",
+      "n": 42,
+      "touch_5pct_5d_pct": 80.952,
+      "avg_mfe_5d_high_pct": 14.125,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 4.9394,
+      "win_close_5d_pct": 52.381
+    },
+    {
+      "slice": "alpha_score>=90 AND volume_ratio>=2",
+      "n": 31,
+      "touch_5pct_5d_pct": 80.645,
+      "avg_mfe_5d_high_pct": 21.8008,
+      "median_mfe_5d_high_pct": 12.9032,
+      "avg_return_5d_close_pct": 13.7053,
+      "win_close_5d_pct": 58.065
+    },
+    {
+      "slice": "decision_bucket=ignored AND ml_prob>=50",
+      "n": 31,
+      "touch_5pct_5d_pct": 80.645,
+      "avg_mfe_5d_high_pct": 12.7009,
+      "median_mfe_5d_high_pct": 9.4812,
+      "avg_return_5d_close_pct": 2.9242,
+      "win_close_5d_pct": 41.935
+    },
+    {
+      "slice": "decision_bucket=ignored AND feature_origin=outcome_sync_partial",
+      "n": 66,
+      "touch_5pct_5d_pct": 80.303,
+      "avg_mfe_5d_high_pct": 14.5605,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 5.2421,
+      "win_close_5d_pct": 65.152
+    },
+    {
+      "slice": "whale_score>=70 AND volume_ratio>=2",
+      "n": 30,
+      "touch_5pct_5d_pct": 80.0,
+      "avg_mfe_5d_high_pct": 21.3068,
+      "median_mfe_5d_high_pct": 12.3063,
+      "avg_return_5d_close_pct": 8.7244,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=90",
+      "n": 65,
+      "touch_5pct_5d_pct": 80.0,
+      "avg_mfe_5d_high_pct": 14.0384,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 5.2783,
+      "win_close_5d_pct": 56.923
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND trend=UP",
+      "n": 65,
+      "touch_5pct_5d_pct": 80.0,
+      "avg_mfe_5d_high_pct": 13.8093,
+      "median_mfe_5d_high_pct": 10.992,
+      "avg_return_5d_close_pct": 5.0949,
+      "win_close_5d_pct": 67.692
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=60",
+      "n": 59,
+      "touch_5pct_5d_pct": 79.661,
+      "avg_mfe_5d_high_pct": 15.0322,
+      "median_mfe_5d_high_pct": 10.5163,
+      "avg_return_5d_close_pct": 5.453,
+      "win_close_5d_pct": 62.712
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=70",
+      "n": 49,
+      "touch_5pct_5d_pct": 79.592,
+      "avg_mfe_5d_high_pct": 15.6036,
+      "median_mfe_5d_high_pct": 10.9916,
+      "avg_return_5d_close_pct": 4.9251,
+      "win_close_5d_pct": 59.184
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=40",
+      "n": 63,
+      "touch_5pct_5d_pct": 79.365,
+      "avg_mfe_5d_high_pct": 14.8997,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 5.1615,
+      "win_close_5d_pct": 61.905
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=50",
+      "n": 62,
+      "touch_5pct_5d_pct": 79.032,
+      "avg_mfe_5d_high_pct": 14.8182,
+      "median_mfe_5d_high_pct": 10.5213,
+      "avg_return_5d_close_pct": 5.0677,
+      "win_close_5d_pct": 61.29
+    },
+    {
+      "slice": "decision_score>=80 AND volume_ratio>=2",
+      "n": 38,
+      "touch_5pct_5d_pct": 78.947,
+      "avg_mfe_5d_high_pct": 20.3194,
+      "median_mfe_5d_high_pct": 16.1525,
+      "avg_return_5d_close_pct": 10.0093,
+      "win_close_5d_pct": 63.158
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=95",
+      "n": 76,
+      "touch_5pct_5d_pct": 78.947,
+      "avg_mfe_5d_high_pct": 15.7777,
+      "median_mfe_5d_high_pct": 10.2965,
+      "avg_return_5d_close_pct": 4.1474,
+      "win_close_5d_pct": 30.263
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 52,
+      "touch_5pct_5d_pct": 78.846,
+      "avg_mfe_5d_high_pct": 15.2866,
+      "median_mfe_5d_high_pct": 11.1881,
+      "avg_return_5d_close_pct": 5.6931,
+      "win_close_5d_pct": 61.538
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND trend=DOWN",
+      "n": 52,
+      "touch_5pct_5d_pct": 78.846,
+      "avg_mfe_5d_high_pct": 14.8791,
+      "median_mfe_5d_high_pct": 9.5157,
+      "avg_return_5d_close_pct": 9.5334,
+      "win_close_5d_pct": 84.615
+    },
+    {
+      "slice": "decision_score>=85 AND volume_ratio>=2",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 19.2873,
+      "median_mfe_5d_high_pct": 16.1525,
+      "avg_return_5d_close_pct": 9.8011,
+      "win_close_5d_pct": 63.636
+    },
+    {
+      "slice": "priority_rank<=10 AND volume_ratio>=2",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 15.3465,
+      "median_mfe_5d_high_pct": 13.8952,
+      "avg_return_5d_close_pct": 0.7084,
+      "win_close_5d_pct": 45.455
+    },
+    {
+      "slice": "decision_bucket=ignored AND priority_rank<=3",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 12.6422,
+      "median_mfe_5d_high_pct": 12.0958,
+      "avg_return_5d_close_pct": 4.5609,
+      "win_close_5d_pct": 57.576
+    },
+    {
+      "slice": "decision_bucket=picked AND priority_rank<=10",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 12.2735,
+      "median_mfe_5d_high_pct": 10.4513,
+      "avg_return_5d_close_pct": 2.2079,
+      "win_close_5d_pct": 48.485
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND feature_origin=scanner_archive_outcome",
+      "n": 130,
+      "touch_5pct_5d_pct": 78.462,
+      "avg_mfe_5d_high_pct": 13.0347,
+      "median_mfe_5d_high_pct": 9.2466,
+      "avg_return_5d_close_pct": 5.34,
+      "win_close_5d_pct": 63.077
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=80",
+      "n": 51,
+      "touch_5pct_5d_pct": 78.431,
+      "avg_mfe_5d_high_pct": 12.3227,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 6.3849,
+      "win_close_5d_pct": 64.706
+    },
+    {
+      "slice": "tier=⭐T2 AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 32,
+      "touch_5pct_5d_pct": 78.125,
+      "avg_mfe_5d_high_pct": 12.3741,
+      "median_mfe_5d_high_pct": 8.6106,
+      "avg_return_5d_close_pct": 4.7923,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "tier=⚡T3 AND expected_edge_score>=5",
+      "n": 64,
+      "touch_5pct_5d_pct": 78.125,
+      "avg_mfe_5d_high_pct": 11.4565,
+      "median_mfe_5d_high_pct": 8.7431,
+      "avg_return_5d_close_pct": 1.1266,
+      "win_close_5d_pct": 48.438
+    },
+    {
+      "slice": "decision_bucket=ignored AND alpha_score>=90",
+      "n": 41,
+      "touch_5pct_5d_pct": 78.049,
+      "avg_mfe_5d_high_pct": 16.2657,
+      "median_mfe_5d_high_pct": 9.176,
+      "avg_return_5d_close_pct": 6.4677,
+      "win_close_5d_pct": 48.78
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=60",
+      "n": 41,
+      "touch_5pct_5d_pct": 78.049,
+      "avg_mfe_5d_high_pct": 11.5111,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 4.1243,
+      "win_close_5d_pct": 56.098
+    },
+    {
+      "slice": "decision_bucket=ignored AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 54,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 14.3041,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 2.2626,
+      "win_close_5d_pct": 40.741
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND priority_rank<=3",
+      "n": 36,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 13.2431,
+      "median_mfe_5d_high_pct": 11.8515,
+      "avg_return_5d_close_pct": 5.6006,
+      "win_close_5d_pct": 61.111
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=70",
+      "n": 90,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 13.1312,
+      "median_mfe_5d_high_pct": 10.395,
+      "avg_return_5d_close_pct": 5.1073,
+      "win_close_5d_pct": 63.333
+    },
+    {
+      "slice": "kr_universe_role=TRANSITIONAL AND whale_score>=40",
+      "n": 54,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 12.725,
+      "median_mfe_5d_high_pct": 9.0327,
+      "avg_return_5d_close_pct": 2.3675,
+      "win_close_5d_pct": 48.148
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=80",
+      "n": 40,
+      "touch_5pct_5d_pct": 77.5,
+      "avg_mfe_5d_high_pct": 16.2892,
+      "median_mfe_5d_high_pct": 9.9143,
+      "avg_return_5d_close_pct": 6.7084,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "tier=⭐T2 AND alpha_score>=85",
+      "n": 62,
+      "touch_5pct_5d_pct": 77.419,
+      "avg_mfe_5d_high_pct": 14.4718,
+      "median_mfe_5d_high_pct": 9.4449,
+      "avg_return_5d_close_pct": 6.3804,
+      "win_close_5d_pct": 58.065
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND decision_score>=95",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 14.9178,
+      "median_mfe_5d_high_pct": 9.9143,
+      "avg_return_5d_close_pct": 5.3641,
+      "win_close_5d_pct": 54.545
+    },
+    {
+      "slice": "priority_rank<=3 AND tech_score>=40",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 11.4613,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.1325,
+      "win_close_5d_pct": 56.818
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=40",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 11.4613,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.1325,
+      "win_close_5d_pct": 56.818
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=50",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 11.4613,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.1325,
+      "win_close_5d_pct": 56.818
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND priority_rank<=10",
+      "n": 123,
+      "touch_5pct_5d_pct": 77.236,
+      "avg_mfe_5d_high_pct": 12.0904,
+      "median_mfe_5d_high_pct": 9.2466,
+      "avg_return_5d_close_pct": 4.0958,
+      "win_close_5d_pct": 61.789
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND expected_edge_score>=7",
+      "n": 35,
+      "touch_5pct_5d_pct": 77.143,
+      "avg_mfe_5d_high_pct": 14.9288,
+      "median_mfe_5d_high_pct": 11.3821,
+      "avg_return_5d_close_pct": 4.4564,
+      "win_close_5d_pct": 51.429
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=40",
+      "n": 70,
+      "touch_5pct_5d_pct": 77.143,
+      "avg_mfe_5d_high_pct": 14.7295,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 4.9822,
+      "win_close_5d_pct": 61.429
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=85",
+      "n": 96,
+      "touch_5pct_5d_pct": 77.083,
+      "avg_mfe_5d_high_pct": 13.3208,
+      "median_mfe_5d_high_pct": 8.6825,
+      "avg_return_5d_close_pct": 5.0722,
+      "win_close_5d_pct": 57.292
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND decision_score>=90",
+      "n": 52,
+      "touch_5pct_5d_pct": 76.923,
+      "avg_mfe_5d_high_pct": 14.4767,
+      "median_mfe_5d_high_pct": 9.9143,
+      "avg_return_5d_close_pct": 4.6017,
+      "win_close_5d_pct": 51.923
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=50",
+      "n": 69,
+      "touch_5pct_5d_pct": 76.812,
+      "avg_mfe_5d_high_pct": 14.636,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 4.8831,
+      "win_close_5d_pct": 60.87
+    },
+    {
+      "slice": "priority_rank<=3 AND tech_score>=50",
+      "n": 43,
+      "touch_5pct_5d_pct": 76.744,
+      "avg_mfe_5d_high_pct": 11.2353,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 3.956,
+      "win_close_5d_pct": 55.814
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=5",
+      "n": 73,
+      "touch_5pct_5d_pct": 76.712,
+      "avg_mfe_5d_high_pct": 18.1991,
+      "median_mfe_5d_high_pct": 11.0368,
+      "avg_return_5d_close_pct": 1.9054,
+      "win_close_5d_pct": 45.205
+    },
+    {
+      "slice": "decision_bucket=ignored AND alpha_score>=85",
+      "n": 60,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 15.2628,
+      "median_mfe_5d_high_pct": 9.2333,
+      "avg_return_5d_close_pct": 6.0007,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "trend=UP AND tier=T3",
+      "n": 30,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 13.655,
+      "median_mfe_5d_high_pct": 12.0565,
+      "avg_return_5d_close_pct": 4.4862,
+      "win_close_5d_pct": 63.333
+    },
+    {
+      "slice": "kr_universe_role=TRANSITIONAL AND whale_score>=60",
+      "n": 30,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 13.5063,
+      "median_mfe_5d_high_pct": 8.3482,
+      "avg_return_5d_close_pct": 3.9364,
+      "win_close_5d_pct": 43.333
+    },
+    {
+      "slice": "trend=DOWN AND tier=⭐T2",
+      "n": 30,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 12.0075,
+      "median_mfe_5d_high_pct": 7.9901,
+      "avg_return_5d_close_pct": 5.9697,
+      "win_close_5d_pct": 70.0
+    },
+    {
+      "slice": "priority_rank<=3 AND decision_score>=95",
+      "n": 51,
+      "touch_5pct_5d_pct": 76.471,
+      "avg_mfe_5d_high_pct": 10.2305,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 2.8015,
+      "win_close_5d_pct": 56.863
+    },
+    {
+      "slice": "decision_bucket=picked",
+      "n": 38,
+      "touch_5pct_5d_pct": 76.316,
+      "avg_mfe_5d_high_pct": 11.7164,
+      "median_mfe_5d_high_pct": 9.2719,
+      "avg_return_5d_close_pct": 1.0496,
+      "win_close_5d_pct": 44.737
+    },
+    {
+      "slice": "decision_bucket=exception_leader",
+      "n": 139,
+      "touch_5pct_5d_pct": 76.259,
+      "avg_mfe_5d_high_pct": 12.5406,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 4.8043,
+      "win_close_5d_pct": 61.871
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=60",
+      "n": 63,
+      "touch_5pct_5d_pct": 76.19,
+      "avg_mfe_5d_high_pct": 14.9093,
+      "median_mfe_5d_high_pct": 9.4972,
+      "avg_return_5d_close_pct": 4.7976,
+      "win_close_5d_pct": 60.317
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND priority_rank<=10",
+      "n": 50,
+      "touch_5pct_5d_pct": 76.0,
+      "avg_mfe_5d_high_pct": 13.3264,
+      "median_mfe_5d_high_pct": 11.9383,
+      "avg_return_5d_close_pct": 3.6238,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "tier=⭐T2 AND whale_score>=80",
+      "n": 50,
+      "touch_5pct_5d_pct": 76.0,
+      "avg_mfe_5d_high_pct": 12.4848,
+      "median_mfe_5d_high_pct": 10.5386,
+      "avg_return_5d_close_pct": 3.2478,
+      "win_close_5d_pct": 54.0
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND decision_score>=95",
+      "n": 33,
+      "touch_5pct_5d_pct": 75.758,
+      "avg_mfe_5d_high_pct": 14.4125,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 3.8156,
+      "win_close_5d_pct": 48.485
+    },
+    {
+      "slice": "tier=⭐T2 AND position=🌋 고점 (Peak)",
+      "n": 70,
+      "touch_5pct_5d_pct": 75.714,
+      "avg_mfe_5d_high_pct": 13.8229,
+      "median_mfe_5d_high_pct": 10.0782,
+      "avg_return_5d_close_pct": 5.7772,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND priority_rank<=5",
+      "n": 74,
+      "touch_5pct_5d_pct": 75.676,
+      "avg_mfe_5d_high_pct": 11.6293,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 3.9374,
+      "win_close_5d_pct": 64.865
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=90",
+      "n": 37,
+      "touch_5pct_5d_pct": 75.676,
+      "avg_mfe_5d_high_pct": 11.508,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 4.7837,
+      "win_close_5d_pct": 59.459
+    },
+    {
+      "slice": "decision_bucket=ignored AND prob_clean>=30",
+      "n": 82,
+      "touch_5pct_5d_pct": 75.61,
+      "avg_mfe_5d_high_pct": 12.1412,
+      "median_mfe_5d_high_pct": 8.6068,
+      "avg_return_5d_close_pct": 4.2351,
+      "win_close_5d_pct": 58.537
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND volume_ratio>=1.2",
+      "n": 45,
+      "touch_5pct_5d_pct": 75.556,
+      "avg_mfe_5d_high_pct": 13.031,
+      "median_mfe_5d_high_pct": 11.0368,
+      "avg_return_5d_close_pct": 0.2312,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND whale_score>=70",
+      "n": 45,
+      "touch_5pct_5d_pct": 75.556,
+      "avg_mfe_5d_high_pct": 11.6311,
+      "median_mfe_5d_high_pct": 10.9916,
+      "avg_return_5d_close_pct": 0.3814,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND tier=🏆T1",
+      "n": 53,
+      "touch_5pct_5d_pct": 75.472,
+      "avg_mfe_5d_high_pct": 15.0824,
+      "median_mfe_5d_high_pct": 10.9916,
+      "avg_return_5d_close_pct": 5.1844,
+      "win_close_5d_pct": 54.717
+    },
+    {
+      "slice": "decision_bucket=ignored AND priority_rank<=5",
+      "n": 53,
+      "touch_5pct_5d_pct": 75.472,
+      "avg_mfe_5d_high_pct": 12.4831,
+      "median_mfe_5d_high_pct": 11.4011,
+      "avg_return_5d_close_pct": 4.5508,
+      "win_close_5d_pct": 58.491
+    },
+    {
+      "slice": "tier=🏆T1 AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 61,
+      "touch_5pct_5d_pct": 75.41,
+      "avg_mfe_5d_high_pct": 13.6991,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 5.5512,
+      "win_close_5d_pct": 60.656
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND decision_score>=85",
+      "n": 65,
+      "touch_5pct_5d_pct": 75.385,
+      "avg_mfe_5d_high_pct": 14.6908,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 4.9418,
+      "win_close_5d_pct": 53.846
+    },
+    {
+      "slice": "tier=⭐T2 AND decision_score>=80",
+      "n": 69,
+      "touch_5pct_5d_pct": 75.362,
+      "avg_mfe_5d_high_pct": 13.4565,
+      "median_mfe_5d_high_pct": 8.5831,
+      "avg_return_5d_close_pct": 3.2428,
+      "win_close_5d_pct": 44.928
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND prob_clean>=40",
+      "n": 77,
+      "touch_5pct_5d_pct": 75.325,
+      "avg_mfe_5d_high_pct": 13.9071,
+      "median_mfe_5d_high_pct": 10.0167,
+      "avg_return_5d_close_pct": 6.3864,
+      "win_close_5d_pct": 64.935
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND prob_clean>=50",
+      "n": 77,
+      "touch_5pct_5d_pct": 75.325,
+      "avg_mfe_5d_high_pct": 13.9071,
+      "median_mfe_5d_high_pct": 10.0167,
+      "avg_return_5d_close_pct": 6.3864,
+      "win_close_5d_pct": 64.935
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND decision_score>=80",
+      "n": 89,
+      "touch_5pct_5d_pct": 75.281,
+      "avg_mfe_5d_high_pct": 15.0606,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 3.7572,
+      "win_close_5d_pct": 39.326
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 89,
+      "touch_5pct_5d_pct": 75.281,
+      "avg_mfe_5d_high_pct": 12.7032,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 4.2737,
+      "win_close_5d_pct": 65.169
+    },
+    {
+      "slice": "alpha_score>=75 AND volume_ratio>=2",
+      "n": 56,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 18.4536,
+      "median_mfe_5d_high_pct": 10.9965,
+      "avg_return_5d_close_pct": 9.1789,
+      "win_close_5d_pct": 55.357
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND decision_score>=85",
+      "n": 76,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 15.1189,
+      "median_mfe_5d_high_pct": 10.2965,
+      "avg_return_5d_close_pct": 2.9288,
+      "win_close_5d_pct": 36.842
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=90",
+      "n": 100,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 14.9845,
+      "median_mfe_5d_high_pct": 9.3693,
+      "avg_return_5d_close_pct": 3.9296,
+      "win_close_5d_pct": 34.0
+    },
+    {
+      "slice": "trend=DOWN AND whale_score>=70",
+      "n": 68,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 14.1373,
+      "median_mfe_5d_high_pct": 8.5466,
+      "avg_return_5d_close_pct": 7.0928,
+      "win_close_5d_pct": 67.647
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND expected_edge_score>=5",
+      "n": 56,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.9244,
+      "median_mfe_5d_high_pct": 10.1919,
+      "avg_return_5d_close_pct": 3.5149,
+      "win_close_5d_pct": 51.786
+    },
+    {
+      "slice": "trend=UP AND decision_score>=95",
+      "n": 192,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.7023,
+      "median_mfe_5d_high_pct": 10.049,
+      "avg_return_5d_close_pct": 5.1536,
+      "win_close_5d_pct": 57.812
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND expected_edge_score>=6",
+      "n": 44,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.5162,
+      "median_mfe_5d_high_pct": 9.1953,
+      "avg_return_5d_close_pct": 3.473,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "tier=T3",
+      "n": 32,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.0434,
+      "median_mfe_5d_high_pct": 11.4834,
+      "avg_return_5d_close_pct": 4.1156,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "tier=T3 AND tech_score>=40",
+      "n": 32,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.0434,
+      "median_mfe_5d_high_pct": 11.4834,
+      "avg_return_5d_close_pct": 4.1156,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND decision_score>=80",
+      "n": 104,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 12.5944,
+      "median_mfe_5d_high_pct": 8.7912,
+      "avg_return_5d_close_pct": 5.431,
+      "win_close_5d_pct": 57.692
+    },
+    {
+      "slice": "decision_bucket=picked AND feature_origin=outcome_sync_partial",
+      "n": 36,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 11.9061,
+      "median_mfe_5d_high_pct": 9.2719,
+      "avg_return_5d_close_pct": 1.051,
+      "win_close_5d_pct": 44.444
+    },
+    {
+      "slice": "priority_rank<=5 AND whale_score>=70",
+      "n": 52,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 11.7418,
+      "median_mfe_5d_high_pct": 9.4816,
+      "avg_return_5d_close_pct": 3.0852,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=85",
+      "n": 40,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 11.352,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 4.6393,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND expected_edge_score>=5",
+      "n": 36,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 10.9752,
+      "median_mfe_5d_high_pct": 9.2181,
+      "avg_return_5d_close_pct": 5.0214,
+      "win_close_5d_pct": 55.556
+    },
+    {
+      "slice": "trend=UP AND priority_rank<=2",
+      "n": 84,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 10.8381,
+      "median_mfe_5d_high_pct": 9.3014,
+      "avg_return_5d_close_pct": 2.9226,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "priority_rank<=2 AND decision_score>=95",
+      "n": 40,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 8.9656,
+      "median_mfe_5d_high_pct": 8.4138,
+      "avg_return_5d_close_pct": 1.3347,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "tier=⚡T3 AND expected_edge_score>=6",
+      "n": 32,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 7.7779,
+      "median_mfe_5d_high_pct": 6.2258,
+      "avg_return_5d_close_pct": -1.5856,
+      "win_close_5d_pct": 43.75
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=10",
+      "n": 115,
+      "touch_5pct_5d_pct": 74.783,
+      "avg_mfe_5d_high_pct": 16.5157,
+      "median_mfe_5d_high_pct": 10.4513,
+      "avg_return_5d_close_pct": 1.8435,
+      "win_close_5d_pct": 46.087
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND decision_score>=90",
+      "n": 95,
+      "touch_5pct_5d_pct": 74.737,
+      "avg_mfe_5d_high_pct": 13.0394,
+      "median_mfe_5d_high_pct": 10.049,
+      "avg_return_5d_close_pct": 5.1651,
+      "win_close_5d_pct": 66.316
+    },
+    {
+      "slice": "priority_rank<=10 AND decision_score>=95",
+      "n": 83,
+      "touch_5pct_5d_pct": 74.699,
+      "avg_mfe_5d_high_pct": 12.5698,
+      "median_mfe_5d_high_pct": 9.2905,
+      "avg_return_5d_close_pct": 4.3388,
+      "win_close_5d_pct": 54.217
+    },
+    {
+      "slice": "trend=DOWN AND selection_lane=1d",
+      "n": 71,
+      "touch_5pct_5d_pct": 74.648,
+      "avg_mfe_5d_high_pct": 14.5717,
+      "median_mfe_5d_high_pct": 9.2998,
+      "avg_return_5d_close_pct": 6.8052,
+      "win_close_5d_pct": 53.521
+    },
+    {
+      "slice": "trend=UP AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 213,
+      "touch_5pct_5d_pct": 74.648,
+      "avg_mfe_5d_high_pct": 13.7208,
+      "median_mfe_5d_high_pct": 10.3129,
+      "avg_return_5d_close_pct": 2.1199,
+      "win_close_5d_pct": 38.498
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND decision_score>=90",
+      "n": 67,
+      "touch_5pct_5d_pct": 74.627,
+      "avg_mfe_5d_high_pct": 14.4949,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 1.6441,
+      "win_close_5d_pct": 35.821
+    },
+    {
+      "slice": "priority_rank<=5 AND decision_score>=95",
+      "n": 63,
+      "touch_5pct_5d_pct": 74.603,
+      "avg_mfe_5d_high_pct": 11.3148,
+      "median_mfe_5d_high_pct": 8.9385,
+      "avg_return_5d_close_pct": 3.6362,
+      "win_close_5d_pct": 57.143
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND alpha_score>=95",
+      "n": 59,
+      "touch_5pct_5d_pct": 74.576,
+      "avg_mfe_5d_high_pct": 17.7525,
+      "median_mfe_5d_high_pct": 9.8555,
+      "avg_return_5d_close_pct": 8.1981,
+      "win_close_5d_pct": 52.542
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=70",
+      "n": 55,
+      "touch_5pct_5d_pct": 74.545,
+      "avg_mfe_5d_high_pct": 14.8515,
+      "median_mfe_5d_high_pct": 8.3752,
+      "avg_return_5d_close_pct": 5.2413,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "decision_bucket=ignored AND decision_score>=85",
+      "n": 55,
+      "touch_5pct_5d_pct": 74.545,
+      "avg_mfe_5d_high_pct": 13.4962,
+      "median_mfe_5d_high_pct": 8.1779,
+      "avg_return_5d_close_pct": 5.571,
+      "win_close_5d_pct": 54.545
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND alpha_score>=80",
+      "n": 149,
+      "touch_5pct_5d_pct": 74.497,
+      "avg_mfe_5d_high_pct": 13.1528,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 5.4938,
+      "win_close_5d_pct": 67.114
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND decision_score>=70",
+      "n": 149,
+      "touch_5pct_5d_pct": 74.497,
+      "avg_mfe_5d_high_pct": 12.6982,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 4.9165,
+      "win_close_5d_pct": 57.047
+    },
+    {
+      "slice": "decision_score>=95 AND expected_edge_score>=10",
+      "n": 94,
+      "touch_5pct_5d_pct": 74.468,
+      "avg_mfe_5d_high_pct": 13.7911,
+      "median_mfe_5d_high_pct": 9.6236,
+      "avg_return_5d_close_pct": 6.123,
+      "win_close_5d_pct": 63.83
+    },
+    {
+      "slice": "kr_universe_role=TRANSITIONAL AND whale_score>=50",
+      "n": 47,
+      "touch_5pct_5d_pct": 74.468,
+      "avg_mfe_5d_high_pct": 12.4543,
+      "median_mfe_5d_high_pct": 8.3141,
+      "avg_return_5d_close_pct": 2.7787,
+      "win_close_5d_pct": 51.064
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND decision_score>=85",
+      "n": 90,
+      "touch_5pct_5d_pct": 74.444,
+      "avg_mfe_5d_high_pct": 12.1494,
+      "median_mfe_5d_high_pct": 9.2905,
+      "avg_return_5d_close_pct": 4.8972,
+      "win_close_5d_pct": 58.889
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND priority_rank<=3",
+      "n": 43,
+      "touch_5pct_5d_pct": 74.419,
+      "avg_mfe_5d_high_pct": 11.0554,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 2.6192,
+      "win_close_5d_pct": 44.186
+    },
+    {
+      "slice": "trend=UP AND priority_rank<=3",
+      "n": 121,
+      "touch_5pct_5d_pct": 74.38,
+      "avg_mfe_5d_high_pct": 11.9385,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 4.4435,
+      "win_close_5d_pct": 54.545
+    },
+    {
+      "slice": "trend=DOWN AND whale_score>=80",
+      "n": 35,
+      "touch_5pct_5d_pct": 74.286,
+      "avg_mfe_5d_high_pct": 16.666,
+      "median_mfe_5d_high_pct": 17.5068,
+      "avg_return_5d_close_pct": 8.428,
+      "win_close_5d_pct": 71.429
+    },
+    {
+      "slice": "decision_bucket=ignored AND decision_score>=95",
+      "n": 35,
+      "touch_5pct_5d_pct": 74.286,
+      "avg_mfe_5d_high_pct": 15.0345,
+      "median_mfe_5d_high_pct": 9.2905,
+      "avg_return_5d_close_pct": 6.1675,
+      "win_close_5d_pct": 48.571
+    },
+    {
+      "slice": "decision_score>=95 AND expected_edge_score>=9",
+      "n": 101,
+      "touch_5pct_5d_pct": 74.257,
+      "avg_mfe_5d_high_pct": 13.2137,
+      "median_mfe_5d_high_pct": 9.222,
+      "avg_return_5d_close_pct": 5.5941,
+      "win_close_5d_pct": 61.386
+    },
+    {
+      "slice": "decision_bucket=ignored AND decision_score>=80",
+      "n": 62,
+      "touch_5pct_5d_pct": 74.194,
+      "avg_mfe_5d_high_pct": 13.6066,
+      "median_mfe_5d_high_pct": 8.1985,
+      "avg_return_5d_close_pct": 5.8897,
+      "win_close_5d_pct": 53.226
+    },
+    {
+      "slice": "priority_rank<=2 AND whale_score>=60",
+      "n": 31,
+      "touch_5pct_5d_pct": 74.194,
+      "avg_mfe_5d_high_pct": 11.1491,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 3.7261,
+      "win_close_5d_pct": 51.613
+    },
+    {
+      "slice": "priority_rank<=10 AND whale_score>=70",
+      "n": 85,
+      "touch_5pct_5d_pct": 74.118,
+      "avg_mfe_5d_high_pct": 13.2286,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 3.6451,
+      "win_close_5d_pct": 50.588
+    },
+    {
+      "slice": "tier=🏆T1 AND selection_lane=1d",
+      "n": 54,
+      "touch_5pct_5d_pct": 74.074,
+      "avg_mfe_5d_high_pct": 16.2665,
+      "median_mfe_5d_high_pct": 11.3834,
+      "avg_return_5d_close_pct": 5.3087,
+      "win_close_5d_pct": 51.852
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND whale_score>=40",
+      "n": 154,
+      "touch_5pct_5d_pct": 74.026,
+      "avg_mfe_5d_high_pct": 13.0982,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 4.6767,
+      "win_close_5d_pct": 61.688
+    },
+    {
+      "slice": "volume_ratio>=1.2 AND expected_edge_score>=7",
+      "n": 50,
+      "touch_5pct_5d_pct": 74.0,
+      "avg_mfe_5d_high_pct": 14.8434,
+      "median_mfe_5d_high_pct": 11.4327,
+      "avg_return_5d_close_pct": 4.893,
+      "win_close_5d_pct": 54.0
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND expected_edge_score>=4",
+      "n": 100,
+      "touch_5pct_5d_pct": 74.0,
+      "avg_mfe_5d_high_pct": 13.8646,
+      "median_mfe_5d_high_pct": 11.4327,
+      "avg_return_5d_close_pct": 4.444,
+      "win_close_5d_pct": 55.0
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND tier=⭐T2",
+      "n": 100,
+      "touch_5pct_5d_pct": 74.0,
+      "avg_mfe_5d_high_pct": 12.8462,
+      "median_mfe_5d_high_pct": 9.4508,
+      "avg_return_5d_close_pct": 5.5403,
+      "win_close_5d_pct": 61.0
+    },
+    {
+      "slice": "priority_rank<=10 AND whale_score>=60",
+      "n": 96,
+      "touch_5pct_5d_pct": 73.958,
+      "avg_mfe_5d_high_pct": 13.8429,
+      "median_mfe_5d_high_pct": 9.5653,
+      "avg_return_5d_close_pct": 4.7161,
+      "win_close_5d_pct": 53.125
+    },
+    {
+      "slice": "alpha_score>=80 AND volume_ratio>=2",
+      "n": 46,
+      "touch_5pct_5d_pct": 73.913,
+      "avg_mfe_5d_high_pct": 18.0047,
+      "median_mfe_5d_high_pct": 12.3921,
+      "avg_return_5d_close_pct": 9.4769,
+      "win_close_5d_pct": 56.522
+    },
+    {
+      "slice": "tier=⚡T3 AND expected_edge_score>=4",
+      "n": 92,
+      "touch_5pct_5d_pct": 73.913,
+      "avg_mfe_5d_high_pct": 12.0871,
+      "median_mfe_5d_high_pct": 9.1183,
+      "avg_return_5d_close_pct": 2.2072,
+      "win_close_5d_pct": 53.261
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND tech_score>=70",
+      "n": 126,
+      "touch_5pct_5d_pct": 73.81,
+      "avg_mfe_5d_high_pct": 13.05,
+      "median_mfe_5d_high_pct": 8.7841,
+      "avg_return_5d_close_pct": 4.9949,
+      "win_close_5d_pct": 61.905
+    },
+    {
+      "slice": "trend=UP AND priority_rank<=5",
+      "n": 187,
+      "touch_5pct_5d_pct": 73.797,
+      "avg_mfe_5d_high_pct": 12.8117,
+      "median_mfe_5d_high_pct": 10.2259,
+      "avg_return_5d_close_pct": 4.9398,
+      "win_close_5d_pct": 53.476
+    },
+    {
+      "slice": "priority_rank<=3",
+      "n": 175,
+      "touch_5pct_5d_pct": 73.714,
+      "avg_mfe_5d_high_pct": 13.9563,
+      "median_mfe_5d_high_pct": 9.2466,
+      "avg_return_5d_close_pct": 2.9539,
+      "win_close_5d_pct": 49.714
+    },
+    {
+      "slice": "alpha_score>=85 AND volume_ratio>=2",
+      "n": 38,
+      "touch_5pct_5d_pct": 73.684,
+      "avg_mfe_5d_high_pct": 19.2219,
+      "median_mfe_5d_high_pct": 12.3921,
+      "avg_return_5d_close_pct": 12.2525,
+      "win_close_5d_pct": 55.263
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND alpha_score>=85",
+      "n": 114,
+      "touch_5pct_5d_pct": 73.684,
+      "avg_mfe_5d_high_pct": 16.1132,
+      "median_mfe_5d_high_pct": 10.1516,
+      "avg_return_5d_close_pct": 7.9002,
+      "win_close_5d_pct": 59.649
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND priority_rank<=5",
+      "n": 57,
+      "touch_5pct_5d_pct": 73.684,
+      "avg_mfe_5d_high_pct": 12.711,
+      "median_mfe_5d_high_pct": 11.3846,
+      "avg_return_5d_close_pct": 5.1366,
+      "win_close_5d_pct": 61.404
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND prob_clean>=20",
+      "n": 224,
+      "touch_5pct_5d_pct": 73.661,
+      "avg_mfe_5d_high_pct": 13.474,
+      "median_mfe_5d_high_pct": 10.0178,
+      "avg_return_5d_close_pct": 3.2393,
+      "win_close_5d_pct": 41.071
+    },
+    {
+      "slice": "scanner_timeframe_profile=DAILY_PRIMARY_WITH_1H_REFRESH AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 239,
+      "touch_5pct_5d_pct": 73.64,
+      "avg_mfe_5d_high_pct": 13.8343,
+      "median_mfe_5d_high_pct": 10.2259,
+      "avg_return_5d_close_pct": 3.1375,
+      "win_close_5d_pct": 37.657
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND decision_score>=95",
+      "n": 72,
+      "touch_5pct_5d_pct": 73.611,
+      "avg_mfe_5d_high_pct": 13.8156,
+      "median_mfe_5d_high_pct": 9.2563,
+      "avg_return_5d_close_pct": 5.8036,
+      "win_close_5d_pct": 65.278
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND expected_edge_score>=5",
+      "n": 87,
+      "touch_5pct_5d_pct": 73.563,
+      "avg_mfe_5d_high_pct": 12.9951,
+      "median_mfe_5d_high_pct": 11.39,
+      "avg_return_5d_close_pct": 3.7842,
+      "win_close_5d_pct": 51.724
+    },
+    {
+      "slice": "decision_bucket=ignored AND theme_routing_path=core_only",
+      "n": 189,
+      "touch_5pct_5d_pct": 73.545,
+      "avg_mfe_5d_high_pct": 12.086,
+      "median_mfe_5d_high_pct": 8.4225,
+      "avg_return_5d_close_pct": 2.5009,
+      "win_close_5d_pct": 39.153
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND tech_score>=80",
+      "n": 102,
+      "touch_5pct_5d_pct": 73.529,
+      "avg_mfe_5d_high_pct": 13.3928,
+      "median_mfe_5d_high_pct": 8.7841,
+      "avg_return_5d_close_pct": 5.8353,
+      "win_close_5d_pct": 62.745
+    },
+    {
+      "slice": "selection_lane=1d AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 253,
+      "touch_5pct_5d_pct": 73.518,
+      "avg_mfe_5d_high_pct": 13.6824,
+      "median_mfe_5d_high_pct": 10.0189,
+      "avg_return_5d_close_pct": 2.985,
+      "win_close_5d_pct": 39.526
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND theme_routing_path=core_only",
+      "n": 185,
+      "touch_5pct_5d_pct": 73.514,
+      "avg_mfe_5d_high_pct": 13.6908,
+      "median_mfe_5d_high_pct": 9.6552,
+      "avg_return_5d_close_pct": 3.7498,
+      "win_close_5d_pct": 35.676
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=80",
+      "n": 151,
+      "touch_5pct_5d_pct": 73.51,
+      "avg_mfe_5d_high_pct": 14.3617,
+      "median_mfe_5d_high_pct": 9.4363,
+      "avg_return_5d_close_pct": 4.263,
+      "win_close_5d_pct": 37.086
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND whale_score>=50",
+      "n": 151,
+      "touch_5pct_5d_pct": 73.51,
+      "avg_mfe_5d_high_pct": 12.8603,
+      "median_mfe_5d_high_pct": 9.2905,
+      "avg_return_5d_close_pct": 4.41,
+      "win_close_5d_pct": 60.927
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND priority_rank<=10",
+      "n": 98,
+      "touch_5pct_5d_pct": 73.469,
+      "avg_mfe_5d_high_pct": 14.4027,
+      "median_mfe_5d_high_pct": 9.5303,
+      "avg_return_5d_close_pct": 2.416,
+      "win_close_5d_pct": 36.735
+    },
+    {
+      "slice": "tier=⭐T2 AND whale_score>=70",
+      "n": 113,
+      "touch_5pct_5d_pct": 73.451,
+      "avg_mfe_5d_high_pct": 11.8787,
+      "median_mfe_5d_high_pct": 8.7179,
+      "avg_return_5d_close_pct": 3.1732,
+      "win_close_5d_pct": 50.442
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 256,
+      "touch_5pct_5d_pct": 73.438,
+      "avg_mfe_5d_high_pct": 13.6734,
+      "median_mfe_5d_high_pct": 10.1224,
+      "avg_return_5d_close_pct": 2.985,
+      "win_close_5d_pct": 39.062
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND expected_edge_score>=4",
+      "n": 64,
+      "touch_5pct_5d_pct": 73.438,
+      "avg_mfe_5d_high_pct": 13.3658,
+      "median_mfe_5d_high_pct": 9.6582,
+      "avg_return_5d_close_pct": 3.5825,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "volume_ratio>=1.2 AND expected_edge_score>=9",
+      "n": 30,
+      "touch_5pct_5d_pct": 73.333,
+      "avg_mfe_5d_high_pct": 14.6514,
+      "median_mfe_5d_high_pct": 11.9732,
+      "avg_return_5d_close_pct": 4.3981,
+      "win_close_5d_pct": 53.333
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND prob_clean>=40",
+      "n": 30,
+      "touch_5pct_5d_pct": 73.333,
+      "avg_mfe_5d_high_pct": 13.8279,
+      "median_mfe_5d_high_pct": 7.4567,
+      "avg_return_5d_close_pct": 3.8791,
+      "win_close_5d_pct": 66.667
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND position=💤 조정 (Resting)",
+      "n": 30,
+      "touch_5pct_5d_pct": 73.333,
+      "avg_mfe_5d_high_pct": 11.2902,
+      "median_mfe_5d_high_pct": 7.2799,
+      "avg_return_5d_close_pct": 5.3195,
+      "win_close_5d_pct": 70.0
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND expected_edge_score>=4",
+      "n": 45,
+      "touch_5pct_5d_pct": 73.333,
+      "avg_mfe_5d_high_pct": 11.0637,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 5.3467,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "priority_rank<=2 AND decision_score>=80",
+      "n": 75,
+      "touch_5pct_5d_pct": 73.333,
+      "avg_mfe_5d_high_pct": 10.022,
+      "median_mfe_5d_high_pct": 8.4532,
+      "avg_return_5d_close_pct": 2.3032,
+      "win_close_5d_pct": 44.0
+    },
+    {
+      "slice": "priority_rank<=5 AND whale_score>=80",
+      "n": 30,
+      "touch_5pct_5d_pct": 73.333,
+      "avg_mfe_5d_high_pct": 9.7756,
+      "median_mfe_5d_high_pct": 8.9552,
+      "avg_return_5d_close_pct": 1.6913,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "position=💤 조정 (Resting) AND theme_routing_path=core_only",
+      "n": 30,
+      "touch_5pct_5d_pct": 73.333,
+      "avg_mfe_5d_high_pct": 9.0798,
+      "median_mfe_5d_high_pct": 6.5898,
+      "avg_return_5d_close_pct": 2.4556,
+      "win_close_5d_pct": 53.333
+    },
+    {
+      "slice": "selection_lane=1d AND alpha_score>=95",
+      "n": 146,
+      "touch_5pct_5d_pct": 73.288,
+      "avg_mfe_5d_high_pct": 14.9104,
+      "median_mfe_5d_high_pct": 9.7137,
+      "avg_return_5d_close_pct": 5.6571,
+      "win_close_5d_pct": 27.397
+    },
+    {
+      "slice": "priority_rank<=5",
+      "n": 277,
+      "touch_5pct_5d_pct": 73.285,
+      "avg_mfe_5d_high_pct": 13.6803,
+      "median_mfe_5d_high_pct": 9.2466,
+      "avg_return_5d_close_pct": 3.6903,
+      "win_close_5d_pct": 51.264
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=85",
+      "n": 131,
+      "touch_5pct_5d_pct": 73.282,
+      "avg_mfe_5d_high_pct": 14.4905,
+      "median_mfe_5d_high_pct": 10.0189,
+      "avg_return_5d_close_pct": 4.1235,
+      "win_close_5d_pct": 35.115
+    },
+    {
+      "slice": "priority_rank<=10 AND whale_score>=40",
+      "n": 101,
+      "touch_5pct_5d_pct": 73.267,
+      "avg_mfe_5d_high_pct": 13.6559,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 4.611,
+      "win_close_5d_pct": 53.465
+    },
+    {
+      "slice": "priority_rank<=10 AND whale_score>=50",
+      "n": 101,
+      "touch_5pct_5d_pct": 73.267,
+      "avg_mfe_5d_high_pct": 13.6559,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 4.611,
+      "win_close_5d_pct": 53.465
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND whale_score>=40",
+      "n": 142,
+      "touch_5pct_5d_pct": 73.239,
+      "avg_mfe_5d_high_pct": 12.4124,
+      "median_mfe_5d_high_pct": 8.3748,
+      "avg_return_5d_close_pct": 3.3437,
+      "win_close_5d_pct": 57.042
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND tech_score>=50",
+      "n": 153,
+      "touch_5pct_5d_pct": 73.203,
+      "avg_mfe_5d_high_pct": 13.0868,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 4.6786,
+      "win_close_5d_pct": 61.438
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND theme_routing_path=core_only",
+      "n": 179,
+      "touch_5pct_5d_pct": 73.184,
+      "avg_mfe_5d_high_pct": 14.2658,
+      "median_mfe_5d_high_pct": 9.7561,
+      "avg_return_5d_close_pct": 4.181,
+      "win_close_5d_pct": 52.514
+    },
+    {
+      "slice": "trend=UP AND priority_rank<=1",
+      "n": 41,
+      "touch_5pct_5d_pct": 73.171,
+      "avg_mfe_5d_high_pct": 10.8787,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 1.4917,
+      "win_close_5d_pct": 41.463
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND alpha_score>=90",
+      "n": 93,
+      "touch_5pct_5d_pct": 73.118,
+      "avg_mfe_5d_high_pct": 16.4711,
+      "median_mfe_5d_high_pct": 9.7561,
+      "avg_return_5d_close_pct": 7.6763,
+      "win_close_5d_pct": 55.914
+    },
+    {
+      "slice": "priority_rank<=2 AND decision_score>=70",
+      "n": 93,
+      "touch_5pct_5d_pct": 73.118,
+      "avg_mfe_5d_high_pct": 10.4189,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 2.5745,
+      "win_close_5d_pct": 45.161
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND decision_score>=95",
+      "n": 52,
+      "touch_5pct_5d_pct": 73.077,
+      "avg_mfe_5d_high_pct": 13.4647,
+      "median_mfe_5d_high_pct": 9.2964,
+      "avg_return_5d_close_pct": 5.31,
+      "win_close_5d_pct": 51.923
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 52,
+      "touch_5pct_5d_pct": 73.077,
+      "avg_mfe_5d_high_pct": 11.6932,
+      "median_mfe_5d_high_pct": 9.5303,
+      "avg_return_5d_close_pct": 1.5605,
+      "win_close_5d_pct": 51.923
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND whale_score>=60",
+      "n": 141,
+      "touch_5pct_5d_pct": 73.05,
+      "avg_mfe_5d_high_pct": 12.4472,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 3.9172,
+      "win_close_5d_pct": 59.574
+    },
+    {
+      "slice": "prob_clean>=20 AND volume_ratio>=2",
+      "n": 63,
+      "touch_5pct_5d_pct": 73.016,
+      "avg_mfe_5d_high_pct": 15.122,
+      "median_mfe_5d_high_pct": 10.567,
+      "avg_return_5d_close_pct": 4.989,
+      "win_close_5d_pct": 52.381
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND whale_score>=80",
+      "n": 100,
+      "touch_5pct_5d_pct": 73.0,
+      "avg_mfe_5d_high_pct": 12.7346,
+      "median_mfe_5d_high_pct": 10.3219,
+      "avg_return_5d_close_pct": 3.8322,
+      "win_close_5d_pct": 57.0
+    },
+    {
+      "slice": "whale_score>=60 AND volume_ratio>=2",
+      "n": 37,
+      "touch_5pct_5d_pct": 72.973,
+      "avg_mfe_5d_high_pct": 18.3655,
+      "median_mfe_5d_high_pct": 10.801,
+      "avg_return_5d_close_pct": 6.6528,
+      "win_close_5d_pct": 43.243
+    },
+    {
+      "slice": "priority_rank<=3 AND decision_score>=80",
+      "n": 111,
+      "touch_5pct_5d_pct": 72.973,
+      "avg_mfe_5d_high_pct": 11.2689,
+      "median_mfe_5d_high_pct": 8.9385,
+      "avg_return_5d_close_pct": 4.3898,
+      "win_close_5d_pct": 51.351
+    },
+    {
+      "slice": "priority_rank<=3 AND tech_score>=60",
+      "n": 37,
+      "touch_5pct_5d_pct": 72.973,
+      "avg_mfe_5d_high_pct": 9.7502,
+      "median_mfe_5d_high_pct": 8.4532,
+      "avg_return_5d_close_pct": 2.1088,
+      "win_close_5d_pct": 48.649
+    },
+    {
+      "slice": "priority_rank<=2",
+      "n": 122,
+      "touch_5pct_5d_pct": 72.951,
+      "avg_mfe_5d_high_pct": 14.2576,
+      "median_mfe_5d_high_pct": 8.657,
+      "avg_return_5d_close_pct": 2.3235,
+      "win_close_5d_pct": 47.541
+    },
+    {
+      "slice": "volume_ratio>=2",
+      "n": 96,
+      "touch_5pct_5d_pct": 72.917,
+      "avg_mfe_5d_high_pct": 15.7322,
+      "median_mfe_5d_high_pct": 11.2484,
+      "avg_return_5d_close_pct": 3.0831,
+      "win_close_5d_pct": 45.833
+    },
+    {
+      "slice": "decision_bucket=ignored AND kr_universe_role=TRANSITIONAL",
+      "n": 48,
+      "touch_5pct_5d_pct": 72.917,
+      "avg_mfe_5d_high_pct": 11.3576,
+      "median_mfe_5d_high_pct": 7.6903,
+      "avg_return_5d_close_pct": 4.5001,
+      "win_close_5d_pct": 41.667
+    },
+    {
+      "slice": "priority_rank<=5 AND decision_score>=80",
+      "n": 166,
+      "touch_5pct_5d_pct": 72.892,
+      "avg_mfe_5d_high_pct": 12.1513,
+      "median_mfe_5d_high_pct": 8.9637,
+      "avg_return_5d_close_pct": 5.1042,
+      "win_close_5d_pct": 50.602
+    },
+    {
+      "slice": "decision_score>=95 AND whale_score>=60",
+      "n": 103,
+      "touch_5pct_5d_pct": 72.816,
+      "avg_mfe_5d_high_pct": 13.5992,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 4.4034,
+      "win_close_5d_pct": 55.34
+    },
+    {
+      "slice": "priority_rank<=10 AND tech_score>=40",
+      "n": 103,
+      "touch_5pct_5d_pct": 72.816,
+      "avg_mfe_5d_high_pct": 13.4973,
+      "median_mfe_5d_high_pct": 9.5062,
+      "avg_return_5d_close_pct": 4.4384,
+      "win_close_5d_pct": 52.427
+    },
+    {
+      "slice": "tech_score>=40 AND decision_score>=95",
+      "n": 125,
+      "touch_5pct_5d_pct": 72.8,
+      "avg_mfe_5d_high_pct": 13.54,
+      "median_mfe_5d_high_pct": 9.2905,
+      "avg_return_5d_close_pct": 4.9491,
+      "win_close_5d_pct": 55.2
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND decision_score>=70",
+      "n": 158,
+      "touch_5pct_5d_pct": 72.785,
+      "avg_mfe_5d_high_pct": 13.6446,
+      "median_mfe_5d_high_pct": 9.5303,
+      "avg_return_5d_close_pct": 2.9794,
+      "win_close_5d_pct": 36.709
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND tech_score>=60",
+      "n": 143,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 12.8004,
+      "median_mfe_5d_high_pct": 9.176,
+      "avg_return_5d_close_pct": 4.436,
+      "win_close_5d_pct": 61.538
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND alpha_score>=95",
+      "n": 33,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 12.7941,
+      "median_mfe_5d_high_pct": 7.4745,
+      "avg_return_5d_close_pct": 4.658,
+      "win_close_5d_pct": 57.576
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND tech_score>=40",
+      "n": 66,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 11.9926,
+      "median_mfe_5d_high_pct": 10.0754,
+      "avg_return_5d_close_pct": 1.6215,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND tech_score>=50",
+      "n": 66,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 11.9926,
+      "median_mfe_5d_high_pct": 10.0754,
+      "avg_return_5d_close_pct": 1.6215,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND whale_score>=40",
+      "n": 66,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 11.9926,
+      "median_mfe_5d_high_pct": 10.0754,
+      "avg_return_5d_close_pct": 1.6215,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND whale_score>=50",
+      "n": 66,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 11.9926,
+      "median_mfe_5d_high_pct": 10.0754,
+      "avg_return_5d_close_pct": 1.6215,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "priority_rank<=2 AND tech_score>=40",
+      "n": 33,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 10.9766,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 3.6266,
+      "win_close_5d_pct": 51.515
+    },
+    {
+      "slice": "priority_rank<=2 AND tech_score>=50",
+      "n": 33,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 10.9766,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 3.6266,
+      "win_close_5d_pct": 51.515
+    },
+    {
+      "slice": "priority_rank<=2 AND whale_score>=40",
+      "n": 33,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 10.9766,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 3.6266,
+      "win_close_5d_pct": 51.515
+    },
+    {
+      "slice": "priority_rank<=2 AND whale_score>=50",
+      "n": 33,
+      "touch_5pct_5d_pct": 72.727,
+      "avg_mfe_5d_high_pct": 10.9766,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 3.6266,
+      "win_close_5d_pct": 51.515
+    },
+    {
+      "slice": "decision_score>=95",
+      "n": 227,
+      "touch_5pct_5d_pct": 72.687,
+      "avg_mfe_5d_high_pct": 12.893,
+      "median_mfe_5d_high_pct": 8.9385,
+      "avg_return_5d_close_pct": 4.7176,
+      "win_close_5d_pct": 54.626
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND whale_score>=50",
+      "n": 139,
+      "touch_5pct_5d_pct": 72.662,
+      "avg_mfe_5d_high_pct": 12.3226,
+      "median_mfe_5d_high_pct": 8.1779,
+      "avg_return_5d_close_pct": 3.4417,
+      "win_close_5d_pct": 57.554
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND whale_score>=70",
+      "n": 106,
+      "touch_5pct_5d_pct": 72.642,
+      "avg_mfe_5d_high_pct": 12.5568,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 3.1685,
+      "win_close_5d_pct": 54.717
+    },
+    {
+      "slice": "decision_bucket=ignored AND alpha_score>=80",
+      "n": 84,
+      "touch_5pct_5d_pct": 72.619,
+      "avg_mfe_5d_high_pct": 14.788,
+      "median_mfe_5d_high_pct": 9.2964,
+      "avg_return_5d_close_pct": 6.5088,
+      "win_close_5d_pct": 47.619
+    },
+    {
+      "slice": "trend=DOWN AND alpha_score>=90",
+      "n": 73,
+      "touch_5pct_5d_pct": 72.603,
+      "avg_mfe_5d_high_pct": 13.859,
+      "median_mfe_5d_high_pct": 8.0103,
+      "avg_return_5d_close_pct": 7.5675,
+      "win_close_5d_pct": 61.644
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=70",
+      "n": 197,
+      "touch_5pct_5d_pct": 72.589,
+      "avg_mfe_5d_high_pct": 13.7548,
+      "median_mfe_5d_high_pct": 9.2998,
+      "avg_return_5d_close_pct": 3.0969,
+      "win_close_5d_pct": 35.533
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND theme_routing_path=theme_shadow",
+      "n": 62,
+      "touch_5pct_5d_pct": 72.581,
+      "avg_mfe_5d_high_pct": 14.0331,
+      "median_mfe_5d_high_pct": 10.5436,
+      "avg_return_5d_close_pct": 1.9512,
+      "win_close_5d_pct": 46.774
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND decision_score>=80",
+      "n": 167,
+      "touch_5pct_5d_pct": 72.455,
+      "avg_mfe_5d_high_pct": 12.7054,
+      "median_mfe_5d_high_pct": 9.222,
+      "avg_return_5d_close_pct": 4.8606,
+      "win_close_5d_pct": 61.078
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND alpha_score>=75",
+      "n": 185,
+      "touch_5pct_5d_pct": 72.432,
+      "avg_mfe_5d_high_pct": 12.8444,
+      "median_mfe_5d_high_pct": 9.1097,
+      "avg_return_5d_close_pct": 5.004,
+      "win_close_5d_pct": 65.405
+    },
+    {
+      "slice": "selection_lane=1d AND alpha_score>=90",
+      "n": 203,
+      "touch_5pct_5d_pct": 72.414,
+      "avg_mfe_5d_high_pct": 14.2046,
+      "median_mfe_5d_high_pct": 9.0074,
+      "avg_return_5d_close_pct": 4.658,
+      "win_close_5d_pct": 31.034
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND expected_edge_score>=7",
+      "n": 58,
+      "touch_5pct_5d_pct": 72.414,
+      "avg_mfe_5d_high_pct": 14.2007,
+      "median_mfe_5d_high_pct": 11.5149,
+      "avg_return_5d_close_pct": 5.4,
+      "win_close_5d_pct": 51.724
+    },
+    {
+      "slice": "decision_bucket=ignored AND decision_score>=70",
+      "n": 87,
+      "touch_5pct_5d_pct": 72.414,
+      "avg_mfe_5d_high_pct": 13.0067,
+      "median_mfe_5d_high_pct": 8.1779,
+      "avg_return_5d_close_pct": 4.8379,
+      "win_close_5d_pct": 50.575
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=80",
+      "n": 134,
+      "touch_5pct_5d_pct": 72.388,
+      "avg_mfe_5d_high_pct": 13.4142,
+      "median_mfe_5d_high_pct": 8.6825,
+      "avg_return_5d_close_pct": 5.9498,
+      "win_close_5d_pct": 58.955
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND prob_clean>=20",
+      "n": 76,
+      "touch_5pct_5d_pct": 72.368,
+      "avg_mfe_5d_high_pct": 10.9302,
+      "median_mfe_5d_high_pct": 8.9248,
+      "avg_return_5d_close_pct": 5.6431,
+      "win_close_5d_pct": 64.474
+    },
+    {
+      "slice": "tech_score>=50 AND decision_score>=95",
+      "n": 123,
+      "touch_5pct_5d_pct": 72.358,
+      "avg_mfe_5d_high_pct": 13.5306,
+      "median_mfe_5d_high_pct": 9.222,
+      "avg_return_5d_close_pct": 5.1951,
+      "win_close_5d_pct": 56.098
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND ml_prob>=50",
+      "n": 170,
+      "touch_5pct_5d_pct": 72.353,
+      "avg_mfe_5d_high_pct": 13.6093,
+      "median_mfe_5d_high_pct": 9.6741,
+      "avg_return_5d_close_pct": 4.1261,
+      "win_close_5d_pct": 54.706
+    },
+    {
+      "slice": "selection_lane=1d AND whale_score>=40",
+      "n": 188,
+      "touch_5pct_5d_pct": 72.34,
+      "avg_mfe_5d_high_pct": 12.6597,
+      "median_mfe_5d_high_pct": 8.7986,
+      "avg_return_5d_close_pct": 2.4524,
+      "win_close_5d_pct": 51.596
+    },
+    {
+      "slice": "tier=⭐T2 AND theme_routing_path=theme_shadow",
+      "n": 65,
+      "touch_5pct_5d_pct": 72.308,
+      "avg_mfe_5d_high_pct": 13.3046,
+      "median_mfe_5d_high_pct": 10.3009,
+      "avg_return_5d_close_pct": 4.424,
+      "win_close_5d_pct": 53.846
+    },
+    {
+      "slice": "prob_clean>=50 AND volume_ratio>=1.2",
+      "n": 101,
+      "touch_5pct_5d_pct": 72.277,
+      "avg_mfe_5d_high_pct": 14.8676,
+      "median_mfe_5d_high_pct": 10.049,
+      "avg_return_5d_close_pct": 5.4409,
+      "win_close_5d_pct": 53.465
+    },
+    {
+      "slice": "priority_rank<=5 AND decision_score>=70",
+      "n": 220,
+      "touch_5pct_5d_pct": 72.273,
+      "avg_mfe_5d_high_pct": 12.1444,
+      "median_mfe_5d_high_pct": 9.0672,
+      "avg_return_5d_close_pct": 4.692,
+      "win_close_5d_pct": 50.909
+    },
+    {
+      "slice": "priority_rank<=3 AND decision_score>=70",
+      "n": 137,
+      "touch_5pct_5d_pct": 72.263,
+      "avg_mfe_5d_high_pct": 11.0917,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 4.0137,
+      "win_close_5d_pct": 50.365
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND tech_score>=40",
+      "n": 155,
+      "touch_5pct_5d_pct": 72.258,
+      "avg_mfe_5d_high_pct": 12.949,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 4.5556,
+      "win_close_5d_pct": 60.645
+    },
+    {
+      "slice": "theme_routing_path=core_only AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 209,
+      "touch_5pct_5d_pct": 72.249,
+      "avg_mfe_5d_high_pct": 12.0867,
+      "median_mfe_5d_high_pct": 8.4299,
+      "avg_return_5d_close_pct": 3.5568,
+      "win_close_5d_pct": 55.024
+    },
+    {
+      "slice": "trend=DOWN AND ml_prob>=50",
+      "n": 108,
+      "touch_5pct_5d_pct": 72.222,
+      "avg_mfe_5d_high_pct": 13.82,
+      "median_mfe_5d_high_pct": 9.5776,
+      "avg_return_5d_close_pct": 8.0528,
+      "win_close_5d_pct": 69.444
+    },
+    {
+      "slice": "kr_universe_role=REJECT_RISK AND theme_routing_path=core_only",
+      "n": 54,
+      "touch_5pct_5d_pct": 72.222,
+      "avg_mfe_5d_high_pct": 12.0243,
+      "median_mfe_5d_high_pct": 7.8598,
+      "avg_return_5d_close_pct": 2.9375,
+      "win_close_5d_pct": 38.889
+    },
+    {
+      "slice": "priority_rank<=2 AND decision_score>=85",
+      "n": 72,
+      "touch_5pct_5d_pct": 72.222,
+      "avg_mfe_5d_high_pct": 10.0104,
+      "median_mfe_5d_high_pct": 8.657,
+      "avg_return_5d_close_pct": 2.289,
+      "win_close_5d_pct": 44.444
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND priority_rank<=3",
+      "n": 36,
+      "touch_5pct_5d_pct": 72.222,
+      "avg_mfe_5d_high_pct": 9.8415,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 3.7286,
+      "win_close_5d_pct": 63.889
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND position=🌋 고점 (Peak)",
+      "n": 158,
+      "touch_5pct_5d_pct": 72.152,
+      "avg_mfe_5d_high_pct": 13.5933,
+      "median_mfe_5d_high_pct": 9.9566,
+      "avg_return_5d_close_pct": 4.5696,
+      "win_close_5d_pct": 56.962
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND decision_score>=80",
+      "n": 79,
+      "touch_5pct_5d_pct": 72.152,
+      "avg_mfe_5d_high_pct": 13.1649,
+      "median_mfe_5d_high_pct": 8.4532,
+      "avg_return_5d_close_pct": 3.3749,
+      "win_close_5d_pct": 48.101
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND whale_score>=60",
+      "n": 61,
+      "touch_5pct_5d_pct": 72.131,
+      "avg_mfe_5d_high_pct": 11.9766,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 1.6381,
+      "win_close_5d_pct": 50.82
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND alpha_score>=85",
+      "n": 43,
+      "touch_5pct_5d_pct": 72.093,
+      "avg_mfe_5d_high_pct": 14.9718,
+      "median_mfe_5d_high_pct": 7.9699,
+      "avg_return_5d_close_pct": 7.2509,
+      "win_close_5d_pct": 53.488
+    },
+    {
+      "slice": "trend=DOWN AND prob_clean>=50",
+      "n": 43,
+      "touch_5pct_5d_pct": 72.093,
+      "avg_mfe_5d_high_pct": 13.9473,
+      "median_mfe_5d_high_pct": 11.4888,
+      "avg_return_5d_close_pct": 9.1453,
+      "win_close_5d_pct": 76.744
+    },
+    {
+      "slice": "trend=DOWN AND position=💤 조정 (Resting)",
+      "n": 43,
+      "touch_5pct_5d_pct": 72.093,
+      "avg_mfe_5d_high_pct": 11.5647,
+      "median_mfe_5d_high_pct": 7.9699,
+      "avg_return_5d_close_pct": 4.2012,
+      "win_close_5d_pct": 65.116
+    },
+    {
+      "slice": "decision_bucket=ignored AND alpha_score>=75",
+      "n": 111,
+      "touch_5pct_5d_pct": 72.072,
+      "avg_mfe_5d_high_pct": 13.6673,
+      "median_mfe_5d_high_pct": 8.3752,
+      "avg_return_5d_close_pct": 4.9872,
+      "win_close_5d_pct": 47.748
+    },
+    {
+      "slice": "selection_lane=1d AND volume_ratio>=2",
+      "n": 50,
+      "touch_5pct_5d_pct": 72.0,
+      "avg_mfe_5d_high_pct": 18.8154,
+      "median_mfe_5d_high_pct": 11.8057,
+      "avg_return_5d_close_pct": 7.5433,
+      "win_close_5d_pct": 58.0
+    },
+    {
+      "slice": "priority_rank<=10 AND tech_score>=50",
+      "n": 100,
+      "touch_5pct_5d_pct": 72.0,
+      "avg_mfe_5d_high_pct": 13.3091,
+      "median_mfe_5d_high_pct": 9.4771,
+      "avg_return_5d_close_pct": 4.4053,
+      "win_close_5d_pct": 52.0
+    },
+    {
+      "slice": "priority_rank<=5 AND whale_score>=60",
+      "n": 57,
+      "touch_5pct_5d_pct": 71.93,
+      "avg_mfe_5d_high_pct": 12.1045,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 3.8041,
+      "win_close_5d_pct": 49.123
+    },
+    {
+      "slice": "trend=UP AND volume_ratio>=3",
+      "n": 32,
+      "touch_5pct_5d_pct": 71.875,
+      "avg_mfe_5d_high_pct": 19.7275,
+      "median_mfe_5d_high_pct": 10.684,
+      "avg_return_5d_close_pct": 6.8246,
+      "win_close_5d_pct": 43.75
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND priority_rank<=5",
+      "n": 64,
+      "touch_5pct_5d_pct": 71.875,
+      "avg_mfe_5d_high_pct": 11.6892,
+      "median_mfe_5d_high_pct": 8.6264,
+      "avg_return_5d_close_pct": 2.2182,
+      "win_close_5d_pct": 40.625
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND priority_rank<=2",
+      "n": 32,
+      "touch_5pct_5d_pct": 71.875,
+      "avg_mfe_5d_high_pct": 11.17,
+      "median_mfe_5d_high_pct": 8.0981,
+      "avg_return_5d_close_pct": 2.6418,
+      "win_close_5d_pct": 37.5
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=75",
+      "n": 167,
+      "touch_5pct_5d_pct": 71.856,
+      "avg_mfe_5d_high_pct": 12.6935,
+      "median_mfe_5d_high_pct": 8.1779,
+      "avg_return_5d_close_pct": 4.7807,
+      "win_close_5d_pct": 57.485
+    },
+    {
+      "slice": "volume_ratio>=1.2 AND expected_edge_score>=8",
+      "n": 39,
+      "touch_5pct_5d_pct": 71.795,
+      "avg_mfe_5d_high_pct": 15.3181,
+      "median_mfe_5d_high_pct": 11.4754,
+      "avg_return_5d_close_pct": 5.6564,
+      "win_close_5d_pct": 56.41
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND expected_edge_score>=8",
+      "n": 117,
+      "touch_5pct_5d_pct": 71.795,
+      "avg_mfe_5d_high_pct": 13.6444,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 5.8187,
+      "win_close_5d_pct": 62.393
+    },
+    {
+      "slice": "tech_score>=60 AND decision_score>=95",
+      "n": 117,
+      "touch_5pct_5d_pct": 71.795,
+      "avg_mfe_5d_high_pct": 13.5109,
+      "median_mfe_5d_high_pct": 8.6114,
+      "avg_return_5d_close_pct": 5.1882,
+      "win_close_5d_pct": 54.701
+    },
+    {
+      "slice": "priority_rank<=5 AND volume_ratio>=1.5",
+      "n": 39,
+      "touch_5pct_5d_pct": 71.795,
+      "avg_mfe_5d_high_pct": 13.3636,
+      "median_mfe_5d_high_pct": 9.2466,
+      "avg_return_5d_close_pct": -0.0804,
+      "win_close_5d_pct": 46.154
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND ml_prob>=30",
+      "n": 209,
+      "touch_5pct_5d_pct": 71.77,
+      "avg_mfe_5d_high_pct": 13.6782,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 2.9366,
+      "win_close_5d_pct": 35.885
+    },
+    {
+      "slice": "decision_bucket=watchlist AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 191,
+      "touch_5pct_5d_pct": 71.728,
+      "avg_mfe_5d_high_pct": 13.6075,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 3.4897,
+      "win_close_5d_pct": 38.22
+    },
+    {
+      "slice": "tech_score>=70 AND decision_score>=95",
+      "n": 99,
+      "touch_5pct_5d_pct": 71.717,
+      "avg_mfe_5d_high_pct": 13.3378,
+      "median_mfe_5d_high_pct": 8.3744,
+      "avg_return_5d_close_pct": 4.7963,
+      "win_close_5d_pct": 53.535
+    },
+    {
+      "slice": "theme_routing_path=core_only AND alpha_score>=95",
+      "n": 166,
+      "touch_5pct_5d_pct": 71.687,
+      "avg_mfe_5d_high_pct": 14.6887,
+      "median_mfe_5d_high_pct": 9.0583,
+      "avg_return_5d_close_pct": 6.3983,
+      "win_close_5d_pct": 28.313
+    },
+    {
+      "slice": "alpha_score>=70 AND volume_ratio>=2",
+      "n": 60,
+      "touch_5pct_5d_pct": 71.667,
+      "avg_mfe_5d_high_pct": 17.5182,
+      "median_mfe_5d_high_pct": 10.2535,
+      "avg_return_5d_close_pct": 7.965,
+      "win_close_5d_pct": 51.667
+    },
+    {
+      "slice": "tier=🏆T1 AND priority_rank<=10",
+      "n": 60,
+      "touch_5pct_5d_pct": 71.667,
+      "avg_mfe_5d_high_pct": 13.9623,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 3.6162,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "priority_rank<=5 AND whale_score>=40",
+      "n": 60,
+      "touch_5pct_5d_pct": 71.667,
+      "avg_mfe_5d_high_pct": 12.0384,
+      "median_mfe_5d_high_pct": 9.4816,
+      "avg_return_5d_close_pct": 3.8262,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "priority_rank<=5 AND whale_score>=50",
+      "n": 60,
+      "touch_5pct_5d_pct": 71.667,
+      "avg_mfe_5d_high_pct": 12.0384,
+      "median_mfe_5d_high_pct": 9.4816,
+      "avg_return_5d_close_pct": 3.8262,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND prob_clean>=30",
+      "n": 134,
+      "touch_5pct_5d_pct": 71.642,
+      "avg_mfe_5d_high_pct": 13.2597,
+      "median_mfe_5d_high_pct": 9.2228,
+      "avg_return_5d_close_pct": 4.3705,
+      "win_close_5d_pct": 49.254
+    },
+    {
+      "slice": "alpha_score>=95 AND whale_score>=60",
+      "n": 88,
+      "touch_5pct_5d_pct": 71.591,
+      "avg_mfe_5d_high_pct": 15.383,
+      "median_mfe_5d_high_pct": 8.7894,
+      "avg_return_5d_close_pct": 5.7964,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "feature_origin=scanner_archive_outcome AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 204,
+      "touch_5pct_5d_pct": 71.569,
+      "avg_mfe_5d_high_pct": 13.5522,
+      "median_mfe_5d_high_pct": 9.5303,
+      "avg_return_5d_close_pct": 1.9808,
+      "win_close_5d_pct": 33.824
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND alpha_score>=85",
+      "n": 109,
+      "touch_5pct_5d_pct": 71.56,
+      "avg_mfe_5d_high_pct": 13.2974,
+      "median_mfe_5d_high_pct": 8.7179,
+      "avg_return_5d_close_pct": 5.826,
+      "win_close_5d_pct": 66.055
+    },
+    {
+      "slice": "tier=⭐T2 AND alpha_score>=75",
+      "n": 109,
+      "touch_5pct_5d_pct": 71.56,
+      "avg_mfe_5d_high_pct": 13.2821,
+      "median_mfe_5d_high_pct": 8.3141,
+      "avg_return_5d_close_pct": 4.4748,
+      "win_close_5d_pct": 53.211
+    },
+    {
+      "slice": "decision_score>=95 AND whale_score>=50",
+      "n": 109,
+      "touch_5pct_5d_pct": 71.56,
+      "avg_mfe_5d_high_pct": 13.2084,
+      "median_mfe_5d_high_pct": 9.2905,
+      "avg_return_5d_close_pct": 4.1788,
+      "win_close_5d_pct": 55.046
+    },
+    {
+      "slice": "tier=⭐T2 AND alpha_score>=70",
+      "n": 130,
+      "touch_5pct_5d_pct": 71.538,
+      "avg_mfe_5d_high_pct": 12.5098,
+      "median_mfe_5d_high_pct": 8.2666,
+      "avg_return_5d_close_pct": 3.483,
+      "win_close_5d_pct": 50.769
+    },
+    {
+      "slice": "decision_score>=70 AND volume_ratio>=2",
+      "n": 56,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 17.9508,
+      "median_mfe_5d_high_pct": 12.182,
+      "avg_return_5d_close_pct": 6.6054,
+      "win_close_5d_pct": 51.786
+    },
+    {
+      "slice": "kr_universe_role=TRANSITIONAL AND decision_score>=95",
+      "n": 35,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 15.6411,
+      "median_mfe_5d_high_pct": 10.6346,
+      "avg_return_5d_close_pct": 9.3249,
+      "win_close_5d_pct": 68.571
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND kr_universe_role=TRANSITIONAL",
+      "n": 77,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 13.826,
+      "median_mfe_5d_high_pct": 9.0909,
+      "avg_return_5d_close_pct": 2.9024,
+      "win_close_5d_pct": 54.545
+    },
+    {
+      "slice": "tier=⚡T3 AND alpha_score>=80",
+      "n": 63,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 13.7975,
+      "median_mfe_5d_high_pct": 7.367,
+      "avg_return_5d_close_pct": 5.562,
+      "win_close_5d_pct": 58.73
+    },
+    {
+      "slice": "decision_bucket=ignored AND decision_score>=90",
+      "n": 49,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 13.7458,
+      "median_mfe_5d_high_pct": 8.1779,
+      "avg_return_5d_close_pct": 5.3231,
+      "win_close_5d_pct": 51.02
+    },
+    {
+      "slice": "trend=DOWN AND tech_score>=60",
+      "n": 84,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 12.8389,
+      "median_mfe_5d_high_pct": 7.9125,
+      "avg_return_5d_close_pct": 6.2525,
+      "win_close_5d_pct": 66.667
+    },
+    {
+      "slice": "selection_lane=1d AND whale_score>=50",
+      "n": 182,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 12.636,
+      "median_mfe_5d_high_pct": 8.3446,
+      "avg_return_5d_close_pct": 2.562,
+      "win_close_5d_pct": 52.198
+    },
+    {
+      "slice": "decision_score>=95 AND whale_score>=70",
+      "n": 84,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 12.3699,
+      "median_mfe_5d_high_pct": 8.5323,
+      "avg_return_5d_close_pct": 2.6164,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "selection_lane=1d AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 105,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 12.2646,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 3.106,
+      "win_close_5d_pct": 52.381
+    },
+    {
+      "slice": "kr_universe_role=TRANSITIONAL AND volume_ratio>=1.2",
+      "n": 42,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 12.0542,
+      "median_mfe_5d_high_pct": 6.1671,
+      "avg_return_5d_close_pct": 3.0291,
+      "win_close_5d_pct": 47.619
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND tech_score>=60",
+      "n": 63,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 11.8908,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 1.2313,
+      "win_close_5d_pct": 47.619
+    },
+    {
+      "slice": "decision_score>=95 AND whale_score>=80",
+      "n": 49,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 11.3476,
+      "median_mfe_5d_high_pct": 7.7098,
+      "avg_return_5d_close_pct": 2.6543,
+      "win_close_5d_pct": 42.857
+    },
+    {
+      "slice": "trend=DOWN AND priority_rank<=10",
+      "n": 56,
+      "touch_5pct_5d_pct": 71.429,
+      "avg_mfe_5d_high_pct": 8.8583,
+      "median_mfe_5d_high_pct": 7.0618,
+      "avg_return_5d_close_pct": 2.3358,
+      "win_close_5d_pct": 51.786
+    },
+    {
+      "slice": "decision_bucket=ignored AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 136,
+      "touch_5pct_5d_pct": 71.324,
+      "avg_mfe_5d_high_pct": 12.7533,
+      "median_mfe_5d_high_pct": 8.6068,
+      "avg_return_5d_close_pct": 4.2642,
+      "win_close_5d_pct": 52.206
+    },
+    {
+      "slice": "decision_score>=95 AND expected_edge_score>=8",
+      "n": 108,
+      "touch_5pct_5d_pct": 71.296,
+      "avg_mfe_5d_high_pct": 12.5539,
+      "median_mfe_5d_high_pct": 8.6114,
+      "avg_return_5d_close_pct": 4.9118,
+      "win_close_5d_pct": 57.407
+    },
+    {
+      "slice": "tier=⭐T2 AND alpha_score>=80",
+      "n": 87,
+      "touch_5pct_5d_pct": 71.264,
+      "avg_mfe_5d_high_pct": 13.6817,
+      "median_mfe_5d_high_pct": 8.7179,
+      "avg_return_5d_close_pct": 5.315,
+      "win_close_5d_pct": 55.172
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND decision_score>=70",
+      "n": 247,
+      "touch_5pct_5d_pct": 71.255,
+      "avg_mfe_5d_high_pct": 12.3275,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 4.5396,
+      "win_close_5d_pct": 59.514
+    },
+    {
+      "slice": "trend=DOWN AND whale_score>=50",
+      "n": 80,
+      "touch_5pct_5d_pct": 71.25,
+      "avg_mfe_5d_high_pct": 13.2025,
+      "median_mfe_5d_high_pct": 7.9699,
+      "avg_return_5d_close_pct": 6.7512,
+      "win_close_5d_pct": 70.0
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND alpha_score>=80",
+      "n": 146,
+      "touch_5pct_5d_pct": 71.233,
+      "avg_mfe_5d_high_pct": 14.7698,
+      "median_mfe_5d_high_pct": 9.5232,
+      "avg_return_5d_close_pct": 6.1206,
+      "win_close_5d_pct": 56.164
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND prob_clean>=30",
+      "n": 73,
+      "touch_5pct_5d_pct": 71.233,
+      "avg_mfe_5d_high_pct": 11.1431,
+      "median_mfe_5d_high_pct": 8.0224,
+      "avg_return_5d_close_pct": 4.4982,
+      "win_close_5d_pct": 64.384
+    },
+    {
+      "slice": "feature_origin=scanner_archive_outcome AND priority_rank<=5",
+      "n": 198,
+      "touch_5pct_5d_pct": 71.212,
+      "avg_mfe_5d_high_pct": 11.8483,
+      "median_mfe_5d_high_pct": 8.826,
+      "avg_return_5d_close_pct": 4.1969,
+      "win_close_5d_pct": 52.525
+    },
+    {
+      "slice": "priority_rank<=2 AND decision_score>=90",
+      "n": 66,
+      "touch_5pct_5d_pct": 71.212,
+      "avg_mfe_5d_high_pct": 9.8783,
+      "median_mfe_5d_high_pct": 8.4138,
+      "avg_return_5d_close_pct": 1.5584,
+      "win_close_5d_pct": 39.394
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND selection_lane=1d",
+      "n": 125,
+      "touch_5pct_5d_pct": 71.2,
+      "avg_mfe_5d_high_pct": 12.8273,
+      "median_mfe_5d_high_pct": 9.0909,
+      "avg_return_5d_close_pct": 2.3011,
+      "win_close_5d_pct": 53.6
+    },
+    {
+      "slice": "volume_ratio>=1.2 AND expected_edge_score>=6",
+      "n": 59,
+      "touch_5pct_5d_pct": 71.186,
+      "avg_mfe_5d_high_pct": 14.2745,
+      "median_mfe_5d_high_pct": 10.049,
+      "avg_return_5d_close_pct": 4.5608,
+      "win_close_5d_pct": 52.542
+    },
+    {
+      "slice": "decision_bucket=ignored AND selection_lane=1d",
+      "n": 177,
+      "touch_5pct_5d_pct": 71.186,
+      "avg_mfe_5d_high_pct": 12.1568,
+      "median_mfe_5d_high_pct": 8.4225,
+      "avg_return_5d_close_pct": 2.1256,
+      "win_close_5d_pct": 37.288
+    },
+    {
+      "slice": "decision_bucket=ignored",
+      "n": 215,
+      "touch_5pct_5d_pct": 71.163,
+      "avg_mfe_5d_high_pct": 12.4122,
+      "median_mfe_5d_high_pct": 8.3752,
+      "avg_return_5d_close_pct": 3.3232,
+      "win_close_5d_pct": 40.465
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND tech_score>=80",
+      "n": 52,
+      "touch_5pct_5d_pct": 71.154,
+      "avg_mfe_5d_high_pct": 12.0931,
+      "median_mfe_5d_high_pct": 8.6549,
+      "avg_return_5d_close_pct": 1.6829,
+      "win_close_5d_pct": 51.923
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND whale_score>=70",
+      "n": 194,
+      "touch_5pct_5d_pct": 71.134,
+      "avg_mfe_5d_high_pct": 14.4698,
+      "median_mfe_5d_high_pct": 9.6842,
+      "avg_return_5d_close_pct": 5.3121,
+      "win_close_5d_pct": 53.093
+    },
+    {
+      "slice": "selection_lane=1d AND expected_edge_score>=8",
+      "n": 45,
+      "touch_5pct_5d_pct": 71.111,
+      "avg_mfe_5d_high_pct": 14.647,
+      "median_mfe_5d_high_pct": 7.6239,
+      "avg_return_5d_close_pct": 5.9422,
+      "win_close_5d_pct": 55.556
+    },
+    {
+      "slice": "tier=⚡T3 AND selection_lane=1d",
+      "n": 121,
+      "touch_5pct_5d_pct": 71.074,
+      "avg_mfe_5d_high_pct": 11.6386,
+      "median_mfe_5d_high_pct": 8.2774,
+      "avg_return_5d_close_pct": 1.2681,
+      "win_close_5d_pct": 52.893
+    },
+    {
+      "slice": "volume_ratio>=3",
+      "n": 38,
+      "touch_5pct_5d_pct": 71.053,
+      "avg_mfe_5d_high_pct": 18.9471,
+      "median_mfe_5d_high_pct": 10.567,
+      "avg_return_5d_close_pct": 6.4243,
+      "win_close_5d_pct": 39.474
+    },
+    {
+      "slice": "trend=DOWN AND whale_score>=60",
+      "n": 76,
+      "touch_5pct_5d_pct": 71.053,
+      "avg_mfe_5d_high_pct": 13.6326,
+      "median_mfe_5d_high_pct": 8.1928,
+      "avg_return_5d_close_pct": 6.9195,
+      "win_close_5d_pct": 68.421
+    },
+    {
+      "slice": "decision_bucket=ignored AND prob_clean>=20",
+      "n": 190,
+      "touch_5pct_5d_pct": 71.053,
+      "avg_mfe_5d_high_pct": 12.1961,
+      "median_mfe_5d_high_pct": 8.7912,
+      "avg_return_5d_close_pct": 3.5888,
+      "win_close_5d_pct": 43.684
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND expected_edge_score>=6",
+      "n": 69,
+      "touch_5pct_5d_pct": 71.014,
+      "avg_mfe_5d_high_pct": 13.1912,
+      "median_mfe_5d_high_pct": 10.3009,
+      "avg_return_5d_close_pct": 4.3859,
+      "win_close_5d_pct": 52.174
+    },
+    {
+      "slice": "tier=⭐T2 AND whale_score>=60",
+      "n": 138,
+      "touch_5pct_5d_pct": 71.014,
+      "avg_mfe_5d_high_pct": 11.5868,
+      "median_mfe_5d_high_pct": 8.1148,
+      "avg_return_5d_close_pct": 3.0396,
+      "win_close_5d_pct": 49.275
+    },
+    {
+      "slice": "theme_routing_path=core_only AND alpha_score>=90",
+      "n": 238,
+      "touch_5pct_5d_pct": 71.008,
+      "avg_mfe_5d_high_pct": 14.2064,
+      "median_mfe_5d_high_pct": 8.9127,
+      "avg_return_5d_close_pct": 4.9155,
+      "win_close_5d_pct": 32.353
+    },
+    {
+      "slice": "trend=DOWN AND ml_prob>=30",
+      "n": 124,
+      "touch_5pct_5d_pct": 70.968,
+      "avg_mfe_5d_high_pct": 13.3383,
+      "median_mfe_5d_high_pct": 8.5897,
+      "avg_return_5d_close_pct": 7.2822,
+      "win_close_5d_pct": 66.129
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND ml_prob>=50",
+      "n": 93,
+      "touch_5pct_5d_pct": 70.968,
+      "avg_mfe_5d_high_pct": 12.7278,
+      "median_mfe_5d_high_pct": 8.0074,
+      "avg_return_5d_close_pct": 5.3877,
+      "win_close_5d_pct": 56.989
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND whale_score>=60",
+      "n": 124,
+      "touch_5pct_5d_pct": 70.968,
+      "avg_mfe_5d_high_pct": 12.1585,
+      "median_mfe_5d_high_pct": 7.8598,
+      "avg_return_5d_close_pct": 2.8933,
+      "win_close_5d_pct": 54.032
+    },
+    {
+      "slice": "priority_rank<=5 AND tech_score>=40",
+      "n": 62,
+      "touch_5pct_5d_pct": 70.968,
+      "avg_mfe_5d_high_pct": 11.827,
+      "median_mfe_5d_high_pct": 9.3797,
+      "avg_return_5d_close_pct": 3.5676,
+      "win_close_5d_pct": 48.387
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=75",
+      "n": 179,
+      "touch_5pct_5d_pct": 70.95,
+      "avg_mfe_5d_high_pct": 13.9417,
+      "median_mfe_5d_high_pct": 9.2998,
+      "avg_return_5d_close_pct": 3.4789,
+      "win_close_5d_pct": 34.637
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND ml_prob>=40",
+      "n": 172,
+      "touch_5pct_5d_pct": 70.93,
+      "avg_mfe_5d_high_pct": 12.7216,
+      "median_mfe_5d_high_pct": 9.4363,
+      "avg_return_5d_close_pct": 3.2708,
+      "win_close_5d_pct": 40.116
+    },
+    {
+      "slice": "selection_lane=1d AND whale_score>=70",
+      "n": 127,
+      "touch_5pct_5d_pct": 70.866,
+      "avg_mfe_5d_high_pct": 13.0982,
+      "median_mfe_5d_high_pct": 9.4972,
+      "avg_return_5d_close_pct": 2.205,
+      "win_close_5d_pct": 50.394
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial",
+      "n": 278,
+      "touch_5pct_5d_pct": 70.863,
+      "avg_mfe_5d_high_pct": 13.688,
+      "median_mfe_5d_high_pct": 8.2935,
+      "avg_return_5d_close_pct": 1.9149,
+      "win_close_5d_pct": 50.36
+    },
+    {
+      "slice": "priority_rank<=5 AND decision_score>=85",
+      "n": 151,
+      "touch_5pct_5d_pct": 70.861,
+      "avg_mfe_5d_high_pct": 11.7321,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 4.5061,
+      "win_close_5d_pct": 49.669
+    },
+    {
+      "slice": "trend=UP AND volume_ratio>=2",
+      "n": 72,
+      "touch_5pct_5d_pct": 70.833,
+      "avg_mfe_5d_high_pct": 15.7657,
+      "median_mfe_5d_high_pct": 10.684,
+      "avg_return_5d_close_pct": 2.9977,
+      "win_close_5d_pct": 47.222
+    },
+    {
+      "slice": "trend=UP AND position=🌋 고점 (Peak)",
+      "n": 240,
+      "touch_5pct_5d_pct": 70.833,
+      "avg_mfe_5d_high_pct": 13.903,
+      "median_mfe_5d_high_pct": 10.0384,
+      "avg_return_5d_close_pct": 3.5474,
+      "win_close_5d_pct": 48.75
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND tech_score>=80",
+      "n": 96,
+      "touch_5pct_5d_pct": 70.833,
+      "avg_mfe_5d_high_pct": 13.8841,
+      "median_mfe_5d_high_pct": 7.8811,
+      "avg_return_5d_close_pct": 4.6337,
+      "win_close_5d_pct": 56.25
+    },
+    {
+      "slice": "tier=⚡T3 AND kr_universe_role=TRANSITIONAL",
+      "n": 72,
+      "touch_5pct_5d_pct": 70.833,
+      "avg_mfe_5d_high_pct": 12.7763,
+      "median_mfe_5d_high_pct": 8.3372,
+      "avg_return_5d_close_pct": 1.4292,
+      "win_close_5d_pct": 45.833
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND theme_routing_path=theme_shadow",
+      "n": 137,
+      "touch_5pct_5d_pct": 70.803,
+      "avg_mfe_5d_high_pct": 11.9148,
+      "median_mfe_5d_high_pct": 9.2998,
+      "avg_return_5d_close_pct": 4.4954,
+      "win_close_5d_pct": 64.234
+    },
+    {
+      "slice": "alpha_score>=95 AND whale_score>=50",
+      "n": 89,
+      "touch_5pct_5d_pct": 70.787,
+      "avg_mfe_5d_high_pct": 15.2268,
+      "median_mfe_5d_high_pct": 8.7179,
+      "avg_return_5d_close_pct": 5.6864,
+      "win_close_5d_pct": 49.438
+    },
+    {
+      "slice": "feature_origin=scanner_archive_outcome AND volume_ratio>=2",
+      "n": 65,
+      "touch_5pct_5d_pct": 70.769,
+      "avg_mfe_5d_high_pct": 17.0113,
+      "median_mfe_5d_high_pct": 12.1065,
+      "avg_return_5d_close_pct": 4.5675,
+      "win_close_5d_pct": 53.846
+    },
+    {
+      "slice": "tier=⭐T2 AND tech_score>=80",
+      "n": 106,
+      "touch_5pct_5d_pct": 70.755,
+      "avg_mfe_5d_high_pct": 14.0232,
+      "median_mfe_5d_high_pct": 9.4508,
+      "avg_return_5d_close_pct": 5.9352,
+      "win_close_5d_pct": 56.604
+    },
+    {
+      "slice": "priority_rank<=10",
+      "n": 458,
+      "touch_5pct_5d_pct": 70.742,
+      "avg_mfe_5d_high_pct": 13.4709,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 3.2921,
+      "win_close_5d_pct": 46.725
+    },
+    {
+      "slice": "whale_score>=40 AND volume_ratio>=2",
+      "n": 41,
+      "touch_5pct_5d_pct": 70.732,
+      "avg_mfe_5d_high_pct": 17.6635,
+      "median_mfe_5d_high_pct": 10.801,
+      "avg_return_5d_close_pct": 6.5774,
+      "win_close_5d_pct": 41.463
+    },
+    {
+      "slice": "whale_score>=50 AND volume_ratio>=2",
+      "n": 41,
+      "touch_5pct_5d_pct": 70.732,
+      "avg_mfe_5d_high_pct": 17.6635,
+      "median_mfe_5d_high_pct": 10.801,
+      "avg_return_5d_close_pct": 6.5774,
+      "win_close_5d_pct": 41.463
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND priority_rank<=10",
+      "n": 41,
+      "touch_5pct_5d_pct": 70.732,
+      "avg_mfe_5d_high_pct": 15.4711,
+      "median_mfe_5d_high_pct": 9.5062,
+      "avg_return_5d_close_pct": 6.0981,
+      "win_close_5d_pct": 48.78
+    },
+    {
+      "slice": "whale_score>=80 AND volume_ratio>=1.2",
+      "n": 41,
+      "touch_5pct_5d_pct": 70.732,
+      "avg_mfe_5d_high_pct": 11.9673,
+      "median_mfe_5d_high_pct": 9.7561,
+      "avg_return_5d_close_pct": -1.4537,
+      "win_close_5d_pct": 36.585
+    },
+    {
+      "slice": "priority_rank<=1 AND decision_score>=80",
+      "n": 41,
+      "touch_5pct_5d_pct": 70.732,
+      "avg_mfe_5d_high_pct": 10.3631,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 1.3355,
+      "win_close_5d_pct": 39.024
+    },
+    {
+      "slice": "priority_rank<=1 AND decision_score>=85",
+      "n": 41,
+      "touch_5pct_5d_pct": 70.732,
+      "avg_mfe_5d_high_pct": 10.3631,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 1.3355,
+      "win_close_5d_pct": 39.024
+    },
+    {
+      "slice": "theme_routing_path=core_only AND whale_score>=40",
+      "n": 392,
+      "touch_5pct_5d_pct": 70.663,
+      "avg_mfe_5d_high_pct": 12.5089,
+      "median_mfe_5d_high_pct": 8.5065,
+      "avg_return_5d_close_pct": 3.2679,
+      "win_close_5d_pct": 51.276
+    },
+    {
+      "slice": "whale_score>=50 AND expected_edge_score>=9",
+      "n": 92,
+      "touch_5pct_5d_pct": 70.652,
+      "avg_mfe_5d_high_pct": 13.0804,
+      "median_mfe_5d_high_pct": 9.2563,
+      "avg_return_5d_close_pct": 4.2735,
+      "win_close_5d_pct": 58.696
+    },
+    {
+      "slice": "priority_rank<=10 AND tech_score>=60",
+      "n": 92,
+      "touch_5pct_5d_pct": 70.652,
+      "avg_mfe_5d_high_pct": 13.022,
+      "median_mfe_5d_high_pct": 9.0921,
+      "avg_return_5d_close_pct": 3.8514,
+      "win_close_5d_pct": 48.913
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND whale_score>=50",
+      "n": 276,
+      "touch_5pct_5d_pct": 70.652,
+      "avg_mfe_5d_high_pct": 12.1627,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 4.2066,
+      "win_close_5d_pct": 59.42
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND tech_score>=80",
+      "n": 235,
+      "touch_5pct_5d_pct": 70.638,
+      "avg_mfe_5d_high_pct": 14.1223,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 4.3894,
+      "win_close_5d_pct": 52.766
+    },
+    {
+      "slice": "tier=⭐T2 AND whale_score>=40",
+      "n": 160,
+      "touch_5pct_5d_pct": 70.625,
+      "avg_mfe_5d_high_pct": 11.8934,
+      "median_mfe_5d_high_pct": 8.2789,
+      "avg_return_5d_close_pct": 3.0359,
+      "win_close_5d_pct": 49.375
+    },
+    {
+      "slice": "trend=DOWN AND tech_score>=40",
+      "n": 85,
+      "touch_5pct_5d_pct": 70.588,
+      "avg_mfe_5d_high_pct": 12.7285,
+      "median_mfe_5d_high_pct": 7.855,
+      "avg_return_5d_close_pct": 6.1114,
+      "win_close_5d_pct": 65.882
+    },
+    {
+      "slice": "trend=DOWN AND tech_score>=50",
+      "n": 85,
+      "touch_5pct_5d_pct": 70.588,
+      "avg_mfe_5d_high_pct": 12.7285,
+      "median_mfe_5d_high_pct": 7.855,
+      "avg_return_5d_close_pct": 6.1114,
+      "win_close_5d_pct": 65.882
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 85,
+      "touch_5pct_5d_pct": 70.588,
+      "avg_mfe_5d_high_pct": 12.4633,
+      "median_mfe_5d_high_pct": 9.176,
+      "avg_return_5d_close_pct": 4.5188,
+      "win_close_5d_pct": 61.176
+    },
+    {
+      "slice": "priority_rank<=3 AND decision_score>=85",
+      "n": 102,
+      "touch_5pct_5d_pct": 70.588,
+      "avg_mfe_5d_high_pct": 10.3917,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 3.1248,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND ml_prob>=40",
+      "n": 214,
+      "touch_5pct_5d_pct": 70.561,
+      "avg_mfe_5d_high_pct": 13.9685,
+      "median_mfe_5d_high_pct": 9.6842,
+      "avg_return_5d_close_pct": 3.9326,
+      "win_close_5d_pct": 50.935
+    },
+    {
+      "slice": "tier=⭐T2 AND tech_score>=70",
+      "n": 146,
+      "touch_5pct_5d_pct": 70.548,
+      "avg_mfe_5d_high_pct": 13.1757,
+      "median_mfe_5d_high_pct": 8.7999,
+      "avg_return_5d_close_pct": 4.3118,
+      "win_close_5d_pct": 52.055
+    },
+    {
+      "slice": "decision_score>=95 AND whale_score>=40",
+      "n": 112,
+      "touch_5pct_5d_pct": 70.536,
+      "avg_mfe_5d_high_pct": 13.0608,
+      "median_mfe_5d_high_pct": 9.2563,
+      "avg_return_5d_close_pct": 4.1283,
+      "win_close_5d_pct": 54.464
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND position=🚀 상승 (Rising)",
+      "n": 112,
+      "touch_5pct_5d_pct": 70.536,
+      "avg_mfe_5d_high_pct": 12.6041,
+      "median_mfe_5d_high_pct": 8.3961,
+      "avg_return_5d_close_pct": 2.5331,
+      "win_close_5d_pct": 54.464
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND whale_score>=80",
+      "n": 95,
+      "touch_5pct_5d_pct": 70.526,
+      "avg_mfe_5d_high_pct": 12.0149,
+      "median_mfe_5d_high_pct": 10.0578,
+      "avg_return_5d_close_pct": 4.1824,
+      "win_close_5d_pct": 56.842
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND decision_score>=90",
+      "n": 78,
+      "touch_5pct_5d_pct": 70.513,
+      "avg_mfe_5d_high_pct": 12.2427,
+      "median_mfe_5d_high_pct": 8.7671,
+      "avg_return_5d_close_pct": 4.5113,
+      "win_close_5d_pct": 55.128
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND scanner_timeframe_profile=DAILY_PRIMARY_WITH_1H_REFRESH",
+      "n": 183,
+      "touch_5pct_5d_pct": 70.492,
+      "avg_mfe_5d_high_pct": 12.8856,
+      "median_mfe_5d_high_pct": 8.1802,
+      "avg_return_5d_close_pct": 3.157,
+      "win_close_5d_pct": 54.645
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND tech_score>=70",
+      "n": 61,
+      "touch_5pct_5d_pct": 70.492,
+      "avg_mfe_5d_high_pct": 11.7059,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 1.515,
+      "win_close_5d_pct": 49.18
+    },
+    {
+      "slice": "decision_bucket=ignored AND scanner_timeframe_profile=DAILY_PRIMARY_WITH_1H_REFRESH",
+      "n": 210,
+      "touch_5pct_5d_pct": 70.476,
+      "avg_mfe_5d_high_pct": 12.3323,
+      "median_mfe_5d_high_pct": 8.2449,
+      "avg_return_5d_close_pct": 3.1801,
+      "win_close_5d_pct": 39.524
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND trend=UP",
+      "n": 193,
+      "touch_5pct_5d_pct": 70.466,
+      "avg_mfe_5d_high_pct": 12.6468,
+      "median_mfe_5d_high_pct": 8.4532,
+      "avg_return_5d_close_pct": 2.6598,
+      "win_close_5d_pct": 54.404
+    },
+    {
+      "slice": "tech_score>=40 AND volume_ratio>=2",
+      "n": 44,
+      "touch_5pct_5d_pct": 70.455,
+      "avg_mfe_5d_high_pct": 16.913,
+      "median_mfe_5d_high_pct": 10.2535,
+      "avg_return_5d_close_pct": 5.2286,
+      "win_close_5d_pct": 38.636
+    },
+    {
+      "slice": "tech_score>=50 AND volume_ratio>=2",
+      "n": 44,
+      "touch_5pct_5d_pct": 70.455,
+      "avg_mfe_5d_high_pct": 16.913,
+      "median_mfe_5d_high_pct": 10.2535,
+      "avg_return_5d_close_pct": 5.2286,
+      "win_close_5d_pct": 38.636
+    },
+    {
+      "slice": "tech_score>=60 AND volume_ratio>=2",
+      "n": 44,
+      "touch_5pct_5d_pct": 70.455,
+      "avg_mfe_5d_high_pct": 16.913,
+      "median_mfe_5d_high_pct": 10.2535,
+      "avg_return_5d_close_pct": 5.2286,
+      "win_close_5d_pct": 38.636
+    },
+    {
+      "slice": "tech_score>=70 AND volume_ratio>=2",
+      "n": 44,
+      "touch_5pct_5d_pct": 70.455,
+      "avg_mfe_5d_high_pct": 16.913,
+      "median_mfe_5d_high_pct": 10.2535,
+      "avg_return_5d_close_pct": 5.2286,
+      "win_close_5d_pct": 38.636
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost",
+      "n": 247,
+      "touch_5pct_5d_pct": 70.445,
+      "avg_mfe_5d_high_pct": 12.3004,
+      "median_mfe_5d_high_pct": 8.7912,
+      "avg_return_5d_close_pct": 4.1889,
+      "win_close_5d_pct": 56.275
+    },
+    {
+      "slice": "ml_prob>=50 AND decision_score>=95",
+      "n": 115,
+      "touch_5pct_5d_pct": 70.435,
+      "avg_mfe_5d_high_pct": 12.8824,
+      "median_mfe_5d_high_pct": 8.6114,
+      "avg_return_5d_close_pct": 5.2919,
+      "win_close_5d_pct": 57.391
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND expected_edge_score>=9",
+      "n": 98,
+      "touch_5pct_5d_pct": 70.408,
+      "avg_mfe_5d_high_pct": 12.7941,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 4.8189,
+      "win_close_5d_pct": 61.224
+    },
+    {
+      "slice": "tier=⚡T3 AND prob_clean>=30",
+      "n": 98,
+      "touch_5pct_5d_pct": 70.408,
+      "avg_mfe_5d_high_pct": 11.896,
+      "median_mfe_5d_high_pct": 7.5883,
+      "avg_return_5d_close_pct": 1.6547,
+      "win_close_5d_pct": 57.143
+    },
+    {
+      "slice": "priority_rank<=5 AND prob_clean>=30",
+      "n": 98,
+      "touch_5pct_5d_pct": 70.408,
+      "avg_mfe_5d_high_pct": 11.6899,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 4.6696,
+      "win_close_5d_pct": 54.082
+    },
+    {
+      "slice": "theme_routing_path=core_only AND volume_ratio>=2",
+      "n": 54,
+      "touch_5pct_5d_pct": 70.37,
+      "avg_mfe_5d_high_pct": 16.1126,
+      "median_mfe_5d_high_pct": 9.6842,
+      "avg_return_5d_close_pct": 6.8225,
+      "win_close_5d_pct": 51.852
+    },
+    {
+      "slice": "tier=⭐T2 AND expected_edge_score>=7",
+      "n": 64,
+      "touch_5pct_5d_pct": 70.312,
+      "avg_mfe_5d_high_pct": 13.5991,
+      "median_mfe_5d_high_pct": 9.8004,
+      "avg_return_5d_close_pct": 5.521,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "selection_lane=1d AND expected_edge_score>=4",
+      "n": 192,
+      "touch_5pct_5d_pct": 70.312,
+      "avg_mfe_5d_high_pct": 13.1845,
+      "median_mfe_5d_high_pct": 8.9341,
+      "avg_return_5d_close_pct": 3.729,
+      "win_close_5d_pct": 47.396
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND decision_score>=85",
+      "n": 128,
+      "touch_5pct_5d_pct": 70.312,
+      "avg_mfe_5d_high_pct": 12.1805,
+      "median_mfe_5d_high_pct": 9.1659,
+      "avg_return_5d_close_pct": 4.4127,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "tech_score>=50 AND expected_edge_score>=9",
+      "n": 111,
+      "touch_5pct_5d_pct": 70.27,
+      "avg_mfe_5d_high_pct": 13.463,
+      "median_mfe_5d_high_pct": 9.222,
+      "avg_return_5d_close_pct": 5.1361,
+      "win_close_5d_pct": 59.459
+    },
+    {
+      "slice": "priority_rank<=1 AND decision_score>=90",
+      "n": 37,
+      "touch_5pct_5d_pct": 70.27,
+      "avg_mfe_5d_high_pct": 10.355,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 0.4874,
+      "win_close_5d_pct": 32.432
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND tech_score>=80",
+      "n": 215,
+      "touch_5pct_5d_pct": 70.233,
+      "avg_mfe_5d_high_pct": 12.628,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 4.1716,
+      "win_close_5d_pct": 59.535
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND tech_score>=40",
+      "n": 178,
+      "touch_5pct_5d_pct": 70.225,
+      "avg_mfe_5d_high_pct": 12.6462,
+      "median_mfe_5d_high_pct": 8.2773,
+      "avg_return_5d_close_pct": 2.8777,
+      "win_close_5d_pct": 54.494
+    },
+    {
+      "slice": "priority_rank<=5 AND prob_clean>=20",
+      "n": 188,
+      "touch_5pct_5d_pct": 70.213,
+      "avg_mfe_5d_high_pct": 11.1891,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 4.2553,
+      "win_close_5d_pct": 51.064
+    },
+    {
+      "slice": "priority_rank<=10 AND whale_score>=80",
+      "n": 47,
+      "touch_5pct_5d_pct": 70.213,
+      "avg_mfe_5d_high_pct": 10.6711,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 1.844,
+      "win_close_5d_pct": 46.809
+    },
+    {
+      "slice": "feature_origin=scanner_archive_outcome AND tier=⚡T3",
+      "n": 47,
+      "touch_5pct_5d_pct": 70.213,
+      "avg_mfe_5d_high_pct": 10.6139,
+      "median_mfe_5d_high_pct": 8.561,
+      "avg_return_5d_close_pct": -0.3292,
+      "win_close_5d_pct": 40.426
+    },
+    {
+      "slice": "priority_rank<=1 AND decision_score>=70",
+      "n": 47,
+      "touch_5pct_5d_pct": 70.213,
+      "avg_mfe_5d_high_pct": 10.3826,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 1.5716,
+      "win_close_5d_pct": 40.426
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND whale_score>=70",
+      "n": 198,
+      "touch_5pct_5d_pct": 70.202,
+      "avg_mfe_5d_high_pct": 11.9265,
+      "median_mfe_5d_high_pct": 8.9758,
+      "avg_return_5d_close_pct": 3.925,
+      "win_close_5d_pct": 57.576
+    },
+    {
+      "slice": "prob_clean>=40 AND volume_ratio>=1.2",
+      "n": 104,
+      "touch_5pct_5d_pct": 70.192,
+      "avg_mfe_5d_high_pct": 14.5349,
+      "median_mfe_5d_high_pct": 9.2998,
+      "avg_return_5d_close_pct": 5.1909,
+      "win_close_5d_pct": 51.923
+    },
+    {
+      "slice": "decision_score>=95 AND expected_edge_score>=7",
+      "n": 114,
+      "touch_5pct_5d_pct": 70.175,
+      "avg_mfe_5d_high_pct": 12.1624,
+      "median_mfe_5d_high_pct": 8.5106,
+      "avg_return_5d_close_pct": 4.4206,
+      "win_close_5d_pct": 54.386
+    },
+    {
+      "slice": "theme_routing_path=core_only AND whale_score>=50",
+      "n": 382,
+      "touch_5pct_5d_pct": 70.157,
+      "avg_mfe_5d_high_pct": 12.3636,
+      "median_mfe_5d_high_pct": 8.3988,
+      "avg_return_5d_close_pct": 3.1769,
+      "win_close_5d_pct": 51.309
+    },
+    {
+      "slice": "selection_lane=1d AND expected_edge_score>=7",
+      "n": 77,
+      "touch_5pct_5d_pct": 70.13,
+      "avg_mfe_5d_high_pct": 13.3917,
+      "median_mfe_5d_high_pct": 8.5831,
+      "avg_return_5d_close_pct": 3.9764,
+      "win_close_5d_pct": 49.351
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND expected_edge_score>=9",
+      "n": 77,
+      "touch_5pct_5d_pct": 70.13,
+      "avg_mfe_5d_high_pct": 12.8909,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 4.8871,
+      "win_close_5d_pct": 64.935
+    },
+    {
+      "slice": "decision_bucket=watchlist AND priority_rank<=3",
+      "n": 87,
+      "touch_5pct_5d_pct": 70.115,
+      "avg_mfe_5d_high_pct": 16.6292,
+      "median_mfe_5d_high_pct": 8.9385,
+      "avg_return_5d_close_pct": 1.3849,
+      "win_close_5d_pct": 39.08
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND kr_universe_role=TRANSITIONAL",
+      "n": 97,
+      "touch_5pct_5d_pct": 70.103,
+      "avg_mfe_5d_high_pct": 12.4422,
+      "median_mfe_5d_high_pct": 8.3969,
+      "avg_return_5d_close_pct": 1.6768,
+      "win_close_5d_pct": 47.423
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=70",
+      "n": 194,
+      "touch_5pct_5d_pct": 70.103,
+      "avg_mfe_5d_high_pct": 12.3854,
+      "median_mfe_5d_high_pct": 8.1001,
+      "avg_return_5d_close_pct": 4.4494,
+      "win_close_5d_pct": 57.216
+    },
+    {
+      "slice": "tier=🏆T1 AND decision_score>=95",
+      "n": 107,
+      "touch_5pct_5d_pct": 70.093,
+      "avg_mfe_5d_high_pct": 13.3675,
+      "median_mfe_5d_high_pct": 8.6114,
+      "avg_return_5d_close_pct": 4.733,
+      "win_close_5d_pct": 56.075
+    },
+    {
+      "slice": "tier=🏆T1 AND theme_routing_path=core_only",
+      "n": 117,
+      "touch_5pct_5d_pct": 70.085,
+      "avg_mfe_5d_high_pct": 13.2794,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 3.443,
+      "win_close_5d_pct": 49.573
+    },
+    {
+      "slice": "selection_lane=1d AND tech_score>=40",
+      "n": 234,
+      "touch_5pct_5d_pct": 70.085,
+      "avg_mfe_5d_high_pct": 12.9506,
+      "median_mfe_5d_high_pct": 8.3861,
+      "avg_return_5d_close_pct": 2.3669,
+      "win_close_5d_pct": 51.709
+    },
+    {
+      "slice": "priority_rank<=3 AND prob_clean>=20",
+      "n": 117,
+      "touch_5pct_5d_pct": 70.085,
+      "avg_mfe_5d_high_pct": 10.6393,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 3.4484,
+      "win_close_5d_pct": 50.427
+    },
+    {
+      "slice": "tech_score>=70 AND decision_score>=80",
+      "n": 254,
+      "touch_5pct_5d_pct": 70.079,
+      "avg_mfe_5d_high_pct": 13.3105,
+      "median_mfe_5d_high_pct": 8.3849,
+      "avg_return_5d_close_pct": 4.3055,
+      "win_close_5d_pct": 51.969
+    },
+    {
+      "slice": "scanner_timeframe_profile=DAILY_PRIMARY_WITH_1H_REFRESH AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 137,
+      "touch_5pct_5d_pct": 70.073,
+      "avg_mfe_5d_high_pct": 12.5436,
+      "median_mfe_5d_high_pct": 8.2192,
+      "avg_return_5d_close_pct": 4.2477,
+      "win_close_5d_pct": 53.285
+    },
+    {
+      "slice": "priority_rank<=5 AND decision_score>=90",
+      "n": 137,
+      "touch_5pct_5d_pct": 70.073,
+      "avg_mfe_5d_high_pct": 11.2771,
+      "median_mfe_5d_high_pct": 8.4532,
+      "avg_return_5d_close_pct": 3.6142,
+      "win_close_5d_pct": 46.715
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND ml_prob>=30",
+      "n": 217,
+      "touch_5pct_5d_pct": 70.046,
+      "avg_mfe_5d_high_pct": 13.9899,
+      "median_mfe_5d_high_pct": 9.6244,
+      "avg_return_5d_close_pct": 3.8064,
+      "win_close_5d_pct": 50.23
+    },
+    {
+      "slice": "alpha_score>=70 AND volume_ratio>=3",
+      "n": 30,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 21.0778,
+      "median_mfe_5d_high_pct": 10.6446,
+      "avg_return_5d_close_pct": 10.3214,
+      "win_close_5d_pct": 43.333
+    },
+    {
+      "slice": "ml_prob>=30 AND volume_ratio>=3",
+      "n": 30,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 20.3953,
+      "median_mfe_5d_high_pct": 10.684,
+      "avg_return_5d_close_pct": 8.5063,
+      "win_close_5d_pct": 40.0
+    },
+    {
+      "slice": "tech_score>=80 AND volume_ratio>=2",
+      "n": 40,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 16.8587,
+      "median_mfe_5d_high_pct": 10.2535,
+      "avg_return_5d_close_pct": 6.0291,
+      "win_close_5d_pct": 37.5
+    },
+    {
+      "slice": "decision_bucket=ignored AND position=🌋 고점 (Peak)",
+      "n": 30,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 15.8372,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 5.1514,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "alpha_score>=95 AND whale_score>=70",
+      "n": 80,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 15.3656,
+      "median_mfe_5d_high_pct": 9.0815,
+      "avg_return_5d_close_pct": 5.2874,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "alpha_score>=95 AND whale_score>=40",
+      "n": 90,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 15.069,
+      "median_mfe_5d_high_pct": 8.4686,
+      "avg_return_5d_close_pct": 5.4163,
+      "win_close_5d_pct": 48.889
+    },
+    {
+      "slice": "selection_lane=1d AND whale_score>=60",
+      "n": 160,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 12.7297,
+      "median_mfe_5d_high_pct": 8.2766,
+      "avg_return_5d_close_pct": 2.3343,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND prob_clean>=20",
+      "n": 190,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 12.552,
+      "median_mfe_5d_high_pct": 8.1791,
+      "avg_return_5d_close_pct": 3.0724,
+      "win_close_5d_pct": 54.737
+    },
+    {
+      "slice": "trend=DOWN",
+      "n": 190,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 12.1698,
+      "median_mfe_5d_high_pct": 7.9699,
+      "avg_return_5d_close_pct": 5.949,
+      "win_close_5d_pct": 61.579
+    },
+    {
+      "slice": "priority_rank<=5 AND tech_score>=50",
+      "n": 60,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 11.638,
+      "median_mfe_5d_high_pct": 8.8778,
+      "avg_return_5d_close_pct": 3.7019,
+      "win_close_5d_pct": 48.333
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND expected_edge_score>=6",
+      "n": 30,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 8.9307,
+      "median_mfe_5d_high_pct": 7.839,
+      "avg_return_5d_close_pct": 3.5936,
+      "win_close_5d_pct": 56.667
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND expected_edge_score>=7",
+      "n": 30,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 8.9307,
+      "median_mfe_5d_high_pct": 7.839,
+      "avg_return_5d_close_pct": 3.5936,
+      "win_close_5d_pct": 56.667
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND expected_edge_score>=8",
+      "n": 30,
+      "touch_5pct_5d_pct": 70.0,
+      "avg_mfe_5d_high_pct": 8.9307,
+      "median_mfe_5d_high_pct": 7.839,
+      "avg_return_5d_close_pct": 3.5936,
+      "win_close_5d_pct": 56.667
+    }
+  ],
+  "best_by_touch": [
+    {
+      "slice": "tier=⭐T2 AND alpha_score>=90",
+      "n": 45,
+      "touch_5pct_5d_pct": 84.444,
+      "avg_mfe_5d_high_pct": 16.8984,
+      "median_mfe_5d_high_pct": 9.744,
+      "avg_return_5d_close_pct": 8.2039,
+      "win_close_5d_pct": 62.222
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=3",
+      "n": 55,
+      "touch_5pct_5d_pct": 83.636,
+      "avg_mfe_5d_high_pct": 19.9841,
+      "median_mfe_5d_high_pct": 11.0368,
+      "avg_return_5d_close_pct": 1.2568,
+      "win_close_5d_pct": 47.273
+    },
+    {
+      "slice": "decision_bucket=ignored AND position=🚀 상승 (Rising)",
+      "n": 35,
+      "touch_5pct_5d_pct": 82.857,
+      "avg_mfe_5d_high_pct": 14.3412,
+      "median_mfe_5d_high_pct": 11.3846,
+      "avg_return_5d_close_pct": 4.965,
+      "win_close_5d_pct": 68.571
+    },
+    {
+      "slice": "decision_bucket=ignored AND tier=🏆T1",
+      "n": 34,
+      "touch_5pct_5d_pct": 82.353,
+      "avg_mfe_5d_high_pct": 16.9847,
+      "median_mfe_5d_high_pct": 11.1881,
+      "avg_return_5d_close_pct": 7.4041,
+      "win_close_5d_pct": 61.765
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND decision_score>=95",
+      "n": 62,
+      "touch_5pct_5d_pct": 82.258,
+      "avg_mfe_5d_high_pct": 14.3418,
+      "median_mfe_5d_high_pct": 10.2877,
+      "avg_return_5d_close_pct": 6.6037,
+      "win_close_5d_pct": 70.968
+    },
+    {
+      "slice": "tier=⭐T2 AND expected_edge_score>=8",
+      "n": 39,
+      "touch_5pct_5d_pct": 82.051,
+      "avg_mfe_5d_high_pct": 17.761,
+      "median_mfe_5d_high_pct": 12.3921,
+      "avg_return_5d_close_pct": 8.7481,
+      "win_close_5d_pct": 56.41
+    },
+    {
+      "slice": "trend=DOWN AND theme_routing_path=core_only",
+      "n": 72,
+      "touch_5pct_5d_pct": 81.944,
+      "avg_mfe_5d_high_pct": 17.2214,
+      "median_mfe_5d_high_pct": 11.9993,
+      "avg_return_5d_close_pct": 10.6612,
+      "win_close_5d_pct": 65.278
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=2",
+      "n": 44,
+      "touch_5pct_5d_pct": 81.818,
+      "avg_mfe_5d_high_pct": 21.4617,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 1.6954,
+      "win_close_5d_pct": 47.727
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=70",
+      "n": 38,
+      "touch_5pct_5d_pct": 81.579,
+      "avg_mfe_5d_high_pct": 11.8815,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.3936,
+      "win_close_5d_pct": 57.895
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 48,
+      "touch_5pct_5d_pct": 81.25,
+      "avg_mfe_5d_high_pct": 14.3675,
+      "median_mfe_5d_high_pct": 11.3834,
+      "avg_return_5d_close_pct": 5.7047,
+      "win_close_5d_pct": 64.583
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 37,
+      "touch_5pct_5d_pct": 81.081,
+      "avg_mfe_5d_high_pct": 14.4661,
+      "median_mfe_5d_high_pct": 11.3846,
+      "avg_return_5d_close_pct": 4.2652,
+      "win_close_5d_pct": 54.054
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=95",
+      "n": 42,
+      "touch_5pct_5d_pct": 80.952,
+      "avg_mfe_5d_high_pct": 14.125,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 4.9394,
+      "win_close_5d_pct": 52.381
+    },
+    {
+      "slice": "alpha_score>=90 AND volume_ratio>=2",
+      "n": 31,
+      "touch_5pct_5d_pct": 80.645,
+      "avg_mfe_5d_high_pct": 21.8008,
+      "median_mfe_5d_high_pct": 12.9032,
+      "avg_return_5d_close_pct": 13.7053,
+      "win_close_5d_pct": 58.065
+    },
+    {
+      "slice": "decision_bucket=ignored AND ml_prob>=50",
+      "n": 31,
+      "touch_5pct_5d_pct": 80.645,
+      "avg_mfe_5d_high_pct": 12.7009,
+      "median_mfe_5d_high_pct": 9.4812,
+      "avg_return_5d_close_pct": 2.9242,
+      "win_close_5d_pct": 41.935
+    },
+    {
+      "slice": "decision_bucket=ignored AND feature_origin=outcome_sync_partial",
+      "n": 66,
+      "touch_5pct_5d_pct": 80.303,
+      "avg_mfe_5d_high_pct": 14.5605,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 5.2421,
+      "win_close_5d_pct": 65.152
+    },
+    {
+      "slice": "whale_score>=70 AND volume_ratio>=2",
+      "n": 30,
+      "touch_5pct_5d_pct": 80.0,
+      "avg_mfe_5d_high_pct": 21.3068,
+      "median_mfe_5d_high_pct": 12.3063,
+      "avg_return_5d_close_pct": 8.7244,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=90",
+      "n": 65,
+      "touch_5pct_5d_pct": 80.0,
+      "avg_mfe_5d_high_pct": 14.0384,
+      "median_mfe_5d_high_pct": 9.1457,
+      "avg_return_5d_close_pct": 5.2783,
+      "win_close_5d_pct": 56.923
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND trend=UP",
+      "n": 65,
+      "touch_5pct_5d_pct": 80.0,
+      "avg_mfe_5d_high_pct": 13.8093,
+      "median_mfe_5d_high_pct": 10.992,
+      "avg_return_5d_close_pct": 5.0949,
+      "win_close_5d_pct": 67.692
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=60",
+      "n": 59,
+      "touch_5pct_5d_pct": 79.661,
+      "avg_mfe_5d_high_pct": 15.0322,
+      "median_mfe_5d_high_pct": 10.5163,
+      "avg_return_5d_close_pct": 5.453,
+      "win_close_5d_pct": 62.712
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=70",
+      "n": 49,
+      "touch_5pct_5d_pct": 79.592,
+      "avg_mfe_5d_high_pct": 15.6036,
+      "median_mfe_5d_high_pct": 10.9916,
+      "avg_return_5d_close_pct": 4.9251,
+      "win_close_5d_pct": 59.184
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=40",
+      "n": 63,
+      "touch_5pct_5d_pct": 79.365,
+      "avg_mfe_5d_high_pct": 14.8997,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 5.1615,
+      "win_close_5d_pct": 61.905
+    },
+    {
+      "slice": "decision_bucket=ignored AND whale_score>=50",
+      "n": 62,
+      "touch_5pct_5d_pct": 79.032,
+      "avg_mfe_5d_high_pct": 14.8182,
+      "median_mfe_5d_high_pct": 10.5213,
+      "avg_return_5d_close_pct": 5.0677,
+      "win_close_5d_pct": 61.29
+    },
+    {
+      "slice": "decision_score>=80 AND volume_ratio>=2",
+      "n": 38,
+      "touch_5pct_5d_pct": 78.947,
+      "avg_mfe_5d_high_pct": 20.3194,
+      "median_mfe_5d_high_pct": 16.1525,
+      "avg_return_5d_close_pct": 10.0093,
+      "win_close_5d_pct": 63.158
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=95",
+      "n": 76,
+      "touch_5pct_5d_pct": 78.947,
+      "avg_mfe_5d_high_pct": 15.7777,
+      "median_mfe_5d_high_pct": 10.2965,
+      "avg_return_5d_close_pct": 4.1474,
+      "win_close_5d_pct": 30.263
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 52,
+      "touch_5pct_5d_pct": 78.846,
+      "avg_mfe_5d_high_pct": 15.2866,
+      "median_mfe_5d_high_pct": 11.1881,
+      "avg_return_5d_close_pct": 5.6931,
+      "win_close_5d_pct": 61.538
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND trend=DOWN",
+      "n": 52,
+      "touch_5pct_5d_pct": 78.846,
+      "avg_mfe_5d_high_pct": 14.8791,
+      "median_mfe_5d_high_pct": 9.5157,
+      "avg_return_5d_close_pct": 9.5334,
+      "win_close_5d_pct": 84.615
+    },
+    {
+      "slice": "decision_score>=85 AND volume_ratio>=2",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 19.2873,
+      "median_mfe_5d_high_pct": 16.1525,
+      "avg_return_5d_close_pct": 9.8011,
+      "win_close_5d_pct": 63.636
+    },
+    {
+      "slice": "priority_rank<=10 AND volume_ratio>=2",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 15.3465,
+      "median_mfe_5d_high_pct": 13.8952,
+      "avg_return_5d_close_pct": 0.7084,
+      "win_close_5d_pct": 45.455
+    },
+    {
+      "slice": "decision_bucket=ignored AND priority_rank<=3",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 12.6422,
+      "median_mfe_5d_high_pct": 12.0958,
+      "avg_return_5d_close_pct": 4.5609,
+      "win_close_5d_pct": 57.576
+    },
+    {
+      "slice": "decision_bucket=picked AND priority_rank<=10",
+      "n": 33,
+      "touch_5pct_5d_pct": 78.788,
+      "avg_mfe_5d_high_pct": 12.2735,
+      "median_mfe_5d_high_pct": 10.4513,
+      "avg_return_5d_close_pct": 2.2079,
+      "win_close_5d_pct": 48.485
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND feature_origin=scanner_archive_outcome",
+      "n": 130,
+      "touch_5pct_5d_pct": 78.462,
+      "avg_mfe_5d_high_pct": 13.0347,
+      "median_mfe_5d_high_pct": 9.2466,
+      "avg_return_5d_close_pct": 5.34,
+      "win_close_5d_pct": 63.077
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=80",
+      "n": 51,
+      "touch_5pct_5d_pct": 78.431,
+      "avg_mfe_5d_high_pct": 12.3227,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 6.3849,
+      "win_close_5d_pct": 64.706
+    },
+    {
+      "slice": "tier=⭐T2 AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 32,
+      "touch_5pct_5d_pct": 78.125,
+      "avg_mfe_5d_high_pct": 12.3741,
+      "median_mfe_5d_high_pct": 8.6106,
+      "avg_return_5d_close_pct": 4.7923,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "tier=⚡T3 AND expected_edge_score>=5",
+      "n": 64,
+      "touch_5pct_5d_pct": 78.125,
+      "avg_mfe_5d_high_pct": 11.4565,
+      "median_mfe_5d_high_pct": 8.7431,
+      "avg_return_5d_close_pct": 1.1266,
+      "win_close_5d_pct": 48.438
+    },
+    {
+      "slice": "decision_bucket=ignored AND alpha_score>=90",
+      "n": 41,
+      "touch_5pct_5d_pct": 78.049,
+      "avg_mfe_5d_high_pct": 16.2657,
+      "median_mfe_5d_high_pct": 9.176,
+      "avg_return_5d_close_pct": 6.4677,
+      "win_close_5d_pct": 48.78
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=60",
+      "n": 41,
+      "touch_5pct_5d_pct": 78.049,
+      "avg_mfe_5d_high_pct": 11.5111,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 4.1243,
+      "win_close_5d_pct": 56.098
+    },
+    {
+      "slice": "decision_bucket=ignored AND kr_universe_role=EXPLOSIVE_LEADER",
+      "n": 54,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 14.3041,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 2.2626,
+      "win_close_5d_pct": 40.741
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND priority_rank<=3",
+      "n": 36,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 13.2431,
+      "median_mfe_5d_high_pct": 11.8515,
+      "avg_return_5d_close_pct": 5.6006,
+      "win_close_5d_pct": 61.111
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=70",
+      "n": 90,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 13.1312,
+      "median_mfe_5d_high_pct": 10.395,
+      "avg_return_5d_close_pct": 5.1073,
+      "win_close_5d_pct": 63.333
+    },
+    {
+      "slice": "kr_universe_role=TRANSITIONAL AND whale_score>=40",
+      "n": 54,
+      "touch_5pct_5d_pct": 77.778,
+      "avg_mfe_5d_high_pct": 12.725,
+      "median_mfe_5d_high_pct": 9.0327,
+      "avg_return_5d_close_pct": 2.3675,
+      "win_close_5d_pct": 48.148
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=80",
+      "n": 40,
+      "touch_5pct_5d_pct": 77.5,
+      "avg_mfe_5d_high_pct": 16.2892,
+      "median_mfe_5d_high_pct": 9.9143,
+      "avg_return_5d_close_pct": 6.7084,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "tier=⭐T2 AND alpha_score>=85",
+      "n": 62,
+      "touch_5pct_5d_pct": 77.419,
+      "avg_mfe_5d_high_pct": 14.4718,
+      "median_mfe_5d_high_pct": 9.4449,
+      "avg_return_5d_close_pct": 6.3804,
+      "win_close_5d_pct": 58.065
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND decision_score>=95",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 14.9178,
+      "median_mfe_5d_high_pct": 9.9143,
+      "avg_return_5d_close_pct": 5.3641,
+      "win_close_5d_pct": 54.545
+    },
+    {
+      "slice": "priority_rank<=3 AND tech_score>=40",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 11.4613,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.1325,
+      "win_close_5d_pct": 56.818
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=40",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 11.4613,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.1325,
+      "win_close_5d_pct": 56.818
+    },
+    {
+      "slice": "priority_rank<=3 AND whale_score>=50",
+      "n": 44,
+      "touch_5pct_5d_pct": 77.273,
+      "avg_mfe_5d_high_pct": 11.4613,
+      "median_mfe_5d_high_pct": 10.7816,
+      "avg_return_5d_close_pct": 4.1325,
+      "win_close_5d_pct": 56.818
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND priority_rank<=10",
+      "n": 123,
+      "touch_5pct_5d_pct": 77.236,
+      "avg_mfe_5d_high_pct": 12.0904,
+      "median_mfe_5d_high_pct": 9.2466,
+      "avg_return_5d_close_pct": 4.0958,
+      "win_close_5d_pct": 61.789
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND expected_edge_score>=7",
+      "n": 35,
+      "touch_5pct_5d_pct": 77.143,
+      "avg_mfe_5d_high_pct": 14.9288,
+      "median_mfe_5d_high_pct": 11.3821,
+      "avg_return_5d_close_pct": 4.4564,
+      "win_close_5d_pct": 51.429
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=40",
+      "n": 70,
+      "touch_5pct_5d_pct": 77.143,
+      "avg_mfe_5d_high_pct": 14.7295,
+      "median_mfe_5d_high_pct": 10.759,
+      "avg_return_5d_close_pct": 4.9822,
+      "win_close_5d_pct": 61.429
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND alpha_score>=85",
+      "n": 96,
+      "touch_5pct_5d_pct": 77.083,
+      "avg_mfe_5d_high_pct": 13.3208,
+      "median_mfe_5d_high_pct": 8.6825,
+      "avg_return_5d_close_pct": 5.0722,
+      "win_close_5d_pct": 57.292
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND decision_score>=90",
+      "n": 52,
+      "touch_5pct_5d_pct": 76.923,
+      "avg_mfe_5d_high_pct": 14.4767,
+      "median_mfe_5d_high_pct": 9.9143,
+      "avg_return_5d_close_pct": 4.6017,
+      "win_close_5d_pct": 51.923
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=50",
+      "n": 69,
+      "touch_5pct_5d_pct": 76.812,
+      "avg_mfe_5d_high_pct": 14.636,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 4.8831,
+      "win_close_5d_pct": 60.87
+    },
+    {
+      "slice": "priority_rank<=3 AND tech_score>=50",
+      "n": 43,
+      "touch_5pct_5d_pct": 76.744,
+      "avg_mfe_5d_high_pct": 11.2353,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 3.956,
+      "win_close_5d_pct": 55.814
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=5",
+      "n": 73,
+      "touch_5pct_5d_pct": 76.712,
+      "avg_mfe_5d_high_pct": 18.1991,
+      "median_mfe_5d_high_pct": 11.0368,
+      "avg_return_5d_close_pct": 1.9054,
+      "win_close_5d_pct": 45.205
+    },
+    {
+      "slice": "decision_bucket=ignored AND alpha_score>=85",
+      "n": 60,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 15.2628,
+      "median_mfe_5d_high_pct": 9.2333,
+      "avg_return_5d_close_pct": 6.0007,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "trend=UP AND tier=T3",
+      "n": 30,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 13.655,
+      "median_mfe_5d_high_pct": 12.0565,
+      "avg_return_5d_close_pct": 4.4862,
+      "win_close_5d_pct": 63.333
+    },
+    {
+      "slice": "kr_universe_role=TRANSITIONAL AND whale_score>=60",
+      "n": 30,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 13.5063,
+      "median_mfe_5d_high_pct": 8.3482,
+      "avg_return_5d_close_pct": 3.9364,
+      "win_close_5d_pct": 43.333
+    },
+    {
+      "slice": "trend=DOWN AND tier=⭐T2",
+      "n": 30,
+      "touch_5pct_5d_pct": 76.667,
+      "avg_mfe_5d_high_pct": 12.0075,
+      "median_mfe_5d_high_pct": 7.9901,
+      "avg_return_5d_close_pct": 5.9697,
+      "win_close_5d_pct": 70.0
+    },
+    {
+      "slice": "priority_rank<=3 AND decision_score>=95",
+      "n": 51,
+      "touch_5pct_5d_pct": 76.471,
+      "avg_mfe_5d_high_pct": 10.2305,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 2.8015,
+      "win_close_5d_pct": 56.863
+    },
+    {
+      "slice": "decision_bucket=picked",
+      "n": 38,
+      "touch_5pct_5d_pct": 76.316,
+      "avg_mfe_5d_high_pct": 11.7164,
+      "median_mfe_5d_high_pct": 9.2719,
+      "avg_return_5d_close_pct": 1.0496,
+      "win_close_5d_pct": 44.737
+    },
+    {
+      "slice": "decision_bucket=exception_leader",
+      "n": 139,
+      "touch_5pct_5d_pct": 76.259,
+      "avg_mfe_5d_high_pct": 12.5406,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 4.8043,
+      "win_close_5d_pct": 61.871
+    },
+    {
+      "slice": "decision_bucket=ignored AND tech_score>=60",
+      "n": 63,
+      "touch_5pct_5d_pct": 76.19,
+      "avg_mfe_5d_high_pct": 14.9093,
+      "median_mfe_5d_high_pct": 9.4972,
+      "avg_return_5d_close_pct": 4.7976,
+      "win_close_5d_pct": 60.317
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND priority_rank<=10",
+      "n": 50,
+      "touch_5pct_5d_pct": 76.0,
+      "avg_mfe_5d_high_pct": 13.3264,
+      "median_mfe_5d_high_pct": 11.9383,
+      "avg_return_5d_close_pct": 3.6238,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "tier=⭐T2 AND whale_score>=80",
+      "n": 50,
+      "touch_5pct_5d_pct": 76.0,
+      "avg_mfe_5d_high_pct": 12.4848,
+      "median_mfe_5d_high_pct": 10.5386,
+      "avg_return_5d_close_pct": 3.2478,
+      "win_close_5d_pct": 54.0
+    },
+    {
+      "slice": "position=🌋 고점 (Peak) AND decision_score>=95",
+      "n": 33,
+      "touch_5pct_5d_pct": 75.758,
+      "avg_mfe_5d_high_pct": 14.4125,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 3.8156,
+      "win_close_5d_pct": 48.485
+    },
+    {
+      "slice": "tier=⭐T2 AND position=🌋 고점 (Peak)",
+      "n": 70,
+      "touch_5pct_5d_pct": 75.714,
+      "avg_mfe_5d_high_pct": 13.8229,
+      "median_mfe_5d_high_pct": 10.0782,
+      "avg_return_5d_close_pct": 5.7772,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND priority_rank<=5",
+      "n": 74,
+      "touch_5pct_5d_pct": 75.676,
+      "avg_mfe_5d_high_pct": 11.6293,
+      "median_mfe_5d_high_pct": 8.9888,
+      "avg_return_5d_close_pct": 3.9374,
+      "win_close_5d_pct": 64.865
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=90",
+      "n": 37,
+      "touch_5pct_5d_pct": 75.676,
+      "avg_mfe_5d_high_pct": 11.508,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 4.7837,
+      "win_close_5d_pct": 59.459
+    },
+    {
+      "slice": "decision_bucket=ignored AND prob_clean>=30",
+      "n": 82,
+      "touch_5pct_5d_pct": 75.61,
+      "avg_mfe_5d_high_pct": 12.1412,
+      "median_mfe_5d_high_pct": 8.6068,
+      "avg_return_5d_close_pct": 4.2351,
+      "win_close_5d_pct": 58.537
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND volume_ratio>=1.2",
+      "n": 45,
+      "touch_5pct_5d_pct": 75.556,
+      "avg_mfe_5d_high_pct": 13.031,
+      "median_mfe_5d_high_pct": 11.0368,
+      "avg_return_5d_close_pct": 0.2312,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND whale_score>=70",
+      "n": 45,
+      "touch_5pct_5d_pct": 75.556,
+      "avg_mfe_5d_high_pct": 11.6311,
+      "median_mfe_5d_high_pct": 10.9916,
+      "avg_return_5d_close_pct": 0.3814,
+      "win_close_5d_pct": 46.667
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND tier=🏆T1",
+      "n": 53,
+      "touch_5pct_5d_pct": 75.472,
+      "avg_mfe_5d_high_pct": 15.0824,
+      "median_mfe_5d_high_pct": 10.9916,
+      "avg_return_5d_close_pct": 5.1844,
+      "win_close_5d_pct": 54.717
+    },
+    {
+      "slice": "decision_bucket=ignored AND priority_rank<=5",
+      "n": 53,
+      "touch_5pct_5d_pct": 75.472,
+      "avg_mfe_5d_high_pct": 12.4831,
+      "median_mfe_5d_high_pct": 11.4011,
+      "avg_return_5d_close_pct": 4.5508,
+      "win_close_5d_pct": 58.491
+    },
+    {
+      "slice": "tier=🏆T1 AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 61,
+      "touch_5pct_5d_pct": 75.41,
+      "avg_mfe_5d_high_pct": 13.6991,
+      "median_mfe_5d_high_pct": 9.3023,
+      "avg_return_5d_close_pct": 5.5512,
+      "win_close_5d_pct": 60.656
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND decision_score>=85",
+      "n": 65,
+      "touch_5pct_5d_pct": 75.385,
+      "avg_mfe_5d_high_pct": 14.6908,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 4.9418,
+      "win_close_5d_pct": 53.846
+    },
+    {
+      "slice": "tier=⭐T2 AND decision_score>=80",
+      "n": 69,
+      "touch_5pct_5d_pct": 75.362,
+      "avg_mfe_5d_high_pct": 13.4565,
+      "median_mfe_5d_high_pct": 8.5831,
+      "avg_return_5d_close_pct": 3.2428,
+      "win_close_5d_pct": 44.928
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND prob_clean>=40",
+      "n": 77,
+      "touch_5pct_5d_pct": 75.325,
+      "avg_mfe_5d_high_pct": 13.9071,
+      "median_mfe_5d_high_pct": 10.0167,
+      "avg_return_5d_close_pct": 6.3864,
+      "win_close_5d_pct": 64.935
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND prob_clean>=50",
+      "n": 77,
+      "touch_5pct_5d_pct": 75.325,
+      "avg_mfe_5d_high_pct": 13.9071,
+      "median_mfe_5d_high_pct": 10.0167,
+      "avg_return_5d_close_pct": 6.3864,
+      "win_close_5d_pct": 64.935
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND decision_score>=80",
+      "n": 89,
+      "touch_5pct_5d_pct": 75.281,
+      "avg_mfe_5d_high_pct": 15.0606,
+      "median_mfe_5d_high_pct": 10.5263,
+      "avg_return_5d_close_pct": 3.7572,
+      "win_close_5d_pct": 39.326
+    },
+    {
+      "slice": "position=🚀 상승 (Rising) AND phase25_variant=phase25_kr_swing_xgboost",
+      "n": 89,
+      "touch_5pct_5d_pct": 75.281,
+      "avg_mfe_5d_high_pct": 12.7032,
+      "median_mfe_5d_high_pct": 9.4571,
+      "avg_return_5d_close_pct": 4.2737,
+      "win_close_5d_pct": 65.169
+    },
+    {
+      "slice": "alpha_score>=75 AND volume_ratio>=2",
+      "n": 56,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 18.4536,
+      "median_mfe_5d_high_pct": 10.9965,
+      "avg_return_5d_close_pct": 9.1789,
+      "win_close_5d_pct": 55.357
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND decision_score>=85",
+      "n": 76,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 15.1189,
+      "median_mfe_5d_high_pct": 10.2965,
+      "avg_return_5d_close_pct": 2.9288,
+      "win_close_5d_pct": 36.842
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND alpha_score>=90",
+      "n": 100,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 14.9845,
+      "median_mfe_5d_high_pct": 9.3693,
+      "avg_return_5d_close_pct": 3.9296,
+      "win_close_5d_pct": 34.0
+    },
+    {
+      "slice": "trend=DOWN AND whale_score>=70",
+      "n": 68,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 14.1373,
+      "median_mfe_5d_high_pct": 8.5466,
+      "avg_return_5d_close_pct": 7.0928,
+      "win_close_5d_pct": 67.647
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND expected_edge_score>=5",
+      "n": 56,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.9244,
+      "median_mfe_5d_high_pct": 10.1919,
+      "avg_return_5d_close_pct": 3.5149,
+      "win_close_5d_pct": 51.786
+    },
+    {
+      "slice": "trend=UP AND decision_score>=95",
+      "n": 192,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.7023,
+      "median_mfe_5d_high_pct": 10.049,
+      "avg_return_5d_close_pct": 5.1536,
+      "win_close_5d_pct": 57.812
+    },
+    {
+      "slice": "kr_universe_role=EXPLOSIVE_LEADER AND expected_edge_score>=6",
+      "n": 44,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.5162,
+      "median_mfe_5d_high_pct": 9.1953,
+      "avg_return_5d_close_pct": 3.473,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "tier=T3",
+      "n": 32,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.0434,
+      "median_mfe_5d_high_pct": 11.4834,
+      "avg_return_5d_close_pct": 4.1156,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "tier=T3 AND tech_score>=40",
+      "n": 32,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 13.0434,
+      "median_mfe_5d_high_pct": 11.4834,
+      "avg_return_5d_close_pct": 4.1156,
+      "win_close_5d_pct": 62.5
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND decision_score>=80",
+      "n": 104,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 12.5944,
+      "median_mfe_5d_high_pct": 8.7912,
+      "avg_return_5d_close_pct": 5.431,
+      "win_close_5d_pct": 57.692
+    },
+    {
+      "slice": "decision_bucket=picked AND feature_origin=outcome_sync_partial",
+      "n": 36,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 11.9061,
+      "median_mfe_5d_high_pct": 9.2719,
+      "avg_return_5d_close_pct": 1.051,
+      "win_close_5d_pct": 44.444
+    },
+    {
+      "slice": "priority_rank<=5 AND whale_score>=70",
+      "n": 52,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 11.7418,
+      "median_mfe_5d_high_pct": 9.4816,
+      "avg_return_5d_close_pct": 3.0852,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "decision_bucket=exception_leader AND decision_score>=85",
+      "n": 40,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 11.352,
+      "median_mfe_5d_high_pct": 8.8608,
+      "avg_return_5d_close_pct": 4.6393,
+      "win_close_5d_pct": 60.0
+    },
+    {
+      "slice": "phase25_variant=phase25_kr_swing_xgboost AND expected_edge_score>=5",
+      "n": 36,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 10.9752,
+      "median_mfe_5d_high_pct": 9.2181,
+      "avg_return_5d_close_pct": 5.0214,
+      "win_close_5d_pct": 55.556
+    },
+    {
+      "slice": "trend=UP AND priority_rank<=2",
+      "n": 84,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 10.8381,
+      "median_mfe_5d_high_pct": 9.3014,
+      "avg_return_5d_close_pct": 2.9226,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "priority_rank<=2 AND decision_score>=95",
+      "n": 40,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 8.9656,
+      "median_mfe_5d_high_pct": 8.4138,
+      "avg_return_5d_close_pct": 1.3347,
+      "win_close_5d_pct": 50.0
+    },
+    {
+      "slice": "tier=⚡T3 AND expected_edge_score>=6",
+      "n": 32,
+      "touch_5pct_5d_pct": 75.0,
+      "avg_mfe_5d_high_pct": 7.7779,
+      "median_mfe_5d_high_pct": 6.2258,
+      "avg_return_5d_close_pct": -1.5856,
+      "win_close_5d_pct": 43.75
+    },
+    {
+      "slice": "feature_origin=outcome_sync_partial AND priority_rank<=10",
+      "n": 115,
+      "touch_5pct_5d_pct": 74.783,
+      "avg_mfe_5d_high_pct": 16.5157,
+      "median_mfe_5d_high_pct": 10.4513,
+      "avg_return_5d_close_pct": 1.8435,
+      "win_close_5d_pct": 46.087
+    },
+    {
+      "slice": "feature_origin=scanner_partial_legacy AND decision_score>=90",
+      "n": 95,
+      "touch_5pct_5d_pct": 74.737,
+      "avg_mfe_5d_high_pct": 13.0394,
+      "median_mfe_5d_high_pct": 10.049,
+      "avg_return_5d_close_pct": 5.1651,
+      "win_close_5d_pct": 66.316
+    },
+    {
+      "slice": "priority_rank<=10 AND decision_score>=95",
+      "n": 83,
+      "touch_5pct_5d_pct": 74.699,
+      "avg_mfe_5d_high_pct": 12.5698,
+      "median_mfe_5d_high_pct": 9.2905,
+      "avg_return_5d_close_pct": 4.3388,
+      "win_close_5d_pct": 54.217
+    }
+  ]
+}

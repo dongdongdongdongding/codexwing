@@ -278,6 +278,7 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "decision_bucket": classify_decision_bucket(decision_label),
                 "status": "PENDING",
                 "horizon": f"T+{horizon_days}D",
+                "target_horizon_days": horizon_days,
                 "recommended_at": context.created_at,
                 "scan_mode": scan_mode,
                 "strategy_family": strategy_family or None,
@@ -330,6 +331,9 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                     meta.get("entry_reference_price"),
                     cache_date=context.as_of_date,
                 ),
+                "target_tp_pct": meta.get("target_tp_pct"),
+                "stop_sl_pct": meta.get("stop_sl_pct"),
+                "hold_days": meta.get("hold_days"),
                 "realized_return_pct": None,
                 "outcome_label": None,
                 "outcome_recorded_at": None,
@@ -1662,6 +1666,9 @@ def _collect_exception_leaders_from_scanner_payload(
         detail_by_symbol = {}
 
     market_gate = str((summary.get("input_meta", {}) or {}).get("market_gate", {}).get("gate", "") or summary.get("market_gate", {}).get("gate", "") or "")
+    input_meta = summary.get("input_meta", {}) if isinstance(summary.get("input_meta"), dict) else {}
+    scan_mode = str(input_meta.get("scan_mode") or summary.get("scan_mode") or "SWING").upper()
+    is_kosdaq_swing = str(context.market or "").upper() == "KOSDAQ" and scan_mode == "SWING"
     regime = resolve_profile_regime(market_gate)
     ticker_names = _resolve_ticker_names(market=context.market, tickers=list(reject_by_symbol.keys()))
 
@@ -1764,6 +1771,8 @@ def _collect_exception_leaders_from_scanner_payload(
         if loss_risk_score >= float(get_loss_risk_gate_thresholds(loss_risk_market).get("hard", 65.0)):
             skipped_hard_loss_risk += 1
             continue
+        if is_kosdaq_swing and real_trend != "UP":
+            continue
 
         scored.append(
             (
@@ -1808,7 +1817,11 @@ def _collect_exception_leaders_from_scanner_payload(
             continue
         meta["generated_at"] = generated_at.isoformat()
         meta["expires_at"] = expires_at.isoformat()
-        meta["horizon_days"] = 3
+        meta["horizon_days"] = 5 if is_kosdaq_swing else 3
+        if is_kosdaq_swing:
+            meta["target_tp_pct"] = 5.0
+            meta["hold_days"] = 5
+            meta["target_policy"] = "kosdaq_exception_leader_up_next5d_tp5"
         watchlist.append(ticker)
         watchlist_meta.append(_enrich_tracking_meta(meta, ticker=ticker))
         if len(watchlist) >= max_watchlist:
