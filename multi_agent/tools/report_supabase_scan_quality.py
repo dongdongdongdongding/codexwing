@@ -41,6 +41,23 @@ REQUIRED_SCAN_COLUMNS = [
     "inference_failed",
 ]
 
+FEATURE_COVERAGE_COLUMNS = [
+    "alpha_score",
+    "tech_score",
+    "ml_prob",
+    "prob_clean",
+    "whale_score",
+    "decision_score",
+    "trend",
+    "tier",
+    "volume",
+    "volume_ratio",
+    "volume_confirmed",
+    "position",
+    "entry_reference_price",
+    "inference_failed",
+]
+
 
 def _infer_submarket(ticker: Any, market_type: Any) -> str:
     t = str(ticker or "").upper()
@@ -163,6 +180,10 @@ def _origin_quality_table(frame: pd.DataFrame) -> List[Dict[str, Any]]:
             validation_excluded = _bool_series(group["validation_excluded"])
         else:
             validation_excluded = pd.Series(False, index=group.index)
+        if "validation_excluded_reason" in group.columns:
+            excluded_reason_missing = validation_excluded & group["validation_excluded_reason"].fillna("").astype(str).str.strip().eq("")
+        else:
+            excluded_reason_missing = validation_excluded
         metadata_missing_fields = _metadata_missing_fields_nonempty(group)
         false_missing_metadata = computed_complete & (
             ~metadata_complete | validation_excluded | metadata_missing_fields
@@ -177,10 +198,11 @@ def _origin_quality_table(frame: pd.DataFrame) -> List[Dict[str, Any]]:
                 "computed_complete_rate_pct": round(float(computed_complete.mean() * 100.0), 3),
                 "metadata_complete_rows": int(metadata_complete.sum()),
                 "validation_excluded_rows": int(validation_excluded.sum()),
+                "excluded_reason_missing_rows": int(excluded_reason_missing.sum()),
                 "metadata_false_missing_rows": int(false_missing_metadata.sum()),
                 "metadata_false_missing_rate_pct": round(float(false_missing_metadata.sum() / n * 100.0), 3),
                 "metadata_false_complete_rows": int(false_complete_metadata.sum()),
-                "missing_rates_pct": _missing_rates(group, REQUIRED_SCAN_COLUMNS),
+                "missing_rates_pct": _missing_rates(group, FEATURE_COVERAGE_COLUMNS),
             }
         )
     return sorted(rows, key=lambda row: (-row["rows"], row["feature_origin"]))
@@ -260,9 +282,9 @@ def _build_report(df: pd.DataFrame) -> Dict[str, Any]:
                 ).notna()
             ).sum()
         ),
-        "missing_rates_all_kr_swing_pct": _missing_rates(kr_swing, REQUIRED_SCAN_COLUMNS),
+        "missing_rates_all_kr_swing_pct": _missing_rates(kr_swing, FEATURE_COVERAGE_COLUMNS),
         "missing_rates_by_submarket_pct": {
-            str(submarket): _missing_rates(group, REQUIRED_SCAN_COLUMNS)
+            str(submarket): _missing_rates(group, FEATURE_COVERAGE_COLUMNS)
             for submarket, group in kr_swing.groupby("submarket", dropna=False)
         },
         "quality_by_feature_origin": _origin_quality_table(kr_swing),
@@ -297,7 +319,7 @@ def _write_markdown(report: Dict[str, Any], md_path: Path) -> None:
         f"- by_submarket: `{report.get('kr_swing_by_submarket', {})}`",
         f"- by_bucket: `{report.get('kr_swing_by_bucket', {})}`",
         "",
-        "## Missing Rates",
+        "## Feature Missing Rates",
         "",
     ]
     missing = report.get("missing_rates_all_kr_swing_pct", {})
@@ -312,6 +334,7 @@ def _write_markdown(report: Dict[str, Any], md_path: Path) -> None:
             f"computed_complete={row['computed_complete_rows']} ({row['computed_complete_rate_pct']}%), "
             f"metadata_complete={row['metadata_complete_rows']}, "
             f"validation_excluded={row['validation_excluded_rows']}, "
+            f"excluded_reason_missing={row['excluded_reason_missing_rows']}, "
             f"metadata_false_missing={row['metadata_false_missing_rows']} ({row['metadata_false_missing_rate_pct']}%)"
         )
     lines.extend(["", "## Return Summary", ""])
