@@ -1687,7 +1687,13 @@ def build_planner_handoff(
         hard_cap = 0.0
         has_tradeable_below_hard = True
 
-    if run_market == "KOSDAQ" and decisions and not has_tradeable_below_hard:
+    kosdaq_relative_floor_enabled = os.getenv("AG_KOSDAQ_RELATIVE_ADMISSION_FLOOR", "0").strip() not in (
+        "0",
+        "",
+        "false",
+        "False",
+    )
+    if run_market == "KOSDAQ" and decisions and not has_tradeable_below_hard and kosdaq_relative_floor_enabled:
         relative_candidates = [
             dec
             for dec in decisions
