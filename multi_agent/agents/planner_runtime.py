@@ -693,6 +693,48 @@ def _apply_expected_edge_gate(
     return decision
 
 
+def _apply_kospi_swing_edge_promotion(
+    *,
+    decision: str,
+    run_market: str,
+    scan_mode: str,
+    expected_edge_score: float | None,
+    rationale: List[str],
+) -> str:
+    """Promote KOSPI SWING candidates that clear the revised 5d swing target slice.
+
+    2026-05-12 Supabase validation for KOSPI SWING resolved 5d rows showed
+    expected_edge_score >= 6.0 at win_5d 77.5% / avg_5d +9.25% (n=138),
+    comfortably above the revised operating target of win_5d >= 70% and
+    avg_5d >= +5%. Keep this KOSPI-only and let later loss/inference gates
+    demote unsafe rows.
+    """
+    market = str(run_market or "").upper()
+    mode = str(scan_mode or "").upper()
+    if market != "KOSPI" or mode != "SWING":
+        return decision
+    if os.getenv("AG_KOSPI_SWING_EDGE_PROMOTION", "1").strip() in ("0", "", "false", "False"):
+        return decision
+    if _decision_rank(decision) >= _decision_rank("PRIORITY_WATCHLIST"):
+        return decision
+    if _decision_rank(decision) < _decision_rank("OBSERVE"):
+        return decision
+    try:
+        edge = float(expected_edge_score) if expected_edge_score not in (None, "") else None
+    except Exception:
+        edge = None
+    if edge is None or not math.isfinite(edge):
+        return decision
+    try:
+        min_edge = float(os.getenv("AG_KOSPI_SWING_EDGE_PROMOTION_MIN", "6.0"))
+    except Exception:
+        min_edge = 6.0
+    if edge < min_edge:
+        return decision
+    rationale.append(f"kospi_swing_edge_promotion=edge={edge:.2f}>=min{min_edge:.2f}")
+    return "PRIORITY_WATCHLIST"
+
+
 def _to_warning_items(raw_warnings: Any) -> List[WarningItem]:
     if not isinstance(raw_warnings, list):
         return []
@@ -1442,6 +1484,13 @@ def build_planner_handoff(
             phase25_signal_direction=phase25_signal_direction or "",
             phase25_oos_win_rate_pct=phase25_oos_win_rate_pct,
             phase25_oos_avg_return_pct=phase25_oos_avg_return_pct,
+        )
+        decision = _apply_kospi_swing_edge_promotion(
+            decision=decision,
+            run_market=run_market,
+            scan_mode=scan_mode,
+            expected_edge_score=float(expected_edge_score) if expected_edge_score not in (None, "") else None,
+            rationale=rationale,
         )
         # 2026-05-08: Intraday Trend (breakout=False) 라벨 PRIORITY 격하.
         # cand/feature_snapshot에서 strategy 텍스트 후보 수집.

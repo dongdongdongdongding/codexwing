@@ -359,6 +359,42 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(planner.decisions[0].ticker, "222222.KS")
         self.assertEqual(planner.decisions[0].relative_rank_model, "kospi_floor_win_relative_v2")
 
+    def test_kospi_swing_edge_promotion_uses_revised_5d_target_slice(self):
+        planner = build_planner_handoff(
+            context=RunContext(run_id="RUN-KS-EDGE", market="KOSPI"),
+            weak_ratio=0.0,
+            candidates=[
+                {
+                    "ticker": "333333.KS",
+                    "stock_name": "Edge Supported KOSPI",
+                    "score": 58.0,
+                    "feature_snapshot": {
+                        "market": "KOSPI",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 82.0,
+                        "tech_score": 75.0,
+                        "conviction_score": 70.0,
+                        "decision_score": 86.0,
+                        "prob_5": 52.0,
+                        "prob_clean": 50.0,
+                        "expected_edge_score": 6.2,
+                        "expected_return_1d_pct": -1.0,
+                        "expected_return_3d_pct": -1.0,
+                        "volume_ratio": 1.2,
+                        "volume_confirmed": True,
+                        "position": "Rising",
+                        "tier": "T1",
+                        "real_trend": "UP",
+                    },
+                }
+            ],
+        )
+
+        decision = planner.decisions[0]
+        self.assertEqual(decision.decision, "PRIORITY_WATCHLIST")
+        self.assertIn("kospi_swing_edge_promotion=", " ".join(decision.rationale))
+
     def test_kosdaq_relative_admission_promotes_soft_risk_when_no_tradeable_candidate(self):
         context = RunContext(run_id="RUN-KQ-ADMIT", market="KOSDAQ")
         planner = build_planner_handoff(
