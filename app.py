@@ -31,10 +31,7 @@ from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.ui_helpers import (
     BackgroundScanState,
-    build_live_cockpit_summary,
     build_signal_display_rows,
-    build_top_candidate_compact_view,
-    build_top_candidate_rows,
     build_watchlist_display_rows,
     compute_progress_fraction,
     enrich_signal_rows_with_planner_trace,
@@ -46,6 +43,10 @@ from modules.ui_helpers import (
 )
 from ui.theme import inject_theme as _inject_design_tokens
 from ui.components import compact_status_bar as _compact_status_bar
+from ui.scan_cockpit import (
+    render_scan_top_candidates as _render_scan_top_candidates,
+    render_signal_card_list as _render_signal_card_list,
+)
 import pandas as pd
 import plotly.graph_objects as go
 import traceback
@@ -827,186 +828,6 @@ def _render_agent_bridge_status(bridge_info, market):
             st.markdown("**Likely Causes**")
             for cause in likely_causes[:6]:
                 st.write(f"- {cause}")
-
-
-def _render_scan_top_candidates(results_df, bridge_info, market):
-    # 2026-05-09: 8:2 자본 배분에 따라 카드를 두 섹션으로 분리.
-    # Stream A (안전 80%) = PRIORITY/WATCHLIST/OBSERVE 위주
-    # Stream B (급등 20%) = EXCEPTION_LEADER만
-    planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
-    raw_records = enrich_signal_rows_with_planner_trace(
-        results_df.to_dict("records"),
-        planner_payload,
-    )
-    raw_records = sort_signal_rows_by_planner_rank(raw_records, planner_payload)
-    streams = split_stream_records(raw_records)
-    stream_a_records = streams["stream_a"]
-    stream_b_records = streams["stream_b"]
-
-    stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
-    stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
-    cockpit = build_live_cockpit_summary(
-        stream_a_rows,
-        stream_b_rows,
-        market=market,
-        strict_quality_gate=str(os.getenv("AG_STRICT_SCAN_QUALITY_GATE", "1")).strip().lower()
-        not in {"0", "", "false", "no", "off"},
-    )
-
-    st.markdown("### 운영 콕핏")
-    cockpit_cols = st.columns(5)
-    cockpit_cols[0].metric("실행 후보", f"{cockpit['actionable_count']}")
-    cockpit_cols[1].metric("Stream A", f"{cockpit['stream_a_count']}")
-    cockpit_cols[2].metric("Stream B", f"{cockpit['stream_b_count']}")
-    cockpit_cols[3].metric("데이터 게이트", cockpit["quality_gate"])
-    cockpit_cols[4].metric("검증 승률", cockpit["validated_win"])
-    st.caption(
-        f"{cockpit['market']} live policy: {cockpit['policy']} | "
-        f"5D target return: {cockpit['validated_return']} | {cockpit['sample']}"
-    )
-
-    if not stream_a_rows and not stream_b_rows:
-        st.markdown("### 🔥 매수 신호")
-        st.info(
-            "현재 매수 신호 없음 — 시장 관망. 모든 후보가 OBSERVE/AVOID로 강등되었거나 "
-            "OOS 검증을 통과하지 못했습니다. Watchlist 표에서 감시 종목을 확인하세요."
-        )
-        return
-
-    # ─── Stream A — 안전 매매 (자본 80%) ───
-    st.markdown("### 🔥 Top 매수 신호 · Stream A (안전 매매, 자본 80%)")
-    st.caption(
-        "**자본 배분**: 1억이면 8,000만 → 종목당 약 1,600만. "
-        "**정확성** = 이 등급/시장의 historical OOS win rate (5d hold 기준, dedup 측정). "
-        "엔트리/TP/SL은 시장별 기본 정책 (KOSPI 시가/+20/-5, KOSDAQ -2%지정/+10/-10)."
-    )
-    if stream_a_rows:
-        _render_signal_card_list(stream_a_rows, empty_text="Stream A 후보 없음.")
-    else:
-        st.info("Stream A 후보 없음 — 게이트가 모두 demote. KOSPI SWING 게이트 회복 진행 중일 수 있음.")
-
-    # ─── Stream B — 급등 잡기 (자본 20%) ───
-    st.markdown("### 🚨 Surge Capture · Stream B (급등 잡기, 자본 20%)")
-    st.caption(
-        "**자본 배분**: 1억이면 2,000만 → 2-3종목 분산해서 종목당 약 700~1,000만. "
-        "EXCEPTION_LEADER는 일반 게이트에 거부됐으나 alpha/conviction 매우 높아 surge 가능성 표시된 픽. "
-        "**변동성 큼** — 손실 한도(SL) 엄수, 이 자본 안에서 큰 손실 났어도 Stream A는 안전."
-    )
-    if stream_b_rows:
-        _render_signal_card_list(stream_b_rows, empty_text="Stream B 후보 없음.")
-    else:
-        st.info("Stream B(EXCEPTION_LEADER) 후보 없음 — 시장에 surge 신호 부재.")
-
-    # ─── 종목 상세 selectbox (둘 다 통합) ───
-    view = build_top_candidate_compact_view(planner_payload, limit=5)
-    detail_by_ticker = view.get("detail_by_ticker", {})
-    all_signal_rows = stream_a_rows + stream_b_rows
-    ticker_options = [str(r.get("ticker", "") or "") for r in all_signal_rows if r.get("ticker")]
-    if not ticker_options:
-        return
-
-    detail_key = f"top_n_detail_select_{market}_{planner_payload.get('produced_at', '')}"
-    selected = st.selectbox(
-        "종목 상세 보기",
-        options=ticker_options,
-        key=detail_key,
-    )
-    detail = detail_by_ticker.get(str(selected) or "")
-    if not detail:
-        return
-
-    with st.expander(f"📊 {detail.get('Name','') or selected} ({selected}) 상세", expanded=True):
-        cols = st.columns(4)
-        cols[0].metric("Decision", str(detail.get("Decision", "") or "-"))
-        cols[1].metric("Theme", str(detail.get("Theme", "") or "-"))
-        cols[2].metric("Trend", str(detail.get("Trend", "") or "-"))
-        cols[3].metric("SigDir", str(detail.get("SigDir", "") or "-"))
-
-        cols2 = st.columns(4)
-        cols2[0].metric("Model Prob", _fmt_pct_or_dash(detail.get("Model Prob")))
-        cols2[1].metric("Gate Thr", _fmt_pct_or_dash(detail.get("Gate Thr")))
-        cols2[2].metric("OOS Win %", _fmt_pct_or_dash(detail.get("OOS Win %")))
-        cols2[3].metric("OOS Ret %", _fmt_pct_or_dash(detail.get("OOS Ret %")))
-
-        cols3 = st.columns(4)
-        cols3[0].metric("Entry", str(detail.get("Entry", "") or "-"))
-        cols3[1].metric("TP", str(detail.get("TP", "") or "-"))
-        cols3[2].metric("SL", str(detail.get("SL", "") or "-"))
-        cols3[3].metric("Hold", str(detail.get("Hold", "") or "-"))
-
-        cols4 = st.columns(2)
-        cols4[0].metric("손실위험", _fmt_pct_or_dash(detail.get("Loss Risk")))
-        cols4[1].metric("리스크 플래그", str(detail.get("Risk Flags", "") or "-"))
-
-
-def _render_signal_card_list(rows, *, empty_text="표시할 후보가 없습니다."):
-    if not rows:
-        st.info(empty_text)
-        return
-    for row in rows:
-        day_val = row.get("day_change_value")
-        if day_val is None:
-            day_delta = None
-        elif float(day_val) > 0:
-            day_delta = "상승"
-        elif float(day_val) < 0:
-            day_delta = "하락"
-        else:
-            day_delta = "보합"
-        name = str(row.get("name") or "").strip()
-        ticker = str(row.get("ticker") or "").strip()
-        subtitle_parts = [part for part in (row.get("theme"), row.get("trend")) if part and part != "-"]
-        subtitle = " · ".join(str(part) for part in subtitle_parts) or "-"
-        exit_parts = []
-        if row.get("entry") and row.get("entry") != "-":
-            exit_parts.append(f"Entry {row.get('entry')}")
-        if row.get("tp") and row.get("tp") != "-":
-            exit_parts.append(f"TP {row.get('tp')}")
-        if row.get("sl") and row.get("sl") != "-":
-            exit_parts.append(f"SL {row.get('sl')}")
-        buy_signal = str(row.get("buy_signal") or "-")
-        risk_label = str(row.get("loss_risk") or "-")
-        risk_level = str(row.get("loss_risk_level") or "")
-        risk_flags = [str(flag) for flag in (row.get("risk_flags") or []) if str(flag).strip()]
-        risk_line = ""
-        if risk_label != "-":
-            risk_line = f"손실위험 {risk_label}" + (f" ({risk_level})" if risk_level else "")
-        if risk_flags:
-            risk_line = (risk_line + " · " if risk_line else "") + " / ".join(risk_flags[:3])
-
-        with st.container(border=True):
-            cols = st.columns([1.25, 2.3, 0.9, 0.9], vertical_alignment="center")
-            with cols[0]:
-                st.caption(f"#{row.get('rank') or '-'}")
-                st.markdown(f"**{ticker or '-'}**")
-                st.caption(name or subtitle)
-            with cols[1]:
-                st.markdown(f"**{buy_signal}**")
-                if exit_parts:
-                    st.caption(" · ".join(exit_parts))
-                if risk_line:
-                    st.caption(risk_line)
-                if name and subtitle != "-":
-                    st.caption(subtitle)
-            with cols[2]:
-                st.metric(
-                    "적중률(OOS)",
-                    str(row.get("accuracy") or "-"),
-                    help="이 등급/시장의 historical OOS win rate (5d hold). "
-                         "후보별 변동값이 아니라 segment 단위 invariant. "
-                         "raw 모델 score가 아닌 dedup 측정 win rate.",
-                )
-            with cols[3]:
-                st.metric("전일비", str(row.get("day_change") or "-"), day_delta)
-
-
-def _fmt_pct_or_dash(value):
-    if value is None or value == "":
-        return "-"
-    try:
-        return f"{float(value):.1f}"
-    except Exception:
-        return "-"
 
 
 def _get_scan_state_snapshot():
