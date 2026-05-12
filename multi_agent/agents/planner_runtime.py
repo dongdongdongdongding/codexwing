@@ -172,7 +172,10 @@ def _apply_loss_risk_gate(
     hard = float(thresholds["hard"])
     soft = float(thresholds["soft"])
     if loss_risk_score >= hard:
-        capped = _decision_from_rank(min(_decision_rank(decision), _decision_rank("OBSERVE")))
+        hard_cap_target = "OBSERVE"
+        if market == "KOSDAQ" and "KOSDAQ_SWING_VALIDATED_TOUCH_EXCEPTION" in theme_risk:
+            hard_cap_target = "WATCHLIST"
+        capped = _decision_from_rank(min(_decision_rank(decision), _decision_rank(hard_cap_target)))
         if capped != decision:
             rationale.append(f"loss_risk_hard_cap:{loss_risk_score:.1f}")
         decision = capped
@@ -285,6 +288,7 @@ def _apply_kosdaq_swing_gate(
     prob_clean: Any,
     real_trend: str,
     alpha_score: Any = None,
+    volume_ratio: Any = None,
     low_model_prob_score: float | None = None,
     low_prob_high_score: float | None = None,
     rationale: List[str],
@@ -309,6 +313,10 @@ def _apply_kosdaq_swing_gate(
         alpha = float(alpha_score) if alpha_score not in (None, "") else None
     except Exception:
         alpha = None
+    try:
+        volume = float(volume_ratio) if volume_ratio not in (None, "") else None
+    except Exception:
+        volume = None
 
     # 2026-05-08 swing-main-sl3: KR swing archive showed model probability is
     # inverted in the current regime. Do not promote this to PRIORITY by itself,
@@ -324,9 +332,23 @@ def _apply_kosdaq_swing_gate(
         and low_prob_high_score is not None
         and low_prob_high_score >= 40.0
     )
+    validated_touch_override = (
+        str(real_trend or "").upper() == "UP"
+        and alpha is not None
+        and alpha >= 90.0
+        and volume is not None
+        and volume >= 2.0
+    )
 
     if gap >= PHASE25_DOWNGRADE_HARD_GAP:
-        if inversion_override:
+        if validated_touch_override:
+            theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_VALIDATED_TOUCH_OVERRIDE")
+            rationale.append(
+                "kosdaq_swing_validated_touch_override:"
+                f"alpha={alpha:.1f},volume_ratio={volume:.2f},"
+                "archive_touch5=80.645pct"
+            )
+        elif inversion_override:
             decision = _decision_from_rank(max(1, _decision_rank(decision) - 1))
             theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE")
             rationale.append(
@@ -470,6 +492,8 @@ def _apply_kr_market_mode_quality_gate(
     theme_routing_path: str,
     rationale: List[str],
     theme_risk: List[str],
+    alpha_score: Any = None,
+    volume_ratio: Any = None,
 ) -> str:
     market = str(run_market or "").upper()
     mode = str(scan_mode or "").upper()
@@ -481,6 +505,14 @@ def _apply_kr_market_mode_quality_gate(
         clean_prob = float(prob_clean) if prob_clean not in (None, "") else None
     except Exception:
         clean_prob = None
+    try:
+        alpha = float(alpha_score) if alpha_score not in (None, "") else None
+    except Exception:
+        alpha = None
+    try:
+        volume = float(volume_ratio) if volume_ratio not in (None, "") else None
+    except Exception:
+        volume = None
 
     def _demote_to(rank_target: int, risk_code: str, reason: str) -> str:
         original = decision
@@ -492,12 +524,28 @@ def _apply_kr_market_mode_quality_gate(
 
     # KOSDAQ swing is under probation until true-buy quality recovers.
     if market == "KOSDAQ" and mode == "SWING":
+        validated_touch_exception = (
+            trend_up
+            and alpha is not None
+            and alpha >= 90.0
+            and volume is not None
+            and volume >= 2.0
+        )
         high_conviction_exception = (
             _is_swing_variant(variant)
             and trend_up
             and route == "theme_routed"
             and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSDAQ_SWING_PRIORITY")
         )
+        if validated_touch_exception:
+            if "KOSDAQ_SWING_VALIDATED_TOUCH_EXCEPTION" not in theme_risk:
+                theme_risk.append("KOSDAQ_SWING_VALIDATED_TOUCH_EXCEPTION")
+            rationale.append(
+                "kosdaq_validated_touch_exception:"
+                "alpha>=90,volume_ratio>=2,"
+                "archive_touch5=80.645pct,avg_mfe5=21.8008pct"
+            )
+            return decision
         if not high_conviction_exception:
             return _demote_to(
                 1,
@@ -1473,6 +1521,7 @@ def build_planner_handoff(
             prob_clean=prob_clean,
             real_trend=real_trend,
             alpha_score=alpha_score,
+            volume_ratio=volume_ratio,
             low_model_prob_score=low_model_prob_score,
             low_prob_high_score=low_prob_high_score,
             rationale=rationale,
@@ -1499,6 +1548,8 @@ def build_planner_handoff(
             theme_routing_path=str(cand.get("routing_path") or theme_context.get("routing_path") or ""),
             rationale=rationale,
             theme_risk=theme_risk,
+            alpha_score=alpha_score,
+            volume_ratio=volume_ratio,
         )
         decision = _apply_expected_edge_gate(
             decision=decision,

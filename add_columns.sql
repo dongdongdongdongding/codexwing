@@ -79,9 +79,20 @@ ADD COLUMN IF NOT EXISTS theme_risk jsonb;
 -- 백필로 13,532행 제거 후 unique constraint 추가하여 재발 차단.
 -- 부분 인덱스: market 또는 scan_mode가 NULL인 행은 unique 검사에서 제외
 -- (legacy NULL row가 일부 존재).
-CREATE UNIQUE INDEX IF NOT EXISTS market_scan_results_unique_pick
+-- Revised 2026-05-13 (swing-main-7mp). The date-level unique index prevented
+-- duplicate outcome stubs, but it also suppressed legitimate same-day repeated
+-- scan runs for the same ticker. Scan archive integrity requires one
+-- authoritative row per run+ticker+date+market+mode. Keep the legacy date-level
+-- guard only for rows that still have run_id=NULL.
+DROP INDEX IF EXISTS market_scan_results_unique_pick;
+
+CREATE UNIQUE INDEX IF NOT EXISTS market_scan_results_unique_run_pick
+  ON market_scan_results (run_id, ticker, ((recommended_at AT TIME ZONE 'UTC')::date), market, scan_mode)
+  WHERE run_id IS NOT NULL AND market IS NOT NULL AND scan_mode IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS market_scan_results_unique_legacy_pick
   ON market_scan_results (ticker, ((recommended_at AT TIME ZONE 'UTC')::date), market, scan_mode)
-  WHERE market IS NOT NULL AND scan_mode IS NOT NULL;
+  WHERE run_id IS NULL AND market IS NOT NULL AND scan_mode IS NOT NULL;
 
 -- Added 2026-05-09. modules/db_schema.py SCAN_RESULT_COLUMNS에 conviction_score
 -- 매핑이 추가됐는데 (Codex 후속 작업) Supabase 컬럼은 빠져 있어 silent drop.
@@ -101,3 +112,13 @@ ADD COLUMN IF NOT EXISTS relative_rank_score numeric,
 ADD COLUMN IF NOT EXISTS relative_rank_pct numeric,
 ADD COLUMN IF NOT EXISTS regime_adjusted_grade text,
 ADD COLUMN IF NOT EXISTS relative_rank_model text;
+
+-- Added 2026-05-13 (swing-main-2bo). The live swing target is now explicitly
+-- "touch +5% within the next 5 trading days using source OHLCV High", not
+-- close-to-close return_5d_pct. NULL means the 5-trading-day window has not
+-- fully matured or source OHLCV was unavailable.
+ALTER TABLE market_scan_results
+ADD COLUMN IF NOT EXISTS max_high_return_5d_pct numeric,
+ADD COLUMN IF NOT EXISTS hit_5pct_within_5d boolean,
+ADD COLUMN IF NOT EXISTS hit_5pct_within_5d_at date,
+ADD COLUMN IF NOT EXISTS swing_target_label_version text;

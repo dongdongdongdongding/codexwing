@@ -19,6 +19,9 @@ HORIZONS = (1, 2, 3, 5, 7, 14, 30)
 INTRADAY_MINUTE_HORIZONS = ((30, "return_30m_pct"), (60, "return_1h_pct"))
 KR_TZ = ZoneInfo("Asia/Seoul")
 US_TZ = ZoneInfo("America/New_York")
+SWING_TOUCH_TARGET_PCT = 5.0
+SWING_TOUCH_WINDOW_DAYS = 5
+SWING_TARGET_LABEL_VERSION = "forward_high_within_5d_v1"
 
 try:
     import FinanceDataReader as fdr  # type: ignore
@@ -73,6 +76,12 @@ def _market_tz(market: str) -> ZoneInfo:
 def _recommended_trade_date(row: Dict[str, Any], market: str) -> Optional[datetime.date]:
     rec_dt = _parse_iso(row.get("recommended_at"))
     if rec_dt is None:
+        base_trade_date = str(row.get("base_trade_date") or "").strip()
+        if base_trade_date:
+            try:
+                return datetime.fromisoformat(base_trade_date[:10]).date()
+            except Exception:
+                return None
         return None
     return rec_dt.astimezone(_market_tz(market)).date()
 
@@ -235,6 +244,7 @@ def _compute_row_returns(row: Dict[str, Any], hist: pd.DataFrame, market: str) -
         changed = True
 
     closes = pd.to_numeric(hist["Close"], errors="coerce")
+    highs = pd.to_numeric(hist["High"], errors="coerce") if "High" in hist.columns else pd.Series(dtype="float")
     for horizon in HORIZONS:
         key = f"return_{horizon}d_pct"
         target_pos = base_pos + horizon
@@ -244,6 +254,37 @@ def _compute_row_returns(row: Dict[str, Any], hist: pd.DataFrame, market: str) -
             if pd.notna(close_val) and float(base_close) > 0:
                 value = round(((float(close_val) / float(base_close)) - 1.0) * 100.0, 6)
         if row.get(key) != value:
+            row[key] = value
+            changed = True
+
+    high_touch_value = None
+    high_touch_hit = None
+    high_touch_date = None
+    target_pos = base_pos + SWING_TOUCH_WINDOW_DAYS
+    if (
+        str(row.get("scan_mode", "SWING")).upper() == "SWING"
+        and not highs.empty
+        and target_pos < len(hist)
+    ):
+        forward = highs.iloc[base_pos + 1 : target_pos + 1].dropna()
+        if len(forward) == SWING_TOUCH_WINDOW_DAYS:
+            max_high = float(forward.max())
+            high_touch_value = round(((max_high / float(base_close)) - 1.0) * 100.0, 6)
+            high_touch_hit = bool(high_touch_value >= SWING_TOUCH_TARGET_PCT)
+            if high_touch_hit:
+                hit_positions = forward[forward >= float(base_close) * (1.0 + SWING_TOUCH_TARGET_PCT / 100.0)]
+                if not hit_positions.empty:
+                    high_touch_date = str(hist.loc[hit_positions.index[0], "trade_date"])
+    for key, value in (
+        ("max_high_return_5d_pct", high_touch_value),
+        ("hit_5pct_within_5d", high_touch_hit),
+        ("hit_5pct_within_5d_at", high_touch_date),
+        (
+            "swing_target_label_version",
+            SWING_TARGET_LABEL_VERSION if high_touch_value is not None else None,
+        ),
+    ):
+        if key not in row or row.get(key) != value:
             row[key] = value
             changed = True
 
@@ -264,7 +305,13 @@ def _compute_row_returns(row: Dict[str, Any], hist: pd.DataFrame, market: str) -
     return changed
 
 
-def run_update(shared_dir: Path, run_ids: List[str], limit_runs: int, dry_run: bool) -> Dict[str, Any]:
+def run_update(
+    shared_dir: Path,
+    run_ids: List[str],
+    limit_runs: int,
+    dry_run: bool,
+    scan_mode_filter: str = "ALL",
+) -> Dict[str, Any]:
     targets = _iter_runs(shared_dir=shared_dir, run_ids=run_ids, limit_runs=limit_runs)
     ticker_windows: Dict[str, Dict[str, Any]] = {}
     run_payloads: List[tuple[Path, Dict[str, Any], str]] = []
@@ -283,7 +330,12 @@ def run_update(shared_dir: Path, run_ids: List[str], limit_runs: int, dry_run: b
         for row in payload.get("outcomes", []):
             if not isinstance(row, dict):
                 continue
-            if row.get("scan_mode") != run_scan_mode:
+            effective_scan_mode = str(row.get("scan_mode") or run_scan_mode or "SWING").upper()
+            if row.get("scan_mode") != effective_scan_mode:
+                row["scan_mode"] = effective_scan_mode
+            if scan_mode_filter != "ALL" and effective_scan_mode != scan_mode_filter:
+                continue
+            if row.get("scan_mode") != run_scan_mode and not row.get("scan_mode"):
                 row["scan_mode"] = run_scan_mode
             ticker = str(row.get("ticker") or "").strip()
             if not ticker:
@@ -325,6 +377,7 @@ def run_update(shared_dir: Path, run_ids: List[str], limit_runs: int, dry_run: b
         "db_rows_upserted": 0,
         "scan_archive_rows_synced": 0,
         "updated_at": datetime.now(timezone.utc).isoformat(),
+        "scan_mode_filter": scan_mode_filter,
         "run_stats": [],
     }
     db = None
@@ -344,6 +397,9 @@ def run_update(shared_dir: Path, run_ids: List[str], limit_runs: int, dry_run: b
         updated_rows = 0
         for row in outcomes:
             if not isinstance(row, dict):
+                continue
+            effective_scan_mode = str(row.get("scan_mode") or run_scan_mode or "SWING").upper()
+            if scan_mode_filter != "ALL" and effective_scan_mode != scan_mode_filter:
                 continue
             stats["rows_seen"] += 1
             ticker = str(row.get("ticker") or "").strip()
@@ -399,6 +455,7 @@ def main() -> None:
     parser.add_argument("--shared-dir", type=str, default="runtime_state/shared_working")
     parser.add_argument("--run-id", action="append", default=[])
     parser.add_argument("--limit-runs", type=int, default=200)
+    parser.add_argument("--scan-mode", choices=["ALL", "SWING", "INTRADAY"], default="ALL")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -407,6 +464,7 @@ def main() -> None:
         run_ids=list(args.run_id or []),
         limit_runs=int(args.limit_runs),
         dry_run=bool(args.dry_run),
+        scan_mode_filter=str(args.scan_mode).upper(),
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 

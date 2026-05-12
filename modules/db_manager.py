@@ -275,6 +275,53 @@ class DBManager:
             return None
         return None
 
+    def _find_scan_result_conflict_row(self, payload, *, exclude_id=None):
+        """Find a unique-key peer for one scan archive payload.
+
+        For run-scoped rows, only a row from the same run is a valid conflict
+        target. Updating a different run's row would make scan-time Top and
+        archive Top diverge. Rows without run_id keep the legacy same-day guard
+        because old scanner writes may still arrive before orchestration binds a
+        run_id.
+        """
+        if not self.client or not isinstance(payload, dict):
+            return None
+        ticker = payload.get("ticker")
+        rec_at = payload.get("recommended_at") or payload.get("created_at")
+        rec_date = str(rec_at)[:10] if rec_at else None
+        market_val = payload.get("market")
+        mode_val = payload.get("scan_mode")
+        if not (ticker and rec_date and market_val and mode_val):
+            return None
+        q = (
+            self.client.table("market_scan_results")
+            .select("*")
+            .eq("ticker", ticker)
+            .eq("market", market_val)
+            .eq("scan_mode", mode_val)
+            .gte("recommended_at", f"{rec_date}T00:00:00")
+            .lte("recommended_at", f"{rec_date}T23:59:59.999")
+        )
+        run_id = str(payload.get("run_id") or "").strip()
+        if run_id:
+            q = q.eq("run_id", run_id)
+        else:
+            q = q.is_("run_id", "null")
+        if exclude_id is not None:
+            q = q.neq("id", exclude_id)
+        rows = q.order("created_at", desc=True).limit(20).execute().data or []
+        return self._choose_authoritative_scan_row(rows)
+
+    def _raise_cross_run_unique_conflict(self, payload):
+        run_id = str((payload or {}).get("run_id") or "").strip() or "NULL"
+        ticker = (payload or {}).get("ticker")
+        rec_date = str((payload or {}).get("recommended_at") or (payload or {}).get("created_at") or "")[:10]
+        raise RuntimeError(
+            "market_scan_results unique conflict is not run-scoped; "
+            "apply swing-main-7mp schema migration before archiving repeated same-day scan runs "
+            f"(run_id={run_id}, ticker={ticker}, date={rec_date})"
+        )
+
     def _feature_quality_payload(self, data, origin="scanner_full"):
         required = {
             "alpha_score": data.get("alpha_score"),
@@ -555,36 +602,25 @@ class DBManager:
                 delete_query = delete_query.gte("created_at", today_start)
             delete_query.execute()
 
-            # 2026-05-08: market_scan_results_unique_pick (ticker, recommended_at::date,
-            # market, scan_mode) UNIQUE 인덱스가 active. 위 delete가 다른 run_id의
-            # 같은 (ticker, date, market, scan_mode) 행을 못 잡으면 INSERT가 23505로
-            # 실패. 그 경우 같은 키의 기존 행을 UPDATE로 보존.
+            # 2026-05-13: repeated same-day scans are valid distinct archive
+            # rows when run_id differs. On conflict, merge only a same-run peer;
+            # never update a different run's row because that corrupts Top
+            # parity between scan-time planner output and Supabase archive.
             try:
                 self.client.table("market_scan_results").insert(payload).execute()
                 print(f"☁️ DB Upserted: {data.get('name', ticker)} [{data.get('market_type')}]")
             except Exception as ie:
                 if "23505" in str(ie) or "duplicate key" in str(ie):
-                    rec_at = payload.get("recommended_at") or payload.get("created_at")
-                    rec_date = str(rec_at)[:10] if rec_at else None
-                    market_val = payload.get("market")
-                    mode_val = payload.get("scan_mode")
-                    if rec_date and market_val and mode_val:
-                        existing = (
-                            self.client.table("market_scan_results")
-                            .select("id")
-                            .eq("ticker", ticker)
-                            .eq("market", market_val)
-                            .eq("scan_mode", mode_val)
-                            .gte("recommended_at", f"{rec_date}T00:00:00")
-                            .lte("recommended_at", f"{rec_date}T23:59:59.999")
-                            .limit(1)
-                            .execute()
-                        )
-                        if existing.data:
-                            row_id = existing.data[0]["id"]
-                            self.client.table("market_scan_results").update(payload).eq("id", row_id).execute()
-                            print(f"☁️ DB Upsert→Update on conflict: {ticker} id={row_id}")
-                            return
+                    existing = self._find_scan_result_conflict_row(payload)
+                    if existing:
+                        row_id = existing["id"]
+                        merged_payload = self._merge_non_empty_payload(dict(existing), payload)
+                        merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
+                        self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                        print(f"☁️ DB Upsert→Merge on same-run conflict: {ticker} id={row_id}")
+                        return
+                    if run_id:
+                        self._raise_cross_run_unique_conflict(payload)
                 raise
 
         except Exception as e:
@@ -1032,29 +1068,14 @@ class DBManager:
                     except Exception as ue:
                         if "23505" not in str(ue) and "duplicate key" not in str(ue):
                             raise
-                        rec_date = str(payload.get("recommended_at") or "")[:10]
-                        market_val = payload.get("market")
-                        mode_val = payload.get("scan_mode")
-                        if not (rec_date and market_val and mode_val):
+                        conflict_payload = self._find_scan_result_conflict_row(payload, exclude_id=row_id)
+                        if not conflict_payload:
+                            if str(payload.get("run_id") or "").strip():
+                                self._raise_cross_run_unique_conflict(payload)
                             raise
-                        conflict_existing = (
-                            self.client.table("market_scan_results")
-                            .select("*")
-                            .eq("ticker", ticker)
-                            .eq("market", market_val)
-                            .eq("scan_mode", mode_val)
-                            .gte("recommended_at", f"{rec_date}T00:00:00")
-                            .lte("recommended_at", f"{rec_date}T23:59:59.999")
-                            .neq("id", row_id)
-                            .limit(1)
-                            .execute()
-                        )
-                        if not conflict_existing.data:
-                            raise
-                        cid = conflict_existing.data[0]["id"]
+                        cid = conflict_payload["id"]
                         consumed_row_ids.add(cid)
-                        conflict_payload = dict(conflict_existing.data[0] or {})
-                        conflict_merged_payload = self._merge_non_empty_payload(conflict_payload, payload)
+                        conflict_merged_payload = self._merge_non_empty_payload(dict(conflict_payload), payload)
                         conflict_merged_payload = self._filter_payload_to_existing_columns("market_scan_results", conflict_merged_payload)
                         self.client.table("market_scan_results").update(conflict_merged_payload).eq("id", cid).execute()
                         self._delete_shadow_scan_rows(run_id, ticker, cid)
@@ -1071,34 +1092,18 @@ class DBManager:
                         inserted_stub += 1
                     except Exception as ie:
                         if "23505" in str(ie) or "duplicate key" in str(ie):
-                            rec_date = str(payload.get("recommended_at") or "")[:10]
-                            market_val = payload.get("market")
-                            mode_val = payload.get("scan_mode")
-                            if rec_date and market_val and mode_val:
-                                conflict_existing = (
-                                    self.client.table("market_scan_results")
-                                    .select("*")
-                                    .eq("ticker", ticker)
-                                    .eq("market", market_val)
-                                    .eq("scan_mode", mode_val)
-                                    .gte("recommended_at", f"{rec_date}T00:00:00")
-                                    .lte("recommended_at", f"{rec_date}T23:59:59.999")
-                                    .limit(1)
-                                    .execute()
-                                )
-                                if conflict_existing.data:
-                                    cid = conflict_existing.data[0]["id"]
-                                    consumed_row_ids.add(cid)
-                                    existing_payload = dict(conflict_existing.data[0] or {})
-                                    merged_payload = self._merge_non_empty_payload(existing_payload, payload)
-                                    merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
-                                    self.client.table("market_scan_results").update(merged_payload).eq("id", cid).execute()
-                                    self._delete_shadow_scan_rows(run_id, ticker, cid)
-                                    merged += 1
-                                else:
-                                    raise
-                            else:
+                            conflict_payload = self._find_scan_result_conflict_row(payload)
+                            if not conflict_payload:
+                                if str(payload.get("run_id") or "").strip():
+                                    self._raise_cross_run_unique_conflict(payload)
                                 raise
+                            cid = conflict_payload["id"]
+                            consumed_row_ids.add(cid)
+                            merged_payload = self._merge_non_empty_payload(dict(conflict_payload), payload)
+                            merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
+                            self.client.table("market_scan_results").update(merged_payload).eq("id", cid).execute()
+                            self._delete_shadow_scan_rows(run_id, ticker, cid)
+                            merged += 1
                         else:
                             raise
                 updated += 1

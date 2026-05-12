@@ -1784,6 +1784,7 @@ vix_str = f"VIX {macro_ctx['vix']:.1f} ({macro_ctx['vix_change_1d']:+.1f}%)" if 
 tnx_str = f"10Y {macro_ctx['tnx']:.2f}%" if macro_ctx.get('tnx') else "10Y N/A"
 krw_str = f"KRW {macro_ctx['krw']:,.0f} ({macro_ctx['krw_change_1d']:+.2f}%)" if macro_ctx.get('krw') else "KRW N/A"
 spy_str = f"SPY {macro_ctx.get('spy_change_1d', 0):+.2f}%"
+ks200_str = f"KS200 {macro_ctx.get('kospi200_change_1d', 0):+.2f}%"
 flags_str = ", ".join(macro_ctx.get('flags', [])) if macro_ctx.get('flags') else ""
 macro_note = None
 if macro_state == "CRASH":
@@ -1793,7 +1794,7 @@ elif macro_state == "RISK_OFF":
 elif macro_state == "CAUTION":
     macro_note = "주의 구간입니다. 고확신 후보 위주로 선별하는 보수적 해석이 유리합니다."
 macro_tone = {"NORMAL": "good", "CAUTION": "caution", "RISK_OFF": "risk", "CRASH": "danger"}.get(macro_state, "good")
-macro_body = f"Risk Score {macro_risk}/100 · {vix_str} · {tnx_str} · {krw_str} · {spy_str}"
+macro_body = f"Risk Score {macro_risk}/100 · {vix_str} · {tnx_str} · {krw_str} · {spy_str} · {ks200_str}"
 if flags_str:
     macro_body += f" · Flags {flags_str}"
 
@@ -2963,6 +2964,7 @@ if active_main_tab == "📚 아카이브":
                 _measurement_cols = [
                     "return_30m_pct", "return_1h_pct", "return_close_pct",
                     "return_1d_pct", "return_2d_pct", "return_3d_pct", "return_5d_pct", "return_7d_pct",
+                    "max_high_return_5d_pct", "hit_5pct_within_5d",
                 ]
                 _existing_measurement_cols = [c for c in _measurement_cols if c in _df6.columns]
                 _perf_ready_dates = set()
@@ -3004,12 +3006,42 @@ if active_main_tab == "📚 아카이브":
                 elif _selected_valid == "검증제외":
                     _day_df = _day_df[_day_df["validation_excluded"] == True]
 
+                _selected_run_id = ""
+                if "run_id" in _day_df.columns and not _day_df.empty:
+                    _run_summary = (
+                        _day_df.dropna(subset=["run_id"])
+                        .groupby("run_id")
+                        .agg(
+                            count=("ticker", "count"),
+                            last_scan=("created_at_kst", "max"),
+                            market=("market", "first") if "market" in _day_df.columns else ("market_type", "first"),
+                        )
+                        .reset_index()
+                        .sort_values("last_scan", ascending=False)
+                    )
+                    _run_ids = [str(x) for x in _run_summary["run_id"].tolist() if str(x).strip()]
+                    if _run_ids:
+                        _run_meta = {
+                            str(row["run_id"]): row
+                            for _, row in _run_summary.iterrows()
+                        }
+                        _selected_run_id = st.selectbox(
+                            "🧾 스캔 Run 선택",
+                            _run_ids,
+                            index=0,
+                            format_func=lambda rid: (
+                                f"{rid} · {_run_meta[rid]['last_scan'].strftime('%H:%M KST')} · "
+                                f"{int(_run_meta[rid]['count'])}종목"
+                            ),
+                        )
+                        _day_df = _day_df[_day_df["run_id"].astype(str) == str(_selected_run_id)].copy()
+
                 # View-level dedup: keep only LATEST scan per ticker per day
                 _enriched_cols = [
                     "decision", "decision_bucket", "outcome_status", "latest_return_pct",
                     "return_30m_pct", "return_1h_pct", "return_close_pct",
                     "return_1d_pct", "return_2d_pct", "return_3d_pct", "return_5d_pct",
-                    "return_7d_pct",
+                    "return_7d_pct", "max_high_return_5d_pct", "hit_5pct_within_5d",
                 ]
                 _day_df["_archive_enriched_score"] = 0
                 for _col in _enriched_cols:
@@ -3035,8 +3067,11 @@ if active_main_tab == "📚 아카이브":
                 c_mode2.metric("장중", intraday_count)
                 c_mode3.metric("스윙", swing_count)
 
-                # Sort by Decision Score (true ML-based rank, not the bugged alpha+ml formula)
-                _day_df = _day_df.sort_values('decision_score', ascending=False, na_position='last')
+                # Archive Top must mirror scan-time/planner order for the selected run_id.
+                # Never mix multiple same-day runs or re-rank by decision_score here.
+                _archive_records = sort_signal_rows_by_planner_rank(_day_df.to_dict("records"), {})
+                if _archive_records:
+                    _day_df = pd.DataFrame(_archive_records)
 
                 _has_stored_returns = any(col in _day_df.columns and _day_df[col].notna().any() for col in _measurement_cols + ["latest_return_pct"])
                 _measured_count = 0
@@ -3079,8 +3114,7 @@ if active_main_tab == "📚 아카이브":
                     _day_df['현재 수익률(%)'] = _day_df['ticker'].map(_curr_perf_map)
 
                 st.divider()
-                # 스캐너 결과와 동일한 Stream A/B 8:2 분리. decision_score 정렬은 위에서 마침.
-                _archive_records = _day_df.to_dict("records")
+                # 스캐너 결과와 동일한 Stream A/B 8:2 분리. 정렬은 run_id 단위 planner rank 기준.
                 _archive_streams = split_stream_records(_archive_records)
                 _archive_stream_a = build_signal_display_rows(_archive_streams["stream_a"], limit=5)
                 _archive_stream_b = build_signal_display_rows(_archive_streams["stream_b"], limit=5)
@@ -3113,7 +3147,9 @@ if active_main_tab == "📚 아카이브":
                         st.info("Top 5 외에 추가 종목이 없습니다.")
 
                 _perf_col = None
-                if 'return_7d_pct' in _day_df.columns:
+                if 'max_high_return_5d_pct' in _day_df.columns:
+                    _perf_col = 'max_high_return_5d_pct'
+                elif 'return_7d_pct' in _day_df.columns:
                     _perf_col = 'return_7d_pct'
                 elif 'return_3d_pct' in _day_df.columns:
                     _perf_col = 'return_3d_pct'
@@ -3123,10 +3159,18 @@ if active_main_tab == "📚 아카이브":
                     _valid = _day_df.dropna(subset=[_perf_col])
                     if not _valid.empty:
                         _avg = _valid[_perf_col].mean()
-                        _winners = (_valid[_perf_col] > 0).sum()
+                        if _perf_col == "max_high_return_5d_pct" and "hit_5pct_within_5d" in _valid.columns:
+                            _hit_text = _valid["hit_5pct_within_5d"].fillna("").astype(str).str.lower()
+                            _winners = _hit_text.isin(["true", "1", "yes"]).sum()
+                            _metric_title = "5일내 +5% 터치"
+                            _avg_title = "평균 최고수익"
+                        else:
+                            _winners = (_valid[_perf_col] > 0).sum()
+                            _metric_title = "수익 종목 수"
+                            _avg_title = "평균 수익률"
                         c1, c2, c3 = st.columns(3)
-                        c1.metric("평균 수익률", f"{_avg:+.2f}%", "수익" if _avg > 0 else "손실")
-                        c2.metric("수익 종목 수", f"{_winners}/{len(_valid)}")
+                        c1.metric(_avg_title, f"{_avg:+.2f}%", "목표권" if _avg >= 5 else "미달")
+                        c2.metric(_metric_title, f"{_winners}/{len(_valid)}")
                         c3.metric("승률", f"{_winners/len(_valid)*100:.0f}%")
 
     except Exception as _e6:

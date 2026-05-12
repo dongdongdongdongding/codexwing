@@ -217,6 +217,7 @@ def scan_symbol_with_retry(
                 intel_data=intel_data,
                 tech_score=int(tech_score),
                 market_gate=market_gate,
+                macro_ctx=macro_ctx,
                 rank_adjustment_fn=rank_adjustment_fn,
                 news_adjustment_fn=news_adjustment_fn,
                 reject_reason_fn=lambda reason: _reject(reason),

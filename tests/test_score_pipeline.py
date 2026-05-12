@@ -148,6 +148,41 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertIn("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE", decision.theme_risk)
         self.assertIn("kosdaq_swing_inverted_prob_override", " ".join(decision.rationale))
 
+    def test_kosdaq_swing_validated_touch_exception_preserves_tradeable_watchlist(self):
+        planner = build_planner_handoff(
+            context=RunContext(run_id="RUN-KQ-TOUCH", market="KOSDAQ"),
+            weak_ratio=0.1,
+            candidates=[
+                {
+                    "ticker": "123456.KQ",
+                    "score": 93.0,
+                    "reasons": ["validated 5d touch slice"],
+                    "feature_snapshot": {
+                        "stock_name": "Validated Touch",
+                        "alpha_score": 94.0,
+                        "tech_score": 82.0,
+                        "conviction_score": 82.0,
+                        "decision_score": 93.0,
+                        "prob_5": 35.0,
+                        "prob_clean": 34.0,
+                        "phase25_prob": 20.0,
+                        "phase25_variant": "phase25_kr_swing_logistic",
+                        "phase25_recommended_threshold": 55.0,
+                        "volume_ratio": 2.4,
+                        "real_trend": "UP",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                    },
+                    "warnings": [],
+                }
+            ],
+        )
+
+        decision = planner.decisions[0]
+        self.assertEqual(decision.decision, "WATCHLIST")
+        self.assertIn("KOSDAQ_SWING_VALIDATED_TOUCH_EXCEPTION", decision.theme_risk)
+        self.assertIn("kosdaq_validated_touch_exception", " ".join(decision.rationale))
+
     def test_kosdaq_relative_ranking_prefers_volume_supported_tech_leader(self):
         context = RunContext(run_id="RUN-KQ-RANK", market="KOSDAQ")
         planner = build_planner_handoff(

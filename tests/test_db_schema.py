@@ -80,6 +80,10 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
             "low_model_prob_score": 23.67,
             "low_prob_high_score": 58.67,
             "expected_edge_inversion_score": 3.6,
+            "max_high_return_5d_pct": 8.4,
+            "hit_5pct_within_5d": True,
+            "hit_5pct_within_5d_at": "2026-05-08",
+            "swing_target_label_version": "forward_high_within_5d_v1",
         },
         overrides={},
         fallback_keys=DEFAULT_FALLBACK_KEYS,
@@ -108,6 +112,10 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
     assert payload["low_model_prob_score"] == 23.67
     assert payload["low_prob_high_score"] == 58.67
     assert payload["expected_edge_inversion_score"] == 3.6
+    assert payload["max_high_return_5d_pct"] == 8.4
+    assert payload["hit_5pct_within_5d"] is True
+    assert payload["hit_5pct_within_5d_at"] == "2026-05-08"
+    assert payload["swing_target_label_version"] == "forward_high_within_5d_v1"
 
 
 def test_pct_clamp():

@@ -143,6 +143,10 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("return_7d_pct",                   "return_7d_pct",                   _to_float_or_none),
     ("return_14d_pct",                  "return_14d_pct",                  _to_float_or_none),
     ("return_30d_pct",                  "return_30d_pct",                  _to_float_or_none),
+    ("max_high_return_5d_pct",          "max_high_return_5d_pct",          _to_float_or_none),
+    ("hit_5pct_within_5d",              "hit_5pct_within_5d",              _passthrough),
+    ("hit_5pct_within_5d_at",           "hit_5pct_within_5d_at",           _passthrough),
+    ("swing_target_label_version",      "swing_target_label_version",      _passthrough),
 
     # Phase25 / model trace
     ("phase25_variant",                 "phase25_variant",                 _passthrough),

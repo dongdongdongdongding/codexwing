@@ -23,6 +23,11 @@ def _false_or_missing(series: pd.Series) -> pd.Series:
     return text.isin({"", "0", "false", "none", "null", "no"})
 
 
+def _true_values(series: pd.Series) -> pd.Series:
+    text = series.fillna("").astype(str).str.strip().str.lower()
+    return text.isin({"1", "true", "yes"})
+
+
 def _base_swing_mask(df: pd.DataFrame, market: str, *, strict_quality: bool) -> pd.Series:
     mask = pd.Series(True, index=df.index)
     if "scan_mode" in df.columns:
@@ -72,16 +77,26 @@ def _metric_block(df: pd.DataFrame, market: str, *, strict_quality: bool) -> Dic
     sub = df.loc[policy].copy()
     ret5 = _as_numeric(sub["return_5d_pct"]) if "return_5d_pct" in sub.columns else pd.Series(dtype="float")
     ret5 = ret5.dropna()
-    if "max_return_observed_pct" in sub.columns:
-        target_source = _as_numeric(sub.loc[ret5.index, "max_return_observed_pct"])
+    target_definition = "forward_high_within_5d"
+    if "max_high_return_5d_pct" in sub.columns:
+        target_source = _as_numeric(sub.loc[:, "max_high_return_5d_pct"]).dropna()
+        if "hit_5pct_within_5d" in sub.columns:
+            target_hit_series = _true_values(sub.loc[target_source.index, "hit_5pct_within_5d"])
+        else:
+            target_hit_series = target_source.ge(5.0)
+    elif "max_return_observed_pct" in sub.columns:
+        target_definition = "legacy_max_close_return_observed"
+        target_source = _as_numeric(sub.loc[ret5.index, "max_return_observed_pct"]).dropna()
+        target_hit_series = target_source.ge(5.0)
     else:
+        target_definition = "fallback_return_5d_close"
         target_source = ret5
-    target_source = target_source.dropna()
+        target_hit_series = target_source.ge(5.0)
     rows = int(len(ret5))
     target_rows = int(len(target_source))
     win_rate = float((ret5.gt(0).mean() * 100.0)) if rows else None
     avg_return = float(ret5.mean()) if rows else None
-    target_hit = float((target_source.ge(5.0).mean() * 100.0)) if target_rows else None
+    target_hit = float((target_hit_series.mean() * 100.0)) if target_rows else None
     avg_target_return = float(target_source.mean()) if target_rows else None
     target_pass = (
         target_rows >= 30
@@ -106,7 +121,10 @@ def _metric_block(df: pd.DataFrame, market: str, *, strict_quality: bool) -> Dic
         "policy": policy_label,
         "rows": rows,
         "target_rows": target_rows,
+        "target_definition": target_definition,
         "win_5d_pct": round(win_rate, 3) if win_rate is not None else None,
+        "hit_5pct_within_5d_high_pct": round(target_hit, 3) if target_hit is not None else None,
+        "avg_max_high_return_5d_pct": round(avg_target_return, 4) if avg_target_return is not None else None,
         "hit_5pct_within_observed_5d_pct": round(target_hit, 3) if target_hit is not None else None,
         "avg_return_5d_pct": round(avg_return, 4) if avg_return is not None else None,
         "avg_max_return_observed_5d_pct": round(avg_target_return, 4) if avg_target_return is not None else None,
@@ -123,8 +141,8 @@ def build_live_policy_report(df: pd.DataFrame) -> Dict[str, Any]:
         "quality_note": "Observed policy performance ignores legacy validation_excluded flags so old resolved rows can be audited. Use --strict-quality for gold-style feature-complete validation.",
         "goal": {
             "win_5d_pct_min": 70.0,
-            "hit_5pct_within_observed_5d_pct_min": 70.0,
-            "avg_max_return_observed_5d_pct_min": 5.0,
+            "hit_5pct_within_5d_high_pct_min": 70.0,
+            "avg_max_high_return_5d_pct_min": 5.0,
             "min_rows": 30,
         },
         "policies": [
@@ -153,7 +171,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- source_rows: `{report.get('source_rows')}`",
         f"- quality_scope: `{report.get('quality_scope')}`",
         f"- quality_note: {report.get('quality_note')}",
-        "- goal: hit_5pct_within_observed_5d >= 70%, avg_max_return_observed_5d >= +5%, target_rows >= 30",
+        "- goal: source OHLCV High 기준 hit_5pct_within_5d >= 70%, avg_max_high_return_5d >= +5%, target_rows >= 30",
         "",
         "## Policies",
     ]
@@ -165,7 +183,10 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- policy: `{row.get('policy')}`",
                 f"- rows: `{row.get('rows')}`",
                 f"- target_rows: `{row.get('target_rows')}`",
+                f"- target_definition: `{row.get('target_definition')}`",
                 f"- win_5d_pct: `{row.get('win_5d_pct')}`",
+                f"- hit_5pct_within_5d_high_pct: `{row.get('hit_5pct_within_5d_high_pct')}`",
+                f"- avg_max_high_return_5d_pct: `{row.get('avg_max_high_return_5d_pct')}`",
                 f"- hit_5pct_within_observed_5d_pct: `{row.get('hit_5pct_within_observed_5d_pct')}`",
                 f"- avg_return_5d_pct: `{row.get('avg_return_5d_pct')}`",
                 f"- avg_max_return_observed_5d_pct: `{row.get('avg_max_return_observed_5d_pct')}`",

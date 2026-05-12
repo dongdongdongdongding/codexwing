@@ -338,5 +338,13 @@ def compute_rank_adjustment(
     if macro_ctx:
         penalty = float(macro_ctx.get("macro_penalty", 0) or 0)
         rank_adjust -= min(penalty, 8)
+        us_lead_score = float(macro_ctx.get("us_lead_score", 0) or 0)
+        us_lead_state = str(macro_ctx.get("us_lead_state", "NEUTRAL") or "NEUTRAL").upper()
+        if us_lead_state == "RISK_OFF" or us_lead_score <= -22:
+            rank_adjust -= 4
+        elif us_lead_state == "CAUTION" or us_lead_score <= -8:
+            rank_adjust -= 2
+        elif us_lead_state == "TAILWIND" and penalty <= 0:
+            rank_adjust += 2
 
     return rank_adjust

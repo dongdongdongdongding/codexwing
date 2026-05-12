@@ -117,6 +117,43 @@ def _theme_flat_fields(theme_context: Optional[Dict[str, Any]]) -> Dict[str, Any
     }
 
 
+def _macro_context_summary(macro_ctx: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    ctx = macro_ctx if isinstance(macro_ctx, dict) else {}
+    keys = [
+        "macro_state",
+        "macro_risk_score",
+        "macro_penalty",
+        "macro_multiplier",
+        "vix",
+        "vix_change_1d",
+        "tnx",
+        "tnx_change_1d",
+        "krw",
+        "krw_change_1d",
+        "spy_change_1d",
+        "ixic_change_1d",
+        "qqq_change_1d",
+        "nq_futures_change_1d",
+        "es_futures_change_1d",
+        "soxx_change_1d",
+        "ewy_change_1d",
+        "koru_change_1d",
+        "kospi200_source",
+        "kospi200_change_1d",
+        "kodex200_source",
+        "kodex200_change_1d",
+        "kr_night_futures_source_status",
+        "kr_derivative_lead_score",
+        "kr_derivative_lead_state",
+        "kr_derivative_lead_flags",
+        "us_lead_score",
+        "us_lead_state",
+        "us_lead_flags",
+        "flags",
+    ]
+    return {key: ctx.get(key) for key in keys if key in ctx}
+
+
 def compute_expected_edge_profile(
     *,
     prob_5: float,
@@ -3253,6 +3290,7 @@ def evaluate_app_kr_candidate(
     intel_data: Any,
     tech_score: int,
     market_gate: Dict[str, Any],
+    macro_ctx: Any,
     rank_adjustment_fn: Callable[..., float],
     news_adjustment_fn: Callable[..., Dict[str, Any]],
     reject_reason_fn: Optional[Callable[[str], None]] = None,
@@ -3633,6 +3671,7 @@ def evaluate_app_kr_candidate(
             whale_score,
             float(volume_ratio),
             volume_confirmed=volume_confirmed,
+            macro_ctx=macro_ctx,
             consec_days=consec_days,
         ),
         1,
@@ -3675,6 +3714,7 @@ def evaluate_app_kr_candidate(
     leader_metrics = theme_overlay.get("leader_metrics", {}) if isinstance(theme_overlay.get("leader_metrics"), dict) else {}
     leader_metrics = {
         **leader_metrics,
+        "macro_context": _macro_context_summary(macro_ctx),
         "leader_score": round(max(float(leader_metrics.get("leader_score", 0.0) or 0.0), float(leader_signal.get("leader_score", 0.0) or 0.0)), 1),
         "breakout_quality_score": round(max(float(leader_metrics.get("breakout_quality_score", 0.0) or 0.0), float(leader_signal.get("breakout_quality_score", 0.0) or 0.0)), 1),
         "close_location_score": round(max(float(leader_metrics.get("close_location_score", 0.0) or 0.0), float(leader_signal.get("close_location_score", 0.0) or 0.0)), 1),
@@ -3703,6 +3743,17 @@ def evaluate_app_kr_candidate(
         theme_context_payload["theme_reasons"] = theme_reasons[:12]
         theme_context_payload["market_sentiment"] = str(context_adjustment.get("market_sentiment", "NEUTRAL"))
         theme_context_payload["context_score_adjustment"] = round(float(context_adjustment.get("adjustment", 0.0) or 0.0), 1)
+        theme_overlay["theme_context"] = theme_context_payload
+    macro_summary = _macro_context_summary(macro_ctx)
+    if macro_summary:
+        theme_context_payload = theme_overlay.get("theme_context", {}) if isinstance(theme_overlay.get("theme_context"), dict) else {}
+        theme_context_payload["macro_context"] = macro_summary
+        if macro_summary.get("us_lead_state") in {"RISK_OFF", "CAUTION", "TAILWIND"}:
+            theme_reasons = list(theme_context_payload.get("theme_reasons", []) or [])
+            lead_reason = f"US_LEAD_{macro_summary.get('us_lead_state')}"
+            if lead_reason not in theme_reasons:
+                theme_reasons.append(lead_reason)
+            theme_context_payload["theme_reasons"] = theme_reasons[:12]
         theme_overlay["theme_context"] = theme_context_payload
     if float(context_adjustment.get("adjustment", 0.0) or 0.0) >= 3.5:
         strategy_tag = f"{strategy_tag} | ContextTailwind"

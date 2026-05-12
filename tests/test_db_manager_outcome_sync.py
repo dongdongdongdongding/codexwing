@@ -3,6 +3,74 @@ import json
 from modules.db_manager import DBManager
 
 
+class _FakeResponse:
+    def __init__(self, data):
+        self.data = data
+
+
+class _FakeTableQuery:
+    def __init__(self, rows):
+        self.rows = list(rows)
+        self.filters = []
+        self.limit_n = None
+
+    def select(self, *_args, **_kwargs):
+        return self
+
+    def eq(self, key, value):
+        self.filters.append(("eq", key, value))
+        return self
+
+    def neq(self, key, value):
+        self.filters.append(("neq", key, value))
+        return self
+
+    def is_(self, key, value):
+        self.filters.append(("is", key, value))
+        return self
+
+    def gte(self, key, value):
+        self.filters.append(("gte", key, value))
+        return self
+
+    def lte(self, key, value):
+        self.filters.append(("lte", key, value))
+        return self
+
+    def order(self, *_args, **_kwargs):
+        return self
+
+    def limit(self, n):
+        self.limit_n = n
+        return self
+
+    def execute(self):
+        rows = self.rows
+        for op, key, value in self.filters:
+            if op == "eq":
+                rows = [r for r in rows if r.get(key) == value]
+            elif op == "neq":
+                rows = [r for r in rows if r.get(key) != value]
+            elif op == "is":
+                rows = [r for r in rows if r.get(key) is None and value == "null"]
+            elif op == "gte":
+                rows = [r for r in rows if str(r.get(key) or "") >= value]
+            elif op == "lte":
+                rows = [r for r in rows if str(r.get(key) or "") <= value]
+        if self.limit_n is not None:
+            rows = rows[: self.limit_n]
+        return _FakeResponse(rows)
+
+
+class _FakeClient:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def table(self, name):
+        assert name == "market_scan_results"
+        return _FakeTableQuery(self.rows)
+
+
 def test_choose_feature_rich_peer_prefers_scanner_full_over_stub():
     db = DBManager.__new__(DBManager)
     rows = [
@@ -255,3 +323,112 @@ def test_merge_non_empty_payload_clears_stale_relative_rank_for_exception_leader
     assert merged["relative_rank_score"] is None
     assert merged["relative_rank_pct"] is None
     assert merged["regime_adjusted_grade"] is None
+
+
+def test_find_scan_result_conflict_row_is_run_scoped_for_repeated_same_day_ticker():
+    db = DBManager.__new__(DBManager)
+    db.client = _FakeClient(
+        [
+            {
+                "id": "old-run",
+                "run_id": "RUN-OLD",
+                "ticker": "005930.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "recommended_at": "2026-05-13T01:00:00+00:00",
+                "created_at": "2026-05-13T01:00:00+00:00",
+                "priority_rank": 1,
+            },
+            {
+                "id": "same-run",
+                "run_id": "RUN-NEW",
+                "ticker": "005930.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "recommended_at": "2026-05-13T02:00:00+00:00",
+                "created_at": "2026-05-13T02:00:00+00:00",
+                "priority_rank": 2,
+            },
+        ]
+    )
+
+    conflict = db._find_scan_result_conflict_row(
+        {
+            "run_id": "RUN-NEW",
+            "ticker": "005930.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "recommended_at": "2026-05-13T03:00:00+00:00",
+        }
+    )
+
+    assert conflict["id"] == "same-run"
+
+
+def test_find_scan_result_conflict_row_does_not_merge_different_run():
+    db = DBManager.__new__(DBManager)
+    db.client = _FakeClient(
+        [
+            {
+                "id": "old-run",
+                "run_id": "RUN-OLD",
+                "ticker": "005930.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "recommended_at": "2026-05-13T01:00:00+00:00",
+                "created_at": "2026-05-13T01:00:00+00:00",
+                "priority_rank": 1,
+            }
+        ]
+    )
+
+    conflict = db._find_scan_result_conflict_row(
+        {
+            "run_id": "RUN-NEW",
+            "ticker": "005930.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "recommended_at": "2026-05-13T03:00:00+00:00",
+        }
+    )
+
+    assert conflict is None
+
+
+def test_find_scan_result_conflict_row_keeps_legacy_null_run_guard():
+    db = DBManager.__new__(DBManager)
+    db.client = _FakeClient(
+        [
+            {
+                "id": "legacy",
+                "run_id": None,
+                "ticker": "005930.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "recommended_at": "2026-05-13T01:00:00+00:00",
+                "created_at": "2026-05-13T01:00:00+00:00",
+                "priority_rank": None,
+            },
+            {
+                "id": "old-run",
+                "run_id": "RUN-OLD",
+                "ticker": "005930.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "recommended_at": "2026-05-13T01:00:00+00:00",
+                "created_at": "2026-05-13T01:00:00+00:00",
+                "priority_rank": 1,
+            },
+        ]
+    )
+
+    conflict = db._find_scan_result_conflict_row(
+        {
+            "ticker": "005930.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "recommended_at": "2026-05-13T03:00:00+00:00",
+        }
+    )
+
+    assert conflict["id"] == "legacy"

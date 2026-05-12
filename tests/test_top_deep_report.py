@@ -65,3 +65,32 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["trade_plan"]["entry_reference_price"] == 73200.0
     assert report["price"]["trend"] == "UP"
     assert report["news"]["headlines"][0]["title"] == "real headline"
+
+
+def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empty():
+    with patch("modules.top_deep_report._fetch_price_snapshot") as price, patch("modules.top_deep_report._fetch_news_snapshot") as news:
+        price.return_value = {"warnings": [], "ohlcv_tail": []}
+        news.return_value = {"status": "OK", "sentiment_score": 0.0, "headlines": [], "warnings": []}
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {"ticker": "CCC.KQ", "Decision Score": 99.0},
+                {"ticker": "AAA.KQ", "Decision Score": 10.0},
+                {"ticker": "BBB.KQ", "Decision Score": 20.0},
+            ],
+            planner_payload={
+                "decisions": [],
+                "watchlist_meta": [
+                    {"ticker": "AAA.KQ", "decision": "WATCHLIST_ONLY", "decision_score": 10.0},
+                    {"ticker": "BBB.KQ", "decision": "WATCHLIST_ONLY", "decision_score": 20.0},
+                    {"ticker": "CCC.KQ", "decision": "WATCHLIST_ONLY", "decision_score": 99.0},
+                ],
+            },
+            run_id="RUN-WATCH",
+            market="KOSDAQ",
+            scan_mode="SWING",
+            top_n=3,
+        )
+
+    assert [row["ticker"] for row in reports] == ["AAA.KQ", "BBB.KQ", "CCC.KQ"]
+    assert [row["rank"] for row in reports] == [1, 2, 3]

@@ -330,6 +330,21 @@ def main() -> None:
                 result = condition.astype("Int8")  # nullable int
                 return result.where(is_resolved)
 
+            if "max_high_return_5d_pct" in df.columns:
+                high_5d = pd.to_numeric(df["max_high_return_5d_pct"], errors="coerce")
+            else:
+                high_5d = pd.Series(index=df.index, dtype="float")
+            if "hit_5pct_within_5d" in df.columns:
+                hit_text = df["hit_5pct_within_5d"].fillna("").astype(str).str.strip().str.lower()
+                high_hit = hit_text.isin({"true", "1", "yes"})
+                high_label = high_hit.astype("Int8").where(is_resolved & high_5d.notna())
+            else:
+                high_label = _label(high_5d, high_5d.ge(5))
+            df["target_definition"] = "forward_high_within_5d"
+            df["target_return_source"] = "source_ohlcv_high"
+            df["label_hit_5pct_within_5d"] = high_label
+            df["max_high_return_5d_pct"] = high_5d.where(is_resolved)
+
             df["label_win_close"] = _label(numeric.get("return_close_pct", pd.Series(index=df.index)), numeric.get("return_close_pct", pd.Series(index=df.index)).gt(0))
             df["label_win_1d"] = _label(numeric.get("return_1d_pct", pd.Series(index=df.index)), numeric.get("return_1d_pct", pd.Series(index=df.index)).gt(0))
             df["label_win_3d"] = _label(numeric.get("return_3d_pct", pd.Series(index=df.index)), numeric.get("return_3d_pct", pd.Series(index=df.index)).gt(0))

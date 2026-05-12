@@ -15,7 +15,8 @@ Checks per run
 1. Count parity: len(planner.decisions) == DB row count for that run_id.
 2. Top-N membership: every ticker in planner top-N appears in DB top-N.
 3. Rank exactness: planner.priority_rank == DB.priority_rank for matching ticker.
-4. Feature origin: report what fraction of DB rows are scanner-full vs outcome
+4. Top Deep parity: local Top Deep Reports must match scan-time Top-N.
+5. Feature origin: report what fraction of DB rows are scanner-full vs outcome
    sync stub — divergence here is the swing-main-emp pattern.
 
 Output
@@ -105,7 +106,71 @@ def _db_rows_for_run(db: DBManager, run_id: str, bucket: Optional[str] = "picked
     return res.data or []
 
 
-def _verify_run(db: DBManager, run_dir: Path, n: int, bucket: Optional[str] = "picked") -> Dict[str, Any]:
+def _deep_top_for_run(run_id: str, n: int, report_dir: Path) -> List[Tuple[int, str]]:
+    path = report_dir / f"{run_id}.json"
+    if not path.exists():
+        return []
+    try:
+        rows = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    if not isinstance(rows, list):
+        return []
+    items = []
+    for idx, row in enumerate(rows, start=1):
+        if not isinstance(row, dict):
+            continue
+        ticker = str(row.get("ticker") or "").strip()
+        if not ticker:
+            continue
+        try:
+            rank = int(row.get("rank") or idx)
+        except Exception:
+            rank = idx
+        items.append((rank, ticker))
+    items.sort(key=lambda x: x[0])
+    return items[:n]
+
+
+def _compare_top_by_rank(
+    left: List[Tuple[int, str]],
+    right: List[Tuple[int, str]],
+    *,
+    left_name: str,
+    right_name: str,
+) -> Dict[str, Any]:
+    left_by_rank = {rank: tk for rank, tk in left}
+    right_by_rank = {rank: tk for rank, tk in right}
+    matches = []
+    mismatches = []
+    left_only = []
+    right_only = []
+    for rank, left_tk in left_by_rank.items():
+        right_tk = right_by_rank.get(rank)
+        if right_tk is None:
+            left_only.append((rank, left_tk))
+        elif right_tk == left_tk:
+            matches.append((rank, left_tk))
+        else:
+            mismatches.append({"rank": rank, left_name: left_tk, right_name: right_tk})
+    for rank, right_tk in right_by_rank.items():
+        if rank not in left_by_rank:
+            right_only.append((rank, right_tk))
+    return {
+        "matches": matches,
+        "mismatches": mismatches,
+        "left_only": left_only,
+        "right_only": right_only,
+    }
+
+
+def _verify_run(
+    db: DBManager,
+    run_dir: Path,
+    n: int,
+    bucket: Optional[str] = "picked",
+    deep_report_dir: Path = Path("runtime_state/reports/top_deep"),
+) -> Dict[str, Any]:
     payload = _load_planner(run_dir)
     if not payload:
         return {"run_dir": str(run_dir), "status": "no_planner_handoff"}
@@ -129,24 +194,13 @@ def _verify_run(db: DBManager, run_dir: Path, n: int, bucket: Optional[str] = "p
         }
 
     db_top = [(int(r.get("priority_rank") or 0), str(r.get("ticker") or "")) for r in db_rows[:n] if r.get("priority_rank")]
-    db_top_by_rank = {rank: tk for rank, tk in db_top}
-    planner_top_by_rank = {rank: tk for rank, tk in planner_top}
-
-    ranks_match = []
-    rank_mismatches = []
-    planner_only = []
-    db_only = []
-    for rank, planner_tk in planner_top_by_rank.items():
-        db_tk = db_top_by_rank.get(rank)
-        if db_tk is None:
-            planner_only.append((rank, planner_tk))
-        elif db_tk == planner_tk:
-            ranks_match.append((rank, planner_tk))
-        else:
-            rank_mismatches.append({"rank": rank, "planner": planner_tk, "db": db_tk})
-    for rank, db_tk in db_top_by_rank.items():
-        if rank not in planner_top_by_rank:
-            db_only.append((rank, db_tk))
+    db_cmp = _compare_top_by_rank(planner_top, db_top, left_name="planner", right_name="db")
+    deep_top = _deep_top_for_run(str(run_id), n, deep_report_dir)
+    deep_cmp = (
+        _compare_top_by_rank(planner_top, deep_top, left_name="planner", right_name="deep")
+        if deep_top
+        else {"matches": [], "mismatches": [], "left_only": planner_top, "right_only": []}
+    )
 
     origins = Counter(r.get("feature_origin") for r in db_rows)
     return {
@@ -157,11 +211,16 @@ def _verify_run(db: DBManager, run_dir: Path, n: int, bucket: Optional[str] = "p
         "status": "checked",
         "planner_count": len(payload.get("decisions", []) or []),
         "db_count": len(db_rows),
+        "deep_count": len(deep_top),
         "topN": n,
-        "ranks_match": len(ranks_match),
-        "rank_mismatches": rank_mismatches,
-        "planner_only": planner_only,
-        "db_only": db_only,
+        "ranks_match": len(db_cmp["matches"]),
+        "rank_mismatches": db_cmp["mismatches"],
+        "planner_only": db_cmp["left_only"],
+        "db_only": db_cmp["right_only"],
+        "deep_ranks_match": len(deep_cmp["matches"]),
+        "deep_rank_mismatches": deep_cmp["mismatches"],
+        "planner_only_deep": deep_cmp["left_only"],
+        "deep_only": deep_cmp["right_only"],
         "feature_origin_dist": dict(origins),
         "scanner_full_pct": round(
             (origins.get("scanner_full", 0) / max(len(db_rows), 1)) * 100, 1
@@ -175,6 +234,7 @@ def main() -> int:
     parser.add_argument("--top-n", type=int, default=10)
     parser.add_argument("--limit-runs", type=int, default=50)
     parser.add_argument("--bucket", default="picked", help="decision_bucket to compare (default: picked). 'all' to mix.")
+    parser.add_argument("--deep-report-dir", default="runtime_state/reports/top_deep")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -195,10 +255,11 @@ def main() -> int:
         return 2
 
     bucket = None if args.bucket == "all" else args.bucket
+    deep_report_dir = Path(args.deep_report_dir)
     results = []
     for d in run_dirs:
         try:
-            r = _verify_run(db, d, args.top_n, bucket=bucket)
+            r = _verify_run(db, d, args.top_n, bucket=bucket, deep_report_dir=deep_report_dir)
         except Exception as exc:
             r = {"run_dir": str(d), "status": "error", "error": str(exc)}
         results.append(r)
@@ -208,10 +269,23 @@ def main() -> int:
     summary = Counter(r["status"] for r in results)
     checked = [r for r in results if r["status"] == "checked"]
     empty_bucket = [r for r in results if r["status"] == "empty_planner_for_bucket"]
-    perfect = [r for r in checked if not r["rank_mismatches"] and not r["planner_only"] and not r["db_only"]]
+    perfect = [
+        r for r in checked
+        if not r["rank_mismatches"]
+        and not r["planner_only"]
+        and not r["db_only"]
+        and not r.get("deep_rank_mismatches")
+        and not r.get("planner_only_deep")
+        and not r.get("deep_only")
+    ]
     rank_mismatch_runs = [r for r in checked if r["rank_mismatches"]]
     missing_db_rows = [r for r in checked if r["planner_only"]]
     extra_db_rows = [r for r in checked if r["db_only"]]
+    deep_mismatch_runs = [r for r in checked if r.get("deep_rank_mismatches")]
+    missing_deep_rows = [r for r in checked if r.get("planner_only_deep")]
+    extra_deep_rows = [r for r in checked if r.get("deep_only")]
+    no_db_rows = [r for r in results if r["status"] == "no_db_rows"]
+    error_runs = [r for r in results if r["status"] == "error"]
     no_scanner_full = [
         r for r in checked
         if "scanner_full" not in (r.get("feature_origin_dist") or {})
@@ -226,6 +300,9 @@ def main() -> int:
     print(f"  rank mismatch: {len(rank_mismatch_runs)}")
     print(f"  planner-only : {len(missing_db_rows)} (rows in planner_handoff but not in DB)")
     print(f"  db-only      : {len(extra_db_rows)} (rows in DB but not in planner top-N)")
+    print(f"  deep mismatch: {len(deep_mismatch_runs)}")
+    print(f"  planner-only deep: {len(missing_deep_rows)} (rows in planner_handoff but not in Top Deep)")
+    print(f"  deep-only    : {len(extra_deep_rows)} (rows in Top Deep but not in planner top-N)")
     print(f"  no scanner_full origin: {len(no_scanner_full)} (only stubs in DB)")
     if bucket == "picked" and empty_bucket and not checked:
         print(f"\n⚠️ FAIL-LOUD: every inspected run had ZERO picked decisions.")
@@ -239,7 +316,27 @@ def main() -> int:
         for m in r["rank_mismatches"][:5]:
             print(f"  rank {m['rank']}: planner={m['planner']} db={m['db']}")
 
-    return 0 if not rank_mismatch_runs else 1
+    for r in missing_db_rows[:5]:
+        print(f"\n[DB-MISSING] {r['run_id']} ({r.get('market')}/{r.get('scan_mode')})")
+        for rank, ticker in r["planner_only"][:5]:
+            print(f"  rank {rank}: planner={ticker} db=<missing>")
+
+    for r in deep_mismatch_runs[:5]:
+        print(f"\n[DEEP-MISMATCH] {r['run_id']} ({r.get('market')}/{r.get('scan_mode')})")
+        for m in r["deep_rank_mismatches"][:5]:
+            print(f"  rank {m['rank']}: planner={m['planner']} deep={m['deep']}")
+
+    fail = bool(
+        rank_mismatch_runs
+        or missing_db_rows
+        or extra_db_rows
+        or deep_mismatch_runs
+        or missing_deep_rows
+        or extra_deep_rows
+        or no_db_rows
+        or error_runs
+    )
+    return 1 if fail else 0
 
 
 if __name__ == "__main__":
