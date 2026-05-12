@@ -71,6 +71,7 @@ SELECT_COLUMNS = ",".join(
         "id",
         "ticker",
         "market",
+        "market_type",
         "scan_mode",
         "recommended_at",
         "created_at",
@@ -127,7 +128,8 @@ def _load_kosdaq_rows() -> pd.DataFrame:
         res = (
             db.client.table("market_scan_results")
             .select(SELECT_COLUMNS)
-            .eq("market", "KOSDAQ")
+            .eq("market_type", "KR")
+            .ilike("ticker", "%.KQ")
             .eq("scan_mode", "SWING")
             .range(page * page_size, page * page_size + page_size - 1)
             .execute()
@@ -142,6 +144,8 @@ def _load_kosdaq_rows() -> pd.DataFrame:
 
 def _prepare(df: pd.DataFrame) -> pd.DataFrame:
     work = df.copy()
+    ticker = work.get("ticker", pd.Series(index=work.index, dtype=object)).fillna("").astype(str).str.upper()
+    work = work[ticker.str.endswith(".KQ")].copy()
     for col in NUMERIC_FEATURES + ["return_5d_pct"]:
         if col in work.columns:
             work[col] = pd.to_numeric(work[col], errors="coerce")
@@ -151,17 +155,10 @@ def _prepare(df: pd.DataFrame) -> pd.DataFrame:
         work[col] = work[col].fillna("UNKNOWN").astype(str)
     if "is_dummy_data" in work.columns:
         work = work[~_bool_series(work["is_dummy_data"])].copy()
-    actual_complete = pd.Series(True, index=work.index)
-    for col in ["alpha_score", "tech_score", "ml_prob", "whale_score", "decision_score", "entry_reference_price"]:
-        actual_complete &= pd.to_numeric(work.get(col), errors="coerce").notna()
-    actual_complete &= pd.to_numeric(work.get("volume_ratio"), errors="coerce").notna()
-    for col in ["trend", "tier", "position"]:
-        actual_complete &= ~work.get(col, pd.Series(index=work.index, dtype=object)).fillna("").astype(str).str.strip().str.lower().isin(
-            {"", "unknown", "nan", "none", "null"}
-        )
-    work = work[actual_complete].copy()
     work = work[work["return_5d_pct"].notna()].copy()
-    rec = work.get("recommended_at", work.get("created_at"))
+    rec = work.get("recommended_at", pd.Series(index=work.index, dtype=object))
+    created = work.get("created_at", pd.Series(index=work.index, dtype=object))
+    rec = rec.where(rec.notna() & rec.astype(str).str.len().gt(0), created)
     work["trade_date"] = pd.to_datetime(rec, errors="coerce").dt.strftime("%Y-%m-%d")
     work = work[work["trade_date"].fillna("").astype(str).str.len().ge(8)].copy()
     work["target_win"] = work["return_5d_pct"].gt(0).astype(int)

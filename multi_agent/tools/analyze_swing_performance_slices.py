@@ -79,14 +79,14 @@ def _load_rows(market: str) -> pd.DataFrame:
     page = 0
     page_size = 1000
     while True:
-        res = (
-            db.client.table("market_scan_results")
-            .select(SELECT_COLUMNS)
-            .eq("market", market)
-            .eq("scan_mode", "SWING")
-            .range(page * page_size, page * page_size + page_size - 1)
-            .execute()
-        )
+        query = db.client.table("market_scan_results").select(SELECT_COLUMNS).eq("scan_mode", "SWING")
+        if market == "KOSDAQ":
+            query = query.eq("market_type", "KR").ilike("ticker", "%.KQ")
+        elif market == "KOSPI":
+            query = query.eq("market_type", "KR").ilike("ticker", "%.KS")
+        else:
+            query = query.eq("market", market)
+        res = query.range(page * page_size, page * page_size + page_size - 1).execute()
         batch = res.data or []
         rows.extend(batch)
         if len(batch) < page_size:

@@ -4,7 +4,7 @@
 Why this exists
 ---------------
 The pipeline writes scan features to `market_scan_results` with feature_origin
-in {scanner_full, scanner_partial_legacy} as the worker scans. A separate
+in {scanner_full, scanner_partial_legacy, scanner_archive_outcome} as the worker scans. A separate
 outcome-sync pass (`update_outcome_return_metrics.py`) writes return_*d_pct,
 but those updates land on the matching outcome row only when the merge
 fallback in `db_manager.upsert_scan_archive_outcomes` finds the worker row
@@ -23,7 +23,7 @@ What this does
 2. Build an index keyed by (ticker, recommended_at YYYY-MM-DD)
    → return_{1,2,3,5,7,14,30}d_pct, latest_return_pct, base_trade_date
 3. For each (ticker, date) key, look up matching market_scan_results rows
-   with feature_origin in {scanner_full, scanner_partial_legacy} where any
+   with feature_origin in {scanner_full, scanner_partial_legacy, scanner_archive_outcome} where any
    return_*_pct column is NULL
 4. UPDATE only the missing return columns (never overwrite non-NULL values)
 5. Print a summary: rows_seen, rows_updated, fill_rate_before/after sample
@@ -64,7 +64,7 @@ RETURN_COLUMNS = (
     "performance_updated_at",
 )
 HORIZONS_FROM_HISTORY = (1, 2, 3, 5, 7, 14, 30)
-SCANNER_ORIGINS = ("scanner_full", "scanner_partial_legacy")
+SCANNER_ORIGINS = ("scanner_full", "scanner_partial_legacy", "scanner_archive_outcome")
 
 
 def _fetch_history_close(ticker: str, start_date: str, end_days: int = 40):
@@ -225,7 +225,7 @@ def _fetch_scanner_rows_missing_returns(
     page_size: int = 1000,
     market_filter: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """Fetch market_scan_results rows where feature_origin ∈ SCANNER_ORIGINS
+    """Fetch market_scan_results rows where feature_origin is backfillable
     and at least one of the return columns we want to set is NULL."""
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable")
@@ -236,7 +236,15 @@ def _fetch_scanner_rows_missing_returns(
         "return_14d_pct,return_30d_pct,latest_return_pct,base_trade_date,entry_reference_price"
     )
     rows_by_id: Dict[Any, Dict[str, Any]] = {}
-    for missing_col in ("return_3d_pct", "return_14d_pct", "return_30d_pct"):
+    for missing_col in (
+        "return_1d_pct",
+        "return_2d_pct",
+        "return_3d_pct",
+        "return_5d_pct",
+        "return_7d_pct",
+        "return_14d_pct",
+        "return_30d_pct",
+    ):
         page = 0
         while True:
             query = (
@@ -247,7 +255,11 @@ def _fetch_scanner_rows_missing_returns(
                 .order("created_at", desc=True)
                 .range(page * page_size, page * page_size + page_size - 1)
             )
-            if market_filter == "KR":
+            if market_filter == "KOSDAQ":
+                query = query.eq("market_type", "KR").ilike("ticker", "%.KQ")
+            elif market_filter == "KOSPI":
+                query = query.eq("market_type", "KR").ilike("ticker", "%.KS")
+            elif market_filter == "KR":
                 query = query.eq("market_type", "KR")
             elif market_filter == "US":
                 query = query.eq("market_type", "US")
@@ -436,9 +448,9 @@ def main() -> int:
     )
     parser.add_argument(
         "--market",
-        choices=["ALL", "KR", "US", "AMEX"],
+        choices=["ALL", "KR", "KOSPI", "KOSDAQ", "US", "AMEX"],
         default="ALL",
-        help="Filter scanner rows by market_type (default ALL).",
+        help="Filter scanner rows by market_type or KR ticker suffix (default ALL).",
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
