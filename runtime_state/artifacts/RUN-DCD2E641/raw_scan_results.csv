@@ -1,6 +1,0 @@
-Tier,_tier_sort,Ticker,Name,Antigrav,Whale,Trend,1D Change,Consecutive,RS vs SPY,Entry(-2%),Target,Stop,Hold,Volume,Strategy,Surge,WR,AI Prob,Clean Hit,Conviction,Position,Context,_prob_5,_prob_clean,Decision Score
-🏆T1,1,GOOG,GOOG,88,92pts,UP,+5.01%,Intraday,+3.2% intraday,286.78,291.08,284.49 (-0.8%),same-day,⚠️ x1.4,⏱️ Intraday Breakout | 1H,📈 Trend Continuation,-,64.4%,45.8%,72.9,🚀 Intraday Breakout,-,64.4,45.8,100.0
-⭐T2,2,META,META,72,96pts,UP,+6.64%,Intraday,+4.0% intraday,572.02,582.85,566.60 (-0.9%),same-day,⚠️ x1.1,⏱️ Intraday Trend | 1H,📈 Trend Continuation,-,49.9%,43.3%,63.7,📈 Intraday Trend,-,49.9,43.3,84.1
-⭐T2,2,AVGO,AVGO,70,91pts,UP,+5.47%,Intraday,+3.3% intraday,309.42,316.64,305.81 (-1.2%),same-day,⚠️ x1.2,⏱️ Intraday Trend | 1H,📈 Trend Continuation,-,50.6%,44.1%,63.5,📈 Intraday Trend,-,50.6,44.1,82.9
-⭐T2,2,WMT,WMT,63,72pts,UP,+0.63%,Intraday,+0.4% intraday,124.28,126.14,123.29 (-0.8%),same-day,✅ x1.7,⏱️ Intraday Trend | 1H,📈 Trend Continuation,-,53.6%,48.2%,63.2,📈 Intraday Trend,-,53.6,48.2,78.2
-⭐T2,2,TSLA,TSLA,69,77pts,UP,+4.64%,Intraday,+2.8% intraday,371.75,379.08,368.09 (-1.0%),same-day,⚠️ x0.7,⏱️ Intraday Trend | 1H,📈 Trend Continuation,-,47.8%,40.4%,58.5,📈 Intraday Trend,-,47.8,40.4,76.6

@@ -1,6 +1,0 @@
-Tier,_tier_sort,Ticker,Name,Antigrav,Whale,Trend,1D Change,Consecutive,RS vs SPY,Entry(-2%),Target,Stop,Hold,Volume,Strategy,Surge,WR,Position,Context,_prob_5,_prob_clean,Decision Score
-T3,3,AMZN,AMZN,38,60.0pts,DOWN,+1.98%,1 UP,-0.9% vs SPY,199.21,209.71,189.25 (-5.0%),3d,⚠️ x1.0,🚀 Momentum,-,52%,📉 바닥 (Bottom),-,0.0,0.0,45.8
-T3,3,META,META,44,40.0pts,DOWN,+1.91%,1 UP,-9.3% vs SPY,525.05,562.73,498.80 (-5.0%),3d,✅ x1.9,🚀 Momentum,-,48%,📉 바닥 (Bottom),-,0.0,0.0,37.4
-T3,3,NVDA,NVDA,35,50.0pts,DOWN,+0.16%,1 UP,-3.1% vs SPY,164.43,174.34,156.21 (-5.0%),3d,✅ x1.2,🚀 Momentum,-,61%,📉 바닥 (Bottom),-,0.0,0.0,37.0
-T3,3,AAPL,AAPL,36,35.0pts,DOWN,-0.74%,2 DOWN,+1.8% vs SPY,242.02,252.08,231.97 (-4.2%),3d,⚠️ x0.8,🚀 Momentum,-,52%,📉 바닥 (Bottom),-,0.0,0.0,30.6
-T3,3,MSFT,MSFT,38,30.0pts,DOWN,+1.89%,1 UP,-4.3% vs SPY,356.23,371.84,340.62 (-4.4%),3d,✅ x1.3,🚀 Momentum,-,56%,📉 바닥 (Bottom),-,0.0,0.0,29.8

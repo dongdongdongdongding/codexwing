@@ -1,19 +1,301 @@
 {
-  "generated_at": "2026-04-17T02:17:15.123013+00:00",
+  "generated_at": "2026-05-12T18:13:07.936244+00:00",
   "market": "KOSPI",
   "theme_states": [
+    {
+      "theme_id": "정유_에너지",
+      "theme_name": "정유/에너지",
+      "direction": "BENEFICIARY",
+      "strength_score": 49.0,
+      "confidence": 0.78,
+      "driver_categories": [
+        "OIL",
+        "GEOPOLITICS",
+        "FX"
+      ],
+      "evidence": [
+        "[Tue, 12 May 2026 20:06:53 +0900] '유가상승'에 국고채 금리 급등…3년·10년물 30개월만 최고(종합2보) | 연합뉴스",
+        "[Tue, 12 May 2026 23:01:08 +09:00] 美 4월 소비자물가 3.8%↑…고유가에 3년來 최대 상승 | 매일경제",
+        "[Tue, 12 May 2026 23:59:59 +0900] 유가상승과 CPI보고서에 뉴욕증시 하락 | 한국경제"
+      ],
+      "beneficiary_keywords": [
+        "정유/에너지",
+        "정유",
+        "에너지",
+        "원유",
+        "LNG",
+        "가스"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-05-12T18:12:57.198286+00:00"
+    },
+    {
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지",
+      "direction": "BENEFICIARY",
+      "strength_score": 45.0,
+      "confidence": 0.751,
+      "driver_categories": [
+        "OIL",
+        "FX",
+        "ECONOMY",
+        "EARNINGS"
+      ],
+      "evidence": [
+        "[주달 상승테마] 2차전지 | 주달",
+        "[주달 상승테마] 2차전지 장비 | 주달"
+      ],
+      "beneficiary_keywords": [
+        "2차전지",
+        "배터리",
+        "양극재",
+        "음극재",
+        "전고체",
+        "폐배터리"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-05-12T18:12:57.197859+00:00"
+    },
+    {
+      "theme_id": "it_platform",
+      "theme_name": "it_platform",
+      "direction": "HEADWIND",
+      "strength_score": 27.41,
+      "confidence": 0.573,
+      "source": "us_overnight_theme_transfer",
+      "evidence": [
+        "ai_datacenter:HEADWIND -27.4"
+      ],
+      "contributing_edges": [
+        {
+          "source_theme_id": "ai_datacenter",
+          "relationship": "CO_MOVE",
+          "confidence": 0.578,
+          "us_direction": "HEADWIND",
+          "us_strength": 47.42,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -27.409
+        }
+      ],
+      "updated_at": "2026-05-12T18:13:07.936150+00:00",
+      "previous_theme_state": {
+        "direction": "BENEFICIARY",
+        "strength_score": 22.0,
+        "source": null
+      }
+    },
+    {
+      "theme_id": "해운",
+      "theme_name": "해운",
+      "direction": "BENEFICIARY",
+      "strength_score": 21.0,
+      "confidence": 0.5,
+      "driver_categories": [
+        "OIL",
+        "GEOPOLITICS",
+        "ECONOMY"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [
+        "해운",
+        "운임",
+        "컨테이너",
+        "벌크"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": 0.2,
+      "momentum_class": "STEADY",
+      "updated_at": "2026-05-12T18:12:57.198337+00:00",
+      "momentum_naver_count": 1
+    },
+    {
+      "theme_id": "bio",
+      "theme_name": "바이오/헬스케어",
+      "direction": "BENEFICIARY",
+      "strength_score": 18.0,
+      "confidence": 0.479,
+      "driver_categories": [
+        "REGULATION",
+        "EARNINGS",
+        "ECONOMY"
+      ],
+      "evidence": [
+        "[DART 20260512] 대웅제약 - 투자판단관련주요경영사항              (INV008(15PGDH 저해제) 기술도입 계약 체결) | 전자공시",
+        "overnight:biotech:BENEFICIARY +12.1"
+      ],
+      "beneficiary_keywords": [
+        "바이오/헬스케어",
+        "바이오",
+        "신약",
+        "임상",
+        "항암",
+        "의료기기"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-05-12T18:12:57.197000+00:00",
+      "overnight_theme_lead": {
+        "direction": "BENEFICIARY",
+        "strength_score": 12.09,
+        "source": "us_overnight_theme_transfer"
+      }
+    },
+    {
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "direction": "HEADWIND",
+      "strength_score": 100.0,
+      "confidence": 0.9,
+      "source": "us_overnight_theme_transfer",
+      "evidence": [
+        "semiconductor:HEADWIND -58.9",
+        "ai_datacenter:HEADWIND -43.4"
+      ],
+      "contributing_edges": [
+        {
+          "source_theme_id": "semiconductor",
+          "relationship": "CO_MOVE",
+          "confidence": 0.95,
+          "us_direction": "HEADWIND",
+          "us_strength": 62.03,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -58.928
+        },
+        {
+          "source_theme_id": "ai_datacenter",
+          "relationship": "CO_MOVE",
+          "confidence": 0.915,
+          "us_direction": "HEADWIND",
+          "us_strength": 47.42,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -43.389
+        }
+      ],
+      "updated_at": "2026-05-12T18:13:07.936146+00:00",
+      "momentum_avg_change_pct": -3.74,
+      "momentum_class": "FADING",
+      "momentum_naver_count": 10
+    },
+    {
+      "theme_id": "robotics",
+      "theme_name": "로봇/자동화",
+      "direction": "HEADWIND",
+      "strength_score": 29.14,
+      "confidence": 0.584,
+      "source": "us_overnight_theme_transfer",
+      "evidence": [
+        "robotics:HEADWIND -29.1"
+      ],
+      "contributing_edges": [
+        {
+          "source_theme_id": "robotics",
+          "relationship": "CO_MOVE",
+          "confidence": 0.777,
+          "us_direction": "HEADWIND",
+          "us_strength": 37.5,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -29.137
+        }
+      ],
+      "updated_at": "2026-05-12T18:13:07.936156+00:00"
+    },
+    {
+      "theme_id": "quantum",
+      "theme_name": "양자",
+      "direction": "HEADWIND",
+      "strength_score": 35.09,
+      "confidence": 0.624,
+      "source": "us_overnight_theme_transfer",
+      "evidence": [
+        "quantum:HEADWIND -35.1"
+      ],
+      "contributing_edges": [
+        {
+          "source_theme_id": "quantum",
+          "relationship": "CO_MOVE",
+          "confidence": 0.558,
+          "us_direction": "HEADWIND",
+          "us_strength": 62.88,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -35.087
+        }
+      ],
+      "updated_at": "2026-05-12T18:13:07.936159+00:00"
+    },
+    {
+      "theme_id": "eco_energy",
+      "theme_name": "eco_energy",
+      "direction": "HEADWIND",
+      "strength_score": 95.58,
+      "confidence": 0.9,
+      "source": "us_overnight_theme_transfer",
+      "evidence": [
+        "nuclear:HEADWIND -62.6",
+        "power_grid:HEADWIND -32.9"
+      ],
+      "contributing_edges": [
+        {
+          "source_theme_id": "nuclear",
+          "relationship": "CO_MOVE",
+          "confidence": 0.78,
+          "us_direction": "HEADWIND",
+          "us_strength": 80.32,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -62.65
+        },
+        {
+          "source_theme_id": "power_grid",
+          "relationship": "CO_MOVE",
+          "confidence": 0.74,
+          "us_direction": "HEADWIND",
+          "us_strength": 44.5,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -32.93
+        }
+      ],
+      "updated_at": "2026-05-12T18:13:07.936162+00:00",
+      "momentum_avg_change_pct": -0.33,
+      "momentum_class": "STEADY"
+    },
+    {
+      "theme_id": "crypto",
+      "theme_name": "가상자산/블록체인",
+      "direction": "HEADWIND",
+      "strength_score": 29.64,
+      "confidence": 0.588,
+      "source": "us_overnight_theme_transfer",
+      "evidence": [
+        "crypto:HEADWIND -29.6"
+      ],
+      "contributing_edges": [
+        {
+          "source_theme_id": "crypto",
+          "relationship": "CO_MOVE",
+          "confidence": 0.414,
+          "us_direction": "HEADWIND",
+          "us_strength": 71.59,
+          "effective_dir": "HEADWIND",
+          "signed_contribution": -29.638
+        }
+      ],
+      "updated_at": "2026-05-12T18:13:07.936164+00:00"
+    },
     {
       "theme_id": "finance",
       "theme_name": "금융",
       "direction": "BENEFICIARY",
-      "strength_score": 86.0,
-      "confidence": 0.95,
+      "strength_score": 20.0,
+      "confidence": 0.573,
       "driver_categories": [],
       "evidence": [
-        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
-        "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
-        "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
-        "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
+        "[Mon, 11 May 2026 01:03:00 GMT] 日증시 주도주 교체…車 밀리고 반도체·AI·은행 뜬다 | 네이트",
+        "[Mon, 11 May 2026 05:16:43 GMT] 日증시 주역 바뀌었다…車 밀리고 반도체·은행·상사가 뜬다 | v.daum.net",
+        "overnight:finance:HEADWIND -15.7"
       ],
       "beneficiary_keywords": [
         "금융",
@@ -24,297 +306,15 @@
         "카드"
       ],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -1.11,
+      "momentum_avg_change_pct": -2.37,
       "momentum_class": "FADING",
-      "updated_at": "2026-04-17T02:17:15.121555+00:00",
+      "updated_at": "2026-05-12T14:13:55.414810+00:00",
+      "overnight_theme_lead": {
+        "direction": "HEADWIND",
+        "strength_score": 15.65,
+        "source": "us_overnight_theme_transfer"
+      },
       "momentum_naver_count": 10
-    },
-    {
-      "theme_id": "shipbuilding",
-      "theme_name": "조선/해양",
-      "direction": "BENEFICIARY",
-      "strength_score": 18.0,
-      "confidence": 0.479,
-      "driver_categories": [
-        "EARNINGS",
-        "GEOPOLITICS",
-        "OIL"
-      ],
-      "evidence": [
-        "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
-      ],
-      "beneficiary_keywords": [
-        "조선/해양",
-        "조선",
-        "선박",
-        "해양",
-        "LNG선",
-        "해양플랜트"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-17T02:17:15.122759+00:00"
-    },
-    {
-      "theme_id": "defense",
-      "theme_name": "방산",
-      "direction": "BENEFICIARY",
-      "strength_score": 18.0,
-      "confidence": 0.479,
-      "driver_categories": [
-        "EARNINGS",
-        "GEOPOLITICS",
-        "POLITICS"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "방산",
-        "미사일",
-        "탄약",
-        "군수",
-        "무기"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-17T02:14:35.711629+00:00"
-    },
-    {
-      "theme_id": "bio",
-      "theme_name": "바이오/헬스케어",
-      "direction": "BENEFICIARY",
-      "strength_score": 33.0,
-      "confidence": 0.666,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "REGULATION"
-      ],
-      "evidence": [
-        "[DART 20260417] 피플바이오 - [기재정정]주요사항보고서(유상증자결정) | 전자공시",
-        "[Naver Stock] 028300.KQ [+3] 외인·기관 쌍끌이에 코스피 6140선…코스닥 바이오도 급등[마켓시그... | 네이버증권",
-        "[Naver Stock] 196170.KQ [+5] “빅파마·대형사만 웃는다”...바이오시밀러 승인 간소화, 시장 재편... | 네이버증권"
-      ],
-      "beneficiary_keywords": [
-        "바이오/헬스케어",
-        "바이오",
-        "헬스케어",
-        "의약",
-        "치료제",
-        "백신"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-17T01:42:44.093602+00:00"
-    },
-    {
-      "theme_id": "consumer_retail",
-      "theme_name": "소비재/유통",
-      "direction": "NEUTRAL",
-      "strength_score": 12.0,
-      "confidence": 0.436,
-      "driver_categories": [],
-      "evidence": [
-        "[Fri, 17 Apr 2026 10:11:36 +0900] [특징주] 화장품주, 美·유럽 중심 수출 성장세에 장초반 상승 | 연합뉴스"
-      ],
-      "beneficiary_keywords": [],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-17T01:42:44.093994+00:00"
-    },
-    {
-      "theme_id": "construction_realestate",
-      "theme_name": "건설/부동산",
-      "direction": "NEUTRAL",
-      "strength_score": 10.0,
-      "confidence": 0.421,
-      "driver_categories": [],
-      "evidence": [
-        "[DART 20260417] 금호건설 - 자기주식처분결과보고서 | 전자공시"
-      ],
-      "beneficiary_keywords": [],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-17T01:33:43.298904+00:00"
-    },
-    {
-      "theme_id": "eco_energy",
-      "theme_name": "친환경/에너지",
-      "direction": "NEUTRAL",
-      "strength_score": 2.0,
-      "confidence": 0.364,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "FX",
-        "GEOPOLITICS",
-        "LIQUIDITY",
-        "OIL",
-        "POLITICS",
-        "REGULATION"
-      ],
-      "evidence": [
-        "[Fri, 17 Apr 2026 09:23:34 +09:00] “도대체 무슨 일”…사상 최대 경상흑자에도 치솟는 환율, 이런 이유가 | 매일경제"
-      ],
-      "beneficiary_keywords": [],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": -0.19,
-      "momentum_class": "STEADY",
-      "updated_at": "2026-04-17T01:33:43.299363+00:00",
-      "momentum_naver_count": 12
-    },
-    {
-      "theme_id": "semiconductor",
-      "theme_name": "반도체",
-      "direction": "BENEFICIARY",
-      "strength_score": 22.0,
-      "confidence": 0.507,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "LIQUIDITY",
-        "REGULATION"
-      ],
-      "evidence": [
-        "[Naver Stock] 402340.KS [+8] 코스피, 중동 전쟁 이후 처음으로 6200선 돌파…TSMC 호실적에 반도체... | 네이버증권"
-      ],
-      "beneficiary_keywords": [
-        "반도체",
-        "메모리",
-        "HBM",
-        "낸드",
-        "DRAM",
-        "파운드리"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": 0.48,
-      "momentum_class": "STEADY",
-      "updated_at": "2026-04-16T17:40:59.518812+00:00",
-      "momentum_naver_count": 8
-    },
-    {
-      "theme_id": "it_platform",
-      "theme_name": "IT서비스/플랫폼",
-      "direction": "BENEFICIARY",
-      "strength_score": 18.0,
-      "confidence": 0.479,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "LIQUIDITY",
-        "RATES"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "IT서비스/플랫폼",
-        "IT서비스",
-        "플랫폼",
-        "소프트웨어",
-        "SW",
-        "클라우드"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-16T17:40:59.518205+00:00"
-    },
-    {
-      "theme_id": "robotics",
-      "theme_name": "로봇/자동화",
-      "direction": "BENEFICIARY",
-      "strength_score": 18.0,
-      "confidence": 0.479,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "LIQUIDITY"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "로봇/자동화",
-        "로봇",
-        "자동화",
-        "스마트팩토리",
-        "협동로봇",
-        "물류로봇"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-16T17:40:59.519500+00:00"
-    },
-    {
-      "theme_id": "secondary_battery",
-      "theme_name": "2차전지",
-      "direction": "BENEFICIARY",
-      "strength_score": 34.0,
-      "confidence": 0.673,
-      "driver_categories": [
-        "EARNINGS",
-        "ECONOMY",
-        "FX",
-        "OIL"
-      ],
-      "evidence": [
-        "[DART 20260416] 하이드로리튬 - 주요사항보고서(자기주식처분결정) | 전자공시",
-        "[주달 상승테마] 2차전지 | 주달"
-      ],
-      "beneficiary_keywords": [
-        "2차전지",
-        "이차전지",
-        "배터리",
-        "양극재",
-        "음극재",
-        "전해액"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-16T17:31:24.539197+00:00"
-    },
-    {
-      "theme_id": "해운",
-      "theme_name": "해운",
-      "direction": "BENEFICIARY",
-      "strength_score": 21.0,
-      "confidence": 0.5,
-      "driver_categories": [
-        "ECONOMY",
-        "GEOPOLITICS",
-        "OIL"
-      ],
-      "evidence": [],
-      "beneficiary_keywords": [
-        "벌크",
-        "운임",
-        "컨테이너",
-        "해운"
-      ],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": -2.34,
-      "momentum_class": "FADING",
-      "updated_at": "2026-04-16T17:31:24.539399+00:00",
-      "momentum_naver_count": 1
-    },
-    {
-      "theme_id": "telecom",
-      "theme_name": "통신/네트워크",
-      "direction": "NEUTRAL",
-      "strength_score": 10.0,
-      "confidence": 0.421,
-      "driver_categories": [],
-      "evidence": [
-        "[Thu, 16 Apr 2026 14:38:20 +0900] '미토스 쇼크'에 네카토·통신사 비상…AI 해킹 대응 총력 | 연합뉴스"
-      ],
-      "beneficiary_keywords": [],
-      "victim_keywords": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "updated_at": "2026-04-16T05:47:15.778826+00:00"
     },
     {
       "theme_id": "automobile",
@@ -324,45 +324,163 @@
       "confidence": 0.421,
       "driver_categories": [],
       "evidence": [
-        "[Thu, 16 Apr 2026 02:00:30 GMT] 반도체 깔고 자동차·방산 ‘바통터치’… 순환매에 코스피 6200 복귀 [이런국장 저런주식] - 서울경제 | 서울경제"
+        "[2026-05-12 22:00] ‘자동차의날’ 금탑산업훈장에 장재훈 현대차 부회장 | 경향신문"
       ],
       "beneficiary_keywords": [],
       "victim_keywords": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "updated_at": "2026-04-16T05:27:03.853113+00:00"
+      "updated_at": "2026-05-12T14:13:55.414962+00:00"
     },
     {
-      "theme_id": "game_content_ent",
-      "theme_name": "게임/콘텐츠/엔터",
+      "theme_id": "defense",
+      "theme_name": "방산",
+      "direction": "BENEFICIARY",
+      "strength_score": 27.0,
+      "confidence": 0.543,
+      "driver_categories": [
+        "GEOPOLITICS",
+        "POLITICS",
+        "EARNINGS"
+      ],
+      "evidence": [
+        "[2026-05-12 14:21] 韓 제약바이오 기업 1분기 실적, 수출 호조가 견인 | 아시아경제"
+      ],
+      "beneficiary_keywords": [
+        "방산",
+        "미사일",
+        "탄약",
+        "군수",
+        "무기",
+        "defense"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-05-12T05:30:26.960042+00:00"
+    },
+    {
+      "theme_id": "전력기기",
+      "theme_name": "전력기기",
+      "direction": "BENEFICIARY",
+      "strength_score": 21.0,
+      "confidence": 0.5,
+      "driver_categories": [
+        "ECONOMY",
+        "LIQUIDITY",
+        "EARNINGS"
+      ],
+      "evidence": [],
+      "beneficiary_keywords": [
+        "전력기기",
+        "변압기",
+        "전선",
+        "전력설비"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-05-12T05:30:26.960268+00:00"
+    },
+    {
+      "theme_id": "shipbuilding",
+      "theme_name": "조선/해양",
       "direction": "NEUTRAL",
-      "strength_score": 12.0,
-      "confidence": 0.436,
+      "strength_score": 1.0,
+      "confidence": 0.357,
+      "driver_categories": [
+        "OIL",
+        "GEOPOLITICS",
+        "EARNINGS"
+      ],
+      "evidence": [
+        "[2026-05-11 21:44] 반도체서 車·IT까지…성과급 전쟁 전방위 확산 | TV조선"
+      ],
+      "beneficiary_keywords": [],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-05-11T14:57:13.463103+00:00"
+    },
+    {
+      "theme_id": "telecom",
+      "theme_name": "통신/네트워크",
+      "direction": "NEUTRAL",
+      "strength_score": 10.0,
+      "confidence": 0.421,
       "driver_categories": [],
       "evidence": [
-        "[DART 20260415] 수성웹툰 - [기재정정]최대주주변경을수반하는주식담보제공계약체결 | 전자공시"
+        "[Mon, 11 May 2026 02:07:00 GMT] 일본株, 주역 교체...반도체·은행 '뜨고', 자동차·통신 '지고' | 뉴스핌"
       ],
       "beneficiary_keywords": [],
       "victim_keywords": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "updated_at": "2026-04-15T08:52:58.112776+00:00"
+      "updated_at": "2026-05-11T13:05:52.214679+00:00"
     },
     {
+      "beneficiary_keywords": [],
+      "confidence": 0.407,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[DART 20260511] 중앙첨단소재 - [첨부정정]주요사항보고서(전환사채권발행결정) | 전자공시"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 8.0,
       "theme_id": "steel_materials",
       "theme_name": "철강/금속/소재",
-      "direction": "NEUTRAL",
-      "strength_score": 8.0,
+      "updated_at": "2026-05-11T06:10:21.636422+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
       "confidence": 0.407,
+      "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[DART 20260415] 대진첨단소재 - [첨부정정]주요사항보고서(전환사채권발행결정) | 전자공시"
+        "[DART 20260508] 스테이지원엔터 - [기재정정]주요사항보고서(유상증자결정) | 전자공시"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 8.0,
+      "theme_id": "game_content_ent",
+      "theme_name": "게임/콘텐츠/엔터",
+      "updated_at": "2026-05-08T06:13:25.281087+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.436,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[2026-05-08 11:26] 대우건설 올해 769%↑, 상승율 1위 칠천피, 반도체만의 잔치 아니었다 | 헤럴드경제"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 12.0,
+      "theme_id": "construction_realestate",
+      "theme_name": "건설/부동산",
+      "updated_at": "2026-05-08T06:06:57.746313+00:00",
+      "victim_keywords": []
+    },
+    {
+      "theme_id": "consumer_retail",
+      "theme_name": "소비재/유통",
+      "direction": "NEUTRAL",
+      "strength_score": 10.0,
+      "confidence": 0.421,
+      "driver_categories": [],
+      "evidence": [
+        "[Mon, 27 Apr 2026 22:00:01 +0900] \"황금연휴·고유가 반사이익까지\"…호텔·카지노·면세점株 '환호' [종목+] | 한국경제"
       ],
       "beneficiary_keywords": [],
       "victim_keywords": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "updated_at": "2026-04-15T03:46:06.825360+00:00"
+      "updated_at": "2026-04-27T14:18:31.601850+00:00"
     },
     {
       "theme_id": "2차전지",
@@ -374,8 +492,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 1.74,
-      "momentum_class": "ACCELERATING",
+      "momentum_avg_change_pct": -3.53,
+      "momentum_class": "FADING",
       "momentum_naver_count": 10,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -389,8 +507,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 1.85,
-      "momentum_class": "ACCELERATING",
+      "momentum_avg_change_pct": 0.19,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 13,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -404,8 +522,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -0.14,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": -1.96,
+      "momentum_class": "FADING",
       "momentum_naver_count": 7,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -419,8 +537,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -0.15,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": -3.6,
+      "momentum_class": "FADING",
       "momentum_naver_count": 4,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -434,8 +552,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 0.09,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": -1.37,
+      "momentum_class": "FADING",
       "momentum_naver_count": 6,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -449,7 +567,7 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -0.94,
+      "momentum_avg_change_pct": -2.39,
       "momentum_class": "FADING",
       "momentum_naver_count": 3,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
@@ -464,8 +582,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 1.33,
-      "momentum_class": "ACCELERATING",
+      "momentum_avg_change_pct": -2.56,
+      "momentum_class": "FADING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -479,8 +597,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 0.14,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": -2.29,
+      "momentum_class": "FADING",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -494,7 +612,7 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -2.75,
+      "momentum_avg_change_pct": -1.62,
       "momentum_class": "FADING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
@@ -509,8 +627,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -0.4,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": -1.82,
+      "momentum_class": "FADING",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -524,8 +642,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -0.11,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": -3.15,
+      "momentum_class": "FADING",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -539,7 +657,7 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -0.67,
+      "momentum_avg_change_pct": -3.4,
       "momentum_class": "FADING",
       "momentum_naver_count": 6,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
@@ -554,8 +672,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 0.17,
-      "momentum_class": "STEADY",
+      "momentum_avg_change_pct": -2.17,
+      "momentum_class": "FADING",
       "momentum_naver_count": 12,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -569,8 +687,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 0.63,
-      "momentum_class": "ACCELERATING",
+      "momentum_avg_change_pct": 3.91,
+      "momentum_class": "EXPLODING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -584,8 +702,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 3.38,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -3.7,
+      "momentum_class": "FADING",
       "momentum_naver_count": 3,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -599,38 +717,109 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": -3.93,
+      "momentum_avg_change_pct": -2.46,
       "momentum_class": "FADING",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
+    },
+    {
+      "theme_id": "친환경/에너지",
+      "theme_name": "친환경/에너지",
+      "direction": "NEUTRAL",
+      "strength_score": 0.0,
+      "confidence": 0.0,
+      "driver_categories": [],
+      "evidence": [],
+      "beneficiary_keywords": [],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": -2.89,
+      "momentum_class": "FADING",
+      "momentum_naver_count": 13,
+      "updated_at": "2026-05-08T18:48:12.546407+00:00"
     }
   ],
   "beneficiary_themes": [
     {
-      "theme_id": "finance",
-      "theme_name": "금융",
-      "strength_score": 86.0,
-      "confidence": 0.95
+      "theme_id": "정유_에너지",
+      "theme_name": "정유/에너지",
+      "strength_score": 49.0,
+      "confidence": 0.78
     },
     {
-      "theme_id": "shipbuilding",
-      "theme_name": "조선/해양",
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지",
+      "strength_score": 45.0,
+      "confidence": 0.751
+    },
+    {
+      "theme_id": "해운",
+      "theme_name": "해운",
+      "strength_score": 21.0,
+      "confidence": 0.5
+    },
+    {
+      "theme_id": "bio",
+      "theme_name": "바이오/헬스케어",
       "strength_score": 18.0,
       "confidence": 0.479
     }
   ],
-  "headwind_themes": [],
+  "headwind_themes": [
+    {
+      "theme_id": "it_platform",
+      "theme_name": "it_platform",
+      "strength_score": 27.41,
+      "confidence": 0.573
+    },
+    {
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "strength_score": 100.0,
+      "confidence": 0.9
+    },
+    {
+      "theme_id": "robotics",
+      "theme_name": "로봇/자동화",
+      "strength_score": 29.14,
+      "confidence": 0.584
+    },
+    {
+      "theme_id": "quantum",
+      "theme_name": "양자",
+      "strength_score": 35.09,
+      "confidence": 0.624
+    },
+    {
+      "theme_id": "eco_energy",
+      "theme_name": "eco_energy",
+      "strength_score": 95.58,
+      "confidence": 0.9
+    },
+    {
+      "theme_id": "crypto",
+      "theme_name": "가상자산/블록체인",
+      "strength_score": 29.64,
+      "confidence": 0.588
+    }
+  ],
   "theme_evidence": {
-    "finance": [
-      "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 '슈퍼 ELS' 출시 | 네이버증권",
-      "[Naver Stock] 000660.KS [+3] 메리츠증권, 코스피200 단일 기초자산 ‘슈퍼 ELS’ 출시…“조기상환... | 네이버증권",
-      "[Naver Stock] 005380.KS [-3] 코스피, 기관·외국인 순매도에 장중 약보합세 | 네이버증권",
-      "[Naver Stock] 005930.KS [-3] 코스피, 美·이란 종전 협상 기대·우려 공존하며 약보합세 | 네이버증권"
+    "bio": [
+      "[DART 20260512] 대웅제약 - 투자판단관련주요경영사항              (INV008(15PGDH 저해제) 기술도입 계약 체결) | 전자공시"
     ],
-    "shipbuilding": [
-      "[DART 20260417] HD한국조선해양 - 단일판매ㆍ공급계약체결(자회사의 주요경영사항) | 전자공시"
-    ]
+    "it_platform": [
+      "[Mon, 11 May 2026 15:00:00 GMT] [더페어 돋보기] 코스피 급등 이끈 주역 외국인과 기관 순매수 규모·집중 매수한 상위 종목군 | thefairnews.co.kr"
+    ],
+    "secondary_battery": [
+      "[주달 상승테마] 2차전지 | 주달",
+      "[주달 상승테마] 2차전지 장비 | 주달"
+    ],
+    "정유_에너지": [
+      "[Tue, 12 May 2026 20:06:53 +0900] '유가상승'에 국고채 금리 급등…3년·10년물 30개월만 최고(종합2보) | 연합뉴스",
+      "[Tue, 12 May 2026 23:01:08 +09:00] 美 4월 소비자물가 3.8%↑…고유가에 3년來 최대 상승 | 매일경제",
+      "[Tue, 12 May 2026 23:59:59 +0900] 유가상승과 CPI보고서에 뉴욕증시 하락 | 한국경제"
+    ],
+    "해운": []
   },
-  "source": "gemini",
-  "theme_momentum_updated_at": "2026-04-17T02:17:15.296993+00:00"
+  "source": "rss_rule_based_timeout",
+  "theme_momentum_updated_at": "2026-05-12T18:13:08.050343+00:00"
 }

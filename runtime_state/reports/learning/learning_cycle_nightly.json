@@ -2,25 +2,25 @@
   "action": "dataset_refresh",
   "collection_stats": {
     "buckets": {
-      "exception_leader": 402,
-      "ignored": 835,
-      "picked": 1009,
-      "watchlist": 1277
+      "exception_leader": 520,
+      "ignored": 1623,
+      "picked": 1288,
+      "watchlist": 5711
     },
     "markets": {
       "AMEX": 81,
-      "KOSDAQ": 2239,
-      "KOSPI": 1109,
-      "KR": 1,
-      "NASDAQ": 92,
+      "KOSDAQ": 4487,
+      "KOSPI": 4427,
+      "KR": 43,
+      "NASDAQ": 103,
       "US": 1
     },
-    "runs_seen": 260,
-    "runs_with_outcomes": 169,
+    "runs_seen": 400,
+    "runs_with_outcomes": 303,
     "statuses": {
-      "EXPIRED": 8,
-      "PENDING": 967,
-      "RESOLVED": 2548
+      "EXPIRED": 199,
+      "PENDING": 3733,
+      "RESOLVED": 5210
     }
   },
   "commands": [
@@ -29,12 +29,12 @@
         "python3",
         "multi_agent/tools/export_scan_archive_learning_dataset.py"
       ],
-      "finished_at": "2026-04-16T14:50:20.146879+00:00",
+      "finished_at": "2026-05-12T14:50:15.847568+00:00",
       "ok": true,
       "returncode": 0,
-      "started_at": "2026-04-16T14:50:05.562424+00:00",
+      "started_at": "2026-05-12T14:50:05.250436+00:00",
       "stderr_tail": "/Users/dongdong/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(",
-      "stdout_tail": "    \"phase25_shadow_variant\",\n    \"phase25_variant\",\n    \"position\",\n    \"price_band\",\n    \"primary_theme\",\n    \"priority_rank\",\n    \"quality_flags\",\n    \"recommended_at\",\n    \"return_1d_pct\",\n    \"return_1h_pct\",\n    \"return_2d_pct\",\n    \"return_30m_pct\",\n    \"return_3d_pct\",\n    \"return_5d_pct\",\n    \"return_7d_pct\",\n    \"return_close_pct\",\n    \"run_id\",\n    \"scan_mode\",\n    \"scanner_timeframe_profile\",\n    \"secondary_themes\",\n    \"selection_lane\",\n    \"source_ref\",\n    \"stock_name\",\n    \"strategy\",\n    \"strategy_family\",\n    \"surge\",\n    \"target_horizon_days\",\n    \"tech_score\",\n    \"theme_inference_status\",\n    \"theme_routing_path\",\n    \"theme_source\",\n    \"ticker\",\n    \"tier\",\n    \"trend\",\n    \"validation_excluded\",\n    \"volume\",\n    \"whale_score\",\n    \"win_rate\"\n  ]\n}"
+      "stdout_tail": "    \"return_14d_pct\",\n    \"return_1d_pct\",\n    \"return_1h_pct\",\n    \"return_2d_pct\",\n    \"return_30d_pct\",\n    \"return_30m_pct\",\n    \"return_3d_pct\",\n    \"return_5d_pct\",\n    \"return_7d_pct\",\n    \"return_close_pct\",\n    \"run_id\",\n    \"scan_mode\",\n    \"scanner_timeframe_profile\",\n    \"secondary_themes\",\n    \"selection_lane\",\n    \"source_ref\",\n    \"stock_name\",\n    \"stop_sl_pct\",\n    \"strategy\",\n    \"strategy_family\",\n    \"surge\",\n    \"target_horizon_days\",\n    \"target_tp_pct\",\n    \"tech_score\",\n    \"theme_inference_status\",\n    \"theme_risk\",\n    \"theme_routing_path\",\n    \"theme_source\",\n    \"ticker\",\n    \"tier\",\n    \"trend\",\n    \"validation_excluded\",\n    \"validation_excluded_reason\",\n    \"volume\",\n    \"volume_confirmed\",\n    \"volume_ratio\",\n    \"whale_score\",\n    \"win_rate\"\n  ]\n}"
     },
     {
       "cmd": [
@@ -43,10 +43,10 @@
         "--market",
         "KOSPI"
       ],
-      "finished_at": "2026-04-16T14:50:20.512245+00:00",
+      "finished_at": "2026-05-12T14:50:16.320034+00:00",
       "ok": true,
       "returncode": 0,
-      "started_at": "2026-04-16T14:50:20.146925+00:00",
+      "started_at": "2026-05-12T14:50:15.847619+00:00",
       "stderr_tail": "",
       "stdout_tail": "{\n  \"json_path\": \"runtime_state/reports/validation/kr_walkforward_release_gate_kospi.json\",\n  \"md_path\": \"runtime_state/reports/validation/kr_walkforward_release_gate_kospi.md\",\n  \"market\": \"KOSPI\",\n  \"release_ready\": false,\n  \"lane_results\": {\n    \"EXPLOSIVE_LEADER\": false,\n    \"CORE_TREND\": true\n  }\n}"
     },
@@ -57,32 +57,32 @@
         "--market",
         "KOSDAQ"
       ],
-      "finished_at": "2026-04-16T14:50:20.845328+00:00",
+      "finished_at": "2026-05-12T14:50:16.704941+00:00",
       "ok": true,
       "returncode": 0,
-      "started_at": "2026-04-16T14:50:20.512270+00:00",
+      "started_at": "2026-05-12T14:50:16.320068+00:00",
       "stderr_tail": "",
       "stdout_tail": "{\n  \"json_path\": \"runtime_state/reports/validation/kr_walkforward_release_gate_kosdaq.json\",\n  \"md_path\": \"runtime_state/reports/validation/kr_walkforward_release_gate_kosdaq.md\",\n  \"market\": \"KOSDAQ\",\n  \"release_ready\": false,\n  \"lane_results\": {\n    \"EXPLOSIVE_LEADER\": false,\n    \"CORE_TREND\": false\n  }\n}"
     }
   ],
-  "generated_at": "2026-04-16T14:50:20.845357+00:00",
+  "generated_at": "2026-05-12T14:50:16.704969+00:00",
   "minimum_required_new_resolved": 20,
   "mode": "nightly",
-  "new_resolved_since_last_cycle": 213,
+  "new_resolved_since_last_cycle": 58,
   "reason": "nightly_learning_dataset_refreshed",
   "resolved_by_bucket": {
-    "exception_leader": 268,
-    "ignored": 530,
+    "exception_leader": 358,
+    "ignored": 880,
     "picked": 927,
-    "watchlist": 823
+    "watchlist": 3045
   },
   "resolved_by_market": {
     "AMEX": 81,
-    "KOSDAQ": 1746,
-    "KOSPI": 627,
-    "KR": 1,
+    "KOSDAQ": 2863,
+    "KOSPI": 2155,
+    "KR": 18,
     "NASDAQ": 92,
     "US": 1
   },
-  "total_resolved": 2548
+  "total_resolved": 5210
 }

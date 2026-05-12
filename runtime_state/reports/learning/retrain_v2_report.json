@@ -1,415 +1,731 @@
 {
-  "generated_at": "2026-04-17T01:15:47.146326",
-  "rows_loaded": 7638,
+  "generated_at": "2026-05-13T02:50:02.076780",
+  "execution_status": "trained",
+  "defer_reason": null,
+  "last_successful_model_train_at": "2026-05-13T02:50:02.076780",
+  "rows_loaded": 11464,
   "backend": "lgb",
   "segments": [
     {
       "name": "phase25_global",
       "status": "trained",
-      "rows": 2334,
-      "positives": 664,
-      "negative": 1670,
+      "rows": 2820,
+      "positives": 804,
+      "negative": 2016,
       "return_col": "return_3d_pct",
+      "target_horizon_days": 3,
       "positive_threshold": 5.0,
-      "auc": 0.5440278249066848,
-      "accuracy": 0.5092724679029957,
-      "positive_precision": 0.4255813953488372,
-      "positive_recall": 0.6535714285714286,
-      "recommended_probability_threshold": 0.5,
-      "threshold_sweep": [
-        {
-          "threshold": 0.25,
-          "picks": 646,
-          "avg_return": 5.857773558823529,
-          "win_rate": 73.68421052631578,
-          "hit_rate": 40.71207430340557
-        },
-        {
-          "threshold": 0.3,
-          "picks": 605,
-          "avg_return": 6.031805487603305,
-          "win_rate": 73.55371900826447,
-          "hit_rate": 41.48760330578513
-        },
-        {
-          "threshold": 0.35,
-          "picks": 556,
-          "avg_return": 6.068174843525179,
-          "win_rate": 73.20143884892086,
-          "hit_rate": 42.26618705035971
-        },
-        {
-          "threshold": 0.4,
-          "picks": 508,
-          "avg_return": 6.280597887795275,
-          "win_rate": 73.22834645669292,
-          "hit_rate": 42.71653543307087
-        },
-        {
-          "threshold": 0.45,
-          "picks": 450,
-          "avg_return": 6.481125479999999,
-          "win_rate": 74.22222222222223,
-          "hit_rate": 43.333333333333336
-        },
-        {
-          "threshold": 0.5,
-          "picks": 430,
-          "avg_return": 6.533030034883721,
-          "win_rate": 74.18604651162791,
-          "hit_rate": 42.55813953488372
-        },
-        {
-          "threshold": 0.6,
-          "picks": 345,
-          "avg_return": 6.409666973913043,
-          "win_rate": 72.7536231884058,
-          "hit_rate": 40.869565217391305
-        }
-      ],
-      "best_threshold_row": {
-        "threshold": 0.5,
-        "picks": 430,
-        "avg_return": 6.533030034883721,
-        "win_rate": 74.18604651162791,
-        "hit_rate": 42.55813953488372
-      },
-      "feature_importance_top15": [
-        {
-          "feature": "ml_prob",
-          "importance": 2131.0
-        },
-        {
-          "feature": "alpha_score",
-          "importance": 1224.0
-        },
-        {
-          "feature": "is_uptrend",
-          "importance": 301.0
-        },
-        {
-          "feature": "scan_intraday",
-          "importance": 228.0
-        },
-        {
-          "feature": "is_kosdaq",
-          "importance": 221.0
-        },
-        {
-          "feature": "is_downtrend",
-          "importance": 184.0
-        },
-        {
-          "feature": "is_amex",
-          "importance": 124.0
-        },
-        {
-          "feature": "is_kospi",
-          "importance": 123.0
-        },
-        {
-          "feature": "fam_kr_core",
-          "importance": 56.0
-        },
-        {
-          "feature": "price_gt15",
-          "importance": 25.0
-        },
-        {
-          "feature": "is_nasdaq",
-          "importance": 21.0
-        },
-        {
-          "feature": "scan_swing",
-          "importance": 2.0
-        },
-        {
-          "feature": "vol_float",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_confirmed",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_gt25x",
-          "importance": 0.0
-        }
-      ],
-      "model_path": "models/phase25_model.pkl",
-      "description": "Global compatibility model using realized 3D >= +5%."
-    },
-    {
-      "name": "phase25_kr_swing",
-      "status": "trained",
-      "rows": 606,
-      "positives": 203,
-      "negative": 403,
-      "return_col": "return_3d_pct",
-      "positive_threshold": 5.0,
-      "auc": 0.5874624624624624,
-      "accuracy": 0.5989010989010989,
-      "positive_precision": 0.5057471264367817,
-      "positive_recall": 0.5945945945945946,
+      "auc": 0.6230204937121565,
+      "raw_auc": 0.6230204937121565,
+      "cv_median_auc": 0.6924671385237614,
+      "signal_direction": "normal",
+      "accuracy": 0.6430555555555556,
+      "positive_precision": 0.44483985765124556,
+      "positive_recall": 0.5530973451327433,
       "recommended_probability_threshold": 0.6,
       "threshold_sweep": [
         {
           "threshold": 0.25,
-          "picks": 144,
-          "avg_return": 4.498150013888889,
-          "win_rate": 72.91666666666666,
-          "hit_rate": 44.44444444444444
+          "picks": 613,
+          "avg_return": 3.5203973507340947,
+          "win_rate": 60.848287112561174,
+          "hit_rate": 33.931484502446985
         },
         {
           "threshold": 0.3,
-          "picks": 140,
-          "avg_return": 4.491794428571429,
-          "win_rate": 72.85714285714285,
-          "hit_rate": 44.285714285714285
+          "picks": 558,
+          "avg_return": 3.548092342293907,
+          "win_rate": 60.752688172043015,
+          "hit_rate": 34.229390681003586
         },
         {
           "threshold": 0.35,
-          "picks": 129,
-          "avg_return": 4.243982511627906,
-          "win_rate": 71.31782945736434,
-          "hit_rate": 42.63565891472868
+          "picks": 481,
+          "avg_return": 3.8603769376299373,
+          "win_rate": 62.78586278586279,
+          "hit_rate": 36.17463617463618
         },
         {
           "threshold": 0.4,
-          "picks": 107,
-          "avg_return": 4.410887093457944,
-          "win_rate": 74.76635514018692,
-          "hit_rate": 42.99065420560748
+          "picks": 409,
+          "avg_return": 4.1011416528117355,
+          "win_rate": 62.10268948655256,
+          "hit_rate": 37.89731051344744
         },
         {
           "threshold": 0.45,
-          "picks": 93,
-          "avg_return": 4.998432677419355,
-          "win_rate": 77.41935483870968,
-          "hit_rate": 48.38709677419355
+          "picks": 335,
+          "avg_return": 4.2446971880597015,
+          "win_rate": 61.19402985074627,
+          "hit_rate": 40.59701492537313
         },
         {
           "threshold": 0.5,
-          "picks": 87,
-          "avg_return": 5.117377091954023,
-          "win_rate": 77.01149425287356,
-          "hit_rate": 50.57471264367817
+          "picks": 281,
+          "avg_return": 5.024691266903915,
+          "win_rate": 65.83629893238434,
+          "hit_rate": 44.48398576512456
         },
         {
           "threshold": 0.6,
-          "picks": 76,
-          "avg_return": 5.388356565789474,
-          "win_rate": 77.63157894736842,
-          "hit_rate": 52.63157894736842
+          "picks": 147,
+          "avg_return": 5.617068197278911,
+          "win_rate": 65.3061224489796,
+          "hit_rate": 44.21768707482993
         }
       ],
       "best_threshold_row": {
         "threshold": 0.6,
-        "picks": 76,
-        "avg_return": 5.388356565789474,
-        "win_rate": 77.63157894736842,
-        "hit_rate": 52.63157894736842
+        "picks": 147,
+        "avg_return": 5.617068197278911,
+        "win_rate": 65.3061224489796,
+        "hit_rate": 44.21768707482993
       },
       "feature_importance_top15": [
         {
-          "feature": "ml_prob",
-          "importance": 1426.0
+          "feature": "atr_pct_14",
+          "importance": 217.0
+        },
+        {
+          "feature": "rsi_14",
+          "importance": 172.0
+        },
+        {
+          "feature": "obv_slope_5d",
+          "importance": 160.0
+        },
+        {
+          "feature": "volatility_5d",
+          "importance": 137.0
+        },
+        {
+          "feature": "kosdaq_low_vol_score",
+          "importance": 132.0
+        },
+        {
+          "feature": "volatility_20d",
+          "importance": 129.0
+        },
+        {
+          "feature": "gap_open_pct",
+          "importance": 123.0
+        },
+        {
+          "feature": "prev_pct_change_1d",
+          "importance": 107.0
+        },
+        {
+          "feature": "kospi_momentum_score",
+          "importance": 106.0
+        },
+        {
+          "feature": "whale_prob_gap",
+          "importance": 101.0
         },
         {
           "feature": "alpha_score",
-          "importance": 1402.0
+          "importance": 97.0
         },
         {
-          "feature": "is_kospi",
-          "importance": 316.0
-        },
-        {
-          "feature": "is_downtrend",
-          "importance": 190.0
-        },
-        {
-          "feature": "is_uptrend",
-          "importance": 154.0
-        },
-        {
-          "feature": "is_kosdaq",
+          "feature": "loss_risk_score",
           "importance": 88.0
         },
         {
-          "feature": "vol_float",
-          "importance": 0.0
+          "feature": "prev_pct_change_5d",
+          "importance": 84.0
         },
         {
-          "feature": "vol_confirmed",
-          "importance": 0.0
+          "feature": "alpha_prob_gap",
+          "importance": 75.0
         },
         {
-          "feature": "vol_gt25x",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_18_25x",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_08_18x",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_lt05x",
-          "importance": 0.0
-        },
-        {
-          "feature": "is_rising",
-          "importance": 0.0
-        },
-        {
-          "feature": "is_peak",
-          "importance": 0.0
-        },
-        {
-          "feature": "is_resting",
-          "importance": 0.0
+          "feature": "tech_prob_gap",
+          "importance": 66.0
         }
       ],
-      "model_path": "models/phase25_kr_swing.pkl",
-      "description": "KR swing model using realized 3D >= +5%."
+      "model_path": "models/phase25_model.pkl",
+      "description": "Global compatibility model using realized 3D >= +5%.",
+      "walk_forward_cv": [
+        {
+          "fold": 0,
+          "train_size": 1318,
+          "val_size": 359,
+          "auc": 0.7247150133398012,
+          "val_win_rate": 61.1764705882353
+        },
+        {
+          "fold": 1,
+          "train_size": 1677,
+          "val_size": 359,
+          "auc": 0.6924671385237614,
+          "val_win_rate": 79.74683544303798
+        },
+        {
+          "fold": 2,
+          "train_size": 2036,
+          "val_size": 359,
+          "auc": 0.5293488593155893,
+          "val_win_rate": 47.85276073619632
+        }
+      ],
+      "oos_holdout": {
+        "size": 423,
+        "auc": 0.5366858887381276,
+        "picks": 166,
+        "win_rate_pct": 41.566265060240966,
+        "avg_return_pct": 0.43259569277108423
+      }
     },
     {
-      "name": "phase25_kr_intraday",
+      "name": "phase25_kospi_swing",
       "status": "trained",
-      "rows": 1766,
-      "positives": 732,
-      "negative": 1034,
-      "return_col": "return_1d_pct",
-      "positive_threshold": 0.0,
-      "auc": 0.5279734219269103,
-      "accuracy": 0.5792452830188679,
-      "positive_precision": 0.6045454545454545,
-      "positive_recall": 0.8444444444444444,
-      "recommended_probability_threshold": 0.35,
+      "rows": 1069,
+      "positives": 508,
+      "negative": 561,
+      "return_col": "return_5d_pct",
+      "target_horizon_days": 5,
+      "positive_threshold": 5.0,
+      "auc": 0.643429313704265,
+      "raw_auc": 0.643429313704265,
+      "cv_median_auc": 0.7776809067131647,
+      "signal_direction": "normal",
+      "accuracy": 0.575091575091575,
+      "positive_precision": 0.5240963855421686,
+      "positive_recall": 0.7016129032258065,
+      "recommended_probability_threshold": 0.45,
       "threshold_sweep": [
         {
           "threshold": 0.25,
-          "picks": 512,
-          "avg_return": 2.044902919921875,
-          "win_rate": 55.859375,
-          "hit_rate": 59.765625
+          "picks": 225,
+          "avg_return": 6.748695106666667,
+          "win_rate": 65.77777777777779,
+          "hit_rate": 50.66666666666667
         },
         {
           "threshold": 0.3,
-          "picks": 509,
-          "avg_return": 2.07630900589391,
-          "win_rate": 56.188605108055015,
-          "hit_rate": 60.11787819253438
+          "picks": 215,
+          "avg_return": 6.963083353488372,
+          "win_rate": 66.04651162790698,
+          "hit_rate": 51.627906976744185
         },
         {
           "threshold": 0.35,
-          "picks": 504,
-          "avg_return": 2.097650376984127,
-          "win_rate": 56.547619047619044,
-          "hit_rate": 60.51587301587301
+          "picks": 205,
+          "avg_return": 7.314239595121953,
+          "win_rate": 67.31707317073172,
+          "hit_rate": 53.170731707317074
         },
         {
           "threshold": 0.4,
-          "picks": 504,
-          "avg_return": 2.097650376984127,
-          "win_rate": 56.547619047619044,
-          "hit_rate": 60.51587301587301
+          "picks": 191,
+          "avg_return": 7.605071209424085,
+          "win_rate": 67.5392670157068,
+          "hit_rate": 53.403141361256544
         },
         {
           "threshold": 0.45,
-          "picks": 469,
-          "avg_return": 2.051897353944563,
-          "win_rate": 57.14285714285714,
-          "hit_rate": 60.98081023454158
+          "picks": 182,
+          "avg_return": 7.648301137362638,
+          "win_rate": 67.03296703296702,
+          "hit_rate": 52.74725274725275
         },
         {
           "threshold": 0.5,
-          "picks": 440,
-          "avg_return": 1.9487938431818184,
-          "win_rate": 56.36363636363636,
-          "hit_rate": 60.45454545454545
+          "picks": 166,
+          "avg_return": 7.316535445783132,
+          "win_rate": 67.46987951807229,
+          "hit_rate": 52.40963855421686
         },
         {
           "threshold": 0.6,
-          "picks": 266,
-          "avg_return": 2.083277796992481,
-          "win_rate": 57.14285714285714,
-          "hit_rate": 60.902255639097746
+          "picks": 131,
+          "avg_return": 7.281943160305343,
+          "win_rate": 64.8854961832061,
+          "hit_rate": 52.67175572519084
         }
       ],
       "best_threshold_row": {
-        "threshold": 0.35,
-        "picks": 504,
-        "avg_return": 2.097650376984127,
-        "win_rate": 56.547619047619044,
-        "hit_rate": 60.51587301587301
+        "threshold": 0.45,
+        "picks": 182,
+        "avg_return": 7.648301137362638,
+        "win_rate": 67.03296703296702,
+        "hit_rate": 52.74725274725275
       },
       "feature_importance_top15": [
         {
-          "feature": "ml_prob",
-          "importance": 3278.0
+          "feature": "atr_pct_14",
+          "importance": 179.0
         },
         {
-          "feature": "is_kosdaq",
-          "importance": 521.0
+          "feature": "rsi_14",
+          "importance": 165.0
         },
         {
-          "feature": "is_uptrend",
-          "importance": 477.0
+          "feature": "prev_pct_change_1d",
+          "importance": 142.0
         },
         {
-          "feature": "fam_kr_core",
-          "importance": 353.0
+          "feature": "gap_open_pct",
+          "importance": 131.0
         },
         {
-          "feature": "is_downtrend",
-          "importance": 183.0
+          "feature": "prev_pct_change_5d",
+          "importance": 130.0
+        },
+        {
+          "feature": "volatility_5d",
+          "importance": 116.0
+        },
+        {
+          "feature": "volatility_20d",
+          "importance": 114.0
+        },
+        {
+          "feature": "obv_slope_5d",
+          "importance": 113.0
+        },
+        {
+          "feature": "kospi_momentum_score",
+          "importance": 109.0
+        },
+        {
+          "feature": "kosdaq_low_vol_score",
+          "importance": 81.0
+        },
+        {
+          "feature": "loss_risk_score",
+          "importance": 68.0
+        },
+        {
+          "feature": "tech_prob_gap",
+          "importance": 66.0
+        },
+        {
+          "feature": "model_prob_disagreement",
+          "importance": 37.0
+        },
+        {
+          "feature": "alpha_prob_gap",
+          "importance": 29.0
+        },
+        {
+          "feature": "kospi_index_5d_return",
+          "importance": 25.0
+        }
+      ],
+      "model_path": "models/phase25_kospi_swing.pkl",
+      "description": "KOSPI swing model: large-cap momentum-persistent (signals directionally correct).",
+      "walk_forward_cv": [
+        {
+          "fold": 0,
+          "train_size": 499,
+          "val_size": 136,
+          "auc": 0.7776809067131647,
+          "val_win_rate": 86.66666666666667
+        },
+        {
+          "fold": 1,
+          "train_size": 635,
+          "val_size": 136,
+          "auc": 0.8122431321652607,
+          "val_win_rate": 88.40579710144928
+        },
+        {
+          "fold": 2,
+          "train_size": 771,
+          "val_size": 136,
+          "auc": 0.4796857463524131,
+          "val_win_rate": 53.76344086021505
+        }
+      ],
+      "oos_holdout": {
+        "size": 161,
+        "auc": 0.5778943278943278,
+        "picks": 93,
+        "win_rate_pct": 36.55913978494624,
+        "avg_return_pct": 1.321496182795699
+      }
+    },
+    {
+      "name": "phase25_kosdaq_swing",
+      "status": "trained",
+      "rows": 931,
+      "positives": 328,
+      "negative": 603,
+      "return_col": "return_5d_pct",
+      "target_horizon_days": 5,
+      "positive_threshold": 5.0,
+      "auc": 0.5920421483054179,
+      "raw_auc": 0.5920421483054179,
+      "cv_median_auc": 0.6207002457002457,
+      "signal_direction": "normal",
+      "accuracy": 0.6008403361344538,
+      "positive_precision": 0.43137254901960786,
+      "positive_recall": 0.5432098765432098,
+      "recommended_probability_threshold": 0.5,
+      "threshold_sweep": [
+        {
+          "threshold": 0.25,
+          "picks": 193,
+          "avg_return": 3.846694145077721,
+          "win_rate": 54.92227979274611,
+          "hit_rate": 35.751295336787564
+        },
+        {
+          "threshold": 0.3,
+          "picks": 172,
+          "avg_return": 4.256589354651163,
+          "win_rate": 55.23255813953488,
+          "hit_rate": 37.2093023255814
+        },
+        {
+          "threshold": 0.35,
+          "picks": 158,
+          "avg_return": 4.513164544303797,
+          "win_rate": 55.69620253164557,
+          "hit_rate": 37.9746835443038
+        },
+        {
+          "threshold": 0.4,
+          "picks": 139,
+          "avg_return": 4.73280009352518,
+          "win_rate": 58.27338129496403,
+          "hit_rate": 39.568345323741006
+        },
+        {
+          "threshold": 0.45,
+          "picks": 126,
+          "avg_return": 5.392076992063493,
+          "win_rate": 60.317460317460316,
+          "hit_rate": 42.06349206349206
+        },
+        {
+          "threshold": 0.5,
+          "picks": 102,
+          "avg_return": 5.713022774509804,
+          "win_rate": 61.76470588235294,
+          "hit_rate": 43.13725490196079
+        },
+        {
+          "threshold": 0.6,
+          "picks": 61,
+          "avg_return": 3.725770754098361,
+          "win_rate": 57.377049180327866,
+          "hit_rate": 39.34426229508197
+        }
+      ],
+      "best_threshold_row": {
+        "threshold": 0.5,
+        "picks": 102,
+        "avg_return": 5.713022774509804,
+        "win_rate": 61.76470588235294,
+        "hit_rate": 43.13725490196079
+      },
+      "feature_importance_top15": [
+        {
+          "feature": "rsi_14",
+          "importance": 170.0
+        },
+        {
+          "feature": "volatility_5d",
+          "importance": 138.0
+        },
+        {
+          "feature": "atr_pct_14",
+          "importance": 121.0
+        },
+        {
+          "feature": "kosdaq_low_vol_score",
+          "importance": 119.0
+        },
+        {
+          "feature": "obv_slope_5d",
+          "importance": 114.0
+        },
+        {
+          "feature": "gap_open_pct",
+          "importance": 113.0
+        },
+        {
+          "feature": "prev_pct_change_1d",
+          "importance": 106.0
+        },
+        {
+          "feature": "volatility_20d",
+          "importance": 101.0
+        },
+        {
+          "feature": "kospi_momentum_score",
+          "importance": 79.0
+        },
+        {
+          "feature": "alpha_prob_gap",
+          "importance": 51.0
+        },
+        {
+          "feature": "model_prob_disagreement",
+          "importance": 50.0
+        },
+        {
+          "feature": "tech_prob_gap",
+          "importance": 49.0
         },
         {
           "feature": "alpha_score",
-          "importance": 0.0
+          "importance": 47.0
         },
         {
-          "feature": "vol_float",
-          "importance": 0.0
+          "feature": "prev_pct_change_5d",
+          "importance": 46.0
         },
         {
-          "feature": "vol_confirmed",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_gt25x",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_18_25x",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_08_18x",
-          "importance": 0.0
-        },
-        {
-          "feature": "vol_lt05x",
-          "importance": 0.0
-        },
-        {
-          "feature": "is_rising",
-          "importance": 0.0
-        },
-        {
-          "feature": "is_peak",
-          "importance": 0.0
-        },
-        {
-          "feature": "is_resting",
-          "importance": 0.0
+          "feature": "loss_risk_score",
+          "importance": 45.0
         }
       ],
-      "model_path": "models/phase25_kr_intraday.pkl",
-      "description": "KR intraday model using next-day positive return."
+      "model_path": "models/phase25_kosdaq_swing.pkl",
+      "description": "KOSDAQ swing model: small/mid-cap, mean-reverting at 3d (median +0.7%) but trends emerge at 5d (median +3.1%, mean +5.0%). Switched horizon 3d→5d so the model targets the timeframe where KOSDAQ surge signals actually materialize; 42% positive rate at +5% threshold is a balanced binary.",
+      "walk_forward_cv": [
+        {
+          "fold": 0,
+          "train_size": 435,
+          "val_size": 118,
+          "auc": 0.7391304347826088,
+          "val_win_rate": 76.31578947368422
+        },
+        {
+          "fold": 1,
+          "train_size": 553,
+          "val_size": 118,
+          "auc": 0.6207002457002457,
+          "val_win_rate": 63.04347826086957
+        },
+        {
+          "fold": 2,
+          "train_size": 671,
+          "val_size": 118,
+          "auc": 0.6169502836169504,
+          "val_win_rate": 55.26315789473685
+        }
+      ],
+      "oos_holdout": {
+        "size": 140,
+        "auc": 0.577968923418424,
+        "picks": 38,
+        "win_rate_pct": 31.57894736842105,
+        "avg_return_pct": -4.0694364210526315
+      }
+    },
+    {
+      "name": "phase25_kospi_intraday",
+      "status": "skipped",
+      "reason": "insufficient_rows",
+      "rows": 180
+    },
+    {
+      "name": "phase25_kosdaq_intraday",
+      "status": "trained",
+      "rows": 387,
+      "positives": 116,
+      "negative": 271,
+      "return_col": "return_1d_pct",
+      "target_horizon_days": 1,
+      "positive_threshold": 0.0,
+      "auc": 0.6235679214402619,
+      "raw_auc": 0.3764320785597381,
+      "cv_median_auc": 0.4600000000000001,
+      "signal_direction": "invert",
+      "accuracy": 0.5656565656565656,
+      "positive_precision": 0.5616438356164384,
+      "positive_recall": 0.7884615384615384,
+      "recommended_probability_threshold": 0.6,
+      "threshold_sweep": [
+        {
+          "threshold": 0.25,
+          "picks": 94,
+          "avg_return": -0.18400253191489357,
+          "win_rate": 52.12765957446809,
+          "hit_rate": 52.12765957446809
+        },
+        {
+          "threshold": 0.3,
+          "picks": 90,
+          "avg_return": -0.3182646555555555,
+          "win_rate": 52.22222222222223,
+          "hit_rate": 52.22222222222223
+        },
+        {
+          "threshold": 0.35,
+          "picks": 86,
+          "avg_return": -0.28230113953488367,
+          "win_rate": 51.162790697674424,
+          "hit_rate": 51.162790697674424
+        },
+        {
+          "threshold": 0.4,
+          "picks": 82,
+          "avg_return": -0.3340856707317072,
+          "win_rate": 51.21951219512195,
+          "hit_rate": 51.21951219512195
+        },
+        {
+          "threshold": 0.45,
+          "picks": 77,
+          "avg_return": -0.11104305194805182,
+          "win_rate": 53.246753246753244,
+          "hit_rate": 53.246753246753244
+        },
+        {
+          "threshold": 0.5,
+          "picks": 73,
+          "avg_return": 0.0881532054794522,
+          "win_rate": 56.16438356164384,
+          "hit_rate": 56.16438356164384
+        },
+        {
+          "threshold": 0.6,
+          "picks": 61,
+          "avg_return": 0.730972442622951,
+          "win_rate": 59.01639344262295,
+          "hit_rate": 59.01639344262295
+        }
+      ],
+      "best_threshold_row": {
+        "threshold": 0.6,
+        "picks": 61,
+        "avg_return": 0.730972442622951,
+        "win_rate": 59.01639344262295,
+        "hit_rate": 59.01639344262295
+      },
+      "feature_importance_top15": [
+        {
+          "feature": "atr_pct_14",
+          "importance": 111.0
+        },
+        {
+          "feature": "gap_open_pct",
+          "importance": 101.0
+        },
+        {
+          "feature": "kosdaq_low_vol_score",
+          "importance": 101.0
+        },
+        {
+          "feature": "prev_pct_change_5d",
+          "importance": 92.0
+        },
+        {
+          "feature": "volatility_5d",
+          "importance": 90.0
+        },
+        {
+          "feature": "prev_pct_change_1d",
+          "importance": 79.0
+        },
+        {
+          "feature": "volatility_20d",
+          "importance": 76.0
+        },
+        {
+          "feature": "rsi_14",
+          "importance": 73.0
+        },
+        {
+          "feature": "obv_slope_5d",
+          "importance": 62.0
+        },
+        {
+          "feature": "alpha_prob_gap",
+          "importance": 60.0
+        },
+        {
+          "feature": "loss_risk_score",
+          "importance": 54.0
+        },
+        {
+          "feature": "whale_prob_gap",
+          "importance": 46.0
+        },
+        {
+          "feature": "alpha_score",
+          "importance": 43.0
+        },
+        {
+          "feature": "tech_prob_gap",
+          "importance": 26.0
+        },
+        {
+          "feature": "kospi_momentum_score",
+          "importance": 26.0
+        }
+      ],
+      "model_path": "models/phase25_kosdaq_intraday.pkl",
+      "description": "KOSDAQ intraday model using next-day positive return (auto-inverts when val AUC<0.5).",
+      "walk_forward_cv": [
+        {
+          "fold": 0,
+          "train_size": 180,
+          "val_size": 50,
+          "auc": 0.5813492063492064,
+          "val_win_rate": 28.57142857142857
+        },
+        {
+          "fold": 1,
+          "train_size": 230,
+          "val_size": 50,
+          "auc": 0.4428341384863124,
+          "val_win_rate": 58.333333333333336
+        },
+        {
+          "fold": 2,
+          "train_size": 280,
+          "val_size": 48,
+          "auc": 0.4600000000000001,
+          "val_win_rate": 51.21951219512195
+        }
+      ],
+      "oos_holdout": {
+        "size": 59,
+        "auc": 0.5528735632183908,
+        "picks": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_pct": 0.443370125
+      }
     }
-  ]
+  ],
+  "existing_models_preserved": [
+    {
+      "name": "phase25_global",
+      "model_path": "models/phase25_model.pkl",
+      "exists": true,
+      "mtime": "2026-05-13T02:49:59.426160",
+      "size_bytes": 289253
+    },
+    {
+      "name": "phase25_kospi_swing",
+      "model_path": "models/phase25_kospi_swing.pkl",
+      "exists": true,
+      "mtime": "2026-05-13T02:50:00.441693",
+      "size_bytes": 238135
+    },
+    {
+      "name": "phase25_kosdaq_swing",
+      "model_path": "models/phase25_kosdaq_swing.pkl",
+      "exists": true,
+      "mtime": "2026-05-13T02:50:01.328717",
+      "size_bytes": 222522
+    },
+    {
+      "name": "phase25_kosdaq_intraday",
+      "model_path": "models/phase25_kosdaq_intraday.pkl",
+      "exists": true,
+      "mtime": "2026-05-13T02:50:02.076478",
+      "size_bytes": 176111
+    }
+  ],
+  "no_dummy_policy": {
+    "enabled": true,
+    "behavior": "Rows with missing real scan-time features are excluded instead of imputed with zero or neutral probabilities.",
+    "deferred_runs_exit_successfully": true
+  }
 }

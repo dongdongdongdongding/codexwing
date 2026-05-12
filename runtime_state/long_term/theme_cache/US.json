@@ -1,9 +1,46 @@
 {
-  "generated_at": "2026-04-09T17:05:09.553462+00:00",
+  "generated_at": "2026-05-07T14:57:52.266373+00:00",
   "market": "NASDAQ",
-  "theme_states": [],
-  "beneficiary_themes": [],
+  "theme_states": [
+    {
+      "theme_id": "automobile",
+      "theme_name": "자동차",
+      "direction": "BENEFICIARY",
+      "strength_score": 20.0,
+      "confidence": 0.573,
+      "driver_categories": [],
+      "evidence": [
+        "[2026-05-07T14:44:27Z] S&P 500 Nuclear Play Vistra Pops Above Key Level On Earnings | Investor's Business Daily",
+        "[Wed, 06 May 2026 17:48:21 GMT] Goodbye quarterly earnings? Here's when traders believe this big change will happen | CNBC"
+      ],
+      "beneficiary_keywords": [
+        "자동차",
+        "차량",
+        "전기차",
+        "모빌리티",
+        "자율주행",
+        "automobile"
+      ],
+      "victim_keywords": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "updated_at": "2026-05-07T14:57:52.265993+00:00"
+    }
+  ],
+  "beneficiary_themes": [
+    {
+      "theme_id": "automobile",
+      "theme_name": "자동차",
+      "strength_score": 20.0,
+      "confidence": 0.573
+    }
+  ],
   "headwind_themes": [],
-  "theme_evidence": {},
-  "source": "fallback"
+  "theme_evidence": {
+    "automobile": [
+      "[2026-05-07T14:44:27Z] S&P 500 Nuclear Play Vistra Pops Above Key Level On Earnings | Investor's Business Daily",
+      "[Wed, 06 May 2026 17:48:21 GMT] Goodbye quarterly earnings? Here's when traders believe this big change will happen | CNBC"
+    ]
+  },
+  "source": "gemini"
 }

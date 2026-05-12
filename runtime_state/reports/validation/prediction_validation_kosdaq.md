@@ -1,23 +1,23 @@
 # Prediction Validation (KOSDAQ)
 
-- generated_at: 2026-04-16T14:38:25.477232+00:00
-- runs_considered: 71
-- rows_considered: 1369
+- generated_at: 2026-05-12T15:17:09.797349+00:00
+- runs_considered: 70
+- rows_considered: 2351
 - excluded_runs: 0
 
 ## Buckets
 - picked:
-  - 1d: n=377 avg=-3.58% win=21.5%
-  - 3d: n=377 avg=-2.66% win=27.9%
-  - 5d: n=377 avg=+2.60% win=51.5%
-  - 7d: n=346 avg=+5.16% win=46.8%
+  - 1d: n=206 avg=-2.80% win=26.7%
+  - 3d: n=206 avg=-1.26% win=34.0%
+  - 5d: n=206 avg=+4.42% win=54.9%
+  - 7d: n=206 avg=+7.10% win=55.8%
 - watchlist:
-  - 1d: n=281 avg=-1.17% win=41.3%
-  - 3d: n=279 avg=+1.04% win=48.0%
-  - 5d: n=268 avg=+3.58% win=56.3%
-  - 7d: n=197 avg=+4.77% win=54.3%
+  - 1d: n=1135 avg=-0.32% win=39.8%
+  - 3d: n=1076 avg=+0.27% win=43.0%
+  - 5d: n=905 avg=+2.96% win=52.6%
+  - 7d: n=848 avg=+3.65% win=52.8%
 - exception_leader:
-  - 1d: n=182 avg=+0.10% win=50.5%
-  - 3d: n=171 avg=+1.70% win=65.5%
-  - 5d: n=131 avg=+3.42% win=67.2%
-  - 7d: n=100 avg=+4.72% win=68.0%
+  - 1d: n=186 avg=-0.31% win=49.5%
+  - 3d: n=172 avg=+1.81% win=62.8%
+  - 5d: n=172 avg=+4.45% win=65.1%
+  - 7d: n=172 avg=+7.25% win=69.8%

@@ -1,15 +1,9 @@
 {
-  "generated_at": "2026-04-16T14:38:32.777591+00:00",
+  "generated_at": "2026-05-12T15:17:18.964154+00:00",
   "market": "NASDAQ",
-  "runs_considered": 17,
-  "rows_considered": 39,
+  "runs_considered": 11,
+  "rows_considered": 36,
   "excluded_runs": [
-    "RUN-44E30A3A",
-    "RUN-4BFC0593",
-    "RUN-59E9226F",
-    "RUN-60837679",
-    "RUN-6FB6B44C",
-    "RUN-77C4D0D8",
     "RUN-82CD689A",
     "RUN-8F26EE6B",
     "RUN-92734BFF",
@@ -50,42 +44,42 @@
     },
     "watchlist": {
       "1d": {
-        "samples": 25,
-        "n": 25,
-        "avg_return_pct": 1.6562,
-        "win_rate_pct": 84.0
+        "samples": 20,
+        "n": 20,
+        "avg_return_pct": 1.2304,
+        "win_rate_pct": 75.0
       },
       "3d": {
-        "samples": 25,
-        "n": 25,
-        "avg_return_pct": 5.1636,
-        "win_rate_pct": 92.0
+        "samples": 20,
+        "n": 20,
+        "avg_return_pct": 4.0216,
+        "win_rate_pct": 75.0
       },
       "5d": {
-        "samples": 25,
-        "n": 25,
-        "avg_return_pct": 7.3145,
-        "win_rate_pct": 88.0
+        "samples": 15,
+        "n": 15,
+        "avg_return_pct": 6.5275,
+        "win_rate_pct": 86.67
       },
       "7d": {
-        "samples": 5,
-        "n": 5,
-        "avg_return_pct": 7.3289,
+        "samples": 15,
+        "n": 15,
+        "avg_return_pct": 10.362,
         "win_rate_pct": 100.0
       }
     },
     "exception_leader": {
       "1d": {
-        "samples": 0,
-        "n": 0,
-        "avg_return_pct": 0.0,
-        "win_rate_pct": 0.0
+        "samples": 6,
+        "n": 6,
+        "avg_return_pct": -0.4479,
+        "win_rate_pct": 33.33
       },
       "3d": {
-        "samples": 0,
-        "n": 0,
-        "avg_return_pct": 0.0,
-        "win_rate_pct": 0.0
+        "samples": 6,
+        "n": 6,
+        "avg_return_pct": 0.0268,
+        "win_rate_pct": 50.0
       },
       "5d": {
         "samples": 0,

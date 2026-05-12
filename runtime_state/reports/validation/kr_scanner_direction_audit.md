@@ -1,6 +1,6 @@
 # KRX Scanner Direction Audit
 
-- generated_at: 2026-04-10T13:27:00.547062+00:00
+- generated_at: 2026-05-12T10:21:53.587609+00:00
 
 ## Timeframe Audit
 - SWING verdict: daily-primary with intraday refresh, not pure daily-only

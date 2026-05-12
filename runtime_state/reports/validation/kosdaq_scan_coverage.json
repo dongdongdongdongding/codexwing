@@ -1,0 +1,203 @@
+{
+  "generated_at": "2026-05-12T12:01:46.405911+00:00",
+  "stage_counts": {
+    "all_rows": 14505,
+    "ticker_kq_rows": 7723,
+    "market_eq_kosdaq_rows": 3515,
+    "kq_swing_rows": 1947,
+    "market_eq_kosdaq_swing_rows": 1620,
+    "kq_swing_non_dummy_rows": 1947,
+    "kq_swing_return_5d_rows": 1376,
+    "kq_swing_strict_feature_rows": 480,
+    "kq_swing_strict_feature_return_5d_rows": 213,
+    "kq_swing_aged_missing_return_5d_rows": 98
+  },
+  "all_market_counts": {
+    "NULL": 7957,
+    "KOSDAQ": 3515,
+    "KOSPI": 2901,
+    "NASDAQ": 57,
+    "AMEX": 46,
+    "KR": 29
+  },
+  "all_market_type_counts": {
+    "KR": 12047,
+    "US": 2286,
+    "AMEX": 172
+  },
+  "kq_swing_market_counts": {
+    "KOSDAQ": 1620,
+    "NULL": 312,
+    "KR": 15
+  },
+  "kq_swing_market_type_counts": {
+    "KR": 1947
+  },
+  "kq_swing_scan_mode_counts": {
+    "SWING": 1947
+  },
+  "kq_swing_feature_origin_counts": {
+    "scanner_archive_outcome": 983,
+    "scanner_partial_legacy": 387,
+    "scanner_full": 299,
+    "outcome_sync_partial": 278
+  },
+  "kq_swing_decision_bucket_counts": {
+    "watchlist": 937,
+    "NULL": 456,
+    "ignored": 360,
+    "exception_leader": 156,
+    "picked": 38
+  },
+  "kq_swing_field_coverage": {
+    "alpha_score": {
+      "present": 1850,
+      "missing": 97,
+      "present_pct": 95.018
+    },
+    "tech_score": {
+      "present": 1019,
+      "missing": 928,
+      "present_pct": 52.337
+    },
+    "ml_prob": {
+      "present": 1884,
+      "missing": 63,
+      "present_pct": 96.764
+    },
+    "whale_score": {
+      "present": 1019,
+      "missing": 928,
+      "present_pct": 52.337
+    },
+    "decision_score": {
+      "present": 1885,
+      "missing": 62,
+      "present_pct": 96.816
+    },
+    "entry_reference_price": {
+      "present": 1947,
+      "missing": 0,
+      "present_pct": 100.0
+    },
+    "volume_ratio": {
+      "present": 1000,
+      "missing": 947,
+      "present_pct": 51.361
+    },
+    "trend": {
+      "present": 1865,
+      "missing": 82,
+      "present_pct": 95.788
+    },
+    "tier": {
+      "present": 996,
+      "missing": 951,
+      "present_pct": 51.156
+    },
+    "position": {
+      "present": 996,
+      "missing": 951,
+      "present_pct": 51.156
+    },
+    "return_5d_pct": {
+      "present": 1376,
+      "missing": 571,
+      "present_pct": 70.673
+    },
+    "recommended_at": {
+      "present": 1461,
+      "missing": 486,
+      "present_pct": 75.039
+    },
+    "created_at": {
+      "present": 1947,
+      "missing": 0,
+      "present_pct": 100.0
+    }
+  },
+  "kq_swing_missing_breakdown": {
+    "return_5d_missing_by_feature_origin": {
+      "scanner_archive_outcome": 302,
+      "scanner_full": 267,
+      "outcome_sync_partial": 1,
+      "scanner_partial_legacy": 1
+    },
+    "aged_return_5d_missing_by_feature_origin": {
+      "scanner_archive_outcome": 96,
+      "outcome_sync_partial": 1,
+      "scanner_partial_legacy": 1
+    },
+    "recommended_at_missing_by_feature_origin": {
+      "scanner_partial_legacy": 380,
+      "scanner_full": 106
+    }
+  },
+  "market_eq_kosdaq_swing_field_coverage": {
+    "alpha_score": {
+      "present": 1577,
+      "missing": 43,
+      "present_pct": 97.346
+    },
+    "tech_score": {
+      "present": 774,
+      "missing": 846,
+      "present_pct": 47.778
+    },
+    "ml_prob": {
+      "present": 1611,
+      "missing": 9,
+      "present_pct": 99.444
+    },
+    "whale_score": {
+      "present": 774,
+      "missing": 846,
+      "present_pct": 47.778
+    },
+    "decision_score": {
+      "present": 1611,
+      "missing": 9,
+      "present_pct": 99.444
+    },
+    "entry_reference_price": {
+      "present": 1620,
+      "missing": 0,
+      "present_pct": 100.0
+    },
+    "volume_ratio": {
+      "present": 941,
+      "missing": 679,
+      "present_pct": 58.086
+    },
+    "trend": {
+      "present": 1598,
+      "missing": 22,
+      "present_pct": 98.642
+    },
+    "tier": {
+      "present": 751,
+      "missing": 869,
+      "present_pct": 46.358
+    },
+    "position": {
+      "present": 751,
+      "missing": 869,
+      "present_pct": 46.358
+    },
+    "return_5d_pct": {
+      "present": 1053,
+      "missing": 567,
+      "present_pct": 65.0
+    },
+    "recommended_at": {
+      "present": 1374,
+      "missing": 246,
+      "present_pct": 84.815
+    },
+    "created_at": {
+      "present": 1620,
+      "missing": 0,
+      "present_pct": 100.0
+    }
+  }
+}

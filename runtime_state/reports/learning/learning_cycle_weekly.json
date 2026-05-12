@@ -2,25 +2,25 @@
   "action": "weekly_retrain",
   "collection_stats": {
     "buckets": {
-      "exception_leader": 320,
-      "ignored": 327,
-      "picked": 1009,
-      "watchlist": 887
+      "exception_leader": 484,
+      "ignored": 1336,
+      "picked": 1150,
+      "watchlist": 5128
     },
     "markets": {
       "AMEX": 81,
-      "KOSDAQ": 1712,
-      "KOSPI": 656,
-      "KR": 1,
-      "NASDAQ": 92,
+      "KOSDAQ": 4093,
+      "KOSPI": 3777,
+      "KR": 43,
+      "NASDAQ": 103,
       "US": 1
     },
-    "runs_seen": 239,
-    "runs_with_outcomes": 148,
+    "runs_seen": 355,
+    "runs_with_outcomes": 260,
     "statuses": {
-      "EXPIRED": 337,
-      "PENDING": 761,
-      "RESOLVED": 1445
+      "EXPIRED": 84,
+      "PENDING": 2990,
+      "RESOLVED": 5024
     }
   },
   "commands": [
@@ -29,45 +29,48 @@
         "python3",
         "multi_agent/tools/export_scan_archive_learning_dataset.py"
       ],
-      "finished_at": "2026-04-12T00:00:14.202877+00:00",
+      "finished_at": "2026-05-10T00:00:13.859132+00:00",
       "ok": true,
       "returncode": 0,
-      "started_at": "2026-04-12T00:00:03.844484+00:00",
+      "started_at": "2026-05-10T00:00:02.060940+00:00",
       "stderr_tail": "/Users/dongdong/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(",
-      "stdout_tail": "    \"phase25_shadow_variant\",\n    \"phase25_variant\",\n    \"position\",\n    \"price_band\",\n    \"primary_theme\",\n    \"priority_rank\",\n    \"quality_flags\",\n    \"recommended_at\",\n    \"return_1d_pct\",\n    \"return_1h_pct\",\n    \"return_2d_pct\",\n    \"return_30m_pct\",\n    \"return_3d_pct\",\n    \"return_5d_pct\",\n    \"return_7d_pct\",\n    \"return_close_pct\",\n    \"run_id\",\n    \"scan_mode\",\n    \"scanner_timeframe_profile\",\n    \"secondary_themes\",\n    \"selection_lane\",\n    \"source_ref\",\n    \"stock_name\",\n    \"strategy\",\n    \"strategy_family\",\n    \"surge\",\n    \"target_horizon_days\",\n    \"tech_score\",\n    \"theme_inference_status\",\n    \"theme_routing_path\",\n    \"theme_source\",\n    \"ticker\",\n    \"tier\",\n    \"trend\",\n    \"validation_excluded\",\n    \"volume\",\n    \"whale_score\",\n    \"win_rate\"\n  ]\n}"
+      "stdout_tail": "    \"return_14d_pct\",\n    \"return_1d_pct\",\n    \"return_1h_pct\",\n    \"return_2d_pct\",\n    \"return_30d_pct\",\n    \"return_30m_pct\",\n    \"return_3d_pct\",\n    \"return_5d_pct\",\n    \"return_7d_pct\",\n    \"return_close_pct\",\n    \"run_id\",\n    \"scan_mode\",\n    \"scanner_timeframe_profile\",\n    \"secondary_themes\",\n    \"selection_lane\",\n    \"source_ref\",\n    \"stock_name\",\n    \"stop_sl_pct\",\n    \"strategy\",\n    \"strategy_family\",\n    \"surge\",\n    \"target_horizon_days\",\n    \"target_tp_pct\",\n    \"tech_score\",\n    \"theme_inference_status\",\n    \"theme_risk\",\n    \"theme_routing_path\",\n    \"theme_source\",\n    \"ticker\",\n    \"tier\",\n    \"trend\",\n    \"validation_excluded\",\n    \"validation_excluded_reason\",\n    \"volume\",\n    \"volume_confirmed\",\n    \"volume_ratio\",\n    \"whale_score\",\n    \"win_rate\"\n  ]\n}"
     },
     {
       "cmd": [
         "python3",
         "retrain_ml.py"
       ],
-      "finished_at": "2026-04-12T00:00:24.958252+00:00",
+      "defer_reason": null,
+      "finished_at": "2026-05-10T00:05:50.537745+00:00",
+      "last_successful_model_train_at": "2026-05-10T09:05:50.366235",
       "ok": true,
       "returncode": 0,
-      "started_at": "2026-04-12T00:00:14.202921+00:00",
+      "semantic_status": "trained",
+      "started_at": "2026-05-10T00:00:13.859199+00:00",
       "stderr_tail": "",
-      "stdout_tail": "      \"importance\": 95.0\n    },\n    {\n      \"feature\": \"is_uptrend\",\n      \"importance\": 74.0\n    },\n    {\n      \"feature\": \"vol_lt05x\",\n      \"importance\": 53.0\n    },\n    {\n      \"feature\": \"vol_08_18x\",\n      \"importance\": 42.0\n    },\n    {\n      \"feature\": \"vol_confirmed\",\n      \"importance\": 17.0\n    },\n    {\n      \"feature\": \"tier_t1\",\n      \"importance\": 5.0\n    },\n    {\n      \"feature\": \"tier_t2\",\n      \"importance\": 2.0\n    },\n    {\n      \"feature\": \"vol_gt25x\",\n      \"importance\": 0.0\n    }\n  ],\n  \"model_path\": \"models/phase25_kr_intraday.pkl\",\n  \"description\": \"KR intraday model using next-day positive return.\"\n}\n\n============================================================\n  primary model: phase25_global  auc=0.5022\n  model path: models/phase25_model.pkl\n  report path: /Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/retrain_v2_report.json\n============================================================"
+      "stdout_tail": "  ],\n  \"model_path\": \"models/phase25_model.pkl\",\n  \"description\": \"Global compatibility model using realized 3D >= +5%.\",\n  \"walk_forward_cv\": [\n    {\n      \"fold\": 0,\n      \"train_size\": 932,\n      \"val_size\": 254,\n      \"auc\": 0.5997747747747748,\n      \"val_win_rate\": 61.0\n    },\n    {\n      \"fold\": 1,\n      \"train_size\": 1186,\n      \"val_size\": 254,\n      \"auc\": 0.6901588315108947,\n      \"val_win_rate\": 73.80952380952381\n    },\n    {\n      \"fold\": 2,\n      \"train_size\": 1440,\n      \"val_size\": 254,\n      \"auc\": 0.5197478991596639,\n      \"val_win_rate\": 57.2463768115942\n    }\n  ],\n  \"oos_holdout\": {\n    \"size\": 300,\n    \"auc\": 0.48168487116046105,\n    \"picks\": 58,\n    \"win_rate_pct\": 46.55172413793103,\n    \"avg_return_pct\": -0.20861186206896548\n  }\n}\n\n============================================================\n  primary model: phase25_global  auc=0.6099\n  model path: models/phase25_model.pkl\n  report path: /Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/retrain_v2_report.json\n============================================================"
     }
   ],
-  "generated_at": "2026-04-12T00:00:24.958275+00:00",
+  "generated_at": "2026-05-10T00:05:50.538124+00:00",
   "minimum_required_new_resolved": 10,
   "minimum_required_total_resolved": 50,
   "mode": "weekly",
-  "new_resolved_since_last_cycle": 626,
+  "new_resolved_since_last_cycle": 358,
   "reason": "weekly_retrain_executed",
   "resolved_by_bucket": {
-    "exception_leader": 138,
-    "ignored": 36,
-    "picked": 809,
-    "watchlist": 462
+    "exception_leader": 358,
+    "ignored": 876,
+    "picked": 927,
+    "watchlist": 2863
   },
   "resolved_by_market": {
     "AMEX": 81,
-    "KOSDAQ": 937,
-    "KOSPI": 343,
-    "KR": 1,
-    "NASDAQ": 82,
+    "KOSDAQ": 2852,
+    "KOSPI": 1980,
+    "KR": 18,
+    "NASDAQ": 92,
     "US": 1
   },
-  "total_resolved": 1445
+  "total_resolved": 5024
 }

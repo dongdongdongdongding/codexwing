@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-10T13:27:00.547062+00:00",
+  "generated_at": "2026-05-12T10:21:53.587609+00:00",
   "scanner_timeframe_audit": {
     "swing_runtime_fetch": {
       "scanner_runtime": "SWING path fetches 5y data via QuantStrategy.fetch_data(period='5y')",

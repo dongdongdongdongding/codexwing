@@ -1,0 +1,110 @@
+{
+  "tp_pct": 12.0,
+  "sl_pct": -3.0,
+  "hold_col": "return_5d_pct",
+  "results": [
+    {
+      "segment": "ALL",
+      "tp_pct": 12.0,
+      "sl_pct": -3.0,
+      "hold_col": "return_5d_pct",
+      "n": 30465,
+      "win_rate_pct": 36.23,
+      "avg_return_pct": 1.252,
+      "median_return_pct": -3.0,
+      "tp_hit_rate_pct": 18.87,
+      "sl_hit_rate_pct": 60.82,
+      "hold_exit_rate_pct": 20.31
+    },
+    {
+      "segment": "strategy~swing",
+      "n": 0
+    },
+    {
+      "segment": "strategy~intraday",
+      "n": 0
+    },
+    {
+      "segment": "market=KR",
+      "tp_pct": 12.0,
+      "sl_pct": -3.0,
+      "hold_col": "return_5d_pct",
+      "n": 28273,
+      "win_rate_pct": 31.87,
+      "avg_return_pct": 0.839,
+      "median_return_pct": -3.0,
+      "tp_hit_rate_pct": 17.91,
+      "sl_hit_rate_pct": 65.14,
+      "hold_exit_rate_pct": 16.95
+    },
+    {
+      "segment": "market=US",
+      "tp_pct": 12.0,
+      "sl_pct": -3.0,
+      "hold_col": "return_5d_pct",
+      "n": 1744,
+      "win_rate_pct": 95.18,
+      "avg_return_pct": 7.212,
+      "median_return_pct": 7.828,
+      "tp_hit_rate_pct": 35.89,
+      "sl_hit_rate_pct": 4.13,
+      "hold_exit_rate_pct": 59.98
+    },
+    {
+      "segment": "market=KOSPI",
+      "tp_pct": 12.0,
+      "sl_pct": -3.0,
+      "hold_col": "return_5d_pct",
+      "n": 2732,
+      "win_rate_pct": 57.1,
+      "avg_return_pct": 4.096,
+      "median_return_pct": 3.982,
+      "tp_hit_rate_pct": 32.5,
+      "sl_hit_rate_pct": 37.26,
+      "hold_exit_rate_pct": 30.23
+    },
+    {
+      "segment": "market=KOSDAQ",
+      "tp_pct": 12.0,
+      "sl_pct": -3.0,
+      "hold_col": "return_5d_pct",
+      "n": 7093,
+      "win_rate_pct": 44.85,
+      "avg_return_pct": 2.438,
+      "median_return_pct": -3.0,
+      "tp_hit_rate_pct": 25.77,
+      "sl_hit_rate_pct": 52.83,
+      "hold_exit_rate_pct": 21.4
+    },
+    {
+      "segment": "market=NASDAQ",
+      "tp_pct": 12.0,
+      "sl_pct": -3.0,
+      "hold_col": "return_5d_pct",
+      "n": 1304,
+      "win_rate_pct": 93.56,
+      "avg_return_pct": 7.023,
+      "median_return_pct": 7.28,
+      "tp_hit_rate_pct": 34.74,
+      "sl_hit_rate_pct": 5.52,
+      "hold_exit_rate_pct": 59.74
+    },
+    {
+      "segment": "market=AMEX",
+      "tp_pct": 12.0,
+      "sl_pct": -3.0,
+      "hold_col": "return_5d_pct",
+      "n": 448,
+      "win_rate_pct": 81.7,
+      "avg_return_pct": 4.104,
+      "median_return_pct": 3.409,
+      "tp_hit_rate_pct": 13.39,
+      "sl_hit_rate_pct": 9.15,
+      "hold_exit_rate_pct": 77.46
+    },
+    {
+      "segment": "decision=BUY/ACCUMULATE",
+      "n": 0
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-08T12:31:51.628824",
-  "rows": 2380,
-  "positives": 962,
+  "generated_at": "2026-05-12T20:10:34.459512",
+  "rows": 2735,
+  "positives": 1071,
   "features": [
     "alpha_score",
     "vol_confirmed",
@@ -52,481 +52,500 @@
     "is_exception_leader",
     "peak_x_highvol",
     "overheat_x_uptrend",
-    "sub7_x_breakout"
+    "sub7_x_breakout",
+    "alpha_prob_gap",
+    "tech_prob_gap",
+    "whale_prob_gap",
+    "model_prob_disagreement",
+    "low_prob_high_alpha_risk",
+    "clean_prob_high_alpha_risk",
+    "model_prob_disagreement_risk",
+    "weak_volume_high_alpha_risk",
+    "chase_low_prob_risk",
+    "kosdaq_tier_chase_risk",
+    "kosdaq_clean_chase_risk",
+    "uptrend_low_support_risk",
+    "missing_core_trace_risk",
+    "loss_risk_score",
+    "model_prob_available_count",
+    "model_prob_mean",
+    "low_model_prob_score",
+    "low_prob_high_score",
+    "expected_edge_inversion_score"
   ],
   "results": [
     {
       "model": "rf",
-      "auc": 0.5675234494599647,
-      "accuracy": 0.5700280112044818,
-      "positive_precision": 0.4195804195804196,
-      "positive_recall": 0.45977011494252873,
+      "auc": 0.5169190614359341,
+      "accuracy": 0.5091352009744214,
+      "positive_precision": 0.35083532219570407,
+      "positive_recall": 0.5287769784172662,
       "threshold_sweep": [
         {
           "threshold": 0.2,
-          "picks": 701,
-          "avg_return": 4.197725951497859,
-          "win_rate": 53.92296718972895,
-          "hit_rate": 36.80456490727532
+          "picks": 821,
+          "avg_return": 3.0221262704019494,
+          "win_rate": 47.990255785627284,
+          "hit_rate": 33.86114494518879
         },
         {
           "threshold": 0.25,
-          "picks": 666,
-          "avg_return": 4.312889232732733,
-          "win_rate": 54.65465465465466,
-          "hit_rate": 37.53753753753754
+          "picks": 820,
+          "avg_return": 3.028501890243902,
+          "win_rate": 48.048780487804876,
+          "hit_rate": 33.90243902439025
         },
         {
           "threshold": 0.3,
-          "picks": 623,
-          "avg_return": 4.412785186195827,
-          "win_rate": 55.0561797752809,
-          "hit_rate": 37.881219903691814
+          "picks": 820,
+          "avg_return": 3.028501890243902,
+          "win_rate": 48.048780487804876,
+          "hit_rate": 33.90243902439025
         },
         {
           "threshold": 0.35,
-          "picks": 565,
-          "avg_return": 4.840365115044248,
-          "win_rate": 56.63716814159292,
-          "hit_rate": 39.29203539823009
+          "picks": 794,
+          "avg_return": 3.0810311095717884,
+          "win_rate": 48.36272040302267,
+          "hit_rate": 34.130982367758186
         },
         {
           "threshold": 0.4,
-          "picks": 496,
-          "avg_return": 5.11437854233871,
-          "win_rate": 57.056451612903224,
-          "hit_rate": 39.91935483870967
+          "picks": 708,
+          "avg_return": 3.2506471228813565,
+          "win_rate": 48.728813559322035,
+          "hit_rate": 34.463276836158194
         },
         {
           "threshold": 0.45,
-          "picks": 384,
-          "avg_return": 5.147760197916667,
-          "win_rate": 58.072916666666664,
-          "hit_rate": 40.625
+          "picks": 581,
+          "avg_return": 3.326924807228916,
+          "win_rate": 48.88123924268503,
+          "hit_rate": 34.42340791738382
         },
         {
           "threshold": 0.5,
-          "picks": 286,
-          "avg_return": 5.63589931118881,
-          "win_rate": 58.04195804195804,
-          "hit_rate": 41.95804195804196
+          "picks": 419,
+          "avg_return": 3.6685909498806684,
+          "win_rate": 47.97136038186158,
+          "hit_rate": 35.08353221957041
         },
         {
           "threshold": 0.55,
-          "picks": 231,
-          "avg_return": 5.685130142857142,
-          "win_rate": 57.14285714285714,
-          "hit_rate": 41.99134199134199
+          "picks": 311,
+          "avg_return": 3.538737996784566,
+          "win_rate": 45.98070739549839,
+          "hit_rate": 35.048231511254016
         },
         {
           "threshold": 0.6,
-          "picks": 180,
-          "avg_return": 5.781567149999998,
-          "win_rate": 55.00000000000001,
-          "hit_rate": 41.11111111111111
+          "picks": 214,
+          "avg_return": 2.7556294065420563,
+          "win_rate": 42.523364485981304,
+          "hit_rate": 32.242990654205606
         }
       ],
       "best_threshold_row": {
-        "threshold": 0.6,
-        "picks": 180,
-        "avg_return": 5.781567149999998,
-        "win_rate": 55.00000000000001,
-        "hit_rate": 41.11111111111111
+        "threshold": 0.5,
+        "picks": 419,
+        "avg_return": 3.6685909498806684,
+        "win_rate": 47.97136038186158,
+        "hit_rate": 35.08353221957041
       }
     },
     {
       "model": "extratrees",
-      "auc": 0.5668003011003695,
-      "accuracy": 0.5630252100840336,
-      "positive_precision": 0.41414141414141414,
-      "positive_recall": 0.47126436781609193,
+      "auc": 0.5383295573485962,
+      "accuracy": 0.5237515225334958,
+      "positive_precision": 0.3583959899749373,
+      "positive_recall": 0.5143884892086331,
       "threshold_sweep": [
         {
           "threshold": 0.2,
-          "picks": 697,
-          "avg_return": 4.161742886657102,
-          "win_rate": 54.08895265423242,
-          "hit_rate": 36.728837876614065
+          "picks": 821,
+          "avg_return": 3.0221262704019494,
+          "win_rate": 47.990255785627284,
+          "hit_rate": 33.86114494518879
         },
         {
           "threshold": 0.25,
-          "picks": 680,
-          "avg_return": 4.275916547058824,
-          "win_rate": 54.11764705882353,
-          "hit_rate": 37.205882352941174
+          "picks": 819,
+          "avg_return": 3.0431510598290603,
+          "win_rate": 48.10744810744811,
+          "hit_rate": 33.943833943833944
         },
         {
           "threshold": 0.3,
-          "picks": 637,
-          "avg_return": 4.466036178963893,
-          "win_rate": 55.25902668759811,
-          "hit_rate": 37.83359497645212
+          "picks": 804,
+          "avg_return": 3.171469651741294,
+          "win_rate": 48.6318407960199,
+          "hit_rate": 34.452736318407965
         },
         {
           "threshold": 0.35,
-          "picks": 587,
-          "avg_return": 4.755844873935264,
-          "win_rate": 56.04770017035775,
-          "hit_rate": 39.01192504258944
+          "picks": 753,
+          "avg_return": 3.276317389110226,
+          "win_rate": 49.00398406374502,
+          "hit_rate": 35.1925630810093
         },
         {
           "threshold": 0.4,
-          "picks": 501,
-          "avg_return": 4.7711173812375245,
-          "win_rate": 57.08582834331337,
-          "hit_rate": 39.72055888223553
+          "picks": 674,
+          "avg_return": 3.5346794703264095,
+          "win_rate": 50.445103857566764,
+          "hit_rate": 35.90504451038576
         },
         {
           "threshold": 0.45,
-          "picks": 400,
-          "avg_return": 5.354476052499999,
-          "win_rate": 58.75,
-          "hit_rate": 41.25
+          "picks": 543,
+          "avg_return": 3.6183905948434627,
+          "win_rate": 49.53959484346225,
+          "hit_rate": 35.727440147329645
         },
         {
           "threshold": 0.5,
-          "picks": 297,
-          "avg_return": 5.334677508417508,
-          "win_rate": 57.57575757575758,
-          "hit_rate": 41.41414141414141
+          "picks": 399,
+          "avg_return": 3.4228300977443613,
+          "win_rate": 47.368421052631575,
+          "hit_rate": 35.83959899749373
         },
         {
           "threshold": 0.55,
-          "picks": 220,
-          "avg_return": 5.68405725,
-          "win_rate": 57.72727272727273,
-          "hit_rate": 41.81818181818181
+          "picks": 288,
+          "avg_return": 3.8480884965277777,
+          "win_rate": 47.56944444444444,
+          "hit_rate": 36.45833333333333
         },
         {
           "threshold": 0.6,
-          "picks": 49,
-          "avg_return": 5.585390489795919,
-          "win_rate": 63.26530612244898,
-          "hit_rate": 44.89795918367347
+          "picks": 228,
+          "avg_return": 3.5325208026315793,
+          "win_rate": 45.17543859649123,
+          "hit_rate": 35.08771929824561
         }
       ],
       "best_threshold_row": {
         "threshold": 0.55,
-        "picks": 220,
-        "avg_return": 5.68405725,
-        "win_rate": 57.72727272727273,
-        "hit_rate": 41.81818181818181
+        "picks": 288,
+        "avg_return": 3.8480884965277777,
+        "win_rate": 47.56944444444444,
+        "hit_rate": 36.45833333333333
       }
     },
     {
       "model": "histgb",
-      "auc": 0.5641360703018616,
-      "accuracy": 0.5714285714285714,
-      "positive_precision": 0.42214532871972316,
-      "positive_recall": 0.4674329501915709,
+      "auc": 0.5298137180863045,
+      "accuracy": 0.5420219244823387,
+      "positive_precision": 0.3638888888888889,
+      "positive_recall": 0.4712230215827338,
       "threshold_sweep": [
         {
           "threshold": 0.2,
-          "picks": 544,
-          "avg_return": 4.974048007352941,
-          "win_rate": 56.61764705882353,
-          "hit_rate": 39.88970588235294
+          "picks": 672,
+          "avg_return": 3.159246705357143,
+          "win_rate": 48.214285714285715,
+          "hit_rate": 34.077380952380956
         },
         {
           "threshold": 0.25,
-          "picks": 505,
-          "avg_return": 4.721856061386139,
-          "win_rate": 56.43564356435643,
-          "hit_rate": 39.40594059405941
+          "picks": 604,
+          "avg_return": 3.2431809039735096,
+          "win_rate": 47.35099337748344,
+          "hit_rate": 34.437086092715234
         },
         {
           "threshold": 0.3,
-          "picks": 452,
-          "avg_return": 5.04297071460177,
-          "win_rate": 56.19469026548673,
-          "hit_rate": 40.48672566371682
+          "picks": 555,
+          "avg_return": 3.354990627027027,
+          "win_rate": 46.846846846846844,
+          "hit_rate": 34.77477477477478
         },
         {
           "threshold": 0.35,
-          "picks": 414,
-          "avg_return": 5.332365519323671,
-          "win_rate": 56.52173913043478,
-          "hit_rate": 40.82125603864734
+          "picks": 508,
+          "avg_return": 3.7655867972440946,
+          "win_rate": 48.4251968503937,
+          "hit_rate": 35.43307086614173
         },
         {
           "threshold": 0.4,
-          "picks": 369,
-          "avg_return": 5.336964880758808,
-          "win_rate": 57.994579945799465,
-          "hit_rate": 40.65040650406504
+          "picks": 453,
+          "avg_return": 3.873043105960265,
+          "win_rate": 48.78587196467991,
+          "hit_rate": 35.98233995584989
         },
         {
           "threshold": 0.45,
-          "picks": 338,
-          "avg_return": 5.570195136094674,
-          "win_rate": 58.57988165680473,
-          "hit_rate": 41.71597633136095
+          "picks": 398,
+          "avg_return": 3.733673479899498,
+          "win_rate": 48.99497487437186,
+          "hit_rate": 35.678391959798994
         },
         {
           "threshold": 0.5,
-          "picks": 289,
-          "avg_return": 5.973810169550173,
-          "win_rate": 58.82352941176471,
-          "hit_rate": 42.21453287197232
+          "picks": 360,
+          "avg_return": 3.9540577722222223,
+          "win_rate": 50.0,
+          "hit_rate": 36.388888888888886
         },
         {
           "threshold": 0.55,
-          "picks": 216,
-          "avg_return": 5.843000555555555,
-          "win_rate": 59.25925925925925,
-          "hit_rate": 41.2037037037037
+          "picks": 298,
+          "avg_return": 4.221263486577181,
+          "win_rate": 52.348993288590606,
+          "hit_rate": 37.919463087248324
         },
         {
           "threshold": 0.6,
-          "picks": 138,
-          "avg_return": 5.6789616014492745,
-          "win_rate": 55.79710144927537,
-          "hit_rate": 39.130434782608695
+          "picks": 240,
+          "avg_return": 4.2078681583333335,
+          "win_rate": 52.083333333333336,
+          "hit_rate": 37.5
         }
       ],
       "best_threshold_row": {
-        "threshold": 0.5,
-        "picks": 289,
-        "avg_return": 5.973810169550173,
-        "win_rate": 58.82352941176471,
-        "hit_rate": 42.21453287197232
+        "threshold": 0.55,
+        "picks": 298,
+        "avg_return": 4.221263486577181,
+        "win_rate": 52.348993288590606,
+        "hit_rate": 37.919463087248324
       }
     },
     {
       "model": "logistic",
-      "auc": 0.5705978872226873,
-      "accuracy": 0.5854341736694678,
-      "positive_precision": 0.4302788844621514,
-      "positive_recall": 0.41379310344827586,
+      "auc": 0.5705247956331068,
+      "accuracy": 0.5651644336175395,
+      "positive_precision": 0.39295392953929537,
+      "positive_recall": 0.5215827338129496,
       "threshold_sweep": [
         {
           "threshold": 0.2,
-          "picks": 714,
-          "avg_return": 4.230636514005603,
-          "win_rate": 53.641456582633054,
-          "hit_rate": 36.554621848739494
+          "picks": 778,
+          "avg_return": 3.0516050385604108,
+          "win_rate": 48.329048843187664,
+          "hit_rate": 34.06169665809769
         },
         {
           "threshold": 0.25,
-          "picks": 700,
-          "avg_return": 4.336528357142857,
-          "win_rate": 54.42857142857142,
-          "hit_rate": 37.142857142857146
+          "picks": 732,
+          "avg_return": 3.2596617677595625,
+          "win_rate": 49.18032786885246,
+          "hit_rate": 34.83606557377049
         },
         {
           "threshold": 0.3,
-          "picks": 656,
-          "avg_return": 4.3584676219512195,
-          "win_rate": 55.03048780487805,
-          "hit_rate": 37.80487804878049
+          "picks": 690,
+          "avg_return": 3.52723722173913,
+          "win_rate": 49.56521739130435,
+          "hit_rate": 35.36231884057971
         },
         {
           "threshold": 0.35,
-          "picks": 610,
-          "avg_return": 4.492222009836065,
-          "win_rate": 55.40983606557377,
-          "hit_rate": 38.0327868852459
+          "picks": 627,
+          "avg_return": 3.9785062121212125,
+          "win_rate": 50.717703349282296,
+          "hit_rate": 37.16108452950559
         },
         {
           "threshold": 0.4,
-          "picks": 513,
-          "avg_return": 4.814291799220273,
-          "win_rate": 57.1150097465887,
-          "hit_rate": 40.35087719298245
+          "picks": 557,
+          "avg_return": 4.234151233393178,
+          "win_rate": 51.34649910233393,
+          "hit_rate": 38.06104129263914
         },
         {
           "threshold": 0.45,
-          "picks": 392,
-          "avg_return": 5.186508951530612,
-          "win_rate": 58.16326530612245,
-          "hit_rate": 41.58163265306122
+          "picks": 445,
+          "avg_return": 4.7650893258426965,
+          "win_rate": 51.91011235955057,
+          "hit_rate": 39.325842696629216
         },
         {
           "threshold": 0.5,
-          "picks": 251,
-          "avg_return": 6.2903684621513944,
-          "win_rate": 58.56573705179283,
-          "hit_rate": 43.02788844621514
+          "picks": 369,
+          "avg_return": 4.70310576693767,
+          "win_rate": 51.76151761517615,
+          "hit_rate": 39.295392953929536
         },
         {
           "threshold": 0.55,
-          "picks": 185,
-          "avg_return": 6.143294654054054,
-          "win_rate": 58.37837837837838,
-          "hit_rate": 42.7027027027027
+          "picks": 276,
+          "avg_return": 4.02379447826087,
+          "win_rate": 48.91304347826087,
+          "hit_rate": 36.594202898550726
         },
         {
           "threshold": 0.6,
-          "picks": 99,
-          "avg_return": 3.8664254545454546,
-          "win_rate": 56.56565656565656,
-          "hit_rate": 38.38383838383838
-        }
-      ],
-      "best_threshold_row": {
-        "threshold": 0.5,
-        "picks": 251,
-        "avg_return": 6.2903684621513944,
-        "win_rate": 58.56573705179283,
-        "hit_rate": 43.02788844621514
-      }
-    },
-    {
-      "model": "lightgbm",
-      "auc": 0.5654428120744632,
-      "accuracy": 0.5392156862745098,
-      "positive_precision": 0.40710382513661203,
-      "positive_recall": 0.5708812260536399,
-      "threshold_sweep": [
-        {
-          "threshold": 0.2,
-          "picks": 589,
-          "avg_return": 4.642768359932089,
-          "win_rate": 56.196943972835314,
-          "hit_rate": 38.879456706281836
-        },
-        {
-          "threshold": 0.25,
-          "picks": 550,
-          "avg_return": 4.930781354545454,
-          "win_rate": 56.90909090909091,
-          "hit_rate": 39.63636363636363
-        },
-        {
-          "threshold": 0.3,
-          "picks": 504,
-          "avg_return": 4.831714549603174,
-          "win_rate": 56.15079365079365,
-          "hit_rate": 40.07936507936508
-        },
-        {
-          "threshold": 0.35,
-          "picks": 468,
-          "avg_return": 5.067741784188034,
-          "win_rate": 57.26495726495726,
-          "hit_rate": 40.81196581196581
-        },
-        {
-          "threshold": 0.4,
-          "picks": 435,
-          "avg_return": 5.08564443908046,
-          "win_rate": 56.7816091954023,
-          "hit_rate": 40.91954022988506
-        },
-        {
-          "threshold": 0.45,
-          "picks": 406,
-          "avg_return": 5.200272044334975,
-          "win_rate": 56.896551724137936,
-          "hit_rate": 40.64039408866995
-        },
-        {
-          "threshold": 0.5,
-          "picks": 366,
-          "avg_return": 5.356292584699453,
-          "win_rate": 56.830601092896174,
-          "hit_rate": 40.7103825136612
-        },
-        {
-          "threshold": 0.55,
-          "picks": 318,
-          "avg_return": 5.803759836477988,
-          "win_rate": 57.23270440251572,
-          "hit_rate": 41.82389937106918
-        },
-        {
-          "threshold": 0.6,
-          "picks": 257,
-          "avg_return": 5.815295941634242,
-          "win_rate": 58.754863813229576,
-          "hit_rate": 42.4124513618677
+          "picks": 171,
+          "avg_return": 5.573648578947369,
+          "win_rate": 51.461988304093566,
+          "hit_rate": 41.52046783625731
         }
       ],
       "best_threshold_row": {
         "threshold": 0.6,
-        "picks": 257,
-        "avg_return": 5.815295941634242,
-        "win_rate": 58.754863813229576,
-        "hit_rate": 42.4124513618677
+        "picks": 171,
+        "avg_return": 5.573648578947369,
+        "win_rate": 51.461988304093566,
+        "hit_rate": 41.52046783625731
       }
     },
     {
-      "model": "xgboost",
-      "auc": 0.5616917442676749,
-      "accuracy": 0.5714285714285714,
-      "positive_precision": 0.4175824175824176,
-      "positive_recall": 0.4367816091954023,
+      "model": "lightgbm",
+      "auc": 0.5245405885236561,
+      "accuracy": 0.5079171741778319,
+      "positive_precision": 0.3492822966507177,
+      "positive_recall": 0.5251798561151079,
       "threshold_sweep": [
         {
           "threshold": 0.2,
-          "picks": 572,
-          "avg_return": 4.697631486013987,
-          "win_rate": 55.769230769230774,
-          "hit_rate": 38.81118881118881
+          "picks": 755,
+          "avg_return": 3.135504810596026,
+          "win_rate": 48.87417218543047,
+          "hit_rate": 33.90728476821192
         },
         {
           "threshold": 0.25,
-          "picks": 533,
-          "avg_return": 4.727311707317073,
-          "win_rate": 55.909943714821765,
-          "hit_rate": 39.39962476547842
+          "picks": 709,
+          "avg_return": 3.203572672778561,
+          "win_rate": 48.94217207334274,
+          "hit_rate": 34.27362482369535
         },
         {
           "threshold": 0.3,
-          "picks": 496,
-          "avg_return": 4.596437981854838,
-          "win_rate": 55.64516129032258,
-          "hit_rate": 39.314516129032256
+          "picks": 647,
+          "avg_return": 3.3643161993817614,
+          "win_rate": 48.99536321483771,
+          "hit_rate": 35.08500772797527
         },
         {
           "threshold": 0.35,
-          "picks": 442,
-          "avg_return": 5.034895246606335,
-          "win_rate": 57.01357466063348,
-          "hit_rate": 40.27149321266968
+          "picks": 595,
+          "avg_return": 3.4932488016806724,
+          "win_rate": 48.403361344537814,
+          "hit_rate": 35.63025210084034
         },
         {
           "threshold": 0.4,
-          "picks": 391,
-          "avg_return": 4.974402225063939,
-          "win_rate": 56.77749360613811,
-          "hit_rate": 40.66496163682864
+          "picks": 541,
+          "avg_return": 3.46038033271719,
+          "win_rate": 47.504621072088725,
+          "hit_rate": 34.93530499075786
         },
         {
           "threshold": 0.45,
-          "picks": 324,
-          "avg_return": 5.690782364197531,
-          "win_rate": 57.71604938271605,
-          "hit_rate": 42.28395061728395
+          "picks": 466,
+          "avg_return": 3.7987752510729615,
+          "win_rate": 48.497854077253216,
+          "hit_rate": 35.622317596566525
         },
         {
           "threshold": 0.5,
-          "picks": 273,
-          "avg_return": 5.715453989010989,
-          "win_rate": 57.509157509157504,
-          "hit_rate": 41.75824175824176
+          "picks": 418,
+          "avg_return": 3.8404755765550243,
+          "win_rate": 48.08612440191388,
+          "hit_rate": 34.92822966507177
         },
         {
           "threshold": 0.55,
-          "picks": 208,
-          "avg_return": 5.541090947115385,
-          "win_rate": 56.25,
-          "hit_rate": 39.90384615384615
+          "picks": 373,
+          "avg_return": 3.816386520107239,
+          "win_rate": 48.257372654155496,
+          "hit_rate": 34.852546916890084
         },
         {
           "threshold": 0.6,
-          "picks": 108,
-          "avg_return": 3.6372411203703705,
-          "win_rate": 51.85185185185185,
-          "hit_rate": 35.18518518518518
+          "picks": 318,
+          "avg_return": 3.8005713553459115,
+          "win_rate": 47.79874213836478,
+          "hit_rate": 34.90566037735849
         }
       ],
       "best_threshold_row": {
         "threshold": 0.5,
-        "picks": 273,
-        "avg_return": 5.715453989010989,
-        "win_rate": 57.509157509157504,
-        "hit_rate": 41.75824175824176
+        "picks": 418,
+        "avg_return": 3.8404755765550243,
+        "win_rate": 48.08612440191388,
+        "hit_rate": 34.92822966507177
+      }
+    },
+    {
+      "model": "xgboost",
+      "auc": 0.5162566079732899,
+      "accuracy": 0.5310596833130329,
+      "positive_precision": 0.3475783475783476,
+      "positive_recall": 0.43884892086330934,
+      "threshold_sweep": [
+        {
+          "threshold": 0.2,
+          "picks": 722,
+          "avg_return": 3.1193343864265937,
+          "win_rate": 48.337950138504155,
+          "hit_rate": 34.21052631578947
+        },
+        {
+          "threshold": 0.25,
+          "picks": 656,
+          "avg_return": 3.1916032789634152,
+          "win_rate": 47.5609756097561,
+          "hit_rate": 33.993902439024396
+        },
+        {
+          "threshold": 0.3,
+          "picks": 597,
+          "avg_return": 3.2988129011725293,
+          "win_rate": 47.73869346733669,
+          "hit_rate": 34.33835845896148
+        },
+        {
+          "threshold": 0.35,
+          "picks": 543,
+          "avg_return": 3.28755008839779,
+          "win_rate": 46.408839779005525,
+          "hit_rate": 33.51749539594843
+        },
+        {
+          "threshold": 0.4,
+          "picks": 492,
+          "avg_return": 3.7982541829268293,
+          "win_rate": 47.764227642276424,
+          "hit_rate": 34.959349593495936
+        },
+        {
+          "threshold": 0.45,
+          "picks": 415,
+          "avg_return": 3.7204026915662647,
+          "win_rate": 47.71084337349398,
+          "hit_rate": 34.93975903614458
+        },
+        {
+          "threshold": 0.5,
+          "picks": 351,
+          "avg_return": 3.3198754729344726,
+          "win_rate": 46.72364672364672,
+          "hit_rate": 34.75783475783476
+        },
+        {
+          "threshold": 0.55,
+          "picks": 274,
+          "avg_return": 3.336609489051095,
+          "win_rate": 47.81021897810219,
+          "hit_rate": 35.76642335766424
+        },
+        {
+          "threshold": 0.6,
+          "picks": 212,
+          "avg_return": 4.134557523584905,
+          "win_rate": 49.056603773584904,
+          "hit_rate": 36.79245283018868
+        }
+      ],
+      "best_threshold_row": {
+        "threshold": 0.6,
+        "picks": 212,
+        "avg_return": 4.134557523584905,
+        "win_rate": 49.056603773584904,
+        "hit_rate": 36.79245283018868
       }
     }
   ],

@@ -1,0 +1,113 @@
+{
+  "generated_at": "2026-05-12T17:17:03.810264+00:00",
+  "dataset": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/archive/scan_archive_learning_dataset_all.csv",
+  "holdout_start": "2026-05-06T13:30:00Z",
+  "market": "KOSPI",
+  "scan_mode": "SWING",
+  "kospi_swing_rows": 2466,
+  "holdout_rows": 503,
+  "priority_watchlist_30d_rows": 116,
+  "priority_watchlist_holdout": {
+    "n": 116,
+    "n_resolved_3d": 0,
+    "avg_3d_pct": null,
+    "win_3d_pct": null,
+    "n_resolved_5d": 0,
+    "avg_5d_pct": null,
+    "win_5d_pct": null,
+    "n_high_touch_5d": 0,
+    "hit_5pct_within_5d_high_pct": null,
+    "avg_max_high_return_5d_pct": null
+  },
+  "marker_counts": {
+    "KOSPI_SWING_PRIORITY_GUARD_SOFT": 371,
+    "EXPECTED_EDGE_WATCH_GUARD_SOFT": 66,
+    "EXPECTED_EDGE_PRIORITY_GUARD_SOFT": 236,
+    "KOSPI_SWING_PRIORITY_GUARD": 371,
+    "EXPECTED_EDGE_WATCH_GUARD": 66,
+    "EXPECTED_EDGE_PRIORITY_GUARD": 371
+  },
+  "by_decision": {
+    "AVOID": {
+      "n": 11,
+      "n_resolved_3d": 3,
+      "avg_3d_pct": -6.0947,
+      "win_3d_pct": 33.333,
+      "n_resolved_5d": 0,
+      "avg_5d_pct": null,
+      "win_5d_pct": null,
+      "n_high_touch_5d": 0,
+      "hit_5pct_within_5d_high_pct": null,
+      "avg_max_high_return_5d_pct": null
+    },
+    "EXCEPTION_LEADER": {
+      "n": 9,
+      "n_resolved_3d": 0,
+      "avg_3d_pct": null,
+      "win_3d_pct": null,
+      "n_resolved_5d": 0,
+      "avg_5d_pct": null,
+      "win_5d_pct": null,
+      "n_high_touch_5d": 0,
+      "hit_5pct_within_5d_high_pct": null,
+      "avg_max_high_return_5d_pct": null
+    },
+    "OBSERVE": {
+      "n": 120,
+      "n_resolved_3d": 1,
+      "avg_3d_pct": 59.3443,
+      "win_3d_pct": 100.0,
+      "n_resolved_5d": 0,
+      "avg_5d_pct": null,
+      "win_5d_pct": null,
+      "n_high_touch_5d": 0,
+      "hit_5pct_within_5d_high_pct": null,
+      "avg_max_high_return_5d_pct": null
+    },
+    "PRIORITY_WATCHLIST": {
+      "n": 116,
+      "n_resolved_3d": 0,
+      "avg_3d_pct": null,
+      "win_3d_pct": null,
+      "n_resolved_5d": 0,
+      "avg_5d_pct": null,
+      "win_5d_pct": null,
+      "n_high_touch_5d": 0,
+      "hit_5pct_within_5d_high_pct": null,
+      "avg_max_high_return_5d_pct": null
+    },
+    "WATCHLIST": {
+      "n": 205,
+      "n_resolved_3d": 119,
+      "avg_3d_pct": -0.5059,
+      "win_3d_pct": 38.655,
+      "n_resolved_5d": 0,
+      "avg_5d_pct": null,
+      "win_5d_pct": null,
+      "n_high_touch_5d": 0,
+      "hit_5pct_within_5d_high_pct": null,
+      "avg_max_high_return_5d_pct": null
+    },
+    "WATCHLIST_ONLY": {
+      "n": 42,
+      "n_resolved_3d": 10,
+      "avg_3d_pct": -5.8236,
+      "win_3d_pct": 20.0,
+      "n_resolved_5d": 0,
+      "avg_5d_pct": null,
+      "win_5d_pct": null,
+      "n_high_touch_5d": 0,
+      "hit_5pct_within_5d_high_pct": null,
+      "avg_max_high_return_5d_pct": null
+    }
+  },
+  "acceptance": {
+    "priority_watchlist_30d_rows_ge_min": true,
+    "priority_holdout_win_3d_ge_65": false,
+    "priority_holdout_avg_3d_ge_3_5": false,
+    "soft_marker_present": true,
+    "high_touch_goal_ge_70": false,
+    "high_touch_avg_ge_5": false,
+    "passes_acceptance": false
+  }
+}

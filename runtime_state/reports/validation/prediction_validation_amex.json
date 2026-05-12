@@ -1,15 +1,9 @@
 {
-  "generated_at": "2026-04-16T14:38:39.274152+00:00",
+  "generated_at": "2026-05-12T15:17:27.388257+00:00",
   "market": "AMEX",
   "runs_considered": 1,
   "rows_considered": 10,
   "excluded_runs": [
-    "RUN-3FCF15D8",
-    "RUN-47117367",
-    "RUN-4DDB8F37",
-    "RUN-58E4793B",
-    "RUN-6EA55EBB",
-    "RUN-773F18E1",
     "RUN-879A78F9",
     "RUN-87E8A5C8",
     "RUN-8D2A41D3",
@@ -72,10 +66,10 @@
         "win_rate_pct": 90.0
       },
       "7d": {
-        "samples": 0,
-        "n": 0,
-        "avg_return_pct": 0.0,
-        "win_rate_pct": 0.0
+        "samples": 10,
+        "n": 10,
+        "avg_return_pct": 9.8071,
+        "win_rate_pct": 90.0
       }
     },
     "exception_leader": {
