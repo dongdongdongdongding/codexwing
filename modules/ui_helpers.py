@@ -143,6 +143,80 @@ def _coerce_text_list(value: Any, limit: int = 3) -> List[str]:
     return out
 
 
+def _action_trace_items(row: Dict[str, Any]) -> List[str]:
+    items: List[str] = []
+    for key in ("theme_risk", "risk_flags", "rationale"):
+        for item in _coerce_text_list(row.get(key), limit=8):
+            if item not in items:
+                items.append(item)
+    return items
+
+
+def build_action_display(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Render-only interpretation of existing planner/scanner trace.
+
+    This does not change candidate selection, ranking, gates, or DB state. It
+    maps already-produced decision/risk trace into an operator-facing action
+    label so strong candidates are not visually mistaken for immediate buys
+    when the planner already emitted wait/avoid risk markers.
+    """
+    if not isinstance(row, dict):
+        return {"label": "-", "condition": "", "reasons": []}
+
+    decision = str(
+        _coalesce_present(row.get("decision"), row.get("Decision"), row.get("decision_bucket"))
+        or ""
+    ).upper().strip()
+    trace_items = _action_trace_items(row)
+    trace_upper = {str(item).upper() for item in trace_items}
+    risk_score = _parse_percent_value(_coalesce_present(row.get("loss_risk_score"), row.get("Loss Risk")))
+
+    hard_markers = {
+        "LOSS_RISK_HARD_CAP",
+        "PHASE25_RAW_AUC_BELOW_RANDOM",
+        "PHASE25_OOS_AUC_REGIME_BREAK",
+        "ML_INFERENCE_FAILED",
+    }
+    wait_markers = {
+        "ENTRY_TIMING_RISK_HIGH",
+        "LOSS_RISK_SOFT_CAP",
+        "EXPECTED_EDGE_PRIORITY_GUARD",
+        "EXPECTED_EDGE_WATCH_GUARD",
+        "KOSDAQ_SWING_TREND_GUARD",
+        "KOSDAQ_SWING_CLEAN_PROB_GUARD",
+        "KOSPI_SWING_MOMENTUM_GUARD",
+        "KOSDAQ_SWING_LOW_VOL_GUARD",
+    }
+
+    if decision in {"AVOID", "REJECT", "SELL", "NO_BUY", "NO_NEW_BUY"} or trace_upper.intersection(hard_markers):
+        label = "매수 금지"
+        condition = "리스크 해소 전 신규 진입 금지"
+    elif decision == "EXCEPTION_LEADER":
+        label = "급등 분리 관찰"
+        condition = "Stream B 소액 운용, 손절 엄수"
+    elif trace_upper.intersection(wait_markers) or (risk_score is not None and risk_score >= 65):
+        label = "눌림/확인 대기"
+        condition = "지지·재돌파 확인 후 검토"
+    elif decision in {"PRIORITY_WATCHLIST", "PICK", "BUY", "STRONG_BUY"}:
+        label = "조건부 매수 가능"
+        condition = "표시된 Entry/TP/SL 기준 준수"
+    elif decision in {"WATCHLIST", "WATCHLIST_ONLY"}:
+        label = "조건부 대기"
+        condition = "가격 부담과 거래량 재유입 확인"
+    elif decision == "OBSERVE":
+        label = "관망"
+        condition = "방향 확인 전 대기"
+    else:
+        label = "확인 필요"
+        condition = "planner trace 기준 추가 확인"
+
+    return {
+        "label": label,
+        "condition": condition,
+        "reasons": trace_items[:4],
+    }
+
+
 def is_exception_leader_row(rec: Dict[str, Any]) -> bool:
     """8:2 자본 배분 정책의 Stream B (EXCEPTION_LEADER) 분류 규칙.
 
@@ -408,6 +482,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         tp = str(_coalesce_present(row.get("TP"), row.get("target_tp_pct")) or "").strip()
         sl = str(_coalesce_present(row.get("SL"), row.get("stop_sl_pct")) or "").strip()
         latest_return = _coalesce_present(row.get("latest_return_pct"), row.get("return_1d_pct"), row.get("return_3d_pct"))
+        action = build_action_display(row)
 
         day_change_numeric = _parse_percent_value(day_change_source)
         normalized.append(
@@ -429,6 +504,9 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "tp": tp or "-",
                 "sl": sl or "-",
                 "latest_return": _format_percent_label(latest_return),
+                "action_label": action["label"],
+                "action_condition": action["condition"],
+                "action_reasons": action["reasons"],
             }
         )
     return normalized

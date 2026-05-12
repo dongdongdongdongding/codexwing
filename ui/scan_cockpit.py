@@ -72,6 +72,9 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         if row.get("sl") and row.get("sl") != "-":
             exit_parts.append(f"SL {row.get('sl')}")
         buy_signal = str(row.get("buy_signal") or "-")
+        action_label = str(row.get("action_label") or "-")
+        action_condition = str(row.get("action_condition") or "")
+        action_reasons = [str(reason) for reason in (row.get("action_reasons") or []) if str(reason).strip()]
         risk_label = str(row.get("loss_risk") or "-")
         risk_level = str(row.get("loss_risk_level") or "")
         risk_flags = [str(flag) for flag in (row.get("risk_flags") or []) if str(flag).strip()]
@@ -89,6 +92,13 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                 st.caption(name or subtitle)
             with cols[1]:
                 st.markdown(f"**{buy_signal}**")
+                if action_label != "-":
+                    action_line = f"액션 {action_label}"
+                    if action_condition:
+                        action_line += f" · {action_condition}"
+                    st.caption(action_line)
+                if action_reasons:
+                    st.caption("판단 근거 " + " / ".join(action_reasons[:3]))
                 if exit_parts:
                     st.caption(" · ".join(exit_parts))
                 if risk_line:

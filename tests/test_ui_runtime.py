@@ -6,6 +6,7 @@ import pandas as pd
 from modules.quant_analysis import QuantStrategy
 from modules.scanner_runtime import run_parallel_scan
 from modules.ui_helpers import (
+    build_action_display,
     build_live_cockpit_summary,
     build_signal_display_rows,
     build_top_candidate_rows,
@@ -95,6 +96,8 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["loss_risk"], "47.2")
         self.assertEqual(rows[0]["loss_risk_level"], "주의")
         self.assertEqual(rows[0]["risk_flags"], ["LOSS_RISK_SOFT_CAP", "ENTRY_TIMING_RISK_HIGH"])
+        self.assertEqual(rows[0]["action_label"], "눌림/확인 대기")
+        self.assertEqual(rows[0]["action_condition"], "지지·재돌파 확인 후 검토")
 
     def test_build_signal_display_rows_does_not_fabricate_day_change(self):
         # 2026-05-09: phase25_prob은 raw score(0-100)로 calibrated probability가
@@ -110,6 +113,29 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["accuracy"], "75.4%")
         self.assertEqual(rows[0]["day_change"], "-")
         self.assertEqual(rows[0]["day_change_value"], None)
+
+    def test_build_action_display_maps_existing_trace_without_core_policy_change(self):
+        self.assertEqual(
+            build_action_display({
+                "decision": "PRIORITY_WATCHLIST",
+                "theme_risk": [],
+                "loss_risk_score": 22.0,
+            })["label"],
+            "조건부 매수 가능",
+        )
+        self.assertEqual(
+            build_action_display({
+                "decision": "PRIORITY_WATCHLIST",
+                "theme_risk": ["ENTRY_TIMING_RISK_HIGH"],
+            })["label"],
+            "눌림/확인 대기",
+        )
+        blocked = build_action_display({
+            "decision": "WATCHLIST",
+            "theme_risk": ["LOSS_RISK_HARD_CAP"],
+        })
+        self.assertEqual(blocked["label"], "매수 금지")
+        self.assertEqual(blocked["condition"], "리스크 해소 전 신규 진입 금지")
 
     def test_build_signal_display_rows_ignores_raw_phase25_prob(self):
         # phase25_prob 단독이면 accuracy는 None. raw score를 정확도로 표시 금지.
