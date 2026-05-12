@@ -195,6 +195,58 @@ def _signal_label(row: Dict[str, Any], loss_risk: float | None) -> str:
     return decision or "OBSERVE"
 
 
+def _segment_accuracy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str, market: str, scan_mode: str) -> float | None:
+    direct = _safe_float(
+        _first_present(row, "phase25_oos_win_rate_pct")
+        or trace.get("phase25_oos_win_rate_pct")
+        or row.get("prob_clean")
+        or trace.get("prob_clean")
+    )
+    if direct is not None:
+        return direct
+    try:
+        from modules.segment_accuracy import lookup_segment_win_rate
+
+        return _safe_float(
+            lookup_segment_win_rate(
+                decision=_first_present(row, "decision", "Decision") or trace.get("decision"),
+                market=market or trace.get("market") or row.get("market"),
+                scan_mode=scan_mode or trace.get("scan_mode") or row.get("scan_mode"),
+                ticker=ticker,
+                horizon_days=5,
+            )
+        )
+    except Exception:
+        return None
+
+
+def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str) -> Dict[str, Any]:
+    tp = _safe_float(trace.get("target_tp_pct") or row.get("target_tp_pct"))
+    sl = _safe_float(trace.get("stop_sl_pct") or row.get("stop_sl_pct"))
+    hold = _safe_int(trace.get("hold_days") or row.get("hold_days"))
+    entry_policy = str(row.get("entry_policy") or trace.get("entry_policy") or "").strip()
+    if tp is None or sl is None or hold is None or not entry_policy:
+        try:
+            from modules.scanner_services import DEFAULT_EXIT_HOLD_DAYS, DEFAULT_EXIT_SL_PCT, DEFAULT_EXIT_TP_PCT
+
+            tp = DEFAULT_EXIT_TP_PCT if tp is None else tp
+            sl = DEFAULT_EXIT_SL_PCT if sl is None else sl
+            hold = DEFAULT_EXIT_HOLD_DAYS if hold is None else hold
+        except Exception:
+            tp = 15.0 if tp is None else tp
+            sl = -10.0 if sl is None else sl
+            hold = 5 if hold is None else hold
+        if not entry_policy:
+            entry_policy = "-2% limit" if str(ticker).upper().endswith(".KQ") else "open/reference"
+    return {
+        "entry_policy": entry_policy,
+        "entry_reference_price": _safe_float(trace.get("entry_reference_price") or row.get("entry_reference_price")),
+        "target_tp_pct": tp,
+        "stop_sl_pct": sl,
+        "hold_days": hold,
+    }
+
+
 def build_top_deep_reports(
     *,
     scan_rows: List[Dict[str, Any]],
@@ -216,6 +268,7 @@ def build_top_deep_reports(
         loss_risk = _safe_float(_first_present(row, "loss_risk_score") or trace.get("loss_risk_score"))
         day_change = _safe_float(_first_present(row, "day_return_pct", "전일비") or price.get("day_change_pct"))
         buy_score = _safe_float(_first_present(row, "relative_rank_score", "decision_score", "Decision Score", "score"))
+        trade_policy = _trade_policy(row, trace, ticker)
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -230,7 +283,7 @@ def build_top_deep_reports(
             "decision": str(_first_present(row, "decision", "Decision") or trace.get("decision") or ""),
             "decision_bucket": str(_first_present(row, "decision_bucket") or trace.get("decision_bucket") or ""),
             "buy_score": buy_score,
-            "accuracy": _safe_float(_first_present(row, "phase25_oos_win_rate_pct") or trace.get("phase25_oos_win_rate_pct")),
+            "accuracy": _segment_accuracy(row, trace, ticker, market, scan_mode),
             "day_change_pct": day_change,
             "loss_risk_score": loss_risk,
             "risk_flags": trace.get("theme_risk") or row.get("theme_risk") or [],
@@ -244,12 +297,7 @@ def build_top_deep_reports(
                 "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
                 "relative_rank_model": trace.get("relative_rank_model") or row.get("relative_rank_model"),
             },
-            "trade_plan": {
-                "entry_reference_price": _safe_float(trace.get("entry_reference_price") or row.get("entry_reference_price")),
-                "target_tp_pct": _safe_float(trace.get("target_tp_pct") or row.get("target_tp_pct")),
-                "stop_sl_pct": _safe_float(trace.get("stop_sl_pct") or row.get("stop_sl_pct")),
-                "hold_days": _safe_int(trace.get("hold_days") or row.get("hold_days")),
-            },
+            "trade_plan": trade_policy,
             "theme": {
                 "primary_theme": trace.get("primary_theme") or row.get("primary_theme"),
                 "theme_routing_path": trace.get("theme_routing_path") or row.get("theme_routing_path"),
@@ -279,6 +327,9 @@ def upsert_reports_to_supabase(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
         db = DBManager()
         if not db.client:
             return {"rows_seen": len(reports), "rows_upserted": 0, "warning": "db_client_unavailable"}
+        run_ids = sorted({str(row.get("run_id") or "") for row in reports if row.get("run_id")})
+        for run_id in run_ids:
+            db.client.table("scan_deep_reports").delete().eq("run_id", run_id).execute()
         db.client.table("scan_deep_reports").upsert(reports, on_conflict="report_id").execute()
         return {"rows_seen": len(reports), "rows_upserted": len(reports), "warning": ""}
     except Exception as exc:

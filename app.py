@@ -1105,7 +1105,7 @@ def _render_top_deep_reports_page():
             e1, e2, e3, e4 = st.columns(4)
             e1.metric("1D 기대", _fmt_metric_pct(prediction.get("expected_return_1d_pct")))
             e2.metric("3D 기대", _fmt_metric_pct(prediction.get("expected_return_3d_pct")))
-            e3.metric("Entry", _fmt_metric_num(trade_plan.get("entry_reference_price"), 2))
+            e3.metric("Entry", str(trade_plan.get("entry_policy") or _fmt_metric_num(trade_plan.get("entry_reference_price"), 2)))
             e4.metric("TP/SL", f"{_fmt_metric_pct(trade_plan.get('target_tp_pct'))} / {_fmt_metric_pct(trade_plan.get('stop_sl_pct'))}")
 
             ohlcv = price.get("ohlcv_tail") if isinstance(price.get("ohlcv_tail"), list) else []

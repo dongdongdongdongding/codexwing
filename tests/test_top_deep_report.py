@@ -49,6 +49,11 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["signal_label"] == "PRIMARY_BUY"
     assert report["loss_risk_score"] == 42.0
     assert report["buy_score"] == 77.5
+    assert report["accuracy"] is not None
     assert report["prediction"]["expected_return_3d_pct"] == 2.3
+    assert report["trade_plan"]["target_tp_pct"] is not None
+    assert report["trade_plan"]["stop_sl_pct"] is not None
+    assert report["trade_plan"]["hold_days"] is not None
+    assert report["trade_plan"]["entry_policy"]
     assert report["price"]["trend"] == "UP"
     assert report["news"]["headlines"][0]["title"] == "real headline"
