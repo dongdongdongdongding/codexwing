@@ -26,6 +26,24 @@ Known environment detail: `/Users/dongdong/Desktop/codex_swing/swing-main` is a 
 
 ## Current Handoff Notes
 
-- Existing uncommitted `runtime_state/` changes predate this takeover cleanup and should be treated as user/runtime artifacts until separately claimed.
-- No Git remote is configured in this checkout, so the mandatory `git push` completion step cannot succeed until a remote is added.
+- Git remote is configured and push-tested:
+  - code: `git@github-codexwing:dongdongdongdongding/codexwing.git`
+  - beads: `git+ssh://git@github-dolt-beads/dongdongdongdongding/dolt.git`
+- The 2026-05-13 runtime cleanup removed generated `runtime_state` files from the Git index while preserving local files on disk.
+- Treat ignored `runtime_state/artifacts`, `runtime_state/shared_working`, context caches, top-deep per-run reports, and large archive datasets as local/generated artifacts.
+- Curated learning, validation, trading, and selected long-term summary reports may be tracked when they are release or planning evidence.
 - Use `bd` issues, not markdown task lists, for follow-up work.
+
+## Current UI Server
+
+The Streamlit operator UI is normally run from the repository root:
+
+```bash
+python3 -m streamlit run app.py --server.port 8501
+```
+
+Local URL:
+
+```text
+http://localhost:8501
+```

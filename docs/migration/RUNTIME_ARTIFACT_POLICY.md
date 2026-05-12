@@ -10,24 +10,35 @@ that can quickly dominate repository size and make review/rebase unsafe.
 
 - Source code, schemas, tools, and small hand-curated fixtures may be tracked.
 - Generated run directories under `runtime_state/shared_working/` are not tracked.
-- Cache and append-only operational logs under `runtime_state/long_term/` are not tracked.
-- Daily, archive, smoke, data-health, and instrument-master reports are not tracked.
+- Context caches, instrument master caches, theme membership caches, and local
+  retrain trigger/smoke state under `runtime_state/long_term/` are not tracked.
+- Selected append-only long-term summary logs may be tracked when they provide
+  compact audit evidence (`outcome_health`, `postmortems`,
+  `profile_diagnostics`, `tickets`) and remain small enough for review.
+- Daily, archive, smoke, data-quality, data-health, top-deep, and
+  instrument-master reports are not tracked by default.
 - Validation and learning reports are tracked only when they are explicit release
   evidence or small curated summaries.
+- Trading reports are tracked only when they summarize paper-trade ledger output
+  for operator review.
 - Large model binaries remain ignored under `models/*.pkl`; model metadata should
   be captured in JSON/Markdown reports.
 
 ## Current Baseline
 
-Measured on 2026-05-06:
+Measured on 2026-05-06 before cleanup:
 
 - `runtime_state/` size: 479 MB
 - tracked `runtime_state` files: 4,164
 
-This is above the desired repository hygiene threshold. The `.gitignore` now
-blocks future bulk runtime artifacts, but files already in the git index require
-an explicit index-prune change (`git rm --cached ...`) in a git-enabled cleanup
-session.
+Post-cleanup status on 2026-05-13:
+
+- generated run artifacts were removed from the Git index with `git rm --cached`
+- local files were preserved on disk
+- tracked `runtime_state` files were reduced to 515
+- `.gitignore` now blocks future bulk artifacts, including shared working runs,
+  artifact bundles, context caches, instrument/theme caches, archive datasets,
+  top-deep per-run reports, and data-quality dumps
 
 ## Curated Evidence
 

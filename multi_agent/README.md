@@ -15,11 +15,21 @@ This directory provides a safe, additive foundation for a 5-agent architecture:
 - Adds agent runtime builders (`aggregation/backtest/market/planner`) reused by both agent classes and legacy orchestration.
 - Adds legacy orchestration bridge that emits downstream handoffs and appends run/postmortem/ticket logs into `runtime_state/long_term/*.jsonl`.
 - Scanner Agent can now ingest legacy scanner rows JSON and emit non-placeholder `scanner_handoff.json`.
+- Scanner archive persistence is run-scoped and verified against archive/top-deep
+  consistency checks, avoiding same-day duplicate ticker collisions.
+- Outcome learning now includes 5-day high-touch labels such as
+  `max_high_return_5d_pct` and `hit_5pct_within_5d`.
+- KR swing context can include US lead and macro/derivative context for
+  planner-facing diagnostics.
+- Planner action traces are exposed to the UI as display fields without moving
+  core scoring logic into Streamlit.
 
 ## What this stage does not do
 - It does not replace existing scanner/runtime behavior in `app.py` or `auto_bot.py`.
 - It does not delete or rewrite core logic in `modules/quant_analysis.py`.
 - It does not modify model files under `models/`.
+- It does not treat generated `runtime_state/shared_working` or
+  `runtime_state/artifacts` run trees as source-controlled state.
 
 ## Next safe wiring step
 Wire a non-UI scan runner that calls shared scanner runtime directly, then feeds
@@ -97,6 +107,18 @@ Scanner Agent input without touching `app.py` execution semantics.
   - includes `expired_outcomes` and `closure_rate_pct` (resolved + expired)
 - Report scan profile diagnostics (`prod/dev` pass/filter and reject reasons):
   - `python3 multi_agent/tools/report_scan_profile_metrics.py --limit-runs 200 --market NASDAQ`
+- Verify scan archive/top consistency:
+  - `python3 multi_agent/tools/verify_scan_archive_top_consistency.py`
+- Repair scan archive top consistency when historical rows need run-scoped fixes:
+  - `python3 multi_agent/tools/repair_scan_archive_top_consistency.py --dry-run`
+- Regenerate top-deep reports from archived scanner rows:
+  - `python3 multi_agent/tools/regenerate_top_deep_reports_from_archive.py --market KOSDAQ`
+- Backfill 5-day high-touch labels:
+  - `python3 multi_agent/tools/backfill_swing_high_touch_labels.py --market KR --dry-run`
+- Report live swing policy performance:
+  - `python3 multi_agent/tools/report_live_policy_performance.py`
+- Report KOSPI swing gate holdout:
+  - `python3 multi_agent/tools/report_kospi_swing_gate_holdout.py`
 - Report realized Top-N validation by segment (`market × scan_mode`):
   - `python3 multi_agent/tools/report_segment_topn_validation.py --topn 5 --recent-days 20`
 - Report segment-specific rerank overlays against actual Supabase outcomes plus rich local bridge artifacts:
@@ -149,3 +171,18 @@ Scanner Agent input without touching `app.py` execution semantics.
 ## Ops Runbook
 - outcome updater only: `docs/migration/OUTCOME_UPDATER_CRON.md`
 - full daily ops: `docs/migration/DAILY_OPS_CRON.md`
+
+## Runtime Artifact Tracking
+
+Generated run trees are intentionally ignored:
+
+- `runtime_state/shared_working/`
+- `runtime_state/artifacts/`
+- `runtime_state/local_short_term/`
+- `runtime_state/long_term/context_cache/`
+- `runtime_state/reports/archive/`
+- `runtime_state/reports/top_deep/`
+
+Track only curated learning, validation, trading, and compact long-term summary
+artifacts when they are needed as review evidence. See
+`docs/migration/RUNTIME_ARTIFACT_POLICY.md`.
