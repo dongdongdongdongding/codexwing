@@ -212,7 +212,25 @@ class DBManager:
             ):
                 continue
             merged_payload[key] = value
+        merged_payload.update(
+            self._recompute_feature_quality_payload(
+                merged_payload,
+                origin=merged_payload.get("feature_origin") or (payload or {}).get("feature_origin") or "scanner_full",
+            )
+        )
         return merged_payload
+
+    def _recompute_feature_quality_payload(self, data, origin="scanner_full"):
+        data_without_stale_quality = dict(data or {})
+        for key in (
+            "feature_quality",
+            "feature_completeness",
+            "feature_missing_fields",
+            "validation_excluded",
+            "validation_excluded_reason",
+        ):
+            data_without_stale_quality.pop(key, None)
+        return self._feature_quality_payload(data_without_stale_quality, origin=origin)
 
     def _find_feature_rich_scan_peer(self, run_id, ticker, market, scan_mode, recommended_at=None):
         if not self.client or not run_id or not ticker:

@@ -46,6 +46,46 @@ def test_merge_non_empty_payload_preserves_existing_features():
     assert merged["outcome_status"] == "RESOLVED"
 
 
+def test_merge_non_empty_payload_recomputes_stale_quality_metadata():
+    db = DBManager.__new__(DBManager)
+    merged = db._merge_non_empty_payload(
+        {
+            "alpha_score": 82,
+            "tech_score": 74,
+            "ml_prob": 0.71,
+            "whale_score": 63,
+            "trend": "UP",
+            "volume_ratio": 2.4,
+            "position": "BREAKOUT",
+            "tier": "A",
+            "decision_score": 7.2,
+            "entry_reference_price": 51200.0,
+            "feature_origin": "scanner_full",
+            "feature_quality": "complete",
+            "feature_missing_fields": [],
+            "validation_excluded": False,
+            "validation_excluded_reason": None,
+        },
+        {
+            "feature_origin": "outcome_sync_partial",
+            "return_5d_pct": 6.2,
+            "feature_quality": "incomplete",
+            "feature_completeness": 0.5,
+            "feature_missing_fields": ["tech_score", "volume_ratio", "position", "tier"],
+            "validation_excluded": True,
+            "validation_excluded_reason": "FEATURE_MISSING:tech_score,volume_ratio,position,tier",
+        },
+    )
+
+    assert merged["feature_origin"] == "scanner_full"
+    assert merged["return_5d_pct"] == 6.2
+    assert merged["feature_quality"] == "complete"
+    assert merged["feature_completeness"] == 1.0
+    assert merged["feature_missing_fields"] == []
+    assert merged["validation_excluded"] is False
+    assert merged["validation_excluded_reason"] is None
+
+
 def test_authoritative_row_prefers_planner_telemetry_over_newer_raw_row():
     db = DBManager.__new__(DBManager)
     rows = [
