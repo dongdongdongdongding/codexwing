@@ -13,6 +13,7 @@ Discord commands should expose the same operational information as the web UI:
 - Macro refresh
 - Top deep analysis history and per-ticker detail
 - Scan archive lookup
+- Accumulated run lookup with selectable `run_id`
 
 The Discord view should use the same source artifacts as the web UI:
 
@@ -162,8 +163,19 @@ Initial commands:
 /macro_refresh
 /top_deep
 /archive
+/runs
 /status
 ```
+
+Historical lookup flow:
+
+1. Run `/runs market:KOSPI` or `/runs market:KOSDAQ`.
+2. Pick or copy the desired `RUN-XXXXXXXX`.
+3. Use `/top_deep run_id:RUN-XXXXXXXX` for the precision analysis view.
+4. Use `/archive run_id:RUN-XXXXXXXX` for the raw scan archive summary.
+
+`run_id` options on `/top_deep` and `/archive` support Discord autocomplete.
+Use `offset` and `limit` to page through older rows in a selected run.
 
 `/kospi_scan` and `/kosdaq_scan` should defer immediately, run the existing
 non-UI pipeline in the background, then post the result summary to

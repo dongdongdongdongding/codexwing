@@ -10,10 +10,13 @@ from modules.discord_integration.register import (
 )
 from modules.discord_integration import renderers
 from modules.discord_integration.renderers import (
+    build_archive_embed,
+    build_runs_embed,
     build_scan_result_embeds,
     build_scan_ack_embed,
     build_status_embed,
     build_top_deep_embeds,
+    run_id_choices,
 )
 from modules.discord_integration.scan_executor import (
     DiscordScanLock,
@@ -26,9 +29,12 @@ def test_register_payloads_include_expected_commands_and_options():
     payloads = build_discord_command_payloads()
     by_name = {row["name"]: row for row in payloads}
 
-    assert {"kospi_scan", "kosdaq_scan", "macro_refresh", "top_deep", "archive", "status"}.issubset(by_name)
+    assert {"kospi_scan", "kosdaq_scan", "macro_refresh", "top_deep", "archive", "runs", "status"}.issubset(by_name)
     assert "options" not in by_name["kospi_scan"]
     assert any(opt["name"] == "ticker" for opt in by_name["top_deep"]["options"])
+    assert any(opt["name"] == "offset" for opt in by_name["top_deep"]["options"])
+    top_run = [opt for opt in by_name["top_deep"]["options"] if opt["name"] == "run_id"][0]
+    assert top_run["autocomplete"] is True
     archive_market = [opt for opt in by_name["archive"]["options"] if opt["name"] == "market"][0]
     assert [choice["value"] for choice in archive_market["choices"]] == ["KOSPI", "KOSDAQ"]
 
@@ -116,6 +122,77 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     assert status["fields"][3]["value"] == "RUN-TEST"
     assert embeds[0]["title"] == "Top 자동 정밀분석"
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
+
+
+def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch):
+    report_dir = tmp_path / "top_deep"
+    artifact_dir = tmp_path / "artifacts"
+    report_dir.mkdir()
+    (artifact_dir / "RUN-OLD").mkdir(parents=True)
+    (artifact_dir / "RUN-NEW").mkdir(parents=True)
+    (report_dir / "RUN-OLD.json").write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "RUN-OLD",
+                    "market": "KOSPI",
+                    "rank": 1,
+                    "ticker": "005930.KS",
+                    "stock_name": "삼성전자",
+                    "trade_plan": {"readiness_analysis": {"final_buy_judgment": {"action": "관망"}}},
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (report_dir / "RUN-NEW.json").write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "RUN-NEW",
+                    "market": "KOSDAQ",
+                    "rank": 1,
+                    "ticker": "035900.KQ",
+                    "stock_name": "JYP Ent.",
+                    "trade_plan": {"readiness_analysis": {"final_buy_judgment": {"action": "눌림 대기"}}},
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (artifact_dir / "RUN-OLD" / "scan_pipeline_summary.json").write_text(
+        json.dumps({"run_id": "RUN-OLD", "market": "KOSPI", "scan_mode": "SWING", "total_scans": 2000, "result_count": 2}),
+        encoding="utf-8",
+    )
+    (artifact_dir / "RUN-OLD" / "raw_scan_results.json").write_text(
+        json.dumps(
+            {
+                "results_sorted": [
+                    {"Ticker": "005930.KS", "Stock Name": "삼성전자", "Decision Score": 91, "Strategy": "BUY"},
+                    {"Ticker": "000660.KS", "Stock Name": "SK하이닉스", "Decision Score": 88, "Strategy": "WATCH"},
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (artifact_dir / "RUN-NEW" / "scan_pipeline_summary.json").write_text(
+        json.dumps({"run_id": "RUN-NEW", "market": "KOSDAQ", "scan_mode": "SWING", "total_scans": 2000, "result_count": 1}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    monkeypatch.setattr(renderers, "ARTIFACT_DIR", artifact_dir)
+
+    runs = build_runs_embed(market="KOSPI")
+    archive = build_archive_embed(run_id="RUN-OLD", offset=1, limit=1)
+    top_deep = build_top_deep_embeds(run_id="RUN-OLD")
+
+    assert "RUN-OLD" in runs["fields"][0]["name"]
+    assert run_id_choices(current="OLD") == ["RUN-OLD"]
+    assert "SK하이닉스" in archive["fields"][0]["name"]
+    assert "삼성전자" in top_deep[0]["fields"][0]["name"]
 
 
 def test_scan_ack_refuses_execution_while_dry_run():

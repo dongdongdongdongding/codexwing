@@ -96,6 +96,10 @@ python3 multi_agent/tools/discord_register_commands.py
 python3 multi_agent/tools/discord_bot.py
 ```
 
+Discord historical lookup uses `/runs` to list stored `RUN-XXXXXXXX` IDs, then
+`/top_deep run_id:...` or `/archive run_id:...` to retrieve a selected run.
+Both lookup commands support `offset` and `limit` for paging.
+
 Persistent local bot runner:
 
 ```bash

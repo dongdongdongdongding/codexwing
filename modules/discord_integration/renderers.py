@@ -10,6 +10,7 @@ from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
+ARTIFACT_DIR = Path("runtime_state/artifacts")
 
 
 def _safe_float(value: Any) -> float | None:
@@ -50,6 +51,103 @@ def _load_local_top_deep_reports(limit: int = 100) -> List[Dict[str, Any]]:
     return rows
 
 
+def _load_json(path: Path) -> Any:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except Exception:
+        return default
+
+
+def _normalize_limit(value: Any, *, default: int, maximum: int) -> int:
+    return max(1, min(maximum, _safe_int(value, default)))
+
+
+def _normalize_offset(value: Any) -> int:
+    return max(0, _safe_int(value, 0))
+
+
+def _run_sort_ts(path: Path | None, fallback: float = 0.0) -> float:
+    if path is None:
+        return fallback
+    try:
+        return path.stat().st_mtime
+    except Exception:
+        return fallback
+
+
+def collect_run_index(*, market: str = "", limit: int = 200) -> List[Dict[str, Any]]:
+    runs: Dict[str, Dict[str, Any]] = {}
+    market_filter = str(market or "").upper()
+
+    if ARTIFACT_DIR.exists():
+        for summary_path in ARTIFACT_DIR.glob("RUN-*/scan_pipeline_summary.json"):
+            payload = _load_json(summary_path)
+            if not isinstance(payload, dict):
+                continue
+            run_id = str(payload.get("run_id") or summary_path.parent.name).strip()
+            if not run_id:
+                continue
+            row = runs.setdefault(run_id, {"run_id": run_id})
+            row.update(
+                {
+                    "market": str(payload.get("market") or row.get("market") or ""),
+                    "scan_mode": str(payload.get("scan_mode") or row.get("scan_mode") or ""),
+                    "result_count": _safe_int(payload.get("result_count"), _safe_int(row.get("result_count"), 0)),
+                    "total_scans": _safe_int(payload.get("total_scans"), _safe_int(row.get("total_scans"), 0)),
+                    "filtered_count": _safe_int(payload.get("filtered_count"), _safe_int(row.get("filtered_count"), 0)),
+                    "artifact_dir": str(payload.get("artifact_dir") or summary_path.parent),
+                    "summary_path": str(summary_path),
+                    "mtime": max(float(row.get("mtime") or 0), _run_sort_ts(summary_path)),
+                }
+            )
+
+    if TOP_DEEP_DIR.exists():
+        for report_path in TOP_DEEP_DIR.glob("*.json"):
+            payload = _load_json(report_path)
+            if not isinstance(payload, list):
+                continue
+            rows = [row for row in payload if isinstance(row, dict)]
+            run_id = str(rows[0].get("run_id") if rows else report_path.stem).strip()
+            if not run_id:
+                continue
+            row = runs.setdefault(run_id, {"run_id": run_id})
+            row["top_deep_rows"] = len(rows)
+            row["top_deep_path"] = str(report_path)
+            row["mtime"] = max(float(row.get("mtime") or 0), _run_sort_ts(report_path))
+            if rows:
+                row["market"] = str(row.get("market") or rows[0].get("market") or "")
+                row["scan_mode"] = str(row.get("scan_mode") or rows[0].get("scan_mode") or "")
+                row["latest_generated_at"] = str(rows[0].get("generated_at") or row.get("latest_generated_at") or "")
+
+    out = []
+    for row in runs.values():
+        if market_filter and str(row.get("market") or "").upper() != market_filter:
+            continue
+        out.append(row)
+    out.sort(key=lambda row: float(row.get("mtime") or 0), reverse=True)
+    return out[: max(1, int(limit or 200))]
+
+
+def run_id_choices(*, current: str = "", market: str = "", limit: int = 25) -> List[str]:
+    current_upper = str(current or "").upper()
+    choices: List[str] = []
+    for row in collect_run_index(market=market, limit=200):
+        run_id = str(row.get("run_id") or "")
+        if current_upper and current_upper not in run_id.upper():
+            continue
+        choices.append(run_id)
+        if len(choices) >= max(1, min(25, int(limit or 25))):
+            break
+    return choices
+
+
 def _latest_run_id(rows: List[Dict[str, Any]]) -> str:
     for row in rows:
         run_id = str(row.get("run_id") or "").strip()
@@ -60,6 +158,7 @@ def _latest_run_id(rows: List[Dict[str, Any]]) -> str:
 
 def build_status_embed(config: DiscordIntegrationConfig) -> Dict[str, Any]:
     rows = _load_local_top_deep_reports(limit=20)
+    runs = collect_run_index(limit=200)
     validation = config.validate()
     return {
         "title": "Swing Bot Status",
@@ -72,6 +171,7 @@ def build_status_embed(config: DiscordIntegrationConfig) -> Dict[str, Any]:
             {"name": "Latest Run", "value": _latest_run_id(rows) or "-", "inline": True},
             {"name": "Top Deep Rows", "value": str(len(rows)), "inline": True},
             {"name": "Scan Exec", "value": "enabled" if config.enable_scan_execution else "disabled", "inline": True},
+            {"name": "Stored Runs", "value": str(len(runs)), "inline": True},
         ],
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
@@ -106,8 +206,19 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     return "\n".join(lines)[:1024]
 
 
-def build_top_deep_embeds(*, ticker: str = "", run_id: str = "", limit: int = 5) -> List[Dict[str, Any]]:
-    rows = _load_local_top_deep_reports(limit=100)
+def build_top_deep_embeds(
+    *,
+    ticker: str = "",
+    run_id: str = "",
+    market: str = "",
+    offset: int = 0,
+    limit: int = 5,
+) -> List[Dict[str, Any]]:
+    safe_offset = _normalize_offset(offset)
+    safe_limit = _normalize_limit(limit, default=5, maximum=10)
+    rows = _load_local_top_deep_reports(limit=500)
+    if market:
+        rows = [row for row in rows if str(row.get("market") or "").upper() == str(market).upper()]
     if run_id:
         rows = [row for row in rows if str(row.get("run_id") or "") == str(run_id)]
     if ticker:
@@ -123,7 +234,7 @@ def build_top_deep_embeds(*, ticker: str = "", run_id: str = "", limit: int = 5)
     latest_run = run_id or _latest_run_id(rows)
     if latest_run and not ticker:
         rows = [row for row in rows if str(row.get("run_id") or "") == latest_run]
-    rows = sorted(rows, key=lambda row: int(row.get("rank") or 9999))[: max(1, int(limit or 5))]
+    rows = sorted(rows, key=lambda row: int(row.get("rank") or 9999))[safe_offset : safe_offset + safe_limit]
     fields: List[Dict[str, Any]] = []
     for row in rows:
         rank = int(row.get("rank") or 0)
@@ -139,7 +250,10 @@ def build_top_deep_embeds(*, ticker: str = "", run_id: str = "", limit: int = 5)
     return [
         {
             "title": "Top 자동 정밀분석",
-            "description": f"Run `{latest_run or '-'}` · 웹 Top 분석과 동일한 readiness 필드 기준",
+            "description": (
+                f"Run `{latest_run or '-'}` · offset {safe_offset} · "
+                "웹 Top 분석과 동일한 readiness 필드 기준"
+            ),
             "color": 0x3498DB,
             "fields": fields[:10],
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -147,8 +261,43 @@ def build_top_deep_embeds(*, ticker: str = "", run_id: str = "", limit: int = 5)
     ]
 
 
-def build_archive_embed(*, market: str = "", ticker: str = "", run_id: str = "") -> Dict[str, Any]:
-    rows = _load_local_top_deep_reports(limit=100)
+def _load_archive_rows_from_artifact(run_id: str) -> List[Dict[str, Any]]:
+    raw_path = ARTIFACT_DIR / str(run_id) / "raw_scan_results.json"
+    payload = _load_json(raw_path)
+    if not isinstance(payload, dict):
+        return []
+    rows = payload.get("results_sorted")
+    if not isinstance(rows, list):
+        scan_result = payload.get("scan_result") if isinstance(payload.get("scan_result"), dict) else {}
+        rows = scan_result.get("results")
+    return [row for row in rows or [] if isinstance(row, dict)]
+
+
+def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
+    ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("Symbol") or "-"
+    name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or ticker
+    return f"#{rank} {name} ({ticker})"
+
+
+def _archive_row_value(row: Dict[str, Any]) -> str:
+    decision = row.get("decision") or row.get("Decision") or row.get("signal_label") or row.get("Strategy") or "-"
+    score = row.get("buy_score") or row.get("Decision Score") or row.get("Score")
+    loss = row.get("loss_risk_score") or row.get("Loss Risk")
+    day = row.get("day_change_pct") or row.get("Change %") or row.get("Day Change")
+    return f"{decision} · 점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"[:1024]
+
+
+def build_archive_embed(
+    *,
+    market: str = "",
+    ticker: str = "",
+    run_id: str = "",
+    offset: int = 0,
+    limit: int = 5,
+) -> Dict[str, Any]:
+    safe_offset = _normalize_offset(offset)
+    safe_limit = _normalize_limit(limit, default=5, maximum=10)
+    rows = _load_local_top_deep_reports(limit=500)
     if market:
         rows = [row for row in rows if str(row.get("market") or "").upper() == str(market).upper()]
     if ticker:
@@ -156,25 +305,70 @@ def build_archive_embed(*, market: str = "", ticker: str = "", run_id: str = "")
     if run_id:
         rows = [row for row in rows if str(row.get("run_id") or "") == str(run_id)]
     latest = _latest_run_id(rows)
-    run_rows = [row for row in rows if str(row.get("run_id") or "") == latest] if latest else rows[:5]
+    selected_run = run_id or latest
+    run_rows = [row for row in rows if str(row.get("run_id") or "") == selected_run] if selected_run else rows
+    source = "top_deep"
+    if selected_run:
+        artifact_rows = _load_archive_rows_from_artifact(selected_run)
+        if artifact_rows:
+            source = "raw_scan_results"
+            run_rows = artifact_rows
+            if ticker:
+                run_rows = [
+                    row
+                    for row in run_rows
+                    if str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or "").upper()
+                    == str(ticker).upper()
+                ]
     fields = []
-    for row in sorted(run_rows, key=lambda r: int(r.get("rank") or 9999))[:5]:
+    for idx, row in enumerate(sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))[
+        safe_offset : safe_offset + safe_limit
+    ], start=safe_offset + 1):
         fields.append(
             {
-                "name": f"#{row.get('rank') or '-'} {row.get('ticker') or '-'}",
-                "value": (
-                    f"{row.get('decision') or row.get('signal_label') or '-'} · "
-                    f"점수 {_fmt_num(row.get('buy_score'), 1)} · "
-                    f"손실위험 {_fmt_num(row.get('loss_risk_score'), 1)}"
-                ),
+                "name": _archive_row_name(row, int(row.get("rank") or row.get("Rank") or idx)),
+                "value": _archive_row_value(row),
                 "inline": False,
             }
         )
     return {
         "title": "스캔 아카이브 요약",
-        "description": f"Run `{latest or '-'}` · rows {len(rows)}",
+        "description": f"Run `{selected_run or '-'}` · source {source} · rows {len(run_rows)} · offset {safe_offset}",
         "color": 0x9B59B6,
         "fields": fields or [{"name": "결과", "value": "표시할 아카이브가 없습니다.", "inline": False}],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def build_runs_embed(*, market: str = "", offset: int = 0, limit: int = 10) -> Dict[str, Any]:
+    safe_offset = _normalize_offset(offset)
+    safe_limit = _normalize_limit(limit, default=10, maximum=15)
+    runs = collect_run_index(market=market, limit=500)
+    selected = runs[safe_offset : safe_offset + safe_limit]
+    fields = []
+    for idx, row in enumerate(selected, start=safe_offset + 1):
+        run_id = str(row.get("run_id") or "-")
+        generated = str(row.get("latest_generated_at") or "")
+        fields.append(
+            {
+                "name": f"#{idx} {run_id}",
+                "value": (
+                    f"{row.get('market') or '-'} · {row.get('scan_mode') or '-'} · "
+                    f"scan {row.get('total_scans') or 0} / pass {row.get('result_count') or 0} / "
+                    f"top_deep {row.get('top_deep_rows') or 0}\n"
+                    f"{generated[:19] or row.get('artifact_dir') or '-'}"
+                )[:1024],
+                "inline": False,
+            }
+        )
+    return {
+        "title": "누적 Run 목록",
+        "description": (
+            f"market `{market or 'ALL'}` · rows {len(runs)} · offset {safe_offset}\n"
+            "`run_id`를 `/top_deep run_id:` 또는 `/archive run_id:`에 넣어 선택 조회하세요."
+        ),
+        "color": 0x1ABC9C,
+        "fields": fields or [{"name": "결과", "value": "표시할 누적 Run이 없습니다.", "inline": False}],
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -303,10 +497,13 @@ def build_macro_refresh_embed(*, market: str = "KR") -> Dict[str, Any]:
 __all__ = [
     "build_archive_embed",
     "build_macro_refresh_embed",
+    "build_runs_embed",
     "build_scan_ack_embed",
     "build_scan_busy_embed",
     "build_scan_result_embeds",
     "build_scan_started_embed",
     "build_status_embed",
     "build_top_deep_embeds",
+    "collect_run_index",
+    "run_id_choices",
 ]

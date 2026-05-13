@@ -26,6 +26,16 @@ def _command_options(name: str) -> List[Dict[str, Any]]:
         return [
             {
                 "type": 3,
+                "name": "market",
+                "description": "시장 필터",
+                "required": False,
+                "choices": [
+                    {"name": "KOSPI", "value": "KOSPI"},
+                    {"name": "KOSDAQ", "value": "KOSDAQ"},
+                ],
+            },
+            {
+                "type": 3,
                 "name": "ticker",
                 "description": "선택 종목 티커 예: 005930.KS",
                 "required": False,
@@ -33,8 +43,24 @@ def _command_options(name: str) -> List[Dict[str, Any]]:
             {
                 "type": 3,
                 "name": "run_id",
-                "description": "선택 Run ID 예: RUN-XXXXXXXX",
+                "description": "선택 Run ID. 입력 중 자동완성됩니다.",
                 "required": False,
+                "autocomplete": True,
+            },
+            {
+                "type": 4,
+                "name": "offset",
+                "description": "결과 시작 위치. 예전 결과를 보려면 5, 10처럼 입력",
+                "required": False,
+                "min_value": 0,
+            },
+            {
+                "type": 4,
+                "name": "limit",
+                "description": "표시 개수",
+                "required": False,
+                "min_value": 1,
+                "max_value": 10,
             },
         ]
     if name == "archive":
@@ -58,8 +84,52 @@ def _command_options(name: str) -> List[Dict[str, Any]]:
             {
                 "type": 3,
                 "name": "run_id",
-                "description": "선택 Run ID 예: RUN-XXXXXXXX",
+                "description": "선택 Run ID. 입력 중 자동완성됩니다.",
                 "required": False,
+                "autocomplete": True,
+            },
+            {
+                "type": 4,
+                "name": "offset",
+                "description": "결과 시작 위치. 예전 결과를 보려면 5, 10처럼 입력",
+                "required": False,
+                "min_value": 0,
+            },
+            {
+                "type": 4,
+                "name": "limit",
+                "description": "표시 개수",
+                "required": False,
+                "min_value": 1,
+                "max_value": 10,
+            },
+        ]
+    if name == "runs":
+        return [
+            {
+                "type": 3,
+                "name": "market",
+                "description": "시장 필터",
+                "required": False,
+                "choices": [
+                    {"name": "KOSPI", "value": "KOSPI"},
+                    {"name": "KOSDAQ", "value": "KOSDAQ"},
+                ],
+            },
+            {
+                "type": 4,
+                "name": "offset",
+                "description": "목록 시작 위치",
+                "required": False,
+                "min_value": 0,
+            },
+            {
+                "type": 4,
+                "name": "limit",
+                "description": "표시 개수",
+                "required": False,
+                "min_value": 1,
+                "max_value": 15,
             },
         ]
     return []

@@ -16,12 +16,14 @@ from modules.discord_integration.permissions import is_authorized_user
 from modules.discord_integration.renderers import (
     build_archive_embed,
     build_macro_refresh_embed,
+    build_runs_embed,
     build_scan_ack_embed,
     build_scan_busy_embed,
     build_scan_result_embeds,
     build_scan_started_embed,
     build_status_embed,
     build_top_deep_embeds,
+    run_id_choices,
 )
 from modules.discord_integration.scan_executor import (
     DiscordScanLock,
@@ -79,6 +81,14 @@ def main() -> int:
         await interaction.response.send_message("권한이 없습니다.", ephemeral=True)
         return False
 
+    async def _run_id_autocomplete(interaction, current: str):
+        namespace = getattr(interaction, "namespace", None)
+        market = str(getattr(namespace, "market", "") or "")
+        return [
+            app_commands.Choice(name=run_id, value=run_id)
+            for run_id in run_id_choices(current=current, market=market, limit=25)
+        ]
+
     @client.event
     async def on_ready():
         print(f"Discord bot ready as {client.user} (dry_run={config.dry_run})")
@@ -90,19 +100,82 @@ def main() -> int:
         await interaction.response.send_message(embed=_embed(discord, build_status_embed(config)), ephemeral=True)
 
     @tree.command(name="top_deep", description="최근 자동 정밀분석 이력과 종목별 상세 매수 판단을 조회합니다.")
-    @app_commands.describe(ticker="선택 종목 티커 예: 005930.KS", run_id="선택 Run ID 예: RUN-XXXXXXXX")
-    async def top_deep(interaction, ticker: str = "", run_id: str = ""):
+    @app_commands.describe(
+        market="시장 필터",
+        ticker="선택 종목 티커 예: 005930.KS",
+        run_id="선택 Run ID. 입력 중 자동완성됩니다.",
+        offset="결과 시작 위치",
+        limit="표시 개수",
+    )
+    @app_commands.choices(
+        market=[
+            app_commands.Choice(name="KOSPI", value="KOSPI"),
+            app_commands.Choice(name="KOSDAQ", value="KOSDAQ"),
+        ]
+    )
+    @app_commands.autocomplete(run_id=_run_id_autocomplete)
+    async def top_deep(
+        interaction,
+        market: str = "",
+        ticker: str = "",
+        run_id: str = "",
+        offset: int = 0,
+        limit: int = 5,
+    ):
         if not await _guard(interaction):
             return
-        embeds = [_embed(discord, payload) for payload in build_top_deep_embeds(ticker=ticker, run_id=run_id)]
+        embeds = [
+            _embed(discord, payload)
+            for payload in build_top_deep_embeds(
+                market=market,
+                ticker=ticker,
+                run_id=run_id,
+                offset=offset,
+                limit=limit,
+            )
+        ]
         await interaction.response.send_message(embeds=embeds[:10], ephemeral=True)
 
     @tree.command(name="archive", description="최근 스캔 아카이브와 realized outcome 상태를 조회합니다.")
-    @app_commands.describe(market="시장 필터", ticker="선택 종목 티커 예: 005930.KS", run_id="선택 Run ID 예: RUN-XXXXXXXX")
-    async def archive(interaction, market: str = "", ticker: str = "", run_id: str = ""):
+    @app_commands.describe(
+        market="시장 필터",
+        ticker="선택 종목 티커 예: 005930.KS",
+        run_id="선택 Run ID. 입력 중 자동완성됩니다.",
+        offset="결과 시작 위치",
+        limit="표시 개수",
+    )
+    @app_commands.choices(
+        market=[
+            app_commands.Choice(name="KOSPI", value="KOSPI"),
+            app_commands.Choice(name="KOSDAQ", value="KOSDAQ"),
+        ]
+    )
+    @app_commands.autocomplete(run_id=_run_id_autocomplete)
+    async def archive(
+        interaction,
+        market: str = "",
+        ticker: str = "",
+        run_id: str = "",
+        offset: int = 0,
+        limit: int = 5,
+    ):
         if not await _guard(interaction):
             return
-        payload = build_archive_embed(market=market, ticker=ticker, run_id=run_id)
+        payload = build_archive_embed(market=market, ticker=ticker, run_id=run_id, offset=offset, limit=limit)
+        await interaction.response.send_message(embed=_embed(discord, payload), ephemeral=True)
+
+    @tree.command(name="runs", description="누적된 스캔 Run 목록을 조회하고 run_id를 선택할 수 있게 표시합니다.")
+    @app_commands.describe(market="시장 필터", offset="목록 시작 위치", limit="표시 개수")
+    @app_commands.choices(
+        market=[
+            app_commands.Choice(name="KOSPI", value="KOSPI"),
+            app_commands.Choice(name="KOSDAQ", value="KOSDAQ"),
+        ]
+    )
+    async def runs(interaction, market: str = "", offset: int = 0, limit: int = 10):
+        if not await _guard(interaction):
+            return
+        payload = build_runs_embed(market=market, offset=offset, limit=limit)
         await interaction.response.send_message(embed=_embed(discord, payload), ephemeral=True)
 
     @tree.command(name="kospi_scan", description="KOSPI 전체 스윙 스캔을 실행합니다. max_scan은 2000으로 고정됩니다.")

@@ -115,6 +115,13 @@ COMMAND_SPECS: Dict[str, DiscordCommandSpec] = {
         response_style="embed_with_csv_or_link",
         web_equivalent_sections=["archive", "scan_card"],
     ),
+    "runs": DiscordCommandSpec(
+        name="runs",
+        description="누적된 스캔 Run 목록을 조회하고 run_id를 선택할 수 있게 표시합니다.",
+        kind="run_index_lookup",
+        response_style="embed",
+        web_equivalent_sections=["archive", "top_deep"],
+    ),
     "status": DiscordCommandSpec(
         name="status",
         description="Discord 연동 설정, 최근 Run, 서버 상태를 확인합니다.",
