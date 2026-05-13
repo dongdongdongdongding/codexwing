@@ -887,6 +887,76 @@ def _fmt_metric_num(value, digits=1):
         return "-"
 
 
+def _readiness_score_card(title, block):
+    block = block if isinstance(block, dict) else {}
+    score = block.get("score")
+    grade = str(block.get("grade") or "-")
+    value = f"{grade} · {_fmt_metric_num(score, 0)}"
+    st.metric(title, value)
+    try:
+        st.progress(max(0, min(100, int(float(score)))))
+    except Exception:
+        st.progress(0)
+    evidence = block.get("evidence") if isinstance(block.get("evidence"), list) else []
+    if evidence:
+        st.caption(" / ".join(str(x) for x in evidence[:2]))
+
+
+def _render_readiness_analysis(readiness):
+    if not isinstance(readiness, dict) or not readiness:
+        return
+    judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
+    action = str(judgment.get("action") or "-")
+    summary = str(judgment.get("summary") or "")
+    tone = str(judgment.get("tone") or "neutral")
+    if tone == "danger":
+        st.error(f"매수 판단: {action} · {summary}")
+    elif tone == "risk":
+        st.warning(f"매수 판단: {action} · {summary}")
+    elif tone in {"good", "focus"}:
+        st.success(f"매수 판단: {action} · {summary}")
+    else:
+        st.info(f"매수 판단: {action} · {summary}")
+
+    s1, s2, s3, s4 = st.columns(4)
+    with s1:
+        _readiness_score_card("종목 품질", readiness.get("quality"))
+    with s2:
+        _readiness_score_card("상승 여력", readiness.get("upside"))
+    with s3:
+        _readiness_score_card("진입 타이밍", readiness.get("timing"))
+    with s4:
+        st.metric("추격 위험", str(readiness.get("chase_risk_level") or "-"))
+        plan = readiness.get("trade_plan_summary") if isinstance(readiness.get("trade_plan_summary"), dict) else {}
+        st.caption(
+            f"Entry {plan.get('entry_policy') or '-'} · "
+            f"TP {_fmt_metric_pct(plan.get('target_tp_pct'))} · "
+            f"SL {_fmt_metric_pct(plan.get('stop_sl_pct'))}"
+        )
+
+    upside = readiness.get("upside") if isinstance(readiness.get("upside"), dict) else {}
+    filters = upside.get("filters") if isinstance(upside.get("filters"), list) else []
+    if filters:
+        filter_rows = []
+        for item in filters:
+            if not isinstance(item, dict):
+                continue
+            filter_rows.append(
+                {
+                    "필터": item.get("label"),
+                    "현재값": item.get("value"),
+                    "판정": "위험" if item.get("triggered") else "통과",
+                    "강도": item.get("severity"),
+                }
+            )
+        if filter_rows:
+            st.dataframe(pd.DataFrame(filter_rows), use_container_width=True, hide_index=True)
+
+    warnings = readiness.get("warnings") if isinstance(readiness.get("warnings"), list) else []
+    if warnings:
+        st.caption("판정 경고: " + " / ".join(str(x) for x in warnings[:5]))
+
+
 def _render_top_deep_reports_page():
     _render_section_intro(
         "Top Deep Reports",
@@ -925,6 +995,7 @@ def _render_top_deep_reports_page():
         news = row.get("news") if isinstance(row.get("news"), dict) else {}
         prediction = row.get("prediction") if isinstance(row.get("prediction"), dict) else {}
         trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+        readiness = trade_plan.get("readiness_analysis") if isinstance(trade_plan.get("readiness_analysis"), dict) else {}
         theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
         title = f"#{int(row.get('rank') or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
         with st.container(border=True):
@@ -948,6 +1019,8 @@ def _render_top_deep_reports_page():
             e2.metric("3D 기대", _fmt_metric_pct(prediction.get("expected_return_3d_pct")))
             e3.metric("Entry", str(trade_plan.get("entry_policy") or _fmt_metric_num(trade_plan.get("entry_reference_price"), 2)))
             e4.metric("TP/SL", f"{_fmt_metric_pct(trade_plan.get('target_tp_pct'))} / {_fmt_metric_pct(trade_plan.get('stop_sl_pct'))}")
+
+            _render_readiness_analysis(readiness)
 
             ohlcv = price.get("ohlcv_tail") if isinstance(price.get("ohlcv_tail"), list) else []
             if ohlcv:

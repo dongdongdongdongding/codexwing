@@ -11,6 +11,15 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
             "day_change_pct": 1.2,
             "volume": 10000,
             "volume_ratio_20d": 1.5,
+            "ma5": 99.0,
+            "ma20": 96.0,
+            "return_5d_pct": 4.0,
+            "return_20d_pct": 12.0,
+            "return_60d_pct": 28.0,
+            "pct_from_52w_high": -15.0,
+            "prior_20d_high": 101.0,
+            "gap_up_pct": 0.5,
+            "close_location_pct": 70.0,
             "trend": "UP",
             "ohlcv_tail": [{"date": "2026-05-12", "close": 100.0}],
         }
@@ -63,6 +72,10 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["trade_plan"]["hold_days"] is not None
     assert report["trade_plan"]["entry_policy"]
     assert report["trade_plan"]["entry_reference_price"] == 73200.0
+    readiness = report["trade_plan"]["readiness_analysis"]
+    assert readiness["quality"]["grade"] != "N/A"
+    assert readiness["upside"]["chase_risk_level"] == "낮음"
+    assert readiness["final_buy_judgment"]["action"] in {"즉시 매수 가능", "조건부 매수 가능"}
     assert report["price"]["trend"] == "UP"
     assert report["news"]["headlines"][0]["title"] == "real headline"
 

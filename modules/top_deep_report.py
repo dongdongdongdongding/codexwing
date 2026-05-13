@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 import pandas as pd
 import yfinance as yf
 
+from modules.entry_readiness import build_entry_readiness_analysis
 from modules.ui_helpers import enrich_signal_rows_with_planner_trace, sort_signal_rows_by_planner_rank
 
 
@@ -98,7 +99,7 @@ def _select_top_candidates(
 def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
     warnings: List[str] = []
     try:
-        hist = yf.Ticker(ticker).history(period="6mo", interval="1d", auto_adjust=False)
+        hist = yf.Ticker(ticker).history(period="1y", interval="1d", auto_adjust=False)
     except Exception as exc:
         return {"warnings": [f"price_fetch_failed:{exc}"], "ohlcv_tail": []}
 
@@ -109,16 +110,56 @@ def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
     latest = hist.iloc[-1]
     close = _safe_float(latest.get("Close"))
     prev_close = _safe_float(hist["Close"].iloc[-2]) if len(hist) >= 2 else None
+    open_price = _safe_float(latest.get("Open"))
+    high = _safe_float(latest.get("High"))
+    low = _safe_float(latest.get("Low"))
     day_change_pct = None
     if close is not None and prev_close not in (None, 0):
         day_change_pct = round((close - prev_close) / prev_close * 100.0, 4)
+    gap_up_pct = None
+    if open_price is not None and prev_close not in (None, 0):
+        gap_up_pct = round((open_price - prev_close) / prev_close * 100.0, 4)
+    candle_return_pct = None
+    if close is not None and open_price not in (None, 0):
+        candle_return_pct = round((close - open_price) / open_price * 100.0, 4)
+    close_location_pct = None
+    if close is not None and high is not None and low is not None and high > low:
+        close_location_pct = round((close - low) / (high - low) * 100.0, 4)
     volume = _safe_int(latest.get("Volume"))
     vol20 = _safe_float(hist["Volume"].tail(20).mean()) if "Volume" in hist else None
     volume_ratio = None
     if volume is not None and vol20 not in (None, 0):
         volume_ratio = round(float(volume) / float(vol20), 4)
+    ma5 = _safe_float(hist["Close"].tail(5).mean()) if len(hist) >= 5 else None
     ma20 = _safe_float(hist["Close"].tail(20).mean()) if len(hist) >= 20 else None
     ma60 = _safe_float(hist["Close"].tail(60).mean()) if len(hist) >= 60 else None
+    prior_20d_high = _safe_float(hist["High"].iloc[:-1].tail(20).max()) if "High" in hist and len(hist) >= 21 else None
+    high_52w = _safe_float(hist["High"].tail(252).max()) if "High" in hist else None
+    pct_from_52w_high = None
+    if close is not None and high_52w not in (None, 0):
+        pct_from_52w_high = round((close - high_52w) / high_52w * 100.0, 4)
+
+    def _lookback_return(days: int) -> float | None:
+        if close is None or len(hist) <= days:
+            return None
+        base = _safe_float(hist["Close"].iloc[-days - 1])
+        if base in (None, 0):
+            return None
+        return round((close - base) / base * 100.0, 4)
+
+    prev_candle_return_pct = None
+    if len(hist) >= 2:
+        prev = hist.iloc[-2]
+        prev_open = _safe_float(prev.get("Open"))
+        prev_close_for_candle = _safe_float(prev.get("Close"))
+        if prev_open not in (None, 0) and prev_close_for_candle is not None:
+            prev_candle_return_pct = round((prev_close_for_candle - prev_open) / prev_open * 100.0, 4)
+    gap_up_after_long_bullish = bool(
+        prev_candle_return_pct is not None
+        and prev_candle_return_pct >= 8.0
+        and gap_up_pct is not None
+        and gap_up_pct >= 3.0
+    )
     trend = "UNKNOWN"
     if close is not None and ma20 is not None and ma60 is not None:
         if close >= ma20 >= ma60:
@@ -148,11 +189,23 @@ def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
         "current_price": close,
         "prev_close": prev_close,
         "day_change_pct": day_change_pct,
+        "gap_up_pct": gap_up_pct,
+        "candle_return_pct": candle_return_pct,
+        "prev_candle_return_pct": prev_candle_return_pct,
+        "gap_up_after_long_bullish": gap_up_after_long_bullish,
+        "close_location_pct": close_location_pct,
         "volume": volume,
         "volume_ratio_20d": volume_ratio,
+        "ma5": ma5,
         "ma20": ma20,
         "ma60": ma60,
         "trend": trend,
+        "return_5d_pct": _lookback_return(5),
+        "return_20d_pct": _lookback_return(20),
+        "return_60d_pct": _lookback_return(60),
+        "high_52w": high_52w,
+        "pct_from_52w_high": pct_from_52w_high,
+        "prior_20d_high": prior_20d_high,
         "range_20d_high": _safe_float(hist["High"].tail(20).max()) if "High" in hist else None,
         "range_20d_low": _safe_float(hist["Low"].tail(20).min()) if "Low" in hist else None,
         "ohlcv_tail": ohlcv_tail,
@@ -296,6 +349,24 @@ def build_top_deep_reports(
         day_change = _safe_float(_first_present(row, "day_return_pct", "전일비") or price.get("day_change_pct"))
         buy_score = _safe_float(_first_present(row, "relative_rank_score", "decision_score", "Decision Score", "score"))
         trade_policy = _trade_policy(row, trace, ticker)
+        prediction = {
+            "phase25_prob": _safe_float(trace.get("phase25_prob") or row.get("phase25_prob")),
+            "expected_return_1d_pct": _safe_float(trace.get("expected_return_1d_pct") or row.get("expected_return_1d_pct")),
+            "expected_return_3d_pct": _safe_float(trace.get("expected_return_3d_pct") or row.get("expected_return_3d_pct")),
+            "expected_edge_score": _safe_float(trace.get("expected_edge_score") or row.get("expected_edge_score")),
+            "relative_rank_score": _safe_float(trace.get("relative_rank_score") or row.get("relative_rank_score")),
+            "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
+            "relative_rank_model": trace.get("relative_rank_model") or row.get("relative_rank_model"),
+        }
+        readiness_analysis = build_entry_readiness_analysis(
+            candidate={**row, **trace},
+            price=price,
+            prediction=prediction,
+            trade_plan=trade_policy,
+            news=news,
+            loss_risk_score=loss_risk,
+        )
+        trade_policy["readiness_analysis"] = readiness_analysis
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -315,15 +386,7 @@ def build_top_deep_reports(
             "loss_risk_score": loss_risk,
             "risk_flags": trace.get("theme_risk") or row.get("theme_risk") or [],
             "rationale": trace.get("rationale") or row.get("rationale") or [],
-            "prediction": {
-                "phase25_prob": _safe_float(trace.get("phase25_prob") or row.get("phase25_prob")),
-                "expected_return_1d_pct": _safe_float(trace.get("expected_return_1d_pct") or row.get("expected_return_1d_pct")),
-                "expected_return_3d_pct": _safe_float(trace.get("expected_return_3d_pct") or row.get("expected_return_3d_pct")),
-                "expected_edge_score": _safe_float(trace.get("expected_edge_score") or row.get("expected_edge_score")),
-                "relative_rank_score": _safe_float(trace.get("relative_rank_score") or row.get("relative_rank_score")),
-                "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
-                "relative_rank_model": trace.get("relative_rank_model") or row.get("relative_rank_model"),
-            },
+            "prediction": prediction,
             "trade_plan": trade_policy,
             "theme": {
                 "primary_theme": trace.get("primary_theme") or row.get("primary_theme"),
