@@ -275,78 +275,45 @@ def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[s
     }
 
 
-def build_execution_priority_records(
+def build_top5_plus_exception_records(
     records: List[Dict[str, Any]],
     planner_payload: Dict[str, Any] | None = None,
     *,
-    limit: int | None = None,
-) -> List[Dict[str, Any]]:
-    """Build the operator-facing execution top list.
+    top_limit: int = 5,
+    exception_limit: int | None = 5,
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Return the service display contract: Top5 main + Exception add-on.
 
-    This is presentation/order logic only. It does not change scanner scores,
-    planner gates, or persistence decisions. The display priority follows the
-    validated operating rule: Exception Leader first when present, then the
-    strongest planner Top candidates as backup.
+    Top5 remains the primary service output. Exception Leaders are not merged
+    into that ranking; they are appended as a separate, clearly labelled add-on
+    for extra precision analysis and Discord output.
     """
     source_records = enrich_signal_rows_with_planner_trace(records or [], planner_payload) if planner_payload else (records or [])
-    base_sorted = sort_signal_rows_by_planner_rank(source_records, planner_payload)
+    sorted_rows = sort_signal_rows_by_planner_rank(source_records, planner_payload)
+    streams = split_stream_records(sorted_rows)
+    top_records = streams["stream_a"][: max(int(top_limit or 0), 0)]
+    exception_records = list(streams["stream_b"])
+    if exception_limit is not None:
+        exception_records = exception_records[: max(int(exception_limit or 0), 0)]
 
-    def _decision(row: Dict[str, Any]) -> str:
-        return str(
-            _coalesce_present(row.get("decision"), row.get("Decision"), row.get("decision_bucket"))
-            or ""
-        ).upper().strip()
+    def _mark(rows: List[Dict[str, Any]], section: str, order: int) -> List[Dict[str, Any]]:
+        marked: List[Dict[str, Any]] = []
+        for idx, row in enumerate(rows, start=1):
+            copy = dict(row)
+            copy["_analysis_section"] = section
+            copy["_analysis_section_order"] = order
+            copy["_analysis_section_rank"] = idx
+            copy["_source_order"] = "top5_main_plus_exception_addon"
+            marked.append(copy)
+        return marked
 
-    def _lane(row: Dict[str, Any]) -> tuple[int, str]:
-        decision = _decision(row)
-        if is_exception_leader_row(row):
-            return 0, "Exception Leader"
-        if decision in {"STRONG_BUY", "PICK", "BUY", "PRIORITY_WATCHLIST"}:
-            return 1, "Planner Top"
-        if decision in {"WATCHLIST", "WATCHLIST_ONLY"}:
-            return 2, "Watchlist 보완"
-        return 3, "Raw Top 참고"
-
-    def _risk_penalty(row: Dict[str, Any]) -> int:
-        action = build_action_display(row)
-        label = str(action.get("label") or "")
-        if "금지" in label:
-            return 2
-        risk_score = _parse_percent_value(_coalesce_present(row.get("loss_risk_score"), row.get("Loss Risk")))
-        return 1 if risk_score is not None and risk_score >= 65 else 0
-
-    ranked: List[Dict[str, Any]] = []
-    for original_order, row in enumerate(base_sorted, start=1):
-        copy = dict(row)
-        lane, label = _lane(copy)
-        copy["_execution_lane"] = lane
-        copy["_execution_priority_label"] = label
-        copy["_planner_display_order"] = original_order
-        ranked.append(copy)
-
-    def _key(row: Dict[str, Any]) -> tuple:
-        relative = _display_rank_float(row.get("relative_rank_score")) or 0.0
-        edge = _display_rank_float(row.get("expected_edge_score")) or 0.0
-        score = _display_rank_float(row.get("decision_score") or row.get("Decision Score") or row.get("score")) or 0.0
-        raw_rank = _display_rank_float(row.get("_raw_scan_rank"))
-        lane = row.get("_execution_lane")
-        return (
-            _risk_penalty(row),
-            int(lane) if lane is not None else 9,
-            -edge,
-            -relative,
-            int(row.get("_planner_display_order") or 9999),
-            -score,
-            int(raw_rank) if raw_rank is not None else 9999,
-        )
-
-    out = sorted(ranked, key=_key)
-    for idx, row in enumerate(out, start=1):
-        row["_execution_priority_rank"] = idx
-        row["_source_order"] = "execution_priority_exception_then_planner_top"
-    if limit is not None:
-        return out[: max(int(limit or 0), 0)]
-    return out
+    top_marked = _mark(top_records, "Top5", 0)
+    exception_marked = _mark(exception_records, "Exception Leader", 1)
+    return {
+        "top5": top_marked,
+        "exception_leaders": exception_marked,
+        "combined": top_marked + exception_marked,
+    }
 
 
 def build_live_cockpit_summary(
@@ -600,8 +567,8 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "rank": rank,
                 "ticker": ticker,
                 "name": name,
-                "execution_priority_label": str(row.get("_execution_priority_label") or "").strip(),
-                "execution_priority_rank": row.get("_execution_priority_rank"),
+                "analysis_section": str(row.get("_analysis_section") or "").strip(),
+                "analysis_section_rank": row.get("_analysis_section_rank"),
                 "buy_signal": buy_signal,
                 "accuracy": _format_accuracy_label(accuracy_source),
                 "day_change": _format_percent_label(day_change_source),

@@ -80,7 +80,8 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["report_id"] == "RUN-TEST:005930.KS:top_deep_report_v1"
     assert report["signal_label"] == "PRIMARY_BUY"
     assert report["selection_alignment"]["raw_scan_rank"] == 1
-    assert report["selection_alignment"]["source_order"] == "execution_priority_exception_then_planner_top"
+    assert report["selection_alignment"]["source_order"] == "top5_main_plus_exception_addon"
+    assert report["selection_alignment"]["analysis_section"] == "Top5"
     assert report["loss_risk_score"] == 42.0
     assert report["buy_score"] == 77.5
     assert report["accuracy"] is not None
@@ -192,7 +193,7 @@ def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empt
     assert [row["rank"] for row in reports] == [1, 2, 3]
 
 
-def test_build_top_deep_reports_uses_execution_priority_exception_first():
+def test_build_top_deep_reports_adds_exception_after_top5_main():
     with (
         patch("modules.top_deep_report._fetch_price_snapshot") as price,
         patch("modules.top_deep_report._fetch_news_snapshot") as news,
@@ -221,6 +222,7 @@ def test_build_top_deep_reports_uses_execution_priority_exception_first():
             top_n=3,
         )
 
-    assert [row["ticker"] for row in reports] == ["EX.KS", "TOP.KS", "RAW.KS"]
-    assert reports[0]["selection_alignment"]["execution_priority_label"] == "Exception Leader"
-    assert reports[0]["selection_alignment"]["source_order"] == "execution_priority_exception_then_planner_top"
+    assert [row["ticker"] for row in reports] == ["TOP.KS", "RAW.KS", "EX.KS"]
+    assert reports[0]["selection_alignment"]["analysis_section"] == "Top5"
+    assert reports[-1]["selection_alignment"]["analysis_section"] == "Exception Leader"
+    assert reports[-1]["selection_alignment"]["source_order"] == "top5_main_plus_exception_addon"

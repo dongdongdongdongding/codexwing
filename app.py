@@ -33,7 +33,7 @@ from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
 from modules.ui_helpers import (
     BackgroundScanState,
-    build_execution_priority_records,
+    build_top5_plus_exception_records,
     build_signal_display_rows,
     build_watchlist_display_rows,
     compute_progress_fraction,
@@ -1115,9 +1115,9 @@ def _render_selection_thesis(row, trade_plan):
 def _render_top_deep_reports_page():
     _render_section_intro(
         "Top Deep Reports",
-        "실전 우선 Top 자동 정밀분석",
-        "Exception Leader를 최우선으로 보고, 남는 자리는 Top 후보로 보완한 실제 데이터 기반 분석 리포트입니다.",
-        ["Exception first", "Top combined", "Real data only"],
+        "Top5 + Exception Leader 자동 정밀분석",
+        "기존 Top5를 메인으로 유지하고, Exception Leader를 별도 추가 후보로 함께 분석합니다.",
+        ["Top5 main", "Exception add-on", "Real data only"],
     )
     rows, warning = _load_top_deep_reports()
     if warning:
@@ -1154,11 +1154,14 @@ def _render_top_deep_reports_page():
     page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=1)
     run_df = day_df[day_df["run_id"] == selected_run].copy()
     run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
-    run_df["_execution_priority_rank"] = run_df["selection_alignment"].apply(
-        lambda value: (value or {}).get("execution_priority_rank") if isinstance(value, dict) else None
+    run_df["_analysis_section_order"] = run_df["selection_alignment"].apply(
+        lambda value: 1 if isinstance(value, dict) and value.get("analysis_section") == "Exception Leader" else 0
     )
-    run_df["_execution_priority_rank"] = pd.to_numeric(run_df["_execution_priority_rank"], errors="coerce")
-    run_df = run_df.sort_values(["_execution_priority_rank", "rank", "generated_at_dt"], ascending=[True, True, False])
+    run_df["_analysis_section_rank"] = run_df["selection_alignment"].apply(
+        lambda value: (value or {}).get("analysis_section_rank") if isinstance(value, dict) else None
+    )
+    run_df["_analysis_section_rank"] = pd.to_numeric(run_df["_analysis_section_rank"], errors="coerce")
+    run_df = run_df.sort_values(["_analysis_section_order", "_analysis_section_rank", "rank", "generated_at_dt"], ascending=[True, True, True, False])
     total = len(run_df)
     max_page = max(1, math.ceil(total / int(page_size)))
     page = st.number_input("페이지", min_value=1, max_value=max_page, value=1, step=1)
@@ -1174,13 +1177,13 @@ def _render_top_deep_reports_page():
         theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
         flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
-        execution_rank = alignment.get("execution_priority_rank") or row.get("rank") or 0
-        execution_label = alignment.get("execution_priority_label") or "-"
-        title = f"실전우선 #{int(execution_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
+        section = alignment.get("analysis_section") or "Top5"
+        section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
+        title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
         with st.container(border=True):
             st.markdown(f"### {title}")
             st.caption(
-                f"{execution_label} · {row.get('signal_label') or '-'} · {row.get('decision') or '-'} · {theme.get('primary_theme') or '-'} · "
+                f"{row.get('signal_label') or '-'} · {row.get('decision') or '-'} · {theme.get('primary_theme') or '-'} · "
                 f"원본스캔 #{alignment.get('raw_scan_rank') or '-'} / 플래너 #{alignment.get('planner_priority_rank') or row.get('rank') or '-'}"
             )
             c1, c2, c3, c4, c5 = st.columns(5)
@@ -3422,36 +3425,28 @@ if active_main_tab == "📚 아카이브":
                     _day_df['현재 수익률(%)'] = _day_df['ticker'].map(_curr_perf_map)
 
                 st.divider()
-                # 스캐너 결과와 동일하게 실전 우선 Top을 먼저 보여준다.
-                _archive_execution_records = build_execution_priority_records(_archive_records, {}, limit=5)
-                _archive_execution_rows = build_signal_display_rows(_archive_execution_records, limit=5)
-                _archive_streams = split_stream_records(_archive_records)
-                _archive_stream_a = build_signal_display_rows(_archive_streams["stream_a"], limit=5)
-                _archive_stream_b = build_signal_display_rows(_archive_streams["stream_b"], limit=5)
+                # 스캐너 결과와 동일하게 Top5 메인 + Exception Leader 추가 후보를 분리 표시.
+                _archive_groups = build_top5_plus_exception_records(_archive_records, {}, top_limit=5, exception_limit=5)
+                _archive_top5 = build_signal_display_rows(_archive_groups["top5"], limit=5)
+                _archive_exception = build_signal_display_rows(_archive_groups["exception_leaders"], limit=5)
 
-                st.markdown(f"### 최우선 실전 Top 5 · Exception Leader + Top 후보 조합 — {_selected_date}")
-                st.caption("아카이브도 최신 스캔 화면과 같은 기준입니다. Exception Leader를 먼저 보고, 남는 자리는 플래너/Top 후보로 채웁니다.")
-                if _archive_execution_rows:
-                    _render_signal_card_list(_archive_execution_rows, empty_text="실전 우선 후보 없음.")
+                st.markdown(f"### 메인 Top 5 - {_selected_date}")
+                st.caption("기존 서비스 기준의 메인 후보입니다. Exception Leader는 아래 별도 추가 후보로 분리합니다.")
+                if _archive_top5:
+                    _render_signal_card_list(_archive_top5, empty_text="Top5 후보 없음.")
                 else:
-                    st.info("실전 우선 후보 없음.")
+                    st.info("Top5 후보 없음.")
 
-                st.markdown("### 보조 보기 · Stream A (일반 Top/안전 매매)")
-                if _archive_stream_a:
-                    _render_signal_card_list(_archive_stream_a, empty_text="Stream A 후보 없음.")
+                st.markdown("### Exception Leader 추가 후보")
+                if _archive_exception:
+                    _render_signal_card_list(_archive_exception, empty_text="Exception Leader 후보 없음.")
                 else:
-                    st.info("Stream A 후보 없음 — 게이트가 모두 demote.")
-
-                st.markdown("### 보조 보기 · Exception Leader 상세")
-                if _archive_stream_b:
-                    _render_signal_card_list(_archive_stream_b, empty_text="Stream B 후보 없음.")
-                else:
-                    st.info("Stream B(EXCEPTION_LEADER) 후보 없음 — 시장에 surge 신호 부재.")
+                    st.info("Exception Leader 후보 없음.")
 
                 st.divider()
                 with st.expander("📋 기타 후보 (Top 5 외)", expanded=False):
                     _seen_tickers = {
-                        str(r.get("ticker") or "") for r in (_archive_stream_a + _archive_stream_b)
+                        str(r.get("ticker") or "") for r in (_archive_top5 + _archive_exception)
                     }
                     _other_records = [
                         r for r in _archive_records

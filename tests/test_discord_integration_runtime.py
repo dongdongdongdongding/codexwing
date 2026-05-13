@@ -120,7 +120,7 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     embeds = build_top_deep_embeds()
 
     assert status["fields"][3]["value"] == "RUN-TEST"
-    assert embeds[0]["title"] == "실전 우선 Top 자동 정밀분석"
+    assert embeds[0]["title"] == "Top5 + Exception Leader 자동 정밀분석"
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
 
 
@@ -217,7 +217,7 @@ def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_pa
     archive = build_archive_embed(market="KOSDAQ")
 
     assert "RUN-RAW" in archive["description"]
-    assert "execution_priority" in archive["description"]
+    assert "top5_plus_exception" in archive["description"]
     assert "JYP Ent." in archive["fields"][0]["name"]
 
 
@@ -349,5 +349,5 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
 
     assert embeds[0]["title"] == "KOSPI 전체 스캔 결과"
     assert embeds[0]["fields"][0]["value"] == "RUN-DISCORD"
-    assert embeds[1]["title"] == "실전 우선 Top 자동 정밀분석"
+    assert embeds[1]["title"] == "Top5 + Exception Leader 자동 정밀분석"
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])

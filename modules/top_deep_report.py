@@ -10,7 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 from modules.entry_readiness import build_entry_readiness_analysis
-from modules.ui_helpers import build_execution_priority_records, enrich_signal_rows_with_planner_trace
+from modules.ui_helpers import build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 
 
 REPORT_VERSION = "top_deep_report_v1"
@@ -127,7 +127,13 @@ def _select_top_candidates(
         ranked_rows.append(copy)
     enriched = enrich_signal_rows_with_planner_trace(ranked_rows, planner_payload)
     rows = [row for row in enriched if _ticker(row)]
-    return build_execution_priority_records(rows, planner_payload, limit=max(int(limit or 0), 0))
+    groups = build_top5_plus_exception_records(
+        rows,
+        planner_payload,
+        top_limit=max(int(limit or 0), 0),
+        exception_limit=5,
+    )
+    return groups["combined"]
 
 
 def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
@@ -700,9 +706,9 @@ def build_top_deep_reports(
                 "planner_decision": str(trace.get("decision") or row.get("decision") or ""),
                 "relative_rank_score": _safe_float(trace.get("relative_rank_score") or row.get("relative_rank_score")),
                 "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
-                "execution_priority_rank": _safe_int(row.get("_execution_priority_rank")),
-                "execution_priority_label": str(row.get("_execution_priority_label") or ""),
-                "source_order": str(row.get("_source_order") or "execution_priority_exception_then_planner_top"),
+                "analysis_section": str(row.get("_analysis_section") or "Top5"),
+                "analysis_section_rank": _safe_int(row.get("_analysis_section_rank")),
+                "source_order": str(row.get("_source_order") or "top5_main_plus_exception_addon"),
             },
             "buy_score": buy_score,
             "accuracy": _segment_accuracy(row, trace, ticker, market, scan_mode),
