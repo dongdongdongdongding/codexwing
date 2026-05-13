@@ -126,6 +126,10 @@ for MARKET in "${MARKETS[@]}"; do
   fi
 done
 
+echo "[STEP] report_scan_cohort_performance"
+run_optional "report_scan_cohort_performance" \
+  python3 multi_agent/tools/report_scan_cohort_performance.py
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
