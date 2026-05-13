@@ -44,3 +44,17 @@ def test_discord_config_accepts_private_guild_setup(monkeypatch):
     assert validation["errors"] == []
     assert validation["config"]["allowed_user_count"] == 2
     assert validation["config"]["dry_run"] is False
+
+
+def test_scan_execution_requires_result_channel(monkeypatch):
+    monkeypatch.setenv("DISCORD_BOT_TOKEN", "x" * 40)
+    monkeypatch.setenv("DISCORD_APPLICATION_ID", "123456789012345678")
+    monkeypatch.setenv("DISCORD_GUILD_ID", "223456789012345678")
+    monkeypatch.delenv("DISCORD_RESULT_CHANNEL_ID", raising=False)
+    monkeypatch.setenv("DISCORD_ALLOWED_USER_IDS", "423456789012345678")
+    monkeypatch.setenv("DISCORD_ENABLE_SCAN_EXECUTION", "1")
+
+    validation = load_discord_config(load_env=False).validate()
+
+    assert validation["ok"] is False
+    assert any("RESULT_CHANNEL" in item for item in validation["errors"])

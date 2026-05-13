@@ -10,9 +10,15 @@ from modules.discord_integration.register import (
 )
 from modules.discord_integration import renderers
 from modules.discord_integration.renderers import (
+    build_scan_result_embeds,
     build_scan_ack_embed,
     build_status_embed,
     build_top_deep_embeds,
+)
+from modules.discord_integration.scan_executor import (
+    DiscordScanLock,
+    build_scan_command,
+    create_scan_job,
 )
 
 
@@ -118,3 +124,91 @@ def test_scan_ack_refuses_execution_while_dry_run():
 
     assert "max_scan=2000" in embed["description"]
     assert "막혀" in embed["description"]
+
+
+def test_scan_executor_command_is_fixed_full_kr_scan(monkeypatch, tmp_path):
+    from modules.discord_integration import scan_executor
+
+    monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
+    job = create_scan_job("KOSDAQ")
+    cmd = build_scan_command(job)
+
+    assert "--market" in cmd
+    assert cmd[cmd.index("--market") + 1] == "KOSDAQ"
+    assert cmd[cmd.index("--max-scan") + 1] == "2000"
+    assert cmd[cmd.index("--profile") + 1] == "prod"
+    assert cmd[cmd.index("--scan-mode") + 1] == "SWING"
+
+
+def test_scan_executor_extracts_summary_from_noisy_log():
+    from modules.discord_integration.scan_executor import _extract_last_json_object
+
+    payload = _extract_last_json_object(
+        '[1/2] filtered\n{"run_id": "RUN-ABC", "market": "KOSPI", "result_count": 3, "total_scans": 2000}\nExit code: 0\n'
+    )
+
+    assert payload["run_id"] == "RUN-ABC"
+    assert payload["total_scans"] == 2000
+
+
+def test_scan_lock_prevents_parallel_jobs(tmp_path):
+    lock_path = tmp_path / "scan.lock"
+    first = DiscordScanLock(path=lock_path)
+    second = DiscordScanLock(path=lock_path)
+
+    assert first.try_acquire(job_id="DS-ONE", market="KOSPI") is True
+    assert second.try_acquire(job_id="DS-TWO", market="KOSDAQ") is False
+
+    first.release()
+    assert second.try_acquire(job_id="DS-TWO", market="KOSDAQ") is True
+    second.release()
+
+
+def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_path):
+    report_dir = tmp_path / "top_deep"
+    report_dir.mkdir()
+    (report_dir / "RUN-DISCORD.json").write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "RUN-DISCORD",
+                    "rank": 1,
+                    "ticker": "000660.KS",
+                    "stock_name": "SK하이닉스",
+                    "trade_plan": {
+                        "readiness_analysis": {
+                            "quality": {"grade": "A", "score": 90},
+                            "upside": {"grade": "B", "score": 70},
+                            "timing": {"grade": "B+", "score": 75},
+                            "chase_risk_level": "보통",
+                            "final_buy_judgment": {"action": "눌림 대기"},
+                        }
+                    },
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    config = DiscordIntegrationConfig(web_base_url="http://localhost:8501")
+    summary = {
+        "run_id": "RUN-DISCORD",
+        "market": "KOSPI",
+        "total_scans": 2000,
+        "result_count": 7,
+        "filtered_count": 1993,
+        "warnings": [],
+        "discord_job": {
+            "job_id": "DS-TEST",
+            "market": "KOSPI",
+            "returncode": 0,
+            "log_path": "runtime_state/discord_jobs/DS-TEST.log",
+        },
+    }
+
+    embeds = build_scan_result_embeds(summary, config=config)
+
+    assert embeds[0]["title"] == "KOSPI 전체 스캔 결과"
+    assert embeds[0]["fields"][0]["value"] == "RUN-DISCORD"
+    assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])

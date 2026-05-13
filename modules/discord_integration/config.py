@@ -78,6 +78,8 @@ class DiscordIntegrationConfig:
             errors.append("DISCORD_GUILD_ID must be a Discord snowflake")
         if self.result_channel_id and not _is_snowflake(self.result_channel_id):
             errors.append("DISCORD_RESULT_CHANNEL_ID must be a Discord snowflake")
+        if self.enable_scan_execution and not self.result_channel_id:
+            errors.append("DISCORD_RESULT_CHANNEL_ID is required when scan execution is enabled")
         for user_id in self.allowed_user_ids:
             if not _is_snowflake(user_id):
                 errors.append(f"DISCORD_ALLOWED_USER_IDS contains invalid snowflake: {user_id}")

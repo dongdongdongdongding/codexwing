@@ -83,6 +83,8 @@ python3 -m multi_agent.workflows.non_ui_scan_pipeline --market NASDAQ --profile 
 ```
 
 Discord KR scan commands use the same non-UI boundary and fix full KOSPI/KOSDAQ scans at `max_scan=2000`.
+When `DISCORD_DRY_RUN=0` and `DISCORD_ENABLE_SCAN_EXECUTION=1`, the bot runs the scan in a separate process,
+uses `runtime_state/discord_jobs/full_kr_scan.lock`, and posts the result summary to the configured Discord channel.
 
 ## Discord Remote Control
 
@@ -91,6 +93,7 @@ Initial setup validation:
 ```bash
 python3 multi_agent/tools/discord_setup_doctor.py
 python3 multi_agent/tools/discord_register_commands.py
+python3 multi_agent/tools/discord_bot.py
 ```
 
 Configure Discord values in `.env.local` and keep `DISCORD_DRY_RUN=1` until the doctor passes. See:

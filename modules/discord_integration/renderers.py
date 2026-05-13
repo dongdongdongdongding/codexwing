@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 
 from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
+from .scan_executor import DiscordScanJob
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 
@@ -195,9 +196,117 @@ def build_scan_ack_embed(config: DiscordIntegrationConfig, *, market: str) -> Di
     }
 
 
+def build_scan_started_embed(config: DiscordIntegrationConfig, *, job: DiscordScanJob) -> Dict[str, Any]:
+    return {
+        "title": f"{job.market} 전체 스캔 접수",
+        "description": (
+            f"Job `{job.job_id}` 실행을 시작했습니다.\n"
+            f"max_scan={FULL_KR_SCAN_MAX}, scan_mode=SWING, profile=prod 고정입니다."
+        ),
+        "color": 0x3498DB,
+        "fields": [
+            {"name": "Result Channel", "value": config.result_channel_id or "-", "inline": True},
+            {"name": "Web", "value": config.web_base_url or "-", "inline": True},
+            {"name": "Log", "value": str(job.log_path), "inline": False},
+        ],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def build_scan_busy_embed() -> Dict[str, Any]:
+    return {
+        "title": "전체 스캔 실행 중",
+        "description": "이미 실행 중인 KOSPI/KOSDAQ 전체 스캔이 있습니다. 완료 후 다시 요청하세요.",
+        "color": 0xF1C40F,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrationConfig) -> List[Dict[str, Any]]:
+    job = summary.get("discord_job") if isinstance(summary.get("discord_job"), dict) else {}
+    market = str(summary.get("market") or job.get("market") or "-")
+    run_id = str(summary.get("run_id") or "-")
+    returncode = int(job.get("returncode") if job.get("returncode") is not None else 1)
+    ok = returncode == 0 and bool(summary.get("run_id"))
+    warnings = summary.get("warnings") if isinstance(summary.get("warnings"), list) else []
+    warning_text = "\n".join(
+        f"- {item.get('code')}: {item.get('message')}"
+        for item in warnings[:3]
+        if isinstance(item, dict)
+    )
+    if not warning_text:
+        warning_text = "-"
+    fields = [
+        {"name": "Run", "value": run_id, "inline": True},
+        {"name": "Market", "value": market, "inline": True},
+        {"name": "Status", "value": "완료" if ok else f"실패/확인 필요 ({returncode})", "inline": True},
+        {"name": "Scanned", "value": str(summary.get("total_scans") or 0), "inline": True},
+        {"name": "Passed", "value": str(summary.get("result_count") or 0), "inline": True},
+        {"name": "Filtered", "value": str(summary.get("filtered_count") or 0), "inline": True},
+        {"name": "Warnings", "value": warning_text[:1024], "inline": False},
+        {"name": "Web", "value": config.web_base_url or "-", "inline": False},
+    ]
+    log_path = str(job.get("log_path") or "")
+    if log_path:
+        fields.append({"name": "Log", "value": log_path, "inline": False})
+
+    embeds = [
+        {
+            "title": f"{market} 전체 스캔 결과",
+            "description": (
+                f"Job `{job.get('job_id') or '-'}` · 웹/아카이브와 같은 run artifact 기준으로 표시합니다."
+            ),
+            "color": 0x2ECC71 if ok else 0xE74C3C,
+            "fields": fields[:10],
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+    ]
+    if ok:
+        embeds.extend(build_top_deep_embeds(run_id=run_id, limit=5))
+    return embeds[:10]
+
+
+def build_macro_refresh_embed(*, market: str = "KR") -> Dict[str, Any]:
+    try:
+        from modules.live_scan_context import normalize_market_key
+        from modules.macro_scheduler import get_macro_context
+        from modules.scan_policy import compute_market_gate
+
+        normalized = normalize_market_key(market)
+        macro = get_macro_context(force_refresh=True, market_group=normalized)
+        gate = compute_market_gate("KOSPI" if normalized == "KR" else normalized)
+        fields = [
+            {"name": "Macro State", "value": str(macro.get("macro_state") or "-"), "inline": True},
+            {"name": "Risk", "value": _fmt_num(macro.get("macro_risk_score"), 1), "inline": True},
+            {"name": "Penalty", "value": _fmt_num(macro.get("macro_penalty"), 1), "inline": True},
+            {"name": "VIX", "value": _fmt_num(macro.get("vix"), 2), "inline": True},
+            {"name": "TNX", "value": _fmt_num(macro.get("tnx"), 2), "inline": True},
+            {"name": "KRW", "value": _fmt_num(macro.get("krw"), 2), "inline": True},
+            {"name": "Market Gate", "value": str(gate.get("msg") or gate.get("state") or "-")[:1024], "inline": False},
+        ]
+        return {
+            "title": "매크로 새로고침",
+            "description": f"`{normalized}` 매크로/마켓 게이트 컨텍스트를 갱신했습니다.",
+            "color": 0x2ECC71,
+            "fields": fields,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+    except Exception as exc:
+        return {
+            "title": "매크로 새로고침 실패",
+            "description": str(exc)[:1500],
+            "color": 0xE74C3C,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+
 __all__ = [
     "build_archive_embed",
+    "build_macro_refresh_embed",
     "build_scan_ack_embed",
+    "build_scan_busy_embed",
+    "build_scan_result_embeds",
+    "build_scan_started_embed",
     "build_status_embed",
     "build_top_deep_embeds",
 ]

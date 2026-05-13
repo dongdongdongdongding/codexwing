@@ -115,12 +115,27 @@ python3 multi_agent/tools/discord_bot.py
 The first runnable command should be `/status`. Read-only commands
 `/top_deep` and `/archive` read the same local/Supabase-derived artifacts used
 by the web UI. `/kospi_scan` and `/kosdaq_scan` acknowledge the full-universe
-request but real scan execution remains disabled until both of these are true:
+request while safe mode is enabled. Real scan execution is enabled only when
+both of these are true:
 
 ```bash
 DISCORD_DRY_RUN=0
 DISCORD_ENABLE_SCAN_EXECUTION=1
 ```
+
+When enabled, the bot:
+
+- defers the slash command immediately
+- uses a single local lock at `runtime_state/discord_jobs/full_kr_scan.lock`
+- runs the existing `multi_agent.workflows.non_ui_scan_pipeline` in a separate
+  process
+- fixes KOSPI/KOSDAQ scan size at `max_scan=2000`
+- writes job logs under `runtime_state/discord_jobs/`
+- posts the final summary and Top Deep embeds to `DISCORD_RESULT_CHANNEL_ID`
+
+Keep only one bot process running. If code changes while the bot is already
+connected, stop the old process and start it again so Discord uses the latest
+command handlers.
 
 ## Command Contract
 
@@ -176,4 +191,5 @@ Required fields:
 - Use one scan lock so two full KR scans cannot run at the same time.
 - Do not print or log `DISCORD_BOT_TOKEN`.
 - Keep scan execution disabled until command registration and read-only
-  responses are verified in the private guild.
+  responses are verified in the private guild. Then enable it explicitly with
+  `DISCORD_DRY_RUN=0` and `DISCORD_ENABLE_SCAN_EXECUTION=1`.
