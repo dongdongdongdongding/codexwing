@@ -35,6 +35,15 @@ Record:
 Use a guild-scoped setup first. Global command propagation is slower and is not
 needed for a private trading control bot.
 
+Invite the bot to the target guild with both scopes:
+
+```text
+bot applications.commands
+```
+
+The setup doctor prints a ready-to-open OAuth invite URL after
+`DISCORD_APPLICATION_ID` is configured.
+
 ## Environment
 
 Add these to `.env.local`:
@@ -48,6 +57,7 @@ DISCORD_ALLOWED_USER_IDS=
 DISCORD_ALLOWED_ROLE_IDS=
 DISCORD_COMMAND_SCOPE=guild
 DISCORD_DRY_RUN=1
+DISCORD_ENABLE_SCAN_EXECUTION=0
 DISCORD_WEB_BASE_URL=http://localhost:8501
 ```
 
@@ -69,6 +79,48 @@ The doctor prints:
 
 The command contract fixes KR scan size at `2000`. Do not expose a user option
 for scan count in Discord commands.
+
+## Register Commands
+
+Dry-run first:
+
+```bash
+python3 multi_agent/tools/discord_register_commands.py
+```
+
+Live guild registration:
+
+```bash
+python3 multi_agent/tools/discord_register_commands.py --live
+```
+
+Command registration uses Discord REST and does not start the bot process.
+If registration returns `403 Missing Access`, invite the bot to the guild with
+the doctor invite URL, then run the live registration again.
+
+## Run Bot
+
+Install dependencies:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+Run the bot:
+
+```bash
+python3 multi_agent/tools/discord_bot.py
+```
+
+The first runnable command should be `/status`. Read-only commands
+`/top_deep` and `/archive` read the same local/Supabase-derived artifacts used
+by the web UI. `/kospi_scan` and `/kosdaq_scan` acknowledge the full-universe
+request but real scan execution remains disabled until both of these are true:
+
+```bash
+DISCORD_DRY_RUN=0
+DISCORD_ENABLE_SCAN_EXECUTION=1
+```
 
 ## Command Contract
 
@@ -123,4 +175,5 @@ Required fields:
 - Use `max_scan=2000` for both KOSPI and KOSDAQ.
 - Use one scan lock so two full KR scans cannot run at the same time.
 - Do not print or log `DISCORD_BOT_TOKEN`.
-
+- Keep scan execution disabled until command registration and read-only
+  responses are verified in the private guild.

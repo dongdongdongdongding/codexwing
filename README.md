@@ -90,6 +90,7 @@ Initial setup validation:
 
 ```bash
 python3 multi_agent/tools/discord_setup_doctor.py
+python3 multi_agent/tools/discord_register_commands.py
 ```
 
 Configure Discord values in `.env.local` and keep `DISCORD_DRY_RUN=1` until the doctor passes. See:

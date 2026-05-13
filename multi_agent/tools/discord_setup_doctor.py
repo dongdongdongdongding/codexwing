@@ -12,6 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from modules.discord_integration.commands import command_contract
 from modules.discord_integration.config import load_discord_config
+from modules.discord_integration.register import build_oauth_invite_url
 
 
 def main() -> int:
@@ -19,6 +20,7 @@ def main() -> int:
     validation = config.validate()
     payload = {
         "validation": validation,
+        "invite_url": build_oauth_invite_url(config),
         "command_contract": command_contract(),
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))

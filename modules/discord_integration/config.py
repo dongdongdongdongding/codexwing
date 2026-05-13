@@ -56,6 +56,7 @@ class DiscordIntegrationConfig:
     allowed_user_ids: List[str] = field(default_factory=list)
     allowed_role_ids: List[str] = field(default_factory=list)
     dry_run: bool = True
+    enable_scan_execution: bool = False
     command_scope: str = "guild"
     web_base_url: str = "http://localhost:8501"
     scan_max: int = FULL_KR_SCAN_MAX
@@ -100,6 +101,7 @@ class DiscordIntegrationConfig:
                 "allowed_user_count": len(self.allowed_user_ids),
                 "allowed_role_count": len(self.allowed_role_ids),
                 "dry_run": bool(self.dry_run),
+                "enable_scan_execution": bool(self.enable_scan_execution),
                 "command_scope": self.command_scope,
                 "web_base_url": self.web_base_url,
                 "scan_max": self.scan_max,
@@ -118,6 +120,7 @@ def load_discord_config(*, load_env: bool = True) -> DiscordIntegrationConfig:
         allowed_user_ids=_split_ids(os.getenv("DISCORD_ALLOWED_USER_IDS", "")),
         allowed_role_ids=_split_ids(os.getenv("DISCORD_ALLOWED_ROLE_IDS", "")),
         dry_run=_env_bool("DISCORD_DRY_RUN", True),
+        enable_scan_execution=_env_bool("DISCORD_ENABLE_SCAN_EXECUTION", False),
         command_scope=os.getenv("DISCORD_COMMAND_SCOPE", "guild").strip().lower() or "guild",
         web_base_url=os.getenv("DISCORD_WEB_BASE_URL", "http://localhost:8501").strip() or "http://localhost:8501",
         scan_max=FULL_KR_SCAN_MAX,
