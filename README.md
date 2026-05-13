@@ -18,6 +18,7 @@ Recent stabilization work:
 - Scanner archive rows now carry 5-day high-touch labels such as `max_high_return_5d_pct` and `hit_5pct_within_5d`.
 - KR swing context includes US lead and macro/derivative signals for planner-facing diagnostics.
 - UI cards expose planner action trace fields without changing the core scoring engine.
+- Discord remote-control integration has a setup-safe command/config contract for KOSPI/KOSDAQ full scans, macro refresh, Top deep reports, and archive lookup.
 - `runtime_state` was pruned from the Git index: generated `artifacts`, `shared_working`, context caches, and large archive datasets remain local artifacts rather than source-controlled files.
 
 ## Core Capabilities
@@ -80,6 +81,20 @@ python3 -m multi_agent.workflows.non_ui_scan_pipeline --market KOSDAQ --profile 
 python3 -m multi_agent.workflows.non_ui_scan_pipeline --market KOSPI --profile prod --max-scan 100 --max-workers 4
 python3 -m multi_agent.workflows.non_ui_scan_pipeline --market NASDAQ --profile dev --tickers AAPL,NVDA,MSFT --max-scan 3 --max-workers 1
 ```
+
+Discord KR scan commands use the same non-UI boundary and fix full KOSPI/KOSDAQ scans at `max_scan=2000`.
+
+## Discord Remote Control
+
+Initial setup validation:
+
+```bash
+python3 multi_agent/tools/discord_setup_doctor.py
+```
+
+Configure Discord values in `.env.local` and keep `DISCORD_DRY_RUN=1` until the doctor passes. See:
+
+- `docs/operations/DISCORD_INTEGRATION.md`
 
 Recommended KR universe hygiene:
 
