@@ -137,6 +137,19 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(blocked["label"], "매수 금지")
         self.assertEqual(blocked["condition"], "리스크 해소 전 신규 진입 금지")
 
+    def test_build_action_display_prefers_planner_action_plan(self):
+        action = build_action_display({
+            "decision": "WATCHLIST_ONLY",
+            "loss_risk_score": 35.0,
+            "final_action": "관망",
+            "entry_condition_text": "시장 정책이 관망 구간입니다. GREEN/YELLOW 회복 후 재평가",
+            "stop_condition_text": "진입 전 상태이므로 손절가 대신 제외 조건으로 관리",
+        })
+
+        self.assertEqual(action["label"], "관망")
+        self.assertIn("GREEN/YELLOW", action["condition"])
+        self.assertIn("제외 조건", action["stop_condition"])
+
     def test_build_signal_display_rows_ignores_raw_phase25_prob(self):
         # phase25_prob 단독이면 accuracy는 None. raw score를 정확도로 표시 금지.
         rows = build_signal_display_rows([{
@@ -177,6 +190,33 @@ class UIHelperTests(unittest.TestCase):
         display = build_signal_display_rows(rows)
         self.assertEqual(display[0]["loss_risk"], "42.5")
         self.assertEqual(display[0]["risk_flags"], ["LOSS_RISK_SOFT_CAP"])
+
+    def test_watchlist_meta_enrichment_adds_action_plan_to_scan_rows(self):
+        rows = enrich_signal_rows_with_planner_trace(
+            [{"ticker": "005930.KS", "Decision Score": 90.0}],
+            {
+                "decisions": [],
+                "watchlist_meta": [
+                    {
+                        "ticker": "005930.KS",
+                        "decision": "WATCHLIST_ONLY",
+                        "loss_risk_score": 52.1,
+                        "theme_risk": ["LOSS_RISK_SOFT_CAP"],
+                        "final_action": "관망",
+                        "entry_condition_text": "시장 정책이 관망 구간입니다. GREEN/YELLOW 회복 후 재평가",
+                        "stop_condition_text": "진입 전 상태이므로 손절가 대신 제외 조건으로 관리",
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual(rows[0]["loss_risk_score"], 52.1)
+        self.assertEqual(rows[0]["final_action"], "관망")
+        display = build_signal_display_rows(rows)
+        self.assertEqual(display[0]["loss_risk"], "52.1")
+        self.assertEqual(display[0]["action_label"], "관망")
+        self.assertIn("GREEN/YELLOW", display[0]["action_condition"])
+        self.assertIn("제외 조건", display[0]["stop_condition"])
 
     def test_sort_signal_rows_by_planner_rank_uses_final_priority_before_raw_score(self):
         rows = enrich_signal_rows_with_planner_trace(

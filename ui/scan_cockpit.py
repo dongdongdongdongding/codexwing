@@ -74,6 +74,7 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         buy_signal = str(row.get("buy_signal") or "-")
         action_label = str(row.get("action_label") or "-")
         action_condition = str(row.get("action_condition") or "")
+        stop_condition = str(row.get("stop_condition") or "")
         action_reasons = [str(reason) for reason in (row.get("action_reasons") or []) if str(reason).strip()]
         risk_label = str(row.get("loss_risk") or "-")
         risk_level = str(row.get("loss_risk_level") or "")
@@ -97,6 +98,8 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     if action_condition:
                         action_line += f" · {action_condition}"
                     st.caption(action_line)
+                if stop_condition:
+                    st.caption(f"손절/제외 {stop_condition}")
                 if action_reasons:
                     st.caption("판단 근거 " + " / ".join(action_reasons[:3]))
                 if exit_parts:
@@ -224,3 +227,10 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         cols4 = st.columns(2)
         cols4[0].metric("손실위험", _fmt_pct_or_dash(detail.get("Loss Risk")))
         cols4[1].metric("리스크 플래그", str(detail.get("Risk Flags", "") or "-"))
+
+        action_text = str(detail.get("Action", "") or "-")
+        entry_condition = str(detail.get("Entry Condition", "") or "-")
+        stop_condition = str(detail.get("Stop Condition", "") or "-")
+        st.markdown(f"**최종 액션:** {action_text}")
+        st.caption(f"매수 조건: {entry_condition}")
+        st.caption(f"손절/제외 조건: {stop_condition}")

@@ -103,6 +103,13 @@ def _format_score_label(value: Any) -> str:
     return f"{numeric:.1f}"
 
 
+def _format_signed_percent_label(value: Any, fallback: str = "-") -> str:
+    numeric = _parse_percent_value(value)
+    if numeric is None:
+        return fallback
+    return f"{numeric:+.0f}%"
+
+
 def _format_risk_score_label(value: Any) -> str:
     numeric = _parse_percent_value(value)
     if numeric is None:
@@ -161,13 +168,30 @@ def build_action_display(row: Dict[str, Any]) -> Dict[str, Any]:
     when the planner already emitted wait/avoid risk markers.
     """
     if not isinstance(row, dict):
-        return {"label": "-", "condition": "", "reasons": []}
+        return {"label": "-", "condition": "", "stop_condition": "", "reasons": []}
 
     decision = str(
         _coalesce_present(row.get("decision"), row.get("Decision"), row.get("decision_bucket"))
         or ""
     ).upper().strip()
     trace_items = _action_trace_items(row)
+    explicit_action = str(_coalesce_present(row.get("final_action"), row.get("Final Action")) or "").strip()
+    explicit_entry = str(
+        _coalesce_present(row.get("entry_condition_text"), row.get("Entry Condition"))
+        or ""
+    ).strip()
+    explicit_stop = str(
+        _coalesce_present(row.get("stop_condition_text"), row.get("Stop Condition"))
+        or ""
+    ).strip()
+    if explicit_action:
+        return {
+            "label": explicit_action,
+            "condition": explicit_entry,
+            "stop_condition": explicit_stop,
+            "reasons": trace_items[:4],
+        }
+
     trace_upper = {str(item).upper() for item in trace_items}
     risk_score = _parse_percent_value(_coalesce_present(row.get("loss_risk_score"), row.get("Loss Risk")))
 
@@ -213,6 +237,7 @@ def build_action_display(row: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "label": label,
         "condition": condition,
+        "stop_condition": explicit_stop,
         "reasons": trace_items[:4],
     }
 
@@ -325,6 +350,16 @@ def enrich_signal_rows_with_planner_trace(
                 "relative_rank_score",
                 "relative_rank_pct",
                 "relative_rank_model",
+                "final_action",
+                "entry_condition_text",
+                "stop_condition_text",
+                "structured_conditions",
+                "target_tp_pct",
+                "stop_sl_pct",
+                "hold_days",
+                "entry_policy",
+                "risk_label",
+                "reason",
             ):
                 if _is_present(item.get(key)):
                     trace[key] = item.get(key)
@@ -506,6 +541,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "latest_return": _format_percent_label(latest_return),
                 "action_label": action["label"],
                 "action_condition": action["condition"],
+                "stop_condition": action["stop_condition"],
                 "action_reasons": action["reasons"],
             }
         )
@@ -747,6 +783,16 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
         thr = row.get("phase25_recommended_threshold")
         ticker = str(row.get("ticker", "") or "")
         policy = _exit_policy(ticker)
+        structured = row.get("structured_conditions") if isinstance(row.get("structured_conditions"), dict) else {}
+        action = build_action_display(row)
+        entry_label = str(_coalesce_present(row.get("entry_policy"), structured.get("entry_policy"), policy["Entry"]) or "")
+        tp_value = _coalesce_present(row.get("target_tp_pct"), structured.get("target_tp_pct"))
+        sl_value = _coalesce_present(row.get("stop_sl_pct"), structured.get("stop_sl_pct"))
+        hold_value = _coalesce_present(row.get("hold_days"), structured.get("hold_days"))
+        tp_label = _format_signed_percent_label(tp_value, policy["TP"])
+        sl_label = _format_signed_percent_label(sl_value, policy["SL"])
+        hold_numeric = _parse_percent_value(hold_value)
+        hold_label = f"{int(hold_numeric)}d" if hold_numeric is not None else policy["Hold"]
         top_rows.append(
             {
                 "Rank": rank,
@@ -761,11 +807,14 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
                 "OOS Ret %": (round(float(oos_ret), 2) if oos_ret not in (None, "") else None),
                 "Loss Risk": (round(float(row.get("loss_risk_score")), 1) if row.get("loss_risk_score") not in (None, "") else None),
                 "Risk Flags": ", ".join(_coerce_text_list(row.get("theme_risk"), limit=5)),
+                "Action": action["label"],
+                "Entry Condition": action["condition"],
+                "Stop Condition": action["stop_condition"],
                 "SigDir": sig_dir,
-                "Entry": policy["Entry"],
-                "TP": policy["TP"],
-                "SL": policy["SL"],
-                "Hold": policy["Hold"],
+                "Entry": entry_label or policy["Entry"],
+                "TP": tp_label,
+                "SL": sl_label,
+                "Hold": hold_label,
             }
         )
     return top_rows

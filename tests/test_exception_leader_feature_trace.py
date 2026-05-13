@@ -4,6 +4,7 @@ from multi_agent.contracts.types import RunContext
 from multi_agent.workflows.legacy_orchestration import (
     _build_relative_zero_pass_decisions,
     _build_realized_outcomes_placeholder,
+    _build_watchlist_only_meta,
     _collect_exception_leaders_from_scanner_payload,
 )
 
@@ -185,6 +186,22 @@ def test_realized_outcome_placeholder_preserves_watchlist_feature_fields(monkeyp
                 "market_gate": "GREEN",
                 "scanner_timeframe_profile": "SWING_DAILY",
                 "kr_universe_role": "EXPLOSIVE_LEADER",
+                "loss_risk_score": 41.5,
+                "theme_risk": ["LOSS_RISK_SOFT_CAP"],
+                "rationale": ["planner wait"],
+                "final_action": "눌림 대기",
+                "entry_condition_text": "20일선 지지 후 전일 고가 돌파",
+                "stop_condition_text": "20일선 종가 이탈",
+                "structured_conditions": {
+                    "entry_policy": "-2% limit",
+                    "target_tp_pct": 10.0,
+                    "stop_sl_pct": -10.0,
+                    "hold_days": 5,
+                },
+                "target_tp_pct": 10.0,
+                "stop_sl_pct": -10.0,
+                "hold_days": 5,
+                "entry_policy": "-2% limit",
             }
         ],
     )
@@ -206,6 +223,56 @@ def test_realized_outcome_placeholder_preserves_watchlist_feature_fields(monkeyp
     assert row["scanner_timeframe_profile"] == "SWING_DAILY"
     assert row["kr_universe_role"] == "EXPLOSIVE_LEADER"
     assert row["target_horizon_days"] == 3
+    assert row["loss_risk_score"] == 41.5
+    assert row["theme_risk"] == ["LOSS_RISK_SOFT_CAP"]
+    assert row["rationale"] == ["planner wait"]
+    assert row["final_action"] == "눌림 대기"
+    assert row["entry_condition_text"] == "20일선 지지 후 전일 고가 돌파"
+    assert row["stop_condition_text"] == "20일선 종가 이탈"
+    assert row["entry_policy"] == "-2% limit"
+
+
+def test_watchlist_only_meta_preserves_loss_risk_and_action_plan():
+    meta = _build_watchlist_only_meta(
+        watchlist=["005930.KS"],
+        policy_summary={
+            "market_gate": "RED",
+            "mode": "avoid",
+            "policy": {"win_5d_pct": 33.3, "avg_5d_pct": -1.2},
+        },
+        ticker_names={"005930.KS": "삼성전자"},
+        decision_details={
+            "005930.KS": {
+                "loss_risk_score": 51.2,
+                "theme_risk": ["LOSS_RISK_SOFT_CAP"],
+                "rationale": ["market policy downgrade"],
+                "final_action": "관망",
+                "entry_condition_text": "시장 정책이 관망 구간입니다. GREEN/YELLOW 회복 후 재평가",
+                "stop_condition_text": "진입 전 상태이므로 손절가 대신 제외 조건으로 관리",
+                "structured_conditions": {
+                    "entry_policy": "open/reference",
+                    "target_tp_pct": 20.0,
+                    "stop_sl_pct": -5.0,
+                    "hold_days": 5,
+                },
+                "target_tp_pct": 20.0,
+                "stop_sl_pct": -5.0,
+                "hold_days": 5,
+                "entry_policy": "open/reference",
+            },
+        },
+    )
+
+    row = meta[0]
+    assert row["risk_label"] == "WATCHLIST_ONLY"
+    assert row["loss_risk_score"] == 51.2
+    assert row["theme_risk"] == ["LOSS_RISK_SOFT_CAP"]
+    assert row["rationale"] == ["market policy downgrade"]
+    assert row["final_action"] == "관망"
+    assert "GREEN/YELLOW" in row["entry_condition_text"]
+    assert "제외 조건" in row["stop_condition_text"]
+    assert row["structured_conditions"]["target_tp_pct"] == 20.0
+    assert row["entry_policy"] == "open/reference"
 
 
 def test_realized_outcome_placeholder_ranks_only_tradeable_decisions():
