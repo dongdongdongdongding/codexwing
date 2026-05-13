@@ -10,6 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 from modules.entry_readiness import build_entry_readiness_analysis
+from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.ui_helpers import build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 
 
@@ -686,6 +687,8 @@ def build_top_deep_reports(
         trade_policy["selection_thesis"] = selection_thesis
         trade_policy["risk_overrides"] = risk_overrides
         trade_policy["entry_action"] = entry_action
+        practical_gate = evaluate_practical_entry_gate({**row, **trace})
+        trade_policy["practical_entry_gate"] = practical_gate
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -714,6 +717,7 @@ def build_top_deep_reports(
             "accuracy": _segment_accuracy(row, trace, ticker, market, scan_mode),
             "day_change_pct": day_change,
             "loss_risk_score": loss_risk,
+            "practical_entry_gate": practical_gate,
             "risk_flags": trace.get("theme_risk") or row.get("theme_risk") or [],
             "rationale": trace.get("rationale") or row.get("rationale") or [],
             "prediction": prediction,

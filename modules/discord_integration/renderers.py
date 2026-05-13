@@ -192,6 +192,8 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+    practical_gate = row.get("practical_entry_gate") if isinstance(row.get("practical_entry_gate"), dict) else {}
+    gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
     section = alignment.get("analysis_section") or "Top5"
     section_rank = alignment.get("analysis_section_rank") or row.get("rank")
     lines = [
@@ -208,6 +210,13 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"TP {_fmt_pct(trade_plan.get('target_tp_pct'))} · SL {_fmt_pct(trade_plan.get('stop_sl_pct'))}"
         ),
     ]
+    if practical_gate.get("level") in {"pass", "near", "small_sample", "watch"}:
+        lines.append(
+            "80%필터: "
+            f"{practical_gate.get('label') or '-'}"
+            f" · n={gate_evidence.get('sample_n', '-')}"
+            f" · 실전승률 {gate_evidence.get('practical_win_pct', '-')}%"
+        )
     return "\n".join(lines)[:1024]
 
 

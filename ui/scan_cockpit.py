@@ -100,6 +100,10 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         risk_label = str(row.get("loss_risk") or "-")
         risk_level = str(row.get("loss_risk_level") or "")
         risk_flags = [str(flag) for flag in (row.get("risk_flags") or []) if str(flag).strip()]
+        gate_label = str(row.get("practical_gate_label") or "")
+        gate_level = str(row.get("practical_gate_level") or "")
+        gate_reasons = [str(reason) for reason in (row.get("practical_gate_reasons") or []) if str(reason).strip()]
+        gate_evidence = row.get("practical_gate_evidence") if isinstance(row.get("practical_gate_evidence"), dict) else {}
         risk_line = ""
         if risk_label != "-":
             risk_line = f"손실위험 {risk_label}" + (f" ({risk_level})" if risk_level else "")
@@ -125,6 +129,17 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     st.caption(f"손절/제외 {stop_condition}")
                 if action_reasons:
                     st.caption("판단 근거 " + " / ".join(action_reasons[:3]))
+                if gate_level in {"pass", "near", "small_sample", "watch"}:
+                    evidence = ""
+                    if gate_evidence:
+                        evidence = (
+                            f" · 검증 n={gate_evidence.get('sample_n', '-')}, "
+                            f"실전승률 {gate_evidence.get('practical_win_pct', '-')}%, "
+                            f"bad {gate_evidence.get('bad_path_pct', '-')}%"
+                        )
+                    st.caption(f"{gate_label}{evidence}")
+                    if gate_reasons:
+                        st.caption("80% 피처 " + " / ".join(gate_reasons[:2]))
                 if exit_parts:
                     st.caption(" · ".join(exit_parts))
                 if risk_line:
@@ -181,6 +196,27 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         f"{cockpit['market']} live policy: {cockpit['policy']} | "
         f"5D target return: {cockpit['validated_return']} | {cockpit['sample']}"
     )
+
+    gate_order = {"pass": 0, "near": 1, "small_sample": 2, "watch": 3}
+    practical_rows = sorted(
+        [
+            row for row in (stream_a_rows + stream_b_rows)
+            if row.get("practical_gate_promote")
+        ],
+        key=lambda row: (
+            gate_order.get(str(row.get("practical_gate_level") or ""), 9),
+            int(row.get("analysis_section_rank") or row.get("rank") or 9999),
+        ),
+    )[:5]
+    st.markdown("### 80% 실전 필터 후보")
+    st.caption(
+        "사후 수익률을 쓰지 않고 스캔 시점 피처만으로 검증된 조합입니다. "
+        "KOSPI 통과는 30개 이상 표본, KOSDAQ은 표본 부족 시 경고로 표시합니다."
+    )
+    if practical_rows:
+        render_signal_card_list(practical_rows, empty_text="80% 실전 필터 후보 없음.")
+    else:
+        st.info("80% 실전 필터 후보 없음 - 이번 스캔은 Top5/Exception을 조건부로만 확인하세요.")
 
     st.markdown("### 메인 Top 5")
     st.caption(

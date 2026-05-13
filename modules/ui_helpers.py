@@ -8,6 +8,9 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 from uuid import uuid4
 
+from modules.practical_entry_gate import evaluate_practical_entry_gate
+from modules.segment_accuracy import lookup_segment_win_rate
+
 
 def compute_progress_fraction(completed_count: int, total_count: int) -> float:
     total = max(int(total_count or 0), 0)
@@ -491,7 +494,6 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
     win rate. raw model score (phase25_prob, prob_clean, ml_prob)는
     calibrated probability가 아니라 정렬용 score이므로 정확도로 표시 금지.
     """
-    from modules.segment_accuracy import lookup_segment_win_rate
     normalized: List[Dict[str, Any]] = []
     source_rows = rows or []
     if limit is not None:
@@ -560,6 +562,8 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         sl = str(_coalesce_present(row.get("SL"), row.get("stop_sl_pct")) or "").strip()
         latest_return = _coalesce_present(row.get("latest_return_pct"), row.get("return_1d_pct"), row.get("return_3d_pct"))
         action = build_action_display(row)
+        practical_gate = evaluate_practical_entry_gate(row)
+        gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
 
         day_change_numeric = _parse_percent_value(day_change_source)
         normalized.append(
@@ -587,6 +591,12 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "action_condition": action["condition"],
                 "stop_condition": action["stop_condition"],
                 "action_reasons": action["reasons"],
+                "practical_gate_level": practical_gate.get("level"),
+                "practical_gate_pass": practical_gate.get("pass"),
+                "practical_gate_promote": practical_gate.get("promote"),
+                "practical_gate_label": practical_gate.get("label"),
+                "practical_gate_reasons": practical_gate.get("reasons") or [],
+                "practical_gate_evidence": gate_evidence,
             }
         )
     return normalized
