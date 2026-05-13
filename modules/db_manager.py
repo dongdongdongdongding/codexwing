@@ -10,6 +10,29 @@ from datetime import datetime, timedelta, timezone
 load_dotenv()
 load_dotenv(".env.local")
 
+LOCAL_SCHEMA_EXTENSION_COLUMNS = {
+    "market_scan_results": {
+        "foreigner",
+        "foreign_flow",
+        "institution",
+        "institution_flow",
+        "retail",
+        "retail_flow",
+        "flow_consensus_buying",
+        "retail_dominant",
+        "dominant",
+        "whale_trend",
+    },
+    "scan_deep_reports": {
+        "selection_alignment",
+        "selection_thesis",
+        "risk_overrides",
+        "entry_action",
+        "practical_entry_gate",
+        "flow",
+    },
+}
+
 class DBManager:
     def __init__(self):
         self.url = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
@@ -34,6 +57,7 @@ class DBManager:
             response = self.client.table(table_name).select("*").limit(1).execute()
             rows = response.data or []
             cols = set(rows[0].keys()) if rows else set()
+            cols |= LOCAL_SCHEMA_EXTENSION_COLUMNS.get(table_name, set())
             self._table_columns_cache[table_name] = cols
             return cols
         except Exception:

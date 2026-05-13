@@ -71,6 +71,18 @@ class _FakeClient:
         return _FakeTableQuery(self.rows)
 
 
+def test_table_column_probe_includes_local_schema_extensions():
+    db = DBManager.__new__(DBManager)
+    db.client = _FakeClient([{"id": 1, "ticker": "005930.KS"}])
+    db._table_columns_cache = {}
+
+    cols = db._get_table_columns("market_scan_results")
+
+    assert "ticker" in cols
+    assert "foreigner" in cols
+    assert "retail_flow" in cols
+
+
 def test_choose_feature_rich_peer_prefers_scanner_full_over_stub():
     db = DBManager.__new__(DBManager)
     rows = [

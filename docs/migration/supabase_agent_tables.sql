@@ -249,6 +249,16 @@ alter table public.market_scan_results
   add column if not exists theme_inference_status text,
   add column if not exists secondary_themes jsonb,
   add column if not exists theme_routing_path text,
+  add column if not exists foreigner double precision,
+  add column if not exists foreign_flow double precision,
+  add column if not exists institution double precision,
+  add column if not exists institution_flow double precision,
+  add column if not exists retail double precision,
+  add column if not exists retail_flow double precision,
+  add column if not exists flow_consensus_buying boolean,
+  add column if not exists retail_dominant boolean,
+  add column if not exists dominant text,
+  add column if not exists whale_trend text,
   add column if not exists rationale jsonb,
   add column if not exists theme_risk jsonb;
 
@@ -344,10 +354,16 @@ create table if not exists public.scan_deep_reports (
   accuracy double precision,
   day_change_pct double precision,
   loss_risk_score double precision,
+  selection_alignment jsonb default '{}'::jsonb,
   risk_flags jsonb default '[]'::jsonb,
   rationale jsonb default '[]'::jsonb,
   prediction jsonb default '{}'::jsonb,
+  selection_thesis jsonb default '{}'::jsonb,
+  risk_overrides jsonb default '{}'::jsonb,
+  entry_action jsonb default '{}'::jsonb,
+  practical_entry_gate jsonb default '{}'::jsonb,
   trade_plan jsonb default '{}'::jsonb,
+  flow jsonb default '{}'::jsonb,
   theme jsonb default '{}'::jsonb,
   price jsonb default '{}'::jsonb,
   news jsonb default '{}'::jsonb,
@@ -362,3 +378,11 @@ create index if not exists idx_scan_deep_reports_run_rank
 
 create index if not exists idx_scan_deep_reports_ticker_generated_at
   on public.scan_deep_reports (ticker, generated_at desc);
+
+alter table public.scan_deep_reports
+  add column if not exists selection_alignment jsonb default '{}'::jsonb,
+  add column if not exists selection_thesis jsonb default '{}'::jsonb,
+  add column if not exists risk_overrides jsonb default '{}'::jsonb,
+  add column if not exists entry_action jsonb default '{}'::jsonb,
+  add column if not exists practical_entry_gate jsonb default '{}'::jsonb,
+  add column if not exists flow jsonb default '{}'::jsonb;

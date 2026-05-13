@@ -58,6 +58,16 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
     payload = build_scan_result_payload(
         {
             "kospi_chg": 1.23,
+            "foreigner": 1500000000,
+            "institution": 700000000,
+            "retail": -2200000000,
+            "foreign_flow": 1500000000,
+            "institution_flow": 700000000,
+            "retail_flow": -2200000000,
+            "flow_consensus_buying": True,
+            "retail_dominant": False,
+            "dominant": "외인",
+            "whale_trend": "↗ 순매수",
             "conviction_score": 72.5,
             "market_gate": "GREEN",
             "verdict": "BUY",
@@ -89,6 +99,16 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
         fallback_keys=DEFAULT_FALLBACK_KEYS,
     )
     assert payload["kospi_chg"] == 1.23
+    assert payload["foreigner"] == 1500000000.0
+    assert payload["institution"] == 700000000.0
+    assert payload["retail"] == -2200000000.0
+    assert payload["foreign_flow"] == 1500000000.0
+    assert payload["institution_flow"] == 700000000.0
+    assert payload["retail_flow"] == -2200000000.0
+    assert payload["flow_consensus_buying"] is True
+    assert payload["retail_dominant"] is False
+    assert payload["dominant"] == "외인"
+    assert payload["whale_trend"] == "↗ 순매수"
     assert payload["conviction_score"] == 72.5
     assert payload["market_gate"] == "GREEN"
     assert payload["verdict"] == "BUY"

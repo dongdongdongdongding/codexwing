@@ -2173,6 +2173,35 @@ def compute_kr_flow_leader_signal(
         }
 
 
+def _flow_persistence_fields(whale_data: Optional[Dict[str, Any]], leader_signal: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    whale = whale_data if isinstance(whale_data, dict) else {}
+    leader = leader_signal if isinstance(leader_signal, dict) else {}
+
+    def pick(*keys: str, default: Any = None) -> Any:
+        for source in (whale, leader):
+            for key in keys:
+                value = source.get(key)
+                if value is not None and value != "":
+                    return value
+        return default
+
+    foreigner = _safe_numeric(pick("foreigner", "foreign_flow"), 0.0)
+    institution = _safe_numeric(pick("institution", "institution_flow"), 0.0)
+    retail = _safe_numeric(pick("retail", "retail_flow"), 0.0)
+    return {
+        "foreigner": round(float(foreigner), 1),
+        "foreign_flow": round(float(foreigner), 1),
+        "institution": round(float(institution), 1),
+        "institution_flow": round(float(institution), 1),
+        "retail": round(float(retail), 1),
+        "retail_flow": round(float(retail), 1),
+        "flow_consensus_buying": bool(pick("flow_consensus_buying", default=False)),
+        "retail_dominant": bool(pick("retail_dominant", default=False)),
+        "dominant": pick("dominant", default=None),
+        "whale_trend": pick("whale_trend", default=None),
+    }
+
+
 def detect_market_leader(
     df: Any,
     ml_prob: float,
@@ -2497,6 +2526,7 @@ def build_kr_scan_outputs(
     continuation_prob_3d: Optional[float] = None,
     continuation_evidence: int = 0,
     continuation_gate_reasons: Optional[list[str]] = None,
+    whale_data: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Build KR scanner table row + DB payload with legacy field compatibility."""
     curr_fmt = "{:,.0f}"
@@ -2534,6 +2564,7 @@ def build_kr_scan_outputs(
         phase25_prob=phase25_prob,
         expected_edge_score=expected_edge_score,
     )
+    flow_fields = _flow_persistence_fields(whale_data, leader_metrics)
 
     res_data = {
         "Tier": tier,
@@ -2542,6 +2573,10 @@ def build_kr_scan_outputs(
         "종목명": stock_name,
         "Antigrav": int(alpha_score),
         "수급": f"{whale_score}점 {whale_trend}",
+        "foreigner": flow_fields["foreigner"],
+        "institution": flow_fields["institution"],
+        "retail": flow_fields["retail"],
+        "dominant": flow_fields["dominant"],
         "추세": real_trend,
         "전일비": f"{prev_pct_change:+.2f}%",
         "연속등락": f"{consec_days}일 연속 상승" if consec_days > 0 else f"{abs(consec_days)}일 연속 하락",
@@ -2611,6 +2646,7 @@ def build_kr_scan_outputs(
         "ml_prob": stored_prob_5,
         "prob_clean": stored_prob_clean,
         "whale_score": int(whale_score),
+        **flow_fields,
         "fund_status": "Pass" if fund_ok else "Fail",
         "initial_trend": real_trend,
         "market_type": m_type,
@@ -3923,6 +3959,7 @@ def evaluate_app_kr_candidate(
         continuation_prob_3d=round(float(continuation_signal.get("prob_up_3d", 50.0) or 50.0), 4),
         continuation_evidence=int(continuation_signal.get("evidence", 0) or 0),
         continuation_gate_reasons=list(continuation_signal.get("reasons", []) or []),
+        whale_data=whale_data,
     )
     outputs["res_data"]["_segment_overlay"] = segment_overlay
     outputs["res_data"]["_continuation_signal"] = continuation_signal

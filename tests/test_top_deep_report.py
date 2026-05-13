@@ -156,7 +156,7 @@ def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():
         )
 
     assert result["rows_upserted"] == 1
-    assert "flow" not in captured["rows"][0]
+    assert captured["rows"][0]["flow"] == {"foreigner": 1}
 
 
 def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empty():

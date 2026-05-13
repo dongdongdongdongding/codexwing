@@ -34,10 +34,16 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "accuracy",
     "day_change_pct",
     "loss_risk_score",
+    "selection_alignment",
     "risk_flags",
     "rationale",
     "prediction",
+    "selection_thesis",
+    "risk_overrides",
+    "entry_action",
+    "practical_entry_gate",
     "trade_plan",
+    "flow",
     "theme",
     "price",
     "news",
@@ -282,9 +288,9 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
     base = {**(row if isinstance(row, dict) else {}), **(trace if isinstance(trace, dict) else {})}
     direct = {
         "whale_score": _safe_float(_first_present(base, "whale_score", "Whale")),
-        "foreigner": _safe_float(_first_present(base, "foreigner", "foreign_net", "foreign_net_buy")),
-        "institution": _safe_float(_first_present(base, "institution", "institution_net", "institution_net_buy")),
-        "retail": _safe_float(_first_present(base, "retail", "individual", "individual_net", "retail_net_buy")),
+        "foreigner": _safe_float(_first_present(base, "foreigner", "foreign_flow", "foreign_net", "foreign_net_buy")),
+        "institution": _safe_float(_first_present(base, "institution", "institution_flow", "institution_net", "institution_net_buy")),
+        "retail": _safe_float(_first_present(base, "retail", "retail_flow", "individual", "individual_net", "retail_net_buy")),
     }
     if any(value is not None for value in direct.values()):
         whale = direct.get("whale_score")
