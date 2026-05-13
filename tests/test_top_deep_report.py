@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from modules.top_deep_report import build_top_deep_reports
+from modules.top_deep_report import build_top_deep_reports, upsert_reports_to_supabase
 
 
 def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
@@ -100,6 +100,51 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert readiness["final_buy_judgment"]["action"] in {"즉시 매수 가능", "조건부 매수 가능"}
     assert report["price"]["trend"] == "UP"
     assert report["news"]["headlines"][0]["title"] == "real headline"
+
+
+def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():
+    captured = {}
+
+    class FakeTable:
+        def delete(self):
+            return self
+
+        def eq(self, *_args):
+            return self
+
+        def upsert(self, rows, **_kwargs):
+            captured["rows"] = rows
+            return self
+
+        def execute(self):
+            return type("Response", (), {"data": []})()
+
+    class FakeClient:
+        def table(self, _name):
+            return FakeTable()
+
+    class FakeDB:
+        client = FakeClient()
+
+        def _filter_payload_to_existing_columns(self, _table, payload):
+            return dict(payload)
+
+    with patch("modules.db_manager.DBManager", return_value=FakeDB()):
+        result = upsert_reports_to_supabase(
+            [
+                {
+                    "report_id": "RUN-X:005930.KS:top_deep_report_v1",
+                    "report_version": "top_deep_report_v1",
+                    "run_id": "RUN-X",
+                    "ticker": "005930.KS",
+                    "generated_at": "2026-05-13T00:00:00+00:00",
+                    "flow": {"foreigner": 1},
+                }
+            ]
+        )
+
+    assert result["rows_upserted"] == 1
+    assert "flow" not in captured["rows"][0]
 
 
 def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empty():

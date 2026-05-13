@@ -16,6 +16,33 @@ from modules.ui_helpers import enrich_signal_rows_with_planner_trace, sort_signa
 REPORT_VERSION = "top_deep_report_v1"
 LOCAL_REPORT_DIR = Path("runtime_state/reports/top_deep")
 
+SCAN_DEEP_REPORT_COLUMNS = {
+    "report_id",
+    "report_version",
+    "run_id",
+    "market",
+    "scan_mode",
+    "rank",
+    "ticker",
+    "stock_name",
+    "generated_at",
+    "signal_label",
+    "decision",
+    "decision_bucket",
+    "buy_score",
+    "accuracy",
+    "day_change_pct",
+    "loss_risk_score",
+    "risk_flags",
+    "rationale",
+    "prediction",
+    "trade_plan",
+    "theme",
+    "price",
+    "news",
+    "data_warnings",
+}
+
 
 def _present(value: Any) -> bool:
     if value is None:
@@ -572,11 +599,19 @@ def upsert_reports_to_supabase(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
         db = DBManager()
         if not db.client:
             return {"rows_seen": len(reports), "rows_upserted": 0, "warning": "db_client_unavailable"}
+        filtered_reports = []
+        for row in reports:
+            if not isinstance(row, dict):
+                continue
+            filtered = db._filter_payload_to_existing_columns("scan_deep_reports", row)
+            if set(filtered.keys()) == set(row.keys()):
+                filtered = {key: value for key, value in row.items() if key in SCAN_DEEP_REPORT_COLUMNS}
+            filtered_reports.append(filtered)
         run_ids = sorted({str(row.get("run_id") or "") for row in reports if row.get("run_id")})
         for run_id in run_ids:
             db.client.table("scan_deep_reports").delete().eq("run_id", run_id).execute()
-        db.client.table("scan_deep_reports").upsert(reports, on_conflict="report_id").execute()
-        return {"rows_seen": len(reports), "rows_upserted": len(reports), "warning": ""}
+        db.client.table("scan_deep_reports").upsert(filtered_reports, on_conflict="report_id").execute()
+        return {"rows_seen": len(reports), "rows_upserted": len(filtered_reports), "warning": ""}
     except Exception as exc:
         return {"rows_seen": len(reports), "rows_upserted": 0, "warning": str(exc)}
 

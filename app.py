@@ -20,6 +20,7 @@ from modules import quant_analysis, db_manager, market_intelligence
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
 from modules.macro_scheduler import get_macro_context
 from modules.scanner_bridge import run_legacy_agent_bridge
+from modules.scan_persistence import persist_scan_run_artifacts
 from modules.scanner_runtime import SharedBackoffState, run_parallel_scan, scan_symbol_with_retry
 from modules.scanner_services import evaluate_uploaded_candidate, normalize_uploaded_ticker
 from modules.segment_accuracy import get_segment_accuracy_snapshot
@@ -839,7 +840,7 @@ def _get_scan_state_snapshot():
 
 
 def _load_top_deep_reports(limit=500):
-    rows = []
+    db_rows = []
     warning = ""
     try:
         db = db_manager.DBManager()
@@ -851,11 +852,9 @@ def _load_top_deep_reports(limit=500):
                 .limit(int(limit or 500))
                 .execute()
             )
-            rows = list(res.data or [])
+            db_rows = list(res.data or [])
     except Exception as exc:
         warning = str(exc)
-    if rows:
-        return rows, warning
 
     local_rows = []
     report_dir = Path("runtime_state/reports/top_deep")
@@ -867,7 +866,34 @@ def _load_top_deep_reports(limit=500):
                     local_rows.extend([row for row in payload if isinstance(row, dict)])
             except Exception:
                 continue
-    return local_rows[: int(limit or 500)], warning
+    merged_by_key = {}
+    order = []
+    for row in list(db_rows or []) + list(local_rows or []):
+        if not isinstance(row, dict):
+            continue
+        key = str(row.get("report_id") or "")
+        if not key:
+            key = f"{row.get('run_id') or ''}:{row.get('ticker') or ''}:{row.get('report_version') or ''}"
+        if key and key in merged_by_key:
+            existing = merged_by_key[key]
+            for item_key, value in row.items():
+                if item_key not in existing or existing.get(item_key) in (None, "", [], {}):
+                    existing[item_key] = value
+            continue
+        if key:
+            merged_by_key[key] = dict(row)
+            order.append(key)
+        else:
+            fallback_key = f"__row_{len(order)}"
+            merged_by_key[fallback_key] = dict(row)
+            order.append(fallback_key)
+    merged = [merged_by_key[key] for key in order]
+    merged = sorted(
+        merged,
+        key=lambda row: str(row.get("generated_at") or row.get("created_at") or ""),
+        reverse=True,
+    )
+    return merged[: int(limit or 500)], warning
 
 
 def _fmt_metric_pct(value):
@@ -1279,6 +1305,7 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
             run_id=scan_state.run_id,
             logger=lambda line: scan_state.append_log("info", line),
         )
+        deep_result = {}
         try:
             planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
             deep_result = generate_and_store_top_deep_reports(
@@ -1303,6 +1330,30 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
             if isinstance(bridge_info, dict):
                 bridge_info.setdefault("errors", []).append(f"top_deep_report_failed:{exc}")
             scan_state.append_log("error", f"❌ Top 정밀분석 리포트 생성 실패: {exc}")
+
+        try:
+            persistence_result = persist_scan_run_artifacts(
+                run_id=scan_state.run_id,
+                market=market,
+                scan_mode=scan_mode,
+                results=results,
+                total_scans=planned_scan_count,
+                diagnostics=diagnostics,
+                bridge_info=bridge_info,
+                top_deep_reports=deep_result,
+                warnings=[],
+                source="web_streamlit",
+            )
+            if isinstance(bridge_info, dict):
+                bridge_info["scan_artifacts"] = persistence_result
+            scan_state.append_log(
+                "info",
+                f"💾 스캔 artifact 저장 완료: {persistence_result.get('artifact_dir', '')}",
+            )
+        except Exception as exc:
+            if isinstance(bridge_info, dict):
+                bridge_info.setdefault("errors", []).append(f"scan_artifact_persist_failed:{exc}")
+            scan_state.append_log("error", f"❌ 스캔 artifact 저장 실패: {exc}")
 
         scan_state.update(
             status="completed",

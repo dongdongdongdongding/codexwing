@@ -122,7 +122,7 @@ def load_local_scan_archive_rows(*, artifact_dir: Path = ARTIFACT_DIR, limit_run
         run_id = str(summary.get("run_id") or run_dir.name)
         market = str(summary.get("market") or "")
         scan_mode = str(summary.get("scan_mode") or "SWING")
-        created_at = _mtime_iso(summary_path)
+        created_at = str(summary.get("created_at") or _mtime_iso(summary_path))
         result_rows = raw.get("results_sorted")
         if not isinstance(result_rows, list):
             scan_result = raw.get("scan_result") if isinstance(raw.get("scan_result"), dict) else {}
