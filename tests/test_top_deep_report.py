@@ -80,7 +80,7 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["report_id"] == "RUN-TEST:005930.KS:top_deep_report_v1"
     assert report["signal_label"] == "PRIMARY_BUY"
     assert report["selection_alignment"]["raw_scan_rank"] == 1
-    assert report["selection_alignment"]["source_order"] == "planner_priority_relative_rank"
+    assert report["selection_alignment"]["source_order"] == "execution_priority_exception_then_planner_top"
     assert report["loss_risk_score"] == 42.0
     assert report["buy_score"] == 77.5
     assert report["accuracy"] is not None
@@ -190,3 +190,37 @@ def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empt
 
     assert [row["ticker"] for row in reports] == ["AAA.KQ", "BBB.KQ", "CCC.KQ"]
     assert [row["rank"] for row in reports] == [1, 2, 3]
+
+
+def test_build_top_deep_reports_uses_execution_priority_exception_first():
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {"warnings": [], "ohlcv_tail": []}
+        news.return_value = {"status": "OK", "sentiment_score": 0.0, "headlines": [], "warnings": []}
+        flow.return_value = {"valid": False, "warnings": ["test_unavailable"]}
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {"ticker": "RAW.KS", "Decision Score": 99.0},
+                {"ticker": "EX.KS", "Decision Score": 70.0},
+                {"ticker": "TOP.KS", "Decision Score": 88.0},
+            ],
+            planner_payload={
+                "decisions": [
+                    {"ticker": "TOP.KS", "decision": "PRIORITY_WATCHLIST", "priority_rank": 1, "relative_rank_score": 70.0},
+                    {"ticker": "EX.KS", "decision": "WATCHLIST", "decision_bucket": "exception_leader", "priority_rank": 2, "relative_rank_score": 50.0},
+                    {"ticker": "RAW.KS", "decision": "WATCHLIST", "priority_rank": 3, "relative_rank_score": 30.0},
+                ],
+            },
+            run_id="RUN-EXEC",
+            market="KOSPI",
+            scan_mode="SWING",
+            top_n=3,
+        )
+
+    assert [row["ticker"] for row in reports] == ["EX.KS", "TOP.KS", "RAW.KS"]
+    assert reports[0]["selection_alignment"]["execution_priority_label"] == "Exception Leader"
+    assert reports[0]["selection_alignment"]["source_order"] == "execution_priority_exception_then_planner_top"

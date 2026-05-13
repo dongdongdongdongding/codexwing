@@ -10,7 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 from modules.entry_readiness import build_entry_readiness_analysis
-from modules.ui_helpers import enrich_signal_rows_with_planner_trace, sort_signal_rows_by_planner_rank
+from modules.ui_helpers import build_execution_priority_records, enrich_signal_rows_with_planner_trace
 
 
 REPORT_VERSION = "top_deep_report_v1"
@@ -127,7 +127,7 @@ def _select_top_candidates(
         ranked_rows.append(copy)
     enriched = enrich_signal_rows_with_planner_trace(ranked_rows, planner_payload)
     rows = [row for row in enriched if _ticker(row)]
-    return sort_signal_rows_by_planner_rank(rows, planner_payload)[: max(int(limit or 0), 0)]
+    return build_execution_priority_records(rows, planner_payload, limit=max(int(limit or 0), 0))
 
 
 def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
@@ -700,7 +700,9 @@ def build_top_deep_reports(
                 "planner_decision": str(trace.get("decision") or row.get("decision") or ""),
                 "relative_rank_score": _safe_float(trace.get("relative_rank_score") or row.get("relative_rank_score")),
                 "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
-                "source_order": "planner_priority_relative_rank",
+                "execution_priority_rank": _safe_int(row.get("_execution_priority_rank")),
+                "execution_priority_label": str(row.get("_execution_priority_label") or ""),
+                "source_order": str(row.get("_source_order") or "execution_priority_exception_then_planner_top"),
             },
             "buy_score": buy_score,
             "accuracy": _segment_accuracy(row, trace, ticker, market, scan_mode),

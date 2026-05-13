@@ -215,7 +215,7 @@ def build_action_display(row: Dict[str, Any]) -> Dict[str, Any]:
     if decision in {"AVOID", "REJECT", "SELL", "NO_BUY", "NO_NEW_BUY"} or trace_upper.intersection(hard_markers):
         label = "매수 금지"
         condition = "리스크 해소 전 신규 진입 금지"
-    elif decision == "EXCEPTION_LEADER":
+    elif is_exception_leader_row(row):
         label = "급등 분리 관찰"
         condition = "Stream B 소액 운용, 손절 엄수"
     elif trace_upper.intersection(wait_markers) or (risk_score is not None and risk_score >= 65):
@@ -252,13 +252,12 @@ def is_exception_leader_row(rec: Dict[str, Any]) -> bool:
     """
     if not isinstance(rec, dict):
         return False
-    d = str(
-        rec.get("decision")
-        or rec.get("Decision")
-        or rec.get("decision_bucket")
-        or ""
-    ).upper().strip()
-    if d == "EXCEPTION_LEADER":
+    decision_values = {
+        str(rec.get("decision") or "").upper().strip(),
+        str(rec.get("Decision") or "").upper().strip(),
+        str(rec.get("decision_bucket") or "").upper().strip(),
+    }
+    if "EXCEPTION_LEADER" in decision_values:
         return True
     rl = str(rec.get("risk_label") or "").upper().strip()
     rs = str(rec.get("reason") or rec.get("reject_reason") or "").lower()
@@ -274,6 +273,80 @@ def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[s
         "stream_a": [r for r in raw if isinstance(r, dict) and not is_exception_leader_row(r)],
         "stream_b": [r for r in raw if isinstance(r, dict) and is_exception_leader_row(r)],
     }
+
+
+def build_execution_priority_records(
+    records: List[Dict[str, Any]],
+    planner_payload: Dict[str, Any] | None = None,
+    *,
+    limit: int | None = None,
+) -> List[Dict[str, Any]]:
+    """Build the operator-facing execution top list.
+
+    This is presentation/order logic only. It does not change scanner scores,
+    planner gates, or persistence decisions. The display priority follows the
+    validated operating rule: Exception Leader first when present, then the
+    strongest planner Top candidates as backup.
+    """
+    source_records = enrich_signal_rows_with_planner_trace(records or [], planner_payload) if planner_payload else (records or [])
+    base_sorted = sort_signal_rows_by_planner_rank(source_records, planner_payload)
+
+    def _decision(row: Dict[str, Any]) -> str:
+        return str(
+            _coalesce_present(row.get("decision"), row.get("Decision"), row.get("decision_bucket"))
+            or ""
+        ).upper().strip()
+
+    def _lane(row: Dict[str, Any]) -> tuple[int, str]:
+        decision = _decision(row)
+        if is_exception_leader_row(row):
+            return 0, "Exception Leader"
+        if decision in {"STRONG_BUY", "PICK", "BUY", "PRIORITY_WATCHLIST"}:
+            return 1, "Planner Top"
+        if decision in {"WATCHLIST", "WATCHLIST_ONLY"}:
+            return 2, "Watchlist 보완"
+        return 3, "Raw Top 참고"
+
+    def _risk_penalty(row: Dict[str, Any]) -> int:
+        action = build_action_display(row)
+        label = str(action.get("label") or "")
+        if "금지" in label:
+            return 2
+        risk_score = _parse_percent_value(_coalesce_present(row.get("loss_risk_score"), row.get("Loss Risk")))
+        return 1 if risk_score is not None and risk_score >= 65 else 0
+
+    ranked: List[Dict[str, Any]] = []
+    for original_order, row in enumerate(base_sorted, start=1):
+        copy = dict(row)
+        lane, label = _lane(copy)
+        copy["_execution_lane"] = lane
+        copy["_execution_priority_label"] = label
+        copy["_planner_display_order"] = original_order
+        ranked.append(copy)
+
+    def _key(row: Dict[str, Any]) -> tuple:
+        relative = _display_rank_float(row.get("relative_rank_score")) or 0.0
+        edge = _display_rank_float(row.get("expected_edge_score")) or 0.0
+        score = _display_rank_float(row.get("decision_score") or row.get("Decision Score") or row.get("score")) or 0.0
+        raw_rank = _display_rank_float(row.get("_raw_scan_rank"))
+        lane = row.get("_execution_lane")
+        return (
+            _risk_penalty(row),
+            int(lane) if lane is not None else 9,
+            -edge,
+            -relative,
+            int(row.get("_planner_display_order") or 9999),
+            -score,
+            int(raw_rank) if raw_rank is not None else 9999,
+        )
+
+    out = sorted(ranked, key=_key)
+    for idx, row in enumerate(out, start=1):
+        row["_execution_priority_rank"] = idx
+        row["_source_order"] = "execution_priority_exception_then_planner_top"
+    if limit is not None:
+        return out[: max(int(limit or 0), 0)]
+    return out
 
 
 def build_live_cockpit_summary(
@@ -463,6 +536,8 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         ticker = str(_coalesce_present(row.get("ticker"), row.get("티커"), row.get("Ticker"), row.get("symbol")) or "").strip()
         name = str(_coalesce_present(row.get("stock_name"), row.get("종목명"), row.get("Name"), row.get("name")) or "").strip()
         decision = str(_coalesce_present(row.get("decision"), row.get("Decision"), row.get("decision_bucket")) or "").strip()
+        if is_exception_leader_row(row):
+            decision = "EXCEPTION_LEADER"
         tier = str(_coalesce_present(row.get("tier"), row.get("Tier")) or "").strip()
         strategy = str(_coalesce_present(row.get("strategy"), row.get("전략"), row.get("strategy_family")) or "").strip()
         buy_signal = " · ".join(part for part in (decision, tier, strategy) if part) or "-"
@@ -486,7 +561,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         #                  해서 원천값을 비워 보이지 않게 한다.
         #   - phase25_prob, AI확률, ml_prob : prob_5(5pct breakout) 계열로 의미 다름
         segment_win = lookup_segment_win_rate(
-            decision=row.get("decision") or row.get("Decision") or row.get("decision_bucket"),
+            decision=decision,
             market=row.get("market") or row.get("market_subtype"),
             scan_mode=row.get("scan_mode") or row.get("Scan Mode"),
             ticker=ticker,
@@ -525,6 +600,8 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "rank": rank,
                 "ticker": ticker,
                 "name": name,
+                "execution_priority_label": str(row.get("_execution_priority_label") or "").strip(),
+                "execution_priority_rank": row.get("_execution_priority_rank"),
                 "buy_signal": buy_signal,
                 "accuracy": _format_accuracy_label(accuracy_source),
                 "day_change": _format_percent_label(day_change_source),

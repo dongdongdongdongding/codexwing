@@ -7,6 +7,7 @@ from modules.quant_analysis import QuantStrategy
 from modules.scanner_runtime import run_parallel_scan
 from modules.ui_helpers import (
     build_action_display,
+    build_execution_priority_records,
     build_live_cockpit_summary,
     build_signal_display_rows,
     build_top_candidate_rows,
@@ -235,6 +236,26 @@ class UIHelperTests(unittest.TestCase):
         )
         sorted_rows = sort_signal_rows_by_planner_rank(rows)
         self.assertEqual([row["ticker"] for row in sorted_rows], ["TOP1.KS", "TOP2.KS", "RAW1.KS"])
+
+    def test_execution_priority_promotes_exception_leader_over_raw_top5(self):
+        rows = [
+            {"ticker": "RAW1.KS", "Decision Score": 99.0, "_raw_scan_rank": 1},
+            {"ticker": "EX1.KS", "Decision Score": 70.0, "_raw_scan_rank": 8},
+            {"ticker": "TOP1.KS", "Decision Score": 88.0, "_raw_scan_rank": 2},
+        ]
+        planner = {
+            "decisions": [
+                {"ticker": "TOP1.KS", "decision": "PRIORITY_WATCHLIST", "priority_rank": 1, "relative_rank_score": 70.0},
+                {"ticker": "EX1.KS", "decision": "WATCHLIST", "decision_bucket": "exception_leader", "priority_rank": 2, "relative_rank_score": 50.0},
+                {"ticker": "RAW1.KS", "decision": "WATCHLIST", "priority_rank": 3, "relative_rank_score": 30.0},
+            ]
+        }
+
+        execution = build_execution_priority_records(rows, planner, limit=3)
+
+        self.assertEqual([row["ticker"] for row in execution], ["EX1.KS", "TOP1.KS", "RAW1.KS"])
+        self.assertEqual(execution[0]["_execution_priority_label"], "Exception Leader")
+        self.assertEqual(execution[0]["_execution_priority_rank"], 1)
 
 
 class ScannerRuntimeTests(unittest.TestCase):

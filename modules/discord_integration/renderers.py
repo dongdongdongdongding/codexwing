@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
+from modules.ui_helpers import build_execution_priority_records
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 ARTIFACT_DIR = Path("runtime_state/artifacts")
@@ -190,7 +191,11 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     timing = readiness.get("timing") if isinstance(readiness.get("timing"), dict) else {}
     judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+    alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+    priority_label = alignment.get("execution_priority_label") or ""
+    priority_rank = alignment.get("execution_priority_rank") or row.get("rank")
     lines = [
+        f"실전우선: #{priority_rank or '-'} {priority_label or '-'}",
         f"액션: {judgment.get('action') or row.get('signal_label') or '-'}",
         (
             f"품질 {quality.get('grade') or '-'}({_fmt_num(quality.get('score'), 0)}) / "
@@ -234,7 +239,14 @@ def build_top_deep_embeds(
     latest_run = run_id or _latest_run_id(rows)
     if latest_run and not ticker:
         rows = [row for row in rows if str(row.get("run_id") or "") == latest_run]
-    rows = sorted(rows, key=lambda row: int(row.get("rank") or 9999))[safe_offset : safe_offset + safe_limit]
+    def _top_deep_sort_key(row: Dict[str, Any]) -> tuple[int, int]:
+        alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+        return (
+            _safe_int(alignment.get("execution_priority_rank"), _safe_int(row.get("rank"), 9999)),
+            _safe_int(row.get("rank"), 9999),
+        )
+
+    rows = sorted(rows, key=_top_deep_sort_key)[safe_offset : safe_offset + safe_limit]
     fields: List[Dict[str, Any]] = []
     for row in rows:
         rank = int(row.get("rank") or 0)
@@ -249,10 +261,10 @@ def build_top_deep_embeds(
         )
     return [
         {
-            "title": "Top 자동 정밀분석",
+            "title": "실전 우선 Top 자동 정밀분석",
             "description": (
                 f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-                "웹 Top 분석과 동일한 readiness 필드 기준"
+                "Exception Leader 우선 + Top 후보 보완 순서"
             ),
             "color": 0x3498DB,
             "fields": fields[:10],
@@ -273,18 +285,34 @@ def _load_archive_rows_from_artifact(run_id: str) -> List[Dict[str, Any]]:
     return [row for row in rows or [] if isinstance(row, dict)]
 
 
+def _load_planner_payload_for_run(run_id: str) -> Dict[str, Any]:
+    summary_path = ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json"
+    summary = _load_json(summary_path)
+    if isinstance(summary, dict):
+        manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
+        planner_path = manifest.get("planner_handoff")
+        if planner_path:
+            payload = _load_json(Path(str(planner_path)))
+            if isinstance(payload, dict):
+                return payload
+    fallback = Path("runtime_state/shared_working") / str(run_id) / "planner_handoff.json"
+    payload = _load_json(fallback)
+    return payload if isinstance(payload, dict) else {}
+
+
 def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
-    ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("Symbol") or "-"
-    name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or ticker
+    ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("Symbol") or row.get("티커") or "-"
+    name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or row.get("종목명") or ticker
     return f"#{rank} {name} ({ticker})"
 
 
 def _archive_row_value(row: Dict[str, Any]) -> str:
-    decision = row.get("decision") or row.get("Decision") or row.get("signal_label") or row.get("Strategy") or "-"
+    decision = row.get("decision") or row.get("Decision") or row.get("signal_label") or row.get("Strategy") or row.get("전략") or "-"
     score = row.get("buy_score") or row.get("Decision Score") or row.get("Score")
     loss = row.get("loss_risk_score") or row.get("Loss Risk")
-    day = row.get("day_change_pct") or row.get("Change %") or row.get("Day Change")
-    return f"{decision} · 점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"[:1024]
+    day = row.get("day_change_pct") or row.get("Change %") or row.get("Day Change") or row.get("전일비")
+    lane = row.get("_execution_priority_label")
+    return f"{lane or '후보'} · {decision} · 점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"[:1024]
 
 
 def build_archive_embed(
@@ -315,22 +343,29 @@ def build_archive_embed(
     if selected_run:
         artifact_rows = _load_archive_rows_from_artifact(selected_run)
         if artifact_rows:
-            source = "raw_scan_results"
-            run_rows = artifact_rows
+            source = "execution_priority(raw+planner)"
+            planner_payload = _load_planner_payload_for_run(selected_run)
+            run_rows = build_execution_priority_records(artifact_rows, planner_payload)
             if ticker:
                 run_rows = [
                     row
                     for row in run_rows
-                    if str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or "").upper()
+                    if str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "").upper()
                     == str(ticker).upper()
                 ]
     fields = []
-    for idx, row in enumerate(sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))[
-        safe_offset : safe_offset + safe_limit
-    ], start=safe_offset + 1):
+    ordered_rows = (
+        run_rows
+        if str(source).startswith("execution_priority")
+        else sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))
+    )
+    for idx, row in enumerate(ordered_rows[safe_offset : safe_offset + safe_limit], start=safe_offset + 1):
         fields.append(
             {
-                "name": _archive_row_name(row, int(row.get("rank") or row.get("Rank") or idx)),
+                "name": _archive_row_name(
+                    row,
+                    int(row.get("_execution_priority_rank") or row.get("rank") or row.get("Rank") or idx),
+                ),
                 "value": _archive_row_value(row),
                 "inline": False,
             }
