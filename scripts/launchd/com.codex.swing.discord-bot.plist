@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.codex.swing.discord-bot</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/dongdong/Projects/codex_swing/swing-main/scripts/run_discord_bot.sh</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/discord_bot.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/discord_bot.err.log</string>
+</dict>
+</plist>

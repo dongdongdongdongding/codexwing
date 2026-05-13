@@ -112,6 +112,21 @@ Run the bot:
 python3 multi_agent/tools/discord_bot.py
 ```
 
+For a persistent local Mac service, install the LaunchAgent:
+
+```bash
+cp scripts/launchd/com.codex.swing.discord-bot.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.codex.swing.discord-bot.plist
+launchctl print gui/$(id -u)/com.codex.swing.discord-bot
+```
+
+The LaunchAgent runs `scripts/run_discord_bot.sh` and writes logs to:
+
+```text
+runtime_state/discord_jobs/discord_bot.out.log
+runtime_state/discord_jobs/discord_bot.err.log
+```
+
 The first runnable command should be `/status`. Read-only commands
 `/top_deep` and `/archive` read the same local/Supabase-derived artifacts used
 by the web UI. `/kospi_scan` and `/kosdaq_scan` acknowledge the full-universe

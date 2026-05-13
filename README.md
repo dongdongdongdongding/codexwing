@@ -96,6 +96,13 @@ python3 multi_agent/tools/discord_register_commands.py
 python3 multi_agent/tools/discord_bot.py
 ```
 
+Persistent local bot runner:
+
+```bash
+cp scripts/launchd/com.codex.swing.discord-bot.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.codex.swing.discord-bot.plist
+```
+
 Configure Discord values in `.env.local` and keep `DISCORD_DRY_RUN=1` until the doctor passes. See:
 
 - `docs/operations/DISCORD_INTEGRATION.md`
