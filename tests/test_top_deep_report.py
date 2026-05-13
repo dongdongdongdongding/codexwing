@@ -79,10 +79,17 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     report = reports[0]
     assert report["report_id"] == "RUN-TEST:005930.KS:top_deep_report_v1"
     assert report["signal_label"] == "PRIMARY_BUY"
+    assert report["selection_alignment"]["raw_scan_rank"] == 1
+    assert report["selection_alignment"]["source_order"] == "planner_priority_relative_rank"
     assert report["loss_risk_score"] == 42.0
     assert report["buy_score"] == 77.5
     assert report["accuracy"] is not None
     assert report["prediction"]["expected_return_3d_pct"] == 2.3
+    assert report["selection_thesis"]["status"] == "planner_priority"
+    assert report["selection_thesis"]["scanner_basis"]["expected_return_3d_pct"] == 2.3
+    assert "selection_thesis" in report["trade_plan"]
+    assert report["risk_overrides"]["severity"] in {"none", "soft"}
+    assert report["entry_action"]["judgment"]["action"] in {"즉시 매수 가능", "조건부 매수 가능"}
     assert report["trade_plan"]["target_tp_pct"] is not None
     assert report["trade_plan"]["stop_sl_pct"] is not None
     assert report["trade_plan"]["hold_days"] is not None

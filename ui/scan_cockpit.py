@@ -46,6 +46,27 @@ def _fmt_pct_or_dash(value: Any) -> str:
         return "-"
 
 
+def _fmt_score_or_dash(value: Any) -> str:
+    if value is None or value == "":
+        return "-"
+    try:
+        return f"{float(str(value).replace('%', '').replace(',', '').strip()):.1f}"
+    except Exception:
+        return str(value)
+
+
+def _ticker_of(row: Dict[str, Any]) -> str:
+    return str(row.get("ticker") or row.get("티커") or row.get("Ticker") or row.get("symbol") or "").strip()
+
+
+def _name_of(row: Dict[str, Any]) -> str:
+    return str(row.get("stock_name") or row.get("종목명") or row.get("Name") or row.get("name") or "").strip()
+
+
+def _score_of(row: Dict[str, Any]) -> Any:
+    return row.get("Decision Score") or row.get("decision_score") or row.get("score")
+
+
 def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "표시할 후보가 없습니다.") -> None:
     if not rows:
         st.info(empty_text)
@@ -127,8 +148,9 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     # Stream A (안전 80%) = PRIORITY/WATCHLIST/OBSERVE 위주
     # Stream B (급등 20%) = EXCEPTION_LEADER만
     planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+    raw_score_records = results_df.to_dict("records")
     raw_records = enrich_signal_rows_with_planner_trace(
-        results_df.to_dict("records"),
+        raw_score_records,
         planner_payload,
     )
     raw_records = sort_signal_rows_by_planner_rank(raw_records, planner_payload)
@@ -157,6 +179,39 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         f"{cockpit['market']} live policy: {cockpit['policy']} | "
         f"5D target return: {cockpit['validated_return']} | {cockpit['sample']}"
     )
+
+    planner_top = [_ticker_of(row) for row in raw_records[:5]]
+    raw_top = [_ticker_of(row) for row in raw_score_records[:5]]
+    overlap = len(set(planner_top).intersection(raw_top)) if planner_top and raw_top else 0
+    with st.expander("스캔 원본 상위 vs 플래너 실행 후보", expanded=overlap < 3):
+        st.caption(
+            "원본 스캔 상위는 Decision Score 기준입니다. Top 매수 신호와 자동 정밀분석은 "
+            "플래너가 손실위험, 기대수익, 상대순위, 시장 게이트를 반영해 재정렬한 실행 후보 기준입니다."
+        )
+        c_raw, c_plan = st.columns(2)
+        with c_raw:
+            st.markdown("**원본 스캔 상위 5 · Decision Score**")
+            for idx, row in enumerate(raw_score_records[:5], start=1):
+                ticker = _ticker_of(row)
+                st.caption(
+                    f"#{idx} {ticker} {_name_of(row)} · Score {_fmt_score_or_dash(_score_of(row))} · "
+                    f"{row.get('전략') or row.get('strategy') or '-'}"
+                )
+        with c_plan:
+            st.markdown("**플래너 실행 후보 5 · 정밀분석 기준**")
+            for idx, row in enumerate(raw_records[:5], start=1):
+                ticker = _ticker_of(row)
+                decision = row.get("decision") or row.get("Decision") or "-"
+                rel = row.get("relative_rank_score")
+                loss = row.get("loss_risk_score")
+                st.caption(
+                    f"#{idx} {ticker} {_name_of(row)} · {decision} · "
+                    f"Rel {_fmt_score_or_dash(rel)} · Loss {_fmt_score_or_dash(loss)}"
+                )
+        if overlap < min(len(raw_top), len(planner_top), 5):
+            st.warning(
+                "두 목록이 다릅니다. 이는 정밀분석이 원본 점수 상위가 아니라 플래너 실행 후보를 분석한다는 뜻입니다."
+            )
 
     if not stream_a_rows and not stream_b_rows:
         st.markdown("### 🔥 매수 신호")

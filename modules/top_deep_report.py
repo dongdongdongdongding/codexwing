@@ -118,7 +118,14 @@ def _select_top_candidates(
     planner_payload: Dict[str, Any],
     limit: int,
 ) -> List[Dict[str, Any]]:
-    enriched = enrich_signal_rows_with_planner_trace(scan_rows, planner_payload)
+    ranked_rows = []
+    for idx, row in enumerate(scan_rows or [], start=1):
+        if not isinstance(row, dict):
+            continue
+        copy = dict(row)
+        copy.setdefault("_raw_scan_rank", idx)
+        ranked_rows.append(copy)
+    enriched = enrich_signal_rows_with_planner_trace(ranked_rows, planner_payload)
     rows = [row for row in enriched if _ticker(row)]
     return sort_signal_rows_by_planner_rank(rows, planner_payload)[: max(int(limit or 0), 0)]
 
@@ -502,6 +509,110 @@ def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str, price
     return _derive_trade_price_levels(policy, price, ticker)
 
 
+def _build_selection_thesis(
+    *,
+    row: Dict[str, Any],
+    trace: Dict[str, Any],
+    prediction: Dict[str, Any],
+    readiness: Dict[str, Any],
+) -> Dict[str, Any]:
+    merged = {**(row if isinstance(row, dict) else {}), **(trace if isinstance(trace, dict) else {})}
+    decision = str(merged.get("decision") or "").upper()
+    raw_score = _safe_float(_first_present(row, "Decision Score", "decision_score", "score"))
+    relative_score = _safe_float(merged.get("relative_rank_score"))
+    expected_edge = _safe_float(prediction.get("expected_edge_score"))
+    loss = _safe_float(merged.get("loss_risk_score"))
+    selection_reasons = []
+    for item in merged.get("rationale") or []:
+        text = str(item).strip()
+        if text and text not in selection_reasons:
+            selection_reasons.append(text)
+        if len(selection_reasons) >= 8:
+            break
+
+    if decision in {"PRIORITY_WATCHLIST", "PICK", "BUY", "STRONG_BUY"}:
+        status = "planner_priority"
+        summary = "플래너가 실행 후보군으로 유지한 종목입니다."
+    elif decision in {"WATCHLIST", "WATCHLIST_ONLY"}:
+        status = "planner_watchlist"
+        summary = "스캔 강도는 있으나 플래너가 감시 후보로 낮춘 종목입니다."
+    elif decision in {"OBSERVE", "AVOID"}:
+        status = "planner_demoted"
+        summary = "스캔에는 포착됐지만 플래너가 관망/회피로 강등한 종목입니다."
+    else:
+        status = "scanner_candidate"
+        summary = "스캔 후보로 포착된 종목입니다."
+
+    if raw_score is not None and raw_score >= 80 and decision in {"OBSERVE", "AVOID"}:
+        summary += " 원본 점수는 높지만 손실위험/기대수익/상대순위에서 차단 신호가 있습니다."
+    elif expected_edge is not None and expected_edge < 0:
+        summary += " 다만 기대 엣지는 음수라 즉시 매수 논리는 약합니다."
+    elif loss is not None and loss >= 65:
+        summary += " 손실위험 하드캡에 가까워 진입 판단은 보수적으로 봅니다."
+
+    quality = readiness.get("quality") if isinstance(readiness.get("quality"), dict) else {}
+    timing = readiness.get("timing") if isinstance(readiness.get("timing"), dict) else {}
+    upside = readiness.get("upside") if isinstance(readiness.get("upside"), dict) else {}
+    return {
+        "status": status,
+        "summary": summary,
+        "scanner_basis": {
+            "raw_decision_score": raw_score,
+            "quant_priority_score": _safe_float(merged.get("quant_priority_score")),
+            "relative_rank_score": relative_score,
+            "relative_rank_pct": _safe_float(merged.get("relative_rank_pct")),
+            "expected_edge_score": expected_edge,
+            "expected_return_1d_pct": _safe_float(prediction.get("expected_return_1d_pct")),
+            "expected_return_3d_pct": _safe_float(prediction.get("expected_return_3d_pct")),
+            "loss_risk_score": loss,
+        },
+        "readiness_snapshot": {
+            "quality_score": quality.get("score"),
+            "upside_score": upside.get("score"),
+            "timing_score": timing.get("score"),
+            "chase_risk_level": readiness.get("chase_risk_level"),
+        },
+        "selection_reasons": selection_reasons,
+    }
+
+
+def _build_risk_overrides(
+    *,
+    row: Dict[str, Any],
+    trace: Dict[str, Any],
+    readiness: Dict[str, Any],
+    loss_risk_score: float | None,
+) -> Dict[str, Any]:
+    merged = {**(row if isinstance(row, dict) else {}), **(trace if isinstance(trace, dict) else {})}
+    flags = []
+    for source in (merged.get("theme_risk"), merged.get("risk_flags"), merged.get("rationale")):
+        for item in source or []:
+            text = str(item).strip()
+            if text and text not in flags:
+                flags.append(text)
+    upside = readiness.get("upside") if isinstance(readiness.get("upside"), dict) else {}
+    filters = upside.get("filters") if isinstance(upside.get("filters"), list) else []
+    triggered_filters = [item for item in filters if isinstance(item, dict) and item.get("triggered")]
+    warnings = [str(item) for item in readiness.get("warnings") or [] if str(item).strip()]
+    severity = "none"
+    if loss_risk_score is not None and loss_risk_score >= 65:
+        severity = "hard"
+    elif any(str(item.get("severity")) == "block" for item in triggered_filters):
+        severity = "hard"
+    elif loss_risk_score is not None and loss_risk_score >= 45:
+        severity = "soft"
+    elif triggered_filters:
+        severity = "soft"
+
+    return {
+        "severity": severity,
+        "loss_risk_score": loss_risk_score,
+        "triggered_chase_filters": triggered_filters,
+        "planner_risk_flags": flags[:10],
+        "data_warnings": warnings[:8],
+    }
+
+
 def build_top_deep_reports(
     *,
     scan_rows: List[Dict[str, Any]],
@@ -542,6 +653,23 @@ def build_top_deep_reports(
             news=news,
             loss_risk_score=loss_risk,
         )
+        selection_thesis = _build_selection_thesis(
+            row=row,
+            trace=trace,
+            prediction=prediction,
+            readiness=readiness_analysis,
+        )
+        risk_overrides = _build_risk_overrides(
+            row=row,
+            trace=trace,
+            readiness=readiness_analysis,
+            loss_risk_score=loss_risk,
+        )
+        entry_action = {
+            "judgment": readiness_analysis.get("final_buy_judgment"),
+            "entry_strategy": readiness_analysis.get("entry_strategy"),
+            "risk_management": readiness_analysis.get("risk_management"),
+        }
         trade_policy["readiness_analysis"] = readiness_analysis
         if isinstance(readiness_analysis.get("entry_strategy"), dict):
             trade_policy["entry_strategy"] = readiness_analysis["entry_strategy"]
@@ -549,6 +677,9 @@ def build_top_deep_reports(
             trade_policy["risk_management"] = readiness_analysis["risk_management"]
         if isinstance(readiness_analysis.get("data_coverage"), dict):
             trade_policy["data_coverage"] = readiness_analysis["data_coverage"]
+        trade_policy["selection_thesis"] = selection_thesis
+        trade_policy["risk_overrides"] = risk_overrides
+        trade_policy["entry_action"] = entry_action
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -562,6 +693,15 @@ def build_top_deep_reports(
             "signal_label": _signal_label({**row, **trace}, loss_risk),
             "decision": str(_first_present(row, "decision", "Decision") or trace.get("decision") or ""),
             "decision_bucket": str(_first_present(row, "decision_bucket") or trace.get("decision_bucket") or ""),
+            "selection_alignment": {
+                "raw_scan_rank": _safe_int(row.get("_raw_scan_rank")),
+                "planner_priority_rank": _safe_int(trace.get("priority_rank") or row.get("priority_rank")),
+                "raw_decision_score": _safe_float(_first_present(row, "Decision Score", "decision_score", "score")),
+                "planner_decision": str(trace.get("decision") or row.get("decision") or ""),
+                "relative_rank_score": _safe_float(trace.get("relative_rank_score") or row.get("relative_rank_score")),
+                "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
+                "source_order": "planner_priority_relative_rank",
+            },
             "buy_score": buy_score,
             "accuracy": _segment_accuracy(row, trace, ticker, market, scan_mode),
             "day_change_pct": day_change,
@@ -569,6 +709,9 @@ def build_top_deep_reports(
             "risk_flags": trace.get("theme_risk") or row.get("theme_risk") or [],
             "rationale": trace.get("rationale") or row.get("rationale") or [],
             "prediction": prediction,
+            "selection_thesis": selection_thesis,
+            "risk_overrides": risk_overrides,
+            "entry_action": entry_action,
             "trade_plan": trade_policy,
             "flow": flow,
             "theme": {

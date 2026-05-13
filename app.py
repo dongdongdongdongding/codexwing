@@ -1070,6 +1070,47 @@ def _render_data_backed_action_plan(trade_plan, readiness):
         st.caption("액션 플랜 경고: " + " / ".join(str(x) for x in risk_warnings[:4]))
 
 
+def _render_selection_thesis(row, trade_plan):
+    row = row if isinstance(row, dict) else {}
+    trade_plan = trade_plan if isinstance(trade_plan, dict) else {}
+    thesis = row.get("selection_thesis") if isinstance(row.get("selection_thesis"), dict) else {}
+    if not thesis:
+        thesis = trade_plan.get("selection_thesis") if isinstance(trade_plan.get("selection_thesis"), dict) else {}
+    overrides = row.get("risk_overrides") if isinstance(row.get("risk_overrides"), dict) else {}
+    if not overrides:
+        overrides = trade_plan.get("risk_overrides") if isinstance(trade_plan.get("risk_overrides"), dict) else {}
+    if not thesis and not overrides:
+        return
+
+    st.markdown("**스캔 선정 논리와 리스크 재판정**")
+    left, right = st.columns(2)
+    with left:
+        st.success(str(thesis.get("summary") or "-"))
+        basis = thesis.get("scanner_basis") if isinstance(thesis.get("scanner_basis"), dict) else {}
+        b1, b2, b3 = st.columns(3)
+        b1.metric("원본 점수", _fmt_metric_num(basis.get("raw_decision_score"), 1))
+        b2.metric("상대순위", _fmt_metric_num(basis.get("relative_rank_score"), 1))
+        b3.metric("기대엣지", _fmt_metric_num(basis.get("expected_edge_score"), 1))
+        reasons = thesis.get("selection_reasons") if isinstance(thesis.get("selection_reasons"), list) else []
+        if reasons:
+            st.caption("선정 근거: " + " / ".join(str(x) for x in reasons[:5]))
+    with right:
+        severity = str(overrides.get("severity") or "none")
+        if severity == "hard":
+            st.error("리스크 재판정: hard override")
+        elif severity == "soft":
+            st.warning("리스크 재판정: soft override")
+        else:
+            st.info("리스크 재판정: override 없음")
+        flags = overrides.get("planner_risk_flags") if isinstance(overrides.get("planner_risk_flags"), list) else []
+        triggered = overrides.get("triggered_chase_filters") if isinstance(overrides.get("triggered_chase_filters"), list) else []
+        if triggered:
+            labels = [str(item.get("label") or item.get("code")) for item in triggered if isinstance(item, dict)]
+            st.caption("추격 필터: " + " / ".join(labels[:4]))
+        if flags:
+            st.caption("플래너 리스크: " + " / ".join(str(x) for x in flags[:5]))
+
+
 def _render_top_deep_reports_page():
     _render_section_intro(
         "Top Deep Reports",
@@ -1127,16 +1168,22 @@ def _render_top_deep_reports_page():
         readiness = trade_plan.get("readiness_analysis") if isinstance(trade_plan.get("readiness_analysis"), dict) else {}
         theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
         flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
+        alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         title = f"#{int(row.get('rank') or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
         with st.container(border=True):
             st.markdown(f"### {title}")
-            st.caption(f"{row.get('signal_label') or '-'} · {row.get('decision') or '-'} · {theme.get('primary_theme') or '-'}")
+            st.caption(
+                f"{row.get('signal_label') or '-'} · {row.get('decision') or '-'} · {theme.get('primary_theme') or '-'} · "
+                f"원본스캔 #{alignment.get('raw_scan_rank') or '-'} / 플래너 #{alignment.get('planner_priority_rank') or row.get('rank') or '-'}"
+            )
             c1, c2, c3, c4, c5 = st.columns(5)
             c1.metric("매수점수", _fmt_metric_num(row.get("buy_score"), 1))
             c2.metric("정확성", _fmt_metric_pct(row.get("accuracy")))
             c3.metric("전일비", _fmt_metric_pct(row.get("day_change_pct")))
             c4.metric("손실위험", _fmt_metric_num(row.get("loss_risk_score"), 1))
             c5.metric("뉴스감성", _fmt_metric_num(news.get("sentiment_score"), 2))
+
+            _render_selection_thesis(row, trade_plan)
 
             p1, p2, p3, p4 = st.columns(4)
             p1.metric("현재가", _fmt_metric_num(price.get("current_price"), 2))

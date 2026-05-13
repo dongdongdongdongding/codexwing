@@ -63,6 +63,41 @@ def test_entry_readiness_allows_valid_pullback_conditionally():
     assert analysis["risk_management"]["data_source"] == "support_resistance_stop_from_price_snapshot"
 
 
+def test_entry_readiness_uses_scanner_strength_before_relative_rank_for_quality():
+    analysis = build_entry_readiness_analysis(
+        candidate={
+            "decision_score": 82.0,
+            "relative_rank_score": 42.0,
+            "prob_clean": 54.0,
+            "real_trend": "UP",
+            "volume_ratio": 1.4,
+        },
+        price={
+            "current_price": 100.0,
+            "return_5d_pct": 3.0,
+            "return_20d_pct": 8.0,
+            "return_60d_pct": 22.0,
+            "pct_from_52w_high": -12.0,
+            "volume_ratio_20d": 1.5,
+            "ma5": 99.0,
+            "ma20": 101.0,
+            "prior_20d_high": 104.0,
+            "range_20d_low": 94.0,
+            "range_20d_high": 104.0,
+            "gap_up_pct": 0.2,
+            "close_location_pct": 62.0,
+        },
+        prediction={"expected_edge_score": 1.0},
+        trade_plan={"entry_policy": "pullback", "entry_zone_low": 98.0, "entry_zone_high": 100.0, "target_price": 108.0, "stop_price": 94.0},
+        news={"sentiment_score": 0.1},
+        loss_risk_score=35.0,
+    )
+
+    assert any("스캐너 강도" in item for item in analysis["quality"]["evidence"])
+    assert any("플래너 상대순위" in item for item in analysis["quality"]["evidence"])
+    assert analysis["final_buy_judgment"]["action"] in {"조건부 매수 가능", "돌파 확인", "눌림 대기"}
+
+
 def test_entry_readiness_marks_missing_data_without_faking_fundamentals():
     analysis = build_entry_readiness_analysis(
         candidate={},

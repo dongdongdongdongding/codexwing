@@ -78,10 +78,14 @@ def _build_quality_score(candidate: Dict[str, Any], prediction: Dict[str, Any], 
     warnings: List[str] = []
     parts: List[tuple[float, float]] = []
 
-    rank_score = _num(_first(candidate, "relative_rank_score", "decision_score", "Decision Score", "score", "buy_score"))
-    if rank_score is not None:
-        parts.append((rank_score, 0.28))
-        evidence.append(f"스캐너/플래너 품질 점수 {_fmt_num(rank_score)}")
+    scanner_score = _num(_first(candidate, "decision_score", "Decision Score", "score", "buy_score"))
+    relative_score = _num(candidate.get("relative_rank_score"))
+    if scanner_score is not None:
+        parts.append((scanner_score, 0.24))
+        evidence.append(f"스캐너 강도 점수 {_fmt_num(scanner_score)}")
+    if relative_score is not None:
+        parts.append((relative_score, 0.12))
+        evidence.append(f"플래너 상대순위 점수 {_fmt_num(relative_score)}")
 
     accuracy = _num(_first(candidate, "phase25_oos_win_rate_pct", "prob_clean", "accuracy"))
     if accuracy is not None:
@@ -374,17 +378,23 @@ def _final_judgment(
             "tone": "good",
             "summary": "품질, 상승 여력, 진입 타이밍이 동시에 양호합니다.",
         }
-    if q >= 65 and u >= 55 and t >= 60:
+    if q >= 60 and u >= 55 and t >= 60 and (loss is None or loss < 55):
         return {
             "action": "조건부 매수 가능",
             "tone": "focus",
             "summary": "조건은 대체로 맞지만 지정가/손절 기준을 지켜야 합니다.",
         }
-    if q >= 65 and t < 60:
+    if q >= 55 and u >= 65 and t < 60:
         return {
             "action": "돌파 확인",
             "tone": "caution",
             "summary": "종목 품질은 있으나 지금 자리는 방향 확인이 부족합니다.",
+        }
+    if q >= 55 and u >= 45 and t >= 55:
+        return {
+            "action": "눌림 대기",
+            "tone": "risk",
+            "summary": "선정 논리는 있으나 진입 조건이 완전히 맞지 않아 눌림 또는 재돌파 확인이 필요합니다.",
         }
     return {
         "action": "관망",
