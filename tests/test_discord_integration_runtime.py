@@ -254,6 +254,41 @@ def test_scan_executor_extracts_summary_from_noisy_log():
     assert payload["total_scans"] == 2000
 
 
+def test_scan_executor_loads_recent_artifact_summary_when_stdout_has_no_json(monkeypatch, tmp_path):
+    from datetime import datetime, timezone
+
+    from modules.discord_integration import scan_executor
+    from modules.discord_integration.scan_executor import DiscordScanJob, _load_recent_artifact_summary
+
+    artifact_dir = tmp_path / "artifacts"
+    run_dir = artifact_dir / "RUN-DISCORD"
+    run_dir.mkdir(parents=True)
+    (run_dir / "scan_pipeline_summary.json").write_text(
+        json.dumps(
+            {
+                "run_id": "RUN-DISCORD",
+                "market": "KOSPI",
+                "total_scans": 835,
+                "result_count": 56,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(scan_executor, "ARTIFACT_DIR", artifact_dir)
+
+    job = DiscordScanJob(
+        job_id="DS-TEST",
+        market="KOSPI",
+        log_path=tmp_path / "DS-TEST.log",
+        started_at=datetime.now(timezone.utc).isoformat(),
+    )
+
+    payload = _load_recent_artifact_summary(job)
+
+    assert payload["run_id"] == "RUN-DISCORD"
+    assert payload["result_count"] == 56
+
+
 def test_scan_lock_prevents_parallel_jobs(tmp_path):
     lock_path = tmp_path / "scan.lock"
     first = DiscordScanLock(path=lock_path)

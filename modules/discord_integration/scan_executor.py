@@ -15,6 +15,7 @@ from .commands import FULL_KR_SCAN_MAX
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 JOB_DIR = Path("runtime_state/discord_jobs")
+ARTIFACT_DIR = Path("runtime_state/artifacts")
 LOCK_PATH = JOB_DIR / "full_kr_scan.lock"
 
 
@@ -152,6 +153,8 @@ def _run_scan_job_sync(job: DiscordScanJob) -> Dict[str, Any]:
     output = _tail_text(job.log_path, max_chars=200_000)
     summary = _extract_last_json_object(output)
     if summary is None:
+        summary = _load_recent_artifact_summary(job)
+    if summary is None:
         summary = {}
     summary["discord_job"] = {
         "job_id": job.job_id,
@@ -162,6 +165,42 @@ def _run_scan_job_sync(job: DiscordScanJob) -> Dict[str, Any]:
         "log_path": str(job.log_path),
     }
     return summary
+
+
+def _load_recent_artifact_summary(job: DiscordScanJob) -> Dict[str, Any] | None:
+    started_at = _parse_iso_timestamp(job.started_at)
+    candidates: List[tuple[float, Path]] = []
+    for path in ARTIFACT_DIR.glob("RUN-*/scan_pipeline_summary.json"):
+        try:
+            mtime = path.stat().st_mtime
+        except OSError:
+            continue
+        if started_at is not None and mtime < started_at.timestamp() - 30:
+            continue
+        candidates.append((mtime, path))
+
+    for _mtime, path in sorted(candidates, reverse=True):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        if str(payload.get("market") or "").upper() != job.market:
+            continue
+        if payload.get("run_id"):
+            return payload
+    return None
+
+
+def _parse_iso_timestamp(value: str) -> datetime | None:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except Exception:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def _tail_text(path: Path, *, max_chars: int) -> str:
