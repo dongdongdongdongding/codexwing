@@ -92,6 +92,10 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["trade_plan"]["stop_price"] is not None
     assert report["trade_plan"]["target_price"] != report["trade_plan"]["stop_price"]
     assert report["trade_plan"]["risk_reward"] is not None
+    assert report["trade_plan"]["entry_strategy"]["primary_condition"]
+    assert report["trade_plan"]["entry_strategy"]["pullback_support_price"] == 99.0
+    assert report["trade_plan"]["risk_management"]["stop_condition"]
+    assert report["trade_plan"]["data_coverage"]["coverage_pct"] > 0
     assert report["flow"]["foreigner"] == 1500000000.0
     assert report["flow"]["retail"] == -2200000000.0
     readiness = report["trade_plan"]["readiness_analysis"]

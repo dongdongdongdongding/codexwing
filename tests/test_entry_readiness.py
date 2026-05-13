@@ -28,6 +28,9 @@ def test_entry_readiness_blocks_extreme_overheat():
     assert analysis["upside"]["chase_risk_level"] == "신규 진입 금지"
     assert analysis["final_buy_judgment"]["action"] == "매수 금지"
     assert any(row["code"] == "RET_60D_GT_150" and row["triggered"] for row in analysis["upside"]["filters"])
+    assert analysis["entry_strategy"]["mode"] == "blocked"
+    assert "신규 매수 금지" in analysis["entry_strategy"]["primary_condition"]
+    assert analysis["risk_management"]["stop_price"] is not None
 
 
 def test_entry_readiness_allows_valid_pullback_conditionally():
@@ -55,6 +58,9 @@ def test_entry_readiness_allows_valid_pullback_conditionally():
     assert analysis["upside"]["chase_risk_level"] == "낮음"
     assert analysis["timing"]["timing_label"] in {"양호", "조건부 양호"}
     assert analysis["final_buy_judgment"]["action"] in {"즉시 매수 가능", "조건부 매수 가능"}
+    assert analysis["entry_strategy"]["mode"] == "entry_allowed"
+    assert analysis["entry_strategy"]["pullback_support_price"] == 99.0
+    assert analysis["risk_management"]["data_source"] == "support_resistance_stop_from_price_snapshot"
 
 
 def test_entry_readiness_marks_missing_data_without_faking_fundamentals():
@@ -70,3 +76,5 @@ def test_entry_readiness_marks_missing_data_without_faking_fundamentals():
     assert analysis["quality"]["source_status"] == "not_connected"
     assert analysis["quality"]["grade"] in {"C", "D"}
     assert any("미연결" in warning for warning in analysis["warnings"])
+    assert analysis["data_coverage"]["coverage_pct"] == 0.0
+    assert analysis["entry_strategy"]["data_source"] == "price_snapshot_ma_volume_return"

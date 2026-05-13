@@ -543,6 +543,12 @@ def build_top_deep_reports(
             loss_risk_score=loss_risk,
         )
         trade_policy["readiness_analysis"] = readiness_analysis
+        if isinstance(readiness_analysis.get("entry_strategy"), dict):
+            trade_policy["entry_strategy"] = readiness_analysis["entry_strategy"]
+        if isinstance(readiness_analysis.get("risk_management"), dict):
+            trade_policy["risk_management"] = readiness_analysis["risk_management"]
+        if isinstance(readiness_analysis.get("data_coverage"), dict):
+            trade_policy["data_coverage"] = readiness_analysis["data_coverage"]
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,

@@ -393,6 +393,170 @@ def _final_judgment(
     }
 
 
+def _fmt_price(value: Any) -> str:
+    numeric = _num(value)
+    if numeric is None:
+        return "-"
+    if numeric >= 1000:
+        return f"{numeric:,.0f}원"
+    return f"{numeric:.2f}"
+
+
+def _nearest_support(price: Dict[str, Any], reference: float) -> tuple[str, float] | None:
+    candidates: List[tuple[str, float]] = []
+    for label, key in (("5일선", "ma5"), ("20일선", "ma20"), ("20일 저점", "range_20d_low")):
+        level = _num(price.get(key))
+        if level is not None and 0 < level <= reference:
+            candidates.append((label, level))
+    if not candidates:
+        return None
+    return max(candidates, key=lambda item: item[1])
+
+
+def _resistance_level(price: Dict[str, Any], reference: float) -> tuple[str, float] | None:
+    candidates: List[tuple[str, float]] = []
+    for label, key in (("전고점", "prior_20d_high"), ("20일 고점", "range_20d_high"), ("52주 고점", "high_52w")):
+        level = _num(price.get(key))
+        if level is not None and level > 0:
+            candidates.append((label, level))
+    if not candidates:
+        return None
+    above = [item for item in candidates if item[1] >= reference]
+    if above:
+        return min(above, key=lambda item: item[1])
+    return max(candidates, key=lambda item: item[1])
+
+
+def _build_data_backed_action_plan(
+    *,
+    price: Dict[str, Any],
+    trade_plan: Dict[str, Any],
+    judgment: Dict[str, Any],
+    loss_risk_score: Any,
+) -> Dict[str, Any]:
+    action = str(judgment.get("action") or "관망")
+    current = _num(price.get("current_price")) or _num(trade_plan.get("entry_reference_price"))
+    entry_high = _num(trade_plan.get("entry_zone_high")) or current
+    entry_low = _num(trade_plan.get("entry_zone_low"))
+    stop_price = _num(trade_plan.get("stop_price"))
+    target_price = _num(trade_plan.get("target_price"))
+    reference = entry_high or current
+    support = _nearest_support(price, reference) if reference is not None else None
+    resistance = _resistance_level(price, reference) if reference is not None else None
+
+    warnings: List[str] = []
+    if current is None:
+        warnings.append("현재가 기반 액션 플랜 산출 불가")
+    if support is None:
+        warnings.append("지지선 데이터 부족: 손절 기준은 기본 손절가만 사용")
+    if resistance is None:
+        warnings.append("저항선 데이터 부족: 돌파 조건은 진입 상단 기준")
+
+    support_label, support_price = support if support is not None else ("기준가", reference or 0.0)
+    resistance_label, resistance_price = resistance if resistance is not None else ("진입 상단", entry_high or reference or 0.0)
+    breakout_price = resistance_price * 1.005 if resistance_price else entry_high
+    pullback_price = support_price if support_price else entry_low
+    invalidation_price = stop_price
+    if invalidation_price is None and support_price:
+        invalidation_price = support_price * 0.985
+
+    if action == "매수 금지":
+        mode = "blocked"
+        primary_condition = "신규 매수 금지"
+        secondary_condition = (
+            f"{support_label} {_fmt_price(support_price)} 지지 확인 후 "
+            f"{resistance_label} {_fmt_price(breakout_price)} 재돌파 시 재검토"
+        )
+        blocked_reason = str(judgment.get("summary") or "과열 또는 손실위험")
+    elif action == "눌림 대기":
+        mode = "pullback_wait"
+        primary_condition = f"{support_label} {_fmt_price(support_price)} 부근 눌림 지지 확인"
+        secondary_condition = f"{resistance_label} {_fmt_price(breakout_price)} 재돌파 + 거래량 재유입"
+        blocked_reason = ""
+    elif action == "돌파 확인":
+        mode = "breakout_confirm"
+        primary_condition = f"{resistance_label} {_fmt_price(breakout_price)} 돌파 확인"
+        secondary_condition = f"돌파 실패 시 {support_label} {_fmt_price(support_price)} 지지까지 대기"
+        blocked_reason = ""
+    elif action in {"즉시 매수 가능", "조건부 매수 가능"}:
+        mode = "entry_allowed"
+        primary_condition = (
+            f"{_fmt_price(entry_low)}~{_fmt_price(entry_high)} 구간에서 "
+            f"{support_label} 지지 유지"
+        )
+        secondary_condition = f"{resistance_label} {_fmt_price(breakout_price)} 돌파 시 추가 확인"
+        blocked_reason = ""
+    else:
+        mode = "watch"
+        primary_condition = f"{support_label} {_fmt_price(support_price)} 지지 또는 {resistance_label} 돌파 확인 전 관망"
+        secondary_condition = f"방향 확인 후 {_fmt_price(entry_low)}~{_fmt_price(entry_high)} 재산정"
+        blocked_reason = ""
+
+    stop_condition = (
+        f"{_fmt_price(invalidation_price)} 이탈"
+        if invalidation_price is not None
+        else f"{support_label} 이탈"
+    )
+    if support is not None and invalidation_price is not None:
+        stop_condition = f"{support_label} {_fmt_price(support_price)} 지지 실패 또는 {_fmt_price(invalidation_price)} 이탈"
+
+    data_points = {
+        "current_price": current,
+        "ma5": _num(price.get("ma5")),
+        "ma20": _num(price.get("ma20")),
+        "prior_20d_high": _num(price.get("prior_20d_high")),
+        "range_20d_low": _num(price.get("range_20d_low")),
+        "range_20d_high": _num(price.get("range_20d_high")),
+        "high_52w": _num(price.get("high_52w")),
+        "volume_ratio_20d": _num(price.get("volume_ratio_20d")),
+        "return_5d_pct": _num(price.get("return_5d_pct")),
+        "return_20d_pct": _num(price.get("return_20d_pct")),
+        "return_60d_pct": _num(price.get("return_60d_pct")),
+        "loss_risk_score": _num(loss_risk_score),
+    }
+    available = [key for key, value in data_points.items() if value is not None]
+
+    entry_strategy = {
+        "mode": mode,
+        "primary_condition": primary_condition,
+        "secondary_condition": secondary_condition,
+        "blocked_reason": blocked_reason,
+        "entry_zone_low": entry_low,
+        "entry_zone_high": entry_high,
+        "pullback_support_label": support_label,
+        "pullback_support_price": round(support_price, 4) if support_price else None,
+        "breakout_label": resistance_label,
+        "breakout_price": round(breakout_price, 4) if breakout_price else None,
+        "data_source": "price_snapshot_ma_volume_return",
+        "evidence": [
+            f"현재가 {_fmt_price(current)}",
+            f"{support_label} {_fmt_price(support_price)}",
+            f"{resistance_label} {_fmt_price(resistance_price)}",
+            f"거래량/20D x{_fmt_num(price.get('volume_ratio_20d'), 2)}",
+        ],
+    }
+    risk_management = {
+        "stop_condition": stop_condition,
+        "stop_price": round(invalidation_price, 4) if invalidation_price is not None else None,
+        "target_price": target_price,
+        "risk_reward": trade_plan.get("risk_reward"),
+        "loss_risk_score": _num(loss_risk_score),
+        "invalidation": "지지선 이탈 또는 돌파 실패 후 장대음봉 발생",
+        "data_source": "support_resistance_stop_from_price_snapshot",
+        "warnings": warnings,
+    }
+    return {
+        "entry_strategy": entry_strategy,
+        "risk_management": risk_management,
+        "data_coverage": {
+            "available_fields": available,
+            "available_count": len(available),
+            "required_fields": list(data_points.keys()),
+            "coverage_pct": round(len(available) / len(data_points) * 100.0, 1),
+        },
+    }
+
+
 def build_entry_readiness_analysis(
     *,
     candidate: Dict[str, Any],
@@ -418,9 +582,16 @@ def build_entry_readiness_analysis(
     upside = _build_upside_score(price)
     timing = _build_timing_score(price)
     judgment = _final_judgment(quality, upside, timing, loss_risk_score)
+    action_plan = _build_data_backed_action_plan(
+        price=price,
+        trade_plan=trade_plan,
+        judgment=judgment,
+        loss_risk_score=loss_risk_score,
+    )
     warnings: List[str] = []
     for block in (quality, upside, timing):
         warnings.extend([str(item) for item in block.get("warnings", []) if str(item).strip()])
+    warnings.extend(action_plan.get("risk_management", {}).get("warnings", []))
 
     return {
         "version": "entry_readiness_v1",
@@ -429,6 +600,9 @@ def build_entry_readiness_analysis(
         "timing": timing,
         "chase_risk_level": upside.get("chase_risk_level"),
         "final_buy_judgment": judgment,
+        "entry_strategy": action_plan["entry_strategy"],
+        "risk_management": action_plan["risk_management"],
+        "data_coverage": action_plan["data_coverage"],
         "trade_plan_summary": {
             "entry_policy": trade_plan.get("entry_policy"),
             "entry_reference_price": trade_plan.get("entry_reference_price"),

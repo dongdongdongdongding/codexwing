@@ -1027,6 +1027,49 @@ def _render_readiness_analysis(readiness):
         st.caption("판정 경고: " + " / ".join(str(x) for x in warnings[:5]))
 
 
+def _render_data_backed_action_plan(trade_plan, readiness):
+    trade_plan = trade_plan if isinstance(trade_plan, dict) else {}
+    readiness = readiness if isinstance(readiness, dict) else {}
+    entry = trade_plan.get("entry_strategy") if isinstance(trade_plan.get("entry_strategy"), dict) else {}
+    if not entry:
+        entry = readiness.get("entry_strategy") if isinstance(readiness.get("entry_strategy"), dict) else {}
+    risk = trade_plan.get("risk_management") if isinstance(trade_plan.get("risk_management"), dict) else {}
+    if not risk:
+        risk = readiness.get("risk_management") if isinstance(readiness.get("risk_management"), dict) else {}
+    coverage = trade_plan.get("data_coverage") if isinstance(trade_plan.get("data_coverage"), dict) else {}
+    if not coverage:
+        coverage = readiness.get("data_coverage") if isinstance(readiness.get("data_coverage"), dict) else {}
+    if not entry and not risk:
+        return
+
+    st.markdown("**데이터 기반 액션 플랜**")
+    a1, a2 = st.columns(2)
+    with a1:
+        st.info(str(entry.get("primary_condition") or "-"))
+        st.caption("보조 조건: " + str(entry.get("secondary_condition") or "-"))
+        if entry.get("blocked_reason"):
+            st.caption("차단 사유: " + str(entry.get("blocked_reason")))
+    with a2:
+        stop_text = str(risk.get("stop_condition") or "-")
+        target_text = _fmt_krw(risk.get("target_price"))
+        rr_text = _fmt_metric_num(risk.get("risk_reward"), 2)
+        st.warning(f"손절 조건: {stop_text}")
+        st.caption(f"목표가 {target_text} · 손익비 {rr_text} · 손실위험 {_fmt_metric_num(risk.get('loss_risk_score'), 1)}")
+
+    l1, l2, l3, l4 = st.columns(4)
+    l1.metric("눌림 지지", _fmt_krw(entry.get("pullback_support_price")), str(entry.get("pullback_support_label") or "-"))
+    l2.metric("돌파 확인", _fmt_krw(entry.get("breakout_price")), str(entry.get("breakout_label") or "-"))
+    l3.metric("무효화", _fmt_krw(risk.get("stop_price")))
+    l4.metric("데이터 커버리지", f"{_fmt_metric_num(coverage.get('coverage_pct'), 0)}%")
+
+    evidence = entry.get("evidence") if isinstance(entry.get("evidence"), list) else []
+    if evidence:
+        st.caption("액션 산출 근거: " + " / ".join(str(x) for x in evidence[:5]))
+    risk_warnings = risk.get("warnings") if isinstance(risk.get("warnings"), list) else []
+    if risk_warnings:
+        st.caption("액션 플랜 경고: " + " / ".join(str(x) for x in risk_warnings[:4]))
+
+
 def _render_top_deep_reports_page():
     _render_section_intro(
         "Top Deep Reports",
@@ -1125,6 +1168,7 @@ def _render_top_deep_reports_page():
                 st.caption("수급 데이터 경고: " + " / ".join(str(x) for x in flow_warnings[:3]) if flow_warnings else "수급 데이터 미확보")
 
             _render_readiness_analysis(readiness)
+            _render_data_backed_action_plan(trade_plan, readiness)
 
             ohlcv = price.get("ohlcv_tail") if isinstance(price.get("ohlcv_tail"), list) else []
             if ohlcv:
