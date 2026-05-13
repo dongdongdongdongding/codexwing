@@ -29,6 +29,7 @@ from modules.scan_policy import (
 )
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
+from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
 from modules.ui_helpers import (
     BackgroundScanState,
     build_signal_display_rows,
@@ -3063,11 +3064,13 @@ if active_main_tab == "📚 아카이브":
 
         _db6 = _DBM()
 
+        _local_archive_rows = load_local_scan_archive_rows(limit_runs=300)
+        _archive_rows = []
         if not _db6.client:
-            st.warning("⚠️ Supabase 연결 없음.")
+            st.warning("⚠️ Supabase 연결 없음. 로컬 스캔 artifact 기준으로 표시합니다.")
+            _archive_rows = _local_archive_rows
         else:
-            with st.spinner("📡 DB에서 스캔 이력 로드 중..."):
-                _archive_rows = []
+            with st.spinner("📡 DB/로컬 artifact에서 스캔 이력 로드 중..."):
                 _batch_size = 1000
                 _max_rows = 25000
                 _offset = 0
@@ -3086,16 +3089,22 @@ if active_main_tab == "📚 아카이브":
                     if len(_batch) < _batch_size:
                         break
                     _offset += _batch_size
-                _df6 = pd.DataFrame(_archive_rows)
+                _before_local_merge = len(_archive_rows)
+                _archive_rows = merge_archive_rows_with_local_artifacts(_archive_rows, _local_archive_rows)
+                if len(_archive_rows) > _before_local_merge:
+                    st.caption(f"로컬 artifact 보강: {len(_archive_rows) - _before_local_merge}건")
+        _df6 = pd.DataFrame(_archive_rows)
+        if True:
             _contaminated_map = _load_contaminated_run_map()
 
             if _df6.empty:
                 st.info("아직 저장된 스캔 결과가 없습니다. 스캐너를 1회 이상 돌리면 여기에 표시됩니다.")
             else:
-                # Supabase appends +00:00 to the naive local datetime stored by db_manager.
-                # Strip the fake UTC timezone and localize to true KST.
-                _df6['created_at'] = pd.to_datetime(_df6['created_at']).dt.tz_localize(None)
-                _df6['created_at_kst'] = _df6['created_at'].dt.tz_localize('Asia/Seoul')
+                _created_at_utc = pd.to_datetime(_df6['created_at'], errors='coerce', utc=True)
+                _local_artifact_mask = _df6.get("source_ref", pd.Series("", index=_df6.index)).astype(str).str.startswith("local_artifact:")
+                _df6['created_at'] = _created_at_utc
+                _df6['created_at_kst'] = _created_at_utc.dt.tz_localize(None).dt.tz_localize('Asia/Seoul')
+                _df6.loc[_local_artifact_mask, 'created_at_kst'] = _created_at_utc[_local_artifact_mask].dt.tz_convert('Asia/Seoul')
                 _df6['effective_trade_date'] = pd.to_datetime(_df6.get('base_trade_date'), errors='coerce').dt.date
                 _df6['scan_date'] = _df6['effective_trade_date'].where(_df6['effective_trade_date'].notna(), _df6['created_at_kst'].dt.date)
                 if 'run_id' in _df6.columns:

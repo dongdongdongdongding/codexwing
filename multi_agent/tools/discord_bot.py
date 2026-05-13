@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import traceback
 from pathlib import Path
 from typing import Iterable
 
@@ -45,6 +46,12 @@ async def _send_embed_chunks(discord_module, target, payloads):
     embeds = [_embed(discord_module, payload) for payload in payloads]
     for idx in range(0, len(embeds), 10):
         await target.send(embeds=embeds[idx : idx + 10])
+
+
+async def _send_followup_chunks(discord_module, interaction, payloads):
+    embeds = [_embed(discord_module, payload) for payload in payloads]
+    for idx in range(0, len(embeds), 10):
+        await interaction.followup.send(embeds=embeds[idx : idx + 10], ephemeral=True)
 
 
 def main() -> int:
@@ -219,17 +226,33 @@ def main() -> int:
 
         started = build_scan_started_embed(config, job=job)
         await interaction.response.send_message(embed=_embed(discord, started), ephemeral=True)
-        client.loop.create_task(_run_scan_background(job, lock))
+        client.loop.create_task(_run_scan_background(job, lock, interaction))
 
-    async def _run_scan_background(job, lock):
+    async def _run_scan_background(job, lock, interaction):
         try:
-            channel = await _result_channel()
+            channel = None
+            try:
+                channel = await _result_channel()
+            except Exception as exc:
+                print(f"Discord result channel fetch failed for {job.job_id}: {exc}", file=sys.stderr)
             if channel is not None:
-                await channel.send(embed=_embed(discord, build_scan_started_embed(config, job=job)))
+                try:
+                    await channel.send(embed=_embed(discord, build_scan_started_embed(config, job=job)))
+                except Exception as exc:
+                    print(f"Discord start message failed for {job.job_id}: {exc}", file=sys.stderr)
             summary = await run_scan_job(job)
+            payloads = build_scan_result_embeds(summary, config=config)
             if channel is not None:
-                await _send_embed_chunks(discord, channel, build_scan_result_embeds(summary, config=config))
+                try:
+                    await _send_embed_chunks(discord, channel, payloads)
+                except Exception as exc:
+                    print(f"Discord result channel send failed for {job.job_id}: {exc}", file=sys.stderr)
+            try:
+                await _send_followup_chunks(discord, interaction, payloads[:2])
+            except Exception as exc:
+                print(f"Discord interaction followup failed for {job.job_id}: {exc}", file=sys.stderr)
         except Exception as exc:
+            traceback.print_exc(file=sys.stderr)
             try:
                 channel = await _result_channel()
                 if channel is not None:

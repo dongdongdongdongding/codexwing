@@ -195,6 +195,32 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
     assert "삼성전자" in top_deep[0]["fields"][0]["name"]
 
 
+def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_path, monkeypatch):
+    report_dir = tmp_path / "top_deep"
+    artifact_dir = tmp_path / "artifacts"
+    report_dir.mkdir()
+    (artifact_dir / "RUN-RAW").mkdir(parents=True)
+    (artifact_dir / "RUN-RAW" / "scan_pipeline_summary.json").write_text(
+        json.dumps({"run_id": "RUN-RAW", "market": "KOSDAQ", "scan_mode": "SWING", "total_scans": 1717, "result_count": 1}),
+        encoding="utf-8",
+    )
+    (artifact_dir / "RUN-RAW" / "raw_scan_results.json").write_text(
+        json.dumps(
+            {"results_sorted": [{"Ticker": "035900.KQ", "Stock Name": "JYP Ent.", "Decision Score": 89, "Strategy": "WATCH"}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    monkeypatch.setattr(renderers, "ARTIFACT_DIR", artifact_dir)
+
+    archive = build_archive_embed(market="KOSDAQ")
+
+    assert "RUN-RAW" in archive["description"]
+    assert "raw_scan_results" in archive["description"]
+    assert "JYP Ent." in archive["fields"][0]["name"]
+
+
 def test_scan_ack_refuses_execution_while_dry_run():
     config = DiscordIntegrationConfig(dry_run=True, enable_scan_execution=True)
     embed = build_scan_ack_embed(config, market="KOSPI")

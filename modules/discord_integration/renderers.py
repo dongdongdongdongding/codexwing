@@ -306,6 +306,10 @@ def build_archive_embed(
         rows = [row for row in rows if str(row.get("run_id") or "") == str(run_id)]
     latest = _latest_run_id(rows)
     selected_run = run_id or latest
+    if not selected_run:
+        artifact_runs = collect_run_index(market=market, limit=1)
+        if artifact_runs:
+            selected_run = str(artifact_runs[0].get("run_id") or "")
     run_rows = [row for row in rows if str(row.get("run_id") or "") == selected_run] if selected_run else rows
     source = "top_deep"
     if selected_run:

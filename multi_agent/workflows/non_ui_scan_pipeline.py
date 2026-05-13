@@ -26,7 +26,7 @@ from modules.scanner_runtime import SharedBackoffState, run_parallel_scan, scan_
 from modules.scanner_services import resolve_strategy_family, resolve_us_hard_filter_gate, resolve_us_signal_window_gate
 from multi_agent.agents.orchestrator import OrchestratorAgent
 from multi_agent.config.scan_profiles import apply_scan_gate_profile
-from multi_agent.contracts.serialization import write_json
+from multi_agent.contracts.serialization import read_json, write_json
 from multi_agent.contracts.types import RunContext
 from multi_agent.storage.memory_layers import MemoryManager
 
@@ -54,6 +54,38 @@ def _attach_shared_working_artifacts(manifest_paths: Dict[str, Any]) -> Dict[str
         if path.exists():
             manifest_paths[name] = str(path)
     return manifest_paths
+
+
+def _generate_top_deep_reports_for_run(
+    *,
+    results: List[Dict[str, Any]],
+    manifest_paths: Dict[str, Any],
+    run_id: str,
+    market: str,
+    scan_mode: str,
+) -> Dict[str, Any]:
+    if not results:
+        return {"count": 0, "reason": "no_scan_results"}
+    planner_path = Path(str(manifest_paths.get("planner_handoff") or ""))
+    if not planner_path.exists():
+        return {"count": 0, "reason": "planner_handoff_missing"}
+    try:
+        from modules.top_deep_report import generate_and_store_top_deep_reports
+
+        planner_payload = read_json(planner_path)
+        top_n = max(1, int(os.getenv("AG_TOP_DEEP_N", "5") or 5))
+        write_db = os.getenv("AG_TOP_DEEP_WRITE_DB", "1").strip() not in {"0", "false", "False"}
+        return generate_and_store_top_deep_reports(
+            scan_rows=results,
+            planner_payload=planner_payload,
+            run_id=run_id,
+            market=market,
+            scan_mode=str(scan_mode or "SWING").upper(),
+            top_n=top_n,
+            write_db=write_db,
+        )
+    except Exception as exc:
+        return {"count": 0, "error": str(exc)}
 
 
 def _parse_ticker_list(raw: str | None) -> List[str]:
@@ -370,6 +402,16 @@ def run_non_ui_scan_pipeline(
     except Exception as exc:
         manifest_paths["downstream_diagnostics_error"] = str(exc)
 
+    top_deep_reports = _generate_top_deep_reports_for_run(
+        results=results,
+        manifest_paths=manifest_paths,
+        run_id=run_id,
+        market=market,
+        scan_mode=str(scan_mode or "SWING").upper(),
+    )
+    if isinstance(top_deep_reports, dict) and top_deep_reports.get("local_path"):
+        manifest_paths["top_deep_reports"] = str(top_deep_reports.get("local_path"))
+
     artifact_dir = memory.artifact_store(run_id)
     raw_json_path = artifact_dir / "raw_scan_results.json"
     write_json(
@@ -413,6 +455,7 @@ def run_non_ui_scan_pipeline(
         "scanner_input_path": str(scanner_input_path),
         "manifest_paths": manifest_paths,
         "artifact_dir": str(artifact_dir),
+        "top_deep_reports": top_deep_reports,
     }
     emit_daily_summary = os.getenv("AG_EMIT_DAILY_SUMMARY", "1").strip() not in {"0", "false", "False"}
     if emit_daily_summary:
