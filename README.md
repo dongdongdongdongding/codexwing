@@ -18,6 +18,7 @@ Recent stabilization work:
 - Scanner archive rows now carry 5-day high-touch labels such as `max_high_return_5d_pct` and `hit_5pct_within_5d`.
 - KR swing context includes US lead and macro/derivative signals for planner-facing diagnostics.
 - UI cards expose planner action trace fields without changing the core scoring engine.
+- Practical 80% entry gating now uses dynamic theme profiles generated from scan archive outcomes instead of fixed theme names.
 - Discord remote-control integration has a setup-safe command/config contract for KOSPI/KOSDAQ full scans, macro refresh, Top deep reports, and archive lookup.
 - `runtime_state` was pruned from the Git index: generated `artifacts`, `shared_working`, context caches, and large archive datasets remain local artifacts rather than source-controlled files.
 
@@ -71,6 +72,8 @@ python3 multi_agent/tools/update_outcome_return_metrics.py
 python3 multi_agent/tools/export_scan_archive_learning_dataset.py --market ALL
 python3 multi_agent/tools/verify_scan_archive_top_consistency.py
 python3 multi_agent/tools/report_live_policy_performance.py
+python3 multi_agent/tools/report_dynamic_theme_entry_profiles.py
+python3 multi_agent/tools/report_scan_cohort_performance.py
 python3 multi_agent/tools/build_paper_trade_ledger.py
 ```
 
@@ -157,4 +160,5 @@ git status --short --branch
 - `AGENTS.md`: project rules and session completion workflow
 - `multi_agent/README.md`: multi-agent workflow and tool commands
 - `docs/operations/CODEX_TAKEOVER.md`: Codex operating handoff
+- `docs/operations/dynamic_theme_entry_profiles.md`: dynamic theme profile gate design
 - `docs/migration/RUNTIME_ARTIFACT_POLICY.md`: runtime artifact tracking policy

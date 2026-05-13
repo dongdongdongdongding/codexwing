@@ -126,6 +126,10 @@ for MARKET in "${MARKETS[@]}"; do
   fi
 done
 
+echo "[STEP] report_dynamic_theme_entry_profiles"
+run_optional "report_dynamic_theme_entry_profiles" \
+  python3 multi_agent/tools/report_dynamic_theme_entry_profiles.py
+
 echo "[STEP] report_scan_cohort_performance"
 run_optional "report_scan_cohort_performance" \
   python3 multi_agent/tools/report_scan_cohort_performance.py
