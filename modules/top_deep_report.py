@@ -237,6 +237,70 @@ def _fetch_news_snapshot(ticker: str, stock_name: str) -> Dict[str, Any]:
         return {"status": "ERROR", "sentiment_score": None, "headlines": [], "warnings": [f"news_fetch_failed:{exc}"]}
 
 
+def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[str, Any]) -> Dict[str, Any]:
+    base = {**(row if isinstance(row, dict) else {}), **(trace if isinstance(trace, dict) else {})}
+    direct = {
+        "whale_score": _safe_float(_first_present(base, "whale_score", "Whale")),
+        "foreigner": _safe_float(_first_present(base, "foreigner", "foreign_net", "foreign_net_buy")),
+        "institution": _safe_float(_first_present(base, "institution", "institution_net", "institution_net_buy")),
+        "retail": _safe_float(_first_present(base, "retail", "individual", "individual_net", "retail_net_buy")),
+    }
+    if any(value is not None for value in direct.values()):
+        whale = direct.get("whale_score")
+        return {
+            "valid": whale is not None,
+            "type": "KR" if str(ticker).upper().endswith((".KS", ".KQ")) else "UNKNOWN",
+            "source": "scan_row",
+            "whale_score": whale,
+            "foreigner": direct.get("foreigner"),
+            "institution": direct.get("institution"),
+            "retail": direct.get("retail"),
+            "dominant": base.get("dominant"),
+            "whale_trend": base.get("whale_trend"),
+            "warnings": [] if whale is not None else ["investor_flow_partial_scan_row"],
+        }
+
+    if not str(ticker).upper().endswith((".KS", ".KQ")):
+        return {
+            "valid": False,
+            "type": "UNSUPPORTED",
+            "source": "none",
+            "whale_score": None,
+            "foreigner": None,
+            "institution": None,
+            "retail": None,
+            "warnings": ["investor_flow_supported_for_kr_only"],
+        }
+
+    try:
+        from modules.quant_analysis import QuantStrategy
+
+        payload = QuantStrategy(ticker).get_investor_flows()
+        return {
+            "valid": bool(payload.get("valid")),
+            "type": payload.get("type") or "KR",
+            "source": payload.get("flow_source") or "quant_strategy",
+            "whale_score": _safe_float(payload.get("whale_score")),
+            "foreigner": _safe_float(payload.get("foreigner")),
+            "institution": _safe_float(payload.get("institution")),
+            "retail": _safe_float(payload.get("retail")),
+            "dominant": payload.get("dominant"),
+            "whale_trend": payload.get("whale_trend"),
+            "warnings": [] if payload.get("valid") else [str(payload.get("reason") or "investor_flow_unavailable")],
+        }
+    except Exception as exc:
+        return {
+            "valid": False,
+            "type": "KR",
+            "source": "quant_strategy",
+            "whale_score": None,
+            "foreigner": None,
+            "institution": None,
+            "retail": None,
+            "warnings": [f"investor_flow_failed:{exc}"],
+        }
+
+
 def _signal_label(row: Dict[str, Any], loss_risk: float | None) -> str:
     decision = str(row.get("decision") or row.get("Decision") or "").upper()
     if decision == "EXCEPTION_LEADER":
@@ -275,7 +339,85 @@ def _segment_accuracy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str, m
         return None
 
 
-def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str) -> Dict[str, Any]:
+def _derive_trade_price_levels(policy: Dict[str, Any], price: Dict[str, Any], ticker: str) -> Dict[str, Any]:
+    policy = dict(policy if isinstance(policy, dict) else {})
+    price = price if isinstance(price, dict) else {}
+    warnings: List[str] = [str(item) for item in policy.get("warnings", []) if str(item).strip()]
+    current = _safe_float(price.get("current_price"))
+    entry = _safe_float(policy.get("entry_reference_price")) or current
+    if entry is None:
+        policy.update(
+            {
+                "entry_zone_low": None,
+                "entry_zone_high": None,
+                "target_price": None,
+                "stop_price": None,
+                "risk_reward": None,
+                "price_level_source": "unavailable",
+                "warnings": ["trade_price_level_unavailable"],
+            }
+        )
+        return policy
+
+    if policy.get("entry_reference_price") is None:
+        policy["entry_reference_price"] = entry
+        warnings.append("entry_reference_price_fallback_current_price")
+
+    is_kq = str(ticker).upper().endswith(".KQ")
+    ma20 = _safe_float(price.get("ma20"))
+    ma5 = _safe_float(price.get("ma5"))
+    range_low = _safe_float(price.get("range_20d_low"))
+    prior_high = _safe_float(price.get("prior_20d_high"))
+    tp_pct = _safe_float(policy.get("target_tp_pct")) or 0.0
+    sl_pct = _safe_float(policy.get("stop_sl_pct")) or (-7.0 if is_kq else -5.0)
+
+    pullback = 0.025 if is_kq else 0.018
+    entry_zone_low = entry * (1.0 - pullback)
+    support_candidates = []
+    for support in (ma5, ma20, range_low):
+        if support is not None and 0 < support < entry and ((entry - support) / entry) <= 0.15:
+            support_candidates.append(support)
+    if support_candidates:
+        entry_zone_low = min(entry_zone_low, max(support_candidates))
+    entry_zone_high = entry
+
+    fallback_stop = entry * (1.0 + sl_pct / 100.0)
+    stop_candidates = [fallback_stop]
+    for support in (ma20, range_low):
+        if support is not None and 0 < support < entry:
+            stop_candidates.append(support * 0.985)
+    stop_price = max([candidate for candidate in stop_candidates if candidate < entry], default=fallback_stop)
+    if (entry - stop_price) / entry < 0.015:
+        stop_price = entry * 0.985
+    if (entry - stop_price) / entry > 0.15:
+        stop_price = fallback_stop
+        warnings.append("stop_price_default_pct_used_due_far_support")
+
+    target_price = entry * (1.0 + tp_pct / 100.0) if tp_pct else None
+    if target_price is not None and prior_high is not None and prior_high > entry:
+        target_price = max(target_price, prior_high * 1.01)
+
+    reward = (target_price - entry) if target_price is not None else None
+    risk = entry - stop_price if stop_price is not None else None
+    risk_reward = round(reward / risk, 4) if reward is not None and risk and risk > 0 else None
+
+    policy.update(
+        {
+            "entry_zone_low": _safe_float(entry_zone_low),
+            "entry_zone_high": _safe_float(entry_zone_high),
+            "target_price": _safe_float(target_price),
+            "stop_price": _safe_float(stop_price),
+            "risk_reward": risk_reward,
+            "stop_sl_pct": _safe_float((stop_price / entry - 1.0) * 100.0) if stop_price is not None else policy.get("stop_sl_pct"),
+            "target_tp_pct": _safe_float((target_price / entry - 1.0) * 100.0) if target_price is not None else policy.get("target_tp_pct"),
+            "price_level_source": "per_stock_price_snapshot",
+            "warnings": warnings,
+        }
+    )
+    return policy
+
+
+def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str, price: Dict[str, Any]) -> Dict[str, Any]:
     tp = _safe_float(trace.get("target_tp_pct") or row.get("target_tp_pct"))
     sl = _safe_float(trace.get("stop_sl_pct") or row.get("stop_sl_pct"))
     hold = _safe_int(trace.get("hold_days") or row.get("hold_days"))
@@ -293,7 +435,10 @@ def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str) -> Di
             hold = 5 if hold is None else hold
         if not entry_policy:
             entry_policy = "-2% limit" if str(ticker).upper().endswith(".KQ") else "open/reference"
-    return {
+    if not _present(_first_present(trace, "target_tp_pct") or row.get("target_tp_pct")):
+        # Exit percent defaults are an explicit fallback; concrete price levels below remain per-stock.
+        trace = {**trace, "trade_policy_warning": "default_target_pct_used"}
+    policy = {
         "entry_policy": entry_policy,
         "entry_reference_price": _safe_float(
             _first_present(
@@ -325,6 +470,9 @@ def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str) -> Di
         "stop_sl_pct": sl,
         "hold_days": hold,
     }
+    if trace.get("trade_policy_warning"):
+        policy["warnings"] = [trace.get("trade_policy_warning")]
+    return _derive_trade_price_levels(policy, price, ticker)
 
 
 def build_top_deep_reports(
@@ -348,7 +496,8 @@ def build_top_deep_reports(
         loss_risk = _safe_float(_first_present(row, "loss_risk_score") or trace.get("loss_risk_score"))
         day_change = _safe_float(_first_present(row, "day_return_pct", "전일비") or price.get("day_change_pct"))
         buy_score = _safe_float(_first_present(row, "relative_rank_score", "decision_score", "Decision Score", "score"))
-        trade_policy = _trade_policy(row, trace, ticker)
+        trade_policy = _trade_policy(row, trace, ticker, price)
+        flow = _fetch_investor_flow_snapshot(ticker, row, trace)
         prediction = {
             "phase25_prob": _safe_float(trace.get("phase25_prob") or row.get("phase25_prob")),
             "expected_return_1d_pct": _safe_float(trace.get("expected_return_1d_pct") or row.get("expected_return_1d_pct")),
@@ -388,13 +537,19 @@ def build_top_deep_reports(
             "rationale": trace.get("rationale") or row.get("rationale") or [],
             "prediction": prediction,
             "trade_plan": trade_policy,
+            "flow": flow,
             "theme": {
                 "primary_theme": trace.get("primary_theme") or row.get("primary_theme"),
                 "theme_routing_path": trace.get("theme_routing_path") or row.get("theme_routing_path"),
             },
             "price": price,
             "news": news,
-            "data_warnings": list(price.get("warnings") or []) + list(news.get("warnings") or []),
+            "data_warnings": (
+                list(price.get("warnings") or [])
+                + list(news.get("warnings") or [])
+                + list(flow.get("warnings") or [])
+                + list(trade_policy.get("warnings") or [])
+            ),
         }
         reports.append(_coerce_jsonable(report))
     return reports

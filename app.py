@@ -887,6 +887,49 @@ def _fmt_metric_num(value, digits=1):
         return "-"
 
 
+def _fmt_krw(value):
+    if value in (None, ""):
+        return "-"
+    try:
+        return f"{float(value):,.0f}원"
+    except Exception:
+        return "-"
+
+
+def _fmt_flow_oku(value):
+    if value in (None, ""):
+        return "-"
+    try:
+        return f"{float(value) / 100000000:+.1f}억"
+    except Exception:
+        return "-"
+
+
+def _infer_top_deep_market(row):
+    market = str(row.get("market") or "").upper()
+    if market:
+        return market
+    ticker = str(row.get("ticker") or "").upper()
+    if ticker.endswith(".KQ"):
+        return "KOSDAQ"
+    if ticker.endswith(".KS"):
+        return "KOSPI"
+    return "UNKNOWN"
+
+
+def _scan_display_label(run_df):
+    if run_df is None or run_df.empty:
+        return "-"
+    run_id = str(run_df["run_id"].dropna().iloc[0]) if "run_id" in run_df and not run_df["run_id"].dropna().empty else "-"
+    market = str(run_df["_market"].dropna().iloc[0]) if "_market" in run_df and not run_df["_market"].dropna().empty else "-"
+    generated = pd.to_datetime(run_df.get("generated_at"), errors="coerce", utc=True)
+    generated = generated.dropna()
+    if not generated.empty:
+        ts = generated.max().tz_convert("Asia/Seoul").strftime("%Y-%m-%d %H:%M")
+        return f"{ts} · {market} · {len(run_df)}건 · {run_id}"
+    return f"{market} · {len(run_df)}건 · {run_id}"
+
+
 def _readiness_score_card(title, block):
     block = block if isinstance(block, dict) else {}
     score = block.get("score")
@@ -974,12 +1017,28 @@ def _render_top_deep_reports_page():
     df = pd.DataFrame(rows)
     df["generated_at_dt"] = pd.to_datetime(df.get("generated_at"), errors="coerce", utc=True)
     df["report_date"] = df["generated_at_dt"].dt.tz_convert("Asia/Seoul").dt.date
-    dates = sorted([d for d in df["report_date"].dropna().unique()], reverse=True)
-    col_date, col_run, col_size = st.columns([1.4, 2.2, 1])
+    df["_market"] = df.apply(_infer_top_deep_market, axis=1)
+    market_options = [m for m in ["KOSPI", "KOSDAQ"] if m in set(df["_market"].dropna().astype(str))]
+    extra_markets = sorted([m for m in set(df["_market"].dropna().astype(str)) if m not in {"KOSPI", "KOSDAQ"}])
+    market_options.extend(extra_markets)
+    if not market_options:
+        market_options = ["전체"]
+    col_market, col_date, col_run, col_size = st.columns([1.2, 1.3, 2.8, 1])
+    selected_market = col_market.selectbox("시장", market_options, index=0)
+    market_df = df if selected_market == "전체" else df[df["_market"] == selected_market].copy()
+    dates = sorted([d for d in market_df["report_date"].dropna().unique()], reverse=True)
+    if not dates:
+        st.info(f"{selected_market} 정밀분석 리포트가 없습니다.")
+        return
     selected_date = col_date.selectbox("날짜", dates, index=0)
-    day_df = df[df["report_date"] == selected_date].copy()
-    runs = list(day_df.sort_values("generated_at_dt", ascending=False)["run_id"].dropna().unique())
-    selected_run = col_run.selectbox("스캔 Run", runs, index=0)
+    day_df = market_df[market_df["report_date"] == selected_date].copy()
+    run_summaries = []
+    for run_id, group in day_df.groupby("run_id", dropna=True):
+        run_summaries.append((str(run_id), _scan_display_label(group), group["generated_at_dt"].max()))
+    run_summaries = sorted(run_summaries, key=lambda item: item[2], reverse=True)
+    runs = [item[0] for item in run_summaries]
+    run_labels = {item[0]: item[1] for item in run_summaries}
+    selected_run = col_run.selectbox("스캔", runs, index=0, format_func=lambda rid: run_labels.get(str(rid), str(rid)))
     page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=1)
     run_df = day_df[day_df["run_id"] == selected_run].copy()
     run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
@@ -988,7 +1047,7 @@ def _render_top_deep_reports_page():
     max_page = max(1, math.ceil(total / int(page_size)))
     page = st.number_input("페이지", min_value=1, max_value=max_page, value=1, step=1)
     page_df = run_df.iloc[(int(page) - 1) * int(page_size): int(page) * int(page_size)]
-    st.caption(f"{selected_date} · `{selected_run}` · {total}건 · {page}/{max_page} 페이지")
+    st.caption(f"{selected_market} · {selected_date} · {run_labels.get(str(selected_run), selected_run)} · {page}/{max_page} 페이지")
 
     for row in page_df.to_dict("records"):
         price = row.get("price") if isinstance(row.get("price"), dict) else {}
@@ -997,6 +1056,7 @@ def _render_top_deep_reports_page():
         trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
         readiness = trade_plan.get("readiness_analysis") if isinstance(trade_plan.get("readiness_analysis"), dict) else {}
         theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+        flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
         title = f"#{int(row.get('rank') or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
         with st.container(border=True):
             st.markdown(f"### {title}")
@@ -1014,11 +1074,28 @@ def _render_top_deep_reports_page():
             p3.metric("거래량/20D", _fmt_metric_num(price.get("volume_ratio_20d"), 2))
             p4.metric("차트추세", str(price.get("trend") or "-"))
 
-            e1, e2, e3, e4 = st.columns(4)
+            e1, e2, e3, e4, e5 = st.columns(5)
             e1.metric("1D 기대", _fmt_metric_pct(prediction.get("expected_return_1d_pct")))
             e2.metric("3D 기대", _fmt_metric_pct(prediction.get("expected_return_3d_pct")))
-            e3.metric("Entry", str(trade_plan.get("entry_policy") or _fmt_metric_num(trade_plan.get("entry_reference_price"), 2)))
-            e4.metric("TP/SL", f"{_fmt_metric_pct(trade_plan.get('target_tp_pct'))} / {_fmt_metric_pct(trade_plan.get('stop_sl_pct'))}")
+            e3.metric("진입가", _fmt_krw(trade_plan.get("entry_reference_price")), str(trade_plan.get("entry_policy") or "-"))
+            e4.metric("목표가", _fmt_krw(trade_plan.get("target_price")), _fmt_metric_pct(trade_plan.get("target_tp_pct")))
+            e5.metric("손절가", _fmt_krw(trade_plan.get("stop_price")), _fmt_metric_pct(trade_plan.get("stop_sl_pct")), delta_color="inverse")
+
+            z1, z2, z3, z4 = st.columns(4)
+            z1.metric("진입 하단", _fmt_krw(trade_plan.get("entry_zone_low")))
+            z2.metric("진입 상단", _fmt_krw(trade_plan.get("entry_zone_high")))
+            z3.metric("손익비", _fmt_metric_num(trade_plan.get("risk_reward"), 2))
+            z4.metric("보유일", f"{trade_plan.get('hold_days') or '-'}일")
+
+            st.markdown("**수급**")
+            f1, f2, f3, f4 = st.columns(4)
+            f1.metric("외인", _fmt_flow_oku(flow.get("foreigner")))
+            f2.metric("기관", _fmt_flow_oku(flow.get("institution")))
+            f3.metric("개인", _fmt_flow_oku(flow.get("retail")), help="개인 순매수가 과도하면 단기 수급 품질이 낮을 수 있습니다.")
+            f4.metric("수급점수", _fmt_metric_num(flow.get("whale_score"), 0), str(flow.get("whale_trend") or flow.get("dominant") or "-"))
+            if not flow.get("valid"):
+                flow_warnings = flow.get("warnings") if isinstance(flow.get("warnings"), list) else []
+                st.caption("수급 데이터 경고: " + " / ".join(str(x) for x in flow_warnings[:3]) if flow_warnings else "수급 데이터 미확보")
 
             _render_readiness_analysis(readiness)
 

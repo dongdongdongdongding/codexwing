@@ -4,7 +4,11 @@ from modules.top_deep_report import build_top_deep_reports
 
 
 def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
-    with patch("modules.top_deep_report._fetch_price_snapshot") as price, patch("modules.top_deep_report._fetch_news_snapshot") as news:
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
         price.return_value = {
             "warnings": [],
             "current_price": 100.0,
@@ -27,6 +31,18 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
             "status": "OK",
             "sentiment_score": 0.25,
             "headlines": [{"title": "real headline", "score": 0.25}],
+            "warnings": [],
+        }
+        flow.return_value = {
+            "valid": True,
+            "type": "KR",
+            "source": "test",
+            "whale_score": 64.0,
+            "foreigner": 1500000000.0,
+            "institution": 700000000.0,
+            "retail": -2200000000.0,
+            "dominant": "외인",
+            "whale_trend": "↗ 순매수",
             "warnings": [],
         }
 
@@ -72,6 +88,12 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["trade_plan"]["hold_days"] is not None
     assert report["trade_plan"]["entry_policy"]
     assert report["trade_plan"]["entry_reference_price"] == 73200.0
+    assert report["trade_plan"]["target_price"] is not None
+    assert report["trade_plan"]["stop_price"] is not None
+    assert report["trade_plan"]["target_price"] != report["trade_plan"]["stop_price"]
+    assert report["trade_plan"]["risk_reward"] is not None
+    assert report["flow"]["foreigner"] == 1500000000.0
+    assert report["flow"]["retail"] == -2200000000.0
     readiness = report["trade_plan"]["readiness_analysis"]
     assert readiness["quality"]["grade"] != "N/A"
     assert readiness["upside"]["chase_risk_level"] == "낮음"
@@ -81,9 +103,14 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
 
 
 def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empty():
-    with patch("modules.top_deep_report._fetch_price_snapshot") as price, patch("modules.top_deep_report._fetch_news_snapshot") as news:
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
         price.return_value = {"warnings": [], "ohlcv_tail": []}
         news.return_value = {"status": "OK", "sentiment_score": 0.0, "headlines": [], "warnings": []}
+        flow.return_value = {"valid": False, "warnings": ["test_unavailable"]}
 
         reports = build_top_deep_reports(
             scan_rows=[

@@ -432,9 +432,14 @@ def build_entry_readiness_analysis(
         "trade_plan_summary": {
             "entry_policy": trade_plan.get("entry_policy"),
             "entry_reference_price": trade_plan.get("entry_reference_price"),
+            "entry_zone_low": trade_plan.get("entry_zone_low"),
+            "entry_zone_high": trade_plan.get("entry_zone_high"),
+            "target_price": trade_plan.get("target_price"),
+            "stop_price": trade_plan.get("stop_price"),
             "target_tp_pct": trade_plan.get("target_tp_pct"),
             "stop_sl_pct": trade_plan.get("stop_sl_pct"),
             "hold_days": trade_plan.get("hold_days"),
+            "risk_reward": trade_plan.get("risk_reward"),
         },
         "warnings": warnings[:8],
     }
