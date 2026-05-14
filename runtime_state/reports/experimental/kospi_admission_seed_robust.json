@@ -1,0 +1,578 @@
+{
+  "report_version": "kospi_admission_robust_search_v1",
+  "generated_at": "2026-05-14T11:59:00.827830+00:00",
+  "mode": "shadow_only_not_production",
+  "input_rows": 4335,
+  "kospi_rows": 2462,
+  "raw_candidate_count": 2,
+  "evaluated_candidate_count": 2,
+  "search_config": {
+    "train_ratios": [],
+    "max_depth": 0,
+    "beam_width": 150,
+    "min_train": 20,
+    "min_test": 8,
+    "max_conditions": 180,
+    "top_per_split": 1,
+    "rolling_folds": 4,
+    "min_train_days": 8,
+    "min_fold_test": 2
+  },
+  "fold_ranges": [
+    {
+      "fold": 1,
+      "train_start": "2026-03-30",
+      "train_end": "2026-04-09",
+      "test_start": "2026-04-10",
+      "test_end": "2026-04-17"
+    },
+    {
+      "fold": 2,
+      "train_start": "2026-03-30",
+      "train_end": "2026-04-17",
+      "test_start": "2026-04-19",
+      "test_end": "2026-04-26"
+    },
+    {
+      "fold": 3,
+      "train_start": "2026-03-30",
+      "train_end": "2026-04-26",
+      "test_start": "2026-04-27",
+      "test_end": "2026-05-06"
+    },
+    {
+      "fold": 4,
+      "train_start": "2026-03-30",
+      "train_end": "2026-05-06",
+      "test_start": "2026-05-07",
+      "test_end": "2026-05-13"
+    }
+  ],
+  "champions": [
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=31.8",
+        "decision_score>=100",
+        "explosive_leader_flag=0"
+      ],
+      "source_split_cut_day": "seed_from_admission_cycle_70pct",
+      "source_train": {
+        "win_rate_pct": 66.667,
+        "n": 21
+      },
+      "source_test": {
+        "win_rate_pct": 88.889,
+        "n": 9
+      },
+      "fold_count": 3,
+      "fold_test_n_total": 19,
+      "fold_weighted_win_pct": 78.947,
+      "fold_min_win_pct": 62.5,
+      "fold_median_win_pct": 80.0,
+      "fold_max_stop5_pct": 0.0,
+      "fold_avg_return_5d_pct": 10.303,
+      "folds": [
+        {
+          "fold": 1,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-09"
+          ],
+          "test_range": [
+            "2026-04-10",
+            "2026-04-17"
+          ],
+          "train": {
+            "n": 11,
+            "win_rate_pct": 63.636,
+            "avg_return_5d_pct": 13.071,
+            "avg_mfe_5d_pct": 21.4515,
+            "avg_mae_5d_pct": 2.3565,
+            "stop5_pct": 9.091,
+            "avg_1d_pct": 5.1334,
+            "avg_3d_pct": 9.6082
+          },
+          "test": {
+            "n": 8,
+            "win_rate_pct": 62.5,
+            "avg_return_5d_pct": 8.0211,
+            "avg_mfe_5d_pct": 16.438,
+            "avg_mae_5d_pct": -0.8412,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": -0.2073,
+            "avg_3d_pct": 7.8438
+          }
+        },
+        {
+          "fold": 2,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-17"
+          ],
+          "test_range": [
+            "2026-04-19",
+            "2026-04-26"
+          ],
+          "train": {
+            "n": 19,
+            "win_rate_pct": 63.158,
+            "avg_return_5d_pct": 10.9448,
+            "avg_mfe_5d_pct": 19.3405,
+            "avg_mae_5d_pct": 1.0101,
+            "stop5_pct": 5.263,
+            "avg_1d_pct": 2.8847,
+            "avg_3d_pct": 8.8653
+          },
+          "test": {
+            "n": 5,
+            "win_rate_pct": 80.0,
+            "avg_return_5d_pct": 11.0184,
+            "avg_mfe_5d_pct": 17.6564,
+            "avg_mae_5d_pct": 1.2101,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 4.2647,
+            "avg_3d_pct": 8.8626
+          }
+        },
+        {
+          "fold": 3,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-26"
+          ],
+          "test_range": [
+            "2026-04-27",
+            "2026-05-06"
+          ],
+          "train": {
+            "n": 24,
+            "win_rate_pct": 66.667,
+            "avg_return_5d_pct": 10.9601,
+            "avg_mfe_5d_pct": 18.9897,
+            "avg_mae_5d_pct": 1.0518,
+            "stop5_pct": 4.167,
+            "avg_1d_pct": 3.1722,
+            "avg_3d_pct": 8.8647
+          },
+          "test": {
+            "n": 6,
+            "win_rate_pct": 100.0,
+            "avg_return_5d_pct": 11.8695,
+            "avg_mfe_5d_pct": 17.4902,
+            "avg_mae_5d_pct": 0.6203,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 2.9428,
+            "avg_3d_pct": 7.217
+          }
+        }
+      ],
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=31.8",
+        "decision_score>=93.26",
+        "explosive_leader_flag=0"
+      ],
+      "source_split_cut_day": "seed_from_admission_cycle_70pct",
+      "source_train": {
+        "win_rate_pct": 62.5,
+        "n": 24
+      },
+      "source_test": {
+        "win_rate_pct": 88.889,
+        "n": 9
+      },
+      "fold_count": 3,
+      "fold_test_n_total": 21,
+      "fold_weighted_win_pct": 76.191,
+      "fold_min_win_pct": 55.556,
+      "fold_median_win_pct": 83.333,
+      "fold_max_stop5_pct": 0.0,
+      "fold_avg_return_5d_pct": 10.5854,
+      "folds": [
+        {
+          "fold": 1,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-09"
+          ],
+          "test_range": [
+            "2026-04-10",
+            "2026-04-17"
+          ],
+          "train": {
+            "n": 12,
+            "win_rate_pct": 58.333,
+            "avg_return_5d_pct": 12.2373,
+            "avg_mfe_5d_pct": 20.3393,
+            "avg_mae_5d_pct": 2.4157,
+            "stop5_pct": 8.333,
+            "avg_1d_pct": 4.9795,
+            "avg_3d_pct": 9.2548
+          },
+          "test": {
+            "n": 9,
+            "win_rate_pct": 55.556,
+            "avg_return_5d_pct": 7.8691,
+            "avg_mfe_5d_pct": 15.3969,
+            "avg_mae_5d_pct": -0.9788,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": -0.2651,
+            "avg_3d_pct": 6.7413
+          }
+        },
+        {
+          "fold": 2,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-17"
+          ],
+          "test_range": [
+            "2026-04-19",
+            "2026-04-26"
+          ],
+          "train": {
+            "n": 21,
+            "win_rate_pct": 57.143,
+            "avg_return_5d_pct": 10.3652,
+            "avg_mfe_5d_pct": 18.2212,
+            "avg_mae_5d_pct": 0.961,
+            "stop5_pct": 4.762,
+            "avg_1d_pct": 2.7318,
+            "avg_3d_pct": 8.1775
+          },
+          "test": {
+            "n": 6,
+            "win_rate_pct": 83.333,
+            "avg_return_5d_pct": 12.0175,
+            "avg_mfe_5d_pct": 19.3135,
+            "avg_mae_5d_pct": 1.5125,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 4.058,
+            "avg_3d_pct": 10.3786
+          }
+        },
+        {
+          "fold": 3,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-26"
+          ],
+          "test_range": [
+            "2026-04-27",
+            "2026-05-06"
+          ],
+          "train": {
+            "n": 27,
+            "win_rate_pct": 62.963,
+            "avg_return_5d_pct": 10.7324,
+            "avg_mfe_5d_pct": 18.4639,
+            "avg_mae_5d_pct": 1.0835,
+            "stop5_pct": 3.704,
+            "avg_1d_pct": 3.0265,
+            "avg_3d_pct": 8.6667
+          },
+          "test": {
+            "n": 6,
+            "win_rate_pct": 100.0,
+            "avg_return_5d_pct": 11.8695,
+            "avg_mfe_5d_pct": 17.4902,
+            "avg_mae_5d_pct": 0.6203,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 2.9428,
+            "avg_3d_pct": 7.217
+          }
+        }
+      ],
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    }
+  ],
+  "stable_70pct_candidates": [
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=31.8",
+        "decision_score>=100",
+        "explosive_leader_flag=0"
+      ],
+      "source_split_cut_day": "seed_from_admission_cycle_70pct",
+      "source_train": {
+        "win_rate_pct": 66.667,
+        "n": 21
+      },
+      "source_test": {
+        "win_rate_pct": 88.889,
+        "n": 9
+      },
+      "fold_count": 3,
+      "fold_test_n_total": 19,
+      "fold_weighted_win_pct": 78.947,
+      "fold_min_win_pct": 62.5,
+      "fold_median_win_pct": 80.0,
+      "fold_max_stop5_pct": 0.0,
+      "fold_avg_return_5d_pct": 10.303,
+      "folds": [
+        {
+          "fold": 1,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-09"
+          ],
+          "test_range": [
+            "2026-04-10",
+            "2026-04-17"
+          ],
+          "train": {
+            "n": 11,
+            "win_rate_pct": 63.636,
+            "avg_return_5d_pct": 13.071,
+            "avg_mfe_5d_pct": 21.4515,
+            "avg_mae_5d_pct": 2.3565,
+            "stop5_pct": 9.091,
+            "avg_1d_pct": 5.1334,
+            "avg_3d_pct": 9.6082
+          },
+          "test": {
+            "n": 8,
+            "win_rate_pct": 62.5,
+            "avg_return_5d_pct": 8.0211,
+            "avg_mfe_5d_pct": 16.438,
+            "avg_mae_5d_pct": -0.8412,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": -0.2073,
+            "avg_3d_pct": 7.8438
+          }
+        },
+        {
+          "fold": 2,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-17"
+          ],
+          "test_range": [
+            "2026-04-19",
+            "2026-04-26"
+          ],
+          "train": {
+            "n": 19,
+            "win_rate_pct": 63.158,
+            "avg_return_5d_pct": 10.9448,
+            "avg_mfe_5d_pct": 19.3405,
+            "avg_mae_5d_pct": 1.0101,
+            "stop5_pct": 5.263,
+            "avg_1d_pct": 2.8847,
+            "avg_3d_pct": 8.8653
+          },
+          "test": {
+            "n": 5,
+            "win_rate_pct": 80.0,
+            "avg_return_5d_pct": 11.0184,
+            "avg_mfe_5d_pct": 17.6564,
+            "avg_mae_5d_pct": 1.2101,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 4.2647,
+            "avg_3d_pct": 8.8626
+          }
+        },
+        {
+          "fold": 3,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-26"
+          ],
+          "test_range": [
+            "2026-04-27",
+            "2026-05-06"
+          ],
+          "train": {
+            "n": 24,
+            "win_rate_pct": 66.667,
+            "avg_return_5d_pct": 10.9601,
+            "avg_mfe_5d_pct": 18.9897,
+            "avg_mae_5d_pct": 1.0518,
+            "stop5_pct": 4.167,
+            "avg_1d_pct": 3.1722,
+            "avg_3d_pct": 8.8647
+          },
+          "test": {
+            "n": 6,
+            "win_rate_pct": 100.0,
+            "avg_return_5d_pct": 11.8695,
+            "avg_mfe_5d_pct": 17.4902,
+            "avg_mae_5d_pct": 0.6203,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 2.9428,
+            "avg_3d_pct": 7.217
+          }
+        }
+      ],
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=31.8",
+        "decision_score>=93.26",
+        "explosive_leader_flag=0"
+      ],
+      "source_split_cut_day": "seed_from_admission_cycle_70pct",
+      "source_train": {
+        "win_rate_pct": 62.5,
+        "n": 24
+      },
+      "source_test": {
+        "win_rate_pct": 88.889,
+        "n": 9
+      },
+      "fold_count": 3,
+      "fold_test_n_total": 21,
+      "fold_weighted_win_pct": 76.191,
+      "fold_min_win_pct": 55.556,
+      "fold_median_win_pct": 83.333,
+      "fold_max_stop5_pct": 0.0,
+      "fold_avg_return_5d_pct": 10.5854,
+      "folds": [
+        {
+          "fold": 1,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-09"
+          ],
+          "test_range": [
+            "2026-04-10",
+            "2026-04-17"
+          ],
+          "train": {
+            "n": 12,
+            "win_rate_pct": 58.333,
+            "avg_return_5d_pct": 12.2373,
+            "avg_mfe_5d_pct": 20.3393,
+            "avg_mae_5d_pct": 2.4157,
+            "stop5_pct": 8.333,
+            "avg_1d_pct": 4.9795,
+            "avg_3d_pct": 9.2548
+          },
+          "test": {
+            "n": 9,
+            "win_rate_pct": 55.556,
+            "avg_return_5d_pct": 7.8691,
+            "avg_mfe_5d_pct": 15.3969,
+            "avg_mae_5d_pct": -0.9788,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": -0.2651,
+            "avg_3d_pct": 6.7413
+          }
+        },
+        {
+          "fold": 2,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-17"
+          ],
+          "test_range": [
+            "2026-04-19",
+            "2026-04-26"
+          ],
+          "train": {
+            "n": 21,
+            "win_rate_pct": 57.143,
+            "avg_return_5d_pct": 10.3652,
+            "avg_mfe_5d_pct": 18.2212,
+            "avg_mae_5d_pct": 0.961,
+            "stop5_pct": 4.762,
+            "avg_1d_pct": 2.7318,
+            "avg_3d_pct": 8.1775
+          },
+          "test": {
+            "n": 6,
+            "win_rate_pct": 83.333,
+            "avg_return_5d_pct": 12.0175,
+            "avg_mfe_5d_pct": 19.3135,
+            "avg_mae_5d_pct": 1.5125,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 4.058,
+            "avg_3d_pct": 10.3786
+          }
+        },
+        {
+          "fold": 3,
+          "train_range": [
+            "2026-03-30",
+            "2026-04-26"
+          ],
+          "test_range": [
+            "2026-04-27",
+            "2026-05-06"
+          ],
+          "train": {
+            "n": 27,
+            "win_rate_pct": 62.963,
+            "avg_return_5d_pct": 10.7324,
+            "avg_mfe_5d_pct": 18.4639,
+            "avg_mae_5d_pct": 1.0835,
+            "stop5_pct": 3.704,
+            "avg_1d_pct": 3.0265,
+            "avg_3d_pct": 8.6667
+          },
+          "test": {
+            "n": 6,
+            "win_rate_pct": 100.0,
+            "avg_return_5d_pct": 11.8695,
+            "avg_mfe_5d_pct": 17.4902,
+            "avg_mae_5d_pct": 0.6203,
+            "stop5_pct": 0.0,
+            "avg_1d_pct": 2.9428,
+            "avg_3d_pct": 7.217
+          }
+        }
+      ],
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    }
+  ],
+  "strict_70pct_candidates": [],
+  "notes": [
+    "KOSPI-only shadow search. Production scanner logic is unchanged.",
+    "Rules are searched on multiple simple train/test ratios, then rechecked on rolling time folds.",
+    "Primary theme is not used as a condition because fixed themes rotate and overfit.",
+    "Archive labels are still proxy labels; any production candidate must be revalidated with ordered OHLCV path labels."
+  ]
+}
