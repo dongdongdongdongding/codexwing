@@ -33,6 +33,7 @@ class DiscordScanLock:
     acquired: bool = False
 
     def try_acquire(self, *, job_id: str, market: str) -> bool:
+        self.path = _lock_path_for_market(self.path, market)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._clear_stale_lock()
         payload = {
@@ -85,6 +86,17 @@ def _pid_exists(pid: int) -> bool:
         return True
     except Exception:
         return False
+
+
+def _lock_path_for_market(path: Path, market: str) -> Path:
+    """Scope the scan lock by market so KOSPI and KOSDAQ can run in parallel."""
+    market_key = str(market or "").upper()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return path
+    stem = path.stem
+    if stem.upper().endswith(f"_{market_key}"):
+        return path
+    return path.with_name(f"{stem}_{market_key}{path.suffix}")
 
 
 def create_scan_job(market: str) -> DiscordScanJob:

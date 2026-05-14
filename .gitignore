@@ -49,6 +49,7 @@ runtime_state/reports/instrument_master/
 runtime_state/reports/top_deep/
 runtime_state/reports/data_health/
 runtime_state/reports/theme_validation/
+runtime_state/reports/trading/signal_section_performance_daily.*
 runtime_state/reports/validation/*.json
 runtime_state/reports/validation/*.md
 !runtime_state/reports/validation/supabase_scan_data_quality.json

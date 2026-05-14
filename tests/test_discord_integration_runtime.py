@@ -351,17 +351,20 @@ def test_scan_executor_loads_recent_artifact_summary_when_stdout_has_no_json(mon
     assert payload["result_count"] == 56
 
 
-def test_scan_lock_prevents_parallel_jobs(tmp_path):
+def test_scan_lock_allows_cross_market_parallel_jobs(tmp_path):
     lock_path = tmp_path / "scan.lock"
     first = DiscordScanLock(path=lock_path)
     second = DiscordScanLock(path=lock_path)
+    third = DiscordScanLock(path=lock_path)
 
     assert first.try_acquire(job_id="DS-ONE", market="KOSPI") is True
-    assert second.try_acquire(job_id="DS-TWO", market="KOSDAQ") is False
+    assert second.try_acquire(job_id="DS-TWO", market="KOSDAQ") is True
+    assert third.try_acquire(job_id="DS-THREE", market="KOSPI") is False
 
     first.release()
-    assert second.try_acquire(job_id="DS-TWO", market="KOSDAQ") is True
     second.release()
+    assert third.try_acquire(job_id="DS-THREE", market="KOSPI") is True
+    third.release()
 
 
 def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_path):
