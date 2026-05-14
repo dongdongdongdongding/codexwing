@@ -15,6 +15,7 @@ from modules.ui_helpers import (
     compute_progress_fraction,
     enrich_signal_rows_with_planner_trace,
     format_volume_display,
+    merge_profile_exception_leaders_into_planner,
     resolve_display_price,
     should_auto_refresh_scan_panel,
     sort_signal_rows_by_planner_rank,
@@ -296,6 +297,35 @@ class UIHelperTests(unittest.TestCase):
         )
         self.assertEqual(len(groups["combined"]), 10)
         self.assertEqual(groups["combined"][-1]["_analysis_section"], "Exception Leader")
+
+    def test_profile_only_exception_leaders_are_merged_into_planner_contract(self):
+        planner = {
+            "decisions": [{"ticker": "TOP1.KS", "decision": "PRIORITY_WATCHLIST"}],
+            "watchlist_meta": [],
+        }
+        profile = {
+            "exception_leaders": {
+                "watchlist_meta": [
+                    {
+                        "ticker": "EX1.KS",
+                        "stock_name": "Profile Exception",
+                        "risk_label": "EXCEPTION_LEADER",
+                        "reason": "exception_leader_watchlist",
+                    }
+                ]
+            }
+        }
+
+        merged = merge_profile_exception_leaders_into_planner(planner, profile)
+        groups = build_top5_plus_exception_records(
+            [{"ticker": "TOP1.KS", "Decision Score": 90.0}],
+            merged,
+            top_limit=5,
+            exception_limit=5,
+        )
+
+        self.assertEqual([row["ticker"] for row in groups["top5"]], ["TOP1.KS"])
+        self.assertEqual([row["ticker"] for row in groups["exception_leaders"]], ["EX1.KS"])
 
 
 class ScannerRuntimeTests(unittest.TestCase):

@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from modules.db_manager import DBManager
 from modules.top_deep_report import generate_and_store_top_deep_reports
+from modules.ui_helpers import merge_profile_exception_leaders_into_planner
 from multi_agent.tools.verify_scan_archive_top_consistency import _load_planner
 
 
@@ -39,6 +40,9 @@ def regenerate(*, shared_dir: Path, limit_runs: int, top_n: int, bucket: str, wr
         planner = _load_planner(run_dir)
         if not planner:
             continue
+        profile_path = run_dir / "profile_diagnostics.json"
+        profile = json.loads(profile_path.read_text(encoding="utf-8")) if profile_path.exists() else {}
+        planner = merge_profile_exception_leaders_into_planner(planner, profile)
         ctx = planner.get("run_context") or {}
         run_id = str(ctx.get("run_id") or run_dir.name)
         rows = _db_rows_for_run(db, run_id, bucket=bucket)

@@ -19,6 +19,7 @@ from modules.ui_helpers import (
     build_top5_plus_exception_records,
     build_top_candidate_compact_view,
     enrich_signal_rows_with_planner_trace,
+    merge_profile_exception_leaders_into_planner,
     sort_signal_rows_by_planner_rank,
 )
 
@@ -165,6 +166,8 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     # Stream A (안전 80%) = PRIORITY/WATCHLIST/OBSERVE 위주
     # Stream B (급등 20%) = EXCEPTION_LEADER만
     planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+    profile_payload = _load_json_safe(bridge_info.get("profile_diagnostics")) if isinstance(bridge_info, dict) else {}
+    planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
     raw_score_records = results_df.to_dict("records")
     enriched_records = enrich_signal_rows_with_planner_trace(
         raw_score_records,

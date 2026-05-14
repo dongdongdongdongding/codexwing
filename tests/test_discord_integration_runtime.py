@@ -221,6 +221,68 @@ def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_pa
     assert "JYP Ent." in archive["fields"][0]["name"]
 
 
+def test_archive_embed_includes_profile_only_exception_leaders(tmp_path, monkeypatch):
+    report_dir = tmp_path / "top_deep"
+    artifact_dir = tmp_path / "artifacts"
+    shared_dir = tmp_path / "shared" / "RUN-PROFILE"
+    report_dir.mkdir()
+    run_dir = artifact_dir / "RUN-PROFILE"
+    run_dir.mkdir(parents=True)
+    shared_dir.mkdir(parents=True)
+    planner_path = shared_dir / "planner_handoff.json"
+    profile_path = shared_dir / "profile_diagnostics.json"
+    planner_path.write_text(
+        json.dumps({"decisions": [{"ticker": "005930.KS", "decision": "PRIORITY_WATCHLIST"}], "watchlist_meta": []}),
+        encoding="utf-8",
+    )
+    profile_path.write_text(
+        json.dumps(
+            {
+                "exception_leaders": {
+                    "watchlist_meta": [
+                        {
+                            "ticker": "034730.KS",
+                            "stock_name": "SK",
+                            "risk_label": "EXCEPTION_LEADER",
+                            "reason": "exception_leader_watchlist",
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "scan_pipeline_summary.json").write_text(
+        json.dumps(
+            {
+                "run_id": "RUN-PROFILE",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "manifest_paths": {
+                    "planner_handoff": str(planner_path),
+                    "profile_diagnostics": str(profile_path),
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "raw_scan_results.json").write_text(
+        json.dumps(
+            {"results_sorted": [{"ticker": "005930.KS", "stock_name": "삼성전자", "Decision Score": 91}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    monkeypatch.setattr(renderers, "ARTIFACT_DIR", artifact_dir)
+
+    archive = build_archive_embed(run_id="RUN-PROFILE", limit=10)
+
+    assert "rows 2" in archive["description"]
+    assert any("SK" in field["name"] for field in archive["fields"])
+
+
 def test_scan_ack_refuses_execution_while_dry_run():
     config = DiscordIntegrationConfig(dry_run=True, enable_scan_execution=True)
     embed = build_scan_ack_embed(config, market="KOSPI")

@@ -71,8 +71,12 @@ def _generate_top_deep_reports_for_run(
         return {"count": 0, "reason": "planner_handoff_missing"}
     try:
         from modules.top_deep_report import generate_and_store_top_deep_reports
+        from modules.ui_helpers import merge_profile_exception_leaders_into_planner
 
         planner_payload = read_json(planner_path)
+        profile_path = Path(str(manifest_paths.get("profile_diagnostics") or ""))
+        profile_payload = read_json(profile_path) if profile_path.exists() else {}
+        planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
         top_n = max(1, int(os.getenv("AG_TOP_DEEP_N", "5") or 5))
         write_db = os.getenv("AG_TOP_DEEP_WRITE_DB", "1").strip() not in {"0", "false", "False"}
         return generate_and_store_top_deep_reports(

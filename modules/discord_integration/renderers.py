@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
-from modules.ui_helpers import build_top5_plus_exception_records
+from modules.ui_helpers import build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 ARTIFACT_DIR = Path("runtime_state/artifacts")
@@ -311,6 +311,21 @@ def _load_planner_payload_for_run(run_id: str) -> Dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
+def _load_profile_payload_for_run(run_id: str) -> Dict[str, Any]:
+    summary_path = ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json"
+    summary = _load_json(summary_path)
+    if isinstance(summary, dict):
+        manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
+        profile_path = manifest.get("profile_diagnostics")
+        if profile_path:
+            payload = _load_json(Path(str(profile_path)))
+            if isinstance(payload, dict):
+                return payload
+    fallback = Path("runtime_state/shared_working") / str(run_id) / "profile_diagnostics.json"
+    payload = _load_json(fallback)
+    return payload if isinstance(payload, dict) else {}
+
+
 def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
     ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("Symbol") or row.get("티커") or "-"
     name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or row.get("종목명") or ticker
@@ -356,6 +371,8 @@ def build_archive_embed(
         if artifact_rows:
             source = "top5_plus_exception(raw+planner)"
             planner_payload = _load_planner_payload_for_run(selected_run)
+            profile_payload = _load_profile_payload_for_run(selected_run)
+            planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
             run_rows = build_top5_plus_exception_records(artifact_rows, planner_payload)["combined"]
             if ticker:
                 run_rows = [

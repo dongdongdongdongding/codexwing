@@ -39,6 +39,7 @@ from modules.ui_helpers import (
     compute_progress_fraction,
     enrich_signal_rows_with_planner_trace,
     format_volume_display,
+    merge_profile_exception_leaders_into_planner,
     resolve_display_price,
     should_auto_refresh_scan_panel,
     split_stream_records,
@@ -1409,6 +1410,8 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
         deep_result = {}
         try:
             planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
+            profile_payload = _load_json_safe(bridge_info.get("profile_diagnostics")) if isinstance(bridge_info, dict) else {}
+            planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
             deep_result = generate_and_store_top_deep_reports(
                 scan_rows=results,
                 planner_payload=planner_payload,
@@ -3382,6 +3385,13 @@ if active_main_tab == "📚 아카이브":
                 if _selected_run_id:
                     _archive_planner_payload = _load_json_safe(
                         str(Path("runtime_state/shared_working") / str(_selected_run_id) / "planner_handoff.json")
+                    )
+                    _archive_profile_payload = _load_json_safe(
+                        str(Path("runtime_state/shared_working") / str(_selected_run_id) / "profile_diagnostics.json")
+                    )
+                    _archive_planner_payload = merge_profile_exception_leaders_into_planner(
+                        _archive_planner_payload,
+                        _archive_profile_payload,
                     )
 
                 # Archive Top must mirror scan-time/planner order for the selected run_id.

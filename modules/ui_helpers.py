@@ -317,6 +317,50 @@ def _planner_exception_leader_records(
     return additions
 
 
+def merge_profile_exception_leaders_into_planner(
+    planner_payload: Dict[str, Any] | None,
+    profile_payload: Dict[str, Any] | None,
+) -> Dict[str, Any]:
+    """Return planner payload augmented with profile-only Exception Leaders.
+
+    Some KOSPI runs emit Exception Leader rows only in
+    ``profile_diagnostics.exception_leaders.watchlist_meta``. The lower
+    diagnostics table reads that profile payload directly, while Top5 cards,
+    Top Deep reports, archives, and Discord renderers consume planner payload.
+    This bridge keeps all surfaces on the same candidate contract.
+    """
+    planner = dict(planner_payload) if isinstance(planner_payload, dict) else {}
+    profile = profile_payload if isinstance(profile_payload, dict) else {}
+    exception_block = profile.get("exception_leaders") if isinstance(profile.get("exception_leaders"), dict) else {}
+    profile_rows = exception_block.get("watchlist_meta") if isinstance(exception_block.get("watchlist_meta"), list) else []
+    if not profile_rows:
+        return planner
+
+    watchlist_meta = list(planner.get("watchlist_meta") or []) if isinstance(planner.get("watchlist_meta"), list) else []
+    existing = {
+        _record_ticker_key(row)
+        for section in (planner.get("decisions") or [], watchlist_meta)
+        for row in (section if isinstance(section, list) else [])
+        if isinstance(row, dict)
+    }
+    for row in profile_rows:
+        if not isinstance(row, dict):
+            continue
+        ticker = _record_ticker_key(row)
+        if not ticker or ticker in existing:
+            continue
+        copy = dict(row)
+        copy.setdefault("ticker", ticker)
+        copy.setdefault("decision", "EXCEPTION_LEADER")
+        copy.setdefault("decision_bucket", "exception_leader")
+        copy.setdefault("risk_label", "EXCEPTION_LEADER")
+        copy.setdefault("reason", "exception_leader_watchlist")
+        watchlist_meta.append(copy)
+        existing.add(ticker)
+    planner["watchlist_meta"] = watchlist_meta
+    return planner
+
+
 def build_top5_plus_exception_records(
     records: List[Dict[str, Any]],
     planner_payload: Dict[str, Any] | None = None,
