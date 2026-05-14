@@ -65,6 +65,129 @@ class QuantStrategy:
         self.strategy_family = None
         self.df: pd.DataFrame = pd.DataFrame()
         self.df_weekly: pd.DataFrame = pd.DataFrame()
+
+    @staticmethod
+    def _fallback_us_tickers(market_type: str) -> dict:
+        """Best-effort US ticker fallback when FDR/Naver listing is unavailable."""
+        market_key = str(market_type or "").upper()
+        result: dict[str, str] = {}
+
+        try:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            profile_path = os.path.join(base_dir, "models", "regime_ticker_profiles.json")
+            with open(profile_path, "r", encoding="utf-8") as fh:
+                profiles = json.load(fh)
+            us_profiles = ((profiles or {}).get("profiles") or {}).get("US") or {}
+            if isinstance(us_profiles, dict):
+                for rows in us_profiles.values():
+                    if not isinstance(rows, dict):
+                        continue
+                    for sym, row in rows.items():
+                        symbol = str(sym or "").strip().upper()
+                        if not symbol or any(ch in symbol for ch in (".", "/", "^")):
+                            continue
+                        name = symbol
+                        if isinstance(row, dict):
+                            name = str(row.get("stock_name") or row.get("name") or symbol).strip() or symbol
+                        result[symbol] = name
+        except Exception:
+            result = {}
+
+        if result and market_key != "NASDAQ":
+            return dict(sorted(result.items()))
+
+        if market_key == "NASDAQ":
+            core = {
+                "AAPL": "Apple Inc.",
+                "ADBE": "Adobe Inc.",
+                "ADI": "Analog Devices Inc.",
+                "ADP": "Automatic Data Processing",
+                "ADSK": "Autodesk Inc.",
+                "AMAT": "Applied Materials Inc.",
+                "AMD": "Advanced Micro Devices Inc.",
+                "AMGN": "Amgen Inc.",
+                "AMZN": "Amazon.com Inc.",
+                "ARM": "Arm Holdings plc",
+                "ASML": "ASML Holding NV",
+                "AVGO": "Broadcom Inc.",
+                "AZN": "AstraZeneca PLC",
+                "BIIB": "Biogen Inc.",
+                "BKNG": "Booking Holdings Inc.",
+                "CDNS": "Cadence Design Systems Inc.",
+                "CEG": "Constellation Energy Corp.",
+                "CHTR": "Charter Communications Inc.",
+                "CMCSA": "Comcast Corp.",
+                "COST": "Costco Wholesale Corp.",
+                "CPRT": "Copart Inc.",
+                "CRWD": "CrowdStrike Holdings Inc.",
+                "CSCO": "Cisco Systems Inc.",
+                "CSX": "CSX Corp.",
+                "CTAS": "Cintas Corp.",
+                "DDOG": "Datadog Inc.",
+                "DXCM": "DexCom Inc.",
+                "EA": "Electronic Arts Inc.",
+                "EXC": "Exelon Corp.",
+                "FANG": "Diamondback Energy Inc.",
+                "FAST": "Fastenal Co.",
+                "FTNT": "Fortinet Inc.",
+                "GFS": "GlobalFoundries Inc.",
+                "GILD": "Gilead Sciences Inc.",
+                "GOOG": "Alphabet Inc.",
+                "GOOGL": "Alphabet Inc.",
+                "HON": "Honeywell International Inc.",
+                "IDXX": "IDEXX Laboratories Inc.",
+                "INTC": "Intel Corp.",
+                "INTU": "Intuit Inc.",
+                "ISRG": "Intuitive Surgical Inc.",
+                "KDP": "Keurig Dr Pepper Inc.",
+                "KLAC": "KLA Corp.",
+                "LIN": "Linde plc",
+                "LRCX": "Lam Research Corp.",
+                "MAR": "Marriott International Inc.",
+                "MCHP": "Microchip Technology Inc.",
+                "MDB": "MongoDB Inc.",
+                "MDLZ": "Mondelez International Inc.",
+                "MELI": "MercadoLibre Inc.",
+                "META": "Meta Platforms Inc.",
+                "MNST": "Monster Beverage Corp.",
+                "MRNA": "Moderna Inc.",
+                "MRVL": "Marvell Technology Inc.",
+                "MSFT": "Microsoft Corp.",
+                "MU": "Micron Technology Inc.",
+                "NFLX": "Netflix Inc.",
+                "NVDA": "NVIDIA Corp.",
+                "NXPI": "NXP Semiconductors NV",
+                "ODFL": "Old Dominion Freight Line Inc.",
+                "ON": "ON Semiconductor Corp.",
+                "ORLY": "O'Reilly Automotive Inc.",
+                "PANW": "Palo Alto Networks Inc.",
+                "PAYX": "Paychex Inc.",
+                "PCAR": "Paccar Inc.",
+                "PEP": "PepsiCo Inc.",
+                "PLTR": "Palantir Technologies Inc.",
+                "PYPL": "PayPal Holdings Inc.",
+                "QCOM": "Qualcomm Inc.",
+                "REGN": "Regeneron Pharmaceuticals Inc.",
+                "ROP": "Roper Technologies Inc.",
+                "ROST": "Ross Stores Inc.",
+                "SBUX": "Starbucks Corp.",
+                "SNPS": "Synopsys Inc.",
+                "TEAM": "Atlassian Corp.",
+                "TMUS": "T-Mobile US Inc.",
+                "TSLA": "Tesla Inc.",
+                "TTD": "The Trade Desk Inc.",
+                "TTWO": "Take-Two Interactive Software Inc.",
+                "TXN": "Texas Instruments Inc.",
+                "VRSK": "Verisk Analytics Inc.",
+                "VRTX": "Vertex Pharmaceuticals Inc.",
+                "WBD": "Warner Bros. Discovery Inc.",
+                "WDAY": "Workday Inc.",
+                "XEL": "Xcel Energy Inc.",
+                "ZS": "Zscaler Inc.",
+            }
+            return core
+
+        return result
     
     @staticmethod
     def get_market_tickers(market_type):
@@ -183,6 +306,8 @@ class QuantStrategy:
                 # US markets
                 for _, row in df.iterrows():
                     result[row['Symbol']] = row['Name']
+                if not result:
+                    result = QuantStrategy._fallback_us_tickers(market_type)
                 return result
             
             if market_type == 'AMEX':
@@ -199,6 +324,11 @@ class QuantStrategy:
                 return result
 
         except Exception as e:
+            if str(market_type).upper() in {"NASDAQ", "S&P500"}:
+                fallback = QuantStrategy._fallback_us_tickers(str(market_type))
+                if fallback:
+                    print(f"Error fetching tickers: {e}. Using local {market_type} fallback universe ({len(fallback)} symbols).")
+                    return fallback
             print(f"Error fetching tickers: {e}")
             return {}
 

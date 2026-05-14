@@ -78,6 +78,14 @@ class Phase25TraceTests(unittest.TestCase):
         self.assertIn("no_phase25_bundle", result["model_error"])
         self.assertTrue(result["phase25_degraded"])
 
+    @patch("modules.quant_analysis.fdr.StockListing", side_effect=RuntimeError("listing dns failed"))
+    def test_nasdaq_ticker_listing_falls_back_to_local_universe(self, _listing_mock):
+        tickers = QuantStrategy.get_market_tickers("NASDAQ")
+
+        self.assertIn("AAPL", tickers)
+        self.assertIn("NVDA", tickers)
+        self.assertGreaterEqual(len(tickers), 50)
+
 
 if __name__ == "__main__":
     unittest.main()
