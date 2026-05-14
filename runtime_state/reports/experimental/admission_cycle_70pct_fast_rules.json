@@ -1,0 +1,3840 @@
+{
+  "report_version": "admission_cycle_target_touch_v1",
+  "generated_at": "2026-05-14T05:25:45.461732+00:00",
+  "mode": "shadow_only_not_production",
+  "input_rows": 4335,
+  "search_config": {
+    "max_depth": 2,
+    "beam_width": 80,
+    "min_train": 20,
+    "min_test": 8,
+    "max_conditions": 100,
+    "train_ratio": 0.7,
+    "run_ml": false
+  },
+  "label_profiles": [
+    {
+      "name": "1D_close_3v3_no_5d_stop",
+      "horizon_days": 1,
+      "target_pct": 3.0,
+      "stop_pct": 3.0,
+      "reward_risk": 1.0,
+      "label_kind": "close_and_no_stop_proxy"
+    },
+    {
+      "name": "3D_close_5v3_no_5d_stop",
+      "horizon_days": 3,
+      "target_pct": 5.0,
+      "stop_pct": 3.0,
+      "reward_risk": 1.67,
+      "label_kind": "close_and_no_stop_proxy"
+    },
+    {
+      "name": "5D_clean_10v5",
+      "horizon_days": 5,
+      "target_pct": 10.0,
+      "stop_pct": 5.0,
+      "reward_risk": 2.0,
+      "label_kind": "mfe_without_stop_proxy"
+    },
+    {
+      "name": "5D_clean_15v5",
+      "horizon_days": 5,
+      "target_pct": 15.0,
+      "stop_pct": 5.0,
+      "reward_risk": 3.0,
+      "label_kind": "mfe_without_stop_proxy"
+    }
+  ],
+  "champions": [
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=24.9",
+        "prob_clean>=32.4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 55,
+        "win_rate_pct": 38.182,
+        "avg_return_5d_pct": 6.6035,
+        "avg_mfe_5d_pct": 11.3626,
+        "avg_mae_5d_pct": -1.8215,
+        "stop5_pct": 16.364,
+        "avg_1d_pct": 0.6561,
+        "avg_3d_pct": 3.2203
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 90.909,
+        "avg_return_5d_pct": 9.836,
+        "avg_mfe_5d_pct": 19.5531,
+        "avg_mae_5d_pct": 3.0769,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 6.6753,
+        "avg_3d_pct": 8.9968
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=31.8",
+        "kr_universe_role=CORE_TREND"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 28,
+        "win_rate_pct": 50.0,
+        "avg_return_5d_pct": 8.9037,
+        "avg_mfe_5d_pct": 16.7806,
+        "avg_mae_5d_pct": 0.7274,
+        "stop5_pct": 14.286,
+        "avg_1d_pct": 3.1574,
+        "avg_3d_pct": 7.5082
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 77.778,
+        "avg_return_5d_pct": 8.8081,
+        "avg_mfe_5d_pct": 15.8174,
+        "avg_mae_5d_pct": 0.4608,
+        "stop5_pct": 11.111,
+        "avg_1d_pct": 5.4738,
+        "avg_3d_pct": 7.2777
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=21.3",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 56,
+        "win_rate_pct": 41.071,
+        "avg_return_5d_pct": 2.9823,
+        "avg_mfe_5d_pct": 10.2576,
+        "avg_mae_5d_pct": -5.3423,
+        "stop5_pct": 39.286,
+        "avg_1d_pct": -0.554,
+        "avg_3d_pct": 0.1358
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 12.4332,
+        "avg_mfe_5d_pct": 18.0664,
+        "avg_mae_5d_pct": -0.4722,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 2.2434,
+        "avg_3d_pct": 6.1769
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.96",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 36,
+        "win_rate_pct": 41.667,
+        "avg_return_5d_pct": 3.5373,
+        "avg_mfe_5d_pct": 10.5098,
+        "avg_mae_5d_pct": -2.81,
+        "stop5_pct": 27.778,
+        "avg_1d_pct": -1.0328,
+        "avg_3d_pct": 0.4621
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 10.9271,
+        "avg_mfe_5d_pct": 16.5147,
+        "avg_mae_5d_pct": -0.0243,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": 2.1639,
+        "avg_3d_pct": 7.7254
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=39.95",
+        "prob_clean<=31.3"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 22,
+        "win_rate_pct": 36.364,
+        "avg_return_5d_pct": 0.75,
+        "avg_mfe_5d_pct": 9.5917,
+        "avg_mae_5d_pct": -5.2495,
+        "stop5_pct": 27.273,
+        "avg_1d_pct": -1.0716,
+        "avg_3d_pct": 0.7843
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 10.0226,
+        "avg_mfe_5d_pct": 17.5228,
+        "avg_mae_5d_pct": -1.2848,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -1.0561,
+        "avg_3d_pct": 6.4438
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=50",
+        "prob_clean<=31.3"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 24,
+        "win_rate_pct": 41.667,
+        "avg_return_5d_pct": 2.1092,
+        "avg_mfe_5d_pct": 11.1329,
+        "avg_mae_5d_pct": -4.4191,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": -0.5893,
+        "avg_3d_pct": 2.2562
+      },
+      "test": {
+        "n": 12,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 9.1643,
+        "avg_mfe_5d_pct": 17.5075,
+        "avg_mae_5d_pct": -0.927,
+        "stop5_pct": 8.333,
+        "avg_1d_pct": -0.3583,
+        "avg_3d_pct": 7.3631
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=22.8",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 22,
+        "win_rate_pct": 45.455,
+        "avg_return_5d_pct": 3.8944,
+        "avg_mfe_5d_pct": 9.5996,
+        "avg_mae_5d_pct": -4.8681,
+        "stop5_pct": 50.0,
+        "avg_1d_pct": -1.9134,
+        "avg_3d_pct": -1.3472
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 8.9239,
+        "avg_mfe_5d_pct": 19.7474,
+        "avg_mae_5d_pct": -1.4361,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 1.1412,
+        "avg_3d_pct": 5.1591
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score<=72.8",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 50,
+        "win_rate_pct": 42.0,
+        "avg_return_5d_pct": 5.7112,
+        "avg_mfe_5d_pct": 11.0488,
+        "avg_mae_5d_pct": -1.6273,
+        "stop5_pct": 22.0,
+        "avg_1d_pct": -0.1628,
+        "avg_3d_pct": 1.7816
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 7.3918,
+        "avg_mfe_5d_pct": 14.6591,
+        "avg_mae_5d_pct": -2.4376,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": -0.6572,
+        "avg_3d_pct": 1.2508
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=26.48",
+        "trend=UP"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 44,
+        "win_rate_pct": 47.727,
+        "avg_return_5d_pct": 5.8948,
+        "avg_mfe_5d_pct": 15.258,
+        "avg_mae_5d_pct": -7.9528,
+        "stop5_pct": 47.727,
+        "avg_1d_pct": 0.8018,
+        "avg_3d_pct": 2.5378
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 7.1909,
+        "avg_mfe_5d_pct": 15.73,
+        "avg_mae_5d_pct": -1.7393,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.9689,
+        "avg_3d_pct": 4.0607
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=34.65",
+        "kr_universe_role=CORE_TREND"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 39,
+        "win_rate_pct": 41.026,
+        "avg_return_5d_pct": 6.9688,
+        "avg_mfe_5d_pct": 13.5491,
+        "avg_mae_5d_pct": -0.7482,
+        "stop5_pct": 23.077,
+        "avg_1d_pct": 1.9952,
+        "avg_3d_pct": 5.1909
+      },
+      "test": {
+        "n": 12,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 6.8209,
+        "avg_mfe_5d_pct": 13.8129,
+        "avg_mae_5d_pct": -1.011,
+        "stop5_pct": 8.333,
+        "avg_1d_pct": 3.4732,
+        "avg_3d_pct": 6.2667
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=51",
+        "prob_clean<=28.8"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 94,
+        "win_rate_pct": 38.298,
+        "avg_return_5d_pct": 4.1049,
+        "avg_mfe_5d_pct": 11.8127,
+        "avg_mae_5d_pct": -4.808,
+        "stop5_pct": 26.596,
+        "avg_1d_pct": 0.6213,
+        "avg_3d_pct": 1.3733
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 6.6054,
+        "avg_mfe_5d_pct": 17.9445,
+        "avg_mae_5d_pct": -2.5323,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 2.5277,
+        "avg_3d_pct": 5.3351
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=32.38",
+        "prob_clean>=30.8"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 52,
+        "win_rate_pct": 42.308,
+        "avg_return_5d_pct": 6.0481,
+        "avg_mfe_5d_pct": 9.9658,
+        "avg_mae_5d_pct": -1.5596,
+        "stop5_pct": 17.308,
+        "avg_1d_pct": 0.0802,
+        "avg_3d_pct": 3.4281
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 6.083,
+        "avg_mfe_5d_pct": 12.5405,
+        "avg_mae_5d_pct": -0.7726,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 2.1753,
+        "avg_3d_pct": 5.8552
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score<=98.122",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 40,
+        "win_rate_pct": 45.0,
+        "avg_return_5d_pct": 4.4365,
+        "avg_mfe_5d_pct": 11.4268,
+        "avg_mae_5d_pct": -3.536,
+        "stop5_pct": 32.5,
+        "avg_1d_pct": -0.561,
+        "avg_3d_pct": 1.2992
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 72.727,
+        "avg_return_5d_pct": 14.0766,
+        "avg_mfe_5d_pct": 22.5342,
+        "avg_mae_5d_pct": -1.4249,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": 1.0372,
+        "avg_3d_pct": 8.5768
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=22.8",
+        "volume_ratio<=1.01"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 34,
+        "win_rate_pct": 41.176,
+        "avg_return_5d_pct": 4.1054,
+        "avg_mfe_5d_pct": 9.831,
+        "avg_mae_5d_pct": -3.3375,
+        "stop5_pct": 38.235,
+        "avg_1d_pct": -0.9559,
+        "avg_3d_pct": -0.0221
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 72.727,
+        "avg_return_5d_pct": 8.8603,
+        "avg_mfe_5d_pct": 17.8976,
+        "avg_mae_5d_pct": -1.2585,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": 0.6159,
+        "avg_3d_pct": 4.997
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "priority_rank>=2",
+        "kr_universe_role=CORE_TREND"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 38,
+        "win_rate_pct": 39.474,
+        "avg_return_5d_pct": 4.3853,
+        "avg_mfe_5d_pct": 10.9649,
+        "avg_mae_5d_pct": -2.5037,
+        "stop5_pct": 28.947,
+        "avg_1d_pct": 1.0807,
+        "avg_3d_pct": 2.7078
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 72.727,
+        "avg_return_5d_pct": 6.132,
+        "avg_mfe_5d_pct": 13.1558,
+        "avg_mae_5d_pct": -1.6073,
+        "stop5_pct": 9.091,
+        "avg_1d_pct": 2.5927,
+        "avg_3d_pct": 6.0784
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=16.8",
+        "prob_clean<=22.26"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 49,
+        "win_rate_pct": 48.98,
+        "avg_return_5d_pct": 3.0946,
+        "avg_mfe_5d_pct": 12.3092,
+        "avg_mae_5d_pct": -7.7803,
+        "stop5_pct": 36.735,
+        "avg_1d_pct": -0.6082,
+        "avg_3d_pct": 0.6151
+      },
+      "test": {
+        "n": 10,
+        "win_rate_pct": 70.0,
+        "avg_return_5d_pct": 8.3622,
+        "avg_mfe_5d_pct": 21.2449,
+        "avg_mae_5d_pct": -0.5775,
+        "stop5_pct": 20.0,
+        "avg_1d_pct": 2.3817,
+        "avg_3d_pct": 8.0383
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean>=30.78",
+        "volume_ratio<=1.01"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 24,
+        "win_rate_pct": 33.333,
+        "avg_return_5d_pct": 1.5378,
+        "avg_mfe_5d_pct": 8.7274,
+        "avg_mae_5d_pct": -5.0273,
+        "stop5_pct": 45.833,
+        "avg_1d_pct": -1.1654,
+        "avg_3d_pct": -0.014
+      },
+      "test": {
+        "n": 10,
+        "win_rate_pct": 70.0,
+        "avg_return_5d_pct": 8.3048,
+        "avg_mfe_5d_pct": 15.9232,
+        "avg_mae_5d_pct": -1.131,
+        "stop5_pct": 20.0,
+        "avg_1d_pct": 1.0589,
+        "avg_3d_pct": 5.1651
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "whale_score>=80",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 43,
+        "win_rate_pct": 53.488,
+        "avg_return_5d_pct": 9.8773,
+        "avg_mfe_5d_pct": 15.3824,
+        "avg_mae_5d_pct": -1.8364,
+        "stop5_pct": 25.581,
+        "avg_1d_pct": 0.4437,
+        "avg_3d_pct": 4.9367
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 21.4857,
+        "avg_mfe_5d_pct": 25.9778,
+        "avg_mae_5d_pct": -1.7013,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.1964,
+        "avg_3d_pct": 9.4612
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "whale_score>=78",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 45,
+        "win_rate_pct": 53.333,
+        "avg_return_5d_pct": 9.5905,
+        "avg_mfe_5d_pct": 15.2429,
+        "avg_mae_5d_pct": -1.804,
+        "stop5_pct": 26.667,
+        "avg_1d_pct": 0.5616,
+        "avg_3d_pct": 4.9093
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 21.4857,
+        "avg_mfe_5d_pct": 25.9778,
+        "avg_mae_5d_pct": -1.7013,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.1964,
+        "avg_3d_pct": 9.4612
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "whale_score>=80",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 43,
+        "win_rate_pct": 32.558,
+        "avg_return_5d_pct": 9.8773,
+        "avg_mfe_5d_pct": 15.3824,
+        "avg_mae_5d_pct": -1.8364,
+        "stop5_pct": 25.581,
+        "avg_1d_pct": 0.4437,
+        "avg_3d_pct": 4.9367
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 21.4857,
+        "avg_mfe_5d_pct": 25.9778,
+        "avg_mae_5d_pct": -1.7013,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.1964,
+        "avg_3d_pct": 9.4612
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "whale_score>=78",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 45,
+        "win_rate_pct": 33.333,
+        "avg_return_5d_pct": 9.5905,
+        "avg_mfe_5d_pct": 15.2429,
+        "avg_mae_5d_pct": -1.804,
+        "stop5_pct": 26.667,
+        "avg_1d_pct": 0.5616,
+        "avg_3d_pct": 4.9093
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 21.4857,
+        "avg_mfe_5d_pct": 25.9778,
+        "avg_mae_5d_pct": -1.7013,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.1964,
+        "avg_3d_pct": 9.4612
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score>=52.2",
+        "whale_score>=70"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 68,
+        "win_rate_pct": 54.412,
+        "avg_return_5d_pct": 9.2686,
+        "avg_mfe_5d_pct": 14.3713,
+        "avg_mae_5d_pct": -0.6184,
+        "stop5_pct": 19.118,
+        "avg_1d_pct": 1.3656,
+        "avg_3d_pct": 5.2975
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 18.6852,
+        "avg_mfe_5d_pct": 23.1001,
+        "avg_mae_5d_pct": -2.1362,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": -0.2384,
+        "avg_3d_pct": 6.3271
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=99",
+        "whale_score>=80"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 53,
+        "win_rate_pct": 50.943,
+        "avg_return_5d_pct": 8.7158,
+        "avg_mfe_5d_pct": 14.18,
+        "avg_mae_5d_pct": -2.4278,
+        "stop5_pct": 24.528,
+        "avg_1d_pct": -0.1116,
+        "avg_3d_pct": 4.5541
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 16.7028,
+        "avg_mfe_5d_pct": 22.8918,
+        "avg_mae_5d_pct": -2.9446,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.1817,
+        "avg_3d_pct": 8.7091
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "alpha_score<=99",
+        "whale_score>=80"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 53,
+        "win_rate_pct": 32.075,
+        "avg_return_5d_pct": 8.7158,
+        "avg_mfe_5d_pct": 14.18,
+        "avg_mae_5d_pct": -2.4278,
+        "stop5_pct": 24.528,
+        "avg_1d_pct": -0.1116,
+        "avg_3d_pct": 4.5541
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 16.7028,
+        "avg_mfe_5d_pct": 22.8918,
+        "avg_mae_5d_pct": -2.9446,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.1817,
+        "avg_3d_pct": 8.7091
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=86",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 38,
+        "win_rate_pct": 44.737,
+        "avg_return_5d_pct": 4.5796,
+        "avg_mfe_5d_pct": 12.0166,
+        "avg_mae_5d_pct": -4.2127,
+        "stop5_pct": 34.211,
+        "avg_1d_pct": -1.3113,
+        "avg_3d_pct": 0.0566
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 16.171,
+        "avg_mfe_5d_pct": 24.7356,
+        "avg_mae_5d_pct": -1.2336,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 1.7095,
+        "avg_3d_pct": 9.7261
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "alpha_score<=86",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 38,
+        "win_rate_pct": 21.053,
+        "avg_return_5d_pct": 4.5796,
+        "avg_mfe_5d_pct": 12.0166,
+        "avg_mae_5d_pct": -4.2127,
+        "stop5_pct": 34.211,
+        "avg_1d_pct": -1.3113,
+        "avg_3d_pct": 0.0566
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 16.171,
+        "avg_mfe_5d_pct": 24.7356,
+        "avg_mae_5d_pct": -1.2336,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 1.7095,
+        "avg_3d_pct": 9.7261
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=86",
+        "prob_clean>=33.62"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 23,
+        "win_rate_pct": 39.13,
+        "avg_return_5d_pct": 4.2308,
+        "avg_mfe_5d_pct": 11.3908,
+        "avg_mae_5d_pct": -4.1462,
+        "stop5_pct": 47.826,
+        "avg_1d_pct": -0.5953,
+        "avg_3d_pct": 1.4011
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 12.1431,
+        "avg_mfe_5d_pct": 18.2841,
+        "avg_mae_5d_pct": -1.9511,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.8256,
+        "avg_3d_pct": 5.4474
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "alpha_score<=86",
+        "prob_clean>=33.62"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 23,
+        "win_rate_pct": 26.087,
+        "avg_return_5d_pct": 4.2308,
+        "avg_mfe_5d_pct": 11.3908,
+        "avg_mae_5d_pct": -4.1462,
+        "stop5_pct": 47.826,
+        "avg_1d_pct": -0.5953,
+        "avg_3d_pct": 1.4011
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 12.1431,
+        "avg_mfe_5d_pct": 18.2841,
+        "avg_mae_5d_pct": -1.9511,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.8256,
+        "avg_3d_pct": 5.4474
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=21.3",
+        "priority_rank>=3"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 64,
+        "win_rate_pct": 39.062,
+        "avg_return_5d_pct": 3.3429,
+        "avg_mfe_5d_pct": 10.5656,
+        "avg_mae_5d_pct": -5.3032,
+        "stop5_pct": 39.062,
+        "avg_1d_pct": -0.5734,
+        "avg_3d_pct": 0.5666
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 10.9024,
+        "avg_mfe_5d_pct": 16.2627,
+        "avg_mae_5d_pct": -2.3678,
+        "stop5_pct": 33.333,
+        "avg_1d_pct": 2.0348,
+        "avg_3d_pct": 5.0087
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=87.1",
+        "prob_clean<=30.6"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 51.613,
+        "avg_return_5d_pct": 7.5416,
+        "avg_mfe_5d_pct": 16.5589,
+        "avg_mae_5d_pct": -2.6403,
+        "stop5_pct": 19.355,
+        "avg_1d_pct": 0.6793,
+        "avg_3d_pct": 4.8095
+      },
+      "test": {
+        "n": 12,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 10.2821,
+        "avg_mfe_5d_pct": 16.303,
+        "avg_mae_5d_pct": 0.3574,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 1.0546,
+        "avg_3d_pct": 4.9668
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.96",
+        "priority_rank>=3"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 41,
+        "win_rate_pct": 43.902,
+        "avg_return_5d_pct": 5.2164,
+        "avg_mfe_5d_pct": 12.0366,
+        "avg_mae_5d_pct": -2.1411,
+        "stop5_pct": 24.39,
+        "avg_1d_pct": -0.5806,
+        "avg_3d_pct": 2.0718
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 8.6965,
+        "avg_mfe_5d_pct": 14.411,
+        "avg_mae_5d_pct": -1.8092,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": 0.2293,
+        "avg_3d_pct": 5.3715
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean>=30.78",
+        "volume_ratio<=1.2235"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 32,
+        "win_rate_pct": 34.375,
+        "avg_return_5d_pct": 3.4004,
+        "avg_mfe_5d_pct": 10.1329,
+        "avg_mae_5d_pct": -4.7975,
+        "stop5_pct": 46.875,
+        "avg_1d_pct": -0.6304,
+        "avg_3d_pct": 0.9669
+      },
+      "test": {
+        "n": 12,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 7.6213,
+        "avg_mfe_5d_pct": 15.1036,
+        "avg_mae_5d_pct": -1.8062,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.0187,
+        "avg_3d_pct": 4.0655
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=35.385",
+        "kr_universe_role=CORE_TREND"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 34,
+        "win_rate_pct": 47.059,
+        "avg_return_5d_pct": 7.8733,
+        "avg_mfe_5d_pct": 15.0675,
+        "avg_mae_5d_pct": -0.1385,
+        "stop5_pct": 23.529,
+        "avg_1d_pct": 2.3024,
+        "avg_3d_pct": 6.2621
+      },
+      "test": {
+        "n": 15,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 6.7663,
+        "avg_mfe_5d_pct": 13.1556,
+        "avg_mae_5d_pct": -0.3471,
+        "stop5_pct": 6.667,
+        "avg_1d_pct": 3.4574,
+        "avg_3d_pct": 5.4821
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=34.65",
+        "prob_clean>=29.03"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 29,
+        "win_rate_pct": 41.379,
+        "avg_return_5d_pct": 5.7826,
+        "avg_mfe_5d_pct": 11.2025,
+        "avg_mae_5d_pct": -1.9765,
+        "stop5_pct": 31.034,
+        "avg_1d_pct": 0.8192,
+        "avg_3d_pct": 2.324
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 6.6024,
+        "avg_mfe_5d_pct": 12.2502,
+        "avg_mae_5d_pct": -0.629,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 2.6542,
+        "avg_3d_pct": 5.3763
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score<=76",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 85,
+        "win_rate_pct": 37.647,
+        "avg_return_5d_pct": 3.5942,
+        "avg_mfe_5d_pct": 10.8044,
+        "avg_mae_5d_pct": -4.7458,
+        "stop5_pct": 30.588,
+        "avg_1d_pct": -0.2225,
+        "avg_3d_pct": 1.1106
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 6.5137,
+        "avg_mfe_5d_pct": 13.7115,
+        "avg_mae_5d_pct": -2.2235,
+        "stop5_pct": 22.222,
+        "avg_1d_pct": -0.5984,
+        "avg_3d_pct": 1.346
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "priority_rank>=3",
+        "trend=UP"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 64,
+        "win_rate_pct": 42.188,
+        "avg_return_5d_pct": 6.3595,
+        "avg_mfe_5d_pct": 14.2966,
+        "avg_mae_5d_pct": -6.2289,
+        "stop5_pct": 48.438,
+        "avg_1d_pct": -0.5785,
+        "avg_3d_pct": 2.1563
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 6.3516,
+        "avg_mfe_5d_pct": 12.6507,
+        "avg_mae_5d_pct": -3.6752,
+        "stop5_pct": 33.333,
+        "avg_1d_pct": -0.2096,
+        "avg_3d_pct": 2.3302
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=21.6",
+        "expected_return_1d_pct>=0.377"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 20,
+        "win_rate_pct": 25.0,
+        "avg_return_5d_pct": 7.2393,
+        "avg_mfe_5d_pct": 13.8384,
+        "avg_mae_5d_pct": -8.8687,
+        "stop5_pct": 65.0,
+        "avg_1d_pct": 0.802,
+        "avg_3d_pct": 3.0905
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 66.667,
+        "avg_return_5d_pct": 6.1196,
+        "avg_mfe_5d_pct": 15.9598,
+        "avg_mae_5d_pct": -4.5777,
+        "stop5_pct": 33.333,
+        "avg_1d_pct": -0.0701,
+        "avg_3d_pct": 4.1242
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=86",
+        "ml_prob>=22.8"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 92,
+        "win_rate_pct": 44.565,
+        "avg_return_5d_pct": 4.3317,
+        "avg_mfe_5d_pct": 11.9826,
+        "avg_mae_5d_pct": -5.2645,
+        "stop5_pct": 33.696,
+        "avg_1d_pct": -0.4397,
+        "avg_3d_pct": 0.8794
+      },
+      "test": {
+        "n": 17,
+        "win_rate_pct": 64.706,
+        "avg_return_5d_pct": 10.1692,
+        "avg_mfe_5d_pct": 16.4365,
+        "avg_mae_5d_pct": -1.6324,
+        "stop5_pct": 11.765,
+        "avg_1d_pct": 0.4875,
+        "avg_3d_pct": 2.7729
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "whale_score>=70",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 63,
+        "win_rate_pct": 55.556,
+        "avg_return_5d_pct": 9.4998,
+        "avg_mfe_5d_pct": 14.8461,
+        "avg_mae_5d_pct": -0.7645,
+        "stop5_pct": 20.635,
+        "avg_1d_pct": 1.3654,
+        "avg_3d_pct": 5.0414
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 18.1803,
+        "avg_mfe_5d_pct": 22.673,
+        "avg_mae_5d_pct": -1.9134,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": -0.0174,
+        "avg_3d_pct": 7.899
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "tech_score>=65",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 76,
+        "win_rate_pct": 50.0,
+        "avg_return_5d_pct": 8.4001,
+        "avg_mfe_5d_pct": 13.9695,
+        "avg_mae_5d_pct": -1.1749,
+        "stop5_pct": 21.053,
+        "avg_1d_pct": 0.9878,
+        "avg_3d_pct": 4.5017
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 18.1803,
+        "avg_mfe_5d_pct": 22.673,
+        "avg_mae_5d_pct": -1.9134,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": -0.0174,
+        "avg_3d_pct": 7.899
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "tech_score>=79.75",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 56,
+        "win_rate_pct": 50.0,
+        "avg_return_5d_pct": 8.2823,
+        "avg_mfe_5d_pct": 14.0452,
+        "avg_mae_5d_pct": -0.9724,
+        "stop5_pct": 17.857,
+        "avg_1d_pct": 1.2702,
+        "avg_3d_pct": 4.7071
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 18.1803,
+        "avg_mfe_5d_pct": 22.673,
+        "avg_mae_5d_pct": -1.9134,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": -0.0174,
+        "avg_3d_pct": 7.899
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "whale_score>=61.4",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 73,
+        "win_rate_pct": 47.945,
+        "avg_return_5d_pct": 8.3887,
+        "avg_mfe_5d_pct": 13.7606,
+        "avg_mae_5d_pct": -1.2525,
+        "stop5_pct": 21.918,
+        "avg_1d_pct": 0.9486,
+        "avg_3d_pct": 4.2941
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 18.1803,
+        "avg_mfe_5d_pct": 22.673,
+        "avg_mae_5d_pct": -1.9134,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": -0.0174,
+        "avg_3d_pct": 7.899
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "decision_score<=98.122",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 40,
+        "win_rate_pct": 20.0,
+        "avg_return_5d_pct": 4.4365,
+        "avg_mfe_5d_pct": 11.4268,
+        "avg_mae_5d_pct": -3.536,
+        "stop5_pct": 32.5,
+        "avg_1d_pct": -0.561,
+        "avg_3d_pct": 1.2992
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 14.0766,
+        "avg_mfe_5d_pct": 22.5342,
+        "avg_mae_5d_pct": -1.4249,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": 1.0372,
+        "avg_3d_pct": 8.5768
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=38.7",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 41,
+        "win_rate_pct": 41.463,
+        "avg_return_5d_pct": 4.3183,
+        "avg_mfe_5d_pct": 12.0037,
+        "avg_mae_5d_pct": -4.4632,
+        "stop5_pct": 39.024,
+        "avg_1d_pct": -1.1507,
+        "avg_3d_pct": 0.1441
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 13.5245,
+        "avg_mfe_5d_pct": 22.131,
+        "avg_mae_5d_pct": -1.6195,
+        "stop5_pct": 27.273,
+        "avg_1d_pct": 1.6339,
+        "avg_3d_pct": 8.3449
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=28",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 33,
+        "win_rate_pct": 39.394,
+        "avg_return_5d_pct": 4.7228,
+        "avg_mfe_5d_pct": 12.8123,
+        "avg_mae_5d_pct": -4.4161,
+        "stop5_pct": 36.364,
+        "avg_1d_pct": -1.0332,
+        "avg_3d_pct": 0.9601
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 13.5245,
+        "avg_mfe_5d_pct": 22.131,
+        "avg_mae_5d_pct": -1.6195,
+        "stop5_pct": 27.273,
+        "avg_1d_pct": 1.6339,
+        "avg_3d_pct": 8.3449
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=87.1",
+        "volume_ratio<=1.25"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 25,
+        "win_rate_pct": 40.0,
+        "avg_return_5d_pct": 4.3442,
+        "avg_mfe_5d_pct": 11.8683,
+        "avg_mae_5d_pct": -3.056,
+        "stop5_pct": 28.0,
+        "avg_1d_pct": 0.3893,
+        "avg_3d_pct": 1.8107
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 12.4799,
+        "avg_mfe_5d_pct": 18.4228,
+        "avg_mae_5d_pct": 0.0159,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 0.3402,
+        "avg_3d_pct": 7.3626
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "ml_prob<=24.9",
+        "prob_clean>=32.4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 55,
+        "win_rate_pct": 20.0,
+        "avg_return_5d_pct": 6.6035,
+        "avg_mfe_5d_pct": 11.3626,
+        "avg_mae_5d_pct": -1.8215,
+        "stop5_pct": 16.364,
+        "avg_1d_pct": 0.6561,
+        "avg_3d_pct": 3.2203
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 9.836,
+        "avg_mfe_5d_pct": 19.5531,
+        "avg_mae_5d_pct": 3.0769,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 6.6753,
+        "avg_3d_pct": 8.9968
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "ml_prob>=22.8",
+        "volume_ratio<=1.01"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 34,
+        "win_rate_pct": 14.706,
+        "avg_return_5d_pct": 4.1054,
+        "avg_mfe_5d_pct": 9.831,
+        "avg_mae_5d_pct": -3.3375,
+        "stop5_pct": 38.235,
+        "avg_1d_pct": -0.9559,
+        "avg_3d_pct": -0.0221
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 8.8603,
+        "avg_mfe_5d_pct": 17.8976,
+        "avg_mae_5d_pct": -1.2585,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": 0.6159,
+        "avg_3d_pct": 4.997
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=1.202",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 45,
+        "win_rate_pct": 42.222,
+        "avg_return_5d_pct": 6.0541,
+        "avg_mfe_5d_pct": 12.9582,
+        "avg_mae_5d_pct": -1.8991,
+        "stop5_pct": 26.667,
+        "avg_1d_pct": -0.1342,
+        "avg_3d_pct": 2.0115
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 8.0061,
+        "avg_mfe_5d_pct": 13.6102,
+        "avg_mae_5d_pct": -0.8661,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": 1.5342,
+        "avg_3d_pct": 5.5288
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=40.5",
+        "ml_prob<=50"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 26,
+        "win_rate_pct": 42.308,
+        "avg_return_5d_pct": 12.7875,
+        "avg_mfe_5d_pct": 19.5394,
+        "avg_mae_5d_pct": -5.9398,
+        "stop5_pct": 50.0,
+        "avg_1d_pct": 1.4882,
+        "avg_3d_pct": 6.7751
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 7.4815,
+        "avg_mfe_5d_pct": 19.4301,
+        "avg_mae_5d_pct": -4.4466,
+        "stop5_pct": 27.273,
+        "avg_1d_pct": -0.8934,
+        "avg_3d_pct": 5.5266
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=50",
+        "decision_score>=86.59"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 41,
+        "win_rate_pct": 39.024,
+        "avg_return_5d_pct": 4.0131,
+        "avg_mfe_5d_pct": 10.8739,
+        "avg_mae_5d_pct": -5.4887,
+        "stop5_pct": 48.78,
+        "avg_1d_pct": 0.1726,
+        "avg_3d_pct": 1.5192
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 6.5656,
+        "avg_mfe_5d_pct": 15.5905,
+        "avg_mae_5d_pct": -2.1658,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": -0.8349,
+        "avg_3d_pct": 6.2412
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=22.8",
+        "decision_score<=81"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 57,
+        "win_rate_pct": 40.351,
+        "avg_return_5d_pct": 1.5395,
+        "avg_mfe_5d_pct": 9.5,
+        "avg_mae_5d_pct": -7.0274,
+        "stop5_pct": 35.088,
+        "avg_1d_pct": -1.1818,
+        "avg_3d_pct": -0.9258
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 63.636,
+        "avg_return_5d_pct": 6.4858,
+        "avg_mfe_5d_pct": 13.176,
+        "avg_mae_5d_pct": -2.6833,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": -1.3093,
+        "avg_3d_pct": 0.295
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score<=98.122",
+        "volume_ratio<=1.01"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 55,
+        "win_rate_pct": 41.818,
+        "avg_return_5d_pct": 4.4942,
+        "avg_mfe_5d_pct": 11.2943,
+        "avg_mae_5d_pct": -2.8972,
+        "stop5_pct": 29.091,
+        "avg_1d_pct": 0.0235,
+        "avg_3d_pct": 1.7457
+      },
+      "test": {
+        "n": 19,
+        "win_rate_pct": 63.158,
+        "avg_return_5d_pct": 10.5819,
+        "avg_mfe_5d_pct": 17.6071,
+        "avg_mae_5d_pct": -2.1929,
+        "stop5_pct": 15.789,
+        "avg_1d_pct": 0.6425,
+        "avg_3d_pct": 5.9466
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score>=52.2",
+        "whale_score>=78"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 49,
+        "win_rate_pct": 51.02,
+        "avg_return_5d_pct": 8.8946,
+        "avg_mfe_5d_pct": 14.1064,
+        "avg_mae_5d_pct": -1.7526,
+        "stop5_pct": 24.49,
+        "avg_1d_pct": 0.4348,
+        "avg_3d_pct": 4.6812
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 20.1352,
+        "avg_mfe_5d_pct": 24.4209,
+        "avg_mae_5d_pct": -2.0797,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.0553,
+        "avg_3d_pct": 6.7433
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score>=52.2",
+        "whale_score>=80"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 46,
+        "win_rate_pct": 52.174,
+        "avg_return_5d_pct": 9.1884,
+        "avg_mfe_5d_pct": 14.3158,
+        "avg_mae_5d_pct": -1.7882,
+        "stop5_pct": 23.913,
+        "avg_1d_pct": 0.3591,
+        "avg_3d_pct": 4.7579
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 20.1352,
+        "avg_mfe_5d_pct": 24.4209,
+        "avg_mae_5d_pct": -2.0797,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.0553,
+        "avg_3d_pct": 6.7433
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "decision_score>=52.2",
+        "whale_score>=78"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 49,
+        "win_rate_pct": 30.612,
+        "avg_return_5d_pct": 8.8946,
+        "avg_mfe_5d_pct": 14.1064,
+        "avg_mae_5d_pct": -1.7526,
+        "stop5_pct": 24.49,
+        "avg_1d_pct": 0.4348,
+        "avg_3d_pct": 4.6812
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 20.1352,
+        "avg_mfe_5d_pct": 24.4209,
+        "avg_mae_5d_pct": -2.0797,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.0553,
+        "avg_3d_pct": 6.7433
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "decision_score>=52.2",
+        "whale_score>=80"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 46,
+        "win_rate_pct": 30.435,
+        "avg_return_5d_pct": 9.1884,
+        "avg_mfe_5d_pct": 14.3158,
+        "avg_mae_5d_pct": -1.7882,
+        "stop5_pct": 23.913,
+        "avg_1d_pct": 0.3591,
+        "avg_3d_pct": 4.7579
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 20.1352,
+        "avg_mfe_5d_pct": 24.4209,
+        "avg_mae_5d_pct": -2.0797,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.0553,
+        "avg_3d_pct": 6.7433
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "whale_score<=80",
+        "priority_rank<=37"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 60,
+        "win_rate_pct": 48.333,
+        "avg_return_5d_pct": 6.5264,
+        "avg_mfe_5d_pct": 12.2451,
+        "avg_mae_5d_pct": -1.0072,
+        "stop5_pct": 21.667,
+        "avg_1d_pct": 1.2005,
+        "avg_3d_pct": 3.8352
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 18.1969,
+        "avg_mfe_5d_pct": 23.9588,
+        "avg_mae_5d_pct": -0.5458,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 0.9739,
+        "avg_3d_pct": 11.0642
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "tech_score>=65",
+        "ml_prob<=31.7"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 36,
+        "win_rate_pct": 47.222,
+        "avg_return_5d_pct": 7.5903,
+        "avg_mfe_5d_pct": 14.6416,
+        "avg_mae_5d_pct": -1.7965,
+        "stop5_pct": 27.778,
+        "avg_1d_pct": 1.2926,
+        "avg_3d_pct": 2.5677
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 16.5912,
+        "avg_mfe_5d_pct": 23.5579,
+        "avg_mae_5d_pct": -3.3773,
+        "stop5_pct": 37.5,
+        "avg_1d_pct": 0.7289,
+        "avg_3d_pct": 10.4032
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "tech_score>=79.75",
+        "ml_prob<=31.7"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 27,
+        "win_rate_pct": 44.444,
+        "avg_return_5d_pct": 7.2231,
+        "avg_mfe_5d_pct": 14.9864,
+        "avg_mae_5d_pct": -1.7366,
+        "stop5_pct": 25.926,
+        "avg_1d_pct": 1.6485,
+        "avg_3d_pct": 2.8133
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 16.5912,
+        "avg_mfe_5d_pct": 23.5579,
+        "avg_mae_5d_pct": -3.3773,
+        "stop5_pct": 37.5,
+        "avg_1d_pct": 0.7289,
+        "avg_3d_pct": 10.4032
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean>=26.8",
+        "whale_score>=70"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 66,
+        "win_rate_pct": 51.515,
+        "avg_return_5d_pct": 8.5148,
+        "avg_mfe_5d_pct": 13.1009,
+        "avg_mae_5d_pct": -0.9167,
+        "stop5_pct": 15.152,
+        "avg_1d_pct": 1.1741,
+        "avg_3d_pct": 4.6034
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 16.0268,
+        "avg_mfe_5d_pct": 19.9587,
+        "avg_mae_5d_pct": -2.2626,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": -0.1276,
+        "avg_3d_pct": 7.1581
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=31.7",
+        "whale_score>=61.4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 37,
+        "win_rate_pct": 45.946,
+        "avg_return_5d_pct": 7.3613,
+        "avg_mfe_5d_pct": 14.3766,
+        "avg_mae_5d_pct": -1.9387,
+        "stop5_pct": 29.73,
+        "avg_1d_pct": 1.3641,
+        "avg_3d_pct": 2.4169
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 15.6034,
+        "avg_mfe_5d_pct": 22.7989,
+        "avg_mae_5d_pct": -5.1799,
+        "stop5_pct": 37.5,
+        "avg_1d_pct": -1.2522,
+        "avg_3d_pct": 8.9924
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=31.7",
+        "whale_score>=70"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 32,
+        "win_rate_pct": 53.125,
+        "avg_return_5d_pct": 8.8376,
+        "avg_mfe_5d_pct": 15.6812,
+        "avg_mae_5d_pct": -1.0841,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 2.0177,
+        "avg_3d_pct": 3.1032
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 15.6034,
+        "avg_mfe_5d_pct": 22.7989,
+        "avg_mae_5d_pct": -5.1799,
+        "stop5_pct": 37.5,
+        "avg_1d_pct": -1.2522,
+        "avg_3d_pct": 8.9924
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.935"
+      ],
+      "condition_count": 1,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 35.484,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "volume_ratio<=1.09"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 35.484,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "volume_ratio<=1.25"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 35.484,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "volume_ratio<=1.57"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 35.484,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "priority_rank>=1"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 35.484,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "volume_ratio<=0.935"
+      ],
+      "condition_count": 1,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 22.581,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "volume_ratio<=1.09"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 22.581,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "volume_ratio<=1.25"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 22.581,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "volume_ratio<=1.57"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 22.581,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "volume_ratio<=0.935",
+        "priority_rank>=1"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 31,
+        "win_rate_pct": 22.581,
+        "avg_return_5d_pct": 2.5755,
+        "avg_mfe_5d_pct": 14.1595,
+        "avg_mae_5d_pct": -6.8094,
+        "stop5_pct": 58.065,
+        "avg_1d_pct": -1.2524,
+        "avg_3d_pct": -1.4196
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 10.8692,
+        "avg_mfe_5d_pct": 19.9557,
+        "avg_mae_5d_pct": -1.6801,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -0.2652,
+        "avg_3d_pct": 7.9453
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "priority_rank>=4",
+        "priority_rank<=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 40,
+        "win_rate_pct": 57.5,
+        "avg_return_5d_pct": 8.6102,
+        "avg_mfe_5d_pct": 15.8109,
+        "avg_mae_5d_pct": -3.2046,
+        "stop5_pct": 27.5,
+        "avg_1d_pct": 1.069,
+        "avg_3d_pct": 3.9493
+      },
+      "test": {
+        "n": 16,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 9.2547,
+        "avg_mfe_5d_pct": 18.3473,
+        "avg_mae_5d_pct": -1.654,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 2.0715,
+        "avg_3d_pct": 6.4061
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "ml_prob>=22.8",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 22,
+        "win_rate_pct": 18.182,
+        "avg_return_5d_pct": 3.8944,
+        "avg_mfe_5d_pct": 9.5996,
+        "avg_mae_5d_pct": -4.8681,
+        "stop5_pct": 50.0,
+        "avg_1d_pct": -1.9134,
+        "avg_3d_pct": -1.3472
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 8.9239,
+        "avg_mfe_5d_pct": 19.7474,
+        "avg_mae_5d_pct": -1.4361,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 1.1412,
+        "avg_3d_pct": 5.1591
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean>=33.62",
+        "volume_ratio<=1.492"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 21,
+        "win_rate_pct": 33.333,
+        "avg_return_5d_pct": 3.5568,
+        "avg_mfe_5d_pct": 10.6715,
+        "avg_mae_5d_pct": -5.9542,
+        "stop5_pct": 52.381,
+        "avg_1d_pct": 0.3469,
+        "avg_3d_pct": 1.4176
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 8.146,
+        "avg_mfe_5d_pct": 14.9648,
+        "avg_mae_5d_pct": -2.9566,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.1672,
+        "avg_3d_pct": 5.2731
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "prob_clean>=33.62",
+        "volume_ratio<=1.492"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 21,
+        "win_rate_pct": 23.81,
+        "avg_return_5d_pct": 3.5568,
+        "avg_mfe_5d_pct": 10.6715,
+        "avg_mae_5d_pct": -5.9542,
+        "stop5_pct": 52.381,
+        "avg_1d_pct": 0.3469,
+        "avg_3d_pct": 1.4176
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 8.146,
+        "avg_mfe_5d_pct": 14.9648,
+        "avg_mae_5d_pct": -2.9566,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.1672,
+        "avg_3d_pct": 5.2731
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio>=0.79",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 27,
+        "win_rate_pct": 40.741,
+        "avg_return_5d_pct": 3.0267,
+        "avg_mfe_5d_pct": 14.6831,
+        "avg_mae_5d_pct": -6.6151,
+        "stop5_pct": 51.852,
+        "avg_1d_pct": -2.1619,
+        "avg_3d_pct": -0.4607
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 8.0503,
+        "avg_mfe_5d_pct": 18.5121,
+        "avg_mae_5d_pct": -2.6285,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.6756,
+        "avg_3d_pct": 6.4354
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_15v5",
+      "conditions": [
+        "volume_ratio>=0.79",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 27,
+        "win_rate_pct": 29.63,
+        "avg_return_5d_pct": 3.0267,
+        "avg_mfe_5d_pct": 14.6831,
+        "avg_mae_5d_pct": -6.6151,
+        "stop5_pct": 51.852,
+        "avg_1d_pct": -2.1619,
+        "avg_3d_pct": -0.4607
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 8.0503,
+        "avg_mfe_5d_pct": 18.5121,
+        "avg_mae_5d_pct": -2.6285,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.6756,
+        "avg_3d_pct": 6.4354
+      },
+      "label_profile": {
+        "name": "5D_clean_15v5",
+        "horizon_days": 5,
+        "target_pct": 15.0,
+        "stop_pct": 5.0,
+        "reward_risk": 3.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=27.3",
+        "prob_clean>=25.2"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 77,
+        "win_rate_pct": 51.948,
+        "avg_return_5d_pct": 7.2722,
+        "avg_mfe_5d_pct": 12.453,
+        "avg_mae_5d_pct": -0.8044,
+        "stop5_pct": 19.481,
+        "avg_1d_pct": 1.4356,
+        "avg_3d_pct": 4.3966
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 62.5,
+        "avg_return_5d_pct": 7.917,
+        "avg_mfe_5d_pct": 16.5687,
+        "avg_mae_5d_pct": -1.0262,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 3.7296,
+        "avg_3d_pct": 6.8338
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    }
+  ],
+  "above_70pct_holdout": [
+    {
+      "market": "KOSPI",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=24.9",
+        "prob_clean>=32.4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 55,
+        "win_rate_pct": 38.182,
+        "avg_return_5d_pct": 6.6035,
+        "avg_mfe_5d_pct": 11.3626,
+        "avg_mae_5d_pct": -1.8215,
+        "stop5_pct": 16.364,
+        "avg_1d_pct": 0.6561,
+        "avg_3d_pct": 3.2203
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 90.909,
+        "avg_return_5d_pct": 9.836,
+        "avg_mfe_5d_pct": 19.5531,
+        "avg_mae_5d_pct": 3.0769,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 6.6753,
+        "avg_3d_pct": 8.9968
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=31.8",
+        "kr_universe_role=CORE_TREND"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 28,
+        "win_rate_pct": 50.0,
+        "avg_return_5d_pct": 8.9037,
+        "avg_mfe_5d_pct": 16.7806,
+        "avg_mae_5d_pct": 0.7274,
+        "stop5_pct": 14.286,
+        "avg_1d_pct": 3.1574,
+        "avg_3d_pct": 7.5082
+      },
+      "test": {
+        "n": 9,
+        "win_rate_pct": 77.778,
+        "avg_return_5d_pct": 8.8081,
+        "avg_mfe_5d_pct": 15.8174,
+        "avg_mae_5d_pct": 0.4608,
+        "stop5_pct": 11.111,
+        "avg_1d_pct": 5.4738,
+        "avg_3d_pct": 7.2777
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=21.3",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 56,
+        "win_rate_pct": 41.071,
+        "avg_return_5d_pct": 2.9823,
+        "avg_mfe_5d_pct": 10.2576,
+        "avg_mae_5d_pct": -5.3423,
+        "stop5_pct": 39.286,
+        "avg_1d_pct": -0.554,
+        "avg_3d_pct": 0.1358
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 12.4332,
+        "avg_mfe_5d_pct": 18.0664,
+        "avg_mae_5d_pct": -0.4722,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 2.2434,
+        "avg_3d_pct": 6.1769
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "volume_ratio<=0.96",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 36,
+        "win_rate_pct": 41.667,
+        "avg_return_5d_pct": 3.5373,
+        "avg_mfe_5d_pct": 10.5098,
+        "avg_mae_5d_pct": -2.81,
+        "stop5_pct": 27.778,
+        "avg_1d_pct": -1.0328,
+        "avg_3d_pct": 0.4621
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 10.9271,
+        "avg_mfe_5d_pct": 16.5147,
+        "avg_mae_5d_pct": -0.0243,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": 2.1639,
+        "avg_3d_pct": 7.7254
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=39.95",
+        "prob_clean<=31.3"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 22,
+        "win_rate_pct": 36.364,
+        "avg_return_5d_pct": 0.75,
+        "avg_mfe_5d_pct": 9.5917,
+        "avg_mae_5d_pct": -5.2495,
+        "stop5_pct": 27.273,
+        "avg_1d_pct": -1.0716,
+        "avg_3d_pct": 0.7843
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 10.0226,
+        "avg_mfe_5d_pct": 17.5228,
+        "avg_mae_5d_pct": -1.2848,
+        "stop5_pct": 12.5,
+        "avg_1d_pct": -1.0561,
+        "avg_3d_pct": 6.4438
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=50",
+        "prob_clean<=31.3"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 24,
+        "win_rate_pct": 41.667,
+        "avg_return_5d_pct": 2.1092,
+        "avg_mfe_5d_pct": 11.1329,
+        "avg_mae_5d_pct": -4.4191,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": -0.5893,
+        "avg_3d_pct": 2.2562
+      },
+      "test": {
+        "n": 12,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 9.1643,
+        "avg_mfe_5d_pct": 17.5075,
+        "avg_mae_5d_pct": -0.927,
+        "stop5_pct": 8.333,
+        "avg_1d_pct": -0.3583,
+        "avg_3d_pct": 7.3631
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=22.8",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 22,
+        "win_rate_pct": 45.455,
+        "avg_return_5d_pct": 3.8944,
+        "avg_mfe_5d_pct": 9.5996,
+        "avg_mae_5d_pct": -4.8681,
+        "stop5_pct": 50.0,
+        "avg_1d_pct": -1.9134,
+        "avg_3d_pct": -1.3472
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 8.9239,
+        "avg_mfe_5d_pct": 19.7474,
+        "avg_mae_5d_pct": -1.4361,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 1.1412,
+        "avg_3d_pct": 5.1591
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score<=72.8",
+        "priority_rank>=4"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 50,
+        "win_rate_pct": 42.0,
+        "avg_return_5d_pct": 5.7112,
+        "avg_mfe_5d_pct": 11.0488,
+        "avg_mae_5d_pct": -1.6273,
+        "stop5_pct": 22.0,
+        "avg_1d_pct": -0.1628,
+        "avg_3d_pct": 1.7816
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 7.3918,
+        "avg_mfe_5d_pct": 14.6591,
+        "avg_mae_5d_pct": -2.4376,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": -0.6572,
+        "avg_3d_pct": 1.2508
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Exception Leader",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean<=26.48",
+        "trend=UP"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-16",
+      "train": {
+        "n": 44,
+        "win_rate_pct": 47.727,
+        "avg_return_5d_pct": 5.8948,
+        "avg_mfe_5d_pct": 15.258,
+        "avg_mae_5d_pct": -7.9528,
+        "stop5_pct": 47.727,
+        "avg_1d_pct": 0.8018,
+        "avg_3d_pct": 2.5378
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 7.1909,
+        "avg_mfe_5d_pct": 15.73,
+        "avg_mae_5d_pct": -1.7393,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 0.9689,
+        "avg_3d_pct": 4.0607
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=34.65",
+        "kr_universe_role=CORE_TREND"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 39,
+        "win_rate_pct": 41.026,
+        "avg_return_5d_pct": 6.9688,
+        "avg_mfe_5d_pct": 13.5491,
+        "avg_mae_5d_pct": -0.7482,
+        "stop5_pct": 23.077,
+        "avg_1d_pct": 1.9952,
+        "avg_3d_pct": 5.1909
+      },
+      "test": {
+        "n": 12,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 6.8209,
+        "avg_mfe_5d_pct": 13.8129,
+        "avg_mae_5d_pct": -1.011,
+        "stop5_pct": 8.333,
+        "avg_1d_pct": 3.4732,
+        "avg_3d_pct": 6.2667
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "All",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "alpha_score<=51",
+        "prob_clean<=28.8"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 94,
+        "win_rate_pct": 38.298,
+        "avg_return_5d_pct": 4.1049,
+        "avg_mfe_5d_pct": 11.8127,
+        "avg_mae_5d_pct": -4.808,
+        "stop5_pct": 26.596,
+        "avg_1d_pct": 0.6213,
+        "avg_3d_pct": 1.3733
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 6.6054,
+        "avg_mfe_5d_pct": 17.9445,
+        "avg_mae_5d_pct": -2.5323,
+        "stop5_pct": 25.0,
+        "avg_1d_pct": 2.5277,
+        "avg_3d_pct": 5.3351
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob<=32.38",
+        "prob_clean>=30.8"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 52,
+        "win_rate_pct": 42.308,
+        "avg_return_5d_pct": 6.0481,
+        "avg_mfe_5d_pct": 9.9658,
+        "avg_mae_5d_pct": -1.5596,
+        "stop5_pct": 17.308,
+        "avg_1d_pct": 0.0802,
+        "avg_3d_pct": 3.4281
+      },
+      "test": {
+        "n": 8,
+        "win_rate_pct": 75.0,
+        "avg_return_5d_pct": 6.083,
+        "avg_mfe_5d_pct": 12.5405,
+        "avg_mae_5d_pct": -0.7726,
+        "stop5_pct": 0.0,
+        "avg_1d_pct": 2.1753,
+        "avg_3d_pct": 5.8552
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "decision_score<=98.122",
+        "volume_ratio<=0.87"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 40,
+        "win_rate_pct": 45.0,
+        "avg_return_5d_pct": 4.4365,
+        "avg_mfe_5d_pct": 11.4268,
+        "avg_mae_5d_pct": -3.536,
+        "stop5_pct": 32.5,
+        "avg_1d_pct": -0.561,
+        "avg_3d_pct": 1.2992
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 72.727,
+        "avg_return_5d_pct": 14.0766,
+        "avg_mfe_5d_pct": 22.5342,
+        "avg_mae_5d_pct": -1.4249,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": 1.0372,
+        "avg_3d_pct": 8.5768
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=22.8",
+        "volume_ratio<=1.01"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 34,
+        "win_rate_pct": 41.176,
+        "avg_return_5d_pct": 4.1054,
+        "avg_mfe_5d_pct": 9.831,
+        "avg_mae_5d_pct": -3.3375,
+        "stop5_pct": 38.235,
+        "avg_1d_pct": -0.9559,
+        "avg_3d_pct": -0.0221
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 72.727,
+        "avg_return_5d_pct": 8.8603,
+        "avg_mfe_5d_pct": 17.8976,
+        "avg_mae_5d_pct": -1.2585,
+        "stop5_pct": 18.182,
+        "avg_1d_pct": 0.6159,
+        "avg_3d_pct": 4.997
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSPI",
+      "cohort": "Top3",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "priority_rank>=2",
+        "kr_universe_role=CORE_TREND"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-23",
+      "train": {
+        "n": 38,
+        "win_rate_pct": 39.474,
+        "avg_return_5d_pct": 4.3853,
+        "avg_mfe_5d_pct": 10.9649,
+        "avg_mae_5d_pct": -2.5037,
+        "stop5_pct": 28.947,
+        "avg_1d_pct": 1.0807,
+        "avg_3d_pct": 2.7078
+      },
+      "test": {
+        "n": 11,
+        "win_rate_pct": 72.727,
+        "avg_return_5d_pct": 6.132,
+        "avg_mfe_5d_pct": 13.1558,
+        "avg_mae_5d_pct": -1.6073,
+        "stop5_pct": 9.091,
+        "avg_1d_pct": 2.5927,
+        "avg_3d_pct": 6.0784
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "ml_prob>=16.8",
+        "prob_clean<=22.26"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 49,
+        "win_rate_pct": 48.98,
+        "avg_return_5d_pct": 3.0946,
+        "avg_mfe_5d_pct": 12.3092,
+        "avg_mae_5d_pct": -7.7803,
+        "stop5_pct": 36.735,
+        "avg_1d_pct": -0.6082,
+        "avg_3d_pct": 0.6151
+      },
+      "test": {
+        "n": 10,
+        "win_rate_pct": 70.0,
+        "avg_return_5d_pct": 8.3622,
+        "avg_mfe_5d_pct": 21.2449,
+        "avg_mae_5d_pct": -0.5775,
+        "stop5_pct": 20.0,
+        "avg_1d_pct": 2.3817,
+        "avg_3d_pct": 8.0383
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    },
+    {
+      "market": "KOSDAQ",
+      "cohort": "Top5+Exception",
+      "profile": "5D_clean_10v5",
+      "conditions": [
+        "prob_clean>=30.78",
+        "volume_ratio<=1.01"
+      ],
+      "condition_count": 2,
+      "split_cut_day": "2026-04-21",
+      "train": {
+        "n": 24,
+        "win_rate_pct": 33.333,
+        "avg_return_5d_pct": 1.5378,
+        "avg_mfe_5d_pct": 8.7274,
+        "avg_mae_5d_pct": -5.0273,
+        "stop5_pct": 45.833,
+        "avg_1d_pct": -1.1654,
+        "avg_3d_pct": -0.014
+      },
+      "test": {
+        "n": 10,
+        "win_rate_pct": 70.0,
+        "avg_return_5d_pct": 8.3048,
+        "avg_mfe_5d_pct": 15.9232,
+        "avg_mae_5d_pct": -1.131,
+        "stop5_pct": 20.0,
+        "avg_1d_pct": 1.0589,
+        "avg_3d_pct": 5.1651
+      },
+      "label_profile": {
+        "name": "5D_clean_10v5",
+        "horizon_days": 5,
+        "target_pct": 10.0,
+        "stop_pct": 5.0,
+        "reward_risk": 2.0,
+        "label_kind": "mfe_without_stop_proxy"
+      }
+    }
+  ],
+  "notes": [
+    "This is an internal admission cycle only; production scanner logic is unchanged.",
+    "5D clean labels use archive high/low proxy: target MFE reached and stop MAE not breached.",
+    "1D/3D labels use close-return target plus no 5D stop breach, so they are conservative but not exact intraday order labels.",
+    "Primary theme values are intentionally excluded from rule features because themes rotate and fixed-theme rules overfit."
+  ]
+}
