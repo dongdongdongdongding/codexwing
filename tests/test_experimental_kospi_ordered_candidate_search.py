@@ -38,6 +38,33 @@ def test_prepare_profile_rows_dedupes_profile_ticker_date() -> None:
     assert rows.iloc[0]["target_pct"] == 10.0
 
 
+def test_prepare_profile_rows_supports_kosdaq_market() -> None:
+    df = pd.DataFrame(
+        [
+            {
+                "market2": "KOSPI",
+                "ticker": "000001.KS",
+                "trade_date": "2026-04-01",
+                "priority_rank": 1,
+                "decision_score": 90,
+            },
+            {
+                "market2": "KOSDAQ",
+                "ticker": "000001.KQ",
+                "trade_date": "2026-04-01",
+                "priority_rank": 1,
+                "decision_score": 90,
+            },
+        ]
+    )
+
+    rows = prepare_profile_rows(df, [OrderedProfile("x", 5, 5.0, 5.0)], market="KOSDAQ")
+
+    assert len(rows) == 1
+    assert rows.iloc[0]["ticker"] == "000001.KQ"
+    assert rows.iloc[0]["candidate_cohort"] == "KOSDAQ_ALL"
+
+
 def test_add_search_columns_marks_immature_no_touch_not_ready() -> None:
     df = pd.DataFrame(
         [

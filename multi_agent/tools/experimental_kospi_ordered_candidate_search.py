@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Search KOSPI admission candidates using ordered OHLCV labels.
+"""Search KR admission candidates using ordered OHLCV labels.
 
-Internal-only research tool. It labels KOSPI scan archive rows with actual
+Internal-only research tool. It labels KR scan archive rows with actual
 daily OHLCV target-before-stop outcomes, then searches pre-entry feature rules
 that improve ordered win rate without changing production scanner behavior.
 """
@@ -28,7 +28,7 @@ from multi_agent.tools.experimental_kospi_admission_robust_search import _parse_
 from multi_agent.tools.experimental_kospi_ordered_revalidation import label_selected_rows
 
 
-REPORT_VERSION = "kospi_ordered_candidate_search_v1"
+REPORT_VERSION = "kr_ordered_candidate_search_v2"
 DEFAULT_OUTPUT = PROJECT_ROOT / "runtime_state/reports/experimental/kospi_ordered_candidate_search.json"
 
 
@@ -42,6 +42,13 @@ class OrderedProfile:
 
 PROFILES: Tuple[OrderedProfile, ...] = (
     OrderedProfile("5D_ordered_8v4", 5, 8.0, 4.0),
+    OrderedProfile("5D_ordered_10v5", 5, 10.0, 5.0),
+    OrderedProfile("5D_ordered_12v5", 5, 12.0, 5.0),
+)
+
+KOSDAQ_PROFILES: Tuple[OrderedProfile, ...] = (
+    OrderedProfile("5D_ordered_5v5", 5, 5.0, 5.0),
+    OrderedProfile("5D_ordered_8v5", 5, 8.0, 5.0),
     OrderedProfile("5D_ordered_10v5", 5, 10.0, 5.0),
     OrderedProfile("5D_ordered_12v5", 5, 12.0, 5.0),
 )
@@ -95,6 +102,7 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
         "rule_id": "ordered_prob_band_top3_10v5",
         "profile": "5D_ordered_10v5",
         "conditions": ["cohort=Top3", "prob_clean=[28.1,31.8]", "decision_score>=100", "explosive_leader_flag=0"],
+        "markets": ["KOSPI"],
         "note": "Current robust KOSPI ordered shadow baseline.",
     },
     {
@@ -107,6 +115,7 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
             "explosive_leader_flag=0",
             "ml_prob<=38.6",
         ],
+        "markets": ["KOSPI"],
         "note": "Best non-theme stop-reduction refinement; smaller test sample.",
     },
     {
@@ -119,6 +128,7 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
             "explosive_leader_flag=0",
             "theme_routing_path=core_only",
         ],
+        "markets": ["KOSPI"],
         "note": "Dynamic theme-routing refinement, not a static theme name.",
     },
     {
@@ -131,6 +141,7 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
             "explosive_leader_flag=0",
             "expected_return_3d_pct<=0.458",
         ],
+        "markets": ["KOSPI"],
         "note": "Recent-regime high win but weaker train sample.",
     },
     {
@@ -143,9 +154,31 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
             "explosive_leader_flag=0",
             "phase25_prob<=40.6",
         ],
+        "markets": ["KOSPI"],
         "note": "Highest small-sample balance; diagnostic until more rows arrive.",
     },
+    {
+        "rule_id": "kosdaq_validated_touch_exception_5v5",
+        "profile": "5D_ordered_5v5",
+        "conditions": [
+            "cohort=Top5",
+            "trend=UP",
+            "alpha_score>=90",
+            "volume_ratio>=2",
+        ],
+        "markets": ["KOSDAQ"],
+        "note": "KOSDAQ validated-touch exception rechecked with stop-first ordered OHLCV.",
+    },
 )
+
+
+def profiles_for_market(market: str) -> Tuple[OrderedProfile, ...]:
+    return KOSDAQ_PROFILES if str(market).upper() == "KOSDAQ" else PROFILES
+
+
+def curated_rules_for_market(market: str) -> Tuple[Dict[str, Any], ...]:
+    market = str(market).upper()
+    return tuple(rule for rule in CURATED_RULES if market in {str(item).upper() for item in rule.get("markets", [])})
 
 
 def _safe_float(value: Any) -> float | None:
@@ -210,16 +243,22 @@ def _condition_to_mask(df: pd.DataFrame, condition: str) -> pd.Series | None:
     return _parse_condition(df, text)
 
 
-def prepare_profile_rows(df: pd.DataFrame, profiles: Sequence[OrderedProfile]) -> pd.DataFrame:
-    kospi = df[df.get("market2", pd.Series("", index=df.index)).eq("KOSPI")].copy()
-    if kospi.empty:
-        return kospi
+def prepare_profile_rows(
+    df: pd.DataFrame,
+    profiles: Sequence[OrderedProfile],
+    *,
+    market: str = "KOSPI",
+) -> pd.DataFrame:
+    market = str(market).upper()
+    market_rows = df[df.get("market2", pd.Series("", index=df.index)).eq(market)].copy()
+    if market_rows.empty:
+        return market_rows
     rows: List[pd.DataFrame] = []
     for profile in profiles:
-        sub = kospi.copy()
+        sub = market_rows.copy()
         sub["candidate_id"] = profile.name
-        sub["candidate_description"] = "full_kospi_ordered_search"
-        sub["candidate_cohort"] = "KOSPI_ALL"
+        sub["candidate_description"] = f"full_{market.lower()}_ordered_search"
+        sub["candidate_cohort"] = f"{market}_ALL"
         sub["target_pct"] = float(profile.target_pct)
         sub["stop_pct"] = float(profile.stop_pct)
         sub["horizon_days"] = int(profile.horizon_days)
@@ -457,12 +496,13 @@ def evaluate_rule(
 def evaluate_curated_rules(
     df: pd.DataFrame,
     *,
+    market: str,
     train_mask: pd.Series,
     test_mask: pd.Series,
     min_fold_test: int,
 ) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
-    for rule in CURATED_RULES:
+    for rule in curated_rules_for_market(market):
         prof = df[df["candidate_id"].eq(str(rule["profile"]))].copy()
         if prof.empty:
             continue
@@ -657,6 +697,7 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
 def build_report(
     input_path: Path,
     *,
+    market: str,
     max_conditions: int,
     beam_width: int,
     min_train: int,
@@ -666,11 +707,13 @@ def build_report(
     use_cached_labels: bool,
     cached_labels_path: Path,
 ) -> Tuple[Dict[str, Any], pd.DataFrame]:
+    market = str(market).upper()
+    profiles = profiles_for_market(market)
     if use_cached_labels and cached_labels_path.exists():
         labeled = pd.read_csv(cached_labels_path, low_memory=False)
     else:
         df = _load_dataset(input_path)
-        profile_rows = prepare_profile_rows(df, PROFILES)
+        profile_rows = prepare_profile_rows(df, profiles, market=market)
         labeled = label_selected_rows(profile_rows)
         labeled = add_search_columns(labeled)
         cached_labels_path.parent.mkdir(parents=True, exist_ok=True)
@@ -684,7 +727,7 @@ def build_report(
     test_mask = labeled["trade_date"].ge(split_day) if split_day else pd.Series(False, index=labeled.index)
 
     all_rows: List[Dict[str, Any]] = []
-    for profile in PROFILES:
+    for profile in profiles:
         all_rows.extend(
             search_profile(
                 labeled,
@@ -701,13 +744,20 @@ def build_report(
         )
     all_rows = sorted(all_rows, key=_candidate_sort_key)
     buckets = classify_candidates(all_rows)
-    curated = evaluate_curated_rules(labeled, train_mask=train_mask, test_mask=test_mask, min_fold_test=min_fold_test)
+    curated = evaluate_curated_rules(
+        labeled,
+        market=market,
+        train_mask=train_mask,
+        test_mask=test_mask,
+        min_fold_test=min_fold_test,
+    )
     report = {
         "report_version": REPORT_VERSION,
+        "market": market,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "input_path": str(input_path),
         "cached_labels_path": str(cached_labels_path),
-        "profiles": [asdict(profile) for profile in PROFILES],
+        "profiles": [asdict(profile) for profile in profiles],
         "rows_labeled": int(len(labeled)),
         "ordered_label_ready_rows": int(labeled["ordered_label_ready"].sum()),
         "unique_ticker_dates": int(labeled[["ticker", "trade_date"]].drop_duplicates().shape[0])
@@ -729,7 +779,7 @@ def build_report(
                 "train": _metrics(labeled, labeled["candidate_id"].eq(profile.name) & train_mask),
                 "test": _metrics(labeled, labeled["candidate_id"].eq(profile.name) & test_mask),
             }
-            for profile in PROFILES
+            for profile in profiles
         },
         "candidate_counts": {
             "evaluated": len(all_rows),
@@ -750,9 +800,11 @@ def build_report(
 
 
 def write_markdown(report: Dict[str, Any], path: Path) -> None:
+    market = report.get("market") or "KOSPI"
     lines = [
-        "# KOSPI Ordered Candidate Search",
+        f"# {market} Ordered Candidate Search",
         "",
+        f"- market: `{market}`",
         f"- generated_at: `{report['generated_at']}`",
         f"- rows_labeled: `{report['rows_labeled']}`",
         f"- ordered_label_ready_rows: `{report['ordered_label_ready_rows']}`",
@@ -808,6 +860,7 @@ def _candidate_line(row: Dict[str, Any], *, prefix: str = "") -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--market", choices=["KOSPI", "KOSDAQ"], default="KOSPI")
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--max-conditions", type=int, default=240)
@@ -826,6 +879,7 @@ def main() -> int:
 
     report, labeled = build_report(
         args.input,
+        market=args.market,
         max_conditions=args.max_conditions,
         beam_width=args.beam_width,
         min_train=args.min_train,
