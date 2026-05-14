@@ -7,6 +7,7 @@ from modules.quant_analysis import QuantStrategy
 from modules.scanner_runtime import run_parallel_scan
 from modules.ui_helpers import (
     build_action_display,
+    build_kr_shadow_gate_records,
     build_live_cockpit_summary,
     build_signal_display_rows,
     build_top5_plus_exception_records,
@@ -297,6 +298,41 @@ class UIHelperTests(unittest.TestCase):
         )
         self.assertEqual(len(groups["combined"]), 10)
         self.assertEqual(groups["combined"][-1]["_analysis_section"], "Exception Leader")
+
+    def test_kr_shadow_gate_records_lift_kosdaq_and_kospi_sections(self):
+        rows = [
+            {
+                "ticker": "KQ1.KQ",
+                "market": "KOSDAQ",
+                "volume_ratio": 1.1,
+                "trend": "DOWN",
+                "selection_lane": "1d",
+                "decision_score": 80,
+            },
+            {
+                "ticker": "KS1.KS",
+                "market": "KOSPI",
+                "priority_rank": 2,
+                "prob_clean": 30.0,
+                "decision_score": 101.0,
+                "explosive_leader_flag": 0,
+            },
+            {
+                "ticker": "KS2.KS",
+                "market": "KOSPI",
+                "priority_rank": 2,
+                "prob_clean": 30.0,
+                "decision_score": 101.0,
+                "explosive_leader_flag": 1,
+            },
+        ]
+
+        groups = build_kr_shadow_gate_records(rows, limit=5)
+
+        self.assertEqual([row["ticker"] for row in groups["kosdaq"]], ["KQ1.KQ"])
+        self.assertEqual([row["ticker"] for row in groups["kospi"]], ["KS1.KS"])
+        self.assertEqual(groups["kosdaq"][0]["_analysis_section"], "KOSDAQ Shadow")
+        self.assertEqual(groups["kospi"][0]["_analysis_section"], "KOSPI Shadow")
 
     def test_profile_only_exception_leaders_are_merged_into_planner_contract(self):
         planner = {

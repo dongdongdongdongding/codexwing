@@ -11,7 +11,7 @@ import yfinance as yf
 
 from modules.entry_readiness import build_entry_readiness_analysis
 from modules.practical_entry_gate import evaluate_practical_entry_gate
-from modules.ui_helpers import build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
+from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 
 
 REPORT_VERSION = "top_deep_report_v1"
@@ -140,7 +140,11 @@ def _select_top_candidates(
         top_limit=max(int(limit or 0), 0),
         exception_limit=5,
     )
-    return groups["combined"]
+    shadow_groups = build_kr_shadow_gate_records(rows, planner_payload, limit=5)
+    shadow_rows = shadow_groups["combined"]
+    seen_shadow = {str(row.get("ticker") or "") for row in shadow_rows}
+    standard_rows = [row for row in groups["combined"] if str(row.get("ticker") or "") not in seen_shadow]
+    return shadow_rows + standard_rows
 
 
 def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:

@@ -33,6 +33,7 @@ from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
 from modules.ui_helpers import (
     BackgroundScanState,
+    build_kr_shadow_gate_records,
     build_top5_plus_exception_records,
     build_signal_display_rows,
     build_watchlist_display_rows,
@@ -1155,8 +1156,9 @@ def _render_top_deep_reports_page():
     page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=3)
     run_df = day_df[day_df["run_id"] == selected_run].copy()
     run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
+    _top_deep_section_order = {"KOSDAQ Shadow": -20, "KOSPI Shadow": -10, "Top5": 0, "Exception Leader": 1}
     run_df["_analysis_section_order"] = run_df["selection_alignment"].apply(
-        lambda value: 1 if isinstance(value, dict) and value.get("analysis_section") == "Exception Leader" else 0
+        lambda value: _top_deep_section_order.get(str(value.get("analysis_section") or "Top5"), 0) if isinstance(value, dict) else 0
     )
     run_df["_analysis_section_rank"] = run_df["selection_alignment"].apply(
         lambda value: (value or {}).get("analysis_section_rank") if isinstance(value, dict) else None
@@ -3448,8 +3450,27 @@ if active_main_tab == "📚 아카이브":
                     top_limit=5,
                     exception_limit=5,
                 )
+                _archive_shadow_groups = build_kr_shadow_gate_records(_archive_records, _archive_planner_payload, limit=5)
+                _archive_market_key = str(_selected_market or "").upper()
+                _archive_shadow_records = (
+                    _archive_shadow_groups["kosdaq"]
+                    if _archive_market_key == "KOSDAQ"
+                    else _archive_shadow_groups["kospi"]
+                    if _archive_market_key == "KOSPI"
+                    else _archive_shadow_groups["combined"]
+                )
+                _archive_shadow = build_signal_display_rows(_archive_shadow_records, limit=5)
                 _archive_top5 = build_signal_display_rows(_archive_groups["top5"], limit=5)
                 _archive_exception = build_signal_display_rows(_archive_groups["exception_leaders"], limit=5)
+
+                if _archive_market_key == "KOSDAQ":
+                    st.markdown("### KOSDAQ 최우선 관찰 Shadow")
+                    st.caption("새 KOSDAQ ordered rebound 후보입니다. 기존 Top5/Exception을 대체하지 않고 상단에서 우선 확인합니다.")
+                    _render_signal_card_list(_archive_shadow, empty_text="KOSDAQ shadow 조건 통과 후보 없음.")
+                elif _archive_market_key == "KOSPI":
+                    st.markdown("### KOSPI Ordered Shadow")
+                    st.caption("KOSPI Top3 중 +10% before -5% ordered 기준을 통과한 별도 관찰 섹션입니다.")
+                    _render_signal_card_list(_archive_shadow, empty_text="KOSPI shadow 조건 통과 후보 없음.")
 
                 st.markdown(f"### 메인 Top 5 - {_selected_date}")
                 st.caption("기존 서비스 기준의 메인 후보입니다. Exception Leader는 아래 별도 추가 후보로 분리합니다.")

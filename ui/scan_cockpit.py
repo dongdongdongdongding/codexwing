@@ -15,6 +15,7 @@ import streamlit as st
 
 from modules.ui_helpers import (
     build_live_cockpit_summary,
+    build_kr_shadow_gate_records,
     build_signal_display_rows,
     build_top5_plus_exception_records,
     build_top_candidate_compact_view,
@@ -105,6 +106,11 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         gate_level = str(row.get("practical_gate_level") or "")
         gate_reasons = [str(reason) for reason in (row.get("practical_gate_reasons") or []) if str(reason).strip()]
         gate_evidence = row.get("practical_gate_evidence") if isinstance(row.get("practical_gate_evidence"), dict) else {}
+        shadow_gate_label = str(row.get("shadow_gate_label") or "")
+        shadow_gate_profile = str(row.get("shadow_gate_profile") or "")
+        shadow_gate_conditions = str(row.get("shadow_gate_conditions") or "")
+        shadow_gate_metrics = str(row.get("shadow_gate_metrics") or "")
+        shadow_gate_note = str(row.get("shadow_gate_note") or "")
         risk_line = ""
         if risk_label != "-":
             risk_line = f"손실위험 {risk_label}" + (f" ({risk_level})" if risk_level else "")
@@ -121,6 +127,12 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                 st.caption(name or subtitle)
             with cols[1]:
                 st.markdown(f"**{buy_signal}**")
+                if shadow_gate_label:
+                    st.caption(f"{shadow_gate_label} · {shadow_gate_profile} · {shadow_gate_metrics}")
+                    if shadow_gate_conditions:
+                        st.caption(shadow_gate_conditions)
+                    if shadow_gate_note:
+                        st.caption(shadow_gate_note)
                 if action_label != "-":
                     action_line = f"액션 {action_label}"
                     if action_condition:
@@ -183,9 +195,12 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     stream_a_records = groups["top5"]
     stream_b_records = groups["exception_leaders"]
     display_records = groups["combined"]
+    shadow_groups = build_kr_shadow_gate_records(raw_score_records, planner_payload, limit=5)
+    shadow_records = shadow_groups["kosdaq" if str(market or "").upper() == "KOSDAQ" else "kospi"]
 
     stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
     stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
+    shadow_rows = build_signal_display_rows(shadow_records, limit=5)
     cockpit = build_live_cockpit_summary(
         stream_a_rows,
         stream_b_rows,
@@ -205,6 +220,21 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         f"{cockpit['market']} live policy: {cockpit['policy']} | "
         f"5D target return: {cockpit['validated_return']} | {cockpit['sample']}"
     )
+
+    if str(market or "").upper() == "KOSDAQ":
+        st.markdown("### KOSDAQ 최우선 관찰 Shadow")
+        st.caption(
+            "기존 KOSDAQ Top5/Exception보다 stop-first가 낮게 검증된 +5% 반등 후보입니다. "
+            "운영 랭킹 교체가 아니라 상단 관찰 섹션으로 분리합니다."
+        )
+        render_signal_card_list(shadow_rows, empty_text="KOSDAQ shadow 조건 통과 후보 없음.")
+    elif str(market or "").upper() == "KOSPI":
+        st.markdown("### KOSPI Ordered Shadow")
+        st.caption(
+            "KOSPI Top3 안에서 +10% before -5% ordered 기준을 통과한 별도 관찰 후보입니다. "
+            "기존 운영모델은 유지하고, 상단에서 별도 확인합니다."
+        )
+        render_signal_card_list(shadow_rows, empty_text="KOSPI shadow 조건 통과 후보 없음.")
 
     gate_order = {"pass": 0, "near": 1, "small_sample": 2, "watch": 3}
     practical_rows = sorted(

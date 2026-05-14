@@ -131,6 +131,38 @@ def _risk_level_label(value: Any) -> str:
     return "낮음"
 
 
+def _row_float(row: Dict[str, Any], *keys: str) -> float | None:
+    value = _coalesce_present(*(row.get(key) for key in keys))
+    numeric = _parse_percent_value(value)
+    return numeric
+
+
+def _row_text(row: Dict[str, Any], *keys: str) -> str:
+    return str(_coalesce_present(*(row.get(key) for key in keys)) or "").strip()
+
+
+def _row_market(row: Dict[str, Any]) -> str:
+    market = _row_text(row, "market", "market2", "market_subtype", "Market").upper()
+    ticker = _row_text(row, "ticker", "티커", "Ticker", "symbol").upper()
+    if market in {"KOSPI", "KOSDAQ"}:
+        return market
+    if ticker.endswith(".KS"):
+        return "KOSPI"
+    if ticker.endswith(".KQ"):
+        return "KOSDAQ"
+    return market
+
+
+def _row_bool_false(row: Dict[str, Any], *keys: str) -> bool:
+    value = _coalesce_present(*(row.get(key) for key in keys))
+    if value in (None, ""):
+        return False
+    if isinstance(value, bool):
+        return value is False
+    text = str(value).strip().lower()
+    return text in {"0", "false", "no", "off", "none"}
+
+
 def _coerce_text_list(value: Any, limit: int = 3) -> List[str]:
     if value is None:
         return []
@@ -265,6 +297,102 @@ def is_exception_leader_row(rec: Dict[str, Any]) -> bool:
     rl = str(rec.get("risk_label") or "").upper().strip()
     rs = str(rec.get("reason") or rec.get("reject_reason") or "").lower()
     return rl == "EXCEPTION_LEADER" or "exception_leader" in rs
+
+
+def is_kospi_ordered_shadow_gate_row(rec: Dict[str, Any]) -> bool:
+    """Current KOSPI ordered shadow gate.
+
+    Display-only gate from the internal ordered OHLCV testbed:
+    Top3, non-exception, prob_clean 28.1-31.8, decision_score>=100,
+    explosive_leader_flag=0.
+    """
+    if not isinstance(rec, dict) or _row_market(rec) != "KOSPI" or is_exception_leader_row(rec):
+        return False
+    rank = _row_float(rec, "priority_rank", "Rank")
+    prob_clean = _row_float(rec, "prob_clean", "_prob_clean", "정밀확률", "Clean")
+    decision_score = _row_float(rec, "decision_score", "Decision Score", "score")
+    return (
+        rank is not None
+        and 1 <= rank <= 3
+        and prob_clean is not None
+        and 28.1 <= prob_clean <= 31.8
+        and decision_score is not None
+        and decision_score >= 100.0
+        and _row_bool_false(rec, "explosive_leader_flag")
+    )
+
+
+def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
+    """Current KOSDAQ ordered rebound shadow gate.
+
+    Display-only gate from the internal ordered OHLCV testbed:
+    volume_ratio<=1.23, trend=DOWN, selection_lane=1d.
+    """
+    if not isinstance(rec, dict) or _row_market(rec) != "KOSDAQ":
+        return False
+    volume_ratio = _row_float(rec, "volume_ratio", "Volume Ratio")
+    trend = _row_text(rec, "trend", "real_trend", "추세", "Trend").upper()
+    lane = _row_text(rec, "selection_lane", "Selection Lane").lower()
+    return volume_ratio is not None and volume_ratio <= 1.23 and trend == "DOWN" and lane == "1d"
+
+
+def build_kr_shadow_gate_records(
+    records: List[Dict[str, Any]],
+    planner_payload: Dict[str, Any] | None = None,
+    *,
+    limit: int = 5,
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Build display-only KOSPI/KOSDAQ shadow-gate sections.
+
+    These rows are not re-ranked into the production Top5. They are duplicated
+    into an explicit upper section so operators can see the tested shadow gates
+    without silently changing the scanner engine.
+    """
+    source_records = enrich_signal_rows_with_planner_trace(records or [], planner_payload) if planner_payload else (records or [])
+    sorted_rows = sort_signal_rows_by_planner_rank(source_records, planner_payload)
+    limit_n = max(int(limit or 0), 0)
+
+    def _mark(rows: List[Dict[str, Any]], *, section: str, order: int, gate: Dict[str, Any]) -> List[Dict[str, Any]]:
+        marked: List[Dict[str, Any]] = []
+        for idx, row in enumerate(rows[:limit_n], start=1):
+            copy = dict(row)
+            copy["_analysis_section"] = section
+            copy["_analysis_section_order"] = order
+            copy["_analysis_section_rank"] = idx
+            copy["_source_order"] = "shadow_gate_above_standard"
+            copy["_shadow_gate"] = dict(gate)
+            marked.append(copy)
+        return marked
+
+    kosdaq = _mark(
+        [row for row in sorted_rows if is_kosdaq_ordered_rebound_shadow_gate_row(row)],
+        section="KOSDAQ Shadow",
+        order=-20,
+        gate={
+            "label": "KOSDAQ 최우선 관찰",
+            "profile": "5D_ordered_5v5",
+            "conditions": "volume_ratio<=1.23 · trend=DOWN · selection_lane=1d",
+            "metrics": "n=20 · win 85.0% · stop 15.0% · test win 88.9%",
+            "note": "+5% 반등 shadow gate, 운영 랭킹 교체 아님",
+        },
+    )
+    kospi = _mark(
+        [row for row in sorted_rows if is_kospi_ordered_shadow_gate_row(row)],
+        section="KOSPI Shadow",
+        order=-10,
+        gate={
+            "label": "KOSPI ordered 관찰",
+            "profile": "5D_ordered_10v5",
+            "conditions": "Top3 · prob_clean 28.1-31.8 · decision_score>=100 · explosive=0",
+            "metrics": "n=19 · win 73.7% · stop 15.8% · test win 77.8%",
+            "note": "+10% runner shadow gate, 운영 랭킹 교체 아님",
+        },
+    )
+    return {
+        "kosdaq": kosdaq,
+        "kospi": kospi,
+        "combined": kosdaq + kospi,
+    }
 
 
 def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
@@ -652,6 +780,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         action = build_action_display(row)
         practical_gate = evaluate_practical_entry_gate(row)
         gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
+        shadow_gate = row.get("_shadow_gate") if isinstance(row.get("_shadow_gate"), dict) else {}
 
         day_change_numeric = _parse_percent_value(day_change_source)
         normalized.append(
@@ -685,6 +814,11 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "practical_gate_label": practical_gate.get("label"),
                 "practical_gate_reasons": practical_gate.get("reasons") or [],
                 "practical_gate_evidence": gate_evidence,
+                "shadow_gate_label": shadow_gate.get("label"),
+                "shadow_gate_profile": shadow_gate.get("profile"),
+                "shadow_gate_conditions": shadow_gate.get("conditions"),
+                "shadow_gate_metrics": shadow_gate.get("metrics"),
+                "shadow_gate_note": shadow_gate.get("note"),
             }
         )
     return normalized

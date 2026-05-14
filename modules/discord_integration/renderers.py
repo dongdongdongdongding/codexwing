@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
-from modules.ui_helpers import build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
+from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 ARTIFACT_DIR = Path("runtime_state/artifacts")
@@ -251,8 +251,14 @@ def build_top_deep_embeds(
     def _top_deep_sort_key(row: Dict[str, Any]) -> tuple[int, int, int]:
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         section = str(alignment.get("analysis_section") or "Top5")
+        section_order = {
+            "KOSDAQ Shadow": -20,
+            "KOSPI Shadow": -10,
+            "Top5": 0,
+            "Exception Leader": 1,
+        }.get(section, 0)
         return (
-            1 if section == "Exception Leader" else 0,
+            section_order,
             _safe_int(alignment.get("analysis_section_rank"), _safe_int(row.get("rank"), 9999)),
             _safe_int(row.get("rank"), 9999),
         )
@@ -275,7 +281,7 @@ def build_top_deep_embeds(
             "title": "Top5 + Exception Leader 자동 정밀분석",
             "description": (
                 f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-                "Top5 메인 + Exception Leader 추가 후보"
+                "Shadow 상단 + Top5 메인 + Exception Leader 추가 후보"
             ),
             "color": 0x3498DB,
             "fields": fields[:10],
@@ -369,11 +375,14 @@ def build_archive_embed(
     if selected_run:
         artifact_rows = _load_archive_rows_from_artifact(selected_run)
         if artifact_rows:
-            source = "top5_plus_exception(raw+planner)"
+            source = "shadow_plus_top5_exception(raw+planner)"
             planner_payload = _load_planner_payload_for_run(selected_run)
             profile_payload = _load_profile_payload_for_run(selected_run)
             planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
-            run_rows = build_top5_plus_exception_records(artifact_rows, planner_payload)["combined"]
+            shadow_rows = build_kr_shadow_gate_records(artifact_rows, planner_payload, limit=5)["combined"]
+            standard_rows = build_top5_plus_exception_records(artifact_rows, planner_payload)["combined"]
+            seen_shadow = {str(row.get("ticker") or "") for row in shadow_rows}
+            run_rows = shadow_rows + [row for row in standard_rows if str(row.get("ticker") or "") not in seen_shadow]
             if ticker:
                 run_rows = [
                     row
@@ -382,11 +391,7 @@ def build_archive_embed(
                     == str(ticker).upper()
                 ]
     fields = []
-    ordered_rows = (
-        run_rows
-        if str(source).startswith("top5_plus_exception")
-        else sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))
-    )
+    ordered_rows = run_rows if "top5_exception" in str(source) else sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))
     for idx, row in enumerate(ordered_rows[safe_offset : safe_offset + safe_limit], start=safe_offset + 1):
         fields.append(
             {

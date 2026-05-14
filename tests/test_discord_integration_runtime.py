@@ -217,7 +217,7 @@ def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_pa
     archive = build_archive_embed(market="KOSDAQ")
 
     assert "RUN-RAW" in archive["description"]
-    assert "top5_plus_exception" in archive["description"]
+    assert "shadow_plus_top5_exception" in archive["description"]
     assert "JYP Ent." in archive["fields"][0]["name"]
 
 
