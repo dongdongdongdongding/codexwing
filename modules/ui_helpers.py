@@ -330,7 +330,7 @@ def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     """
     if not isinstance(rec, dict) or _row_market(rec) != "KOSDAQ":
         return False
-    volume_ratio = _row_float(rec, "volume_ratio", "Volume Ratio")
+    volume_ratio = _row_float(rec, "volume_ratio", "Volume Ratio", "volume", "거래량")
     trend = _row_text(rec, "trend", "real_trend", "추세", "Trend").upper()
     lane = _row_text(rec, "selection_lane", "Selection Lane").lower()
     return volume_ratio is not None and volume_ratio <= 1.23 and trend == "DOWN" and lane == "1d"
@@ -600,12 +600,24 @@ def enrich_signal_rows_with_planner_trace(
                 continue
             trace = trace_by_ticker.setdefault(ticker, {})
             for key in (
+                "stock_name",
                 "decision",
                 "decision_bucket",
                 "priority_rank",
+                "decision_score",
+                "prob_clean",
+                "prob_5",
+                "_prob_clean",
+                "_prob_5",
                 "loss_risk_score",
                 "theme_risk",
                 "rationale",
+                "real_trend",
+                "trend",
+                "selection_lane",
+                "volume",
+                "volume_ratio",
+                "volume_confirmed",
                 "relative_rank_score",
                 "relative_rank_pct",
                 "relative_rank_model",

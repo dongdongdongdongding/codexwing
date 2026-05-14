@@ -334,6 +334,36 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(groups["kosdaq"][0]["_analysis_section"], "KOSDAQ Shadow")
         self.assertEqual(groups["kospi"][0]["_analysis_section"], "KOSPI Shadow")
 
+    def test_kr_shadow_gate_uses_planner_lane_and_volume_display_fields(self):
+        rows = [
+            {
+                "티커": "KQ2.KQ",
+                "market": "KOSDAQ",
+                "종목명": "Planner Lane",
+                "거래량": "✅ 0.80",
+                "추세": "UP",
+                "Decision Score": 70,
+            }
+        ]
+        planner = {
+            "decisions": [
+                {
+                    "ticker": "KQ2.KQ",
+                    "stock_name": "Planner Lane",
+                    "volume": "✅ 0.80",
+                    "real_trend": "DOWN",
+                    "selection_lane": "1d",
+                    "decision_score": 70,
+                }
+            ]
+        }
+
+        groups = build_kr_shadow_gate_records(rows, planner, limit=5)
+
+        self.assertEqual([row["티커"] for row in groups["kosdaq"]], ["KQ2.KQ"])
+        self.assertEqual(groups["kosdaq"][0]["selection_lane"], "1d")
+        self.assertEqual(groups["kosdaq"][0]["real_trend"], "DOWN")
+
     def test_profile_only_exception_leaders_are_merged_into_planner_contract(self):
         planner = {
             "decisions": [{"ticker": "TOP1.KS", "decision": "PRIORITY_WATCHLIST"}],
