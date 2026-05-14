@@ -3378,9 +3378,15 @@ if active_main_tab == "📚 아카이브":
                 c_mode2.metric("장중", intraday_count)
                 c_mode3.metric("스윙", swing_count)
 
+                _archive_planner_payload = {}
+                if _selected_run_id:
+                    _archive_planner_payload = _load_json_safe(
+                        str(Path("runtime_state/shared_working") / str(_selected_run_id) / "planner_handoff.json")
+                    )
+
                 # Archive Top must mirror scan-time/planner order for the selected run_id.
                 # Never mix multiple same-day runs or re-rank by decision_score here.
-                _archive_records = sort_signal_rows_by_planner_rank(_day_df.to_dict("records"), {})
+                _archive_records = sort_signal_rows_by_planner_rank(_day_df.to_dict("records"), _archive_planner_payload)
                 if _archive_records:
                     _day_df = pd.DataFrame(_archive_records)
 
@@ -3426,7 +3432,12 @@ if active_main_tab == "📚 아카이브":
 
                 st.divider()
                 # 스캐너 결과와 동일하게 Top5 메인 + Exception Leader 추가 후보를 분리 표시.
-                _archive_groups = build_top5_plus_exception_records(_archive_records, {}, top_limit=5, exception_limit=5)
+                _archive_groups = build_top5_plus_exception_records(
+                    _archive_records,
+                    _archive_planner_payload,
+                    top_limit=5,
+                    exception_limit=5,
+                )
                 _archive_top5 = build_signal_display_rows(_archive_groups["top5"], limit=5)
                 _archive_exception = build_signal_display_rows(_archive_groups["exception_leaders"], limit=5)
 

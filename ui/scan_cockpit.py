@@ -16,10 +16,10 @@ import streamlit as st
 from modules.ui_helpers import (
     build_live_cockpit_summary,
     build_signal_display_rows,
+    build_top5_plus_exception_records,
     build_top_candidate_compact_view,
     enrich_signal_rows_with_planner_trace,
     sort_signal_rows_by_planner_rank,
-    split_stream_records,
 )
 
 
@@ -166,14 +166,20 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     # Stream B (급등 20%) = EXCEPTION_LEADER만
     planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
     raw_score_records = results_df.to_dict("records")
-    raw_records = enrich_signal_rows_with_planner_trace(
+    enriched_records = enrich_signal_rows_with_planner_trace(
         raw_score_records,
         planner_payload,
     )
-    raw_records = sort_signal_rows_by_planner_rank(raw_records, planner_payload)
-    streams = split_stream_records(raw_records)
-    stream_a_records = streams["stream_a"]
-    stream_b_records = streams["stream_b"]
+    raw_records = sort_signal_rows_by_planner_rank(enriched_records, planner_payload)
+    groups = build_top5_plus_exception_records(
+        raw_score_records,
+        planner_payload,
+        top_limit=5,
+        exception_limit=5,
+    )
+    stream_a_records = groups["top5"]
+    stream_b_records = groups["exception_leaders"]
+    display_records = groups["combined"]
 
     stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
     stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
@@ -238,7 +244,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     else:
         st.info("Exception Leader 후보 없음 - 이번 스캔에는 별도 급등 후보가 없습니다.")
 
-    planner_top = [_ticker_of(row) for row in raw_records[:5]]
+    planner_top = [_ticker_of(row) for row in display_records[:5]]
     raw_top = [_ticker_of(row) for row in raw_score_records[:5]]
     overlap = len(set(planner_top).intersection(raw_top)) if planner_top and raw_top else 0
     with st.expander("보조 확인 · 원본 Top5 vs 플래너 후보", expanded=False):
@@ -257,7 +263,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
                 )
         with c_plan:
             st.markdown("**플래너 실행 후보 5 · 정밀분석 기준**")
-            for idx, row in enumerate(raw_records[:5], start=1):
+            for idx, row in enumerate(display_records[:5], start=1):
                 ticker = _ticker_of(row)
                 decision = row.get("decision") or row.get("Decision") or "-"
                 rel = row.get("relative_rank_score")
