@@ -12,6 +12,7 @@ from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exc
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 ARTIFACT_DIR = Path("runtime_state/artifacts")
+TOP_DEEP_DISCORD_LIMIT = 15
 
 
 def _safe_float(value: Any) -> float | None:
@@ -226,10 +227,10 @@ def build_top_deep_embeds(
     run_id: str = "",
     market: str = "",
     offset: int = 0,
-    limit: int = 10,
+    limit: int = TOP_DEEP_DISCORD_LIMIT,
 ) -> List[Dict[str, Any]]:
     safe_offset = _normalize_offset(offset)
-    safe_limit = _normalize_limit(limit, default=10, maximum=10)
+    safe_limit = _normalize_limit(limit, default=TOP_DEEP_DISCORD_LIMIT, maximum=TOP_DEEP_DISCORD_LIMIT)
     rows = _load_local_top_deep_reports(limit=500)
     if market:
         rows = [row for row in rows if str(row.get("market") or "").upper() == str(market).upper()]
@@ -284,7 +285,7 @@ def build_top_deep_embeds(
                 "Shadow 상단 + Top5 메인 + Exception Leader 추가 후보"
             ),
             "color": 0x3498DB,
-            "fields": fields[:10],
+            "fields": fields[:25],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     ]
@@ -528,7 +529,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
         }
     ]
     if ok:
-        embeds.extend(build_top_deep_embeds(run_id=run_id, limit=10))
+        embeds.extend(build_top_deep_embeds(run_id=run_id, limit=TOP_DEEP_DISCORD_LIMIT))
     return embeds[:10]
 
 

@@ -33,6 +33,8 @@ def test_register_payloads_include_expected_commands_and_options():
     assert "options" not in by_name["kospi_scan"]
     assert any(opt["name"] == "ticker" for opt in by_name["top_deep"]["options"])
     assert any(opt["name"] == "offset" for opt in by_name["top_deep"]["options"])
+    top_limit = [opt for opt in by_name["top_deep"]["options"] if opt["name"] == "limit"][0]
+    assert top_limit["max_value"] == 15
     top_run = [opt for opt in by_name["top_deep"]["options"] if opt["name"] == "run_id"][0]
     assert top_run["autocomplete"] is True
     archive_market = [opt for opt in by_name["archive"]["options"] if opt["name"] == "market"][0]
@@ -416,3 +418,49 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
     assert embeds[0]["fields"][0]["value"] == "RUN-DISCORD"
     assert embeds[1]["title"] == "Top5 + Exception Leader 자동 정밀분석"
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
+
+
+def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_path):
+    report_dir = tmp_path / "top_deep"
+    report_dir.mkdir()
+    rows = []
+    for idx in range(1, 16):
+        section = "Top5" if idx <= 10 else "Exception Leader"
+        rows.append(
+            {
+                "run_id": "RUN-15",
+                "rank": idx,
+                "ticker": f"000{idx:03d}.KS",
+                "stock_name": f"종목{idx}",
+                "selection_alignment": {
+                    "analysis_section": section,
+                    "analysis_section_rank": idx if idx <= 10 else idx - 10,
+                },
+                "trade_plan": {
+                    "readiness_analysis": {
+                        "final_buy_judgment": {"action": "관망"},
+                    }
+                },
+            }
+        )
+    (report_dir / "RUN-15.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+
+    embeds = build_scan_result_embeds(
+        {
+            "run_id": "RUN-15",
+            "market": "KOSPI",
+            "total_scans": 835,
+            "result_count": 65,
+            "filtered_count": 770,
+            "warnings": [],
+            "discord_job": {"job_id": "DS-15", "market": "KOSPI", "returncode": 0},
+        },
+        config=DiscordIntegrationConfig(web_base_url="http://localhost:8501"),
+    )
+
+    fields = embeds[1]["fields"]
+    assert len(fields) == 15
+    assert "종목10" in fields[9]["name"]
+    assert "종목15" in fields[14]["name"]
+    assert "Exception Leader #5" in fields[14]["value"]

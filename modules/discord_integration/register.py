@@ -60,7 +60,7 @@ def _command_options(name: str) -> List[Dict[str, Any]]:
                 "description": "표시 개수",
                 "required": False,
                 "min_value": 1,
-                "max_value": 10,
+                "max_value": 15,
             },
         ]
     if name == "archive":
