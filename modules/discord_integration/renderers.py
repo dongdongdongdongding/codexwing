@@ -226,10 +226,10 @@ def build_top_deep_embeds(
     run_id: str = "",
     market: str = "",
     offset: int = 0,
-    limit: int = 5,
+    limit: int = 10,
 ) -> List[Dict[str, Any]]:
     safe_offset = _normalize_offset(offset)
-    safe_limit = _normalize_limit(limit, default=5, maximum=10)
+    safe_limit = _normalize_limit(limit, default=10, maximum=10)
     rows = _load_local_top_deep_reports(limit=500)
     if market:
         rows = [row for row in rows if str(row.get("market") or "").upper() == str(market).upper()]
@@ -332,10 +332,10 @@ def build_archive_embed(
     ticker: str = "",
     run_id: str = "",
     offset: int = 0,
-    limit: int = 5,
+    limit: int = 10,
 ) -> Dict[str, Any]:
     safe_offset = _normalize_offset(offset)
-    safe_limit = _normalize_limit(limit, default=5, maximum=10)
+    safe_limit = _normalize_limit(limit, default=10, maximum=10)
     rows = _load_local_top_deep_reports(limit=500)
     if market:
         rows = [row for row in rows if str(row.get("market") or "").upper() == str(market).upper()]
@@ -506,7 +506,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
         }
     ]
     if ok:
-        embeds.extend(build_top_deep_embeds(run_id=run_id, limit=5))
+        embeds.extend(build_top_deep_embeds(run_id=run_id, limit=10))
     return embeds[:10]
 
 

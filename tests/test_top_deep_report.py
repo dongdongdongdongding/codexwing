@@ -226,3 +226,54 @@ def test_build_top_deep_reports_adds_exception_after_top5_main():
     assert reports[0]["selection_alignment"]["analysis_section"] == "Top5"
     assert reports[-1]["selection_alignment"]["analysis_section"] == "Exception Leader"
     assert reports[-1]["selection_alignment"]["source_order"] == "top5_main_plus_exception_addon"
+
+
+def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five():
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {"warnings": [], "ohlcv_tail": []}
+        news.return_value = {"status": "OK", "sentiment_score": 0.0, "headlines": [], "warnings": []}
+        flow.return_value = {"valid": False, "warnings": ["test_unavailable"]}
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {"ticker": f"TOP{i}.KQ", "stock_name": f"Top {i}", "Decision Score": 100.0 - i}
+                for i in range(1, 6)
+            ],
+            planner_payload={
+                "decisions": [
+                    {
+                        "ticker": f"TOP{i}.KQ",
+                        "decision": "PRIORITY_WATCHLIST",
+                        "priority_rank": i,
+                        "relative_rank_score": 90.0 - i,
+                    }
+                    for i in range(1, 6)
+                ],
+                "watchlist_meta": [
+                    {
+                        "ticker": f"EX{i}.KQ",
+                        "stock_name": f"Exception {i}",
+                        "risk_label": "EXCEPTION_LEADER",
+                        "reason": "exception_leader_watchlist",
+                        "priority_rank": 100 + i,
+                        "relative_rank_score": 70.0 - i,
+                    }
+                    for i in range(1, 7)
+                ],
+            },
+            run_id="RUN-PLANNER-EX",
+            market="KOSDAQ",
+            scan_mode="SWING",
+            top_n=5,
+        )
+
+    assert [row["ticker"] for row in reports] == [f"TOP{i}.KQ" for i in range(1, 6)] + [
+        f"EX{i}.KQ" for i in range(1, 6)
+    ]
+    assert len(reports) == 10
+    assert [row["selection_alignment"]["analysis_section"] for row in reports[:5]] == ["Top5"] * 5
+    assert [row["selection_alignment"]["analysis_section"] for row in reports[5:]] == ["Exception Leader"] * 5

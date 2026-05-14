@@ -127,7 +127,7 @@ def main() -> int:
         ticker: str = "",
         run_id: str = "",
         offset: int = 0,
-        limit: int = 5,
+        limit: int = 10,
     ):
         if not await _guard(interaction):
             return
@@ -164,7 +164,7 @@ def main() -> int:
         ticker: str = "",
         run_id: str = "",
         offset: int = 0,
-        limit: int = 5,
+        limit: int = 10,
     ):
         if not await _guard(interaction):
             return

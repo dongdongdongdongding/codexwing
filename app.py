@@ -1151,7 +1151,7 @@ def _render_top_deep_reports_page():
     runs = [item[0] for item in run_summaries]
     run_labels = {item[0]: item[1] for item in run_summaries}
     selected_run = col_run.selectbox("스캔", runs, index=0, format_func=lambda rid: run_labels.get(str(rid), str(rid)))
-    page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=1)
+    page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=3)
     run_df = day_df[day_df["run_id"] == selected_run].copy()
     run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
     run_df["_analysis_section_order"] = run_df["selection_alignment"].apply(

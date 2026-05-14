@@ -278,6 +278,45 @@ def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[s
     }
 
 
+def _record_ticker_key(row: Dict[str, Any]) -> str:
+    return str(
+        _coalesce_present(row.get("ticker"), row.get("티커"), row.get("Ticker"), row.get("symbol"))
+        or ""
+    ).strip()
+
+
+def _planner_exception_leader_records(
+    planner_payload: Dict[str, Any] | None,
+    existing_tickers: set[str],
+) -> List[Dict[str, Any]]:
+    """Lift planner-only Exception Leaders into display/report candidates.
+
+    The scanner result rows are the Top5 source of truth, but Exception Leader
+    candidates can be produced only in planner ``watchlist_meta`` after the raw
+    scan rows have already been narrowed. Without this bridge, Discord/web deep
+    reports silently show Top5 only even when the planner emitted Stream B.
+    """
+    payload = planner_payload if isinstance(planner_payload, dict) else {}
+    seen = {str(ticker).strip() for ticker in existing_tickers if str(ticker).strip()}
+    additions: List[Dict[str, Any]] = []
+    for section in ("watchlist_meta", "decisions"):
+        for item in payload.get(section, []) or []:
+            if not isinstance(item, dict) or not is_exception_leader_row(item):
+                continue
+            ticker = _record_ticker_key(item)
+            if not ticker or ticker in seen:
+                continue
+            copy = dict(item)
+            copy.setdefault("ticker", ticker)
+            copy.setdefault("decision", "EXCEPTION_LEADER")
+            copy.setdefault("decision_bucket", "exception_leader")
+            copy.setdefault("risk_label", "EXCEPTION_LEADER")
+            copy.setdefault("reason", "exception_leader_planner_addon")
+            additions.append(copy)
+            seen.add(ticker)
+    return additions
+
+
 def build_top5_plus_exception_records(
     records: List[Dict[str, Any]],
     planner_payload: Dict[str, Any] | None = None,
@@ -292,6 +331,11 @@ def build_top5_plus_exception_records(
     for extra precision analysis and Discord output.
     """
     source_records = enrich_signal_rows_with_planner_trace(records or [], planner_payload) if planner_payload else (records or [])
+    if planner_payload:
+        source_records = list(source_records) + _planner_exception_leader_records(
+            planner_payload,
+            {_record_ticker_key(row) for row in source_records if isinstance(row, dict)},
+        )
     sorted_rows = sort_signal_rows_by_planner_rank(source_records, planner_payload)
     streams = split_stream_records(sorted_rows)
     top_records = streams["stream_a"][: max(int(top_limit or 0), 0)]

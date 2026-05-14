@@ -259,6 +259,44 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(groups["top5"][0]["_analysis_section"], "Top5")
         self.assertEqual(groups["exception_leaders"][0]["_analysis_section"], "Exception Leader")
 
+    def test_top5_plus_exception_adds_planner_only_exception_leaders(self):
+        rows = [
+            {"ticker": f"TOP{i}.KQ", "Decision Score": 100.0 - i, "_raw_scan_rank": i}
+            for i in range(1, 6)
+        ]
+        planner = {
+            "decisions": [
+                {
+                    "ticker": f"TOP{i}.KQ",
+                    "decision": "PRIORITY_WATCHLIST",
+                    "priority_rank": i,
+                    "relative_rank_score": 90.0 - i,
+                }
+                for i in range(1, 6)
+            ],
+            "watchlist_meta": [
+                {
+                    "ticker": f"EX{i}.KQ",
+                    "stock_name": f"Exception {i}",
+                    "risk_label": "EXCEPTION_LEADER",
+                    "reason": "exception_leader_watchlist",
+                    "priority_rank": 100 + i,
+                    "relative_rank_score": 70.0 - i,
+                }
+                for i in range(1, 7)
+            ],
+        }
+
+        groups = build_top5_plus_exception_records(rows, planner, top_limit=5, exception_limit=5)
+
+        self.assertEqual([row["ticker"] for row in groups["top5"]], [f"TOP{i}.KQ" for i in range(1, 6)])
+        self.assertEqual(
+            [row["ticker"] for row in groups["exception_leaders"]],
+            [f"EX{i}.KQ" for i in range(1, 6)],
+        )
+        self.assertEqual(len(groups["combined"]), 10)
+        self.assertEqual(groups["combined"][-1]["_analysis_section"], "Exception Leader")
+
 
 class ScannerRuntimeTests(unittest.TestCase):
     def test_run_parallel_scan_emits_callback_for_each_symbol(self):
