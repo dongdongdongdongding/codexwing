@@ -3451,7 +3451,21 @@ if active_main_tab == "📚 아카이브":
                     exception_limit=5,
                 )
                 _archive_shadow_groups = build_kr_shadow_gate_records(_archive_records, _archive_planner_payload, limit=5)
-                _archive_market_key = str(_selected_market or "").upper()
+                _archive_market_key = str(((_archive_planner_payload or {}).get("run_context") or {}).get("market") or "").upper()
+                if _archive_market_key not in {"KOSPI", "KOSDAQ"} and "market" in _day_df.columns:
+                    _archive_markets = [
+                        str(value).upper()
+                        for value in _day_df["market"].dropna().unique().tolist()
+                        if str(value).upper() in {"KOSPI", "KOSDAQ"}
+                    ]
+                    if len(_archive_markets) == 1:
+                        _archive_market_key = _archive_markets[0]
+                if _archive_market_key not in {"KOSPI", "KOSDAQ"}:
+                    _archive_tickers = [str(row.get("ticker") or row.get("티커") or "").upper() for row in _archive_records]
+                    if _archive_tickers and all(ticker.endswith(".KS") for ticker in _archive_tickers if ticker):
+                        _archive_market_key = "KOSPI"
+                    elif _archive_tickers and all(ticker.endswith(".KQ") for ticker in _archive_tickers if ticker):
+                        _archive_market_key = "KOSDAQ"
                 _archive_shadow_records = (
                     _archive_shadow_groups["kosdaq"]
                     if _archive_market_key == "KOSDAQ"
