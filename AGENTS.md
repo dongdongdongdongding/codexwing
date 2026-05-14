@@ -14,6 +14,15 @@ The target audience is not only engineers but also a product/planning operator w
 - Do not rely on hidden internal reasoning as the final source of truth.
 - Use explicit evidence, warnings, versioning, and outcomes.
 
+## Operational Reflection Rules
+- Before fixing a repeated or user-reported mismatch, identify every source of truth that can produce the same visible concept. Do not assume identical labels mean identical data paths.
+- When one UI surface shows data and another does not, compare the exact payloads, files, DB rows, and renderers behind both surfaces before patching.
+- For service-critical outputs, verify all consumer paths, not only the path that first failed: live web cards, archive, automatic deep reports, Discord scan result, Discord lookup commands, local artifacts, and DB persistence.
+- Treat partial fixes as suspect until they are tested against at least one real recent run that previously failed. Synthetic tests are required but not sufficient for data-routing bugs.
+- If a bug recurs after a fix, write down what assumption was wrong, add a regression test for that assumption, and update the shared contract or helper so future surfaces cannot drift.
+- Prefer one shared merge/normalization function for equivalent concepts such as Top5, Exception Leader, planner watchlist, profile diagnostics, and archive rows. Avoid separate ad hoc joins per UI surface.
+- After changing output contracts, regenerate or backfill recent artifacts when stale local/DB reports would otherwise keep showing the old behavior.
+
 ## Mandatory Agents
 1. Scanner Agent
 2. Aggregation Agent
