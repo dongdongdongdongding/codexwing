@@ -90,7 +90,14 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
                     "stock_name": "삼성전자",
                     "decision": "WATCHLIST",
                     "buy_score": 77.5,
+                    "day_change_pct": -3.21,
                     "loss_risk_score": 42.0,
+                    "flow": {
+                        "foreigner": 1200000,
+                        "institution": -300000,
+                        "retail": -900000,
+                        "whale_score": 72,
+                    },
                     "trade_plan": {
                         "entry_policy": "open/reference",
                         "target_tp_pct": 20.0,
@@ -124,6 +131,8 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     assert status["fields"][3]["value"] == "RUN-TEST"
     assert embeds[0]["title"] == "Top5 + Exception Leader 자동 정밀분석"
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
+    assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
+    assert "수급: 외인 +1,200,000 / 기관 -300,000 / 개인 -900,000" in embeds[0]["fields"][0]["value"]
 
 
 def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch):

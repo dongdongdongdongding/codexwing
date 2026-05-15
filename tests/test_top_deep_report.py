@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from modules.top_deep_report import build_top_deep_reports, upsert_reports_to_supabase
+from modules.top_deep_report import build_top_deep_reports, upsert_reports_to_supabase, _fetch_investor_flow_snapshot
 
 
 def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
@@ -157,6 +157,30 @@ def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():
 
     assert result["rows_upserted"] == 1
     assert captured["rows"][0]["flow"] == {"foreigner": 1}
+
+
+def test_investor_flow_fetches_breakdown_when_exception_has_score_only():
+    with patch("modules.quant_analysis.QuantStrategy") as strategy:
+        strategy.return_value.get_investor_flows.return_value = {
+            "valid": True,
+            "flow_source": "naver",
+            "whale_score": 72.0,
+            "foreigner": 1200000,
+            "institution": -300000,
+            "retail": -900000,
+            "dominant": "외인",
+        }
+
+        flow = _fetch_investor_flow_snapshot(
+            "278470.KS",
+            {"ticker": "278470.KS", "decision": "EXCEPTION_LEADER"},
+            {"whale_score": 80.0},
+        )
+
+    assert flow["source"] == "naver"
+    assert flow["foreigner"] == 1200000.0
+    assert flow["institution"] == -300000.0
+    assert flow["retail"] == -900000.0
 
 
 def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empty():

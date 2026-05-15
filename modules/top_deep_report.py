@@ -291,15 +291,29 @@ def _fetch_news_snapshot(ticker: str, stock_name: str) -> Dict[str, Any]:
 def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[str, Any]) -> Dict[str, Any]:
     base = {**(row if isinstance(row, dict) else {}), **(trace if isinstance(trace, dict) else {})}
     direct = {
-        "whale_score": _safe_float(_first_present(base, "whale_score", "Whale")),
-        "foreigner": _safe_float(_first_present(base, "foreigner", "foreign_flow", "foreign_net", "foreign_net_buy")),
-        "institution": _safe_float(_first_present(base, "institution", "institution_flow", "institution_net", "institution_net_buy")),
-        "retail": _safe_float(_first_present(base, "retail", "retail_flow", "individual", "individual_net", "retail_net_buy")),
+        "whale_score": _safe_float(_first_present(base, "whale_score", "Whale", "kr_flow_leader_score")),
+        "foreigner": _safe_float(
+            _first_present(base, "foreigner", "foreign_flow", "foreign_net", "foreign_net_buy", "kr_foreign_flow")
+        ),
+        "institution": _safe_float(
+            _first_present(
+                base,
+                "institution",
+                "institution_flow",
+                "institution_net",
+                "institution_net_buy",
+                "kr_institution_flow",
+            )
+        ),
+        "retail": _safe_float(
+            _first_present(base, "retail", "retail_flow", "individual", "individual_net", "retail_net_buy", "kr_retail_flow")
+        ),
     }
-    if any(value is not None for value in direct.values()):
+    has_flow_breakdown = any(direct.get(key) is not None for key in ("foreigner", "institution", "retail"))
+    if has_flow_breakdown:
         whale = direct.get("whale_score")
         return {
-            "valid": whale is not None,
+            "valid": True,
             "type": "KR" if str(ticker).upper().endswith((".KS", ".KQ")) else "UNKNOWN",
             "source": "scan_row",
             "whale_score": whale,
@@ -308,7 +322,7 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "retail": direct.get("retail"),
             "dominant": base.get("dominant"),
             "whale_trend": base.get("whale_trend"),
-            "warnings": [] if whale is not None else ["investor_flow_partial_scan_row"],
+            "warnings": [] if whale is not None else ["investor_flow_score_missing_scan_row"],
         }
 
     if not str(ticker).upper().endswith((".KS", ".KQ")):
@@ -327,11 +341,12 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
         from modules.quant_analysis import QuantStrategy
 
         payload = QuantStrategy(ticker).get_investor_flows()
+        fetched_whale = _safe_float(payload.get("whale_score"))
         return {
             "valid": bool(payload.get("valid")),
             "type": payload.get("type") or "KR",
             "source": payload.get("flow_source") or "quant_strategy",
-            "whale_score": _safe_float(payload.get("whale_score")),
+            "whale_score": fetched_whale if fetched_whale is not None else direct.get("whale_score"),
             "foreigner": _safe_float(payload.get("foreigner")),
             "institution": _safe_float(payload.get("institution")),
             "retail": _safe_float(payload.get("retail")),
@@ -344,7 +359,7 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "valid": False,
             "type": "KR",
             "source": "quant_strategy",
-            "whale_score": None,
+            "whale_score": direct.get("whale_score"),
             "foreigner": None,
             "institution": None,
             "retail": None,

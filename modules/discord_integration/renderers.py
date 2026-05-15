@@ -31,6 +31,13 @@ def _fmt_num(value: Any, digits: int = 1) -> str:
     return f"{numeric:.{digits}f}"
 
 
+def _fmt_flow(value: Any) -> str:
+    numeric = _safe_float(value)
+    if numeric is None:
+        return "-"
+    return f"{numeric:+,.0f}"
+
+
 def _fmt_pct(value: Any) -> str:
     numeric = _safe_float(value)
     if numeric is None:
@@ -194,6 +201,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
     winner_profile = alignment.get("validated_winner_profile") if isinstance(alignment.get("validated_winner_profile"), dict) else {}
+    flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
     practical_gate = row.get("practical_entry_gate") if isinstance(row.get("practical_entry_gate"), dict) else {}
     gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
     section = alignment.get("analysis_section") or "Top5"
@@ -207,6 +215,13 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"타이밍 {timing.get('grade') or '-'}({_fmt_num(timing.get('score'), 0)})"
         ),
         f"추격위험: {readiness.get('chase_risk_level') or '-'} · 손실위험 {_fmt_num(row.get('loss_risk_score'), 1)}",
+        f"전일비: {_fmt_pct(row.get('day_change_pct'))}",
+        (
+            f"수급: 외인 {_fmt_flow(flow.get('foreigner'))} / "
+            f"기관 {_fmt_flow(flow.get('institution'))} / "
+            f"개인 {_fmt_flow(flow.get('retail'))} · "
+            f"점수 {_fmt_num(flow.get('whale_score'), 0)}"
+        ),
         (
             f"Entry {trade_plan.get('entry_policy') or '-'} · "
             f"TP {_fmt_pct(trade_plan.get('target_tp_pct'))} · SL {_fmt_pct(trade_plan.get('stop_sl_pct'))}"

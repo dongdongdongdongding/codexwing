@@ -930,7 +930,10 @@ def _fmt_flow_oku(value):
     if value in (None, ""):
         return "-"
     try:
-        return f"{float(value) / 100000000:+.1f}억"
+        numeric = float(value)
+        if abs(numeric) >= 100000000:
+            return f"{numeric / 100000000:+.1f}억"
+        return f"{numeric:+,.0f}"
     except Exception:
         return "-"
 
