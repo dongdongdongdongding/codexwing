@@ -429,6 +429,81 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
 
 
+def test_scan_result_renderer_clarifies_zero_pass_exception_only(monkeypatch, tmp_path):
+    report_dir = tmp_path / "top_deep"
+    artifact_dir = tmp_path / "artifacts"
+    shared_dir = tmp_path / "shared" / "RUN-ZERO"
+    report_dir.mkdir()
+    (artifact_dir / "RUN-ZERO").mkdir(parents=True)
+    shared_dir.mkdir(parents=True)
+    (report_dir / "RUN-ZERO.json").write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "RUN-ZERO",
+                    "rank": 1,
+                    "ticker": "017670.KS",
+                    "stock_name": "SK텔레콤",
+                    "selection_alignment": {"analysis_section": "Exception Leader", "analysis_section_rank": 1},
+                    "trade_plan": {"readiness_analysis": {"final_buy_judgment": {"action": "관망"}}},
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    scanner_path = shared_dir / "scanner_handoff.json"
+    scanner_path.write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "market_gate": {
+                        "gate": "RED",
+                        "msg": "종가 하락장 경보: KOSPI -6.12% / KOSDAQ -5.14%",
+                    }
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (artifact_dir / "RUN-ZERO" / "scan_pipeline_summary.json").write_text(
+        json.dumps(
+            {
+                "run_id": "RUN-ZERO",
+                "market": "KOSPI",
+                "total_scans": 835,
+                "result_count": 0,
+                "filtered_count": 835,
+                "manifest_paths": {"scanner_handoff": str(scanner_path)},
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    monkeypatch.setattr(renderers, "ARTIFACT_DIR", artifact_dir)
+
+    summary = {
+        "run_id": "RUN-ZERO",
+        "market": "KOSPI",
+        "total_scans": 835,
+        "result_count": 0,
+        "filtered_count": 835,
+        "warnings": [],
+        "discord_job": {"job_id": "DS-ZERO", "market": "KOSPI", "returncode": 0},
+    }
+
+    embeds = build_scan_result_embeds(summary, config=DiscordIntegrationConfig(web_base_url="http://localhost:8501"))
+
+    assert embeds[0]["color"] == 0xF1C40F
+    assert any(field["name"] == "Market Gate" for field in embeds[0]["fields"])
+    warnings_field = next(field for field in embeds[0]["fields"] if field["name"] == "Warnings")
+    assert "Top5 통과 후보 0개" in warnings_field["value"]
+    assert "운영 상태" == embeds[1]["fields"][0]["name"]
+    assert "Exception Leader는 추가 관찰 후보" in embeds[1]["fields"][0]["value"]
+
+
 def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_path):
     report_dir = tmp_path / "top_deep"
     report_dir.mkdir()

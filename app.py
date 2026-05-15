@@ -963,6 +963,29 @@ def _scan_display_label(run_df):
     return f"{market} · {len(run_df)}건 · {run_id}"
 
 
+def _load_scan_context_for_run(run_id):
+    if not run_id:
+        return {}
+    summary = _load_json_safe(f"runtime_state/artifacts/{run_id}/scan_pipeline_summary.json")
+    scanner_payload = {}
+    manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
+    scanner_path = manifest.get("scanner_handoff")
+    if scanner_path:
+        scanner_payload = _load_json_safe(scanner_path)
+    if not scanner_payload:
+        scanner_payload = _load_json_safe(f"runtime_state/shared_working/{run_id}/scanner_handoff.json")
+    scanner_summary = scanner_payload.get("summary") if isinstance(scanner_payload.get("summary"), dict) else {}
+    market_gate = scanner_summary.get("market_gate")
+    if not isinstance(market_gate, dict):
+        input_meta = scanner_summary.get("input_meta") if isinstance(scanner_summary.get("input_meta"), dict) else {}
+        market_gate = input_meta.get("market_gate") if isinstance(input_meta.get("market_gate"), dict) else {}
+    return {
+        "summary": summary,
+        "scanner_summary": scanner_summary,
+        "market_gate": market_gate if isinstance(market_gate, dict) else {},
+    }
+
+
 def _readiness_score_card(title, block):
     block = block if isinstance(block, dict) else {}
     score = block.get("score")
@@ -1173,6 +1196,28 @@ def _render_top_deep_reports_page():
     page = st.number_input("페이지", min_value=1, max_value=max_page, value=1, step=1)
     page_df = run_df.iloc[(int(page) - 1) * int(page_size): int(page) * int(page_size)]
     st.caption(f"{selected_market} · {selected_date} · {run_labels.get(str(selected_run), selected_run)} · {page}/{max_page} 페이지")
+    section_counts = run_df["selection_alignment"].apply(
+        lambda value: str(value.get("analysis_section") or "Top5") if isinstance(value, dict) else "Top5"
+    ).value_counts().to_dict()
+    scan_context = _load_scan_context_for_run(str(selected_run))
+    scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
+    market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
+    result_count = int(scan_summary.get("result_count") or section_counts.get("Top5", 0) or 0)
+    filtered_count = int(scan_summary.get("filtered_count") or 0)
+    gate_msg = str(market_gate.get("msg") or "")
+    if result_count == 0 and section_counts.get("Exception Leader", 0):
+        st.warning(
+            "원본 Top5 통과 후보 0개입니다. "
+            f"필터 {filtered_count}개 · Exception Leader {section_counts.get('Exception Leader', 0)}개는 추가 관찰 후보로만 표시됩니다."
+        )
+    if gate_msg:
+        gate = str(market_gate.get("gate") or "-").upper()
+        if gate == "RED":
+            st.error(f"시장 게이트: {gate_msg}")
+        elif gate == "YELLOW":
+            st.warning(f"시장 게이트: {gate_msg}")
+        else:
+            st.info(f"시장 게이트: {gate_msg}")
 
     for row in page_df.to_dict("records"):
         price = row.get("price") if isinstance(row.get("price"), dict) else {}

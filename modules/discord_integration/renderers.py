@@ -67,6 +67,36 @@ def _load_json(path: Path) -> Any:
         return None
 
 
+def _load_scan_context_for_run(run_id: str) -> Dict[str, Any]:
+    if not run_id:
+        return {}
+    summary_path = ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json"
+    summary = _load_json(summary_path)
+    if not isinstance(summary, dict):
+        summary = {}
+    scanner_payload: Dict[str, Any] = {}
+    manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
+    scanner_path = manifest.get("scanner_handoff")
+    if scanner_path:
+        payload = _load_json(Path(str(scanner_path)))
+        if isinstance(payload, dict):
+            scanner_payload = payload
+    if not scanner_payload:
+        payload = _load_json(Path("runtime_state/shared_working") / str(run_id) / "scanner_handoff.json")
+        if isinstance(payload, dict):
+            scanner_payload = payload
+    scanner_summary = scanner_payload.get("summary") if isinstance(scanner_payload.get("summary"), dict) else {}
+    market_gate = scanner_summary.get("market_gate")
+    if not isinstance(market_gate, dict):
+        input_meta = scanner_summary.get("input_meta") if isinstance(scanner_summary.get("input_meta"), dict) else {}
+        market_gate = input_meta.get("market_gate") if isinstance(input_meta.get("market_gate"), dict) else {}
+    return {
+        "summary": summary,
+        "scanner_summary": scanner_summary,
+        "market_gate": market_gate if isinstance(market_gate, dict) else {},
+    }
+
+
 def _safe_int(value: Any, default: int = 0) -> int:
     try:
         return int(value)
@@ -270,6 +300,21 @@ def build_top_deep_embeds(
     latest_run = run_id or _latest_run_id(rows)
     if latest_run and not ticker:
         rows = [row for row in rows if str(row.get("run_id") or "") == latest_run]
+    all_rows = list(rows)
+    section_counts: Dict[str, int] = {}
+    for row in all_rows:
+        alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+        section = str(alignment.get("analysis_section") or "Top5")
+        section_counts[section] = section_counts.get(section, 0) + 1
+    scan_context = _load_scan_context_for_run(latest_run)
+    scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
+    market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
+    result_count = _safe_int(scan_summary.get("result_count"), section_counts.get("Top5", 0))
+    filtered_count = _safe_int(scan_summary.get("filtered_count"), 0)
+    gate_name = str(market_gate.get("gate") or "").upper()
+    gate_msg = str(market_gate.get("msg") or "")
+    zero_primary = result_count == 0 and section_counts.get("Exception Leader", 0) > 0
+
     def _top_deep_sort_key(row: Dict[str, Any]) -> tuple[int, int, int]:
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         section = str(alignment.get("analysis_section") or "Top5")
@@ -287,6 +332,20 @@ def build_top_deep_embeds(
 
     rows = sorted(rows, key=_top_deep_sort_key)[safe_offset : safe_offset + safe_limit]
     fields: List[Dict[str, Any]] = []
+    if safe_offset == 0 and not ticker and (zero_primary or gate_name):
+        status_lines = [
+            f"원본 통과: {result_count}개 · 필터: {filtered_count}개",
+            (
+                f"섹션: Shadow {section_counts.get('KOSDAQ Shadow', 0) + section_counts.get('KOSPI Shadow', 0)} / "
+                f"Top5 {section_counts.get('Top5', 0)} / "
+                f"Exception {section_counts.get('Exception Leader', 0)}"
+            ),
+        ]
+        if gate_msg:
+            status_lines.append(f"시장 게이트: {gate_msg}")
+        if zero_primary:
+            status_lines.append("Top5 통과 후보가 없어 Exception Leader는 추가 관찰 후보로만 표시됩니다.")
+        fields.append({"name": "운영 상태", "value": "\n".join(status_lines)[:1024], "inline": False})
     for row in rows:
         rank = int(row.get("rank") or 0)
         name = str(row.get("stock_name") or row.get("ticker") or "-")
@@ -303,9 +362,9 @@ def build_top_deep_embeds(
             "title": "Top5 + Exception Leader 자동 정밀분석",
             "description": (
                 f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-                "Shadow 상단 + Top5 메인 + Exception Leader 추가 후보"
+                f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
             ),
-            "color": 0x3498DB,
+            "color": 0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,
             "fields": fields[:25],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
@@ -516,12 +575,19 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     run_id = str(summary.get("run_id") or "-")
     returncode = int(job.get("returncode") if job.get("returncode") is not None else 1)
     ok = returncode == 0 and bool(summary.get("run_id"))
+    scan_context = _load_scan_context_for_run(run_id)
+    market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
+    result_count = _safe_int(summary.get("result_count"), 0)
     warnings = summary.get("warnings") if isinstance(summary.get("warnings"), list) else []
     warning_text = "\n".join(
         f"- {item.get('code')}: {item.get('message')}"
         for item in warnings[:3]
         if isinstance(item, dict)
     )
+    gate_msg = str(market_gate.get("msg") or "")
+    if result_count == 0 and ok:
+        extra = "원본 Top5 통과 후보 0개. Exception Leader가 있더라도 관찰용으로만 해석하세요."
+        warning_text = f"{warning_text}\n- {extra}" if warning_text and warning_text != "-" else f"- {extra}"
     if not warning_text:
         warning_text = "-"
     fields = [
@@ -529,11 +595,17 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
         {"name": "Market", "value": market, "inline": True},
         {"name": "Status", "value": "완료" if ok else f"실패/확인 필요 ({returncode})", "inline": True},
         {"name": "Scanned", "value": str(summary.get("total_scans") or 0), "inline": True},
-        {"name": "Passed", "value": str(summary.get("result_count") or 0), "inline": True},
+        {"name": "Passed", "value": str(result_count), "inline": True},
         {"name": "Filtered", "value": str(summary.get("filtered_count") or 0), "inline": True},
-        {"name": "Warnings", "value": warning_text[:1024], "inline": False},
-        {"name": "Web", "value": config.web_base_url or "-", "inline": False},
     ]
+    if gate_msg:
+        fields.append({"name": "Market Gate", "value": gate_msg[:1024], "inline": False})
+    fields.extend(
+        [
+            {"name": "Warnings", "value": warning_text[:1024], "inline": False},
+            {"name": "Web", "value": config.web_base_url or "-", "inline": False},
+        ]
+    )
     log_path = str(job.get("log_path") or "")
     if log_path:
         fields.append({"name": "Log", "value": log_path, "inline": False})
@@ -544,7 +616,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
             "description": (
                 f"Job `{job.get('job_id') or '-'}` · 웹/아카이브와 같은 run artifact 기준으로 표시합니다."
             ),
-            "color": 0x2ECC71 if ok else 0xE74C3C,
+            "color": 0xF1C40F if ok and result_count == 0 else (0x2ECC71 if ok else 0xE74C3C),
             "fields": fields[:10],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
