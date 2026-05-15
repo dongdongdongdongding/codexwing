@@ -29,13 +29,32 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 def _metric(values: List[float]) -> Dict[str, Any]:
     if not values:
-        return {"samples": 0, "n": 0, "avg_return_pct": 0.0, "win_rate_pct": 0.0}
+        return {
+            "samples": 0,
+            "n": 0,
+            "avg_return_pct": 0.0,
+            "median_return_pct": 0.0,
+            "min_return_pct": 0.0,
+            "max_return_pct": 0.0,
+            "win_rate_pct": 0.0,
+            "loss_5pct_or_worse_pct": 0.0,
+            "hit_5pct_or_better_pct": 0.0,
+        }
+    ordered = sorted(float(v) for v in values)
+    n = len(ordered)
+    mid = n // 2
+    median = ordered[mid] if n % 2 else (ordered[mid - 1] + ordered[mid]) / 2.0
     wins = sum(1 for v in values if v > 0)
     return {
-        "samples": int(len(values)),
-        "n": int(len(values)),
-        "avg_return_pct": round(sum(values) / len(values), 4),
-        "win_rate_pct": round(wins / len(values) * 100.0, 2),
+        "samples": int(n),
+        "n": int(n),
+        "avg_return_pct": round(sum(ordered) / n, 4),
+        "median_return_pct": round(float(median), 4),
+        "min_return_pct": round(float(ordered[0]), 4),
+        "max_return_pct": round(float(ordered[-1]), 4),
+        "win_rate_pct": round(wins / n * 100.0, 2),
+        "loss_5pct_or_worse_pct": round(sum(1 for v in ordered if v <= -5.0) / n * 100.0, 2),
+        "hit_5pct_or_better_pct": round(sum(1 for v in ordered if v >= 5.0) / n * 100.0, 2),
     }
 
 
@@ -125,7 +144,14 @@ def main() -> None:
         for horizon in HORIZONS:
             block = report["buckets"][bucket][horizon]
             lines.append(
-                f"  - {horizon}: n={block['samples']} avg={block['avg_return_pct']:+.2f}% win={block['win_rate_pct']:.1f}%"
+                f"  - {horizon}: n={block['samples']} "
+                f"win={block['win_rate_pct']:.1f}% "
+                f"avg={block['avg_return_pct']:+.2f}% "
+                f"med={block['median_return_pct']:+.2f}% "
+                f"min={block['min_return_pct']:+.2f}% "
+                f"max={block['max_return_pct']:+.2f}% "
+                f"loss5={block['loss_5pct_or_worse_pct']:.1f}% "
+                f"hit5={block['hit_5pct_or_better_pct']:.1f}%"
             )
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(json.dumps({"json_path": str(json_path), "md_path": str(md_path), "excluded_runs": len(excluded_runs)}, ensure_ascii=False, indent=2))

@@ -96,8 +96,16 @@ def _metric_block(df: pd.DataFrame, market: str, *, strict_quality: bool) -> Dic
     target_rows = int(len(target_source))
     win_rate = float((ret5.gt(0).mean() * 100.0)) if rows else None
     avg_return = float(ret5.mean()) if rows else None
+    median_return = float(ret5.median()) if rows else None
+    min_return = float(ret5.min()) if rows else None
+    max_return = float(ret5.max()) if rows else None
+    loss5_rate = float((ret5.le(-5.0).mean() * 100.0)) if rows else None
+    hit5_close_rate = float((ret5.ge(5.0).mean() * 100.0)) if rows else None
     target_hit = float((target_hit_series.mean() * 100.0)) if target_rows else None
     avg_target_return = float(target_source.mean()) if target_rows else None
+    median_target_return = float(target_source.median()) if target_rows else None
+    min_target_return = float(target_source.min()) if target_rows else None
+    max_target_return = float(target_source.max()) if target_rows else None
     target_pass = (
         target_rows >= 30
         and avg_target_return is not None
@@ -125,8 +133,16 @@ def _metric_block(df: pd.DataFrame, market: str, *, strict_quality: bool) -> Dic
         "win_5d_pct": round(win_rate, 3) if win_rate is not None else None,
         "hit_5pct_within_5d_high_pct": round(target_hit, 3) if target_hit is not None else None,
         "avg_max_high_return_5d_pct": round(avg_target_return, 4) if avg_target_return is not None else None,
+        "median_max_high_return_5d_pct": round(median_target_return, 4) if median_target_return is not None else None,
+        "min_max_high_return_5d_pct": round(min_target_return, 4) if min_target_return is not None else None,
+        "max_max_high_return_5d_pct": round(max_target_return, 4) if max_target_return is not None else None,
         "hit_5pct_within_observed_5d_pct": round(target_hit, 3) if target_hit is not None else None,
         "avg_return_5d_pct": round(avg_return, 4) if avg_return is not None else None,
+        "median_return_5d_pct": round(median_return, 4) if median_return is not None else None,
+        "min_return_5d_pct": round(min_return, 4) if min_return is not None else None,
+        "max_return_5d_pct": round(max_return, 4) if max_return is not None else None,
+        "loss_5pct_or_worse_5d_pct": round(loss5_rate, 3) if loss5_rate is not None else None,
+        "hit_5pct_or_better_close_5d_pct": round(hit5_close_rate, 3) if hit5_close_rate is not None else None,
         "avg_max_return_observed_5d_pct": round(avg_target_return, 4) if avg_target_return is not None else None,
         "passes_goal": bool(target_pass),
         "close_5d_quality_pass": bool(close_quality_pass),
@@ -187,8 +203,16 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"- win_5d_pct: `{row.get('win_5d_pct')}`",
                 f"- hit_5pct_within_5d_high_pct: `{row.get('hit_5pct_within_5d_high_pct')}`",
                 f"- avg_max_high_return_5d_pct: `{row.get('avg_max_high_return_5d_pct')}`",
+                f"- median_max_high_return_5d_pct: `{row.get('median_max_high_return_5d_pct')}`",
+                f"- min_max_high_return_5d_pct: `{row.get('min_max_high_return_5d_pct')}`",
+                f"- max_max_high_return_5d_pct: `{row.get('max_max_high_return_5d_pct')}`",
                 f"- hit_5pct_within_observed_5d_pct: `{row.get('hit_5pct_within_observed_5d_pct')}`",
                 f"- avg_return_5d_pct: `{row.get('avg_return_5d_pct')}`",
+                f"- median_return_5d_pct: `{row.get('median_return_5d_pct')}`",
+                f"- min_return_5d_pct: `{row.get('min_return_5d_pct')}`",
+                f"- max_return_5d_pct: `{row.get('max_return_5d_pct')}`",
+                f"- loss_5pct_or_worse_5d_pct: `{row.get('loss_5pct_or_worse_5d_pct')}`",
+                f"- hit_5pct_or_better_close_5d_pct: `{row.get('hit_5pct_or_better_close_5d_pct')}`",
                 f"- avg_max_return_observed_5d_pct: `{row.get('avg_max_return_observed_5d_pct')}`",
                 f"- passes_goal: `{row.get('passes_goal')}`",
                 f"- close_5d_quality_pass: `{row.get('close_5d_quality_pass')}`",
@@ -211,8 +235,9 @@ def main() -> None:
     report = build_strict_live_policy_report(df) if args.strict_quality else build_live_policy_report(df)
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    json_path = out_dir / "live_swing_policy_performance.json"
-    md_path = out_dir / "live_swing_policy_performance.md"
+    suffix = "strict" if args.strict_quality else "observed"
+    json_path = out_dir / f"live_swing_policy_performance_{suffix}.json"
+    md_path = out_dir / f"live_swing_policy_performance_{suffix}.md"
     json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     md_path.write_text(render_markdown(report), encoding="utf-8")
     print(json.dumps({"json_path": str(json_path), "md_path": str(md_path), **report}, ensure_ascii=False, indent=2))
