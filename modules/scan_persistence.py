@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
+from modules.scan_integrity import write_scan_integrity_artifacts
 from multi_agent.contracts.serialization import write_json
 from multi_agent.storage.memory_layers import MemoryManager
 
@@ -110,6 +111,23 @@ def persist_scan_run_artifacts(
         },
     )
 
+    integrity_result = write_scan_integrity_artifacts(
+        artifact_dir=artifact_dir,
+        run_id=run_id,
+        market=market,
+        scan_mode=str(scan_mode or "SWING").upper(),
+        results=result_rows,
+        total_scans=total_scans_int,
+        diagnostics=diagnostics,
+        bridge_info=bridge_info,
+        top_deep_reports=top_deep_reports,
+        created_at=created_at,
+    )
+    if integrity_result.get("observed_factor_snapshots"):
+        manifest_paths["observed_factor_snapshots"] = str(integrity_result.get("observed_factor_snapshots"))
+    if integrity_result.get("scan_integrity_report"):
+        manifest_paths["scan_integrity_report"] = str(integrity_result.get("scan_integrity_report"))
+
     summary_path = artifact_dir / "scan_pipeline_summary.json"
     summary = {
         "run_id": run_id,
@@ -128,9 +146,12 @@ def persist_scan_run_artifacts(
         "artifact_dir": str(artifact_dir),
         "raw_scan_results": str(raw_path),
         "top_deep_reports": top_deep_reports,
+        "scan_integrity": integrity_result,
         "persistence_contract": {
             "raw_scan_results": raw_path.exists(),
             "scan_pipeline_summary": True,
+            "observed_factor_snapshots": bool(integrity_result.get("ok")),
+            "scan_integrity_report": bool(integrity_result.get("ok")),
             "top_deep_local": bool(top_deep_reports.get("local_path") and Path(str(top_deep_reports.get("local_path"))).exists()),
         },
     }

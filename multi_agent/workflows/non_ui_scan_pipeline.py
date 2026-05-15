@@ -21,6 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from modules import quant_analysis
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
 from modules.macro_scheduler import get_macro_context
+from modules.scan_integrity import write_scan_integrity_artifacts
 from modules.scan_policy import compute_market_gate, compute_rank_adjustment
 from modules.scanner_runtime import SharedBackoffState, run_parallel_scan, scan_symbol_with_retry
 from modules.scanner_services import resolve_strategy_family, resolve_us_hard_filter_gate, resolve_us_signal_window_gate
@@ -461,6 +462,23 @@ def run_non_ui_scan_pipeline(
         "artifact_dir": str(artifact_dir),
         "top_deep_reports": top_deep_reports,
     }
+    integrity_result = write_scan_integrity_artifacts(
+        artifact_dir=artifact_dir,
+        run_id=run_id,
+        market=market,
+        scan_mode=str(scan_mode or "SWING").upper(),
+        results=results,
+        total_scans=int(scan_result.get("total_scans", 0) or 0),
+        diagnostics=diagnostics,
+        bridge_info=manifest_paths,
+        top_deep_reports=top_deep_reports,
+        created_at=str(context.created_at),
+    )
+    if integrity_result.get("observed_factor_snapshots"):
+        manifest_paths["observed_factor_snapshots"] = str(integrity_result.get("observed_factor_snapshots"))
+    if integrity_result.get("scan_integrity_report"):
+        manifest_paths["scan_integrity_report"] = str(integrity_result.get("scan_integrity_report"))
+    summary["scan_integrity"] = integrity_result
     emit_daily_summary = os.getenv("AG_EMIT_DAILY_SUMMARY", "1").strip() not in {"0", "false", "False"}
     if emit_daily_summary:
         try:
