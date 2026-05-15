@@ -193,6 +193,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+    winner_profile = alignment.get("validated_winner_profile") if isinstance(alignment.get("validated_winner_profile"), dict) else {}
     practical_gate = row.get("practical_entry_gate") if isinstance(row.get("practical_entry_gate"), dict) else {}
     gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
     section = alignment.get("analysis_section") or "Top5"
@@ -217,6 +218,11 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"{practical_gate.get('label') or '-'}"
             f" · n={gate_evidence.get('sample_n', '-')}"
             f" · 실전승률 {gate_evidence.get('practical_win_pct', '-')}%"
+        )
+    if winner_profile.get("level") in {"pass", "near"}:
+        lines.append(
+            f"검증프로필: {winner_profile.get('label') or '-'} · "
+            f"{winner_profile.get('metrics') or '-'}"
         )
     return "\n".join(lines)[:1024]
 

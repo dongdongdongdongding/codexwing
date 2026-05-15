@@ -362,6 +362,59 @@ def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     return volume_ratio is not None and volume_ratio <= 1.23 and trend == "DOWN" and lane == "1d"
 
 
+def validated_winner_profile(rec: Dict[str, Any]) -> Dict[str, Any]:
+    """Display-side admission profile backed by current validation reports.
+
+    This does not alter scanner scoring. It controls which candidates deserve
+    the top actionable display slot after recent realized-outcome validation.
+    """
+    market = _row_market(rec)
+    rank = _row_float(rec, "priority_rank", "Rank")
+    edge = _row_float(rec, "expected_edge_score")
+    prob_clean = _row_float(rec, "prob_clean", "_prob_clean", "정밀확률", "Clean")
+    alpha = _row_float(rec, "alpha_score", "Alpha", "종합점수")
+    is_exception = is_exception_leader_row(rec)
+
+    if market == "KOSPI":
+        if is_exception and alpha is not None and alpha >= 80:
+            return {
+                "level": "pass",
+                "label": "KOSPI 검증 Exception Leader",
+                "profile": "exception_leader__alpha_ge_80",
+                "metrics": "n=45 · win5 86.7% · avg5 +8.88%",
+            }
+        if rank is not None and 1 <= rank <= 5 and edge is not None and edge >= 7:
+            return {
+                "level": "pass",
+                "label": "KOSPI 검증 Top5",
+                "profile": "rank_top5__edge_ge_7",
+                "metrics": "n=55 · win5 80.0% · avg5 +8.99%",
+            }
+        if rank is not None and 1 <= rank <= 5 and prob_clean is not None and prob_clean >= 50:
+            return {
+                "level": "pass",
+                "label": "KOSPI 검증 Top5",
+                "profile": "rank_top5__prob_clean_ge_50",
+                "metrics": "n=40 · win5 82.5% · avg5 +8.70%",
+            }
+    if market == "KOSDAQ":
+        if is_exception and alpha is not None and alpha >= 85:
+            return {
+                "level": "near",
+                "label": "KOSDAQ 관찰 Exception Leader",
+                "profile": "exception_leader__alpha_ge_85",
+                "metrics": "n=13 · win5 69.2% · avg5 +3.04%",
+            }
+        if rank is not None and 1 <= rank <= 5 and edge is not None and edge >= 7:
+            return {
+                "level": "near",
+                "label": "KOSDAQ 관찰 Top5",
+                "profile": "rank_top5__edge_ge_7",
+                "metrics": "n=29 · win5 65.5% · avg5 +7.35%",
+            }
+    return {"level": "fail", "label": "검증 프로필 미달", "profile": "", "metrics": ""}
+
+
 def build_kr_shadow_gate_records(
     records: List[Dict[str, Any]],
     planner_payload: Dict[str, Any] | None = None,
@@ -536,8 +589,21 @@ def build_top5_plus_exception_records(
         )
     sorted_rows = sort_signal_rows_by_planner_rank(source_records, planner_payload)
     streams = split_stream_records(sorted_rows)
-    top_records = streams["stream_a"][: max(int(top_limit or 0), 0)]
-    exception_records = list(streams["stream_b"])
+    top_limit_n = max(int(top_limit or 0), 0)
+    validated_top = []
+    for row in streams["stream_a"]:
+        profile = validated_winner_profile(row)
+        if profile.get("level") in {"pass", "near"}:
+            copy = dict(row)
+            copy["_validated_winner_profile"] = profile
+            validated_top.append(copy)
+    top_records = validated_top[:top_limit_n] if validated_top else streams["stream_a"][:top_limit_n]
+
+    exception_records = []
+    for row in streams["stream_b"]:
+        copy = dict(row)
+        copy["_validated_winner_profile"] = validated_winner_profile(row)
+        exception_records.append(copy)
     if exception_limit is not None:
         exception_records = exception_records[: max(int(exception_limit or 0), 0)]
 
@@ -635,6 +701,11 @@ def enrich_signal_rows_with_planner_trace(
                 "prob_5",
                 "_prob_clean",
                 "_prob_5",
+                "alpha_score",
+                "expected_edge_score",
+                "expected_return_1d_pct",
+                "expected_return_3d_pct",
+                "phase25_prob",
                 "loss_risk_score",
                 "theme_risk",
                 "rationale",

@@ -296,6 +296,54 @@ def test_top_deep_report_does_not_promote_material_risk_to_primary_buy():
     assert any("특수 리스크" in warning for warning in readiness["warnings"])
 
 
+def test_top_deep_report_prefers_validated_winner_profile_over_raw_priority():
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {"warnings": [], "current_price": 100.0, "ohlcv_tail": []}
+        news.return_value = {"status": "OK", "sentiment_score": 0.0, "headlines": [], "warnings": []}
+        flow.return_value = {"valid": False, "warnings": ["test_unavailable"]}
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {"ticker": "BAD.KS", "stock_name": "Bad", "Decision Score": 95.0},
+                {"ticker": "GOOD.KS", "stock_name": "Good", "Decision Score": 88.0},
+            ],
+            planner_payload={
+                "decisions": [
+                    {
+                        "ticker": "BAD.KS",
+                        "decision": "PRIORITY_WATCHLIST",
+                        "priority_rank": 1,
+                        "relative_rank_score": 80.0,
+                        "expected_edge_score": 0.1,
+                        "prob_clean": 30.0,
+                        "alpha_score": 68.0,
+                    },
+                    {
+                        "ticker": "GOOD.KS",
+                        "decision": "PRIORITY_WATCHLIST",
+                        "priority_rank": 4,
+                        "relative_rank_score": 65.0,
+                        "expected_edge_score": 7.2,
+                        "prob_clean": 41.0,
+                        "alpha_score": 76.0,
+                    },
+                ],
+            },
+            run_id="RUN-VALIDATED",
+            market="KOSPI",
+            scan_mode="SWING",
+            top_n=5,
+        )
+
+    assert [row["ticker"] for row in reports] == ["GOOD.KS"]
+    profile = reports[0]["selection_alignment"]["validated_winner_profile"]
+    assert profile["profile"] == "rank_top5__edge_ge_7"
+
+
 def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five():
     with (
         patch("modules.top_deep_report._fetch_price_snapshot") as price,

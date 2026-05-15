@@ -766,6 +766,7 @@ def build_top_deep_reports(
                 "analysis_section": str(row.get("_analysis_section") or "Top5"),
                 "analysis_section_rank": _safe_int(row.get("_analysis_section_rank")),
                 "source_order": str(row.get("_source_order") or "top5_main_plus_exception_addon"),
+                "validated_winner_profile": row.get("_validated_winner_profile"),
             },
             "buy_score": buy_score,
             "accuracy": _segment_accuracy(row, trace, ticker, market, scan_mode),
