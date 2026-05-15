@@ -352,7 +352,45 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
         }
 
 
-def _signal_label(row: Dict[str, Any], loss_risk: float | None) -> str:
+def _practical_gate_blocks(gate: Dict[str, Any] | None) -> bool:
+    if not isinstance(gate, dict):
+        return False
+    return gate.get("level") == "fail" and bool(gate.get("evidence"))
+
+
+def _apply_practical_gate_override(readiness: Dict[str, Any], gate: Dict[str, Any]) -> Dict[str, Any]:
+    if not _practical_gate_blocks(gate):
+        return readiness
+    judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
+    if judgment.get("action") not in {"즉시 매수 가능", "조건부 매수 가능"}:
+        return readiness
+    updated = dict(readiness)
+    updated["final_buy_judgment"] = {
+        "action": "관망",
+        "tone": "neutral",
+        "summary": "실전 80% 필터 미달 후보라 매수 액션에서 제외합니다.",
+    }
+    overrides = list(updated.get("safety_overrides") or [])
+    overrides.append("실전 80% 필터 미달")
+    updated["safety_overrides"] = overrides[:8]
+    return updated
+
+
+def _signal_label(
+    row: Dict[str, Any],
+    loss_risk: float | None,
+    *,
+    readiness: Dict[str, Any] | None = None,
+    practical_gate: Dict[str, Any] | None = None,
+) -> str:
+    judgment = readiness.get("final_buy_judgment") if isinstance(readiness, dict) else {}
+    action = str(judgment.get("action") or "")
+    if action == "매수 금지":
+        return "NO_BUY"
+    if action in {"눌림 대기", "돌파 확인", "관망"}:
+        return "WAIT_CONFIRM"
+    if _practical_gate_blocks(practical_gate):
+        return "WAIT_CONFIRM"
     decision = str(row.get("decision") or row.get("Decision") or "").upper()
     if decision == "EXCEPTION_LEADER":
         return "SURGE_CAPTURE"
@@ -670,6 +708,8 @@ def build_top_deep_reports(
             news=news,
             loss_risk_score=loss_risk,
         )
+        practical_gate = evaluate_practical_entry_gate({**row, **trace})
+        readiness_analysis = _apply_practical_gate_override(readiness_analysis, practical_gate)
         selection_thesis = _build_selection_thesis(
             row=row,
             trace=trace,
@@ -697,7 +737,6 @@ def build_top_deep_reports(
         trade_policy["selection_thesis"] = selection_thesis
         trade_policy["risk_overrides"] = risk_overrides
         trade_policy["entry_action"] = entry_action
-        practical_gate = evaluate_practical_entry_gate({**row, **trace})
         trade_policy["practical_entry_gate"] = practical_gate
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
@@ -709,7 +748,12 @@ def build_top_deep_reports(
             "ticker": ticker,
             "stock_name": stock_name,
             "generated_at": generated_at,
-            "signal_label": _signal_label({**row, **trace}, loss_risk),
+            "signal_label": _signal_label(
+                {**row, **trace},
+                loss_risk,
+                readiness=readiness_analysis,
+                practical_gate=practical_gate,
+            ),
             "decision": str(_first_present(row, "decision", "Decision") or trace.get("decision") or ""),
             "decision_bucket": str(_first_present(row, "decision_bucket") or trace.get("decision_bucket") or ""),
             "selection_alignment": {

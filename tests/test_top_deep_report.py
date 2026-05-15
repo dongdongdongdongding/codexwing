@@ -228,6 +228,74 @@ def test_build_top_deep_reports_adds_exception_after_top5_main():
     assert reports[-1]["selection_alignment"]["source_order"] == "top5_main_plus_exception_addon"
 
 
+def test_top_deep_report_does_not_promote_material_risk_to_primary_buy():
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {
+            "warnings": [],
+            "current_price": 47800.0,
+            "day_change_pct": 10.78,
+            "volume_ratio_20d": 1.27,
+            "ma5": 46200.0,
+            "ma20": 45949.0,
+            "return_5d_pct": 12.0,
+            "return_20d_pct": 18.0,
+            "return_60d_pct": 24.0,
+            "pct_from_52w_high": -12.0,
+            "prior_20d_high": 55400.0,
+            "close_location_pct": 70.0,
+            "ohlcv_tail": [{"date": "2026-05-15", "close": 47800.0}],
+        }
+        news.return_value = {
+            "status": "OK",
+            "sentiment_score": -0.4,
+            "headlines": [{"title": "한화솔루션, 유상증자 일정 재확정...신주 상장 7월"}],
+            "warnings": [],
+        }
+        flow.return_value = {"valid": False, "warnings": ["test_unavailable"]}
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {
+                    "ticker": "009830.KS",
+                    "stock_name": "한화솔루션",
+                    "Decision Score": 89.5,
+                    "매수가(-2%)": "46,844",
+                    "전일비": 10.78,
+                }
+            ],
+            planner_payload={
+                "decisions": [
+                    {
+                        "ticker": "009830.KS",
+                        "decision": "PRIORITY_WATCHLIST",
+                        "priority_rank": 3,
+                        "loss_risk_score": 26.656,
+                        "relative_rank_score": 68.4743,
+                        "expected_return_1d_pct": 0.01,
+                        "expected_return_3d_pct": 0.02,
+                        "expected_edge_score": 0.14,
+                        "theme_risk": ["EXPECTED_EDGE_PRIORITY_GUARD_SOFT"],
+                    }
+                ]
+            },
+            run_id="RUN-RISK",
+            market="KOSPI",
+            scan_mode="SWING",
+            top_n=5,
+        )
+
+    report = reports[0]
+    readiness = report["trade_plan"]["readiness_analysis"]
+    assert report["signal_label"] == "NO_BUY"
+    assert readiness["final_buy_judgment"]["action"] == "매수 금지"
+    assert report["entry_action"]["judgment"]["action"] == "매수 금지"
+    assert any("특수 리스크" in warning for warning in readiness["warnings"])
+
+
 def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five():
     with (
         patch("modules.top_deep_report._fetch_price_snapshot") as price,

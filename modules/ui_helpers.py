@@ -240,19 +240,45 @@ def build_action_display(row: Dict[str, Any]) -> Dict[str, Any]:
         "ENTRY_TIMING_RISK_HIGH",
         "LOSS_RISK_SOFT_CAP",
         "EXPECTED_EDGE_PRIORITY_GUARD",
+        "EXPECTED_EDGE_PRIORITY_GUARD_SOFT",
         "EXPECTED_EDGE_WATCH_GUARD",
+        "EXPECTED_EDGE_WATCH_GUARD_SOFT",
         "KOSDAQ_SWING_TREND_GUARD",
         "KOSDAQ_SWING_CLEAN_PROB_GUARD",
         "KOSPI_SWING_MOMENTUM_GUARD",
+        "KOSPI_SWING_PRIORITY_GUARD_SOFT",
         "KOSDAQ_SWING_LOW_VOL_GUARD",
     }
+    special_risk_terms = {
+        "유상증자",
+        "신주배정",
+        "신주 상장",
+        "신주상장",
+        "전환사채",
+        "주식관련사채",
+        "CB",
+        "BW",
+        "감사의견",
+        "관리종목",
+        "환기종목",
+        "자본잠식",
+    }
+    trace_text_upper = "\n".join(trace_items).upper()
+    day_change = _parse_percent_value(_coalesce_present(row.get("전일비"), row.get("day_return_pct"), row.get("day_change_pct")))
 
-    if decision in {"AVOID", "REJECT", "SELL", "NO_BUY", "NO_NEW_BUY"} or trace_upper.intersection(hard_markers):
+    if (
+        decision in {"AVOID", "REJECT", "SELL", "NO_BUY", "NO_NEW_BUY"}
+        or trace_upper.intersection(hard_markers)
+        or any(term.upper() in trace_text_upper for term in special_risk_terms)
+    ):
         label = "매수 금지"
         condition = "리스크 해소 전 신규 진입 금지"
     elif is_exception_leader_row(row):
         label = "급등 분리 관찰"
         condition = "Stream B 소액 운용, 손절 엄수"
+    elif day_change is not None and day_change > 8.0:
+        label = "눌림/확인 대기"
+        condition = "당일 급등 추격 금지, 지지·재돌파 확인"
     elif trace_upper.intersection(wait_markers) or (risk_score is not None and risk_score >= 65):
         label = "눌림/확인 대기"
         condition = "지지·재돌파 확인 후 검토"

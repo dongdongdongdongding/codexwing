@@ -3,6 +3,23 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List
 
+MATERIAL_RISK_TERMS = (
+    "유상증자",
+    "신주배정",
+    "신주 상장",
+    "신주상장",
+    "전환사채",
+    "주식관련사채",
+    "CB",
+    "BW",
+    "감사의견",
+    "관리종목",
+    "환기종목",
+    "자본잠식",
+    "횡령",
+    "배임",
+)
+
 
 def _num(value: Any) -> float | None:
     try:
@@ -144,6 +161,7 @@ def _build_quality_score(candidate: Dict[str, Any], prediction: Dict[str, Any], 
 
 
 def _chase_filters(price: Dict[str, Any]) -> List[Dict[str, Any]]:
+    day_change = _num(_first(price, "day_change_pct", "day_return_pct", "전일비"))
     ret5 = _num(price.get("return_5d_pct"))
     ret20 = _num(price.get("return_20d_pct"))
     ret60 = _num(price.get("return_60d_pct"))
@@ -154,6 +172,20 @@ def _chase_filters(price: Dict[str, Any]) -> List[Dict[str, Any]]:
     within_high_5 = high_gap is not None and high_gap >= -5.0
     volume_spike = volume_ratio is not None and volume_ratio >= 2.0
     return [
+        {
+            "code": "DAY_CHANGE_GT_8",
+            "label": "당일 상승률 > 8%",
+            "value": _fmt_pct(day_change),
+            "triggered": bool(day_change is not None and day_change > 8.0),
+            "severity": "high",
+        },
+        {
+            "code": "DAY_CHANGE_GT_12",
+            "label": "당일 상승률 > 12%",
+            "value": _fmt_pct(day_change),
+            "triggered": bool(day_change is not None and day_change > 12.0),
+            "severity": "very_high",
+        },
         {
             "code": "RET_5D_GT_25",
             "label": "최근 5거래일 상승률 > 25%",
@@ -201,6 +233,7 @@ def _build_upside_score(price: Dict[str, Any]) -> Dict[str, Any]:
     ret5 = _num(price.get("return_5d_pct"))
     ret20 = _num(price.get("return_20d_pct"))
     ret60 = _num(price.get("return_60d_pct"))
+    day_change = _num(_first(price, "day_change_pct", "day_return_pct", "전일비"))
     high_gap = _num(price.get("pct_from_52w_high"))
     volume_ratio = _num(price.get("volume_ratio_20d"))
 
@@ -209,6 +242,12 @@ def _build_upside_score(price: Dict[str, Any]) -> Dict[str, Any]:
     if ret60 is None:
         warnings.append("60D 상승률 계산을 위한 가격 이력이 부족")
 
+    if day_change is not None:
+        evidence.append(f"당일 {_fmt_pct(day_change)}")
+        if day_change > 12:
+            score -= 24
+        elif day_change > 8:
+            score -= 16
     if ret5 is not None:
         evidence.append(f"5D {_fmt_pct(ret5)}")
         if ret5 > 25:
@@ -403,6 +442,95 @@ def _final_judgment(
     }
 
 
+def _risk_text_payload(candidate: Dict[str, Any], news: Dict[str, Any]) -> str:
+    chunks: List[str] = []
+    for key in (
+        "stock_name",
+        "name",
+        "reason",
+        "reject_reason",
+        "rationale",
+        "theme_risk",
+        "risk_flags",
+        "news",
+        "news_title",
+        "headline",
+    ):
+        value = candidate.get(key)
+        if isinstance(value, list):
+            chunks.extend(str(item) for item in value)
+        elif isinstance(value, dict):
+            chunks.extend(str(v) for v in value.values())
+        elif value not in (None, ""):
+            chunks.append(str(value))
+    for item in news.get("headlines") or []:
+        if isinstance(item, dict):
+            chunks.append(str(item.get("title") or ""))
+            chunks.append(str(item.get("summary") or ""))
+        else:
+            chunks.append(str(item))
+    return "\n".join(chunks).upper()
+
+
+def _material_risk_flags(candidate: Dict[str, Any], news: Dict[str, Any]) -> List[str]:
+    payload = _risk_text_payload(candidate, news)
+    flags = []
+    for term in MATERIAL_RISK_TERMS:
+        if term.upper() in payload:
+            flags.append(term)
+    return flags
+
+
+def _apply_safety_overrides(
+    judgment: Dict[str, Any],
+    *,
+    candidate: Dict[str, Any],
+    price: Dict[str, Any],
+    prediction: Dict[str, Any],
+    news: Dict[str, Any],
+) -> tuple[Dict[str, Any], List[str]]:
+    overrides: List[str] = []
+    result = dict(judgment if isinstance(judgment, dict) else {})
+    material_flags = _material_risk_flags(candidate, news)
+    if material_flags:
+        result = {
+            "action": "매수 금지",
+            "tone": "danger",
+            "summary": "유상증자/CB/BW/관리종목 등 특수 리스크가 감지되어 신규 진입을 막습니다.",
+        }
+        overrides.append("특수 리스크: " + ", ".join(material_flags[:4]))
+        return result, overrides
+
+    expected_edge = _num(prediction.get("expected_edge_score") or candidate.get("expected_edge_score"))
+    expected_1d = _num(prediction.get("expected_return_1d_pct") or candidate.get("expected_return_1d_pct"))
+    expected_3d = _num(prediction.get("expected_return_3d_pct") or candidate.get("expected_return_3d_pct"))
+    low_edge = expected_edge is not None and expected_edge < 0.5
+    low_returns = (
+        expected_1d is not None
+        and expected_3d is not None
+        and expected_1d < 0.2
+        and expected_3d < 0.3
+    )
+    if low_edge and low_returns and result.get("action") in {"즉시 매수 가능", "조건부 매수 가능"}:
+        result = {
+            "action": "관망",
+            "tone": "neutral",
+            "summary": "스캐너 강도와 별개로 1D/3D 기대수익이 사실상 0에 가까워 즉시 매수 액션에서 제외합니다.",
+        }
+        overrides.append("기대수익/엣지 부족")
+
+    day_change = _num(_first(price, "day_change_pct", "day_return_pct", "전일비"))
+    if day_change is not None and day_change > 8.0 and result.get("action") in {"즉시 매수 가능", "조건부 매수 가능"}:
+        result = {
+            "action": "눌림 대기",
+            "tone": "risk",
+            "summary": "당일 급등 이후 신규 추격보다 눌림 확인이 필요합니다.",
+        }
+        overrides.append("당일 급등 추격 차단")
+
+    return result, overrides
+
+
 def _fmt_price(value: Any) -> str:
     numeric = _num(value)
     if numeric is None:
@@ -592,6 +720,13 @@ def build_entry_readiness_analysis(
     upside = _build_upside_score(price)
     timing = _build_timing_score(price)
     judgment = _final_judgment(quality, upside, timing, loss_risk_score)
+    judgment, safety_overrides = _apply_safety_overrides(
+        judgment,
+        candidate=merged_candidate,
+        price=price,
+        prediction=prediction,
+        news=news,
+    )
     action_plan = _build_data_backed_action_plan(
         price=price,
         trade_plan=trade_plan,
@@ -602,6 +737,7 @@ def build_entry_readiness_analysis(
     for block in (quality, upside, timing):
         warnings.extend([str(item) for item in block.get("warnings", []) if str(item).strip()])
     warnings.extend(action_plan.get("risk_management", {}).get("warnings", []))
+    warnings.extend(safety_overrides)
 
     return {
         "version": "entry_readiness_v1",
@@ -610,6 +746,7 @@ def build_entry_readiness_analysis(
         "timing": timing,
         "chase_risk_level": upside.get("chase_risk_level"),
         "final_buy_judgment": judgment,
+        "safety_overrides": safety_overrides,
         "entry_strategy": action_plan["entry_strategy"],
         "risk_management": action_plan["risk_management"],
         "data_coverage": action_plan["data_coverage"],

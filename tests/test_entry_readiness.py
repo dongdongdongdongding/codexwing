@@ -63,6 +63,33 @@ def test_entry_readiness_allows_valid_pullback_conditionally():
     assert analysis["risk_management"]["data_source"] == "support_resistance_stop_from_price_snapshot"
 
 
+def test_entry_readiness_blocks_material_corporate_action_news():
+    analysis = build_entry_readiness_analysis(
+        candidate={"decision_score": 90.0, "prob_clean": 72.0, "real_trend": "UP", "volume_ratio": 1.4},
+        price={
+            "current_price": 47800.0,
+            "day_change_pct": 10.78,
+            "return_5d_pct": 12.0,
+            "return_20d_pct": 18.0,
+            "return_60d_pct": 24.0,
+            "pct_from_52w_high": -12.0,
+            "volume_ratio_20d": 1.27,
+            "ma5": 46200.0,
+            "ma20": 45949.0,
+            "prior_20d_high": 55400.0,
+            "close_location_pct": 70.0,
+        },
+        prediction={"expected_edge_score": 0.14, "expected_return_1d_pct": 0.01, "expected_return_3d_pct": 0.02},
+        trade_plan={"entry_policy": "open/reference", "target_tp_pct": 19.0, "stop_sl_pct": -3.4, "hold_days": 5},
+        news={"headlines": [{"title": "한화솔루션, 유상증자 일정 재확정...신주 상장 7월"}]},
+        loss_risk_score=26.0,
+    )
+
+    assert analysis["final_buy_judgment"]["action"] == "매수 금지"
+    assert analysis["entry_strategy"]["mode"] == "blocked"
+    assert any("특수 리스크" in warning for warning in analysis["warnings"])
+
+
 def test_entry_readiness_uses_scanner_strength_before_relative_rank_for_quality():
     analysis = build_entry_readiness_analysis(
         candidate={
