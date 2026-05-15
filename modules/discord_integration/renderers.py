@@ -97,6 +97,34 @@ def _load_scan_context_for_run(run_id: str) -> Dict[str, Any]:
     }
 
 
+def _scan_integrity_from_summary(summary: Dict[str, Any]) -> Dict[str, Any]:
+    integrity = summary.get("scan_integrity") if isinstance(summary.get("scan_integrity"), dict) else {}
+    report = integrity.get("report") if isinstance(integrity.get("report"), dict) else {}
+    if report:
+        return report
+    manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
+    report_path = manifest.get("scan_integrity_report")
+    if not report_path:
+        artifact_dir = summary.get("artifact_dir")
+        if artifact_dir:
+            report_path = str(Path(str(artifact_dir)) / "scan_integrity_report.json")
+    payload = _load_json(Path(str(report_path))) if report_path else None
+    return payload if isinstance(payload, dict) else {}
+
+
+def _integrity_status_lines(report: Dict[str, Any]) -> List[str]:
+    if not isinstance(report, dict) or not report:
+        return ["무결성 리포트: 없음"]
+    completeness = _safe_float(report.get("feature_completeness"))
+    completeness_text = "-" if completeness is None else f"{completeness * 100:.1f}%"
+    flags = report.get("quality_flags") if isinstance(report.get("quality_flags"), list) else []
+    return [
+        f"무결성: {completeness_text} · snapshot {report.get('snapshot_count', 0)} / raw {report.get('raw_result_count', 0)}",
+        f"Top5 {report.get('picked_count', 0)} · Exception {report.get('exception_leader_count', 0)} · TopDeep {report.get('top_deep_report_count', '-')}",
+        "flags: " + (", ".join(str(flag) for flag in flags[:5]) if flags else "OK"),
+    ]
+
+
 def _safe_int(value: Any, default: int = 0) -> int:
     try:
         return int(value)
@@ -309,6 +337,7 @@ def build_top_deep_embeds(
     scan_context = _load_scan_context_for_run(latest_run)
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
     market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
+    integrity_report = _scan_integrity_from_summary(scan_summary)
     result_count = _safe_int(scan_summary.get("result_count"), section_counts.get("Top5", 0))
     filtered_count = _safe_int(scan_summary.get("filtered_count"), 0)
     gate_name = str(market_gate.get("gate") or "").upper()
@@ -345,6 +374,7 @@ def build_top_deep_embeds(
             status_lines.append(f"시장 게이트: {gate_msg}")
         if zero_primary:
             status_lines.append("Top5 통과 후보가 없어 Exception Leader는 추가 관찰 후보로만 표시됩니다.")
+        status_lines.extend(_integrity_status_lines(integrity_report))
         fields.append({"name": "운영 상태", "value": "\n".join(status_lines)[:1024], "inline": False})
     for row in rows:
         rank = int(row.get("rank") or 0)
@@ -357,6 +387,8 @@ def build_top_deep_embeds(
                 "inline": False,
             }
         )
+    if safe_offset == 0 and not ticker and not (zero_primary or gate_name):
+        fields.append({"name": "데이터 무결성", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})
     return [
         {
             "title": "Top5 + Exception Leader 자동 정밀분석",
@@ -452,6 +484,9 @@ def build_archive_embed(
         if artifact_runs:
             selected_run = str(artifact_runs[0].get("run_id") or "")
     run_rows = [row for row in rows if str(row.get("run_id") or "") == selected_run] if selected_run else rows
+    scan_context = _load_scan_context_for_run(selected_run) if selected_run else {}
+    scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
+    integrity_report = _scan_integrity_from_summary(scan_summary)
     source = "top_deep"
     if selected_run:
         artifact_rows = _load_archive_rows_from_artifact(selected_run)
@@ -481,6 +516,14 @@ def build_archive_embed(
                     int(row.get("_analysis_section_rank") or row.get("rank") or row.get("Rank") or idx),
                 ),
                 "value": _archive_row_value(row),
+                "inline": False,
+            }
+        )
+    if selected_run:
+        fields.append(
+            {
+                "name": "무결성",
+                "value": "\n".join(_integrity_status_lines(integrity_report))[:1024],
                 "inline": False,
             }
         )
@@ -577,6 +620,8 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     ok = returncode == 0 and bool(summary.get("run_id"))
     scan_context = _load_scan_context_for_run(run_id)
     market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
+    scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
+    integrity_report = _scan_integrity_from_summary(scan_summary or summary)
     result_count = _safe_int(summary.get("result_count"), 0)
     warnings = summary.get("warnings") if isinstance(summary.get("warnings"), list) else []
     warning_text = "\n".join(
@@ -600,6 +645,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     ]
     if gate_msg:
         fields.append({"name": "Market Gate", "value": gate_msg[:1024], "inline": False})
+    fields.append({"name": "Data Integrity", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})
     fields.extend(
         [
             {"name": "Warnings", "value": warning_text[:1024], "inline": False},

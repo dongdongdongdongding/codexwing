@@ -986,6 +986,51 @@ def _load_scan_context_for_run(run_id):
     }
 
 
+def _scan_integrity_report_for_context(scan_context):
+    summary = scan_context.get("summary") if isinstance(scan_context, dict) and isinstance(scan_context.get("summary"), dict) else {}
+    integrity = summary.get("scan_integrity") if isinstance(summary.get("scan_integrity"), dict) else {}
+    report = integrity.get("report") if isinstance(integrity.get("report"), dict) else {}
+    if report:
+        return report
+    manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
+    report_path = manifest.get("scan_integrity_report")
+    if not report_path and summary.get("artifact_dir"):
+        report_path = str(Path(str(summary.get("artifact_dir"))) / "scan_integrity_report.json")
+    if report_path:
+        payload = _load_json_safe(str(report_path))
+        return payload if isinstance(payload, dict) else {}
+    return {}
+
+
+def _render_scan_integrity_panel(report, *, compact=False):
+    if not isinstance(report, dict) or not report:
+        st.info("데이터 무결성 리포트가 아직 없습니다. 다음 스캔부터 자동 생성됩니다.")
+        return
+    completeness = report.get("feature_completeness")
+    try:
+        completeness_pct = float(completeness) * 100.0
+    except Exception:
+        completeness_pct = None
+    flags = report.get("quality_flags") if isinstance(report.get("quality_flags"), list) else []
+    if flags:
+        st.warning("데이터 무결성 경고: " + " / ".join(str(flag) for flag in flags[:5]))
+    elif compact:
+        st.caption("데이터 무결성: OK")
+    else:
+        st.success("데이터 무결성: OK")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Factor 완성도", "-" if completeness_pct is None else f"{completeness_pct:.1f}%")
+    c2.metric("Snapshot", int(report.get("snapshot_count") or 0))
+    c3.metric("Top5", int(report.get("picked_count") or 0))
+    c4.metric("Exception", int(report.get("exception_leader_count") or 0))
+    if not compact:
+        missing = report.get("field_missing_counts") if isinstance(report.get("field_missing_counts"), dict) else {}
+        missing = {k: v for k, v in missing.items() if int(v or 0) > 0}
+        if missing:
+            ordered = sorted(missing.items(), key=lambda item: int(item[1] or 0), reverse=True)
+            st.caption("누락 상위: " + " / ".join(f"{key} {value}" for key, value in ordered[:8]))
+
+
 def _readiness_score_card(title, block):
     block = block if isinstance(block, dict) else {}
     score = block.get("score")
@@ -1202,6 +1247,7 @@ def _render_top_deep_reports_page():
     scan_context = _load_scan_context_for_run(str(selected_run))
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
     market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
+    integrity_report = _scan_integrity_report_for_context(scan_context)
     result_count = int(scan_summary.get("result_count") or section_counts.get("Top5", 0) or 0)
     filtered_count = int(scan_summary.get("filtered_count") or 0)
     gate_msg = str(market_gate.get("msg") or "")
@@ -1218,6 +1264,7 @@ def _render_top_deep_reports_page():
             st.warning(f"시장 게이트: {gate_msg}")
         else:
             st.info(f"시장 게이트: {gate_msg}")
+    _render_scan_integrity_panel(integrity_report, compact=True)
 
     for row in page_df.to_dict("records"):
         price = row.get("price") if isinstance(row.get("price"), dict) else {}
@@ -3443,6 +3490,10 @@ if active_main_tab == "📚 아카이브":
                         _archive_planner_payload,
                         _archive_profile_payload,
                     )
+
+                if _selected_run_id:
+                    _archive_scan_context = _load_scan_context_for_run(str(_selected_run_id))
+                    _render_scan_integrity_panel(_scan_integrity_report_for_context(_archive_scan_context), compact=True)
 
                 # Archive Top must mirror scan-time/planner order for the selected run_id.
                 # Never mix multiple same-day runs or re-rank by decision_score here.

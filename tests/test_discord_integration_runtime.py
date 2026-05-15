@@ -544,7 +544,9 @@ def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_pa
     )
 
     fields = embeds[1]["fields"]
-    assert len(fields) == 15
+    candidate_fields = [field for field in fields if field["name"] != "데이터 무결성"]
+    assert len(candidate_fields) == 15
     assert "종목10" in fields[9]["name"]
     assert "종목15" in fields[14]["name"]
     assert "Exception Leader #5" in fields[14]["value"]
+    assert fields[-1]["name"] == "데이터 무결성"
