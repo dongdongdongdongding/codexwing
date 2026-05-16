@@ -145,7 +145,34 @@ def test_classify_candidates_promotes_75pct_practical_bucket() -> None:
     assert buckets["practical_watch_75pct_non_theme"] == [row]
     assert buckets["practical_candidates_75pct_non_theme"] == [row]
     assert buckets["strong_practical_80pct_non_theme"] == []
+    assert buckets["recent_regime_75pct_non_theme"] == []
     assert buckets["promotion_ready_non_theme"] == []
+
+
+def test_classify_candidates_separates_recent_regime_from_practical() -> None:
+    row = {
+        "profile": "x",
+        "conditions": ["cohort=Top5", "prob_clean<=27.7"],
+        "uses_static_theme": False,
+        "all": {"n": 23, "win_pct": 65.2174, "avg_mfe_pct": 9.0},
+        "train": {"n": 11, "win_pct": 45.4545},
+        "test": {
+            "n": 12,
+            "win_pct": 83.3333,
+            "stop_pct": 16.6667,
+            "median_close_5d_pct": 1.4568,
+            "close_loss_5pct_or_worse_pct": 0.0,
+        },
+        "fold_weighted_win_pct": 83.3334,
+        "fold_min_win_pct": 71.4286,
+    }
+
+    buckets = classify_candidates([row])
+
+    assert buckets["practical_watch_75pct_non_theme"] == [row]
+    assert buckets["practical_candidates_75pct_non_theme"] == []
+    assert buckets["strong_practical_80pct_non_theme"] == []
+    assert buckets["recent_regime_75pct_non_theme"] == [row]
 
 
 def test_condition_to_mask_supports_numeric_band() -> None:

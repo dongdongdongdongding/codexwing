@@ -91,7 +91,6 @@ STRUCTURAL_CATEGORICAL_FEATURES: Tuple[str, ...] = (
     "tier",
     "market_gate",
     "volume_confirmed",
-    "feature_quality",
     "core_trend_flag",
     "explosive_leader_flag",
     "explosive_eligible",
@@ -693,6 +692,7 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
     practical_watch: List[Dict[str, Any]] = []
     practical: List[Dict[str, Any]] = []
     strong_practical: List[Dict[str, Any]] = []
+    recent_regime: List[Dict[str, Any]] = []
     promotion_ready: List[Dict[str, Any]] = []
     release_like: List[Dict[str, Any]] = []
     theme_dependent: List[Dict[str, Any]] = []
@@ -723,6 +723,8 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
             and int(all_m["n"]) >= 18
             and int(train["n"]) >= 8
             and int(test["n"]) >= 8
+            and all_win >= 60.0
+            and train_win >= 55.0
             and test_win >= 75.0
             and test_stop <= 25.0
             and test_loss5 <= 15.0
@@ -736,6 +738,8 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
             and int(all_m["n"]) >= 18
             and int(train["n"]) >= 8
             and int(test["n"]) >= 8
+            and all_win >= 60.0
+            and train_win >= 55.0
             and test_win >= 80.0
             and test_stop <= 20.0
             and test_loss5 <= 10.0
@@ -744,6 +748,20 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
             and min_fold >= 60.0
         ):
             strong_practical.append(row)
+        if (
+            non_theme
+            and int(all_m["n"]) >= 18
+            and int(train["n"]) >= 8
+            and int(test["n"]) >= 8
+            and (all_win < 60.0 or train_win < 55.0)
+            and test_win >= 75.0
+            and test_stop <= 25.0
+            and test_loss5 <= 15.0
+            and test_median_close > 0.0
+            and fold_win >= 65.0
+            and min_fold >= 55.0
+        ):
+            recent_regime.append(row)
         if (
             not row["uses_static_theme"]
             and int(all_m["n"]) >= 18
@@ -786,6 +804,7 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
         "practical_watch_75pct_non_theme": sorted(practical_watch, key=_candidate_sort_key)[:30],
         "practical_candidates_75pct_non_theme": sorted(practical, key=_candidate_sort_key)[:30],
         "strong_practical_80pct_non_theme": sorted(strong_practical, key=_candidate_sort_key)[:30],
+        "recent_regime_75pct_non_theme": sorted(recent_regime, key=_candidate_sort_key)[:30],
         "promotion_ready_non_theme": sorted(promotion_ready, key=_candidate_sort_key)[:30],
         "release_like_non_theme": sorted(release_like, key=_candidate_sort_key)[:30],
         "high_win_small_n_non_theme": sorted(high_win_small_n, key=_candidate_sort_key)[:30],
@@ -906,8 +925,11 @@ def build_report(
         "best_overall": all_rows[:50],
         "notes": [
             "Production scanner ranking is unchanged.",
-            "Practical watch starts at ordered test win >=75%; practical candidates also require stop/loss-tail/fold safeguards.",
+            "Practical watch starts at ordered test win >=75%.",
+            "Practical candidates require ordered test win >=75%, all win >=60%, train win >=55%, and stop/loss-tail/fold safeguards.",
+            "Recent-regime candidates pass the latest test window but fail the all/train stability floor, so they are not promotion candidates.",
             "Strong practical candidates use ordered test win >=80%; promotion-ready remains stricter and requires larger samples.",
+            "feature_quality is excluded from searched categorical conditions because it is a data completeness marker, not a trading signal.",
             "Release-like candidates exclude static primary_theme conditions to avoid hard-coded theme overfit.",
             "Rows with immature no-touch labels are excluded from win-rate denominators.",
             "Daily OHLCV same-bar target/stop order is conservative stop-first via the imported labeler.",
@@ -951,6 +973,11 @@ def write_markdown(report: Dict[str, Any], path: Path) -> None:
     if not report.get("strong_practical_80pct_non_theme"):
         lines.append("- none")
     for row in report.get("strong_practical_80pct_non_theme") or []:
+        lines.append(_candidate_line(row))
+    lines.extend(["", "## Recent-Regime 75pct Non-Theme Diagnostics", ""])
+    if not report.get("recent_regime_75pct_non_theme"):
+        lines.append("- none")
+    for row in report.get("recent_regime_75pct_non_theme") or []:
         lines.append(_candidate_line(row))
     lines.extend(["", "## Promotion-Ready Non-Theme Candidates", ""])
     if not report.get("promotion_ready_non_theme"):

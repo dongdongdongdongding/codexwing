@@ -1,7 +1,7 @@
 # KOSDAQ Ordered Candidate Search
 
 - market: `KOSDAQ`
-- generated_at: `2026-05-16T10:06:21.473995+00:00`
+- generated_at: `2026-05-16T16:10:07.829935+00:00`
 - rows_labeled: `6272`
 - ordered_label_ready_rows: `5838`
 - unique_ticker_dates: `1568`
@@ -55,7 +55,6 @@
 - `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'decision_score<=90.5']: all n=31 win=64.5161%, train n=21 win=57.1429%, test n=10 win=80.0%, test_stop=20.0%, test_med_close=5.3211%, test_min_close=-8.3012%, test_loss5=11.1111%, fold_win=68.4211%, min_fold=63.6364%, avg_mfe=7.643%, avg_mae=-2.8835%, min_mae=-9.5495%
 - `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'decision_score<=69.005']: all n=25 win=64.0%, train n=16 win=56.25%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=4.2194%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=73.3333%, min_fold=71.4286%, avg_mfe=7.9239%, avg_mae=-2.6363%, min_mae=-9.5495%
 - `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'decision_score<=69.005', 'prob_clean<=35.225']: all n=25 win=64.0%, train n=16 win=56.25%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=4.2194%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=73.3333%, min_fold=71.4286%, avg_mfe=7.9239%, avg_mae=-2.6363%, min_mae=-9.5495%
-- `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'decision_score<=69.005', 'alpha_score<=89.1']: all n=24 win=62.5%, train n=15 win=53.3333%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=4.2194%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=71.4286%, min_fold=66.6667%, avg_mfe=7.9795%, avg_mae=-2.5814%, min_mae=-9.5495%
 - `5D_ordered_5v5` ['ml_prob=[10,20.84]', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'alpha_score>=68']: all n=24 win=70.8333%, train n=15 win=66.6667%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=7.6521%, test_min_close=-3.8413%, test_loss5=0.0%, fold_win=69.5652%, min_fold=63.6364%, avg_mfe=8.6836%, avg_mae=-3.4056%, min_mae=-12.4594%
 - `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'alpha_score>=68']: all n=24 win=70.8333%, train n=15 win=66.6667%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=7.6521%, test_min_close=-3.8413%, test_loss5=0.0%, fold_win=69.5652%, min_fold=63.6364%, avg_mfe=8.6836%, avg_mae=-3.4056%, min_mae=-12.4594%
 - `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'alpha_score>=59', 'decision_score<=97.5']: all n=22 win=81.8182%, train n=14 win=85.7143%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=84.2105%, min_fold=70.0%, avg_mfe=8.4091%, avg_mae=-2.8353%, min_mae=-11.354%
@@ -68,12 +67,16 @@
 - `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'decision_score<=90.5', 'prob_clean<=31.8']: all n=27 win=66.6667%, train n=19 win=63.1579%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=70.5883%, min_fold=66.6667%, avg_mfe=6.845%, avg_mae=-3.0002%, min_mae=-9.5495%
 - `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'decision_score<=90.5', 'prob_clean<=35.225']: all n=27 win=66.6667%, train n=19 win=63.1579%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=70.5883%, min_fold=66.6667%, avg_mfe=6.845%, avg_mae=-3.0002%, min_mae=-9.5495%
 - `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'decision_score<=90.5']: all n=29 win=65.5172%, train n=21 win=61.9048%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=70.5883%, min_fold=66.6667%, avg_mfe=6.6054%, avg_mae=-3.3109%, min_mae=-11.354%
-- `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'decision_score<=69.005', 'alpha_score<=83']: all n=23 win=60.8696%, train n=15 win=53.3333%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=3.1178%, test_min_close=-8.3012%, test_loss5=14.2857%, fold_win=69.2308%, min_fold=66.6667%, avg_mfe=7.9807%, avg_mae=-2.5208%, min_mae=-9.5495%
 - `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'decision_score<=90.5', 'alpha_score<=89.1']: all n=28 win=64.2857%, train n=20 win=60.0%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=68.75%, min_fold=66.6667%, avg_mfe=6.606%, avg_mae=-3.2879%, min_mae=-11.354%
 
 ## Strong Practical 80pct Non-Theme
 
 - none
+
+## Recent-Regime 75pct Non-Theme Diagnostics
+
+- `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'decision_score<=69.005', 'alpha_score<=89.1']: all n=24 win=62.5%, train n=15 win=53.3333%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=4.2194%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=71.4286%, min_fold=66.6667%, avg_mfe=7.9795%, avg_mae=-2.5814%, min_mae=-9.5495%
+- `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'decision_score<=69.005', 'alpha_score<=83']: all n=23 win=60.8696%, train n=15 win=53.3333%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=3.1178%, test_min_close=-8.3012%, test_loss5=14.2857%, fold_win=69.2308%, min_fold=66.6667%, avg_mfe=7.9807%, avg_mae=-2.5208%, min_mae=-9.5495%
 
 ## Promotion-Ready Non-Theme Candidates
 
@@ -153,8 +156,11 @@
 ## Notes
 
 - Production scanner ranking is unchanged.
-- Practical watch starts at ordered test win >=75%; practical candidates also require stop/loss-tail/fold safeguards.
+- Practical watch starts at ordered test win >=75%.
+- Practical candidates require ordered test win >=75%, all win >=60%, train win >=55%, and stop/loss-tail/fold safeguards.
+- Recent-regime candidates pass the latest test window but fail the all/train stability floor, so they are not promotion candidates.
 - Strong practical candidates use ordered test win >=80%; promotion-ready remains stricter and requires larger samples.
+- feature_quality is excluded from searched categorical conditions because it is a data completeness marker, not a trading signal.
 - Release-like candidates exclude static primary_theme conditions to avoid hard-coded theme overfit.
 - Rows with immature no-touch labels are excluded from win-rate denominators.
 - Daily OHLCV same-bar target/stop order is conservative stop-first via the imported labeler.
