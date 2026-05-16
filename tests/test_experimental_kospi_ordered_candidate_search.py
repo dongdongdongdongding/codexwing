@@ -122,6 +122,32 @@ def test_classify_candidates_excludes_static_theme_from_release_like() -> None:
     assert buckets["theme_dependent_diagnostics"] == [row]
 
 
+def test_classify_candidates_promotes_75pct_practical_bucket() -> None:
+    row = {
+        "profile": "x",
+        "conditions": ["prob_clean<=31.8"],
+        "uses_static_theme": False,
+        "all": {"n": 24, "win_pct": 76.0, "avg_mfe_pct": 9.0},
+        "train": {"n": 12, "win_pct": 75.0},
+        "test": {
+            "n": 9,
+            "win_pct": 77.7778,
+            "stop_pct": 22.2222,
+            "median_close_5d_pct": 7.0,
+            "close_loss_5pct_or_worse_pct": 0.0,
+        },
+        "fold_weighted_win_pct": 69.5652,
+        "fold_min_win_pct": 63.6364,
+    }
+
+    buckets = classify_candidates([row])
+
+    assert buckets["practical_watch_75pct_non_theme"] == [row]
+    assert buckets["practical_candidates_75pct_non_theme"] == [row]
+    assert buckets["strong_practical_80pct_non_theme"] == []
+    assert buckets["promotion_ready_non_theme"] == []
+
+
 def test_condition_to_mask_supports_numeric_band() -> None:
     df = pd.DataFrame({"prob_clean": [27.9, 28.1, 30.0, 31.8, 31.9]})
 

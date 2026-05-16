@@ -673,67 +673,119 @@ def _candidate_sort_key(row: Dict[str, Any]) -> Tuple[Any, ...]:
     train = row.get("train") or {}
     all_m = row.get("all") or {}
     return (
-        -(float(test.get("win_pct") or 0.0)),
-        -(float(row.get("fold_weighted_win_pct") or 0.0)),
-        float(test.get("stop_pct") or 100.0),
-        float(test.get("close_loss_5pct_or_worse_pct") or 100.0),
-        -(float(test.get("median_close_5d_pct") or -999.0)),
-        -(float(all_m.get("avg_mfe_pct") or 0.0)),
+        -_metric_float(test.get("win_pct"), 0.0),
+        -_metric_float(row.get("fold_weighted_win_pct"), 0.0),
+        _metric_float(test.get("stop_pct"), 100.0),
+        _metric_float(test.get("close_loss_5pct_or_worse_pct"), 100.0),
+        -_metric_float(test.get("median_close_5d_pct"), -999.0),
+        -_metric_float(all_m.get("avg_mfe_pct"), 0.0),
         -(int(test.get("n") or 0)),
-        -(float(train.get("win_pct") or 0.0)),
+        -_metric_float(train.get("win_pct"), 0.0),
     )
 
 
+def _metric_float(value: Any, default: float) -> float:
+    number = _safe_float(value)
+    return default if number is None else float(number)
+
+
 def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
-    release_like: List[Dict[str, Any]] = []
+    practical_watch: List[Dict[str, Any]] = []
+    practical: List[Dict[str, Any]] = []
+    strong_practical: List[Dict[str, Any]] = []
     promotion_ready: List[Dict[str, Any]] = []
+    release_like: List[Dict[str, Any]] = []
     theme_dependent: List[Dict[str, Any]] = []
     high_win_small_n: List[Dict[str, Any]] = []
     for row in rows:
         all_m = row["all"]
         train = row["train"]
         test = row["test"]
-        fold_win = row.get("fold_weighted_win_pct") or 0.0
-        min_fold = row.get("fold_min_win_pct") or 0.0
+        test_win = _metric_float(test.get("win_pct"), 0.0)
+        test_stop = _metric_float(test.get("stop_pct"), 100.0)
+        test_loss5 = _metric_float(test.get("close_loss_5pct_or_worse_pct"), 100.0)
+        test_median_close = _metric_float(test.get("median_close_5d_pct"), -999.0)
+        train_win = _metric_float(train.get("win_pct"), 0.0)
+        all_win = _metric_float(all_m.get("win_pct"), 0.0)
+        fold_win = _metric_float(row.get("fold_weighted_win_pct"), 0.0)
+        min_fold = _metric_float(row.get("fold_min_win_pct"), 0.0)
+        non_theme = not row["uses_static_theme"]
+
+        if (
+            non_theme
+            and int(all_m["n"]) >= 10
+            and int(test["n"]) >= 5
+            and test_win >= 75.0
+        ):
+            practical_watch.append(row)
+        if (
+            non_theme
+            and int(all_m["n"]) >= 18
+            and int(train["n"]) >= 8
+            and int(test["n"]) >= 8
+            and test_win >= 75.0
+            and test_stop <= 25.0
+            and test_loss5 <= 15.0
+            and test_median_close > 0.0
+            and fold_win >= 65.0
+            and min_fold >= 55.0
+        ):
+            practical.append(row)
+        if (
+            non_theme
+            and int(all_m["n"]) >= 18
+            and int(train["n"]) >= 8
+            and int(test["n"]) >= 8
+            and test_win >= 80.0
+            and test_stop <= 20.0
+            and test_loss5 <= 10.0
+            and test_median_close > 0.0
+            and fold_win >= 70.0
+            and min_fold >= 60.0
+        ):
+            strong_practical.append(row)
         if (
             not row["uses_static_theme"]
             and int(all_m["n"]) >= 18
             and int(train["n"]) >= 8
             and int(test["n"]) >= 8
-            and float(all_m["win_pct"] or 0.0) >= 70.0
-            and float(train["win_pct"] or 0.0) >= 65.0
-            and float(test["win_pct"] or 0.0) >= 70.0
-            and float(fold_win or 0.0) >= 65.0
-            and float(min_fold or 0.0) >= 50.0
-            and float(test["stop_pct"] or 100.0) <= 30.0
+            and all_win >= 70.0
+            and train_win >= 65.0
+            and test_win >= 70.0
+            and fold_win >= 65.0
+            and min_fold >= 50.0
+            and test_stop <= 30.0
         ):
             release_like.append(row)
         if (
-            not row["uses_static_theme"]
+            non_theme
             and int(all_m["n"]) >= 30
             and int(train["n"]) >= 12
             and int(test["n"]) >= 12
             and int(row.get("fold_count") or 0) >= 3
-            and float(all_m["win_pct"] or 0.0) >= 70.0
-            and float(train["win_pct"] or 0.0) >= 70.0
-            and float(test["win_pct"] or 0.0) >= 70.0
-            and float(fold_win or 0.0) >= 70.0
-            and float(min_fold or 0.0) >= 60.0
-            and float(test["stop_pct"] or 100.0) <= 15.0
-            and float(test.get("close_loss_5pct_or_worse_pct") or 100.0) <= 10.0
-            and float(test.get("median_close_5d_pct") or -999.0) > 0.0
+            and all_win >= 75.0
+            and train_win >= 75.0
+            and test_win >= 80.0
+            and fold_win >= 75.0
+            and min_fold >= 65.0
+            and test_stop <= 12.0
+            and test_loss5 <= 5.0
+            and test_median_close > 0.0
         ):
             promotion_ready.append(row)
-        if row["uses_static_theme"] and float(test["win_pct"] or 0.0) >= 75.0 and int(test["n"]) >= 5:
+        if row["uses_static_theme"] and test_win >= 75.0 and int(test["n"]) >= 5:
             theme_dependent.append(row)
         if (
-            not row["uses_static_theme"]
+            non_theme
             and int(all_m["n"]) >= 10
-            and float(test["win_pct"] or 0.0) >= 80.0
-            and float(test["stop_pct"] or 100.0) <= 20.0
+            and test_win >= 80.0
+            and test_stop <= 20.0
         ):
             high_win_small_n.append(row)
     return {
+        "practical_watch_75pct_non_theme": sorted(practical_watch, key=_candidate_sort_key)[:30],
+        "practical_candidates_75pct_non_theme": sorted(practical, key=_candidate_sort_key)[:30],
+        "strong_practical_80pct_non_theme": sorted(strong_practical, key=_candidate_sort_key)[:30],
         "promotion_ready_non_theme": sorted(promotion_ready, key=_candidate_sort_key)[:30],
         "release_like_non_theme": sorted(release_like, key=_candidate_sort_key)[:30],
         "high_win_small_n_non_theme": sorted(high_win_small_n, key=_candidate_sort_key)[:30],
@@ -854,6 +906,8 @@ def build_report(
         "best_overall": all_rows[:50],
         "notes": [
             "Production scanner ranking is unchanged.",
+            "Practical watch starts at ordered test win >=75%; practical candidates also require stop/loss-tail/fold safeguards.",
+            "Strong practical candidates use ordered test win >=80%; promotion-ready remains stricter and requires larger samples.",
             "Release-like candidates exclude static primary_theme conditions to avoid hard-coded theme overfit.",
             "Rows with immature no-touch labels are excluded from win-rate denominators.",
             "Daily OHLCV same-bar target/stop order is conservative stop-first via the imported labeler.",
@@ -883,15 +937,30 @@ def write_markdown(report: Dict[str, Any], path: Path) -> None:
             f"test n={metrics['test']['n']} win={metrics['test']['win_pct']}%, "
             f"test_stop={metrics['test']['stop_pct']}%"
         )
-    lines.extend(["", "## Release-Like Non-Theme Candidates", ""])
-    if not report["release_like_non_theme"]:
+    lines.extend(["", "## Practical Watch 75pct Non-Theme", ""])
+    if not report.get("practical_watch_75pct_non_theme"):
         lines.append("- none")
-    for row in report["release_like_non_theme"][:15]:
+    for row in report.get("practical_watch_75pct_non_theme") or []:
+        lines.append(_candidate_line(row))
+    lines.extend(["", "## Practical Candidates 75pct Non-Theme", ""])
+    if not report.get("practical_candidates_75pct_non_theme"):
+        lines.append("- none")
+    for row in report.get("practical_candidates_75pct_non_theme") or []:
+        lines.append(_candidate_line(row))
+    lines.extend(["", "## Strong Practical 80pct Non-Theme", ""])
+    if not report.get("strong_practical_80pct_non_theme"):
+        lines.append("- none")
+    for row in report.get("strong_practical_80pct_non_theme") or []:
         lines.append(_candidate_line(row))
     lines.extend(["", "## Promotion-Ready Non-Theme Candidates", ""])
     if not report.get("promotion_ready_non_theme"):
         lines.append("- none")
     for row in report.get("promotion_ready_non_theme") or []:
+        lines.append(_candidate_line(row))
+    lines.extend(["", "## Release-Like Non-Theme Candidates", ""])
+    if not report["release_like_non_theme"]:
+        lines.append("- none")
+    for row in report["release_like_non_theme"][:15]:
         lines.append(_candidate_line(row))
     lines.extend(["", "## Current Cohort Baseline", ""])
     cohort_report = report.get("baseline_by_profile_cohort") or {}
