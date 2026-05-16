@@ -5,6 +5,7 @@ import pandas as pd
 from multi_agent.tools.experimental_kospi_ordered_candidate_search import (
     OrderedProfile,
     _condition_to_mask,
+    _metrics,
     add_search_columns,
     classify_candidates,
     prepare_profile_rows,
@@ -141,3 +142,27 @@ def test_condition_to_mask_top3_is_inclusive_and_excludes_exception() -> None:
     mask = _condition_to_mask(df, "cohort=Top3")
 
     assert mask.tolist() == [True, True, True, False, False]
+
+
+def test_metrics_include_ordered_tail_distribution() -> None:
+    df = pd.DataFrame(
+        {
+            "ordered_label_ready": [True, True, True],
+            "ordered_win": [True, False, True],
+            "ordered_stop": [False, True, False],
+            "ordered_terminal_status": ["target_before_stop", "stop_before_target", "target_before_stop"],
+            "ordered_mfe_pct": [12.0, 1.0, 9.0],
+            "ordered_mae_pct": [-1.0, -7.0, -2.0],
+            "return_5d_pct": [8.0, -6.0, 3.0],
+        }
+    )
+
+    metrics = _metrics(df, pd.Series([True, True, True]))
+
+    assert metrics["n"] == 3
+    assert metrics["win_pct"] == 66.6667
+    assert metrics["median_close_5d_pct"] == 3.0
+    assert metrics["min_close_5d_pct"] == -6.0
+    assert metrics["max_close_5d_pct"] == 8.0
+    assert metrics["close_loss_5pct_or_worse_pct"] == 33.3333
+    assert metrics["min_mae_pct"] == -7.0

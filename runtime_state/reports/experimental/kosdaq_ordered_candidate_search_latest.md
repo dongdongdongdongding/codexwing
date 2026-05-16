@@ -1,7 +1,7 @@
 # KOSDAQ Ordered Candidate Search
 
 - market: `KOSDAQ`
-- generated_at: `2026-05-14T14:18:19.483864+00:00`
+- generated_at: `2026-05-16T02:50:02.174284+00:00`
 - rows_labeled: `6272`
 - ordered_label_ready_rows: `5838`
 - unique_ticker_dates: `1568`
@@ -16,43 +16,74 @@
 
 ## Release-Like Non-Theme Candidates
 
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'explosive_eligible=1']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'prob_clean<=50']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'decision_score<=97.5']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'core_trend_flag=0']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'ml_prob>=19.285']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.2699%, avg_mae=-2.816%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_edge_score<=2.92']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_1d_pct<=0.9']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'scanner_timeframe_profile=DAILY_PRIMARY_WITH_1H_REFRESH']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_3d_pct<=1.34']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_3d_pct<=1.64']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_1d_pct<=0.71']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_3d_pct<=1.84']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_1d_pct<=0.46']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_1d_pct<=0.25']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
+- `5D_ordered_5v5` ['ml_prob=[10,20.84]', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'alpha_score>=68']: all n=24 win=70.8333%, train n=15 win=66.6667%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=7.6521%, test_min_close=-3.8413%, test_loss5=0.0%, fold_win=69.5652%, min_fold=63.6364%, avg_mfe=8.6836%, avg_mae=-3.4056%, min_mae=-12.4594%
+- `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'alpha_score>=68']: all n=24 win=70.8333%, train n=15 win=66.6667%, test n=9 win=77.7778%, test_stop=22.2222%, test_med_close=7.6521%, test_min_close=-3.8413%, test_loss5=0.0%, fold_win=69.5652%, min_fold=63.6364%, avg_mfe=8.6836%, avg_mae=-3.4056%, min_mae=-12.4594%
+- `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'alpha_score>=59', 'decision_score<=97.5']: all n=22 win=81.8182%, train n=14 win=85.7143%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=84.2105%, min_fold=70.0%, avg_mfe=8.4091%, avg_mae=-2.8353%, min_mae=-11.354%
+- `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'alpha_score>=59', 'prob_clean<=35.225']: all n=24 win=75.0%, train n=16 win=75.0%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=75.0%, min_fold=70.0%, avg_mfe=7.915%, avg_mae=-3.1958%, min_mae=-12.4594%
+- `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'alpha_score>=59', 'prob_clean<=31.8']: all n=22 win=72.7273%, train n=14 win=71.4286%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=72.7273%, min_fold=70.0%, avg_mfe=8.1425%, avg_mae=-3.3065%, min_mae=-12.4594%
+- `5D_ordered_5v5` ['ml_prob<=19.285', 'volume_ratio<=1.23', 'alpha_score>=59']: all n=28 win=71.4286%, train n=20 win=70.0%, test n=8 win=75.0%, test_stop=25.0%, test_med_close=7.6521%, test_min_close=-8.3012%, test_loss5=12.5%, fold_win=72.0%, min_fold=70.0%, avg_mfe=7.6814%, avg_mae=-3.5951%, min_mae=-12.4594%
+- `5D_ordered_5v5` ['ml_prob=[10,20.84]', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'decision_score<=97.5']: all n=25 win=76.0%, train n=14 win=78.5714%, test n=11 win=72.7273%, test_stop=27.2727%, test_med_close=4.2401%, test_min_close=-8.3012%, test_loss5=10.0%, fold_win=78.2609%, min_fold=64.2857%, avg_mfe=9.4663%, avg_mae=-2.4019%, min_mae=-7.888%
+- `5D_ordered_5v5` ['prob_clean=[28.1,31.8]', 'expected_edge_score>=2.92']: all n=20 win=70.0%, train n=9 win=66.6667%, test n=11 win=72.7273%, test_stop=27.2727%, test_med_close=0.5682%, test_min_close=-33.2955%, test_loss5=45.4545%, fold_win=70.0%, min_fold=70.0%, avg_mfe=7.9148%, avg_mae=-3.0521%, min_mae=-15.3727%
+- `5D_ordered_5v5` ['prob_clean=[28.1,31.8]', 'expected_edge_score>=2.92', 'alpha_score>=59']: all n=20 win=70.0%, train n=9 win=66.6667%, test n=11 win=72.7273%, test_stop=27.2727%, test_med_close=0.5682%, test_min_close=-33.2955%, test_loss5=45.4545%, fold_win=70.0%, min_fold=70.0%, avg_mfe=7.9148%, avg_mae=-3.0521%, min_mae=-15.3727%
+
+## Promotion-Ready Non-Theme Candidates
+
+- none
+
+## Current Cohort Baseline
+
+### 5D_ordered_5v5
+| cohort | n | win | stop | med_close5 | min_close5 | max_close5 | close_loss5 | avg_mfe | min_mae |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Top1 | 61 | 47.541 | 47.541 | -0.9342 | -23.3281 | 30.9707 | 26.7857 | 5.5914 | -17.0874 |
+| Top3 | 151 | 50.3311 | 45.0331 | 0.8442 | -33.2955 | 50.3643 | 28.0303 | 6.8051 | -27.957 |
+| Top5 | 227 | 45.815 | 50.6608 | 1.5182 | -33.2955 | 56.9153 | 27.7778 | 6.2821 | -27.957 |
+| Exception Leader | 141 | 56.0284 | 39.0071 | 3.0733 | -34.8118 | 65.653 | 13.4454 | 5.9367 | -19.2557 |
+| Top5+Exception | 368 | 49.7283 | 46.1957 | 1.8622 | -34.8118 | 65.653 | 22.3975 | 6.1498 | -27.957 |
+
+### 5D_ordered_8v5
+| cohort | n | win | stop | med_close5 | min_close5 | max_close5 | close_loss5 | avg_mfe | min_mae |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Top1 | 61 | 27.8689 | 62.2951 | -0.9342 | -23.3281 | 30.9707 | 26.7857 | 6.3914 | -17.0874 |
+| Top3 | 151 | 36.4238 | 53.6424 | 0.8442 | -33.2955 | 50.3643 | 28.0303 | 7.5135 | -27.957 |
+| Top5 | 227 | 32.1586 | 59.0308 | 1.5182 | -33.2955 | 56.9153 | 27.7778 | 6.9808 | -27.957 |
+| Exception Leader | 139 | 42.446 | 43.1655 | 3.0733 | -34.8118 | 65.653 | 13.4454 | 7.2043 | -26.8063 |
+| Top5+Exception | 366 | 36.0656 | 53.0055 | 1.8622 | -34.8118 | 65.653 | 22.3975 | 7.0657 | -27.957 |
+
+### 5D_ordered_10v5
+| cohort | n | win | stop | med_close5 | min_close5 | max_close5 | close_loss5 | avg_mfe | min_mae |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Top1 | 61 | 26.2295 | 62.2951 | -0.9342 | -23.3281 | 30.9707 | 26.7857 | 6.5665 | -17.0874 |
+| Top3 | 151 | 32.4503 | 55.6291 | 0.8442 | -33.2955 | 50.3643 | 28.0303 | 7.745 | -27.957 |
+| Top5 | 227 | 28.6344 | 60.3524 | 1.5182 | -33.2955 | 56.9153 | 27.7778 | 7.3464 | -27.957 |
+| Exception Leader | 137 | 34.3066 | 44.5255 | 3.0733 | -34.8118 | 65.653 | 13.4454 | 7.8161 | -26.8063 |
+| Top5+Exception | 364 | 30.7692 | 54.3956 | 1.8622 | -34.8118 | 65.653 | 22.3975 | 7.5232 | -27.957 |
+
+### 5D_ordered_12v5
+| cohort | n | win | stop | med_close5 | min_close5 | max_close5 | close_loss5 | avg_mfe | min_mae |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Top1 | 61 | 21.3115 | 63.9344 | -0.9342 | -23.3281 | 30.9707 | 26.7857 | 6.9549 | -17.0874 |
+| Top3 | 151 | 26.4901 | 58.9404 | 0.8442 | -33.2955 | 50.3643 | 28.0303 | 8.073 | -27.957 |
+| Top5 | 227 | 23.348 | 62.9956 | 1.5182 | -33.2955 | 56.9153 | 27.7778 | 7.8099 | -27.957 |
+| Exception Leader | 137 | 27.0073 | 46.7153 | 3.0733 | -34.8118 | 65.653 | 13.4454 | 7.968 | -26.8063 |
+| Top5+Exception | 364 | 24.7253 | 56.8681 | 1.8622 | -34.8118 | 65.653 | 22.3975 | 7.8694 | -27.957 |
+
 
 ## Curated Ordered Candidates
 
-- `kosdaq_validated_touch_exception_5v5` `5D_ordered_5v5` ['cohort=Top5', 'trend=UP', 'alpha_score>=90', 'volume_ratio>=2']: all n=5 win=40.0%, train n=1 win=0.0%, test n=4 win=50.0%, test_stop=50.0%, fold_win=50.0%, min_fold=0.0%, avg_mfe=11.8694%, avg_mae=-5.7941%
+- none
 
 ## High-Win Small-N Non-Theme Candidates
 
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_edge_score<=0.21']: all n=17 win=88.2353%, train n=8 win=87.5%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=93.75%, min_fold=87.5%, avg_mfe=10.1961%, avg_mae=-2.6669%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_3d_pct<=0.49']: all n=17 win=88.2353%, train n=8 win=87.5%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=93.75%, min_fold=87.5%, avg_mfe=10.1961%, avg_mae=-2.6669%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_1d_pct<=0.02']: all n=17 win=88.2353%, train n=8 win=87.5%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=93.75%, min_fold=87.5%, avg_mfe=10.1961%, avg_mae=-2.6669%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'explosive_eligible=1']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'prob_clean<=50']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'decision_score<=97.5']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'core_trend_flag=0']: all n=20 win=85.0%, train n=11 win=81.8182%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=89.4737%, min_fold=80.0%, avg_mfe=10.0859%, avg_mae=-2.8729%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'ml_prob>=19.285']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.2699%, avg_mae=-2.816%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_edge_score<=2.92']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_1d_pct<=0.9']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'scanner_timeframe_profile=DAILY_PRIMARY_WITH_1H_REFRESH']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_3d_pct<=1.34']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_3d_pct<=1.64']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
-- `5D_ordered_5v5` ['volume_ratio<=1.23', 'trend=DOWN', 'selection_lane=1d', 'expected_return_1d_pct<=0.71']: all n=19 win=84.2105%, train n=10 win=80.0%, test n=9 win=88.8889%, test_stop=11.1111%, fold_win=88.8889%, min_fold=80.0%, avg_mfe=10.1719%, avg_mae=-3.0455%
+- `5D_ordered_8v5` ['ml_prob>=50', 'volume_ratio>=0.901', 'expected_edge_score<=2.92', 'alpha_score>=77']: all n=35 win=42.8571%, train n=26 win=26.9231%, test n=9 win=88.8889%, test_stop=11.1111%, test_med_close=13.7392%, test_min_close=-8.881%, test_loss5=25.0%, fold_win=41.1765%, min_fold=26.9231%, avg_mfe=8.4753%, avg_mae=-4.0794%, min_mae=-10.1971%
+- `5D_ordered_8v5` ['ml_prob>=50', 'volume_ratio>=0.901', 'expected_edge_score<=2.92', 'alpha_score>=83']: all n=32 win=43.75%, train n=24 win=29.1667%, test n=8 win=87.5%, test_stop=12.5%, test_med_close=13.7392%, test_min_close=-8.881%, test_loss5=25.0%, fold_win=43.75%, min_fold=29.1667%, avg_mfe=8.8739%, avg_mae=-4.003%, min_mae=-10.1971%
+- `5D_ordered_5v5` ['ml_prob>=50', 'whale_score>=79', 'alpha_score>=77', 'decision_score<=90.5']: all n=21 win=71.4286%, train n=8 win=50.0%, test n=13 win=84.6154%, test_stop=15.3846%, test_med_close=-0.287%, test_min_close=-26.8634%, test_loss5=33.3333%, fold_win=70.0%, min_fold=50.0%, avg_mfe=9.6867%, avg_mae=-4.3322%, min_mae=-15.3727%
+- `5D_ordered_8v5` ['ml_prob>=50', 'volume_ratio>=0.825', 'expected_edge_score<=2.92', 'alpha_score>=77']: all n=38 win=44.7368%, train n=26 win=26.9231%, test n=12 win=83.3333%, test_stop=16.6667%, test_med_close=9.7838%, test_min_close=-9.5521%, test_loss5=27.2727%, fold_win=43.2433%, min_fold=26.9231%, avg_mfe=8.6406%, avg_mae=-4.0905%, min_mae=-10.1971%
+- `5D_ordered_8v5` ['ml_prob>=50', 'volume_ratio>=0.825', 'expected_edge_score<=2.92', 'alpha_score>=83']: all n=35 win=45.7143%, train n=24 win=29.1667%, test n=11 win=81.8182%, test_stop=18.1818%, test_med_close=9.7838%, test_min_close=-9.5521%, test_loss5=27.2727%, fold_win=45.7143%, min_fold=29.1667%, avg_mfe=9.0191%, avg_mae=-4.0216%, min_mae=-10.1971%
+- `5D_ordered_5v5` ['ml_prob=[10,20.84]', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'decision_score<=90.5']: all n=18 win=72.2222%, train n=8 win=62.5%, test n=10 win=80.0%, test_stop=20.0%, test_med_close=5.3211%, test_min_close=-8.3012%, test_loss5=11.1111%, fold_win=75.0%, min_fold=63.6364%, avg_mfe=9.9538%, avg_mae=-2.2185%, min_mae=-7.888%
+- `5D_ordered_5v5` ['ml_prob=[10,20.84]', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'alpha_score>=59']: all n=29 win=68.9655%, train n=19 win=63.1579%, test n=10 win=80.0%, test_stop=20.0%, test_med_close=5.3211%, test_min_close=-8.3012%, test_loss5=11.1111%, fold_win=70.3704%, min_fold=66.6667%, avg_mfe=8.3706%, avg_mae=-3.127%, min_mae=-12.4594%
+- `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'alpha_score>=59']: all n=29 win=68.9655%, train n=19 win=63.1579%, test n=10 win=80.0%, test_stop=20.0%, test_med_close=5.3211%, test_min_close=-8.3012%, test_loss5=11.1111%, fold_win=70.3704%, min_fold=66.6667%, avg_mfe=8.3706%, avg_mae=-3.127%, min_mae=-12.4594%
+- `5D_ordered_5v5` ['ml_prob<=20.84', 'volume_ratio<=1.23', 'prob_clean<=31.8', 'decision_score<=90.5']: all n=31 win=64.5161%, train n=21 win=57.1429%, test n=10 win=80.0%, test_stop=20.0%, test_med_close=5.3211%, test_min_close=-8.3012%, test_loss5=11.1111%, fold_win=68.4211%, min_fold=63.6364%, avg_mfe=7.643%, avg_mae=-2.8835%, min_mae=-9.5495%
 
 ## Theme-Dependent Diagnostics
 

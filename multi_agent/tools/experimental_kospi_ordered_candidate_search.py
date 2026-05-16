@@ -30,6 +30,8 @@ from multi_agent.tools.experimental_kospi_ordered_revalidation import label_sele
 
 REPORT_VERSION = "kr_ordered_candidate_search_v2"
 DEFAULT_OUTPUT = PROJECT_ROOT / "runtime_state/reports/experimental/kospi_ordered_candidate_search.json"
+DEFAULT_CACHED_LABELS = PROJECT_ROOT / "runtime_state/reports/experimental/kospi_ordered_candidate_search.rows.csv"
+DEFAULT_KOSDAQ_CACHED_LABELS = PROJECT_ROOT / "runtime_state/reports/experimental/kosdaq_ordered_candidate_search_latest.rows.csv"
 
 
 @dataclass(frozen=True)
@@ -396,16 +398,41 @@ def _metrics(df: pd.DataFrame, mask: pd.Series) -> Dict[str, Any]:
             "avg_mfe_pct": None,
             "avg_mae_pct": None,
             "avg_close_5d_pct": None,
+            "median_mfe_pct": None,
+            "min_mfe_pct": None,
+            "max_mfe_pct": None,
+            "median_mae_pct": None,
+            "min_mae_pct": None,
+            "max_mae_pct": None,
+            "median_close_5d_pct": None,
+            "min_close_5d_pct": None,
+            "max_close_5d_pct": None,
+            "close_loss_5pct_or_worse_pct": None,
+            "close_hit_5pct_or_better_pct": None,
         }
     no_touch = sub.get("ordered_terminal_status", pd.Series("", index=sub.index)).fillna("").astype(str).eq("no_touch")
+    mfe = pd.to_numeric(sub["ordered_mfe_pct"], errors="coerce").dropna()
+    mae = pd.to_numeric(sub["ordered_mae_pct"], errors="coerce").dropna()
+    close_5d = pd.to_numeric(sub.get("return_5d_pct", pd.Series(index=sub.index)), errors="coerce").dropna()
     return {
         "n": n,
         "win_pct": _round(sub["ordered_win"].mean() * 100.0),
         "stop_pct": _round(sub["ordered_stop"].mean() * 100.0),
         "no_touch_pct": _round(no_touch.mean() * 100.0),
-        "avg_mfe_pct": _round(pd.to_numeric(sub["ordered_mfe_pct"], errors="coerce").mean()),
-        "avg_mae_pct": _round(pd.to_numeric(sub["ordered_mae_pct"], errors="coerce").mean()),
-        "avg_close_5d_pct": _round(pd.to_numeric(sub.get("return_5d_pct", pd.Series(index=sub.index)), errors="coerce").mean()),
+        "avg_mfe_pct": _round(mfe.mean()) if len(mfe) else None,
+        "avg_mae_pct": _round(mae.mean()) if len(mae) else None,
+        "avg_close_5d_pct": _round(close_5d.mean()) if len(close_5d) else None,
+        "median_mfe_pct": _round(mfe.median()) if len(mfe) else None,
+        "min_mfe_pct": _round(mfe.min()) if len(mfe) else None,
+        "max_mfe_pct": _round(mfe.max()) if len(mfe) else None,
+        "median_mae_pct": _round(mae.median()) if len(mae) else None,
+        "min_mae_pct": _round(mae.min()) if len(mae) else None,
+        "max_mae_pct": _round(mae.max()) if len(mae) else None,
+        "median_close_5d_pct": _round(close_5d.median()) if len(close_5d) else None,
+        "min_close_5d_pct": _round(close_5d.min()) if len(close_5d) else None,
+        "max_close_5d_pct": _round(close_5d.max()) if len(close_5d) else None,
+        "close_loss_5pct_or_worse_pct": _round(close_5d.le(-5.0).mean() * 100.0) if len(close_5d) else None,
+        "close_hit_5pct_or_better_pct": _round(close_5d.ge(5.0).mean() * 100.0) if len(close_5d) else None,
     }
 
 
@@ -649,6 +676,8 @@ def _candidate_sort_key(row: Dict[str, Any]) -> Tuple[Any, ...]:
         -(float(test.get("win_pct") or 0.0)),
         -(float(row.get("fold_weighted_win_pct") or 0.0)),
         float(test.get("stop_pct") or 100.0),
+        float(test.get("close_loss_5pct_or_worse_pct") or 100.0),
+        -(float(test.get("median_close_5d_pct") or -999.0)),
         -(float(all_m.get("avg_mfe_pct") or 0.0)),
         -(int(test.get("n") or 0)),
         -(float(train.get("win_pct") or 0.0)),
@@ -657,6 +686,7 @@ def _candidate_sort_key(row: Dict[str, Any]) -> Tuple[Any, ...]:
 
 def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
     release_like: List[Dict[str, Any]] = []
+    promotion_ready: List[Dict[str, Any]] = []
     theme_dependent: List[Dict[str, Any]] = []
     high_win_small_n: List[Dict[str, Any]] = []
     for row in rows:
@@ -678,6 +708,22 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
             and float(test["stop_pct"] or 100.0) <= 30.0
         ):
             release_like.append(row)
+        if (
+            not row["uses_static_theme"]
+            and int(all_m["n"]) >= 30
+            and int(train["n"]) >= 12
+            and int(test["n"]) >= 12
+            and int(row.get("fold_count") or 0) >= 3
+            and float(all_m["win_pct"] or 0.0) >= 70.0
+            and float(train["win_pct"] or 0.0) >= 70.0
+            and float(test["win_pct"] or 0.0) >= 70.0
+            and float(fold_win or 0.0) >= 70.0
+            and float(min_fold or 0.0) >= 60.0
+            and float(test["stop_pct"] or 100.0) <= 15.0
+            and float(test.get("close_loss_5pct_or_worse_pct") or 100.0) <= 10.0
+            and float(test.get("median_close_5d_pct") or -999.0) > 0.0
+        ):
+            promotion_ready.append(row)
         if row["uses_static_theme"] and float(test["win_pct"] or 0.0) >= 75.0 and int(test["n"]) >= 5:
             theme_dependent.append(row)
         if (
@@ -688,10 +734,26 @@ def classify_candidates(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[s
         ):
             high_win_small_n.append(row)
     return {
+        "promotion_ready_non_theme": sorted(promotion_ready, key=_candidate_sort_key)[:30],
         "release_like_non_theme": sorted(release_like, key=_candidate_sort_key)[:30],
         "high_win_small_n_non_theme": sorted(high_win_small_n, key=_candidate_sort_key)[:30],
         "theme_dependent_diagnostics": sorted(theme_dependent, key=_candidate_sort_key)[:30],
     }
+
+
+def _cohort_baseline_by_profile(labeled: pd.DataFrame, profiles: Sequence[OrderedProfile]) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    cohort_masks = _decision_masks(labeled)
+    cohorts = ("Top1", "Top3", "Top5", "Exception Leader", "Top5+Exception")
+    out: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    for profile in profiles:
+        profile_mask = labeled["candidate_id"].eq(profile.name)
+        out[profile.name] = {}
+        for cohort in cohorts:
+            cohort_mask = cohort_masks.get(cohort)
+            if cohort_mask is None:
+                continue
+            out[profile.name][cohort] = _metrics(labeled, profile_mask & cohort_mask)
+    return out
 
 
 def build_report(
@@ -781,6 +843,7 @@ def build_report(
             }
             for profile in profiles
         },
+        "baseline_by_profile_cohort": _cohort_baseline_by_profile(labeled, profiles),
         "candidate_counts": {
             "evaluated": len(all_rows),
             "curated": len(curated),
@@ -825,6 +888,38 @@ def write_markdown(report: Dict[str, Any], path: Path) -> None:
         lines.append("- none")
     for row in report["release_like_non_theme"][:15]:
         lines.append(_candidate_line(row))
+    lines.extend(["", "## Promotion-Ready Non-Theme Candidates", ""])
+    if not report.get("promotion_ready_non_theme"):
+        lines.append("- none")
+    for row in report.get("promotion_ready_non_theme") or []:
+        lines.append(_candidate_line(row))
+    lines.extend(["", "## Current Cohort Baseline", ""])
+    cohort_report = report.get("baseline_by_profile_cohort") or {}
+    for profile, cohorts in cohort_report.items():
+        lines.append(f"### {profile}")
+        lines.append("| cohort | n | win | stop | med_close5 | min_close5 | max_close5 | close_loss5 | avg_mfe | min_mae |")
+        lines.append("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+        for cohort, metrics in cohorts.items():
+            lines.append(
+                "| "
+                + " | ".join(
+                    str(value)
+                    for value in (
+                        cohort,
+                        metrics.get("n"),
+                        metrics.get("win_pct"),
+                        metrics.get("stop_pct"),
+                        metrics.get("median_close_5d_pct"),
+                        metrics.get("min_close_5d_pct"),
+                        metrics.get("max_close_5d_pct"),
+                        metrics.get("close_loss_5pct_or_worse_pct"),
+                        metrics.get("avg_mfe_pct"),
+                        metrics.get("min_mae_pct"),
+                    )
+                )
+                + " |"
+            )
+        lines.append("")
     lines.extend(["", "## Curated Ordered Candidates", ""])
     if not report.get("curated_ordered_candidates"):
         lines.append("- none")
@@ -853,8 +948,12 @@ def _candidate_line(row: Dict[str, Any], *, prefix: str = "") -> str:
         f"train n={row['train']['n']} win={row['train']['win_pct']}%, "
         f"test n={row['test']['n']} win={row['test']['win_pct']}%, "
         f"test_stop={row['test']['stop_pct']}%, "
+        f"test_med_close={row['test'].get('median_close_5d_pct')}%, "
+        f"test_min_close={row['test'].get('min_close_5d_pct')}%, "
+        f"test_loss5={row['test'].get('close_loss_5pct_or_worse_pct')}%, "
         f"fold_win={row['fold_weighted_win_pct']}%, min_fold={row['fold_min_win_pct']}%, "
-        f"avg_mfe={row['all']['avg_mfe_pct']}%, avg_mae={row['all']['avg_mae_pct']}%"
+        f"avg_mfe={row['all']['avg_mfe_pct']}%, avg_mae={row['all']['avg_mae_pct']}%, "
+        f"min_mae={row['all'].get('min_mae_pct')}%"
     )
 
 
@@ -873,9 +972,11 @@ def main() -> int:
     parser.add_argument(
         "--cached-labels",
         type=Path,
-        default=PROJECT_ROOT / "runtime_state/reports/experimental/kospi_ordered_candidate_search.rows.csv",
+        default=DEFAULT_CACHED_LABELS,
     )
     args = parser.parse_args()
+    if args.market == "KOSDAQ" and args.cached_labels == DEFAULT_CACHED_LABELS:
+        args.cached_labels = DEFAULT_KOSDAQ_CACHED_LABELS
 
     report, labeled = build_report(
         args.input,
