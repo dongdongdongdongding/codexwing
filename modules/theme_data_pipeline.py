@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -8,7 +9,7 @@ from typing import Any, Dict, Iterable, List
 
 import pandas as pd
 
-from modules.kr_stock_theme_master import get_stock_theme_record, normalize_theme_name
+from modules.kr_stock_theme_master import get_stock_theme_record, load_kr_stock_theme_master, normalize_theme_name
 from modules.live_scan_context import normalize_market_key
 
 try:
@@ -25,6 +26,7 @@ THEME_ID_MAP = {
     "통신/네트워크": "telecom",
     "로봇/자동화": "robotics",
     "친환경/에너지": "eco_energy",
+    "정유/에너지": "oil_energy",
     "조선/해양": "shipbuilding",
     "철강/금속/소재": "steel_materials",
     "건설/부동산": "construction_realestate",
@@ -33,25 +35,46 @@ THEME_ID_MAP = {
     "금융": "finance",
     "IT서비스/플랫폼": "it_platform",
     "방산": "defense",
+    "우주항공/방산": "aerospace_defense",
+    "가상자산/블록체인": "crypto_blockchain",
+    "전자부품/디스플레이": "electronic_components_display",
+    "산업재/기계": "industrial_machinery",
+    "지주/투자": "holding_investment",
+    "운송/물류": "transport_logistics",
+    "교육/출판": "education_publishing",
+    "농업/사료": "agriculture_feed",
+    "제지/포장": "paper_packaging",
+    "섬유/의류": "textile_apparel",
     "unclassified": "unclassified",
 }
 
 THEME_ALIAS_FALLBACK = {
-    "2차전지": ["2차전지", "이차전지", "배터리", "양극재", "음극재", "전해액", "분리막", "리튬", "battery", "lithium", "cathode"],
-    "반도체": ["반도체", "메모리", "HBM", "낸드", "DRAM", "파운드리", "웨이퍼", "패키징", "semiconductor", "chip", "memory", "foundry"],
-    "바이오/헬스케어": ["바이오", "헬스케어", "의약", "치료제", "백신", "진단", "제약", "의료", "biotech", "pharma", "therapeutics", "medical"],
-    "자동차": ["자동차", "차량", "전기차", "모빌리티", "자율주행", "automobile", "vehicle", "ev", "mobility", "autonomous"],
-    "통신/네트워크": ["통신", "네트워크", "5G", "6G", "안테나", "광통신", "telecom", "network", "wireless", "broadband"],
-    "로봇/자동화": ["로봇", "자동화", "스마트팩토리", "협동로봇", "robot", "automation", "factory automation"],
-    "친환경/에너지": ["친환경", "에너지", "태양광", "풍력", "수소", "연료전지", "ESS", "원자력", "전력", "clean energy", "solar", "wind", "hydrogen", "nuclear", "power grid"],
-    "조선/해양": ["조선", "선박", "해양", "LNG선", "shipbuilding", "marine", "offshore", "lng carrier"],
-    "철강/금속/소재": ["철강", "금속", "구리", "알루미늄", "화학", "소재", "steel", "metal", "materials", "copper", "aluminum"],
-    "건설/부동산": ["건설", "부동산", "레미콘", "시멘트", "건자재", "construction", "real estate", "cement", "building products"],
-    "소비재/유통": ["화장품", "식품", "음료", "유통", "면세", "패션", "consumer", "retail", "cosmetics", "beverage", "food"],
-    "게임/콘텐츠/엔터": ["게임", "콘텐츠", "엔터", "영화", "드라마", "웹툰", "game", "gaming", "content", "entertainment", "media"],
-    "금융": ["금융", "은행", "보험", "증권", "캐피탈", "카드", "financial", "bank", "insurance", "brokerage", "capital markets"],
-    "IT서비스/플랫폼": ["IT서비스", "플랫폼", "소프트웨어", "SW", "클라우드", "AI", "인공지능", "보안", "핀테크", "software", "platform", "cloud", "security", "fintech", "data center"],
+    "2차전지": ["2차전지", "이차전지", "배터리", "축전지", "전지", "양극재", "양극활물질", "음극재", "전해액", "분리막", "리튬", "니켈", "코발트", "동박", "battery", "lithium", "cathode"],
+    "반도체": ["반도체", "메모리", "HBM", "낸드", "DRAM", "파운드리", "웨이퍼", "패키징", "프로브카드", "프로브 카드", "Probe Card", "테스트소켓", "테스트 소켓", "Test Socket", "Probe Station", "식각", "증착", "CVD", "LP CVD", "플라즈마", "세정장비", "세정", "Chemical 중앙공급", "C.C.S.S", "클린룸", "semiconductor", "chip", "memory", "foundry"],
+    "바이오/헬스케어": ["바이오", "헬스케어", "의약", "치료제", "백신", "진단", "제약", "의료", "의료기기", "건강기능식품", "실험동물", "세포", "동물용 의약품", "생명과학", "시약", "DNA", "Sequencing", "Microarray", "Mouse", "아목사실린", "시메티딘", "아셀렉스", "안전성평가", "유효성평가", "시판후조사", "알파리퀴드", "유전체", "NGS", "암패널", "Genelix", "Genext", "Geneka", "보툴리눔", "필러", "인사돌", "마데카솔", "메디컬 에스테틱", "CRO", "생물종", "유전적 질병", "방사성동위원소", "척추임플란트", "척추용 임플란트", "전자약", "M-CHECK", "biotech", "pharma", "therapeutics", "medical"],
+    "자동차": ["자동차", "차량", "전기차", "모빌리티", "자율주행", "자동차 부품", "엔진부품", "와이어링 하네스", "연료저장장치", "내장품", "자전거", "automobile", "vehicle", "ev", "mobility", "autonomous"],
+    "통신/네트워크": ["통신", "네트워크", "5G", "6G", "안테나", "광통신", "RF", "기지국", "스위치", "라우터", "Router", "커넥터", "케이블", "전화번호", "콜센터", "고객센터", "광트랜시버", "광다중화장치", "PLC모뎀", "DCU", "내비게이션", "블랙박스", "telecom", "network", "wireless", "broadband"],
+    "로봇/자동화": ["로봇", "자동화", "스마트팩토리", "공작기계", "3D 프린터", "레이저", "감속기", "협동로봇", "물류로봇", "자동화 장비", "robot", "automation", "factory automation"],
+    "친환경/에너지": ["친환경", "에너지", "태양광", "풍력", "수소", "연료전지", "ESS", "원자력", "전력", "전선", "케이블", "보일러", "난방", "히트펌프", "열교환기", "열교환", "변압기", "송배전", "전력기기", "전동기", "발전기", "전자변성기", "변환장치", "clean energy", "solar", "wind", "hydrogen", "nuclear", "power grid"],
+    "정유/에너지": ["정유", "석유", "석유류", "유류", "LPG", "윤활유", "oil refining", "petroleum"],
+    "조선/해양": ["조선", "선박", "해양", "LNG선", "선박엔진", "선박용", "조선기자재", "shipbuilding", "marine", "offshore", "lng carrier"],
+    "철강/금속/소재": ["철강", "금속", "구리", "알루미늄", "알미", "화학", "소재", "합금", "강관", "스테인리스", "비철금속", "도금", "필름", "잉크리본", "인화지", "플라스틱", "합성수지", "파이프", "실란트", "열연박판", "후판", "무늬강판", "Magnet", "Shield Magnet", "필터", "내화", "요업", "세라믹", "페라이트", "벽돌", "몰탈", "화공약품", "안경렌즈", "폴리프로필렌", "수처리응집제", "하이드로겔", "steel", "metal", "materials", "copper", "aluminum"],
+    "건설/부동산": ["건설", "부동산", "레미콘", "시멘트", "건자재", "토목", "수중공사", "준설", "시설물", "콘크리트", "플랜트", "아스팔트", "건축", "실내건축", "창호", "설계", "감리", "합판", "마루", "파티클보드", "우드칩", "목재", "MDF", "바닥재", "construction", "real estate", "cement", "building products"],
+    "소비재/유통": ["화장품", "식품", "음료", "유통", "면세", "패션", "생활용품", "의복", "어묵", "백화점", "리조트", "카지노", "홍삼", "인삼", "가구", "주방", "렌탈", "소파", "유제품", "숙박", "여행", "렌터카", "완구", "레인지후드", "의자", "양돈", "도축", "육계", "삼계", "육가공", "삼계탕", "오리", "와인", "정수기", "온수매트", "가방", "모자", "무점포 소매", "종합 소매", "상품 종합 도매", "도소매", "TV홈쇼핑", "홈쇼핑", "편의점", "프랜차이즈", "곡물가공", "소맥분", "밀가루", "아이스크림", "우유", "치즈", "스낵", "비스킷", "당과", "치킨", "신발", "모피", "조리기", "Jayjun", "Nerdy", "시리얼", "시리얼바", "마스크팩", "면생리대", "은나노스텝", "닥터오렌지", "consumer", "retail", "cosmetics", "beverage", "food"],
+    "게임/콘텐츠/엔터": ["게임", "콘텐츠", "엔터", "영화", "드라마", "웹툰", "영상", "음향", "전시관", "박물관", "엑스포", "반주기", "방송", "캐릭터", "미술품", "경매", "골프", "콘서트", "음반", "음원", "아티스트", "악기", "피아노", "기타", "현악기", "창작 및 예술", "game", "gaming", "content", "entertainment", "media"],
+    "금융": ["금융", "은행", "보험", "증권", "캐피탈", "카드", "신용조회", "채권추심", "신용조사", "기업신용", "ATM", "CD-VAN", "financial", "bank", "insurance", "brokerage", "capital markets"],
+    "IT서비스/플랫폼": ["IT서비스", "플랫폼", "소프트웨어", "SW", "S/W", "H/W", "클라우드", "AI", "인공지능", "보안", "핀테크", "결제", "데이터", "시스템 통합", "온라인투자", "전자칠판", "전자교탁", "솔루션", "TeraStream", "전자상거래", "그룹웨어", "자료관리시스템", "POS", "금전등록기", "인터넷 인프라", "호스팅", "포털", "인터넷연동서비스", "미들웨어", "FXUI", "줌닷컴", "스토리지", "SPSS", "SI", "휴대폰부가서비스", "권리조사", "리서치", "판도라TV", "KM 플레이어", "디지털 사이니지", "키오스크", "software", "platform", "cloud", "security", "fintech", "data center"],
     "방산": ["방산", "미사일", "탄약", "군수", "무기", "defense", "aerospace", "missile", "munition", "weapons"],
+    "우주항공/방산": ["우주", "항공", "위성", "발사체", "항공기", "항공우주", "넥스텍", "추진기관", "aerospace", "satellite", "launch vehicle"],
+    "가상자산/블록체인": ["가상자산", "블록체인", "암호화폐", "비트코인", "토큰증권", "STO", "crypto", "blockchain"],
+    "전자부품/디스플레이": ["전자부품", "전자부품 제조업", "디스플레이", "OLED", "LCD", "FPD", "LED", "터치패널", "PCB", "FPCB", "인쇄회로", "회로기판", "모듈", "광학필름", "BLU", "전구", "형광등", "PC", "모니터", "컴퓨터", "플로터", "셋톱박스", "카메라 윈도우", "휴대폰액세서리", "코리아써", "HTL", "HIL", "RED HOST", "display", "printed circuit board"],
+    "산업재/기계": ["기계", "장비", "특수 목적용 기계", "산업용", "펌프", "압축기", "밸브", "기어", "베어링", "엘리베이터", "공조", "냉동", "자동판매기", "검사 장비", "아스팔트믹싱플랜트", "자동제어반", "모터", "MOTOR", "TIMER", "정밀기기", "측정", "시험", "줄자", "지게차", "인증서비스", "기술검사서비스", "전기전자규격", "계측제어", "고무벨트", "콘베이어벨트", "전자가속기", "정밀금형", "사출품", "industrial machinery"],
+    "지주/투자": ["지주", "투자", "창업투자", "벤처캐피탈", "신기술사업금융", "기업인수목적", "SPAC", "스팩", "회사 본부", "경영 컨설팅", "사업경영", "관리자문", "사모펀드", "PEF", "신탁업", "집합투자업", "venture capital", "holding"],
+    "운송/물류": ["운송", "물류", "해운", "항공운송", "택배", "창고", "포워딩", "logistics", "shipping"],
+    "교육/출판": ["교육", "출판", "학습", "교재", "이러닝", "도서", "학원", "어학원", "온라인강의", "만화단행본", "정기간행물", "education", "publishing"],
+    "농업/사료": ["농업", "사료", "비료", "종자", "농약", "축산", "수산", "조경수", "작물", "고추", "수박", "참외", "오이", "호박", "배추", "살균제", "살충제", "제초제", "토마토", "feed", "fertilizer"],
+    "제지/포장": ["제지", "펄프", "종이", "판지", "골판지", "카톤팩", "포장", "포장재", "인쇄", "다이어리", "paper", "packaging"],
+    "섬유/의류": ["섬유", "의류", "의복", "봉제", "직물", "염색", "신사복", "패션", "textile", "apparel"],
 }
 
 FIELD_WEIGHTS = {
@@ -103,6 +126,50 @@ def _safe_date(value: Any) -> str:
 def _theme_id(theme_name: str) -> str:
     canonical = normalize_theme_name(theme_name)
     return THEME_ID_MAP.get(canonical, canonical.lower().replace("/", "_").replace(" ", "_"))
+
+
+def _kr_name_theme_key(name: Any) -> str:
+    text = re.sub(r"\s+", "", _safe_text(name))
+    if not text:
+        return ""
+    text = re.sub(r"(?:\d+)?우(?:B|C)?(?:\(전환\))?$", "", text)
+    text = re.sub(r"(?:\d+)?우선주$", "", text)
+    return text
+
+
+def _build_kr_name_theme_fallback() -> Dict[str, Dict[str, Any]]:
+    master = load_kr_stock_theme_master()
+    records = master.get("records_by_ticker", {}) if isinstance(master, dict) else {}
+    fallback: Dict[str, Dict[str, Any]] = {}
+    for record in records.values():
+        if not isinstance(record, dict):
+            continue
+        primary = normalize_theme_name(record.get("primary_theme"))
+        if not primary or primary == "unclassified":
+            continue
+        key = _kr_name_theme_key(record.get("stock_name"))
+        if not key:
+            continue
+        current = fallback.get(key)
+        if current and str(current.get("theme_inference_status") or "") == "inferred":
+            continue
+        fallback[key] = record
+    return fallback
+
+
+def _lookup_kr_name_theme_fallback(fallback: Dict[str, Dict[str, Any]], name: Any) -> Dict[str, Any] | None:
+    key = _kr_name_theme_key(name)
+    if not key:
+        return None
+    direct = fallback.get(key)
+    if direct:
+        return direct
+    if len(key) < 4:
+        return None
+    candidates = [(base, record) for base, record in fallback.items() if base.startswith(key) or key.startswith(base)]
+    if len(candidates) != 1:
+        return None
+    return candidates[0][1]
 
 
 def _kr_symbol(code: str, market_scope: str) -> str:
@@ -403,18 +470,32 @@ def _infer_from_official_text(instrument: Dict[str, Any], taxonomy: Dict[str, Di
         score = 0.0
         evidence: List[str] = []
         fields_hit = set()
-        for token in _iter_tokens(theme_row):
-            token_lower = token.lower()
-            if len(token_lower) < 2:
+        tokens = list(_iter_tokens(theme_row))
+        for field_name, text in field_texts.items():
+            if not text:
                 continue
-            for field_name, text in field_texts.items():
-                if not text or token_lower not in text:
+            best_increment = 0.0
+            best_tokens: List[str] = []
+            for token in tokens:
+                token_lower = token.lower()
+                if len(token_lower) < 2 or token_lower not in text:
                     continue
-                score += FIELD_WEIGHTS[field_name] + _best_match_specificity(token, field_name)
-                evidence.append(f"{field_name}:{token}")
-                fields_hit.add(field_name)
-                break
-        if score < 0.92 and not ("official_products" in fields_hit and score >= 0.72):
+                increment = FIELD_WEIGHTS[field_name] + _best_match_specificity(token, field_name)
+                if increment > best_increment:
+                    best_increment = increment
+                    best_tokens = [token]
+                elif increment == best_increment:
+                    best_tokens.append(token)
+            if best_increment <= 0:
+                continue
+            score += best_increment
+            fields_hit.add(field_name)
+            evidence.extend(f"{field_name}:{token}" for token in best_tokens)
+        if (
+            score < 0.92
+            and not ("official_products" in fields_hit and score >= 0.70)
+            and not ("official_industry" in fields_hit and score >= 0.62)
+        ):
             continue
         confidence = min(0.79, 0.38 + (score * 0.22) + (0.06 if len(fields_hit) >= 2 else 0.0))
         matches.append(
@@ -443,6 +524,7 @@ def build_theme_membership_payload(
     instrument_payload = instrument_payload or load_instrument_master_payload(market_key)
     records = instrument_payload.get("records", []) if isinstance(instrument_payload, dict) else []
     taxonomy = _theme_taxonomy()
+    kr_name_theme_fallback = _build_kr_name_theme_fallback() if market_key == "KR" else {}
     membership_records: List[Dict[str, Any]] = []
     primary_source_distribution: Counter[str] = Counter()
     warnings: List[str] = []
@@ -453,7 +535,7 @@ def build_theme_membership_payload(
         symbol = _safe_text(instrument.get("symbol")).upper()
         market_scope = _safe_text(instrument.get("market_scope")).upper()
         best: Dict[str, Dict[str, Any]] = {}
-        source_priority = {"stock_master": 3, "seed_catalog": 2, "official_text_match": 1}
+        source_priority = {"stock_master": 3, "seed_catalog": 2, "stock_master_name_fallback": 2, "official_text_match": 1}
 
         def upsert(row: Dict[str, Any]) -> None:
             theme_name = normalize_theme_name(row.get("theme_name"))
@@ -518,6 +600,41 @@ def build_theme_membership_payload(
                             "evidence": [f"stock_master_secondary:{secondary_theme}"],
                         }
                     )
+
+            if not best:
+                name_fallback = _lookup_kr_name_theme_fallback(kr_name_theme_fallback, instrument.get("name"))
+                if name_fallback:
+                    fallback_primary = normalize_theme_name(name_fallback.get("primary_theme"))
+                    fallback_secondary = [
+                        normalize_theme_name(item)
+                        for item in (name_fallback.get("secondary_themes", []) or [])
+                    ]
+                    if fallback_primary != "unclassified":
+                        upsert(
+                            {
+                                "theme_name": fallback_primary,
+                                "confidence": 0.78,
+                                "theme_source": "stock_master_name_fallback",
+                                "theme_inference_status": "name_fallback",
+                                "reasons": ["preferred_or_variant_name_fallback"],
+                                "evidence": [
+                                    f"name_fallback:{_safe_text(instrument.get('name'))}->{_safe_text(name_fallback.get('stock_name'))}"
+                                ],
+                            }
+                        )
+                    for secondary_theme in fallback_secondary:
+                        if secondary_theme == "unclassified":
+                            continue
+                        upsert(
+                            {
+                                "theme_name": secondary_theme,
+                                "confidence": 0.70,
+                                "theme_source": "stock_master_name_fallback",
+                                "theme_inference_status": "name_fallback",
+                                "reasons": ["preferred_or_variant_name_fallback_secondary"],
+                                "evidence": [f"name_fallback_secondary:{secondary_theme}"],
+                            }
+                        )
 
         for theme_name, theme_row in taxonomy.items():
             ticker_memberships = theme_row.get("ticker_memberships", {})

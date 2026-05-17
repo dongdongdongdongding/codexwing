@@ -66,3 +66,48 @@ def test_load_master_falls_back_to_runtime_membership(monkeypatch, tmp_path):
     assert payload["records_by_ticker"]["005930.KS"]["stock_name"] == "삼성전자"
     assert "123456" not in payload["records_by_ticker"]
     assert "theme_membership" in payload["source_path"] or "KR.json" in payload["source_path"]
+
+
+def test_infers_theme_from_single_official_industry_signal():
+    row = master._normalize_record(
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "market": "KOSPI",
+            "industry": "반도체 제조업",
+            "products": "",
+            "primary_theme": "",
+            "theme_inference_status": "blank",
+        }
+    )
+
+    assert row["primary_theme"] == "반도체"
+    assert row["theme_inference_status"] == "rule_inferred"
+
+
+def test_infers_new_theme_buckets_from_official_products():
+    robot = master._normalize_record(
+        {
+            "ticker": "123450.KQ",
+            "stock_name": "테스트로봇",
+            "market": "KOSDAQ",
+            "industry": "특수 목적용 기계 제조업",
+            "products": "정밀 감속기",
+            "primary_theme": "",
+            "theme_inference_status": "blank",
+        }
+    )
+    investor = master._normalize_record(
+        {
+            "ticker": "123451.KQ",
+            "stock_name": "테스트창투",
+            "market": "KOSDAQ",
+            "industry": "창업투자 및 벤처캐피탈",
+            "products": "",
+            "primary_theme": "",
+            "theme_inference_status": "blank",
+        }
+    )
+
+    assert robot["primary_theme"] == "로봇/자동화"
+    assert investor["primary_theme"] == "지주/투자"

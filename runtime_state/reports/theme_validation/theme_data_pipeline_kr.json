@@ -1,8 +1,8 @@
 {
   "market": "KR",
-  "generated_at": "2026-04-19T07:14:25.362657+00:00",
+  "generated_at": "2026-05-17T11:22:33.233412+00:00",
   "instrument_master_version": "instrument-master::KR::2026-04-19",
-  "theme_membership_version": "theme-membership::KR::2026-04-19",
+  "theme_membership_version": "theme-membership::KR::2026-05-17",
   "instrument_record_count": 2879,
   "membership_record_count": 2879,
   "official_coverage": {
@@ -11,36 +11,48 @@
     "official_products": 2753
   },
   "primary_source_distribution": {
-    "unclassified": 804,
-    "official_text_match": 60,
-    "stock_master": 2014,
-    "seed_catalog": 1
+    "stock_master_name_fallback": 17,
+    "official_text_match": 144,
+    "stock_master": 2718
   },
   "primary_theme_distribution": {
-    "unclassified": 804,
-    "바이오/헬스케어": 362,
-    "철강/금속/소재": 290,
-    "금융": 214,
-    "자동차": 174,
-    "IT서비스/플랫폼": 165,
-    "반도체": 165,
-    "통신/네트워크": 132,
-    "소비재/유통": 128,
-    "건설/부동산": 120,
-    "게임/콘텐츠/엔터": 106,
-    "2차전지": 75,
-    "친환경/에너지": 55,
-    "로봇/자동화": 53,
-    "조선/해양": 28
+    "바이오/헬스케어": 407,
+    "철강/금속/소재": 356,
+    "금융": 244,
+    "소비재/유통": 217,
+    "IT서비스/플랫폼": 194,
+    "자동차": 187,
+    "반도체": 179,
+    "건설/부동산": 163,
+    "통신/네트워크": 147,
+    "산업재/기계": 146,
+    "게임/콘텐츠/엔터": 136,
+    "전자부품/디스플레이": 105,
+    "친환경/에너지": 79,
+    "2차전지": 79,
+    "로봇/자동화": 55
   },
-  "high_conf_primary_ratio": 0.6999,
+  "high_conf_primary_ratio": 0.9441,
   "warnings": [],
   "samples": [
     {
       "symbol": "052960",
       "name": "태양3C",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "철강/금속/소재",
+      "top_membership": {
+        "theme_id": "steel_materials",
+        "theme_name": "철강/금속/소재",
+        "confidence": 0.78,
+        "theme_source": "stock_master_name_fallback",
+        "theme_inference_status": "name_fallback",
+        "reasons": [
+          "preferred_or_variant_name_fallback"
+        ],
+        "evidence": [
+          "name_fallback:태양3C->태양"
+        ],
+        "driver_categories": []
+      }
     },
     {
       "symbol": "059180",
@@ -70,14 +82,16 @@
       "top_membership": {
         "theme_id": "bio",
         "theme_name": "바이오/헬스케어",
-        "confidence": 0.688,
+        "confidence": 0.534,
         "theme_source": "official_text_match",
         "theme_inference_status": "official_text_match",
         "reasons": [
+          "official_products:시약",
           "official_products:의약",
           "official_products:진단"
         ],
         "evidence": [
+          "official_products:시약",
           "official_products:의약",
           "official_products:진단"
         ],
@@ -91,44 +105,154 @@
     {
       "symbol": "076340",
       "name": "지에이이노더스",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "건설/부동산",
+      "top_membership": {
+        "theme_id": "construction_realestate",
+        "theme_name": "건설/부동산",
+        "confidence": 0.73,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_industry:시설물",
+          "official_products:수중공사"
+        ],
+        "evidence": [
+          "official_industry:시설물",
+          "official_products:수중공사"
+        ],
+        "driver_categories": []
+      }
     },
     {
       "symbol": "086220",
       "name": "광동헬스바이오",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "소비재/유통",
+      "top_membership": {
+        "theme_id": "consumer_retail",
+        "theme_name": "소비재/유통",
+        "confidence": 0.704,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_industry:식품",
+          "official_products:식품"
+        ],
+        "evidence": [
+          "official_industry:식품",
+          "official_products:식품"
+        ],
+        "driver_categories": []
+      }
     },
     {
       "symbol": "092590",
       "name": "럭스피아",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "전자부품/디스플레이",
+      "top_membership": {
+        "theme_id": "electronic_components_display",
+        "theme_name": "전자부품/디스플레이",
+        "confidence": 0.534,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_products:LED",
+          "official_products:모듈"
+        ],
+        "evidence": [
+          "official_products:LED",
+          "official_products:모듈"
+        ],
+        "driver_categories": []
+      }
     },
     {
       "symbol": "093510",
       "name": "엔지브이아이",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "자동차",
+      "top_membership": {
+        "theme_id": "automobile",
+        "theme_name": "자동차",
+        "confidence": 0.73,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_industry:자동차",
+          "official_products:연료저장장치"
+        ],
+        "evidence": [
+          "official_industry:자동차",
+          "official_products:연료저장장치"
+        ],
+        "driver_categories": []
+      }
     },
     {
       "symbol": "102950",
       "name": "아하",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "IT서비스/플랫폼",
+      "top_membership": {
+        "theme_id": "it_platform",
+        "theme_name": "IT서비스/플랫폼",
+        "confidence": 0.56,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_products:전자교탁",
+          "official_products:전자칠판"
+        ],
+        "evidence": [
+          "official_products:전자교탁",
+          "official_products:전자칠판"
+        ],
+        "driver_categories": [
+          "ECONOMY",
+          "LIQUIDITY",
+          "EARNINGS",
+          "RATES"
+        ]
+      }
     },
     {
       "symbol": "103660",
       "name": "씨앗",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "철강/금속/소재",
+      "top_membership": {
+        "theme_id": "steel_materials",
+        "theme_name": "철강/금속/소재",
+        "confidence": 0.73,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_industry:화학",
+          "official_products:잉크리본"
+        ],
+        "evidence": [
+          "official_industry:화학",
+          "official_products:잉크리본"
+        ],
+        "driver_categories": []
+      }
     },
     {
       "symbol": "112190",
       "name": "KC산업",
-      "primary_theme": "unclassified",
-      "top_membership": {}
+      "primary_theme": "건설/부동산",
+      "top_membership": {
+        "theme_id": "construction_realestate",
+        "theme_name": "건설/부동산",
+        "confidence": 0.73,
+        "theme_source": "official_text_match",
+        "theme_inference_status": "official_text_match",
+        "reasons": [
+          "official_industry:시멘트",
+          "official_products:콘크리트"
+        ],
+        "evidence": [
+          "official_industry:시멘트",
+          "official_products:콘크리트"
+        ],
+        "driver_categories": []
+      }
     }
   ]
 }

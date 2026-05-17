@@ -84,6 +84,33 @@ class ThemeMembershipBuilderTests(unittest.TestCase):
         self.assertEqual(row["memberships"][0]["theme_source"], "stock_master")
         self.assertGreaterEqual(row["memberships"][0]["confidence"], 0.88)
 
+    @patch("modules.theme_data_pipeline.get_stock_theme_record")
+    def test_build_theme_membership_infers_from_official_products_when_master_is_blank(self, get_stock_theme_record_mock):
+        get_stock_theme_record_mock.return_value = {}
+        instrument_payload = {
+            "version": "instrument-master::KR::test",
+            "market": "KR",
+            "records": [
+                {
+                    "symbol": "123450.KQ",
+                    "name": "테스트프로브",
+                    "market_scope": "KOSDAQ",
+                    "official_sector": "",
+                    "official_industry": "전자부품 제조업",
+                    "official_products": "반도체 프로브카드",
+                    "industry_code": "",
+                    "classification_source": "FDR_KRX_DESC",
+                }
+            ],
+        }
+
+        payload = build_theme_membership_payload("KR", instrument_payload=instrument_payload)
+        row = payload["records"][0]
+
+        self.assertEqual(row["primary_theme"], "반도체")
+        self.assertEqual(row["memberships"][0]["theme_source"], "official_text_match")
+        self.assertIn("official_products:프로브카드", row["memberships"][0]["evidence"])
+
     def test_build_catalog_from_membership_payload_groups_tickers_by_theme(self):
         payload = {
             "version": "theme-membership::KR::test",
