@@ -9,9 +9,10 @@ def test_classify_signal_sections_covers_shadow_top5_and_exception():
         "ticker": "000001.KS",
         "market": "KOSPI",
         "priority_rank": "2",
-        "prob_clean": "30.0",
-        "decision_score": "101",
-        "explosive_leader_flag": "0",
+        "prob_clean": "36.0",
+        "alpha_score": "70.0",
+        "theme_day_avg_alpha_score": "75.0",
+        "kr_universe_role": "CORE_TREND",
     }
     top5 = {"ticker": "000002.KS", "market": "KOSPI", "priority_rank": "5"}
     exception = {"ticker": "000003.KQ", "market": "KOSDAQ", "decision": "EXCEPTION_LEADER"}
@@ -27,9 +28,10 @@ def test_build_section_performance_metrics_records_horizons():
             "ticker": "000001.KS",
             "market": "KOSPI",
             "priority_rank": "2",
-            "prob_clean": "30.0",
-            "decision_score": "101",
-            "explosive_leader_flag": "0",
+            "prob_clean": "36.0",
+            "alpha_score": "70.0",
+            "theme_day_avg_alpha_score": "75.0",
+            "kr_universe_role": "CORE_TREND",
             "return_1d_pct": "1.0",
             "return_3d_pct": "-2.0",
             "return_5d_pct": "4.0",

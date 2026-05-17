@@ -329,22 +329,31 @@ def is_kospi_ordered_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     """Current KOSPI ordered shadow gate.
 
     Display-only gate from the internal ordered OHLCV testbed:
-    Top3, non-exception, prob_clean 28.1-31.8, decision_score>=100,
-    explosive_leader_flag=0.
+    prob_clean>=35.5, alpha_score>=67, same-day theme avg alpha<=81,
+    CORE_TREND role. This is a shadow-only display gate; it does not replace
+    the production scanner ranking.
     """
     if not isinstance(rec, dict) or _row_market(rec) != "KOSPI" or is_exception_leader_row(rec):
         return False
-    rank = _row_float(rec, "priority_rank", "Rank")
     prob_clean = _row_float(rec, "prob_clean", "_prob_clean", "정밀확률", "Clean")
-    decision_score = _row_float(rec, "decision_score", "Decision Score", "score")
+    alpha = _row_float(rec, "alpha_score", "Alpha", "종합점수")
+    theme_avg_alpha = _row_float(
+        rec,
+        "theme_day_avg_alpha_score",
+        "_theme_day_avg_alpha_score",
+        "display_theme_day_avg_alpha_score",
+    )
+    role = _row_text(rec, "kr_universe_role", "KR Universe Role").upper()
+    core_flag = _row_text(rec, "core_trend_flag", "Core Trend Flag").lower()
+    is_core_trend = role == "CORE_TREND" or core_flag in {"1", "true", "yes", "on"}
     return (
-        rank is not None
-        and 1 <= rank <= 3
-        and prob_clean is not None
-        and 28.1 <= prob_clean <= 31.8
-        and decision_score is not None
-        and decision_score >= 100.0
-        and _row_bool_false(rec, "explosive_leader_flag")
+        prob_clean is not None
+        and prob_clean >= 35.5
+        and alpha is not None
+        and alpha >= 67.0
+        and theme_avg_alpha is not None
+        and theme_avg_alpha <= 81.0
+        and is_core_trend
     )
 
 
@@ -428,6 +437,7 @@ def build_kr_shadow_gate_records(
     without silently changing the scanner engine.
     """
     source_records = enrich_signal_rows_with_planner_trace(records or [], planner_payload) if planner_payload else (records or [])
+    source_records = _attach_display_theme_day_alpha(source_records)
     sorted_rows = sort_signal_rows_by_planner_rank(source_records, planner_payload)
     limit_n = max(int(limit or 0), 0)
 
@@ -462,9 +472,9 @@ def build_kr_shadow_gate_records(
         gate={
             "label": "KOSPI ordered 관찰",
             "profile": "5D_ordered_10v5",
-            "conditions": "Top3 · prob_clean 28.1-31.8 · decision_score>=100 · explosive=0",
-            "metrics": "n=19 · win 73.7% · stop 15.8% · test win 77.8%",
-            "note": "+10% runner shadow gate, 운영 랭킹 교체 아님",
+            "conditions": "prob_clean>=35.5 · alpha>=67 · CORE_TREND · 테마평균 alpha<=81",
+            "metrics": "n=24 · win 70.8% · test win 87.5% · stop 12.5% · loss5 0%",
+            "note": "최신 테마 보정 후 +10% shadow gate, 운영 랭킹 교체 아님",
         },
     )
     return {
@@ -472,6 +482,42 @@ def build_kr_shadow_gate_records(
         "kospi": kospi,
         "combined": kosdaq + kospi,
     }
+
+
+def _attach_display_theme_day_alpha(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Attach same-scan theme alpha averages when storage rows do not have them.
+
+    The KOSPI ordered shadow gate was validated with dynamic same-day theme
+    features. Live scan rows already carry primary_theme and alpha_score, but
+    not always the precomputed theme aggregate, so compute a display-only
+    equivalent over the rows visible in the current scan/archive payload.
+    """
+    rows = [dict(row) for row in records or [] if isinstance(row, dict)]
+    theme_alpha: Dict[str, List[float]] = {}
+    for row in rows:
+        if _row_market(row) != "KOSPI":
+            continue
+        theme = _row_text(row, "primary_theme", "테마", "theme").strip()
+        if not theme or theme.lower() in {"nan", "none", "null", "unclassified", "unknown"}:
+            continue
+        alpha = _row_float(row, "alpha_score", "Alpha", "종합점수")
+        if alpha is None:
+            continue
+        theme_alpha.setdefault(theme, []).append(alpha)
+    averages = {
+        theme: sum(values) / len(values)
+        for theme, values in theme_alpha.items()
+        if values
+    }
+    if not averages:
+        return rows
+    for row in rows:
+        if _row_float(row, "theme_day_avg_alpha_score", "_theme_day_avg_alpha_score") is not None:
+            continue
+        theme = _row_text(row, "primary_theme", "테마", "theme").strip()
+        if theme in averages:
+            row["_theme_day_avg_alpha_score"] = round(averages[theme], 2)
+    return rows
 
 
 def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:

@@ -8,6 +8,7 @@ from multi_agent.tools.experimental_kospi_ordered_candidate_search import (
     _metrics,
     add_dynamic_theme_day_features,
     add_search_columns,
+    apply_latest_kr_theme_membership,
     classify_candidates,
     prepare_profile_rows,
 )
@@ -157,6 +158,35 @@ def test_add_dynamic_theme_day_features_uses_same_day_theme_peers() -> None:
     assert telecom["theme_day_strength_rank"] == 1.0
     assert telecom["theme_day_strength_bucket"] == "THEME_TOP3"
     assert finance["theme_day_strength_rank"] == 2.0
+
+
+def test_apply_latest_kr_theme_membership_refreshes_stale_archive_theme(monkeypatch) -> None:
+    payload = {
+        "records": [
+            {
+                "symbol": "000001.KS",
+                "primary_theme": "반도체",
+                "memberships": [{"theme_source": "stock_master"}],
+            }
+        ]
+    }
+    monkeypatch.setattr(
+        "multi_agent.tools.experimental_kospi_ordered_candidate_search.load_theme_membership_payload",
+        lambda market: payload,
+    )
+    df = pd.DataFrame(
+        [
+            {"ticker": "000001.KS", "primary_theme": "unclassified"},
+            {"ticker": "000002.KS", "primary_theme": "금융"},
+        ]
+    )
+
+    out = apply_latest_kr_theme_membership(df)
+
+    assert out.loc[0, "primary_theme"] == "반도체"
+    assert bool(out.loc[0, "theme_membership_refreshed"]) is True
+    assert out.loc[0, "theme_membership_source"] == "stock_master"
+    assert out.loc[1, "primary_theme"] == "금융"
 
 
 def test_classify_candidates_excludes_static_theme_from_release_like() -> None:

@@ -26,6 +26,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from multi_agent.tools.experimental_admission_cycle import DEFAULT_INPUT, _decision_masks, _load_dataset
 from multi_agent.tools.experimental_kospi_admission_robust_search import _parse_condition
 from multi_agent.tools.experimental_kospi_ordered_revalidation import label_selected_rows
+from modules.theme_data_pipeline import load_theme_membership_payload
 
 
 REPORT_VERSION = "kr_ordered_candidate_search_v2"
@@ -187,6 +188,18 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
         "note": "Highest small-sample balance; diagnostic until more rows arrive.",
     },
     {
+        "rule_id": "kospi_refreshed_theme_core_prob_alpha_10v5",
+        "profile": "5D_ordered_10v5",
+        "conditions": [
+            "prob_clean>=35.5",
+            "theme_day_avg_alpha_score<=81",
+            "kr_universe_role=CORE_TREND",
+            "alpha_score>=67",
+        ],
+        "markets": ["KOSPI"],
+        "note": "Latest-theme refresh candidate: test win 87.5%, stop 12.5%, test loss5 0%; shadow-only until larger sample.",
+    },
+    {
         "rule_id": "kospi_stable_top1_expected_edge_8v4",
         "profile": "5D_ordered_8v4",
         "conditions": ["cohort=Top1", "expected_edge_score>=2.23"],
@@ -327,6 +340,7 @@ def prepare_profile_rows(
 
 def add_search_columns(labeled: pd.DataFrame) -> pd.DataFrame:
     out = labeled.copy()
+    out = apply_latest_kr_theme_membership(out)
     out = add_dynamic_theme_day_features(out)
     cohort_masks = _decision_masks(out)
     out["cohort"] = "Other"
@@ -341,6 +355,59 @@ def add_search_columns(labeled: pd.DataFrame) -> pd.DataFrame:
     out.loc[no_touch & bars.lt(horizon), "ordered_label_ready"] = False
     out["ordered_win"] = out["ordered_target_before_stop"].eq(True) & out["ordered_label_ready"]
     out["ordered_stop"] = out["ordered_stop_before_target"].eq(True) & out["ordered_label_ready"]
+    return out
+
+
+def _normalize_symbol_key(value: Any) -> str:
+    text = str(value or "").strip().upper()
+    if not text or text in {"NAN", "NONE", "NULL"}:
+        return ""
+    return text
+
+
+def _kr_theme_membership_map() -> Dict[str, Dict[str, Any]]:
+    payload = load_theme_membership_payload("KR")
+    rows = payload.get("records", []) if isinstance(payload, dict) else []
+    out: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        symbol = _normalize_symbol_key(row.get("symbol"))
+        primary = str(row.get("primary_theme") or "").strip()
+        if not symbol or not primary or primary.lower() in {"unclassified", "unknown", "nan", "none"}:
+            continue
+        out[symbol] = row
+    return out
+
+
+def apply_latest_kr_theme_membership(labeled: pd.DataFrame) -> pd.DataFrame:
+    """Refresh stale archive theme labels from the KR membership artifact."""
+    out = labeled.copy()
+    if "ticker" not in out.columns:
+        return out
+    theme_map = _kr_theme_membership_map()
+    if not theme_map:
+        return out
+
+    ticker_key = out["ticker"].map(_normalize_symbol_key)
+    current = out.get("primary_theme", pd.Series("", index=out.index)).fillna("").astype(str).str.strip()
+    current_bad = current.eq("") | current.str.lower().isin({"unclassified", "unknown", "nan", "none", "null"})
+    refreshed = ticker_key.map(lambda key: str(theme_map.get(key, {}).get("primary_theme") or "").strip())
+    has_refreshed = refreshed.ne("") & ~refreshed.str.lower().isin({"unclassified", "unknown", "nan", "none", "null"})
+    changed = has_refreshed & (current_bad | current.ne(refreshed))
+    if not bool(changed.any()):
+        return out
+
+    out["primary_theme_archive"] = current
+    out.loc[changed, "primary_theme"] = refreshed.loc[changed]
+    out["theme_membership_refreshed"] = changed
+    out["theme_membership_source"] = ticker_key.map(
+        lambda key: (
+            ((theme_map.get(key, {}).get("memberships") or [{}])[0].get("theme_source"))
+            if theme_map.get(key)
+            else ""
+        )
+    )
     return out
 
 
@@ -485,6 +552,29 @@ def _feature_coverage_report(df: pd.DataFrame, features: Sequence[str] = FLOW_CO
             "coverage_pct": _round((non_empty.mean() * 100.0) if total else 0.0),
         }
     return {"unique_ticker_dates": total, "features": rows}
+
+
+def _theme_refresh_report(df: pd.DataFrame) -> Dict[str, Any]:
+    total = int(len(df))
+    refreshed = df.get("theme_membership_refreshed", pd.Series(False, index=df.index)).fillna(False).astype(bool)
+    primary = df.get("primary_theme", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
+    unclassified = primary.eq("") | primary.str.lower().isin({"unclassified", "unknown", "nan", "none", "null"})
+    source_counts = (
+        df.get("theme_membership_source", pd.Series("", index=df.index))
+        .fillna("")
+        .astype(str)
+        .replace("", "not_refreshed")
+        .value_counts()
+        .head(12)
+        .to_dict()
+    )
+    return {
+        "rows": total,
+        "refreshed_rows": int(refreshed.sum()),
+        "refreshed_pct": _round((refreshed.mean() * 100.0) if total else 0.0),
+        "unclassified_rows_after_refresh": int(unclassified.sum()),
+        "primary_source_distribution": source_counts,
+    }
 
 
 def _mask_for_candidate_row(df: pd.DataFrame, row: Dict[str, Any]) -> pd.Series | None:
@@ -1087,13 +1177,9 @@ def build_report(
         df = _load_dataset(input_path)
         profile_rows = prepare_profile_rows(df, profiles, market=market)
         labeled = label_selected_rows(profile_rows)
-        labeled = add_search_columns(labeled)
         cached_labels_path.parent.mkdir(parents=True, exist_ok=True)
         labeled.to_csv(cached_labels_path, index=False)
-    if "ordered_label_ready" not in labeled.columns:
-        labeled = add_search_columns(labeled)
-    elif "theme_day_strength_score" not in labeled.columns:
-        labeled = add_dynamic_theme_day_features(labeled)
+    labeled = add_search_columns(labeled)
     labeled["trade_date"] = labeled["trade_date"].fillna("").astype(str)
     days = sorted(labeled["trade_date"].dropna().astype(str).unique().tolist())
     split_day = days[max(1, min(len(days) - 1, int(len(days) * 0.58)))] if len(days) >= 3 else None
@@ -1153,6 +1239,7 @@ def build_report(
             "static_theme_candidates_are_diagnostic_only": True,
         },
         "feature_coverage": _feature_coverage_report(labeled),
+        "theme_refresh": _theme_refresh_report(labeled),
         "baseline_by_profile": {
             profile.name: {
                 "all": _metrics(labeled, labeled["candidate_id"].eq(profile.name)),
@@ -1216,6 +1303,12 @@ def write_markdown(report: Dict[str, Any], path: Path) -> None:
             f"- `{name}`: non_empty={row.get('non_empty')} "
             f"coverage={row.get('coverage_pct')}%"
         )
+    theme_refresh = report.get("theme_refresh") or {}
+    lines.extend(["", "## Theme Refresh", ""])
+    lines.append(f"- refreshed_rows: `{theme_refresh.get('refreshed_rows')}` / `{theme_refresh.get('rows')}`")
+    lines.append(f"- refreshed_pct: `{theme_refresh.get('refreshed_pct')}`")
+    lines.append(f"- unclassified_rows_after_refresh: `{theme_refresh.get('unclassified_rows_after_refresh')}`")
+    lines.append(f"- primary_source_distribution: `{theme_refresh.get('primary_source_distribution')}`")
     lines.extend(["", "## Practical Watch 75pct Non-Theme", ""])
     if not report.get("practical_watch_75pct_non_theme"):
         lines.append("- none")
@@ -1362,8 +1455,7 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     write_markdown(report, args.output.with_suffix(".md"))
-    if not args.cached_labels.exists():
-        labeled.to_csv(args.cached_labels, index=False)
+    labeled.to_csv(args.cached_labels, index=False)
     print(
         json.dumps(
             {
