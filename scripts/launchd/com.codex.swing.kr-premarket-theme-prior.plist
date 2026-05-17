@@ -4,7 +4,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.codex.swing.kr-daily-auto-scan</string>
+  <string>com.codex.swing.kr-premarket-theme-prior</string>
   <key>ProgramArguments</key>
   <array>
     <string>/Users/dongdong/Projects/codex_swing/swing-main/scripts/run_kr_daily_auto_scans.sh</string>
@@ -12,18 +12,18 @@
   <key>EnvironmentVariables</key>
   <dict>
     <key>AG_KR_DAILY_PHASE</key>
-    <string>confirmed</string>
+    <string>premarket</string>
   </dict>
   <key>StartCalendarInterval</key>
   <dict>
     <key>Hour</key>
-    <integer>9</integer>
+    <integer>8</integer>
     <key>Minute</key>
-    <integer>35</integer>
+    <integer>20</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_daily_auto_scan.out.log</string>
+  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_premarket_theme_prior.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_daily_auto_scan.err.log</string>
+  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_premarket_theme_prior.err.log</string>
 </dict>
 </plist>

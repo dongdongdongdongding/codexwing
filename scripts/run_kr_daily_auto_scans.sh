@@ -12,5 +12,6 @@ export DISCORD_DRY_RUN="${DISCORD_DRY_RUN:-0}"
 export DISCORD_ENABLE_SCAN_EXECUTION="${DISCORD_ENABLE_SCAN_EXECUTION:-1}"
 export AG_TOP_DEEP_N="${AG_TOP_DEEP_N:-10}"
 export AG_TOP_DEEP_WRITE_DB="${AG_TOP_DEEP_WRITE_DB:-1}"
+export AG_KR_DAILY_PHASE="${AG_KR_DAILY_PHASE:-confirmed}"
 
-exec /usr/bin/env python3 -u multi_agent/tools/run_kr_daily_auto_scans.py
+exec /usr/bin/env python3 -u multi_agent/tools/run_kr_daily_auto_scans.py --phase "${AG_KR_DAILY_PHASE}"

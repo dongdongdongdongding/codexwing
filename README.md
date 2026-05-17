@@ -89,6 +89,11 @@ Discord KR scan commands use the same non-UI boundary and fix full KOSPI/KOSDAQ 
 When `DISCORD_DRY_RUN=0` and `DISCORD_ENABLE_SCAN_EXECUTION=1`, the bot runs the scan in a separate process,
 uses `runtime_state/discord_jobs/full_kr_scan.lock`, and posts the result summary to the configured Discord channel.
 
+KR daily automation is split by timing:
+
+- `08:20 KST`: pre-market theme prior only. This uses US lead/macro context and the US-to-KR theme transfer graph, and is not a buy list.
+- `09:35 KST`: confirmed KOSPI/KOSDAQ full scans after the 09:30 intraday confirmation window. These results publish Top Deep, archive, section performance, and Discord embeds.
+
 ## Discord Remote Control
 
 Initial setup validation:

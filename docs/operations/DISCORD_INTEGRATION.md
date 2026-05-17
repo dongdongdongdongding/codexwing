@@ -181,6 +181,16 @@ Use `offset` and `limit` to page through older rows in a selected run.
 non-UI pipeline in the background, then post the result summary to
 `DISCORD_RESULT_CHANNEL_ID`.
 
+Daily KR automation uses two LaunchAgents:
+
+- `com.codex.swing.kr-premarket-theme-prior`: runs at `08:20 KST` with
+  `AG_KR_DAILY_PHASE=premarket`. It posts only US-lead based KR theme priors
+  and writes `runtime_state/shared/theme_prior/kr_premarket_theme_prior_latest.json`.
+- `com.codex.swing.kr-daily-auto-scan`: runs at `09:35 KST` with
+  `AG_KR_DAILY_PHASE=confirmed`. It runs the actionable KOSPI/KOSDAQ full
+  scans after the 09:30 intraday confirmation window and publishes the same
+  Top Deep/archive/performance artifacts as the web UI.
+
 ## Result Rendering Requirement
 
 Discord results should mirror the web information structure, adapted to Discord

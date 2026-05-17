@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """Daily KOSPI/KOSDAQ background scan runner.
 
-Runs both KR swing scans in parallel through the same non-UI pipeline used by
-Discord commands, records section performance snapshots, and posts the result
-to the configured Discord result channel.
+The 08:20 KST phase publishes only pre-market theme priors. The post-09:30
+phase runs both KR swing scans in parallel through the same non-UI pipeline
+used by Discord commands, records section performance snapshots, and posts the
+result to the configured Discord result channel.
 """
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 import os
 import subprocess
 import sys
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from pathlib import Path
 from typing import Any, Dict, List
+from zoneinfo import ZoneInfo
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -24,6 +27,8 @@ if str(PROJECT_ROOT) not in sys.path:
 from modules.discord_integration.config import DiscordIntegrationConfig, load_discord_config
 from modules.discord_integration.renderers import build_scan_result_embeds
 from modules.discord_integration.scan_executor import DiscordScanLock, create_scan_job, run_scan_job
+from modules.kr_premarket_theme_prior import build_premarket_theme_prior, write_premarket_theme_prior
+from modules.macro_scheduler import get_macro_context
 from modules.signal_section_performance import (
     build_latest_performance_markdown,
     build_section_performance_metrics,
@@ -33,22 +38,43 @@ from modules.signal_section_performance import (
 
 MARKETS = ("KOSPI", "KOSDAQ")
 LOG_DIR = Path("runtime_state/discord_jobs")
+KST = ZoneInfo("Asia/Seoul")
 
 
-async def main_async() -> int:
+async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: bool = False) -> int:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     config = load_discord_config(load_env=True)
+    phase_key = str(phase or "confirmed").strip().lower()
+    if phase_key == "premarket":
+        return await _run_premarket_theme_prior(config)
+    if phase_key not in {"confirmed", "scan"}:
+        print(f"[ERROR] unknown phase: {phase}", file=sys.stderr)
+        return 2
+    if not allow_before_confirm_window and _before_confirm_window():
+        await _post_embeds(
+            config,
+            [
+                {
+                    "title": "KR 확정 스캔 보류",
+                    "description": "확정 스캔은 KST 09:30 이후에만 실행합니다. 08:20 작업은 개장 전 테마 prior만 생성해야 합니다.",
+                    "color": 0xF1C40F,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            ],
+        )
+        return 75
     started_at = datetime.now(timezone.utc).isoformat()
     await _post_embeds(
         config,
         [
             {
                 "title": "KR 자동 스캔 시작",
-                "description": "KST 08:20 자동 작업: KOSPI/KOSDAQ 병렬 전체 스윙 스캔을 시작합니다.",
+                "description": "KST 09:35 확정 작업: 09:30 이후 국장 수급 확인 구간에서 KOSPI/KOSDAQ 병렬 전체 스윙 스캔을 시작합니다.",
                 "color": 0x3498DB,
                 "fields": [
                     {"name": "Markets", "value": ", ".join(MARKETS), "inline": True},
                     {"name": "Top Deep", "value": "Shadow + Top5 + Exception Leader", "inline": True},
+                    {"name": "Timing Rule", "value": "08:20 prior / 09:30 이후 confirmed scan", "inline": False},
                     {"name": "Started", "value": started_at, "inline": False},
                 ],
                 "timestamp": started_at,
@@ -87,6 +113,17 @@ async def main_async() -> int:
 
     print(json.dumps({"summaries": summaries, "performance": performance_payload}, ensure_ascii=False, indent=2))
     return 0 if all(_summary_ok(item) for item in summaries) else 1
+
+
+async def _run_premarket_theme_prior(config: DiscordIntegrationConfig) -> int:
+    generated_at = datetime.now(timezone.utc).isoformat()
+    macro_ctx = await asyncio.to_thread(get_macro_context, True, "KR")
+    payload = build_premarket_theme_prior(macro_ctx)
+    paths = write_premarket_theme_prior(payload)
+    payload["paths"] = paths
+    await _post_embeds(config, [_premarket_theme_prior_embed(payload)])
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
 
 
 async def _run_market_scan(market: str) -> Dict[str, Any]:
@@ -156,6 +193,45 @@ def _performance_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _premarket_theme_prior_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
+    source = payload.get("source") if isinstance(payload.get("source"), dict) else {}
+    priors = payload.get("kr_theme_priors") if isinstance(payload.get("kr_theme_priors"), list) else []
+    fields: List[Dict[str, Any]] = [
+        {
+            "name": "주의",
+            "value": "개장 전 테마 prior입니다. 매수 후보가 아니며 09:30 이후 확정 스캔으로 검증해야 합니다.",
+            "inline": False,
+        },
+        {
+            "name": "Market Lead",
+            "value": (
+                f"macro {source.get('macro_state') or '-'} · risk {source.get('macro_risk_score') or '-'} · "
+                f"US lead {source.get('us_lead_state') or '-'} / {source.get('us_lead_score') or '-'}"
+            )[:1024],
+            "inline": False,
+        },
+    ]
+    if priors:
+        lines = []
+        for idx, row in enumerate(priors[:10], start=1):
+            direction = str(row.get("direction") or "-")
+            arrow = "상방" if direction == "BENEFICIARY" else "역풍" if direction == "HEADWIND" else "중립"
+            lines.append(f"{idx}. {row.get('theme_id') or '-'} · {arrow} · strength {row.get('strength_score') or 0}")
+        fields.append({"name": "예상 테마 Prior", "value": "\n".join(lines)[:1024], "inline": False})
+    else:
+        fields.append({"name": "예상 테마 Prior", "value": "유의미한 개장 전 테마 prior 없음", "inline": False})
+    paths = payload.get("paths") if isinstance(payload.get("paths"), dict) else {}
+    if paths:
+        fields.append({"name": "Local Artifact", "value": str(paths.get("latest") or "-")[:1024], "inline": False})
+    return {
+        "title": "KR 개장 전 테마 Prior",
+        "description": f"08:20 준비 작업 · 09:30 이후 확정 스캔 전까지는 관찰 전용입니다. confirm_after={payload.get('confirm_after_kst') or '09:30'} KST",
+        "color": 0x95A5A6,
+        "fields": fields[:10],
+        "timestamp": payload.get("generated_at") or datetime.now(timezone.utc).isoformat(),
+    }
+
+
 async def _post_embeds(config: DiscordIntegrationConfig, embeds: List[Dict[str, Any]]) -> None:
     if config.dry_run:
         print("[INFO] Discord dry-run is enabled; skipping channel post.")
@@ -191,8 +267,17 @@ def _summary_ok(summary: Dict[str, Any]) -> bool:
     return bool(summary.get("run_id")) and int(job.get("returncode") if job.get("returncode") is not None else 1) == 0
 
 
+def _before_confirm_window(now: datetime | None = None) -> bool:
+    kst_now = (now or datetime.now(timezone.utc)).astimezone(KST)
+    return kst_now.time() < time(9, 30)
+
+
 def main() -> int:
-    return asyncio.run(main_async())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--phase", choices=["premarket", "confirmed", "scan"], default=os.getenv("AG_KR_DAILY_PHASE", "confirmed"))
+    parser.add_argument("--allow-before-confirm-window", action="store_true")
+    args = parser.parse_args()
+    return asyncio.run(main_async(phase=args.phase, allow_before_confirm_window=args.allow_before_confirm_window))
 
 
 if __name__ == "__main__":
