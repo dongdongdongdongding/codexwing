@@ -79,6 +79,17 @@ NUMERIC_FEATURES: Tuple[str, ...] = (
     "regime_volatility_20d",
     "model_prob_mean",
     "phase25_prob",
+    "theme_day_symbol_count",
+    "theme_day_avg_alpha_score",
+    "theme_day_avg_decision_score",
+    "theme_day_avg_volume_ratio",
+    "theme_day_avg_day_return_pct",
+    "theme_day_positive_return_pct",
+    "theme_day_avg_expected_return_1d_pct",
+    "theme_day_avg_expected_return_3d_pct",
+    "theme_day_strength_score",
+    "theme_day_strength_rank",
+    "theme_day_strength_pct",
 )
 
 STRUCTURAL_CATEGORICAL_FEATURES: Tuple[str, ...] = (
@@ -91,6 +102,7 @@ STRUCTURAL_CATEGORICAL_FEATURES: Tuple[str, ...] = (
     "tier",
     "market_gate",
     "volume_confirmed",
+    "theme_day_strength_bucket",
     "core_trend_flag",
     "explosive_leader_flag",
     "explosive_eligible",
@@ -98,6 +110,22 @@ STRUCTURAL_CATEGORICAL_FEATURES: Tuple[str, ...] = (
 
 THEME_CATEGORICAL_FEATURES: Tuple[str, ...] = ("primary_theme",)
 COHORT_CONDITIONS: Tuple[str, ...] = ("cohort=Top1", "cohort=Top3", "cohort=Top5", "cohort=Exception Leader")
+FLOW_COVERAGE_FEATURES: Tuple[str, ...] = (
+    "foreigner",
+    "foreign_flow",
+    "institution",
+    "institution_flow",
+    "retail",
+    "retail_flow",
+    "dominant",
+    "whale_trend",
+)
+SAME_REGIME_DIAGNOSTIC_COLUMNS: Tuple[str, ...] = (
+    "market_gate",
+    "trend",
+    "theme_routing_path",
+    "theme_day_strength_bucket",
+)
 CURATED_RULES: Tuple[Dict[str, Any], ...] = (
     {
         "rule_id": "ordered_prob_band_top3_10v5",
@@ -157,6 +185,20 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
         ],
         "markets": ["KOSPI"],
         "note": "Highest small-sample balance; diagnostic until more rows arrive.",
+    },
+    {
+        "rule_id": "kospi_stable_top1_expected_edge_8v4",
+        "profile": "5D_ordered_8v4",
+        "conditions": ["cohort=Top1", "expected_edge_score>=2.23"],
+        "markets": ["KOSPI"],
+        "note": "Stable non-theme KOSPI base: raises train win but currently below 75pct test gate.",
+    },
+    {
+        "rule_id": "kospi_stable_top1_expected_return_8v4",
+        "profile": "5D_ordered_8v4",
+        "conditions": ["cohort=Top1", "expected_return_1d_pct>=0.18"],
+        "markets": ["KOSPI"],
+        "note": "Stable non-theme KOSPI base: train-first guardrail candidate.",
     },
     {
         "rule_id": "kosdaq_validated_touch_exception_5v5",
@@ -285,6 +327,7 @@ def prepare_profile_rows(
 
 def add_search_columns(labeled: pd.DataFrame) -> pd.DataFrame:
     out = labeled.copy()
+    out = add_dynamic_theme_day_features(out)
     cohort_masks = _decision_masks(out)
     out["cohort"] = "Other"
     for name in ("Top5", "Top3", "Top1", "Exception Leader"):
@@ -299,6 +342,202 @@ def add_search_columns(labeled: pd.DataFrame) -> pd.DataFrame:
     out["ordered_win"] = out["ordered_target_before_stop"].eq(True) & out["ordered_label_ready"]
     out["ordered_stop"] = out["ordered_stop_before_target"].eq(True) & out["ordered_label_ready"]
     return out
+
+
+def add_dynamic_theme_day_features(labeled: pd.DataFrame) -> pd.DataFrame:
+    """Add same-day dynamic theme strength features without using future returns."""
+    out = labeled.copy()
+    defaults = {
+        "theme_day_symbol_count": 0.0,
+        "theme_day_avg_alpha_score": None,
+        "theme_day_avg_decision_score": None,
+        "theme_day_avg_volume_ratio": None,
+        "theme_day_avg_day_return_pct": None,
+        "theme_day_positive_return_pct": None,
+        "theme_day_avg_expected_return_1d_pct": None,
+        "theme_day_avg_expected_return_3d_pct": None,
+        "theme_day_strength_score": None,
+        "theme_day_strength_rank": None,
+        "theme_day_strength_pct": None,
+        "theme_day_strength_bucket": "",
+    }
+    for col, value in defaults.items():
+        out[col] = value
+    required = {"trade_date", "primary_theme", "ticker"}
+    if not required.issubset(out.columns):
+        return out
+
+    theme = out["primary_theme"].fillna("").astype(str).str.strip()
+    valid_theme = theme.ne("") & ~theme.str.lower().isin({"nan", "none", "null", "unclassified", "unknown"})
+    if not bool(valid_theme.any()):
+        return out
+
+    base = out.loc[valid_theme].copy()
+    if "priority_rank" in base.columns:
+        base["_theme_rank_sort"] = pd.to_numeric(base["priority_rank"], errors="coerce")
+    else:
+        base["_theme_rank_sort"] = float("inf")
+    if "decision_score" in base.columns:
+        base["_theme_decision_sort"] = pd.to_numeric(base["decision_score"], errors="coerce")
+    else:
+        base["_theme_decision_sort"] = float("-inf")
+    base = base.sort_values(
+        ["trade_date", "primary_theme", "ticker", "_theme_rank_sort", "_theme_decision_sort"],
+        ascending=[True, True, True, True, False],
+        na_position="last",
+    ).drop_duplicates(["trade_date", "primary_theme", "ticker"], keep="first")
+
+    for col in (
+        "alpha_score",
+        "decision_score",
+        "volume_ratio",
+        "day_return_pct",
+        "expected_return_1d_pct",
+        "expected_return_3d_pct",
+    ):
+        if col in base.columns:
+            base[col] = pd.to_numeric(base[col], errors="coerce")
+
+    grouped = base.groupby(["trade_date", "primary_theme"], dropna=False)
+    rows: List[Dict[str, Any]] = []
+    for (trade_date, primary_theme), group in grouped:
+        day_return = pd.to_numeric(group.get("day_return_pct", pd.Series(dtype=float)), errors="coerce")
+        volume = pd.to_numeric(group.get("volume_ratio", pd.Series(dtype=float)), errors="coerce")
+        expected_1d = pd.to_numeric(group.get("expected_return_1d_pct", pd.Series(dtype=float)), errors="coerce")
+        expected_3d = pd.to_numeric(group.get("expected_return_3d_pct", pd.Series(dtype=float)), errors="coerce")
+        alpha = pd.to_numeric(group.get("alpha_score", pd.Series(dtype=float)), errors="coerce")
+        decision = pd.to_numeric(group.get("decision_score", pd.Series(dtype=float)), errors="coerce")
+        positive_ratio = day_return.gt(0).mean() * 100.0 if day_return.notna().any() else None
+        symbol_count = int(group["ticker"].nunique())
+        avg_day_return = day_return.mean() if day_return.notna().any() else None
+        avg_volume = volume.mean() if volume.notna().any() else None
+        avg_expected_1d = expected_1d.mean() if expected_1d.notna().any() else None
+        avg_expected_3d = expected_3d.mean() if expected_3d.notna().any() else None
+        avg_alpha = alpha.mean() if alpha.notna().any() else None
+        avg_decision = decision.mean() if decision.notna().any() else None
+        strength = (
+            (float(avg_day_return or 0.0) * 1.15)
+            + (float(avg_expected_1d or 0.0) * 0.85)
+            + (float(avg_expected_3d or 0.0) * 0.35)
+            + (min(float(avg_volume or 0.0), 6.0) * 0.65)
+            + (float(positive_ratio or 0.0) / 100.0 * 2.0)
+            + min(math.log1p(max(symbol_count, 0)), 2.5)
+            + (float(avg_decision or 0.0) / 100.0)
+        )
+        rows.append(
+            {
+                "trade_date": trade_date,
+                "primary_theme": primary_theme,
+                "theme_day_symbol_count": float(symbol_count),
+                "theme_day_avg_alpha_score": _round(avg_alpha),
+                "theme_day_avg_decision_score": _round(avg_decision),
+                "theme_day_avg_volume_ratio": _round(avg_volume),
+                "theme_day_avg_day_return_pct": _round(avg_day_return),
+                "theme_day_positive_return_pct": _round(positive_ratio),
+                "theme_day_avg_expected_return_1d_pct": _round(avg_expected_1d),
+                "theme_day_avg_expected_return_3d_pct": _round(avg_expected_3d),
+                "theme_day_strength_score": _round(strength),
+            }
+        )
+    if not rows:
+        return out
+    features = pd.DataFrame(rows)
+    features["theme_day_strength_rank"] = features.groupby("trade_date")["theme_day_strength_score"].rank(
+        method="dense",
+        ascending=False,
+    )
+    features["_theme_count"] = features.groupby("trade_date")["primary_theme"].transform("count")
+    features["theme_day_strength_pct"] = (
+        1.0 - ((features["theme_day_strength_rank"] - 1.0) / features["_theme_count"].clip(lower=1))
+    ) * 100.0
+    features["theme_day_strength_bucket"] = "THEME_TAIL"
+    features.loc[features["theme_day_strength_rank"].le(3), "theme_day_strength_bucket"] = "THEME_TOP3"
+    features.loc[
+        features["theme_day_strength_rank"].gt(3) & features["theme_day_strength_rank"].le(7),
+        "theme_day_strength_bucket",
+    ] = "THEME_TOP7"
+    features = features.drop(columns=["_theme_count"])
+    out = out.merge(features, on=["trade_date", "primary_theme"], how="left", suffixes=("", "_dyn"))
+    for col in defaults:
+        dyn_col = f"{col}_dyn"
+        if dyn_col in out.columns:
+            out[col] = out[dyn_col].where(out[dyn_col].notna(), out[col])
+            out = out.drop(columns=[dyn_col])
+    return out
+
+
+def _feature_coverage_report(df: pd.DataFrame, features: Sequence[str] = FLOW_COVERAGE_FEATURES) -> Dict[str, Any]:
+    if {"ticker", "trade_date"}.issubset(df.columns):
+        base = df.drop_duplicates(["ticker", "trade_date"]).copy()
+    else:
+        base = df.copy()
+    total = int(len(base))
+    rows: Dict[str, Any] = {}
+    for col in features:
+        if col not in base.columns:
+            rows[col] = {"present": False, "non_empty": 0, "coverage_pct": 0.0}
+            continue
+        text = base[col].fillna("").astype(str).str.strip()
+        non_empty = text.ne("") & ~text.str.lower().isin({"nan", "none", "null", "unknown"})
+        rows[col] = {
+            "present": True,
+            "non_empty": int(non_empty.sum()),
+            "coverage_pct": _round((non_empty.mean() * 100.0) if total else 0.0),
+        }
+    return {"unique_ticker_dates": total, "features": rows}
+
+
+def _mask_for_candidate_row(df: pd.DataFrame, row: Dict[str, Any]) -> pd.Series | None:
+    mask = df["candidate_id"].fillna("").astype(str).eq(str(row.get("profile") or ""))
+    for condition in row.get("conditions") or []:
+        parsed = _condition_to_mask(df, str(condition))
+        if parsed is None:
+            return None
+        mask &= parsed.fillna(False)
+    return mask.fillna(False)
+
+
+def _same_regime_diagnostics(
+    df: pd.DataFrame,
+    mask: pd.Series,
+    train_mask: pd.Series,
+    test_mask: pd.Series,
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for col in SAME_REGIME_DIAGNOSTIC_COLUMNS:
+        if col not in df.columns:
+            continue
+        text = df[col].fillna("").astype(str).str.strip()
+        test_values = text.loc[mask & test_mask]
+        test_values = test_values[test_values.ne("") & ~test_values.str.lower().isin({"nan", "none", "null", "unknown"})]
+        if test_values.empty:
+            continue
+        value = str(test_values.value_counts().index[0])
+        same_value = text.eq(value)
+        rows.append(
+            {
+                "dimension": col,
+                "value": value,
+                "test_value_share_pct": _round(test_values.eq(value).mean() * 100.0),
+                "same_regime_train": _metrics(df, mask & train_mask & same_value),
+                "same_regime_test": _metrics(df, mask & test_mask & same_value),
+            }
+        )
+    return rows
+
+
+def annotate_candidate_diagnostics(
+    df: pd.DataFrame,
+    rows: Sequence[Dict[str, Any]],
+    *,
+    train_mask: pd.Series,
+    test_mask: pd.Series,
+) -> None:
+    for row in rows:
+        mask = _mask_for_candidate_row(df, row)
+        if mask is None:
+            continue
+        row["same_regime_diagnostics"] = _same_regime_diagnostics(df, mask, train_mask, test_mask)
 
 
 def build_condition_masks(
@@ -853,6 +1092,8 @@ def build_report(
         labeled.to_csv(cached_labels_path, index=False)
     if "ordered_label_ready" not in labeled.columns:
         labeled = add_search_columns(labeled)
+    elif "theme_day_strength_score" not in labeled.columns:
+        labeled = add_dynamic_theme_day_features(labeled)
     labeled["trade_date"] = labeled["trade_date"].fillna("").astype(str)
     days = sorted(labeled["trade_date"].dropna().astype(str).unique().tolist())
     split_day = days[max(1, min(len(days) - 1, int(len(days) * 0.58)))] if len(days) >= 3 else None
@@ -884,6 +1125,11 @@ def build_report(
         test_mask=test_mask,
         min_fold_test=min_fold_test,
     )
+    for bucket_rows in buckets.values():
+        annotate_candidate_diagnostics(labeled, bucket_rows, train_mask=train_mask, test_mask=test_mask)
+    annotate_candidate_diagnostics(labeled, curated, train_mask=train_mask, test_mask=test_mask)
+    best_overall = all_rows[:50]
+    annotate_candidate_diagnostics(labeled, best_overall, train_mask=train_mask, test_mask=test_mask)
     report = {
         "report_version": REPORT_VERSION,
         "market": market,
@@ -906,6 +1152,7 @@ def build_report(
             "include_static_themes": include_static_themes,
             "static_theme_candidates_are_diagnostic_only": True,
         },
+        "feature_coverage": _feature_coverage_report(labeled),
         "baseline_by_profile": {
             profile.name: {
                 "all": _metrics(labeled, labeled["candidate_id"].eq(profile.name)),
@@ -922,7 +1169,7 @@ def build_report(
         },
         "curated_ordered_candidates": curated,
         **buckets,
-        "best_overall": all_rows[:50],
+        "best_overall": best_overall,
         "notes": [
             "Production scanner ranking is unchanged.",
             "Practical watch starts at ordered test win >=75%.",
@@ -930,6 +1177,8 @@ def build_report(
             "Recent-regime candidates pass the latest test window but fail the all/train stability floor, so they are not promotion candidates.",
             "Strong practical candidates use ordered test win >=80%; promotion-ready remains stricter and requires larger samples.",
             "feature_quality is excluded from searched categorical conditions because it is a data completeness marker, not a trading signal.",
+            "theme_day_* features are dynamic same-day peer aggregates, not fixed theme-name filters.",
+            "same_regime_diagnostics show train/test behavior inside the candidate's dominant test regime dimensions.",
             "Release-like candidates exclude static primary_theme conditions to avoid hard-coded theme overfit.",
             "Rows with immature no-touch labels are excluded from win-rate denominators.",
             "Daily OHLCV same-bar target/stop order is conservative stop-first via the imported labeler.",
@@ -958,6 +1207,14 @@ def write_markdown(report: Dict[str, Any], path: Path) -> None:
             f"- `{profile}`: all n={metrics['all']['n']} win={metrics['all']['win_pct']}%, "
             f"test n={metrics['test']['n']} win={metrics['test']['win_pct']}%, "
             f"test_stop={metrics['test']['stop_pct']}%"
+        )
+    lines.extend(["", "## Flow Feature Coverage", ""])
+    coverage = report.get("feature_coverage") or {}
+    lines.append(f"- unique_ticker_dates: `{coverage.get('unique_ticker_dates')}`")
+    for name, row in (coverage.get("features") or {}).items():
+        lines.append(
+            f"- `{name}`: non_empty={row.get('non_empty')} "
+            f"coverage={row.get('coverage_pct')}%"
         )
     lines.extend(["", "## Practical Watch 75pct Non-Theme", ""])
     if not report.get("practical_watch_75pct_non_theme"):
@@ -1038,6 +1295,7 @@ def write_markdown(report: Dict[str, Any], path: Path) -> None:
 
 
 def _candidate_line(row: Dict[str, Any], *, prefix: str = "") -> str:
+    same_regime = _same_regime_summary(row)
     return (
         f"- {prefix}`{row['profile']}` {row['conditions']}: "
         f"all n={row['all']['n']} win={row['all']['win_pct']}%, "
@@ -1050,7 +1308,22 @@ def _candidate_line(row: Dict[str, Any], *, prefix: str = "") -> str:
         f"fold_win={row['fold_weighted_win_pct']}%, min_fold={row['fold_min_win_pct']}%, "
         f"avg_mfe={row['all']['avg_mfe_pct']}%, avg_mae={row['all']['avg_mae_pct']}%, "
         f"min_mae={row['all'].get('min_mae_pct')}%"
+        f"{same_regime}"
     )
+
+
+def _same_regime_summary(row: Dict[str, Any]) -> str:
+    diagnostics = row.get("same_regime_diagnostics") or []
+    parts: List[str] = []
+    for diag in diagnostics[:2]:
+        train = diag.get("same_regime_train") or {}
+        test = diag.get("same_regime_test") or {}
+        parts.append(
+            f"{diag.get('dimension')}={diag.get('value')} "
+            f"train {train.get('n')}/{train.get('win_pct')}% "
+            f"test {test.get('n')}/{test.get('win_pct')}%"
+        )
+    return f", same_regime=[{'; '.join(parts)}]" if parts else ""
 
 
 def main() -> int:

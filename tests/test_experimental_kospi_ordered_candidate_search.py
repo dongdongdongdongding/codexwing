@@ -6,6 +6,7 @@ from multi_agent.tools.experimental_kospi_ordered_candidate_search import (
     OrderedProfile,
     _condition_to_mask,
     _metrics,
+    add_dynamic_theme_day_features,
     add_search_columns,
     classify_candidates,
     prepare_profile_rows,
@@ -102,6 +103,60 @@ def test_add_search_columns_marks_immature_no_touch_not_ready() -> None:
 
     assert out["ordered_label_ready"].tolist() == [False, True]
     assert out["ordered_win"].tolist() == [False, True]
+
+
+def test_add_dynamic_theme_day_features_uses_same_day_theme_peers() -> None:
+    df = pd.DataFrame(
+        [
+            {
+                "trade_date": "2026-04-01",
+                "ticker": "000001.KS",
+                "primary_theme": "통신/네트워크",
+                "priority_rank": 1,
+                "alpha_score": 80,
+                "decision_score": 90,
+                "volume_ratio": 2.0,
+                "day_return_pct": 3.0,
+                "expected_return_1d_pct": 1.0,
+                "expected_return_3d_pct": 2.0,
+            },
+            {
+                "trade_date": "2026-04-01",
+                "ticker": "000002.KS",
+                "primary_theme": "통신/네트워크",
+                "priority_rank": 2,
+                "alpha_score": 70,
+                "decision_score": 80,
+                "volume_ratio": 1.0,
+                "day_return_pct": -1.0,
+                "expected_return_1d_pct": 0.0,
+                "expected_return_3d_pct": 1.0,
+            },
+            {
+                "trade_date": "2026-04-01",
+                "ticker": "000003.KS",
+                "primary_theme": "금융",
+                "priority_rank": 3,
+                "alpha_score": 60,
+                "decision_score": 70,
+                "volume_ratio": 0.5,
+                "day_return_pct": -2.0,
+                "expected_return_1d_pct": -1.0,
+                "expected_return_3d_pct": -1.0,
+            },
+        ]
+    )
+
+    out = add_dynamic_theme_day_features(df)
+    telecom = out[out["primary_theme"].eq("통신/네트워크")].iloc[0]
+    finance = out[out["primary_theme"].eq("금융")].iloc[0]
+
+    assert telecom["theme_day_symbol_count"] == 2.0
+    assert telecom["theme_day_avg_day_return_pct"] == 1.0
+    assert telecom["theme_day_positive_return_pct"] == 50.0
+    assert telecom["theme_day_strength_rank"] == 1.0
+    assert telecom["theme_day_strength_bucket"] == "THEME_TOP3"
+    assert finance["theme_day_strength_rank"] == 2.0
 
 
 def test_classify_candidates_excludes_static_theme_from_release_like() -> None:
