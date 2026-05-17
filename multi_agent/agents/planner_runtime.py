@@ -342,11 +342,12 @@ def _apply_kosdaq_swing_gate(
 
     if gap >= PHASE25_DOWNGRADE_HARD_GAP:
         if validated_touch_override:
-            theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_VALIDATED_TOUCH_OVERRIDE")
+            decision = _decision_from_rank(max(1, _decision_rank(decision) - 1))
+            theme_risk.append("PHASE25_SWING_BELOW_THRESHOLD_VALIDATED_TOUCH_DEMOTED")
             rationale.append(
-                "kosdaq_swing_validated_touch_override:"
+                "kosdaq_swing_validated_touch_demoted:"
                 f"alpha={alpha:.1f},volume_ratio={volume:.2f},"
-                "archive_touch5=80.645pct"
+                "ordered_5v5_recheck=weak_stop_first"
             )
         elif inversion_override:
             decision = _decision_from_rank(max(1, _decision_rank(decision) - 1))
@@ -538,14 +539,18 @@ def _apply_kr_market_mode_quality_gate(
             and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSDAQ_SWING_PRIORITY")
         )
         if validated_touch_exception:
-            if "KOSDAQ_SWING_VALIDATED_TOUCH_EXCEPTION" not in theme_risk:
-                theme_risk.append("KOSDAQ_SWING_VALIDATED_TOUCH_EXCEPTION")
+            if "KOSDAQ_SWING_VALIDATED_TOUCH_DEPRECATED" not in theme_risk:
+                theme_risk.append("KOSDAQ_SWING_VALIDATED_TOUCH_DEPRECATED")
             rationale.append(
-                "kosdaq_validated_touch_exception:"
+                "kosdaq_validated_touch_deprecated:"
                 "alpha>=90,volume_ratio>=2,"
-                "archive_touch5=80.645pct,avg_mfe5=21.8008pct"
+                "ordered_5v5_all_win=40pct,test_stop=50pct"
             )
-            return decision
+            return _demote_to(
+                1,
+                "KOSDAQ_SWING_PROBATION",
+                "market_mode_probation=KOSDAQ_SWING_VALIDATED_TOUCH_DEPRECATED",
+            )
         if not high_conviction_exception:
             return _demote_to(
                 1,

@@ -358,17 +358,32 @@ def is_kospi_ordered_shadow_gate_row(rec: Dict[str, Any]) -> bool:
 
 
 def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
-    """Current KOSDAQ ordered rebound shadow gate.
+    """Current KOSDAQ low-loss rebound shadow gate.
 
     Display-only gate from the internal ordered OHLCV testbed:
-    volume_ratio<=1.23, trend=DOWN, selection_lane=1d.
+    tech_score<=80, same-scan theme avg decision<=63.1,
+    same-scan theme symbol count>=7, trend=UP.
     """
     if not isinstance(rec, dict) or _row_market(rec) != "KOSDAQ":
         return False
-    volume_ratio = _row_float(rec, "volume_ratio", "Volume Ratio", "volume", "거래량")
+    tech = _row_float(rec, "tech_score", "Tech", "기술점수")
+    theme_avg_decision = _row_float(
+        rec,
+        "theme_day_avg_decision_score",
+        "_theme_day_avg_decision_score",
+        "display_theme_day_avg_decision_score",
+    )
+    theme_count = _row_float(rec, "theme_day_symbol_count", "_theme_day_symbol_count", "display_theme_day_symbol_count")
     trend = _row_text(rec, "trend", "real_trend", "추세", "Trend").upper()
-    lane = _row_text(rec, "selection_lane", "Selection Lane").lower()
-    return volume_ratio is not None and volume_ratio <= 1.23 and trend == "DOWN" and lane == "1d"
+    return (
+        tech is not None
+        and tech <= 80.0
+        and theme_avg_decision is not None
+        and theme_avg_decision <= 63.1
+        and theme_count is not None
+        and theme_count >= 7.0
+        and trend == "UP"
+    )
 
 
 def validated_winner_profile(rec: Dict[str, Any]) -> Dict[str, Any]:
@@ -437,7 +452,7 @@ def build_kr_shadow_gate_records(
     without silently changing the scanner engine.
     """
     source_records = enrich_signal_rows_with_planner_trace(records or [], planner_payload) if planner_payload else (records or [])
-    source_records = _attach_display_theme_day_alpha(source_records)
+    source_records = _attach_display_theme_day_metrics(source_records)
     sorted_rows = sort_signal_rows_by_planner_rank(source_records, planner_payload)
     limit_n = max(int(limit or 0), 0)
 
@@ -460,9 +475,9 @@ def build_kr_shadow_gate_records(
         gate={
             "label": "KOSDAQ 최우선 관찰",
             "profile": "5D_ordered_5v5",
-            "conditions": "volume_ratio<=1.23 · trend=DOWN · selection_lane=1d",
-            "metrics": "n=20 · win 85.0% · stop 15.0% · test win 88.9%",
-            "note": "+5% 반등 shadow gate, 운영 랭킹 교체 아님",
+            "conditions": "tech<=80 · 테마평균 decision<=63.1 · 테마후보>=7 · trend=UP",
+            "metrics": "n=21 · win 76.2% · test win 81.8% · test min -2.27% · loss5 0%",
+            "note": "손실 꼬리 축소형 +5% shadow gate, 운영 랭킹 교체 아님",
         },
     )
     kospi = _mark(
@@ -484,39 +499,59 @@ def build_kr_shadow_gate_records(
     }
 
 
-def _attach_display_theme_day_alpha(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Attach same-scan theme alpha averages when storage rows do not have them.
+def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Attach same-scan theme aggregates when storage rows do not have them.
 
-    The KOSPI ordered shadow gate was validated with dynamic same-day theme
-    features. Live scan rows already carry primary_theme and alpha_score, but
-    not always the precomputed theme aggregate, so compute a display-only
-    equivalent over the rows visible in the current scan/archive payload.
+    Ordered shadow gates were validated with dynamic same-day theme features.
+    Live scan rows already carry primary_theme and row-level scores, but not
+    always the precomputed theme aggregates, so compute display-only equivalents
+    over the rows visible in the current scan/archive payload.
     """
     rows = [dict(row) for row in records or [] if isinstance(row, dict)]
-    theme_alpha: Dict[str, List[float]] = {}
+    grouped: Dict[tuple[str, str], Dict[str, Any]] = {}
     for row in rows:
-        if _row_market(row) != "KOSPI":
+        market = _row_market(row)
+        if market not in {"KOSPI", "KOSDAQ"}:
             continue
         theme = _row_text(row, "primary_theme", "테마", "theme").strip()
         if not theme or theme.lower() in {"nan", "none", "null", "unclassified", "unknown"}:
             continue
+        key = (market, theme)
+        bucket = grouped.setdefault(key, {"tickers": set(), "alpha": [], "decision": []})
+        ticker = _row_text(row, "ticker", "티커", "Ticker", "symbol").strip()
+        if ticker:
+            bucket["tickers"].add(ticker)
         alpha = _row_float(row, "alpha_score", "Alpha", "종합점수")
-        if alpha is None:
-            continue
-        theme_alpha.setdefault(theme, []).append(alpha)
-    averages = {
-        theme: sum(values) / len(values)
-        for theme, values in theme_alpha.items()
-        if values
+        decision = _row_float(row, "decision_score", "Decision Score", "score")
+        if alpha is not None:
+            bucket["alpha"].append(alpha)
+        if decision is not None:
+            bucket["decision"].append(decision)
+    metrics = {
+        key: {
+            "symbol_count": float(len(value["tickers"])),
+            "avg_alpha": (sum(value["alpha"]) / len(value["alpha"])) if value["alpha"] else None,
+            "avg_decision": (sum(value["decision"]) / len(value["decision"])) if value["decision"] else None,
+        }
+        for key, value in grouped.items()
     }
-    if not averages:
+    if not metrics:
         return rows
     for row in rows:
-        if _row_float(row, "theme_day_avg_alpha_score", "_theme_day_avg_alpha_score") is not None:
-            continue
+        market = _row_market(row)
         theme = _row_text(row, "primary_theme", "테마", "theme").strip()
-        if theme in averages:
-            row["_theme_day_avg_alpha_score"] = round(averages[theme], 2)
+        metric = metrics.get((market, theme))
+        if not metric:
+            continue
+        if _row_float(row, "theme_day_symbol_count", "_theme_day_symbol_count") is None:
+            row["_theme_day_symbol_count"] = metric["symbol_count"]
+        if metric["avg_alpha"] is not None and _row_float(row, "theme_day_avg_alpha_score", "_theme_day_avg_alpha_score") is None:
+            row["_theme_day_avg_alpha_score"] = round(metric["avg_alpha"], 2)
+        if (
+            metric["avg_decision"] is not None
+            and _row_float(row, "theme_day_avg_decision_score", "_theme_day_avg_decision_score") is None
+        ):
+            row["_theme_day_avg_decision_score"] = round(metric["avg_decision"], 2)
     return rows
 
 

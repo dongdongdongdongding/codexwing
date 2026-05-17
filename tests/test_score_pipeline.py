@@ -148,7 +148,7 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertIn("PHASE25_SWING_BELOW_THRESHOLD_INVERTED_OVERRIDE", decision.theme_risk)
         self.assertIn("kosdaq_swing_inverted_prob_override", " ".join(decision.rationale))
 
-    def test_kosdaq_swing_validated_touch_exception_preserves_tradeable_watchlist(self):
+    def test_kosdaq_swing_validated_touch_exception_is_demoted_after_ordered_recheck(self):
         planner = build_planner_handoff(
             context=RunContext(run_id="RUN-KQ-TOUCH", market="KOSDAQ"),
             weak_ratio=0.1,
@@ -179,9 +179,10 @@ class ScorePipelineTests(unittest.TestCase):
         )
 
         decision = planner.decisions[0]
-        self.assertEqual(decision.decision, "WATCHLIST")
-        self.assertIn("KOSDAQ_SWING_VALIDATED_TOUCH_EXCEPTION", decision.theme_risk)
-        self.assertIn("kosdaq_validated_touch_exception", " ".join(decision.rationale))
+        self.assertEqual(decision.decision, "OBSERVE")
+        self.assertIn("KOSDAQ_SWING_VALIDATED_TOUCH_DEPRECATED", decision.theme_risk)
+        self.assertIn("KOSDAQ_SWING_PROBATION", decision.theme_risk)
+        self.assertIn("kosdaq_validated_touch_deprecated", " ".join(decision.rationale))
 
     def test_kosdaq_relative_ranking_prefers_volume_supported_tech_leader(self):
         context = RunContext(run_id="RUN-KQ-RANK", market="KOSDAQ")

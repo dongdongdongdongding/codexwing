@@ -225,6 +225,30 @@ CURATED_RULES: Tuple[Dict[str, Any], ...] = (
         "markets": ["KOSDAQ"],
         "note": "KOSDAQ validated-touch exception rechecked with stop-first ordered OHLCV.",
     },
+    {
+        "rule_id": "kosdaq_low_loss_theme_rebound_5v5",
+        "profile": "5D_ordered_5v5",
+        "conditions": [
+            "tech_score<=80",
+            "theme_day_avg_decision_score<=63.0879",
+            "theme_day_symbol_count>=7",
+            "trend=UP",
+        ],
+        "markets": ["KOSDAQ"],
+        "note": "Lower loss-tail KOSDAQ shadow: test win 81.8%, test min -2.27%, loss5 0%.",
+    },
+    {
+        "rule_id": "kosdaq_low_model_1d_rebound_5v5",
+        "profile": "5D_ordered_5v5",
+        "conditions": [
+            "ml_prob=[10,20.84]",
+            "volume_ratio<=1.23",
+            "selection_lane=1d",
+            "prob_clean<=31.8",
+        ],
+        "markets": ["KOSDAQ"],
+        "note": "Higher win KOSDAQ 1d rebound but larger loss tail; diagnostic against low-loss gate.",
+    },
 )
 
 
