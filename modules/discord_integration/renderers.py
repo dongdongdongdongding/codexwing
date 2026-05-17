@@ -391,9 +391,10 @@ def build_top_deep_embeds(
         fields.append({"name": "데이터 무결성", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})
     return [
         {
-            "title": "Top5 + Exception Leader 자동 정밀분석",
+            "title": "Shadow + Top5 + Exception Leader 자동 정밀분석",
             "description": (
                 f"Run `{latest_run or '-'}` · offset {safe_offset} · "
+                f"Shadow {section_counts.get('KOSDAQ Shadow', 0) + section_counts.get('KOSPI Shadow', 0)} / "
                 f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
             ),
             "color": 0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,

@@ -129,7 +129,7 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     embeds = build_top_deep_embeds()
 
     assert status["fields"][3]["value"] == "RUN-TEST"
-    assert embeds[0]["title"] == "Top5 + Exception Leader 자동 정밀분석"
+    assert embeds[0]["title"] == "Shadow + Top5 + Exception Leader 자동 정밀분석"
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
     assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
     assert "수급: 외인 +1,200,000 / 기관 -300,000 / 개인 -900,000" in embeds[0]["fields"][0]["value"]
@@ -425,7 +425,7 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
 
     assert embeds[0]["title"] == "KOSPI 전체 스캔 결과"
     assert embeds[0]["fields"][0]["value"] == "RUN-DISCORD"
-    assert embeds[1]["title"] == "Top5 + Exception Leader 자동 정밀분석"
+    assert embeds[1]["title"] == "Shadow + Top5 + Exception Leader 자동 정밀분석"
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
 
 

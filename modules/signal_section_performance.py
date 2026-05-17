@@ -9,6 +9,7 @@ from statistics import median
 from typing import Any, Dict, Iterable, List
 
 from modules.ui_helpers import (
+    attach_display_theme_day_metrics,
     is_exception_leader_row,
     is_kosdaq_ordered_rebound_shadow_gate_row,
     is_kospi_ordered_shadow_gate_row,
@@ -88,8 +89,9 @@ def build_section_performance_metrics(
     as_of = as_of_date or str(date.today())
     buckets: Dict[tuple[str, str, int], List[float]] = {}
     latest_dates: Dict[tuple[str, str, int], str] = {}
+    prepared_rows = attach_display_theme_day_metrics(list(rows or []))
 
-    for row in rows:
+    for row in prepared_rows:
         market = _market(row)
         if market not in {"KOSPI", "KOSDAQ"}:
             continue

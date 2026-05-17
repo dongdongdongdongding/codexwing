@@ -1188,9 +1188,9 @@ def _render_selection_thesis(row, trade_plan):
 def _render_top_deep_reports_page():
     _render_section_intro(
         "Top Deep Reports",
-        "Top5 + Exception Leader 자동 정밀분석",
-        "기존 Top5를 메인으로 유지하고, Exception Leader를 별도 추가 후보로 함께 분석합니다.",
-        ["Top5 main", "Exception add-on", "Real data only"],
+        "Shadow + Top5 + Exception Leader 자동 정밀분석",
+        "검증용 Shadow 후보를 상단에 분리하고, 기존 Top5와 Exception Leader를 함께 분석합니다.",
+        ["Shadow watch", "Top5 main", "Exception add-on", "Real data only"],
     )
     rows, warning = _load_top_deep_reports()
     if warning:
@@ -3578,11 +3578,11 @@ if active_main_tab == "📚 아카이브":
 
                 if _archive_market_key == "KOSDAQ":
                     st.markdown("### KOSDAQ 최우선 관찰 Shadow")
-                    st.caption("새 KOSDAQ ordered rebound 후보입니다. 기존 Top5/Exception을 대체하지 않고 상단에서 우선 확인합니다.")
+                    st.caption("손실 꼬리 축소형 KOSDAQ shadow 조건을 통과한 후보입니다. 기존 Top5/Exception을 대체하지 않고 상단에서 우선 확인합니다.")
                     _render_signal_card_list(_archive_shadow, empty_text="KOSDAQ shadow 조건 통과 후보 없음.")
                 elif _archive_market_key == "KOSPI":
                     st.markdown("### KOSPI Ordered Shadow")
-                    st.caption("KOSPI Top3 중 +10% before -5% ordered 기준을 통과한 별도 관찰 섹션입니다.")
+                    st.caption("prob_clean/alpha/CORE_TREND/테마 평균 조건을 통과한 KOSPI shadow 관찰 섹션입니다. 운영 Top5를 자동 교체하지 않습니다.")
                     _render_signal_card_list(_archive_shadow, empty_text="KOSPI shadow 조건 통과 후보 없음.")
 
                 st.markdown(f"### 메인 Top 5 - {_selected_date}")

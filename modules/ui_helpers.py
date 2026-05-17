@@ -499,6 +499,10 @@ def build_kr_shadow_gate_records(
     }
 
 
+def attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return _attach_display_theme_day_metrics(records)
+
+
 def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Attach same-scan theme aggregates when storage rows do not have them.
 
@@ -508,7 +512,7 @@ def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dic
     over the rows visible in the current scan/archive payload.
     """
     rows = [dict(row) for row in records or [] if isinstance(row, dict)]
-    grouped: Dict[tuple[str, str], Dict[str, Any]] = {}
+    grouped: Dict[tuple[str, str, str], Dict[str, Any]] = {}
     for row in rows:
         market = _row_market(row)
         if market not in {"KOSPI", "KOSDAQ"}:
@@ -516,7 +520,8 @@ def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dic
         theme = _row_text(row, "primary_theme", "테마", "theme").strip()
         if not theme or theme.lower() in {"nan", "none", "null", "unclassified", "unknown"}:
             continue
-        key = (market, theme)
+        date_key = _row_theme_date_key(row)
+        key = (market, date_key, theme)
         bucket = grouped.setdefault(key, {"tickers": set(), "alpha": [], "decision": []})
         ticker = _row_text(row, "ticker", "티커", "Ticker", "symbol").strip()
         if ticker:
@@ -540,7 +545,8 @@ def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dic
     for row in rows:
         market = _row_market(row)
         theme = _row_text(row, "primary_theme", "테마", "theme").strip()
-        metric = metrics.get((market, theme))
+        date_key = _row_theme_date_key(row)
+        metric = metrics.get((market, date_key, theme))
         if not metric:
             continue
         if _row_float(row, "theme_day_symbol_count", "_theme_day_symbol_count") is None:
@@ -553,6 +559,11 @@ def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dic
         ):
             row["_theme_day_avg_decision_score"] = round(metric["avg_decision"], 2)
     return rows
+
+
+def _row_theme_date_key(row: Dict[str, Any]) -> str:
+    text = _row_text(row, "base_trade_date", "trade_date", "recommended_at", "created_at", "generated_at").strip()
+    return text[:10] if text else ""
 
 
 def split_stream_records(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
