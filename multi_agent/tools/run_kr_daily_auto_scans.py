@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from datetime import datetime, time, timezone
 from pathlib import Path
@@ -39,6 +40,9 @@ from modules.signal_section_performance import (
 MARKETS = ("KOSPI", "KOSDAQ")
 LOG_DIR = Path("runtime_state/discord_jobs")
 KST = ZoneInfo("Asia/Seoul")
+DISCORD_MAX_EMBEDS_PER_MESSAGE = 10
+DISCORD_MAX_MESSAGE_CHARS = 6000
+DISCORD_SAFE_MESSAGE_CHARS = 5400
 
 
 async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: bool = False) -> int:
@@ -239,9 +243,9 @@ async def _post_embeds(config: DiscordIntegrationConfig, embeds: List[Dict[str, 
     if not config.bot_token or not config.result_channel_id:
         print("[WARN] Discord token/channel missing; skipping channel post.", file=sys.stderr)
         return
-    for idx in range(0, len(embeds), 10):
+    for chunk in _chunk_embeds_for_discord(embeds):
         try:
-            await asyncio.to_thread(_post_embed_chunk, config, embeds[idx : idx + 10])
+            await asyncio.to_thread(_post_embed_chunk, config, chunk)
         except Exception as exc:
             print(f"[WARN] Discord channel post failed: {exc}", file=sys.stderr)
 
@@ -258,8 +262,44 @@ def _post_embed_chunk(config: DiscordIntegrationConfig, embeds: List[Dict[str, A
         },
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        response.read()
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            response.read()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:2000]
+        raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
+
+
+def _chunk_embeds_for_discord(embeds: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+    chunks: List[List[Dict[str, Any]]] = []
+    current: List[Dict[str, Any]] = []
+    current_chars = 0
+    for embed in embeds or []:
+        embed_chars = _discord_embed_char_count(embed)
+        if current and (
+            len(current) >= DISCORD_MAX_EMBEDS_PER_MESSAGE
+            or current_chars + embed_chars > DISCORD_SAFE_MESSAGE_CHARS
+        ):
+            chunks.append(current)
+            current = []
+            current_chars = 0
+        current.append(embed)
+        current_chars += embed_chars
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def _discord_embed_char_count(embed: Dict[str, Any]) -> int:
+    total = len(str(embed.get("title") or "")) + len(str(embed.get("description") or ""))
+    footer = embed.get("footer") if isinstance(embed.get("footer"), dict) else {}
+    author = embed.get("author") if isinstance(embed.get("author"), dict) else {}
+    total += len(str(footer.get("text") or "")) + len(str(author.get("name") or ""))
+    fields = embed.get("fields") if isinstance(embed.get("fields"), list) else []
+    for field in fields:
+        if isinstance(field, dict):
+            total += len(str(field.get("name") or "")) + len(str(field.get("value") or ""))
+    return total
 
 
 def _summary_ok(summary: Dict[str, Any]) -> bool:
