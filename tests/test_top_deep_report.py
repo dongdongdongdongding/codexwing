@@ -114,6 +114,35 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["news"]["headlines"][0]["title"] == "real headline"
 
 
+def test_build_top_deep_reports_maps_korean_theme_field():
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {"warnings": [], "current_price": 100.0, "day_change_pct": 0.0}
+        news.return_value = {"status": "OK", "headlines": [], "warnings": []}
+        flow.return_value = {"valid": True, "type": "KR", "source": "test", "warnings": []}
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {
+                    "ticker": "271560.KS",
+                    "종목명": "오리온",
+                    "테마": "소비재/유통",
+                    "Decision Score": 55.3,
+                }
+            ],
+            planner_payload={"decisions": []},
+            run_id="RUN-THEME",
+            market="KOSPI",
+            scan_mode="SWING",
+            top_n=5,
+        )
+
+    assert reports[0]["theme"]["primary_theme"] == "소비재/유통"
+
+
 def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():
     captured = {}
 

@@ -797,8 +797,10 @@ def build_top_deep_reports(
             "trade_plan": trade_policy,
             "flow": flow,
             "theme": {
-                "primary_theme": trace.get("primary_theme") or row.get("primary_theme"),
-                "theme_routing_path": trace.get("theme_routing_path") or row.get("theme_routing_path"),
+                "primary_theme": _first_present(trace, "primary_theme", "테마", "Theme")
+                or _first_present(row, "primary_theme", "테마", "Theme"),
+                "theme_routing_path": _first_present(trace, "theme_routing_path", "theme_routing_path")
+                or _first_present(row, "theme_routing_path", "theme_routing_path"),
             },
             "price": price,
             "news": news,
