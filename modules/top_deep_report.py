@@ -142,8 +142,8 @@ def _select_top_candidates(
     )
     shadow_groups = build_kr_shadow_gate_records(rows, planner_payload, limit=5)
     shadow_rows = shadow_groups["combined"]
-    seen_shadow = {str(row.get("ticker") or "") for row in shadow_rows}
-    standard_rows = [row for row in groups["combined"] if str(row.get("ticker") or "") not in seen_shadow]
+    seen_shadow = {_ticker(row) for row in shadow_rows if _ticker(row)}
+    standard_rows = [row for row in groups["combined"] if _ticker(row) not in seen_shadow]
     return shadow_rows + standard_rows
 
 

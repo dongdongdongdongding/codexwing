@@ -261,6 +261,25 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(groups["top5"][0]["_analysis_section"], "Top5")
         self.assertEqual(groups["exception_leaders"][0]["_analysis_section"], "Exception Leader")
 
+    def test_top5_plus_exception_fills_top5_after_validated_profile_promotion(self):
+        rows = [
+            {"ticker": "VALID.KS", "Decision Score": 90.0, "_raw_scan_rank": 1},
+            {"ticker": "RAW1.KS", "Decision Score": 80.0, "_raw_scan_rank": 2},
+            {"ticker": "RAW2.KS", "Decision Score": 70.0, "_raw_scan_rank": 3},
+        ]
+
+        def fake_profile(row):
+            if row.get("ticker") == "VALID.KS":
+                return {"level": "pass", "label": "검증 Top5", "profile": "test", "metrics": "n=1"}
+            return {"level": "fail", "label": "검증 미달", "profile": "", "metrics": ""}
+
+        with patch("modules.ui_helpers.validated_winner_profile", side_effect=fake_profile):
+            groups = build_top5_plus_exception_records(rows, None, top_limit=3, exception_limit=0)
+
+        self.assertEqual([row["ticker"] for row in groups["top5"]], ["VALID.KS", "RAW1.KS", "RAW2.KS"])
+        self.assertEqual(groups["top5"][0]["_validated_winner_profile"]["profile"], "test")
+        self.assertEqual(len(groups["combined"]), 3)
+
     def test_top5_plus_exception_adds_planner_only_exception_leaders(self):
         rows = [
             {"ticker": f"TOP{i}.KQ", "Decision Score": 100.0 - i, "_raw_scan_rank": i}

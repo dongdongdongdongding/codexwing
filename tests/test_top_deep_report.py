@@ -1,6 +1,11 @@
 from unittest.mock import patch
 
-from modules.top_deep_report import build_top_deep_reports, upsert_reports_to_supabase, _fetch_investor_flow_snapshot
+from modules.top_deep_report import (
+    _fetch_investor_flow_snapshot,
+    _select_top_candidates,
+    build_top_deep_reports,
+    upsert_reports_to_supabase,
+)
 
 
 def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
@@ -392,9 +397,42 @@ def test_top_deep_report_prefers_validated_winner_profile_over_raw_priority():
             top_n=5,
         )
 
-    assert [row["ticker"] for row in reports] == ["GOOD.KS"]
+    assert [row["ticker"] for row in reports] == ["GOOD.KS", "BAD.KS"]
     profile = reports[0]["selection_alignment"]["validated_winner_profile"]
     assert profile["profile"] == "rank_top5__edge_ge_7"
+    assert reports[1]["selection_alignment"]["validated_winner_profile"] is None
+
+
+def test_select_top_candidates_dedupes_shadow_with_korean_ticker_without_dropping_top5():
+    rows = [
+        {
+            "티커": "271560.KS",
+            "종목명": "오리온",
+            "market": "KOSPI",
+            "primary_theme": "소비재/유통",
+            "prob_clean": 38.0,
+            "alpha_score": 79.0,
+            "kr_universe_role": "CORE_TREND",
+            "Decision Score": 52.3,
+        },
+        {
+            "티커": "001450.KS",
+            "종목명": "현대해상",
+            "market": "KOSPI",
+            "primary_theme": "자동차",
+            "prob_clean": 20.0,
+            "alpha_score": 82.0,
+            "kr_universe_role": "EXPLOSIVE_LEADER",
+            "Decision Score": 11.5,
+        },
+    ]
+
+    selected = _select_top_candidates(rows, {}, 5)
+
+    assert [(row.get("_analysis_section"), row.get("티커")) for row in selected] == [
+        ("KOSPI Shadow", "271560.KS"),
+        ("Top5", "001450.KS"),
+    ]
 
 
 def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five():

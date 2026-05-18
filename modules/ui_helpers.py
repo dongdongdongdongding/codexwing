@@ -689,7 +689,13 @@ def build_top5_plus_exception_records(
             copy = dict(row)
             copy["_validated_winner_profile"] = profile
             validated_top.append(copy)
-    top_records = validated_top[:top_limit_n] if validated_top else streams["stream_a"][:top_limit_n]
+    validated_keys = {_record_ticker_key(row) for row in validated_top}
+    remaining_top = [
+        row
+        for row in streams["stream_a"]
+        if _record_ticker_key(row) not in validated_keys
+    ]
+    top_records = (validated_top + remaining_top)[:top_limit_n]
 
     exception_records = []
     for row in streams["stream_b"]:
