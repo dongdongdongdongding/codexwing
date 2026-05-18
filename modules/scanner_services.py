@@ -2199,6 +2199,9 @@ def _flow_persistence_fields(whale_data: Optional[Dict[str, Any]], leader_signal
         "retail_dominant": bool(pick("retail_dominant", default=False)),
         "dominant": pick("dominant", default=None),
         "whale_trend": pick("whale_trend", default=None),
+        "flow_source": pick("flow_source", default=None),
+        "flow_unit": pick("flow_unit", default=None),
+        "flow_warnings": pick("warnings", "flow_warnings", default=[]),
     }
 
 
@@ -2587,6 +2590,9 @@ def build_kr_scan_outputs(
         "institution": flow_fields["institution"],
         "retail": flow_fields["retail"],
         "dominant": flow_fields["dominant"],
+        "flow_source": flow_fields["flow_source"],
+        "flow_unit": flow_fields["flow_unit"],
+        "flow_warnings": flow_fields["flow_warnings"],
         "추세": real_trend,
         "전일비": f"{prev_pct_change:+.2f}%",
         "연속등락": f"{consec_days}일 연속 상승" if consec_days > 0 else f"{abs(consec_days)}일 연속 하락",
@@ -3529,6 +3535,7 @@ def evaluate_app_kr_candidate(
             "strategy_type": str(strategy_type),
             "signal_hits": signal_hits,
             "signal_lookback": signal_lookback,
+            **_flow_persistence_fields(whale_data, leader_signal),
         }
         if isinstance(extra, dict):
             payload.update(extra)

@@ -938,6 +938,20 @@ def _fmt_flow_oku(value):
         return "-"
 
 
+def _fmt_flow_value(value, unit=None):
+    if value in (None, ""):
+        return "-"
+    unit_key = str(unit or "").lower()
+    if unit_key == "krw":
+        return _fmt_flow_oku(value)
+    try:
+        numeric = float(value)
+        suffix = "주" if unit_key == "shares" else ""
+        return f"{numeric:+,.0f}{suffix}"
+    except Exception:
+        return "-"
+
+
 def _infer_top_deep_market(row):
     market = str(row.get("market") or "").upper()
     if market:
@@ -1314,12 +1328,18 @@ def _render_top_deep_reports_page():
 
             st.markdown("**수급**")
             f1, f2, f3, f4 = st.columns(4)
-            f1.metric("외인", _fmt_flow_oku(flow.get("foreigner")))
-            f2.metric("기관", _fmt_flow_oku(flow.get("institution")))
-            f3.metric("개인", _fmt_flow_oku(flow.get("retail")), help="개인 순매수가 과도하면 단기 수급 품질이 낮을 수 있습니다.")
+            flow_unit = flow.get("flow_unit")
+            f1.metric("외인", _fmt_flow_value(flow.get("foreigner"), flow_unit))
+            f2.metric("기관", _fmt_flow_value(flow.get("institution"), flow_unit))
+            f3.metric("개인", _fmt_flow_value(flow.get("retail"), flow_unit), help="개인 순매수가 과도하면 단기 수급 품질이 낮을 수 있습니다.")
             f4.metric("수급점수", _fmt_metric_num(flow.get("whale_score"), 0), str(flow.get("whale_trend") or flow.get("dominant") or "-"))
+            flow_warnings = flow.get("warnings") if isinstance(flow.get("warnings"), list) else []
+            flow_source = str(flow.get("source") or "-")
+            flow_unit_label = {"krw": "원", "shares": "주"}.get(str(flow_unit or "").lower(), str(flow_unit or "-"))
+            st.caption(f"수급 기준: {flow_source} · 단위: {flow_unit_label}")
+            if flow.get("scan_whale_score") is not None and flow.get("scan_whale_score") != flow.get("whale_score"):
+                st.caption(f"스캔 당시 수급점수: {_fmt_metric_num(flow.get('scan_whale_score'), 0)} / 현재 보강 수급점수: {_fmt_metric_num(flow.get('whale_score'), 0)}")
             if not flow.get("valid"):
-                flow_warnings = flow.get("warnings") if isinstance(flow.get("warnings"), list) else []
                 st.caption("수급 데이터 경고: " + " / ".join(str(x) for x in flow_warnings[:3]) if flow_warnings else "수급 데이터 미확보")
 
             _render_readiness_analysis(readiness)

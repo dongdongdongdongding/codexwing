@@ -904,6 +904,22 @@ def _detail_feature_fields(row: Dict[str, Any]) -> Dict[str, Any]:
         out["tech_score"] = round(_safe_float(row.get("tech_score")), 2)
     if "whale_score" in row:
         out["whale_score"] = round(_safe_float(row.get("whale_score")), 2)
+    for key in (
+        "foreigner",
+        "foreign_flow",
+        "institution",
+        "institution_flow",
+        "retail",
+        "retail_flow",
+        "dominant",
+        "whale_trend",
+        "flow_source",
+        "flow_unit",
+    ):
+        if key in row and _detail_has_feature(row.get(key)):
+            out[key] = row.get(key)
+    if "flow_warnings" in row and isinstance(row.get("flow_warnings"), list):
+        out["flow_warnings"] = row.get("flow_warnings")
     if "volume_ratio" in row:
         volume_ratio = _safe_float(row.get("volume_ratio"))
         out["volume_ratio"] = round(volume_ratio, 3)

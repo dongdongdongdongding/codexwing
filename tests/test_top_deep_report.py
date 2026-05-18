@@ -193,7 +193,7 @@ def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():
     assert captured["rows"][0]["flow"] == {"foreigner": 1}
 
 
-def test_investor_flow_fetches_breakdown_when_exception_has_score_only():
+def test_investor_flow_fetches_live_breakdown_when_exception_has_score_only():
     with patch("modules.quant_analysis.QuantStrategy") as strategy:
         strategy.return_value.get_investor_flows.return_value = {
             "valid": True,
@@ -211,10 +211,34 @@ def test_investor_flow_fetches_breakdown_when_exception_has_score_only():
             {"whale_score": 80.0},
         )
 
-    assert flow["source"] == "naver"
+    strategy.return_value.get_investor_flows.assert_called_once()
+    assert flow["source"] == "live_fetch:naver"
+    assert flow["scan_whale_score"] == 80.0
+    assert flow["whale_score"] == 72.0
     assert flow["foreigner"] == 1200000.0
     assert flow["institution"] == -300000.0
     assert flow["retail"] == -900000.0
+    assert flow["warnings"] == ["live_flow_breakdown_used_for_scan_score_only_row"]
+
+
+def test_investor_flow_parses_scan_flow_label_with_breakdown():
+    flow = _fetch_investor_flow_snapshot(
+        "271560.KS",
+        {
+            "ticker": "271560.KS",
+            "수급": "76.0점 🔥 가속매수",
+            "foreigner": 62791,
+            "institution": -8700,
+            "retail": -54091,
+        },
+        {},
+    )
+
+    assert flow["source"] == "scan_row"
+    assert flow["flow_unit"] == "shares"
+    assert flow["whale_score"] == 76.0
+    assert flow["whale_trend"] == "🔥 가속매수"
+    assert flow["warnings"] == []
 
 
 def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empty():

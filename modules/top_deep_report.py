@@ -81,6 +81,25 @@ def _safe_int(value: Any) -> int | None:
     return numeric
 
 
+def _parse_flow_label(value: Any) -> Dict[str, Any]:
+    text = str(value or "").strip()
+    if not text:
+        return {}
+    score = None
+    try:
+        import re
+
+        match = re.search(r"([-+]?\d+(?:\.\d+)?)\s*점", text)
+        if match:
+            score = float(match.group(1))
+    except Exception:
+        score = None
+    trend = text
+    if score is not None:
+        trend = text.split("점", 1)[1].strip()
+    return {"whale_score": score, "whale_trend": trend or None}
+
+
 def _ticker(row: Dict[str, Any]) -> str:
     return str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").strip()
 
@@ -290,8 +309,12 @@ def _fetch_news_snapshot(ticker: str, stock_name: str) -> Dict[str, Any]:
 
 def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[str, Any]) -> Dict[str, Any]:
     base = {**(row if isinstance(row, dict) else {}), **(trace if isinstance(trace, dict) else {})}
+    flow_label = _parse_flow_label(_first_present(base, "수급", "flow_label"))
+    whale_score = _safe_float(_first_present(base, "whale_score", "Whale", "kr_flow_leader_score"))
+    if whale_score is None:
+        whale_score = flow_label.get("whale_score")
     direct = {
-        "whale_score": _safe_float(_first_present(base, "whale_score", "Whale", "kr_flow_leader_score")),
+        "whale_score": whale_score,
         "foreigner": _safe_float(
             _first_present(base, "foreigner", "foreign_flow", "foreign_net", "foreign_net_buy", "kr_foreign_flow")
         ),
@@ -312,20 +335,20 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
     has_flow_breakdown = any(direct.get(key) is not None for key in ("foreigner", "institution", "retail"))
     if has_flow_breakdown:
         whale = direct.get("whale_score")
+        direct_source = str(base.get("flow_source") or "").strip()
         return {
             "valid": True,
             "type": "KR" if str(ticker).upper().endswith((".KS", ".KQ")) else "UNKNOWN",
-            "source": "scan_row",
-            "flow_unit": base.get("flow_unit"),
+            "source": f"scan_row:{direct_source}" if direct_source else "scan_row",
+            "flow_unit": base.get("flow_unit") or "shares",
             "whale_score": whale,
             "foreigner": direct.get("foreigner"),
             "institution": direct.get("institution"),
             "retail": direct.get("retail"),
             "dominant": base.get("dominant"),
-            "whale_trend": base.get("whale_trend"),
+            "whale_trend": base.get("whale_trend") or flow_label.get("whale_trend"),
             "warnings": [] if whale is not None else ["investor_flow_score_missing_scan_row"],
         }
-
     if not str(ticker).upper().endswith((".KS", ".KQ")):
         return {
             "valid": False,
@@ -344,14 +367,17 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
         payload = QuantStrategy(ticker).get_investor_flows()
         fetched_whale = _safe_float(payload.get("whale_score"))
         payload_warnings = [str(item) for item in (payload.get("warnings") or []) if item]
+        if direct.get("whale_score") is not None:
+            payload_warnings.append("live_flow_breakdown_used_for_scan_score_only_row")
         if not payload.get("valid"):
             payload_warnings.append(str(payload.get("reason") or "investor_flow_unavailable"))
         return {
             "valid": bool(payload.get("valid")),
             "type": payload.get("type") or "KR",
-            "source": payload.get("flow_source") or "quant_strategy",
+            "source": f"live_fetch:{payload.get('flow_source') or 'quant_strategy'}",
             "flow_unit": payload.get("flow_unit"),
             "whale_score": fetched_whale if fetched_whale is not None else direct.get("whale_score"),
+            "scan_whale_score": direct.get("whale_score"),
             "foreigner": _safe_float(payload.get("foreigner")),
             "institution": _safe_float(payload.get("institution")),
             "retail": _safe_float(payload.get("retail")),
