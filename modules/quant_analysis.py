@@ -2972,6 +2972,10 @@ class QuantStrategy:
         if is_kr:
             code = str(self.ticker).split('.')[0]
             sum_inst, sum_for, sum_ret = 0.0, 0.0, 0.0
+            sum_inst_1d, sum_for_1d, sum_ret_1d = 0.0, 0.0, 0.0
+            sum_inst_3d, sum_for_3d, sum_ret_3d = 0.0, 0.0, 0.0
+            sum_inst_10d, sum_for_10d, sum_ret_10d = 0.0, 0.0, 0.0
+            flow_asof = None
             _flow_source = None
             _flow_df = None
             _col_map: typing.Dict[str, typing.Any] = {}
@@ -3006,6 +3010,7 @@ class QuantStrategy:
 
                     recent = _flow_df.tail(10)
                     inst_col = _find_col(["기관합계", "기관"])
+                    inst_cols = []
                     if inst_col is not None:
                         sum_inst = _sum_col(recent, inst_col)
                         _col_map['institution'] = inst_col
@@ -3020,6 +3025,7 @@ class QuantStrategy:
                             _col_map['institution_parts'] = inst_cols
 
                     for_col = _find_col(["외국인합계", "외국인"])
+                    foreign_cols = []
                     if for_col is not None:
                         sum_for = _sum_col(recent, for_col)
                         _col_map['foreigner'] = for_col
@@ -3036,6 +3042,36 @@ class QuantStrategy:
                         _col_map['retail'] = ret_col
                     else:
                         sum_ret = -1 * (sum_inst + sum_for)
+
+                    def _sum_inst_frame(frame: pd.DataFrame) -> float:
+                        if inst_col is not None:
+                            return _sum_col(frame, inst_col)
+                        return sum(_sum_col(frame, col) for col in inst_cols)
+
+                    def _sum_for_frame(frame: pd.DataFrame) -> float:
+                        if for_col is not None:
+                            return _sum_col(frame, for_col)
+                        return sum(_sum_col(frame, col) for col in foreign_cols)
+
+                    def _sum_ret_frame(frame: pd.DataFrame, inst_value: float, for_value: float) -> float:
+                        if ret_col is not None:
+                            return _sum_col(frame, ret_col)
+                        return -1 * (inst_value + for_value)
+
+                    recent_1d = _flow_df.tail(1)
+                    recent_3d = _flow_df.tail(3)
+                    sum_inst_1d = _sum_inst_frame(recent_1d)
+                    sum_for_1d = _sum_for_frame(recent_1d)
+                    sum_ret_1d = _sum_ret_frame(recent_1d, sum_inst_1d, sum_for_1d)
+                    sum_inst_3d = _sum_inst_frame(recent_3d)
+                    sum_for_3d = _sum_for_frame(recent_3d)
+                    sum_ret_3d = _sum_ret_frame(recent_3d, sum_inst_3d, sum_for_3d)
+                    sum_inst_10d, sum_for_10d, sum_ret_10d = sum_inst, sum_for, sum_ret
+                    try:
+                        latest_idx = recent_1d.index[-1]
+                        flow_asof = latest_idx.strftime("%Y-%m-%d") if hasattr(latest_idx, "strftime") else str(latest_idx)
+                    except Exception:
+                        flow_asof = None
 
                     if abs(sum_inst) + abs(sum_for) + abs(sum_ret) <= 0:
                         raise ValueError("pykrx_zero_investor_flow")
@@ -3063,9 +3099,22 @@ class QuantStrategy:
                         df_html['Institution'] = pd.to_numeric(df_html['순매매량'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
                         df_html['Foreigner'] = pd.to_numeric(df_html['순매매량.1'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
                         recent = df_html.head(10)
-                        sum_inst = float(recent['Institution'].sum())
-                        sum_for = float(recent['Foreigner'].sum())
-                        sum_ret = -1 * (sum_inst + sum_for)
+                        recent_1d = df_html.head(1)
+                        recent_3d = df_html.head(3)
+                        sum_inst_1d = float(recent_1d['Institution'].sum())
+                        sum_for_1d = float(recent_1d['Foreigner'].sum())
+                        sum_ret_1d = -1 * (sum_inst_1d + sum_for_1d)
+                        sum_inst_3d = float(recent_3d['Institution'].sum())
+                        sum_for_3d = float(recent_3d['Foreigner'].sum())
+                        sum_ret_3d = -1 * (sum_inst_3d + sum_for_3d)
+                        sum_inst_10d = float(recent['Institution'].sum())
+                        sum_for_10d = float(recent['Foreigner'].sum())
+                        sum_ret_10d = -1 * (sum_inst_10d + sum_for_10d)
+                        sum_inst, sum_for, sum_ret = sum_inst_10d, sum_for_10d, sum_ret_10d
+                        try:
+                            flow_asof = str(recent_1d['날짜'].iloc[0])
+                        except Exception:
+                            flow_asof = None
                         _flow_source = 'naver'
                         res['flow_unit'] = 'shares'
                 except Exception:
@@ -3075,78 +3124,95 @@ class QuantStrategy:
                 res['reason'] = "Both pykrx and Naver scraper failed"
                 return res
 
-            res['foreigner'] = int(sum_for)
-            res['institution'] = int(sum_inst)
-            res['retail'] = int(sum_ret)
+            daily_whale_flow = sum_inst_1d + sum_for_1d
+            whale_flow_3d = sum_inst_3d + sum_for_3d
+            whale_flow_10d = sum_inst_10d + sum_for_10d
+            res['foreigner'] = int(sum_for_1d)
+            res['institution'] = int(sum_inst_1d)
+            res['retail'] = int(sum_ret_1d)
+            res['foreign_flow'] = int(sum_for_1d)
+            res['institution_flow'] = int(sum_inst_1d)
+            res['retail_flow'] = int(sum_ret_1d)
+            res['foreigner_1d'] = int(sum_for_1d)
+            res['institution_1d'] = int(sum_inst_1d)
+            res['retail_1d'] = int(sum_ret_1d)
+            res['foreigner_3d'] = int(sum_for_3d)
+            res['institution_3d'] = int(sum_inst_3d)
+            res['retail_3d'] = int(sum_ret_3d)
+            res['foreigner_10d'] = int(sum_for_10d)
+            res['institution_10d'] = int(sum_inst_10d)
+            res['retail_10d'] = int(sum_ret_10d)
+            res['whale_flow'] = int(daily_whale_flow)
+            res['whale_flow_1d'] = int(daily_whale_flow)
+            res['whale_flow_3d'] = int(whale_flow_3d)
+            res['whale_flow_10d'] = int(whale_flow_10d)
+            res['flow_window'] = '1d'
+            res['flow_asof'] = flow_asof
             res['valid'] = True
             res['type'] = 'KR'
             res['flow_source'] = _flow_source
+            flow_pairs = [
+                ('외인', float(sum_for_1d)),
+                ('기관', float(sum_inst_1d)),
+                ('개인', float(sum_ret_1d)),
+            ]
+            buyers = [(name, value) for name, value in flow_pairs if value > 0]
+            sellers = [(name, value) for name, value in flow_pairs if value < 0]
+            buy_dominant = max(buyers, key=lambda item: item[1]) if buyers else (None, 0.0)
+            sell_dominant = min(sellers, key=lambda item: item[1]) if sellers else (None, 0.0)
+            res['buy_dominant'] = buy_dominant[0]
+            res['buy_dominant_flow'] = int(buy_dominant[1]) if buy_dominant[0] else 0
+            res['sell_dominant'] = sell_dominant[0]
+            res['sell_dominant_flow'] = int(sell_dominant[1]) if sell_dominant[0] else 0
+            if buy_dominant[0]:
+                res['dominant'] = buy_dominant[0]
+                res['dominant_side'] = 'buy'
+                res['dominant_flow'] = int(buy_dominant[1])
+            elif sell_dominant[0]:
+                res['dominant'] = sell_dominant[0]
+                res['dominant_side'] = 'sell'
+                res['dominant_flow'] = int(sell_dominant[1])
 
-            # Scoring (KR) — Proportional to actual flows
-            whale_flow = sum_inst + sum_for  # 기관 + 외인
-            total_abs = abs(sum_inst) + abs(sum_for) + abs(sum_ret)
+            total_abs_1d = abs(sum_inst_1d) + abs(sum_for_1d) + abs(sum_ret_1d)
+            total_abs_10d = abs(sum_inst_10d) + abs(sum_for_10d) + abs(sum_ret_10d)
+            res['total_abs_flow'] = int(total_abs_1d)
+            res['total_abs_flow_10d'] = int(total_abs_10d)
 
             score = 50  # Neutral baseline
 
-            if total_abs > 0:
-                # Whale dominance ratio: how much of total flow is whale?
-                whale_ratio = whale_flow / total_abs if total_abs > 0 else 0
-                # Range: -1 (pure retail) to +1 (pure whale)
-                score = 50 + int(whale_ratio * 50)
-                # Both inst AND foreign buying = strong consensus
-                if sum_inst > 0 and sum_for > 0:
-                    score += 5
-                # Penalty: If retail buying is 3x+ whale, it's clearly retail-driven
-                if abs(sum_ret) > abs(whale_flow) * 3 and sum_ret > 0:
-                    score = min(score, 40)
-
-            # Determine dominant investor type
-            if abs(sum_for) > abs(sum_inst) and abs(sum_for) > abs(sum_ret):
-                res['dominant'] = '외인'
-            elif abs(sum_inst) > abs(sum_for) and abs(sum_inst) > abs(sum_ret):
-                res['dominant'] = '기관'
-            else:
-                res['dominant'] = '개인'
+            if total_abs_10d > 0:
+                score += int((whale_flow_10d / total_abs_10d) * 25)
+            if total_abs_1d > 0:
+                score += int((daily_whale_flow / total_abs_1d) * 35)
+            if sum_inst_1d > 0 and sum_for_1d > 0:
+                score += 10
+            if sum_inst_1d < 0 and sum_for_1d < 0:
+                score -= 15
+            if daily_whale_flow < 0:
+                score -= 15
+            if daily_whale_flow > 0 and whale_flow_10d > 0:
+                score += 8
+            if daily_whale_flow < 0 and whale_flow_10d > 0:
+                score -= 10
+            if sum_ret_1d > 0 and sum_ret_1d > max(abs(daily_whale_flow) * 1.5, 1.0):
+                score = min(score, 40)
 
             # 3-Day Whale Trend Analysis (short-term acceleration/deceleration)
             # For pykrx: recompute from flow df if available; for naver: use df_html
-            try:
-                if _flow_source == 'pykrx_value' and _flow_df is not None:
-                    _r3 = _flow_df.tail(3)
-                    if 'institution' in _col_map:
-                        sum_inst_3d = float(pd.to_numeric(_r3[_col_map['institution']], errors='coerce').fillna(0).sum())
-                    else:
-                        sum_inst_3d = sum(
-                            float(pd.to_numeric(_r3[col], errors='coerce').fillna(0).sum())
-                            for col in _col_map.get('institution_parts', [])
-                        )
-                    if 'foreigner' in _col_map:
-                        sum_for_3d = float(pd.to_numeric(_r3[_col_map['foreigner']], errors='coerce').fillna(0).sum())
-                    else:
-                        sum_for_3d = sum(
-                            float(pd.to_numeric(_r3[col], errors='coerce').fillna(0).sum())
-                            for col in _col_map.get('foreigner_parts', [])
-                        )
-                elif _flow_source == 'naver' and 'df_html' in dir():
-                    _r3 = df_html.head(3)
-                    sum_inst_3d = float(_r3['Institution'].sum())
-                    sum_for_3d = float(_r3['Foreigner'].sum())
-                else:
-                    sum_inst_3d, sum_for_3d = 0.0, 0.0
-                whale_3d = sum_inst_3d + sum_for_3d
-                whale_10d_avg = whale_flow / 10 * 3  # Normalized to 3-day equivalent
-                if whale_3d > 0 and whale_3d > whale_10d_avg:
-                    res['whale_trend'] = '🔥 가속매수'
-                    score += 5
-                elif whale_3d > 0:
-                    res['whale_trend'] = '↗ 순매수'
-                elif whale_3d < 0 and whale_3d < whale_10d_avg:
-                    res['whale_trend'] = '🔻 가속매도'
-                    score -= 10
-                else:
-                    res['whale_trend'] = '↘ 순매도'
-            except Exception:
-                pass
+            if daily_whale_flow > 0 and whale_flow_3d > 0:
+                res['whale_trend'] = '🔥 당일+3일 순매수'
+            elif daily_whale_flow > 0 and whale_flow_10d < 0:
+                res['whale_trend'] = '↗ 당일 순매수 전환'
+            elif daily_whale_flow > 0:
+                res['whale_trend'] = '↗ 당일 순매수'
+            elif daily_whale_flow < 0 and whale_flow_3d < 0:
+                res['whale_trend'] = '🔻 당일+3일 순매도'
+            elif daily_whale_flow < 0 and whale_flow_10d > 0:
+                res['whale_trend'] = '↘ 당일 순매도 전환'
+            elif daily_whale_flow < 0:
+                res['whale_trend'] = '↘ 당일 순매도'
+            else:
+                res['whale_trend'] = '↔ 당일 중립'
 
             res['whale_confidence'] = '확정'
             res['whale_score'] = max(0, min(100, score))

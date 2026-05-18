@@ -100,6 +100,40 @@ def _parse_flow_label(value: Any) -> Dict[str, Any]:
     return {"whale_score": score, "whale_trend": trend or None}
 
 
+def _list_warnings(value: Any) -> List[str]:
+    if value is None or value == "":
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value if item is not None and str(item)]
+    return [str(value)]
+
+
+def _derive_flow_dominance(flow: Dict[str, Any]) -> Dict[str, Any]:
+    foreigner = _safe_float(flow.get("foreigner"))
+    institution = _safe_float(flow.get("institution"))
+    retail = _safe_float(flow.get("retail"))
+    pairs = [
+        ("외인", foreigner),
+        ("기관", institution),
+        ("개인", retail),
+    ]
+    buyers = [(name, value) for name, value in pairs if value is not None and value > 0]
+    sellers = [(name, value) for name, value in pairs if value is not None and value < 0]
+    buy = max(buyers, key=lambda item: item[1]) if buyers else (None, None)
+    sell = min(sellers, key=lambda item: item[1]) if sellers else (None, None)
+    dominant = buy if buy[0] else sell
+    return {
+        "buy_dominant": buy[0],
+        "buy_dominant_flow": buy[1],
+        "sell_dominant": sell[0],
+        "sell_dominant_flow": sell[1],
+        "dominant": dominant[0],
+        "dominant_side": "buy" if buy[0] else ("sell" if sell[0] else None),
+        "dominant_flow": dominant[1],
+        "whale_flow": (foreigner + institution) if foreigner is not None and institution is not None else None,
+    }
+
+
 def _ticker(row: Dict[str, Any]) -> str:
     return str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").strip()
 
@@ -316,11 +350,12 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
     direct = {
         "whale_score": whale_score,
         "foreigner": _safe_float(
-            _first_present(base, "foreigner", "foreign_flow", "foreign_net", "foreign_net_buy", "kr_foreign_flow")
+            _first_present(base, "foreigner_1d", "foreigner", "foreign_flow", "foreign_net", "foreign_net_buy", "kr_foreign_flow")
         ),
         "institution": _safe_float(
             _first_present(
                 base,
+                "institution_1d",
                 "institution",
                 "institution_flow",
                 "institution_net",
@@ -329,13 +364,20 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             )
         ),
         "retail": _safe_float(
-            _first_present(base, "retail", "retail_flow", "individual", "individual_net", "retail_net_buy", "kr_retail_flow")
+            _first_present(base, "retail_1d", "retail", "retail_flow", "individual", "individual_net", "retail_net_buy", "kr_retail_flow")
         ),
     }
     has_flow_breakdown = any(direct.get(key) is not None for key in ("foreigner", "institution", "retail"))
     if has_flow_breakdown:
         whale = direct.get("whale_score")
         direct_source = str(base.get("flow_source") or "").strip()
+        flow_window = str(base.get("flow_window") or "").strip()
+        dominance = _derive_flow_dominance(direct)
+        whale_flow = (
+            base.get("whale_flow_1d")
+            if _present(base.get("whale_flow_1d"))
+            else (base.get("whale_flow") if _present(base.get("whale_flow")) else dominance.get("whale_flow"))
+        )
         return {
             "valid": True,
             "type": "KR" if str(ticker).upper().endswith((".KS", ".KQ")) else "UNKNOWN",
@@ -345,9 +387,32 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "foreigner": direct.get("foreigner"),
             "institution": direct.get("institution"),
             "retail": direct.get("retail"),
-            "dominant": base.get("dominant"),
+            "dominant": dominance.get("dominant") or base.get("dominant"),
+            "dominant_side": dominance.get("dominant_side") or base.get("dominant_side"),
+            "dominant_flow": dominance.get("dominant_flow") or base.get("dominant_flow"),
+            "buy_dominant": dominance.get("buy_dominant"),
+            "buy_dominant_flow": dominance.get("buy_dominant_flow"),
+            "sell_dominant": dominance.get("sell_dominant"),
+            "sell_dominant_flow": dominance.get("sell_dominant_flow"),
+            "foreigner_1d": direct.get("foreigner"),
+            "institution_1d": direct.get("institution"),
+            "retail_1d": direct.get("retail"),
+            "foreigner_3d": base.get("foreigner_3d"),
+            "institution_3d": base.get("institution_3d"),
+            "retail_3d": base.get("retail_3d"),
+            "foreigner_10d": base.get("foreigner_10d"),
+            "institution_10d": base.get("institution_10d"),
+            "retail_10d": base.get("retail_10d"),
+            "whale_flow": whale_flow,
+            "whale_flow_1d": whale_flow,
+            "whale_flow_3d": base.get("whale_flow_3d"),
+            "whale_flow_10d": base.get("whale_flow_10d"),
+            "flow_window": flow_window or "legacy_unknown",
+            "flow_asof": base.get("flow_asof"),
             "whale_trend": base.get("whale_trend") or flow_label.get("whale_trend"),
-            "warnings": [] if whale is not None else ["investor_flow_score_missing_scan_row"],
+            "warnings": _list_warnings(base.get("flow_warnings"))
+            + ([] if flow_window else ["legacy_flow_window_unknown"])
+            + ([] if whale is not None else ["investor_flow_score_missing_scan_row"]),
         }
     if not str(ticker).upper().endswith((".KS", ".KQ")):
         return {
@@ -371,6 +436,12 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             payload_warnings.append("live_flow_breakdown_used_for_scan_score_only_row")
         if not payload.get("valid"):
             payload_warnings.append(str(payload.get("reason") or "investor_flow_unavailable"))
+        dominance = _derive_flow_dominance(payload)
+        whale_flow = (
+            payload.get("whale_flow_1d")
+            if _present(payload.get("whale_flow_1d"))
+            else (payload.get("whale_flow") if _present(payload.get("whale_flow")) else dominance.get("whale_flow"))
+        )
         return {
             "valid": bool(payload.get("valid")),
             "type": payload.get("type") or "KR",
@@ -381,7 +452,28 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "foreigner": _safe_float(payload.get("foreigner")),
             "institution": _safe_float(payload.get("institution")),
             "retail": _safe_float(payload.get("retail")),
-            "dominant": payload.get("dominant"),
+            "dominant": payload.get("dominant") or dominance.get("dominant"),
+            "dominant_side": payload.get("dominant_side") or dominance.get("dominant_side"),
+            "dominant_flow": payload.get("dominant_flow") or dominance.get("dominant_flow"),
+            "buy_dominant": payload.get("buy_dominant") or dominance.get("buy_dominant"),
+            "buy_dominant_flow": payload.get("buy_dominant_flow") or dominance.get("buy_dominant_flow"),
+            "sell_dominant": payload.get("sell_dominant") or dominance.get("sell_dominant"),
+            "sell_dominant_flow": payload.get("sell_dominant_flow") or dominance.get("sell_dominant_flow"),
+            "foreigner_1d": payload.get("foreigner_1d", payload.get("foreigner")),
+            "institution_1d": payload.get("institution_1d", payload.get("institution")),
+            "retail_1d": payload.get("retail_1d", payload.get("retail")),
+            "foreigner_3d": payload.get("foreigner_3d"),
+            "institution_3d": payload.get("institution_3d"),
+            "retail_3d": payload.get("retail_3d"),
+            "foreigner_10d": payload.get("foreigner_10d"),
+            "institution_10d": payload.get("institution_10d"),
+            "retail_10d": payload.get("retail_10d"),
+            "whale_flow": whale_flow,
+            "whale_flow_1d": whale_flow,
+            "whale_flow_3d": payload.get("whale_flow_3d"),
+            "whale_flow_10d": payload.get("whale_flow_10d"),
+            "flow_window": payload.get("flow_window") or "1d",
+            "flow_asof": payload.get("flow_asof"),
             "whale_trend": payload.get("whale_trend"),
             "warnings": payload_warnings,
         }

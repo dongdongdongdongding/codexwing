@@ -64,6 +64,20 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
             "foreign_flow": 1500000000,
             "institution_flow": 700000000,
             "retail_flow": -2200000000,
+            "foreigner_1d": 1500000000,
+            "institution_1d": 700000000,
+            "retail_1d": -2200000000,
+            "foreigner_3d": 2500000000,
+            "institution_3d": 900000000,
+            "retail_3d": -3400000000,
+            "foreigner_10d": 3500000000,
+            "institution_10d": 1900000000,
+            "retail_10d": -5400000000,
+            "whale_flow_1d": 2200000000,
+            "whale_flow_3d": 3400000000,
+            "whale_flow_10d": 5400000000,
+            "flow_window": "1d",
+            "flow_asof": "2026-05-19",
             "flow_consensus_buying": True,
             "retail_dominant": False,
             "dominant": "외인",
@@ -105,6 +119,20 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
     assert payload["foreign_flow"] == 1500000000.0
     assert payload["institution_flow"] == 700000000.0
     assert payload["retail_flow"] == -2200000000.0
+    assert payload["foreigner_1d"] == 1500000000.0
+    assert payload["institution_1d"] == 700000000.0
+    assert payload["retail_1d"] == -2200000000.0
+    assert payload["foreigner_3d"] == 2500000000.0
+    assert payload["institution_3d"] == 900000000.0
+    assert payload["retail_3d"] == -3400000000.0
+    assert payload["foreigner_10d"] == 3500000000.0
+    assert payload["institution_10d"] == 1900000000.0
+    assert payload["retail_10d"] == -5400000000.0
+    assert payload["whale_flow_1d"] == 2200000000.0
+    assert payload["whale_flow_3d"] == 3400000000.0
+    assert payload["whale_flow_10d"] == 5400000000.0
+    assert payload["flow_window"] == "1d"
+    assert payload["flow_asof"] == "2026-05-19"
     assert payload["flow_consensus_buying"] is True
     assert payload["retail_dominant"] is False
     assert payload["dominant"] == "외인"

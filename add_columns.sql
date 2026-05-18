@@ -122,3 +122,23 @@ ADD COLUMN IF NOT EXISTS max_high_return_5d_pct numeric,
 ADD COLUMN IF NOT EXISTS hit_5pct_within_5d boolean,
 ADD COLUMN IF NOT EXISTS hit_5pct_within_5d_at date,
 ADD COLUMN IF NOT EXISTS swing_target_label_version text;
+
+-- Added 2026-05-19 (swing-main-b9p3). KR investor flow must not mix daily
+-- entry timing with 3d/10d background accumulation. `foreigner`,
+-- `institution`, `retail` remain the primary daily display fields; these
+-- explicit windows preserve the supporting context for archive/retraining.
+ALTER TABLE market_scan_results
+ADD COLUMN IF NOT EXISTS foreigner_1d numeric,
+ADD COLUMN IF NOT EXISTS institution_1d numeric,
+ADD COLUMN IF NOT EXISTS retail_1d numeric,
+ADD COLUMN IF NOT EXISTS foreigner_3d numeric,
+ADD COLUMN IF NOT EXISTS institution_3d numeric,
+ADD COLUMN IF NOT EXISTS retail_3d numeric,
+ADD COLUMN IF NOT EXISTS foreigner_10d numeric,
+ADD COLUMN IF NOT EXISTS institution_10d numeric,
+ADD COLUMN IF NOT EXISTS retail_10d numeric,
+ADD COLUMN IF NOT EXISTS whale_flow_1d numeric,
+ADD COLUMN IF NOT EXISTS whale_flow_3d numeric,
+ADD COLUMN IF NOT EXISTS whale_flow_10d numeric,
+ADD COLUMN IF NOT EXISTS flow_window text,
+ADD COLUMN IF NOT EXISTS flow_asof text;

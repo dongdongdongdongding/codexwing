@@ -230,6 +230,9 @@ def test_investor_flow_parses_scan_flow_label_with_breakdown():
             "foreigner": 62791,
             "institution": -8700,
             "retail": -54091,
+            "dominant": "개인",
+            "flow_window": "1d",
+            "flow_warnings": ["pykrx_flow_failed:pykrx_empty_investor_flow"],
         },
         {},
     )
@@ -237,8 +240,37 @@ def test_investor_flow_parses_scan_flow_label_with_breakdown():
     assert flow["source"] == "scan_row"
     assert flow["flow_unit"] == "shares"
     assert flow["whale_score"] == 76.0
+    assert flow["dominant"] == "외인"
+    assert flow["dominant_side"] == "buy"
+    assert flow["buy_dominant"] == "외인"
+    assert flow["sell_dominant"] == "개인"
+    assert flow["whale_flow"] == 54091.0
     assert flow["whale_trend"] == "🔥 가속매수"
-    assert flow["warnings"] == []
+    assert flow["warnings"] == ["pykrx_flow_failed:pykrx_empty_investor_flow"]
+
+
+def test_investor_flow_marks_legacy_breakdown_when_window_is_unknown():
+    flow = _fetch_investor_flow_snapshot(
+        "022100.KS",
+        {
+            "ticker": "022100.KS",
+            "수급": "70.0점 🔻 가속매도",
+            "foreigner": 135471,
+            "institution": 151062,
+            "retail": -286533,
+            "dominant": "개인",
+            "flow_source": "naver",
+            "flow_unit": "shares",
+        },
+        {},
+    )
+
+    assert flow["source"] == "scan_row:naver"
+    assert flow["dominant"] == "기관"
+    assert flow["dominant_side"] == "buy"
+    assert flow["whale_flow"] == 286533.0
+    assert flow["flow_window"] == "legacy_unknown"
+    assert flow["warnings"] == ["legacy_flow_window_unknown"]
 
 
 def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empty():

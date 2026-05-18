@@ -24,9 +24,23 @@ def test_kr_investor_flow_prefers_pykrx_trading_value(monkeypatch):
     assert flow["valid"] is True
     assert flow["flow_source"] == "pykrx_value"
     assert flow["flow_unit"] == "KRW"
-    assert flow["institution"] == 300_000_000
-    assert flow["foreigner"] == 200_000_000
-    assert flow["retail"] == -500_000_000
+    assert flow["institution"] == 200_000_000
+    assert flow["foreigner"] == -100_000_000
+    assert flow["retail"] == -100_000_000
+    assert flow["institution_3d"] == 300_000_000
+    assert flow["foreigner_3d"] == 200_000_000
+    assert flow["retail_3d"] == -500_000_000
+    assert flow["institution_10d"] == 300_000_000
+    assert flow["foreigner_10d"] == 200_000_000
+    assert flow["retail_10d"] == -500_000_000
+    assert flow["dominant"] == "기관"
+    assert flow["dominant_side"] == "buy"
+    assert flow["buy_dominant"] == "기관"
+    assert flow["sell_dominant"] == "외인"
+    assert flow["whale_flow_1d"] == 100_000_000
+    assert flow["whale_flow_3d"] == 500_000_000
+    assert flow["whale_flow_10d"] == 500_000_000
+    assert flow["flow_window"] == "1d"
     assert flow["whale_score"] > 50
     assert flow["warnings"] == []
 
@@ -62,7 +76,21 @@ def test_kr_investor_flow_falls_back_to_naver_when_pykrx_fails(monkeypatch):
     assert flow["valid"] is True
     assert flow["flow_source"] == "naver"
     assert flow["flow_unit"] == "shares"
-    assert flow["institution"] == 500
-    assert flow["foreigner"] == 3500
-    assert flow["retail"] == -4000
+    assert flow["institution"] == 1000
+    assert flow["foreigner"] == 2000
+    assert flow["retail"] == -3000
+    assert flow["institution_3d"] == 500
+    assert flow["foreigner_3d"] == 3500
+    assert flow["retail_3d"] == -4000
+    assert flow["institution_10d"] == 500
+    assert flow["foreigner_10d"] == 3500
+    assert flow["retail_10d"] == -4000
+    assert flow["dominant"] == "외인"
+    assert flow["dominant_side"] == "buy"
+    assert flow["buy_dominant"] == "외인"
+    assert flow["sell_dominant"] == "개인"
+    assert flow["whale_flow_1d"] == 3000
+    assert flow["whale_flow_3d"] == 4000
+    assert flow["whale_flow_10d"] == 4000
+    assert flow["flow_window"] == "1d"
     assert flow["warnings"] == ["pykrx_flow_failed:krx unavailable"]

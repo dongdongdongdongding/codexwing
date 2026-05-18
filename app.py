@@ -952,6 +952,25 @@ def _fmt_flow_value(value, unit=None):
         return "-"
 
 
+def _fmt_flow_leader_caption(flow):
+    if not isinstance(flow, dict):
+        return None
+    unit = flow.get("flow_unit")
+    window = str(flow.get("flow_window") or "").lower()
+    primary_label = "당일 외인+기관" if window in {"1d", "day"} else "외인+기관"
+    parts = []
+    flow_asof = flow.get("flow_asof")
+    if flow_asof:
+        parts.append(f"기준일: {flow_asof}")
+    if flow.get("whale_flow_1d") is not None or flow.get("whale_flow") is not None:
+        parts.append(f"{primary_label}: {_fmt_flow_value(flow.get('whale_flow_1d', flow.get('whale_flow')), unit)}")
+    if flow.get("whale_flow_3d") is not None:
+        parts.append(f"3일 외인+기관: {_fmt_flow_value(flow.get('whale_flow_3d'), unit)}")
+    if flow.get("whale_flow_10d") is not None:
+        parts.append(f"10일 외인+기관: {_fmt_flow_value(flow.get('whale_flow_10d'), unit)}")
+    return " · ".join(parts) if parts else None
+
+
 def _infer_top_deep_market(row):
     market = str(row.get("market") or "").upper()
     if market:
@@ -1329,16 +1348,23 @@ def _render_top_deep_reports_page():
             st.markdown("**수급**")
             f1, f2, f3, f4 = st.columns(4)
             flow_unit = flow.get("flow_unit")
-            f1.metric("외인", _fmt_flow_value(flow.get("foreigner"), flow_unit))
-            f2.metric("기관", _fmt_flow_value(flow.get("institution"), flow_unit))
-            f3.metric("개인", _fmt_flow_value(flow.get("retail"), flow_unit), help="개인 순매수가 과도하면 단기 수급 품질이 낮을 수 있습니다.")
-            f4.metric("수급점수", _fmt_metric_num(flow.get("whale_score"), 0), str(flow.get("whale_trend") or flow.get("dominant") or "-"))
+            flow_window_key = str(flow.get("flow_window") or "").lower()
+            flow_metric_prefix = "당일 " if flow_window_key in {"1d", "day"} else ""
+            f1.metric(f"{flow_metric_prefix}외인", _fmt_flow_value(flow.get("foreigner_1d", flow.get("foreigner")), flow_unit))
+            f2.metric(f"{flow_metric_prefix}기관", _fmt_flow_value(flow.get("institution_1d", flow.get("institution")), flow_unit))
+            f3.metric(f"{flow_metric_prefix}개인", _fmt_flow_value(flow.get("retail_1d", flow.get("retail")), flow_unit), help="개인 순매수가 과도하면 단기 수급 품질이 낮을 수 있습니다.")
+            f4.metric("수급점수", _fmt_metric_num(flow.get("whale_score"), 0), str(flow.get("whale_trend") or "-"))
             flow_warnings = flow.get("warnings") if isinstance(flow.get("warnings"), list) else []
             flow_source = str(flow.get("source") or "-")
             flow_unit_label = {"krw": "원", "shares": "주"}.get(str(flow_unit or "").lower(), str(flow_unit or "-"))
             st.caption(f"수급 기준: {flow_source} · 단위: {flow_unit_label}")
+            flow_leader_caption = _fmt_flow_leader_caption(flow)
+            if flow_leader_caption:
+                st.caption(flow_leader_caption)
             if flow.get("scan_whale_score") is not None and flow.get("scan_whale_score") != flow.get("whale_score"):
                 st.caption(f"스캔 당시 수급점수: {_fmt_metric_num(flow.get('scan_whale_score'), 0)} / 현재 보강 수급점수: {_fmt_metric_num(flow.get('whale_score'), 0)}")
+            if flow_warnings:
+                st.caption("수급 데이터 참고: " + " / ".join(str(x) for x in flow_warnings[:3]))
             if not flow.get("valid"):
                 st.caption("수급 데이터 경고: " + " / ".join(str(x) for x in flow_warnings[:3]) if flow_warnings else "수급 데이터 미확보")
 

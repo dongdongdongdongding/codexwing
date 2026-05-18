@@ -38,6 +38,26 @@ def _fmt_flow(value: Any) -> str:
     return f"{numeric:+,.0f}"
 
 
+def _fmt_flow_line(flow: Dict[str, Any]) -> str:
+    window = str(flow.get("flow_window") or "").lower()
+    label = "당일" if window in {"1d", "day"} else "수급"
+    whale_1d = flow.get("whale_flow_1d", flow.get("whale_flow"))
+    whale_3d = flow.get("whale_flow_3d")
+    whale_10d = flow.get("whale_flow_10d")
+    tail = []
+    if whale_3d is not None:
+        tail.append(f"3일 외+기 {_fmt_flow(whale_3d)}")
+    if whale_10d is not None:
+        tail.append(f"10일 외+기 {_fmt_flow(whale_10d)}")
+    context = " · " + " / ".join(tail) if tail else ""
+    return (
+        f"수급: {label} 외인 {_fmt_flow(flow.get('foreigner_1d', flow.get('foreigner')))} / "
+        f"기관 {_fmt_flow(flow.get('institution_1d', flow.get('institution')))} / "
+        f"개인 {_fmt_flow(flow.get('retail_1d', flow.get('retail')))} · "
+        f"외+기 {_fmt_flow(whale_1d)} · 점수 {_fmt_num(flow.get('whale_score'), 0)}{context}"
+    )
+
+
 def _fmt_pct(value: Any) -> str:
     numeric = _safe_float(value)
     if numeric is None:
@@ -274,12 +294,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         ),
         f"추격위험: {readiness.get('chase_risk_level') or '-'} · 손실위험 {_fmt_num(row.get('loss_risk_score'), 1)}",
         f"전일비: {_fmt_pct(row.get('day_change_pct'))}",
-        (
-            f"수급: 외인 {_fmt_flow(flow.get('foreigner'))} / "
-            f"기관 {_fmt_flow(flow.get('institution'))} / "
-            f"개인 {_fmt_flow(flow.get('retail'))} · "
-            f"점수 {_fmt_num(flow.get('whale_score'), 0)}"
-        ),
+        _fmt_flow_line(flow),
         (
             f"Entry {trade_plan.get('entry_policy') or '-'} · "
             f"TP {_fmt_pct(trade_plan.get('target_tp_pct'))} · SL {_fmt_pct(trade_plan.get('stop_sl_pct'))}"
