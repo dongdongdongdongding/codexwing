@@ -2956,7 +2956,14 @@ class QuantStrategy:
         Returns: Dict with Whale Score (0-100) and flows.
         """
         import typing
-        res: typing.Dict[str, typing.Any] = {'whale_score': 50, 'foreigner': 0, 'institution': 0, 'retail': 0, 'valid': False}
+        res: typing.Dict[str, typing.Any] = {
+            'whale_score': 50,
+            'foreigner': 0,
+            'institution': 0,
+            'retail': 0,
+            'valid': False,
+            'warnings': [],
+        }
         
         # 1. Determine Market Type
         is_kr = str(self.ticker).endswith('.KS') or str(self.ticker).endswith('.KQ')
@@ -2966,15 +2973,84 @@ class QuantStrategy:
             code = str(self.ticker).split('.')[0]
             sum_inst, sum_for, sum_ret = 0.0, 0.0, 0.0
             _flow_source = None
+            _flow_df = None
+            _col_map: typing.Dict[str, typing.Any] = {}
 
-            # pykrx investor flow API is unreliable on this env — skip directly to Naver
+            # Prefer official KRX investor trading value. Naver remains a fallback
+            # because pykrx can fail on holidays, transient network errors, or
+            # environment-specific KRX throttling.
+            if HAS_PYKRX:
+                try:
+                    end_d = datetime.now().strftime("%Y%m%d")
+                    start_d = (datetime.now() - timedelta(days=21)).strftime("%Y%m%d")
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        _flow_df = stock.get_market_trading_value_by_date(start_d, end_d, code)
+                    if _flow_df is None or _flow_df.empty:
+                        raise ValueError("pykrx_empty_investor_flow")
+
+                    def _norm_col(col: typing.Any) -> str:
+                        return str(col).replace(" ", "").replace("_", "").strip()
+
+                    def _find_col(candidates: typing.Iterable[str]) -> typing.Any:
+                        normalized = {_norm_col(col): col for col in _flow_df.columns}
+                        for candidate in candidates:
+                            col = normalized.get(_norm_col(candidate))
+                            if col is not None:
+                                return col
+                        return None
+
+                    def _sum_col(frame: pd.DataFrame, col: typing.Any) -> float:
+                        if col is None:
+                            return 0.0
+                        return float(pd.to_numeric(frame[col], errors='coerce').fillna(0).sum())
+
+                    recent = _flow_df.tail(10)
+                    inst_col = _find_col(["기관합계", "기관"])
+                    if inst_col is not None:
+                        sum_inst = _sum_col(recent, inst_col)
+                        _col_map['institution'] = inst_col
+                    else:
+                        inst_cols = [
+                            _find_col([name])
+                            for name in ("금융투자", "보험", "투신", "사모", "은행", "기타금융", "연기금")
+                        ]
+                        inst_cols = [col for col in inst_cols if col is not None]
+                        sum_inst = sum(_sum_col(recent, col) for col in inst_cols)
+                        if inst_cols:
+                            _col_map['institution_parts'] = inst_cols
+
+                    for_col = _find_col(["외국인합계", "외국인"])
+                    if for_col is not None:
+                        sum_for = _sum_col(recent, for_col)
+                        _col_map['foreigner'] = for_col
+                    else:
+                        foreign_cols = [_find_col([name]) for name in ("외국인", "기타외국인")]
+                        foreign_cols = [col for col in foreign_cols if col is not None]
+                        sum_for = sum(_sum_col(recent, col) for col in foreign_cols)
+                        if foreign_cols:
+                            _col_map['foreigner_parts'] = foreign_cols
+
+                    ret_col = _find_col(["개인"])
+                    if ret_col is not None:
+                        sum_ret = _sum_col(recent, ret_col)
+                        _col_map['retail'] = ret_col
+                    else:
+                        sum_ret = -1 * (sum_inst + sum_for)
+
+                    if abs(sum_inst) + abs(sum_for) + abs(sum_ret) <= 0:
+                        raise ValueError("pykrx_zero_investor_flow")
+                    _flow_source = 'pykrx_value'
+                    res['flow_unit'] = 'KRW'
+                except Exception as exc:
+                    res['warnings'].append(f"pykrx_flow_failed:{exc}")
+            else:
+                res['warnings'].append("pykrx_unavailable")
 
             # Naver Finance HTML fallback
             if _flow_source is None:
                 try:
                     import requests
                     from bs4 import BeautifulSoup
-                    import io
 
                     url = f"https://finance.naver.com/item/frgn.naver?code={code}"
                     headers = {"User-Agent": "Mozilla/5.0"}
@@ -2991,6 +3067,7 @@ class QuantStrategy:
                         sum_for = float(recent['Foreigner'].sum())
                         sum_ret = -1 * (sum_inst + sum_for)
                         _flow_source = 'naver'
+                        res['flow_unit'] = 'shares'
                 except Exception:
                     pass
 
@@ -3034,10 +3111,22 @@ class QuantStrategy:
             # 3-Day Whale Trend Analysis (short-term acceleration/deceleration)
             # For pykrx: recompute from flow df if available; for naver: use df_html
             try:
-                if _flow_source == 'pykrx' and '_flow_df' in dir():
+                if _flow_source == 'pykrx_value' and _flow_df is not None:
                     _r3 = _flow_df.tail(3)
-                    sum_inst_3d = float(_r3[_col_map['institution']].sum()) if 'institution' in _col_map else 0.0
-                    sum_for_3d = float(_r3[_col_map['foreigner']].sum()) if 'foreigner' in _col_map else 0.0
+                    if 'institution' in _col_map:
+                        sum_inst_3d = float(pd.to_numeric(_r3[_col_map['institution']], errors='coerce').fillna(0).sum())
+                    else:
+                        sum_inst_3d = sum(
+                            float(pd.to_numeric(_r3[col], errors='coerce').fillna(0).sum())
+                            for col in _col_map.get('institution_parts', [])
+                        )
+                    if 'foreigner' in _col_map:
+                        sum_for_3d = float(pd.to_numeric(_r3[_col_map['foreigner']], errors='coerce').fillna(0).sum())
+                    else:
+                        sum_for_3d = sum(
+                            float(pd.to_numeric(_r3[col], errors='coerce').fillna(0).sum())
+                            for col in _col_map.get('foreigner_parts', [])
+                        )
                 elif _flow_source == 'naver' and 'df_html' in dir():
                     _r3 = df_html.head(3)
                     sum_inst_3d = float(_r3['Institution'].sum())

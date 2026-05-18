@@ -316,6 +316,7 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
             "valid": True,
             "type": "KR" if str(ticker).upper().endswith((".KS", ".KQ")) else "UNKNOWN",
             "source": "scan_row",
+            "flow_unit": base.get("flow_unit"),
             "whale_score": whale,
             "foreigner": direct.get("foreigner"),
             "institution": direct.get("institution"),
@@ -342,17 +343,21 @@ def _fetch_investor_flow_snapshot(ticker: str, row: Dict[str, Any], trace: Dict[
 
         payload = QuantStrategy(ticker).get_investor_flows()
         fetched_whale = _safe_float(payload.get("whale_score"))
+        payload_warnings = [str(item) for item in (payload.get("warnings") or []) if item]
+        if not payload.get("valid"):
+            payload_warnings.append(str(payload.get("reason") or "investor_flow_unavailable"))
         return {
             "valid": bool(payload.get("valid")),
             "type": payload.get("type") or "KR",
             "source": payload.get("flow_source") or "quant_strategy",
+            "flow_unit": payload.get("flow_unit"),
             "whale_score": fetched_whale if fetched_whale is not None else direct.get("whale_score"),
             "foreigner": _safe_float(payload.get("foreigner")),
             "institution": _safe_float(payload.get("institution")),
             "retail": _safe_float(payload.get("retail")),
             "dominant": payload.get("dominant"),
             "whale_trend": payload.get("whale_trend"),
-            "warnings": [] if payload.get("valid") else [str(payload.get("reason") or "investor_flow_unavailable")],
+            "warnings": payload_warnings,
         }
     except Exception as exc:
         return {
