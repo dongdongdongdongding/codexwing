@@ -1,0 +1,37 @@
+{
+  "version": "incident_regression_fixture_v1",
+  "incidents": [
+    {
+      "incident_id": "manual-kr-2026-05-hanwha-solution",
+      "ticker": "009830.KS",
+      "stock_name": "한화솔루션",
+      "market": "KOSPI",
+      "section": "Top5",
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_bucket": "picked",
+      "buy_score": 68.4,
+      "loss_risk_score": 26.6,
+      "return_1h_pct": -11.0,
+      "return_close_pct": -9.2,
+      "failure_tags": ["severe_same_day_loss", "risk_annotation_required"],
+      "display_contract": {
+        "display_status": "VISIBLE_RISK_ANNOTATED"
+      },
+      "risk_flags": ["ENTRY_TIMING_RISK_HIGH"]
+    },
+    {
+      "incident_id": "synthetic-unprotected-severe-loss",
+      "ticker": "000000.KS",
+      "stock_name": "Unprotected Fixture",
+      "market": "KOSPI",
+      "section": "Top5",
+      "decision": "PRIORITY_WATCHLIST",
+      "decision_bucket": "picked",
+      "buy_score": 78.0,
+      "loss_risk_score": 20.0,
+      "return_30m_pct": -8.5,
+      "failure_tags": ["severe_same_day_loss", "protected_high_confidence"],
+      "risk_flags": ["CHASE_LOW_PROB_RISK"]
+    }
+  ]
+}

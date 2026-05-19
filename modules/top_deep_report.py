@@ -12,6 +12,7 @@ import yfinance as yf
 from modules.entry_readiness import build_entry_readiness_analysis
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
+from modules.incident_regression import detect_failure_risk_reason_codes
 
 
 REPORT_VERSION = "top_deep_report_v1"
@@ -828,6 +829,7 @@ def _build_display_contract(row: Dict[str, Any], trace: Dict[str, Any], report: 
         "display_rank": _safe_int(report.get("rank")),
         "action_label": action or None,
         "risk_flags": risk_flags[:10],
+        "failure_risk_reason_codes": detect_failure_risk_reason_codes({**row, **trace, **report}),
         "data_warning_count": len(data_warnings),
     }
 

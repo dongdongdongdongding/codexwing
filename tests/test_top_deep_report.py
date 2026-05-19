@@ -412,6 +412,8 @@ def test_top_deep_report_does_not_promote_material_risk_to_primary_buy():
     assert report["display_contract"]["display_status"] == "VISIBLE_RISK_ANNOTATED"
     assert report["display_contract"]["original_scan_rank"] == 1
     assert report["display_contract"]["planner_priority_rank"] == 3
+    assert "NO_BUY_ACTION" in report["display_contract"]["failure_risk_reason_codes"]
+    assert "EXPECTED_EDGE_PRIORITY_GUARD_SOFT" in report["display_contract"]["failure_risk_reason_codes"]
     assert any("특수 리스크" in warning for warning in readiness["warnings"])
 
 
