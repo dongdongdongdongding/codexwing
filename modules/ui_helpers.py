@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 from uuid import uuid4
 
+from modules.candidate_interpretation import build_candidate_interpretation
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.segment_accuracy import lookup_segment_win_rate
 
@@ -988,6 +989,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         practical_gate = evaluate_practical_entry_gate(row)
         gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
         shadow_gate = row.get("_shadow_gate") if isinstance(row.get("_shadow_gate"), dict) else {}
+        interpretation = build_candidate_interpretation(row)
 
         day_change_numeric = _parse_percent_value(day_change_source)
         normalized.append(
@@ -1026,6 +1028,14 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "shadow_gate_conditions": shadow_gate.get("conditions"),
                 "shadow_gate_metrics": shadow_gate.get("metrics"),
                 "shadow_gate_note": shadow_gate.get("note"),
+                "candidate_interpretation": interpretation,
+                "original_rank": interpretation.get("original_rank"),
+                "planner_rank": interpretation.get("planner_rank"),
+                "realized_expectancy_3d_prob": interpretation.get("realized_expectancy_3d_prob"),
+                "realized_expectancy_5d_prob": interpretation.get("realized_expectancy_5d_prob"),
+                "ranking_score_5d": interpretation.get("ranking_score_5d"),
+                "policy_version": interpretation.get("policy_version"),
+                "data_warning_count": interpretation.get("data_warning_count"),
             }
         )
     return normalized

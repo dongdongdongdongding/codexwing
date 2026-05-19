@@ -159,6 +159,8 @@ def test_build_top_deep_reports_maps_korean_theme_field():
     assert reports[0]["theme"]["theme_day_avg_decision_score"] == 70.0
     assert reports[0]["market_regime"]["market_gate"] == "GREEN"
     assert reports[0]["market_regime"]["regime_breadth_pct"] == 60.0
+    assert reports[0]["candidate_interpretation"]["section"] == "Top5"
+    assert reports[0]["candidate_interpretation"]["primary_theme"] == "소비재/유통"
 
 
 def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():

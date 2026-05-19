@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
+from modules.candidate_interpretation import build_candidate_interpretation
 from modules.model_governance import active_policy_metadata
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
 
@@ -273,6 +274,7 @@ def _readiness(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
+    interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
     readiness = _readiness(row)
     quality = readiness.get("quality") if isinstance(readiness.get("quality"), dict) else {}
     upside = readiness.get("upside") if isinstance(readiness.get("upside"), dict) else {}
@@ -291,16 +293,16 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
     regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
-    section = alignment.get("analysis_section") or "Top5"
-    section_rank = alignment.get("analysis_section_rank") or row.get("rank")
+    section = interpretation.get("section") or alignment.get("analysis_section") or "Top5"
+    section_rank = interpretation.get("section_rank") or alignment.get("analysis_section_rank") or row.get("rank")
     lines = [
         f"구분: {section} #{section_rank or '-'}",
         (
             f"표시계약: {display_contract.get('display_status') or 'VISIBLE'}"
-            f" · 원본#{display_contract.get('original_scan_rank') or alignment.get('raw_scan_rank') or '-'}"
-            f" · 기대순위#{display_contract.get('planner_priority_rank') or alignment.get('planner_priority_rank') or '-'}"
+            f" · 원본#{interpretation.get('original_rank') or display_contract.get('original_scan_rank') or alignment.get('raw_scan_rank') or '-'}"
+            f" · 기대순위#{interpretation.get('planner_rank') or display_contract.get('planner_priority_rank') or alignment.get('planner_priority_rank') or '-'}"
         ),
-        f"액션: {judgment.get('action') or row.get('signal_label') or '-'}",
+        f"액션: {interpretation.get('action_label') or judgment.get('action') or row.get('signal_label') or '-'}",
         (
             f"품질 {quality.get('grade') or '-'}({_fmt_num(quality.get('score'), 0)}) / "
             f"상승여력 {upside.get('grade') or '-'}({_fmt_num(upside.get('score'), 0)}) / "
@@ -309,7 +311,13 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         f"추격위험: {readiness.get('chase_risk_level') or '-'} · 손실위험 {_fmt_num(row.get('loss_risk_score'), 1)}",
         f"정책: {policy_metadata.get('active_policy_version') or '-'} · {policy_metadata.get('promotion_status') or '-'}",
         f"예상순수익(3D): {_fmt_pct(prediction.get('expected_net_return_3d_pct'))} · 모델 {prediction.get('tradable_pnl_model_version') or '-'}",
-        f"실현기대: 3D {_fmt_pct(admission.get('expected_value_3d_pct'))} / 5D {_fmt_pct(admission.get('expected_value_5d_pct'))} · 5D점수 {_fmt_num(admission.get('ranking_score_5d'), 1)}",
+        (
+            f"실현기대: 3D확률 {_fmt_pct(interpretation.get('realized_expectancy_3d_prob'))} / "
+            f"5D확률 {_fmt_pct(interpretation.get('realized_expectancy_5d_prob'))} · "
+            f"3D값 {_fmt_pct(interpretation.get('expected_value_3d_pct'))} / "
+            f"5D값 {_fmt_pct(interpretation.get('expected_value_5d_pct'))} · "
+            f"5D점수 {_fmt_num(interpretation.get('ranking_score_5d'), 1)}"
+        ),
         (
             f"국면/테마: 확률x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
             f"수익x{_fmt_num(regime_theme_adjustment.get('return_multiplier'), 2)} · "
@@ -319,8 +327,8 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         f"전일비: {_fmt_pct(row.get('day_change_pct'))}",
         _fmt_flow_line(flow),
         (
-            f"Entry {trade_plan.get('entry_policy') or '-'} · "
-            f"TP {_fmt_pct(trade_plan.get('target_tp_pct'))} · SL {_fmt_pct(trade_plan.get('stop_sl_pct'))}"
+            f"Entry {trade_plan.get('entry_policy') or '-'} {_fmt_num(interpretation.get('entry_reference_price'), 0)} · "
+            f"TP {_fmt_pct(interpretation.get('target_tp_pct'))} · SL {_fmt_pct(interpretation.get('stop_sl_pct'))}"
         ),
     ]
     if practical_gate.get("level") in {"pass", "near", "small_sample", "watch"}:
@@ -491,23 +499,24 @@ def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
 
 
 def _archive_row_value(row: Dict[str, Any]) -> str:
+    interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
     decision = row.get("decision") or row.get("Decision") or row.get("signal_label") or row.get("Strategy") or row.get("전략") or "-"
     score = row.get("buy_score") or row.get("Decision Score") or row.get("Score")
     loss = row.get("loss_risk_score") or row.get("Loss Risk")
     day = row.get("day_change_pct") or row.get("Change %") or row.get("Day Change") or row.get("전일비")
-    section = row.get("_analysis_section")
+    section = interpretation.get("section") or row.get("_analysis_section")
     display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
     policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
     if not policy_metadata:
         policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
     visible = display_contract.get("display_status") or "VISIBLE"
-    raw_rank = display_contract.get("original_scan_rank") or row.get("_raw_scan_rank") or row.get("rank") or row.get("Rank")
-    policy_version = policy_metadata.get("active_policy_version") or "-"
+    raw_rank = interpretation.get("original_rank") or display_contract.get("original_scan_rank") or row.get("_raw_scan_rank") or row.get("rank") or row.get("Rank")
+    policy_version = interpretation.get("policy_version") or policy_metadata.get("active_policy_version") or "-"
     regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
     return (
         f"{section or '후보'} · {visible} · 원본#{raw_rank or '-'} · {decision} · "
-        f"정책 {policy_version} · 5D기대점수 {_fmt_num(admission.get('ranking_score_5d'), 1)} · "
+        f"정책 {policy_version} · 5D기대점수 {_fmt_num(interpretation.get('ranking_score_5d'), 1)} · "
         f"국면/테마x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
         f"점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
     )[:1024]
