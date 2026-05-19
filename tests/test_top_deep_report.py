@@ -140,6 +140,11 @@ def test_build_top_deep_reports_maps_korean_theme_field():
                     "종목명": "오리온",
                     "테마": "소비재/유통",
                     "Decision Score": 55.3,
+                    "theme_day_symbol_count": 4,
+                    "theme_day_avg_decision_score": 70,
+                    "market_gate": "GREEN",
+                    "regime_breadth_pct": 60,
+                    "regime_avg_chg": 1.1,
                 }
             ],
             planner_payload={"decisions": []},
@@ -150,6 +155,10 @@ def test_build_top_deep_reports_maps_korean_theme_field():
         )
 
     assert reports[0]["theme"]["primary_theme"] == "소비재/유통"
+    assert reports[0]["theme"]["theme_day_symbol_count"] == 4.0
+    assert reports[0]["theme"]["theme_day_avg_decision_score"] == 70.0
+    assert reports[0]["market_regime"]["market_gate"] == "GREEN"
+    assert reports[0]["market_regime"]["regime_breadth_pct"] == 60.0
 
 
 def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():

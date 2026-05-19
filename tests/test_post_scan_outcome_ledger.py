@@ -17,6 +17,11 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
                 "recommended_at": "2026-05-19T09:30:00+09:00",
                 "scan_entry_reference_price": 100.0,
                 "entry_reference_price": 101.0,
+                "primary_theme": "반도체",
+                "theme_day_symbol_count": 6,
+                "theme_day_avg_decision_score": 72.5,
+                "regime_breadth_pct": 61.0,
+                "regime_avg_chg": 0.8,
                 "return_10m_pct": -0.5,
                 "return_30m_pct": 1.2,
                 "return_1h_pct": 2.3,
@@ -47,6 +52,12 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
     assert rows[0]["mfe_5d_pct"] == 10.0
     assert rows[0]["mae_5d_pct"] == -1.5
     assert rows[0]["ledger_status"] == "MATURED_5D"
+    assert rows[0]["primary_theme"] == "반도체"
+    assert rows[0]["theme_day_symbol_count"] == 6.0
+    assert rows[0]["theme_day_avg_decision_score"] == 72.5
+    assert rows[0]["regime_breadth_pct"] == 61.0
+    assert rows[0]["feature_snapshot"]["primary_theme"] == "반도체"
+    assert rows[0]["feature_snapshot"]["regime_avg_chg"] == 0.8
 
 
 def test_summarize_post_scan_ledger_reports_win_avg_min_max_and_stop_first():
@@ -100,6 +111,22 @@ def test_write_run_post_scan_ledger_is_candidate_only_and_no_raw_bars(tmp_path):
                     "ticker": "005930.KS",
                     "selection_alignment": {"analysis_section": "Exception Leader", "analysis_section_rank": 1},
                     "trade_plan": {"entry_reference_price": 100.0},
+                    "theme": {
+                        "primary_theme": "반도체",
+                        "theme_day_symbol_count": 5,
+                        "theme_day_avg_decision_score": 71,
+                    },
+                    "market_regime": {
+                        "market_gate": "GREEN",
+                        "regime_breadth_pct": 58,
+                        "regime_avg_chg": 1.2,
+                    },
+                    "realized_expectancy_admission": {
+                        "regime_theme_adjustment": {
+                            "confidence": 0.7,
+                            "prob_multiplier": 1.1,
+                        }
+                    },
                 }
             ]
         ),
@@ -117,4 +144,8 @@ def test_write_run_post_scan_ledger_is_candidate_only_and_no_raw_bars(tmp_path):
     assert saved["storage_policy"]["raw_intraday_bars_persisted"] is False
     assert saved["storage_policy"]["scope"] == "emitted_candidates_only"
     assert saved["rows"][0]["section"] == "Exception Leader"
+    assert saved["rows"][0]["primary_theme"] == "반도체"
+    assert saved["rows"][0]["market_gate"] == "GREEN"
+    assert saved["rows"][0]["theme_day_avg_decision_score"] == 71.0
+    assert saved["rows"][0]["regime_theme_adjustment"]["confidence"] == 0.7
     assert "raw_bars" not in saved["rows"][0]

@@ -163,7 +163,26 @@ alter table public.agent_realized_outcomes
   add column if not exists target_hit_at_5d date,
   add column if not exists stop_hit_at_5d date,
   add column if not exists outcome_path_terminal_status text,
-  add column if not exists outcome_path_label_version text;
+  add column if not exists outcome_path_label_version text,
+  add column if not exists primary_theme text,
+  add column if not exists theme_source text,
+  add column if not exists theme_inference_status text,
+  add column if not exists secondary_themes jsonb,
+  add column if not exists theme_routing_path text,
+  add column if not exists theme_score_adjustment double precision,
+  add column if not exists theme_day_symbol_count double precision,
+  add column if not exists theme_day_avg_alpha_score double precision,
+  add column if not exists theme_day_avg_decision_score double precision,
+  add column if not exists theme_day_avg_volume_ratio double precision,
+  add column if not exists theme_day_avg_day_return_pct double precision,
+  add column if not exists theme_day_positive_return_pct double precision,
+  add column if not exists theme_day_strength_rank double precision,
+  add column if not exists theme_day_strength_bucket text,
+  add column if not exists regime_breadth_pct double precision,
+  add column if not exists regime_avg_chg double precision,
+  add column if not exists regime_volatility_20d double precision,
+  add column if not exists kospi_chg double precision,
+  add column if not exists kosdaq_chg double precision;
 
 create index if not exists idx_agent_realized_outcomes_decision_bucket
   on public.agent_realized_outcomes (decision_bucket);
@@ -193,6 +212,27 @@ create table if not exists public.post_scan_outcome_ledger (
   scanner_timeframe_profile text,
   kr_universe_role text,
   selection_lane text,
+  primary_theme text,
+  theme_source text,
+  theme_inference_status text,
+  secondary_themes jsonb,
+  theme_routing_path text,
+  theme_score_adjustment double precision,
+  theme_day_symbol_count double precision,
+  theme_day_avg_alpha_score double precision,
+  theme_day_avg_decision_score double precision,
+  theme_day_avg_volume_ratio double precision,
+  theme_day_avg_day_return_pct double precision,
+  theme_day_positive_return_pct double precision,
+  theme_day_strength_rank double precision,
+  theme_day_strength_bucket text,
+  regime_breadth_pct double precision,
+  regime_avg_chg double precision,
+  regime_volatility_20d double precision,
+  kospi_chg double precision,
+  kosdaq_chg double precision,
+  feature_snapshot jsonb,
+  regime_theme_adjustment jsonb,
   relative_rank_score double precision,
   loss_risk_score double precision,
   return_10m_pct double precision,
@@ -225,6 +265,29 @@ create index if not exists idx_post_scan_outcome_ledger_market_section
 
 create index if not exists idx_post_scan_outcome_ledger_recommended_at
   on public.post_scan_outcome_ledger (recommended_at desc);
+
+alter table public.post_scan_outcome_ledger
+  add column if not exists primary_theme text,
+  add column if not exists theme_source text,
+  add column if not exists theme_inference_status text,
+  add column if not exists secondary_themes jsonb,
+  add column if not exists theme_routing_path text,
+  add column if not exists theme_score_adjustment double precision,
+  add column if not exists theme_day_symbol_count double precision,
+  add column if not exists theme_day_avg_alpha_score double precision,
+  add column if not exists theme_day_avg_decision_score double precision,
+  add column if not exists theme_day_avg_volume_ratio double precision,
+  add column if not exists theme_day_avg_day_return_pct double precision,
+  add column if not exists theme_day_positive_return_pct double precision,
+  add column if not exists theme_day_strength_rank double precision,
+  add column if not exists theme_day_strength_bucket text,
+  add column if not exists regime_breadth_pct double precision,
+  add column if not exists regime_avg_chg double precision,
+  add column if not exists regime_volatility_20d double precision,
+  add column if not exists kospi_chg double precision,
+  add column if not exists kosdaq_chg double precision,
+  add column if not exists feature_snapshot jsonb,
+  add column if not exists regime_theme_adjustment jsonb;
 
 create index if not exists idx_agent_profile_diagnostics_profile
   on public.agent_profile_diagnostics (current_profile);

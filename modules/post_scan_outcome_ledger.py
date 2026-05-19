@@ -39,6 +39,45 @@ def _safe_int(value: Any) -> Optional[int]:
         return None
 
 
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value not in (None, "", "nan", "None"):
+            return value
+    return None
+
+
+def _theme_regime_snapshot(row: Dict[str, Any], section_meta: Dict[str, Any]) -> Dict[str, Any]:
+    fields = (
+        "primary_theme",
+        "theme_source",
+        "theme_inference_status",
+        "secondary_themes",
+        "theme_routing_path",
+        "theme_score_adjustment",
+        "theme_day_symbol_count",
+        "theme_day_avg_alpha_score",
+        "theme_day_avg_decision_score",
+        "theme_day_avg_volume_ratio",
+        "theme_day_avg_day_return_pct",
+        "theme_day_positive_return_pct",
+        "theme_day_strength_rank",
+        "theme_day_strength_bucket",
+        "regime_breadth_pct",
+        "regime_avg_chg",
+        "regime_volatility_20d",
+        "kospi_chg",
+        "kosdaq_chg",
+        "market_gate_snapshot",
+        "regime_theme_adjustment",
+    )
+    snapshot: Dict[str, Any] = {}
+    for field in fields:
+        value = _first_present(row.get(field), section_meta.get(field))
+        if value is not None:
+            snapshot[field] = value
+    return snapshot
+
+
 def _load_top_deep_section_map(run_id: str, report_dir: Optional[Path] = None) -> Dict[str, Dict[str, Any]]:
     base = report_dir or Path("runtime_state/reports/top_deep")
     path = base / f"{run_id}.json"
@@ -59,11 +98,33 @@ def _load_top_deep_section_map(run_id: str, report_dir: Optional[Path] = None) -
             continue
         alignment = item.get("selection_alignment") if isinstance(item.get("selection_alignment"), dict) else {}
         trade_plan = item.get("trade_plan") if isinstance(item.get("trade_plan"), dict) else {}
+        theme = item.get("theme") if isinstance(item.get("theme"), dict) else {}
+        market_regime = item.get("market_regime") if isinstance(item.get("market_regime"), dict) else {}
+        admission = item.get("realized_expectancy_admission") if isinstance(item.get("realized_expectancy_admission"), dict) else {}
+        adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
         out[ticker] = {
             "section": alignment.get("analysis_section") or item.get("analysis_section"),
             "section_rank": alignment.get("analysis_section_rank") or item.get("rank"),
             "source_order": alignment.get("source_order"),
             "scan_entry_reference_price": trade_plan.get("entry_reference_price"),
+            "primary_theme": theme.get("primary_theme") or adjustment.get("primary_theme"),
+            "theme_routing_path": theme.get("theme_routing_path"),
+            "theme_score_adjustment": _first_present(theme.get("theme_score_adjustment"), adjustment.get("theme_score_adjustment")),
+            "theme_day_symbol_count": _first_present(theme.get("theme_day_symbol_count"), adjustment.get("theme_day_symbol_count")),
+            "theme_day_avg_alpha_score": theme.get("theme_day_avg_alpha_score"),
+            "theme_day_avg_decision_score": _first_present(theme.get("theme_day_avg_decision_score"), adjustment.get("theme_day_avg_decision_score")),
+            "theme_day_avg_volume_ratio": theme.get("theme_day_avg_volume_ratio"),
+            "theme_day_avg_day_return_pct": theme.get("theme_day_avg_day_return_pct"),
+            "theme_day_positive_return_pct": theme.get("theme_day_positive_return_pct"),
+            "theme_day_strength_rank": theme.get("theme_day_strength_rank"),
+            "theme_day_strength_bucket": theme.get("theme_day_strength_bucket"),
+            "regime_breadth_pct": _first_present(market_regime.get("regime_breadth_pct"), adjustment.get("regime_breadth_pct")),
+            "regime_avg_chg": _first_present(market_regime.get("regime_avg_chg"), adjustment.get("regime_avg_chg")),
+            "regime_volatility_20d": market_regime.get("regime_volatility_20d"),
+            "kospi_chg": market_regime.get("kospi_chg"),
+            "kosdaq_chg": market_regime.get("kosdaq_chg"),
+            "market_gate": market_regime.get("market_gate") or adjustment.get("market_gate"),
+            "regime_theme_adjustment": adjustment or None,
         }
     return out
 
@@ -124,12 +185,33 @@ def build_post_scan_ledger_rows(
             "target_tp_pct": _safe_float(outcome.get("target_tp_pct")),
             "stop_sl_pct": _safe_float(outcome.get("stop_sl_pct")),
             "hold_days": _safe_int(outcome.get("hold_days")),
-            "market_gate": outcome.get("market_gate"),
+            "market_gate": _first_present(outcome.get("market_gate"), section_meta.get("market_gate")),
             "scanner_timeframe_profile": outcome.get("scanner_timeframe_profile"),
             "kr_universe_role": outcome.get("kr_universe_role"),
             "selection_lane": outcome.get("selection_lane"),
             "relative_rank_score": _safe_float(outcome.get("relative_rank_score")),
             "loss_risk_score": _safe_float(outcome.get("loss_risk_score")),
+            "primary_theme": _first_present(outcome.get("primary_theme"), section_meta.get("primary_theme")),
+            "theme_source": outcome.get("theme_source"),
+            "theme_inference_status": outcome.get("theme_inference_status"),
+            "secondary_themes": outcome.get("secondary_themes"),
+            "theme_routing_path": _first_present(outcome.get("theme_routing_path"), section_meta.get("theme_routing_path")),
+            "theme_score_adjustment": _safe_float(_first_present(outcome.get("theme_score_adjustment"), section_meta.get("theme_score_adjustment"))),
+            "theme_day_symbol_count": _safe_float(_first_present(outcome.get("theme_day_symbol_count"), section_meta.get("theme_day_symbol_count"))),
+            "theme_day_avg_alpha_score": _safe_float(_first_present(outcome.get("theme_day_avg_alpha_score"), section_meta.get("theme_day_avg_alpha_score"))),
+            "theme_day_avg_decision_score": _safe_float(_first_present(outcome.get("theme_day_avg_decision_score"), section_meta.get("theme_day_avg_decision_score"))),
+            "theme_day_avg_volume_ratio": _safe_float(_first_present(outcome.get("theme_day_avg_volume_ratio"), section_meta.get("theme_day_avg_volume_ratio"))),
+            "theme_day_avg_day_return_pct": _safe_float(_first_present(outcome.get("theme_day_avg_day_return_pct"), section_meta.get("theme_day_avg_day_return_pct"))),
+            "theme_day_positive_return_pct": _safe_float(_first_present(outcome.get("theme_day_positive_return_pct"), section_meta.get("theme_day_positive_return_pct"))),
+            "theme_day_strength_rank": _safe_float(_first_present(outcome.get("theme_day_strength_rank"), section_meta.get("theme_day_strength_rank"))),
+            "theme_day_strength_bucket": _first_present(outcome.get("theme_day_strength_bucket"), section_meta.get("theme_day_strength_bucket")),
+            "regime_breadth_pct": _safe_float(_first_present(outcome.get("regime_breadth_pct"), section_meta.get("regime_breadth_pct"))),
+            "regime_avg_chg": _safe_float(_first_present(outcome.get("regime_avg_chg"), section_meta.get("regime_avg_chg"))),
+            "regime_volatility_20d": _safe_float(_first_present(outcome.get("regime_volatility_20d"), section_meta.get("regime_volatility_20d"))),
+            "kospi_chg": _safe_float(_first_present(outcome.get("kospi_chg"), section_meta.get("kospi_chg"))),
+            "kosdaq_chg": _safe_float(_first_present(outcome.get("kosdaq_chg"), section_meta.get("kosdaq_chg"))),
+            "market_gate_snapshot": outcome.get("market_gate_snapshot"),
+            "regime_theme_adjustment": _first_present(outcome.get("regime_theme_adjustment"), section_meta.get("regime_theme_adjustment")),
             "mfe_intraday_pct": _safe_float(outcome.get("mfe_intraday_pct")),
             "mae_intraday_pct": _safe_float(outcome.get("mae_intraday_pct")),
             "mfe_5d_pct": _safe_float(outcome.get("mfe_5d_pct") or outcome.get("max_high_return_5d_pct")),
@@ -143,6 +225,7 @@ def build_post_scan_ledger_rows(
             "source_ref": outcome.get("source_ref"),
             "updated_at": generated_at,
         }
+        row["feature_snapshot"] = _theme_regime_snapshot(row, section_meta)
         for _, key in SUMMARY_HORIZONS:
             row[key] = _safe_float(outcome.get(key))
         row["ledger_status"] = "PARTIAL" if any(row.get(key) is not None for _, key in SUMMARY_HORIZONS) else "PENDING"

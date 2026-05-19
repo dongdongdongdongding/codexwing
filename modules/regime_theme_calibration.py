@@ -194,6 +194,8 @@ def build_regime_theme_adjustment(
         "theme_day_avg_decision_score": theme_avg,
         "theme_day_symbol_count": theme_count,
         "theme_score_adjustment": theme_score_adj,
+        "regime_breadth_pct": breadth,
+        "regime_avg_chg": regime_avg_chg,
         "theme_momentum": theme_momentum,
         "theme_cache_age_hours": round(cache_age, 3) if cache_age is not None else None,
         "warnings": warnings,
