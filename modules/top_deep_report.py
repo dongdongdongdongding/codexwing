@@ -18,6 +18,7 @@ from modules.candidate_interpretation import build_candidate_interpretation
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
 from modules.model_governance import active_policy_metadata
+from modules.portfolio_exposure import build_portfolio_exposure_summary
 from modules.realized_expectancy_admission import build_realized_expectancy_admission
 from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
@@ -55,6 +56,7 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "realized_expectancy_admission",
     "entry_action",
     "entry_readiness_contract",
+    "portfolio_exposure_summary",
     "stock_quality_score",
     "stock_quality_grade",
     "upside_room_score",
@@ -1097,6 +1099,9 @@ def generate_and_store_top_deep_reports(
         scan_mode=scan_mode,
         top_n=top_n,
     )
+    exposure_summary = build_portfolio_exposure_summary(reports, run_id=run_id)
+    for report in reports:
+        report["portfolio_exposure_summary"] = exposure_summary
     local_path = save_reports_local(reports, run_id)
     db_result = upsert_reports_to_supabase(reports) if write_db else {"rows_seen": len(reports), "rows_upserted": 0, "warning": "write_db_disabled"}
-    return {"count": len(reports), "local_path": local_path, "db_result": db_result}
+    return {"count": len(reports), "local_path": local_path, "db_result": db_result, "portfolio_exposure_summary": exposure_summary}

@@ -57,6 +57,9 @@ def test_persist_scan_run_artifacts_writes_archive_contract(tmp_path):
     assert summary["persistence_contract"]["observed_factor_snapshots"] is True
     assert summary["persistence_contract"]["scan_integrity_report"] is True
     assert summary["scan_integrity"]["report"]["snapshot_count"] == 1
+    assert summary["portfolio_exposure_summary"]["version"] == "portfolio_exposure_v1"
+    assert summary["portfolio_exposure_summary"]["candidate_count"] == 1
+    assert summary["portfolio_exposure_summary"]["market_counts"]["KOSPI"] == 1
     assert "FACTOR_COMPLETENESS_BELOW_95" in summary["scan_integrity"]["report"]["quality_flags"]
     assert raw["results_sorted"][0]["ticker"] == "005490.KS"
 

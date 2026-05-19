@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
+from modules.portfolio_exposure import build_portfolio_exposure_summary
 from modules.scan_integrity import write_scan_integrity_artifacts
 from multi_agent.contracts.serialization import write_json
 from multi_agent.storage.memory_layers import MemoryManager
@@ -92,6 +93,11 @@ def persist_scan_run_artifacts(
     manifest_paths = _artifact_manifest(bridge_info)
     if top_deep_reports.get("local_path"):
         manifest_paths["top_deep_reports"] = str(top_deep_reports.get("local_path"))
+    portfolio_exposure_summary = (
+        top_deep_reports.get("portfolio_exposure_summary")
+        if isinstance(top_deep_reports.get("portfolio_exposure_summary"), dict)
+        else build_portfolio_exposure_summary(result_rows, run_id=run_id)
+    )
 
     raw_path = artifact_dir / "raw_scan_results.json"
     write_json(
@@ -146,6 +152,7 @@ def persist_scan_run_artifacts(
         "artifact_dir": str(artifact_dir),
         "raw_scan_results": str(raw_path),
         "top_deep_reports": top_deep_reports,
+        "portfolio_exposure_summary": portfolio_exposure_summary,
         "scan_integrity": integrity_result,
         "persistence_contract": {
             "raw_scan_results": raw_path.exists(),

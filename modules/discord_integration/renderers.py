@@ -12,6 +12,7 @@ from modules.candidate_interpretation import build_candidate_interpretation
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
+from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
@@ -419,6 +420,9 @@ def build_top_deep_embeds(
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
     market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
     integrity_report = _scan_integrity_from_summary(scan_summary)
+    exposure_summary = scan_summary.get("portfolio_exposure_summary") if isinstance(scan_summary.get("portfolio_exposure_summary"), dict) else {}
+    if not exposure_summary:
+        exposure_summary = build_portfolio_exposure_summary(all_rows, run_id=latest_run)
     result_count = _safe_int(scan_summary.get("result_count"), section_counts.get("Top5", 0))
     filtered_count = _safe_int(scan_summary.get("filtered_count"), 0)
     gate_name = str(market_gate.get("gate") or "").upper()
@@ -458,6 +462,7 @@ def build_top_deep_embeds(
         if zero_primary:
             status_lines.append("Top5 통과 후보가 없어 Exception Leader는 추가 관찰 후보로만 표시됩니다.")
         status_lines.extend(_integrity_status_lines(integrity_report))
+        status_lines.append("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
         fields.append({"name": "운영 상태", "value": "\n".join(status_lines)[:1024], "inline": False})
     for row in rows:
         rank = int(row.get("rank") or 0)
@@ -471,7 +476,17 @@ def build_top_deep_embeds(
             }
         )
     if safe_offset == 0 and not ticker and not (zero_primary or gate_name):
-        fields.append({"name": "데이터 무결성", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})
+        fields.append(
+            {
+                "name": "데이터 무결성",
+                "value": (
+                    "\n".join(_integrity_status_lines(integrity_report))
+                    + "\n\n포트폴리오 노출\n"
+                    + "\n".join(render_portfolio_exposure_lines(exposure_summary))
+                )[:1024],
+                "inline": False,
+            }
+        )
     return [
         {
             "title": "Shadow + Top5 + Exception Leader 자동 정밀분석",
@@ -629,6 +644,7 @@ def build_archive_embed(
     scan_context = _load_scan_context_for_run(selected_run) if selected_run else {}
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
     integrity_report = _scan_integrity_from_summary(scan_summary)
+    exposure_summary = scan_summary.get("portfolio_exposure_summary") if isinstance(scan_summary.get("portfolio_exposure_summary"), dict) else {}
     source = "top_deep"
     if selected_run:
         artifact_rows = _load_archive_rows_from_artifact(selected_run)
@@ -660,6 +676,10 @@ def build_archive_embed(
                     if str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "").upper()
                     == str(ticker).upper()
                 ]
+            if not exposure_summary:
+                exposure_summary = build_portfolio_exposure_summary(run_rows, run_id=selected_run)
+    if selected_run and not exposure_summary:
+        exposure_summary = build_portfolio_exposure_summary(run_rows, run_id=selected_run)
     fields = []
     ordered_rows = run_rows if "top5_exception" in str(source) else sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))
     for idx, row in enumerate(ordered_rows[safe_offset : safe_offset + safe_limit], start=safe_offset + 1):
@@ -678,6 +698,13 @@ def build_archive_embed(
             {
                 "name": "무결성",
                 "value": "\n".join(_integrity_status_lines(integrity_report))[:1024],
+                "inline": False,
+            }
+        )
+        fields.append(
+            {
+                "name": "포트폴리오 노출",
+                "value": "\n".join(render_portfolio_exposure_lines(exposure_summary))[:1024],
                 "inline": False,
             }
         )

@@ -32,6 +32,7 @@ from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
 from modules.next_day_explosive_radar import build_next_day_radar_records
+from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from modules.ui_helpers import (
     BackgroundScanState,
     build_kr_shadow_gate_records,
@@ -1307,6 +1308,14 @@ def _render_top_deep_reports_page():
         else:
             st.info(f"시장 게이트: {gate_msg}")
     _render_scan_integrity_panel(integrity_report, compact=True)
+    exposure_summary = scan_summary.get("portfolio_exposure_summary") if isinstance(scan_summary.get("portfolio_exposure_summary"), dict) else {}
+    if not exposure_summary:
+        exposure_summary = build_portfolio_exposure_summary(run_df.to_dict("records"), run_id=str(selected_run))
+    exposure_flags = exposure_summary.get("risk_flags") if isinstance(exposure_summary.get("risk_flags"), list) else []
+    if exposure_flags:
+        st.warning("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
+    else:
+        st.info("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
 
     for row in page_df.to_dict("records"):
         price = row.get("price") if isinstance(row.get("price"), dict) else {}

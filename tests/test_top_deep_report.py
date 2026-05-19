@@ -4,6 +4,7 @@ from modules.top_deep_report import (
     _fetch_investor_flow_snapshot,
     _select_top_candidates,
     build_top_deep_reports,
+    generate_and_store_top_deep_reports,
     upsert_reports_to_supabase,
 )
 
@@ -127,6 +128,48 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert "contract" in report["trade_plan"]["readiness_analysis"]
     assert report["price"]["trend"] == "UP"
     assert report["news"]["headlines"][0]["title"] == "real headline"
+
+
+def test_generate_and_store_top_deep_reports_attaches_portfolio_exposure_summary(tmp_path):
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+        patch("modules.top_deep_report.LOCAL_REPORT_DIR", tmp_path),
+    ):
+        price.return_value = {"warnings": [], "current_price": 100.0, "day_change_pct": 0.0}
+        news.return_value = {"status": "OK", "headlines": [], "warnings": []}
+        flow.return_value = {
+            "valid": True,
+            "type": "KR",
+            "source": "test",
+            "foreigner": -100.0,
+            "institution": -50.0,
+            "retail": 150.0,
+            "warnings": [],
+        }
+        result = generate_and_store_top_deep_reports(
+            scan_rows=[
+                {"ticker": "000001.KS", "stock_name": "A", "Decision Score": 90.0, "primary_theme": "전력기기"},
+                {"ticker": "000002.KS", "stock_name": "B", "Decision Score": 89.0, "primary_theme": "전력기기"},
+            ],
+            planner_payload={
+                "decisions": [
+                    {"ticker": "000001.KS", "decision": "PRIORITY_WATCHLIST", "priority_rank": 1, "loss_risk_score": 70.0},
+                    {"ticker": "000002.KS", "decision": "PRIORITY_WATCHLIST", "priority_rank": 2, "loss_risk_score": 68.0},
+                ]
+            },
+            run_id="RUN-EXPOSURE",
+            market="KOSPI",
+            scan_mode="SWING",
+            write_db=False,
+        )
+
+    summary = result["portfolio_exposure_summary"]
+    assert summary["version"] == "portfolio_exposure_v1"
+    assert summary["dominant_theme"]["label"] == "전력기기"
+    assert "THEME_CROWDED" in summary["risk_flags"]
+    assert "LOSS_RISK_CLUSTER" in summary["risk_flags"]
 
 
 def test_build_top_deep_reports_maps_korean_theme_field():
