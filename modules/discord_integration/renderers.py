@@ -275,6 +275,7 @@ def _readiness(row: Dict[str, Any]) -> Dict[str, Any]:
 
 def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
+    data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
     readiness = _readiness(row)
     quality = readiness.get("quality") if isinstance(readiness.get("quality"), dict) else {}
     upside = readiness.get("upside") if isinstance(readiness.get("upside"), dict) else {}
@@ -310,6 +311,11 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         ),
         f"추격위험: {readiness.get('chase_risk_level') or '-'} · 손실위험 {_fmt_num(row.get('loss_risk_score'), 1)}",
         f"정책: {policy_metadata.get('active_policy_version') or '-'} · {policy_metadata.get('promotion_status') or '-'}",
+        (
+            f"데이터: {data_quality.get('display_warning_level') or interpretation.get('data_quality_level') or '-'} · "
+            f"필수 {_fmt_num(data_quality.get('required_present_pct') or interpretation.get('data_required_present_pct'), 0)}% · "
+            f"경고 {', '.join((data_quality.get('visible_warnings') or interpretation.get('data_warnings') or [])[:3]) or '-'}"
+        ),
         f"예상순수익(3D): {_fmt_pct(prediction.get('expected_net_return_3d_pct'))} · 모델 {prediction.get('tradable_pnl_model_version') or '-'}",
         (
             f"실현기대: 3D확률 {_fmt_pct(interpretation.get('realized_expectancy_3d_prob'))} / "
@@ -500,6 +506,7 @@ def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
 
 def _archive_row_value(row: Dict[str, Any]) -> str:
     interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
+    data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
     decision = row.get("decision") or row.get("Decision") or row.get("signal_label") or row.get("Strategy") or row.get("전략") or "-"
     score = row.get("buy_score") or row.get("Decision Score") or row.get("Score")
     loss = row.get("loss_risk_score") or row.get("Loss Risk")
@@ -517,6 +524,7 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     return (
         f"{section or '후보'} · {visible} · 원본#{raw_rank or '-'} · {decision} · "
         f"정책 {policy_version} · 5D기대점수 {_fmt_num(interpretation.get('ranking_score_5d'), 1)} · "
+        f"데이터 {data_quality.get('display_warning_level') or interpretation.get('data_quality_level') or '-'} · "
         f"국면/테마x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
         f"점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
     )[:1024]

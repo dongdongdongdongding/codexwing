@@ -22,6 +22,9 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
                 "theme_day_avg_decision_score": 72.5,
                 "regime_breadth_pct": 61.0,
                 "regime_avg_chg": 0.8,
+                "candidate_data_quality": {"display_warning_level": "warning", "required_present_pct": 80.0},
+                "data_required_present_pct": 80.0,
+                "data_warning_level": "warning",
                 "return_10m_pct": -0.5,
                 "return_30m_pct": 1.2,
                 "return_1h_pct": 2.3,
@@ -58,6 +61,8 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
     assert rows[0]["regime_breadth_pct"] == 61.0
     assert rows[0]["feature_snapshot"]["primary_theme"] == "반도체"
     assert rows[0]["feature_snapshot"]["regime_avg_chg"] == 0.8
+    assert rows[0]["candidate_data_quality"]["display_warning_level"] == "warning"
+    assert rows[0]["data_warning_level"] == "warning"
 
 
 def test_summarize_post_scan_ledger_reports_win_avg_min_max_and_stop_first():
@@ -127,6 +132,10 @@ def test_write_run_post_scan_ledger_is_candidate_only_and_no_raw_bars(tmp_path):
                             "prob_multiplier": 1.1,
                         }
                     },
+                    "candidate_data_quality": {
+                        "display_warning_level": "critical",
+                        "required_present_pct": 60.0,
+                    },
                 }
             ]
         ),
@@ -148,4 +157,6 @@ def test_write_run_post_scan_ledger_is_candidate_only_and_no_raw_bars(tmp_path):
     assert saved["rows"][0]["market_gate"] == "GREEN"
     assert saved["rows"][0]["theme_day_avg_decision_score"] == 71.0
     assert saved["rows"][0]["regime_theme_adjustment"]["confidence"] == 0.7
+    assert saved["rows"][0]["candidate_data_quality"]["display_warning_level"] == "critical"
+    assert saved["rows"][0]["data_warning_level"] == "critical"
     assert "raw_bars" not in saved["rows"][0]

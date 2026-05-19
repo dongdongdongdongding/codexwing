@@ -1311,6 +1311,7 @@ def _render_top_deep_reports_page():
         display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
         policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
         admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+        candidate_data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
         section = alignment.get("analysis_section") or "Top5"
         section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
         title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
@@ -1330,6 +1331,12 @@ def _render_top_deep_reports_page():
                 f"상태 {policy_metadata.get('promotion_status') or '-'} · "
                 f"롤백 {policy_metadata.get('rollback_active', False)}"
             )
+            if candidate_data_quality:
+                st.caption(
+                    f"데이터 품질 {candidate_data_quality.get('display_warning_level') or '-'} · "
+                    f"필수필드 {candidate_data_quality.get('required_present_pct', '-')}% · "
+                    f"경고 {', '.join((candidate_data_quality.get('visible_warnings') or [])[:4]) or '-'}"
+                )
             c1, c2, c3, c4, c5, c6 = st.columns(6)
             c1.metric("매수점수", _fmt_metric_num(row.get("buy_score"), 1))
             c2.metric("정확성", _fmt_metric_pct(row.get("accuracy")))

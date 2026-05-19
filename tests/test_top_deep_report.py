@@ -161,6 +161,8 @@ def test_build_top_deep_reports_maps_korean_theme_field():
     assert reports[0]["market_regime"]["regime_breadth_pct"] == 60.0
     assert reports[0]["candidate_interpretation"]["section"] == "Top5"
     assert reports[0]["candidate_interpretation"]["primary_theme"] == "소비재/유통"
+    assert reports[0]["candidate_data_quality"]["display_warning_level"] in {"warning", "critical"}
+    assert "volume_ratio" in reports[0]["candidate_data_quality"]["missing_required_fields"]
 
 
 def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():

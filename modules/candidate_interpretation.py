@@ -85,6 +85,7 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
     policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
     theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
     price = row.get("price") if isinstance(row.get("price"), dict) else {}
+    data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
 
     section = str(_first(alignment.get("analysis_section"), row.get("_analysis_section"), row.get("section"), "Top5"))
     section_rank = _to_int(_first(alignment.get("analysis_section_rank"), row.get("_analysis_section_rank"), row.get("section_rank"), row.get("rank")))
@@ -92,6 +93,7 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
     planner_rank = _to_int(_first(display_contract.get("planner_priority_rank"), alignment.get("planner_priority_rank"), row.get("priority_rank"), row.get("rank")))
 
     warnings = _text_list(row.get("data_warnings"), limit=6)
+    warnings.extend(item for item in _text_list(data_quality.get("visible_warnings"), limit=6) if item not in warnings)
     warnings.extend(item for item in _text_list(row.get("quality_flags"), limit=6) if item not in warnings)
     risk_reasons = _text_list(row.get("risk_flags"), limit=6)
     risk_reasons.extend(item for item in _text_list(row.get("rationale"), limit=6) if item not in risk_reasons)
@@ -125,6 +127,8 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
         "policy_version": _first(admission.get("policy_version"), prediction.get("admission_policy_version"), policy_metadata.get("active_policy_version")),
         "data_warning_count": len(warnings),
         "data_warnings": warnings,
+        "data_quality_level": data_quality.get("display_warning_level"),
+        "data_required_present_pct": data_quality.get("required_present_pct"),
         "risk_reasons": risk_reasons,
         "primary_theme": _first(theme.get("primary_theme"), row.get("primary_theme"), row.get("테마"), row.get("Theme")),
         "day_change_pct": _to_float(_first(row.get("day_change_pct"), row.get("day_return_pct"), row.get("전일비"), price.get("day_change_pct"))),

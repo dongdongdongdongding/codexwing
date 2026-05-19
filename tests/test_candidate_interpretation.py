@@ -1,3 +1,4 @@
+from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import INTERPRETATION_VERSION, build_candidate_interpretation
 from modules.ui_helpers import build_signal_display_rows
 
@@ -69,4 +70,4 @@ def test_signal_display_rows_embed_same_candidate_interpretation_contract():
     assert display["original_rank"] == 12
     assert display["planner_rank"] == 3
     assert display["realized_expectancy_5d_prob"] == 80.1
-    assert interpretation == build_candidate_interpretation(row)
+    assert interpretation == build_candidate_interpretation({**row, "candidate_data_quality": build_candidate_data_quality(row)})

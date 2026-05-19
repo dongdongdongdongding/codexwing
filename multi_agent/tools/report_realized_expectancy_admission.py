@@ -65,7 +65,53 @@ def _markdown(report):
                 f"- adjusted 5D win/avg/min/max: `{adjusted['return_5d']['win_pct']}` / `{adjusted['return_5d']['avg_pct']}` / `{adjusted['return_5d']['min_pct']}` / `{adjusted['return_5d']['max_pct']}`",
             ]
         )
+    quality = report.get("data_quality_breakdown") if isinstance(report.get("data_quality_breakdown"), dict) else {}
+    if quality:
+        lines.extend(["", "## Data Quality Breakdown"])
+        for level, metrics in sorted(quality.items()):
+            lines.append(
+                f"- {level}: rows `{metrics['rows']}` · 3D win/avg `{metrics['return_3d_win_pct']}` / `{metrics['return_3d_avg_pct']}` · "
+                f"5D win/avg `{metrics['return_5d_win_pct']}` / `{metrics['return_5d_avg_pct']}`"
+            )
     return "\n".join(lines) + "\n"
+
+
+def _quality_breakdown(rows):
+    groups = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
+        level = str(row.get("data_warning_level") or quality.get("display_warning_level") or "unknown")
+        groups.setdefault(level, []).append(row)
+
+    def _float(value):
+        try:
+            return float(value)
+        except Exception:
+            return None
+
+    def _metrics(values):
+        clean = [value for value in (_float(value) for value in values) if value is not None]
+        if not clean:
+            return {"win_pct": None, "avg_pct": None}
+        return {
+            "win_pct": round(sum(1 for value in clean if value > 0) / len(clean) * 100.0, 4),
+            "avg_pct": round(sum(clean) / len(clean), 6),
+        }
+
+    out = {}
+    for level, group in groups.items():
+        ret3 = _metrics([row.get("return_3d_pct") for row in group])
+        ret5 = _metrics([row.get("return_5d_pct") for row in group])
+        out[level] = {
+            "rows": len(group),
+            "return_3d_win_pct": ret3["win_pct"],
+            "return_3d_avg_pct": ret3["avg_pct"],
+            "return_5d_win_pct": ret5["win_pct"],
+            "return_5d_avg_pct": ret5["avg_pct"],
+        }
+    return out
 
 
 def main() -> int:
@@ -79,6 +125,7 @@ def main() -> int:
     rows = load_post_scan_ledger_rows(Path(args.shared_dir), limit_runs=int(args.limit_runs))
     report = compare_original_vs_expectancy_order(rows, top_n=int(args.top_n))
     report["regime_theme_comparison"] = compare_unadjusted_vs_regime_theme_order(rows, top_n=int(args.top_n))
+    report["data_quality_breakdown"] = _quality_breakdown(rows)
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "kr_realized_expectancy_admission.json"

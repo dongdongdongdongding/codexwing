@@ -102,6 +102,7 @@ def _load_top_deep_section_map(run_id: str, report_dir: Optional[Path] = None) -
         market_regime = item.get("market_regime") if isinstance(item.get("market_regime"), dict) else {}
         admission = item.get("realized_expectancy_admission") if isinstance(item.get("realized_expectancy_admission"), dict) else {}
         adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
+        data_quality = item.get("candidate_data_quality") if isinstance(item.get("candidate_data_quality"), dict) else {}
         out[ticker] = {
             "section": alignment.get("analysis_section") or item.get("analysis_section"),
             "section_rank": alignment.get("analysis_section_rank") or item.get("rank"),
@@ -125,6 +126,9 @@ def _load_top_deep_section_map(run_id: str, report_dir: Optional[Path] = None) -
             "kosdaq_chg": market_regime.get("kosdaq_chg"),
             "market_gate": market_regime.get("market_gate") or adjustment.get("market_gate"),
             "regime_theme_adjustment": adjustment or None,
+            "candidate_data_quality": data_quality or None,
+            "data_required_present_pct": data_quality.get("required_present_pct"),
+            "data_warning_level": data_quality.get("display_warning_level"),
         }
     return out
 
@@ -212,6 +216,9 @@ def build_post_scan_ledger_rows(
             "kosdaq_chg": _safe_float(_first_present(outcome.get("kosdaq_chg"), section_meta.get("kosdaq_chg"))),
             "market_gate_snapshot": outcome.get("market_gate_snapshot"),
             "regime_theme_adjustment": _first_present(outcome.get("regime_theme_adjustment"), section_meta.get("regime_theme_adjustment")),
+            "candidate_data_quality": outcome.get("candidate_data_quality") or section_meta.get("candidate_data_quality"),
+            "data_required_present_pct": _safe_float(outcome.get("data_required_present_pct") or section_meta.get("data_required_present_pct")),
+            "data_warning_level": outcome.get("data_warning_level") or section_meta.get("data_warning_level"),
             "mfe_intraday_pct": _safe_float(outcome.get("mfe_intraday_pct")),
             "mae_intraday_pct": _safe_float(outcome.get("mae_intraday_pct")),
             "mfe_5d_pct": _safe_float(outcome.get("mfe_5d_pct") or outcome.get("max_high_return_5d_pct")),

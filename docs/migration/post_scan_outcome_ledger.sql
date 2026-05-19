@@ -44,6 +44,9 @@ create table if not exists public.post_scan_outcome_ledger (
   kosdaq_chg double precision,
   feature_snapshot jsonb,
   regime_theme_adjustment jsonb,
+  candidate_data_quality jsonb default '{}'::jsonb,
+  data_required_present_pct double precision,
+  data_warning_level text,
   relative_rank_score double precision,
   loss_risk_score double precision,
   return_10m_pct double precision,
@@ -115,7 +118,10 @@ alter table public.post_scan_outcome_ledger
   add column if not exists kospi_chg double precision,
   add column if not exists kosdaq_chg double precision,
   add column if not exists feature_snapshot jsonb,
-  add column if not exists regime_theme_adjustment jsonb;
+  add column if not exists regime_theme_adjustment jsonb,
+  add column if not exists candidate_data_quality jsonb default '{}'::jsonb,
+  add column if not exists data_required_present_pct double precision,
+  add column if not exists data_warning_level text;
 
 create index if not exists idx_post_scan_outcome_ledger_run_id
   on public.post_scan_outcome_ledger (run_id);

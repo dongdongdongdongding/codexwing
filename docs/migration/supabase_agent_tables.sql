@@ -233,6 +233,9 @@ create table if not exists public.post_scan_outcome_ledger (
   kosdaq_chg double precision,
   feature_snapshot jsonb,
   regime_theme_adjustment jsonb,
+  candidate_data_quality jsonb default '{}'::jsonb,
+  data_required_present_pct double precision,
+  data_warning_level text,
   relative_rank_score double precision,
   loss_risk_score double precision,
   return_10m_pct double precision,
@@ -287,7 +290,10 @@ alter table public.post_scan_outcome_ledger
   add column if not exists kospi_chg double precision,
   add column if not exists kosdaq_chg double precision,
   add column if not exists feature_snapshot jsonb,
-  add column if not exists regime_theme_adjustment jsonb;
+  add column if not exists regime_theme_adjustment jsonb,
+  add column if not exists candidate_data_quality jsonb default '{}'::jsonb,
+  add column if not exists data_required_present_pct double precision,
+  add column if not exists data_warning_level text;
 
 create index if not exists idx_agent_profile_diagnostics_profile
   on public.agent_profile_diagnostics (current_profile);
@@ -506,6 +512,7 @@ create table if not exists public.scan_deep_reports (
   selection_thesis jsonb default '{}'::jsonb,
   risk_overrides jsonb default '{}'::jsonb,
   display_contract jsonb default '{}'::jsonb,
+  candidate_data_quality jsonb default '{}'::jsonb,
   candidate_interpretation jsonb default '{}'::jsonb,
   policy_metadata jsonb default '{}'::jsonb,
   realized_expectancy_admission jsonb default '{}'::jsonb,
@@ -533,6 +540,7 @@ alter table public.scan_deep_reports
   add column if not exists selection_thesis jsonb default '{}'::jsonb,
   add column if not exists risk_overrides jsonb default '{}'::jsonb,
   add column if not exists display_contract jsonb default '{}'::jsonb,
+  add column if not exists candidate_data_quality jsonb default '{}'::jsonb,
   add column if not exists candidate_interpretation jsonb default '{}'::jsonb,
   add column if not exists policy_metadata jsonb default '{}'::jsonb,
   add column if not exists realized_expectancy_admission jsonb default '{}'::jsonb,

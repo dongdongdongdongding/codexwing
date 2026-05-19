@@ -11,6 +11,7 @@ import yfinance as yf
 
 from modules.entry_readiness import build_entry_readiness_analysis
 from modules.practical_entry_gate import evaluate_practical_entry_gate
+from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
@@ -46,6 +47,7 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "selection_thesis",
     "risk_overrides",
     "display_contract",
+    "candidate_data_quality",
     "candidate_interpretation",
     "policy_metadata",
     "realized_expectancy_admission",
@@ -1008,6 +1010,7 @@ def build_top_deep_reports(
             ),
         }
         report["display_contract"] = _build_display_contract(row=row, trace=trace, report=report)
+        report["candidate_data_quality"] = build_candidate_data_quality(report)
         report["candidate_interpretation"] = build_candidate_interpretation(report)
         reports.append(_coerce_jsonable(report))
     return reports
