@@ -10,7 +10,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from modules.realized_expectancy_admission import compare_original_vs_expectancy_order, load_post_scan_ledger_rows
+from modules.realized_expectancy_admission import (
+    compare_original_vs_expectancy_order,
+    compare_unadjusted_vs_regime_theme_order,
+    load_post_scan_ledger_rows,
+)
 
 
 DEFAULT_OUT_DIR = PROJECT_ROOT / "runtime_state" / "reports" / "validation"
@@ -39,6 +43,28 @@ def _markdown(report):
         f"- 5D win/avg/min/max: `{expectancy['return_5d']['win_pct']}` / `{expectancy['return_5d']['avg_pct']}` / `{expectancy['return_5d']['min_pct']}` / `{expectancy['return_5d']['max_pct']}`",
         f"- stop_first_5d_pct: `{expectancy['stop_first_5d_pct']}`",
     ]
+    regime_theme = report.get("regime_theme_comparison") if isinstance(report.get("regime_theme_comparison"), dict) else {}
+    if regime_theme:
+        unadjusted = regime_theme["unadjusted_order"]
+        adjusted = regime_theme["regime_theme_order"]
+        coverage = regime_theme.get("feature_coverage") if isinstance(regime_theme.get("feature_coverage"), dict) else {}
+        lines.extend(
+            [
+                "",
+                "## Regime/Theme Calibration Check",
+                (
+                    f"- feature coverage rows/market_gate/theme/same_scan_theme: "
+                    f"`{coverage.get('rows')}` / `{coverage.get('market_gate_rows')}` / "
+                    f"`{coverage.get('primary_theme_rows')}` / `{coverage.get('same_scan_theme_rows')}`"
+                ),
+                f"- unadjusted rows: `{unadjusted['rows']}` · applied rows: `{unadjusted['regime_theme_applied_rows']}`",
+                f"- unadjusted 3D win/avg/min/max: `{unadjusted['return_3d']['win_pct']}` / `{unadjusted['return_3d']['avg_pct']}` / `{unadjusted['return_3d']['min_pct']}` / `{unadjusted['return_3d']['max_pct']}`",
+                f"- unadjusted 5D win/avg/min/max: `{unadjusted['return_5d']['win_pct']}` / `{unadjusted['return_5d']['avg_pct']}` / `{unadjusted['return_5d']['min_pct']}` / `{unadjusted['return_5d']['max_pct']}`",
+                f"- adjusted rows: `{adjusted['rows']}` · applied rows: `{adjusted['regime_theme_applied_rows']}`",
+                f"- adjusted 3D win/avg/min/max: `{adjusted['return_3d']['win_pct']}` / `{adjusted['return_3d']['avg_pct']}` / `{adjusted['return_3d']['min_pct']}` / `{adjusted['return_3d']['max_pct']}`",
+                f"- adjusted 5D win/avg/min/max: `{adjusted['return_5d']['win_pct']}` / `{adjusted['return_5d']['avg_pct']}` / `{adjusted['return_5d']['min_pct']}` / `{adjusted['return_5d']['max_pct']}`",
+            ]
+        )
     return "\n".join(lines) + "\n"
 
 
@@ -52,6 +78,7 @@ def main() -> int:
 
     rows = load_post_scan_ledger_rows(Path(args.shared_dir), limit_runs=int(args.limit_runs))
     report = compare_original_vs_expectancy_order(rows, top_n=int(args.top_n))
+    report["regime_theme_comparison"] = compare_unadjusted_vs_regime_theme_order(rows, top_n=int(args.top_n))
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "kr_realized_expectancy_admission.json"

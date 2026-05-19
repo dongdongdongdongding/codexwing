@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+from modules.regime_theme_calibration import build_regime_theme_adjustment
+
 
 ADMISSION_POLICY_VERSION = "kr_realized_expectancy_admission_v1"
 ADMISSION_HORIZONS = (3, 5)
@@ -151,6 +153,7 @@ def build_realized_expectancy_admission(
     market: Any = "",
     section: Any = "",
     calibrations: Optional[Dict[tuple, SectionCalibration]] = None,
+    apply_regime_theme: bool = True,
 ) -> Dict[str, Any]:
     row = row if isinstance(row, dict) else {}
     market_key = normalize_market(market or _row_value(row, "market", "Market"), _row_value(row, "ticker", "Ticker", "티커"))
@@ -194,6 +197,25 @@ def build_realized_expectancy_admission(
     prob5 = _clamp(calibration.section_win_5d_pct * 0.45 + anchor5 * 0.35 + momentum * 0.55 + edge_adjust + score_adjust - loss_adjust, 1.0, 99.0)
     avg3 = calibration.avg_return_3d_pct + expected_3d * 0.35 + momentum * 0.08 + expected_edge * 0.18 - loss_adjust * 0.08
     avg5 = calibration.avg_return_5d_pct + expected_5d * 0.35 + momentum * 0.10 + expected_edge * 0.20 - loss_adjust * 0.10
+    unadjusted = {
+        "3d_prob": round(prob3, 6),
+        "5d_prob": round(prob5, 6),
+        "avg_return_3d_pct": round(avg3, 6),
+        "avg_return_5d_pct": round(avg5, 6),
+        "stop_first_risk_pct": round(stop_first_risk, 6),
+    }
+    regime_theme_adjustment = build_regime_theme_adjustment(row)
+    adjustment_confidence = _safe_float(regime_theme_adjustment.get("confidence"), 0.0) or 0.0
+    effective_confidence = _clamp(adjustment_confidence, 0.0, 0.75)
+    if apply_regime_theme and feature_evidence_count >= 2 and effective_confidence > 0.0:
+        prob_multiplier = 1.0 + ((_safe_float(regime_theme_adjustment.get("prob_multiplier"), 1.0) or 1.0) - 1.0) * effective_confidence
+        return_multiplier = 1.0 + ((_safe_float(regime_theme_adjustment.get("return_multiplier"), 1.0) or 1.0) - 1.0) * effective_confidence
+        stop_multiplier = 1.0 + ((_safe_float(regime_theme_adjustment.get("stop_risk_multiplier"), 1.0) or 1.0) - 1.0) * effective_confidence
+        prob3 = _clamp(prob3 * prob_multiplier, 1.0, 99.0)
+        prob5 = _clamp(prob5 * prob_multiplier, 1.0, 99.0)
+        avg3 = avg3 * return_multiplier
+        avg5 = avg5 * return_multiplier
+        stop_first_risk = _clamp(stop_first_risk * stop_multiplier, 5.0, 85.0)
     ev3 = prob3 / 100.0 * avg3 + (1.0 - prob3 / 100.0) * calibration.min_return_3d_pct
     ev5 = prob5 / 100.0 * avg5 + (1.0 - prob5 / 100.0) * calibration.min_return_5d_pct
     ranking3 = _clamp(prob3 * 0.48 + ev3 * 5.0 + momentum * 0.8 + rank_prior - stop_first_risk * 0.30, 0.0, 100.0)
@@ -233,6 +255,8 @@ def build_realized_expectancy_admission(
         "ranking_score_5d": round(ranking5, 6),
         "expected_value_3d_pct": round(ev3, 6),
         "expected_value_5d_pct": round(ev5, 6),
+        "unadjusted_expectancy": unadjusted,
+        "regime_theme_adjustment": regime_theme_adjustment,
         "expected_value_band": {
             "low_3d_pct": calibration.min_return_3d_pct,
             "base_3d_pct": round(ev3, 6),
@@ -254,6 +278,8 @@ def build_realized_expectancy_admission(
             "section_rank": round(section_rank, 6),
             "rank_prior": round(rank_prior, 6),
             "momentum_score": round(momentum, 6),
+            "regime_theme_effective_confidence": round(effective_confidence, 6),
+            "regime_theme_applied": bool(apply_regime_theme and feature_evidence_count >= 2 and effective_confidence > 0.0),
         },
     }
 
@@ -263,6 +289,7 @@ def enrich_rows_with_realized_expectancy(
     *,
     market: Any = "",
     calibrations: Optional[Dict[tuple, SectionCalibration]] = None,
+    apply_regime_theme: bool = True,
 ) -> List[Dict[str, Any]]:
     enriched: List[Dict[str, Any]] = []
     for row in rows or []:
@@ -275,6 +302,7 @@ def enrich_rows_with_realized_expectancy(
             market=market or copy.get("market"),
             section=section,
             calibrations=calibrations,
+            apply_regime_theme=apply_regime_theme,
         )
         enriched.append(copy)
     return enriched
@@ -341,6 +369,62 @@ def compare_original_vs_expectancy_order(rows: Iterable[Dict[str, Any]], *, top_
         "comparison_groups": len(groups),
         "original_order": summarize(original, "original"),
         "expectancy_order": summarize(by_expectancy, "realized_expectancy"),
+    }
+
+
+def compare_unadjusted_vs_regime_theme_order(rows: Iterable[Dict[str, Any]], *, top_n: int = 5) -> Dict[str, Any]:
+    row_list = [row for row in rows or [] if isinstance(row, dict)]
+    coverage_rows = len(row_list)
+    market_gate_rows = sum(1 for row in row_list if _row_value(row, "market_gate") not in (None, "", "nan", "None"))
+    theme_rows = sum(1 for row in row_list if _row_value(row, "primary_theme", "테마", "Theme") not in (None, "", "nan", "None"))
+    same_scan_theme_rows = sum(1 for row in row_list if _row_value(row, "theme_day_avg_decision_score", "_theme_day_avg_decision_score", "display_theme_day_avg_decision_score") not in (None, "", "nan", "None"))
+    groups: Dict[tuple, List[Dict[str, Any]]] = {}
+    for row in row_list:
+        key = (
+            str(row.get("run_id") or "ALL"),
+            normalize_market(row.get("market") or "-", row.get("ticker")),
+            normalize_section(row.get("section") or row.get("_analysis_section") or "Top5"),
+        )
+        groups.setdefault(key, []).append(row)
+
+    unadjusted: List[Dict[str, Any]] = []
+    adjusted: List[Dict[str, Any]] = []
+    for _, group in sorted(groups.items()):
+        unadjusted.extend(sort_by_realized_expectancy(enrich_rows_with_realized_expectancy(group, apply_regime_theme=False), horizon=5)[:top_n])
+        adjusted.extend(sort_by_realized_expectancy(enrich_rows_with_realized_expectancy(group, apply_regime_theme=True), horizon=5)[:top_n])
+
+    def summarize(selected: List[Dict[str, Any]], label: str) -> Dict[str, Any]:
+        ret3 = _metrics([_safe_float(row.get("return_3d_pct")) for row in selected])
+        ret5 = _metrics([_safe_float(row.get("return_5d_pct")) for row in selected])
+        stop_labels = [row.get("stop_before_target_5d") for row in selected if isinstance(row.get("stop_before_target_5d"), bool)]
+        applied = [
+            ((row.get("realized_expectancy_admission") or {}).get("trace") or {}).get("regime_theme_applied")
+            for row in selected
+            if isinstance(row.get("realized_expectancy_admission"), dict)
+        ]
+        return {
+            "order": label,
+            "rows": len(selected),
+            "tickers": [row.get("ticker") for row in selected],
+            "return_3d": ret3,
+            "return_5d": ret5,
+            "stop_first_5d_pct": round(sum(1 for value in stop_labels if value) / len(stop_labels) * 100.0, 4) if stop_labels else None,
+            "regime_theme_applied_rows": sum(1 for value in applied if value),
+        }
+
+    return {
+        "policy_version": ADMISSION_POLICY_VERSION,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "top_n": int(top_n),
+        "comparison_groups": len(groups),
+        "feature_coverage": {
+            "rows": coverage_rows,
+            "market_gate_rows": market_gate_rows,
+            "primary_theme_rows": theme_rows,
+            "same_scan_theme_rows": same_scan_theme_rows,
+        },
+        "unadjusted_order": summarize(unadjusted, "unadjusted_realized_expectancy"),
+        "regime_theme_order": summarize(adjusted, "regime_theme_realized_expectancy"),
     }
 
 

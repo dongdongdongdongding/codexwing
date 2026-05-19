@@ -1343,6 +1343,17 @@ def _render_top_deep_reports_page():
             a2.metric("실현기대 5D", _fmt_metric_pct(admission.get("expected_value_5d_pct")))
             a3.metric("5D 랭킹", _fmt_metric_num(admission.get("ranking_score_5d"), 1))
             a4.metric("Stop-first", _fmt_metric_pct(admission.get("stop_first_risk_pct")))
+            regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
+            if regime_theme_adjustment:
+                warnings = regime_theme_adjustment.get("warnings") if isinstance(regime_theme_adjustment.get("warnings"), list) else []
+                st.caption(
+                    "국면/테마 보정 "
+                    f"확률x{_fmt_metric_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
+                    f"수익x{_fmt_metric_num(regime_theme_adjustment.get('return_multiplier'), 2)} · "
+                    f"손절위험x{_fmt_metric_num(regime_theme_adjustment.get('stop_risk_multiplier'), 2)} · "
+                    f"신뢰도 {_fmt_metric_pct((regime_theme_adjustment.get('confidence') or 0) * 100)}"
+                    + (f" · 경고 {', '.join(str(item) for item in warnings[:3])}" if warnings else "")
+                )
 
             _render_selection_thesis(row, trade_plan)
 

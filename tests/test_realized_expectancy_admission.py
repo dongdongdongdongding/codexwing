@@ -2,6 +2,7 @@ from modules.realized_expectancy_admission import (
     ADMISSION_POLICY_VERSION,
     build_realized_expectancy_admission,
     compare_original_vs_expectancy_order,
+    compare_unadjusted_vs_regime_theme_order,
     sort_by_realized_expectancy,
 )
 
@@ -58,6 +59,64 @@ def test_missing_calibration_returns_explicit_unavailable_reason():
 
     assert admission["available"] is False
     assert admission["unavailable_reason"] == "missing_calibration:NASDAQ:Top5"
+
+
+def test_regime_theme_adjustment_is_applied_with_trace(monkeypatch):
+    def fake_adjustment(_row):
+        return {
+            "version": "test",
+            "prob_multiplier": 1.2,
+            "return_multiplier": 1.2,
+            "stop_risk_multiplier": 0.8,
+            "confidence": 0.75,
+            "warnings": [],
+            "evidence": ["market_gate", "same_scan_theme"],
+        }
+
+    monkeypatch.setattr("modules.realized_expectancy_admission.build_regime_theme_adjustment", fake_adjustment)
+    base_row = {
+        "market": "KOSPI",
+        "_analysis_section": "Top5",
+        "expected_edge_score": 5.0,
+        "prob_clean": 64.0,
+        "decision_score": 82.0,
+        "loss_risk_score": 34.0,
+        "trend": "UP",
+        "volume_ratio": 2.1,
+        "day_change_pct": 2.0,
+    }
+
+    admission = build_realized_expectancy_admission(base_row, market="KOSPI", section="Top5")
+
+    assert admission["3d_prob"] > admission["unadjusted_expectancy"]["3d_prob"]
+    assert admission["avg_return_5d_pct"] > admission["unadjusted_expectancy"]["avg_return_5d_pct"]
+    assert admission["stop_first_risk_pct"] < admission["unadjusted_expectancy"]["stop_first_risk_pct"]
+    assert admission["regime_theme_adjustment"]["evidence"] == ["market_gate", "same_scan_theme"]
+    assert admission["trace"]["regime_theme_effective_confidence"] == 0.75
+
+
+def test_sparse_feature_rows_keep_rank_fallback_despite_regime_adjustment(monkeypatch):
+    monkeypatch.setattr(
+        "modules.realized_expectancy_admission.build_regime_theme_adjustment",
+        lambda _row: {
+            "version": "test",
+            "prob_multiplier": 1.2,
+            "return_multiplier": 1.2,
+            "stop_risk_multiplier": 0.8,
+            "confidence": 0.75,
+            "warnings": [],
+            "evidence": ["market_gate"],
+        },
+    )
+
+    admission = build_realized_expectancy_admission(
+        {"ticker": "005930.KS", "market": "KR", "_analysis_section_rank": 3},
+        market="KR",
+        section="Top5",
+    )
+
+    assert admission["ranking_score_5d"] == 97.0
+    assert admission["trace"]["feature_evidence_count"] < 2
 
 
 def test_kr_market_rows_are_normalized_from_ticker_suffix():
@@ -138,3 +197,52 @@ def test_validation_comparison_reports_old_vs_expectancy_metrics():
     assert report["comparison_groups"] == 1
     assert report["original_order"]["return_5d"]["avg_pct"] == -4.0
     assert report["expectancy_order"]["return_5d"]["avg_pct"] == 9.0
+
+
+def test_regime_theme_comparison_reports_unadjusted_vs_adjusted(monkeypatch):
+    monkeypatch.setattr(
+        "modules.realized_expectancy_admission.build_regime_theme_adjustment",
+        lambda row: {
+            "version": "test",
+            "prob_multiplier": 1.2 if row.get("ticker") == "B.KS" else 0.85,
+            "return_multiplier": 1.2 if row.get("ticker") == "B.KS" else 0.85,
+            "stop_risk_multiplier": 0.8 if row.get("ticker") == "B.KS" else 1.2,
+            "confidence": 0.75,
+            "warnings": [],
+            "evidence": ["market_gate", "same_scan_theme"],
+        },
+    )
+    rows = [
+        {
+            "ticker": "A.KS",
+            "market": "KOSPI",
+            "section": "Top5",
+            "section_rank": 1,
+            "expected_edge_score": 2.0,
+            "prob_clean": 64.0,
+            "loss_risk_score": 34.0,
+            "trend": "UP",
+            "return_3d_pct": -1.0,
+            "return_5d_pct": -2.0,
+            "stop_before_target_5d": True,
+        },
+        {
+            "ticker": "B.KS",
+            "market": "KOSPI",
+            "section": "Top5",
+            "section_rank": 2,
+            "expected_edge_score": 2.0,
+            "prob_clean": 64.0,
+            "loss_risk_score": 34.0,
+            "trend": "UP",
+            "return_3d_pct": 3.0,
+            "return_5d_pct": 7.0,
+            "stop_before_target_5d": False,
+        },
+    ]
+
+    report = compare_unadjusted_vs_regime_theme_order(rows, top_n=1)
+
+    assert report["unadjusted_order"]["tickers"] == ["A.KS"]
+    assert report["regime_theme_order"]["tickers"] == ["B.KS"]
+    assert report["regime_theme_order"]["regime_theme_applied_rows"] == 1

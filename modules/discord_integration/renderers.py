@@ -290,6 +290,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     if not policy_metadata:
         policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+    regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
     section = alignment.get("analysis_section") or "Top5"
     section_rank = alignment.get("analysis_section_rank") or row.get("rank")
     lines = [
@@ -309,6 +310,12 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         f"정책: {policy_metadata.get('active_policy_version') or '-'} · {policy_metadata.get('promotion_status') or '-'}",
         f"예상순수익(3D): {_fmt_pct(prediction.get('expected_net_return_3d_pct'))} · 모델 {prediction.get('tradable_pnl_model_version') or '-'}",
         f"실현기대: 3D {_fmt_pct(admission.get('expected_value_3d_pct'))} / 5D {_fmt_pct(admission.get('expected_value_5d_pct'))} · 5D점수 {_fmt_num(admission.get('ranking_score_5d'), 1)}",
+        (
+            f"국면/테마: 확률x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
+            f"수익x{_fmt_num(regime_theme_adjustment.get('return_multiplier'), 2)} · "
+            f"손절x{_fmt_num(regime_theme_adjustment.get('stop_risk_multiplier'), 2)} · "
+            f"신뢰도 {_fmt_num((_safe_float(regime_theme_adjustment.get('confidence')) or 0.0) * 100.0, 0)}%"
+        ),
         f"전일비: {_fmt_pct(row.get('day_change_pct'))}",
         _fmt_flow_line(flow),
         (
@@ -497,9 +504,11 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     visible = display_contract.get("display_status") or "VISIBLE"
     raw_rank = display_contract.get("original_scan_rank") or row.get("_raw_scan_rank") or row.get("rank") or row.get("Rank")
     policy_version = policy_metadata.get("active_policy_version") or "-"
+    regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
     return (
         f"{section or '후보'} · {visible} · 원본#{raw_rank or '-'} · {decision} · "
         f"정책 {policy_version} · 5D기대점수 {_fmt_num(admission.get('ranking_score_5d'), 1)} · "
+        f"국면/테마x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
         f"점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
     )[:1024]
 
