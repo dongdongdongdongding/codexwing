@@ -1309,6 +1309,7 @@ def _render_top_deep_reports_page():
         flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
+        policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
         section = alignment.get("analysis_section") or "Top5"
         section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
         title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
@@ -1322,6 +1323,11 @@ def _render_top_deep_reports_page():
                 f"표시계약 {display_contract.get('display_status') or 'VISIBLE'} · "
                 f"숨김허용 {display_contract.get('suppression_allowed', False)} · "
                 f"표시사유 {display_contract.get('display_reason') or 'scanner_emitted_candidate'}"
+            )
+            st.caption(
+                f"정책 {policy_metadata.get('active_policy_version') or '-'} · "
+                f"상태 {policy_metadata.get('promotion_status') or '-'} · "
+                f"롤백 {policy_metadata.get('rollback_active', False)}"
             )
             c1, c2, c3, c4, c5, c6 = st.columns(6)
             c1.metric("매수점수", _fmt_metric_num(row.get("buy_score"), 1))

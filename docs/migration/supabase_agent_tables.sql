@@ -443,6 +443,7 @@ create table if not exists public.scan_deep_reports (
   selection_thesis jsonb default '{}'::jsonb,
   risk_overrides jsonb default '{}'::jsonb,
   display_contract jsonb default '{}'::jsonb,
+  policy_metadata jsonb default '{}'::jsonb,
   entry_action jsonb default '{}'::jsonb,
   practical_entry_gate jsonb default '{}'::jsonb,
   trade_plan jsonb default '{}'::jsonb,
@@ -467,6 +468,7 @@ alter table public.scan_deep_reports
   add column if not exists selection_thesis jsonb default '{}'::jsonb,
   add column if not exists risk_overrides jsonb default '{}'::jsonb,
   add column if not exists display_contract jsonb default '{}'::jsonb,
+  add column if not exists policy_metadata jsonb default '{}'::jsonb,
   add column if not exists entry_action jsonb default '{}'::jsonb,
   add column if not exists practical_entry_gate jsonb default '{}'::jsonb,
   add column if not exists flow jsonb default '{}'::jsonb;

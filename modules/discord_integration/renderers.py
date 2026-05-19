@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
+from modules.model_governance import active_policy_metadata
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
@@ -285,6 +286,9 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     practical_gate = row.get("practical_entry_gate") if isinstance(row.get("practical_entry_gate"), dict) else {}
     gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
     display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
+    policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
+    if not policy_metadata:
+        policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     section = alignment.get("analysis_section") or "Top5"
     section_rank = alignment.get("analysis_section_rank") or row.get("rank")
     lines = [
@@ -301,6 +305,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"타이밍 {timing.get('grade') or '-'}({_fmt_num(timing.get('score'), 0)})"
         ),
         f"추격위험: {readiness.get('chase_risk_level') or '-'} · 손실위험 {_fmt_num(row.get('loss_risk_score'), 1)}",
+        f"정책: {policy_metadata.get('active_policy_version') or '-'} · {policy_metadata.get('promotion_status') or '-'}",
         f"예상순수익(3D): {_fmt_pct(prediction.get('expected_net_return_3d_pct'))} · 모델 {prediction.get('tradable_pnl_model_version') or '-'}",
         f"전일비: {_fmt_pct(row.get('day_change_pct'))}",
         _fmt_flow_line(flow),
@@ -483,11 +488,15 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     day = row.get("day_change_pct") or row.get("Change %") or row.get("Day Change") or row.get("전일비")
     section = row.get("_analysis_section")
     display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
+    policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
+    if not policy_metadata:
+        policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     visible = display_contract.get("display_status") or "VISIBLE"
     raw_rank = display_contract.get("original_scan_rank") or row.get("_raw_scan_rank") or row.get("rank") or row.get("Rank")
+    policy_version = policy_metadata.get("active_policy_version") or "-"
     return (
         f"{section or '후보'} · {visible} · 원본#{raw_rank or '-'} · {decision} · "
-        f"점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
+        f"정책 {policy_version} · 점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
     )[:1024]
 
 
@@ -530,6 +539,16 @@ def build_archive_embed(
             standard_rows = build_top5_plus_exception_records(artifact_rows, planner_payload)["combined"]
             seen_shadow = {str(row.get("ticker") or "") for row in shadow_rows}
             run_rows = shadow_rows + [row for row in standard_rows if str(row.get("ticker") or "") not in seen_shadow]
+            top_deep_by_ticker = {
+                str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper(): row
+                for row in rows
+                if str(row.get("run_id") or "") == selected_run
+            }
+            for row in run_rows:
+                key = str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper()
+                top_deep_row = top_deep_by_ticker.get(key) or {}
+                if top_deep_row.get("policy_metadata") and not row.get("policy_metadata"):
+                    row["policy_metadata"] = top_deep_row.get("policy_metadata")
             if ticker:
                 run_rows = [
                     row

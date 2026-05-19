@@ -91,6 +91,8 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["buy_score"] == 77.5
     assert report["accuracy"] is not None
     assert report["prediction"]["expected_return_3d_pct"] == 2.3
+    assert report["policy_metadata"]["active_policy_version"].startswith("kr_scanner_policy_")
+    assert report["policy_metadata"]["promotion_status"] == "production_champion"
     assert report["selection_thesis"]["status"] == "planner_priority"
     assert report["selection_thesis"]["scanner_basis"]["expected_return_3d_pct"] == 2.3
     assert "selection_thesis" in report["trade_plan"]

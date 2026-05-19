@@ -13,6 +13,7 @@ from modules.entry_readiness import build_entry_readiness_analysis
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
+from modules.model_governance import active_policy_metadata
 from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
 
@@ -43,6 +44,7 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "selection_thesis",
     "risk_overrides",
     "display_contract",
+    "policy_metadata",
     "entry_action",
     "practical_entry_gate",
     "trade_plan",
@@ -847,6 +849,7 @@ def build_top_deep_reports(
     traces = _planner_trace_by_ticker(planner_payload)
     reports: List[Dict[str, Any]] = []
     generated_at = datetime.now(timezone.utc).isoformat()
+    policy_metadata = active_policy_metadata(market=market, scan_mode=scan_mode)
     for rank, row in enumerate(_select_top_candidates(scan_rows, planner_payload, top_n), start=1):
         ticker = _ticker(row)
         trace = traces.get(ticker, {})
@@ -949,6 +952,7 @@ def build_top_deep_reports(
             "risk_flags": trace.get("theme_risk") or row.get("theme_risk") or [],
             "rationale": trace.get("rationale") or row.get("rationale") or [],
             "prediction": prediction,
+            "policy_metadata": policy_metadata,
             "selection_thesis": selection_thesis,
             "risk_overrides": risk_overrides,
             "entry_action": entry_action,

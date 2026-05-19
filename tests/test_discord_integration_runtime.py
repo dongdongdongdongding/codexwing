@@ -92,6 +92,10 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
                     "buy_score": 77.5,
                     "day_change_pct": -3.21,
                     "loss_risk_score": 42.0,
+                    "policy_metadata": {
+                        "active_policy_version": "kr_scanner_policy_test",
+                        "promotion_status": "production_champion",
+                    },
                     "flow": {
                         "foreigner": 1200000,
                         "institution": -300000,
@@ -132,6 +136,7 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     assert embeds[0]["title"] == "Shadow + Top5 + Exception Leader 자동 정밀분석"
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
     assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
+    assert "정책: kr_scanner_policy_test · production_champion" in embeds[0]["fields"][0]["value"]
     assert "수급: 외인 +1,200,000 / 기관 -300,000 / 개인 -900,000" in embeds[0]["fields"][0]["value"]
 
 
@@ -150,6 +155,10 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
                     "rank": 1,
                     "ticker": "005930.KS",
                     "stock_name": "삼성전자",
+                    "policy_metadata": {
+                        "active_policy_version": "kr_scanner_policy_old",
+                        "promotion_status": "production_champion",
+                    },
                     "trade_plan": {"readiness_analysis": {"final_buy_judgment": {"action": "관망"}}},
                 }
             ],
@@ -197,11 +206,13 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
     monkeypatch.setattr(renderers, "ARTIFACT_DIR", artifact_dir)
 
     runs = build_runs_embed(market="KOSPI")
+    archive_top = build_archive_embed(run_id="RUN-OLD", offset=0, limit=1)
     archive = build_archive_embed(run_id="RUN-OLD", offset=1, limit=1)
     top_deep = build_top_deep_embeds(run_id="RUN-OLD")
 
     assert "RUN-OLD" in runs["fields"][0]["name"]
     assert run_id_choices(current="OLD") == ["RUN-OLD"]
+    assert "정책 kr_scanner_policy_old" in archive_top["fields"][0]["value"]
     assert "SK하이닉스" in archive["fields"][0]["name"]
     assert "삼성전자" in top_deep[0]["fields"][0]["name"]
 
