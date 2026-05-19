@@ -246,12 +246,12 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     )
 
     if str(market or "").upper() == "KOSDAQ":
-        st.markdown("### KOSDAQ 최우선 관찰 Shadow")
+        st.markdown("### KOSDAQ Shadow 관찰")
         st.caption(
-            "기존 KOSDAQ Top5/Exception보다 stop-first가 낮게 검증된 +5% 반등 후보입니다. "
-            "운영 랭킹 교체가 아니라 상단 관찰 섹션으로 분리합니다."
+            "Ordered rebound 조건과 Low-loss theme 조건을 별도 섹션명으로 분리합니다. "
+            "운영 랭킹 교체가 아니라 상단 관찰 섹션입니다."
         )
-        render_signal_card_list(shadow_rows, empty_text="KOSDAQ shadow 조건 통과 후보 없음.")
+        render_signal_card_list(shadow_rows, empty_text="KOSDAQ shadow 관찰 조건 통과 후보 없음.")
     elif str(market or "").upper() == "KOSPI":
         st.markdown("### KOSPI Ordered Shadow")
         st.caption(

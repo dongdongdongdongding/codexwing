@@ -157,6 +157,18 @@ def _safe_int(value: Any, default: int = 0) -> int:
         return default
 
 
+def _shadow_section_count(section_counts: Dict[str, int]) -> int:
+    return sum(
+        int(section_counts.get(section, 0) or 0)
+        for section in (
+            "KOSDAQ Ordered Shadow",
+            "KOSDAQ Low-loss Shadow",
+            "KOSDAQ Shadow",
+            "KOSPI Shadow",
+        )
+    )
+
+
 def _normalize_limit(value: Any, *, default: int, maximum: int) -> int:
     return max(1, min(maximum, _safe_int(value, default)))
 
@@ -417,6 +429,8 @@ def build_top_deep_embeds(
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         section = str(alignment.get("analysis_section") or "Top5")
         section_order = {
+            "KOSDAQ Ordered Shadow": -30,
+            "KOSDAQ Low-loss Shadow": -20,
             "KOSDAQ Shadow": -20,
             "KOSPI Shadow": -10,
             "Top5": 0,
@@ -434,7 +448,7 @@ def build_top_deep_embeds(
         status_lines = [
             f"원본 통과: {result_count}개 · 필터: {filtered_count}개",
             (
-                f"섹션: Shadow {section_counts.get('KOSDAQ Shadow', 0) + section_counts.get('KOSPI Shadow', 0)} / "
+                f"섹션: Shadow {_shadow_section_count(section_counts)} / "
                 f"Top5 {section_counts.get('Top5', 0)} / "
                 f"Exception {section_counts.get('Exception Leader', 0)}"
             ),
@@ -463,7 +477,7 @@ def build_top_deep_embeds(
             "title": "Shadow + Top5 + Exception Leader 자동 정밀분석",
             "description": (
                 f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-                f"Shadow {section_counts.get('KOSDAQ Shadow', 0) + section_counts.get('KOSPI Shadow', 0)} / "
+                f"Shadow {_shadow_section_count(section_counts)} / "
                 f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
             ),
             "color": 0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,

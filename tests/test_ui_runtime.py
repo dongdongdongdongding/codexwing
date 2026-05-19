@@ -359,8 +359,35 @@ class UIHelperTests(unittest.TestCase):
 
         self.assertEqual([row["ticker"] for row in groups["kosdaq"]], ["KQ1.KQ"])
         self.assertEqual([row["ticker"] for row in groups["kospi"]], ["KS1.KS"])
-        self.assertEqual(groups["kosdaq"][0]["_analysis_section"], "KOSDAQ Shadow")
+        self.assertEqual(groups["kosdaq"][0]["_analysis_section"], "KOSDAQ Low-loss Shadow")
         self.assertEqual(groups["kospi"][0]["_analysis_section"], "KOSPI Shadow")
+
+    def test_kr_shadow_gate_separates_kosdaq_ordered_and_low_loss_contracts(self):
+        rows = [
+            {
+                "ticker": "ORDERED.KQ",
+                "market": "KOSDAQ",
+                "candidate_id": "5D_ordered_5v5",
+                "volume_ratio": 1.2,
+                "trend": "DOWN",
+                "selection_lane": "1d",
+            },
+            {
+                "ticker": "LOWLOSS.KQ",
+                "market": "KOSDAQ",
+                "primary_theme": "로봇/자동화",
+                "tech_score": 75,
+                "trend": "UP",
+                "theme_day_symbol_count": 7,
+                "theme_day_avg_decision_score": 60,
+            },
+        ]
+
+        groups = build_kr_shadow_gate_records(rows, limit=5)
+
+        self.assertEqual([row["ticker"] for row in groups["kosdaq_ordered"]], ["ORDERED.KQ"])
+        self.assertEqual([row["ticker"] for row in groups["kosdaq_low_loss"]], ["LOWLOSS.KQ"])
+        self.assertEqual([row["_analysis_section"] for row in groups["kosdaq"]], ["KOSDAQ Ordered Shadow", "KOSDAQ Low-loss Shadow"])
 
     def test_kr_shadow_gate_uses_planner_theme_metrics_display_fields(self):
         rows = [

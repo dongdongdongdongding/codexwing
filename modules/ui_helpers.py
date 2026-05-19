@@ -362,7 +362,7 @@ def is_kospi_ordered_shadow_gate_row(rec: Dict[str, Any]) -> bool:
 
 
 def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
-    """Current KOSDAQ low-loss rebound shadow gate.
+    """Current KOSDAQ low-loss theme rebound shadow gate.
 
     Display-only gate from the internal ordered OHLCV testbed:
     tech_score<=80, same-scan theme avg decision<=63.1,
@@ -387,6 +387,27 @@ def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
         and theme_count is not None
         and theme_count >= 7.0
         and trend == "UP"
+    )
+
+
+def is_kosdaq_ordered_observer_shadow_gate_row(rec: Dict[str, Any]) -> bool:
+    """Issue-tracked KOSDAQ ordered rebound observer gate.
+
+    This is a separate display-only contract from the low-loss theme rebound
+    gate above. It mirrors the daily observer issue definition exactly.
+    """
+    if not isinstance(rec, dict) or _row_market(rec) != "KOSDAQ":
+        return False
+    candidate_id = _row_text(rec, "candidate_id", "profile").strip()
+    volume_ratio = _row_float(rec, "volume_ratio", "Volume Ratio")
+    trend = _row_text(rec, "trend", "real_trend", "추세", "Trend").upper()
+    selection_lane = _row_text(rec, "selection_lane", "Selection Lane").lower()
+    return (
+        candidate_id == "5D_ordered_5v5"
+        and volume_ratio is not None
+        and volume_ratio <= 1.23
+        and trend == "DOWN"
+        and selection_lane == "1d"
     )
 
 
@@ -472,9 +493,27 @@ def build_kr_shadow_gate_records(
             marked.append(copy)
         return marked
 
-    kosdaq = _mark(
-        [row for row in sorted_rows if is_kosdaq_ordered_rebound_shadow_gate_row(row)],
-        section="KOSDAQ Shadow",
+    kosdaq_ordered = _mark(
+        [row for row in sorted_rows if is_kosdaq_ordered_observer_shadow_gate_row(row)],
+        section="KOSDAQ Ordered Shadow",
+        order=-30,
+        gate={
+            "label": "KOSDAQ ordered 관찰",
+            "profile": "5D_ordered_5v5",
+            "conditions": "volume_ratio<=1.23 · trend=DOWN · selection_lane=1d",
+            "metrics": "n=20 · ordered win 85.0% · stop-first 15.0% · 5D avg +8.16%",
+            "note": "이슈 추적용 ordered rebound gate, 운영 랭킹 교체 아님",
+        },
+    )
+    ordered_tickers = {_row_text(row, "ticker", "티커", "Ticker", "symbol").upper() for row in kosdaq_ordered}
+    kosdaq_low_loss = _mark(
+        [
+            row
+            for row in sorted_rows
+            if is_kosdaq_ordered_rebound_shadow_gate_row(row)
+            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in ordered_tickers
+        ],
+        section="KOSDAQ Low-loss Shadow",
         order=-20,
         gate={
             "label": "KOSDAQ 최우선 관찰",
@@ -497,9 +536,11 @@ def build_kr_shadow_gate_records(
         },
     )
     return {
-        "kosdaq": kosdaq,
+        "kosdaq_ordered": kosdaq_ordered,
+        "kosdaq_low_loss": kosdaq_low_loss,
+        "kosdaq": kosdaq_ordered + kosdaq_low_loss,
         "kospi": kospi,
-        "combined": kosdaq + kospi,
+        "combined": kosdaq_ordered + kosdaq_low_loss + kospi,
     }
 
 

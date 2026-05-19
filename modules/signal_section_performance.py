@@ -11,6 +11,7 @@ from typing import Any, Dict, Iterable, List
 from modules.ui_helpers import (
     attach_display_theme_day_metrics,
     is_exception_leader_row,
+    is_kosdaq_ordered_observer_shadow_gate_row,
     is_kosdaq_ordered_rebound_shadow_gate_row,
     is_kospi_ordered_shadow_gate_row,
 )
@@ -69,7 +70,11 @@ def load_archive_rows(path: Path = DEFAULT_ARCHIVE_CSV) -> List[Dict[str, Any]]:
 
 def classify_signal_sections(row: Dict[str, Any]) -> List[str]:
     sections: List[str] = []
-    if is_kosdaq_ordered_rebound_shadow_gate_row(row) or is_kospi_ordered_shadow_gate_row(row):
+    if (
+        is_kosdaq_ordered_observer_shadow_gate_row(row)
+        or is_kosdaq_ordered_rebound_shadow_gate_row(row)
+        or is_kospi_ordered_shadow_gate_row(row)
+    ):
         sections.append("Shadow")
     if is_exception_leader_row(row):
         sections.append("Exception Leader")

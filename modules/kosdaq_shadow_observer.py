@@ -9,7 +9,7 @@ from pathlib import Path
 from statistics import median
 from typing import Any, Dict, Iterable, List
 
-from modules.ui_helpers import is_kosdaq_ordered_rebound_shadow_gate_row
+from modules.ui_helpers import is_kosdaq_ordered_observer_shadow_gate_row, is_kosdaq_ordered_rebound_shadow_gate_row
 
 REPORT_VERSION = "kosdaq_ordered_rebound_shadow_observer_v1"
 DEFAULT_SOURCE_CSV = Path("runtime_state/reports/experimental/kosdaq_ordered_candidate_search_latest.rows.csv")
@@ -66,9 +66,14 @@ def build_kosdaq_shadow_observer_report(
     source_rows = list(rows or [])
     observer_rows = [row for row in source_rows if is_kosdaq_ordered_rebound_observer_row(row)]
     ready_rows = [row for row in observer_rows if _truthy(row.get("ordered_label_ready"))]
-    display_shadow_rows = [row for row in source_rows if _market(row) == "KOSDAQ" and is_kosdaq_ordered_rebound_shadow_gate_row(row)]
+    display_shadow_rows = [
+        row
+        for row in source_rows
+        if _market(row) == "KOSDAQ"
+        and (is_kosdaq_ordered_observer_shadow_gate_row(row) or is_kosdaq_ordered_rebound_shadow_gate_row(row))
+    ]
     display_overlap = [
-        row for row in observer_rows if is_kosdaq_ordered_rebound_shadow_gate_row(row)
+        row for row in observer_rows if is_kosdaq_ordered_observer_shadow_gate_row(row)
     ]
 
     ordered_summary = _ordered_summary(ready_rows)
@@ -119,7 +124,7 @@ def build_kosdaq_shadow_observer_report(
             "observer_rows_also_in_display_shadow": len(display_overlap),
             "observer_display_overlap_pct": _pct(len(display_overlap), len(observer_rows)),
             "warning": (
-                "현재 UI KOSDAQ Shadow 조건과 이슈 관찰 조건이 다르다."
+                "현재 UI KOSDAQ Ordered Shadow 조건과 이슈 관찰 조건이 다르다."
                 if observer_rows and len(display_overlap) < len(observer_rows)
                 else ""
             ),

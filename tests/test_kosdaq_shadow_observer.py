@@ -60,7 +60,7 @@ def test_report_summarizes_ordered_win_stop_and_returns():
     assert report["promotion"]["status"] == "shadow_observe"
 
 
-def test_report_flags_display_gate_mismatch_without_changing_display_logic():
+def test_report_tracks_display_gate_alignment_after_section_split():
     rows = [
         _row(trade_date="2026-05-01", ticker="A.KQ"),
         {
@@ -76,6 +76,7 @@ def test_report_flags_display_gate_mismatch_without_changing_display_logic():
 
     report = build_kosdaq_shadow_observer_report(rows, generated_at="now")
 
-    assert report["display_gate_alignment"]["current_display_shadow_rows"] == 1
-    assert report["display_gate_alignment"]["observer_rows_also_in_display_shadow"] == 0
-    assert "다르다" in report["display_gate_alignment"]["warning"]
+    assert report["display_gate_alignment"]["current_display_shadow_rows"] == 2
+    assert report["display_gate_alignment"]["observer_rows_also_in_display_shadow"] == 1
+    assert report["display_gate_alignment"]["observer_display_overlap_pct"] == 100.0
+    assert report["display_gate_alignment"]["warning"] == ""

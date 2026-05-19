@@ -1262,7 +1262,14 @@ def _render_top_deep_reports_page():
     page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=3)
     run_df = day_df[day_df["run_id"] == selected_run].copy()
     run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
-    _top_deep_section_order = {"KOSDAQ Shadow": -20, "KOSPI Shadow": -10, "Top5": 0, "Exception Leader": 1}
+    _top_deep_section_order = {
+        "KOSDAQ Ordered Shadow": -30,
+        "KOSDAQ Low-loss Shadow": -20,
+        "KOSDAQ Shadow": -20,
+        "KOSPI Shadow": -10,
+        "Top5": 0,
+        "Exception Leader": 1,
+    }
     run_df["_analysis_section_order"] = run_df["selection_alignment"].apply(
         lambda value: _top_deep_section_order.get(str(value.get("analysis_section") or "Top5"), 0) if isinstance(value, dict) else 0
     )
