@@ -60,6 +60,19 @@ from ui.scan_integrity_view import (
     render_scan_integrity_panel as _render_scan_integrity_panel,
     scan_integrity_report_for_context as _scan_integrity_report_for_context,
 )
+from ui.top_deep_view import (
+    fmt_flow_leader_caption as _fmt_flow_leader_caption,
+    fmt_flow_value as _fmt_flow_value,
+    fmt_krw as _fmt_krw,
+    fmt_metric_num as _fmt_metric_num,
+    fmt_metric_pct as _fmt_metric_pct,
+    infer_top_deep_market as _infer_top_deep_market,
+    load_top_deep_reports as _load_top_deep_reports,
+    scan_display_label as _scan_display_label,
+    top_deep_section_name as _top_deep_section_name,
+    top_deep_section_order as _top_deep_section_order,
+    top_deep_section_rank as _top_deep_section_rank,
+)
 import pandas as pd
 import plotly.graph_objects as go
 import traceback
@@ -724,160 +737,6 @@ def _get_scan_state_snapshot():
     return state.snapshot()
 
 
-def _load_top_deep_reports(limit=500):
-    db_rows = []
-    warning = ""
-    try:
-        db = db_manager.DBManager()
-        if db.client:
-            res = (
-                db.client.table("scan_deep_reports")
-                .select("*")
-                .order("generated_at", desc=True)
-                .limit(int(limit or 500))
-                .execute()
-            )
-            db_rows = list(res.data or [])
-    except Exception as exc:
-        warning = str(exc)
-
-    local_rows = []
-    report_dir = Path("runtime_state/reports/top_deep")
-    if report_dir.exists():
-        for path in sorted(report_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[:100]:
-            try:
-                payload = json.loads(path.read_text(encoding="utf-8"))
-                if isinstance(payload, list):
-                    local_rows.extend([row for row in payload if isinstance(row, dict)])
-            except Exception:
-                continue
-    merged_by_key = {}
-    order = []
-    for row in list(db_rows or []) + list(local_rows or []):
-        if not isinstance(row, dict):
-            continue
-        key = str(row.get("report_id") or "")
-        if not key:
-            key = f"{row.get('run_id') or ''}:{row.get('ticker') or ''}:{row.get('report_version') or ''}"
-        if key and key in merged_by_key:
-            existing = merged_by_key[key]
-            for item_key, value in row.items():
-                if item_key not in existing or existing.get(item_key) in (None, "", [], {}):
-                    existing[item_key] = value
-            continue
-        if key:
-            merged_by_key[key] = dict(row)
-            order.append(key)
-        else:
-            fallback_key = f"__row_{len(order)}"
-            merged_by_key[fallback_key] = dict(row)
-            order.append(fallback_key)
-    merged = [merged_by_key[key] for key in order]
-    merged = sorted(
-        merged,
-        key=lambda row: str(row.get("generated_at") or row.get("created_at") or ""),
-        reverse=True,
-    )
-    return merged[: int(limit or 500)], warning
-
-
-def _fmt_metric_pct(value):
-    if value in (None, ""):
-        return "-"
-    try:
-        return f"{float(value):+.2f}%"
-    except Exception:
-        return "-"
-
-
-def _fmt_metric_num(value, digits=1):
-    if value in (None, ""):
-        return "-"
-    try:
-        return f"{float(value):.{digits}f}"
-    except Exception:
-        return "-"
-
-
-def _fmt_krw(value):
-    if value in (None, ""):
-        return "-"
-    try:
-        return f"{float(value):,.0f}원"
-    except Exception:
-        return "-"
-
-
-def _fmt_flow_oku(value):
-    if value in (None, ""):
-        return "-"
-    try:
-        numeric = float(value)
-        if abs(numeric) >= 100000000:
-            return f"{numeric / 100000000:+.1f}억"
-        return f"{numeric:+,.0f}"
-    except Exception:
-        return "-"
-
-
-def _fmt_flow_value(value, unit=None):
-    if value in (None, ""):
-        return "-"
-    unit_key = str(unit or "").lower()
-    if unit_key == "krw":
-        return _fmt_flow_oku(value)
-    try:
-        numeric = float(value)
-        suffix = "주" if unit_key == "shares" else ""
-        return f"{numeric:+,.0f}{suffix}"
-    except Exception:
-        return "-"
-
-
-def _fmt_flow_leader_caption(flow):
-    if not isinstance(flow, dict):
-        return None
-    unit = flow.get("flow_unit")
-    window = str(flow.get("flow_window") or "").lower()
-    primary_label = "당일 외인+기관" if window in {"1d", "day"} else "외인+기관"
-    parts = []
-    flow_asof = flow.get("flow_asof")
-    if flow_asof:
-        parts.append(f"기준일: {flow_asof}")
-    if flow.get("whale_flow_1d") is not None or flow.get("whale_flow") is not None:
-        parts.append(f"{primary_label}: {_fmt_flow_value(flow.get('whale_flow_1d', flow.get('whale_flow')), unit)}")
-    if flow.get("whale_flow_3d") is not None:
-        parts.append(f"3일 외인+기관: {_fmt_flow_value(flow.get('whale_flow_3d'), unit)}")
-    if flow.get("whale_flow_10d") is not None:
-        parts.append(f"10일 외인+기관: {_fmt_flow_value(flow.get('whale_flow_10d'), unit)}")
-    return " · ".join(parts) if parts else None
-
-
-def _infer_top_deep_market(row):
-    market = str(row.get("market") or "").upper()
-    if market:
-        return market
-    ticker = str(row.get("ticker") or "").upper()
-    if ticker.endswith(".KQ"):
-        return "KOSDAQ"
-    if ticker.endswith(".KS"):
-        return "KOSPI"
-    return "UNKNOWN"
-
-
-def _scan_display_label(run_df):
-    if run_df is None or run_df.empty:
-        return "-"
-    run_id = str(run_df["run_id"].dropna().iloc[0]) if "run_id" in run_df and not run_df["run_id"].dropna().empty else "-"
-    market = str(run_df["_market"].dropna().iloc[0]) if "_market" in run_df and not run_df["_market"].dropna().empty else "-"
-    generated = pd.to_datetime(run_df.get("generated_at"), errors="coerce", utc=True)
-    generated = generated.dropna()
-    if not generated.empty:
-        ts = generated.max().tz_convert("Asia/Seoul").strftime("%Y-%m-%d %H:%M")
-        return f"{ts} · {market} · {len(run_df)}건 · {run_id}"
-    return f"{market} · {len(run_df)}건 · {run_id}"
-
-
 def _readiness_score_card(title, block):
     block = block if isinstance(block, dict) else {}
     score = block.get("score")
@@ -1075,20 +934,8 @@ def _render_top_deep_reports_page():
     page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=3)
     run_df = day_df[day_df["run_id"] == selected_run].copy()
     run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
-    _top_deep_section_order = {
-        "KOSDAQ Ordered Shadow": -30,
-        "KOSDAQ Low-loss Shadow": -20,
-        "KOSDAQ Shadow": -20,
-        "KOSPI Shadow": -10,
-        "Top5": 0,
-        "Exception Leader": 1,
-    }
-    run_df["_analysis_section_order"] = run_df["selection_alignment"].apply(
-        lambda value: _top_deep_section_order.get(str(value.get("analysis_section") or "Top5"), 0) if isinstance(value, dict) else 0
-    )
-    run_df["_analysis_section_rank"] = run_df["selection_alignment"].apply(
-        lambda value: (value or {}).get("analysis_section_rank") if isinstance(value, dict) else None
-    )
+    run_df["_analysis_section_order"] = run_df["selection_alignment"].apply(_top_deep_section_order)
+    run_df["_analysis_section_rank"] = run_df["selection_alignment"].apply(_top_deep_section_rank)
     run_df["_analysis_section_rank"] = pd.to_numeric(run_df["_analysis_section_rank"], errors="coerce")
     run_df = run_df.sort_values(["_analysis_section_order", "_analysis_section_rank", "rank", "generated_at_dt"], ascending=[True, True, True, False])
     total = len(run_df)
@@ -1096,9 +943,7 @@ def _render_top_deep_reports_page():
     page = st.number_input("페이지", min_value=1, max_value=max_page, value=1, step=1)
     page_df = run_df.iloc[(int(page) - 1) * int(page_size): int(page) * int(page_size)]
     st.caption(f"{selected_market} · {selected_date} · {run_labels.get(str(selected_run), selected_run)} · {page}/{max_page} 페이지")
-    section_counts = run_df["selection_alignment"].apply(
-        lambda value: str(value.get("analysis_section") or "Top5") if isinstance(value, dict) else "Top5"
-    ).value_counts().to_dict()
+    section_counts = run_df["selection_alignment"].apply(_top_deep_section_name).value_counts().to_dict()
     scan_context = _load_scan_context_for_run(str(selected_run))
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
     market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
