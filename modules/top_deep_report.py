@@ -13,6 +13,7 @@ from modules.entry_readiness import build_entry_readiness_analysis
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
+from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
 
 REPORT_VERSION = "top_deep_report_v1"
@@ -866,6 +867,11 @@ def build_top_deep_reports(
             "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
             "relative_rank_model": trace.get("relative_rank_model") or row.get("relative_rank_model"),
         }
+        prediction["expected_net_return_3d_pct"] = compute_net_return_pct(
+            prediction.get("expected_return_3d_pct"),
+            TradableCostModel(),
+        )
+        prediction["tradable_pnl_model_version"] = TradableCostModel().version
         readiness_analysis = build_entry_readiness_analysis(
             candidate={**row, **trace},
             price=price,

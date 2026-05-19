@@ -1323,12 +1323,13 @@ def _render_top_deep_reports_page():
                 f"숨김허용 {display_contract.get('suppression_allowed', False)} · "
                 f"표시사유 {display_contract.get('display_reason') or 'scanner_emitted_candidate'}"
             )
-            c1, c2, c3, c4, c5 = st.columns(5)
+            c1, c2, c3, c4, c5, c6 = st.columns(6)
             c1.metric("매수점수", _fmt_metric_num(row.get("buy_score"), 1))
             c2.metric("정확성", _fmt_metric_pct(row.get("accuracy")))
             c3.metric("전일비", _fmt_metric_pct(row.get("day_change_pct")))
             c4.metric("손실위험", _fmt_metric_num(row.get("loss_risk_score"), 1))
             c5.metric("뉴스감성", _fmt_metric_num(news.get("sentiment_score"), 2))
+            c6.metric("예상순수익 3D", _fmt_metric_pct(prediction.get("expected_net_return_3d_pct")))
 
             _render_selection_thesis(row, trade_plan)
 

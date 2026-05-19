@@ -281,6 +281,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
     winner_profile = alignment.get("validated_winner_profile") if isinstance(alignment.get("validated_winner_profile"), dict) else {}
     flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
+    prediction = row.get("prediction") if isinstance(row.get("prediction"), dict) else {}
     practical_gate = row.get("practical_entry_gate") if isinstance(row.get("practical_entry_gate"), dict) else {}
     gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
     display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
@@ -300,6 +301,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"타이밍 {timing.get('grade') or '-'}({_fmt_num(timing.get('score'), 0)})"
         ),
         f"추격위험: {readiness.get('chase_risk_level') or '-'} · 손실위험 {_fmt_num(row.get('loss_risk_score'), 1)}",
+        f"예상순수익(3D): {_fmt_pct(prediction.get('expected_net_return_3d_pct'))} · 모델 {prediction.get('tradable_pnl_model_version') or '-'}",
         f"전일비: {_fmt_pct(row.get('day_change_pct'))}",
         _fmt_flow_line(flow),
         (
