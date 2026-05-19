@@ -1730,7 +1730,11 @@ class QuantStrategy:
                         os.path.join(models_dir, "phase25_kr_intraday.pkl"),
                         os.path.join(models_dir, "phase25_model.pkl"),
                     ]
-                    if _market_tag:
+                    # 2026-05-19 swing-main-ymm: phase25_kosdaq_intraday is
+                    # retired after the April inverted production block. Keep
+                    # KOSPI segment fallback, but never select the old KOSDAQ
+                    # bundle until the intraday dataset/features are rebuilt.
+                    if _market_tag and not (_market_tag == "kosdaq" and scan_mode == "INTRADAY"):
                         primary_candidates.append(os.path.join(models_dir, f"phase25_{_market_tag}_intraday.pkl"))
                     shadow_candidates = [
                         os.path.join(models_dir, "phase25_kr_intraday_histgb.pkl"),

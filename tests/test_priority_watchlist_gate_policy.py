@@ -1,4 +1,4 @@
-from multi_agent.agents.planner_runtime import _apply_kosdaq_swing_gate
+from multi_agent.agents.planner_runtime import _apply_kosdaq_swing_gate, _apply_phase25_reliability_gate
 from multi_agent.tools.emit_daily_backtest import _resolved_return_for_row
 
 
@@ -22,6 +22,27 @@ def test_kosdaq_swing_gate_rationale_identifies_actual_clean_prob_guard():
     assert decision == "WATCHLIST"
     assert "KOSDAQ_SWING_CLEAN_PROB_GUARD" in theme_risk
     assert rationale == ["kosdaq_swing_gate:clean_prob=16.3<28.0"]
+
+
+def test_retired_kosdaq_intraday_phase25_variant_is_avoided():
+    rationale = []
+    theme_risk = []
+
+    decision = _apply_phase25_reliability_gate(
+        decision="PRIORITY_WATCHLIST",
+        phase25_variant="phase25_kosdaq_intraday",
+        phase25_signal_direction="normal",
+        phase25_raw_auc=0.62,
+        phase25_oos_auc=0.61,
+        phase25_oos_win_rate_pct=80.0,
+        phase25_oos_avg_return_pct=8.0,
+        rationale=rationale,
+        theme_risk=theme_risk,
+    )
+
+    assert decision == "AVOID"
+    assert "PHASE25_RETIRED_VARIANT" in theme_risk
+    assert rationale == ["phase25_retired_variant=phase25_kosdaq_intraday"]
 
 
 def test_daily_backtest_uses_kosdaq_swing_5d_horizon():
@@ -50,4 +71,3 @@ def test_daily_backtest_uses_kospi_swing_3d_horizon():
 
     assert value == 3.2
     assert col == "return_3d_pct"
-

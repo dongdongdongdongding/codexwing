@@ -784,6 +784,11 @@ def _has_features(df: pd.DataFrame) -> pd.Series:
 # 학습 표본 부족, phase25_kosdaq_intraday raw_auc 0.27(random 미만, 4월 inverted
 # 운영 사례). 통합 모델(phase25_kr_*_xgboost) 정렬 +8~+15pp 작동.
 # 환경변수 AG_PHASE25_DISABLE_SEGMENTS=0이면 옛 동작 복원 (rollback용).
+# 2026-05-19 (swing-main-ymm): phase25_kosdaq_intraday는 rollback용 단일
+# segment 복원에서도 제외한다. 4월 운영에서 raw_auc/oos_auc 모두 random
+# 미만인데 normal로 출하되어 winner를 AVOID 처리했고, 5월에는 production
+# picks가 0건이라 재검증할 표본도 없다. 데이터/피처 재설계 전에는 재학습
+# spec에 올리지 않는다.
 import os as _os_for_segments
 _DISABLE_SINGLE_SEGMENTS = _os_for_segments.getenv(
     "AG_PHASE25_DISABLE_SEGMENTS", "1"
@@ -833,17 +838,15 @@ _SINGLE_SEGMENT_SPECS = [
         filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSPI") & df["scan_mode"].eq("INTRADAY") & df["return_1d_pct"].notna(),
         description="KOSPI intraday model using next-day positive return.",
     ),
-    SegmentSpec(
-        name="phase25_kosdaq_intraday",
-        model_path="models/phase25_kosdaq_intraday.pkl",
-        return_col="return_1d_pct",
-        positive_threshold=0.0,
-        min_rows=300,
-        min_positive=60,
-        filter_fn=lambda df: _is_resolved(df) & _has_features(df) & df["market_subtype"].eq("KOSDAQ") & df["scan_mode"].eq("INTRADAY") & df["return_1d_pct"].notna(),
-        description="KOSDAQ intraday model using next-day positive return (auto-inverts when val AUC<0.5).",
-    ),
 ]
+
+RETIRED_SEGMENT_SPECS = {
+    "phase25_kosdaq_intraday": {
+        "status": "retired",
+        "issue": "swing-main-ymm",
+        "reason": "raw_auc/oos_auc below random and 2026-04 inverted production block; retrain only after INTRADAY dataset/feature redesign",
+    }
+}
 
 SEGMENTS = list(_BASE_SEGMENTS) + ([] if _DISABLE_SINGLE_SEGMENTS else list(_SINGLE_SEGMENT_SPECS))
 

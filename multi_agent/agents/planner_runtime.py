@@ -78,6 +78,9 @@ _INTRADAY_VARIANT_PREFIXES = (
     "phase25_kospi_intraday",
     "phase25_kosdaq_intraday",
 )
+RETIRED_PHASE25_VARIANT_PREFIXES = (
+    "phase25_kosdaq_intraday",
+)
 
 
 def _is_swing_variant(variant: str | None) -> bool:
@@ -86,6 +89,10 @@ def _is_swing_variant(variant: str | None) -> bool:
 
 def _is_intraday_variant(variant: str | None) -> bool:
     return any(str(variant or "").startswith(p) for p in _INTRADAY_VARIANT_PREFIXES)
+
+
+def _is_retired_phase25_variant(variant: str | None) -> bool:
+    return any(str(variant or "").startswith(p) for p in RETIRED_PHASE25_VARIANT_PREFIXES)
 
 
 def _gate_passes(raw_prob: float | None, clean_prob: float | None, score: float, recommended_threshold: float | None, gate_name: str) -> bool:
@@ -220,6 +227,10 @@ def _apply_phase25_reliability_gate(
     """
     if not phase25_variant:
         return decision
+    if _is_retired_phase25_variant(phase25_variant):
+        theme_risk.append("PHASE25_RETIRED_VARIANT")
+        rationale.append(f"phase25_retired_variant={phase25_variant}")
+        return "AVOID"
     oos_validates = (
         phase25_oos_auc is not None and phase25_oos_auc >= 0.55
         and phase25_oos_win_rate_pct is not None and phase25_oos_win_rate_pct >= 70.0

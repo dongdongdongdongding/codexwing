@@ -27,6 +27,8 @@ def test_retrain_segments_use_horizon_policy():
         assert by_name["phase25_kospi_swing"].return_col == "return_5d_pct"
         assert by_name["phase25_kosdaq_swing"].return_col == "return_5d_pct"
         assert horizon_days_from_return_col(by_name["phase25_kosdaq_swing"].return_col) == 5
+        assert "phase25_kosdaq_intraday" not in by_name
+        assert retrain_ml.RETIRED_SEGMENT_SPECS["phase25_kosdaq_intraday"]["status"] == "retired"
     finally:
         os.environ["AG_PHASE25_DISABLE_SEGMENTS"] = "1"
         importlib.reload(retrain_ml)
