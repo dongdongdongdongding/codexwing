@@ -82,6 +82,9 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
     prediction = row.get("prediction") if isinstance(row.get("prediction"), dict) else {}
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+    execution_stop = row.get("execution_stop") if isinstance(row.get("execution_stop"), dict) else {}
+    if not execution_stop and isinstance(trade_plan.get("execution_stop"), dict):
+        execution_stop = trade_plan["execution_stop"]
     policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
     theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
     price = row.get("price") if isinstance(row.get("price"), dict) else {}
@@ -115,9 +118,11 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
         "decision": _first(row.get("decision"), row.get("Decision"), row.get("decision_bucket")),
         "entry_reference_price": _to_float(_first(trade_plan.get("entry_reference_price"), row.get("entry_reference_price"), row.get("Entry"), row.get("매수가(-2%)"))),
         "target_price": _to_float(_first(trade_plan.get("target_price"), row.get("target_price"))),
-        "stop_price": _to_float(_first(trade_plan.get("stop_price"), row.get("stop_price"))),
+        "stop_price": _to_float(_first(execution_stop.get("display_stop_price"), trade_plan.get("stop_price"), row.get("stop_price"))),
         "target_tp_pct": _to_float(_first(trade_plan.get("target_tp_pct"), row.get("target_tp_pct"), row.get("TP"))),
-        "stop_sl_pct": _to_float(_first(trade_plan.get("stop_sl_pct"), row.get("stop_sl_pct"), row.get("SL"))),
+        "stop_sl_pct": _to_float(_first(execution_stop.get("display_stop_sl_pct"), trade_plan.get("stop_sl_pct"), row.get("stop_sl_pct"), row.get("SL"))),
+        "stop_display_source": execution_stop.get("display_stop_source"),
+        "stop_conflict": execution_stop.get("stop_conflict"),
         "realized_expectancy_3d_prob": _to_float(_first(admission.get("3d_prob"), prediction.get("realized_expectancy_3d_prob"))),
         "realized_expectancy_5d_prob": _to_float(_first(admission.get("5d_prob"), prediction.get("realized_expectancy_5d_prob"))),
         "expected_value_3d_pct": _to_float(admission.get("expected_value_3d_pct")),

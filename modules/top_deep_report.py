@@ -10,6 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 from modules.entry_readiness import build_entry_readiness_analysis
+from modules.execution_stop_display import build_execution_stop_display
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
@@ -931,6 +932,8 @@ def build_top_deep_reports(
         trade_policy["risk_overrides"] = risk_overrides
         trade_policy["entry_action"] = entry_action
         trade_policy["practical_entry_gate"] = practical_gate
+        execution_stop = build_execution_stop_display({**row, **trace}, trade_policy)
+        trade_policy["execution_stop"] = execution_stop
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -974,6 +977,7 @@ def build_top_deep_reports(
             "selection_thesis": selection_thesis,
             "risk_overrides": risk_overrides,
             "entry_action": entry_action,
+            "execution_stop": execution_stop,
             "trade_plan": trade_policy,
             "flow": flow,
             "theme": {

@@ -117,6 +117,8 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         radar_plus10 = row.get("next_day_plus10_prob")
         radar_reasons = [str(reason) for reason in (row.get("next_day_radar_reasons") or []) if str(reason).strip()]
         radar_missing = [str(reason) for reason in (row.get("next_day_radar_unavailable") or []) if str(reason).strip()]
+        stop_source = str(row.get("stop_display_source") or "")
+        stop_conflict = bool(row.get("stop_conflict"))
         risk_line = ""
         if risk_label != "-":
             risk_line = f"손실위험 {risk_label}" + (f" ({risk_level})" if risk_level else "")
@@ -170,6 +172,11 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                         st.caption("80% 피처 " + " / ".join(gate_reasons[:2]))
                 if exit_parts:
                     st.caption(" · ".join(exit_parts))
+                if stop_source:
+                    label = "표시 손절"
+                    if stop_conflict:
+                        label += " 충돌: 더 엄격한 값 적용"
+                    st.caption(f"{label} · {stop_source}")
                 if risk_line:
                     st.caption(risk_line)
                 if name and subtitle != "-":

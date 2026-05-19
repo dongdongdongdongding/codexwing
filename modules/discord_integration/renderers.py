@@ -9,6 +9,7 @@ from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
 from modules.candidate_interpretation import build_candidate_interpretation
+from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
@@ -270,6 +271,11 @@ def build_status_embed(config: DiscordIntegrationConfig) -> Dict[str, Any]:
 
 def _readiness(row: Dict[str, Any]) -> Dict[str, Any]:
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+    execution_stop = row.get("execution_stop") if isinstance(row.get("execution_stop"), dict) else {}
+    if not execution_stop and isinstance(trade_plan.get("execution_stop"), dict):
+        execution_stop = trade_plan["execution_stop"]
+    if not execution_stop:
+        execution_stop = build_execution_stop_display(row, trade_plan)
     readiness = trade_plan.get("readiness_analysis") if isinstance(trade_plan.get("readiness_analysis"), dict) else {}
     return readiness if isinstance(readiness, dict) else {}
 
@@ -283,6 +289,11 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     timing = readiness.get("timing") if isinstance(readiness.get("timing"), dict) else {}
     judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+    execution_stop = row.get("execution_stop") if isinstance(row.get("execution_stop"), dict) else {}
+    if not execution_stop and isinstance(trade_plan.get("execution_stop"), dict):
+        execution_stop = trade_plan["execution_stop"]
+    if not execution_stop:
+        execution_stop = build_execution_stop_display(row, trade_plan)
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
     winner_profile = alignment.get("validated_winner_profile") if isinstance(alignment.get("validated_winner_profile"), dict) else {}
     flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
@@ -338,6 +349,11 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"TP {_fmt_pct(interpretation.get('target_tp_pct'))} · SL {_fmt_pct(interpretation.get('stop_sl_pct'))}"
         ),
     ]
+    if execution_stop.get("display_stop_source"):
+        stop_line = f"표시손절: {execution_stop.get('display_stop_source')}"
+        if execution_stop.get("stop_conflict"):
+            stop_line += " · raw/dynamic 충돌, 더 엄격한 값 표시"
+        lines.append(stop_line)
     if practical_gate.get("level") in {"pass", "near", "small_sample", "watch"}:
         lines.append(
             "80%필터: "

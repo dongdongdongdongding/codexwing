@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
+from modules.execution_stop_display import build_execution_stop_display
 from modules.next_day_explosive_radar import build_next_day_radar_candidate
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.segment_accuracy import lookup_segment_win_rate
@@ -985,7 +986,14 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         trend = str(_coalesce_present(row.get("trend"), row.get("추세"), row.get("Trend"), row.get("initial_trend")) or "").strip()
         entry = str(_coalesce_present(row.get("매수가(-2%)"), row.get("Entry"), row.get("entry_reference_price")) or "").strip()
         tp = str(_coalesce_present(row.get("TP"), row.get("target_tp_pct")) or "").strip()
-        sl = str(_coalesce_present(row.get("SL"), row.get("stop_sl_pct")) or "").strip()
+        trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+        execution_stop = row.get("execution_stop") if isinstance(row.get("execution_stop"), dict) else {}
+        if not execution_stop and isinstance(trade_plan.get("execution_stop"), dict):
+            execution_stop = trade_plan["execution_stop"]
+        if not execution_stop:
+            execution_stop = build_execution_stop_display(row, trade_plan)
+        sl_source = _coalesce_present(execution_stop.get("display_stop_sl_pct"), row.get("SL"), row.get("stop_sl_pct"))
+        sl = _format_signed_percent_label(sl_source, "-")
         latest_return = _coalesce_present(row.get("latest_return_pct"), row.get("return_1d_pct"), row.get("return_3d_pct"))
         action = build_action_display(row)
         practical_gate = evaluate_practical_entry_gate(row)
@@ -1018,6 +1026,10 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "entry": entry or "-",
                 "tp": tp or "-",
                 "sl": sl or "-",
+                "stop_display_source": execution_stop.get("display_stop_source"),
+                "stop_conflict": execution_stop.get("stop_conflict"),
+                "raw_stop_sl_pct": execution_stop.get("raw_stop_sl_pct"),
+                "dynamic_stop_sl_pct": execution_stop.get("dynamic_stop_sl_pct"),
                 "latest_return": _format_percent_label(latest_return),
                 "action_label": action["label"],
                 "action_condition": action["condition"],

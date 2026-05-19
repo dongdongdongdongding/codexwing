@@ -102,6 +102,8 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["entry_action"]["judgment"]["action"] in {"즉시 매수 가능", "조건부 매수 가능"}
     assert report["trade_plan"]["target_tp_pct"] is not None
     assert report["trade_plan"]["stop_sl_pct"] is not None
+    assert report["execution_stop"]["display_stop_sl_pct"] is not None
+    assert report["trade_plan"]["execution_stop"]["display_stop_sl_pct"] == report["execution_stop"]["display_stop_sl_pct"]
     assert report["trade_plan"]["hold_days"] is not None
     assert report["trade_plan"]["entry_policy"]
     assert report["trade_plan"]["entry_reference_price"] == 73200.0

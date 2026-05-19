@@ -71,3 +71,20 @@ def test_signal_display_rows_embed_same_candidate_interpretation_contract():
     assert display["planner_rank"] == 3
     assert display["realized_expectancy_5d_prob"] == 80.1
     assert interpretation == build_candidate_interpretation({**row, "candidate_data_quality": build_candidate_data_quality(row)})
+
+
+def test_candidate_interpretation_prefers_unified_execution_stop():
+    row = _fixture_row()
+    row["execution_stop"] = {
+        "display_stop_price": 97000,
+        "display_stop_sl_pct": -3,
+        "display_stop_source": "raw_scan_stricter",
+        "stop_conflict": True,
+    }
+
+    interpretation = build_candidate_interpretation(row)
+
+    assert interpretation["stop_price"] == 97000.0
+    assert interpretation["stop_sl_pct"] == -3.0
+    assert interpretation["stop_display_source"] == "raw_scan_stricter"
+    assert interpretation["stop_conflict"] is True

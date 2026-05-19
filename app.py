@@ -1138,6 +1138,7 @@ def _render_readiness_analysis(readiness):
 def _render_data_backed_action_plan(trade_plan, readiness):
     trade_plan = trade_plan if isinstance(trade_plan, dict) else {}
     readiness = readiness if isinstance(readiness, dict) else {}
+    execution_stop = trade_plan.get("execution_stop") if isinstance(trade_plan.get("execution_stop"), dict) else {}
     entry = trade_plan.get("entry_strategy") if isinstance(trade_plan.get("entry_strategy"), dict) else {}
     if not entry:
         entry = readiness.get("entry_strategy") if isinstance(readiness.get("entry_strategy"), dict) else {}
@@ -1167,7 +1168,7 @@ def _render_data_backed_action_plan(trade_plan, readiness):
     l1, l2, l3, l4 = st.columns(4)
     l1.metric("눌림 지지", _fmt_krw(entry.get("pullback_support_price")), str(entry.get("pullback_support_label") or "-"))
     l2.metric("돌파 확인", _fmt_krw(entry.get("breakout_price")), str(entry.get("breakout_label") or "-"))
-    l3.metric("무효화", _fmt_krw(risk.get("stop_price")))
+    l3.metric("무효화", _fmt_krw(execution_stop.get("display_stop_price") or risk.get("stop_price")))
     l4.metric("데이터 커버리지", f"{_fmt_metric_num(coverage.get('coverage_pct'), 0)}%")
 
     evidence = entry.get("evidence") if isinstance(entry.get("evidence"), list) else []
@@ -1305,6 +1306,9 @@ def _render_top_deep_reports_page():
         news = row.get("news") if isinstance(row.get("news"), dict) else {}
         prediction = row.get("prediction") if isinstance(row.get("prediction"), dict) else {}
         trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+        execution_stop = row.get("execution_stop") if isinstance(row.get("execution_stop"), dict) else {}
+        if not execution_stop and isinstance(trade_plan.get("execution_stop"), dict):
+            execution_stop = trade_plan["execution_stop"]
         readiness = trade_plan.get("readiness_analysis") if isinstance(trade_plan.get("readiness_analysis"), dict) else {}
         theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
         flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
@@ -1376,7 +1380,17 @@ def _render_top_deep_reports_page():
             e2.metric("3D 기대", _fmt_metric_pct(prediction.get("expected_return_3d_pct")))
             e3.metric("진입가", _fmt_krw(trade_plan.get("entry_reference_price")), str(trade_plan.get("entry_policy") or "-"))
             e4.metric("목표가", _fmt_krw(trade_plan.get("target_price")), _fmt_metric_pct(trade_plan.get("target_tp_pct")))
-            e5.metric("손절가", _fmt_krw(trade_plan.get("stop_price")), _fmt_metric_pct(trade_plan.get("stop_sl_pct")), delta_color="inverse")
+            e5.metric(
+                "표시 손절가",
+                _fmt_krw(execution_stop.get("display_stop_price") or trade_plan.get("stop_price")),
+                _fmt_metric_pct(execution_stop.get("display_stop_sl_pct") or trade_plan.get("stop_sl_pct")),
+                delta_color="inverse",
+            )
+            if execution_stop.get("display_stop_source"):
+                msg = f"손절 기준: {execution_stop.get('display_stop_source')}"
+                if execution_stop.get("stop_conflict"):
+                    msg += " · raw/dynamic 충돌, 더 엄격한 값 표시"
+                st.caption(msg)
 
             z1, z2, z3, z4 = st.columns(4)
             z1.metric("진입 하단", _fmt_krw(trade_plan.get("entry_zone_low")))
