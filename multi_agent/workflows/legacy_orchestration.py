@@ -2143,6 +2143,16 @@ def run_legacy_orchestration(
     }
 
     realized_outcomes = _build_realized_outcomes_placeholder(context=context, planner_handoff=planner_handoff, scanner_payload=scanner_payload)
+    post_scan_ledger_payload: Dict[str, Any] = {}
+    try:
+        from modules.post_scan_outcome_ledger import write_run_post_scan_ledger
+
+        post_scan_ledger_payload = write_run_post_scan_ledger(
+            run_dir=run_dir,
+            outcomes=realized_outcomes.get("outcomes", []),
+        )
+    except Exception:
+        post_scan_ledger_payload = {}
     outcome_health = _collect_recent_outcome_health(
         context=context,
         exclude_run_id=context.run_id,
@@ -2167,6 +2177,8 @@ def run_legacy_orchestration(
         "realized_outcomes": str(write_json(run_dir / "realized_outcomes.json", realized_outcomes)),
         "outcome_health": str(write_json(run_dir / "outcome_health.json", outcome_health_row)),
     }
+    if post_scan_ledger_payload:
+        out_paths["post_scan_outcome_ledger"] = str(run_dir / "post_scan_outcome_ledger.json")
 
     postmortem_dict: Dict[str, Any] = {}
     tickets_payload: List[Dict[str, Any]] = []
@@ -2269,6 +2281,11 @@ def run_legacy_orchestration(
             market=context.market,
             outcomes=realized_outcomes.get("outcomes", []),
         )
+        if post_scan_ledger_payload and hasattr(db, "save_post_scan_outcome_ledger"):
+            db.save_post_scan_outcome_ledger(
+                run_id=context.run_id,
+                rows=post_scan_ledger_payload.get("rows", []),
+            )
         if profile_diagnostics:
             db.save_agent_profile_diagnostics(
                 {

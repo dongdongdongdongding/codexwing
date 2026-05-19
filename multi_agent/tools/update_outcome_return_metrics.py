@@ -16,12 +16,13 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 HORIZONS = (1, 2, 3, 5, 7, 14, 30)
-INTRADAY_MINUTE_HORIZONS = ((30, "return_30m_pct"), (60, "return_1h_pct"))
+INTRADAY_MINUTE_HORIZONS = ((10, "return_10m_pct"), (30, "return_30m_pct"), (60, "return_1h_pct"))
 KR_TZ = ZoneInfo("Asia/Seoul")
 US_TZ = ZoneInfo("America/New_York")
 SWING_TOUCH_TARGET_PCT = 5.0
 SWING_TOUCH_WINDOW_DAYS = 5
 SWING_TARGET_LABEL_VERSION = "forward_high_within_5d_v1"
+OUTCOME_PATH_LABEL_VERSION = "scan_entry_forward_ohlc_stop_first_v1"
 
 try:
     import FinanceDataReader as fdr  # type: ignore
@@ -229,6 +230,16 @@ def _apply_scan_entry_reference(row: Dict[str, Any], scan_entry_map: Dict[str, f
     return True
 
 
+def _target_stop_policy(row: Dict[str, Any]) -> tuple[float, float]:
+    target = _safe_float(row.get("target_tp_pct"))
+    stop = _safe_float(row.get("stop_sl_pct"))
+    if target is None or target <= 0:
+        target = 5.0
+    if stop is None or stop == 0:
+        stop = 5.0
+    return float(target), abs(float(stop))
+
+
 def _compute_intraday_row_returns(row: Dict[str, Any], market: str, interval: str = "30m") -> bool:
     """Fill same-day minute-horizon returns for any recommendation row.
 
@@ -258,6 +269,7 @@ def _compute_intraday_row_returns(row: Dict[str, Any], market: str, interval: st
         intraday_hist["local_bar_end"] = intraday_hist["local_ts"] + timedelta(minutes=_interval_minutes(interval))
         same_day = intraday_hist[local_idx.date == rec_local.date()]
         if not same_day.empty:
+            after_scan = same_day[same_day["local_bar_end"] >= rec_local]
             for minutes, key in INTRADAY_MINUTE_HORIZONS:
                 target_dt = rec_local + timedelta(minutes=minutes)
                 eligible = same_day[same_day["local_bar_end"] >= target_dt]
@@ -279,6 +291,19 @@ def _compute_intraday_row_returns(row: Dict[str, Any], market: str, interval: st
             if close_value is not None and row.get("return_close_pct") != close_value:
                 row["return_close_pct"] = close_value
                 changed = True
+            if not after_scan.empty:
+                high_series = pd.to_numeric(after_scan["High"], errors="coerce") if "High" in after_scan.columns else pd.Series(dtype="float")
+                low_series = pd.to_numeric(after_scan["Low"], errors="coerce") if "Low" in after_scan.columns else pd.Series(dtype="float")
+                if not high_series.dropna().empty:
+                    mfe_intraday = round(((float(high_series.max()) / entry_price) - 1.0) * 100.0, 6)
+                    if row.get("mfe_intraday_pct") != mfe_intraday:
+                        row["mfe_intraday_pct"] = mfe_intraday
+                        changed = True
+                if not low_series.dropna().empty:
+                    mae_intraday = round(((float(low_series.min()) / entry_price) - 1.0) * 100.0, 6)
+                    if row.get("mae_intraday_pct") != mae_intraday:
+                        row["mae_intraday_pct"] = mae_intraday
+                        changed = True
 
     if changed:
         row["performance_updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -373,6 +398,86 @@ def _compute_row_returns(row: Dict[str, Any], hist: pd.DataFrame, market: str) -
     return changed
 
 
+def _compute_path_risk_labels(row: Dict[str, Any], hist: pd.DataFrame, market: str) -> bool:
+    trade_date = _recommended_trade_date(row, market)
+    entry = _safe_float(row.get("scan_entry_reference_price"))
+    if entry is None:
+        entry = _safe_float(row.get("entry_reference_price"))
+    if trade_date is None or entry is None or entry <= 0 or hist is None or hist.empty:
+        return False
+    eligible = hist[hist["trade_date"] >= trade_date].copy()
+    if eligible.empty or "High" not in eligible.columns or "Low" not in eligible.columns:
+        return False
+    forward = eligible.iloc[:SWING_TOUCH_WINDOW_DAYS]
+    if len(forward) < SWING_TOUCH_WINDOW_DAYS:
+        values = {
+            "mfe_5d_pct": None,
+            "mae_5d_pct": None,
+            "target_before_stop_5d": None,
+            "stop_before_target_5d": None,
+            "target_hit_at_5d": None,
+            "stop_hit_at_5d": None,
+            "outcome_path_terminal_status": "insufficient_forward_bars",
+            "outcome_path_label_version": None,
+        }
+    else:
+        highs = pd.to_numeric(forward["High"], errors="coerce")
+        lows = pd.to_numeric(forward["Low"], errors="coerce")
+        if highs.dropna().empty or lows.dropna().empty:
+            return False
+        target_pct, stop_pct = _target_stop_policy(row)
+        target_price = float(entry) * (1.0 + target_pct / 100.0)
+        stop_price = float(entry) * (1.0 - stop_pct / 100.0)
+        mfe = round(((float(highs.max()) / float(entry)) - 1.0) * 100.0, 6)
+        mae = round(((float(lows.min()) / float(entry)) - 1.0) * 100.0, 6)
+        target_hit_at = None
+        stop_hit_at = None
+        target_before_stop = False
+        stop_before_target = False
+        terminal = "no_touch"
+        for idx, bar in forward.iterrows():
+            high_val = _safe_float(bar.get("High"))
+            low_val = _safe_float(bar.get("Low"))
+            bar_date = str(bar.get("trade_date") or "")[:10]
+            target_hit = high_val is not None and high_val >= target_price
+            stop_hit = low_val is not None and low_val <= stop_price
+            if target_hit and stop_hit:
+                target_hit_at = bar_date
+                stop_hit_at = bar_date
+                stop_before_target = True
+                terminal = "same_bar_stop_first"
+                break
+            if stop_hit:
+                stop_hit_at = bar_date
+                stop_before_target = True
+                terminal = "stop_before_target"
+                break
+            if target_hit:
+                target_hit_at = bar_date
+                target_before_stop = True
+                terminal = "target_before_stop"
+                break
+        values = {
+            "mfe_5d_pct": mfe,
+            "mae_5d_pct": mae,
+            "target_before_stop_5d": target_before_stop,
+            "stop_before_target_5d": stop_before_target,
+            "target_hit_at_5d": target_hit_at,
+            "stop_hit_at_5d": stop_hit_at,
+            "outcome_path_terminal_status": terminal,
+            "outcome_path_label_version": OUTCOME_PATH_LABEL_VERSION,
+        }
+
+    changed = False
+    for key, value in values.items():
+        if row.get(key) != value:
+            row[key] = value
+            changed = True
+    if changed:
+        row["performance_updated_at"] = datetime.now(timezone.utc).isoformat()
+    return changed
+
+
 def run_update(
     shared_dir: Path,
     run_ids: List[str],
@@ -448,6 +553,7 @@ def run_update(
         "tickers_with_history": len(history_map),
         "db_rows_upserted": 0,
         "scan_archive_rows_synced": 0,
+        "post_scan_ledger_rows_upserted": 0,
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "scan_mode_filter": scan_mode_filter,
         "run_stats": [],
@@ -484,6 +590,8 @@ def run_update(
             elif _compute_row_returns(row, hist, market):
                 row_changed = True
                 stats["daily_rows_updated"] += 1
+            if hist is not None and _compute_path_risk_labels(row, hist, market):
+                row_changed = True
             stats["intraday_rows_attempted"] += 1
             if _compute_intraday_row_returns(row, market):
                 row_changed = True
@@ -497,6 +605,12 @@ def run_update(
             payload["summary"] = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
             payload["summary"]["performance_last_updated_at"] = datetime.now(timezone.utc).isoformat()
             _write_json(run_dir / "realized_outcomes.json", payload)
+            try:
+                from modules.post_scan_outcome_ledger import write_run_post_scan_ledger
+
+                write_run_post_scan_ledger(run_dir=run_dir, outcomes=outcomes)
+            except Exception:
+                pass
             stats["files_updated"] += 1
         if not dry_run and db is not None and getattr(db, "client", None) is not None:
             try:
@@ -518,6 +632,13 @@ def run_update(
                 pass
             try:
                 stats["scan_archive_rows_synced"] += int(db.upsert_scan_archive_outcomes(run_dir.name, run_market, outcomes) or 0)
+            except Exception:
+                pass
+            try:
+                ledger_payload = _load_json(run_dir / "post_scan_outcome_ledger.json")
+                ledger_rows = ledger_payload.get("rows", []) if isinstance(ledger_payload.get("rows"), list) else []
+                if ledger_rows and hasattr(db, "save_post_scan_outcome_ledger"):
+                    stats["post_scan_ledger_rows_upserted"] += int(db.save_post_scan_outcome_ledger(run_dir.name, ledger_rows) or 0)
             except Exception:
                 pass
         stats["run_stats"].append({"run_id": run_dir.name, "updated_rows": updated_rows, "changed": changed})

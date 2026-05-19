@@ -416,6 +416,26 @@ def run_non_ui_scan_pipeline(
     )
     if isinstance(top_deep_reports, dict) and top_deep_reports.get("local_path"):
         manifest_paths["top_deep_reports"] = str(top_deep_reports.get("local_path"))
+        try:
+            from modules.post_scan_outcome_ledger import write_run_post_scan_ledger
+
+            run_dir = memory.root / "shared_working" / run_id
+            outcomes_payload = read_json(run_dir / "realized_outcomes.json")
+            ledger_payload = write_run_post_scan_ledger(
+                run_dir=run_dir,
+                outcomes=outcomes_payload.get("outcomes", []) if isinstance(outcomes_payload, dict) else [],
+            )
+            manifest_paths["post_scan_outcome_ledger"] = str(run_dir / "post_scan_outcome_ledger.json")
+            try:
+                from modules.db_manager import DBManager
+
+                db = DBManager()
+                if getattr(db, "client", None) is not None and hasattr(db, "save_post_scan_outcome_ledger"):
+                    db.save_post_scan_outcome_ledger(run_id, ledger_payload.get("rows", []))
+            except Exception:
+                pass
+        except Exception as exc:
+            manifest_paths["post_scan_outcome_ledger_error"] = str(exc)
 
     artifact_dir = memory.artifact_store(run_id)
     raw_json_path = artifact_dir / "raw_scan_results.json"

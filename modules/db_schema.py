@@ -158,6 +158,7 @@ SCAN_RESULT_COLUMNS: tuple = (
 
     # Returns (post-scan outcome sync)
     ("latest_return_pct",               "latest_return_pct",               _to_float_or_none),
+    ("return_10m_pct",                  "return_10m_pct",                  _to_float_or_none),
     ("return_30m_pct",                  "return_30m_pct",                  _to_float_or_none),
     ("return_1h_pct",                   "return_1h_pct",                   _to_float_or_none),
     ("return_close_pct",                "return_close_pct",                _to_float_or_none),
@@ -172,6 +173,16 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("hit_5pct_within_5d",              "hit_5pct_within_5d",              _passthrough),
     ("hit_5pct_within_5d_at",           "hit_5pct_within_5d_at",           _passthrough),
     ("swing_target_label_version",      "swing_target_label_version",      _passthrough),
+    ("mfe_intraday_pct",                "mfe_intraday_pct",                _to_float_or_none),
+    ("mae_intraday_pct",                "mae_intraday_pct",                _to_float_or_none),
+    ("mfe_5d_pct",                      "mfe_5d_pct",                      _to_float_or_none),
+    ("mae_5d_pct",                      "mae_5d_pct",                      _to_float_or_none),
+    ("target_before_stop_5d",           "target_before_stop_5d",           _passthrough),
+    ("stop_before_target_5d",           "stop_before_target_5d",           _passthrough),
+    ("target_hit_at_5d",                "target_hit_at_5d",                _passthrough),
+    ("stop_hit_at_5d",                  "stop_hit_at_5d",                  _passthrough),
+    ("outcome_path_terminal_status",    "outcome_path_terminal_status",    _passthrough),
+    ("outcome_path_label_version",      "outcome_path_label_version",      _passthrough),
 
     # Phase25 / model trace
     ("phase25_variant",                 "phase25_variant",                 _passthrough),

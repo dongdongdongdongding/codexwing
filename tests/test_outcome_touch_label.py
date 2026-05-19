@@ -4,14 +4,20 @@ import json
 import pandas as pd
 
 from multi_agent.tools import update_outcome_return_metrics as outcome_metrics
-from multi_agent.tools.update_outcome_return_metrics import _compute_intraday_row_returns, _compute_row_returns
+from multi_agent.tools.update_outcome_return_metrics import (
+    _compute_intraday_row_returns,
+    _compute_path_risk_labels,
+    _compute_row_returns,
+)
 
 
-def _hist(closes, highs):
+def _hist(closes, highs, lows=None):
+    low_values = lows if lows is not None else highs
     return pd.DataFrame(
         {
             "Close": closes,
             "High": highs,
+            "Low": low_values,
             "trade_date": [date(2026, 5, 1 + i) for i in range(len(closes))],
         }
     )
@@ -91,15 +97,25 @@ def test_compute_intraday_returns_applies_to_swing_rows(monkeypatch):
             "2026-05-01T15:00:00+09:00",
         ]
     )
-    hist = pd.DataFrame({"Close": [99.0, 103.0, 104.0, 105.0]}, index=idx)
+    hist = pd.DataFrame(
+        {
+            "Close": [99.0, 103.0, 104.0, 105.0],
+            "High": [101.0, 104.0, 105.0, 106.0],
+            "Low": [98.0, 102.0, 103.0, 104.0],
+        },
+        index=idx,
+    )
 
     monkeypatch.setattr(outcome_metrics, "_fetch_intraday_history", lambda *args, **kwargs: hist)
 
     assert _compute_intraday_row_returns(row, "KOSPI") is True
 
+    assert row["return_10m_pct"] == -1.0
     assert row["return_30m_pct"] == 3.0
     assert row["return_1h_pct"] == 4.0
     assert row["return_close_pct"] == 5.0
+    assert row["mfe_intraday_pct"] == 6.0
+    assert row["mae_intraday_pct"] == -2.0
 
 
 def test_daily_return_update_preserves_scan_entry_for_intraday_path(monkeypatch):
@@ -111,7 +127,7 @@ def test_daily_return_update_preserves_scan_entry_for_intraday_path(monkeypatch)
     }
     hist = _hist(closes=[100, 101, 102], highs=[101, 102, 103])
     idx = pd.DatetimeIndex(["2026-05-01T10:00:00+09:00", "2026-05-01T15:00:00+09:00"])
-    intraday = pd.DataFrame({"Close": [99.0, 100.0]}, index=idx)
+    intraday = pd.DataFrame({"Close": [99.0, 100.0], "High": [100.0, 101.0], "Low": [98.5, 99.0]}, index=idx)
 
     monkeypatch.setattr(outcome_metrics, "_fetch_intraday_history", lambda *args, **kwargs: intraday)
 
@@ -160,7 +176,10 @@ def test_run_update_fills_intraday_even_when_daily_history_missing(tmp_path, mon
             "2026-05-01T15:00:00+09:00",
         ]
     )
-    intraday = pd.DataFrame({"Close": [103.0, 104.0, 105.0]}, index=idx)
+    intraday = pd.DataFrame(
+        {"Close": [103.0, 104.0, 105.0], "High": [104.0, 105.0, 106.0], "Low": [99.0, 102.0, 103.0]},
+        index=idx,
+    )
 
     class FakeDB:
         client = None
@@ -184,6 +203,7 @@ def test_run_update_fills_intraday_even_when_daily_history_missing(tmp_path, mon
     assert updated["return_30m_pct"] == 3.0
     assert updated["return_1h_pct"] == 4.0
     assert updated["return_close_pct"] == 5.0
+    assert updated["return_10m_pct"] == 3.0
 
 
 def test_run_update_recovers_scan_entry_from_top_deep_for_intraday(tmp_path, monkeypatch):
@@ -229,7 +249,7 @@ def test_run_update_recovers_scan_entry_from_top_deep_for_intraday(tmp_path, mon
         encoding="utf-8",
     )
     idx = pd.DatetimeIndex(["2026-05-01T10:00:00+09:00", "2026-05-01T15:00:00+09:00"])
-    intraday = pd.DataFrame({"Close": [105.0, 104.5]}, index=idx)
+    intraday = pd.DataFrame({"Close": [105.0, 104.5], "High": [106.0, 105.0], "Low": [104.0, 103.0]}, index=idx)
 
     class FakeDB:
         client = None
@@ -253,3 +273,28 @@ def test_run_update_recovers_scan_entry_from_top_deep_for_intraday(tmp_path, mon
     assert updated["scan_entry_reference_price"] == 95.0
     assert updated["return_30m_pct"] == 10.526316
     assert updated["return_close_pct"] == 10.0
+
+
+def test_compute_path_risk_labels_marks_stop_first_with_daily_ohlc():
+    row = {
+        "ticker": "005930.KS",
+        "scan_mode": "SWING",
+        "recommended_at": "2026-05-01T09:40:00+09:00",
+        "scan_entry_reference_price": 100.0,
+        "target_tp_pct": 5.0,
+        "stop_sl_pct": -3.0,
+    }
+    hist = _hist(
+        closes=[100, 99, 102, 104, 103, 101],
+        highs=[101, 103, 106, 105, 104, 103],
+        lows=[99, 96, 101, 102, 101, 100],
+    )
+
+    assert _compute_path_risk_labels(row, hist, "KOSPI") is True
+
+    assert row["mfe_5d_pct"] == 6.0
+    assert row["mae_5d_pct"] == -4.0
+    assert row["target_before_stop_5d"] is False
+    assert row["stop_before_target_5d"] is True
+    assert row["stop_hit_at_5d"] == "2026-05-02"
+    assert row["outcome_path_terminal_status"] == "stop_before_target"

@@ -888,6 +888,7 @@ class DBManager:
                     "entry_reference_price": row.get("entry_reference_price"),
                     "scan_entry_reference_price": row.get("scan_entry_reference_price"),
                     "latest_return_pct": row.get("latest_return_pct"),
+                    "return_10m_pct": row.get("return_10m_pct"),
                     "return_30m_pct": row.get("return_30m_pct"),
                     "return_1h_pct": row.get("return_1h_pct"),
                     "return_close_pct": row.get("return_close_pct"),
@@ -898,6 +899,16 @@ class DBManager:
                     "return_7d_pct": row.get("return_7d_pct"),
                     "return_14d_pct": row.get("return_14d_pct"),
                     "return_30d_pct": row.get("return_30d_pct"),
+                    "mfe_intraday_pct": row.get("mfe_intraday_pct"),
+                    "mae_intraday_pct": row.get("mae_intraday_pct"),
+                    "mfe_5d_pct": row.get("mfe_5d_pct"),
+                    "mae_5d_pct": row.get("mae_5d_pct"),
+                    "target_before_stop_5d": row.get("target_before_stop_5d"),
+                    "stop_before_target_5d": row.get("stop_before_target_5d"),
+                    "target_hit_at_5d": row.get("target_hit_at_5d"),
+                    "stop_hit_at_5d": row.get("stop_hit_at_5d"),
+                    "outcome_path_terminal_status": row.get("outcome_path_terminal_status"),
+                    "outcome_path_label_version": row.get("outcome_path_label_version"),
                     "quant_priority_score": row.get("quant_priority_score"),
                     "quant_score_1d": row.get("quant_score_1d"),
                     "quant_score_3d": row.get("quant_score_3d"),
@@ -936,6 +947,81 @@ class DBManager:
             return len(rows)
         except Exception as e:
             print(f"Agent Realized Outcomes Save Error: {e}")
+            return 0
+
+    def save_post_scan_outcome_ledger(self, run_id, rows):
+        """
+        Upsert lightweight post-scan outcome ledger rows.
+        Target table: post_scan_outcome_ledger (ledger_key unique)
+        """
+        if not self.client:
+            return 0
+        if not rows:
+            return 0
+        payloads = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            ledger_key = str(row.get("ledger_key") or "").strip()
+            ticker = str(row.get("ticker") or "").strip()
+            if not ledger_key or not ticker:
+                continue
+            payload = {
+                "ledger_key": ledger_key,
+                "ledger_version": row.get("ledger_version"),
+                "run_id": row.get("run_id") or run_id,
+                "ticker": ticker,
+                "stock_name": row.get("stock_name"),
+                "market": row.get("market"),
+                "scan_mode": row.get("scan_mode"),
+                "strategy_family": row.get("strategy_family"),
+                "section": row.get("section"),
+                "section_rank": row.get("section_rank"),
+                "priority_rank": row.get("priority_rank"),
+                "decision": row.get("decision"),
+                "decision_bucket": row.get("decision_bucket"),
+                "recommended_at": row.get("recommended_at"),
+                "base_trade_date": row.get("base_trade_date"),
+                "scan_entry_reference_price": row.get("scan_entry_reference_price"),
+                "entry_reference_price": row.get("entry_reference_price"),
+                "target_tp_pct": row.get("target_tp_pct"),
+                "stop_sl_pct": row.get("stop_sl_pct"),
+                "hold_days": row.get("hold_days"),
+                "market_gate": row.get("market_gate"),
+                "scanner_timeframe_profile": row.get("scanner_timeframe_profile"),
+                "kr_universe_role": row.get("kr_universe_role"),
+                "selection_lane": row.get("selection_lane"),
+                "relative_rank_score": row.get("relative_rank_score"),
+                "loss_risk_score": row.get("loss_risk_score"),
+                "return_10m_pct": row.get("return_10m_pct"),
+                "return_30m_pct": row.get("return_30m_pct"),
+                "return_1h_pct": row.get("return_1h_pct"),
+                "return_close_pct": row.get("return_close_pct"),
+                "return_1d_pct": row.get("return_1d_pct"),
+                "return_3d_pct": row.get("return_3d_pct"),
+                "return_5d_pct": row.get("return_5d_pct"),
+                "mfe_intraday_pct": row.get("mfe_intraday_pct"),
+                "mae_intraday_pct": row.get("mae_intraday_pct"),
+                "mfe_5d_pct": row.get("mfe_5d_pct"),
+                "mae_5d_pct": row.get("mae_5d_pct"),
+                "target_before_stop_5d": row.get("target_before_stop_5d"),
+                "stop_before_target_5d": row.get("stop_before_target_5d"),
+                "target_hit_at_5d": row.get("target_hit_at_5d"),
+                "stop_hit_at_5d": row.get("stop_hit_at_5d"),
+                "outcome_path_terminal_status": row.get("outcome_path_terminal_status"),
+                "outcome_path_label_version": row.get("outcome_path_label_version"),
+                "ledger_status": row.get("ledger_status"),
+                "source_ref": row.get("source_ref"),
+                "updated_at": datetime.now().isoformat(),
+            }
+            payloads.append(self._filter_payload_to_existing_columns("post_scan_outcome_ledger", payload))
+        if not payloads:
+            return 0
+        try:
+            self.client.table("post_scan_outcome_ledger").upsert(payloads, on_conflict="ledger_key").execute()
+            return len(payloads)
+        except Exception as e:
+            print(f"Post Scan Outcome Ledger Save Error: {e}")
             return 0
 
     def upsert_scan_archive_outcomes(self, run_id, market, outcomes):

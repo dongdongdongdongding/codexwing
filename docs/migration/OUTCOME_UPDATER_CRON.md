@@ -1,6 +1,7 @@
 # Outcome Updater Cron Guide
 
-`realized_outcomes.json`의 `PENDING`을 `signals.result_3d` 기반으로 `RESOLVED`로 갱신하는 운영 가이드입니다.
+`realized_outcomes.json`의 `PENDING`을 `signals.result_3d` 기반으로 `RESOLVED`로 갱신하고,
+후보 단위 `post_scan_outcome_ledger.json`를 최신 성과 라벨로 채우는 운영 가이드입니다.
 
 전체 운영 배치(요약/리포트/stale 알림 포함)가 필요하면
 `docs/migration/DAILY_OPS_CRON.md`를 사용하세요.
@@ -27,9 +28,17 @@ python3 multi_agent/tools/report_outcome_conversion.py --limit-runs 50
 - 업데이트 로그(JSONL): `runtime_state/long_term/outcomes/realized_outcomes_updates.jsonl`
 - Cron 로그(텍스트): `runtime_state/long_term/outcomes/cron_outcome_updater.log`
 - 갱신 대상 파일: `runtime_state/shared_working/RUN-*/realized_outcomes.json`
-- DB 업서트 대상(가용 시): `agent_realized_outcomes`
+- 후보 성과 ledger: `runtime_state/shared_working/RUN-*/post_scan_outcome_ledger.json`
+- DB 업서트 대상(가용 시): `agent_realized_outcomes`, `market_scan_results`, `post_scan_outcome_ledger`
 
-## 4) 주의사항
+## 4) Post-scan outcome ledger 범위
+
+- 저장 범위는 스캐너가 실제 배출한 후보(Top/Shadow/Exception)만입니다.
+- 원시 분봉/틱 데이터는 저장하지 않고 `10m/30m/1h/close/1D/3D/5D`, MFE, MAE, target-first/stop-first 요약값만 저장합니다.
+- `entry_reference_price`는 일봉 성과 계산용 기준가이고, `scan_entry_reference_price`는 스캔 당시 화면에 노출된 진입 기준가입니다.
+- `target_before_stop_5d`는 일봉 OHLC 기준의 보수적 라벨입니다. 같은 일봉에서 목표가와 손절가가 모두 닿으면 `stop_first`로 기록합니다.
+
+## 5) 주의사항
 
 - `supabase` 패키지/환경변수(`SUPABASE_URL`, `SUPABASE_KEY`)가 없으면 실제 해소는 진행되지 않고 통계만 출력됩니다.
 - 이 프로젝트는 `.env`와 `.env.local`을 모두 읽습니다. Python 런타임에서 `SUPABASE_*`가 비어 있으면 `NEXT_PUBLIC_SUPABASE_*`를 fallback으로 사용합니다.

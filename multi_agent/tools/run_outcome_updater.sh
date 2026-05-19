@@ -7,4 +7,5 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 cd "${PROJECT_ROOT}"
 
 python3 multi_agent/tools/update_realized_outcomes.py --limit-runs 200 "$@"
+python3 multi_agent/tools/update_outcome_return_metrics.py --limit-runs 200
 python3 multi_agent/tools/report_outcome_conversion.py --limit-runs 200

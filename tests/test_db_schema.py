@@ -106,6 +106,13 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
             "low_prob_high_score": 58.67,
             "expected_edge_inversion_score": 3.6,
             "scan_entry_reference_price": 101500,
+            "return_10m_pct": -0.5,
+            "mfe_5d_pct": 7.5,
+            "mae_5d_pct": -2.5,
+            "target_before_stop_5d": True,
+            "stop_before_target_5d": False,
+            "outcome_path_terminal_status": "target_before_stop",
+            "outcome_path_label_version": "scan_entry_forward_ohlc_stop_first_v1",
             "max_high_return_5d_pct": 8.4,
             "hit_5pct_within_5d": True,
             "hit_5pct_within_5d_at": "2026-05-08",
@@ -163,6 +170,13 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
     assert payload["low_prob_high_score"] == 58.67
     assert payload["expected_edge_inversion_score"] == 3.6
     assert payload["scan_entry_reference_price"] == 101500.0
+    assert payload["return_10m_pct"] == -0.5
+    assert payload["mfe_5d_pct"] == 7.5
+    assert payload["mae_5d_pct"] == -2.5
+    assert payload["target_before_stop_5d"] is True
+    assert payload["stop_before_target_5d"] is False
+    assert payload["outcome_path_terminal_status"] == "target_before_stop"
+    assert payload["outcome_path_label_version"] == "scan_entry_forward_ohlc_stop_first_v1"
     assert payload["max_high_return_5d_pct"] == 8.4
     assert payload["hit_5pct_within_5d"] is True
     assert payload["hit_5pct_within_5d_at"] == "2026-05-08"
