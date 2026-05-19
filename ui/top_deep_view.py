@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -8,6 +9,13 @@ import pandas as pd
 import streamlit as st
 
 from modules import db_manager
+from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
+from ui.scan_integrity_view import (
+    load_scan_context_for_run,
+    render_scan_integrity_panel,
+    scan_integrity_report_for_context,
+)
+from ui.view_chrome import render_section_intro
 
 
 TOP_DEEP_SECTION_ORDER = {
@@ -347,6 +355,232 @@ def render_selection_thesis(row: Dict[str, Any], trade_plan: Dict[str, Any]) -> 
             st.caption("플래너 리스크: " + " / ".join(str(x) for x in flags[:5]))
 
 
+def render_top_deep_reports_page() -> None:
+    render_section_intro(
+        "Top Deep Reports",
+        "Shadow + Top5 + Exception Leader 자동 정밀분석",
+        "검증용 Shadow 후보를 상단에 분리하고, 기존 Top5와 Exception Leader를 함께 분석합니다.",
+        ["Shadow watch", "Top5 main", "Exception add-on", "Real data only"],
+    )
+    rows, warning = load_top_deep_reports()
+    if warning:
+        st.warning(f"Supabase 조회 실패 또는 제한: {warning}. 로컬 리포트가 있으면 대체 표시합니다.")
+    if not rows:
+        st.info("아직 생성된 Top 정밀분석 리포트가 없습니다. 스캔을 1회 완료하면 자동 생성됩니다.")
+        return
+
+    df = pd.DataFrame(rows)
+    df["generated_at_dt"] = pd.to_datetime(df.get("generated_at"), errors="coerce", utc=True)
+    df["report_date"] = df["generated_at_dt"].dt.tz_convert("Asia/Seoul").dt.date
+    df["_market"] = df.apply(infer_top_deep_market, axis=1)
+    market_options = [m for m in ["KOSPI", "KOSDAQ"] if m in set(df["_market"].dropna().astype(str))]
+    extra_markets = sorted([m for m in set(df["_market"].dropna().astype(str)) if m not in {"KOSPI", "KOSDAQ"}])
+    market_options.extend(extra_markets)
+    if not market_options:
+        market_options = ["전체"]
+    col_market, col_date, col_run, col_size = st.columns([1.2, 1.3, 2.8, 1])
+    selected_market = col_market.selectbox("시장", market_options, index=0)
+    market_df = df if selected_market == "전체" else df[df["_market"] == selected_market].copy()
+    dates = sorted([d for d in market_df["report_date"].dropna().unique()], reverse=True)
+    if not dates:
+        st.info(f"{selected_market} 정밀분석 리포트가 없습니다.")
+        return
+    selected_date = col_date.selectbox("날짜", dates, index=0)
+    day_df = market_df[market_df["report_date"] == selected_date].copy()
+    run_summaries = []
+    for run_id, group in day_df.groupby("run_id", dropna=True):
+        run_summaries.append((str(run_id), scan_display_label(group), group["generated_at_dt"].max()))
+    run_summaries = sorted(run_summaries, key=lambda item: item[2], reverse=True)
+    runs = [item[0] for item in run_summaries]
+    run_labels = {item[0]: item[1] for item in run_summaries}
+    selected_run = col_run.selectbox("스캔", runs, index=0, format_func=lambda rid: run_labels.get(str(rid), str(rid)))
+    page_size = col_size.selectbox("페이지 크기", [1, 3, 5, 10], index=3)
+    run_df = day_df[day_df["run_id"] == selected_run].copy()
+    run_df["rank"] = pd.to_numeric(run_df.get("rank"), errors="coerce")
+    run_df["_analysis_section_order"] = run_df["selection_alignment"].apply(top_deep_section_order)
+    run_df["_analysis_section_rank"] = run_df["selection_alignment"].apply(top_deep_section_rank)
+    run_df["_analysis_section_rank"] = pd.to_numeric(run_df["_analysis_section_rank"], errors="coerce")
+    run_df = run_df.sort_values(["_analysis_section_order", "_analysis_section_rank", "rank", "generated_at_dt"], ascending=[True, True, True, False])
+    total = len(run_df)
+    max_page = max(1, math.ceil(total / int(page_size)))
+    page = st.number_input("페이지", min_value=1, max_value=max_page, value=1, step=1)
+    page_df = run_df.iloc[(int(page) - 1) * int(page_size): int(page) * int(page_size)]
+    st.caption(f"{selected_market} · {selected_date} · {run_labels.get(str(selected_run), selected_run)} · {page}/{max_page} 페이지")
+    section_counts = run_df["selection_alignment"].apply(top_deep_section_name).value_counts().to_dict()
+    scan_context = load_scan_context_for_run(str(selected_run))
+    scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
+    market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}
+    integrity_report = scan_integrity_report_for_context(scan_context)
+    result_count = int(scan_summary.get("result_count") or section_counts.get("Top5", 0) or 0)
+    filtered_count = int(scan_summary.get("filtered_count") or 0)
+    gate_msg = str(market_gate.get("msg") or "")
+    if result_count == 0 and section_counts.get("Exception Leader", 0):
+        st.warning(
+            "원본 Top5 통과 후보 0개입니다. "
+            f"필터 {filtered_count}개 · Exception Leader {section_counts.get('Exception Leader', 0)}개는 추가 관찰 후보로만 표시됩니다."
+        )
+    if gate_msg:
+        gate = str(market_gate.get("gate") or "-").upper()
+        if gate == "RED":
+            st.error(f"시장 게이트: {gate_msg}")
+        elif gate == "YELLOW":
+            st.warning(f"시장 게이트: {gate_msg}")
+        else:
+            st.info(f"시장 게이트: {gate_msg}")
+    render_scan_integrity_panel(integrity_report, compact=True)
+    exposure_summary = scan_summary.get("portfolio_exposure_summary") if isinstance(scan_summary.get("portfolio_exposure_summary"), dict) else {}
+    if not exposure_summary:
+        exposure_summary = build_portfolio_exposure_summary(run_df.to_dict("records"), run_id=str(selected_run))
+    exposure_flags = exposure_summary.get("risk_flags") if isinstance(exposure_summary.get("risk_flags"), list) else []
+    if exposure_flags:
+        st.warning("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
+    else:
+        st.info("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
+
+    for row in page_df.to_dict("records"):
+        price = row.get("price") if isinstance(row.get("price"), dict) else {}
+        news = row.get("news") if isinstance(row.get("news"), dict) else {}
+        prediction = row.get("prediction") if isinstance(row.get("prediction"), dict) else {}
+        trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+        execution_stop = row.get("execution_stop") if isinstance(row.get("execution_stop"), dict) else {}
+        if not execution_stop and isinstance(trade_plan.get("execution_stop"), dict):
+            execution_stop = trade_plan["execution_stop"]
+        readiness = trade_plan.get("readiness_analysis") if isinstance(trade_plan.get("readiness_analysis"), dict) else {}
+        theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+        flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
+        alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+        display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
+        policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
+        admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+        candidate_data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
+        section = alignment.get("analysis_section") or "Top5"
+        section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
+        title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
+        with st.container(border=True):
+            st.markdown(f"### {title}")
+            st.caption(
+                f"{row.get('signal_label') or '-'} · {row.get('decision') or '-'} · {theme.get('primary_theme') or '-'} · "
+                f"원본스캔 #{alignment.get('raw_scan_rank') or '-'} / 플래너 #{alignment.get('planner_priority_rank') or row.get('rank') or '-'}"
+            )
+            st.caption(
+                f"표시계약 {display_contract.get('display_status') or 'VISIBLE'} · "
+                f"숨김허용 {display_contract.get('suppression_allowed', False)} · "
+                f"표시사유 {display_contract.get('display_reason') or 'scanner_emitted_candidate'}"
+            )
+            st.caption(
+                f"정책 {policy_metadata.get('active_policy_version') or '-'} · "
+                f"상태 {policy_metadata.get('promotion_status') or '-'} · "
+                f"롤백 {policy_metadata.get('rollback_active', False)}"
+            )
+            if candidate_data_quality:
+                st.caption(
+                    f"데이터 품질 {candidate_data_quality.get('display_warning_level') or '-'} · "
+                    f"필수필드 {candidate_data_quality.get('required_present_pct', '-')}% · "
+                    f"경고 {', '.join((candidate_data_quality.get('visible_warnings') or [])[:4]) or '-'}"
+                )
+            c1, c2, c3, c4, c5, c6 = st.columns(6)
+            c1.metric("매수점수", fmt_metric_num(row.get("buy_score"), 1))
+            c2.metric("정확성", fmt_metric_pct(row.get("accuracy")))
+            c3.metric("전일비", fmt_metric_pct(row.get("day_change_pct")))
+            c4.metric("손실위험", fmt_metric_num(row.get("loss_risk_score"), 1))
+            c5.metric("뉴스감성", fmt_metric_num(news.get("sentiment_score"), 2))
+            c6.metric("예상순수익 3D", fmt_metric_pct(prediction.get("expected_net_return_3d_pct")))
+
+            a1, a2, a3, a4 = st.columns(4)
+            a1.metric("실현기대 3D", fmt_metric_pct(admission.get("expected_value_3d_pct")))
+            a2.metric("실현기대 5D", fmt_metric_pct(admission.get("expected_value_5d_pct")))
+            a3.metric("5D 랭킹", fmt_metric_num(admission.get("ranking_score_5d"), 1))
+            a4.metric("Stop-first", fmt_metric_pct(admission.get("stop_first_risk_pct")))
+            regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
+            if regime_theme_adjustment:
+                warnings = regime_theme_adjustment.get("warnings") if isinstance(regime_theme_adjustment.get("warnings"), list) else []
+                st.caption(
+                    "국면/테마 보정 "
+                    f"확률x{fmt_metric_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
+                    f"수익x{fmt_metric_num(regime_theme_adjustment.get('return_multiplier'), 2)} · "
+                    f"손절위험x{fmt_metric_num(regime_theme_adjustment.get('stop_risk_multiplier'), 2)} · "
+                    f"신뢰도 {fmt_metric_pct((regime_theme_adjustment.get('confidence') or 0) * 100)}"
+                    + (f" · 경고 {', '.join(str(item) for item in warnings[:3])}" if warnings else "")
+                )
+
+            render_selection_thesis(row, trade_plan)
+
+            p1, p2, p3, p4 = st.columns(4)
+            p1.metric("현재가", fmt_metric_num(price.get("current_price"), 2))
+            p2.metric("거래량", f"{int(price.get('volume')):,}" if price.get("volume") is not None else "-")
+            p3.metric("거래량/20D", fmt_metric_num(price.get("volume_ratio_20d"), 2))
+            p4.metric("차트추세", str(price.get("trend") or "-"))
+
+            e1, e2, e3, e4, e5 = st.columns(5)
+            e1.metric("1D 기대", fmt_metric_pct(prediction.get("expected_return_1d_pct")))
+            e2.metric("3D 기대", fmt_metric_pct(prediction.get("expected_return_3d_pct")))
+            e3.metric("진입가", fmt_krw(trade_plan.get("entry_reference_price")), str(trade_plan.get("entry_policy") or "-"))
+            e4.metric("목표가", fmt_krw(trade_plan.get("target_price")), fmt_metric_pct(trade_plan.get("target_tp_pct")))
+            e5.metric(
+                "표시 손절가",
+                fmt_krw(execution_stop.get("display_stop_price") or trade_plan.get("stop_price")),
+                fmt_metric_pct(execution_stop.get("display_stop_sl_pct") or trade_plan.get("stop_sl_pct")),
+                delta_color="inverse",
+            )
+            if execution_stop.get("display_stop_source"):
+                msg = f"손절 기준: {execution_stop.get('display_stop_source')}"
+                if execution_stop.get("stop_conflict"):
+                    msg += " · raw/dynamic 충돌, 더 엄격한 값 표시"
+                st.caption(msg)
+
+            z1, z2, z3, z4 = st.columns(4)
+            z1.metric("진입 하단", fmt_krw(trade_plan.get("entry_zone_low")))
+            z2.metric("진입 상단", fmt_krw(trade_plan.get("entry_zone_high")))
+            z3.metric("손익비", fmt_metric_num(trade_plan.get("risk_reward"), 2))
+            z4.metric("보유일", f"{trade_plan.get('hold_days') or '-'}일")
+
+            st.markdown("**수급**")
+            f1, f2, f3, f4 = st.columns(4)
+            flow_unit = flow.get("flow_unit")
+            flow_window_key = str(flow.get("flow_window") or "").lower()
+            flow_metric_prefix = "당일 " if flow_window_key in {"1d", "day"} else ""
+            f1.metric(f"{flow_metric_prefix}외인", fmt_flow_value(flow.get("foreigner_1d", flow.get("foreigner")), flow_unit))
+            f2.metric(f"{flow_metric_prefix}기관", fmt_flow_value(flow.get("institution_1d", flow.get("institution")), flow_unit))
+            f3.metric(f"{flow_metric_prefix}개인", fmt_flow_value(flow.get("retail_1d", flow.get("retail")), flow_unit), help="개인 순매수가 과도하면 단기 수급 품질이 낮을 수 있습니다.")
+            f4.metric("수급점수", fmt_metric_num(flow.get("whale_score"), 0), str(flow.get("whale_trend") or "-"))
+            flow_warnings = flow.get("warnings") if isinstance(flow.get("warnings"), list) else []
+            flow_source = str(flow.get("source") or "-")
+            flow_unit_label = {"krw": "원", "shares": "주"}.get(str(flow_unit or "").lower(), str(flow_unit or "-"))
+            st.caption(f"수급 기준: {flow_source} · 단위: {flow_unit_label}")
+            flow_leader_caption = fmt_flow_leader_caption(flow)
+            if flow_leader_caption:
+                st.caption(flow_leader_caption)
+            if flow.get("scan_whale_score") is not None and flow.get("scan_whale_score") != flow.get("whale_score"):
+                st.caption(f"스캔 당시 수급점수: {fmt_metric_num(flow.get('scan_whale_score'), 0)} / 현재 보강 수급점수: {fmt_metric_num(flow.get('whale_score'), 0)}")
+            if flow_warnings:
+                st.caption("수급 데이터 참고: " + " / ".join(str(x) for x in flow_warnings[:3]))
+            if not flow.get("valid"):
+                st.caption("수급 데이터 경고: " + " / ".join(str(x) for x in flow_warnings[:3]) if flow_warnings else "수급 데이터 미확보")
+
+            render_readiness_analysis(readiness)
+            render_data_backed_action_plan(trade_plan, readiness)
+
+            ohlcv = price.get("ohlcv_tail") if isinstance(price.get("ohlcv_tail"), list) else []
+            if ohlcv:
+                chart_df = pd.DataFrame(ohlcv)
+                if "date" in chart_df and "close" in chart_df:
+                    st.line_chart(chart_df.set_index("date")[["close"]])
+
+            flags = row.get("risk_flags") if isinstance(row.get("risk_flags"), list) else []
+            rationale = row.get("rationale") if isinstance(row.get("rationale"), list) else []
+            if flags or rationale:
+                st.caption("리스크/판단 근거: " + " / ".join([str(x) for x in (flags + rationale)[:8]]))
+
+            headlines = news.get("headlines") if isinstance(news.get("headlines"), list) else []
+            if headlines:
+                with st.expander("뉴스/공시성 헤드라인", expanded=False):
+                    for item in headlines[:5]:
+                        st.caption(f"{fmt_metric_num(item.get('score'), 2)} · {item.get('title')}")
+            warnings = row.get("data_warnings") if isinstance(row.get("data_warnings"), list) else []
+            if warnings:
+                st.caption("데이터 경고: " + " / ".join(str(x) for x in warnings[:5]))
+
+
 __all__ = [
     "TOP_DEEP_SECTION_ORDER",
     "fmt_flow_leader_caption",
@@ -360,6 +594,7 @@ __all__ = [
     "render_data_backed_action_plan",
     "render_readiness_analysis",
     "render_selection_thesis",
+    "render_top_deep_reports_page",
     "scan_display_label",
     "top_deep_section_name",
     "top_deep_section_order",
