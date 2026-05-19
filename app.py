@@ -87,8 +87,9 @@ from ui.intelligence_view import (
     build_next_session_theme_line as _build_next_session_theme_line,
     intelligence_signal_line as _intelligence_signal_line,
     intelligence_tactical_line as _intelligence_tactical_line,
+    render_intelligence_highlights as _render_intelligence_highlights,
+    render_theme_cards as _render_theme_cards,
     theme_name_line as _theme_name_line,
-    theme_tone as _theme_tone,
 )
 import pandas as pd
 import plotly.graph_objects as go
@@ -151,68 +152,6 @@ def _coerce_numeric_display(df, columns):
 def _inject_toss_theme():
     """디자인 토큰/CSS 주입. 실제 구현은 ui.theme.inject_theme."""
     _inject_design_tokens()
-
-
-def _render_intelligence_highlights(highlights):
-    if not highlights:
-        return
-    rows_html = []
-    for label, text in highlights:
-        label_text = html.escape(str(label or "").strip())
-        body_text = html.escape(str(text or "").strip())
-        if not body_text:
-            continue
-        rows_html.append(
-            f"""
-            <div class="intel-highlight-item">
-              <span class="intel-highlight-badge">{label_text}</span>
-              <div class="intel-highlight-text">{body_text}</div>
-            </div>
-            """
-        )
-    if rows_html:
-        st.markdown('<div class="intel-highlight-list">' + "".join(rows_html) + "</div>", unsafe_allow_html=True)
-
-
-def _render_theme_cards(theme_rows, *, empty_text, compact=False):
-    rows = theme_rows or []
-    if not rows:
-        st.caption(empty_text)
-        return
-    limit = 3 if compact else 6
-    for row in rows[:limit]:
-        if not isinstance(row, dict):
-            continue
-        tone, badge = _theme_tone(row.get("direction"))
-        strength = float(row.get("strength_score", 0.0) or 0.0)
-        confidence = float(row.get("confidence", 0.0) or 0.0)
-        momentum = str(row.get("momentum_class") or "").strip()
-        evidence_rows = _coerce_text_rows(row.get("evidence"), limit=2 if compact else 3)
-        evidence_text = " / ".join(evidence_rows) if evidence_rows else "아직 핵심 근거가 구조화되지 않았습니다."
-        meta_parts = [
-            f"강도 {strength:.1f}",
-            f"신뢰 {int(round(confidence * 100))}%",
-        ]
-        if momentum:
-            meta_parts.append(f"모멘텀 {momentum}")
-        if row.get("momentum_avg_change_pct") is not None:
-            try:
-                meta_parts.append(f"평균변화 {float(row.get('momentum_avg_change_pct')):+.2f}%")
-            except Exception:
-                pass
-        st.markdown(
-            f"""
-            <div class="intel-theme-card {tone}">
-              <div class="intel-theme-head">
-                <div class="intel-theme-name">{html.escape(str(row.get('theme_name') or '-'))}</div>
-                <div class="intel-theme-badge {tone}">{html.escape(badge)}</div>
-              </div>
-              <div class="intel-theme-meta">{html.escape(' · '.join(meta_parts))}</div>
-              <div class="intel-theme-evidence"><strong>핵심 근거</strong>{html.escape(evidence_text)}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 
 
 def _render_intelligence_overview_dashboard(market, intel_data, theme_summary):

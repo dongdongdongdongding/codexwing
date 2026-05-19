@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import html
 from typing import Any, Dict, List, Tuple
+
+import streamlit as st
 
 from ui.view_chrome import coerce_text_rows
 
@@ -46,6 +49,68 @@ def build_intelligence_highlights(intel_data: Dict[str, Any]) -> List[Tuple[str,
     if macro_rows:
         highlights.append(("매크로", " / ".join(macro_rows)))
     return highlights[:5]
+
+
+def render_intelligence_highlights(highlights: List[Tuple[str, str]]) -> None:
+    if not highlights:
+        return
+    rows_html = []
+    for label, text in highlights:
+        label_text = html.escape(str(label or "").strip())
+        body_text = html.escape(str(text or "").strip())
+        if not body_text:
+            continue
+        rows_html.append(
+            f"""
+            <div class="intel-highlight-item">
+              <span class="intel-highlight-badge">{label_text}</span>
+              <div class="intel-highlight-text">{body_text}</div>
+            </div>
+            """
+        )
+    if rows_html:
+        st.markdown('<div class="intel-highlight-list">' + "".join(rows_html) + "</div>", unsafe_allow_html=True)
+
+
+def render_theme_cards(theme_rows: List[Dict[str, Any]], *, empty_text: str, compact: bool = False) -> None:
+    rows = theme_rows or []
+    if not rows:
+        st.caption(empty_text)
+        return
+    limit = 3 if compact else 6
+    for row in rows[:limit]:
+        if not isinstance(row, dict):
+            continue
+        tone, badge = theme_tone(row.get("direction"))
+        strength = float(row.get("strength_score", 0.0) or 0.0)
+        confidence = float(row.get("confidence", 0.0) or 0.0)
+        momentum = str(row.get("momentum_class") or "").strip()
+        evidence_rows = coerce_text_rows(row.get("evidence"), limit=2 if compact else 3)
+        evidence_text = " / ".join(evidence_rows) if evidence_rows else "아직 핵심 근거가 구조화되지 않았습니다."
+        meta_parts = [
+            f"강도 {strength:.1f}",
+            f"신뢰 {int(round(confidence * 100))}%",
+        ]
+        if momentum:
+            meta_parts.append(f"모멘텀 {momentum}")
+        if row.get("momentum_avg_change_pct") is not None:
+            try:
+                meta_parts.append(f"평균변화 {float(row.get('momentum_avg_change_pct')):+.2f}%")
+            except Exception:
+                pass
+        st.markdown(
+            f"""
+            <div class="intel-theme-card {tone}">
+              <div class="intel-theme-head">
+                <div class="intel-theme-name">{html.escape(str(row.get('theme_name') or '-'))}</div>
+                <div class="intel-theme-badge {tone}">{html.escape(badge)}</div>
+              </div>
+              <div class="intel-theme-meta">{html.escape(' · '.join(meta_parts))}</div>
+              <div class="intel-theme-evidence"><strong>핵심 근거</strong>{html.escape(evidence_text)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def theme_name_line(rows: List[Dict[str, Any]], limit: int = 5) -> str:
@@ -190,6 +255,8 @@ __all__ = [
     "intelligence_driver_line",
     "intelligence_signal_line",
     "intelligence_tactical_line",
+    "render_intelligence_highlights",
+    "render_theme_cards",
     "theme_name_line",
     "theme_tone",
 ]
