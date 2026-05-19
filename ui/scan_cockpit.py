@@ -13,6 +13,7 @@ from typing import Any, Dict, List
 
 import streamlit as st
 
+from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.ui_helpers import (
     build_live_cockpit_summary,
     build_kr_shadow_gate_records,
@@ -111,6 +112,11 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         shadow_gate_conditions = str(row.get("shadow_gate_conditions") or "")
         shadow_gate_metrics = str(row.get("shadow_gate_metrics") or "")
         shadow_gate_note = str(row.get("shadow_gate_note") or "")
+        radar_score = row.get("next_day_radar_score")
+        radar_plus5 = row.get("next_day_plus5_prob")
+        radar_plus10 = row.get("next_day_plus10_prob")
+        radar_reasons = [str(reason) for reason in (row.get("next_day_radar_reasons") or []) if str(reason).strip()]
+        radar_missing = [str(reason) for reason in (row.get("next_day_radar_unavailable") or []) if str(reason).strip()]
         risk_line = ""
         if risk_label != "-":
             risk_line = f"손실위험 {risk_label}" + (f" ({risk_level})" if risk_level else "")
@@ -133,6 +139,15 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                         st.caption(shadow_gate_conditions)
                     if shadow_gate_note:
                         st.caption(shadow_gate_note)
+                if radar_score is not None:
+                    st.caption(
+                        f"별도 급등 레이더 · score {_fmt_score_or_dash(radar_score)} · "
+                        f"+5확률 {_fmt_score_or_dash(radar_plus5)} · +10확률 {_fmt_score_or_dash(radar_plus10)}"
+                    )
+                    if radar_reasons:
+                        st.caption("레이더 근거 " + " / ".join(radar_reasons[:4]))
+                    if radar_missing:
+                        st.caption("미확보 피처 " + " / ".join(radar_missing[:3]))
                 if action_label != "-":
                     action_line = f"액션 {action_label}"
                     if action_condition:
@@ -197,10 +212,12 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     display_records = groups["combined"]
     shadow_groups = build_kr_shadow_gate_records(raw_score_records, planner_payload, limit=5)
     shadow_records = shadow_groups["kosdaq" if str(market or "").upper() == "KOSDAQ" else "kospi"]
+    radar_records = build_next_day_radar_records(raw_score_records, limit=5)
 
     stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
     stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
     shadow_rows = build_signal_display_rows(shadow_records, limit=5)
+    radar_rows = build_signal_display_rows(radar_records, limit=5)
     cockpit = build_live_cockpit_summary(
         stream_a_rows,
         stream_b_rows,
@@ -235,6 +252,13 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
             "기존 운영모델은 유지하고, 상단에서 별도 확인합니다."
         )
         render_signal_card_list(shadow_rows, empty_text="KOSPI shadow 조건 통과 후보 없음.")
+
+    st.markdown("### 별도 급등 레이더")
+    st.caption(
+        "익일 +5%/+10% 급등 포착만 별도로 보는 shadow-only 레이더입니다. "
+        "운영 Top5/Exception을 대체하지 않으며 검증 리포트가 기준선을 이길 때만 승격 검토합니다."
+    )
+    render_signal_card_list(radar_rows, empty_text="별도 급등 레이더 후보 없음.")
 
     gate_order = {"pass": 0, "near": 1, "small_sample": 2, "watch": 3}
     practical_rows = sorted(

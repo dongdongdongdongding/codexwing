@@ -10,6 +10,7 @@ from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
 from modules.candidate_interpretation import build_candidate_interpretation
 from modules.model_governance import active_policy_metadata
+from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
@@ -530,6 +531,47 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     )[:1024]
 
 
+def _radar_row_name(row: Dict[str, Any], rank: int) -> str:
+    ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "-"
+    name = row.get("stock_name") or row.get("Stock Name") or row.get("name") or row.get("종목명") or ticker
+    return f"레이더 #{rank} {name} ({ticker})"
+
+
+def _radar_row_value(row: Dict[str, Any]) -> str:
+    radar = row.get("next_day_radar") if isinstance(row.get("next_day_radar"), dict) else {}
+    reasons = ", ".join(str(value) for value in (radar.get("feature_reasons") or [])[:4]) or "-"
+    missing = ", ".join(str(value) for value in (radar.get("unavailable_features") or [])[:3]) or "-"
+    return (
+        f"score {_fmt_num(radar.get('radar_score'), 1)} · "
+        f"익일+5 {_fmt_num(radar.get('next_day_plus5_prob'), 1)} · "
+        f"익일+10 {_fmt_num(radar.get('next_day_plus10_prob'), 1)} · "
+        f"근거 {reasons} · 미확보 {missing} · shadow_only"
+    )[:1024]
+
+
+def build_next_day_radar_embed(run_id: str, *, market: str = "", limit: int = 5) -> Dict[str, Any]:
+    rows = _load_archive_rows_from_artifact(run_id)
+    if market:
+        rows = [
+            row for row in rows
+            if str(row.get("market") or row.get("market_subtype") or "").upper() in {"", str(market).upper()}
+        ]
+    radar_rows = build_next_day_radar_records(rows, limit=limit)
+    fields = [
+        {"name": _radar_row_name(row, idx), "value": _radar_row_value(row), "inline": False}
+        for idx, row in enumerate(radar_rows, start=1)
+    ]
+    if not fields:
+        fields = [{"name": "후보 없음", "value": "별도 급등 레이더 후보가 없습니다.", "inline": False}]
+    return {
+        "title": "별도 급등 레이더",
+        "description": f"Run `{run_id or '-'}` · Top5/Exception 대체 아님 · 검증 전 shadow-only",
+        "color": 0xE67E22,
+        "fields": fields[:10],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 def build_archive_embed(
     *,
     market: str = "",
@@ -751,6 +793,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     ]
     if ok:
         embeds.extend(build_top_deep_embeds(run_id=run_id, limit=TOP_DEEP_DISCORD_LIMIT))
+        embeds.append(build_next_day_radar_embed(run_id, market=market, limit=5))
     return embeds[:10]
 
 
@@ -797,6 +840,7 @@ __all__ = [
     "build_scan_result_embeds",
     "build_scan_started_embed",
     "build_status_embed",
+    "build_next_day_radar_embed",
     "build_top_deep_embeds",
     "collect_run_index",
     "run_id_choices",

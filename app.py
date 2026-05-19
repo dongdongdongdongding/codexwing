@@ -31,6 +31,7 @@ from modules.scan_policy import (
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
+from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.ui_helpers import (
     BackgroundScanState,
     build_kr_shadow_gate_records,
@@ -3657,6 +3658,7 @@ if active_main_tab == "📚 아카이브":
                     else _archive_shadow_groups["combined"]
                 )
                 _archive_shadow = build_signal_display_rows(_archive_shadow_records, limit=5)
+                _archive_radar = build_signal_display_rows(build_next_day_radar_records(_archive_records, limit=5), limit=5)
                 _archive_top5 = build_signal_display_rows(_archive_groups["top5"], limit=5)
                 _archive_exception = build_signal_display_rows(_archive_groups["exception_leaders"], limit=5)
 
@@ -3668,6 +3670,10 @@ if active_main_tab == "📚 아카이브":
                     st.markdown("### KOSPI Ordered Shadow")
                     st.caption("prob_clean/alpha/CORE_TREND/테마 평균 조건을 통과한 KOSPI shadow 관찰 섹션입니다. 운영 Top5를 자동 교체하지 않습니다.")
                     _render_signal_card_list(_archive_shadow, empty_text="KOSPI shadow 조건 통과 후보 없음.")
+
+                st.markdown("### 별도 급등 레이더")
+                st.caption("익일 +5%/+10% 급등 포착 전용 shadow-only 관찰 섹션입니다. Top5/Exception을 대체하지 않습니다.")
+                _render_signal_card_list(_archive_radar, empty_text="별도 급등 레이더 후보 없음.")
 
                 st.markdown(f"### 메인 Top 5 - {_selected_date}")
                 st.caption("기존 서비스 기준의 메인 후보입니다. Exception Leader는 아래 별도 추가 후보로 분리합니다.")

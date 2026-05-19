@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
+from modules.next_day_explosive_radar import build_next_day_radar_candidate
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.segment_accuracy import lookup_segment_win_rate
 
@@ -990,6 +991,9 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         practical_gate = evaluate_practical_entry_gate(row)
         gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
         shadow_gate = row.get("_shadow_gate") if isinstance(row.get("_shadow_gate"), dict) else {}
+        next_day_radar = row.get("next_day_radar") if isinstance(row.get("next_day_radar"), dict) else None
+        if next_day_radar is None and str(row.get("_analysis_section") or "") == "별도 급등 레이더":
+            next_day_radar = build_next_day_radar_candidate(row)
         data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else build_candidate_data_quality(row)
         interpretation = build_candidate_interpretation({**row, "candidate_data_quality": data_quality})
 
@@ -1030,6 +1034,12 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "shadow_gate_conditions": shadow_gate.get("conditions"),
                 "shadow_gate_metrics": shadow_gate.get("metrics"),
                 "shadow_gate_note": shadow_gate.get("note"),
+                "next_day_radar_score": next_day_radar.get("radar_score") if next_day_radar else None,
+                "next_day_plus5_prob": next_day_radar.get("next_day_plus5_prob") if next_day_radar else None,
+                "next_day_plus10_prob": next_day_radar.get("next_day_plus10_prob") if next_day_radar else None,
+                "next_day_radar_reasons": next_day_radar.get("feature_reasons") if next_day_radar else [],
+                "next_day_radar_unavailable": next_day_radar.get("unavailable_features") if next_day_radar else [],
+                "next_day_radar_version": next_day_radar.get("version") if next_day_radar else None,
                 "candidate_interpretation": interpretation,
                 "candidate_data_quality": data_quality,
                 "original_rank": interpretation.get("original_rank"),
