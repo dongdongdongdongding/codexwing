@@ -27,6 +27,12 @@ def _text(value: Any) -> str:
     return str(value or "").strip()
 
 
+def _truthy(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y"}
+
+
 def _ticker(row: Dict[str, Any]) -> str:
     return _text(row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커")).upper()
 
@@ -132,6 +138,7 @@ def build_reject_rows_from_diagnostics(diagnostic_rows: Iterable[Dict[str, Any]]
             continue
         run_id = _text(item.get("run_id"))
         market = _text(item.get("market")).upper()
+        base_trade_date = _text(item.get("base_trade_date") or item.get("as_of_date") or item.get("created_at"))[:10]
         details = item.get("reject_details_by_symbol") if isinstance(item.get("reject_details_by_symbol"), dict) else {}
         reasons_by_symbol = item.get("reject_reasons_by_symbol") if isinstance(item.get("reject_reasons_by_symbol"), dict) else {}
         for ticker, detail_list in details.items():
@@ -143,6 +150,7 @@ def build_reject_rows_from_diagnostics(diagnostic_rows: Iterable[Dict[str, Any]]
                     "run_id": run_id,
                     "ticker": _text(ticker).upper(),
                     "market": market or detail.get("liquidity_market"),
+                    "base_trade_date": base_trade_date,
                     "emitted": False,
                     "reject_stage": detail.get("stage"),
                     "reject_reasons": reasons_by_symbol.get(ticker) or [],
@@ -162,7 +170,12 @@ def attach_reject_outcomes(reject_rows: List[Dict[str, Any]], outcome_rows: Iter
     for row in reject_rows:
         key = (_text(row.get("run_id")), _ticker(row))
         outcome = outcome_index.get(key) or {}
-        merged.append({**row, **outcome, "emitted": False, "outcome_available": bool(outcome)})
+        available = False
+        if outcome:
+            available = _truthy(outcome.get("outcome_available")) or any(
+                _num(outcome.get(f"return_{horizon}d_pct")) is not None for horizon in HORIZONS
+            )
+        merged.append({**row, **outcome, "emitted": False, "outcome_available": available})
     return merged
 
 

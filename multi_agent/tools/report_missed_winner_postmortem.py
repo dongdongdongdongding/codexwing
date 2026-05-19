@@ -17,6 +17,7 @@ from modules.missed_winner_postmortem import (
     build_missed_winner_postmortem,
     build_reject_rows_from_diagnostics,
 )
+from modules.rejected_outcome_backfill import DEFAULT_REJECT_OUTCOME_CSV
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
 from modules.signal_section_performance import DEFAULT_ARCHIVE_CSV, load_archive_rows
 
@@ -53,6 +54,7 @@ def _load_diagnostics(artifact_dir: Path, limit_runs: int) -> List[Dict[str, Any
             {
                 "run_id": str(run_context.get("run_id") or summary.get("run_id") or run_dir.name),
                 "market": str(run_context.get("market") or summary.get("market") or ""),
+                "base_trade_date": str(run_context.get("as_of_date") or run_context.get("created_at") or summary.get("created_at") or "")[:10],
                 **diagnostics,
             }
         )
@@ -108,14 +110,14 @@ def main() -> int:
     parser.add_argument("--archive-csv", default=str(DEFAULT_ARCHIVE_CSV))
     parser.add_argument("--artifact-dir", default="runtime_state/artifacts")
     parser.add_argument("--limit-runs", type=int, default=300)
-    parser.add_argument("--reject-outcomes-csv", default="")
+    parser.add_argument("--reject-outcomes-csv", default=str(DEFAULT_REJECT_OUTCOME_CSV))
     parser.add_argument("--output", default=str(DEFAULT_OUT))
     args = parser.parse_args()
 
     emitted_rows = _load_rows(int(args.limit_runs), Path(args.archive_csv))
     diagnostics = _load_diagnostics(Path(args.artifact_dir), int(args.limit_runs))
     reject_rows = build_reject_rows_from_diagnostics(diagnostics)
-    if args.reject_outcomes_csv:
+    if args.reject_outcomes_csv and Path(args.reject_outcomes_csv).exists():
         reject_rows = attach_reject_outcomes(reject_rows, _load_outcome_csv(Path(args.reject_outcomes_csv)))
     report = build_missed_winner_postmortem(emitted_rows, reject_rows=reject_rows)
     out = Path(args.output)

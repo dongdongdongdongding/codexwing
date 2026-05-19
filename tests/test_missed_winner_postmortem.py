@@ -47,6 +47,12 @@ def test_build_reject_rows_from_diagnostics_and_attach_outcomes():
     assert merged[0]["outcome_available"] is True
     assert merged[0]["return_1d_pct"] == 8.0
 
+    unavailable = attach_reject_outcomes(
+        rejects,
+        [{"run_id": "RUN-1", "ticker": "000001.KS", "outcome_available": "False"}],
+    )
+    assert unavailable[0]["outcome_available"] is False
+
 
 def test_missed_winner_postmortem_reports_capture_and_reasons():
     report = build_missed_winner_postmortem(
