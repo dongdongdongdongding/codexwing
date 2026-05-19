@@ -886,6 +886,7 @@ class DBManager:
                     "realized_return_pct": row.get("realized_return_pct"),
                     "base_trade_date": row.get("base_trade_date"),
                     "entry_reference_price": row.get("entry_reference_price"),
+                    "scan_entry_reference_price": row.get("scan_entry_reference_price"),
                     "latest_return_pct": row.get("latest_return_pct"),
                     "return_30m_pct": row.get("return_30m_pct"),
                     "return_1h_pct": row.get("return_1h_pct"),

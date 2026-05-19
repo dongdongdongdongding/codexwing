@@ -134,6 +134,7 @@ SCAN_RESULT_COLUMNS: tuple = (
     ("horizon",                         "horizon",                         _passthrough),
     ("base_trade_date",                 "base_trade_date",                 _passthrough),
     ("entry_reference_price",           "entry_reference_price",           _to_float_or_none),
+    ("scan_entry_reference_price",      "scan_entry_reference_price",      _to_float_or_none),
     ("source_ref",                      "source_ref",                      _passthrough),
 
     # Scanner lane / role trace

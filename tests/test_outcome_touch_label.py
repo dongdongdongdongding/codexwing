@@ -1,8 +1,10 @@
 from datetime import date
 
+import json
 import pandas as pd
 
-from multi_agent.tools.update_outcome_return_metrics import _compute_row_returns
+from multi_agent.tools import update_outcome_return_metrics as outcome_metrics
+from multi_agent.tools.update_outcome_return_metrics import _compute_intraday_row_returns, _compute_row_returns
 
 
 def _hist(closes, highs):
@@ -72,3 +74,182 @@ def test_compute_row_returns_marks_mature_non_touch_as_false():
     assert row["hit_5pct_within_5d"] is False
     assert row["hit_5pct_within_5d_at"] is None
     assert row["swing_target_label_version"] == "forward_high_within_5d_v1"
+
+
+def test_compute_intraday_returns_applies_to_swing_rows(monkeypatch):
+    row = {
+        "ticker": "005930.KS",
+        "scan_mode": "SWING",
+        "recommended_at": "2026-05-01T09:40:00+09:00",
+        "entry_reference_price": 100.0,
+    }
+    idx = pd.DatetimeIndex(
+        [
+            "2026-05-01T09:30:00+09:00",
+            "2026-05-01T10:00:00+09:00",
+            "2026-05-01T10:30:00+09:00",
+            "2026-05-01T15:00:00+09:00",
+        ]
+    )
+    hist = pd.DataFrame({"Close": [99.0, 103.0, 104.0, 105.0]}, index=idx)
+
+    monkeypatch.setattr(outcome_metrics, "_fetch_intraday_history", lambda *args, **kwargs: hist)
+
+    assert _compute_intraday_row_returns(row, "KOSPI") is True
+
+    assert row["return_30m_pct"] == 3.0
+    assert row["return_1h_pct"] == 4.0
+    assert row["return_close_pct"] == 5.0
+
+
+def test_daily_return_update_preserves_scan_entry_for_intraday_path(monkeypatch):
+    row = {
+        "ticker": "005930.KS",
+        "scan_mode": "SWING",
+        "recommended_at": "2026-05-01T09:40:00+09:00",
+        "entry_reference_price": 98.0,
+    }
+    hist = _hist(closes=[100, 101, 102], highs=[101, 102, 103])
+    idx = pd.DatetimeIndex(["2026-05-01T10:00:00+09:00", "2026-05-01T15:00:00+09:00"])
+    intraday = pd.DataFrame({"Close": [99.0, 100.0]}, index=idx)
+
+    monkeypatch.setattr(outcome_metrics, "_fetch_intraday_history", lambda *args, **kwargs: intraday)
+
+    assert _compute_row_returns(row, hist, "KOSPI") is True
+    assert row["entry_reference_price"] == 100.0
+    assert row["scan_entry_reference_price"] == 98.0
+
+    assert _compute_intraday_row_returns(row, "KOSPI") is True
+    assert row["return_30m_pct"] == 1.020408
+    assert row["return_close_pct"] == 2.040816
+
+
+def test_run_update_fills_intraday_even_when_daily_history_missing(tmp_path, monkeypatch):
+    shared = tmp_path / "shared_working"
+    run_dir = shared / "RUN-TEST"
+    run_dir.mkdir(parents=True)
+    (run_dir / "scanner_handoff.json").write_text(
+        json.dumps(
+            {
+                "run_context": {"market": "KOSPI"},
+                "summary": {"input_meta": {"scan_mode": "SWING"}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "realized_outcomes.json").write_text(
+        json.dumps(
+            {
+                "outcomes": [
+                    {
+                        "ticker": "005930.KS",
+                        "market": "KOSPI",
+                        "scan_mode": "SWING",
+                        "recommended_at": "2026-05-01T09:40:00+09:00",
+                        "entry_reference_price": 100.0,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    idx = pd.DatetimeIndex(
+        [
+            "2026-05-01T10:00:00+09:00",
+            "2026-05-01T10:30:00+09:00",
+            "2026-05-01T15:00:00+09:00",
+        ]
+    )
+    intraday = pd.DataFrame({"Close": [103.0, 104.0, 105.0]}, index=idx)
+
+    class FakeDB:
+        client = None
+
+    monkeypatch.setattr(outcome_metrics, "_fetch_history", lambda *args, **kwargs: None)
+    monkeypatch.setattr(outcome_metrics, "_fetch_intraday_history", lambda *args, **kwargs: intraday)
+    monkeypatch.setattr("modules.db_manager.DBManager", FakeDB)
+
+    stats = outcome_metrics.run_update(
+        shared_dir=shared,
+        run_ids=["RUN-TEST"],
+        limit_runs=0,
+        dry_run=False,
+        scan_mode_filter="ALL",
+    )
+
+    updated = json.loads((run_dir / "realized_outcomes.json").read_text(encoding="utf-8"))["outcomes"][0]
+    assert stats["rows_without_daily_history"] == 1
+    assert stats["intraday_rows_attempted"] == 1
+    assert stats["intraday_rows_updated"] == 1
+    assert updated["return_30m_pct"] == 3.0
+    assert updated["return_1h_pct"] == 4.0
+    assert updated["return_close_pct"] == 5.0
+
+
+def test_run_update_recovers_scan_entry_from_top_deep_for_intraday(tmp_path, monkeypatch):
+    shared = tmp_path / "shared_working"
+    run_dir = shared / "RUN-TEST"
+    run_dir.mkdir(parents=True)
+    top_deep_dir = tmp_path / "runtime_state" / "reports" / "top_deep"
+    top_deep_dir.mkdir(parents=True)
+    (top_deep_dir / "RUN-TEST.json").write_text(
+        json.dumps(
+            [
+                {
+                    "ticker": "005930.KS",
+                    "trade_plan": {"entry_reference_price": 95.0},
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "scanner_handoff.json").write_text(
+        json.dumps(
+            {
+                "run_context": {"market": "KOSPI"},
+                "summary": {"input_meta": {"scan_mode": "SWING"}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "realized_outcomes.json").write_text(
+        json.dumps(
+            {
+                "outcomes": [
+                    {
+                        "ticker": "005930.KS",
+                        "market": "KOSPI",
+                        "scan_mode": "SWING",
+                        "recommended_at": "2026-05-01T09:40:00+09:00",
+                        "entry_reference_price": 100.0,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    idx = pd.DatetimeIndex(["2026-05-01T10:00:00+09:00", "2026-05-01T15:00:00+09:00"])
+    intraday = pd.DataFrame({"Close": [105.0, 104.5]}, index=idx)
+
+    class FakeDB:
+        client = None
+
+    monkeypatch.setattr(outcome_metrics, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(outcome_metrics, "_fetch_history", lambda *args, **kwargs: None)
+    monkeypatch.setattr(outcome_metrics, "_fetch_intraday_history", lambda *args, **kwargs: intraday)
+    monkeypatch.setattr("modules.db_manager.DBManager", FakeDB)
+
+    stats = outcome_metrics.run_update(
+        shared_dir=shared,
+        run_ids=["RUN-TEST"],
+        limit_runs=0,
+        dry_run=False,
+        scan_mode_filter="ALL",
+    )
+
+    updated = json.loads((run_dir / "realized_outcomes.json").read_text(encoding="utf-8"))["outcomes"][0]
+    assert stats["intraday_rows_updated"] == 1
+    assert updated["entry_reference_price"] == 100.0
+    assert updated["scan_entry_reference_price"] == 95.0
+    assert updated["return_30m_pct"] == 10.526316
+    assert updated["return_close_pct"] == 10.0

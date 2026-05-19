@@ -173,11 +173,74 @@ def _safe_float(value: Any) -> Optional[float]:
         return None
 
 
-def _compute_intraday_row_returns(row: Dict[str, Any], market: str) -> bool:
-    if str(row.get("scan_mode", "SWING")).upper() != "INTRADAY":
+def _interval_minutes(interval: str) -> int:
+    text = str(interval or "").strip().lower()
+    if text.endswith("m"):
+        try:
+            return max(1, int(text[:-1]))
+        except Exception:
+            return 30
+    if text.endswith("h"):
+        try:
+            return max(1, int(text[:-1]) * 60)
+        except Exception:
+            return 60
+    return 30
+
+
+def _load_scan_entry_reference_map(run_id: str) -> Dict[str, float]:
+    """Recover scan-time planned entry prices from the generated deep report.
+
+    `entry_reference_price` is intentionally overwritten with the realized
+    base close for daily outcome labels. Same-day 30m/1h path labels must stay
+    anchored to the price shown to the operator at scan time.
+    """
+    report_path = PROJECT_ROOT / "runtime_state" / "reports" / "top_deep" / f"{run_id}.json"
+    if not report_path.exists():
+        return {}
+    try:
+        with report_path.open("r", encoding="utf-8") as f:
+            reports = json.load(f)
+    except Exception:
+        return {}
+    if not isinstance(reports, list):
+        return {}
+
+    out: Dict[str, float] = {}
+    for report in reports:
+        if not isinstance(report, dict):
+            continue
+        ticker = str(report.get("ticker") or "").strip()
+        trade_plan = report.get("trade_plan") if isinstance(report.get("trade_plan"), dict) else {}
+        entry = _safe_float(trade_plan.get("entry_reference_price"))
+        if ticker and entry is not None and entry > 0:
+            out[ticker] = round(float(entry), 6)
+    return out
+
+
+def _apply_scan_entry_reference(row: Dict[str, Any], scan_entry_map: Dict[str, float]) -> bool:
+    if row.get("scan_entry_reference_price") not in (None, ""):
         return False
+    ticker = str(row.get("ticker") or "").strip()
+    entry = scan_entry_map.get(ticker)
+    if entry is None:
+        return False
+    row["scan_entry_reference_price"] = entry
+    return True
+
+
+def _compute_intraday_row_returns(row: Dict[str, Any], market: str, interval: str = "30m") -> bool:
+    """Fill same-day minute-horizon returns for any recommendation row.
+
+    These columns are not an INTRADAY-strategy-only concept. KR SWING Top/
+    Shadow/Exception candidates also need 30m/1h/close path labels so severe
+    post-scan drops can become regression data. Missing or immature minute bars
+    never clear an existing non-null value.
+    """
     rec_dt = _parse_iso(row.get("recommended_at"))
-    entry_price = _safe_float(row.get("entry_reference_price"))
+    entry_price = _safe_float(row.get("scan_entry_reference_price"))
+    if entry_price is None:
+        entry_price = _safe_float(row.get("entry_reference_price"))
     if rec_dt is None or entry_price is None or entry_price <= 0:
         return False
 
@@ -185,24 +248,25 @@ def _compute_intraday_row_returns(row: Dict[str, Any], market: str) -> bool:
     rec_local = rec_dt.astimezone(market_tz)
     start_dt = rec_local.astimezone(timezone.utc) - timedelta(hours=2)
     end_dt = (rec_local + timedelta(days=2)).astimezone(timezone.utc)
-    intraday_hist = _fetch_intraday_history(str(row.get("ticker") or ""), start_dt=start_dt, end_dt=end_dt, interval="30m")
+    intraday_hist = _fetch_intraday_history(str(row.get("ticker") or ""), start_dt=start_dt, end_dt=end_dt, interval=interval)
     changed = False
 
     if intraday_hist is not None and not intraday_hist.empty:
         local_idx = intraday_hist.index.tz_convert(market_tz)
         intraday_hist = intraday_hist.copy()
         intraday_hist["local_ts"] = local_idx
+        intraday_hist["local_bar_end"] = intraday_hist["local_ts"] + timedelta(minutes=_interval_minutes(interval))
         same_day = intraday_hist[local_idx.date == rec_local.date()]
         if not same_day.empty:
             for minutes, key in INTRADAY_MINUTE_HORIZONS:
                 target_dt = rec_local + timedelta(minutes=minutes)
-                eligible = same_day[same_day["local_ts"] >= target_dt]
+                eligible = same_day[same_day["local_bar_end"] >= target_dt]
                 value = None
                 if not eligible.empty:
                     close_val = _safe_float(eligible["Close"].iloc[0])
                     if close_val is not None and entry_price > 0:
                         value = round(((close_val / entry_price) - 1.0) * 100.0, 6)
-                if row.get(key) != value:
+                if value is not None and row.get(key) != value:
                     row[key] = value
                     changed = True
 
@@ -212,7 +276,7 @@ def _compute_intraday_row_returns(row: Dict[str, Any], market: str) -> bool:
                 close_val = _safe_float(close_rows["Close"].iloc[-1])
                 if close_val is not None and entry_price > 0:
                     close_value = round(((close_val / entry_price) - 1.0) * 100.0, 6)
-            if row.get("return_close_pct") != close_value:
+            if close_value is not None and row.get("return_close_pct") != close_value:
                 row["return_close_pct"] = close_value
                 changed = True
 
@@ -235,6 +299,10 @@ def _compute_row_returns(row: Dict[str, Any], hist: pd.DataFrame, market: str) -
         return False
 
     changed = False
+    original_entry = _safe_float(row.get("entry_reference_price"))
+    if original_entry is not None and row.get("scan_entry_reference_price") in (None, ""):
+        row["scan_entry_reference_price"] = round(float(original_entry), 6)
+        changed = True
     base_trade_date = str(hist.loc[base_idx, "trade_date"])
     if row.get("base_trade_date") != base_trade_date:
         row["base_trade_date"] = base_trade_date
@@ -372,6 +440,10 @@ def run_update(
         "runs_with_file": 0,
         "rows_seen": 0,
         "rows_updated": 0,
+        "daily_rows_updated": 0,
+        "intraday_rows_attempted": 0,
+        "intraday_rows_updated": 0,
+        "rows_without_daily_history": 0,
         "files_updated": 0,
         "tickers_with_history": len(history_map),
         "db_rows_upserted": 0,
@@ -392,6 +464,7 @@ def run_update(
         outcomes = payload.get("outcomes", []) if isinstance(payload.get("outcomes"), list) else []
         if not outcomes:
             continue
+        scan_entry_map = _load_scan_entry_reference_map(run_dir.name)
         stats["runs_with_file"] += 1
         changed = False
         updated_rows = 0
@@ -405,13 +478,16 @@ def run_update(
             ticker = str(row.get("ticker") or "").strip()
             market = _infer_market(row, run_market=run_market)
             hist = history_map.get(ticker)
+            row_changed = _apply_scan_entry_reference(row, scan_entry_map)
             if hist is None:
-                continue
-            row_changed = False
-            if _compute_row_returns(row, hist, market):
+                stats["rows_without_daily_history"] += 1
+            elif _compute_row_returns(row, hist, market):
                 row_changed = True
+                stats["daily_rows_updated"] += 1
+            stats["intraday_rows_attempted"] += 1
             if _compute_intraday_row_returns(row, market):
                 row_changed = True
+                stats["intraday_rows_updated"] += 1
             if row_changed:
                 changed = True
                 updated_rows += 1
