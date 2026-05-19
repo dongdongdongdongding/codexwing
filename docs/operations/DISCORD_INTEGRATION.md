@@ -181,6 +181,18 @@ Use `offset` and `limit` to page through older rows in a selected run.
 non-UI pipeline in the background, then post the result summary to
 `DISCORD_RESULT_CHANNEL_ID`.
 
+Discord must follow the shared scanner product contract in
+`docs/operations/SCANNER_PRODUCT_CONTRACT.md`. In particular:
+
+- `Top5` is the production priority stream, not an unconditional buy list.
+- `Exception Leader` is a separate high-momentum observation stream and does
+  not replace Top5.
+- `KOSDAQ Ordered Shadow`, `KOSDAQ Low-loss Shadow`, `KOSPI Shadow`, and
+  `별도 급등 레이더` are shadow/observer sections. They must remain visually
+  distinct from production Top5.
+- Action labels such as `조건부 매수 가능`, `눌림/확인 대기`, `관망`, and
+  `매수 금지` are deterministic interpretations of stored fields/traces.
+
 Daily KR automation uses two LaunchAgents:
 
 - `com.codex.swing.kr-premarket-theme-prior`: runs at `08:20 KST` with

@@ -4,7 +4,7 @@ KR/US swing and intraday scanner with multi-agent execution support, scan archiv
 
 ## Current Status
 
-Updated: 2026-05-13
+Updated: 2026-05-19
 
 - Primary repository: `git@github-codexwing:dongdongdongdongding/codexwing.git`
 - Issue database: beads through `scripts/issue`
@@ -20,6 +20,7 @@ Recent stabilization work:
 - UI cards expose planner action trace fields without changing the core scoring engine.
 - Practical 80% entry gating now uses dynamic theme profiles generated from scan archive outcomes instead of fixed theme names.
 - Discord remote-control integration has a setup-safe command/config contract for KOSPI/KOSDAQ full scans, macro refresh, Top deep reports, and archive lookup.
+- Scanner product semantics are documented: Top5 is the production priority stream, Exception/Shadow/Radar are separate observation streams, and action labels are deterministic trace interpretations rather than hidden suppression.
 - `runtime_state` was pruned from the Git index: generated `artifacts`, `shared_working`, context caches, and large archive datasets remain local artifacts rather than source-controlled files.
 
 ## Core Capabilities
@@ -165,5 +166,6 @@ git status --short --branch
 - `AGENTS.md`: project rules and session completion workflow
 - `multi_agent/README.md`: multi-agent workflow and tool commands
 - `docs/operations/CODEX_TAKEOVER.md`: Codex operating handoff
+- `docs/operations/SCANNER_PRODUCT_CONTRACT.md`: Top5/Exception/Shadow/Radar and action-label semantics
 - `docs/operations/dynamic_theme_entry_profiles.md`: dynamic theme profile gate design
 - `docs/migration/RUNTIME_ARTIFACT_POLICY.md`: runtime artifact tracking policy

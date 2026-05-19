@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List
 
+from modules.scanner_product_contract import scanner_product_contract
+
 
 FULL_KR_SCAN_MAX = 2000
 
@@ -142,6 +144,7 @@ def command_contract() -> Dict[str, object]:
         "full_kr_scan_max": FULL_KR_SCAN_MAX,
         "commands": {name: spec.to_dict() for name, spec in COMMAND_SPECS.items()},
         "web_equivalent_result_fields": WEB_EQUIVALENT_RESULT_FIELDS,
+        "scanner_product_contract": scanner_product_contract(),
     }
 
 
