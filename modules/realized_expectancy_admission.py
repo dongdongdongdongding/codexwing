@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 from modules.regime_theme_calibration import build_regime_theme_adjustment
+from modules.section_performance_calibration import DEFAULT_SECTION_CALIBRATION_PATH, load_section_performance_calibration
 
 
 ADMISSION_POLICY_VERSION = "kr_realized_expectancy_admission_v1"
@@ -39,6 +40,7 @@ DEFAULT_CALIBRATIONS: Dict[tuple, SectionCalibration] = {
     ("KOSDAQ", "Exception Leader"): SectionCalibration("KOSDAQ", "Exception Leader", "validated_profile_default", 13, 55.0, 69.2, 2.6, 3.04, -10.0, -12.0, 16.0, 25.0, 34.0),
     ("KOSDAQ", "Shadow"): SectionCalibration("KOSDAQ", "Shadow", "shadow_observation_default", 20, 54.0, 63.0, 2.8, 5.2, -8.5, -11.0, 17.0, 27.0, 32.0),
 }
+_ARTIFACT_CALIBRATION_CACHE: Dict[str, Dict[tuple, SectionCalibration]] = {}
 
 
 def _safe_float(value: Any, default: Optional[float] = None) -> Optional[float]:
@@ -98,10 +100,49 @@ def _row_value(row: Dict[str, Any], *keys: str) -> Any:
     return None
 
 
+def _artifact_calibrations() -> Dict[tuple, SectionCalibration]:
+    cache_key = str(DEFAULT_SECTION_CALIBRATION_PATH)
+    if cache_key in _ARTIFACT_CALIBRATION_CACHE:
+        return _ARTIFACT_CALIBRATION_CACHE[cache_key]
+    payload = load_section_performance_calibration(DEFAULT_SECTION_CALIBRATION_PATH)
+    out: Dict[tuple, SectionCalibration] = {}
+    for entry in payload.get("entries") or []:
+        if not isinstance(entry, dict):
+            continue
+        market = normalize_market(entry.get("market"))
+        section = normalize_section(entry.get("section"))
+        ret3 = entry.get("return_3d") if isinstance(entry.get("return_3d"), dict) else {}
+        ret5 = entry.get("return_5d") if isinstance(entry.get("return_5d"), dict) else {}
+        if market not in {"KOSPI", "KOSDAQ"}:
+            continue
+        if not ret3.get("n") and not ret5.get("n"):
+            continue
+        default = DEFAULT_CALIBRATIONS.get((market, section))
+        if default is None:
+            continue
+        out[(market, section)] = SectionCalibration(
+            market=market,
+            section=section,
+            source=str(payload.get("version") or "section_performance_artifact"),
+            sample_size=int(entry.get("sample_n") or max(ret3.get("n") or 0, ret5.get("n") or 0)),
+            section_win_3d_pct=float(ret3.get("win_pct") if ret3.get("win_pct") is not None else default.section_win_3d_pct),
+            section_win_5d_pct=float(ret5.get("win_pct") if ret5.get("win_pct") is not None else default.section_win_5d_pct),
+            avg_return_3d_pct=float(ret3.get("avg_pct") if ret3.get("avg_pct") is not None else default.avg_return_3d_pct),
+            avg_return_5d_pct=float(ret5.get("avg_pct") if ret5.get("avg_pct") is not None else default.avg_return_5d_pct),
+            min_return_3d_pct=float(ret3.get("min_pct") if ret3.get("min_pct") is not None else default.min_return_3d_pct),
+            min_return_5d_pct=float(ret5.get("min_pct") if ret5.get("min_pct") is not None else default.min_return_5d_pct),
+            max_return_3d_pct=float(ret3.get("max_pct") if ret3.get("max_pct") is not None else default.max_return_3d_pct),
+            max_return_5d_pct=float(ret5.get("max_pct") if ret5.get("max_pct") is not None else default.max_return_5d_pct),
+            stop_first_risk_pct=float(entry.get("stop_first_5d_pct") if entry.get("stop_first_5d_pct") is not None else default.stop_first_risk_pct),
+        )
+    _ARTIFACT_CALIBRATION_CACHE[cache_key] = out
+    return out
+
+
 def calibration_for(market: Any, section: Any, calibrations: Optional[Dict[tuple, SectionCalibration]] = None) -> Optional[SectionCalibration]:
     market_key = normalize_market(market)
     section_key = normalize_section(section)
-    table = calibrations or DEFAULT_CALIBRATIONS
+    table = calibrations or {**DEFAULT_CALIBRATIONS, **_artifact_calibrations()}
     return table.get((market_key, section_key))
 
 
