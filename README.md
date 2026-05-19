@@ -168,5 +168,6 @@ git status --short --branch
 - `docs/operations/CODEX_TAKEOVER.md`: Codex operating handoff
 - `docs/operations/SCANNER_PRODUCT_CONTRACT.md`: Top5/Exception/Shadow/Radar and action-label semantics
 - `docs/operations/KR_INTRADAY_DATA_ADAPTERS.md`: KR intraday source decision, adapter contract, and bounded storage policy
+- `docs/operations/PYKRX_INVESTOR_FLOW_DIAGNOSTICS.md`: pykrx empty investor-flow response classification and fallback rules
 - `docs/operations/dynamic_theme_entry_profiles.md`: dynamic theme profile gate design
 - `docs/migration/RUNTIME_ARTIFACT_POLICY.md`: runtime artifact tracking policy
