@@ -516,6 +516,13 @@ def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_pa
                 "rank": idx,
                 "ticker": f"000{idx:03d}.KS",
                 "stock_name": f"종목{idx}",
+                "signal_label": "NO_BUY" if idx == 3 else "WAIT_CONFIRM",
+                "display_contract": {
+                    "display_status": "VISIBLE_RISK_ANNOTATED" if idx == 3 else "VISIBLE",
+                    "original_scan_rank": idx,
+                    "planner_priority_rank": idx,
+                    "suppression_allowed": False,
+                },
                 "selection_alignment": {
                     "analysis_section": section,
                     "analysis_section_rank": idx if idx <= 10 else idx - 10,
@@ -548,5 +555,7 @@ def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_pa
     assert len(candidate_fields) == 15
     assert "종목10" in fields[9]["name"]
     assert "종목15" in fields[14]["name"]
+    assert "VISIBLE_RISK_ANNOTATED" in fields[2]["value"]
+    assert "원본#3" in fields[2]["value"]
     assert "Exception Leader #5" in fields[14]["value"]
     assert fields[-1]["name"] == "데이터 무결성"

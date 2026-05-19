@@ -41,6 +41,7 @@ LOCAL_SCHEMA_EXTENSION_COLUMNS = {
         "selection_alignment",
         "selection_thesis",
         "risk_overrides",
+        "display_contract",
         "entry_action",
         "practical_entry_gate",
         "flow",

@@ -50,8 +50,9 @@ def _fmt_flow_line(flow: Dict[str, Any]) -> str:
     if whale_10d is not None:
         tail.append(f"10일 외+기 {_fmt_flow(whale_10d)}")
     context = " · " + " / ".join(tail) if tail else ""
+    label_prefix = f"{label} " if label != "수급" else ""
     return (
-        f"수급: {label} 외인 {_fmt_flow(flow.get('foreigner_1d', flow.get('foreigner')))} / "
+        f"수급: {label_prefix}외인 {_fmt_flow(flow.get('foreigner_1d', flow.get('foreigner')))} / "
         f"기관 {_fmt_flow(flow.get('institution_1d', flow.get('institution')))} / "
         f"개인 {_fmt_flow(flow.get('retail_1d', flow.get('retail')))} · "
         f"외+기 {_fmt_flow(whale_1d)} · 점수 {_fmt_num(flow.get('whale_score'), 0)}{context}"
@@ -282,10 +283,16 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
     practical_gate = row.get("practical_entry_gate") if isinstance(row.get("practical_entry_gate"), dict) else {}
     gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
+    display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
     section = alignment.get("analysis_section") or "Top5"
     section_rank = alignment.get("analysis_section_rank") or row.get("rank")
     lines = [
         f"구분: {section} #{section_rank or '-'}",
+        (
+            f"표시계약: {display_contract.get('display_status') or 'VISIBLE'}"
+            f" · 원본#{display_contract.get('original_scan_rank') or alignment.get('raw_scan_rank') or '-'}"
+            f" · 기대순위#{display_contract.get('planner_priority_rank') or alignment.get('planner_priority_rank') or '-'}"
+        ),
         f"액션: {judgment.get('action') or row.get('signal_label') or '-'}",
         (
             f"품질 {quality.get('grade') or '-'}({_fmt_num(quality.get('score'), 0)}) / "
@@ -473,7 +480,13 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     loss = row.get("loss_risk_score") or row.get("Loss Risk")
     day = row.get("day_change_pct") or row.get("Change %") or row.get("Day Change") or row.get("전일비")
     section = row.get("_analysis_section")
-    return f"{section or '후보'} · {decision} · 점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"[:1024]
+    display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
+    visible = display_contract.get("display_status") or "VISIBLE"
+    raw_rank = display_contract.get("original_scan_rank") or row.get("_raw_scan_rank") or row.get("rank") or row.get("Rank")
+    return (
+        f"{section or '후보'} · {visible} · 원본#{raw_rank or '-'} · {decision} · "
+        f"점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
+    )[:1024]
 
 
 def build_archive_embed(

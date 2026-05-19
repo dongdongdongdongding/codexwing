@@ -1308,6 +1308,7 @@ def _render_top_deep_reports_page():
         theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
         flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+        display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
         section = alignment.get("analysis_section") or "Top5"
         section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
         title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
@@ -1316,6 +1317,11 @@ def _render_top_deep_reports_page():
             st.caption(
                 f"{row.get('signal_label') or '-'} · {row.get('decision') or '-'} · {theme.get('primary_theme') or '-'} · "
                 f"원본스캔 #{alignment.get('raw_scan_rank') or '-'} / 플래너 #{alignment.get('planner_priority_rank') or row.get('rank') or '-'}"
+            )
+            st.caption(
+                f"표시계약 {display_contract.get('display_status') or 'VISIBLE'} · "
+                f"숨김허용 {display_contract.get('suppression_allowed', False)} · "
+                f"표시사유 {display_contract.get('display_reason') or 'scanner_emitted_candidate'}"
             )
             c1, c2, c3, c4, c5 = st.columns(5)
             c1.metric("매수점수", _fmt_metric_num(row.get("buy_score"), 1))

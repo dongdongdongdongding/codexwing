@@ -40,6 +40,7 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "prediction",
     "selection_thesis",
     "risk_overrides",
+    "display_contract",
     "entry_action",
     "practical_entry_gate",
     "trade_plan",
@@ -806,6 +807,31 @@ def _build_risk_overrides(
     }
 
 
+def _build_display_contract(row: Dict[str, Any], trace: Dict[str, Any], report: Dict[str, Any]) -> Dict[str, Any]:
+    alignment = report.get("selection_alignment") if isinstance(report.get("selection_alignment"), dict) else {}
+    readiness = report.get("trade_plan", {}).get("readiness_analysis", {}) if isinstance(report.get("trade_plan"), dict) else {}
+    judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
+    risk_flags = report.get("risk_flags") if isinstance(report.get("risk_flags"), list) else []
+    data_warnings = report.get("data_warnings") if isinstance(report.get("data_warnings"), list) else []
+    action = str(judgment.get("action") or report.get("signal_label") or "").strip()
+    high_risk = action in {"매수 금지", "신규 매수 금지"} or str(report.get("signal_label") or "").upper() == "NO_BUY"
+    return {
+        "version": "candidate_display_contract_v1",
+        "visible": True,
+        "suppression_allowed": False,
+        "display_status": "VISIBLE_RISK_ANNOTATED" if high_risk or risk_flags else "VISIBLE",
+        "display_reason": "risk_annotation_only" if high_risk or risk_flags else "scanner_emitted_candidate",
+        "analysis_section": alignment.get("analysis_section") or "Top5",
+        "analysis_section_rank": _safe_int(alignment.get("analysis_section_rank")),
+        "original_scan_rank": _safe_int(alignment.get("raw_scan_rank") or row.get("_raw_scan_rank")),
+        "planner_priority_rank": _safe_int(alignment.get("planner_priority_rank") or trace.get("priority_rank") or row.get("priority_rank")),
+        "display_rank": _safe_int(report.get("rank")),
+        "action_label": action or None,
+        "risk_flags": risk_flags[:10],
+        "data_warning_count": len(data_warnings),
+    }
+
+
 def build_top_deep_reports(
     *,
     scan_rows: List[Dict[str, Any]],
@@ -935,6 +961,7 @@ def build_top_deep_reports(
                 + list(trade_policy.get("warnings") or [])
             ),
         }
+        report["display_contract"] = _build_display_contract(row=row, trace=trace, report=report)
         reports.append(_coerce_jsonable(report))
     return reports
 

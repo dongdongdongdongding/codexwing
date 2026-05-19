@@ -407,6 +407,11 @@ def test_top_deep_report_does_not_promote_material_risk_to_primary_buy():
     assert report["signal_label"] == "NO_BUY"
     assert readiness["final_buy_judgment"]["action"] == "매수 금지"
     assert report["entry_action"]["judgment"]["action"] == "매수 금지"
+    assert report["display_contract"]["visible"] is True
+    assert report["display_contract"]["suppression_allowed"] is False
+    assert report["display_contract"]["display_status"] == "VISIBLE_RISK_ANNOTATED"
+    assert report["display_contract"]["original_scan_rank"] == 1
+    assert report["display_contract"]["planner_priority_rank"] == 3
     assert any("특수 리스크" in warning for warning in readiness["warnings"])
 
 
