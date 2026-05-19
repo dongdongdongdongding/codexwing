@@ -14,6 +14,7 @@ from modules.loss_risk_features import (
     get_loss_risk_gate_thresholds,
     get_loss_risk_soft_cap_decision,
 )
+from modules.strategy_family_policy import apply_strategy_family_policy
 from multi_agent.agents.kr_quant_reranker import (
     compute_kr_basket_priority,
     compute_kr_quant_rerank,
@@ -1335,7 +1336,7 @@ def build_planner_handoff(
             for name, value in loss_risk_features.items()
             if name.endswith("_risk") and float(value or 0.0) >= 1.0
         ]
-        strategy_family = str(feature_snapshot.get("strategy_family") or "")
+        strategy_family = str(feature_snapshot.get("strategy_family") or cand.get("strategy_family") or "")
         scan_mode = str(feature_snapshot.get("scan_mode") or "")
         phase25_variant = str(feature_snapshot.get("phase25_variant") or "")
         phase25_prob = feature_snapshot.get("phase25_prob")
@@ -1614,6 +1615,15 @@ def build_planner_handoff(
             rationale=rationale,
             theme_risk=theme_risk,
         )
+        decision, target_horizon_days, strategy_family_policy = apply_strategy_family_policy(
+            decision=decision,
+            strategy_family=strategy_family,
+            market=run_market if run_market in {"KOSPI", "KOSDAQ"} else str(feature_snapshot.get("market") or feature_snapshot.get("market_type") or cand.get("market") or cand.get("market_type") or run_market),
+            scan_mode=scan_mode,
+            target_horizon_days=target_horizon_days,
+        )
+        rationale.extend([str(item) for item in strategy_family_policy.get("rationale", [])])
+        theme_risk.extend([str(item) for item in strategy_family_policy.get("risk_flags", [])])
 
         if bool(feature_snapshot.get("inference_failed", False)):
             target_rank = min(_decision_rank(decision), _decision_rank("OBSERVE"))
