@@ -471,8 +471,8 @@ def test_top_deep_report_does_not_promote_material_risk_to_primary_buy():
     report = reports[0]
     readiness = report["trade_plan"]["readiness_analysis"]
     assert report["signal_label"] == "NO_BUY"
-    assert readiness["final_buy_judgment"]["action"] == "매수 금지"
-    assert report["entry_action"]["judgment"]["action"] == "매수 금지"
+    assert readiness["final_buy_judgment"]["action"] == "스윙 제외"
+    assert report["entry_action"]["judgment"]["action"] == "스윙 제외"
     assert report["display_contract"]["visible"] is True
     assert report["display_contract"]["suppression_allowed"] is False
     assert report["display_contract"]["display_status"] == "VISIBLE_RISK_ANNOTATED"
@@ -480,7 +480,11 @@ def test_top_deep_report_does_not_promote_material_risk_to_primary_buy():
     assert report["display_contract"]["planner_priority_rank"] == 3
     assert "NO_BUY_ACTION" in report["display_contract"]["failure_risk_reason_codes"]
     assert "EXPECTED_EDGE_PRIORITY_GUARD_SOFT" in report["display_contract"]["failure_risk_reason_codes"]
-    assert any("특수 리스크" in warning for warning in readiness["warnings"])
+    assert any("구조적 제외 리스크" in warning for warning in readiness["warnings"])
+    assert readiness["structural_exclusion_risk"]["risk_level"] == "exclude"
+    assert "RIGHTS_OFFERING" in readiness["structural_exclusion_risk"]["reason_codes"]
+    assert report["exclusion_risk_level"] == "제외"
+    assert report["exclusion_reasons"][0]["source_type"] == "news"
 
 
 def test_top_deep_report_prefers_validated_winner_profile_over_raw_priority():

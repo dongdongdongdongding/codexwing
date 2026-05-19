@@ -57,6 +57,8 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "entry_action",
     "entry_readiness_contract",
     "portfolio_exposure_summary",
+    "structural_exclusion_risk",
+    "exclusion_reasons",
     "stock_quality_score",
     "stock_quality_grade",
     "upside_room_score",
@@ -549,7 +551,7 @@ def _signal_label(
 ) -> str:
     judgment = readiness.get("final_buy_judgment") if isinstance(readiness, dict) else {}
     action = str(judgment.get("action") or "")
-    if action == "매수 금지":
+    if action in {"매수 금지", "스윙 제외"}:
         return "NO_BUY"
     if action in {"눌림 대기", "돌파 확인", "관망"}:
         return "WAIT_CONFIRM"
@@ -839,7 +841,7 @@ def _build_display_contract(row: Dict[str, Any], trace: Dict[str, Any], report: 
     risk_flags = report.get("risk_flags") if isinstance(report.get("risk_flags"), list) else []
     data_warnings = report.get("data_warnings") if isinstance(report.get("data_warnings"), list) else []
     action = str(judgment.get("action") or report.get("signal_label") or "").strip()
-    high_risk = action in {"매수 금지", "신규 매수 금지"} or str(report.get("signal_label") or "").upper() == "NO_BUY"
+    high_risk = action in {"매수 금지", "신규 매수 금지", "스윙 제외"} or str(report.get("signal_label") or "").upper() == "NO_BUY"
     return {
         "version": "candidate_display_contract_v1",
         "visible": True,
@@ -994,6 +996,7 @@ def build_top_deep_reports(
             "risk_overrides": risk_overrides,
             "entry_action": entry_action,
             "entry_readiness_contract": readiness_contract,
+            "structural_exclusion_risk": readiness_analysis.get("structural_exclusion_risk"),
             "stock_quality_score": readiness_contract.get("stock_quality_score"),
             "stock_quality_grade": readiness_contract.get("stock_quality_grade"),
             "upside_room_score": readiness_contract.get("upside_room_score"),
@@ -1002,6 +1005,7 @@ def build_top_deep_reports(
             "entry_timing_grade": readiness_contract.get("entry_timing_grade"),
             "chase_risk_level": readiness_contract.get("chase_risk_level"),
             "exclusion_risk_level": readiness_contract.get("exclusion_risk_level"),
+            "exclusion_reasons": readiness_contract.get("exclusion_reasons"),
             "final_action": readiness_contract.get("final_action"),
             "action_reason_codes": readiness_contract.get("action_reason_codes"),
             "execution_stop": execution_stop,

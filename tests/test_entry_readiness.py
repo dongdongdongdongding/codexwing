@@ -161,9 +161,9 @@ def test_entry_readiness_blocks_material_corporate_action_news():
         loss_risk_score=26.0,
     )
 
-    assert analysis["final_buy_judgment"]["action"] == "매수 금지"
+    assert analysis["final_buy_judgment"]["action"] == "스윙 제외"
     assert analysis["entry_strategy"]["mode"] == "blocked"
-    assert any("특수 리스크" in warning for warning in analysis["warnings"])
+    assert any("구조적 제외 리스크" in warning for warning in analysis["warnings"])
 
 
 def test_entry_readiness_uses_scanner_strength_before_relative_rank_for_quality():

@@ -4,6 +4,7 @@ import math
 from typing import Any, Dict, List
 
 from modules.entry_readiness_contract import build_entry_readiness_contract
+from modules.structural_exclusion_risk import evaluate_structural_exclusion_risk
 
 MATERIAL_RISK_TERMS = (
     "유상증자",
@@ -494,6 +495,8 @@ def _apply_safety_overrides(
 ) -> tuple[Dict[str, Any], List[str]]:
     overrides: List[str] = []
     result = dict(judgment if isinstance(judgment, dict) else {})
+    if result.get("action") == "스윙 제외":
+        return result, overrides
     material_flags = _material_risk_flags(candidate, news)
     if material_flags:
         result = {
@@ -577,6 +580,27 @@ def _apply_safety_overrides(
     return result, overrides
 
 
+def _apply_structural_exclusion_override(
+    judgment: Dict[str, Any],
+    structural_risk: Dict[str, Any],
+) -> tuple[Dict[str, Any], List[str]]:
+    if not isinstance(structural_risk, dict):
+        return judgment, []
+    action = str(structural_risk.get("final_action_override") or "")
+    if action not in {"스윙 제외", "매수 금지"}:
+        return judgment, []
+    reasons = [str(code) for code in structural_risk.get("reason_codes") or [] if str(code).strip()]
+    summary = "구조적 제외 리스크가 확인되어 스윙 신규 진입 대상에서 제외합니다." if action == "스윙 제외" else "구조적 고위험 신호가 확인되어 신규 진입을 막습니다."
+    return (
+        {
+            "action": action,
+            "tone": "danger",
+            "summary": summary,
+        },
+        ["구조적 제외 리스크: " + ", ".join(reasons[:5]) if reasons else "구조적 제외 리스크"],
+    )
+
+
 def _fmt_price(value: Any) -> str:
     numeric = _num(value)
     if numeric is None:
@@ -644,9 +668,9 @@ def _build_data_backed_action_plan(
     if invalidation_price is None and support_price:
         invalidation_price = support_price * 0.985
 
-    if action == "매수 금지":
+    if action in {"매수 금지", "스윙 제외"}:
         mode = "blocked"
-        primary_condition = "신규 매수 금지"
+        primary_condition = "스윙 제외" if action == "스윙 제외" else "신규 매수 금지"
         secondary_condition = (
             f"{support_label} {_fmt_price(support_price)} 지지 확인 후 "
             f"{resistance_label} {_fmt_price(breakout_price)} 재돌파 시 재검토"
@@ -767,7 +791,9 @@ def build_entry_readiness_analysis(
     quality = _build_quality_score(merged_candidate, prediction, news)
     upside = _build_upside_score(price)
     timing = _build_timing_score(price)
+    structural_risk = evaluate_structural_exclusion_risk(merged_candidate, price=price, news=news)
     judgment = _final_judgment(quality, upside, timing, loss_risk_score)
+    judgment, structural_overrides = _apply_structural_exclusion_override(judgment, structural_risk)
     judgment, safety_overrides = _apply_safety_overrides(
         judgment,
         candidate=merged_candidate,
@@ -776,6 +802,7 @@ def build_entry_readiness_analysis(
         news=news,
         flow=flow,
     )
+    safety_overrides = structural_overrides + safety_overrides
     action_plan = _build_data_backed_action_plan(
         price=price,
         trade_plan=trade_plan,
@@ -796,6 +823,7 @@ def build_entry_readiness_analysis(
         "chase_risk_level": upside.get("chase_risk_level"),
         "final_buy_judgment": judgment,
         "safety_overrides": safety_overrides,
+        "structural_exclusion_risk": structural_risk,
         "entry_strategy": action_plan["entry_strategy"],
         "risk_management": action_plan["risk_management"],
         "data_coverage": action_plan["data_coverage"],
@@ -824,6 +852,7 @@ def build_entry_readiness_analysis(
             "entry_timing_score": contract.get("entry_timing_score"),
             "entry_timing_grade": contract.get("entry_timing_grade"),
             "exclusion_risk_level": contract.get("exclusion_risk_level"),
+            "exclusion_reasons": contract.get("exclusion_reasons"),
             "final_action": contract.get("final_action"),
             "action_reason_codes": contract.get("action_reason_codes"),
             "policy_version": contract.get("policy_version"),

@@ -139,6 +139,7 @@ def _load_top_deep_section_map(run_id: str, report_dir: Optional[Path] = None) -
             "entry_timing_grade": item.get("entry_timing_grade") or readiness_contract.get("entry_timing_grade"),
             "chase_risk_level": item.get("chase_risk_level") or readiness_contract.get("chase_risk_level"),
             "exclusion_risk_level": item.get("exclusion_risk_level") or readiness_contract.get("exclusion_risk_level"),
+            "exclusion_reasons": item.get("exclusion_reasons") or readiness_contract.get("exclusion_reasons"),
             "final_action": item.get("final_action") or readiness_contract.get("final_action"),
             "action_reason_codes": item.get("action_reason_codes") or readiness_contract.get("action_reason_codes"),
         }
@@ -247,6 +248,7 @@ def build_post_scan_ledger_rows(
             "entry_timing_grade": _first_present(outcome.get("entry_timing_grade"), section_meta.get("entry_timing_grade"), readiness_contract.get("entry_timing_grade")),
             "chase_risk_level": _first_present(outcome.get("chase_risk_level"), section_meta.get("chase_risk_level"), readiness_contract.get("chase_risk_level")),
             "exclusion_risk_level": _first_present(outcome.get("exclusion_risk_level"), section_meta.get("exclusion_risk_level"), readiness_contract.get("exclusion_risk_level")),
+            "exclusion_reasons": _first_present(outcome.get("exclusion_reasons"), section_meta.get("exclusion_reasons"), readiness_contract.get("exclusion_reasons")),
             "final_action": _first_present(outcome.get("final_action"), section_meta.get("final_action"), readiness_contract.get("final_action")),
             "action_reason_codes": _first_present(outcome.get("action_reason_codes"), section_meta.get("action_reason_codes"), readiness_contract.get("action_reason_codes")),
             "mfe_intraday_pct": _safe_float(outcome.get("mfe_intraday_pct")),

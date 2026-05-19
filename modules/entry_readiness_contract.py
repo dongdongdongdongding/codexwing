@@ -21,6 +21,7 @@ def build_entry_readiness_contract(
     timing = readiness.get("timing") if isinstance(readiness.get("timing"), dict) else {}
     judgment = readiness.get("final_buy_judgment") if isinstance(readiness.get("final_buy_judgment"), dict) else {}
     coverage = readiness.get("data_coverage") if isinstance(readiness.get("data_coverage"), dict) else {}
+    structural_risk = readiness.get("structural_exclusion_risk") if isinstance(readiness.get("structural_exclusion_risk"), dict) else {}
 
     required = [str(item) for item in coverage.get("required_fields") or [] if str(item).strip()]
     available = {str(item) for item in coverage.get("available_fields") or [] if str(item).strip()}
@@ -28,7 +29,8 @@ def build_entry_readiness_contract(
     warnings = _unique_texts(readiness.get("warnings"), limit=10)
     safety_overrides = _unique_texts(readiness.get("safety_overrides"), limit=10)
     reason_codes = _reason_codes(upside, safety_overrides, missing)
-    exclusion_level = _exclusion_risk_level(judgment, safety_overrides, warnings)
+    exclusion_level = _exclusion_risk_level(judgment, safety_overrides, warnings, structural_risk)
+    exclusion_reasons = _exclusion_reasons(structural_risk, safety_overrides)
 
     return {
         "version": READINESS_CONTRACT_VERSION,
@@ -41,6 +43,7 @@ def build_entry_readiness_contract(
         "entry_timing_grade": _text(timing.get("grade")) or "N/A",
         "chase_risk_level": _text(readiness.get("chase_risk_level") or upside.get("chase_risk_level")) or "불명",
         "exclusion_risk_level": exclusion_level,
+        "exclusion_reasons": exclusion_reasons,
         "final_action": _text(judgment.get("action")) or "관망",
         "final_action_tone": _text(judgment.get("tone")) or "neutral",
         "action_summary": _text(judgment.get("summary")),
@@ -65,6 +68,7 @@ def build_unavailable_entry_readiness_contract(*, reason: str, final_action: str
         "entry_timing_grade": "N/A",
         "chase_risk_level": "불명",
         "exclusion_risk_level": "불명",
+        "exclusion_reasons": [],
         "final_action": final_action or "관망",
         "final_action_tone": "neutral",
         "action_summary": "정밀 가격/수급 스냅샷 전 단계라 진입 가능 여부 계약을 확정할 수 없습니다.",
@@ -101,10 +105,38 @@ def _input_signal_trace(*blocks: Dict[str, Any]) -> List[Dict[str, Any]]:
     return trace[:20]
 
 
-def _exclusion_risk_level(judgment: Dict[str, Any], safety_overrides: List[str], warnings: List[str]) -> str:
+def _exclusion_reasons(structural_risk: Dict[str, Any], safety_overrides: List[str]) -> List[Dict[str, Any]]:
+    reasons = structural_risk.get("reasons") if isinstance(structural_risk.get("reasons"), list) else []
+    out: List[Dict[str, Any]] = []
+    for item in reasons:
+        if isinstance(item, dict):
+            out.append(
+                {
+                    "code": _text(item.get("code")),
+                    "level": _text(item.get("level")),
+                    "source_type": _text(item.get("source_type")),
+                    "source_field": _text(item.get("source_field")),
+                    "evidence": _text(item.get("evidence")),
+                }
+            )
+    if not out:
+        for item in safety_overrides:
+            text = _text(item)
+            if text:
+                out.append({"code": _code(text), "level": "legacy", "source_type": "safety_override", "source_field": "safety_overrides", "evidence": text})
+    return out[:10]
+
+
+def _exclusion_risk_level(judgment: Dict[str, Any], safety_overrides: List[str], warnings: List[str], structural_risk: Dict[str, Any] | None = None) -> str:
     action = _text(judgment.get("action"))
+    structural_risk = structural_risk if isinstance(structural_risk, dict) else {}
+    structural_level = _text(structural_risk.get("risk_level"))
+    if structural_level == "exclude":
+        return "제외"
+    if structural_level == "high":
+        return "높음"
     text_blob = " ".join(safety_overrides + warnings)
-    if action == "매수 금지":
+    if action in {"매수 금지", "스윙 제외"}:
         return "높음"
     if any(token in text_blob for token in ("유상증자", "관리종목", "환기종목", "자본잠식", "감사의견")):
         return "높음"
