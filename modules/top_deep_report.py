@@ -10,6 +10,7 @@ import pandas as pd
 import yfinance as yf
 
 from modules.entry_readiness import build_entry_readiness_analysis
+from modules.entry_readiness_contract import build_entry_readiness_contract
 from modules.execution_stop_display import build_execution_stop_display
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.candidate_data_quality import build_candidate_data_quality
@@ -53,6 +54,17 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "policy_metadata",
     "realized_expectancy_admission",
     "entry_action",
+    "entry_readiness_contract",
+    "stock_quality_score",
+    "stock_quality_grade",
+    "upside_room_score",
+    "upside_room_grade",
+    "entry_timing_score",
+    "entry_timing_grade",
+    "chase_risk_level",
+    "exclusion_risk_level",
+    "final_action",
+    "action_reason_codes",
     "practical_entry_gate",
     "trade_plan",
     "flow",
@@ -904,6 +916,8 @@ def build_top_deep_reports(
         )
         practical_gate = evaluate_practical_entry_gate({**row, **trace})
         readiness_analysis = _apply_practical_gate_override(readiness_analysis, practical_gate)
+        readiness_analysis["contract"] = build_entry_readiness_contract(readiness_analysis, source="top_deep_report")
+        readiness_contract = readiness_analysis.get("contract") if isinstance(readiness_analysis.get("contract"), dict) else {}
         selection_thesis = _build_selection_thesis(
             row=row,
             trace=trace,
@@ -977,6 +991,17 @@ def build_top_deep_reports(
             "selection_thesis": selection_thesis,
             "risk_overrides": risk_overrides,
             "entry_action": entry_action,
+            "entry_readiness_contract": readiness_contract,
+            "stock_quality_score": readiness_contract.get("stock_quality_score"),
+            "stock_quality_grade": readiness_contract.get("stock_quality_grade"),
+            "upside_room_score": readiness_contract.get("upside_room_score"),
+            "upside_room_grade": readiness_contract.get("upside_room_grade"),
+            "entry_timing_score": readiness_contract.get("entry_timing_score"),
+            "entry_timing_grade": readiness_contract.get("entry_timing_grade"),
+            "chase_risk_level": readiness_contract.get("chase_risk_level"),
+            "exclusion_risk_level": readiness_contract.get("exclusion_risk_level"),
+            "final_action": readiness_contract.get("final_action"),
+            "action_reason_codes": readiness_contract.get("action_reason_codes"),
             "execution_stop": execution_stop,
             "trade_plan": trade_policy,
             "flow": flow,

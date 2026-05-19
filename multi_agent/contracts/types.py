@@ -198,6 +198,7 @@ class PlannerDecision:
     theme_rationale: List[str] = field(default_factory=list)
     theme_risk: List[str] = field(default_factory=list)
     rationale: List[str] = field(default_factory=list)
+    entry_readiness_contract: Optional[Dict[str, Any]] = None
     evidence_refs: List[str] = field(default_factory=list)
     warnings: List[WarningItem] = field(default_factory=list)
     realized_outcome_ref: Optional[str] = None

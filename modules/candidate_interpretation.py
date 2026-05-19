@@ -82,6 +82,10 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
     prediction = row.get("prediction") if isinstance(row.get("prediction"), dict) else {}
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+    readiness_contract = row.get("entry_readiness_contract") if isinstance(row.get("entry_readiness_contract"), dict) else {}
+    if not readiness_contract and isinstance(trade_plan.get("readiness_analysis"), dict):
+        nested_readiness = trade_plan["readiness_analysis"]
+        readiness_contract = nested_readiness.get("contract") if isinstance(nested_readiness.get("contract"), dict) else {}
     execution_stop = row.get("execution_stop") if isinstance(row.get("execution_stop"), dict) else {}
     if not execution_stop and isinstance(trade_plan.get("execution_stop"), dict):
         execution_stop = trade_plan["execution_stop"]
@@ -139,6 +143,13 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
         "day_change_pct": _to_float(_first(row.get("day_change_pct"), row.get("day_return_pct"), row.get("전일비"), price.get("day_change_pct"))),
         "loss_risk_score": _to_float(_first(row.get("loss_risk_score"), row.get("Loss Risk"))),
         "buy_score": _to_float(_first(row.get("buy_score"), row.get("decision_score"), row.get("Decision Score"), row.get("score"))),
+        "stock_quality_grade": _first(readiness_contract.get("stock_quality_grade"), row.get("stock_quality_grade")),
+        "upside_room_grade": _first(readiness_contract.get("upside_room_grade"), row.get("upside_room_grade")),
+        "entry_timing_grade": _first(readiness_contract.get("entry_timing_grade"), row.get("entry_timing_grade")),
+        "chase_risk_level": _first(readiness_contract.get("chase_risk_level"), row.get("chase_risk_level")),
+        "exclusion_risk_level": _first(readiness_contract.get("exclusion_risk_level"), row.get("exclusion_risk_level")),
+        "entry_readiness_action": _first(readiness_contract.get("final_action"), row.get("final_action")),
+        "entry_readiness_reason_codes": _text_list(readiness_contract.get("action_reason_codes"), limit=10),
     }
 
 

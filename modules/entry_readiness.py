@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List
 
+from modules.entry_readiness_contract import build_entry_readiness_contract
+
 MATERIAL_RISK_TERMS = (
     "유상증자",
     "신주배정",
@@ -786,7 +788,7 @@ def build_entry_readiness_analysis(
     warnings.extend(action_plan.get("risk_management", {}).get("warnings", []))
     warnings.extend(safety_overrides)
 
-    return {
+    analysis = {
         "version": "entry_readiness_v1",
         "quality": quality,
         "upside": upside,
@@ -811,6 +813,23 @@ def build_entry_readiness_analysis(
         },
         "warnings": warnings[:8],
     }
+    contract = build_entry_readiness_contract(analysis)
+    analysis["contract"] = contract
+    analysis.update(
+        {
+            "stock_quality_score": contract.get("stock_quality_score"),
+            "stock_quality_grade": contract.get("stock_quality_grade"),
+            "upside_room_score": contract.get("upside_room_score"),
+            "upside_room_grade": contract.get("upside_room_grade"),
+            "entry_timing_score": contract.get("entry_timing_score"),
+            "entry_timing_grade": contract.get("entry_timing_grade"),
+            "exclusion_risk_level": contract.get("exclusion_risk_level"),
+            "final_action": contract.get("final_action"),
+            "action_reason_codes": contract.get("action_reason_codes"),
+            "policy_version": contract.get("policy_version"),
+        }
+    )
+    return analysis
 
 
 __all__ = ["build_entry_readiness_analysis"]

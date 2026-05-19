@@ -44,6 +44,18 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
                 "section": "Top5",
                 "section_rank": 1,
                 "scan_entry_reference_price": 99.0,
+                "entry_readiness_contract": {
+                    "stock_quality_score": 82.0,
+                    "stock_quality_grade": "B+",
+                    "upside_room_score": 76.0,
+                    "upside_room_grade": "B+",
+                    "entry_timing_score": 79.0,
+                    "entry_timing_grade": "B+",
+                    "chase_risk_level": "낮음",
+                    "exclusion_risk_level": "낮음",
+                    "final_action": "조건부 매수 가능",
+                    "action_reason_codes": [],
+                },
             }
         },
     )
@@ -63,6 +75,9 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
     assert rows[0]["feature_snapshot"]["regime_avg_chg"] == 0.8
     assert rows[0]["candidate_data_quality"]["display_warning_level"] == "warning"
     assert rows[0]["data_warning_level"] == "warning"
+    assert rows[0]["entry_readiness_contract"]["stock_quality_grade"] == "B+"
+    assert rows[0]["stock_quality_score"] == 82.0
+    assert rows[0]["final_action"] == "조건부 매수 가능"
 
 
 def test_summarize_post_scan_ledger_reports_win_avg_min_max_and_stop_first():

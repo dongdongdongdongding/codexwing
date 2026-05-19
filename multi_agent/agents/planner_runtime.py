@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from multi_agent.contracts.types import PlannerDecision, PlannerHandoff, RunContext, WarningItem
 from modules.horizon_policy import resolve_horizon_policy
+from modules.entry_readiness_contract import build_unavailable_entry_readiness_contract
 from modules.inverted_signal_features import compute_low_prob_high_score_features
 from modules.loss_risk_features import (
     compute_entry_timing_risk_features,
@@ -1613,6 +1614,10 @@ def build_planner_handoff(
                 theme_risk.append("ML_INFERENCE_FAILED")
 
         warning_items = _to_warning_items(cand.get("warnings"))
+        entry_readiness_contract = build_unavailable_entry_readiness_contract(
+            reason="PRICE_SNAPSHOT_UNAVAILABLE_IN_PLANNER_RUNTIME",
+            final_action="관망" if decision == "AVOID" else None,
+        )
         decision_row = PlannerDecision(
             ticker=ticker,
             stock_name=stock_name,
@@ -1681,6 +1686,7 @@ def build_planner_handoff(
             theme_rationale=theme_rationale,
             theme_risk=theme_risk,
             rationale=rationale,
+            entry_readiness_contract=entry_readiness_contract,
             evidence_refs=[
                 "scanner_handoff.json",
                 "aggregation_handoff.json",
@@ -1735,6 +1741,17 @@ def build_planner_handoff(
                     "relative_rank_model": relative_rank_model or None,
                     "primary_theme": primary_theme or None,
                     "theme_routing_path": str(cand.get("routing_path") or theme_context.get("routing_path") or ""),
+                    "entry_readiness_contract": entry_readiness_contract,
+                    "stock_quality_score": entry_readiness_contract.get("stock_quality_score"),
+                    "stock_quality_grade": entry_readiness_contract.get("stock_quality_grade"),
+                    "upside_room_score": entry_readiness_contract.get("upside_room_score"),
+                    "upside_room_grade": entry_readiness_contract.get("upside_room_grade"),
+                    "entry_timing_score": entry_readiness_contract.get("entry_timing_score"),
+                    "entry_timing_grade": entry_readiness_contract.get("entry_timing_grade"),
+                    "chase_risk_level": entry_readiness_contract.get("chase_risk_level"),
+                    "exclusion_risk_level": entry_readiness_contract.get("exclusion_risk_level"),
+                    "final_action": entry_readiness_contract.get("final_action"),
+                    "action_reason_codes": entry_readiness_contract.get("action_reason_codes"),
                     "reason": "planner_lane_watchlist",
                 }
             )
@@ -1783,6 +1800,10 @@ def build_planner_handoff(
             if promoted.ticker in avoid_list:
                 avoid_list.remove(promoted.ticker)
             if promoted.ticker not in watchlist:
+                promoted_readiness = promoted.entry_readiness_contract or build_unavailable_entry_readiness_contract(
+                    reason="PRICE_SNAPSHOT_UNAVAILABLE_IN_PLANNER_RUNTIME",
+                    final_action="관망",
+                )
                 watchlist.insert(0, promoted.ticker)
                 watchlist_meta.insert(
                     0,
@@ -1804,6 +1825,17 @@ def build_planner_handoff(
                         "market_gate": promoted.market_gate or None,
                         "scanner_timeframe_profile": promoted.scanner_timeframe_profile or None,
                         "kr_universe_role": promoted.kr_universe_role or None,
+                        "entry_readiness_contract": promoted_readiness,
+                        "stock_quality_score": promoted_readiness.get("stock_quality_score"),
+                        "stock_quality_grade": promoted_readiness.get("stock_quality_grade"),
+                        "upside_room_score": promoted_readiness.get("upside_room_score"),
+                        "upside_room_grade": promoted_readiness.get("upside_room_grade"),
+                        "entry_timing_score": promoted_readiness.get("entry_timing_score"),
+                        "entry_timing_grade": promoted_readiness.get("entry_timing_grade"),
+                        "chase_risk_level": promoted_readiness.get("chase_risk_level"),
+                        "exclusion_risk_level": promoted_readiness.get("exclusion_risk_level"),
+                        "final_action": promoted_readiness.get("final_action"),
+                        "action_reason_codes": promoted_readiness.get("action_reason_codes"),
                         "reason": "kosdaq_relative_admission_floor",
                     },
                 )

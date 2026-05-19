@@ -103,6 +103,7 @@ def _load_top_deep_section_map(run_id: str, report_dir: Optional[Path] = None) -
         admission = item.get("realized_expectancy_admission") if isinstance(item.get("realized_expectancy_admission"), dict) else {}
         adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
         data_quality = item.get("candidate_data_quality") if isinstance(item.get("candidate_data_quality"), dict) else {}
+        readiness_contract = item.get("entry_readiness_contract") if isinstance(item.get("entry_readiness_contract"), dict) else {}
         out[ticker] = {
             "section": alignment.get("analysis_section") or item.get("analysis_section"),
             "section_rank": alignment.get("analysis_section_rank") or item.get("rank"),
@@ -129,6 +130,17 @@ def _load_top_deep_section_map(run_id: str, report_dir: Optional[Path] = None) -
             "candidate_data_quality": data_quality or None,
             "data_required_present_pct": data_quality.get("required_present_pct"),
             "data_warning_level": data_quality.get("display_warning_level"),
+            "entry_readiness_contract": readiness_contract or None,
+            "stock_quality_score": item.get("stock_quality_score") or readiness_contract.get("stock_quality_score"),
+            "stock_quality_grade": item.get("stock_quality_grade") or readiness_contract.get("stock_quality_grade"),
+            "upside_room_score": item.get("upside_room_score") or readiness_contract.get("upside_room_score"),
+            "upside_room_grade": item.get("upside_room_grade") or readiness_contract.get("upside_room_grade"),
+            "entry_timing_score": item.get("entry_timing_score") or readiness_contract.get("entry_timing_score"),
+            "entry_timing_grade": item.get("entry_timing_grade") or readiness_contract.get("entry_timing_grade"),
+            "chase_risk_level": item.get("chase_risk_level") or readiness_contract.get("chase_risk_level"),
+            "exclusion_risk_level": item.get("exclusion_risk_level") or readiness_contract.get("exclusion_risk_level"),
+            "final_action": item.get("final_action") or readiness_contract.get("final_action"),
+            "action_reason_codes": item.get("action_reason_codes") or readiness_contract.get("action_reason_codes"),
         }
     return out
 
@@ -168,6 +180,13 @@ def build_post_scan_ledger_rows(
             scan_entry = _safe_float(section_meta.get("scan_entry_reference_price"))
         if scan_entry is None:
             scan_entry = _safe_float(outcome.get("entry_reference_price"))
+        readiness_contract = (
+            outcome.get("entry_readiness_contract")
+            if isinstance(outcome.get("entry_readiness_contract"), dict)
+            else section_meta.get("entry_readiness_contract")
+            if isinstance(section_meta.get("entry_readiness_contract"), dict)
+            else {}
+        )
         row = {
             "ledger_key": f"{run_id}:{ticker}:{rank if rank is not None else idx}:{LEDGER_VERSION}",
             "ledger_version": LEDGER_VERSION,
@@ -219,6 +238,17 @@ def build_post_scan_ledger_rows(
             "candidate_data_quality": outcome.get("candidate_data_quality") or section_meta.get("candidate_data_quality"),
             "data_required_present_pct": _safe_float(outcome.get("data_required_present_pct") or section_meta.get("data_required_present_pct")),
             "data_warning_level": outcome.get("data_warning_level") or section_meta.get("data_warning_level"),
+            "entry_readiness_contract": readiness_contract or None,
+            "stock_quality_score": _safe_float(_first_present(outcome.get("stock_quality_score"), section_meta.get("stock_quality_score"), readiness_contract.get("stock_quality_score"))),
+            "stock_quality_grade": _first_present(outcome.get("stock_quality_grade"), section_meta.get("stock_quality_grade"), readiness_contract.get("stock_quality_grade")),
+            "upside_room_score": _safe_float(_first_present(outcome.get("upside_room_score"), section_meta.get("upside_room_score"), readiness_contract.get("upside_room_score"))),
+            "upside_room_grade": _first_present(outcome.get("upside_room_grade"), section_meta.get("upside_room_grade"), readiness_contract.get("upside_room_grade")),
+            "entry_timing_score": _safe_float(_first_present(outcome.get("entry_timing_score"), section_meta.get("entry_timing_score"), readiness_contract.get("entry_timing_score"))),
+            "entry_timing_grade": _first_present(outcome.get("entry_timing_grade"), section_meta.get("entry_timing_grade"), readiness_contract.get("entry_timing_grade")),
+            "chase_risk_level": _first_present(outcome.get("chase_risk_level"), section_meta.get("chase_risk_level"), readiness_contract.get("chase_risk_level")),
+            "exclusion_risk_level": _first_present(outcome.get("exclusion_risk_level"), section_meta.get("exclusion_risk_level"), readiness_contract.get("exclusion_risk_level")),
+            "final_action": _first_present(outcome.get("final_action"), section_meta.get("final_action"), readiness_contract.get("final_action")),
+            "action_reason_codes": _first_present(outcome.get("action_reason_codes"), section_meta.get("action_reason_codes"), readiness_contract.get("action_reason_codes")),
             "mfe_intraday_pct": _safe_float(outcome.get("mfe_intraday_pct")),
             "mae_intraday_pct": _safe_float(outcome.get("mae_intraday_pct")),
             "mfe_5d_pct": _safe_float(outcome.get("mfe_5d_pct") or outcome.get("max_high_return_5d_pct")),

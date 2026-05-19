@@ -121,6 +121,10 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert readiness["quality"]["grade"] != "N/A"
     assert readiness["upside"]["chase_risk_level"] == "낮음"
     assert readiness["final_buy_judgment"]["action"] in {"즉시 매수 가능", "조건부 매수 가능"}
+    assert report["entry_readiness_contract"]["stock_quality_grade"] != "N/A"
+    assert report["stock_quality_score"] == report["entry_readiness_contract"]["stock_quality_score"]
+    assert report["final_action"] == report["entry_readiness_contract"]["final_action"]
+    assert "contract" in report["trade_plan"]["readiness_analysis"]
     assert report["price"]["trend"] == "UP"
     assert report["news"]["headlines"][0]["title"] == "real headline"
 
