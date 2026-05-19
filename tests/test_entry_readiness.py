@@ -63,6 +63,76 @@ def test_entry_readiness_allows_valid_pullback_conditionally():
     assert analysis["risk_management"]["data_source"] == "support_resistance_stop_from_price_snapshot"
 
 
+def test_entry_readiness_blocks_pullback_buy_when_foreign_and_institution_sell_today():
+    analysis = build_entry_readiness_analysis(
+        candidate={"relative_rank_score": 78.0, "prob_clean": 74.0, "real_trend": "UP", "volume_ratio": 1.5},
+        price={
+            "current_price": 98.0,
+            "day_change_pct": -2.4,
+            "return_5d_pct": -1.5,
+            "return_20d_pct": 8.0,
+            "return_60d_pct": 22.0,
+            "pct_from_52w_high": -18.0,
+            "volume_ratio_20d": 1.6,
+            "ma5": 99.0,
+            "ma20": 96.0,
+            "prior_20d_high": 101.0,
+            "gap_up_pct": 0.0,
+            "close_location_pct": 72.0,
+        },
+        prediction={"expected_edge_score": 4.0},
+        trade_plan={"entry_policy": "-2% limit", "target_tp_pct": 10.0, "stop_sl_pct": -10.0, "hold_days": 5},
+        news={"sentiment_score": 0.2},
+        flow={
+            "flow_window": "1d",
+            "foreigner_1d": -255659,
+            "institution_1d": -74360,
+            "retail_1d": 330019,
+            "whale_flow_1d": -330019,
+        },
+        loss_risk_score=30.0,
+    )
+
+    assert analysis["final_buy_judgment"]["action"] == "매수 금지"
+    assert analysis["entry_strategy"]["mode"] == "blocked"
+    assert "당일 외인/기관 동반 순매도" in analysis["safety_overrides"]
+
+
+def test_entry_readiness_downgrades_pullback_buy_when_daily_whale_flow_is_negative():
+    analysis = build_entry_readiness_analysis(
+        candidate={"relative_rank_score": 78.0, "prob_clean": 74.0, "real_trend": "UP", "volume_ratio": 1.5},
+        price={
+            "current_price": 98.0,
+            "day_change_pct": -1.7,
+            "return_5d_pct": -1.0,
+            "return_20d_pct": 8.0,
+            "return_60d_pct": 22.0,
+            "pct_from_52w_high": -18.0,
+            "volume_ratio_20d": 1.6,
+            "ma5": 99.0,
+            "ma20": 96.0,
+            "prior_20d_high": 101.0,
+            "gap_up_pct": 0.0,
+            "close_location_pct": 72.0,
+        },
+        prediction={"expected_edge_score": 4.0},
+        trade_plan={"entry_policy": "-2% limit", "target_tp_pct": 10.0, "stop_sl_pct": -10.0, "hold_days": 5},
+        news={"sentiment_score": 0.2},
+        flow={
+            "flow_window": "1d",
+            "foreigner_1d": 5000,
+            "institution_1d": -40000,
+            "retail_1d": 35000,
+            "whale_flow_1d": -35000,
+        },
+        loss_risk_score=30.0,
+    )
+
+    assert analysis["final_buy_judgment"]["action"] == "관망"
+    assert analysis["entry_strategy"]["mode"] == "watch"
+    assert "당일 외인+기관 순매도" in analysis["safety_overrides"]
+
+
 def test_entry_readiness_blocks_material_corporate_action_news():
     analysis = build_entry_readiness_analysis(
         candidate={"decision_score": 90.0, "prob_clean": 72.0, "real_trend": "UP", "volume_ratio": 1.4},

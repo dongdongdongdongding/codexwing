@@ -844,6 +844,7 @@ def build_top_deep_reports(
             prediction=prediction,
             trade_plan=trade_policy,
             news=news,
+            flow=flow,
             loss_risk_score=loss_risk,
         )
         practical_gate = evaluate_practical_entry_gate({**row, **trace})

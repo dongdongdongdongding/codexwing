@@ -488,6 +488,7 @@ def _apply_safety_overrides(
     price: Dict[str, Any],
     prediction: Dict[str, Any],
     news: Dict[str, Any],
+    flow: Dict[str, Any],
 ) -> tuple[Dict[str, Any], List[str]]:
     overrides: List[str] = []
     result = dict(judgment if isinstance(judgment, dict) else {})
@@ -500,6 +501,49 @@ def _apply_safety_overrides(
         }
         overrides.append("특수 리스크: " + ", ".join(material_flags[:4]))
         return result, overrides
+
+    flow = flow if isinstance(flow, dict) else {}
+    flow_window = str(flow.get("flow_window") or candidate.get("flow_window") or "").lower()
+    has_daily_flow = flow_window in {"1d", "day"} or any(
+        key in flow or key in candidate for key in ("foreigner_1d", "institution_1d", "retail_1d", "whale_flow_1d")
+    )
+    if has_daily_flow and result.get("action") in {"즉시 매수 가능", "조건부 매수 가능"}:
+        foreigner_1d = _num(_first(flow, "foreigner_1d", "foreigner"))
+        institution_1d = _num(_first(flow, "institution_1d", "institution"))
+        retail_1d = _num(_first(flow, "retail_1d", "retail"))
+        whale_flow_1d = _num(_first(flow, "whale_flow_1d", "whale_flow"))
+        if whale_flow_1d is None and foreigner_1d is not None and institution_1d is not None:
+            whale_flow_1d = foreigner_1d + institution_1d
+        if foreigner_1d is None:
+            foreigner_1d = _num(_first(candidate, "foreigner_1d", "foreigner"))
+        if institution_1d is None:
+            institution_1d = _num(_first(candidate, "institution_1d", "institution"))
+        if retail_1d is None:
+            retail_1d = _num(_first(candidate, "retail_1d", "retail"))
+        if whale_flow_1d is None:
+            whale_flow_1d = _num(_first(candidate, "whale_flow_1d", "whale_flow"))
+        if whale_flow_1d is None and foreigner_1d is not None and institution_1d is not None:
+            whale_flow_1d = foreigner_1d + institution_1d
+
+        foreigner_selling = foreigner_1d is not None and foreigner_1d < 0
+        institution_selling = institution_1d is not None and institution_1d < 0
+        whale_selling = whale_flow_1d is not None and whale_flow_1d < 0
+        retail_absorbing = retail_1d is not None and retail_1d > 0
+        if foreigner_selling and institution_selling:
+            result = {
+                "action": "매수 금지",
+                "tone": "danger",
+                "summary": "당일 외인/기관 동반 순매도로 가격 눌림만 보고 진입할 수 없습니다.",
+            }
+            overrides.append("당일 외인/기관 동반 순매도")
+            return result, overrides
+        if whale_selling and retail_absorbing:
+            result = {
+                "action": "관망",
+                "tone": "neutral",
+                "summary": "당일 외인+기관 순매도와 개인 매수 흡수 구간이라 눌림 매수를 보류합니다.",
+            }
+            overrides.append("당일 외인+기관 순매도")
 
     expected_edge = _num(prediction.get("expected_edge_score") or candidate.get("expected_edge_score"))
     expected_1d = _num(prediction.get("expected_return_1d_pct") or candidate.get("expected_return_1d_pct"))
@@ -702,6 +746,7 @@ def build_entry_readiness_analysis(
     prediction: Dict[str, Any],
     trade_plan: Dict[str, Any],
     news: Dict[str, Any] | None = None,
+    flow: Dict[str, Any] | None = None,
     loss_risk_score: Any = None,
 ) -> Dict[str, Any]:
     """Build a display-side entry-readiness analysis without changing ranking.
@@ -714,6 +759,7 @@ def build_entry_readiness_analysis(
     prediction = prediction if isinstance(prediction, dict) else {}
     trade_plan = trade_plan if isinstance(trade_plan, dict) else {}
     news = news if isinstance(news, dict) else {}
+    flow = flow if isinstance(flow, dict) else {}
 
     merged_candidate = {**candidate, **price}
     quality = _build_quality_score(merged_candidate, prediction, news)
@@ -726,6 +772,7 @@ def build_entry_readiness_analysis(
         price=price,
         prediction=prediction,
         news=news,
+        flow=flow,
     )
     action_plan = _build_data_backed_action_plan(
         price=price,
