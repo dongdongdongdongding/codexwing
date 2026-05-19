@@ -96,6 +96,11 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
                         "active_policy_version": "kr_scanner_policy_test",
                         "promotion_status": "production_champion",
                     },
+                    "realized_expectancy_admission": {
+                        "expected_value_3d_pct": 1.2,
+                        "expected_value_5d_pct": 4.5,
+                        "ranking_score_5d": 72.0,
+                    },
                     "flow": {
                         "foreigner": 1200000,
                         "institution": -300000,
@@ -137,6 +142,7 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
     assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
     assert "정책: kr_scanner_policy_test · production_champion" in embeds[0]["fields"][0]["value"]
+    assert "실현기대: 3D +1.20% / 5D +4.50% · 5D점수 72.0" in embeds[0]["fields"][0]["value"]
     assert "수급: 외인 +1,200,000 / 기관 -300,000 / 개인 -900,000" in embeds[0]["fields"][0]["value"]
 
 
@@ -159,6 +165,7 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
                         "active_policy_version": "kr_scanner_policy_old",
                         "promotion_status": "production_champion",
                     },
+                    "realized_expectancy_admission": {"ranking_score_5d": 64.0},
                     "trade_plan": {"readiness_analysis": {"final_buy_judgment": {"action": "관망"}}},
                 }
             ],
@@ -213,6 +220,7 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
     assert "RUN-OLD" in runs["fields"][0]["name"]
     assert run_id_choices(current="OLD") == ["RUN-OLD"]
     assert "정책 kr_scanner_policy_old" in archive_top["fields"][0]["value"]
+    assert "5D기대점수 64.0" in archive_top["fields"][0]["value"]
     assert "SK하이닉스" in archive["fields"][0]["name"]
     assert "삼성전자" in top_deep[0]["fields"][0]["name"]
 

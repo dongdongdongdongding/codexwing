@@ -14,6 +14,7 @@ from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
 from modules.model_governance import active_policy_metadata
+from modules.realized_expectancy_admission import build_realized_expectancy_admission
 from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
 
@@ -45,6 +46,7 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "risk_overrides",
     "display_contract",
     "policy_metadata",
+    "realized_expectancy_admission",
     "entry_action",
     "practical_entry_gate",
     "trade_plan",
@@ -875,6 +877,17 @@ def build_top_deep_reports(
             TradableCostModel(),
         )
         prediction["tradable_pnl_model_version"] = TradableCostModel().version
+        admission = build_realized_expectancy_admission(
+            {**row, **trace},
+            market=market,
+            section=row.get("_analysis_section") or "Top5",
+        )
+        if admission.get("available"):
+            prediction["realized_expectancy_3d_prob"] = admission.get("3d_prob")
+            prediction["realized_expectancy_5d_prob"] = admission.get("5d_prob")
+            prediction["ranking_score_3d"] = admission.get("ranking_score_3d")
+            prediction["ranking_score_5d"] = admission.get("ranking_score_5d")
+            prediction["admission_policy_version"] = admission.get("policy_version")
         readiness_analysis = build_entry_readiness_analysis(
             candidate={**row, **trace},
             price=price,
@@ -953,6 +966,7 @@ def build_top_deep_reports(
             "rationale": trace.get("rationale") or row.get("rationale") or [],
             "prediction": prediction,
             "policy_metadata": policy_metadata,
+            "realized_expectancy_admission": admission,
             "selection_thesis": selection_thesis,
             "risk_overrides": risk_overrides,
             "entry_action": entry_action,

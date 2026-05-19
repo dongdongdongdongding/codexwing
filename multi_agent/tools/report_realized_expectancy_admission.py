@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from modules.realized_expectancy_admission import compare_original_vs_expectancy_order, load_post_scan_ledger_rows
+
+
+DEFAULT_OUT_DIR = PROJECT_ROOT / "runtime_state" / "reports" / "validation"
+
+
+def _markdown(report):
+    original = report["original_order"]
+    expectancy = report["expectancy_order"]
+    lines = [
+        "# KR Realized Expectancy Admission Report",
+        "",
+        f"- generated_at: `{report['generated_at']}`",
+        f"- policy_version: `{report['policy_version']}`",
+        f"- top_n: `{report['top_n']}`",
+        f"- comparison_groups: `{report['comparison_groups']}`",
+        "",
+        "## Original Top Order",
+        f"- rows: `{original['rows']}`",
+        f"- 3D win/avg/min/max: `{original['return_3d']['win_pct']}` / `{original['return_3d']['avg_pct']}` / `{original['return_3d']['min_pct']}` / `{original['return_3d']['max_pct']}`",
+        f"- 5D win/avg/min/max: `{original['return_5d']['win_pct']}` / `{original['return_5d']['avg_pct']}` / `{original['return_5d']['min_pct']}` / `{original['return_5d']['max_pct']}`",
+        f"- stop_first_5d_pct: `{original['stop_first_5d_pct']}`",
+        "",
+        "## Realized-Expectancy Order",
+        f"- rows: `{expectancy['rows']}`",
+        f"- 3D win/avg/min/max: `{expectancy['return_3d']['win_pct']}` / `{expectancy['return_3d']['avg_pct']}` / `{expectancy['return_3d']['min_pct']}` / `{expectancy['return_3d']['max_pct']}`",
+        f"- 5D win/avg/min/max: `{expectancy['return_5d']['win_pct']}` / `{expectancy['return_5d']['avg_pct']}` / `{expectancy['return_5d']['min_pct']}` / `{expectancy['return_5d']['max_pct']}`",
+        f"- stop_first_5d_pct: `{expectancy['stop_first_5d_pct']}`",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Compare original Top order vs realized-expectancy admission order.")
+    parser.add_argument("--shared-dir", default="runtime_state/shared_working")
+    parser.add_argument("--limit-runs", type=int, default=200)
+    parser.add_argument("--top-n", type=int, default=5)
+    parser.add_argument("--output-dir", default=str(DEFAULT_OUT_DIR))
+    args = parser.parse_args()
+
+    rows = load_post_scan_ledger_rows(Path(args.shared_dir), limit_runs=int(args.limit_runs))
+    report = compare_original_vs_expectancy_order(rows, top_n=int(args.top_n))
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / "kr_realized_expectancy_admission.json"
+    md_path = out_dir / "kr_realized_expectancy_admission.md"
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    md_path.write_text(_markdown(report), encoding="utf-8")
+    print(json.dumps({"json_path": str(json_path), "md_path": str(md_path), "rows": len(rows)}, ensure_ascii=False, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

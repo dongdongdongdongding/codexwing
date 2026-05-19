@@ -93,6 +93,8 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["prediction"]["expected_return_3d_pct"] == 2.3
     assert report["policy_metadata"]["active_policy_version"].startswith("kr_scanner_policy_")
     assert report["policy_metadata"]["promotion_status"] == "production_champion"
+    assert report["realized_expectancy_admission"]["policy_version"] == "kr_realized_expectancy_admission_v1"
+    assert report["prediction"]["ranking_score_5d"] is not None
     assert report["selection_thesis"]["status"] == "planner_priority"
     assert report["selection_thesis"]["scanner_basis"]["expected_return_3d_pct"] == 2.3
     assert "selection_thesis" in report["trade_plan"]

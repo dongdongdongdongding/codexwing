@@ -1310,6 +1310,7 @@ def _render_top_deep_reports_page():
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
         policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
+        admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
         section = alignment.get("analysis_section") or "Top5"
         section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
         title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
@@ -1336,6 +1337,12 @@ def _render_top_deep_reports_page():
             c4.metric("손실위험", _fmt_metric_num(row.get("loss_risk_score"), 1))
             c5.metric("뉴스감성", _fmt_metric_num(news.get("sentiment_score"), 2))
             c6.metric("예상순수익 3D", _fmt_metric_pct(prediction.get("expected_net_return_3d_pct")))
+
+            a1, a2, a3, a4 = st.columns(4)
+            a1.metric("실현기대 3D", _fmt_metric_pct(admission.get("expected_value_3d_pct")))
+            a2.metric("실현기대 5D", _fmt_metric_pct(admission.get("expected_value_5d_pct")))
+            a3.metric("5D 랭킹", _fmt_metric_num(admission.get("ranking_score_5d"), 1))
+            a4.metric("Stop-first", _fmt_metric_pct(admission.get("stop_first_risk_pct")))
 
             _render_selection_thesis(row, trade_plan)
 

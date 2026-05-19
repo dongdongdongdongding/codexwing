@@ -46,6 +46,7 @@ LOCAL_SCHEMA_EXTENSION_COLUMNS = {
         "practical_entry_gate",
         "flow",
         "policy_metadata",
+        "realized_expectancy_admission",
     },
 }
 
