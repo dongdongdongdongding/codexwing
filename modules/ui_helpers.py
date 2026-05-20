@@ -14,6 +14,12 @@ from modules.execution_stop_display import build_execution_stop_display
 from modules.next_day_explosive_radar import build_next_day_radar_candidate
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.segment_accuracy import lookup_segment_win_rate
+from modules.scanner_performance_contract import (
+    format_metric,
+    live_policy_summary,
+    profile_level,
+    slice_metric,
+)
 
 
 def compute_progress_fraction(completed_count: int, total_count: int) -> float:
@@ -424,43 +430,51 @@ def validated_winner_profile(rec: Dict[str, Any]) -> Dict[str, Any]:
     alpha = _row_float(rec, "alpha_score", "Alpha", "종합점수")
     is_exception = is_exception_leader_row(rec)
 
+    def _profile_result(metric, *, label: str, profile: str) -> Dict[str, Any]:
+        return {
+            "level": profile_level(metric),
+            "label": label,
+            "profile": profile,
+            "metrics": format_metric(metric),
+        }
+
     if market == "KOSPI":
         if is_exception and alpha is not None and alpha >= 80:
-            return {
-                "level": "pass",
-                "label": "KOSPI 검증 Exception Leader",
-                "profile": "exception_leader__alpha_ge_80",
-                "metrics": "n=45 · win5 86.7% · avg5 +8.88%",
-            }
+            metric = slice_metric("KOSPI", "exception_leader__alpha_ge_80")
+            return _profile_result(
+                metric,
+                label="KOSPI 검증 Exception Leader",
+                profile="exception_leader__alpha_ge_80",
+            )
         if rank is not None and 1 <= rank <= 5 and edge is not None and edge >= 7:
-            return {
-                "level": "pass",
-                "label": "KOSPI 검증 Top5",
-                "profile": "rank_top5__edge_ge_7",
-                "metrics": "n=55 · win5 80.0% · avg5 +8.99%",
-            }
+            metric = slice_metric("KOSPI", "rank_top5__edge_ge_7")
+            return _profile_result(
+                metric,
+                label="KOSPI 검증 Top5",
+                profile="rank_top5__edge_ge_7",
+            )
         if rank is not None and 1 <= rank <= 5 and prob_clean is not None and prob_clean >= 50:
-            return {
-                "level": "pass",
-                "label": "KOSPI 검증 Top5",
-                "profile": "rank_top5__prob_clean_ge_50",
-                "metrics": "n=40 · win5 82.5% · avg5 +8.70%",
-            }
+            metric = slice_metric("KOSPI", "rank_top5__prob_clean_ge_50")
+            return _profile_result(
+                metric,
+                label="KOSPI 검증 Top5",
+                profile="rank_top5__prob_clean_ge_50",
+            )
     if market == "KOSDAQ":
         if is_exception and alpha is not None and alpha >= 85:
-            return {
-                "level": "near",
-                "label": "KOSDAQ 관찰 Exception Leader",
-                "profile": "exception_leader__alpha_ge_85",
-                "metrics": "n=13 · win5 69.2% · avg5 +3.04%",
-            }
+            metric = slice_metric("KOSDAQ", "exception_leader__alpha_ge_85")
+            return _profile_result(
+                metric,
+                label="KOSDAQ 관찰 Exception Leader",
+                profile="exception_leader__alpha_ge_85",
+            )
         if rank is not None and 1 <= rank <= 5 and edge is not None and edge >= 7:
-            return {
-                "level": "near",
-                "label": "KOSDAQ 관찰 Top5",
-                "profile": "rank_top5__edge_ge_7",
-                "metrics": "n=29 · win5 65.5% · avg5 +7.35%",
-            }
+            metric = slice_metric("KOSDAQ", "rank_top5__edge_ge_7")
+            return _profile_result(
+                metric,
+                label="KOSDAQ 관찰 Top5",
+                profile="rank_top5__edge_ge_7",
+            )
     return {"level": "fail", "label": "검증 프로필 미달", "profile": "", "metrics": ""}
 
 
@@ -730,7 +744,7 @@ def build_top5_plus_exception_records(
     validated_top = []
     for row in streams["stream_a"]:
         profile = validated_winner_profile(row)
-        if profile.get("level") in {"pass", "near"}:
+        if profile.get("level") == "pass":
             copy = dict(row)
             copy["_validated_winner_profile"] = profile
             validated_top.append(copy)
@@ -779,29 +793,7 @@ def build_live_cockpit_summary(
 ) -> Dict[str, Any]:
     """Summarize the live trading cockpit in operator-facing terms."""
     market_key = str(market or "").upper()
-    policies = {
-        "KOSPI": {
-            "policy": "exception_leader OR edge>=5",
-            "validated_win": "77.95%",
-            "validated_return": "+8.80%",
-            "sample": "n=254",
-        },
-        "KOSDAQ": {
-            "policy": "exception_leader AND trend=UP",
-            "validated_win": "80.00%",
-            "validated_return": "+13.81% MFE",
-            "sample": "n=65",
-        },
-    }
-    policy = policies.get(
-        market_key,
-        {
-            "policy": "segment policy",
-            "validated_win": "-",
-            "validated_return": "-",
-            "sample": "-",
-        },
-    )
+    policy = live_policy_summary(market_key, strict_quality_gate=strict_quality_gate)
     stream_a_count = len(stream_a_rows or [])
     stream_b_count = len(stream_b_rows or [])
     return {

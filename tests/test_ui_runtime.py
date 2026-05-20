@@ -162,17 +162,27 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["accuracy"], "-")
 
     def test_build_live_cockpit_summary_surfaces_validated_policy(self):
-        summary = build_live_cockpit_summary(
-            [{"ticker": "005930.KS"}],
-            [{"ticker": "000660.KS"}],
-            market="KOSPI",
-            strict_quality_gate=True,
-        )
+        with patch("modules.ui_helpers.live_policy_summary") as live_policy:
+            live_policy.return_value = {
+                "policy": "exception_leader OR expected_edge_score>=5",
+                "validated_win": "72.5%",
+                "validated_return": "+7.65%",
+                "sample": "n=447 · loss5 9.5%",
+                "quality_scope": "observed_archive",
+                "validation_pass": True,
+            }
+            summary = build_live_cockpit_summary(
+                [{"ticker": "005930.KS"}],
+                [{"ticker": "000660.KS"}],
+                market="KOSPI",
+                strict_quality_gate=False,
+            )
 
         self.assertEqual(summary["actionable_count"], 2)
-        self.assertEqual(summary["quality_gate"], "ON")
-        self.assertEqual(summary["policy"], "exception_leader OR edge>=5")
-        self.assertEqual(summary["validated_win"], "77.95%")
+        self.assertEqual(summary["quality_gate"], "OFF")
+        self.assertEqual(summary["policy"], "exception_leader OR expected_edge_score>=5")
+        self.assertEqual(summary["validated_win"], "72.5%")
+        self.assertEqual(summary["quality_scope"], "observed_archive")
 
     def test_enrich_signal_rows_with_planner_trace_adds_loss_risk(self):
         rows = enrich_signal_rows_with_planner_trace(
@@ -279,6 +289,23 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual([row["ticker"] for row in groups["top5"]], ["VALID.KS", "RAW1.KS", "RAW2.KS"])
         self.assertEqual(groups["top5"][0]["_validated_winner_profile"]["profile"], "test")
         self.assertEqual(len(groups["combined"]), 3)
+
+    def test_top5_plus_exception_does_not_promote_near_profile(self):
+        rows = [
+            {"ticker": "RAW1.KQ", "Decision Score": 90.0, "_raw_scan_rank": 1},
+            {"ticker": "NEAR.KQ", "Decision Score": 80.0, "_raw_scan_rank": 2},
+        ]
+
+        def fake_profile(row):
+            if row.get("ticker") == "NEAR.KQ":
+                return {"level": "near", "label": "관찰", "profile": "near", "metrics": "n=10"}
+            return {"level": "fail", "label": "검증 미달", "profile": "", "metrics": ""}
+
+        with patch("modules.ui_helpers.validated_winner_profile", side_effect=fake_profile):
+            groups = build_top5_plus_exception_records(rows, None, top_limit=2, exception_limit=0)
+
+        self.assertEqual([row["ticker"] for row in groups["top5"]], ["RAW1.KQ", "NEAR.KQ"])
+        self.assertNotIn("_validated_winner_profile", groups["top5"][0])
 
     def test_top5_plus_exception_adds_planner_only_exception_leaders(self):
         rows = [

@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, List, Optional
 
 from modules.regime_theme_calibration import build_regime_theme_adjustment
 from modules.section_performance_calibration import DEFAULT_SECTION_CALIBRATION_PATH, load_section_performance_calibration
+from modules.scanner_performance_contract import latest_section_metric
 
 
 ADMISSION_POLICY_VERSION = "kr_realized_expectancy_admission_v1"
@@ -41,6 +42,7 @@ DEFAULT_CALIBRATIONS: Dict[tuple, SectionCalibration] = {
     ("KOSDAQ", "Shadow"): SectionCalibration("KOSDAQ", "Shadow", "shadow_observation_default", 20, 54.0, 63.0, 2.8, 5.2, -8.5, -11.0, 17.0, 27.0, 32.0),
 }
 _ARTIFACT_CALIBRATION_CACHE: Dict[str, Dict[tuple, SectionCalibration]] = {}
+_DAILY_CALIBRATION_CACHE: Dict[str, Dict[tuple, SectionCalibration]] = {}
 
 
 def _safe_float(value: Any, default: Optional[float] = None) -> Optional[float]:
@@ -139,10 +141,69 @@ def _artifact_calibrations() -> Dict[tuple, SectionCalibration]:
     return out
 
 
+def _daily_section_calibrations() -> Dict[tuple, SectionCalibration]:
+    """Build calibration anchors from the latest section-performance snapshot.
+
+    Static defaults are intentionally weak fallbacks. The operator-facing
+    realized-expectancy view must track the same daily Top5 / Shadow /
+    Exception Leader validation report used by web and Discord summaries.
+    """
+    cache_key = "latest_signal_section_performance_daily"
+    if cache_key in _DAILY_CALIBRATION_CACHE:
+        return _DAILY_CALIBRATION_CACHE[cache_key]
+    out: Dict[tuple, SectionCalibration] = {}
+    for market in ("KOSPI", "KOSDAQ"):
+        for section in ("Top5", "Exception Leader", "Shadow"):
+            metric3 = latest_section_metric(market, section, horizon_days=3)
+            metric5 = latest_section_metric(market, section, horizon_days=5)
+            if metric3 is None and metric5 is None:
+                continue
+            default = DEFAULT_CALIBRATIONS.get((market, section))
+            if default is None:
+                continue
+            sample_size = max(
+                metric3.sample_n if metric3 is not None else 0,
+                metric5.sample_n if metric5 is not None else 0,
+            )
+            out[(market, section)] = SectionCalibration(
+                market=market,
+                section=section,
+                source="signal_section_performance_daily",
+                sample_size=sample_size,
+                section_win_3d_pct=(
+                    metric3.win_rate_pct if metric3 is not None and metric3.win_rate_pct is not None else default.section_win_3d_pct
+                ),
+                section_win_5d_pct=(
+                    metric5.win_rate_pct if metric5 is not None and metric5.win_rate_pct is not None else default.section_win_5d_pct
+                ),
+                avg_return_3d_pct=(
+                    metric3.avg_return_pct if metric3 is not None and metric3.avg_return_pct is not None else default.avg_return_3d_pct
+                ),
+                avg_return_5d_pct=(
+                    metric5.avg_return_pct if metric5 is not None and metric5.avg_return_pct is not None else default.avg_return_5d_pct
+                ),
+                min_return_3d_pct=(
+                    metric3.worst_return_pct if metric3 is not None and metric3.worst_return_pct is not None else default.min_return_3d_pct
+                ),
+                min_return_5d_pct=(
+                    metric5.worst_return_pct if metric5 is not None and metric5.worst_return_pct is not None else default.min_return_5d_pct
+                ),
+                max_return_3d_pct=(
+                    metric3.best_return_pct if metric3 is not None and metric3.best_return_pct is not None else default.max_return_3d_pct
+                ),
+                max_return_5d_pct=(
+                    metric5.best_return_pct if metric5 is not None and metric5.best_return_pct is not None else default.max_return_5d_pct
+                ),
+                stop_first_risk_pct=default.stop_first_risk_pct,
+            )
+    _DAILY_CALIBRATION_CACHE[cache_key] = out
+    return out
+
+
 def calibration_for(market: Any, section: Any, calibrations: Optional[Dict[tuple, SectionCalibration]] = None) -> Optional[SectionCalibration]:
     market_key = normalize_market(market)
     section_key = normalize_section(section)
-    table = calibrations or {**DEFAULT_CALIBRATIONS, **_artifact_calibrations()}
+    table = calibrations or {**DEFAULT_CALIBRATIONS, **_artifact_calibrations(), **_daily_section_calibrations()}
     return table.get((market_key, section_key))
 
 

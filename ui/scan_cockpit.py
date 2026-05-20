@@ -242,8 +242,14 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     cockpit_cols[4].metric("검증 승률", cockpit["validated_win"])
     st.caption(
         f"{cockpit['market']} live policy: {cockpit['policy']} | "
-        f"5D target return: {cockpit['validated_return']} | {cockpit['sample']}"
+        f"5D target return: {cockpit['validated_return']} | {cockpit['sample']} | "
+        f"{cockpit.get('quality_scope', '-')}"
     )
+    if not cockpit.get("validation_pass"):
+        st.warning(
+            "현재 라이브 정책은 최신 검증 기준을 완전히 통과하지 못했습니다. "
+            "후보는 표시하되, 액션/손절/수급 확인을 우선하세요."
+        )
 
     if str(market or "").upper() == "KOSDAQ":
         st.markdown("### KOSDAQ Shadow 관찰")
