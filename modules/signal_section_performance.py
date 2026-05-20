@@ -208,8 +208,10 @@ def build_latest_performance_markdown(metrics: List[Dict[str, Any]]) -> str:
                 for row in sorted(values, key=lambda item: int(item.get("horizon_days") or 0)):
                     win = _fmt_pct(row.get("win_rate_pct"))
                     avg = _fmt_signed(row.get("avg_return_pct"))
+                    worst = _fmt_signed(row.get("worst_return_pct"))
+                    best = _fmt_signed(row.get("best_return_pct"))
                     sample = int(row.get("sample_n") or 0)
-                    parts.append(f"{row.get('horizon_days')}D win {win} / avg {avg} / n={sample}")
+                    parts.append(f"{row.get('horizon_days')}D win {win} / avg {avg} / worst {worst} / best {best} / n={sample}")
                 lines.append(f"- {section}: " + " | ".join(parts))
             lines.append("")
     return "\n".join(lines).strip() + "\n"

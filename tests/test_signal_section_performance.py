@@ -1,4 +1,5 @@
 from modules.signal_section_performance import (
+    build_latest_performance_markdown,
     build_section_performance_metrics,
     classify_signal_sections,
 )
@@ -65,6 +66,7 @@ def test_build_section_performance_metrics_records_horizons():
     assert by_key[("KOSPI", "Shadow", 1)]["win_rate_pct"] == 100.0
     assert by_key[("KOSPI", "Top5", 3)]["avg_return_pct"] == -2.0
     assert by_key[("KOSDAQ", "Exception Leader", 5)]["win_rate_pct"] == 100.0
+    assert "worst -2.00% / best -2.00%" in build_latest_performance_markdown(metrics)
 
 
 def test_section_performance_keeps_swing_and_intraday_separate():

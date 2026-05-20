@@ -133,12 +133,14 @@ def _cohort_masks(df: pd.DataFrame) -> Dict[str, pd.Series]:
 def _horizon_summary(df: pd.DataFrame, col: str) -> Dict[str, Any]:
     returns = df[col].dropna()
     if returns.empty:
-        return {"n": 0, "win_pct": None, "avg_pct": None, "median_pct": None}
+        return {"n": 0, "win_pct": None, "avg_pct": None, "median_pct": None, "min_pct": None, "max_pct": None}
     return {
         "n": int(len(returns)),
         "win_pct": _pct(returns.gt(0).mean()),
         "avg_pct": _round(returns.mean(), 4),
         "median_pct": _round(returns.median(), 4),
+        "min_pct": _round(returns.min(), 4),
+        "max_pct": _round(returns.max(), 4),
     }
 
 
@@ -217,7 +219,10 @@ def build_report(df: pd.DataFrame) -> Dict[str, Any]:
 def _fmt_horizon(row: Dict[str, Any]) -> str:
     if not row or not row.get("n"):
         return "-"
-    return f"n={row.get('n')} / win {row.get('win_pct')}% / avg {row.get('avg_pct'):+.2f}%"
+    return (
+        f"n={row.get('n')} / win {row.get('win_pct')}% / avg {row.get('avg_pct'):+.2f}% / "
+        f"min {row.get('min_pct'):+.2f}% / max {row.get('max_pct'):+.2f}%"
+    )
 
 
 def _fmt_path(row: Dict[str, Any]) -> str:

@@ -49,9 +49,12 @@ def test_scan_cohort_performance_groups_by_chase_risk_level():
 
     kospi = report["markets"]["KOSPI"]
     assert kospi["by_chase_risk_level"]["낮음"]["horizons"]["5D"]["win_pct"] == 100.0
+    assert kospi["cohorts"]["Top5"]["horizons"]["5D"]["min_pct"] == -1.0
+    assert kospi["cohorts"]["Top5"]["horizons"]["5D"]["max_pct"] == 4.0
     assert kospi["by_chase_risk_level"]["높음"]["path"]["bad_path_pct"] == 100.0
     assert report["markets"]["KOSDAQ"]["cohorts"]["Exception Leader"]["horizons"]["5D"]["n"] == 1
 
     markdown = render_markdown(report)
     assert "### Chase Risk Level" in markdown
+    assert "min -1.00% / max +4.00%" in markdown
     assert "| 높음 |" in markdown
