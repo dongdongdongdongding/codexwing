@@ -481,6 +481,7 @@ def build_top_deep_embeds(
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         section = str(alignment.get("analysis_section") or "Top5")
         section_order = {
+            "Practical 80 Gate": -100,
             "KOSDAQ Ordered Shadow": -30,
             "KOSDAQ Theme Rank Shadow": -25,
             "KOSDAQ Low-loss Shadow": -20,
@@ -501,7 +502,8 @@ def build_top_deep_embeds(
         status_lines = [
             f"원본 통과: {result_count}개 · 필터: {filtered_count}개",
             (
-                f"섹션: Shadow {_shadow_section_count(section_counts)} / "
+                f"섹션: Practical {section_counts.get('Practical 80 Gate', 0)} / "
+                f"Shadow {_shadow_section_count(section_counts)} / "
                 f"Top5 {section_counts.get('Top5', 0)} / "
                 f"Exception {section_counts.get('Exception Leader', 0)}"
             ),
@@ -537,9 +539,10 @@ def build_top_deep_embeds(
             }
         )
     return _split_embed_fields(
-        title="Shadow + Top5 + Exception Leader 자동 정밀분석",
+        title="Practical + Shadow + Top5 + Exception 자동 정밀분석",
         description=(
             f"Run `{latest_run or '-'}` · offset {safe_offset} · "
+            f"Practical {section_counts.get('Practical 80 Gate', 0)} / "
             f"Shadow {_shadow_section_count(section_counts)} / "
             f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
         ),

@@ -223,10 +223,12 @@ def _select_top_candidates(
         exception_limit=5,
     )
     shadow_groups = build_kr_shadow_gate_records(rows, planner_payload, limit=5)
-    shadow_rows = shadow_groups["combined"]
+    practical_rows = groups.get("practical") or []
+    seen_practical = {_ticker(row) for row in practical_rows if _ticker(row)}
+    shadow_rows = [row for row in shadow_groups["combined"] if _ticker(row) not in seen_practical]
     seen_shadow = {_ticker(row) for row in shadow_rows if _ticker(row)}
-    standard_rows = [row for row in groups["combined"] if _ticker(row) not in seen_shadow]
-    return shadow_rows + standard_rows
+    standard_rows = [row for row in groups["combined"] if _ticker(row) not in seen_practical and _ticker(row) not in seen_shadow]
+    return practical_rows + shadow_rows + standard_rows
 
 
 def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:

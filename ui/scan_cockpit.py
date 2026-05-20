@@ -214,6 +214,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         top_limit=5,
         exception_limit=5,
     )
+    practical_records = groups.get("practical", [])
     stream_a_records = groups["top5"]
     stream_b_records = groups["exception_leaders"]
     display_records = groups["combined"]
@@ -221,6 +222,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     shadow_records = shadow_groups["kosdaq" if str(market or "").upper() == "KOSDAQ" else "kospi"]
     radar_records = build_next_day_radar_records(raw_score_records, limit=5)
 
+    practical_rows = build_signal_display_rows(practical_records, limit=5)
     stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
     stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
     shadow_rows = build_signal_display_rows(shadow_records, limit=5)
@@ -251,6 +253,16 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
             "후보는 표시하되, 액션/손절/수급 확인을 우선하세요."
         )
 
+    st.markdown("### 실전 우선 Top 후보")
+    st.caption(
+        "Top5/Exception 중 스캔 시점 피처만으로 Practical 80 Gate를 통과한 후보입니다. "
+        "정밀분석과 디스코드에서도 최상단 섹션으로 분리하며, 동일 종목은 아래 섹션에서 중복 정밀분석하지 않습니다."
+    )
+    if practical_rows:
+        render_signal_card_list(practical_rows, empty_text="실전 우선 후보 없음.")
+    else:
+        st.info("실전 우선 후보 없음 - 이번 스캔은 Shadow/Top5/Exception을 조건부로만 확인하세요.")
+
     if str(market or "").upper() == "KOSDAQ":
         st.markdown("### KOSDAQ Shadow 관찰")
         st.caption(
@@ -272,27 +284,6 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         "운영 Top5/Exception을 대체하지 않으며 검증 리포트가 기준선을 이길 때만 승격 검토합니다."
     )
     render_signal_card_list(radar_rows, empty_text="별도 급등 레이더 후보 없음.")
-
-    gate_order = {"pass": 0, "near": 1, "small_sample": 2, "watch": 3}
-    practical_rows = sorted(
-        [
-            row for row in (stream_a_rows + stream_b_rows)
-            if row.get("practical_gate_promote")
-        ],
-        key=lambda row: (
-            gate_order.get(str(row.get("practical_gate_level") or ""), 9),
-            int(row.get("analysis_section_rank") or row.get("rank") or 9999),
-        ),
-    )[:5]
-    st.markdown("### 80% 실전 필터 후보")
-    st.caption(
-        "사후 수익률을 쓰지 않고 스캔 시점 피처만으로 검증된 조합입니다. "
-        "KOSPI 통과는 30개 이상 표본, KOSDAQ은 표본 부족 시 경고로 표시합니다."
-    )
-    if practical_rows:
-        render_signal_card_list(practical_rows, empty_text="80% 실전 필터 후보 없음.")
-    else:
-        st.info("80% 실전 필터 후보 없음 - 이번 스캔은 Top5/Exception을 조건부로만 확인하세요.")
 
     st.markdown("### 메인 Top 5")
     st.caption(

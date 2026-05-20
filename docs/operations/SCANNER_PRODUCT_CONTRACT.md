@@ -1,6 +1,6 @@
 # Scanner Product Contract
 
-Updated: 2026-05-19
+Updated: 2026-05-20
 
 This document fixes the operator-facing meaning of scanner sections, action
 labels, probability fields, and the improvement loop. It is a product contract,
@@ -23,7 +23,8 @@ not a trading guarantee.
 
 | Section | Role | Operator Meaning |
 |---|---|---|
-| Top5 | production priority | Main production scanner output. This is the first section to inspect, but action labels and entry conditions still decide whether it is tradable. |
+| Practical 80 Gate | validated practical priority | Top5/Exception candidates that pass the scan-time Practical 80 Gate. This is the first section to inspect when present; it does not delete the original Top5 section. |
+| Top5 | production priority | Main production scanner output. Inspect after Practical 80 Gate when that section exists; action labels and entry conditions still decide whether it is tradable. |
 | Exception Leader | momentum exception stream | Strong out-of-rank momentum stream. It is not a Top5 replacement; it is a separate high-volatility observation and precision-analysis target. |
 | Shadow | validated observer group | Generic grouping for gates under forward observation. Shadow rows do not change production ranking. |
 | KOSDAQ Ordered Shadow | KOSDAQ ordered observer | KOSDAQ ordered rebound observer. It appears near the top for visibility, but remains shadow-only until validation says otherwise. |
@@ -96,13 +97,13 @@ loss-tail metrics alongside win rate.
 
 ## Improvement Loop
 
-1. Scanner emits Top5, Exception Leader, Shadow, and radar candidates with
+1. Scanner emits Practical 80 Gate, Top5, Exception Leader, Shadow, and radar candidates with
    section labels.
 2. Top Deep builds the entry-readiness contract without hiding candidates.
 3. Archive and Supabase/local stores persist scan rows, detail rows, and
    outcome placeholders.
 4. Outcome jobs backfill 1D/3D/5D and loss-tail metrics.
-5. Validation reports compare Top5, Exception Leader, and Shadow by market,
+5. Validation reports compare Practical 80 Gate, Top5, Exception Leader, and Shadow by market,
    horizon, average, median, best, worst, win rate, and stop/loss rate.
 6. PM/postmortem analysis creates targeted beads issues for misses, data
    failures, and promotion candidates.
@@ -115,7 +116,7 @@ The Streamlit UI and Discord bot must use the same sections, action labels, and
 run artifacts. Discord may compress the layout into embeds/buttons/select
 menus, but the information content should match the web view:
 
-- Top5, Exception Leader, Shadow, and radar section identity
+- Practical 80 Gate, Top5, Exception Leader, Shadow, and radar section identity
 - final action and reason codes
 - entry condition and stop/exclusion condition
 - quality/upside/timing grades

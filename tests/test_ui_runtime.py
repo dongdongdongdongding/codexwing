@@ -307,6 +307,33 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual([row["ticker"] for row in groups["top5"]], ["RAW1.KQ", "NEAR.KQ"])
         self.assertNotIn("_validated_winner_profile", groups["top5"][0])
 
+    def test_top5_plus_exception_lifts_practical_gate_without_duplicate_combined_rows(self):
+        rows = [
+            {"ticker": "PRACTICAL.KS", "Decision Score": 90.0, "_raw_scan_rank": 1},
+            {"ticker": "RAW1.KS", "Decision Score": 80.0, "_raw_scan_rank": 2},
+            {"ticker": "EX1.KS", "Decision Score": 70.0, "_raw_scan_rank": 8},
+        ]
+        planner = {
+            "decisions": [
+                {"ticker": "PRACTICAL.KS", "decision": "PRIORITY_WATCHLIST", "priority_rank": 1},
+                {"ticker": "RAW1.KS", "decision": "WATCHLIST", "priority_rank": 2},
+                {"ticker": "EX1.KS", "decision": "WATCHLIST", "decision_bucket": "exception_leader", "priority_rank": 3},
+            ]
+        }
+
+        def fake_practical(row):
+            if row.get("ticker") == "PRACTICAL.KS":
+                return {"level": "pass", "promote": True, "label": "실전 80% 필터 통과"}
+            return {"level": "fail", "promote": False, "label": "실전 80% 필터 미달"}
+
+        with patch("modules.ui_helpers.evaluate_practical_entry_gate", side_effect=fake_practical):
+            groups = build_top5_plus_exception_records(rows, planner, top_limit=2, exception_limit=2)
+
+        self.assertEqual([row["ticker"] for row in groups["practical"]], ["PRACTICAL.KS"])
+        self.assertEqual(groups["practical"][0]["_analysis_section"], "Practical 80 Gate")
+        self.assertEqual([row["ticker"] for row in groups["combined"]], ["PRACTICAL.KS", "RAW1.KS", "EX1.KS"])
+        self.assertEqual(len({row["ticker"] for row in groups["combined"]}), len(groups["combined"]))
+
     def test_top5_plus_exception_adds_planner_only_exception_leaders(self):
         rows = [
             {"ticker": f"TOP{i}.KQ", "Decision Score": 100.0 - i, "_raw_scan_rank": i}

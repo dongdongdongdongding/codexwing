@@ -24,6 +24,13 @@ class ActionLabelContract:
 
 
 CANDIDATE_SECTION_CONTRACTS: Dict[str, CandidateSectionContract] = {
+    "Practical 80 Gate": CandidateSectionContract(
+        label="Practical 80 Gate",
+        role="validated_practical_priority",
+        production_rank_source=True,
+        replaces_top5=False,
+        operator_semantics="Top5/Exception 후보 중 스캔 시점 피처만으로 Practical 80 Gate를 통과한 실전 우선 섹션입니다. Top5 원본 랭킹을 삭제하지 않고 최상단에 중복 없는 우선 후보로 분리합니다.",
+    ),
     "Top5": CandidateSectionContract(
         label="Top5",
         role="production_priority",

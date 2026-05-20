@@ -19,6 +19,7 @@ from ui.view_chrome import render_section_intro
 
 
 TOP_DEEP_SECTION_ORDER = {
+    "Practical 80 Gate": -100,
     "KOSDAQ Ordered Shadow": -30,
     "KOSDAQ Theme Rank Shadow": -25,
     "KOSDAQ Low-loss Shadow": -20,
@@ -359,9 +360,9 @@ def render_selection_thesis(row: Dict[str, Any], trade_plan: Dict[str, Any]) -> 
 def render_top_deep_reports_page() -> None:
     render_section_intro(
         "Top Deep Reports",
-        "Shadow + Top5 + Exception Leader 자동 정밀분석",
-        "검증용 Shadow 후보를 상단에 분리하고, 기존 Top5와 Exception Leader를 함께 분석합니다.",
-        ["Shadow watch", "Top5 main", "Exception add-on", "Real data only"],
+        "Practical + Shadow + Top5 + Exception 자동 정밀분석",
+        "Practical 80 Gate 후보를 최상단에 분리하고, Shadow/Top5/Exception을 같은 기준으로 분석합니다.",
+        ["Practical first", "Shadow watch", "Top5 main", "Exception add-on", "Real data only"],
     )
     rows, warning = load_top_deep_reports()
     if warning:
@@ -408,6 +409,11 @@ def render_top_deep_reports_page() -> None:
     page_df = run_df.iloc[(int(page) - 1) * int(page_size): int(page) * int(page_size)]
     st.caption(f"{selected_market} · {selected_date} · {run_labels.get(str(selected_run), selected_run)} · {page}/{max_page} 페이지")
     section_counts = run_df["selection_alignment"].apply(top_deep_section_name).value_counts().to_dict()
+    st.caption(
+        f"섹션: Practical {section_counts.get('Practical 80 Gate', 0)} / "
+        f"Shadow {sum(int(section_counts.get(section, 0) or 0) for section in TOP_DEEP_SECTION_ORDER if 'Shadow' in section)} / "
+        f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
+    )
     scan_context = load_scan_context_for_run(str(selected_run))
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
     market_gate = scan_context.get("market_gate") if isinstance(scan_context.get("market_gate"), dict) else {}

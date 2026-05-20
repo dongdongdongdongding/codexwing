@@ -930,6 +930,29 @@ def build_top5_plus_exception_records(
     if exception_limit is not None:
         exception_records = exception_records[: max(int(exception_limit or 0), 0)]
 
+    gate_order = {"pass": 0, "near": 1, "small_sample": 2}
+    practical_records = []
+    practical_source = top_records + exception_records
+    seen_practical = set()
+    for row in practical_source:
+        gate = evaluate_practical_entry_gate(row)
+        if not gate.get("promote"):
+            continue
+        ticker_key = _record_ticker_key(row)
+        if not ticker_key or ticker_key in seen_practical:
+            continue
+        copy = dict(row)
+        copy["_practical_entry_gate"] = gate
+        practical_records.append(copy)
+        seen_practical.add(ticker_key)
+    practical_records.sort(
+        key=lambda row: (
+            gate_order.get(str((row.get("_practical_entry_gate") or {}).get("level") or ""), 9),
+            int(row.get("priority_rank") or row.get("_raw_scan_rank") or 9999),
+        )
+    )
+    practical_records = practical_records[:5]
+
     def _mark(rows: List[Dict[str, Any]], section: str, order: int) -> List[Dict[str, Any]]:
         marked: List[Dict[str, Any]] = []
         for idx, row in enumerate(rows, start=1):
@@ -941,12 +964,17 @@ def build_top5_plus_exception_records(
             marked.append(copy)
         return marked
 
+    practical_marked = _mark(practical_records, "Practical 80 Gate", -1)
     top_marked = _mark(top_records, "Top5", 0)
     exception_marked = _mark(exception_records, "Exception Leader", 1)
+    practical_keys = {_record_ticker_key(row) for row in practical_marked}
+    top_combined = [row for row in top_marked if _record_ticker_key(row) not in practical_keys]
+    exception_combined = [row for row in exception_marked if _record_ticker_key(row) not in practical_keys]
     return {
+        "practical": practical_marked,
         "top5": top_marked,
         "exception_leaders": exception_marked,
-        "combined": top_marked + exception_marked,
+        "combined": practical_marked + top_combined + exception_combined,
     }
 
 
@@ -1195,7 +1223,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         sl = _format_signed_percent_label(sl_source, "-")
         latest_return = _coalesce_present(row.get("latest_return_pct"), row.get("return_1d_pct"), row.get("return_3d_pct"))
         action = build_action_display(row)
-        practical_gate = evaluate_practical_entry_gate(row)
+        practical_gate = row.get("_practical_entry_gate") if isinstance(row.get("_practical_entry_gate"), dict) else evaluate_practical_entry_gate(row)
         gate_evidence = practical_gate.get("evidence") if isinstance(practical_gate.get("evidence"), dict) else {}
         shadow_gate = row.get("_shadow_gate") if isinstance(row.get("_shadow_gate"), dict) else {}
         next_day_radar = row.get("next_day_radar") if isinstance(row.get("next_day_radar"), dict) else None

@@ -2644,8 +2644,16 @@ if active_main_tab == "📚 아카이브":
                 )
                 _archive_shadow = build_signal_display_rows(_archive_shadow_records, limit=5)
                 _archive_radar = build_signal_display_rows(build_next_day_radar_records(_archive_records, limit=5), limit=5)
+                _archive_practical = build_signal_display_rows(_archive_groups.get("practical", []), limit=5)
                 _archive_top5 = build_signal_display_rows(_archive_groups["top5"], limit=5)
                 _archive_exception = build_signal_display_rows(_archive_groups["exception_leaders"], limit=5)
+
+                st.markdown("### 실전 우선 Top 후보")
+                st.caption("Practical 80 Gate를 통과한 후보입니다. 같은 종목은 자동 정밀분석에서 최상단 섹션으로 우선 표시합니다.")
+                if _archive_practical:
+                    _render_signal_card_list(_archive_practical, empty_text="실전 우선 후보 없음.")
+                else:
+                    st.info("실전 우선 후보 없음.")
 
                 if _archive_market_key == "KOSDAQ":
                     st.markdown("### KOSDAQ 최우선 관찰 Shadow")
