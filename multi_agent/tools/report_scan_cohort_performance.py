@@ -89,6 +89,11 @@ def _load_rows(path: Path) -> pd.DataFrame:
 
 def _prepare_labels(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
+    if "market2" not in out.columns:
+        ticker = out.get("ticker", pd.Series("", index=out.index)).fillna("").astype(str).str.upper()
+        out["market2"] = ""
+        out.loc[ticker.str.endswith(".KS"), "market2"] = "KOSPI"
+        out.loc[ticker.str.endswith(".KQ"), "market2"] = "KOSDAQ"
     stop = pd.Series(False, index=out.index)
     if "min_return_observed_pct" in out.columns:
         stop |= out["min_return_observed_pct"].le(-5.0).fillna(False)
@@ -162,6 +167,20 @@ def _cohort_summary(df: pd.DataFrame) -> Dict[str, Any]:
     return summary
 
 
+def _group_summary(df: pd.DataFrame, column: str, *, limit: int = 12) -> Dict[str, Any]:
+    if column not in df.columns:
+        return {}
+    labels = df[column].fillna("").astype(str).str.strip()
+    labels = labels.loc[labels.ne("") & labels.str.lower().ne("nan") & labels.str.lower().ne("none")]
+    if labels.empty:
+        return {}
+    counts = labels.value_counts().head(limit)
+    return {
+        str(label): _cohort_summary(df.loc[labels.index[labels.eq(label)]])
+        for label in counts.index
+    }
+
+
 def build_report(df: pd.DataFrame) -> Dict[str, Any]:
     prepared = _prepare_labels(df)
     markets: Dict[str, Any] = {}
@@ -173,6 +192,7 @@ def build_report(df: pd.DataFrame) -> Dict[str, Any]:
         markets[market] = {
             "rows": int(len(market_df)),
             "cohorts": cohorts,
+            "by_chase_risk_level": _group_summary(market_df, "chase_risk_level"),
         }
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -184,6 +204,7 @@ def build_report(df: pd.DataFrame) -> Dict[str, Any]:
             "Practical 80 Gate": "scan-time practical_entry_gate level in pass/near/small_sample",
             "clean_riser": "1D >= -1, 3D >= 1D, 5D >= 3D, 5D >= +5, no 5% stop proxy",
             "bad_path": "5% stop proxy hit OR 1D < -3 OR 5D < 0",
+            "chase_risk_level": "entry-readiness overextension bucket; validate realized returns and loss tails by level",
         },
         "rows": {
             "input_rows": int(len(df)),
@@ -235,6 +256,17 @@ def render_markdown(report: Dict[str, Any]) -> str:
                 f"{_fmt_horizon(horizons.get('5D', {}))} | "
                 f"{_fmt_path(row.get('path', {}))} |"
             )
+        if payload.get("by_chase_risk_level"):
+            lines.extend(["", "### Chase Risk Level", ""])
+            lines.extend(["| Level | 1D | 3D | 5D | Path Quality |", "|---|---:|---:|---:|---:|"])
+            for level, row in payload.get("by_chase_risk_level", {}).items():
+                horizons = row.get("horizons", {})
+                lines.append(
+                    f"| {level} | {_fmt_horizon(horizons.get('1D', {}))} | "
+                    f"{_fmt_horizon(horizons.get('3D', {}))} | "
+                    f"{_fmt_horizon(horizons.get('5D', {}))} | "
+                    f"{_fmt_path(row.get('path', {}))} |"
+                )
     return "\n".join(lines) + "\n"
 
 

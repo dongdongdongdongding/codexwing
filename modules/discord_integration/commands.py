@@ -36,6 +36,7 @@ WEB_EQUIVALENT_RESULT_FIELDS: Dict[str, List[str]] = {
         "timing.grade",
         "timing.score",
         "chase_risk_level",
+        "chase_risk_reasons",
         "day_change_pct",
         "flow.foreigner",
         "flow.institution",

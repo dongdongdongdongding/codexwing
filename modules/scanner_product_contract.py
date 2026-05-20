@@ -159,6 +159,7 @@ REQUIRED_ENTRY_READINESS_FIELDS: Tuple[str, ...] = (
     "entry_timing_score",
     "entry_timing_grade",
     "chase_risk_level",
+    "chase_risk_reasons",
     "exclusion_risk_level",
     "final_action",
     "action_reason_codes",

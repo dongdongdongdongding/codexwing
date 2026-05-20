@@ -9,7 +9,7 @@ def test_entry_readiness_contract_flattens_three_scores_and_reason_codes():
                 "score": 42.0,
                 "grade": "D",
                 "chase_risk_level": "신규 진입 금지",
-                "filters": [{"code": "RET_60D_GT_150", "triggered": True}],
+                "filters": [{"code": "NO_NEW_ENTRY_60D_GT_150", "triggered": True}],
                 "evidence": ["60D +166.0%"],
             },
             "timing": {"score": 77.5, "grade": "B+", "label": "진입 타이밍", "evidence": ["20일선 지지"]},
@@ -25,7 +25,8 @@ def test_entry_readiness_contract_flattens_three_scores_and_reason_codes():
     assert contract["chase_risk_level"] == "신규 진입 금지"
     assert contract["exclusion_risk_level"] == "높음"
     assert contract["final_action"] == "매수 금지"
-    assert "RET_60D_GT_150" in contract["action_reason_codes"]
+    assert "NO_NEW_ENTRY_60D_GT_150" in contract["action_reason_codes"]
+    assert contract["chase_risk_reasons"] == ["NO_NEW_ENTRY_60D_GT_150"]
     assert "READINESS_MISSING_FIELDS" in contract["action_reason_codes"]
     assert contract["missing_fields"] == ["ma20"]
 

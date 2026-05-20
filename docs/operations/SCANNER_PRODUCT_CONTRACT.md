@@ -56,7 +56,7 @@ or an unavailable contract when price/flow data is missing. Required fields:
 - `stock_quality_score`, `stock_quality_grade`
 - `upside_room_score`, `upside_room_grade`
 - `entry_timing_score`, `entry_timing_grade`
-- `chase_risk_level`, `exclusion_risk_level`
+- `chase_risk_level`, `chase_risk_reasons`, `exclusion_risk_level`
 - `final_action`, `action_reason_codes`
 - `input_signals`, `missing_fields`, `warnings`
 - `policy_version`
@@ -121,4 +121,3 @@ menus, but the information content should match the web view:
 - chase/exclusion risk
 - same-day and cumulative flow fields with missing-data warnings
 - run ID, archive reference, and realized outcome status
-

@@ -29,6 +29,7 @@ def build_entry_readiness_contract(
     warnings = _unique_texts(readiness.get("warnings"), limit=10)
     safety_overrides = _unique_texts(readiness.get("safety_overrides"), limit=10)
     reason_codes = _reason_codes(upside, safety_overrides, missing)
+    chase_risk_reasons = _chase_reason_codes(upside)
     exclusion_level = _exclusion_risk_level(judgment, safety_overrides, warnings, structural_risk)
     exclusion_reasons = _exclusion_reasons(structural_risk, safety_overrides)
 
@@ -42,6 +43,7 @@ def build_entry_readiness_contract(
         "entry_timing_score": _num(timing.get("score")),
         "entry_timing_grade": _text(timing.get("grade")) or "N/A",
         "chase_risk_level": _text(readiness.get("chase_risk_level") or upside.get("chase_risk_level")) or "불명",
+        "chase_risk_reasons": chase_risk_reasons,
         "exclusion_risk_level": exclusion_level,
         "exclusion_reasons": exclusion_reasons,
         "final_action": _text(judgment.get("action")) or "관망",
@@ -67,6 +69,7 @@ def build_unavailable_entry_readiness_contract(*, reason: str, final_action: str
         "entry_timing_score": None,
         "entry_timing_grade": "N/A",
         "chase_risk_level": "불명",
+        "chase_risk_reasons": [],
         "exclusion_risk_level": "불명",
         "exclusion_reasons": [],
         "final_action": final_action or "관망",
@@ -91,6 +94,20 @@ def _reason_codes(upside: Dict[str, Any], safety_overrides: List[str], missing_f
     codes.extend(f"SAFETY_OVERRIDE_{_code(item)}" for item in safety_overrides)
     if missing_fields:
         codes.append("READINESS_MISSING_FIELDS")
+    return _unique_texts(codes, limit=20)
+
+
+def _chase_reason_codes(upside: Dict[str, Any]) -> List[str]:
+    explicit = _unique_texts(upside.get("chase_risk_reasons"), limit=20)
+    if explicit:
+        return explicit
+    codes: List[str] = []
+    filters = upside.get("filters") if isinstance(upside.get("filters"), list) else []
+    for item in filters:
+        if isinstance(item, dict) and item.get("triggered"):
+            code = _text(item.get("code"))
+            if code:
+                codes.append(code)
     return _unique_texts(codes, limit=20)
 
 

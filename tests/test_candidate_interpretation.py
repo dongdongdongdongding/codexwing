@@ -29,6 +29,12 @@ def _fixture_row():
             "stop_sl_pct": -5,
             "readiness_analysis": {"final_buy_judgment": {"action": "눌림 대기"}},
         },
+        "entry_readiness_contract": {
+            "chase_risk_level": "높음",
+            "chase_risk_reasons": ["CHASE_5D_GT_25"],
+            "action_reason_codes": ["CHASE_5D_GT_25"],
+            "final_action": "눌림 대기",
+        },
         "realized_expectancy_admission": {
             "policy_version": "kr_realized_expectancy_admission_v1",
             "3d_prob": 62.5,
@@ -60,6 +66,8 @@ def test_candidate_interpretation_contract_extracts_surface_parity_fields():
     assert interpretation["realized_expectancy_5d_prob"] == 80.1
     assert interpretation["ranking_score_5d"] == 77.4
     assert interpretation["data_warning_count"] == 1
+    assert interpretation["chase_risk_level"] == "높음"
+    assert interpretation["chase_risk_reasons"] == ["CHASE_5D_GT_25"]
 
 
 def test_signal_display_rows_embed_same_candidate_interpretation_contract():

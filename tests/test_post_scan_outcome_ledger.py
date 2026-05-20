@@ -52,6 +52,7 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
                     "entry_timing_score": 79.0,
                     "entry_timing_grade": "B+",
                     "chase_risk_level": "낮음",
+                    "chase_risk_reasons": ["CHASE_5D_GT_25"],
                     "exclusion_risk_level": "낮음",
                     "final_action": "조건부 매수 가능",
                     "action_reason_codes": [],
@@ -78,6 +79,7 @@ def test_build_post_scan_ledger_preserves_section_and_path_metrics():
     assert rows[0]["entry_readiness_contract"]["stock_quality_grade"] == "B+"
     assert rows[0]["stock_quality_score"] == 82.0
     assert rows[0]["final_action"] == "조건부 매수 가능"
+    assert rows[0]["chase_risk_reasons"] == ["CHASE_5D_GT_25"]
 
 
 def test_summarize_post_scan_ledger_reports_win_avg_min_max_and_stop_first():

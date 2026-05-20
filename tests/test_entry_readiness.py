@@ -29,9 +29,10 @@ def test_entry_readiness_blocks_extreme_overheat():
     assert analysis["stock_quality_grade"] in {"A", "B+"}
     assert analysis["upside_room_grade"] in {"C", "D"}
     assert analysis["final_action"] == "매수 금지"
-    assert "RET_60D_GT_150" in analysis["action_reason_codes"]
+    assert "NO_NEW_ENTRY_60D_GT_150" in analysis["action_reason_codes"]
     assert analysis["final_buy_judgment"]["action"] == "매수 금지"
-    assert any(row["code"] == "RET_60D_GT_150" and row["triggered"] for row in analysis["upside"]["filters"])
+    assert "NO_NEW_ENTRY_60D_GT_150" in analysis["chase_risk_reasons"]
+    assert any(row["code"] == "NO_NEW_ENTRY_60D_GT_150" and row["triggered"] for row in analysis["upside"]["filters"])
     assert analysis["entry_strategy"]["mode"] == "blocked"
     assert "신규 매수 금지" in analysis["entry_strategy"]["primary_condition"]
     assert analysis["risk_management"]["stop_price"] is not None

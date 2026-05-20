@@ -147,6 +147,7 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
         "upside_room_grade": _first(readiness_contract.get("upside_room_grade"), row.get("upside_room_grade")),
         "entry_timing_grade": _first(readiness_contract.get("entry_timing_grade"), row.get("entry_timing_grade")),
         "chase_risk_level": _first(readiness_contract.get("chase_risk_level"), row.get("chase_risk_level")),
+        "chase_risk_reasons": _text_list(_first(readiness_contract.get("chase_risk_reasons"), row.get("chase_risk_reasons")), limit=10),
         "exclusion_risk_level": _first(readiness_contract.get("exclusion_risk_level"), row.get("exclusion_risk_level")),
         "entry_readiness_action": _first(readiness_contract.get("final_action"), row.get("final_action")),
         "entry_readiness_reason_codes": _text_list(readiness_contract.get("action_reason_codes"), limit=10),
