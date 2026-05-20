@@ -47,13 +47,52 @@ def _field_values(row: Dict[str, Any]) -> Dict[str, Any]:
     flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
     trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
-    return {
+    values = {
         "entry_reference_price": _first(trade_plan.get("entry_reference_price"), row.get("entry_reference_price"), row.get("scan_entry_reference_price")),
         "current_price": _first(price.get("current_price"), row.get("current_price"), row.get("Close"), row.get("close")),
         "volume_ratio": _first(price.get("volume_ratio_20d"), row.get("volume_ratio"), row.get("volume_ratio_20d")),
-        "flow": _first(flow.get("foreigner"), flow.get("institution"), row.get("foreigner"), row.get("institution"), row.get("foreign_flow"), row.get("institution_flow")),
+        "flow_1d": _first(
+            flow.get("foreigner_1d"),
+            flow.get("institution_1d"),
+            flow.get("retail_1d"),
+            row.get("foreigner_1d"),
+            row.get("institution_1d"),
+            row.get("retail_1d"),
+            flow.get("foreigner"),
+            flow.get("institution"),
+            row.get("foreigner"),
+            row.get("institution"),
+            row.get("foreign_flow"),
+            row.get("institution_flow"),
+        ),
         "calibration": _first(admission.get("policy_version"), admission.get("calibration_source"), row.get("admission_policy_version")),
     }
+    market = str(_first(row.get("market"), row.get("Market")) or "").upper()
+    ticker = str(_first(row.get("ticker"), row.get("Ticker"), row.get("티커")) or "").upper()
+    is_kr = market in {"KOSPI", "KOSDAQ"} or ticker.endswith((".KS", ".KQ"))
+    if is_kr:
+        values.update(
+            {
+                "flow_3d": _first(
+                    flow.get("foreigner_3d"),
+                    flow.get("institution_3d"),
+                    flow.get("retail_3d"),
+                    row.get("foreigner_3d"),
+                    row.get("institution_3d"),
+                    row.get("retail_3d"),
+                ),
+                "flow_10d": _first(
+                    flow.get("foreigner_10d"),
+                    flow.get("institution_10d"),
+                    flow.get("retail_10d"),
+                    row.get("foreigner_10d"),
+                    row.get("institution_10d"),
+                    row.get("retail_10d"),
+                ),
+                "flow_asof": _first(flow.get("asof"), flow.get("as_of"), flow.get("updated_at"), row.get("flow_asof")),
+            }
+        )
+    return values
 
 
 def build_candidate_data_quality(row: Dict[str, Any], *, now: datetime | None = None) -> Dict[str, Any]:

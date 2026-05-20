@@ -2177,6 +2177,29 @@ def _flow_persistence_fields(whale_data: Optional[Dict[str, Any]], leader_signal
     whale = whale_data if isinstance(whale_data, dict) else {}
     leader = leader_signal if isinstance(leader_signal, dict) else {}
 
+    def has_flow_evidence(source: Dict[str, Any]) -> bool:
+        if not isinstance(source, dict):
+            return False
+        if source.get("valid") is True:
+            return True
+        for key in (
+            "flow_source",
+            "flow_asof",
+            "flow_window",
+            "foreigner_1d",
+            "institution_1d",
+            "retail_1d",
+            "foreigner_3d",
+            "institution_3d",
+            "retail_3d",
+            "foreigner_10d",
+            "institution_10d",
+            "retail_10d",
+        ):
+            if source.get(key) not in (None, ""):
+                return True
+        return False
+
     def pick(*keys: str, default: Any = None) -> Any:
         for source in (whale, leader):
             for key in keys:
@@ -2185,43 +2208,59 @@ def _flow_persistence_fields(whale_data: Optional[Dict[str, Any]], leader_signal
                     return value
         return default
 
-    foreigner = _safe_numeric(pick("foreigner", "foreign_flow"), 0.0)
-    institution = _safe_numeric(pick("institution", "institution_flow"), 0.0)
-    retail = _safe_numeric(pick("retail", "retail_flow"), 0.0)
+    has_evidence = has_flow_evidence(whale) or has_flow_evidence(leader)
+
+    def optional_flow(*keys: str) -> Optional[float]:
+        if not has_evidence:
+            return None
+        value = pick(*keys, default=None)
+        return _optional_float(value)
+
+    def pick_flow_meta(*keys: str, default: Any = None) -> Any:
+        if not has_evidence:
+            return default
+        return pick(*keys, default=default)
+
+    def rounded(value: Optional[float]) -> Optional[float]:
+        return round(float(value), 1) if value is not None else None
+
+    foreigner = optional_flow("foreigner", "foreign_flow")
+    institution = optional_flow("institution", "institution_flow")
+    retail = optional_flow("retail", "retail_flow")
     return {
-        "foreigner": round(float(foreigner), 1),
-        "foreign_flow": round(float(foreigner), 1),
-        "institution": round(float(institution), 1),
-        "institution_flow": round(float(institution), 1),
-        "retail": round(float(retail), 1),
-        "retail_flow": round(float(retail), 1),
+        "foreigner": rounded(foreigner),
+        "foreign_flow": rounded(foreigner),
+        "institution": rounded(institution),
+        "institution_flow": rounded(institution),
+        "retail": rounded(retail),
+        "retail_flow": rounded(retail),
         "foreigner_1d": pick("foreigner_1d", default=foreigner),
         "institution_1d": pick("institution_1d", default=institution),
         "retail_1d": pick("retail_1d", default=retail),
-        "foreigner_3d": pick("foreigner_3d", default=None),
-        "institution_3d": pick("institution_3d", default=None),
-        "retail_3d": pick("retail_3d", default=None),
-        "foreigner_10d": pick("foreigner_10d", default=None),
-        "institution_10d": pick("institution_10d", default=None),
-        "retail_10d": pick("retail_10d", default=None),
-        "flow_consensus_buying": bool(pick("flow_consensus_buying", default=False)),
-        "retail_dominant": bool(pick("retail_dominant", default=False)),
-        "dominant": pick("dominant", default=None),
-        "dominant_side": pick("dominant_side", default=None),
-        "dominant_flow": pick("dominant_flow", default=None),
-        "buy_dominant": pick("buy_dominant", default=None),
-        "buy_dominant_flow": pick("buy_dominant_flow", default=None),
-        "sell_dominant": pick("sell_dominant", default=None),
-        "sell_dominant_flow": pick("sell_dominant_flow", default=None),
-        "whale_trend": pick("whale_trend", default=None),
-        "whale_flow": pick("whale_flow", "whale_flow_1d", "whale_net_flow", default=None),
-        "whale_flow_1d": pick("whale_flow_1d", "whale_flow", default=None),
-        "whale_flow_3d": pick("whale_flow_3d", default=None),
-        "whale_flow_10d": pick("whale_flow_10d", default=None),
-        "flow_source": pick("flow_source", default=None),
-        "flow_unit": pick("flow_unit", default=None),
-        "flow_window": pick("flow_window", default=None),
-        "flow_asof": pick("flow_asof", default=None),
+        "foreigner_3d": pick_flow_meta("foreigner_3d", default=None),
+        "institution_3d": pick_flow_meta("institution_3d", default=None),
+        "retail_3d": pick_flow_meta("retail_3d", default=None),
+        "foreigner_10d": pick_flow_meta("foreigner_10d", default=None),
+        "institution_10d": pick_flow_meta("institution_10d", default=None),
+        "retail_10d": pick_flow_meta("retail_10d", default=None),
+        "flow_consensus_buying": bool(pick_flow_meta("flow_consensus_buying", default=False)),
+        "retail_dominant": bool(pick_flow_meta("retail_dominant", default=False)),
+        "dominant": pick_flow_meta("dominant", default=None),
+        "dominant_side": pick_flow_meta("dominant_side", default=None),
+        "dominant_flow": pick_flow_meta("dominant_flow", default=None),
+        "buy_dominant": pick_flow_meta("buy_dominant", default=None),
+        "buy_dominant_flow": pick_flow_meta("buy_dominant_flow", default=None),
+        "sell_dominant": pick_flow_meta("sell_dominant", default=None),
+        "sell_dominant_flow": pick_flow_meta("sell_dominant_flow", default=None),
+        "whale_trend": pick_flow_meta("whale_trend", default=None),
+        "whale_flow": pick_flow_meta("whale_flow", "whale_flow_1d", "whale_net_flow", default=None),
+        "whale_flow_1d": pick_flow_meta("whale_flow_1d", "whale_flow", default=None),
+        "whale_flow_3d": pick_flow_meta("whale_flow_3d", default=None),
+        "whale_flow_10d": pick_flow_meta("whale_flow_10d", default=None),
+        "flow_source": pick_flow_meta("flow_source", default=None),
+        "flow_unit": pick_flow_meta("flow_unit", default=None),
+        "flow_window": pick_flow_meta("flow_window", default=None),
+        "flow_asof": pick_flow_meta("flow_asof", default=None),
         "flow_warnings": pick("warnings", "flow_warnings", default=[]),
     }
 
