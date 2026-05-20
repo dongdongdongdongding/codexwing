@@ -4,8 +4,10 @@ from multi_agent.tools.run_kr_daily_auto_scans import (
     _chunk_embeds_for_discord,
     _discord_embed_char_count,
     _embed_to_content_chunks,
+    _parse_last_json_line,
     _prepare_embeds_for_discord,
     _scan_targets,
+    _validation_embed,
 )
 
 
@@ -76,3 +78,38 @@ def test_daily_auto_scan_targets_can_be_overridden(monkeypatch):
     monkeypatch.setenv("AG_KR_DAILY_SCAN_TARGETS", "KOSPI:SWING,KOSDAQ/SWING,KOSPI:SWING,bad")
 
     assert _scan_targets() == [("KOSPI", "SWING"), ("KOSDAQ", "SWING")]
+
+
+def test_post_scan_validation_json_parser_reads_last_json_line():
+    text = "noise\n{\"json\":\"a.json\",\"md\":\"a.md\"}\nother\n{\"segments\":8}\n"
+
+    assert _parse_last_json_line(text) == {"segments": 8}
+
+
+def test_post_scan_validation_json_parser_reads_pretty_json_tail():
+    text = "warning\n{\n  \"json_path\": \"a.json\",\n  \"md_path\": \"a.md\",\n  \"segments\": 8\n}\n"
+
+    assert _parse_last_json_line(text) == {"json_path": "a.json", "md_path": "a.md", "segments": 8}
+
+
+def test_validation_embed_summarizes_post_scan_reports():
+    embed = _validation_embed(
+        {
+            "generated_at": "now",
+            "ok": False,
+            "results": [
+                {
+                    "name": "Segment Top5 Validation",
+                    "ok": False,
+                    "returncode": 1,
+                    "json_path": "runtime_state/reports/validation/segment_top5_validation.json",
+                    "md_path": "runtime_state/reports/validation/segment_top5_validation.md",
+                    "summary": "### KOSPI:SWING\n- recent top5 positive-rate: 60.00%",
+                }
+            ],
+        }
+    )
+
+    assert embed["title"] == "스캔 후 자동 검증"
+    assert embed["color"] == 0xE67E22
+    assert "recent top5 positive-rate" in embed["fields"][0]["value"]

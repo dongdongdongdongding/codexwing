@@ -49,6 +49,26 @@ DISCORD_MAX_EMBED_DESCRIPTION_CHARS = 4096
 DISCORD_MAX_EMBED_FIELD_NAME_CHARS = 256
 DISCORD_MAX_EMBED_FIELD_VALUE_CHARS = 1024
 DISCORD_MAX_CONTENT_CHARS = 2000
+POST_SCAN_VALIDATION_COMMANDS = (
+    {
+        "name": "Scan Cohort Performance",
+        "command": [sys.executable, "multi_agent/tools/report_scan_cohort_performance.py"],
+        "md_path": "runtime_state/reports/validation/scan_cohort_performance.md",
+        "json_path": "runtime_state/reports/validation/scan_cohort_performance.json",
+    },
+    {
+        "name": "Segment Top1 Validation",
+        "command": [sys.executable, "multi_agent/tools/report_segment_topn_validation.py", "--topn", "1"],
+        "md_path": "runtime_state/reports/validation/segment_top1_validation.md",
+        "json_path": "runtime_state/reports/validation/segment_top1_validation.json",
+    },
+    {
+        "name": "Segment Top5 Validation",
+        "command": [sys.executable, "multi_agent/tools/report_segment_topn_validation.py", "--topn", "5"],
+        "md_path": "runtime_state/reports/validation/segment_top5_validation.md",
+        "json_path": "runtime_state/reports/validation/segment_top5_validation.json",
+    },
+)
 
 
 async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: bool = False) -> int:
@@ -96,6 +116,7 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
     summaries = await asyncio.gather(*[_run_market_scan(market, scan_mode) for market, scan_mode in scan_targets])
     _refresh_archive_dataset()
     performance_payload = _record_section_performance()
+    validation_payload = _record_post_scan_validation()
 
     result_embeds: List[Dict[str, Any]] = [
         {
@@ -117,12 +138,19 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
             "timestamp": datetime.now(timezone.utc).isoformat(),
         },
         _performance_embed(performance_payload),
+        _validation_embed(validation_payload),
     ]
     for summary in summaries:
         result_embeds.extend(build_scan_result_embeds(summary, config=config))
     await _post_embeds(config, result_embeds)
 
-    print(json.dumps({"summaries": summaries, "performance": performance_payload}, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {"summaries": summaries, "performance": performance_payload, "validation": validation_payload},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0 if all(_summary_ok(item) for item in summaries) else 1
 
 
@@ -214,6 +242,106 @@ def _record_section_performance() -> Dict[str, Any]:
     return {"metrics": metrics, "paths": paths, "markdown": build_latest_performance_markdown(metrics)}
 
 
+def _record_post_scan_validation() -> Dict[str, Any]:
+    results: List[Dict[str, Any]] = []
+    env = dict(os.environ)
+    env.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
+    for spec in POST_SCAN_VALIDATION_COMMANDS:
+        started_at = datetime.now(timezone.utc).isoformat()
+        item: Dict[str, Any] = {
+            "name": spec["name"],
+            "started_at": started_at,
+            "command": list(spec["command"]),
+            "json_path": spec.get("json_path"),
+            "md_path": spec.get("md_path"),
+        }
+        try:
+            completed = subprocess.run(
+                list(spec["command"]),
+                cwd=str(PROJECT_ROOT),
+                env=env,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=900,
+            )
+            item["returncode"] = int(completed.returncode)
+            item["ok"] = completed.returncode == 0
+            item["stdout_tail"] = (completed.stdout or "")[-2000:]
+            item["stderr_tail"] = (completed.stderr or "")[-2000:]
+            parsed = _parse_last_json_line(completed.stdout or "")
+            if parsed:
+                item.update({key: value for key, value in parsed.items() if key in {"json", "md", "json_path", "md_path", "prepared_rows", "segments"}})
+        except Exception as exc:
+            item["ok"] = False
+            item["returncode"] = -1
+            item["error"] = str(exc)
+        md_path = PROJECT_ROOT / str(item.get("md") or item.get("md_path") or "")
+        item["summary"] = _markdown_validation_excerpt(md_path)
+        item["finished_at"] = datetime.now(timezone.utc).isoformat()
+        results.append(item)
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "ok": all(bool(item.get("ok")) for item in results),
+        "results": results,
+    }
+
+
+def _parse_last_json_line(text: str) -> Dict[str, Any]:
+    for line in reversed((text or "").splitlines()):
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            payload = json.loads(line)
+        except Exception:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    raw = text or ""
+    for idx in [pos for pos, char in enumerate(raw) if char == "{"][::-1]:
+        try:
+            payload = json.loads(raw[idx:].strip())
+        except Exception:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    return {}
+
+
+def _markdown_validation_excerpt(path: Path, *, max_lines: int = 10) -> str:
+    try:
+        if not path.exists():
+            return ""
+        lines: List[str] = []
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line:
+                continue
+            if line.startswith("#"):
+                continue
+            if any(
+                token in line.lower()
+                for token in (
+                    "kospi",
+                    "kosdaq",
+                    "top1",
+                    "top5",
+                    "exception",
+                    "positive-rate",
+                    "avg return",
+                    "worst/best",
+                    "min/max",
+                )
+            ):
+                lines.append(line)
+            if len(lines) >= max_lines:
+                break
+        return "\n".join(lines)[:1800]
+    except Exception as exc:
+        return f"summary read failed: {exc}"
+
+
 def _performance_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
     markdown = str(payload.get("markdown") or "").strip()
     fields = []
@@ -232,6 +360,33 @@ def _performance_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
         "fields": fields[:24]
         + [{"name": "Local Records", "value": "\n".join(str(v) for v in paths.values())[:1024] or "-", "inline": False}],
         "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def _validation_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
+    results = payload.get("results") if isinstance(payload.get("results"), list) else []
+    fields: List[Dict[str, Any]] = []
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        status = "OK" if item.get("ok") else "FAIL"
+        value_parts = [
+            f"status `{status}` · rc `{item.get('returncode')}`",
+            f"json `{item.get('json') or item.get('json_path') or '-'}`",
+            f"md `{item.get('md') or item.get('md_path') or '-'}`",
+        ]
+        summary = str(item.get("summary") or "").strip()
+        if summary:
+            value_parts.append(summary)
+        elif item.get("stderr_tail"):
+            value_parts.append(str(item.get("stderr_tail"))[:800])
+        fields.append({"name": str(item.get("name") or "Post Scan Validation")[:256], "value": "\n".join(value_parts)[:1024], "inline": False})
+    return {
+        "title": "스캔 후 자동 검증",
+        "description": "Top1/Top5/Shadow/Exception 성능 리포트 갱신 결과입니다. 승률·평균·손실꼬리 확인용입니다.",
+        "color": 0x2ECC71 if payload.get("ok") else 0xE67E22,
+        "fields": fields[:10] or [{"name": "Status", "value": "검증 결과 없음", "inline": False}],
+        "timestamp": payload.get("generated_at") or datetime.now(timezone.utc).isoformat(),
     }
 
 

@@ -206,6 +206,11 @@ Daily KR automation uses two LaunchAgents:
   target is a separate observation stream for top-mover capture and does not
   replace the swing Top5 stream. Override with
   `AG_KR_DAILY_SCAN_TARGETS=KOSPI:SWING,KOSDAQ:SWING` when needed.
+  After the scan artifacts are refreshed, the runner also regenerates the
+  section performance snapshot, scan cohort performance, and segment Top1/Top5
+  validation reports, then posts their status and key excerpts to Discord. These
+  post-scan validations are diagnostic and should not block scan persistence if
+  a report command fails.
 
 ## Result Rendering Requirement
 
