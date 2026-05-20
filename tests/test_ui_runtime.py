@@ -408,13 +408,26 @@ class UIHelperTests(unittest.TestCase):
                 "theme_day_symbol_count": 7,
                 "theme_day_avg_decision_score": 60,
             },
+            {
+                "ticker": "THEMERANK.KQ",
+                "market": "KOSDAQ",
+                "primary_theme": "반도체",
+                "prob_clean": 30,
+                "theme_day_avg_decision_score": 75,
+                "theme_day_strength_rank": 1,
+                "theme_day_strength_score": 2.1,
+            },
         ]
 
         groups = build_kr_shadow_gate_records(rows, limit=5)
 
         self.assertEqual([row["ticker"] for row in groups["kosdaq_ordered"]], ["ORDERED.KQ"])
+        self.assertEqual([row["ticker"] for row in groups["kosdaq_theme_rank"]], ["THEMERANK.KQ"])
         self.assertEqual([row["ticker"] for row in groups["kosdaq_low_loss"]], ["LOWLOSS.KQ"])
-        self.assertEqual([row["_analysis_section"] for row in groups["kosdaq"]], ["KOSDAQ Ordered Shadow", "KOSDAQ Low-loss Shadow"])
+        self.assertEqual(
+            [row["_analysis_section"] for row in groups["kosdaq"]],
+            ["KOSDAQ Ordered Shadow", "KOSDAQ Theme Rank Shadow", "KOSDAQ Low-loss Shadow"],
+        )
 
     def test_kr_shadow_gate_uses_planner_theme_metrics_display_fields(self):
         rows = [

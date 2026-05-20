@@ -187,7 +187,7 @@ Discord must follow the shared scanner product contract in
 - `Top5` is the production priority stream, not an unconditional buy list.
 - `Exception Leader` is a separate high-momentum observation stream and does
   not replace Top5.
-- `KOSDAQ Ordered Shadow`, `KOSDAQ Low-loss Shadow`, `KOSPI Shadow`, and
+- `KOSDAQ Ordered Shadow`, `KOSDAQ Theme Rank Shadow`, `KOSDAQ Low-loss Shadow`, `KOSPI Shadow`, and
   `별도 급등 레이더` are shadow/observer sections. They must remain visually
   distinct from production Top5.
 - Action labels such as `조건부 매수 가능`, `눌림/확인 대기`, `관망`, and

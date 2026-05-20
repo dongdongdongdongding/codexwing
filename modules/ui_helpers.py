@@ -396,6 +396,47 @@ def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     )
 
 
+def is_kosdaq_theme_rank_shadow_gate_row(rec: Dict[str, Any]) -> bool:
+    """Latest KOSDAQ dynamic-theme rank shadow gate.
+
+    Display-only gate from the ordered OHLCV testbed:
+    theme_day_avg_decision_score>=71.9429, same-day theme rank #1,
+    theme_day_strength_score<=2.8655, prob_clean<=32.325. This remains
+    shadow-only because promotion_ready_non_theme is still 0.
+    """
+    if not isinstance(rec, dict) or _row_market(rec) != "KOSDAQ":
+        return False
+    theme_avg_decision = _row_float(
+        rec,
+        "theme_day_avg_decision_score",
+        "_theme_day_avg_decision_score",
+        "display_theme_day_avg_decision_score",
+    )
+    theme_rank = _row_float(
+        rec,
+        "theme_day_strength_rank",
+        "_theme_day_strength_rank",
+        "display_theme_day_strength_rank",
+    )
+    theme_strength = _row_float(
+        rec,
+        "theme_day_strength_score",
+        "_theme_day_strength_score",
+        "display_theme_day_strength_score",
+    )
+    prob_clean = _row_float(rec, "prob_clean", "_prob_clean", "정밀확률", "Clean", "phase25_prob", "ml_prob")
+    return (
+        theme_avg_decision is not None
+        and theme_avg_decision >= 71.9429
+        and theme_rank is not None
+        and theme_rank <= 1.0
+        and theme_strength is not None
+        and theme_strength <= 2.8655
+        and prob_clean is not None
+        and prob_clean <= 32.325
+    )
+
+
 def is_kosdaq_ordered_observer_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     """Issue-tracked KOSDAQ ordered rebound observer gate.
 
@@ -520,12 +561,32 @@ def build_kr_shadow_gate_records(
         },
     )
     ordered_tickers = {_row_text(row, "ticker", "티커", "Ticker", "symbol").upper() for row in kosdaq_ordered}
+    kosdaq_theme_rank = _mark(
+        [
+            row
+            for row in sorted_rows
+            if is_kosdaq_theme_rank_shadow_gate_row(row)
+            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in ordered_tickers
+        ],
+        section="KOSDAQ Theme Rank Shadow",
+        order=-25,
+        gate={
+            "label": "KOSDAQ 테마랭크 관찰",
+            "profile": "5D_ordered_5v5",
+            "conditions": "테마평균 decision>=71.94 · 테마랭크<=1 · 테마강도<=2.8655 · prob_clean<=32.325",
+            "metrics": "n=27 · win 81.5% · train 66.7% · test 88.9% · stop 11.1% · MFE +11.05%",
+            "note": "최신 ordered search release-like gate, promotion_ready=0 이므로 shadow-only",
+        },
+    )
+    kosdaq_shadow_tickers = ordered_tickers | {
+        _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() for row in kosdaq_theme_rank
+    }
     kosdaq_low_loss = _mark(
         [
             row
             for row in sorted_rows
             if is_kosdaq_ordered_rebound_shadow_gate_row(row)
-            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in ordered_tickers
+            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in kosdaq_shadow_tickers
         ],
         section="KOSDAQ Low-loss Shadow",
         order=-20,
@@ -551,10 +612,11 @@ def build_kr_shadow_gate_records(
     )
     return {
         "kosdaq_ordered": kosdaq_ordered,
+        "kosdaq_theme_rank": kosdaq_theme_rank,
         "kosdaq_low_loss": kosdaq_low_loss,
-        "kosdaq": kosdaq_ordered + kosdaq_low_loss,
+        "kosdaq": kosdaq_ordered + kosdaq_theme_rank + kosdaq_low_loss,
         "kospi": kospi,
-        "combined": kosdaq_ordered + kosdaq_low_loss + kospi,
+        "combined": kosdaq_ordered + kosdaq_theme_rank + kosdaq_low_loss + kospi,
     }
 
 
@@ -581,26 +643,76 @@ def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dic
             continue
         date_key = _row_theme_date_key(row)
         key = (market, date_key, theme)
-        bucket = grouped.setdefault(key, {"tickers": set(), "alpha": [], "decision": []})
+        bucket = grouped.setdefault(
+            key,
+            {
+                "tickers": set(),
+                "alpha": [],
+                "decision": [],
+                "day_return": [],
+                "volume_ratio": [],
+                "expected_1d": [],
+                "expected_3d": [],
+            },
+        )
         ticker = _row_text(row, "ticker", "티커", "Ticker", "symbol").strip()
         if ticker:
             bucket["tickers"].add(ticker)
         alpha = _row_float(row, "alpha_score", "Alpha", "종합점수")
         decision = _row_float(row, "decision_score", "Decision Score", "score")
+        day_return = _row_float(row, "day_return_pct", "전일비", "day_change_pct")
+        volume_ratio = _row_float(row, "volume_ratio", "Volume Ratio", "거래량비율")
+        expected_1d = _row_float(row, "expected_return_1d_pct", "Expected 1D")
+        expected_3d = _row_float(row, "expected_return_3d_pct", "Expected 3D")
         if alpha is not None:
             bucket["alpha"].append(alpha)
         if decision is not None:
             bucket["decision"].append(decision)
+        if day_return is not None:
+            bucket["day_return"].append(day_return)
+        if volume_ratio is not None:
+            bucket["volume_ratio"].append(volume_ratio)
+        if expected_1d is not None:
+            bucket["expected_1d"].append(expected_1d)
+        if expected_3d is not None:
+            bucket["expected_3d"].append(expected_3d)
+
+    def _avg(values: List[float]) -> float | None:
+        return (sum(values) / len(values)) if values else None
+
     metrics = {
-        key: {
-            "symbol_count": float(len(value["tickers"])),
-            "avg_alpha": (sum(value["alpha"]) / len(value["alpha"])) if value["alpha"] else None,
-            "avg_decision": (sum(value["decision"]) / len(value["decision"])) if value["decision"] else None,
-        }
+        key: _theme_metric_payload(key, value, _avg)
         for key, value in grouped.items()
     }
     if not metrics:
         return rows
+    by_day: Dict[tuple[str, str], List[tuple[tuple[str, str, str], float]]] = {}
+    for key, metric in metrics.items():
+        market, date_key, _theme = key
+        strength = _parse_percent_value(metric.get("strength_score"))
+        if strength is None:
+            continue
+        by_day.setdefault((market, date_key), []).append((key, strength))
+    for day_items in by_day.values():
+        ordered = sorted(day_items, key=lambda item: item[1], reverse=True)
+        last_strength: float | None = None
+        rank = 0
+        dense_rank = 0
+        total = len(ordered)
+        for key, strength in ordered:
+            rank += 1
+            if last_strength is None or strength != last_strength:
+                dense_rank = rank
+                last_strength = strength
+            metric = metrics[key]
+            metric["strength_rank"] = float(dense_rank)
+            metric["strength_pct"] = (1.0 - ((float(dense_rank) - 1.0) / max(float(total), 1.0))) * 100.0
+            if dense_rank <= 3:
+                metric["strength_bucket"] = "THEME_TOP3"
+            elif dense_rank <= 7:
+                metric["strength_bucket"] = "THEME_TOP7"
+            else:
+                metric["strength_bucket"] = "THEME_TAIL"
     for row in rows:
         market = _row_market(row)
         theme = _row_text(row, "primary_theme", "테마", "theme").strip()
@@ -617,7 +729,61 @@ def _attach_display_theme_day_metrics(records: List[Dict[str, Any]]) -> List[Dic
             and _row_float(row, "theme_day_avg_decision_score", "_theme_day_avg_decision_score") is None
         ):
             row["_theme_day_avg_decision_score"] = round(metric["avg_decision"], 2)
+        if metric.get("avg_volume_ratio") is not None and _row_float(row, "theme_day_avg_volume_ratio") is None:
+            row["_theme_day_avg_volume_ratio"] = round(metric["avg_volume_ratio"], 2)
+        if metric.get("avg_day_return") is not None and _row_float(row, "theme_day_avg_day_return_pct") is None:
+            row["_theme_day_avg_day_return_pct"] = round(metric["avg_day_return"], 2)
+        if metric.get("avg_expected_1d") is not None and _row_float(row, "theme_day_avg_expected_return_1d_pct") is None:
+            row["_theme_day_avg_expected_return_1d_pct"] = round(metric["avg_expected_1d"], 2)
+        if metric.get("avg_expected_3d") is not None and _row_float(row, "theme_day_avg_expected_return_3d_pct") is None:
+            row["_theme_day_avg_expected_return_3d_pct"] = round(metric["avg_expected_3d"], 2)
+        if _row_float(row, "theme_day_strength_score", "_theme_day_strength_score") is None:
+            row["_theme_day_strength_score"] = round(float(metric.get("strength_score") or 0.0), 4)
+        if _row_float(row, "theme_day_strength_rank", "_theme_day_strength_rank") is None and metric.get("strength_rank") is not None:
+            row["_theme_day_strength_rank"] = metric["strength_rank"]
+        if _row_float(row, "theme_day_strength_pct", "_theme_day_strength_pct") is None and metric.get("strength_pct") is not None:
+            row["_theme_day_strength_pct"] = round(float(metric["strength_pct"]), 4)
+        if not _row_text(row, "theme_day_strength_bucket", "_theme_day_strength_bucket") and metric.get("strength_bucket"):
+            row["_theme_day_strength_bucket"] = metric["strength_bucket"]
     return rows
+
+
+def _theme_metric_payload(
+    key: tuple[str, str, str],
+    value: Dict[str, Any],
+    avg_fn,
+) -> Dict[str, Any]:
+    del key
+    symbol_count = int(len(value["tickers"]))
+    avg_alpha = avg_fn(value["alpha"])
+    avg_decision = avg_fn(value["decision"])
+    avg_day_return = avg_fn(value["day_return"])
+    avg_volume = avg_fn(value["volume_ratio"])
+    avg_expected_1d = avg_fn(value["expected_1d"])
+    avg_expected_3d = avg_fn(value["expected_3d"])
+    positive_ratio = None
+    if value["day_return"]:
+        positive_ratio = sum(1 for item in value["day_return"] if item > 0.0) / len(value["day_return"]) * 100.0
+    strength = (
+        (float(avg_day_return or 0.0) * 1.15)
+        + (float(avg_expected_1d or 0.0) * 0.85)
+        + (float(avg_expected_3d or 0.0) * 0.35)
+        + (min(float(avg_volume or 0.0), 6.0) * 0.65)
+        + (float(positive_ratio or 0.0) / 100.0 * 2.0)
+        + min(math.log1p(max(symbol_count, 0)), 2.5)
+        + (float(avg_decision or 0.0) / 100.0)
+    )
+    return {
+        "symbol_count": float(symbol_count),
+        "avg_alpha": avg_alpha,
+        "avg_decision": avg_decision,
+        "avg_day_return": avg_day_return,
+        "avg_volume_ratio": avg_volume,
+        "avg_expected_1d": avg_expected_1d,
+        "avg_expected_3d": avg_expected_3d,
+        "positive_return_pct": positive_ratio,
+        "strength_score": strength,
+    }
 
 
 def _row_theme_date_key(row: Dict[str, Any]) -> str:

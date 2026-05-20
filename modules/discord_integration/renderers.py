@@ -210,6 +210,7 @@ def _shadow_section_count(section_counts: Dict[str, int]) -> int:
         int(section_counts.get(section, 0) or 0)
         for section in (
             "KOSDAQ Ordered Shadow",
+            "KOSDAQ Theme Rank Shadow",
             "KOSDAQ Low-loss Shadow",
             "KOSDAQ Shadow",
             "KOSPI Shadow",
@@ -481,6 +482,7 @@ def build_top_deep_embeds(
         section = str(alignment.get("analysis_section") or "Top5")
         section_order = {
             "KOSDAQ Ordered Shadow": -30,
+            "KOSDAQ Theme Rank Shadow": -25,
             "KOSDAQ Low-loss Shadow": -20,
             "KOSDAQ Shadow": -20,
             "KOSPI Shadow": -10,

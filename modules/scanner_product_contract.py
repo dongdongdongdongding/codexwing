@@ -59,6 +59,13 @@ CANDIDATE_SECTION_CONTRACTS: Dict[str, CandidateSectionContract] = {
         replaces_top5=False,
         operator_semantics="KOSDAQ 손실 꼬리 축소형 shadow 게이트입니다. 낮은 낙폭 특성 검증을 따로 축적합니다.",
     ),
+    "KOSDAQ Theme Rank Shadow": CandidateSectionContract(
+        label="KOSDAQ Theme Rank Shadow",
+        role="kosdaq_theme_rank_observer",
+        production_rank_source=False,
+        replaces_top5=False,
+        operator_semantics="KOSDAQ 동적 테마 랭크 1위권 ordered 관찰 게이트입니다. 운영 Top5를 대체하지 않고 성과를 따로 축적합니다.",
+    ),
     "KOSPI Shadow": CandidateSectionContract(
         label="KOSPI Shadow",
         role="kospi_ordered_observer",

@@ -20,6 +20,7 @@ from ui.view_chrome import render_section_intro
 
 TOP_DEEP_SECTION_ORDER = {
     "KOSDAQ Ordered Shadow": -30,
+    "KOSDAQ Theme Rank Shadow": -25,
     "KOSDAQ Low-loss Shadow": -20,
     "KOSDAQ Shadow": -20,
     "KOSPI Shadow": -10,

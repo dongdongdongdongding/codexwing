@@ -27,6 +27,7 @@ not a trading guarantee.
 | Exception Leader | momentum exception stream | Strong out-of-rank momentum stream. It is not a Top5 replacement; it is a separate high-volatility observation and precision-analysis target. |
 | Shadow | validated observer group | Generic grouping for gates under forward observation. Shadow rows do not change production ranking. |
 | KOSDAQ Ordered Shadow | KOSDAQ ordered observer | KOSDAQ ordered rebound observer. It appears near the top for visibility, but remains shadow-only until validation says otherwise. |
+| KOSDAQ Theme Rank Shadow | KOSDAQ theme-rank observer | KOSDAQ dynamic same-day theme-rank ordered observer. It appears above Low-loss Shadow, but remains shadow-only until larger forward samples validate it. |
 | KOSDAQ Low-loss Shadow | KOSDAQ low-loss observer | KOSDAQ low-loss/theme observer focused on reducing loss tails. It is not the same gate as KOSDAQ Ordered Shadow. |
 | KOSPI Shadow | KOSPI ordered observer | KOSPI ordered observer gate. It is tracked separately from Top5 and Exception Leader. |
 | 별도 급등 레이더 | next-day surge radar | Separate next-day surge radar. It is shadow-only and does not replace Top5 or Exception Leader. |
