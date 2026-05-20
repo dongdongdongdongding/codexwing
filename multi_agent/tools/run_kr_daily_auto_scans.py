@@ -48,6 +48,7 @@ DISCORD_MAX_EMBED_TITLE_CHARS = 256
 DISCORD_MAX_EMBED_DESCRIPTION_CHARS = 4096
 DISCORD_MAX_EMBED_FIELD_NAME_CHARS = 256
 DISCORD_MAX_EMBED_FIELD_VALUE_CHARS = 1024
+DISCORD_MAX_CONTENT_CHARS = 2000
 
 
 async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: bool = False) -> int:
@@ -253,11 +254,34 @@ async def _post_embeds(config: DiscordIntegrationConfig, embeds: List[Dict[str, 
         try:
             await asyncio.to_thread(_post_embed_chunk, config, chunk)
         except Exception as exc:
-            print(f"[WARN] Discord channel post failed: {exc}", file=sys.stderr)
+            print(f"[WARN] Discord embed chunk post failed: {exc}", file=sys.stderr)
+            await _post_embed_chunk_fallback(config, chunk)
 
 
 def _post_embed_chunk(config: DiscordIntegrationConfig, embeds: List[Dict[str, Any]]) -> None:
-    body = json.dumps({"embeds": embeds}, ensure_ascii=False).encode("utf-8")
+    _post_discord_message(config, {"embeds": embeds})
+
+
+async def _post_embed_chunk_fallback(config: DiscordIntegrationConfig, embeds: List[Dict[str, Any]]) -> None:
+    for embed in embeds or []:
+        try:
+            await asyncio.to_thread(_post_embed_chunk, config, [embed])
+            continue
+        except Exception as exc:
+            print(f"[WARN] Discord single embed post failed; falling back to text: {exc}", file=sys.stderr)
+        for content in _embed_to_content_chunks(embed):
+            try:
+                await asyncio.to_thread(_post_discord_content, config, content)
+            except Exception as exc:
+                print(f"[WARN] Discord text fallback failed: {exc}", file=sys.stderr)
+
+
+def _post_discord_content(config: DiscordIntegrationConfig, content: str) -> None:
+    _post_discord_message(config, {"content": _clip_text(content, DISCORD_MAX_CONTENT_CHARS)})
+
+
+def _post_discord_message(config: DiscordIntegrationConfig, payload: Dict[str, Any]) -> None:
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(
         f"https://discord.com/api/v10/channels/{config.result_channel_id}/messages",
         data=body,
@@ -282,6 +306,10 @@ def _chunk_embeds_for_discord(embeds: List[Dict[str, Any]]) -> List[List[Dict[st
     current_chars = 0
     for embed in embeds or []:
         embed_chars = _discord_embed_char_count(embed)
+        if embed_chars > DISCORD_SAFE_MESSAGE_CHARS:
+            for split_embed in _split_embed_for_discord(embed):
+                chunks.extend(_chunk_embeds_for_discord([split_embed]))
+            continue
         if current and (
             len(current) >= DISCORD_MAX_EMBEDS_PER_MESSAGE
             or current_chars + embed_chars > DISCORD_SAFE_MESSAGE_CHARS
@@ -361,10 +389,33 @@ def _fit_single_field(base: Dict[str, Any], field: Dict[str, Any]) -> Dict[str, 
         return field
     base_chars = _discord_embed_char_count({**base, "fields": []})
     name_len = len(str(field.get("name") or ""))
-    available = max(100, DISCORD_SAFE_MESSAGE_CHARS - base_chars - name_len)
+    available = max(1, DISCORD_SAFE_MESSAGE_CHARS - base_chars - name_len)
     clipped = dict(field)
     clipped["value"] = _clip_text(clipped.get("value"), min(DISCORD_MAX_EMBED_FIELD_VALUE_CHARS, available))
     return clipped
+
+
+def _embed_to_content_chunks(embed: Dict[str, Any]) -> List[str]:
+    title = str(embed.get("title") or "Discord embed fallback")
+    description = str(embed.get("description") or "").strip()
+    lines = [f"**{title}**"]
+    if description:
+        lines.append(description)
+    fields = embed.get("fields") if isinstance(embed.get("fields"), list) else []
+    for field in fields:
+        if not isinstance(field, dict):
+            continue
+        name = str(field.get("name") or "-").strip() or "-"
+        value = str(field.get("value") or "-").strip() or "-"
+        lines.append(f"{name}: {value}")
+    text = "\n".join(lines)
+    chunks: List[str] = []
+    while text:
+        chunks.append(_clip_text(text, DISCORD_MAX_CONTENT_CHARS))
+        if len(text) <= DISCORD_MAX_CONTENT_CHARS:
+            break
+        text = text[DISCORD_MAX_CONTENT_CHARS - 1 :].lstrip()
+    return chunks or ["자동 스캔 결과 요약을 생성하지 못했습니다."]
 
 
 def _clip_text(value: Any, limit: int) -> str:

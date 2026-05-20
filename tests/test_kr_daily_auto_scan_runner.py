@@ -1,7 +1,9 @@
 from multi_agent.tools.run_kr_daily_auto_scans import (
+    DISCORD_MAX_CONTENT_CHARS,
     DISCORD_SAFE_MESSAGE_CHARS,
     _chunk_embeds_for_discord,
     _discord_embed_char_count,
+    _embed_to_content_chunks,
     _prepare_embeds_for_discord,
 )
 
@@ -47,3 +49,17 @@ def test_discord_embed_preparation_splits_and_clips_oversized_embeds():
         for field in embed.get("fields") or []:
             assert len(field.get("name") or "") <= 256
             assert len(field.get("value") or "") <= 1024
+
+
+def test_discord_embed_text_fallback_chunks_under_content_limit():
+    embed = {
+        "title": "자동 스캔 완료",
+        "description": "d" * 3000,
+        "fields": [{"name": "결과", "value": "v" * 5000}],
+    }
+
+    chunks = _embed_to_content_chunks(embed)
+
+    assert len(chunks) > 1
+    assert all(0 < len(chunk) <= DISCORD_MAX_CONTENT_CHARS for chunk in chunks)
+    assert chunks[0].startswith("**자동 스캔 완료**")
