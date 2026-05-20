@@ -11,6 +11,7 @@ import argparse
 import json
 import math
 import sys
+import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from itertools import combinations
@@ -928,10 +929,15 @@ def search_profile(
     min_test: int,
     min_fold_test: int,
     include_static_themes: bool,
+    progress: Optional[Any] = None,
 ) -> List[Dict[str, Any]]:
     prof = df[df["candidate_id"].eq(profile.name)].copy()
     if prof.empty:
+        if progress:
+            progress(f"{profile.name}: skipped empty profile")
         return []
+    if progress:
+        progress(f"{profile.name}: profile_rows={len(prof)}")
     train = train_mask.loc[prof.index]
     test = test_mask.loc[prof.index]
     folds = _rolling_folds(prof, min_train_days=10, fold_count=4)
@@ -941,6 +947,8 @@ def search_profile(
         include_static_themes=include_static_themes,
         max_conditions=max_conditions,
     )
+    if progress:
+        progress(f"{profile.name}: condition_masks={len(conditions)}")
     condition_map = {name: mask for name, mask in conditions}
     seen: set[Tuple[str, ...]] = set()
     evaluated: List[Dict[str, Any]] = []
@@ -967,6 +975,8 @@ def search_profile(
 
     for name, mask in conditions:
         maybe_add((name,), mask)
+    if progress:
+        progress(f"{profile.name}: depth1_evaluated={len(evaluated)}")
 
     useful = [
         (name, mask)
@@ -983,6 +993,8 @@ def search_profile(
     )[:beam_width]
     base_names = {tuple(row["conditions"])[0] for row in ranked_base}
     beam = [(name, condition_map[name]) for name in base_names if name in condition_map]
+    if progress:
+        progress(f"{profile.name}: useful_conditions={len(useful)} beam={len(beam)}")
 
     for (name_a, mask_a), (name_b, mask_b) in combinations(useful, 2):
         if _feature_name(name_a) == _feature_name(name_b):
@@ -990,6 +1002,8 @@ def search_profile(
         if name_a not in base_names and name_b not in base_names:
             continue
         maybe_add((name_a, name_b), mask_a & mask_b)
+    if progress:
+        progress(f"{profile.name}: depth2_done evaluated={len(evaluated)}")
 
     ranked_pairs = sorted(
         [row for row in evaluated if row["depth"] == 2],
@@ -1003,6 +1017,8 @@ def search_profile(
             if name_c in pair or _feature_name(name_c) in pair_features:
                 continue
             maybe_add(tuple(list(pair) + [name_c]), pair_mask & mask_c)
+    if progress:
+        progress(f"{profile.name}: depth3_done evaluated={len(evaluated)}")
 
     ranked_triples = sorted(
         [row for row in evaluated if row["depth"] == 3],
@@ -1016,6 +1032,8 @@ def search_profile(
             if name_d in triple or _feature_name(name_d) in triple_features:
                 continue
             maybe_add(tuple(list(triple) + [name_d]), triple_mask & mask_d)
+    if progress:
+        progress(f"{profile.name}: depth4_done evaluated={len(evaluated)}")
 
     return sorted(evaluated, key=_candidate_sort_key)
 
@@ -1192,42 +1210,67 @@ def build_report(
     include_static_themes: bool,
     use_cached_labels: bool,
     cached_labels_path: Path,
+    progress: bool = False,
 ) -> Tuple[Dict[str, Any], pd.DataFrame]:
+    started_at = time.monotonic()
+
+    def log_progress(message: str) -> None:
+        if not progress:
+            return
+        elapsed = time.monotonic() - started_at
+        print(f"[ordered-search] +{elapsed:.1f}s {message}", file=sys.stderr, flush=True)
+
     market = str(market).upper()
+    log_progress(f"start market={market} input={input_path}")
     profiles = profiles_for_market(market)
     if use_cached_labels and cached_labels_path.exists():
+        log_progress(f"load_cached_labels path={cached_labels_path}")
         labeled = pd.read_csv(cached_labels_path, low_memory=False)
+        log_progress(f"cached_labels_loaded rows={len(labeled)}")
     else:
+        log_progress("load_archive_dataset")
         df = _load_dataset(input_path)
+        log_progress(f"archive_loaded rows={len(df)}")
         profile_rows = prepare_profile_rows(df, profiles, market=market)
+        log_progress(f"profile_rows_prepared rows={len(profile_rows)}")
         labeled = label_selected_rows(profile_rows)
+        log_progress(f"ordered_labels_built rows={len(labeled)}")
         cached_labels_path.parent.mkdir(parents=True, exist_ok=True)
         labeled.to_csv(cached_labels_path, index=False)
+        log_progress(f"ordered_labels_cached path={cached_labels_path}")
     labeled = add_search_columns(labeled)
+    log_progress("search_columns_added")
     labeled["trade_date"] = labeled["trade_date"].fillna("").astype(str)
     days = sorted(labeled["trade_date"].dropna().astype(str).unique().tolist())
     split_day = days[max(1, min(len(days) - 1, int(len(days) * 0.58)))] if len(days) >= 3 else None
     train_mask = labeled["trade_date"].lt(split_day) if split_day else pd.Series(False, index=labeled.index)
     test_mask = labeled["trade_date"].ge(split_day) if split_day else pd.Series(False, index=labeled.index)
+    log_progress(f"split_ready split_day={split_day} train_n={int(train_mask.sum())} test_n={int(test_mask.sum())}")
 
     all_rows: List[Dict[str, Any]] = []
     for profile in profiles:
-        all_rows.extend(
-            search_profile(
-                labeled,
-                profile=profile,
-                train_mask=train_mask,
-                test_mask=test_mask,
-                max_conditions=max_conditions,
-                beam_width=beam_width,
-                min_train=min_train,
-                min_test=min_test,
-                min_fold_test=min_fold_test,
-                include_static_themes=include_static_themes,
-            )
+        profile_rows = search_profile(
+            labeled,
+            profile=profile,
+            train_mask=train_mask,
+            test_mask=test_mask,
+            max_conditions=max_conditions,
+            beam_width=beam_width,
+            min_train=min_train,
+            min_test=min_test,
+            min_fold_test=min_fold_test,
+            include_static_themes=include_static_themes,
+            progress=log_progress if progress else None,
         )
+        all_rows.extend(profile_rows)
+        log_progress(f"{profile.name}: accumulated_candidates={len(all_rows)}")
     all_rows = sorted(all_rows, key=_candidate_sort_key)
+    log_progress(f"candidate_search_done evaluated={len(all_rows)}")
     buckets = classify_candidates(all_rows)
+    log_progress(
+        "classification_done "
+        + " ".join(f"{key}={len(value)}" for key, value in sorted(buckets.items()))
+    )
     curated = evaluate_curated_rules(
         labeled,
         market=market,
@@ -1235,11 +1278,13 @@ def build_report(
         test_mask=test_mask,
         min_fold_test=min_fold_test,
     )
+    log_progress(f"curated_rules_done rows={len(curated)}")
     for bucket_rows in buckets.values():
         annotate_candidate_diagnostics(labeled, bucket_rows, train_mask=train_mask, test_mask=test_mask)
     annotate_candidate_diagnostics(labeled, curated, train_mask=train_mask, test_mask=test_mask)
     best_overall = all_rows[:50]
     annotate_candidate_diagnostics(labeled, best_overall, train_mask=train_mask, test_mask=test_mask)
+    log_progress("diagnostics_done")
     report = {
         "report_version": REPORT_VERSION,
         "market": market,
@@ -1295,6 +1340,7 @@ def build_report(
             "Daily OHLCV same-bar target/stop order is conservative stop-first via the imported labeler.",
         ],
     }
+    log_progress("report_built")
     return report, labeled
 
 
@@ -1475,11 +1521,14 @@ def main() -> int:
         include_static_themes=bool(args.include_static_themes),
         use_cached_labels=bool(args.use_cached_labels),
         cached_labels_path=args.cached_labels,
+        progress=True,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    started_at = time.monotonic()
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     write_markdown(report, args.output.with_suffix(".md"))
     labeled.to_csv(args.cached_labels, index=False)
+    print(f"[ordered-search] +{time.monotonic() - started_at:.1f}s files_written", file=sys.stderr, flush=True)
     print(
         json.dumps(
             {

@@ -184,6 +184,57 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertIn("KOSDAQ_SWING_PROBATION", decision.theme_risk)
         self.assertIn("kosdaq_validated_touch_deprecated", " ".join(decision.rationale))
 
+    def test_kosdaq_relative_ranking_is_shadow_only_by_default(self):
+        context = RunContext(run_id="RUN-KQ-RANK-SHADOW", market="KOSDAQ")
+        planner = build_planner_handoff(
+            context=context,
+            weak_ratio=0.0,
+            candidates=[
+                {
+                    "ticker": "111111.KQ",
+                    "stock_name": "Higher Scanner Score",
+                    "score": 95.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 98.0,
+                        "tech_score": 80.0,
+                        "decision_score": 95.0,
+                        "prob_5": 45.0,
+                        "prob_clean": 40.0,
+                        "volume_ratio": 0.2,
+                        "real_trend": "UP",
+                    },
+                },
+                {
+                    "ticker": "222222.KQ",
+                    "stock_name": "Relative Leader",
+                    "score": 80.0,
+                    "feature_snapshot": {
+                        "market": "KOSDAQ",
+                        "scan_mode": "SWING",
+                        "strategy_family": "KR_CORE",
+                        "alpha_score": 86.0,
+                        "tech_score": 100.0,
+                        "decision_score": 80.0,
+                        "prob_5": 45.0,
+                        "prob_clean": 40.0,
+                        "volume_ratio": 4.0,
+                        "real_trend": "UP",
+                    },
+                },
+            ],
+        )
+
+        self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v5")
+        self.assertIn("KOSDAQ_RELATIVE_RANKING_SHADOW_ONLY", planner.decisions[0].theme_risk)
+        self.assertIn("relative_rank_shadow_only:model=kosdaq_floor_win_relative_v5", " ".join(planner.decisions[0].rationale))
+        self.assertTrue(
+            all("KOSDAQ_RELATIVE_RANKING_SHADOW_ONLY" in decision.theme_risk for decision in planner.decisions)
+        )
+
+    @patch.dict("os.environ", {"AG_KOSDAQ_RELATIVE_RANKING_ENABLED": "1"})
     def test_kosdaq_relative_ranking_prefers_volume_supported_tech_leader(self):
         context = RunContext(run_id="RUN-KQ-RANK", market="KOSDAQ")
         planner = build_planner_handoff(
@@ -230,6 +281,7 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(planner.decisions[0].ticker, "222222.KQ")
         self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v5")
 
+    @patch.dict("os.environ", {"AG_KOSDAQ_RELATIVE_RANKING_ENABLED": "1"})
     def test_kosdaq_relative_ranking_penalizes_loss_risk(self):
         context = RunContext(run_id="RUN-KQ-FLOOR", market="KOSDAQ")
         planner = build_planner_handoff(
@@ -282,6 +334,7 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(planner.decisions[0].ticker, "444444.KQ")
         self.assertEqual(planner.decisions[0].relative_rank_model, "kosdaq_floor_win_relative_v5")
 
+    @patch.dict("os.environ", {"AG_KOSDAQ_RELATIVE_RANKING_ENABLED": "1"})
     def test_kosdaq_relative_ranking_pushes_down_weak_entry_timing(self):
         context = RunContext(run_id="RUN-KQ-ENTRY-TIMING", market="KOSDAQ")
         planner = build_planner_handoff(

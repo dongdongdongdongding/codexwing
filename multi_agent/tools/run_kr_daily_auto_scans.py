@@ -43,6 +43,11 @@ KST = ZoneInfo("Asia/Seoul")
 DISCORD_MAX_EMBEDS_PER_MESSAGE = 10
 DISCORD_MAX_MESSAGE_CHARS = 6000
 DISCORD_SAFE_MESSAGE_CHARS = 5400
+DISCORD_MAX_EMBED_FIELDS = 25
+DISCORD_MAX_EMBED_TITLE_CHARS = 256
+DISCORD_MAX_EMBED_DESCRIPTION_CHARS = 4096
+DISCORD_MAX_EMBED_FIELD_NAME_CHARS = 256
+DISCORD_MAX_EMBED_FIELD_VALUE_CHARS = 1024
 
 
 async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: bool = False) -> int:
@@ -243,7 +248,8 @@ async def _post_embeds(config: DiscordIntegrationConfig, embeds: List[Dict[str, 
     if not config.bot_token or not config.result_channel_id:
         print("[WARN] Discord token/channel missing; skipping channel post.", file=sys.stderr)
         return
-    for chunk in _chunk_embeds_for_discord(embeds):
+    safe_embeds = _prepare_embeds_for_discord(embeds)
+    for chunk in _chunk_embeds_for_discord(safe_embeds):
         try:
             await asyncio.to_thread(_post_embed_chunk, config, chunk)
         except Exception as exc:
@@ -288,6 +294,88 @@ def _chunk_embeds_for_discord(embeds: List[Dict[str, Any]]) -> List[List[Dict[st
     if current:
         chunks.append(current)
     return chunks
+
+
+def _prepare_embeds_for_discord(embeds: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    safe: List[Dict[str, Any]] = []
+    for embed in embeds or []:
+        safe.extend(_split_embed_for_discord(embed))
+    return safe
+
+
+def _split_embed_for_discord(embed: Dict[str, Any]) -> List[Dict[str, Any]]:
+    base = _embed_base_for_discord(embed)
+    base_chars = _discord_embed_char_count({**base, "fields": []})
+    if base_chars > DISCORD_SAFE_MESSAGE_CHARS:
+        non_desc_chars = base_chars - len(str(base.get("description") or ""))
+        available_desc = max(0, DISCORD_SAFE_MESSAGE_CHARS - non_desc_chars)
+        base["description"] = _clip_text(base.get("description"), available_desc)
+
+    fields = embed.get("fields") if isinstance(embed.get("fields"), list) else []
+    normalized_fields = [_field_for_discord(field) for field in fields if isinstance(field, dict)]
+    if not normalized_fields:
+        return [{**base, "fields": []}]
+
+    pages: List[Dict[str, Any]] = []
+    current: List[Dict[str, Any]] = []
+    for field in normalized_fields:
+        candidate_fields = current + [field]
+        candidate = {**base, "fields": candidate_fields}
+        if current and (
+            len(candidate_fields) > DISCORD_MAX_EMBED_FIELDS
+            or _discord_embed_char_count(candidate) > DISCORD_SAFE_MESSAGE_CHARS
+        ):
+            pages.append({**base, "fields": current})
+            current = []
+        current.append(_fit_single_field(base, field))
+    if current:
+        pages.append({**base, "fields": current[:DISCORD_MAX_EMBED_FIELDS]})
+    return pages
+
+
+def _embed_base_for_discord(embed: Dict[str, Any]) -> Dict[str, Any]:
+    safe = dict(embed)
+    safe["title"] = _clip_text(safe.get("title"), DISCORD_MAX_EMBED_TITLE_CHARS)
+    safe["description"] = _clip_text(safe.get("description"), DISCORD_MAX_EMBED_DESCRIPTION_CHARS)
+    footer = safe.get("footer") if isinstance(safe.get("footer"), dict) else None
+    if footer:
+        safe["footer"] = {**footer, "text": _clip_text(footer.get("text"), 2048)}
+    author = safe.get("author") if isinstance(safe.get("author"), dict) else None
+    if author:
+        safe["author"] = {**author, "name": _clip_text(author.get("name"), 256)}
+    safe.pop("fields", None)
+    return safe
+
+
+def _field_for_discord(field: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "name": _clip_text(field.get("name"), DISCORD_MAX_EMBED_FIELD_NAME_CHARS) or "-",
+        "value": _clip_text(field.get("value"), DISCORD_MAX_EMBED_FIELD_VALUE_CHARS) or "-",
+        "inline": bool(field.get("inline", False)),
+    }
+
+
+def _fit_single_field(base: Dict[str, Any], field: Dict[str, Any]) -> Dict[str, Any]:
+    candidate = {**base, "fields": [field]}
+    if _discord_embed_char_count(candidate) <= DISCORD_SAFE_MESSAGE_CHARS:
+        return field
+    base_chars = _discord_embed_char_count({**base, "fields": []})
+    name_len = len(str(field.get("name") or ""))
+    available = max(100, DISCORD_SAFE_MESSAGE_CHARS - base_chars - name_len)
+    clipped = dict(field)
+    clipped["value"] = _clip_text(clipped.get("value"), min(DISCORD_MAX_EMBED_FIELD_VALUE_CHARS, available))
+    return clipped
+
+
+def _clip_text(value: Any, limit: int) -> str:
+    text = str(value or "")
+    if limit <= 0:
+        return ""
+    if len(text) <= limit:
+        return text
+    if limit <= 1:
+        return text[:limit]
+    return text[: limit - 1] + "…"
 
 
 def _discord_embed_char_count(embed: Dict[str, Any]) -> int:

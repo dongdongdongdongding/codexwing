@@ -188,6 +188,29 @@ def _momentum_score(row: Dict[str, Any]) -> float:
     return _clamp(score, -15.0, 20.0)
 
 
+def _ranking_score(
+    *,
+    probability: float,
+    avg_return_pct: float,
+    expected_value_pct: float,
+    momentum: float,
+    rank_prior: float,
+    stop_first_risk: float,
+    edge_adjust: float,
+) -> float:
+    negative_ev_penalty = max(0.0, -float(expected_value_pct)) * 0.25
+    score = (
+        float(probability) * 0.68
+        + float(avg_return_pct) * 1.35
+        + float(momentum) * 0.95
+        + float(rank_prior)
+        + float(edge_adjust) * 0.35
+        - float(stop_first_risk) * 0.22
+        - negative_ev_penalty
+    )
+    return _clamp(score, 0.0, 100.0)
+
+
 def build_realized_expectancy_admission(
     row: Dict[str, Any],
     *,
@@ -214,8 +237,9 @@ def build_realized_expectancy_admission(
     expected_5d = _safe_float(_row_value(row, "expected_return_5d_pct"), expected_3d) or expected_3d
     decision_score = _safe_float(_row_value(row, "decision_score", "Decision Score", "score"), 50.0) or 50.0
     loss_risk = _safe_float(_row_value(row, "loss_risk_score"), 50.0) or 50.0
-    section_rank = _safe_float(_row_value(row, "_analysis_section_rank", "section_rank", "priority_rank", "rank"), 999.0) or 999.0
-    rank_prior = _clamp((6.0 - section_rank) * 2.2, -4.0, 11.0)
+    raw_section_rank = _safe_float(_row_value(row, "_analysis_section_rank", "section_rank", "priority_rank", "rank"))
+    section_rank = raw_section_rank if raw_section_rank is not None else 999.0
+    rank_prior = _clamp((6.0 - section_rank) * 2.2, -4.0, 11.0) if raw_section_rank is not None else 0.0
     feature_evidence_count = sum(
         1
         for value in [
@@ -233,7 +257,7 @@ def build_realized_expectancy_admission(
     edge_adjust = _clamp(expected_edge * 1.1, -12.0, 14.0)
     score_adjust = _clamp((decision_score - 70.0) * 0.12, -6.0, 6.0)
     loss_adjust = _clamp((loss_risk - 45.0) * 0.20, -5.0, 12.0)
-    stop_first_risk = _clamp(calibration.stop_first_risk_pct + loss_adjust * 1.8 - momentum * 0.25, 5.0, 85.0)
+    stop_first_risk = _clamp(calibration.stop_first_risk_pct + loss_adjust * 1.8 - momentum * 0.55, 5.0, 85.0)
     prob3 = _clamp(calibration.section_win_3d_pct * 0.45 + anchor3 * 0.35 + momentum * 0.65 + edge_adjust + score_adjust - loss_adjust, 1.0, 99.0)
     prob5 = _clamp(calibration.section_win_5d_pct * 0.45 + anchor5 * 0.35 + momentum * 0.55 + edge_adjust + score_adjust - loss_adjust, 1.0, 99.0)
     avg3 = calibration.avg_return_3d_pct + expected_3d * 0.35 + momentum * 0.08 + expected_edge * 0.18 - loss_adjust * 0.08
@@ -259,8 +283,24 @@ def build_realized_expectancy_admission(
         stop_first_risk = _clamp(stop_first_risk * stop_multiplier, 5.0, 85.0)
     ev3 = prob3 / 100.0 * avg3 + (1.0 - prob3 / 100.0) * calibration.min_return_3d_pct
     ev5 = prob5 / 100.0 * avg5 + (1.0 - prob5 / 100.0) * calibration.min_return_5d_pct
-    ranking3 = _clamp(prob3 * 0.48 + ev3 * 5.0 + momentum * 0.8 + rank_prior - stop_first_risk * 0.30, 0.0, 100.0)
-    ranking5 = _clamp(prob5 * 0.48 + ev5 * 5.0 + momentum * 0.8 + rank_prior - stop_first_risk * 0.30, 0.0, 100.0)
+    ranking3 = _ranking_score(
+        probability=prob3,
+        avg_return_pct=avg3,
+        expected_value_pct=ev3,
+        momentum=momentum,
+        rank_prior=rank_prior,
+        stop_first_risk=stop_first_risk,
+        edge_adjust=edge_adjust,
+    )
+    ranking5 = _ranking_score(
+        probability=prob5,
+        avg_return_pct=avg5,
+        expected_value_pct=ev5,
+        momentum=momentum,
+        rank_prior=rank_prior,
+        stop_first_risk=stop_first_risk,
+        edge_adjust=edge_adjust,
+    )
     if feature_evidence_count < 2:
         rank_fallback_score = _clamp(100.0 - section_rank, 0.0, 100.0)
         ranking3 = rank_fallback_score

@@ -39,6 +39,7 @@ KOSDAQ_RELATIVE_WEIGHTS = {
     "loss_risk_score": -0.10,
     "entry_timing_risk_score": -0.04,
 }
+KOSDAQ_RELATIVE_RANKING_ENV = "AG_KOSDAQ_RELATIVE_RANKING_ENABLED"
 
 
 # Phase25 quality-gate thresholds per (market, mode).
@@ -148,6 +149,20 @@ def _decision_from_rank(rank: int) -> str:
 
 def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
+
+
+def _env_enabled(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() not in {"0", "", "false", "no", "off"}
+
+
+def _kosdaq_relative_ranking_enabled() -> bool:
+    # 2026-05-20 forward validation shows kosdaq_floor_win_relative_v5 is
+    # negative in live 5D outcomes. Keep telemetry, but require an explicit
+    # release toggle before it can alter production ordering again.
+    return _env_enabled(KOSDAQ_RELATIVE_RANKING_ENV, default=False)
 
 
 def _resolve_market_gate(*sources: Dict[str, Any]) -> str:
@@ -1227,11 +1242,12 @@ def build_planner_handoff(
     for cand in ranked_candidates:
         cand["_basket_priority"] = compute_kr_basket_priority(cand, run_market, active_lane)
     _attach_relative_ranks(ranked_candidates, run_market)
+    relative_ranking_active = run_market != "KOSDAQ" or _kosdaq_relative_ranking_enabled()
 
     def _order_key(row: Dict[str, Any]) -> tuple[float, ...]:
         basket_meta = row.get("_basket_priority", {}) if isinstance(row.get("_basket_priority"), dict) else {}
         quant_meta = row.get("_quant_rerank", {}) if isinstance(row.get("_quant_rerank"), dict) else {}
-        relative_score = float(row.get("_relative_rank_score") or 0.0)
+        relative_score = float(row.get("_relative_rank_score") or 0.0) if relative_ranking_active else 0.0
         basket_score = float(basket_meta.get("score", quant_meta.get("score", row.get("score", 0.0))) or 0.0)
         quant_score = float(quant_meta.get("score", row.get("score", 0.0)) or 0.0)
         scanner_score = float(row.get("score", 0.0) or 0.0)
@@ -1473,6 +1489,13 @@ def build_planner_handoff(
             rationale.append(f"entry_timing_risk_score={entry_timing_risk_score:.1f}")
             if entry_timing_risk_score >= 45.0:
                 theme_risk.append("ENTRY_TIMING_RISK_HIGH")
+        if (
+            run_market == "KOSDAQ"
+            and not relative_ranking_active
+            and relative_rank_model == KOSDAQ_RELATIVE_RANK_MODEL
+        ):
+            rationale.append(f"relative_rank_shadow_only:model={relative_rank_model}")
+            theme_risk.append("KOSDAQ_RELATIVE_RANKING_SHADOW_ONLY")
         if regime_adjusted_grade:
             rationale.append(
                 f"relative_rank={regime_adjusted_grade}:pct={float(relative_rank_pct or 0.0):.3f},"
