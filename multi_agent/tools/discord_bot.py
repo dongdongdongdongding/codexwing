@@ -131,17 +131,16 @@ def main() -> int:
     ):
         if not await _guard(interaction):
             return
-        embeds = [
-            _embed(discord, payload)
-            for payload in build_top_deep_embeds(
-                market=market,
-                ticker=ticker,
-                run_id=run_id,
-                offset=offset,
-                limit=limit,
-            )
-        ]
-        await interaction.response.send_message(embeds=embeds[:10], ephemeral=True)
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        payloads = await asyncio.to_thread(
+            build_top_deep_embeds,
+            market=market,
+            ticker=ticker,
+            run_id=run_id,
+            offset=offset,
+            limit=limit,
+        )
+        await _send_followup_chunks(discord, interaction, payloads[:10])
 
     @tree.command(name="archive", description="최근 스캔 아카이브와 realized outcome 상태를 조회합니다.")
     @app_commands.describe(
@@ -168,8 +167,16 @@ def main() -> int:
     ):
         if not await _guard(interaction):
             return
-        payload = build_archive_embed(market=market, ticker=ticker, run_id=run_id, offset=offset, limit=limit)
-        await interaction.response.send_message(embed=_embed(discord, payload), ephemeral=True)
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        payload = await asyncio.to_thread(
+            build_archive_embed,
+            market=market,
+            ticker=ticker,
+            run_id=run_id,
+            offset=offset,
+            limit=limit,
+        )
+        await interaction.followup.send(embed=_embed(discord, payload), ephemeral=True)
 
     @tree.command(name="runs", description="누적된 스캔 Run 목록을 조회하고 run_id를 선택할 수 있게 표시합니다.")
     @app_commands.describe(market="시장 필터", offset="목록 시작 위치", limit="표시 개수")
@@ -182,8 +189,9 @@ def main() -> int:
     async def runs(interaction, market: str = "", offset: int = 0, limit: int = 10):
         if not await _guard(interaction):
             return
-        payload = build_runs_embed(market=market, offset=offset, limit=limit)
-        await interaction.response.send_message(embed=_embed(discord, payload), ephemeral=True)
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        payload = await asyncio.to_thread(build_runs_embed, market=market, offset=offset, limit=limit)
+        await interaction.followup.send(embed=_embed(discord, payload), ephemeral=True)
 
     @tree.command(name="kospi_scan", description="KOSPI 전체 스윙 스캔을 실행합니다. max_scan은 2000으로 고정됩니다.")
     async def kospi_scan(interaction):

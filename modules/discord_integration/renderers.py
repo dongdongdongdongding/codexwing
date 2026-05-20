@@ -19,7 +19,9 @@ from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exc
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 ARTIFACT_DIR = Path("runtime_state/artifacts")
 TOP_DEEP_DISCORD_LIMIT = 15
-DISCORD_EMBED_SAFE_CHARS = 5600
+# Discord rejects embeds above 6000 aggregate chars. Keep a conservative local
+# budget because Discord's server-side count includes fields we may undercount.
+DISCORD_EMBED_SAFE_CHARS = 4800
 
 
 def _safe_float(value: Any) -> float | None:
