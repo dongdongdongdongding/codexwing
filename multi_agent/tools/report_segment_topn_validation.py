@@ -161,6 +161,8 @@ def _daily_topn_rows(rows: List[Dict[str, Any]], topn: int, metric_column: str) 
                 "samples": float(len(metrics)),
                 "positive_rate": sum(v > 0 for v in metrics) / len(metrics),
                 "avg_return_pct": sum(metrics) / len(metrics),
+                "min_return_pct": min(metrics),
+                "max_return_pct": max(metrics),
                 "hit5_rate": sum(v >= 5.0 for v in metrics) / len(metrics),
                 "hit10_rate": sum(v >= 10.0 for v in metrics) / len(metrics),
             }
@@ -175,6 +177,10 @@ def _aggregate(days: List[Dict[str, float]]) -> Dict[str, Any]:
             "topn_samples_per_day": 0,
             "positive_rate_pct": 0.0,
             "avg_return_pct": 0.0,
+            "worst_return_pct": None,
+            "best_return_pct": None,
+            "min_daily_avg_return_pct": None,
+            "max_daily_avg_return_pct": None,
             "hit5_rate_pct": 0.0,
             "hit10_rate_pct": 0.0,
             "accuracy_gap_to_target_pct": -TARGET_TOP5_ACCURACY_PCT,
@@ -185,6 +191,10 @@ def _aggregate(days: List[Dict[str, float]]) -> Dict[str, Any]:
         "topn_samples_per_day": int(round(sum(day["samples"] for day in days) / len(days))),
         "positive_rate_pct": round(sum(day["positive_rate"] for day in days) / len(days) * 100.0, 2),
         "avg_return_pct": round(sum(day["avg_return_pct"] for day in days) / len(days), 4),
+        "worst_return_pct": round(min(day["min_return_pct"] for day in days), 4),
+        "best_return_pct": round(max(day["max_return_pct"] for day in days), 4),
+        "min_daily_avg_return_pct": round(min(day["avg_return_pct"] for day in days), 4),
+        "max_daily_avg_return_pct": round(max(day["avg_return_pct"] for day in days), 4),
         "hit5_rate_pct": round(sum(day["hit5_rate"] for day in days) / len(days) * 100.0, 2),
         "hit10_rate_pct": round(sum(day["hit10_rate"] for day in days) / len(days) * 100.0, 2),
         "accuracy_gap_to_target_pct": round(
@@ -312,6 +322,10 @@ def build_markdown(report: Dict[str, Any]) -> str:
                 f"(gap {recent.get('accuracy_gap_to_target_pct', 0.0):+.2f}%)",
                 f"- recent top{report['topn']} avg return: {recent.get('avg_return_pct', 0.0):+.2f}% "
                 f"(gap {recent.get('return_gap_to_target_pct', 0.0):+.2f}%)",
+                f"- recent worst/best candidate return: {_fmt_signed(recent.get('worst_return_pct'))} / "
+                f"{_fmt_signed(recent.get('best_return_pct'))}",
+                f"- recent min/max daily avg return: {_fmt_signed(recent.get('min_daily_avg_return_pct'))} / "
+                f"{_fmt_signed(recent.get('max_daily_avg_return_pct'))}",
                 f"- recent hit5 / hit10: {recent.get('hit5_rate_pct', 0.0):.2f}% / {recent.get('hit10_rate_pct', 0.0):.2f}%",
                 f"- history top{report['topn']} positive-rate: {history.get('positive_rate_pct', 0.0):.2f}%",
                 f"- history top{report['topn']} avg return: {history.get('avg_return_pct', 0.0):+.2f}%",
@@ -320,6 +334,15 @@ def build_markdown(report: Dict[str, Any]) -> str:
             ]
         )
     return "\n".join(lines)
+
+
+def _fmt_signed(value: Any) -> str:
+    try:
+        if value is None:
+            return "-"
+        return f"{float(value):+.2f}%"
+    except Exception:
+        return "-"
 
 
 def main() -> None:
