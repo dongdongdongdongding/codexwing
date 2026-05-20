@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import sys
 from datetime import datetime, timedelta, timezone
@@ -35,7 +36,31 @@ def _num(series: pd.Series) -> pd.Series:
 
 
 def _contains_marker(series: pd.Series, marker: str) -> pd.Series:
-    return series.fillna("").astype(str).str.contains(marker, regex=False)
+    return series.apply(lambda value: marker in _marker_set(value))
+
+
+def _marker_set(value: Any) -> set[str]:
+    if value is None:
+        return set()
+    if isinstance(value, float) and pd.isna(value):
+        return set()
+    if isinstance(value, (list, tuple, set)):
+        return {str(item).strip() for item in value if str(item).strip()}
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return set()
+        for parser in (json.loads, ast.literal_eval):
+            try:
+                parsed = parser(text)
+            except Exception:
+                continue
+            if isinstance(parsed, (list, tuple, set)):
+                return {str(item).strip() for item in parsed if str(item).strip()}
+            if isinstance(parsed, str):
+                return {parsed.strip()} if parsed.strip() else set()
+        return {part.strip() for part in text.split(",") if part.strip()}
+    return {str(value).strip()} if str(value).strip() else set()
 
 
 def _pct(mask: pd.Series) -> float | None:

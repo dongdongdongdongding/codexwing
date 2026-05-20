@@ -591,14 +591,11 @@ def _apply_kr_market_mode_quality_gate(
             return "WATCHLIST"
         return decision
 
-    # KOSPI swing priority guard relaxation (swing-main-0nr, 2026-05-06).
-    # Forward-validation over 30d showed gated rows had win_3d=69.4% / avg_3d=3.92%
-    # (n=1,228 with EXPECTED_EDGE_WATCH_GUARD combo) versus the passing baseline
-    # win_3d=62.1% / avg_3d=2.29% (n=29). The hard demote was net-negative — it
-    # blocked candidates that beat the picked baseline by 7pp. Relax to a soft
-    # note: keep the rationale/theme_risk markers so audits can still see the
-    # phase25 condition, but do not demote. Gated by env toggle so the previous
-    # behavior remains one flag away if a forward-week regression appears.
+    # KOSPI swing priority guard. The 2026-05-06 relaxation restored sample size,
+    # but the 2026-05-20 forward holdout failed: PRIORITY_WATCHLIST 3D win=33.7%
+    # / avg=-1.08% and 5D win=32.2% / avg=-2.59%. Keep the relaxation available
+    # only behind an explicit env flag for shadow experiments; default production
+    # behavior is the hard demote.
     if market == "KOSPI" and mode == "SWING" and _decision_rank(decision) >= 3:
         allow_priority = (
             _is_swing_variant(variant)
@@ -606,7 +603,7 @@ def _apply_kr_market_mode_quality_gate(
             and _gate_passes(raw_phase25_prob, clean_prob, float(score), recommended_threshold, "KOSPI_SWING_PRIORITY")
         )
         if not allow_priority:
-            relax = os.getenv("AG_KOSPI_SWING_PRIORITY_GUARD_RELAX", "1").strip() not in ("0", "", "false", "False")
+            relax = os.getenv("AG_KOSPI_SWING_PRIORITY_GUARD_RELAX", "0").strip() not in ("0", "", "false", "False")
             if relax:
                 theme_risk.append("KOSPI_SWING_PRIORITY_GUARD_SOFT")
                 rationale.append("priority_guard=KOSPI_SWING(soft)")
@@ -721,16 +718,14 @@ def _apply_expected_edge_gate(
         or not trend_up
         or float(score) < 84.0
     ):
-        # KOSPI SWING relaxation (2026-05-08): 0nr이 KOSPI_SWING_PRIORITY_GUARD
-        # 와 EXPECTED_EDGE_WATCH_GUARD를 풀었으나 같은 후보가 직후
-        # EXPECTED_EDGE_PRIORITY_GUARD에 동일하게 잡혀 KOSPI SWING
-        # PRIORITY_WATCHLIST 회복 0건 (5/7 RUN-114752B6 47/47 WATCHLIST 강등).
-        # EEPG와 EEWG는 동일 임계 함수에서 priority_*/min_* 만 다른
-        # 직렬 단계이므로 같은 패턴으로 KOSPI SWING 한정 soft note 적용.
+        # KOSPI SWING priority-edge hard gate is the default again after the
+        # 2026-05-20 forward holdout showed the relaxed PRIORITY_WATCHLIST rows
+        # materially underperformed. Explicit env opt-in keeps the prior behavior
+        # available for controlled shadow experiments only.
         kospi_swing_relax = (
             market == "KOSPI"
             and mode == "SWING"
-            and os.getenv("AG_EXPECTED_EDGE_PRIORITY_GUARD_RELAX", "1").strip() not in ("0", "", "false", "False")
+            and os.getenv("AG_EXPECTED_EDGE_PRIORITY_GUARD_RELAX", "0").strip() not in ("0", "", "false", "False")
         )
         if kospi_swing_relax:
             theme_risk.append("EXPECTED_EDGE_PRIORITY_GUARD_SOFT")
@@ -748,16 +743,13 @@ def _apply_expected_edge_gate(
         float(expected_return_1d_pct) < min_1d
         or float(expected_return_3d_pct) < min_3d
     ):
-        # KOSPI SWING relaxation (swing-main-0nr, 2026-05-06): gated rows had
-        # win_5d=75.4% / avg_5d=7.53% (n=345 EXPECTED_EDGE alone) and 74.6% /
-        # 7.92% in the EXPECTED_EDGE|KOSPI_SWING_PRIORITY combo (n=1,228) —
-        # both above the picked baseline (win_5d=72.4% / avg_5d=5.32%, n=29).
-        # KOSPI INTRADAY and KOSDAQ keep the hard demote because gated-row
-        # win-rates there (61.5% / 56.8%) sit at or below their baselines.
+        # KOSPI SWING watch-edge hard gate is the default again after forward
+        # validation rejected the relaxed sample. Enable the env flag only for
+        # controlled shadow runs, not normal production scans.
         kospi_swing_relax = (
             market == "KOSPI"
             and mode == "SWING"
-            and os.getenv("AG_EXPECTED_EDGE_WATCH_GUARD_RELAX", "1").strip() not in ("0", "", "false", "False")
+            and os.getenv("AG_EXPECTED_EDGE_WATCH_GUARD_RELAX", "0").strip() not in ("0", "", "false", "False")
         )
         if kospi_swing_relax:
             theme_risk.append("EXPECTED_EDGE_WATCH_GUARD_SOFT")

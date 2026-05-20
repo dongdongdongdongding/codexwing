@@ -90,22 +90,28 @@ Two observations are decisive:
    candidates. Their gated populations sit below their respective
    baselines.
 
-### Policy change applied
+### 2026-05-20 rollback
 
-- `KOSPI_SWING_PRIORITY_GUARD`: hard demote → soft note. The marker is still
-  emitted in `theme_risk` as `KOSPI_SWING_PRIORITY_GUARD_SOFT` so audits keep
-  the trace, but the candidate stays at its original decision rank.
-- `EXPECTED_EDGE_WATCH_GUARD`: KOSPI SWING only → soft note
-  (`EXPECTED_EDGE_WATCH_GUARD_SOFT`). KOSPI INTRADAY, KOSDAQ INTRADAY, and
-  KOSDAQ SWING keep the original demote.
+The 2026-05-20 forward holdout rejected the KOSPI SWING relaxation:
+`PRIORITY_WATCHLIST` had 190 rows, 175 resolved 3D rows, win_3d 33.714%,
+avg_3d -1.0794%, 115 resolved 5D rows, win_5d 32.174%, and avg_5d
+-2.592%. This fails the original win_3d >= 65% and avg_3d >= 3.5%
+acceptance thresholds.
+
+Production defaults are therefore rolled back to hard demote:
+
+- `KOSPI_SWING_PRIORITY_GUARD`: hard demote by default. The soft-note path is
+  available only when `AG_KOSPI_SWING_PRIORITY_GUARD_RELAX=1`.
+- `EXPECTED_EDGE_WATCH_GUARD`: hard demote by default. The soft-note path is
+  available only when `AG_EXPECTED_EDGE_WATCH_GUARD_RELAX=1`.
+- `EXPECTED_EDGE_PRIORITY_GUARD`: hard demote by default. The soft-note path
+  is available only when `AG_EXPECTED_EDGE_PRIORITY_GUARD_RELAX=1`.
 - All other guards (`KOSDAQ_SWING_PROBATION`, `KOSDAQ_SWING_TREND_GUARD`,
   `KOSDAQ_SWING_CLEAN_PROB_GUARD`, `KOSDAQ_INTRADAY_WATCH_GUARD`) keep
   hard demote.
 
-Both relaxations gate on environment toggles
-(`AG_KOSPI_SWING_PRIORITY_GUARD_RELAX`, `AG_EXPECTED_EDGE_WATCH_GUARD_RELAX`,
-default `1` = relax). Setting either to `0` restores the previous behavior
-without redeployment.
+Use the relax flags only for controlled shadow experiments, not normal
+production scans.
 
 ### 2026-05-08 follow-up — EXPECTED_EDGE_PRIORITY_GUARD also relaxed
 
@@ -131,9 +137,9 @@ from the same threshold function in `_apply_expected_edge_gate` —
 identical features, just stricter cutoffs — and the EEWG forward
 result was net-positive on KOSPI SWING.
 
-Toggle: `AG_EXPECTED_EDGE_PRIORITY_GUARD_RELAX` (default `1`). Setting
-to `0` restores the hard demote with no redeploy. Rollback fast if the
-7-day forward holdout fails the win/avg thresholds.
+Historical note: this relaxation was rolled back on 2026-05-20. The toggle
+now defaults to `0`; setting `AG_EXPECTED_EDGE_PRIORITY_GUARD_RELAX=1` is a
+shadow experiment, not the production default.
 
 ### Acceptance / monitoring
 
@@ -146,4 +152,3 @@ to `0` restores the hard demote with no redeploy. Rollback fast if the
   weekly to catch regime shift in the gated population. If a gated cause
   re-inverts (gated win below picked baseline), the soft demote should be
   promoted back to hard.
-
