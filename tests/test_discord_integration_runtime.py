@@ -569,12 +569,48 @@ def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_pa
         config=DiscordIntegrationConfig(web_base_url="http://localhost:8501"),
     )
 
-    fields = embeds[1]["fields"]
+    fields = [
+        field
+        for embed in embeds
+        if embed["title"] == "Shadow + Top5 + Exception Leader 자동 정밀분석"
+        for field in embed["fields"]
+    ]
     candidate_fields = [field for field in fields if field["name"] != "데이터 무결성"]
     assert len(candidate_fields) == 15
-    assert "종목10" in fields[9]["name"]
-    assert "종목15" in fields[14]["name"]
-    assert "VISIBLE_RISK_ANNOTATED" in fields[2]["value"]
-    assert "원본#3" in fields[2]["value"]
-    assert "Exception Leader #5" in fields[14]["value"]
-    assert fields[-1]["name"] == "데이터 무결성"
+    assert "종목10" in candidate_fields[9]["name"]
+    assert "종목15" in candidate_fields[14]["name"]
+    assert "VISIBLE_RISK_ANNOTATED" in candidate_fields[2]["value"]
+    assert "원본#3" in candidate_fields[2]["value"]
+    assert "Exception Leader #5" in candidate_fields[14]["value"]
+    assert any(field["name"] == "데이터 무결성" for field in fields)
+
+
+def test_top_deep_embed_splits_before_discord_character_limit(monkeypatch, tmp_path):
+    report_dir = tmp_path / "top_deep"
+    report_dir.mkdir()
+    rows = [
+        {
+            "run_id": "RUN-LONG",
+            "rank": idx,
+            "ticker": f"000{idx:03d}.KS",
+            "stock_name": f"긴종목{idx}",
+            "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": idx},
+            "trade_plan": {"readiness_analysis": {"final_buy_judgment": {"action": "관망"}}},
+        }
+        for idx in range(1, 16)
+    ]
+    (report_dir / "RUN-LONG.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    monkeypatch.setattr(renderers, "_field_value_for_top_deep", lambda _row: "x" * 1000)
+
+    embeds = build_top_deep_embeds(run_id="RUN-LONG", limit=15)
+
+    assert len(embeds) > 1
+    candidate_fields = [
+        field
+        for embed in embeds
+        for field in embed["fields"]
+        if field["name"] != "데이터 무결성"
+    ]
+    assert len(candidate_fields) == 15
+    assert all(renderers._embed_char_count(embed) <= renderers.DISCORD_EMBED_SAFE_CHARS for embed in embeds)

@@ -18,6 +18,7 @@ from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exc
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 ARTIFACT_DIR = Path("runtime_state/artifacts")
 TOP_DEEP_DISCORD_LIMIT = 15
+DISCORD_EMBED_SAFE_CHARS = 5600
 
 
 def _safe_float(value: Any) -> float | None:
@@ -69,6 +70,51 @@ def _fmt_pct(value: Any) -> str:
     if numeric is None:
         return "-"
     return f"{numeric:+.2f}%"
+
+
+def _embed_char_count(embed: Dict[str, Any]) -> int:
+    total = len(str(embed.get("title") or "")) + len(str(embed.get("description") or ""))
+    fields = embed.get("fields") if isinstance(embed.get("fields"), list) else []
+    for field in fields:
+        if isinstance(field, dict):
+            total += len(str(field.get("name") or "")) + len(str(field.get("value") or ""))
+    return total
+
+
+def _split_embed_fields(
+    *,
+    title: str,
+    description: str,
+    color: int,
+    fields: List[Dict[str, Any]],
+    timestamp: str,
+    safe_chars: int = DISCORD_EMBED_SAFE_CHARS,
+) -> List[Dict[str, Any]]:
+    base = {"title": title, "description": description, "color": color, "timestamp": timestamp}
+    if _embed_char_count({**base, "fields": fields}) <= safe_chars:
+        return [{**base, "fields": fields[:25]}]
+
+    chunks: List[List[Dict[str, Any]]] = []
+    current: List[Dict[str, Any]] = []
+    for field in fields:
+        candidate = current + [field]
+        if current and _embed_char_count({**base, "fields": candidate}) > safe_chars:
+            chunks.append(current)
+            current = []
+        clipped = dict(field)
+        if _embed_char_count({**base, "fields": [clipped]}) > safe_chars:
+            available = max(100, safe_chars - _embed_char_count({**base, "fields": []}) - len(str(clipped.get("name") or "")) - 20)
+            clipped["value"] = str(clipped.get("value") or "")[:available]
+        current.append(clipped)
+    if current:
+        chunks.append(current)
+
+    total_pages = len(chunks)
+    out: List[Dict[str, Any]] = []
+    for idx, chunk in enumerate(chunks, start=1):
+        page_desc = description if total_pages == 1 else f"{description} · page {idx}/{total_pages}"
+        out.append({**base, "description": page_desc, "fields": chunk[:25]})
+    return out
 
 
 def _load_local_top_deep_reports(limit: int = 100) -> List[Dict[str, Any]]:
@@ -487,19 +533,17 @@ def build_top_deep_embeds(
                 "inline": False,
             }
         )
-    return [
-        {
-            "title": "Shadow + Top5 + Exception Leader 자동 정밀분석",
-            "description": (
-                f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-                f"Shadow {_shadow_section_count(section_counts)} / "
-                f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
-            ),
-            "color": 0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,
-            "fields": fields[:25],
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
-    ]
+    return _split_embed_fields(
+        title="Shadow + Top5 + Exception Leader 자동 정밀분석",
+        description=(
+            f"Run `{latest_run or '-'}` · offset {safe_offset} · "
+            f"Shadow {_shadow_section_count(section_counts)} / "
+            f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
+        ),
+        color=0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,
+        fields=fields,
+        timestamp=datetime.now(timezone.utc).isoformat(),
+    )
 
 
 def _load_archive_rows_from_artifact(run_id: str) -> List[Dict[str, Any]]:

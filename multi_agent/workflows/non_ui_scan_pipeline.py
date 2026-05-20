@@ -65,8 +65,6 @@ def _generate_top_deep_reports_for_run(
     market: str,
     scan_mode: str,
 ) -> Dict[str, Any]:
-    if not results:
-        return {"count": 0, "reason": "no_scan_results"}
     planner_path = Path(str(manifest_paths.get("planner_handoff") or ""))
     if not planner_path.exists():
         return {"count": 0, "reason": "planner_handoff_missing"}
@@ -91,6 +89,13 @@ def _generate_top_deep_reports_for_run(
         )
     except Exception as exc:
         return {"count": 0, "error": str(exc)}
+
+
+def _pipeline_source(strategy_version: str, code_version: str) -> str:
+    marker = f"{strategy_version} {code_version}".lower()
+    if "discord" in marker:
+        return "discord_scan_executor"
+    return "non_ui_scan_pipeline"
 
 
 def _parse_ticker_list(raw: str | None) -> List[str]:
@@ -226,6 +231,7 @@ def run_non_ui_scan_pipeline(
 ) -> Dict[str, Any]:
     resolved_profile, applied_profile_defaults = apply_scan_gate_profile(profile)
     run_id = f"RUN-{uuid4().hex[:8].upper()}"
+    source = _pipeline_source(strategy_version, code_version)
     context = RunContext(
         run_id=run_id,
         as_of_date=str(date.today()),
@@ -443,6 +449,7 @@ def run_non_ui_scan_pipeline(
         raw_json_path,
         {
             "run_context": context.to_dict(),
+            "source": source,
             "scan_result": scan_result,
             "results_sorted": results,
             "diagnostics": diagnostics,
@@ -464,6 +471,7 @@ def run_non_ui_scan_pipeline(
     summary = {
         "run_id": run_id,
         "market": market,
+        "source": source,
         "result_count": len(results),
         "total_scans": int(scan_result.get("total_scans", 0) or 0),
         "error_count": int(scan_result.get("error_count", 0) or 0),
