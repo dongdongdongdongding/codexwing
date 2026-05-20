@@ -13,6 +13,7 @@ from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
+from modules.scanner_performance_contract import live_policy_summary
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
@@ -868,6 +869,19 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
         {"name": "Passed", "value": str(result_count), "inline": True},
         {"name": "Filtered", "value": str(summary.get("filtered_count") or 0), "inline": True},
     ]
+    policy = live_policy_summary(market, strict_quality_gate=True)
+    fields.append(
+        {
+            "name": "Live Policy Validation",
+            "value": (
+                f"{policy.get('policy') or '-'}\n"
+                f"win5 {policy.get('validated_win') or '-'} · avg5 {policy.get('validated_return') or '-'} · "
+                f"{policy.get('sample') or '-'}\n"
+                f"{policy.get('quality_scope') or '-'} · pass={policy.get('validation_pass')}"
+            )[:1024],
+            "inline": False,
+        }
+    )
     if gate_msg:
         fields.append({"name": "Market Gate", "value": gate_msg[:1024], "inline": False})
     fields.append({"name": "Data Integrity", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})

@@ -444,6 +444,7 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
 
     assert embeds[0]["title"] == "KOSPI 전체 스캔 결과"
     assert embeds[0]["fields"][0]["value"] == "RUN-DISCORD"
+    assert any(field["name"] == "Live Policy Validation" for field in embeds[0]["fields"])
     assert embeds[1]["title"] == "Shadow + Top5 + Exception Leader 자동 정밀분석"
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
 
