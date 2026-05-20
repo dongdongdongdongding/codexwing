@@ -30,6 +30,7 @@ def test_latest_section_metric_uses_latest_as_of_date(tmp_path):
                     "as_of_date": "2026-05-20",
                     "generated_at": "2026-05-20T00:00:00Z",
                     "market": "KOSPI",
+                    "scan_mode": "SWING",
                     "section": "Exception Leader",
                     "horizon_days": 5,
                     "sample_n": 31,
@@ -50,6 +51,49 @@ def test_latest_section_metric_uses_latest_as_of_date(tmp_path):
     assert metric.production_pass is True
     assert profile_level(metric) == "pass"
     assert "win5D 80.0%" in format_metric(metric)
+
+
+def test_latest_section_metric_filters_scan_mode(tmp_path):
+    path = tmp_path / "sections.json"
+    path.write_text(
+        json.dumps(
+            [
+                {
+                    "as_of_date": "2026-05-20",
+                    "generated_at": "2026-05-20T00:00:00Z",
+                    "market": "KOSPI",
+                    "scan_mode": "SWING",
+                    "section": "Top5",
+                    "horizon_days": 5,
+                    "sample_n": 30,
+                    "win_rate_pct": 80.0,
+                    "avg_return_pct": 5.0,
+                },
+                {
+                    "as_of_date": "2026-05-20",
+                    "generated_at": "2026-05-20T00:00:00Z",
+                    "market": "KOSPI",
+                    "scan_mode": "INTRADAY",
+                    "section": "Top5",
+                    "horizon_days": 5,
+                    "sample_n": 30,
+                    "win_rate_pct": 20.0,
+                    "avg_return_pct": -5.0,
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    swing = latest_section_metric("KOSPI", "Top5", horizon_days=5, path=path)
+    intraday = latest_section_metric("KOSPI", "Top5", horizon_days=5, scan_mode="INTRADAY", path=path)
+
+    assert swing is not None
+    assert intraday is not None
+    assert swing.scan_mode == "SWING"
+    assert swing.win_rate_pct == 80.0
+    assert intraday.scan_mode == "INTRADAY"
+    assert intraday.win_rate_pct == 20.0
 
 
 def test_live_policy_summary_reads_selected_quality_scope(tmp_path, monkeypatch):

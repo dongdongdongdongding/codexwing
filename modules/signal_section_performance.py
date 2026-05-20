@@ -31,6 +31,7 @@ class SectionMetric:
     as_of_date: str
     generated_at: str
     market: str
+    scan_mode: str
     section: str
     horizon_days: int
     sample_n: int
@@ -48,6 +49,7 @@ class SectionMetric:
             "as_of_date": self.as_of_date,
             "generated_at": self.generated_at,
             "market": self.market,
+            "scan_mode": self.scan_mode,
             "section": self.section,
             "horizon_days": self.horizon_days,
             "sample_n": self.sample_n,
@@ -94,14 +96,15 @@ def build_section_performance_metrics(
 ) -> List[Dict[str, Any]]:
     generated = generated_at or datetime.now(timezone.utc).isoformat()
     as_of = as_of_date or str(date.today())
-    buckets: Dict[tuple[str, str, int], List[float]] = {}
-    latest_dates: Dict[tuple[str, str, int], str] = {}
+    buckets: Dict[tuple[str, str, str, int], List[float]] = {}
+    latest_dates: Dict[tuple[str, str, str, int], str] = {}
     prepared_rows = attach_display_theme_day_metrics(list(rows or []))
 
     for row in prepared_rows:
         market = _market(row)
         if market not in {"KOSPI", "KOSDAQ"}:
             continue
+        scan_mode = _scan_mode(row)
         sections = classify_signal_sections(row)
         if not sections:
             continue
@@ -111,36 +114,38 @@ def build_section_performance_metrics(
                 value = _to_float(row.get(f"return_{horizon}d_pct"))
                 if value is None:
                     continue
-                key = (market, section, horizon)
+                key = (market, scan_mode, section, horizon)
                 buckets.setdefault(key, []).append(value)
                 if base_date and base_date > latest_dates.get(key, ""):
                     latest_dates[key] = base_date
 
     metrics: List[Dict[str, Any]] = []
     for market in ("KOSPI", "KOSDAQ"):
-        for section in SECTIONS:
-            for horizon in HORIZONS:
-                key = (market, section, horizon)
-                values = buckets.get(key, [])
-                win_n = sum(1 for value in values if value > 0)
-                sample_n = len(values)
-                metric = SectionMetric(
-                    as_of_date=as_of,
-                    generated_at=generated,
-                    market=market,
-                    section=section,
-                    horizon_days=horizon,
-                    sample_n=sample_n,
-                    win_n=win_n,
-                    win_rate_pct=round((win_n / sample_n) * 100.0, 2) if sample_n else None,
-                    avg_return_pct=round(sum(values) / sample_n, 4) if sample_n else None,
-                    median_return_pct=round(float(median(values)), 4) if sample_n else None,
-                    best_return_pct=round(max(values), 4) if sample_n else None,
-                    worst_return_pct=round(min(values), 4) if sample_n else None,
-                    latest_base_trade_date=latest_dates.get(key, ""),
-                    source=source,
-                )
-                metrics.append(metric.to_dict())
+        for scan_mode in _scan_modes_for_market(buckets, market):
+            for section in SECTIONS:
+                for horizon in HORIZONS:
+                    key = (market, scan_mode, section, horizon)
+                    values = buckets.get(key, [])
+                    win_n = sum(1 for value in values if value > 0)
+                    sample_n = len(values)
+                    metric = SectionMetric(
+                        as_of_date=as_of,
+                        generated_at=generated,
+                        market=market,
+                        scan_mode=scan_mode,
+                        section=section,
+                        horizon_days=horizon,
+                        sample_n=sample_n,
+                        win_n=win_n,
+                        win_rate_pct=round((win_n / sample_n) * 100.0, 2) if sample_n else None,
+                        avg_return_pct=round(sum(values) / sample_n, 4) if sample_n else None,
+                        median_return_pct=round(float(median(values)), 4) if sample_n else None,
+                        best_return_pct=round(max(values), 4) if sample_n else None,
+                        worst_return_pct=round(min(values), 4) if sample_n else None,
+                        latest_base_trade_date=latest_dates.get(key, ""),
+                        source=source,
+                    )
+                    metrics.append(metric.to_dict())
     return metrics
 
 
@@ -168,6 +173,7 @@ def write_daily_section_performance_snapshot(
         key=lambda row: (
             str(row.get("as_of_date") or ""),
             str(row.get("market") or ""),
+            str(row.get("scan_mode") or "SWING"),
             str(row.get("section") or ""),
             int(row.get("horizon_days") or 0),
         )
@@ -182,19 +188,30 @@ def write_daily_section_performance_snapshot(
 def build_latest_performance_markdown(metrics: List[Dict[str, Any]]) -> str:
     lines = ["# Signal Section Performance Snapshot", ""]
     for market in ("KOSPI", "KOSDAQ"):
-        lines.append(f"## {market}")
-        for section in SECTIONS:
-            values = [row for row in metrics if row.get("market") == market and row.get("section") == section]
-            if not values:
-                continue
-            parts = []
-            for row in sorted(values, key=lambda item: int(item.get("horizon_days") or 0)):
-                win = _fmt_pct(row.get("win_rate_pct"))
-                avg = _fmt_signed(row.get("avg_return_pct"))
-                sample = int(row.get("sample_n") or 0)
-                parts.append(f"{row.get('horizon_days')}D win {win} / avg {avg} / n={sample}")
-            lines.append(f"- {section}: " + " | ".join(parts))
-        lines.append("")
+        scan_modes = sorted(
+            {str(row.get("scan_mode") or "SWING").upper() for row in metrics if row.get("market") == market},
+            key=lambda item: (item != "SWING", item),
+        )
+        for scan_mode in scan_modes or ["SWING"]:
+            lines.append(f"## {market} / {scan_mode}")
+            for section in SECTIONS:
+                values = [
+                    row
+                    for row in metrics
+                    if row.get("market") == market
+                    and str(row.get("scan_mode") or "SWING").upper() == scan_mode
+                    and row.get("section") == section
+                ]
+                if not values:
+                    continue
+                parts = []
+                for row in sorted(values, key=lambda item: int(item.get("horizon_days") or 0)):
+                    win = _fmt_pct(row.get("win_rate_pct"))
+                    avg = _fmt_signed(row.get("avg_return_pct"))
+                    sample = int(row.get("sample_n") or 0)
+                    parts.append(f"{row.get('horizon_days')}D win {win} / avg {avg} / n={sample}")
+                lines.append(f"- {section}: " + " | ".join(parts))
+            lines.append("")
     return "\n".join(lines).strip() + "\n"
 
 
@@ -204,6 +221,7 @@ def _write_csv(rows: List[Dict[str, Any]], path: Path) -> None:
         "as_of_date",
         "generated_at",
         "market",
+        "scan_mode",
         "section",
         "horizon_days",
         "sample_n",
@@ -238,6 +256,18 @@ def _market(row: Dict[str, Any]) -> str:
     if ticker.endswith(".KQ"):
         return "KOSDAQ"
     return market
+
+
+def _scan_mode(row: Dict[str, Any]) -> str:
+    scan_mode = str(row.get("scan_mode") or "SWING").upper().strip()
+    return scan_mode if scan_mode in {"SWING", "INTRADAY"} else "SWING"
+
+
+def _scan_modes_for_market(buckets: Dict[tuple[str, str, str, int], List[float]], market: str) -> List[str]:
+    found = {scan_mode for bucket_market, scan_mode, _, _ in buckets if bucket_market == market}
+    if not found:
+        return ["SWING"]
+    return sorted(found, key=lambda item: (item != "SWING", item))
 
 
 def _to_float(value: Any) -> float | None:

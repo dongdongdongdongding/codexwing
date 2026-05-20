@@ -197,7 +197,7 @@ def _refresh_archive_dataset() -> None:
         "--market",
         "ALL",
         "--scan-mode",
-        "SWING",
+        "ALL",
     ]
     env = dict(os.environ)
     env.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")

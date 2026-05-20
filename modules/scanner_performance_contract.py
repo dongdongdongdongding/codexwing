@@ -19,6 +19,7 @@ SLICE_VALIDATION_PATHS = {
 @dataclass(frozen=True)
 class PerformanceMetric:
     market: str
+    scan_mode: str
     section: str
     horizon_days: int
     sample_n: int
@@ -96,6 +97,7 @@ def _norm_section(value: Any) -> str:
 def _metric_from_section_row(row: Dict[str, Any]) -> PerformanceMetric:
     return PerformanceMetric(
         market=_norm_market(row.get("market")),
+        scan_mode=str(row.get("scan_mode") or "SWING").upper().strip() or "SWING",
         section=_norm_section(row.get("section")),
         horizon_days=int(row.get("horizon_days") or 0),
         sample_n=int(row.get("sample_n") or 0),
@@ -115,6 +117,7 @@ def latest_section_metric(
     section: Any,
     *,
     horizon_days: int = 5,
+    scan_mode: Any = "SWING",
     path: Path = SECTION_PERFORMANCE_PATH,
 ) -> Optional[PerformanceMetric]:
     payload = _load_json(path)
@@ -122,11 +125,13 @@ def latest_section_metric(
         return None
     market_key = _norm_market(market)
     section_key = _norm_section(section)
+    scan_mode_key = str(scan_mode or "SWING").upper().strip() or "SWING"
     candidates = [
         row
         for row in payload
         if isinstance(row, dict)
         and _norm_market(row.get("market")) == market_key
+        and str(row.get("scan_mode") or "SWING").upper().strip() == scan_mode_key
         and _norm_section(row.get("section")) == section_key
         and int(row.get("horizon_days") or 0) == int(horizon_days)
     ]
@@ -157,6 +162,7 @@ def slice_metric(market: Any, slice_name: str) -> Optional[PerformanceMetric]:
     section = "Exception Leader" if "exception" in slice_name.lower() else "Top5"
     return PerformanceMetric(
         market=market_key,
+        scan_mode="SWING",
         section=section,
         horizon_days=5,
         sample_n=int(target.get("n") or 0),
