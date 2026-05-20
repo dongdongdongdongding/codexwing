@@ -229,7 +229,7 @@ def _performance_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
         "title": "섹션별 성과 기록",
         "description": "Shadow / Top5 / Exception Leader 1D·3D·5D 승률과 평균수익률 스냅샷",
         "color": 0x1ABC9C,
-        "fields": fields[:10]
+        "fields": fields[:24]
         + [{"name": "Local Records", "value": "\n".join(str(v) for v in paths.values())[:1024] or "-", "inline": False}],
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
