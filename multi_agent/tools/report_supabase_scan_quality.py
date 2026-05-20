@@ -170,6 +170,23 @@ def _computed_complete_mask(frame: pd.DataFrame) -> pd.Series:
     if "volume" in frame.columns:
         volume_ok |= frame["volume"].fillna("").astype(str).str.extract(r"(-?\d+(?:\.\d+)?)", expand=False).notna()
     mask &= volume_ok
+    for col in [
+        "foreigner_1d",
+        "institution_1d",
+        "retail_1d",
+        "foreigner_3d",
+        "institution_3d",
+        "retail_3d",
+        "foreigner_10d",
+        "institution_10d",
+        "retail_10d",
+    ]:
+        if col not in frame.columns:
+            return pd.Series(False, index=frame.index)
+        mask &= pd.to_numeric(frame[col], errors="coerce").notna()
+    if "flow_asof" not in frame.columns:
+        return pd.Series(False, index=frame.index)
+    mask &= frame["flow_asof"].fillna("").astype(str).str.strip().ne("")
     return mask
 
 

@@ -1,129 +1,142 @@
 # Supabase Scan Data Quality
 
-- generated_at: `2026-05-12T17:34:48.018021+00:00`
-- table_rows: `15,502`
-- column_count: `107`
-- kr_swing_rows: `5,060`
+- generated_at: `2026-05-20T07:13:26.789321+00:00`
+- table_rows: `18,177`
+- column_count: `143`
+- kr_swing_rows: `7,041`
 - schema_missing_required_columns: `none`
-- kr_swing_validation_excluded_rows: `3,943`
+- kr_swing_validation_excluded_rows: `4,014`
 - kr_swing_dummy_rows: `0`
-- kr_swing_computed_complete_rows: `2,132`
-- kr_swing_computed_complete_with_return3d_rows: `1,392`
+- kr_swing_computed_complete_rows: `79`
+- kr_swing_computed_complete_with_return3d_rows: `0`
 
 ## KR SWING Counts
 
-- by_submarket: `{'KOSPI': 2832, 'KOSDAQ': 2228}`
-- by_bucket: `{'watchlist': 2934, 'unknown': 994, 'ignored': 550, 'exception_leader': 308, 'picked': 274}`
+- by_submarket: `{'KOSPI': 4147, 'KOSDAQ': 2894}`
+- by_bucket: `{'watchlist': 4103, 'unknown': 1180, 'ignored': 1033, 'exception_leader': 377, 'picked': 348}`
 
 ## Feature Missing Rates
 
-- alpha_score: `11.146%`
-- tech_score: `56.917%`
-- ml_prob: `2.846%`
-- prob_clean: `16.344%`
-- whale_score: `56.917%`
-- decision_score: `2.609%`
-- trend: `2.609%`
-- tier: `57.866%`
-- volume: `56.897%`
-- volume_ratio: `65.119%`
-- volume_confirmed: `65.119%`
-- position: `57.866%`
-- inference_failed: `76.976%`
+- alpha_score: `8.01%`
+- tech_score: `40.974%`
+- ml_prob: `2.045%`
+- prob_clean: `11.745%`
+- whale_score: `40.974%`
+- foreign_flow: `80.699%`
+- institution_flow: `80.699%`
+- retail_flow: `80.699%`
+- foreigner_1d: `98.878%`
+- institution_1d: `98.878%`
+- retail_1d: `98.878%`
+- foreigner_3d: `98.878%`
+- institution_3d: `98.878%`
+- retail_3d: `98.878%`
+- foreigner_10d: `98.878%`
+- institution_10d: `98.878%`
+- retail_10d: `98.878%`
+- flow_asof: `98.878%`
+- decision_score: `1.875%`
+- trend: `1.875%`
+- tier: `42.593%`
+- volume: `40.889%`
+- volume_ratio: `46.868%`
+- volume_confirmed: `46.868%`
+- position: `42.593%`
+- inference_failed: `56.327%`
 
 ## Origin Quality
 
-- scanner_archive_outcome: rows=2518, computed_complete=159 (6.315%), metadata_complete=74, validation_excluded=2444, excluded_reason_missing=0, metadata_false_missing=85 (3.376%)
-- scanner_full: rows=1004, computed_complete=1004 (100.0%), metadata_complete=1004, validation_excluded=0, excluded_reason_missing=0, metadata_false_missing=0 (0.0%)
-- outcome_sync_partial: rows=873, computed_complete=305 (34.937%), metadata_complete=30, validation_excluded=843, excluded_reason_missing=0, metadata_false_missing=275 (31.501%)
-- scanner_partial_legacy: rows=665, computed_complete=664 (99.85%), metadata_complete=9, validation_excluded=656, excluded_reason_missing=0, metadata_false_missing=655 (98.496%)
+- scanner_full: rows=2914, computed_complete=79 (2.711%), metadata_complete=2914, validation_excluded=0, excluded_reason_missing=0, metadata_false_missing=0 (0.0%)
+- scanner_archive_outcome: rows=2589, computed_complete=0 (0.0%), metadata_complete=74, validation_excluded=2515, excluded_reason_missing=0, metadata_false_missing=0 (0.0%)
+- outcome_sync_partial: rows=873, computed_complete=0 (0.0%), metadata_complete=30, validation_excluded=843, excluded_reason_missing=0, metadata_false_missing=0 (0.0%)
+- scanner_partial_legacy: rows=665, computed_complete=0 (0.0%), metadata_complete=9, validation_excluded=656, excluded_reason_missing=0, metadata_false_missing=0 (0.0%)
 
 ## Return Summary
 
 ### return_1d_pct by bucket
-- KOSDAQ / exception_leader: n=208, avg=-0.2162%, win=51.442%
-- KOSDAQ / ignored: n=349, avg=-0.4777%, win=40.401%
+- KOSDAQ / exception_leader: n=278, avg=-1.2255%, win=43.885%
+- KOSDAQ / ignored: n=752, avg=-1.409%, win=34.043%
 - KOSDAQ / picked: n=41, avg=-1.4986%, win=39.024%
-- KOSDAQ / unknown: n=471, avg=-0.2151%, win=39.703%
-- KOSDAQ / watchlist: n=1086, avg=-0.1827%, win=39.871%
+- KOSDAQ / unknown: n=601, avg=-0.799%, win=37.438%
+- KOSDAQ / watchlist: n=1200, avg=-0.3178%, win=38.917%
 - KOSPI / exception_leader: n=93, avg=0.6028%, win=46.237%
-- KOSPI / ignored: n=155, avg=1.2337%, win=54.194%
-- KOSPI / picked: n=226, avg=-1.04%, win=28.319%
-- KOSPI / unknown: n=523, avg=0.6521%, win=48.948%
-- KOSPI / watchlist: n=1746, avg=1.0513%, win=50.63%
+- KOSPI / ignored: n=281, avg=0.0684%, win=50.178%
+- KOSPI / picked: n=307, avg=-1.1597%, win=30.293%
+- KOSPI / unknown: n=563, avg=0.5269%, win=48.135%
+- KOSPI / watchlist: n=2866, avg=0.1676%, win=45.953%
 
 ### return_3d_pct by bucket
-- KOSDAQ / exception_leader: n=195, avg=1.7215%, win=60.0%
-- KOSDAQ / ignored: n=245, avg=1.5062%, win=53.469%
+- KOSDAQ / exception_leader: n=249, avg=-0.9555%, win=48.594%
+- KOSDAQ / ignored: n=683, avg=-3.7396%, win=31.772%
 - KOSDAQ / picked: n=41, avg=-2.0504%, win=31.707%
-- KOSDAQ / unknown: n=453, avg=0.234%, win=43.488%
-- KOSDAQ / watchlist: n=1001, avg=-0.1367%, win=40.959%
-- KOSPI / exception_leader: n=84, avg=4.8978%, win=80.952%
-- KOSPI / ignored: n=144, avg=2.3847%, win=58.333%
-- KOSPI / picked: n=45, avg=2.4345%, win=51.111%
-- KOSPI / unknown: n=439, avg=2.8341%, win=55.353%
-- KOSPI / watchlist: n=1554, avg=3.2138%, win=61.583%
+- KOSDAQ / unknown: n=601, avg=-1.5439%, win=37.105%
+- KOSDAQ / watchlist: n=1184, avg=-1.0417%, win=37.5%
+- KOSPI / exception_leader: n=93, avg=4.5751%, win=79.57%
+- KOSPI / ignored: n=234, avg=-0.2069%, win=48.718%
+- KOSPI / picked: n=292, avg=0.4283%, win=41.438%
+- KOSPI / unknown: n=523, avg=2.6611%, win=54.685%
+- KOSPI / watchlist: n=2631, avg=-0.2607%, win=45.04%
 
 ### return_5d_pct by bucket
-- KOSDAQ / exception_leader: n=195, avg=4.9967%, win=65.641%
-- KOSDAQ / ignored: n=204, avg=3.4792%, win=58.824%
+- KOSDAQ / exception_leader: n=215, avg=3.2022%, win=60.0%
+- KOSDAQ / ignored: n=394, avg=-1.811%, win=41.117%
 - KOSDAQ / picked: n=41, avg=1.0386%, win=48.78%
-- KOSDAQ / unknown: n=426, avg=3.3023%, win=53.756%
-- KOSDAQ / watchlist: n=776, avg=2.4951%, win=50.0%
-- KOSPI / exception_leader: n=84, avg=8.9851%, win=85.714%
-- KOSPI / ignored: n=138, avg=3.0034%, win=59.42%
-- KOSPI / picked: n=45, avg=4.586%, win=66.667%
-- KOSPI / unknown: n=430, avg=4.6435%, win=58.837%
-- KOSPI / watchlist: n=1309, avg=6.6175%, win=66.845%
+- KOSDAQ / unknown: n=470, avg=2.0762%, win=49.574%
+- KOSDAQ / watchlist: n=1106, avg=0.6485%, win=43.852%
+- KOSPI / exception_leader: n=93, avg=7.5761%, win=79.57%
+- KOSPI / ignored: n=160, avg=2.1455%, win=55.625%
+- KOSPI / picked: n=232, avg=-1.7142%, win=38.793%
+- KOSPI / unknown: n=523, avg=2.9407%, win=52.772%
+- KOSPI / watchlist: n=1834, avg=3.6603%, win=54.962%
 
 ### return_7d_pct by bucket
 - KOSDAQ / exception_leader: n=195, avg=7.1186%, win=69.231%
-- KOSDAQ / ignored: n=184, avg=5.2456%, win=58.696%
+- KOSDAQ / ignored: n=251, avg=1.4407%, win=47.41%
 - KOSDAQ / picked: n=41, avg=8.8285%, win=39.024%
-- KOSDAQ / unknown: n=416, avg=3.0322%, win=50.481%
-- KOSDAQ / watchlist: n=658, avg=2.8634%, win=50.152%
-- KOSPI / exception_leader: n=84, avg=13.1273%, win=89.286%
-- KOSPI / ignored: n=134, avg=4.2925%, win=64.925%
-- KOSPI / picked: n=45, avg=7.2089%, win=77.778%
-- KOSPI / unknown: n=425, avg=7.3585%, win=63.765%
-- KOSPI / watchlist: n=1270, avg=8.8233%, win=68.425%
+- KOSDAQ / unknown: n=459, avg=1.5829%, win=46.841%
+- KOSDAQ / watchlist: n=1043, avg=-0.5879%, win=41.898%
+- KOSPI / exception_leader: n=90, avg=11.7734%, win=85.556%
+- KOSPI / ignored: n=146, avg=3.3094%, win=61.644%
+- KOSPI / picked: n=107, avg=-0.5183%, win=47.664%
+- KOSPI / unknown: n=439, avg=7.04%, win=63.098%
+- KOSPI / watchlist: n=1619, avg=6.2464%, win=60.655%
 
 ### return_1d_pct by rank band
-- KOSDAQ / rank_gt10: n=964, avg=-0.0241%, win=40.353%
-- KOSDAQ / top5: n=365, avg=-0.3021%, win=47.671%
-- KOSDAQ / top6_10: n=235, avg=-0.5025%, win=42.979%
-- KOSDAQ / unknown: n=591, avg=-0.5436%, win=37.225%
-- KOSPI / rank_gt10: n=1484, avg=1.0375%, win=50.876%
-- KOSPI / top5: n=312, avg=1.2118%, win=50.962%
-- KOSPI / top6_10: n=280, avg=0.4257%, win=45.357%
-- KOSPI / unknown: n=667, avg=0.2279%, win=43.478%
+- KOSDAQ / rank_gt10: n=1004, avg=-0.1822%, win=39.442%
+- KOSDAQ / top5: n=435, avg=-0.5497%, win=44.368%
+- KOSDAQ / top6_10: n=274, avg=-0.8601%, win=40.876%
+- KOSDAQ / unknown: n=1159, avg=-1.4371%, win=33.218%
+- KOSPI / rank_gt10: n=1518, avg=0.9903%, win=50.725%
+- KOSPI / top5: n=498, avg=0.3511%, win=45.984%
+- KOSPI / top6_10: n=416, avg=0.1671%, win=46.394%
+- KOSPI / unknown: n=1678, avg=-0.7458%, win=40.107%
 
 ### return_3d_pct by rank band
-- KOSDAQ / rank_gt10: n=909, avg=-0.5856%, win=39.384%
-- KOSDAQ / top5: n=341, avg=1.8417%, win=57.185%
-- KOSDAQ / top6_10: n=227, avg=1.7451%, win=51.101%
-- KOSDAQ / unknown: n=458, avg=0.2139%, win=43.45%
-- KOSPI / rank_gt10: n=1322, avg=3.2099%, win=61.876%
-- KOSPI / top5: n=264, avg=3.7638%, win=66.288%
-- KOSPI / top6_10: n=241, avg=2.5789%, win=57.676%
-- KOSPI / unknown: n=439, avg=2.8341%, win=55.353%
+- KOSDAQ / rank_gt10: n=999, avg=-1.0514%, win=37.738%
+- KOSDAQ / top5: n=410, avg=0.3073%, win=49.512%
+- KOSDAQ / top6_10: n=265, avg=0.1488%, win=45.66%
+- KOSDAQ / unknown: n=1084, avg=-3.8307%, win=29.244%
+- KOSPI / rank_gt10: n=1513, avg=2.7948%, win=59.022%
+- KOSPI / top5: n=447, avg=1.2553%, win=52.796%
+- KOSPI / top6_10: n=383, avg=-0.3741%, win=43.342%
+- KOSPI / unknown: n=1430, avg=-2.4044%, win=33.916%
 
 ### return_5d_pct by rank band
-- KOSDAQ / rank_gt10: n=690, avg=2.2832%, win=50.435%
-- KOSDAQ / top5: n=320, avg=4.4842%, win=60.625%
-- KOSDAQ / top6_10: n=206, avg=3.1678%, win=55.34%
-- KOSDAQ / unknown: n=426, avg=3.3023%, win=53.756%
-- KOSPI / rank_gt10: n=1127, avg=6.3329%, win=66.46%
-- KOSPI / top5: n=235, avg=6.5522%, win=71.489%
-- KOSPI / top6_10: n=214, avg=6.3599%, win=66.355%
-- KOSPI / unknown: n=430, avg=4.6435%, win=58.837%
+- KOSDAQ / rank_gt10: n=967, avg=0.6017%, win=44.881%
+- KOSDAQ / top5: n=374, avg=2.2948%, win=54.011%
+- KOSDAQ / top6_10: n=245, avg=1.9996%, win=49.796%
+- KOSDAQ / unknown: n=640, avg=-0.3428%, win=42.344%
+- KOSPI / rank_gt10: n=1482, avg=4.2859%, win=57.557%
+- KOSPI / top5: n=350, avg=3.0482%, win=57.714%
+- KOSPI / top6_10: n=290, avg=3.5759%, win=55.172%
+- KOSPI / unknown: n=720, avg=0.6187%, win=44.722%
 
 ### return_7d_pct by rank band
-- KOSDAQ / rank_gt10: n=572, avg=2.8236%, win=50.524%
-- KOSDAQ / top5: n=310, avg=6.6875%, win=63.226%
-- KOSDAQ / top6_10: n=196, avg=4.6488%, win=53.061%
-- KOSDAQ / unknown: n=416, avg=3.0322%, win=50.481%
-- KOSPI / rank_gt10: n=1097, avg=8.5518%, win=70.283%
-- KOSPI / top5: n=227, avg=8.9597%, win=68.722%
-- KOSPI / top6_10: n=209, avg=8.5775%, win=66.507%
-- KOSPI / unknown: n=425, avg=7.3585%, win=63.765%
+- KOSDAQ / rank_gt10: n=915, avg=-0.5637%, win=41.421%
+- KOSDAQ / top5: n=352, avg=4.8083%, win=59.375%
+- KOSDAQ / top6_10: n=233, avg=2.397%, win=48.069%
+- KOSDAQ / unknown: n=489, avg=1.0015%, win=45.399%
+- KOSPI / rank_gt10: n=1416, avg=5.7475%, win=61.653%
+- KOSPI / top5: n=284, avg=6.6647%, win=60.915%
+- KOSPI / top6_10: n=262, avg=5.9891%, win=58.779%
+- KOSPI / unknown: n=439, avg=7.04%, win=63.098%

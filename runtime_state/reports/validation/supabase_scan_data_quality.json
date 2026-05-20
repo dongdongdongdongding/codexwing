@@ -1,121 +1,145 @@
 {
-  "generated_at": "2026-05-12T17:34:48.018021+00:00",
+  "generated_at": "2026-05-20T07:13:26.789321+00:00",
   "table": "market_scan_results",
-  "total_rows": 15502,
-  "column_count": 107,
+  "total_rows": 18177,
+  "column_count": 143,
   "schema_missing_required_columns": [],
-  "kr_swing_rows": 5060,
+  "kr_swing_rows": 7041,
   "kr_swing_by_submarket": {
-    "KOSPI": 2832,
-    "KOSDAQ": 2228
+    "KOSPI": 4147,
+    "KOSDAQ": 2894
   },
   "kr_swing_by_bucket": {
-    "watchlist": 2934,
-    "unknown": 994,
-    "ignored": 550,
-    "exception_leader": 308,
-    "picked": 274
+    "watchlist": 4103,
+    "unknown": 1180,
+    "ignored": 1033,
+    "exception_leader": 377,
+    "picked": 348
   },
-  "kr_swing_validation_excluded_rows": 3943,
+  "kr_swing_validation_excluded_rows": 4014,
   "kr_swing_dummy_rows": 0,
-  "kr_swing_computed_complete_rows": 2132,
-  "kr_swing_computed_complete_with_return3d_rows": 1392,
+  "kr_swing_computed_complete_rows": 79,
+  "kr_swing_computed_complete_with_return3d_rows": 0,
   "missing_rates_all_kr_swing_pct": {
-    "alpha_score": 11.146,
-    "tech_score": 56.917,
-    "ml_prob": 2.846,
-    "prob_clean": 16.344,
-    "whale_score": 56.917,
-    "decision_score": 2.609,
-    "trend": 2.609,
-    "tier": 57.866,
-    "volume": 56.897,
-    "volume_ratio": 65.119,
-    "volume_confirmed": 65.119,
-    "position": 57.866,
+    "alpha_score": 8.01,
+    "tech_score": 40.974,
+    "ml_prob": 2.045,
+    "prob_clean": 11.745,
+    "whale_score": 40.974,
+    "foreign_flow": 80.699,
+    "institution_flow": 80.699,
+    "retail_flow": 80.699,
+    "foreigner_1d": 98.878,
+    "institution_1d": 98.878,
+    "retail_1d": 98.878,
+    "foreigner_3d": 98.878,
+    "institution_3d": 98.878,
+    "retail_3d": 98.878,
+    "foreigner_10d": 98.878,
+    "institution_10d": 98.878,
+    "retail_10d": 98.878,
+    "flow_asof": 98.878,
+    "decision_score": 1.875,
+    "trend": 1.875,
+    "tier": 42.593,
+    "volume": 40.889,
+    "volume_ratio": 46.868,
+    "volume_confirmed": 46.868,
+    "position": 42.593,
     "entry_reference_price": 0.0,
-    "inference_failed": 76.976
+    "inference_failed": 56.327
   },
   "missing_rates_by_submarket_pct": {
     "KOSDAQ": {
-      "alpha_score": 6.822,
-      "tech_score": 52.962,
-      "ml_prob": 3.411,
-      "prob_clean": 21.634,
-      "whale_score": 52.962,
-      "decision_score": 3.007,
-      "trend": 3.007,
-      "tier": 54.174,
-      "volume": 52.962,
-      "volume_ratio": 53.86,
-      "volume_confirmed": 53.86,
-      "position": 54.174,
+      "alpha_score": 5.252,
+      "tech_score": 40.843,
+      "ml_prob": 2.626,
+      "prob_clean": 16.655,
+      "whale_score": 40.843,
+      "foreign_flow": 83.932,
+      "institution_flow": 83.932,
+      "retail_flow": 83.932,
+      "foreigner_1d": 99.447,
+      "institution_1d": 99.447,
+      "retail_1d": 99.447,
+      "foreigner_3d": 99.447,
+      "institution_3d": 99.447,
+      "retail_3d": 99.447,
+      "foreigner_10d": 99.447,
+      "institution_10d": 99.447,
+      "retail_10d": 99.447,
+      "flow_asof": 99.447,
+      "decision_score": 2.315,
+      "trend": 2.315,
+      "tier": 43.849,
+      "volume": 40.774,
+      "volume_ratio": 41.534,
+      "volume_confirmed": 41.534,
+      "position": 43.849,
       "entry_reference_price": 0.0,
-      "inference_failed": 79.847
+      "inference_failed": 63.614
     },
     "KOSPI": {
-      "alpha_score": 14.548,
-      "tech_score": 60.028,
-      "ml_prob": 2.401,
-      "prob_clean": 12.182,
-      "whale_score": 60.028,
-      "decision_score": 2.295,
-      "trend": 2.295,
-      "tier": 60.77,
-      "volume": 59.993,
-      "volume_ratio": 73.976,
-      "volume_confirmed": 73.976,
-      "position": 60.77,
+      "alpha_score": 9.935,
+      "tech_score": 41.066,
+      "ml_prob": 1.64,
+      "prob_clean": 8.319,
+      "whale_score": 41.066,
+      "foreign_flow": 78.442,
+      "institution_flow": 78.442,
+      "retail_flow": 78.442,
+      "foreigner_1d": 98.481,
+      "institution_1d": 98.481,
+      "retail_1d": 98.481,
+      "foreigner_3d": 98.481,
+      "institution_3d": 98.481,
+      "retail_3d": 98.481,
+      "foreigner_10d": 98.481,
+      "institution_10d": 98.481,
+      "retail_10d": 98.481,
+      "flow_asof": 98.481,
+      "decision_score": 1.567,
+      "trend": 1.567,
+      "tier": 41.717,
+      "volume": 40.969,
+      "volume_ratio": 50.591,
+      "volume_confirmed": 50.591,
+      "position": 41.717,
       "entry_reference_price": 0.0,
-      "inference_failed": 74.718
+      "inference_failed": 51.242
     }
   },
   "quality_by_feature_origin": [
     {
-      "feature_origin": "scanner_archive_outcome",
-      "rows": 2518,
-      "computed_complete_rows": 159,
-      "computed_complete_rate_pct": 6.315,
-      "metadata_complete_rows": 74,
-      "validation_excluded_rows": 2444,
-      "excluded_reason_missing_rows": 0,
-      "metadata_false_missing_rows": 85,
-      "metadata_false_missing_rate_pct": 3.376,
-      "metadata_false_complete_rows": 0,
-      "missing_rates_pct": {
-        "alpha_score": 0.0,
-        "tech_score": 91.819,
-        "ml_prob": 0.0,
-        "prob_clean": 0.437,
-        "whale_score": 91.819,
-        "decision_score": 0.0,
-        "trend": 0.0,
-        "tier": 93.685,
-        "volume": 91.779,
-        "volume_ratio": 74.94,
-        "volume_confirmed": 74.94,
-        "position": 93.685,
-        "entry_reference_price": 0.0,
-        "inference_failed": 93.924
-      }
-    },
-    {
       "feature_origin": "scanner_full",
-      "rows": 1004,
-      "computed_complete_rows": 1004,
-      "computed_complete_rate_pct": 100.0,
-      "metadata_complete_rows": 1004,
+      "rows": 2914,
+      "computed_complete_rows": 79,
+      "computed_complete_rate_pct": 2.711,
+      "metadata_complete_rows": 2914,
       "validation_excluded_rows": 0,
       "excluded_reason_missing_rows": 0,
       "metadata_false_missing_rows": 0,
       "metadata_false_missing_rate_pct": 0.0,
-      "metadata_false_complete_rows": 0,
+      "metadata_false_complete_rows": 2835,
       "missing_rates_pct": {
         "alpha_score": 0.0,
         "tech_score": 0.0,
         "ml_prob": 0.0,
         "prob_clean": 0.0,
         "whale_score": 0.0,
+        "foreign_flow": 53.363,
+        "institution_flow": 53.363,
+        "retail_flow": 53.363,
+        "foreigner_1d": 97.289,
+        "institution_1d": 97.289,
+        "retail_1d": 97.289,
+        "foreigner_3d": 97.289,
+        "institution_3d": 97.289,
+        "retail_3d": 97.289,
+        "foreigner_10d": 97.289,
+        "institution_10d": 97.289,
+        "retail_10d": 97.289,
+        "flow_asof": 97.289,
         "decision_score": 0.0,
         "trend": 0.0,
         "tier": 0.0,
@@ -128,22 +152,76 @@
       }
     },
     {
+      "feature_origin": "scanner_archive_outcome",
+      "rows": 2589,
+      "computed_complete_rows": 0,
+      "computed_complete_rate_pct": 0.0,
+      "metadata_complete_rows": 74,
+      "validation_excluded_rows": 2515,
+      "excluded_reason_missing_rows": 0,
+      "metadata_false_missing_rows": 0,
+      "metadata_false_missing_rate_pct": 0.0,
+      "metadata_false_complete_rows": 74,
+      "missing_rates_pct": {
+        "alpha_score": 0.0,
+        "tech_score": 89.494,
+        "ml_prob": 0.0,
+        "prob_clean": 0.425,
+        "whale_score": 89.494,
+        "foreign_flow": 100.0,
+        "institution_flow": 100.0,
+        "retail_flow": 100.0,
+        "foreigner_1d": 100.0,
+        "institution_1d": 100.0,
+        "retail_1d": 100.0,
+        "foreigner_3d": 100.0,
+        "institution_3d": 100.0,
+        "retail_3d": 100.0,
+        "foreigner_10d": 100.0,
+        "institution_10d": 100.0,
+        "retail_10d": 100.0,
+        "flow_asof": 100.0,
+        "decision_score": 0.0,
+        "trend": 0.0,
+        "tier": 93.859,
+        "volume": 89.262,
+        "volume_ratio": 73.078,
+        "volume_confirmed": 73.078,
+        "position": 93.859,
+        "entry_reference_price": 0.0,
+        "inference_failed": 94.09
+      }
+    },
+    {
       "feature_origin": "outcome_sync_partial",
       "rows": 873,
-      "computed_complete_rows": 305,
-      "computed_complete_rate_pct": 34.937,
+      "computed_complete_rows": 0,
+      "computed_complete_rate_pct": 0.0,
       "metadata_complete_rows": 30,
       "validation_excluded_rows": 843,
       "excluded_reason_missing_rows": 0,
-      "metadata_false_missing_rows": 275,
-      "metadata_false_missing_rate_pct": 31.501,
-      "metadata_false_complete_rows": 0,
+      "metadata_false_missing_rows": 0,
+      "metadata_false_missing_rate_pct": 0.0,
+      "metadata_false_complete_rows": 30,
       "missing_rates_pct": {
         "alpha_score": 64.605,
         "tech_score": 65.063,
         "ml_prob": 16.495,
         "prob_clean": 19.359,
         "whale_score": 65.063,
+        "foreign_flow": 100.0,
+        "institution_flow": 100.0,
+        "retail_flow": 100.0,
+        "foreigner_1d": 100.0,
+        "institution_1d": 100.0,
+        "retail_1d": 100.0,
+        "foreigner_3d": 100.0,
+        "institution_3d": 100.0,
+        "retail_3d": 100.0,
+        "foreigner_10d": 100.0,
+        "institution_10d": 100.0,
+        "retail_10d": 100.0,
+        "flow_asof": 100.0,
         "decision_score": 15.12,
         "trend": 15.12,
         "tier": 65.063,
@@ -158,20 +236,33 @@
     {
       "feature_origin": "scanner_partial_legacy",
       "rows": 665,
-      "computed_complete_rows": 664,
-      "computed_complete_rate_pct": 99.85,
+      "computed_complete_rows": 0,
+      "computed_complete_rate_pct": 0.0,
       "metadata_complete_rows": 9,
       "validation_excluded_rows": 656,
       "excluded_reason_missing_rows": 0,
-      "metadata_false_missing_rows": 655,
-      "metadata_false_missing_rate_pct": 98.496,
-      "metadata_false_complete_rows": 0,
+      "metadata_false_missing_rows": 0,
+      "metadata_false_missing_rate_pct": 0.0,
+      "metadata_false_complete_rows": 9,
       "missing_rates_pct": {
         "alpha_score": 0.0,
         "tech_score": 0.0,
         "ml_prob": 0.0,
         "prob_clean": 97.293,
         "whale_score": 0.0,
+        "foreign_flow": 100.0,
+        "institution_flow": 100.0,
+        "retail_flow": 100.0,
+        "foreigner_1d": 100.0,
+        "institution_1d": 100.0,
+        "retail_1d": 100.0,
+        "foreigner_3d": 100.0,
+        "institution_3d": 100.0,
+        "retail_3d": 100.0,
+        "foreigner_10d": 100.0,
+        "institution_10d": 100.0,
+        "retail_10d": 100.0,
+        "flow_asof": 100.0,
         "decision_score": 0.0,
         "trend": 0.0,
         "tier": 0.15,
@@ -189,16 +280,16 @@
       {
         "submarket": "KOSDAQ",
         "bucket": "exception_leader",
-        "n": 208,
-        "avg_return_pct": -0.2162,
-        "win_rate_pct": 51.442
+        "n": 278,
+        "avg_return_pct": -1.2255,
+        "win_rate_pct": 43.885
       },
       {
         "submarket": "KOSDAQ",
         "bucket": "ignored",
-        "n": 349,
-        "avg_return_pct": -0.4777,
-        "win_rate_pct": 40.401
+        "n": 752,
+        "avg_return_pct": -1.409,
+        "win_rate_pct": 34.043
       },
       {
         "submarket": "KOSDAQ",
@@ -210,16 +301,16 @@
       {
         "submarket": "KOSDAQ",
         "bucket": "unknown",
-        "n": 471,
-        "avg_return_pct": -0.2151,
-        "win_rate_pct": 39.703
+        "n": 601,
+        "avg_return_pct": -0.799,
+        "win_rate_pct": 37.438
       },
       {
         "submarket": "KOSDAQ",
         "bucket": "watchlist",
-        "n": 1086,
-        "avg_return_pct": -0.1827,
-        "win_rate_pct": 39.871
+        "n": 1200,
+        "avg_return_pct": -0.3178,
+        "win_rate_pct": 38.917
       },
       {
         "submarket": "KOSPI",
@@ -231,46 +322,46 @@
       {
         "submarket": "KOSPI",
         "bucket": "ignored",
-        "n": 155,
-        "avg_return_pct": 1.2337,
-        "win_rate_pct": 54.194
+        "n": 281,
+        "avg_return_pct": 0.0684,
+        "win_rate_pct": 50.178
       },
       {
         "submarket": "KOSPI",
         "bucket": "picked",
-        "n": 226,
-        "avg_return_pct": -1.04,
-        "win_rate_pct": 28.319
+        "n": 307,
+        "avg_return_pct": -1.1597,
+        "win_rate_pct": 30.293
       },
       {
         "submarket": "KOSPI",
         "bucket": "unknown",
-        "n": 523,
-        "avg_return_pct": 0.6521,
-        "win_rate_pct": 48.948
+        "n": 563,
+        "avg_return_pct": 0.5269,
+        "win_rate_pct": 48.135
       },
       {
         "submarket": "KOSPI",
         "bucket": "watchlist",
-        "n": 1746,
-        "avg_return_pct": 1.0513,
-        "win_rate_pct": 50.63
+        "n": 2866,
+        "avg_return_pct": 0.1676,
+        "win_rate_pct": 45.953
       }
     ],
     "return_3d_pct": [
       {
         "submarket": "KOSDAQ",
         "bucket": "exception_leader",
-        "n": 195,
-        "avg_return_pct": 1.7215,
-        "win_rate_pct": 60.0
+        "n": 249,
+        "avg_return_pct": -0.9555,
+        "win_rate_pct": 48.594
       },
       {
         "submarket": "KOSDAQ",
         "bucket": "ignored",
-        "n": 245,
-        "avg_return_pct": 1.5062,
-        "win_rate_pct": 53.469
+        "n": 683,
+        "avg_return_pct": -3.7396,
+        "win_rate_pct": 31.772
       },
       {
         "submarket": "KOSDAQ",
@@ -282,67 +373,67 @@
       {
         "submarket": "KOSDAQ",
         "bucket": "unknown",
-        "n": 453,
-        "avg_return_pct": 0.234,
-        "win_rate_pct": 43.488
+        "n": 601,
+        "avg_return_pct": -1.5439,
+        "win_rate_pct": 37.105
       },
       {
         "submarket": "KOSDAQ",
         "bucket": "watchlist",
-        "n": 1001,
-        "avg_return_pct": -0.1367,
-        "win_rate_pct": 40.959
+        "n": 1184,
+        "avg_return_pct": -1.0417,
+        "win_rate_pct": 37.5
       },
       {
         "submarket": "KOSPI",
         "bucket": "exception_leader",
-        "n": 84,
-        "avg_return_pct": 4.8978,
-        "win_rate_pct": 80.952
+        "n": 93,
+        "avg_return_pct": 4.5751,
+        "win_rate_pct": 79.57
       },
       {
         "submarket": "KOSPI",
         "bucket": "ignored",
-        "n": 144,
-        "avg_return_pct": 2.3847,
-        "win_rate_pct": 58.333
+        "n": 234,
+        "avg_return_pct": -0.2069,
+        "win_rate_pct": 48.718
       },
       {
         "submarket": "KOSPI",
         "bucket": "picked",
-        "n": 45,
-        "avg_return_pct": 2.4345,
-        "win_rate_pct": 51.111
+        "n": 292,
+        "avg_return_pct": 0.4283,
+        "win_rate_pct": 41.438
       },
       {
         "submarket": "KOSPI",
         "bucket": "unknown",
-        "n": 439,
-        "avg_return_pct": 2.8341,
-        "win_rate_pct": 55.353
+        "n": 523,
+        "avg_return_pct": 2.6611,
+        "win_rate_pct": 54.685
       },
       {
         "submarket": "KOSPI",
         "bucket": "watchlist",
-        "n": 1554,
-        "avg_return_pct": 3.2138,
-        "win_rate_pct": 61.583
+        "n": 2631,
+        "avg_return_pct": -0.2607,
+        "win_rate_pct": 45.04
       }
     ],
     "return_5d_pct": [
       {
         "submarket": "KOSDAQ",
         "bucket": "exception_leader",
-        "n": 195,
-        "avg_return_pct": 4.9967,
-        "win_rate_pct": 65.641
+        "n": 215,
+        "avg_return_pct": 3.2022,
+        "win_rate_pct": 60.0
       },
       {
         "submarket": "KOSDAQ",
         "bucket": "ignored",
-        "n": 204,
-        "avg_return_pct": 3.4792,
-        "win_rate_pct": 58.824
+        "n": 394,
+        "avg_return_pct": -1.811,
+        "win_rate_pct": 41.117
       },
       {
         "submarket": "KOSDAQ",
@@ -354,51 +445,51 @@
       {
         "submarket": "KOSDAQ",
         "bucket": "unknown",
-        "n": 426,
-        "avg_return_pct": 3.3023,
-        "win_rate_pct": 53.756
+        "n": 470,
+        "avg_return_pct": 2.0762,
+        "win_rate_pct": 49.574
       },
       {
         "submarket": "KOSDAQ",
         "bucket": "watchlist",
-        "n": 776,
-        "avg_return_pct": 2.4951,
-        "win_rate_pct": 50.0
+        "n": 1106,
+        "avg_return_pct": 0.6485,
+        "win_rate_pct": 43.852
       },
       {
         "submarket": "KOSPI",
         "bucket": "exception_leader",
-        "n": 84,
-        "avg_return_pct": 8.9851,
-        "win_rate_pct": 85.714
+        "n": 93,
+        "avg_return_pct": 7.5761,
+        "win_rate_pct": 79.57
       },
       {
         "submarket": "KOSPI",
         "bucket": "ignored",
-        "n": 138,
-        "avg_return_pct": 3.0034,
-        "win_rate_pct": 59.42
+        "n": 160,
+        "avg_return_pct": 2.1455,
+        "win_rate_pct": 55.625
       },
       {
         "submarket": "KOSPI",
         "bucket": "picked",
-        "n": 45,
-        "avg_return_pct": 4.586,
-        "win_rate_pct": 66.667
+        "n": 232,
+        "avg_return_pct": -1.7142,
+        "win_rate_pct": 38.793
       },
       {
         "submarket": "KOSPI",
         "bucket": "unknown",
-        "n": 430,
-        "avg_return_pct": 4.6435,
-        "win_rate_pct": 58.837
+        "n": 523,
+        "avg_return_pct": 2.9407,
+        "win_rate_pct": 52.772
       },
       {
         "submarket": "KOSPI",
         "bucket": "watchlist",
-        "n": 1309,
-        "avg_return_pct": 6.6175,
-        "win_rate_pct": 66.845
+        "n": 1834,
+        "avg_return_pct": 3.6603,
+        "win_rate_pct": 54.962
       }
     ],
     "return_7d_pct": [
@@ -412,9 +503,9 @@
       {
         "submarket": "KOSDAQ",
         "bucket": "ignored",
-        "n": 184,
-        "avg_return_pct": 5.2456,
-        "win_rate_pct": 58.696
+        "n": 251,
+        "avg_return_pct": 1.4407,
+        "win_rate_pct": 47.41
       },
       {
         "submarket": "KOSDAQ",
@@ -426,51 +517,51 @@
       {
         "submarket": "KOSDAQ",
         "bucket": "unknown",
-        "n": 416,
-        "avg_return_pct": 3.0322,
-        "win_rate_pct": 50.481
+        "n": 459,
+        "avg_return_pct": 1.5829,
+        "win_rate_pct": 46.841
       },
       {
         "submarket": "KOSDAQ",
         "bucket": "watchlist",
-        "n": 658,
-        "avg_return_pct": 2.8634,
-        "win_rate_pct": 50.152
+        "n": 1043,
+        "avg_return_pct": -0.5879,
+        "win_rate_pct": 41.898
       },
       {
         "submarket": "KOSPI",
         "bucket": "exception_leader",
-        "n": 84,
-        "avg_return_pct": 13.1273,
-        "win_rate_pct": 89.286
+        "n": 90,
+        "avg_return_pct": 11.7734,
+        "win_rate_pct": 85.556
       },
       {
         "submarket": "KOSPI",
         "bucket": "ignored",
-        "n": 134,
-        "avg_return_pct": 4.2925,
-        "win_rate_pct": 64.925
+        "n": 146,
+        "avg_return_pct": 3.3094,
+        "win_rate_pct": 61.644
       },
       {
         "submarket": "KOSPI",
         "bucket": "picked",
-        "n": 45,
-        "avg_return_pct": 7.2089,
-        "win_rate_pct": 77.778
+        "n": 107,
+        "avg_return_pct": -0.5183,
+        "win_rate_pct": 47.664
       },
       {
         "submarket": "KOSPI",
         "bucket": "unknown",
-        "n": 425,
-        "avg_return_pct": 7.3585,
-        "win_rate_pct": 63.765
+        "n": 439,
+        "avg_return_pct": 7.04,
+        "win_rate_pct": 63.098
       },
       {
         "submarket": "KOSPI",
         "bucket": "watchlist",
-        "n": 1270,
-        "avg_return_pct": 8.8233,
-        "win_rate_pct": 68.425
+        "n": 1619,
+        "avg_return_pct": 6.2464,
+        "win_rate_pct": 60.655
       }
     ]
   },
@@ -479,232 +570,232 @@
       {
         "submarket": "KOSDAQ",
         "rank_band": "rank_gt10",
-        "n": 964,
-        "avg_return_pct": -0.0241,
-        "win_rate_pct": 40.353
+        "n": 1004,
+        "avg_return_pct": -0.1822,
+        "win_rate_pct": 39.442
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top5",
-        "n": 365,
-        "avg_return_pct": -0.3021,
-        "win_rate_pct": 47.671
+        "n": 435,
+        "avg_return_pct": -0.5497,
+        "win_rate_pct": 44.368
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top6_10",
-        "n": 235,
-        "avg_return_pct": -0.5025,
-        "win_rate_pct": 42.979
+        "n": 274,
+        "avg_return_pct": -0.8601,
+        "win_rate_pct": 40.876
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "unknown",
-        "n": 591,
-        "avg_return_pct": -0.5436,
-        "win_rate_pct": 37.225
+        "n": 1159,
+        "avg_return_pct": -1.4371,
+        "win_rate_pct": 33.218
       },
       {
         "submarket": "KOSPI",
         "rank_band": "rank_gt10",
-        "n": 1484,
-        "avg_return_pct": 1.0375,
-        "win_rate_pct": 50.876
+        "n": 1518,
+        "avg_return_pct": 0.9903,
+        "win_rate_pct": 50.725
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top5",
-        "n": 312,
-        "avg_return_pct": 1.2118,
-        "win_rate_pct": 50.962
+        "n": 498,
+        "avg_return_pct": 0.3511,
+        "win_rate_pct": 45.984
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top6_10",
-        "n": 280,
-        "avg_return_pct": 0.4257,
-        "win_rate_pct": 45.357
+        "n": 416,
+        "avg_return_pct": 0.1671,
+        "win_rate_pct": 46.394
       },
       {
         "submarket": "KOSPI",
         "rank_band": "unknown",
-        "n": 667,
-        "avg_return_pct": 0.2279,
-        "win_rate_pct": 43.478
+        "n": 1678,
+        "avg_return_pct": -0.7458,
+        "win_rate_pct": 40.107
       }
     ],
     "return_3d_pct": [
       {
         "submarket": "KOSDAQ",
         "rank_band": "rank_gt10",
-        "n": 909,
-        "avg_return_pct": -0.5856,
-        "win_rate_pct": 39.384
+        "n": 999,
+        "avg_return_pct": -1.0514,
+        "win_rate_pct": 37.738
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top5",
-        "n": 341,
-        "avg_return_pct": 1.8417,
-        "win_rate_pct": 57.185
+        "n": 410,
+        "avg_return_pct": 0.3073,
+        "win_rate_pct": 49.512
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top6_10",
-        "n": 227,
-        "avg_return_pct": 1.7451,
-        "win_rate_pct": 51.101
+        "n": 265,
+        "avg_return_pct": 0.1488,
+        "win_rate_pct": 45.66
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "unknown",
-        "n": 458,
-        "avg_return_pct": 0.2139,
-        "win_rate_pct": 43.45
+        "n": 1084,
+        "avg_return_pct": -3.8307,
+        "win_rate_pct": 29.244
       },
       {
         "submarket": "KOSPI",
         "rank_band": "rank_gt10",
-        "n": 1322,
-        "avg_return_pct": 3.2099,
-        "win_rate_pct": 61.876
+        "n": 1513,
+        "avg_return_pct": 2.7948,
+        "win_rate_pct": 59.022
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top5",
-        "n": 264,
-        "avg_return_pct": 3.7638,
-        "win_rate_pct": 66.288
+        "n": 447,
+        "avg_return_pct": 1.2553,
+        "win_rate_pct": 52.796
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top6_10",
-        "n": 241,
-        "avg_return_pct": 2.5789,
-        "win_rate_pct": 57.676
+        "n": 383,
+        "avg_return_pct": -0.3741,
+        "win_rate_pct": 43.342
       },
       {
         "submarket": "KOSPI",
         "rank_band": "unknown",
-        "n": 439,
-        "avg_return_pct": 2.8341,
-        "win_rate_pct": 55.353
+        "n": 1430,
+        "avg_return_pct": -2.4044,
+        "win_rate_pct": 33.916
       }
     ],
     "return_5d_pct": [
       {
         "submarket": "KOSDAQ",
         "rank_band": "rank_gt10",
-        "n": 690,
-        "avg_return_pct": 2.2832,
-        "win_rate_pct": 50.435
+        "n": 967,
+        "avg_return_pct": 0.6017,
+        "win_rate_pct": 44.881
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top5",
-        "n": 320,
-        "avg_return_pct": 4.4842,
-        "win_rate_pct": 60.625
+        "n": 374,
+        "avg_return_pct": 2.2948,
+        "win_rate_pct": 54.011
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top6_10",
-        "n": 206,
-        "avg_return_pct": 3.1678,
-        "win_rate_pct": 55.34
+        "n": 245,
+        "avg_return_pct": 1.9996,
+        "win_rate_pct": 49.796
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "unknown",
-        "n": 426,
-        "avg_return_pct": 3.3023,
-        "win_rate_pct": 53.756
+        "n": 640,
+        "avg_return_pct": -0.3428,
+        "win_rate_pct": 42.344
       },
       {
         "submarket": "KOSPI",
         "rank_band": "rank_gt10",
-        "n": 1127,
-        "avg_return_pct": 6.3329,
-        "win_rate_pct": 66.46
+        "n": 1482,
+        "avg_return_pct": 4.2859,
+        "win_rate_pct": 57.557
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top5",
-        "n": 235,
-        "avg_return_pct": 6.5522,
-        "win_rate_pct": 71.489
+        "n": 350,
+        "avg_return_pct": 3.0482,
+        "win_rate_pct": 57.714
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top6_10",
-        "n": 214,
-        "avg_return_pct": 6.3599,
-        "win_rate_pct": 66.355
+        "n": 290,
+        "avg_return_pct": 3.5759,
+        "win_rate_pct": 55.172
       },
       {
         "submarket": "KOSPI",
         "rank_band": "unknown",
-        "n": 430,
-        "avg_return_pct": 4.6435,
-        "win_rate_pct": 58.837
+        "n": 720,
+        "avg_return_pct": 0.6187,
+        "win_rate_pct": 44.722
       }
     ],
     "return_7d_pct": [
       {
         "submarket": "KOSDAQ",
         "rank_band": "rank_gt10",
-        "n": 572,
-        "avg_return_pct": 2.8236,
-        "win_rate_pct": 50.524
+        "n": 915,
+        "avg_return_pct": -0.5637,
+        "win_rate_pct": 41.421
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top5",
-        "n": 310,
-        "avg_return_pct": 6.6875,
-        "win_rate_pct": 63.226
+        "n": 352,
+        "avg_return_pct": 4.8083,
+        "win_rate_pct": 59.375
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "top6_10",
-        "n": 196,
-        "avg_return_pct": 4.6488,
-        "win_rate_pct": 53.061
+        "n": 233,
+        "avg_return_pct": 2.397,
+        "win_rate_pct": 48.069
       },
       {
         "submarket": "KOSDAQ",
         "rank_band": "unknown",
-        "n": 416,
-        "avg_return_pct": 3.0322,
-        "win_rate_pct": 50.481
+        "n": 489,
+        "avg_return_pct": 1.0015,
+        "win_rate_pct": 45.399
       },
       {
         "submarket": "KOSPI",
         "rank_band": "rank_gt10",
-        "n": 1097,
-        "avg_return_pct": 8.5518,
-        "win_rate_pct": 70.283
+        "n": 1416,
+        "avg_return_pct": 5.7475,
+        "win_rate_pct": 61.653
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top5",
-        "n": 227,
-        "avg_return_pct": 8.9597,
-        "win_rate_pct": 68.722
+        "n": 284,
+        "avg_return_pct": 6.6647,
+        "win_rate_pct": 60.915
       },
       {
         "submarket": "KOSPI",
         "rank_band": "top6_10",
-        "n": 209,
-        "avg_return_pct": 8.5775,
-        "win_rate_pct": 66.507
+        "n": 262,
+        "avg_return_pct": 5.9891,
+        "win_rate_pct": 58.779
       },
       {
         "submarket": "KOSPI",
         "rank_band": "unknown",
-        "n": 425,
-        "avg_return_pct": 7.3585,
-        "win_rate_pct": 63.765
+        "n": 439,
+        "avg_return_pct": 7.04,
+        "win_rate_pct": 63.098
       }
     ]
   }
