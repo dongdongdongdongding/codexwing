@@ -14,6 +14,7 @@ from modules.loss_risk_features import (
     get_loss_risk_gate_thresholds,
     get_loss_risk_soft_cap_decision,
 )
+from modules.phase25_governance import phase25_oos_validates, phase25_weak_oos_reasons
 from modules.strategy_family_policy import apply_strategy_family_policy
 from multi_agent.agents.kr_quant_reranker import (
     compute_kr_basket_priority,
@@ -247,10 +248,15 @@ def _apply_phase25_reliability_gate(
         theme_risk.append("PHASE25_RETIRED_VARIANT")
         rationale.append(f"phase25_retired_variant={phase25_variant}")
         return "AVOID"
-    oos_validates = (
-        phase25_oos_auc is not None and phase25_oos_auc >= 0.55
-        and phase25_oos_win_rate_pct is not None and phase25_oos_win_rate_pct >= 70.0
-        and phase25_oos_avg_return_pct is not None and phase25_oos_avg_return_pct >= 5.0
+    oos_validates = phase25_oos_validates(
+        oos_auc=phase25_oos_auc,
+        oos_win_rate_pct=phase25_oos_win_rate_pct,
+        oos_avg_return_pct=phase25_oos_avg_return_pct,
+    )
+    weak_oos_reasons = phase25_weak_oos_reasons(
+        oos_auc=phase25_oos_auc,
+        oos_win_rate_pct=phase25_oos_win_rate_pct,
+        oos_avg_return_pct=phase25_oos_avg_return_pct,
     )
     triggered = False
     if phase25_signal_direction == "uncertain":
@@ -270,6 +276,10 @@ def _apply_phase25_reliability_gate(
         triggered = True
     if triggered:
         return "AVOID"
+    if weak_oos_reasons and _decision_rank(decision) >= 3:
+        theme_risk.append("PHASE25_WEAK_OOS_PRIORITY_BLOCK")
+        rationale.append("phase25_weak_oos_priority_block:" + ",".join(weak_oos_reasons))
+        return "WATCHLIST"
     return decision
 
 

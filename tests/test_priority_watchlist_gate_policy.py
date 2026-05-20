@@ -50,6 +50,29 @@ def test_retired_kosdaq_intraday_phase25_variant_is_avoided():
     assert rationale == ["phase25_retired_variant=phase25_kosdaq_intraday"]
 
 
+def test_weak_phase25_oos_blocks_priority_without_hiding_candidate():
+    rationale = []
+    theme_risk = []
+
+    decision = _apply_phase25_reliability_gate(
+        decision="PRIORITY_WATCHLIST",
+        phase25_variant="phase25_global",
+        phase25_signal_direction="normal",
+        phase25_raw_auc=0.56,
+        phase25_oos_auc=0.517,
+        phase25_oos_win_rate_pct=39.7,
+        phase25_oos_avg_return_pct=-1.89,
+        rationale=rationale,
+        theme_risk=theme_risk,
+    )
+
+    assert decision == "WATCHLIST"
+    assert "PHASE25_WEAK_OOS_PRIORITY_BLOCK" in theme_risk
+    assert rationale == [
+        "phase25_weak_oos_priority_block:oos_win=39.7%<60.0%,oos_avg=-1.89%<0.0%"
+    ]
+
+
 def test_daily_backtest_uses_kosdaq_swing_5d_horizon():
     value, col = _resolved_return_for_row(
         {

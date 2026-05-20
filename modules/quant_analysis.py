@@ -48,6 +48,7 @@ from modules.inverted_signal_features import compute_low_prob_high_score_feature
 from modules.loss_risk_features import compute_loss_risk_features
 from modules.live_scan_context import live_mode_enabled
 from modules.market_data import get_history
+from modules.phase25_governance import phase25_oos_validates, phase25_weak_oos_reasons
 
 # Global Macro Cache to prevent 429 Too Many Requests during Deep Dive
 _GLOBAL_MACRO_CACHE = None
@@ -2015,10 +2016,15 @@ class QuantStrategy:
                     _oos_auc = p25_bundle.get("oos_auc")
                     _oos_win = p25_bundle.get("oos_win_rate_pct")
                     _oos_ret = p25_bundle.get("oos_avg_return_pct")
-                    _oos_validates = (
-                        _oos_auc is not None and float(_oos_auc) >= 0.55 and
-                        _oos_win is not None and float(_oos_win) >= 70.0 and
-                        _oos_ret is not None and float(_oos_ret) >= 5.0
+                    _oos_validates = phase25_oos_validates(
+                        oos_auc=_oos_auc,
+                        oos_win_rate_pct=_oos_win,
+                        oos_avg_return_pct=_oos_ret,
+                    )
+                    _weak_oos_reasons = phase25_weak_oos_reasons(
+                        oos_auc=_oos_auc,
+                        oos_win_rate_pct=_oos_win,
+                        oos_avg_return_pct=_oos_ret,
                     )
                     if _p25_direction == "uncertain" and _oos_validates:
                         _p25_direction = "normal"
@@ -2028,6 +2034,10 @@ class QuantStrategy:
                         _p25_prob = 100.0 - _p25_prob_raw
                     else:
                         _p25_prob = _p25_prob_raw
+                    if _weak_oos_reasons:
+                        _p25_prob = 50.0
+                        res["phase25_neutralized"] = True
+                        res["phase25_neutralized_reason"] = ",".join(_weak_oos_reasons)
 
                     _shadow_prob = None
                     if shadow_bundle is not None:
@@ -2043,10 +2053,15 @@ class QuantStrategy:
                             _shadow_oos_auc = shadow_bundle.get("oos_auc")
                             _shadow_oos_win = shadow_bundle.get("oos_win_rate_pct")
                             _shadow_oos_ret = shadow_bundle.get("oos_avg_return_pct")
-                            _shadow_oos_validates = (
-                                _shadow_oos_auc is not None and float(_shadow_oos_auc) >= 0.55 and
-                                _shadow_oos_win is not None and float(_shadow_oos_win) >= 70.0 and
-                                _shadow_oos_ret is not None and float(_shadow_oos_ret) >= 5.0
+                            _shadow_oos_validates = phase25_oos_validates(
+                                oos_auc=_shadow_oos_auc,
+                                oos_win_rate_pct=_shadow_oos_win,
+                                oos_avg_return_pct=_shadow_oos_ret,
+                            )
+                            _shadow_weak_oos_reasons = phase25_weak_oos_reasons(
+                                oos_auc=_shadow_oos_auc,
+                                oos_win_rate_pct=_shadow_oos_win,
+                                oos_avg_return_pct=_shadow_oos_ret,
                             )
                             if _shadow_direction == "uncertain" and _shadow_oos_validates:
                                 _shadow_direction = "normal"
@@ -2056,6 +2071,8 @@ class QuantStrategy:
                                 _shadow_prob = 100.0 - _shadow_prob_raw
                             else:
                                 _shadow_prob = _shadow_prob_raw
+                            if _shadow_weak_oos_reasons:
+                                _shadow_prob = 50.0
                         except Exception:
                             _shadow_prob = None
 

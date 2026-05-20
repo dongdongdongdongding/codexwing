@@ -1,0 +1,33 @@
+{
+  "report_version": "phase25_governance_v1",
+  "generated_at": "2026-05-20T07:32:46.559392+00:00",
+  "source_generated_at": "2026-05-17T09:06:50.095610",
+  "source_execution_status": "trained",
+  "rows_loaded": 13288,
+  "backend": "lgb",
+  "release_ready": false,
+  "trained_segments": 1,
+  "weak_segments": 1,
+  "segments": [
+    {
+      "name": "phase25_global",
+      "status": "trained",
+      "rows": 3069,
+      "target_horizon_days": 3,
+      "return_col": "return_3d_pct",
+      "signal_direction": "normal",
+      "raw_auc": 0.561786385315797,
+      "cv_median_auc": 0.5688078703703703,
+      "oos_auc": 0.5173434583950061,
+      "cv_oos_auc_gap": 0.051464,
+      "oos_win_rate_pct": 39.682539682539684,
+      "oos_avg_return_pct": -1.8904526746031751,
+      "oos_release_ready": false,
+      "weak_oos_reasons": [
+        "oos_win=39.7%<60.0%",
+        "oos_avg=-1.89%<0.0%"
+      ],
+      "action": "neutralize_probability_and_block_priority"
+    }
+  ]
+}
