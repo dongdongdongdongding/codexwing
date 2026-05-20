@@ -58,3 +58,27 @@ def test_report_tracks_rank1_top5_horizons_and_baseline_verdict():
     assert report["groups"]["v3_top5"]["5d"]["worst_return_pct"] == -7.0
     assert report["groups"]["v3_top5"]["5d"]["loss5_rate_pct"] == 50.0
     assert report["policy_verdict"]["status"] == "insufficient_sample"
+
+
+def test_report_marks_negative_early_evidence_before_full_sample_threshold():
+    rows = []
+    for index in range(15):
+        rows.append(
+            _row(
+                ticker=f"BAD{index}.KQ",
+                priority_rank=str(index % 5 + 1),
+                return_5d_pct="-9.0",
+            )
+        )
+
+    report = build_kosdaq_v3_admission_validation_report(
+        rows,
+        as_of_date="2026-05-20",
+        generated_at="now",
+        min_matured_5d=30,
+    )
+
+    assert report["groups"]["v3_top5"]["5d"]["sample_n"] == 15
+    assert report["policy_verdict"]["status"] == "negative_early_evidence"
+    assert report["policy_verdict"]["action"] == "keep_disabled_or_retune"
+    assert any("early harm guard" in reason for reason in report["policy_verdict"]["reasons"])

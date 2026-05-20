@@ -9,12 +9,16 @@ from pathlib import Path
 from statistics import median
 from typing import Any, Dict, Iterable, List
 
-REPORT_VERSION = "kosdaq_v3_admission_validation_v1"
+REPORT_VERSION = "kosdaq_v3_admission_validation_v2"
 DEFAULT_ARCHIVE_CSV = Path("runtime_state/reports/archive/scan_archive_learning_dataset_all.csv")
 DEFAULT_REPORT_DIR = Path("runtime_state/reports/validation")
 DEFAULT_JSON_PATH = DEFAULT_REPORT_DIR / "kosdaq_v3_admission_validation.json"
 DEFAULT_MD_PATH = DEFAULT_REPORT_DIR / "kosdaq_v3_admission_validation.md"
 HORIZONS = (1, 3, 5, 7, 14, 30)
+EARLY_HARM_MIN_TOP5_SAMPLE = 10
+EARLY_HARM_AVG_LAG_PCT = 5.0
+EARLY_HARM_LOSS5_EXCESS_PCT = 25.0
+EARLY_HARM_MAX_WIN_RATE_PCT = 30.0
 
 
 @dataclass(frozen=True)
@@ -198,6 +202,9 @@ def _policy_verdict(
 
     rank1_avg = _to_float(rank1_5d.get("avg_return_pct"))
     rank1_loss5 = _to_float(rank1_5d.get("loss5_rate_pct"))
+    top5_avg = _to_float(top5_5d.get("avg_return_pct"))
+    top5_win = _to_float(top5_5d.get("win_rate_pct"))
+    top5_loss5 = _to_float(top5_5d.get("loss5_rate_pct"))
     baseline_avg = _to_float(baseline.get("avg_return_pct"))
     baseline_loss5 = _to_float(baseline.get("loss5_rate_pct"))
     improved_avg = rank1_avg is not None and baseline_avg is not None and rank1_avg > baseline_avg
@@ -206,12 +213,58 @@ def _policy_verdict(
         reasons.append(f"rank1 avg5 {rank1_avg:.4f}% vs baseline {baseline_avg:.4f}%")
     if rank1_loss5 is not None and baseline_loss5 is not None:
         reasons.append(f"rank1 loss5 {rank1_loss5:.4f}% vs baseline {baseline_loss5:.4f}%")
+    if top5_avg is not None and baseline_avg is not None:
+        reasons.append(f"top5 avg5 {top5_avg:.4f}% vs baseline {baseline_avg:.4f}%")
+    if top5_win is not None:
+        reasons.append(f"top5 win5 {top5_win:.4f}%")
+    if top5_loss5 is not None and baseline_loss5 is not None:
+        reasons.append(f"top5 loss5 {top5_loss5:.4f}% vs baseline {baseline_loss5:.4f}%")
+
+    early_harm_reasons = _early_harm_reasons(
+        top5_n=top5_n,
+        top5_avg=top5_avg,
+        top5_win=top5_win,
+        top5_loss5=top5_loss5,
+        baseline_avg=baseline_avg,
+        baseline_loss5=baseline_loss5,
+    )
+    if rank1_n < min_matured_5d and top5_n < min_matured_5d and early_harm_reasons:
+        return {
+            "status": "negative_early_evidence",
+            "action": "keep_disabled_or_retune",
+            "reasons": reasons + early_harm_reasons,
+        }
 
     if rank1_n >= min_matured_5d and improved_avg and improved_loss:
         return {"status": "pass", "action": "keep_or_consider_tune_up", "reasons": reasons}
     if rank1_n >= min_matured_5d and not (improved_avg or improved_loss):
         return {"status": "fail", "action": "rollback_or_retune", "reasons": reasons}
     return {"status": "insufficient_sample", "action": "continue_forward_validation", "reasons": reasons}
+
+
+def _early_harm_reasons(
+    *,
+    top5_n: int,
+    top5_avg: float | None,
+    top5_win: float | None,
+    top5_loss5: float | None,
+    baseline_avg: float | None,
+    baseline_loss5: float | None,
+) -> List[str]:
+    if top5_n < EARLY_HARM_MIN_TOP5_SAMPLE:
+        return []
+    reasons: List[str] = []
+    if top5_avg is not None and baseline_avg is not None and top5_avg <= baseline_avg - EARLY_HARM_AVG_LAG_PCT:
+        reasons.append(
+            f"early harm guard: top5 avg5 lags baseline by at least {EARLY_HARM_AVG_LAG_PCT:.1f}pp"
+        )
+    if top5_loss5 is not None and baseline_loss5 is not None and top5_loss5 >= baseline_loss5 + EARLY_HARM_LOSS5_EXCESS_PCT:
+        reasons.append(
+            f"early harm guard: top5 loss5 exceeds baseline by at least {EARLY_HARM_LOSS5_EXCESS_PCT:.1f}pp"
+        )
+    if top5_win is not None and top5_win <= EARLY_HARM_MAX_WIN_RATE_PCT:
+        reasons.append(f"early harm guard: top5 win5 <= {EARLY_HARM_MAX_WIN_RATE_PCT:.1f}%")
+    return reasons
 
 
 def _recent_samples(rows: List[Dict[str, Any]], *, limit: int) -> List[Dict[str, Any]]:
