@@ -42,16 +42,42 @@ def _role_ids(interaction) -> Iterable[str]:
     return [str(getattr(role, "id", "")) for role in roles if getattr(role, "id", None)]
 
 
+def _embed_delivery_error_text(embed, exc: Exception) -> str:
+    title = str(getattr(embed, "title", "") or "Discord embed")
+    detail = str(exc)[:1500]
+    return f"`{title[:120]}` 전송 실패: {detail}"
+
+
 async def _send_embed_chunks(discord_module, target, payloads):
     embeds = [_embed(discord_module, payload) for payload in payloads]
     for idx in range(0, len(embeds), 10):
-        await target.send(embeds=embeds[idx : idx + 10])
+        chunk = embeds[idx : idx + 10]
+        try:
+            await target.send(embeds=chunk)
+            continue
+        except Exception as exc:
+            print(f"Discord embed chunk send failed; retrying singles: {exc}", file=sys.stderr)
+        for embed in chunk:
+            try:
+                await target.send(embed=embed)
+            except Exception as exc:
+                await target.send(_embed_delivery_error_text(embed, exc))
 
 
 async def _send_followup_chunks(discord_module, interaction, payloads):
     embeds = [_embed(discord_module, payload) for payload in payloads]
     for idx in range(0, len(embeds), 10):
-        await interaction.followup.send(embeds=embeds[idx : idx + 10], ephemeral=True)
+        chunk = embeds[idx : idx + 10]
+        try:
+            await interaction.followup.send(embeds=chunk, ephemeral=True)
+            continue
+        except Exception as exc:
+            print(f"Discord followup chunk send failed; retrying singles: {exc}", file=sys.stderr)
+        for embed in chunk:
+            try:
+                await interaction.followup.send(embed=embed, ephemeral=True)
+            except Exception as exc:
+                await interaction.followup.send(_embed_delivery_error_text(embed, exc), ephemeral=True)
 
 
 def main() -> int:
