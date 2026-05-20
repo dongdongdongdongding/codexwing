@@ -314,11 +314,23 @@ def _markdown_validation_excerpt(path: Path, *, max_lines: int = 10) -> str:
         if not path.exists():
             return ""
         lines: List[str] = []
+        in_definitions = False
         for raw in path.read_text(encoding="utf-8").splitlines():
             line = raw.strip()
             if not line:
                 continue
+            if line == "## Definitions":
+                in_definitions = True
+                continue
+            if line.startswith("## ") and line != "## Definitions":
+                in_definitions = False
+            if in_definitions:
+                continue
             if line.startswith("#"):
+                continue
+            if line.startswith("|---"):
+                continue
+            if line.startswith("| Cohort") or line.startswith("| Level"):
                 continue
             if any(
                 token in line.lower()
@@ -332,6 +344,9 @@ def _markdown_validation_excerpt(path: Path, *, max_lines: int = 10) -> str:
                     "avg return",
                     "worst/best",
                     "min/max",
+                    "practical",
+                    "clean",
+                    "bad",
                 )
             ):
                 lines.append(line)

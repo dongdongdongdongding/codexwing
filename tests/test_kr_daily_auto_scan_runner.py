@@ -4,6 +4,7 @@ from multi_agent.tools.run_kr_daily_auto_scans import (
     _chunk_embeds_for_discord,
     _discord_embed_char_count,
     _embed_to_content_chunks,
+    _markdown_validation_excerpt,
     _parse_last_json_line,
     _prepare_embeds_for_discord,
     _scan_targets,
@@ -113,3 +114,29 @@ def test_validation_embed_summarizes_post_scan_reports():
     assert embed["title"] == "스캔 후 자동 검증"
     assert embed["color"] == 0xE67E22
     assert "recent top5 positive-rate" in embed["fields"][0]["value"]
+
+
+def test_markdown_validation_excerpt_prefers_metrics_over_definitions(tmp_path):
+    path = tmp_path / "scan_cohort_performance.md"
+    path.write_text(
+        "\n".join(
+            [
+                "# Scan Cohort Performance",
+                "## Definitions",
+                "- Top1: `priority_rank == 1`",
+                "- Top5: `priority_rank between 1 and 5`",
+                "## KOSPI",
+                "| Cohort | 1D | 3D | 5D | Path Quality |",
+                "|---|---:|---:|---:|---:|",
+                "| Top1 | n=1 / win 100.0% / avg +1.00% / min +1.00% / max +1.00% | - | - | - |",
+                "| Practical 80 Gate | n=1 / win 100.0% / avg +2.00% / min +2.00% / max +2.00% | - | - | - |",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    excerpt = _markdown_validation_excerpt(path)
+
+    assert "priority_rank" not in excerpt
+    assert "| Top1 |" in excerpt
+    assert "Practical 80 Gate" in excerpt
