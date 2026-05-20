@@ -37,7 +37,7 @@ from modules.signal_section_performance import (
     write_daily_section_performance_snapshot,
 )
 
-MARKETS = ("KOSPI", "KOSDAQ")
+DEFAULT_SCAN_TARGETS = (("KOSPI", "SWING"), ("KOSDAQ", "SWING"), ("KOSPI", "INTRADAY"))
 LOG_DIR = Path("runtime_state/discord_jobs")
 KST = ZoneInfo("Asia/Seoul")
 DISCORD_MAX_EMBEDS_PER_MESSAGE = 10
@@ -82,7 +82,7 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
                 "description": "KST 09:35 확정 작업: 09:30 이후 국장 수급 확인 구간에서 KOSPI/KOSDAQ 병렬 전체 스윙 스캔을 시작합니다.",
                 "color": 0x3498DB,
                 "fields": [
-                    {"name": "Markets", "value": ", ".join(MARKETS), "inline": True},
+                    {"name": "Targets", "value": ", ".join(f"{m}/{mode}" for m, mode in _scan_targets()), "inline": True},
                     {"name": "Top Deep", "value": "Shadow + Top5 + Exception Leader", "inline": True},
                     {"name": "Timing Rule", "value": "08:20 prior / 09:30 이후 confirmed scan", "inline": False},
                     {"name": "Started", "value": started_at, "inline": False},
@@ -92,7 +92,8 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
         ],
     )
 
-    summaries = await asyncio.gather(*[_run_market_scan(market) for market in MARKETS])
+    scan_targets = _scan_targets()
+    summaries = await asyncio.gather(*[_run_market_scan(market, scan_mode) for market, scan_mode in scan_targets])
     _refresh_archive_dataset()
     performance_payload = _record_section_performance()
 
@@ -103,7 +104,7 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
             "color": 0x2ECC71 if all(_summary_ok(item) for item in summaries) else 0xE67E22,
             "fields": [
                 {
-                    "name": str(item.get("market") or item.get("discord_job", {}).get("market") or "-"),
+                    "name": _summary_target_label(item),
                     "value": (
                         f"Run `{item.get('run_id') or '-'}` · "
                         f"scan {item.get('total_scans') or 0} · pass {item.get('result_count') or 0} · "
@@ -136,16 +137,40 @@ async def _run_premarket_theme_prior(config: DiscordIntegrationConfig) -> int:
     return 0
 
 
-async def _run_market_scan(market: str) -> Dict[str, Any]:
-    job = create_scan_job(market)
+def _scan_targets() -> List[tuple[str, str]]:
+    raw = os.getenv("AG_KR_DAILY_SCAN_TARGETS", "")
+    if not raw.strip():
+        return list(DEFAULT_SCAN_TARGETS)
+    targets: List[tuple[str, str]] = []
+    for token in raw.split(","):
+        text = token.strip()
+        if not text:
+            continue
+        if ":" in text:
+            market, mode = text.split(":", 1)
+        elif "/" in text:
+            market, mode = text.split("/", 1)
+        else:
+            market, mode = text, "SWING"
+        market_key = market.strip().upper()
+        mode_key = mode.strip().upper() or "SWING"
+        if market_key in {"KOSPI", "KOSDAQ"} and mode_key in {"SWING", "INTRADAY"} and (market_key, mode_key) not in targets:
+            targets.append((market_key, mode_key))
+    return targets or list(DEFAULT_SCAN_TARGETS)
+
+
+async def _run_market_scan(market: str, scan_mode: str = "SWING") -> Dict[str, Any]:
+    job = create_scan_job(market, scan_mode=scan_mode)
     lock = DiscordScanLock()
-    if not lock.try_acquire(job_id=job.job_id, market=job.market):
+    if not lock.try_acquire(job_id=job.job_id, market=job.market, scan_mode=job.scan_mode):
         return {
             "market": market,
-            "warnings": [{"code": "SCAN_LOCK_BUSY", "message": f"{market} scan lock is busy"}],
+            "scan_mode": job.scan_mode,
+            "warnings": [{"code": "SCAN_LOCK_BUSY", "message": f"{market}/{job.scan_mode} scan lock is busy"}],
             "discord_job": {
                 "job_id": job.job_id,
                 "market": market,
+                "scan_mode": job.scan_mode,
                 "returncode": 75,
                 "log_path": str(job.log_path),
                 "started_at": job.started_at,
@@ -156,6 +181,13 @@ async def _run_market_scan(market: str) -> Dict[str, Any]:
         return await run_scan_job(job)
     finally:
         lock.release()
+
+
+def _summary_target_label(summary: Dict[str, Any]) -> str:
+    job = summary.get("discord_job") if isinstance(summary.get("discord_job"), dict) else {}
+    market = str(summary.get("market") or job.get("market") or "-")
+    scan_mode = str(summary.get("scan_mode") or job.get("scan_mode") or "SWING")
+    return f"{market}/{scan_mode}"
 
 
 def _refresh_archive_dataset() -> None:

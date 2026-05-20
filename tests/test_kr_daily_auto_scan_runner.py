@@ -5,6 +5,7 @@ from multi_agent.tools.run_kr_daily_auto_scans import (
     _discord_embed_char_count,
     _embed_to_content_chunks,
     _prepare_embeds_for_discord,
+    _scan_targets,
 )
 
 
@@ -63,3 +64,15 @@ def test_discord_embed_text_fallback_chunks_under_content_limit():
     assert len(chunks) > 1
     assert all(0 < len(chunk) <= DISCORD_MAX_CONTENT_CHARS for chunk in chunks)
     assert chunks[0].startswith("**자동 스캔 완료**")
+
+
+def test_daily_auto_scan_targets_include_kospi_intraday_observer(monkeypatch):
+    monkeypatch.delenv("AG_KR_DAILY_SCAN_TARGETS", raising=False)
+
+    assert _scan_targets() == [("KOSPI", "SWING"), ("KOSDAQ", "SWING"), ("KOSPI", "INTRADAY")]
+
+
+def test_daily_auto_scan_targets_can_be_overridden(monkeypatch):
+    monkeypatch.setenv("AG_KR_DAILY_SCAN_TARGETS", "KOSPI:SWING,KOSDAQ/SWING,KOSPI:SWING,bad")
+
+    assert _scan_targets() == [("KOSPI", "SWING"), ("KOSDAQ", "SWING")]

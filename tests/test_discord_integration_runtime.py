@@ -335,6 +335,20 @@ def test_scan_executor_command_is_fixed_full_kr_scan(monkeypatch, tmp_path):
     assert cmd[cmd.index("--scan-mode") + 1] == "SWING"
 
 
+def test_scan_executor_command_supports_intraday_observation_mode(monkeypatch, tmp_path):
+    from modules.discord_integration import scan_executor
+
+    monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
+    job = create_scan_job("KOSPI", scan_mode="INTRADAY")
+    cmd = build_scan_command(job)
+
+    assert job.scan_mode == "INTRADAY"
+    assert "KOSPI_INTRADAY" in job.log_path.name
+    assert cmd[cmd.index("--market") + 1] == "KOSPI"
+    assert cmd[cmd.index("--scan-mode") + 1] == "INTRADAY"
+    assert "intraday" in cmd[cmd.index("--strategy-version") + 1]
+
+
 def test_scan_executor_extracts_summary_from_noisy_log():
     from modules.discord_integration.scan_executor import _extract_last_json_object
 

@@ -25,6 +25,7 @@ class DiscordScanJob:
     market: str
     log_path: Path
     started_at: str
+    scan_mode: str = "SWING"
 
 
 @dataclass
@@ -32,13 +33,14 @@ class DiscordScanLock:
     path: Path = LOCK_PATH
     acquired: bool = False
 
-    def try_acquire(self, *, job_id: str, market: str) -> bool:
-        self.path = _lock_path_for_market(self.path, market)
+    def try_acquire(self, *, job_id: str, market: str, scan_mode: str = "SWING") -> bool:
+        self.path = _lock_path_for_market(self.path, market, scan_mode)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._clear_stale_lock()
         payload = {
             "job_id": job_id,
             "market": market,
+            "scan_mode": str(scan_mode or "SWING").upper(),
             "pid": os.getpid(),
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -88,27 +90,35 @@ def _pid_exists(pid: int) -> bool:
         return False
 
 
-def _lock_path_for_market(path: Path, market: str) -> Path:
-    """Scope the scan lock by market so KOSPI and KOSDAQ can run in parallel."""
+def _lock_path_for_market(path: Path, market: str, scan_mode: str = "SWING") -> Path:
+    """Scope the scan lock by market/mode so independent KR scans can run in parallel."""
     market_key = str(market or "").upper()
     if market_key not in {"KOSPI", "KOSDAQ"}:
         return path
+    mode_key = str(scan_mode or "SWING").upper()
+    if mode_key not in {"SWING", "INTRADAY"}:
+        mode_key = "SWING"
     stem = path.stem
-    if stem.upper().endswith(f"_{market_key}"):
+    suffix = f"_{market_key}_{mode_key}"
+    if stem.upper().endswith(suffix):
         return path
-    return path.with_name(f"{stem}_{market_key}{path.suffix}")
+    return path.with_name(f"{stem}{suffix}{path.suffix}")
 
 
-def create_scan_job(market: str) -> DiscordScanJob:
+def create_scan_job(market: str, scan_mode: str = "SWING") -> DiscordScanJob:
     normalized_market = str(market or "").upper()
     if normalized_market not in {"KOSPI", "KOSDAQ"}:
         raise ValueError(f"Unsupported Discord scan market: {market}")
+    normalized_mode = str(scan_mode or "SWING").upper()
+    if normalized_mode not in {"SWING", "INTRADAY"}:
+        raise ValueError(f"Unsupported Discord scan mode: {scan_mode}")
     JOB_DIR.mkdir(parents=True, exist_ok=True)
     job_id = f"DS-{uuid4().hex[:8].upper()}"
     return DiscordScanJob(
         job_id=job_id,
         market=normalized_market,
-        log_path=JOB_DIR / f"{job_id}_{normalized_market}.log",
+        scan_mode=normalized_mode,
+        log_path=JOB_DIR / f"{job_id}_{normalized_market}_{normalized_mode}.log",
         started_at=datetime.now(timezone.utc).isoformat(),
     )
 
@@ -129,13 +139,13 @@ def build_scan_command(job: DiscordScanJob) -> List[str]:
         "--max-retries",
         "1",
         "--scan-mode",
-        "SWING",
+        job.scan_mode,
         "--strategy-version",
-        "discord-full-kr-v1",
+        f"discord-full-kr-{job.scan_mode.lower()}-v1",
         "--model-version",
         "legacy",
         "--code-version",
-        "discord-scan-executor-v1",
+        f"discord-scan-executor-{job.scan_mode.lower()}-v1",
     ]
 
 
@@ -171,6 +181,7 @@ def _run_scan_job_sync(job: DiscordScanJob) -> Dict[str, Any]:
     summary["discord_job"] = {
         "job_id": job.job_id,
         "market": job.market,
+        "scan_mode": job.scan_mode,
         "started_at": job.started_at,
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "returncode": completed.returncode,

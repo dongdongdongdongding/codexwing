@@ -201,7 +201,11 @@ Daily KR automation uses two LaunchAgents:
 - `com.codex.swing.kr-daily-auto-scan`: runs at `09:35 KST` with
   `AG_KR_DAILY_PHASE=confirmed`. It runs the actionable KOSPI/KOSDAQ full
   scans after the 09:30 intraday confirmation window and publishes the same
-  Top Deep/archive/performance artifacts as the web UI.
+  Top Deep/archive/performance artifacts as the web UI. The default targets are
+  `KOSPI/SWING`, `KOSDAQ/SWING`, and `KOSPI/INTRADAY`; the KOSPI intraday
+  target is a separate observation stream for top-mover capture and does not
+  replace the swing Top5 stream. Override with
+  `AG_KR_DAILY_SCAN_TARGETS=KOSPI:SWING,KOSDAQ:SWING` when needed.
 
 ## Result Rendering Requirement
 
