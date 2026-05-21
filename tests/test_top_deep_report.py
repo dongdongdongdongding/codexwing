@@ -261,6 +261,100 @@ def test_upsert_reports_to_supabase_filters_columns_when_schema_cache_empty():
     assert captured["rows"][0]["flow"] == {"foreigner": 1}
 
 
+def test_upsert_reports_to_supabase_retries_after_remote_schema_column_miss():
+    captured = {"attempts": 0}
+
+    class FakeTable:
+        def delete(self):
+            return self
+
+        def eq(self, *_args):
+            return self
+
+        def upsert(self, rows, **_kwargs):
+            captured["attempts"] += 1
+            captured["rows"] = rows
+            if captured["attempts"] == 1:
+                raise Exception("Could not find the 'action_reason_codes' column of 'scan_deep_reports' in the schema cache")
+            return self
+
+        def execute(self):
+            return type("Response", (), {"data": []})()
+
+    class FakeClient:
+        def table(self, _name):
+            return FakeTable()
+
+    class FakeDB:
+        client = FakeClient()
+
+        def _filter_payload_to_existing_columns(self, _table, payload):
+            return dict(payload)
+
+    with patch("modules.db_manager.DBManager", return_value=FakeDB()):
+        result = upsert_reports_to_supabase(
+            [
+                {
+                    "report_id": "RUN-X:005930.KS:top_deep_report_v1",
+                    "run_id": "RUN-X",
+                    "ticker": "005930.KS",
+                    "action_reason_codes": ["READINESS_MISSING_FIELDS"],
+                }
+            ]
+        )
+
+    assert captured["attempts"] == 2
+    assert result["rows_upserted"] == 1
+    assert result["warning"] == "schema_columns_dropped:action_reason_codes"
+    assert "action_reason_codes" not in captured["rows"][0]
+
+
+def test_build_top_deep_reports_uses_scan_row_price_proxy_when_live_price_rate_limited():
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {"warnings": ["price_fetch_failed:Too Many Requests"], "ohlcv_tail": []}
+        news.return_value = {"status": "OK", "sentiment_score": 0.0, "headlines": [], "warnings": []}
+        flow.return_value = {
+            "valid": True,
+            "type": "KR",
+            "source": "scan_row:naver",
+            "foreigner_1d": 1000,
+            "institution_3d": 2000,
+            "retail_10d": -3000,
+            "flow_asof": "2026-05-21T00:00:00+00:00",
+            "warnings": [],
+        }
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {
+                    "ticker": "005930.KS",
+                    "종목명": "삼성전자",
+                    "Decision Score": 90.0,
+                    "매수가(-2%)": "68,600",
+                    "전일비": "+2.5%",
+                    "거래량": "✅ 3.20",
+                }
+            ],
+            planner_payload={"decisions": []},
+            run_id="RUN-PROXY",
+            market="KOSPI",
+            scan_mode="SWING",
+            top_n=1,
+        )
+
+    report = reports[0]
+    assert report["price"]["current_price"] == 70000.0
+    assert report["price"]["day_change_pct"] == 2.5
+    assert report["price"]["volume_ratio_20d"] == 3.2
+    assert "price_proxy_from_scan_row" in report["price"]["warnings"]
+    assert report["candidate_data_quality"]["display_warning_level"] in {"ok", "warning"}
+    assert "current_price" not in report["candidate_data_quality"]["missing_required_fields"]
+
+
 def test_investor_flow_fetches_live_breakdown_when_exception_has_score_only():
     with patch("modules.quant_analysis.QuantStrategy") as strategy:
         strategy.return_value.get_investor_flows.return_value = {

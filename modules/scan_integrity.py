@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
@@ -20,10 +21,10 @@ COMMON_FIELD_ALIASES: Dict[str, Tuple[str, ...]] = {
     "decision_bucket": ("decision_bucket",),
     "decision_score": ("decision_score", "Decision Score", "buy_score", "Score"),
     "alpha_score": ("alpha_score", "Antigrav", "Alpha"),
-    "tech_score": ("tech_score", "Tech", "technical_score"),
-    "ml_prob": ("ml_prob", "prob_5", "AI Prob", "probability"),
+    "tech_score": ("tech_score", "Tech", "technical_score", "확신도"),
+    "ml_prob": ("ml_prob", "prob_5", "AI Prob", "probability", "AI확률", "정밀확률", "승률", "_prob_5", "_prob_clean"),
     "prob_clean": ("prob_clean",),
-    "whale_score": ("whale_score", "Whale", "세력점수"),
+    "whale_score": ("whale_score", "Whale", "세력점수", "수급"),
     "foreigner": ("foreigner",),
     "foreign_flow": ("foreign_flow",),
     "institution": ("institution",),
@@ -45,11 +46,11 @@ COMMON_FIELD_ALIASES: Dict[str, Tuple[str, ...]] = {
     "dominant": ("dominant",),
     "whale_trend": ("whale_trend",),
     "volume": ("volume", "Volume", "거래량"),
-    "volume_ratio": ("volume_ratio", "Volume Ratio", "거래량비율"),
+    "volume_ratio": ("volume_ratio", "Volume Ratio", "거래량비율", "거래량"),
     "day_return_pct": ("day_return_pct", "day_change_pct", "Change %", "전일비"),
-    "trend": ("trend", "initial_trend", "real_trend"),
-    "position": ("position",),
-    "tier": ("tier",),
+    "trend": ("trend", "initial_trend", "real_trend", "추세"),
+    "position": ("position", "위치"),
+    "tier": ("tier", "Tier"),
     "entry_reference_price": ("entry_reference_price", "Entry Price", "Entry(-2%)", "매수가(-2%)"),
     "target_tp_pct": ("target_tp_pct",),
     "stop_sl_pct": ("stop_sl_pct",),
@@ -76,11 +77,11 @@ COMMON_FIELD_ALIASES: Dict[str, Tuple[str, ...]] = {
     "phase25_degraded": ("phase25_degraded",),
     "model_trace_status": ("model_trace_status",),
     "model_error": ("model_error",),
-    "primary_theme": ("primary_theme",),
+    "primary_theme": ("primary_theme", "테마"),
     "theme_source": ("theme_source",),
     "theme_inference_status": ("theme_inference_status",),
     "secondary_themes": ("secondary_themes",),
-    "theme_routing_path": ("theme_routing_path", "routing_path"),
+    "theme_routing_path": ("theme_routing_path", "routing_path", "_routing_path"),
     "theme_score_adjustment": ("theme_score_adjustment",),
     "rationale": ("rationale",),
     "theme_risk": ("theme_risk",),
@@ -180,6 +181,14 @@ def _safe_float(value: Any) -> float | None:
             return None
         return result
     except Exception:
+        if isinstance(value, str):
+            match = re.search(r"[-+]?\d+(?:\.\d+)?", value.replace(",", ""))
+            if match:
+                try:
+                    result = float(match.group(0))
+                    return None if math.isnan(result) or math.isinf(result) else result
+                except Exception:
+                    return None
         return None
 
 
@@ -277,6 +286,12 @@ def _canonical_snapshot(
         if not _is_missing(value):
             field_sources[field] = "raw_scan" if not _is_missing(raw_value) else str(planner.get("_planner_source") or "planner")
         factors[field] = _json_safe(value)
+    if _is_missing(factors.get("selection_lane")):
+        quant_signal = row.get("_quant_signal") if isinstance(row.get("_quant_signal"), dict) else {}
+        lane = quant_signal.get("lane")
+        if not _is_missing(lane):
+            factors["selection_lane"] = _json_safe(lane)
+            field_sources["selection_lane"] = "raw_scan._quant_signal"
 
     ticker = str(factors.get("ticker") or _ticker(row) or _ticker(planner)).strip().upper()
     rank = _safe_int(factors.get("priority_rank")) or raw_rank

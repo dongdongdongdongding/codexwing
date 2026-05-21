@@ -64,6 +64,28 @@ def test_candidate_data_quality_ok_when_required_fields_are_fresh():
     assert quality["required_present_pct"] == 100.0
 
 
+def test_candidate_data_quality_accepts_flow_asof_key_inside_flow_payload():
+    now = datetime(2026, 5, 21, tzinfo=timezone.utc)
+    quality = build_candidate_data_quality(
+        {
+            "ticker": "000660.KS",
+            "trade_plan": {"entry_reference_price": 100},
+            "price": {"current_price": 101, "volume_ratio_20d": 1.4, "asof": now.isoformat()},
+            "flow": {
+                "foreigner_1d": 1000,
+                "institution_3d": 2000,
+                "retail_10d": -3000,
+                "flow_asof": now.isoformat(),
+            },
+            "realized_expectancy_admission": {"policy_version": "v1", "generated_at": now.isoformat()},
+        },
+        now=now,
+    )
+
+    assert quality["display_warning_level"] == "ok"
+    assert quality["flow_asof"] == now.isoformat()
+
+
 def test_candidate_data_quality_requires_kr_multi_window_flow():
     now = datetime(2026, 5, 19, tzinfo=timezone.utc)
     quality = build_candidate_data_quality(

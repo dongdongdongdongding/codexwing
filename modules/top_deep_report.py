@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -100,6 +101,24 @@ def _safe_float(value: Any) -> float | None:
     if math.isnan(numeric) or math.isinf(numeric):
         return None
     return round(numeric, 4)
+
+
+def _float_from_text(value: Any) -> float | None:
+    direct = _safe_float(value)
+    if direct is not None:
+        return direct
+    if value is None:
+        return None
+    try:
+        import re
+
+        text = str(value).replace(",", "")
+        match = re.search(r"[-+]?\d+(?:\.\d+)?", text)
+        if not match:
+            return None
+        return _safe_float(match.group(0))
+    except Exception:
+        return None
 
 
 def _safe_int(value: Any) -> int | None:
@@ -345,6 +364,71 @@ def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
         "range_20d_low": _safe_float(hist["Low"].tail(20).min()) if "Low" in hist else None,
         "ohlcv_tail": ohlcv_tail,
     }
+
+
+def _entry_proxy_current_price(row: Dict[str, Any], trace: Dict[str, Any]) -> float | None:
+    current = _float_from_text(
+        _first_present(trace, "current_price", "Current Price", "현재가", "curr_price", "price")
+        or _first_present(row, "current_price", "Current Price", "현재가", "curr_price", "price")
+    )
+    if current is not None:
+        return current
+
+    explicit_entry = _float_from_text(
+        _first_present(trace, "entry_reference_price", "entry_price", "Entry Price", "Entry(-2%)")
+        or _first_present(row, "entry_reference_price", "entry_price", "Entry Price", "Entry(-2%)")
+    )
+    if explicit_entry is not None:
+        return explicit_entry
+
+    limit_entry = _float_from_text(_first_present(trace, "매수가(-2%)") or _first_present(row, "매수가(-2%)"))
+    if limit_entry is not None and limit_entry > 0:
+        return _safe_float(limit_entry / 0.98)
+    return None
+
+
+def _price_proxy_from_scan_row(row: Dict[str, Any], trace: Dict[str, Any], *, generated_at: str) -> Dict[str, Any]:
+    merged = {**(row if isinstance(row, dict) else {}), **(trace if isinstance(trace, dict) else {})}
+    current = _entry_proxy_current_price(row, trace)
+    day_change = _float_from_text(_first_present(merged, "day_return_pct", "전일비"))
+    volume_ratio = _float_from_text(
+        _first_present(merged, "volume_ratio", "volume_ratio_20d", "거래량")
+        or ((merged.get("_leader_metrics") or {}).get("kr_volume_ratio") if isinstance(merged.get("_leader_metrics"), dict) else None)
+    )
+    proxy = {
+        "warnings": [],
+        "current_price": current,
+        "day_change_pct": day_change,
+        "volume_ratio_20d": volume_ratio,
+        "asof": generated_at,
+    }
+    if current is None and day_change is None and volume_ratio is None:
+        return {"warnings": []}
+    proxy["warnings"] = ["price_proxy_from_scan_row"]
+    return proxy
+
+
+def _merge_price_snapshot_with_scan_row(
+    fetched: Dict[str, Any],
+    row: Dict[str, Any],
+    trace: Dict[str, Any],
+    *,
+    generated_at: str,
+) -> Dict[str, Any]:
+    price = dict(fetched if isinstance(fetched, dict) else {})
+    proxy = _price_proxy_from_scan_row(row, trace, generated_at=generated_at)
+    for key, value in proxy.items():
+        if key == "warnings":
+            continue
+        if not _present(price.get(key)) and _present(value):
+            price[key] = value
+    if _present(proxy.get("current_price")) or _present(proxy.get("day_change_pct")) or _present(proxy.get("volume_ratio_20d")):
+        warnings = list(price.get("warnings") or [])
+        for warning in proxy.get("warnings") or []:
+            if warning not in warnings:
+                warnings.append(warning)
+        price["warnings"] = warnings
+    return price
 
 
 def _fetch_news_snapshot(ticker: str, stock_name: str) -> Dict[str, Any]:
@@ -880,7 +964,12 @@ def build_top_deep_reports(
         ticker = _ticker(row)
         trace = traces.get(ticker, {})
         stock_name = str(_first_present(row, "stock_name", "종목명", "Name", "name") or trace.get("stock_name") or ticker)
-        price = _fetch_price_snapshot(ticker)
+        price = _merge_price_snapshot_with_scan_row(
+            _fetch_price_snapshot(ticker),
+            row,
+            trace,
+            generated_at=generated_at,
+        )
         news = _fetch_news_snapshot(ticker, stock_name)
         loss_risk = _safe_float(_first_present(row, "loss_risk_score") or trace.get("loss_risk_score"))
         day_change = _safe_float(_first_present(row, "day_return_pct", "전일비") or price.get("day_change_pct"))
@@ -1083,8 +1172,31 @@ def upsert_reports_to_supabase(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
         run_ids = sorted({str(row.get("run_id") or "") for row in reports if row.get("run_id")})
         for run_id in run_ids:
             db.client.table("scan_deep_reports").delete().eq("run_id", run_id).execute()
-        db.client.table("scan_deep_reports").upsert(filtered_reports, on_conflict="report_id").execute()
-        return {"rows_seen": len(reports), "rows_upserted": len(filtered_reports), "warning": ""}
+        dropped_columns: List[str] = []
+        for _attempt in range(6):
+            try:
+                db.client.table("scan_deep_reports").upsert(filtered_reports, on_conflict="report_id").execute()
+                break
+            except Exception as exc:
+                text = str(exc)
+                match = re.search(r"Could not find the '([^']+)' column", text)
+                if not match:
+                    raise
+                column = match.group(1)
+                dropped_columns.append(column)
+                filtered_reports = [
+                    {key: value for key, value in row.items() if key != column}
+                    for row in filtered_reports
+                    if isinstance(row, dict)
+                ]
+        else:
+            return {
+                "rows_seen": len(reports),
+                "rows_upserted": 0,
+                "warning": f"schema_retry_exhausted:dropped={','.join(dropped_columns)}",
+            }
+        warning = f"schema_columns_dropped:{','.join(dropped_columns)}" if dropped_columns else ""
+        return {"rows_seen": len(reports), "rows_upserted": len(filtered_reports), "warning": warning}
     except Exception as exc:
         return {"rows_seen": len(reports), "rows_upserted": 0, "warning": str(exc)}
 

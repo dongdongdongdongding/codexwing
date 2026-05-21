@@ -87,3 +87,61 @@ def test_scan_integrity_requires_kr_multi_window_flow_fields():
     assert "institution_10d" in missing
     assert "flow_asof" in missing
     assert "FACTOR_COMPLETENESS_BELOW_95" in report["quality_flags"]
+
+
+def test_scan_integrity_accepts_display_aliases_from_raw_scanner_rows():
+    snapshots = build_observed_factor_snapshots(
+        run_id="RUN-ALIAS",
+        market="KOSPI",
+        scan_mode="SWING",
+        created_at="2026-05-21T00:00:00Z",
+        results=[
+            {
+                "티커": "353200.KS",
+                "종목명": "대덕전자",
+                "Decision Score": 100,
+                "Antigrav": 100,
+                "확신도": 82.9,
+                "AI확률": "39.0%",
+                "수급": "77.0점 🔥 당일+3일 순매수",
+                "거래량": "✅ 3.20",
+                "전일비": "+7.74%",
+                "추세": "UP",
+                "매수가(-2%)": "140,434",
+                "expected_edge_score": 3.85,
+                "expected_return_1d_pct": 0.27,
+                "expected_return_3d_pct": 0.49,
+                "loss_risk_score": 30,
+                "_quant_signal": {"lane": "3d"},
+                "테마": "전자부품/디스플레이",
+                "_routing_path": "core_only",
+                "foreigner_1d": -7309,
+                "institution_1d": 35184,
+                "retail_1d": -27875,
+                "foreigner_3d": 105,
+                "institution_3d": 96139,
+                "retail_3d": -96244,
+                "foreigner_10d": -162176,
+                "institution_10d": 357179,
+                "retail_10d": -195003,
+                "flow_asof": "2026.05.20",
+            }
+        ],
+    )
+    report = build_scan_integrity_report(
+        run_id="RUN-ALIAS",
+        market="KOSPI",
+        scan_mode="SWING",
+        snapshots=snapshots,
+        raw_result_count=1,
+        total_scans=1,
+    )
+
+    factors = snapshots[0]["factors"]
+    assert factors["tech_score"] == 82.9
+    assert factors["ml_prob"] == "39.0%"
+    assert factors["whale_score"] == "77.0점 🔥 당일+3일 순매수"
+    assert factors["volume_ratio"] == "✅ 3.20"
+    assert factors["selection_lane"] == "3d"
+    assert report["feature_completeness"] == 1.0
+    assert report["quality_flags"] == []

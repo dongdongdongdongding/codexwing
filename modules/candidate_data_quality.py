@@ -89,7 +89,7 @@ def _field_values(row: Dict[str, Any]) -> Dict[str, Any]:
                     row.get("institution_10d"),
                     row.get("retail_10d"),
                 ),
-                "flow_asof": _first(flow.get("asof"), flow.get("as_of"), flow.get("updated_at"), row.get("flow_asof")),
+                "flow_asof": _first(flow.get("flow_asof"), flow.get("asof"), flow.get("as_of"), flow.get("updated_at"), row.get("flow_asof")),
             }
         )
     return values
@@ -105,7 +105,7 @@ def build_candidate_data_quality(row: Dict[str, Any], *, now: datetime | None = 
     required_fields = list(values.keys())
     missing = [field for field in required_fields if not _present(values.get(field))]
 
-    flow_asof = _first(flow.get("asof"), flow.get("as_of"), flow.get("updated_at"), row.get("flow_asof"))
+    flow_asof = _first(flow.get("flow_asof"), flow.get("asof"), flow.get("as_of"), flow.get("updated_at"), row.get("flow_asof"))
     price_asof = _first(price.get("asof"), price.get("as_of"), price.get("updated_at"), row.get("price_asof"))
     calibration_asof = _first(admission.get("generated_at"), admission.get("calibration_asof"), row.get("calibration_asof"))
     stale_fields: List[str] = []
