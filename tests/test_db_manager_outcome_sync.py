@@ -83,6 +83,88 @@ def test_table_column_probe_includes_local_schema_extensions():
     assert "retail_flow" in cols
 
 
+class _SchemaDriftTable:
+    def __init__(self, captured, missing_column):
+        self.captured = captured
+        self.missing_column = missing_column
+
+    def upsert(self, rows, **_kwargs):
+        self.captured["attempts"] += 1
+        self.captured["rows"] = rows
+        if self.captured["attempts"] == 1:
+            raise Exception(f"Could not find the '{self.missing_column}' column of 'x' in the schema cache")
+        return self
+
+    def execute(self):
+        return _FakeResponse([])
+
+
+class _SchemaDriftClient:
+    def __init__(self, captured, missing_column):
+        self.captured = captured
+        self.missing_column = missing_column
+
+    def table(self, _name):
+        return _SchemaDriftTable(self.captured, self.missing_column)
+
+
+def test_save_agent_realized_outcomes_retries_after_remote_schema_column_miss():
+    captured = {"attempts": 0}
+    db = DBManager.__new__(DBManager)
+    db.client = _SchemaDriftClient(captured, "action_reason_codes")
+    db._table_columns_cache = {
+        "agent_realized_outcomes": {
+            "outcome_key",
+            "run_id",
+            "ticker",
+            "priority_rank",
+            "action_reason_codes",
+            "updated_at",
+        }
+    }
+
+    saved = db.save_agent_realized_outcomes(
+        "RUN-TEST",
+        [{"ticker": "005930.KS", "priority_rank": 1, "action_reason_codes": ["READINESS_MISSING_FIELDS"]}],
+    )
+
+    assert saved == 1
+    assert captured["attempts"] == 2
+    assert "action_reason_codes" not in captured["rows"][0]
+    assert "action_reason_codes" not in db._table_columns_cache["agent_realized_outcomes"]
+
+
+def test_save_post_scan_outcome_ledger_retries_after_remote_schema_column_miss():
+    captured = {"attempts": 0}
+    db = DBManager.__new__(DBManager)
+    db.client = _SchemaDriftClient(captured, "action_reason_codes")
+    db._table_columns_cache = {
+        "post_scan_outcome_ledger": {
+            "ledger_key",
+            "run_id",
+            "ticker",
+            "action_reason_codes",
+            "updated_at",
+        }
+    }
+
+    saved = db.save_post_scan_outcome_ledger(
+        "RUN-TEST",
+        [
+            {
+                "ledger_key": "RUN-TEST:005930.KS:1:post_scan_outcome_ledger_v1",
+                "ticker": "005930.KS",
+                "action_reason_codes": ["READINESS_MISSING_FIELDS"],
+            }
+        ],
+    )
+
+    assert saved == 1
+    assert captured["attempts"] == 2
+    assert "action_reason_codes" not in captured["rows"][0]
+    assert "action_reason_codes" not in db._table_columns_cache["post_scan_outcome_ledger"]
+
+
 def test_choose_feature_rich_peer_prefers_scanner_full_over_stub():
     db = DBManager.__new__(DBManager)
     rows = [

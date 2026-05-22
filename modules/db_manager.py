@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from pathlib import Path
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -132,6 +133,38 @@ class DBManager:
         if not known:
             return payload
         return {k: v for k, v in payload.items() if k in known}
+
+    def _extract_missing_schema_column(self, exc):
+        match = re.search(r"Could not find the '([^']+)' column", str(exc))
+        return match.group(1) if match else None
+
+    def _upsert_with_schema_drift_retry(self, table_name, rows, *, on_conflict, max_attempts=32):
+        """
+        Supabase/PostgREST can keep an older schema cache than our local payload.
+        Drop only the missing remote column and retry so one additive field does
+        not zero out critical outcome persistence.
+        """
+        payloads = [dict(row) for row in (rows or []) if isinstance(row, dict)]
+        if not payloads:
+            return 0
+
+        dropped = []
+        for _attempt in range(max_attempts):
+            try:
+                self.client.table(table_name).upsert(payloads, on_conflict=on_conflict).execute()
+                if dropped:
+                    print(f"⚠️ {table_name} schema drift columns dropped for this save: {','.join(dropped)}")
+                return len(payloads)
+            except Exception as exc:
+                column = self._extract_missing_schema_column(exc)
+                if not column:
+                    raise
+                dropped.append(column)
+                cached = self._table_columns_cache.get(table_name)
+                if isinstance(cached, set):
+                    cached.discard(column)
+                payloads = [{key: value for key, value in row.items() if key != column} for row in payloads]
+        raise RuntimeError(f"{table_name} schema drift retry exhausted; dropped={','.join(dropped)}")
 
     def _classify_decision_bucket(self, decision):
         value = str(decision or "").strip().upper()
@@ -1021,8 +1054,11 @@ class DBManager:
             return 0
 
         try:
-            self.client.table("agent_realized_outcomes").upsert(rows, on_conflict="outcome_key").execute()
-            return len(rows)
+            return self._upsert_with_schema_drift_retry(
+                "agent_realized_outcomes",
+                rows,
+                on_conflict="outcome_key",
+            )
         except Exception as e:
             print(f"Agent Realized Outcomes Save Error: {e}")
             return 0
@@ -1132,8 +1168,11 @@ class DBManager:
         if not payloads:
             return 0
         try:
-            self.client.table("post_scan_outcome_ledger").upsert(payloads, on_conflict="ledger_key").execute()
-            return len(payloads)
+            return self._upsert_with_schema_drift_retry(
+                "post_scan_outcome_ledger",
+                payloads,
+                on_conflict="ledger_key",
+            )
         except Exception as e:
             print(f"Post Scan Outcome Ledger Save Error: {e}")
             return 0
