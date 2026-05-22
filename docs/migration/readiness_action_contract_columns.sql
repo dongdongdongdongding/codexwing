@@ -1,0 +1,45 @@
+alter table public.scan_deep_reports
+  add column if not exists entry_readiness_contract jsonb default '{}'::jsonb,
+  add column if not exists stock_quality_score double precision,
+  add column if not exists stock_quality_grade text,
+  add column if not exists upside_room_score double precision,
+  add column if not exists upside_room_grade text,
+  add column if not exists entry_timing_score double precision,
+  add column if not exists entry_timing_grade text,
+  add column if not exists chase_risk_level text,
+  add column if not exists chase_risk_reasons jsonb default '[]'::jsonb,
+  add column if not exists exclusion_risk_level text,
+  add column if not exists exclusion_reasons jsonb default '[]'::jsonb,
+  add column if not exists structural_exclusion_risk jsonb default '{}'::jsonb,
+  add column if not exists final_action text,
+  add column if not exists action_reason_codes jsonb default '[]'::jsonb;
+
+alter table public.agent_realized_outcomes
+  add column if not exists entry_readiness_contract jsonb default '{}'::jsonb,
+  add column if not exists stock_quality_score double precision,
+  add column if not exists stock_quality_grade text,
+  add column if not exists upside_room_score double precision,
+  add column if not exists upside_room_grade text,
+  add column if not exists entry_timing_score double precision,
+  add column if not exists entry_timing_grade text,
+  add column if not exists chase_risk_level text,
+  add column if not exists chase_risk_reasons jsonb default '[]'::jsonb,
+  add column if not exists exclusion_risk_level text,
+  add column if not exists exclusion_reasons jsonb default '[]'::jsonb,
+  add column if not exists final_action text,
+  add column if not exists action_reason_codes jsonb default '[]'::jsonb;
+
+alter table public.post_scan_outcome_ledger
+  add column if not exists entry_readiness_contract jsonb default '{}'::jsonb,
+  add column if not exists stock_quality_score double precision,
+  add column if not exists stock_quality_grade text,
+  add column if not exists upside_room_score double precision,
+  add column if not exists upside_room_grade text,
+  add column if not exists entry_timing_score double precision,
+  add column if not exists entry_timing_grade text,
+  add column if not exists chase_risk_level text,
+  add column if not exists chase_risk_reasons jsonb default '[]'::jsonb,
+  add column if not exists exclusion_risk_level text,
+  add column if not exists exclusion_reasons jsonb default '[]'::jsonb,
+  add column if not exists final_action text,
+  add column if not exists action_reason_codes jsonb default '[]'::jsonb;
