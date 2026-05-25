@@ -146,6 +146,10 @@ def _profile_level(summary: Dict[str, Any]) -> str:
         return "small_sample"
     if n >= 20 and practical >= 70.0 and win5 >= 75.0 and bad <= 35.0 and avg5 > 2.0:
         return "watch"
+    if n >= 18 and win5 >= 60.0 and bad <= 55.0 and avg5 > 2.0:
+        return "watch"
+    if n >= 12 and win5 >= 66.0 and bad <= 65.0 and avg5 > 4.0:
+        return "watch"
     return "fail"
 
 
@@ -292,6 +296,10 @@ def build_report(df: pd.DataFrame, *, lookback_days: int) -> Dict[str, Any]:
             "rows": int(len(market_df)),
             "profile_source": profile_source,
             "selected_theme_count": int(len(selected)),
+            "profile_level_counts": {
+                level: sum(1 for profile in selected.values() if profile.get("level") == level)
+                for level in ["pass", "near", "small_sample", "watch"]
+            },
             "themes": dict(
                 sorted(
                     selected.items(),
@@ -314,7 +322,7 @@ def build_report(df: pd.DataFrame, *, lookback_days: int) -> Dict[str, Any]:
             "pass": "n>=30, practical>=78%, 5D win>=78%, bad_path<=25%, avg5>3%",
             "near": "n>=30, practical>=72%, 5D win>=75%, bad_path<=32%, avg5>2%",
             "small_sample": "12<=n<30, practical>=80%, 5D win>=80%, bad_path<=20%, avg5>3%",
-            "watch": "n>=20, practical>=70%, 5D win>=75%, bad_path<=35%, avg5>2%",
+            "watch": "non-promoting: n>=20 practical>=70%/5D win>=75%/bad<=35%/avg5>2%, or broader data-backed watch rules with positive 5D edge and bounded bad_path",
         },
         "rows": {
             "input_rows": int(len(df)),
@@ -343,6 +351,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
         lines.append(f"- rows: `{payload.get('rows')}`")
         lines.append(f"- profile_source: `{payload.get('profile_source')}`")
         lines.append(f"- selected_theme_count: `{payload.get('selected_theme_count')}`")
+        lines.append(f"- profile_level_counts: `{json.dumps(payload.get('profile_level_counts') or {}, ensure_ascii=False)}`")
         lines.extend(["", "| Theme | Level | Condition | N | 1D Win | 5D Win | Practical | Bad Path | Avg 5D | Thresholds | Required |", "|---|---|---|---:|---:|---:|---:|---:|---:|---|---|"])
         for theme, profile in payload.get("themes", {}).items():
             ev = profile.get("evidence", {})

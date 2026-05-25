@@ -1,6 +1,20 @@
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 
 
+WATCH_PROFILE = {
+    "level": "watch",
+    "evidence": {
+        "sample_n": 20,
+        "win5_pct": 90.0,
+        "practical_win_pct": 65.0,
+        "bad_path_pct": 15.0,
+    },
+    "required": {
+        "trend": "DOWN",
+    },
+}
+
+
 PROFILE_PAYLOAD = {
     "markets": {
         "KOSPI": {
@@ -105,5 +119,30 @@ def test_fixed_theme_name_without_dynamic_profile_does_not_pass():
         profile_payload={"markets": {"KOSPI": {"themes": {}}}},
     )
 
+    assert gate["pass"] is False
+    assert gate["promote"] is False
+
+
+def test_watch_profile_is_visible_but_not_promoted():
+    payload = {
+        "markets": {
+            "KOSPI": {
+                "themes": {
+                    "자동차": WATCH_PROFILE,
+                }
+            }
+        }
+    }
+    gate = evaluate_practical_entry_gate(
+        {
+            "ticker": "005380.KS",
+            "primary_theme": "자동차",
+            "trend": "DOWN",
+        },
+        profile_payload=payload,
+    )
+
+    assert gate["level"] == "watch"
+    assert gate["label"] == "조건부 감시"
     assert gate["pass"] is False
     assert gate["promote"] is False
