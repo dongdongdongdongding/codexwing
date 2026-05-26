@@ -81,6 +81,8 @@ def test_table_column_probe_includes_local_schema_extensions():
     assert "ticker" in cols
     assert "foreigner" in cols
     assert "retail_flow" in cols
+    assert "ordered_entry_at" in cols
+    assert "outcome_path_warnings" in cols
 
 
 class _SchemaDriftTable:

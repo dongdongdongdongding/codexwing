@@ -298,3 +298,67 @@ def test_compute_path_risk_labels_marks_stop_first_with_daily_ohlc():
     assert row["stop_before_target_5d"] is True
     assert row["stop_hit_at_5d"] == "2026-05-02"
     assert row["outcome_path_terminal_status"] == "stop_before_target"
+    assert row["outcome_path_label_version"] == "scan_entry_forward_hybrid_30m_daily_stop_first_v2"
+
+
+def test_compute_path_risk_labels_uses_post_scan_intraday_before_daily():
+    row = {
+        "ticker": "005930.KS",
+        "scan_mode": "SWING",
+        "recommended_at": "2026-05-01T09:40:00+09:00",
+        "scan_entry_reference_price": 100.0,
+        "target_tp_pct": 5.0,
+        "stop_sl_pct": -3.0,
+    }
+    hist = _hist(
+        closes=[100, 103, 104, 103, 102, 101],
+        highs=[120, 106, 104, 103, 102, 101],
+        lows=[80, 99, 100, 100, 100, 100],
+    )
+    idx = pd.DatetimeIndex(["2026-05-01T09:30:00+09:00", "2026-05-01T15:00:00+09:00"])
+    intraday = pd.DataFrame(
+        {"Close": [98.0, 99.0], "High": [101.0, 100.0], "Low": [96.0, 98.0]},
+        index=idx,
+    )
+
+    assert _compute_path_risk_labels(row, hist, "KOSPI", intraday_hist=intraday) is True
+
+    assert row["target_before_stop_5d"] is False
+    assert row["stop_before_target_5d"] is True
+    assert row["stop_hit_at_5d"] == "2026-05-01"
+    assert row["ordered_stop_hit_at"] == "2026-05-01T10:00:00+09:00"
+    assert row["mfe_5d_pct"] == 6.0
+    assert row["mae_5d_pct"] == -4.0
+    assert row["ordered_mfe_until_terminal_5d_pct"] == 1.0
+    assert row["ordered_mae_until_terminal_5d_pct"] == -4.0
+    assert row["outcome_path_source"] == "intraday_30m+daily_ohlc"
+    assert "partial_intraday_bar_contains_pre_scan_range" in row["outcome_path_warnings"]
+
+
+def test_compute_path_risk_labels_records_mae_before_target():
+    row = {
+        "ticker": "005930.KS",
+        "scan_mode": "SWING",
+        "recommended_at": "2026-05-01T09:40:00+09:00",
+        "scan_entry_reference_price": 100.0,
+        "target_tp_pct": 5.0,
+        "stop_sl_pct": -5.0,
+    }
+    hist = _hist(
+        closes=[100, 104, 103, 102, 101, 100],
+        highs=[101, 104, 103, 102, 101, 100],
+        lows=[99, 100, 100, 100, 100, 100],
+    )
+    idx = pd.DatetimeIndex(["2026-05-01T10:00:00+09:00"])
+    intraday = pd.DataFrame(
+        {"Close": [105.0], "High": [106.0], "Low": [99.0]},
+        index=idx,
+    )
+
+    assert _compute_path_risk_labels(row, hist, "KOSPI", intraday_hist=intraday) is True
+
+    assert row["target_before_stop_5d"] is True
+    assert row["target_hit_at_5d"] == "2026-05-01"
+    assert row["ordered_target_hit_at"] == "2026-05-01T10:30:00+09:00"
+    assert row["ordered_mae_before_target_5d_pct"] == -1.0
+    assert row["ordered_mfe_until_terminal_5d_pct"] == 6.0

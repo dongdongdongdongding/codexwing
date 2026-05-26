@@ -22,7 +22,8 @@ US_TZ = ZoneInfo("America/New_York")
 SWING_TOUCH_TARGET_PCT = 5.0
 SWING_TOUCH_WINDOW_DAYS = 5
 SWING_TARGET_LABEL_VERSION = "forward_high_within_5d_v1"
-OUTCOME_PATH_LABEL_VERSION = "scan_entry_forward_ohlc_stop_first_v1"
+OUTCOME_PATH_LABEL_VERSION = "scan_entry_forward_hybrid_30m_daily_stop_first_v2"
+OUTCOME_PATH_HORIZON_SESSIONS = 5
 
 try:
     import FinanceDataReader as fdr  # type: ignore
@@ -240,7 +241,102 @@ def _target_stop_policy(row: Dict[str, Any]) -> tuple[float, float]:
     return float(target), abs(float(stop))
 
 
-def _compute_intraday_row_returns(row: Dict[str, Any], market: str, interval: str = "30m") -> bool:
+def _entry_price_for_path(row: Dict[str, Any]) -> Optional[float]:
+    entry = _safe_float(row.get("scan_entry_reference_price"))
+    if entry is None:
+        entry = _safe_float(row.get("entry_reference_price"))
+    return entry if entry is not None and entry > 0 else None
+
+
+def _post_scan_intraday_context(
+    row: Dict[str, Any],
+    market: str,
+    interval: str = "30m",
+    intraday_hist: Optional[pd.DataFrame] = None,
+    fetch_if_missing: bool = True,
+) -> Optional[Dict[str, Any]]:
+    rec_dt = _parse_iso(row.get("recommended_at"))
+    entry_price = _entry_price_for_path(row)
+    if rec_dt is None or entry_price is None:
+        return None
+
+    market_tz = _market_tz(market)
+    rec_local = rec_dt.astimezone(market_tz)
+    if intraday_hist is None and fetch_if_missing:
+        start_dt = rec_local.astimezone(timezone.utc) - timedelta(hours=2)
+        end_dt = (rec_local + timedelta(days=2)).astimezone(timezone.utc)
+        intraday_hist = _fetch_intraday_history(
+            str(row.get("ticker") or ""),
+            start_dt=start_dt,
+            end_dt=end_dt,
+            interval=interval,
+        )
+    if intraday_hist is None or intraday_hist.empty:
+        return {
+            "rec_local": rec_local,
+            "entry_price": entry_price,
+            "same_day": pd.DataFrame(),
+            "after_scan": pd.DataFrame(),
+            "warnings": ["intraday_history_unavailable" if fetch_if_missing else "intraday_history_not_supplied"],
+        }
+
+    hist = intraday_hist.copy()
+    if hist.index.tz is None:
+        hist.index = hist.index.tz_localize("UTC")
+    local_idx = hist.index.tz_convert(market_tz)
+    hist["local_ts"] = local_idx
+    hist["local_bar_end"] = hist["local_ts"] + timedelta(minutes=_interval_minutes(interval))
+    same_day = hist[local_idx.date == rec_local.date()].copy()
+    after_scan = same_day[same_day["local_bar_end"] >= rec_local].copy()
+
+    warnings: List[str] = []
+    if after_scan.empty:
+        warnings.append("post_scan_intraday_empty")
+    else:
+        first_start = after_scan["local_ts"].iloc[0]
+        first_end = after_scan["local_bar_end"].iloc[0]
+        if first_start < rec_local < first_end:
+            warnings.append("partial_intraday_bar_contains_pre_scan_range")
+
+    return {
+        "rec_local": rec_local,
+        "entry_price": entry_price,
+        "same_day": same_day,
+        "after_scan": after_scan,
+        "warnings": warnings,
+    }
+
+
+def _fetch_intraday_for_outcome_row(
+    row: Dict[str, Any],
+    market: str,
+    interval: str = "30m",
+) -> Optional[pd.DataFrame]:
+    rec_dt = _parse_iso(row.get("recommended_at"))
+    if rec_dt is None or _entry_price_for_path(row) is None:
+        return None
+    market_tz = _market_tz(market)
+    rec_local = rec_dt.astimezone(market_tz)
+    # yfinance minute bars are availability-limited. Avoid long empty network
+    # calls for older archive rows; daily OHLC still provides conservative labels.
+    if rec_local.date() < (datetime.now(market_tz).date() - timedelta(days=58)):
+        return None
+    start_dt = rec_local.astimezone(timezone.utc) - timedelta(hours=2)
+    end_dt = (rec_local + timedelta(days=2)).astimezone(timezone.utc)
+    return _fetch_intraday_history(
+        str(row.get("ticker") or ""),
+        start_dt=start_dt,
+        end_dt=end_dt,
+        interval=interval,
+    )
+
+
+def _compute_intraday_row_returns(
+    row: Dict[str, Any],
+    market: str,
+    interval: str = "30m",
+    intraday_hist: Optional[pd.DataFrame] = None,
+) -> bool:
     """Fill same-day minute-horizon returns for any recommendation row.
 
     These columns are not an INTRADAY-strategy-only concept. KR SWING Top/
@@ -248,62 +344,50 @@ def _compute_intraday_row_returns(row: Dict[str, Any], market: str, interval: st
     post-scan drops can become regression data. Missing or immature minute bars
     never clear an existing non-null value.
     """
-    rec_dt = _parse_iso(row.get("recommended_at"))
-    entry_price = _safe_float(row.get("scan_entry_reference_price"))
-    if entry_price is None:
-        entry_price = _safe_float(row.get("entry_reference_price"))
-    if rec_dt is None or entry_price is None or entry_price <= 0:
+    context = _post_scan_intraday_context(row, market, interval=interval, intraday_hist=intraday_hist)
+    if not context:
         return False
-
-    market_tz = _market_tz(market)
-    rec_local = rec_dt.astimezone(market_tz)
-    start_dt = rec_local.astimezone(timezone.utc) - timedelta(hours=2)
-    end_dt = (rec_local + timedelta(days=2)).astimezone(timezone.utc)
-    intraday_hist = _fetch_intraday_history(str(row.get("ticker") or ""), start_dt=start_dt, end_dt=end_dt, interval=interval)
     changed = False
 
-    if intraday_hist is not None and not intraday_hist.empty:
-        local_idx = intraday_hist.index.tz_convert(market_tz)
-        intraday_hist = intraday_hist.copy()
-        intraday_hist["local_ts"] = local_idx
-        intraday_hist["local_bar_end"] = intraday_hist["local_ts"] + timedelta(minutes=_interval_minutes(interval))
-        same_day = intraday_hist[local_idx.date == rec_local.date()]
-        if not same_day.empty:
-            after_scan = same_day[same_day["local_bar_end"] >= rec_local]
-            for minutes, key in INTRADAY_MINUTE_HORIZONS:
-                target_dt = rec_local + timedelta(minutes=minutes)
-                eligible = same_day[same_day["local_bar_end"] >= target_dt]
-                value = None
-                if not eligible.empty:
-                    close_val = _safe_float(eligible["Close"].iloc[0])
-                    if close_val is not None and entry_price > 0:
-                        value = round(((close_val / entry_price) - 1.0) * 100.0, 6)
-                if value is not None and row.get(key) != value:
-                    row[key] = value
-                    changed = True
-
-            close_rows = same_day.sort_values("local_ts")
-            close_value = None
-            if not close_rows.empty:
-                close_val = _safe_float(close_rows["Close"].iloc[-1])
+    rec_local = context["rec_local"]
+    entry_price = float(context["entry_price"])
+    same_day = context["same_day"]
+    after_scan = context["after_scan"]
+    if not same_day.empty:
+        for minutes, key in INTRADAY_MINUTE_HORIZONS:
+            target_dt = rec_local + timedelta(minutes=minutes)
+            eligible = same_day[same_day["local_bar_end"] >= target_dt]
+            value = None
+            if not eligible.empty:
+                close_val = _safe_float(eligible["Close"].iloc[0])
                 if close_val is not None and entry_price > 0:
-                    close_value = round(((close_val / entry_price) - 1.0) * 100.0, 6)
-            if close_value is not None and row.get("return_close_pct") != close_value:
-                row["return_close_pct"] = close_value
+                    value = round(((close_val / entry_price) - 1.0) * 100.0, 6)
+            if value is not None and row.get(key) != value:
+                row[key] = value
                 changed = True
-            if not after_scan.empty:
-                high_series = pd.to_numeric(after_scan["High"], errors="coerce") if "High" in after_scan.columns else pd.Series(dtype="float")
-                low_series = pd.to_numeric(after_scan["Low"], errors="coerce") if "Low" in after_scan.columns else pd.Series(dtype="float")
-                if not high_series.dropna().empty:
-                    mfe_intraday = round(((float(high_series.max()) / entry_price) - 1.0) * 100.0, 6)
-                    if row.get("mfe_intraday_pct") != mfe_intraday:
-                        row["mfe_intraday_pct"] = mfe_intraday
-                        changed = True
-                if not low_series.dropna().empty:
-                    mae_intraday = round(((float(low_series.min()) / entry_price) - 1.0) * 100.0, 6)
-                    if row.get("mae_intraday_pct") != mae_intraday:
-                        row["mae_intraday_pct"] = mae_intraday
-                        changed = True
+
+        close_rows = same_day.sort_values("local_ts")
+        close_value = None
+        if not close_rows.empty:
+            close_val = _safe_float(close_rows["Close"].iloc[-1])
+            if close_val is not None and entry_price > 0:
+                close_value = round(((close_val / entry_price) - 1.0) * 100.0, 6)
+        if close_value is not None and row.get("return_close_pct") != close_value:
+            row["return_close_pct"] = close_value
+            changed = True
+        if not after_scan.empty:
+            high_series = pd.to_numeric(after_scan["High"], errors="coerce") if "High" in after_scan.columns else pd.Series(dtype="float")
+            low_series = pd.to_numeric(after_scan["Low"], errors="coerce") if "Low" in after_scan.columns else pd.Series(dtype="float")
+            if not high_series.dropna().empty:
+                mfe_intraday = round(((float(high_series.max()) / entry_price) - 1.0) * 100.0, 6)
+                if row.get("mfe_intraday_pct") != mfe_intraday:
+                    row["mfe_intraday_pct"] = mfe_intraday
+                    changed = True
+            if not low_series.dropna().empty:
+                mae_intraday = round(((float(low_series.min()) / entry_price) - 1.0) * 100.0, 6)
+                if row.get("mae_intraday_pct") != mae_intraday:
+                    row["mae_intraday_pct"] = mae_intraday
+                    changed = True
 
     if changed:
         row["performance_updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -398,18 +482,92 @@ def _compute_row_returns(row: Dict[str, Any], hist: pd.DataFrame, market: str) -
     return changed
 
 
-def _compute_path_risk_labels(row: Dict[str, Any], hist: pd.DataFrame, market: str) -> bool:
+def _path_float_ret(value: Any, entry: float) -> Optional[float]:
+    numeric = _safe_float(value)
+    if numeric is None or entry <= 0:
+        return None
+    return ((float(numeric) / float(entry)) - 1.0) * 100.0
+
+
+def _compute_path_risk_labels(
+    row: Dict[str, Any],
+    hist: pd.DataFrame,
+    market: str,
+    intraday_hist: Optional[pd.DataFrame] = None,
+) -> bool:
     trade_date = _recommended_trade_date(row, market)
-    entry = _safe_float(row.get("scan_entry_reference_price"))
-    if entry is None:
-        entry = _safe_float(row.get("entry_reference_price"))
+    entry = _entry_price_for_path(row)
     if trade_date is None or entry is None or entry <= 0 or hist is None or hist.empty:
         return False
-    eligible = hist[hist["trade_date"] >= trade_date].copy()
-    if eligible.empty or "High" not in eligible.columns or "Low" not in eligible.columns:
+    eligible = hist[hist["trade_date"] > trade_date].copy()
+    if "High" not in hist.columns or "Low" not in hist.columns:
         return False
-    forward = eligible.iloc[:SWING_TOUCH_WINDOW_DAYS]
-    if len(forward) < SWING_TOUCH_WINDOW_DAYS:
+
+    intraday_context = _post_scan_intraday_context(
+        row,
+        market,
+        intraday_hist=intraday_hist,
+        fetch_if_missing=False,
+    )
+    intraday_after_scan = (
+        intraday_context.get("after_scan", pd.DataFrame())
+        if isinstance(intraday_context, dict)
+        else pd.DataFrame()
+    )
+    path_bars: List[Dict[str, Any]] = []
+    warnings: List[str] = []
+    source_parts: List[str] = []
+    session_count = 0
+    if isinstance(intraday_context, dict):
+        warnings.extend([str(w) for w in intraday_context.get("warnings", []) if str(w)])
+    if not intraday_after_scan.empty:
+        source_parts.append("intraday_30m")
+        session_count += 1
+        for _, bar in intraday_after_scan.sort_values("local_ts").iterrows():
+            high = _safe_float(bar.get("High"))
+            low = _safe_float(bar.get("Low"))
+            close = _safe_float(bar.get("Close"))
+            if high is None or low is None:
+                continue
+            bar_end = bar.get("local_bar_end")
+            bar_start = bar.get("local_ts")
+            at_value = bar_end.isoformat() if hasattr(bar_end, "isoformat") else str(bar_end)
+            path_bars.append(
+                {
+                    "at": at_value,
+                    "date": str(at_value)[:10],
+                    "high": high,
+                    "low": low,
+                    "close": close,
+                    "source": "intraday_30m",
+                    "bar_start": bar_start.isoformat() if hasattr(bar_start, "isoformat") else str(bar_start),
+                }
+            )
+
+    daily_needed = max(0, OUTCOME_PATH_HORIZON_SESSIONS - session_count)
+    forward_daily = eligible.iloc[:daily_needed]
+    if not forward_daily.empty:
+        source_parts.append("daily_ohlc")
+        session_count += len(forward_daily)
+        for _, bar in forward_daily.iterrows():
+            high = _safe_float(bar.get("High"))
+            low = _safe_float(bar.get("Low"))
+            close = _safe_float(bar.get("Close"))
+            if high is None or low is None:
+                continue
+            bar_date = str(bar.get("trade_date") or "")[:10]
+            path_bars.append(
+                {
+                    "at": bar_date,
+                    "date": bar_date,
+                    "high": high,
+                    "low": low,
+                    "close": close,
+                    "source": "daily_ohlc",
+                }
+            )
+
+    if not path_bars:
         values = {
             "mfe_5d_pct": None,
             "mae_5d_pct": None,
@@ -417,53 +575,95 @@ def _compute_path_risk_labels(row: Dict[str, Any], hist: pd.DataFrame, market: s
             "stop_before_target_5d": None,
             "target_hit_at_5d": None,
             "stop_hit_at_5d": None,
+            "ordered_entry_at": row.get("recommended_at"),
+            "ordered_entry_price": round(float(entry), 6),
+            "ordered_target_hit_at": None,
+            "ordered_stop_hit_at": None,
+            "ordered_mfe_until_terminal_5d_pct": None,
+            "ordered_mae_until_terminal_5d_pct": None,
+            "ordered_mae_before_target_5d_pct": None,
+            "outcome_path_bar_count": 0,
+            "outcome_path_source": "unavailable",
+            "outcome_path_warnings": warnings or ["post_entry_path_unavailable"],
             "outcome_path_terminal_status": "insufficient_forward_bars",
             "outcome_path_label_version": None,
         }
     else:
-        highs = pd.to_numeric(forward["High"], errors="coerce")
-        lows = pd.to_numeric(forward["Low"], errors="coerce")
-        if highs.dropna().empty or lows.dropna().empty:
-            return False
         target_pct, stop_pct = _target_stop_policy(row)
         target_price = float(entry) * (1.0 + target_pct / 100.0)
         stop_price = float(entry) * (1.0 - stop_pct / 100.0)
-        mfe = round(((float(highs.max()) / float(entry)) - 1.0) * 100.0, 6)
-        mae = round(((float(lows.min()) / float(entry)) - 1.0) * 100.0, 6)
+        high_rets = [_path_float_ret(bar.get("high"), float(entry)) for bar in path_bars]
+        low_rets = [_path_float_ret(bar.get("low"), float(entry)) for bar in path_bars]
+        high_rets_clean = [float(v) for v in high_rets if v is not None]
+        low_rets_clean = [float(v) for v in low_rets if v is not None]
+        if not high_rets_clean or not low_rets_clean:
+            return False
+        mfe = round(max(high_rets_clean), 6)
+        mae = round(min(low_rets_clean), 6)
         target_hit_at = None
         stop_hit_at = None
         target_before_stop = False
         stop_before_target = False
         terminal = "no_touch"
-        for idx, bar in forward.iterrows():
-            high_val = _safe_float(bar.get("High"))
-            low_val = _safe_float(bar.get("Low"))
-            bar_date = str(bar.get("trade_date") or "")[:10]
+        terminal_highs: List[float] = []
+        terminal_lows: List[float] = []
+        ordered_mae_before_target = None
+        for bar in path_bars:
+            high_val = _safe_float(bar.get("high"))
+            low_val = _safe_float(bar.get("low"))
+            high_ret = _path_float_ret(high_val, float(entry))
+            low_ret = _path_float_ret(low_val, float(entry))
+            if high_ret is not None:
+                terminal_highs.append(high_ret)
+            if low_ret is not None:
+                terminal_lows.append(low_ret)
+            bar_at = str(bar.get("at") or bar.get("date") or "")
             target_hit = high_val is not None and high_val >= target_price
             stop_hit = low_val is not None and low_val <= stop_price
             if target_hit and stop_hit:
-                target_hit_at = bar_date
-                stop_hit_at = bar_date
+                target_hit_at = bar_at
+                stop_hit_at = bar_at
                 stop_before_target = True
                 terminal = "same_bar_stop_first"
+                warnings.append("same_bar_target_and_stop_touch")
                 break
             if stop_hit:
-                stop_hit_at = bar_date
+                stop_hit_at = bar_at
                 stop_before_target = True
                 terminal = "stop_before_target"
                 break
             if target_hit:
-                target_hit_at = bar_date
+                target_hit_at = bar_at
                 target_before_stop = True
                 terminal = "target_before_stop"
+                ordered_mae_before_target = round(min(terminal_lows), 6) if terminal_lows else None
                 break
+        if terminal == "no_touch" and session_count < OUTCOME_PATH_HORIZON_SESSIONS:
+            target_before_stop = None
+            stop_before_target = None
+            terminal = "insufficient_forward_bars"
+        terminal_mfe = round(max(terminal_highs), 6) if terminal_highs else None
+        terminal_mae = round(min(terminal_lows), 6) if terminal_lows else None
+        source = "+".join(dict.fromkeys(source_parts)) if source_parts else "daily_ohlc"
+        target_hit_date = str(target_hit_at)[:10] if target_hit_at else None
+        stop_hit_date = str(stop_hit_at)[:10] if stop_hit_at else None
         values = {
             "mfe_5d_pct": mfe,
             "mae_5d_pct": mae,
             "target_before_stop_5d": target_before_stop,
             "stop_before_target_5d": stop_before_target,
-            "target_hit_at_5d": target_hit_at,
-            "stop_hit_at_5d": stop_hit_at,
+            "target_hit_at_5d": target_hit_date,
+            "stop_hit_at_5d": stop_hit_date,
+            "ordered_entry_at": row.get("recommended_at"),
+            "ordered_entry_price": round(float(entry), 6),
+            "ordered_target_hit_at": target_hit_at,
+            "ordered_stop_hit_at": stop_hit_at,
+            "ordered_mfe_until_terminal_5d_pct": terminal_mfe,
+            "ordered_mae_until_terminal_5d_pct": terminal_mae,
+            "ordered_mae_before_target_5d_pct": ordered_mae_before_target,
+            "outcome_path_bar_count": len(path_bars),
+            "outcome_path_source": source,
+            "outcome_path_warnings": warnings,
             "outcome_path_terminal_status": terminal,
             "outcome_path_label_version": OUTCOME_PATH_LABEL_VERSION,
         }
@@ -539,6 +739,7 @@ def run_update(
         )
         if hist is not None and not hist.empty:
             history_map[ticker] = hist
+    intraday_cache: Dict[tuple, Optional[pd.DataFrame]] = {}
 
     stats = {
         "runs_seen": len(targets),
@@ -585,15 +786,29 @@ def run_update(
             market = _infer_market(row, run_market=run_market)
             hist = history_map.get(ticker)
             row_changed = _apply_scan_entry_reference(row, scan_entry_map)
+            rec_dt = _parse_iso(row.get("recommended_at"))
+            rec_key = None
+            if rec_dt is not None:
+                rec_key = (
+                    ticker,
+                    market,
+                    rec_dt.astimezone(_market_tz(market)).date().isoformat(),
+                )
+            if rec_key is not None and rec_key in intraday_cache:
+                intraday_hist = intraday_cache[rec_key]
+            else:
+                intraday_hist = _fetch_intraday_for_outcome_row(row, market)
+                if rec_key is not None:
+                    intraday_cache[rec_key] = intraday_hist
             if hist is None:
                 stats["rows_without_daily_history"] += 1
             elif _compute_row_returns(row, hist, market):
                 row_changed = True
                 stats["daily_rows_updated"] += 1
-            if hist is not None and _compute_path_risk_labels(row, hist, market):
+            if hist is not None and _compute_path_risk_labels(row, hist, market, intraday_hist=intraday_hist):
                 row_changed = True
             stats["intraday_rows_attempted"] += 1
-            if _compute_intraday_row_returns(row, market):
+            if _compute_intraday_row_returns(row, market, intraday_hist=intraday_hist):
                 row_changed = True
                 stats["intraday_rows_updated"] += 1
             if row_changed:

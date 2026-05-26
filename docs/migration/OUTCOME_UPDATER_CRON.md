@@ -36,7 +36,9 @@ python3 multi_agent/tools/report_outcome_conversion.py --limit-runs 50
 - 저장 범위는 스캐너가 실제 배출한 후보(Top/Shadow/Exception)만입니다.
 - 원시 분봉/틱 데이터는 저장하지 않고 `10m/30m/1h/close/1D/3D/5D`, MFE, MAE, target-first/stop-first 요약값만 저장합니다.
 - `entry_reference_price`는 일봉 성과 계산용 기준가이고, `scan_entry_reference_price`는 스캔 당시 화면에 노출된 진입 기준가입니다.
-- `target_before_stop_5d`는 일봉 OHLC 기준의 보수적 라벨입니다. 같은 일봉에서 목표가와 손절가가 모두 닿으면 `stop_first`로 기록합니다.
+- `target_before_stop_5d`는 스캔 이후 경로 기준의 보수적 라벨입니다. 가능한 경우 당일 스캔 이후 30분봉을 먼저 쓰고, 이후 일봉 OHLC를 이어붙입니다.
+- 같은 봉에서 목표가와 손절가가 모두 닿으면 `stop_first`로 기록합니다. 30분봉도 완전한 틱 순서는 아니므로 `outcome_path_warnings`에 부분봉/동일봉 경고를 남깁니다.
+- `ordered_entry_at`, `ordered_target_hit_at`, `ordered_stop_hit_at`, `ordered_mae_before_target_5d_pct`는 모델 승격 검증용 정밀 경로 필드입니다. 원시 분봉 전체는 저장하지 않고 요약 라벨만 저장합니다.
 
 ## 5) 주의사항
 
