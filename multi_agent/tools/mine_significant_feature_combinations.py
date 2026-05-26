@@ -229,13 +229,21 @@ def _predicate_key(feature: str, direction: str, value: Any) -> str:
     return f"{feature}|{direction}|{value}"
 
 
-def _build_numeric_predicates(df: pd.DataFrame, col: str, *, min_support: int, max_support_ratio: float) -> List[Predicate]:
+def _build_numeric_predicates(
+    df: pd.DataFrame,
+    col: str,
+    *,
+    basis_mask: np.ndarray,
+    min_support: int,
+    max_support_ratio: float,
+) -> List[Predicate]:
     values = pd.to_numeric(df[col], errors="coerce")
-    if values.notna().sum() < min_support:
+    basis_values = values.loc[basis_mask]
+    if basis_values.notna().sum() < min_support:
         return []
     thresholds = set()
     for q in [0.15, 0.25, 0.35, 0.5, 0.65, 0.75, 0.85]:
-        val = values.quantile(q)
+        val = basis_values.quantile(q)
         if pd.notna(val):
             thresholds.add(round(float(val), 6))
     if col == "priority_rank":
@@ -245,22 +253,30 @@ def _build_numeric_predicates(df: pd.DataFrame, col: str, *, min_support: int, m
     if col in {"foreigner", "institution", "retail", "foreign_flow", "institution_flow", "retail_flow", "foreigner_1d", "institution_1d", "foreigner_3d", "institution_3d", "foreigner_10d", "institution_10d", "whale_flow_1d", "whale_flow_3d", "whale_flow_10d"}:
         thresholds.add(0.0)
     predicates: List[Predicate] = []
-    max_support = max(min_support, int(len(df) * max_support_ratio))
+    max_support = max(min_support, int(int(basis_mask.sum()) * max_support_ratio))
     for threshold in sorted(thresholds):
         for direction, op in [(">=", values.ge), ("<=", values.le)]:
             mask = op(threshold).fillna(False)
             mask_values = mask.to_numpy(dtype=bool)
-            support = int(mask_values.sum())
+            support = int((mask_values & basis_mask).sum())
             if min_support <= support <= max_support:
                 label = f"{col} {direction} {threshold:g}"
                 predicates.append(Predicate(_predicate_key(col, direction, threshold), col, label, direction, threshold, mask_values))
     return predicates
 
 
-def _build_categorical_predicates(df: pd.DataFrame, col: str, *, min_support: int, max_support_ratio: float) -> List[Predicate]:
+def _build_categorical_predicates(
+    df: pd.DataFrame,
+    col: str,
+    *,
+    basis_mask: np.ndarray,
+    min_support: int,
+    max_support_ratio: float,
+) -> List[Predicate]:
     series = df[col].fillna("UNKNOWN").astype(str).str.strip()
-    counts = series.value_counts(dropna=False)
-    max_support = max(min_support, int(len(df) * max_support_ratio))
+    basis = series.loc[basis_mask]
+    counts = basis.value_counts(dropna=False)
+    max_support = max(min_support, int(int(basis_mask.sum()) * max_support_ratio))
     predicates: List[Predicate] = []
     for value, support in counts.items():
         if not value or value.lower() in {"nan", "none", "unknown", ""}:
@@ -273,12 +289,19 @@ def _build_categorical_predicates(df: pd.DataFrame, col: str, *, min_support: in
     return predicates
 
 
-def _build_predicates(df: pd.DataFrame, *, min_support: int, max_support_ratio: float, include_primary_theme: bool) -> List[Predicate]:
+def _build_predicates(
+    df: pd.DataFrame,
+    *,
+    basis_mask: np.ndarray,
+    min_support: int,
+    max_support_ratio: float,
+    include_primary_theme: bool,
+) -> List[Predicate]:
     predicates: List[Predicate] = []
     for col in _candidate_numeric_columns(df):
-        predicates.extend(_build_numeric_predicates(df, col, min_support=min_support, max_support_ratio=max_support_ratio))
+        predicates.extend(_build_numeric_predicates(df, col, basis_mask=basis_mask, min_support=min_support, max_support_ratio=max_support_ratio))
     for col in _candidate_categorical_columns(df, include_primary_theme=include_primary_theme):
-        predicates.extend(_build_categorical_predicates(df, col, min_support=min_support, max_support_ratio=max_support_ratio))
+        predicates.extend(_build_categorical_predicates(df, col, basis_mask=basis_mask, min_support=min_support, max_support_ratio=max_support_ratio))
 
     unique: Dict[str, Predicate] = {}
     for pred in predicates:
@@ -310,6 +333,9 @@ def _combo_payload(
     predicates: Sequence[Predicate],
     train: Dict[str, Any],
     test: Dict[str, Any],
+    min_train: int,
+    min_test: int,
+    min_days: int,
 ) -> Dict[str, Any]:
     return {
         "combo_id": combo_id,
@@ -324,10 +350,10 @@ def _combo_payload(
         "test": test,
         "train_score": _round(_score(train, horizon=horizon), 4),
         "test_score": _round(_score(test, horizon=horizon), 4),
-        "holdout_safe": _is_production_safe(test, horizon=horizon, min_n=10, min_days=5),
-        "train_stable": _is_train_stable(train, horizon=horizon, min_n=18, min_days=5),
-        "production_safe": _is_production_safe(test, horizon=horizon, min_n=10, min_days=5)
-        and _is_train_stable(train, horizon=horizon, min_n=18, min_days=5),
+        "holdout_safe": _is_production_safe(test, horizon=horizon, min_n=min_test, min_days=min_days),
+        "train_stable": _is_train_stable(train, horizon=horizon, min_n=min_train, min_days=min_days),
+        "production_safe": _is_production_safe(test, horizon=horizon, min_n=min_test, min_days=min_days)
+        and _is_train_stable(train, horizon=horizon, min_n=min_train, min_days=min_days),
     }
 
 
@@ -354,7 +380,13 @@ def _mine_scope(
         return []
 
     predicate_support = max(3, min_support)
-    predicates = _build_predicates(scoped.copy(), min_support=predicate_support, max_support_ratio=0.92, include_primary_theme=include_primary_theme)
+    predicates = _build_predicates(
+        scoped.copy(),
+        basis_mask=train_values,
+        min_support=predicate_support,
+        max_support_ratio=0.92,
+        include_primary_theme=include_primary_theme,
+    )
     scoped_predicates = []
     for pred in predicates:
         mask = np.asarray(pred.mask, dtype=bool)
@@ -363,8 +395,8 @@ def _mine_scope(
 
     results: List[Dict[str, Any]] = []
     combo_counter = count(1)
-    seen = set()
     for horizon in horizons:
+        seen = set()
         singleton_rows = []
         for pred in scoped_predicates:
             train, test, _mask = _combo_metrics(scoped, [pred], train_values, test_values)
@@ -388,6 +420,9 @@ def _mine_scope(
                         predicates=preds,
                         train=train,
                         test=test,
+                        min_train=min_train,
+                        min_test=min_test,
+                        min_days=min_days,
                     )
                 )
 
@@ -423,6 +458,9 @@ def _mine_scope(
                         predicates=preds,
                         train=train,
                         test=test,
+                        min_train=min_train,
+                        min_test=min_test,
+                        min_days=min_days,
                     )
                 )
             if not beam:
@@ -592,7 +630,9 @@ def build_report(
         "top_combinations": all_results[:240],
         "notes": [
             "Internal research only; production scanner/model artifacts are unchanged.",
+            "Predicate thresholds and categorical levels are learned from the train split only, then applied to holdout.",
             "Beam expansion is ranked by train metrics only; holdout metrics are used for validation/reporting.",
+            "Duplicate-combination tracking is horizon-local so 1D candidates do not suppress 3D/5D validation.",
             "Outcome and future-path columns are excluded from predicates to avoid leakage.",
             "Primary theme identity is excluded by default because fixed-theme rules overfit rotating market themes; source/routing/risk metadata can still participate.",
         ],
