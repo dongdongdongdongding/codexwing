@@ -94,6 +94,15 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "md_path": "runtime_state/reports/experimental/loss_exclusion_guard_watch_latest.md",
         "json_path": "runtime_state/reports/experimental/loss_exclusion_guard_watch_latest.json",
     },
+    {
+        "name": "Ordered Shadow Watch",
+        "command": [
+            sys.executable,
+            "multi_agent/tools/report_ordered_shadow_watch.py",
+        ],
+        "md_path": "runtime_state/reports/experimental/ordered_shadow_watch_latest.md",
+        "json_path": "runtime_state/reports/experimental/ordered_shadow_watch_latest.json",
+    },
 )
 
 
