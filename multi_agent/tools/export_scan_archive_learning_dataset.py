@@ -28,6 +28,75 @@ RETURN_COLS = [
 ]
 
 
+DEPRECATED_PATH_WARNING_TOKENS = (
+    "partial_intraday_bar_contains_pre_scan_range",
+)
+
+
+def _dedupe_archive_rows(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
+    """Keep one export row per stable recommendation/outcome key.
+
+    Supabase archive rows can contain old duplicates when historical outcome
+    syncs were re-run before the archive upsert key was tightened. Training and
+    validation exports should not treat those duplicates as independent samples,
+    especially when stale path warnings survive next to corrected rows.
+    """
+    if df.empty:
+        return df, 0
+
+    key_cols = [
+        col
+        for col in ["run_id", "ticker", "recommended_at", "source_ref", "scan_mode"]
+        if col in df.columns
+    ]
+    if len(key_cols) < 3:
+        return df, 0
+
+    work = df.copy()
+    warnings = (
+        work["outcome_path_warnings"].fillna("").astype(str)
+        if "outcome_path_warnings" in work.columns
+        else pd.Series("", index=work.index, dtype="object")
+    )
+    deprecated_warning = pd.Series(False, index=work.index)
+    for token in DEPRECATED_PATH_WARNING_TOKENS:
+        deprecated_warning |= warnings.str.contains(token, regex=False, na=False)
+    work["_dedupe_deprecated_warning"] = deprecated_warning.astype(int)
+
+    for col in ["market", "market_type", "outcome_path_label_version", "outcome_path_source"]:
+        if col in work.columns:
+            work[f"_dedupe_has_{col}"] = work[col].notna() & work[col].astype(str).str.strip().ne("")
+        else:
+            work[f"_dedupe_has_{col}"] = False
+
+    for col in ["performance_updated_at", "created_at"]:
+        if col in work.columns:
+            work[f"_dedupe_{col}"] = pd.to_datetime(work[col], errors="coerce", utc=True)
+        else:
+            work[f"_dedupe_{col}"] = pd.NaT
+
+    if "id" in work.columns:
+        work["_dedupe_id"] = pd.to_numeric(work["id"], errors="coerce").fillna(-1)
+    else:
+        work["_dedupe_id"] = -1
+
+    sort_cols = [
+        "_dedupe_deprecated_warning",
+        "_dedupe_has_market",
+        "_dedupe_has_market_type",
+        "_dedupe_has_outcome_path_label_version",
+        "_dedupe_has_outcome_path_source",
+        "_dedupe_performance_updated_at",
+        "_dedupe_created_at",
+        "_dedupe_id",
+    ]
+    ascending = [True, False, False, False, False, False, False, False]
+    sorted_work = work.sort_values(sort_cols, ascending=ascending, kind="mergesort")
+    deduped = sorted_work.drop_duplicates(key_cols, keep="first").sort_index()
+    removed = int(len(work) - len(deduped))
+    return deduped.drop(columns=[col for col in deduped.columns if col.startswith("_dedupe_")]), removed
+
+
 def _infer_decision_bucket(df: pd.DataFrame) -> pd.Series:
     if "decision" in df.columns:
         decision = df["decision"].fillna("").astype(str).str.upper()
@@ -293,6 +362,10 @@ def main() -> None:
     df = pd.DataFrame(rows)
     if not df.empty and str(args.scan_mode).upper() != "ALL" and "scan_mode" in df.columns:
         df = df[df["scan_mode"].fillna("SWING").str.upper() == str(args.scan_mode).upper()]
+    rows_before_dedupe = int(len(df))
+    duplicate_rows_removed = 0
+    if not df.empty:
+        df, duplicate_rows_removed = _dedupe_archive_rows(df)
     if not df.empty:
         df["decision_bucket"] = _infer_decision_bucket(df)
         df["selection_lane"] = _infer_selection_lane(df)
@@ -397,6 +470,8 @@ def main() -> None:
         json.dumps(
             {
                 "rows": int(len(df)),
+                "rows_before_dedupe": rows_before_dedupe,
+                "duplicate_rows_removed": duplicate_rows_removed,
                 "csv_path": str(csv_path),
                 "json_path": str(json_path),
                 "market": market,
