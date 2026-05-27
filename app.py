@@ -126,6 +126,41 @@ def _load_contaminated_run_map():
     return result
 
 
+def _exit_policy_watch_rows_for_market(market_key, *, limit=6):
+    payload = _load_json_safe("runtime_state/reports/experimental/exit_policy_watch_latest.json")
+    rows = payload.get("watch_rows", []) if isinstance(payload.get("watch_rows"), list) else []
+    market = str(market_key or "").upper()
+    filtered = [row for row in rows if isinstance(row, dict) and str(row.get("market") or "").upper() == market]
+    return filtered[: max(int(limit or 0), 0)]
+
+
+def _render_exit_policy_watch_panel(market_key):
+    rows = _exit_policy_watch_rows_for_market(market_key)
+    if not rows:
+        return
+    st.markdown("### EXIT-WATCH 실행형 관찰")
+    st.caption("5일 종가 보유 승격은 실패했지만, 목표/손절 실행 경로가 강한 후보군입니다. 운영 Top5를 대체하지 않고 매일 표본과 순익 기준을 관찰합니다.")
+    display_rows = []
+    for row in rows:
+        display_rows.append(
+            {
+                "상태": row.get("state"),
+                "코호트": row.get("cohort"),
+                "모델": row.get("model"),
+                "TopN": row.get("topn"),
+                "표본": row.get("n"),
+                "일수": row.get("days"),
+                "실행승률": row.get("exit_win_5d_pct"),
+                "순실행평균": row.get("net_exit_avg_5d_pct"),
+                "실행최저": row.get("exit_min_5d_pct"),
+                "보유평균5D": row.get("close_avg_5d_pct"),
+                "보유최저5D": row.get("close_min_5d_pct"),
+                "탈락게이트": ", ".join(str(item) for item in (row.get("failed_checks") or [])[:3]),
+            }
+        )
+    st.dataframe(pd.DataFrame(display_rows), use_container_width=True, hide_index=True)
+
+
 def _coerce_numeric_display(df, columns):
     cleaned = df.copy()
     for col in columns:
@@ -2659,6 +2694,7 @@ if active_main_tab == "📚 아카이브":
                     st.markdown("### KOSDAQ 최우선 관찰 Shadow")
                     st.caption("손실 꼬리 축소형 KOSDAQ shadow 조건을 통과한 후보입니다. 기존 Top5/Exception을 대체하지 않고 상단에서 우선 확인합니다.")
                     _render_signal_card_list(_archive_shadow, empty_text="KOSDAQ shadow 조건 통과 후보 없음.")
+                    _render_exit_policy_watch_panel(_archive_market_key)
                 elif _archive_market_key == "KOSPI":
                     st.markdown("### KOSPI Ordered Shadow")
                     st.caption("prob_clean/alpha/CORE_TREND/테마 평균 조건을 통과한 KOSPI shadow 관찰 섹션입니다. 운영 Top5를 자동 교체하지 않습니다.")
