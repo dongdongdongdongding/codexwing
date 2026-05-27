@@ -63,6 +63,26 @@ def test_ordered_metrics_drive_promotion_gate():
     assert metrics["stop_before_target_5d_pct"] == 10.0
     assert metrics["ordered_path_coverage_pct"] == 100.0
     assert flags["promotable"] is True
+    assert flags["failed_checks"] == []
+
+
+def test_promotion_gate_reports_failed_checks():
+    metrics = {
+        "n": 41,
+        "active_days": 14,
+        "ordered_path_coverage_pct": 100.0,
+        "ordered_path_label_version": ORDERED_OUTCOME_PATH_LABEL_VERSION,
+        "label_win_pct": 73.171,
+        "avg_5d_pct": 0.1308,
+        "bad_path_pct": 29.268,
+        "stop5_pct": 4.878,
+        "min_5d_pct": -33.2955,
+    }
+
+    flags = _promotion_flags(metrics, [73.0, 46.667, 80.0], min_n=30, min_days=10, min_folds=3, require_ordered=True)
+
+    assert flags["promotable"] is False
+    assert flags["failed_checks"] == ["avg_return_gate", "tail_loss_gate"]
 
 
 def test_load_dataset_prefers_exact_ordered_stop_over_proxy(tmp_path):

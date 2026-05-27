@@ -410,8 +410,10 @@ def _promotion_flags(
         "tail_loss_gate": min5 >= -12.0,
         "fold_stability_gate": min_fold_win >= 45.0,
     }
+    failed_checks = [name for name, passed in checks.items() if not passed]
     return {
         "checks": checks,
+        "failed_checks": failed_checks,
         "promotable": all(checks.values()),
         "folds": int(folds),
         "min_fold_label_win_pct": _round(min_fold_win, 4),
@@ -646,13 +648,14 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         "",
         "## Top Policies",
         "",
-        "| Rank | Promote | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | No Touch | Bad | Stop | Folds | Min Fold Win | AUC | Score |",
-        "|---:|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Rank | Promote | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | No Touch | Bad | Stop | Folds | Min Fold Win | Failed Checks | AUC | Score |",
+        "|---:|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|",
     ]
     for idx, row in enumerate(report.get("top_policies", [])[:80], start=1):
         metrics = row.get("metrics") or {}
         promo = row.get("promotion") or {}
         label = (row.get("label_profile") or {}).get("name")
+        failed = ",".join(str(item) for item in (promo.get("failed_checks") or [])[:5]) or "-"
         lines.append(
             "| "
             + " | ".join(
@@ -679,6 +682,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
                     metrics.get("stop5_pct"),
                     promo.get("folds"),
                     promo.get("min_fold_label_win_pct"),
+                    failed,
                     row.get("auc_mean"),
                     row.get("quality_score"),
                 ]
