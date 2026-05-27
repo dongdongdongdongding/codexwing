@@ -27,6 +27,10 @@ def _fmt_pct(value: Any) -> str:
         return "-"
 
 
+def _state_rank(state: Any) -> int:
+    return {"PROMOTE": 3, "EXIT-WATCH": 2, "WATCH": 1}.get(str(state or ""), 0)
+
+
 def load_admission_optimizer_report(path: str | Path | None = None, *, market: str | None = None) -> Dict[str, Any]:
     market_key = str(market or "").strip().upper()
     if path:
@@ -110,9 +114,17 @@ def admission_optimizer_rows(
                 "report_source": str(payload.get("report_source") or payload.get("stem") or ""),
             }
         )
-        if len(rows) >= max(int(limit or 0), 0):
-            break
-    return rows
+    rows.sort(
+        key=lambda row: (
+            _state_rank(row.get("state")),
+            int(row.get("n") or 0),
+            int(row.get("days") or 0),
+            _safe_float(row.get("avg_ordered_exit_5d_pct"), -999.0),
+            _safe_float(row.get("quality_score"), -999.0),
+        ),
+        reverse=True,
+    )
+    return rows[: max(int(limit or 0), 0)]
 
 
 def admission_optimizer_discord_summary(market: str | None = None, *, limit: int = 3) -> str:
