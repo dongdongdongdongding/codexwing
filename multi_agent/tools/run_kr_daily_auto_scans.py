@@ -69,6 +69,31 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "md_path": "runtime_state/reports/validation/segment_top5_validation.md",
         "json_path": "runtime_state/reports/validation/segment_top5_validation.json",
     },
+    {
+        "name": "Loss Exclusion Guard Watch",
+        "command": [
+            sys.executable,
+            "multi_agent/tools/mine_loss_exclusion_guards.py",
+            "--stem",
+            "loss_exclusion_guard_watch_latest",
+            "--markets",
+            "KOSDAQ",
+            "--scopes",
+            "exception_leader",
+            "--horizons",
+            "3d,5d",
+            "--beam-width",
+            "16",
+            "--max-terms",
+            "2",
+            "--min-excluded",
+            "8",
+            "--min-retention",
+            "0.35",
+        ],
+        "md_path": "runtime_state/reports/experimental/loss_exclusion_guard_watch_latest.md",
+        "json_path": "runtime_state/reports/experimental/loss_exclusion_guard_watch_latest.json",
+    },
 )
 
 
@@ -348,6 +373,11 @@ def _markdown_validation_excerpt(path: Path, *, max_lines: int = 10) -> str:
                     "practical",
                     "clean",
                     "bad",
+                    "guard",
+                    "shadow",
+                    "production",
+                    "retain",
+                    "win_delta",
                 )
             ):
                 lines.append(line)

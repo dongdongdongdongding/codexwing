@@ -3,6 +3,7 @@ import urllib.error
 from multi_agent.tools.run_kr_daily_auto_scans import (
     DISCORD_MAX_CONTENT_CHARS,
     DISCORD_SAFE_MESSAGE_CHARS,
+    POST_SCAN_VALIDATION_COMMANDS,
     _chunk_embeds_for_discord,
     _discord_retry_after,
     _discord_embed_char_count,
@@ -157,3 +158,32 @@ def test_markdown_validation_excerpt_prefers_metrics_over_definitions(tmp_path):
     assert "priority_rank" not in excerpt
     assert "| Top1 |" in excerpt
     assert "Practical 80 Gate" in excerpt
+
+
+def test_post_scan_validation_includes_loss_exclusion_guard_watch():
+    names = [spec["name"] for spec in POST_SCAN_VALIDATION_COMMANDS]
+
+    assert "Loss Exclusion Guard Watch" in names
+
+
+def test_markdown_validation_excerpt_includes_guard_watch_rows(tmp_path):
+    path = tmp_path / "loss_exclusion_guard_watch_latest.md"
+    path.write_text(
+        "\n".join(
+            [
+                "# Loss Exclusion Guard Mining",
+                "## Top Exclusion Guards",
+                "| Rank | Level | Market | Scope | Horizon | Terms | Retain | Base Win | Kept Win | ΔWin |",
+                "|---:|---|---|---|---|---:|---:|---:|---:|---:|",
+                "| 1 | shadow_candidate | KOSDAQ | exception_leader | 3d | 2 | 0.3684 | 36.842 | 71.429 | 34.587 |",
+                "## Notes",
+                "- Internal research only.",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    excerpt = _markdown_validation_excerpt(path)
+
+    assert "shadow_candidate" in excerpt
+    assert "KOSDAQ" in excerpt
