@@ -12,6 +12,7 @@ from modules.candidate_interpretation import build_candidate_interpretation
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
+from modules.operational_admission_monitor import admission_optimizer_discord_summary
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from modules.scanner_performance_contract import live_policy_summary
 from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
@@ -889,6 +890,13 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
             "inline": False,
         }
     )
+    fields.append(
+        {
+            "name": "Admission Optimizer",
+            "value": admission_optimizer_discord_summary(market, limit=3)[:1024],
+            "inline": False,
+        }
+    )
     if gate_msg:
         fields.append({"name": "Market Gate", "value": gate_msg[:1024], "inline": False})
     fields.append({"name": "Data Integrity", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})
@@ -909,7 +917,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                 f"Job `{job.get('job_id') or '-'}` · 웹/아카이브와 같은 run artifact 기준으로 표시합니다."
             ),
             "color": 0xF1C40F if ok and result_count == 0 else (0x2ECC71 if ok else 0xE74C3C),
-            "fields": fields[:10],
+            "fields": fields[:12],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     ]

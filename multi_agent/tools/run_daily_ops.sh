@@ -68,6 +68,10 @@ echo "[STEP] backfill_scanner_full_returns"
 run_optional "backfill_scanner_full_returns" \
   python3 multi_agent/tools/backfill_scanner_full_returns.py --limit-runs "${BACKFILL_RETURN_LIMIT_RUNS:-1000}"
 
+echo "[STEP] export_scan_archive_learning_dataset"
+run_optional "export_scan_archive_learning_dataset" \
+  python3 multi_agent/tools/export_scan_archive_learning_dataset.py --market ALL --quality-tier "${ARCHIVE_LEARNING_QUALITY_TIER:-ALL}"
+
 echo "[STEP] report_outcome_conversion"
 run_optional "report_outcome_conversion" \
   python3 multi_agent/tools/report_outcome_conversion.py --limit-runs "${LIMIT_RUNS}"
@@ -133,6 +137,15 @@ run_optional "report_dynamic_theme_entry_profiles" \
 echo "[STEP] report_scan_cohort_performance"
 run_optional "report_scan_cohort_performance" \
   python3 multi_agent/tools/report_scan_cohort_performance.py
+
+if [[ "${AG_OPERATIONAL_ADMISSION_OPTIMIZER_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] operational_admission_optimizer"
+  run_optional "operational_admission_optimizer" \
+    python3 multi_agent/tools/operational_admission_optimizer.py \
+      --input runtime_state/reports/archive/scan_archive_learning_dataset_all.csv \
+      --output-dir runtime_state/reports/experimental \
+      --stem operational_admission_optimizer_latest
+fi
 
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()

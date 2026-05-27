@@ -8,6 +8,7 @@ from typing import Any, Dict
 import pandas as pd
 import streamlit as st
 
+from modules.operational_admission_monitor import admission_optimizer_status
 from ui.components import section_intro
 
 
@@ -120,6 +121,55 @@ def render_daily_ops_overview() -> None:
                 st.dataframe(pd.DataFrame(rows), width="stretch")
     else:
         st.caption("아직 시장별 일일 성과 요약이 생성되지 않았습니다.")
+    render_admission_optimizer_overview()
+
+
+def render_admission_optimizer_overview() -> None:
+    status = admission_optimizer_status()
+    st.markdown("---")
+    st.subheader("운영 승격 모니터")
+    if not status.get("available"):
+        st.caption("operational admission optimizer 리포트가 아직 없습니다.")
+        return
+
+    best = status.get("best_row") if isinstance(status.get("best_row"), dict) else {}
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("평가 정책", int(status.get("evaluated_policies") or 0))
+    c2.metric("승격 가능", int(status.get("promotable_count") or 0))
+    c3.metric("최상위 점수", f"{float(status.get('best_quality_score') or 0.0):.1f}")
+    c4.metric("최상위 라벨", str(best.get("label") or "-"))
+    st.caption(
+        f"generated_at={status.get('generated_at') or '-'} · "
+        f"version={status.get('report_version') or '-'} · "
+        "exact ordered target/stop 라벨을 통과한 정책만 승격 대상으로 봅니다."
+    )
+    rows = status.get("display_rows") if isinstance(status.get("display_rows"), list) else []
+    if rows:
+        display = pd.DataFrame(rows)
+        wanted = [
+            "state",
+            "market",
+            "cohort",
+            "label",
+            "policy_type",
+            "model",
+            "topn",
+            "n",
+            "days",
+            "label_win_pct",
+            "avg_5d_pct",
+            "min_5d_pct",
+            "target_before_stop_5d_pct",
+            "stop_before_target_5d_pct",
+            "no_touch_5d_pct",
+            "ordered_path_coverage_pct",
+            "folds",
+            "min_fold_label_win_pct",
+            "quality_score",
+        ]
+        st.dataframe(display[[col for col in wanted if col in display.columns]], width="stretch", hide_index=True)
+    else:
+        st.caption("표시할 승격/관찰 정책이 없습니다.")
 
 
 def return_metric(return_buckets: Dict[str, Any], bucket: str, horizon: str, field: str = "avg_return_pct") -> float:
@@ -150,6 +200,7 @@ def _load_json_safe(path_str: str) -> Dict[str, Any]:
 
 
 __all__ = [
+    "render_admission_optimizer_overview",
     "load_latest_daily_summary",
     "render_daily_ops_overview",
     "return_metric",

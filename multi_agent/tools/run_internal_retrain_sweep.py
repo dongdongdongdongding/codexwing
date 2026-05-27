@@ -44,6 +44,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT = ROOT / "runtime_state/reports/archive/scan_archive_learning_dataset_all.csv"
 DEFAULT_OUTPUT_DIR = ROOT / "runtime_state/reports/experimental"
 REPORT_VERSION = "internal_retrain_sweep_v1"
+ORDERED_OUTCOME_PATH_LABEL_VERSION = "scan_entry_forward_hybrid_30m_daily_stop_first_v2"
 
 BASE_NUMERIC = [
     "alpha_score",
@@ -130,6 +131,13 @@ RETURN_COLS = [
     "return_5d_pct",
     "max_high_return_5d_pct",
     "min_return_observed_pct",
+    "mfe_5d_pct",
+    "mae_5d_pct",
+    "ordered_entry_price",
+    "ordered_mfe_until_terminal_5d_pct",
+    "ordered_mae_until_terminal_5d_pct",
+    "ordered_mae_before_target_5d_pct",
+    "outcome_path_bar_count",
 ]
 
 
@@ -199,7 +207,15 @@ def _load_dataset(path: Path) -> pd.DataFrame:
     for col in sorted(set(BASE_NUMERIC + FLOW_NUMERIC + REGIME_NUMERIC + RETURN_COLS + ["priority_rank"])):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
-    for col in ["is_dummy_data", "validation_excluded", "label_stop_loss_5pct", "explosive_leader_flag", "core_trend_flag"]:
+    for col in [
+        "is_dummy_data",
+        "validation_excluded",
+        "label_stop_loss_5pct",
+        "explosive_leader_flag",
+        "core_trend_flag",
+        "target_before_stop_5d",
+        "stop_before_target_5d",
+    ]:
         if col in df.columns:
             df[f"{col}_bool"] = _safe_bool(df[col])
 
@@ -228,16 +244,37 @@ def _load_dataset(path: Path) -> pd.DataFrame:
     # Archive rows can split scan-time features and realized outcomes across
     # sibling rows. Collapse by date/ticker with first non-null per column so a
     # training row can contain both the original feature snapshot and labels.
+    if "recommended_at" not in out.columns:
+        out["recommended_at"] = out["trade_date"]
     out = out.sort_values(["trade_date", "ticker", "priority_rank", "recommended_at"], na_position="last")
     out = out.groupby(["trade_date", "ticker"], as_index=False, sort=False).first()
 
-    stop = pd.Series(False, index=out.index)
+    exact_path = pd.Series(False, index=out.index)
+    if "outcome_path_label_version" in out.columns:
+        exact_path = (
+            out["outcome_path_label_version"]
+            .fillna("")
+            .astype(str)
+            .eq(ORDERED_OUTCOME_PATH_LABEL_VERSION)
+        )
+    ordered_stop = pd.Series(False, index=out.index)
+    if "stop_before_target_5d_bool" in out.columns:
+        ordered_stop = out["stop_before_target_5d_bool"].fillna(False) & exact_path
+
+    stop = ordered_stop.copy()
+    proxy_stop = pd.Series(False, index=out.index)
     if "min_return_observed_pct" in out.columns:
-        stop |= out["min_return_observed_pct"].le(-5.0).fillna(False)
+        proxy_stop |= out["min_return_observed_pct"].le(-5.0).fillna(False)
     if "label_stop_loss_5pct_bool" in out.columns:
-        stop |= out["label_stop_loss_5pct_bool"].fillna(False)
+        proxy_stop |= out["label_stop_loss_5pct_bool"].fillna(False)
+    stop |= proxy_stop & ~exact_path
     out["stop5_proxy"] = stop
-    out["bad_path"] = stop | out.get("return_1d_pct", pd.Series(index=out.index)).lt(-3.0).fillna(False) | out.get("return_5d_pct", pd.Series(index=out.index)).lt(0.0).fillna(False)
+    out["ordered_path_exact"] = exact_path
+    out["bad_path"] = (
+        stop
+        | out.get("return_1d_pct", pd.Series(index=out.index)).lt(-3.0).fillna(False)
+        | out.get("return_5d_pct", pd.Series(index=out.index)).lt(0.0).fillna(False)
+    )
     out["exception_leader"] = (
         out.get("decision_bucket", pd.Series("", index=out.index)).fillna("").astype(str).str.lower().eq("exception_leader")
         | out.get("decision", pd.Series("", index=out.index)).fillna("").astype(str).str.upper().eq("EXCEPTION_LEADER")

@@ -57,10 +57,11 @@ from multi_agent.tools.run_internal_retrain_sweep import (
     _load_dataset,
     _pct,
     _round,
+    ORDERED_OUTCOME_PATH_LABEL_VERSION,
 )
 
 
-REPORT_VERSION = "operational_admission_optimizer_v1"
+REPORT_VERSION = "operational_admission_optimizer_v2"
 
 EXTRA_NUMERIC = [
     "priority_rank",
@@ -109,6 +110,10 @@ class LabelProfile:
 
 
 LABEL_PROFILES = [
+    LabelProfile("ordered_5d_5v5", 5.0, 5.0, "ordered_touch_5d", "Exact path: scan-time target touched before stop within 5 sessions"),
+    LabelProfile("ordered_5d_8v5", 8.0, 5.0, "ordered_touch_5d", "Exact path: target-before-stop plus 5D MFE >= +8%"),
+    LabelProfile("ordered_5d_10v5", 10.0, 5.0, "ordered_touch_5d", "Exact path: target-before-stop plus 5D MFE >= +10%"),
+    LabelProfile("ordered_5d_5v3_lowmae", 5.0, 3.0, "ordered_low_mae_5d", "Exact path: target-before-stop and MAE before target better than -3%"),
     LabelProfile("fast_1d_2v3", 2.0, 3.0, "close_1d", "1D close >= +2% and 5D path drawdown better than -3%"),
     LabelProfile("clean_3d_4v4", 4.0, 4.0, "close_3d", "3D close >= +4%, 1D not worse than -2%, and drawdown better than -4%"),
     LabelProfile("clean_5d_6v5", 6.0, 5.0, "close_5d", "5D close >= +6% and drawdown better than -5%"),
@@ -134,7 +139,47 @@ def _bool_series(series: pd.Series) -> pd.Series:
     return series.fillna("").astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y"})
 
 
+def _is_ordered_profile(profile: LabelProfile) -> bool:
+    return str(profile.kind or "").startswith("ordered_")
+
+
+def _ordered_path_valid(df: pd.DataFrame) -> pd.Series:
+    if "target_before_stop_5d" not in df.columns or "stop_before_target_5d" not in df.columns:
+        return pd.Series(False, index=df.index)
+    version = df.get("outcome_path_label_version", pd.Series("", index=df.index)).fillna("").astype(str)
+    terminal = df.get("outcome_path_terminal_status", pd.Series("", index=df.index)).fillna("").astype(str)
+    target_raw = df["target_before_stop_5d"]
+    stop_raw = df["stop_before_target_5d"]
+    return (
+        version.eq(ORDERED_OUTCOME_PATH_LABEL_VERSION)
+        & target_raw.notna()
+        & stop_raw.notna()
+        & ~terminal.eq("insufficient_forward_bars")
+    )
+
+
 def _label(df: pd.DataFrame, profile: LabelProfile) -> Tuple[pd.Series, pd.Series]:
+    if profile.kind in {"ordered_touch_5d", "ordered_low_mae_5d"}:
+        valid = _ordered_path_valid(df)
+        target_first = _bool_series(df.get("target_before_stop_5d", pd.Series(False, index=df.index)))
+        stop_first = _bool_series(df.get("stop_before_target_5d", pd.Series(False, index=df.index)))
+        mfe = pd.to_numeric(
+            df.get("mfe_5d_pct", df.get("max_high_return_5d_pct", pd.Series(index=df.index, dtype=float))),
+            errors="coerce",
+        )
+        label = target_first & ~stop_first
+        if profile.target_pct > 5.0:
+            valid &= mfe.notna()
+            label &= mfe.ge(profile.target_pct)
+        if profile.kind == "ordered_low_mae_5d":
+            mae_before = pd.to_numeric(
+                df.get("ordered_mae_before_target_5d_pct", pd.Series(index=df.index, dtype=float)),
+                errors="coerce",
+            )
+            valid &= mae_before.notna()
+            label &= mae_before.ge(-abs(profile.stop_pct))
+        return label.fillna(False), valid
+
     min_path = pd.to_numeric(df.get("min_return_observed_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
     no_stop = min_path.gt(-abs(profile.stop_pct))
     if profile.kind == "close_1d":
@@ -268,12 +313,36 @@ def _metrics(df: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, Any
     if sub.empty:
         return {"n": 0, "active_days": 0}
     wins = label.loc[idx].astype(bool)
+    ordered_valid = _ordered_path_valid(sub)
+    exact_target = _bool_series(sub.get("target_before_stop_5d", pd.Series(False, index=sub.index)))
+    exact_stop = _bool_series(sub.get("stop_before_target_5d", pd.Series(False, index=sub.index)))
+    ordered_valid_n = int(ordered_valid.sum())
+    if ordered_valid_n:
+        ordered_target_pct = _pct(exact_target.loc[ordered_valid].mean())
+        ordered_stop_pct = _pct(exact_stop.loc[ordered_valid].mean())
+        ordered_no_touch_pct = _pct((~exact_target.loc[ordered_valid] & ~exact_stop.loc[ordered_valid]).mean())
+    else:
+        ordered_target_pct = None
+        ordered_stop_pct = None
+        ordered_no_touch_pct = None
+    stop_series = exact_stop.where(ordered_valid, sub.get("stop5_proxy", pd.Series(False, index=sub.index)).fillna(False))
+    bad_series = (
+        stop_series
+        | sub.get("return_1d_pct", pd.Series(index=sub.index, dtype=float)).lt(-3.0).fillna(False)
+        | sub.get("return_5d_pct", pd.Series(index=sub.index, dtype=float)).lt(0.0).fillna(False)
+    )
     out: Dict[str, Any] = {
         "n": int(len(sub)),
         "active_days": int(sub["trade_date"].nunique()) if "trade_date" in sub.columns else 0,
         "label_win_pct": _pct(wins.mean()) if len(wins) else None,
-        "bad_path_pct": _pct(sub.get("bad_path", pd.Series(False, index=sub.index)).mean()),
-        "stop5_pct": _pct(sub.get("stop5_proxy", pd.Series(False, index=sub.index)).mean()),
+        "bad_path_pct": _pct(bad_series.mean()),
+        "stop5_pct": _pct(stop_series.mean()),
+        "ordered_path_n": ordered_valid_n,
+        "ordered_path_coverage_pct": _pct(ordered_valid_n / len(sub)) if len(sub) else None,
+        "target_before_stop_5d_pct": ordered_target_pct,
+        "stop_before_target_5d_pct": ordered_stop_pct,
+        "no_touch_5d_pct": ordered_no_touch_pct,
+        "ordered_path_label_version": ORDERED_OUTCOME_PATH_LABEL_VERSION if ordered_valid_n else None,
     }
     for horizon, col in [("1d", "return_1d_pct"), ("3d", "return_3d_pct"), ("5d", "return_5d_pct")]:
         ret = pd.to_numeric(sub.get(col, pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
@@ -282,10 +351,22 @@ def _metrics(df: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, Any
         out[f"median_{horizon}_pct"] = _round(ret.median()) if len(ret) else None
         out[f"min_{horizon}_pct"] = _round(ret.min()) if len(ret) else None
         out[f"max_{horizon}_pct"] = _round(ret.max()) if len(ret) else None
-    mfe = pd.to_numeric(sub.get("max_high_return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
-    mae = pd.to_numeric(sub.get("min_return_observed_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
+    mfe = pd.to_numeric(
+        sub.get("mfe_5d_pct", sub.get("max_high_return_5d_pct", pd.Series(index=sub.index, dtype=float))),
+        errors="coerce",
+    )
+    mae = pd.to_numeric(
+        sub.get("mae_5d_pct", sub.get("min_return_observed_pct", pd.Series(index=sub.index, dtype=float))),
+        errors="coerce",
+    )
+    terminal_mfe = pd.to_numeric(sub.get("ordered_mfe_until_terminal_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
+    terminal_mae = pd.to_numeric(sub.get("ordered_mae_until_terminal_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
+    mae_before_target = pd.to_numeric(sub.get("ordered_mae_before_target_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
     out["avg_mfe_5d_pct"] = _round(mfe.mean()) if len(mfe.dropna()) else None
     out["avg_mae_5d_pct"] = _round(mae.mean()) if len(mae.dropna()) else None
+    out["avg_ordered_mfe_until_terminal_5d_pct"] = _round(terminal_mfe.mean()) if len(terminal_mfe.dropna()) else None
+    out["avg_ordered_mae_until_terminal_5d_pct"] = _round(terminal_mae.mean()) if len(terminal_mae.dropna()) else None
+    out["avg_ordered_mae_before_target_5d_pct"] = _round(mae_before_target.mean()) if len(mae_before_target.dropna()) else None
     return out
 
 
@@ -296,7 +377,15 @@ def _merge_metrics(df: pd.DataFrame, selected_indices: Sequence[pd.Index], label
     return _metrics(df, idx, label)
 
 
-def _promotion_flags(metrics: Dict[str, Any], fold_wins: Sequence[float], *, min_n: int, min_days: int, min_folds: int) -> Dict[str, Any]:
+def _promotion_flags(
+    metrics: Dict[str, Any],
+    fold_wins: Sequence[float],
+    *,
+    min_n: int,
+    min_days: int,
+    min_folds: int,
+    require_ordered: bool,
+) -> Dict[str, Any]:
     label_win = _safe_float(metrics.get("label_win_pct"))
     avg5 = _safe_float(metrics.get("avg_5d_pct"), -999.0)
     bad = _safe_float(metrics.get("bad_path_pct"), 100.0)
@@ -305,9 +394,15 @@ def _promotion_flags(metrics: Dict[str, Any], fold_wins: Sequence[float], *, min
     folds = len(fold_wins)
     min_fold_win = min(fold_wins) if fold_wins else 0.0
     checks = {
+        "exact_label_profile_gate": bool(require_ordered),
         "enough_samples": int(metrics.get("n") or 0) >= min_n,
         "enough_days": int(metrics.get("active_days") or 0) >= min_days,
         "enough_folds": folds >= min_folds,
+        "ordered_path_gate": (not require_ordered)
+        or (
+            _safe_float(metrics.get("ordered_path_coverage_pct")) >= 95.0
+            and str(metrics.get("ordered_path_label_version") or "") == ORDERED_OUTCOME_PATH_LABEL_VERSION
+        ),
         "label_win_gate": label_win >= 70.0,
         "avg_return_gate": avg5 >= 3.0,
         "bad_path_gate": bad <= 35.0,
@@ -339,6 +434,10 @@ def _quality_score(metrics: Dict[str, Any], flags: Dict[str, Any]) -> float:
         sample_penalty += 50.0
     if not checks.get("enough_folds", False):
         sample_penalty += 50.0
+    if not checks.get("exact_label_profile_gate", False):
+        sample_penalty += 120.0
+    if not checks.get("ordered_path_gate", False):
+        sample_penalty += 80.0
     passed_gate_bonus = sum(1 for ok in checks.values() if ok) * 4.0
     return (
         (100.0 if flags.get("promotable") else 0.0)
@@ -354,7 +453,14 @@ def _quality_score(metrics: Dict[str, Any], flags: Dict[str, Any]) -> float:
     )
 
 
-def _score_baseline(scoped: pd.DataFrame, score_col: str, windows: Sequence[Tuple[set[str], set[str]]], label: pd.Series) -> List[Dict[str, Any]]:
+def _score_baseline(
+    scoped: pd.DataFrame,
+    score_col: str,
+    windows: Sequence[Tuple[set[str], set[str]]],
+    label: pd.Series,
+    *,
+    profile: LabelProfile,
+) -> List[Dict[str, Any]]:
     if score_col not in scoped.columns:
         return []
     rows = []
@@ -374,7 +480,7 @@ def _score_baseline(scoped: pd.DataFrame, score_col: str, windows: Sequence[Tupl
                 fold_metric = _metrics(scoped, idx, label)
                 fold_wins.append(_safe_float(fold_metric.get("label_win_pct")))
         metrics = _merge_metrics(scoped, selected, label)
-        flags = _promotion_flags(metrics, fold_wins, min_n=30, min_days=10, min_folds=3)
+        flags = _promotion_flags(metrics, fold_wins, min_n=30, min_days=10, min_folds=3, require_ordered=_is_ordered_profile(profile))
         rows.append(
             {
                 "policy_type": "score_baseline",
@@ -447,7 +553,14 @@ def _fit_model_policies(
     rows: List[Dict[str, Any]] = []
     for topn in TOPNS:
         metrics = _merge_metrics(scoped, selected_by_topn[topn], label)
-        flags = _promotion_flags(metrics, fold_wins_by_topn[topn], min_n=30, min_days=10, min_folds=3)
+        flags = _promotion_flags(
+            metrics,
+            fold_wins_by_topn[topn],
+            min_n=30,
+            min_days=10,
+            min_folds=3,
+            require_ordered=_is_ordered_profile(profile),
+        )
         rows.append(
             {
                 "policy_type": "ml_model",
@@ -487,7 +600,10 @@ def _run_scope(
     label, valid = _label(scoped, profile)
     scoped = scoped.loc[valid].copy()
     label = label.loc[scoped.index]
-    if len(scoped) < min_rows or scoped["trade_date"].nunique() < min_train_days + test_days:
+    ordered_profile = _is_ordered_profile(profile)
+    effective_min_rows = min(min_rows, 30) if ordered_profile else min_rows
+    effective_min_train_rows = min(min_train_rows, 40) if ordered_profile else min_train_rows
+    if len(scoped) < effective_min_rows or scoped["trade_date"].nunique() < min_train_days + test_days:
         return []
     days = sorted(scoped["trade_date"].dropna().astype(str).unique().tolist())
     windows = _walk_windows(days, min_train_days=min_train_days, test_days=test_days, max_folds=max_folds)
@@ -496,7 +612,7 @@ def _run_scope(
 
     rows: List[Dict[str, Any]] = []
     for score_col in SCORE_BASELINES + ["loss_risk_score"]:
-        for row in _score_baseline(scoped, score_col, windows, label):
+        for row in _score_baseline(scoped, score_col, windows, label, profile=profile):
             rows.append({**row, "market": market, "cohort": cohort, "label_profile": asdict(profile)})
 
     for feature_set, (numeric, categorical) in _feature_sets(scoped, include_theme=include_theme).items():
@@ -512,7 +628,7 @@ def _run_scope(
                 numeric=numeric,
                 categorical=categorical,
                 model_name=model_name,
-                min_train_rows=min_train_rows,
+                min_train_rows=effective_min_train_rows,
             ):
                 rows.append({**row, "market": market, "cohort": cohort, "label_profile": asdict(profile)})
     return rows
@@ -530,8 +646,8 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         "",
         "## Top Policies",
         "",
-        "| Rank | Promote | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Bad | Stop | Folds | Min Fold Win | AUC | Score |",
-        "|---:|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Rank | Promote | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | No Touch | Bad | Stop | Folds | Min Fold Win | AUC | Score |",
+        "|---:|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for idx, row in enumerate(report.get("top_policies", [])[:80], start=1):
         metrics = row.get("metrics") or {}
@@ -556,6 +672,9 @@ def _render_markdown(report: Dict[str, Any]) -> str:
                     metrics.get("label_win_pct"),
                     metrics.get("avg_5d_pct"),
                     metrics.get("min_5d_pct"),
+                    metrics.get("target_before_stop_5d_pct"),
+                    metrics.get("stop_before_target_5d_pct"),
+                    metrics.get("no_touch_5d_pct"),
                     metrics.get("bad_path_pct"),
                     metrics.get("stop5_pct"),
                     promo.get("folds"),
@@ -567,8 +686,8 @@ def _render_markdown(report: Dict[str, Any]) -> str:
             + " |"
         )
     lines.extend(["", "## Promotion Gate", ""])
-    lines.append("- `promotable` requires enough samples/days/folds, label win >= 70%, 5D avg >= +3%, bad path <= 35%, stop5 <= 25%, 5D tail loss >= -12%, and no fold below 45% label win.")
-    lines.append("- Target-before-stop is currently a conservative proxy because archive data has high/low path fields, not exact intraday event order for every row.")
+    lines.append("- `promotable` requires an exact ordered path label profile, enough samples/days/folds, label win >= 70%, 5D avg >= +3%, bad path <= 35%, stop5 <= 25%, 5D tail loss >= -12%, and no fold below 45% label win.")
+    lines.append(f"- Exact path label version: `{ORDERED_OUTCOME_PATH_LABEL_VERSION}`. Proxy labels remain visible for diagnosis but cannot trigger promotion.")
     if not report.get("promotable_policies"):
         lines.extend(
             [
@@ -576,7 +695,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
                 "## No-Promotion Diagnosis",
                 "",
                 "- No policy passed the full release gate. This means current scan-time features and archive path labels do not yet justify replacing production logic.",
-                "- Near-misses should be monitored, not deployed. The next data improvement is exact ordered target/stop labeling and richer intraday flow/theme acceleration.",
+                "- Near-misses should be monitored, not deployed. The next data improvement is richer intraday flow/theme acceleration and more exact ordered-label coverage.",
             ]
         )
     lines.extend(["", "## Notes"])
@@ -645,6 +764,7 @@ def build_report(
             "Walk-forward windows validate recent contiguous trade-date blocks, using only prior days for training.",
             "Score baselines are evaluated alongside ML models so scanner logic and learned models compete under the same promotion gate.",
             "Fixed primary theme values are optional because rotating themes can overfit; flow/regime/theme metadata remains available when enabled.",
+            f"Promotion requires exact ordered target/stop labels from {ORDERED_OUTCOME_PATH_LABEL_VERSION}; proxy high/low labels are diagnostic only.",
         ],
     }
 
