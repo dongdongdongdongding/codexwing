@@ -140,6 +140,30 @@ def test_validation_embed_summarizes_post_scan_reports():
     assert "recent top5 positive-rate" in embed["fields"][0]["value"]
 
 
+def test_validation_embed_marks_existing_summary_fallback_as_degraded():
+    embed = _validation_embed(
+        {
+            "generated_at": "now",
+            "ok": True,
+            "degraded": True,
+            "results": [
+                {
+                    "name": "Segment Top5 Validation",
+                    "ok": False,
+                    "degraded": True,
+                    "warning": "command_failed_existing_markdown_summary_used",
+                    "returncode": 1,
+                    "summary": "- recent top5 positive-rate: 80.00%",
+                }
+            ],
+        }
+    )
+
+    assert embed["color"] == 0xF1C40F
+    assert "DEGRADED" in embed["fields"][0]["value"]
+    assert "existing_markdown" in embed["fields"][0]["value"]
+
+
 def test_markdown_validation_excerpt_prefers_metrics_over_definitions(tmp_path):
     path = tmp_path / "scan_cohort_performance.md"
     path.write_text(

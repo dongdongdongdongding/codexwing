@@ -315,11 +315,15 @@ def _record_post_scan_validation() -> Dict[str, Any]:
             item["error"] = str(exc)
         md_path = PROJECT_ROOT / str(item.get("md") or item.get("md_path") or "")
         item["summary"] = _markdown_validation_excerpt(md_path)
+        if not item.get("ok") and item["summary"]:
+            item["degraded"] = True
+            item["warning"] = "command_failed_existing_markdown_summary_used"
         item["finished_at"] = datetime.now(timezone.utc).isoformat()
         results.append(item)
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "ok": all(bool(item.get("ok")) for item in results),
+        "ok": all(bool(item.get("ok") or item.get("degraded")) for item in results),
+        "degraded": any(bool(item.get("degraded")) for item in results),
         "results": results,
     }
 
@@ -426,12 +430,14 @@ def _validation_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
     for item in results:
         if not isinstance(item, dict):
             continue
-        status = "OK" if item.get("ok") else "FAIL"
+        status = "OK" if item.get("ok") else "DEGRADED" if item.get("degraded") else "FAIL"
         value_parts = [
             f"status `{status}` · rc `{item.get('returncode')}`",
             f"json `{item.get('json') or item.get('json_path') or '-'}`",
             f"md `{item.get('md') or item.get('md_path') or '-'}`",
         ]
+        if item.get("warning"):
+            value_parts.append(f"warning `{item.get('warning')}`")
         summary = str(item.get("summary") or "").strip()
         if summary:
             value_parts.append(summary)
@@ -441,7 +447,7 @@ def _validation_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "title": "스캔 후 자동 검증",
         "description": "Top1/Top5/Shadow/Exception 성능 리포트 갱신 결과입니다. 승률·평균·손실꼬리 확인용입니다.",
-        "color": 0x2ECC71 if payload.get("ok") else 0xE67E22,
+        "color": 0xF1C40F if payload.get("degraded") else 0x2ECC71 if payload.get("ok") else 0xE67E22,
         "fields": fields[:10] or [{"name": "Status", "value": "검증 결과 없음", "inline": False}],
         "timestamp": payload.get("generated_at") or datetime.now(timezone.utc).isoformat(),
     }
