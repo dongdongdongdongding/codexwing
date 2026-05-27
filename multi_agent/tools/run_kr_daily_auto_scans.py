@@ -119,6 +119,15 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "md_path": "runtime_state/reports/validation/intraday_learning_readiness.md",
         "json_path": "runtime_state/reports/validation/intraday_learning_readiness.json",
     },
+    {
+        "name": "INTRADAY Model Viability",
+        "command": [
+            sys.executable,
+            "multi_agent/tools/report_intraday_model_viability.py",
+        ],
+        "md_path": "runtime_state/reports/learning/kr_intraday_model_viability.md",
+        "json_path": "runtime_state/reports/learning/kr_intraday_model_viability.json",
+    },
 )
 
 

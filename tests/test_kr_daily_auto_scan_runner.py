@@ -201,6 +201,7 @@ def test_post_scan_validation_includes_loss_exclusion_guard_watch():
     assert "Loss Exclusion Guard Watch" in names
     assert "Ordered Shadow Watch" in names
     assert "INTRADAY Learning Readiness" in names
+    assert "INTRADAY Model Viability" in names
 
 
 def test_markdown_validation_excerpt_includes_guard_watch_rows(tmp_path):
