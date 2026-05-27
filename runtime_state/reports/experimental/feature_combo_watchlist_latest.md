@@ -1,6 +1,6 @@
 # Feature Combo Watchlist
 
-- generated_at: `2026-05-27T12:18:19.710084+00:00`
+- generated_at: `2026-05-27T12:51:48.668032+00:00`
 - production_scanner_changed: `False`
 - review_candidate_count: `0`
 
@@ -20,6 +20,14 @@
 - test_avg_5d: `PASS` actual `7.9019` expected `>=5.0%`
 - test_bad_path: `FAIL` actual `40.0` expected `<=25.0%`
 - test_stop5: `PASS` actual `0.0` expected `<=10.0%`
+
+## Refinement Candidates
+
+### kospi_exact_path_low_alpha_low_ml_top5_exception
+| Condition | Status | Score | Train | Test |
+|---|---|---:|---:|---:|
+| decision_score >= 60.5 | watch_refinement_candidate | 216.3461 | n=16 days=5 win5=81.25% avg5=9.956% min5=-29.9776% bad=25.0% drop1d=6.25% loss5=18.75% stop=18.75% | n=6 days=5 win5=100.0% avg5=10.6922% min5=3.1098% bad=0.0% drop1d=0.0% loss5=0.0% stop=0.0% |
+| theme_inference_status == inferred | diagnostic_only | 68.5079 | n=7 days=3 win5=85.714% avg5=14.2293% min5=-12.6667% bad=14.286% drop1d=14.286% loss5=14.286% stop=14.286% | n=9 days=6 win5=80.0% avg5=7.9019% min5=-3.2595% bad=33.333% drop1d=22.222% loss5=11.111% stop=0.0% |
 
 ## Notes
 

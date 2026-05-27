@@ -3,7 +3,7 @@ import pandas as pd
 from multi_agent.tools.report_feature_combo_watchlist import evaluate_watch_rules
 
 
-def _row(day, ticker, alpha, ml, ret5, rank=1, exact=True):
+def _row(day, ticker, alpha, ml, ret5, rank=1, exact=True, volume_ratio=1.0):
     return {
         "trade_date": day,
         "ticker": ticker,
@@ -18,6 +18,7 @@ def _row(day, ticker, alpha, ml, ret5, rank=1, exact=True):
         "return_5d_pct": ret5,
         "bad_path": ret5 < 0,
         "stop5_proxy": False,
+        "volume_ratio": volume_ratio,
     }
 
 
@@ -80,3 +81,49 @@ def test_pinned_feature_combo_watch_blocks_missing_feature():
 
     assert rows[0]["status"] == "blocked_missing_feature"
     assert rows[0]["missing_features"] == ["ml_prob"]
+
+
+def test_pinned_feature_combo_watch_reports_refinement_candidates():
+    rows = []
+    for idx in range(1, 15):
+        good = idx not in {3, 8, 14}
+        rows.append(
+            _row(
+                f"2026-05-{idx:02d}",
+                f"000{idx:03d}.KS",
+                60,
+                20,
+                7 if good else -2,
+                volume_ratio=2.0 if good else 0.5,
+            )
+        )
+    df = pd.DataFrame(rows)
+    rule = {
+        "rule_id": "test_refinement",
+        "issue_id": "test",
+        "market": "KOSPI",
+        "scope": "top5_exception",
+        "quality_scope": "exact_path",
+        "conditions": [
+            {"feature": "alpha_score", "op": "<=", "value": 67.0},
+            {"feature": "ml_prob", "op": "<=", "value": 30.45},
+        ],
+        "gate": {
+            "min_train_n": 1,
+            "min_train_days": 1,
+            "min_train_win_5d_pct": 50.0,
+            "min_test_n": 1,
+            "min_test_days": 1,
+            "min_test_win_5d_pct": 50.0,
+            "min_test_avg_5d_pct": 0.0,
+            "max_test_bad_path_pct": 50.0,
+            "max_test_stop5_pct": 50.0,
+        },
+    }
+
+    result = evaluate_watch_rules(df, [rule])[0]
+
+    labels = [item["condition_label"] for item in result["refinement_candidates"]]
+    assert "volume_ratio >= 2.0" in labels
+    selected = next(item for item in result["refinement_candidates"] if item["condition_label"] == "volume_ratio >= 2.0")
+    assert selected["test"]["bad_path_pct"] == 0.0
