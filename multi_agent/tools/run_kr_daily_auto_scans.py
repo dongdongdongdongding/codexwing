@@ -50,6 +50,8 @@ DISCORD_MAX_EMBED_DESCRIPTION_CHARS = 4096
 DISCORD_MAX_EMBED_FIELD_NAME_CHARS = 256
 DISCORD_MAX_EMBED_FIELD_VALUE_CHARS = 1024
 DISCORD_MAX_CONTENT_CHARS = 2000
+DISCORD_INTER_MESSAGE_PAUSE_SECONDS = 1.1
+DISCORD_MIN_RETRY_AFTER_SECONDS = 1.0
 POST_SCAN_VALIDATION_COMMANDS = (
     {
         "name": "Scan Cohort Performance",
@@ -492,7 +494,9 @@ async def _post_embeds(config: DiscordIntegrationConfig, embeds: List[Dict[str, 
         print("[WARN] Discord token/channel missing; skipping channel post.", file=sys.stderr)
         return
     safe_embeds = _prepare_embeds_for_discord(embeds)
-    for chunk in _chunk_embeds_for_discord(safe_embeds):
+    for idx, chunk in enumerate(_chunk_embeds_for_discord(safe_embeds)):
+        if idx > 0:
+            await asyncio.sleep(DISCORD_INTER_MESSAGE_PAUSE_SECONDS)
         try:
             await asyncio.to_thread(_post_embed_chunk, config, chunk)
         except Exception as exc:
@@ -505,13 +509,17 @@ def _post_embed_chunk(config: DiscordIntegrationConfig, embeds: List[Dict[str, A
 
 
 async def _post_embed_chunk_fallback(config: DiscordIntegrationConfig, embeds: List[Dict[str, Any]]) -> None:
-    for embed in embeds or []:
+    for embed_idx, embed in enumerate(embeds or []):
+        if embed_idx > 0:
+            await asyncio.sleep(DISCORD_INTER_MESSAGE_PAUSE_SECONDS)
         try:
             await asyncio.to_thread(_post_embed_chunk, config, [embed])
             continue
         except Exception as exc:
             print(f"[WARN] Discord single embed post failed; falling back to text: {exc}", file=sys.stderr)
-        for content in _embed_to_content_chunks(embed):
+        for content_idx, content in enumerate(_embed_to_content_chunks(embed)):
+            if content_idx > 0:
+                await asyncio.sleep(DISCORD_INTER_MESSAGE_PAUSE_SECONDS)
             try:
                 await asyncio.to_thread(_post_discord_content, config, content)
             except Exception as exc:
@@ -542,7 +550,7 @@ def _post_discord_message(config: DiscordIntegrationConfig, payload: Dict[str, A
             last_detail = detail
             retry_after = _discord_retry_after(exc, detail)
             if exc.code == 429 and attempt < 4:
-                time_module.sleep(max(0.3, retry_after) + 0.2)
+                time_module.sleep(_discord_backoff_seconds(retry_after, attempt))
                 continue
             if 500 <= exc.code < 600 and attempt < 4:
                 time_module.sleep(min(5.0, 0.5 * (attempt + 1)))
@@ -563,6 +571,10 @@ def _discord_retry_after(exc: urllib.error.HTTPError, detail: str) -> float:
         return float(payload.get("retry_after") or 0.0)
     except Exception:
         return 0.0
+
+
+def _discord_backoff_seconds(retry_after: float, attempt: int) -> float:
+    return max(DISCORD_MIN_RETRY_AFTER_SECONDS, float(retry_after or 0.0)) + 0.5 + min(2.0, 0.25 * max(0, attempt))
 
 
 def _chunk_embeds_for_discord(embeds: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:

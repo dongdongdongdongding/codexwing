@@ -5,6 +5,7 @@ from multi_agent.tools.run_kr_daily_auto_scans import (
     DISCORD_SAFE_MESSAGE_CHARS,
     POST_SCAN_VALIDATION_COMMANDS,
     _chunk_embeds_for_discord,
+    _discord_backoff_seconds,
     _discord_retry_after,
     _discord_embed_char_count,
     _embed_to_content_chunks,
@@ -85,6 +86,11 @@ def test_discord_retry_after_reads_header_and_json_body():
 
     assert _discord_retry_after(header_exc, "{}") == 1.25
     assert _discord_retry_after(body_exc, '{"retry_after": 0.53}') == 0.53
+
+
+def test_discord_backoff_has_conservative_floor():
+    assert _discord_backoff_seconds(0.3, 0) >= 1.5
+    assert _discord_backoff_seconds(2.0, 2) > 2.0
 
 
 def test_daily_auto_scan_targets_include_kospi_intraday_observer(monkeypatch):
