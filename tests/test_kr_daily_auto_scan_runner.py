@@ -248,3 +248,24 @@ def test_markdown_validation_excerpt_includes_guard_watch_rows(tmp_path):
 
     assert "shadow_candidate" in excerpt
     assert "KOSDAQ" in excerpt
+
+
+def test_markdown_validation_excerpt_includes_feature_combo_refinements(tmp_path):
+    path = tmp_path / "feature_combo_watchlist_latest.md"
+    path.write_text(
+        "\n".join(
+            [
+                "# Feature Combo Watchlist",
+                "## Refinement Candidates",
+                "| Condition | Status | Score | Train | Test |",
+                "|---|---|---:|---:|---:|",
+                "| decision_score >= 60.5 | watch_refinement_candidate | 216.3 | n=16 win5=81.25% drop1d=6.25% | n=6 win5=100.0% bad=0.0% drop1d=0.0% loss5=0.0% |",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    excerpt = _markdown_validation_excerpt(path)
+
+    assert "watch_refinement_candidate" in excerpt
+    assert "drop1d=0.0%" in excerpt

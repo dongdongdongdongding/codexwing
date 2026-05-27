@@ -539,6 +539,10 @@ def _markdown_validation_excerpt(path: Path, *, max_lines: int = 10) -> str:
                     "guard",
                     "shadow",
                     "production",
+                    "refinement",
+                    "drop1d",
+                    "loss5",
+                    "win5",
                     "retain",
                     "win_delta",
                 )
