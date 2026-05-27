@@ -198,6 +198,8 @@ def test_markdown_validation_excerpt_prefers_metrics_over_definitions(tmp_path):
 def test_post_scan_validation_includes_loss_exclusion_guard_watch():
     names = [spec["name"] for spec in POST_SCAN_VALIDATION_COMMANDS]
 
+    assert "Live Policy Observed" in names
+    assert "Live Policy Strict" in names
     assert "Loss Exclusion Guard Watch" in names
     assert "Ordered Shadow Watch" in names
     assert "INTRADAY Learning Readiness" in names

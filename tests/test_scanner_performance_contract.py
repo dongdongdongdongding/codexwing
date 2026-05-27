@@ -129,6 +129,60 @@ def test_live_policy_summary_reads_selected_quality_scope(tmp_path, monkeypatch)
     assert summary["validation_pass"] is False
 
 
+def test_live_policy_summary_prefers_practical_gate_for_strict_operator_view(tmp_path, monkeypatch):
+    cohort_path = tmp_path / "scan_cohort.json"
+    cohort_path.write_text(
+        json.dumps(
+            {
+                "markets": {
+                    "KOSPI": {
+                        "cohorts": {
+                            "Practical 80 Gate": {
+                                "horizons": {
+                                    "5D": {
+                                        "n": 42,
+                                        "win_pct": 81.25,
+                                        "avg_pct": 8.1234,
+                                    }
+                                },
+                                "path": {"bad_path_pct": 12.5},
+                            }
+                        }
+                    },
+                    "KOSDAQ": {
+                        "cohorts": {
+                            "Practical 80 Gate": {
+                                "horizons": {
+                                    "5D": {
+                                        "n": 14,
+                                        "win_pct": 92.857,
+                                        "avg_pct": 19.9478,
+                                    }
+                                },
+                                "path": {"bad_path_pct": 7.143},
+                            }
+                        }
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("modules.scanner_performance_contract.SCAN_COHORT_PERFORMANCE_PATH", cohort_path)
+
+    kospi = live_policy_summary("KOSPI", strict_quality_gate=True)
+    kosdaq = live_policy_summary("KOSDAQ", strict_quality_gate=True)
+
+    assert kospi["policy"] == "Practical 80 Gate"
+    assert kospi["validated_win"] == "81.2%"
+    assert kospi["validated_return"] == "+8.12%"
+    assert kospi["sample"] == "n=42 · bad 12.5%"
+    assert kospi["quality_scope"] == "scan_cohort_practical_gate"
+    assert kospi["validation_pass"] is True
+    assert kosdaq["sample"] == "n=14 · bad 7.1% · small_sample"
+    assert kosdaq["validation_pass"] is False
+
+
 def test_slice_metric_reads_validation_slice(tmp_path, monkeypatch):
     path = tmp_path / "kospi_slice.json"
     path.write_text(

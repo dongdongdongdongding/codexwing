@@ -65,6 +65,18 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "json_path": "runtime_state/reports/validation/scan_cohort_performance.json",
     },
     {
+        "name": "Live Policy Observed",
+        "command": [sys.executable, "multi_agent/tools/report_live_policy_performance.py"],
+        "md_path": "runtime_state/reports/validation/live_swing_policy_performance_observed.md",
+        "json_path": "runtime_state/reports/validation/live_swing_policy_performance_observed.json",
+    },
+    {
+        "name": "Live Policy Strict",
+        "command": [sys.executable, "multi_agent/tools/report_live_policy_performance.py", "--strict-quality"],
+        "md_path": "runtime_state/reports/validation/live_swing_policy_performance_strict.md",
+        "json_path": "runtime_state/reports/validation/live_swing_policy_performance_strict.json",
+    },
+    {
         "name": "Segment Top1 Validation",
         "command": [sys.executable, "multi_agent/tools/report_segment_topn_validation.py", "--topn", "1"],
         "md_path": "runtime_state/reports/validation/segment_top1_validation.md",

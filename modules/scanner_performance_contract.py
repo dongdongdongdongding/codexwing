@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 SECTION_PERFORMANCE_PATH = Path("runtime_state/reports/trading/signal_section_performance_daily.json")
 LIVE_POLICY_OBSERVED_PATH = Path("runtime_state/reports/validation/live_swing_policy_performance_observed.json")
 LIVE_POLICY_STRICT_PATH = Path("runtime_state/reports/validation/live_swing_policy_performance_strict.json")
+SCAN_COHORT_PERFORMANCE_PATH = Path("runtime_state/reports/validation/scan_cohort_performance.json")
 SLICE_VALIDATION_PATHS = {
     "KOSPI": Path("runtime_state/reports/validation/kospi_swing_5d_slice_validation.json"),
     "KOSDAQ": Path("runtime_state/reports/validation/kosdaq_swing_5d_slice_validation.json"),
@@ -220,6 +221,48 @@ def slice_metric(market: Any, slice_name: str) -> Optional[PerformanceMetric]:
     )
 
 
+def _practical_gate_policy_summary(market: Any, *, path: Optional[Path] = None) -> Optional[Dict[str, Any]]:
+    payload = _load_json(path or SCAN_COHORT_PERFORMANCE_PATH)
+    if not isinstance(payload, dict):
+        return None
+    market_key = _norm_market(market)
+    market_payload = payload.get("markets", {}).get(market_key) if isinstance(payload.get("markets"), dict) else None
+    if not isinstance(market_payload, dict):
+        return None
+    cohorts = market_payload.get("cohorts") if isinstance(market_payload.get("cohorts"), dict) else {}
+    cohort = cohorts.get("Practical 80 Gate")
+    if not isinstance(cohort, dict):
+        return None
+    horizons = cohort.get("horizons") if isinstance(cohort.get("horizons"), dict) else {}
+    horizon = horizons.get("5D") if isinstance(horizons.get("5D"), dict) else {}
+    sample_n = int(horizon.get("n") or 0)
+    if sample_n <= 0:
+        return None
+    win = _safe_float(horizon.get("win_pct"))
+    avg = _safe_float(horizon.get("avg_pct"))
+    path_metrics = cohort.get("path") if isinstance(cohort.get("path"), dict) else {}
+    bad_path = _safe_float(path_metrics.get("bad_path_pct"))
+    validation_pass = (
+        sample_n >= DEFAULT_PRODUCTION_MIN_SAMPLE_N
+        and (win or 0.0) >= 70.0
+        and (avg or 0.0) >= 5.0
+        and (bad_path is None or bad_path <= 20.0)
+    )
+    sample = f"n={sample_n}"
+    if bad_path is not None:
+        sample += f" · bad {bad_path:.1f}%"
+    if sample_n < DEFAULT_PRODUCTION_MIN_SAMPLE_N:
+        sample += " · small_sample"
+    return {
+        "policy": "Practical 80 Gate",
+        "validated_win": "-" if win is None else f"{win:.1f}%",
+        "validated_return": "-" if avg is None else f"{avg:+.2f}%",
+        "sample": sample,
+        "quality_scope": "scan_cohort_practical_gate",
+        "validation_pass": bool(validation_pass),
+    }
+
+
 def format_metric(metric: Optional[PerformanceMetric], *, horizon_label: str = "5D") -> str:
     if metric is None:
         return "검증 없음"
@@ -249,6 +292,10 @@ def profile_level(metric: Optional[PerformanceMetric]) -> str:
 
 
 def live_policy_summary(market: Any, *, strict_quality_gate: bool = True) -> Dict[str, Any]:
+    if strict_quality_gate:
+        practical = _practical_gate_policy_summary(market)
+        if practical:
+            return practical
     path = LIVE_POLICY_STRICT_PATH if strict_quality_gate else LIVE_POLICY_OBSERVED_PATH
     payload = _load_json(path)
     market_key = _norm_market(market)
