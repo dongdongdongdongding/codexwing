@@ -92,6 +92,24 @@ NUMERIC_FEATURES: Tuple[str, ...] = (
     "theme_day_strength_score",
     "theme_day_strength_rank",
     "theme_day_strength_pct",
+    "foreigner",
+    "foreign_flow",
+    "institution",
+    "institution_flow",
+    "retail",
+    "retail_flow",
+    "foreigner_1d",
+    "institution_1d",
+    "retail_1d",
+    "foreigner_3d",
+    "institution_3d",
+    "retail_3d",
+    "foreigner_10d",
+    "institution_10d",
+    "retail_10d",
+    "whale_flow_1d",
+    "whale_flow_3d",
+    "whale_flow_10d",
 )
 
 STRUCTURAL_CATEGORICAL_FEATURES: Tuple[str, ...] = (
@@ -104,6 +122,11 @@ STRUCTURAL_CATEGORICAL_FEATURES: Tuple[str, ...] = (
     "tier",
     "market_gate",
     "volume_confirmed",
+    "flow_consensus_buying",
+    "retail_dominant",
+    "dominant",
+    "whale_trend",
+    "flow_window",
     "theme_day_strength_bucket",
     "core_trend_flag",
     "explosive_leader_flag",
@@ -115,18 +138,49 @@ COHORT_CONDITIONS: Tuple[str, ...] = ("cohort=Top1", "cohort=Top3", "cohort=Top5
 FLOW_COVERAGE_FEATURES: Tuple[str, ...] = (
     "foreigner",
     "foreign_flow",
+    "foreigner_1d",
+    "foreigner_3d",
+    "foreigner_10d",
     "institution",
     "institution_flow",
+    "institution_1d",
+    "institution_3d",
+    "institution_10d",
     "retail",
     "retail_flow",
+    "retail_1d",
+    "retail_3d",
+    "retail_10d",
+    "whale_flow_1d",
+    "whale_flow_3d",
+    "whale_flow_10d",
     "dominant",
     "whale_trend",
+    "flow_consensus_buying",
+    "retail_dominant",
+    "flow_window",
+    "flow_asof",
 )
 SAME_REGIME_DIAGNOSTIC_COLUMNS: Tuple[str, ...] = (
     "market_gate",
     "trend",
     "theme_routing_path",
     "theme_day_strength_bucket",
+)
+ARCHIVE_REFRESH_FEATURES: Tuple[str, ...] = tuple(
+    dict.fromkeys(
+        (
+            *NUMERIC_FEATURES,
+            *STRUCTURAL_CATEGORICAL_FEATURES,
+            *THEME_CATEGORICAL_FEATURES,
+            *FLOW_COVERAGE_FEATURES,
+            *SAME_REGIME_DIAGNOSTIC_COLUMNS,
+            "market2",
+            "decision",
+            "decision_bucket",
+            "priority_rank",
+        )
+    )
 )
 CURATED_RULES: Tuple[Dict[str, Any], ...] = (
     {
@@ -322,6 +376,105 @@ def _condition_to_mask(df: pd.DataFrame, condition: str) -> pd.Series | None:
         numeric = pd.to_numeric(df[col], errors="coerce")
         return numeric.ge(low).fillna(False) & numeric.le(high).fillna(False)
     return _parse_condition(df, text)
+
+
+def _is_missing_feature_value(series: pd.Series) -> pd.Series:
+    text = series.fillna("").astype(str).str.strip()
+    return series.isna() | text.eq("") | text.str.lower().isin({"nan", "none", "null", "unknown"})
+
+
+def _refresh_cached_labels_from_archive(labeled: pd.DataFrame, archive_df: pd.DataFrame) -> pd.DataFrame:
+    """Attach current archive features to cached ordered labels without relabeling outcomes."""
+    merge_keys = ("ticker", "trade_date")
+    if not set(merge_keys).issubset(labeled.columns) or not set(merge_keys).issubset(archive_df.columns):
+        return labeled
+
+    feature_cols = [
+        col
+        for col in ARCHIVE_REFRESH_FEATURES
+        if col in archive_df.columns and col not in merge_keys
+    ]
+    if not feature_cols:
+        return labeled
+
+    lookup = archive_df[[*merge_keys, *feature_cols]].copy()
+    lookup["_ticker_key"] = lookup["ticker"].fillna("").astype(str)
+    lookup["_trade_date_key"] = lookup["trade_date"].fillna("").astype(str)
+    if "priority_rank" in lookup.columns:
+        lookup["_priority_rank_sort"] = pd.to_numeric(lookup["priority_rank"], errors="coerce")
+    else:
+        lookup["_priority_rank_sort"] = float("inf")
+    if "decision_score" in lookup.columns:
+        lookup["_decision_score_sort"] = pd.to_numeric(lookup["decision_score"], errors="coerce")
+    else:
+        lookup["_decision_score_sort"] = float("-inf")
+    lookup = (
+        lookup.sort_values(
+            ["_ticker_key", "_trade_date_key", "_priority_rank_sort", "_decision_score_sort"],
+            ascending=[True, True, True, False],
+            na_position="last",
+        )
+        .drop_duplicates(["_ticker_key", "_trade_date_key"], keep="first")
+        .drop(columns=[*merge_keys, "_priority_rank_sort", "_decision_score_sort"])
+    )
+
+    out = labeled.copy()
+    out["_ticker_key"] = out["ticker"].fillna("").astype(str)
+    out["_trade_date_key"] = out["trade_date"].fillna("").astype(str)
+    merged = out.merge(lookup, on=["_ticker_key", "_trade_date_key"], how="left", suffixes=("", "__archive"))
+    for col in feature_cols:
+        archive_col = f"{col}__archive" if col in out.columns else col
+        if archive_col not in merged.columns:
+            continue
+        if col in out.columns:
+            missing = _is_missing_feature_value(merged[col])
+            merged[col] = merged[col].where(~missing, merged[archive_col])
+            if archive_col != col:
+                merged = merged.drop(columns=[archive_col])
+        else:
+            merged[col] = merged[archive_col]
+            if archive_col != col:
+                merged = merged.drop(columns=[archive_col])
+    return merged.drop(columns=["_ticker_key", "_trade_date_key"], errors="ignore")
+
+
+def _append_missing_cached_labels(
+    labeled: pd.DataFrame,
+    profile_rows: pd.DataFrame,
+    *,
+    labeler=label_selected_rows,
+) -> Tuple[pd.DataFrame, int]:
+    """Incrementally label archive rows that are absent from a cached label file."""
+    merge_keys = ("candidate_id", "ticker", "trade_date")
+    if profile_rows.empty or not set(merge_keys).issubset(profile_rows.columns):
+        return labeled, 0
+    if labeled.empty or not set(merge_keys).issubset(labeled.columns):
+        missing = labeler(profile_rows.copy())
+        return missing.reset_index(drop=True), int(len(profile_rows))
+
+    cached_keys = (
+        labeled.loc[:, merge_keys]
+        .fillna("")
+        .astype(str)
+        .agg("\x1f".join, axis=1)
+    )
+    profile_keys = (
+        profile_rows.loc[:, merge_keys]
+        .fillna("")
+        .astype(str)
+        .agg("\x1f".join, axis=1)
+    )
+    missing_rows = profile_rows.loc[~profile_keys.isin(set(cached_keys))].copy()
+    if missing_rows.empty:
+        return labeled, 0
+
+    newly_labeled = labeler(missing_rows)
+    combined = pd.concat([labeled, newly_labeled], ignore_index=True, sort=False)
+    sort_cols = [col for col in ["candidate_id", "trade_date", "ticker", "priority_rank"] if col in combined.columns]
+    if sort_cols:
+        combined = combined.sort_values(sort_cols, na_position="last")
+    combined = combined.drop_duplicates(list(merge_keys), keep="first").reset_index(drop=True)
+    return combined, int(len(missing_rows))
 
 
 def prepare_profile_rows(
@@ -581,7 +734,11 @@ def _feature_coverage_report(df: pd.DataFrame, features: Sequence[str] = FLOW_CO
 
 def _theme_refresh_report(df: pd.DataFrame) -> Dict[str, Any]:
     total = int(len(df))
-    refreshed = df.get("theme_membership_refreshed", pd.Series(False, index=df.index)).fillna(False).astype(bool)
+    if "theme_membership_refreshed" in df.columns:
+        raw_refreshed = df["theme_membership_refreshed"]
+        refreshed = raw_refreshed.eq(True) | raw_refreshed.fillna("").astype(str).str.lower().isin({"true", "1", "yes"})
+    else:
+        refreshed = pd.Series(False, index=df.index, dtype=bool)
     primary = df.get("primary_theme", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
     unclassified = primary.eq("") | primary.str.lower().isin({"unclassified", "unknown", "nan", "none", "null"})
     source_counts = (
@@ -1223,10 +1380,24 @@ def build_report(
     market = str(market).upper()
     log_progress(f"start market={market} input={input_path}")
     profiles = profiles_for_market(market)
+    cached_label_refresh: Dict[str, Any] = {"used_cached_labels": False}
     if use_cached_labels and cached_labels_path.exists():
+        cached_label_refresh["used_cached_labels"] = True
         log_progress(f"load_cached_labels path={cached_labels_path}")
         labeled = pd.read_csv(cached_labels_path, low_memory=False)
+        cached_label_refresh["loaded_rows"] = int(len(labeled))
         log_progress(f"cached_labels_loaded rows={len(labeled)}")
+        log_progress("load_archive_dataset_for_cached_feature_refresh")
+        df = _load_dataset(input_path)
+        log_progress(f"archive_loaded rows={len(df)}")
+        profile_rows = prepare_profile_rows(df, profiles, market=market)
+        cached_label_refresh["fresh_profile_rows"] = int(len(profile_rows))
+        log_progress(f"profile_rows_prepared rows={len(profile_rows)}")
+        labeled, missing_count = _append_missing_cached_labels(labeled, profile_rows)
+        cached_label_refresh["missing_profile_rows_labeled"] = int(missing_count)
+        log_progress(f"cached_labels_missing_rows_labeled rows={missing_count}")
+        labeled = _refresh_cached_labels_from_archive(labeled, df)
+        log_progress("cached_labels_feature_refresh_done")
     else:
         log_progress("load_archive_dataset")
         df = _load_dataset(input_path)
@@ -1307,6 +1478,7 @@ def build_report(
             "include_static_themes": include_static_themes,
             "static_theme_candidates_are_diagnostic_only": True,
         },
+        "cached_label_refresh": cached_label_refresh,
         "feature_coverage": _feature_coverage_report(labeled),
         "theme_refresh": _theme_refresh_report(labeled),
         "baseline_by_profile": {

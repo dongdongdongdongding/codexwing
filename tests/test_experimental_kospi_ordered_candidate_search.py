@@ -3,9 +3,15 @@ from __future__ import annotations
 import pandas as pd
 
 from multi_agent.tools.experimental_kospi_ordered_candidate_search import (
+    FLOW_COVERAGE_FEATURES,
+    NUMERIC_FEATURES,
+    STRUCTURAL_CATEGORICAL_FEATURES,
     OrderedProfile,
+    _append_missing_cached_labels,
     _condition_to_mask,
+    _feature_coverage_report,
     _metrics,
+    _refresh_cached_labels_from_archive,
     add_dynamic_theme_day_features,
     add_search_columns,
     apply_latest_kr_theme_membership,
@@ -304,3 +310,165 @@ def test_metrics_include_ordered_tail_distribution() -> None:
     assert metrics["max_close_5d_pct"] == 8.0
     assert metrics["close_loss_5pct_or_worse_pct"] == 33.3333
     assert metrics["min_mae_pct"] == -7.0
+
+
+def test_ordered_search_exposes_current_kr_flow_fields() -> None:
+    assert "foreigner_1d" in NUMERIC_FEATURES
+    assert "institution_3d" in NUMERIC_FEATURES
+    assert "retail_10d" in NUMERIC_FEATURES
+    assert "whale_flow_3d" in NUMERIC_FEATURES
+    assert "flow_consensus_buying" in STRUCTURAL_CATEGORICAL_FEATURES
+    assert "flow_asof" in FLOW_COVERAGE_FEATURES
+
+
+def test_flow_coverage_report_counts_multi_window_flow_fields() -> None:
+    df = pd.DataFrame(
+        [
+            {
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "foreigner_1d": 100,
+                "institution_1d": -50,
+                "retail_1d": -50,
+                "flow_asof": "2026-05-20",
+            },
+            {
+                "ticker": "000002.KS",
+                "trade_date": "2026-05-20",
+                "foreigner_1d": None,
+                "institution_1d": None,
+                "retail_1d": None,
+                "flow_asof": "",
+            },
+        ]
+    )
+
+    report = _feature_coverage_report(df)
+
+    assert report["features"]["foreigner_1d"]["non_empty"] == 1
+    assert report["features"]["institution_1d"]["coverage_pct"] == 50.0
+    assert report["features"]["flow_asof"]["non_empty"] == 1
+
+
+def test_refresh_cached_labels_from_archive_adds_current_flow_fields() -> None:
+    cached = pd.DataFrame(
+        [
+            {
+                "candidate_id": "5D_ordered_10v5",
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "ordered_target_before_stop": True,
+            },
+            {
+                "candidate_id": "5D_ordered_12v5",
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "ordered_target_before_stop": False,
+            },
+        ]
+    )
+    archive = pd.DataFrame(
+        [
+            {
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "priority_rank": 2,
+                "decision_score": 80,
+                "foreigner_1d": 1000,
+                "institution_1d": -200,
+                "retail_1d": -800,
+                "flow_asof": "2026-05-20",
+            },
+            {
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "priority_rank": 1,
+                "decision_score": 90,
+                "foreigner_1d": 1200,
+                "institution_1d": 300,
+                "retail_1d": -1500,
+                "flow_asof": "2026-05-20",
+            },
+        ]
+    )
+
+    out = _refresh_cached_labels_from_archive(cached, archive)
+
+    assert out["foreigner_1d"].tolist() == [1200, 1200]
+    assert out["institution_1d"].tolist() == [300, 300]
+    assert out["retail_1d"].tolist() == [-1500, -1500]
+    assert out["flow_asof"].tolist() == ["2026-05-20", "2026-05-20"]
+    assert out["ordered_target_before_stop"].tolist() == [True, False]
+
+
+def test_refresh_cached_labels_from_archive_fills_blanks_without_overwriting_values() -> None:
+    cached = pd.DataFrame(
+        [
+            {
+                "candidate_id": "5D_ordered_10v5",
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "foreigner_1d": "",
+            },
+            {
+                "candidate_id": "5D_ordered_10v5",
+                "ticker": "000002.KS",
+                "trade_date": "2026-05-20",
+                "foreigner_1d": 999,
+            },
+        ]
+    )
+    archive = pd.DataFrame(
+        [
+            {"ticker": "000001.KS", "trade_date": "2026-05-20", "foreigner_1d": 100},
+            {"ticker": "000002.KS", "trade_date": "2026-05-20", "foreigner_1d": 200},
+        ]
+    )
+
+    out = _refresh_cached_labels_from_archive(cached, archive)
+
+    assert out["foreigner_1d"].tolist() == [100, 999]
+
+
+def test_append_missing_cached_labels_labels_only_absent_profile_rows() -> None:
+    cached = pd.DataFrame(
+        [
+            {
+                "candidate_id": "5D_ordered_10v5",
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "ordered_terminal_status": "target_before_stop",
+            }
+        ]
+    )
+    profile_rows = pd.DataFrame(
+        [
+            {
+                "candidate_id": "5D_ordered_10v5",
+                "ticker": "000001.KS",
+                "trade_date": "2026-05-20",
+                "priority_rank": 1,
+            },
+            {
+                "candidate_id": "5D_ordered_10v5",
+                "ticker": "000002.KS",
+                "trade_date": "2026-05-20",
+                "priority_rank": 2,
+            },
+        ]
+    )
+    seen: list[pd.DataFrame] = []
+
+    def fake_labeler(rows: pd.DataFrame) -> pd.DataFrame:
+        seen.append(rows.copy())
+        out = rows.copy()
+        out["ordered_terminal_status"] = "history_unavailable"
+        return out
+
+    out, missing_count = _append_missing_cached_labels(cached, profile_rows, labeler=fake_labeler)
+
+    assert missing_count == 1
+    assert len(seen) == 1
+    assert seen[0]["ticker"].tolist() == ["000002.KS"]
+    assert out[["candidate_id", "ticker", "trade_date"]].drop_duplicates().shape[0] == 2
+    assert out[out["ticker"].eq("000001.KS")]["ordered_terminal_status"].iloc[0] == "target_before_stop"
