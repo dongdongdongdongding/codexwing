@@ -185,6 +185,15 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "json_path": "runtime_state/reports/experimental/significant_feature_combinations_exact_path_top5_exception_strict_latest.json",
     },
     {
+        "name": "Pinned Feature Combo Watch",
+        "command": [
+            sys.executable,
+            "multi_agent/tools/report_feature_combo_watchlist.py",
+        ],
+        "md_path": "runtime_state/reports/experimental/feature_combo_watchlist_latest.md",
+        "json_path": "runtime_state/reports/experimental/feature_combo_watchlist_latest.json",
+    },
+    {
         "name": "Exit Policy Watch",
         "command": [
             sys.executable,

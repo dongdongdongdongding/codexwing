@@ -1,0 +1,163 @@
+{
+  "report_version": "feature_combo_watchlist_v1",
+  "generated_at": "2026-05-27T12:16:15.092615+00:00",
+  "input_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/archive/scan_archive_learning_dataset_all.csv",
+  "production_scanner_changed": false,
+  "rules": [
+    {
+      "rule_id": "kospi_exact_path_low_alpha_low_ml_top5_exception",
+      "issue_id": "swing-main-n7og",
+      "market": "KOSPI",
+      "scope": "top5_exception",
+      "quality_scope": "exact_path",
+      "horizon": "5d",
+      "cut_day": "2026-05-07",
+      "conditions": [
+        {
+          "feature": "alpha_score",
+          "op": "<=",
+          "value": 67.0
+        },
+        {
+          "feature": "ml_prob",
+          "op": "<=",
+          "value": 30.45
+        }
+      ],
+      "missing_features": [],
+      "all": {
+        "n": 32,
+        "label_win_pct": 68.75,
+        "active_days": 14,
+        "bad_path_pct": 28.125,
+        "stop5_pct": 12.5,
+        "win_1d_pct": 65.625,
+        "avg_1d_pct": 2.9745,
+        "median_1d_pct": 1.5533,
+        "min_1d_pct": -8.5011,
+        "max_1d_pct": 19.4617,
+        "win_3d_pct": 74.074,
+        "avg_3d_pct": 6.2695,
+        "median_3d_pct": 3.0474,
+        "min_3d_pct": -15.1007,
+        "max_3d_pct": 51.9669,
+        "win_5d_pct": 81.481,
+        "avg_5d_pct": 10.976,
+        "median_5d_pct": 5.2922,
+        "min_5d_pct": -29.9776,
+        "max_5d_pct": 97.5155
+      },
+      "train": {
+        "n": 22,
+        "label_win_pct": 81.818,
+        "active_days": 7,
+        "bad_path_pct": 22.727,
+        "stop5_pct": 18.182,
+        "win_1d_pct": 72.727,
+        "avg_1d_pct": 3.3519,
+        "median_1d_pct": 2.5443,
+        "min_1d_pct": -8.5011,
+        "max_1d_pct": 19.4617,
+        "win_3d_pct": 77.273,
+        "avg_3d_pct": 6.4021,
+        "median_3d_pct": 3.2679,
+        "min_3d_pct": -15.1007,
+        "max_3d_pct": 51.9669,
+        "win_5d_pct": 81.818,
+        "avg_5d_pct": 11.6746,
+        "median_5d_pct": 4.6017,
+        "min_5d_pct": -29.9776,
+        "max_5d_pct": 97.5155
+      },
+      "test": {
+        "n": 10,
+        "label_win_pct": 40.0,
+        "active_days": 7,
+        "bad_path_pct": 40.0,
+        "stop5_pct": 0.0,
+        "win_1d_pct": 50.0,
+        "avg_1d_pct": 2.1444,
+        "median_1d_pct": 0.4089,
+        "min_1d_pct": -6.5005,
+        "max_1d_pct": 17.3134,
+        "win_3d_pct": 60.0,
+        "avg_3d_pct": 5.6864,
+        "median_3d_pct": 0.1944,
+        "min_3d_pct": -3.6133,
+        "max_3d_pct": 17.2005,
+        "win_5d_pct": 80.0,
+        "avg_5d_pct": 7.9019,
+        "median_5d_pct": 7.8885,
+        "min_5d_pct": -3.2595,
+        "max_5d_pct": 17.5781
+      },
+      "gate_checks": [
+        {
+          "name": "train_n",
+          "actual": 22,
+          "expected": ">=18",
+          "passed": true
+        },
+        {
+          "name": "train_days",
+          "actual": 7,
+          "expected": ">=6",
+          "passed": true
+        },
+        {
+          "name": "train_win_5d",
+          "actual": 81.818,
+          "expected": ">=70.0%",
+          "passed": true
+        },
+        {
+          "name": "test_n",
+          "actual": 10,
+          "expected": ">=8",
+          "passed": true
+        },
+        {
+          "name": "test_days",
+          "actual": 7,
+          "expected": ">=5",
+          "passed": true
+        },
+        {
+          "name": "test_win_5d",
+          "actual": 80.0,
+          "expected": ">=75.0%",
+          "passed": true
+        },
+        {
+          "name": "test_avg_5d",
+          "actual": 7.9019,
+          "expected": ">=5.0%",
+          "passed": true
+        },
+        {
+          "name": "test_bad_path",
+          "actual": 40.0,
+          "expected": "<=25.0%",
+          "passed": false
+        },
+        {
+          "name": "test_stop5",
+          "actual": 0.0,
+          "expected": "<=10.0%",
+          "passed": true
+        }
+      ],
+      "status": "watch_failed_current_gate",
+      "note": "Relaxed exact-path near-miss found on 2026-05-27; forward-track only."
+    }
+  ],
+  "summary": {
+    "rule_count": 1,
+    "review_candidate_count": 0,
+    "insufficient_forward_sample_count": 0
+  },
+  "notes": [
+    "Pinned candidate tracking only; this report does not search new rules.",
+    "review_candidate still requires manual release review before scanner changes."
+  ]
+}
