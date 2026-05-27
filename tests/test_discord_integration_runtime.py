@@ -1,6 +1,8 @@
+import asyncio
 import json
 from pathlib import Path
 
+from multi_agent.tools.discord_bot import _send_interaction_chunks
 from modules.discord_integration.config import DiscordIntegrationConfig
 from modules.discord_integration.delivery import (
     SAFE_MESSAGE_CHARS,
@@ -71,6 +73,61 @@ def test_shared_delivery_sanitizes_oversized_embed_payloads():
         assert discord_embed_char_count(embed) <= SAFE_MESSAGE_CHARS
     for chunk in chunks:
         assert sum(discord_embed_char_count(embed) for embed in chunk) <= SAFE_MESSAGE_CHARS
+
+
+def test_interaction_sender_splits_oversized_embeds_before_send():
+    class FakeEmbed:
+        @staticmethod
+        def from_dict(payload):
+            return payload
+
+    class FakeDiscord:
+        Embed = FakeEmbed
+
+    class FakeResponse:
+        def __init__(self):
+            self.messages = []
+            self._done = False
+
+        def is_done(self):
+            return self._done
+
+        async def send_message(self, **kwargs):
+            self._done = True
+            self.messages.append(kwargs)
+
+    class FakeFollowup:
+        def __init__(self):
+            self.messages = []
+
+        async def send(self, **kwargs):
+            self.messages.append(kwargs)
+
+    class FakeInteraction:
+        def __init__(self):
+            self.response = FakeResponse()
+            self.followup = FakeFollowup()
+
+    payload = {
+        "title": "archive",
+        "description": "d" * 1000,
+        "fields": [
+            {"name": f"row-{idx}", "value": "v" * 1024, "inline": False}
+            for idx in range(12)
+        ],
+    }
+    interaction = FakeInteraction()
+
+    asyncio.run(_send_interaction_chunks(FakeDiscord, interaction, [payload]))
+
+    messages = interaction.response.messages + interaction.followup.messages
+    assert len(messages) >= 2
+    assert interaction.response.messages
+    for message in messages:
+        embeds = message.get("embeds") or [message.get("embed")]
+        embeds = [embed for embed in embeds if embed]
+        assert embeds
+        assert sum(discord_embed_char_count(embed) for embed in embeds) <= SAFE_MESSAGE_CHARS
 
 
 def test_register_application_commands_dry_run_does_not_post():

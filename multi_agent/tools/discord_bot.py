@@ -68,25 +68,51 @@ async def _send_embed_chunks(discord_module, target, payloads):
                         print(f"Discord text fallback send failed: {text_exc}", file=sys.stderr)
 
 
-async def _send_followup_chunks(discord_module, interaction, payloads):
+def _interaction_response_done(interaction) -> bool:
+    response = getattr(interaction, "response", None)
+    is_done = getattr(response, "is_done", None)
+    if callable(is_done):
+        try:
+            return bool(is_done())
+        except Exception:
+            return True
+    return True
+
+
+async def _send_interaction_chunks(discord_module, interaction, payloads):
+    """Send one or more embed payloads through Discord's interaction limits."""
     safe_payloads = prepare_embeds_for_discord(list(payloads or []))
     for chunk_payloads in chunk_embeds_for_discord(safe_payloads):
         chunk = [_embed(discord_module, payload) for payload in chunk_payloads]
         try:
-            await interaction.followup.send(embeds=chunk, ephemeral=True)
+            if not _interaction_response_done(interaction):
+                await interaction.response.send_message(embeds=chunk, ephemeral=True)
+            else:
+                await interaction.followup.send(embeds=chunk, ephemeral=True)
             continue
         except Exception as exc:
-            print(f"Discord followup chunk send failed; retrying singles: {exc}", file=sys.stderr)
+            print(f"Discord interaction chunk send failed; retrying singles: {exc}", file=sys.stderr)
         for payload, embed in zip(chunk_payloads, chunk):
             try:
-                await interaction.followup.send(embed=embed, ephemeral=True)
+                if not _interaction_response_done(interaction):
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                else:
+                    await interaction.followup.send(embed=embed, ephemeral=True)
+                continue
             except Exception as exc:
-                print(f"Discord single followup send failed; falling back to text: {exc}", file=sys.stderr)
-                for content in embed_to_content_chunks(payload):
-                    try:
-                        await interaction.followup.send(content, ephemeral=True)
-                    except Exception as text_exc:
-                        print(f"Discord text followup fallback failed: {text_exc}", file=sys.stderr)
+                print(f"Discord single interaction send failed; falling back to text: {exc}", file=sys.stderr)
+            for content in embed_to_content_chunks(payload):
+                try:
+                    if not _interaction_response_done(interaction):
+                        await interaction.response.send_message(content=content, ephemeral=True)
+                    else:
+                        await interaction.followup.send(content=content, ephemeral=True)
+                except Exception as text_exc:
+                    print(f"Discord text interaction fallback failed: {text_exc}", file=sys.stderr)
+
+
+async def _send_followup_chunks(discord_module, interaction, payloads):
+    await _send_interaction_chunks(discord_module, interaction, payloads)
 
 
 def main() -> int:
@@ -139,7 +165,7 @@ def main() -> int:
     async def status(interaction):
         if not await _guard(interaction):
             return
-        await interaction.response.send_message(embed=_embed(discord, build_status_embed(config)), ephemeral=True)
+        await _send_interaction_chunks(discord, interaction, [build_status_embed(config)])
 
     @tree.command(name="top_deep", description="최근 자동 정밀분석 이력과 종목별 상세 매수 판단을 조회합니다.")
     @app_commands.describe(
@@ -211,7 +237,7 @@ def main() -> int:
             offset=offset,
             limit=limit,
         )
-        await interaction.followup.send(embed=_embed(discord, payload), ephemeral=True)
+        await _send_followup_chunks(discord, interaction, [payload])
 
     @tree.command(name="runs", description="누적된 스캔 Run 목록을 조회하고 run_id를 선택할 수 있게 표시합니다.")
     @app_commands.describe(market="시장 필터", offset="목록 시작 위치", limit="표시 개수")
@@ -226,7 +252,7 @@ def main() -> int:
             return
         await interaction.response.defer(ephemeral=True, thinking=True)
         payload = await asyncio.to_thread(build_runs_embed, market=market, offset=offset, limit=limit)
-        await interaction.followup.send(embed=_embed(discord, payload), ephemeral=True)
+        await _send_followup_chunks(discord, interaction, [payload])
 
     @tree.command(name="kospi_scan", description="KOSPI 전체 스윙 스캔을 실행합니다. max_scan은 2000으로 고정됩니다.")
     async def kospi_scan(interaction):
@@ -246,13 +272,13 @@ def main() -> int:
             return
         await interaction.response.defer(ephemeral=True, thinking=True)
         payload = await asyncio.to_thread(build_macro_refresh_embed, market="KR")
-        await interaction.followup.send(embed=_embed(discord, payload), ephemeral=True)
+        await _send_followup_chunks(discord, interaction, [payload])
 
     async def _handle_scan(interaction, market: str):
         enabled = bool(config.enable_scan_execution and not config.dry_run)
         if not enabled:
             payload = build_scan_ack_embed(config, market=market)
-            await interaction.response.send_message(embed=_embed(discord, payload), ephemeral=True)
+            await _send_interaction_chunks(discord, interaction, [payload])
             return
         if not config.result_channel_id:
             await interaction.response.send_message(
@@ -268,7 +294,7 @@ def main() -> int:
             return
 
         started = build_scan_started_embed(config, job=job)
-        await interaction.response.send_message(embed=_embed(discord, started), ephemeral=True)
+        await _send_interaction_chunks(discord, interaction, [started])
         client.loop.create_task(_run_scan_background(job, lock, interaction))
 
     async def _run_scan_background(job, lock, interaction):
