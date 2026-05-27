@@ -287,16 +287,11 @@ def _post_scan_intraday_context(
     hist["local_ts"] = local_idx
     hist["local_bar_end"] = hist["local_ts"] + timedelta(minutes=_interval_minutes(interval))
     same_day = hist[local_idx.date == rec_local.date()].copy()
-    after_scan = same_day[same_day["local_bar_end"] >= rec_local].copy()
+    after_scan = same_day[same_day["local_ts"] >= rec_local].copy()
 
     warnings: List[str] = []
     if after_scan.empty:
         warnings.append("post_scan_intraday_empty")
-    else:
-        first_start = after_scan["local_ts"].iloc[0]
-        first_end = after_scan["local_bar_end"].iloc[0]
-        if first_start < rec_local < first_end:
-            warnings.append("partial_intraday_bar_contains_pre_scan_range")
 
     return {
         "rec_local": rec_local,
@@ -670,7 +665,7 @@ def _compute_path_risk_labels(
 
     changed = False
     for key, value in values.items():
-        if row.get(key) != value:
+        if key not in row or row.get(key) != value:
             row[key] = value
             changed = True
     if changed:

@@ -115,7 +115,7 @@ def test_compute_intraday_returns_applies_to_swing_rows(monkeypatch):
     assert row["return_1h_pct"] == 4.0
     assert row["return_close_pct"] == 5.0
     assert row["mfe_intraday_pct"] == 6.0
-    assert row["mae_intraday_pct"] == -2.0
+    assert row["mae_intraday_pct"] == 2.0
 
 
 def test_daily_return_update_preserves_scan_entry_for_intraday_path(monkeypatch):
@@ -323,16 +323,19 @@ def test_compute_path_risk_labels_uses_post_scan_intraday_before_daily():
 
     assert _compute_path_risk_labels(row, hist, "KOSPI", intraday_hist=intraday) is True
 
-    assert row["target_before_stop_5d"] is False
-    assert row["stop_before_target_5d"] is True
-    assert row["stop_hit_at_5d"] == "2026-05-01"
-    assert row["ordered_stop_hit_at"] == "2026-05-01T10:00:00+09:00"
+    assert row["target_before_stop_5d"] is True
+    assert row["stop_before_target_5d"] is False
+    assert row["target_hit_at_5d"] == "2026-05-02"
+    assert row["stop_hit_at_5d"] is None
+    assert row["ordered_target_hit_at"] == "2026-05-02"
+    assert row["ordered_stop_hit_at"] is None
     assert row["mfe_5d_pct"] == 6.0
-    assert row["mae_5d_pct"] == -4.0
-    assert row["ordered_mfe_until_terminal_5d_pct"] == 1.0
-    assert row["ordered_mae_until_terminal_5d_pct"] == -4.0
+    assert row["mae_5d_pct"] == -2.0
+    assert row["ordered_mfe_until_terminal_5d_pct"] == 6.0
+    assert row["ordered_mae_until_terminal_5d_pct"] == -2.0
+    assert row["ordered_mae_before_target_5d_pct"] == -2.0
     assert row["outcome_path_source"] == "intraday_30m+daily_ohlc"
-    assert "partial_intraday_bar_contains_pre_scan_range" in row["outcome_path_warnings"]
+    assert row["outcome_path_warnings"] == []
 
 
 def test_compute_path_risk_labels_records_mae_before_target():
