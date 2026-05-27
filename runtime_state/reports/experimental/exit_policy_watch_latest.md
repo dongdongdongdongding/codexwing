@@ -1,0 +1,113 @@
+# Exit Policy Watch
+
+- generated_at: `2026-05-27T07:16:33.337038+00:00`
+- report_version: `exit_policy_watch_v1`
+- optimizer_generated_at: `2026-05-27T07:09:57.978059+00:00`
+- friction_pct: `0.35`
+- watch_count: `85`
+- ready_review_count: `0`
+
+## Watch Rows
+
+| Rank | State | Market | Cohort | Label | Model | TopN | N | Days | Exit Win | Gross Exit Avg | Net Exit Avg | Exit Min | Close Avg5 | Close Min5 | Stop First | Failed Checks |
+|---:|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 1 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | decision_score | 5 | 66 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | +0.22% | -33.02% | 0.00% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 2 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | decision_score | 3 | 41 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | -0.39% | -24.05% | 0.00% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 3 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | phase25_shadow_prob | 3 | 41 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | +0.81% | -33.02% | 0.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 4 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | loss_risk_score | 3 | 40 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | +1.71% | -33.30% | 0.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 5 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | loss_risk_score | 3 | 41 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | +1.92% | -21.29% | 0.00% | label_win_gate,avg_return_gate,tail_loss_gate,fold_stability_gate |
+| 6 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | phase25_shadow_prob | 5 | 66 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | -0.46% | -33.02% | 0.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 7 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | phase25_shadow_prob | 3 | 41 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | -0.43% | -21.58% | 0.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 8 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | loss_risk_score | 3 | 33 | 13 | 100.00% | +5.00% | +4.65% | +5.00% | +0.65% | -33.30% | 0.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 9 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | phase25_shadow_prob | 3 | 40 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | -0.75% | -33.30% | 0.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 10 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | expected_edge_score | 1 | 13 | 13 | 100.00% | +5.00% | +4.65% | +5.00% | +0.89% | -33.30% | 0.00% | enough_samples,avg_return_gate,tail_loss_gate |
+| 11 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | expected_edge_score | 1 | 14 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | +1.62% | -33.30% | 0.00% | enough_samples,avg_return_gate,tail_loss_gate |
+| 12 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | volume_ratio | 1 | 14 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | +4.39% | -23.48% | 0.00% | enough_samples,tail_loss_gate,fold_stability_gate |
+| 13 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | explosive_leader | ordered_5d_5v3_lowmae | relative_rank_score | 5 | 33 | 7 | 100.00% | +5.00% | +4.65% | +5.00% | +9.04% | -11.65% | 0.00% | enough_days,enough_folds,bad_path_gate |
+| 14 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | expected_edge_score | 1 | 14 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | +1.08% | -33.30% | 0.00% | enough_samples,avg_return_gate,tail_loss_gate |
+| 15 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | prob_clean | 1 | 13 | 13 | 100.00% | +5.00% | +4.65% | +5.00% | -0.55% | -33.30% | 0.00% | enough_samples,avg_return_gate,tail_loss_gate |
+| 16 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | volume_ratio | 1 | 13 | 13 | 100.00% | +5.00% | +4.65% | +5.00% | +6.68% | -14.23% | 0.00% | enough_samples,label_win_gate,bad_path_gate,tail_loss_gate |
+| 17 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | explosive_leader | ordered_5d_5v3_lowmae | volume_ratio | 5 | 33 | 7 | 100.00% | +5.00% | +4.65% | +5.00% | +8.59% | -21.21% | 0.00% | enough_days,enough_folds,bad_path_gate,tail_loss_gate |
+| 18 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | explosive_leader | ordered_5d_5v3_lowmae | loss_risk_score | 5 | 33 | 7 | 100.00% | +5.00% | +4.65% | +5.00% | +5.57% | -11.65% | 0.00% | enough_days,enough_folds,bad_path_gate |
+| 19 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | loss_risk_score | 1 | 14 | 14 | 100.00% | +5.00% | +4.65% | +5.00% | -0.88% | -21.29% | 0.00% | enough_samples,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 20 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | explosive_leader | ordered_5d_5v3_lowmae | whale_score | 5 | 33 | 7 | 100.00% | +5.00% | +4.65% | +5.00% | +6.26% | -21.21% | 0.00% | enough_days,enough_folds,bad_path_gate,tail_loss_gate |
+| 21 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | explosive_leader | ordered_5d_5v3_lowmae | expected_edge_score | 5 | 33 | 7 | 100.00% | +5.00% | +4.65% | +5.00% | +1.75% | -21.21% | 0.00% | enough_days,enough_folds,avg_return_gate,tail_loss_gate |
+| 22 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | phase25_shadow_prob | 5 | 67 | 14 | 98.51% | +4.88% | +4.53% | -3.00% | +0.64% | -24.05% | 1.49% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 23 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | volume_ratio | 5 | 67 | 14 | 98.51% | +4.88% | +4.53% | -3.00% | +0.65% | -27.48% | 1.49% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 24 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | loss_risk_score | 5 | 67 | 14 | 98.51% | +4.88% | +4.53% | -3.00% | +1.31% | -23.13% | 1.49% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+| 25 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | relative_rank_score | 5 | 67 | 14 | 98.51% | +4.88% | +4.53% | -3.00% | +0.91% | -23.13% | 1.49% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+| 26 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | phase25_prob | 5 | 66 | 14 | 98.48% | +4.88% | +4.53% | -3.00% | +2.00% | -19.66% | 1.51% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 27 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | expected_edge_score | 5 | 66 | 14 | 98.48% | +4.88% | +4.53% | -3.00% | +2.89% | -20.20% | 1.51% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 28 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | relative_rank_score | 5 | 66 | 14 | 98.48% | +4.88% | +4.53% | -3.00% | +0.83% | -23.48% | 1.51% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 29 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | volume_ratio | 5 | 66 | 14 | 98.48% | +4.88% | +4.53% | -3.00% | +1.15% | -33.02% | 1.51% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 30 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | loss_risk_score | 5 | 66 | 14 | 98.48% | +4.88% | +4.53% | -3.00% | +0.48% | -23.48% | 1.51% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 31 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | phase25_shadow_prob | 5 | 57 | 14 | 98.25% | +4.86% | +4.51% | -3.00% | -1.70% | -33.30% | 1.75% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 32 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | loss_risk_score | 5 | 57 | 14 | 98.25% | +4.86% | +4.51% | -3.00% | -1.47% | -33.30% | 1.75% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 33 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | volume_ratio | 5 | 57 | 14 | 98.25% | +4.86% | +4.51% | -3.00% | -1.72% | -33.30% | 1.75% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 34 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | relative_rank_score | 5 | 57 | 14 | 98.25% | +4.86% | +4.51% | -3.00% | -1.62% | -33.30% | 1.75% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 35 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | volume_ratio | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +3.19% | -27.48% | 2.44% | label_win_gate,tail_loss_gate |
+| 36 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | phase25_prob | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +1.07% | -21.29% | 2.44% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 37 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | expected_edge_score | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | -1.03% | -33.30% | 2.44% | avg_return_gate,tail_loss_gate |
+| 38 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | relative_rank_score | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +2.08% | -23.48% | 2.44% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 39 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | loss_risk_score | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +2.38% | -23.48% | 2.44% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 40 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | volume_ratio | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +0.69% | -27.48% | 2.44% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 41 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | phase25_prob | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +0.38% | -19.66% | 2.44% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 42 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | relative_rank_score | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +1.46% | -21.29% | 2.44% | label_win_gate,avg_return_gate,tail_loss_gate,fold_stability_gate |
+| 43 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | whale_score | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | +1.17% | -27.48% | 2.44% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 44 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | expected_edge_score | 3 | 41 | 14 | 97.56% | +4.80% | +4.45% | -3.00% | -1.03% | -20.20% | 2.44% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 45 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | relative_rank_score | 3 | 40 | 14 | 97.50% | +4.80% | +4.45% | -3.00% | +0.83% | -33.30% | 2.50% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 46 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | expected_edge_score | 3 | 40 | 14 | 97.50% | +4.80% | +4.45% | -3.00% | +0.71% | -33.30% | 2.50% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 47 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | phase25_prob | 3 | 40 | 14 | 97.50% | +4.80% | +4.45% | -3.00% | +1.11% | -24.05% | 2.50% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+| 48 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | volume_ratio | 3 | 40 | 14 | 97.50% | +4.80% | +4.45% | -3.00% | -0.31% | -33.30% | 2.50% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+| 49 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | prob_clean | 5 | 67 | 14 | 97.02% | +4.76% | +4.41% | -3.00% | -0.34% | -33.30% | 2.98% | avg_return_gate,tail_loss_gate |
+| 50 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | phase25_prob | 5 | 67 | 14 | 97.02% | +4.76% | +4.41% | -3.00% | -0.00% | -23.13% | 2.98% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 51 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | expected_edge_score | 5 | 67 | 14 | 97.02% | +4.76% | +4.41% | -3.00% | +0.57% | -33.30% | 2.98% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 52 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | decision_score | 5 | 67 | 14 | 97.02% | +4.76% | +4.41% | -3.00% | +0.49% | -33.30% | 2.98% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+| 53 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | prob_clean | 5 | 66 | 14 | 96.97% | +4.76% | +4.41% | -3.00% | +0.92% | -23.13% | 3.03% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 54 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | expected_edge_score | 3 | 33 | 13 | 96.97% | +4.76% | +4.41% | -3.00% | -0.18% | -33.30% | 3.03% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 55 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | prob_clean | 3 | 33 | 13 | 96.97% | +4.76% | +4.41% | -3.00% | -0.18% | -33.30% | 3.03% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 56 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | relative_rank_score | 3 | 33 | 13 | 96.97% | +4.76% | +4.41% | -3.00% | -0.19% | -33.30% | 3.03% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 57 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | phase25_prob | 3 | 33 | 13 | 96.97% | +4.76% | +4.41% | -3.00% | +0.29% | -24.05% | 3.03% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 58 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | phase25_shadow_prob | 3 | 33 | 13 | 96.97% | +4.76% | +4.41% | -3.00% | +0.19% | -33.30% | 3.03% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 59 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | whale_score | 5 | 66 | 14 | 96.97% | +4.76% | +4.41% | -3.00% | +0.87% | -27.48% | 3.03% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 60 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | prob_clean | 5 | 57 | 14 | 96.49% | +4.72% | +4.37% | -3.00% | -1.80% | -33.30% | 3.51% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 61 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | phase25_prob | 5 | 57 | 14 | 96.49% | +4.72% | +4.37% | -3.00% | -1.82% | -33.30% | 3.51% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 62 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | decision_score | 5 | 57 | 14 | 96.49% | +4.72% | +4.37% | -3.00% | -1.54% | -33.30% | 3.51% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 63 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | expected_edge_score | 5 | 57 | 14 | 96.49% | +4.72% | +4.37% | -3.00% | -1.62% | -33.30% | 3.51% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 64 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | whale_score | 5 | 67 | 14 | 95.52% | +4.64% | +4.29% | -3.00% | +0.38% | -27.48% | 4.48% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 65 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | prob_clean | 3 | 41 | 14 | 95.12% | +4.61% | +4.26% | -3.00% | +0.13% | -33.30% | 4.88% | avg_return_gate,tail_loss_gate |
+| 66 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | prob_clean | 3 | 41 | 14 | 95.12% | +4.61% | +4.26% | -3.00% | +0.81% | -19.66% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 67 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | decision_score | 3 | 41 | 14 | 95.12% | +4.61% | +4.26% | -3.00% | -0.02% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+| 68 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | decision_score | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 69 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | expected_edge_score | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 70 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | prob_clean | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 71 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | phase25_prob | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 72 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | phase25_shadow_prob | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 73 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | relative_rank_score | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 74 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | whale_score | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 75 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | volume_ratio | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 76 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | loss_risk_score | 5 | 41 | 13 | 95.12% | +4.61% | +4.26% | -3.00% | -2.43% | -33.30% | 4.88% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 77 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | prob_clean | 3 | 40 | 14 | 95.00% | +4.60% | +4.25% | -3.00% | -0.72% | -33.30% | 5.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 78 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | decision_score | 3 | 40 | 14 | 95.00% | +4.60% | +4.25% | -3.00% | -1.72% | -33.30% | 5.00% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+| 79 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | whale_score | 5 | 57 | 14 | 94.74% | +4.58% | +4.23% | -3.00% | -1.92% | -33.30% | 5.26% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 80 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | whale_score | 3 | 33 | 13 | 93.94% | +4.52% | +4.17% | -3.00% | -0.65% | -33.30% | 6.06% | avg_return_gate,bad_path_gate,tail_loss_gate |
+| 81 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | volume_ratio | 3 | 33 | 13 | 93.94% | +4.52% | +4.17% | -3.00% | -1.43% | -33.30% | 6.06% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 82 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5 | ordered_5d_5v3_lowmae | decision_score | 3 | 33 | 13 | 93.94% | +4.52% | +4.17% | -3.00% | -1.16% | -33.30% | 6.06% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 83 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | prob_clean | 1 | 14 | 14 | 92.86% | +4.43% | +4.08% | -3.00% | -0.25% | -13.46% | 7.14% | enough_samples,avg_return_gate,tail_loss_gate,fold_stability_gate |
+| 84 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | whale_score | 3 | 41 | 14 | 92.68% | +4.41% | +4.06% | -3.00% | +2.34% | -27.48% | 7.32% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate |
+| 85 | FORWARD_TRACK_SMALL_SAMPLE | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | whale_score | 3 | 40 | 14 | 92.50% | +4.40% | +4.05% | -3.00% | +0.31% | -33.30% | 7.50% | label_win_gate,avg_return_gate,bad_path_gate,tail_loss_gate,fold_stability_gate |
+
+## Baselines
+
+### KOSDAQ
+
+| Cohort | N | Win5 | Avg5 | Min5 | Max5 | Bad Path | Clean Riser |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Top5 | 434 | 52.77% | +1.94% | -46.31% | +65.65% | 66.59% | 11.52% |
+| Exception Leader | 278 | 54.68% | +1.92% | -34.81% | +65.65% | 69.78% | 13.31% |
+| Practical 80 Gate | 14 | 92.86% | +19.95% | -2.58% | +37.81% | 7.14% | 50.00% |
+
+## Notes
+- EXIT-WATCH is not a production scanner replacement.
+- Close-hold failures remain visible through failed_checks and close_avg/min fields.
+- Net exit average subtracts configured friction_pct for fees/slippage/tax approximation.

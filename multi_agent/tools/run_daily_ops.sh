@@ -158,6 +158,12 @@ if [[ "${AG_OPERATIONAL_ADMISSION_OPTIMIZER_KOSDAQ_THEME_ENABLE:-1}" == "1" ]]; 
       --include-theme
 fi
 
+if [[ "${AG_EXIT_POLICY_WATCH_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] report_exit_policy_watch"
+  run_optional "report_exit_policy_watch" \
+    python3 multi_agent/tools/report_exit_policy_watch.py
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then

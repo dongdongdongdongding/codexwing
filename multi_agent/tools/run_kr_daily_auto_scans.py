@@ -123,6 +123,15 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "json_path": "runtime_state/reports/experimental/ordered_shadow_watch_latest.json",
     },
     {
+        "name": "Exit Policy Watch",
+        "command": [
+            sys.executable,
+            "multi_agent/tools/report_exit_policy_watch.py",
+        ],
+        "md_path": "runtime_state/reports/experimental/exit_policy_watch_latest.md",
+        "json_path": "runtime_state/reports/experimental/exit_policy_watch_latest.json",
+    },
+    {
         "name": "INTRADAY Learning Readiness",
         "command": [
             sys.executable,
