@@ -19,7 +19,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-DEFAULT_OPTIMIZER_REPORT = Path("runtime_state/reports/experimental/operational_admission_optimizer_kosdaq_theme_latest.json")
+DEFAULT_OPTIMIZER_REPORTS = [
+    Path("runtime_state/reports/experimental/operational_admission_optimizer_latest.json"),
+    Path("runtime_state/reports/experimental/operational_admission_optimizer_kosdaq_theme_latest.json"),
+]
 DEFAULT_COHORT_REPORT = Path("runtime_state/reports/validation/scan_cohort_performance.json")
 DEFAULT_OUTPUT_DIR = Path("runtime_state/reports/experimental")
 REPORT_VERSION = "exit_policy_watch_v1"
@@ -81,6 +84,45 @@ def _baseline_rows(cohort_report: Dict[str, Any], market: str) -> List[Dict[str,
             }
         )
     return rows
+
+
+def _combine_optimizer_reports(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+    combined: Dict[str, Any] = {
+        "generated_at": None,
+        "evaluated_policies": 0,
+        "top_policies": [],
+        "source_reports": [],
+    }
+    by_key: Dict[tuple[Any, ...], Dict[str, Any]] = {}
+    for report in reports:
+        if not report:
+            continue
+        combined["source_reports"].append(
+            {
+                "generated_at": report.get("generated_at"),
+                "evaluated_policies": report.get("evaluated_policies"),
+                "promotable_count": report.get("promotable_count"),
+            }
+        )
+        if report.get("generated_at"):
+            combined["generated_at"] = report.get("generated_at")
+        combined["evaluated_policies"] = int(combined.get("evaluated_policies") or 0) + int(report.get("evaluated_policies") or 0)
+        for policy in report.get("top_policies") or []:
+            if not isinstance(policy, dict):
+                continue
+            label_profile = policy.get("label_profile") if isinstance(policy.get("label_profile"), dict) else {}
+            key = (
+                policy.get("market"),
+                policy.get("cohort"),
+                label_profile.get("name"),
+                policy.get("policy_type"),
+                policy.get("model"),
+                policy.get("feature_set"),
+                policy.get("topn"),
+            )
+            by_key[key] = policy
+    combined["top_policies"] = list(by_key.values())
+    return combined
 
 
 def _watch_state(row: Dict[str, Any], *, min_n: int, min_days: int, min_net_avg_pct: float) -> str:
@@ -256,7 +298,7 @@ def render_markdown(report: Dict[str, Any]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Report tactical exit-policy watch lanes.")
-    parser.add_argument("--optimizer-report", default=str(DEFAULT_OPTIMIZER_REPORT))
+    parser.add_argument("--optimizer-report", action="append", default=None)
     parser.add_argument("--cohort-report", default=str(DEFAULT_COHORT_REPORT))
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--stem", default="exit_policy_watch_latest")
@@ -266,7 +308,8 @@ def main() -> int:
     parser.add_argument("--min-net-avg-pct", type=float, default=3.0)
     args = parser.parse_args()
 
-    optimizer = _load_json(Path(args.optimizer_report))
+    optimizer_paths = [Path(item) for item in (args.optimizer_report or [str(path) for path in DEFAULT_OPTIMIZER_REPORTS])]
+    optimizer = _combine_optimizer_reports([_load_json(path) for path in optimizer_paths])
     cohort = _load_json(Path(args.cohort_report))
     report = build_report(
         optimizer,

@@ -2699,6 +2699,7 @@ if active_main_tab == "📚 아카이브":
                     st.markdown("### KOSPI Ordered Shadow")
                     st.caption("prob_clean/alpha/CORE_TREND/테마 평균 조건을 통과한 KOSPI shadow 관찰 섹션입니다. 운영 Top5를 자동 교체하지 않습니다.")
                     _render_signal_card_list(_archive_shadow, empty_text="KOSPI shadow 조건 통과 후보 없음.")
+                    _render_exit_policy_watch_panel(_archive_market_key)
 
                 st.markdown("### 별도 급등 레이더")
                 st.caption("익일 +5%/+10% 급등 포착 전용 shadow-only 관찰 섹션입니다. Top5/Exception을 대체하지 않습니다.")
