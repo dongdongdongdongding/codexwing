@@ -105,6 +105,15 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "md_path": "runtime_state/reports/experimental/ordered_shadow_watch_latest.md",
         "json_path": "runtime_state/reports/experimental/ordered_shadow_watch_latest.json",
     },
+    {
+        "name": "INTRADAY Learning Readiness",
+        "command": [
+            sys.executable,
+            "multi_agent/tools/report_intraday_learning_readiness.py",
+        ],
+        "md_path": "runtime_state/reports/validation/intraday_learning_readiness.md",
+        "json_path": "runtime_state/reports/validation/intraday_learning_readiness.json",
+    },
 )
 
 
