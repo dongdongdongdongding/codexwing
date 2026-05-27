@@ -19,6 +19,8 @@ from ui.view_chrome import render_section_intro
 
 
 TOP_DEEP_SECTION_ORDER = {
+    "KOSPI Operating Challenger": -150,
+    "KOSDAQ Operating Challenger": -140,
     "Practical 80 Gate": -100,
     "KOSDAQ Ordered Shadow": -30,
     "KOSDAQ Theme Rank Shadow": -25,
@@ -360,9 +362,9 @@ def render_selection_thesis(row: Dict[str, Any], trade_plan: Dict[str, Any]) -> 
 def render_top_deep_reports_page() -> None:
     render_section_intro(
         "Top Deep Reports",
-        "Practical + Shadow + Top5 + Exception 자동 정밀분석",
-        "Practical 80 Gate 후보를 최상단에 분리하고, Shadow/Top5/Exception을 같은 기준으로 분석합니다.",
-        ["Practical first", "Shadow watch", "Top5 main", "Exception add-on", "Real data only"],
+        "Challenger + Practical + Shadow + Top5 + Exception 자동 정밀분석",
+        "운영 챌린저와 Practical 80 Gate 후보를 최상단에 분리하고, Shadow/Top5/Exception을 같은 기준으로 분석합니다.",
+        ["Challenger first", "Practical next", "Shadow watch", "Top5 audit", "Real data only"],
     )
     rows, warning = load_top_deep_reports()
     if warning:
@@ -409,8 +411,13 @@ def render_top_deep_reports_page() -> None:
     page_df = run_df.iloc[(int(page) - 1) * int(page_size): int(page) * int(page_size)]
     st.caption(f"{selected_market} · {selected_date} · {run_labels.get(str(selected_run), selected_run)} · {page}/{max_page} 페이지")
     section_counts = run_df["selection_alignment"].apply(top_deep_section_name).value_counts().to_dict()
+    operating_count = sum(
+        int(section_counts.get(section, 0) or 0)
+        for section in ("KOSPI Operating Challenger", "KOSDAQ Operating Challenger")
+    )
     st.caption(
-        f"섹션: Practical {section_counts.get('Practical 80 Gate', 0)} / "
+        f"섹션: Challenger {operating_count} / "
+        f"Practical {section_counts.get('Practical 80 Gate', 0)} / "
         f"Shadow {sum(int(section_counts.get(section, 0) or 0) for section in TOP_DEEP_SECTION_ORDER if 'Shadow' in section)} / "
         f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
     )

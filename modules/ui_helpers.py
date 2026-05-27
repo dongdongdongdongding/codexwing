@@ -367,6 +367,83 @@ def is_kospi_ordered_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     )
 
 
+def is_kospi_operating_challenger_row(rec: Dict[str, Any]) -> bool:
+    """Deployable KOSPI challenger lane promoted above weak raw Top5.
+
+    This mirrors the current best KOSPI promotion-gate near miss:
+    Top3, low phase25 probability, and same-day theme strength. It is an
+    operator-primary lane, while original Top5/Exception rows remain visible
+    below for audit and outcome tracking.
+    """
+    if not isinstance(rec, dict) or _row_market(rec) != "KOSPI" or is_exception_leader_row(rec):
+        return False
+    rank = _row_float(rec, "priority_rank", "rank", "Rank", "_raw_scan_rank")
+    phase25 = _row_float(rec, "phase25_prob", "phase25_prob_clean", "phase25_shadow_prob")
+    theme_rank = _row_float(
+        rec,
+        "theme_day_strength_rank",
+        "_theme_day_strength_rank",
+        "display_theme_day_strength_rank",
+    )
+    theme_strength = _row_float(
+        rec,
+        "theme_day_strength_score",
+        "_theme_day_strength_score",
+        "display_theme_day_strength_score",
+    )
+    return (
+        rank is not None
+        and 1 <= rank <= 3
+        and phase25 is not None
+        and phase25 <= 38.3
+        and theme_rank is not None
+        and theme_rank <= 8.0
+        and theme_strength is not None
+        and theme_strength >= 2.0908
+    )
+
+
+def is_kosdaq_operating_challenger_row(rec: Dict[str, Any]) -> bool:
+    """Deployable KOSDAQ challenger lane promoted above weak raw Top5.
+
+    Uses the current dynamic-theme/tech watch profile because it can be
+    evaluated from scan-time fields without materializing a new ML model.
+    KOSDAQ still carries higher loss-path risk, so the display metadata keeps
+    that warning explicit while prioritizing it over the much weaker raw Top5.
+    """
+    if not isinstance(rec, dict) or _row_market(rec) != "KOSDAQ":
+        return False
+    theme_avg_volume = _row_float(
+        rec,
+        "theme_day_avg_volume_ratio",
+        "_theme_day_avg_volume_ratio",
+        "display_theme_day_avg_volume_ratio",
+    )
+    theme_avg_expected_1d = _row_float(
+        rec,
+        "theme_day_avg_expected_return_1d_pct",
+        "_theme_day_avg_expected_return_1d_pct",
+        "display_theme_day_avg_expected_return_1d_pct",
+    )
+    tech = _row_float(rec, "tech_score", "Tech", "기술점수")
+    theme_avg_alpha = _row_float(
+        rec,
+        "theme_day_avg_alpha_score",
+        "_theme_day_avg_alpha_score",
+        "display_theme_day_avg_alpha_score",
+    )
+    return (
+        theme_avg_volume is not None
+        and theme_avg_volume >= 0.8633
+        and theme_avg_expected_1d is not None
+        and theme_avg_expected_1d >= 0.1514
+        and tech is not None
+        and tech <= 65.0
+        and theme_avg_alpha is not None
+        and theme_avg_alpha <= 69.5321
+    )
+
+
 def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     """Current KOSDAQ low-loss theme rebound shadow gate.
 
@@ -548,8 +625,42 @@ def build_kr_shadow_gate_records(
             marked.append(copy)
         return marked
 
+    kospi_operating = _mark(
+        [row for row in sorted_rows if is_kospi_operating_challenger_row(row)],
+        section="KOSPI Operating Challenger",
+        order=-120,
+        gate={
+            "label": "KOSPI 운영 챌린저",
+            "profile": "5D_ordered_10v5",
+            "conditions": "Top3 · phase25_prob<=38.3 · 테마강도순위<=8 · 테마강도>=2.0908",
+            "metrics": "test n=8 · 실전승률 87.5% · 5D avg +25.0% · bad 0% · stop 12.5%",
+            "note": "기존 KOSPI Top5/Exception보다 우선 확인. stop5 10% 초과 리스크는 계속 백그라운드 개선.",
+        },
+    )
+    kosdaq_operating = _mark(
+        [row for row in sorted_rows if is_kosdaq_operating_challenger_row(row)],
+        section="KOSDAQ Operating Challenger",
+        order=-110,
+        gate={
+            "label": "KOSDAQ 운영 챌린저",
+            "profile": "5D_ordered_5v5_dynamic_theme_tech",
+            "conditions": "테마평균 volume>=0.8633 · 테마평균 기대1D>=0.1514 · tech<=65 · 테마평균 alpha<=69.5321",
+            "metrics": "ordered all n=21 · target-before-stop 95.2% · stop 4.8%; close-tail 검증은 계속 보강",
+            "note": "기존 KOSDAQ Top5/Exception보다 우선 확인하되, 손실경로 리스크 경고를 유지.",
+        },
+    )
+    operating_tickers = {
+        _row_text(row, "ticker", "티커", "Ticker", "symbol").upper()
+        for row in kospi_operating + kosdaq_operating
+    }
+
     kosdaq_ordered = _mark(
-        [row for row in sorted_rows if is_kosdaq_ordered_observer_shadow_gate_row(row)],
+        [
+            row
+            for row in sorted_rows
+            if is_kosdaq_ordered_observer_shadow_gate_row(row)
+            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in operating_tickers
+        ],
         section="KOSDAQ Ordered Shadow",
         order=-30,
         gate={
@@ -567,6 +678,7 @@ def build_kr_shadow_gate_records(
             for row in sorted_rows
             if is_kosdaq_theme_rank_shadow_gate_row(row)
             and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in ordered_tickers
+            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in operating_tickers
         ],
         section="KOSDAQ Theme Rank Shadow",
         order=-25,
@@ -587,6 +699,7 @@ def build_kr_shadow_gate_records(
             for row in sorted_rows
             if is_kosdaq_ordered_rebound_shadow_gate_row(row)
             and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in kosdaq_shadow_tickers
+            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in operating_tickers
         ],
         section="KOSDAQ Low-loss Shadow",
         order=-20,
@@ -599,7 +712,12 @@ def build_kr_shadow_gate_records(
         },
     )
     kospi = _mark(
-        [row for row in sorted_rows if is_kospi_ordered_shadow_gate_row(row)],
+        [
+            row
+            for row in sorted_rows
+            if is_kospi_ordered_shadow_gate_row(row)
+            and _row_text(row, "ticker", "티커", "Ticker", "symbol").upper() not in operating_tickers
+        ],
         section="KOSPI Shadow",
         order=-10,
         gate={
@@ -611,12 +729,15 @@ def build_kr_shadow_gate_records(
         },
     )
     return {
+        "kospi_operating": kospi_operating,
+        "kosdaq_operating": kosdaq_operating,
+        "operating": kospi_operating + kosdaq_operating,
         "kosdaq_ordered": kosdaq_ordered,
         "kosdaq_theme_rank": kosdaq_theme_rank,
         "kosdaq_low_loss": kosdaq_low_loss,
-        "kosdaq": kosdaq_ordered + kosdaq_theme_rank + kosdaq_low_loss,
-        "kospi": kospi,
-        "combined": kosdaq_ordered + kosdaq_theme_rank + kosdaq_low_loss + kospi,
+        "kosdaq": kosdaq_operating + kosdaq_ordered + kosdaq_theme_rank + kosdaq_low_loss,
+        "kospi": kospi_operating + kospi,
+        "combined": kospi_operating + kosdaq_operating + kosdaq_ordered + kosdaq_theme_rank + kosdaq_low_loss + kospi,
     }
 
 

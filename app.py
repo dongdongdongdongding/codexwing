@@ -2678,6 +2678,20 @@ if active_main_tab == "📚 아카이브":
                     if _archive_market_key == "KOSPI"
                     else _archive_shadow_groups["combined"]
                 )
+                _archive_operating_records = (
+                    _archive_shadow_groups["kosdaq_operating"]
+                    if _archive_market_key == "KOSDAQ"
+                    else _archive_shadow_groups["kospi_operating"]
+                    if _archive_market_key == "KOSPI"
+                    else _archive_shadow_groups["operating"]
+                )
+                _archive_operating_sections = {"KOSPI Operating Challenger", "KOSDAQ Operating Challenger"}
+                _archive_shadow_records = [
+                    row
+                    for row in _archive_shadow_records
+                    if str(row.get("_analysis_section") or "") not in _archive_operating_sections
+                ]
+                _archive_operating = build_signal_display_rows(_archive_operating_records, limit=5)
                 _archive_shadow = build_signal_display_rows(_archive_shadow_records, limit=5)
                 _archive_radar = build_signal_display_rows(build_next_day_radar_records(_archive_records, limit=5), limit=5)
                 _archive_practical = build_signal_display_rows(_archive_groups.get("practical", []), limit=5)
@@ -2692,14 +2706,20 @@ if active_main_tab == "📚 아카이브":
                     st.info("실전 우선 후보 없음.")
 
                 if _archive_market_key == "KOSDAQ":
-                    st.markdown("### KOSDAQ 최우선 관찰 Shadow")
-                    st.caption("손실 꼬리 축소형 KOSDAQ shadow 조건을 통과한 후보입니다. 기존 Top5/Exception을 대체하지 않고 상단에서 우선 확인합니다.")
-                    _render_signal_card_list(_archive_shadow, empty_text="KOSDAQ shadow 조건 통과 후보 없음.")
+                    st.markdown("### KOSDAQ 운영 챌린저")
+                    st.caption("기존 KOSDAQ Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. 손실경로 리스크는 카드의 경고/손절 기준으로 계속 추적합니다.")
+                    _render_signal_card_list(_archive_operating, empty_text="KOSDAQ 운영 챌린저 조건 통과 후보 없음.")
+                    st.markdown("### KOSDAQ Shadow 관찰")
+                    st.caption("운영 챌린저와 분리된 검증 관찰 섹션입니다. 운영 교체 후보가 아니라 추적/비교 대상으로 봅니다.")
+                    _render_signal_card_list(_archive_shadow, empty_text="KOSDAQ Shadow 조건 통과 후보 없음.")
                     _render_exit_policy_watch_panel(_archive_market_key)
                 elif _archive_market_key == "KOSPI":
-                    st.markdown("### KOSPI Ordered Shadow")
-                    st.caption("prob_clean/alpha/CORE_TREND/테마 평균 조건을 통과한 KOSPI shadow 관찰 섹션입니다. 운영 Top5를 자동 교체하지 않습니다.")
-                    _render_signal_card_list(_archive_shadow, empty_text="KOSPI shadow 조건 통과 후보 없음.")
+                    st.markdown("### KOSPI 운영 챌린저")
+                    st.caption("기존 KOSPI Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. stop5 초과 리스크는 백그라운드 검증으로 계속 줄입니다.")
+                    _render_signal_card_list(_archive_operating, empty_text="KOSPI 운영 챌린저 조건 통과 후보 없음.")
+                    st.markdown("### KOSPI Shadow 관찰")
+                    st.caption("운영 챌린저와 분리된 검증 관찰 섹션입니다. 운영 교체 후보가 아니라 추적/비교 대상으로 봅니다.")
+                    _render_signal_card_list(_archive_shadow, empty_text="KOSPI Shadow 조건 통과 후보 없음.")
                     _render_exit_policy_watch_panel(_archive_market_key)
 
                 st.markdown("### 별도 급등 레이더")

@@ -416,6 +416,46 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(groups["kosdaq"][0]["_analysis_section"], "KOSDAQ Low-loss Shadow")
         self.assertEqual(groups["kospi"][0]["_analysis_section"], "KOSPI Shadow")
 
+    def test_kr_shadow_gate_records_promote_operating_challengers_first(self):
+        rows = [
+            {
+                "ticker": "KSOP.KS",
+                "market": "KOSPI",
+                "priority_rank": 1,
+                "phase25_prob": 30.0,
+                "theme_day_strength_rank": 3,
+                "theme_day_strength_score": 2.5,
+            },
+            {
+                "ticker": "KQOP.KQ",
+                "market": "KOSDAQ",
+                "theme_day_avg_volume_ratio": 1.0,
+                "theme_day_avg_expected_return_1d_pct": 0.2,
+                "tech_score": 60,
+                "theme_day_avg_alpha_score": 60.0,
+            },
+            {
+                "ticker": "KQLOW.KQ",
+                "market": "KOSDAQ",
+                "primary_theme": "로봇/자동화",
+                "tech_score": 75,
+                "trend": "UP",
+                "theme_day_symbol_count": 7,
+                "theme_day_avg_decision_score": 60,
+            },
+        ]
+
+        groups = build_kr_shadow_gate_records(rows, limit=5)
+
+        self.assertEqual([row["ticker"] for row in groups["operating"]], ["KSOP.KS", "KQOP.KQ"])
+        self.assertEqual(
+            [row["_analysis_section"] for row in groups["combined"][:2]],
+            ["KOSPI Operating Challenger", "KOSDAQ Operating Challenger"],
+        )
+        self.assertEqual([row["ticker"] for row in groups["kospi_operating"]], ["KSOP.KS"])
+        self.assertEqual([row["ticker"] for row in groups["kosdaq_operating"]], ["KQOP.KQ"])
+        self.assertEqual(groups["combined"][2]["_analysis_section"], "KOSDAQ Low-loss Shadow")
+
     def test_kr_shadow_gate_separates_kosdaq_ordered_and_low_loss_contracts(self):
         rows = [
             {

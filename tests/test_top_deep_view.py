@@ -45,6 +45,8 @@ def test_top_deep_market_and_section_helpers():
     assert infer_top_deep_market({"market": "kospi", "ticker": "X"}) == "KOSPI"
     assert top_deep_section_name({}) == "Top5"
     assert top_deep_section_name({"analysis_section": "Exception Leader"}) == "Exception Leader"
+    assert top_deep_section_order({"analysis_section": "KOSPI Operating Challenger"}) < top_deep_section_order({"analysis_section": "Practical 80 Gate"})
+    assert top_deep_section_order({"analysis_section": "KOSDAQ Operating Challenger"}) < top_deep_section_order({"analysis_section": "KOSDAQ Ordered Shadow"})
     assert top_deep_section_order({"analysis_section": "Practical 80 Gate"}) < top_deep_section_order({"analysis_section": "KOSDAQ Ordered Shadow"})
     assert top_deep_section_order({"analysis_section": "KOSDAQ Ordered Shadow"}) < top_deep_section_order({"analysis_section": "Top5"})
     assert top_deep_section_rank({"analysis_section_rank": 3}) == 3

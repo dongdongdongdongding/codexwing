@@ -24,6 +24,20 @@ class ActionLabelContract:
 
 
 CANDIDATE_SECTION_CONTRACTS: Dict[str, CandidateSectionContract] = {
+    "KOSPI Operating Challenger": CandidateSectionContract(
+        label="KOSPI Operating Challenger",
+        role="kospi_operating_challenger",
+        production_rank_source=True,
+        replaces_top5=True,
+        operator_semantics="현재 검증 기준에서 기존 KOSPI Top5/Exception보다 우선 확인하는 운영 챌린저 섹션입니다. 원본 Top5는 아래에 남기지만, 실전 확인 순서는 이 섹션을 먼저 봅니다.",
+    ),
+    "KOSDAQ Operating Challenger": CandidateSectionContract(
+        label="KOSDAQ Operating Challenger",
+        role="kosdaq_operating_challenger",
+        production_rank_source=True,
+        replaces_top5=True,
+        operator_semantics="현재 검증 기준에서 기존 KOSDAQ Top5/Exception보다 우선 확인하는 운영 챌린저 섹션입니다. 손실경로 리스크가 높으므로 경고와 손절 기준을 함께 확인합니다.",
+    ),
     "Practical 80 Gate": CandidateSectionContract(
         label="Practical 80 Gate",
         role="validated_practical_priority",

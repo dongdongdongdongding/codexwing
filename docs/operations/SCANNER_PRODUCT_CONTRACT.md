@@ -23,8 +23,10 @@ not a trading guarantee.
 
 | Section | Role | Operator Meaning |
 |---|---|---|
-| Practical 80 Gate | validated practical priority | Top5/Exception candidates that pass the scan-time Practical 80 Gate. This is the first section to inspect when present; it does not delete the original Top5 section. |
-| Top5 | production priority | Main production scanner output. Inspect after Practical 80 Gate when that section exists; action labels and entry conditions still decide whether it is tradable. |
+| KOSPI Operating Challenger | KOSPI operating challenger | Current KOSPI challenger lane promoted above raw Top5/Exception. Original Top5 stays visible below for audit, but this is the first KOSPI section to inspect while background validation keeps reducing stop risk. |
+| KOSDAQ Operating Challenger | KOSDAQ operating challenger | Current KOSDAQ challenger lane promoted above raw Top5/Exception. It remains explicitly risk-tagged because KOSDAQ loss-path evidence is still weaker than KOSPI. |
+| Practical 80 Gate | validated practical priority | Top5/Exception candidates that pass the scan-time Practical 80 Gate. Inspect after Operating Challenger when present; it does not delete the original Top5 section. |
+| Top5 | production priority | Main production scanner output. Inspect after Operating Challenger and Practical 80 Gate when those sections exist; action labels and entry conditions still decide whether it is tradable. |
 | Exception Leader | momentum exception stream | Strong out-of-rank momentum stream. It is not a Top5 replacement; it is a separate high-volatility observation and precision-analysis target. |
 | Shadow | validated observer group | Generic grouping for gates under forward observation. Shadow rows do not change production ranking. |
 | KOSDAQ Ordered Shadow | KOSDAQ ordered observer | KOSDAQ ordered rebound observer. It appears near the top for visibility, but remains shadow-only until validation says otherwise. |
@@ -97,13 +99,13 @@ loss-tail metrics alongside win rate.
 
 ## Improvement Loop
 
-1. Scanner emits Practical 80 Gate, Top5, Exception Leader, Shadow, and radar candidates with
+1. Scanner emits Operating Challenger, Practical 80 Gate, Top5, Exception Leader, Shadow, and radar candidates with
    section labels.
 2. Top Deep builds the entry-readiness contract without hiding candidates.
 3. Archive and Supabase/local stores persist scan rows, detail rows, and
    outcome placeholders.
 4. Outcome jobs backfill 1D/3D/5D and loss-tail metrics.
-5. Validation reports compare Practical 80 Gate, Top5, Exception Leader, and Shadow by market,
+5. Validation reports compare Operating Challenger, Practical 80 Gate, Top5, Exception Leader, and Shadow by market,
    horizon, average, median, best, worst, win rate, and stop/loss rate.
 6. PM/postmortem analysis creates targeted beads issues for misses, data
    failures, and promotion candidates.
@@ -116,7 +118,7 @@ The Streamlit UI and Discord bot must use the same sections, action labels, and
 run artifacts. Discord may compress the layout into embeds/buttons/select
 menus, but the information content should match the web view:
 
-- Practical 80 Gate, Top5, Exception Leader, Shadow, and radar section identity
+- Operating Challenger, Practical 80 Gate, Top5, Exception Leader, Shadow, and radar section identity
 - final action and reason codes
 - entry condition and stop/exclusion condition
 - quality/upside/timing grades
