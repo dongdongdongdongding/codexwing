@@ -155,6 +155,7 @@ def _render_exit_policy_watch_panel(market_key):
                 "실행최저": row.get("exit_min_5d_pct"),
                 "보유평균5D": row.get("close_avg_5d_pct"),
                 "보유최저5D": row.get("close_min_5d_pct"),
+                "경로경고율": row.get("outcome_path_warning_pct"),
                 "탈락게이트": ", ".join(str(item) for item in (row.get("failed_checks") or [])[:3]),
             }
         )

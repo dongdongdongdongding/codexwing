@@ -152,15 +152,22 @@ def build_report(
 ) -> Dict[str, Any]:
     policies = optimizer_report.get("top_policies") if isinstance(optimizer_report.get("top_policies"), list) else []
     watch_rows: List[Dict[str, Any]] = []
+    blocked_rows: List[Dict[str, Any]] = []
     for policy in policies:
         if not isinstance(policy, dict):
             continue
         promotion = policy.get("promotion") if isinstance(policy.get("promotion"), dict) else {}
-        if not promotion.get("exit_policy_watch"):
-            continue
         metrics = policy.get("metrics") if isinstance(policy.get("metrics"), dict) else {}
+        exit_win = _safe_float(metrics.get("win_ordered_exit_5d_pct"), 0.0) or 0.0
+        gross_avg = _safe_float(metrics.get("avg_ordered_exit_5d_pct"), -999.0)
+        exit_min = _safe_float(metrics.get("min_ordered_exit_5d_pct"), -999.0)
+        stop_first = _safe_float(metrics.get("stop_before_target_5d_pct"), 100.0)
+        exit_metric_candidate = bool(exit_win >= 80.0 and gross_avg >= 3.0 and exit_min >= -5.0 and stop_first <= 10.0)
+        if not promotion.get("exit_policy_watch") and not (
+            exit_metric_candidate and "path_warning_gate" in set(promotion.get("failed_checks") or [])
+        ):
+            continue
         label_profile = policy.get("label_profile") if isinstance(policy.get("label_profile"), dict) else {}
-        gross_avg = _safe_float(metrics.get("avg_ordered_exit_5d_pct"))
         net_avg = gross_avg - friction_pct if gross_avg is not None else None
         row = {
             "market": policy.get("market"),
@@ -178,6 +185,8 @@ def build_report(
             "target_before_stop_5d_pct": metrics.get("target_before_stop_5d_pct"),
             "stop_before_target_5d_pct": metrics.get("stop_before_target_5d_pct"),
             "ordered_path_label_version": metrics.get("ordered_path_label_version"),
+            "outcome_path_sources": metrics.get("outcome_path_sources") or {},
+            "outcome_path_warning_pct": metrics.get("outcome_path_warning_pct"),
             "exit_policy_target_pct": metrics.get("exit_policy_target_pct"),
             "exit_policy_stop_pct": metrics.get("exit_policy_stop_pct"),
             "exit_win_5d_pct": metrics.get("win_ordered_exit_5d_pct"),
@@ -187,8 +196,12 @@ def build_report(
             "failed_checks": list(promotion.get("failed_checks") or []),
             "quality_score": policy.get("quality_score"),
         }
-        row["state"] = _watch_state(row, min_n=min_n, min_days=min_days, min_net_avg_pct=min_net_avg_pct)
-        watch_rows.append(row)
+        if promotion.get("exit_policy_watch"):
+            row["state"] = _watch_state(row, min_n=min_n, min_days=min_days, min_net_avg_pct=min_net_avg_pct)
+            watch_rows.append(row)
+        else:
+            row["state"] = "BLOCKED_PATH_WARNING"
+            blocked_rows.append(row)
     watch_rows.sort(
         key=lambda item: (
             _state_rank(item.get("state")),
@@ -200,7 +213,17 @@ def build_report(
         ),
         reverse=True,
     )
+    blocked_rows.sort(
+        key=lambda item: (
+            int(item.get("n") or 0),
+            int(item.get("days") or 0),
+            _safe_float(item.get("outcome_path_warning_pct"), 100.0) * -1.0,
+            _safe_float(item.get("net_exit_avg_5d_pct"), -999.0),
+        ),
+        reverse=True,
+    )
     markets = sorted({str(row.get("market") or "") for row in watch_rows if row.get("market")})
+    markets = sorted(set(markets) | {str(row.get("market") or "") for row in blocked_rows if row.get("market")})
     baselines = {market: _baseline_rows(cohort_report, market) for market in markets}
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -212,8 +235,10 @@ def build_report(
         "optimizer_generated_at": optimizer_report.get("generated_at"),
         "optimizer_evaluated_policies": optimizer_report.get("evaluated_policies"),
         "watch_count": len(watch_rows),
+        "blocked_path_warning_count": len(blocked_rows),
         "ready_review_count": sum(1 for row in watch_rows if row.get("state") == "EXIT_POLICY_READY_REVIEW"),
         "watch_rows": watch_rows,
+        "blocked_path_warning_rows": blocked_rows,
         "baselines": baselines,
         "notes": [
             "EXIT-WATCH is not a production scanner replacement.",
@@ -232,11 +257,12 @@ def render_markdown(report: Dict[str, Any]) -> str:
         f"- optimizer_generated_at: `{report.get('optimizer_generated_at')}`",
         f"- friction_pct: `{report.get('friction_pct')}`",
         f"- watch_count: `{report.get('watch_count')}`",
+        f"- blocked_path_warning_count: `{report.get('blocked_path_warning_count')}`",
         f"- ready_review_count: `{report.get('ready_review_count')}`",
         "",
         "## Watch Rows",
         "",
-        "| Rank | State | Market | Cohort | Label | Model | TopN | N | Days | Target | Stop | Exit Win | Gross Exit Avg | Net Exit Avg | Exit Min | Close Avg5 | Close Min5 | Stop First | Failed Checks |",
+        "| Rank | State | Market | Cohort | Label | Model | TopN | N | Days | Target | Stop | Exit Win | Net Exit Avg | Exit Min | Close Avg5 | Close Min5 | Stop First | Path Warn | Failed Checks |",
         "|---:|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for rank, row in enumerate(report.get("watch_rows") or [], start=1):
@@ -257,12 +283,37 @@ def render_markdown(report: Dict[str, Any]) -> str:
                     _fmt_pct(row.get("exit_policy_target_pct")),
                     _fmt_pct(row.get("exit_policy_stop_pct")),
                     _fmt_pct(row.get("exit_win_5d_pct"), signed=False),
-                    _fmt_pct(row.get("gross_exit_avg_5d_pct")),
                     _fmt_pct(row.get("net_exit_avg_5d_pct")),
                     _fmt_pct(row.get("exit_min_5d_pct")),
                     _fmt_pct(row.get("close_avg_5d_pct")),
                     _fmt_pct(row.get("close_min_5d_pct")),
                     _fmt_pct(row.get("stop_before_target_5d_pct"), signed=False),
+                    _fmt_pct(row.get("outcome_path_warning_pct"), signed=False),
+                    ",".join(str(item) for item in (row.get("failed_checks") or [])) or "-",
+                ]
+            )
+            + " |"
+        )
+    lines.extend(["", "## Blocked By Path Warning", ""])
+    lines.append("| Rank | Market | Cohort | Label | Model | TopN | N | Days | Exit Win | Net Exit Avg | Path Warn | Failed Checks |")
+    lines.append("|---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---|")
+    for rank, row in enumerate((report.get("blocked_path_warning_rows") or [])[:30], start=1):
+        lines.append(
+            "| "
+            + " | ".join(
+                str(value)
+                for value in [
+                    rank,
+                    row.get("market"),
+                    row.get("cohort"),
+                    row.get("label"),
+                    row.get("model"),
+                    row.get("topn"),
+                    row.get("n"),
+                    row.get("days"),
+                    _fmt_pct(row.get("exit_win_5d_pct"), signed=False),
+                    _fmt_pct(row.get("net_exit_avg_5d_pct")),
+                    _fmt_pct(row.get("outcome_path_warning_pct"), signed=False),
                     ",".join(str(item) for item in (row.get("failed_checks") or [])) or "-",
                 ]
             )

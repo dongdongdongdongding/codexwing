@@ -59,3 +59,42 @@ def test_exit_policy_watch_report_separates_exit_from_hold():
     assert row["close_min_5d_pct"] == -33.2955
     assert report["baselines"]["KOSDAQ"][0]["cohort"] == "Top5"
     assert "Net Exit Avg" in render_markdown(report)
+
+
+def test_exit_policy_watch_report_keeps_path_warning_blocks_visible():
+    optimizer = {
+        "top_policies": [
+            {
+                "market": "KOSPI",
+                "cohort": "ranked_top20",
+                "policy_type": "score_baseline",
+                "model": "volume_ratio",
+                "feature_set": "score_column",
+                "topn": 5,
+                "label_profile": {"name": "ordered_5d_5v3_lowmae"},
+                "metrics": {
+                    "n": 72,
+                    "active_days": 16,
+                    "avg_5d_pct": 3.85,
+                    "min_5d_pct": -24.29,
+                    "stop_before_target_5d_pct": 1.39,
+                    "win_ordered_exit_5d_pct": 98.61,
+                    "avg_ordered_exit_5d_pct": 4.89,
+                    "min_ordered_exit_5d_pct": -3.0,
+                    "outcome_path_warning_pct": 72.22,
+                },
+                "promotion": {
+                    "promotable": False,
+                    "exit_policy_watch": False,
+                    "failed_checks": ["path_warning_gate", "tail_loss_gate"],
+                },
+            }
+        ]
+    }
+
+    report = build_report(optimizer, {}, friction_pct=0.35)
+
+    assert report["watch_count"] == 0
+    assert report["blocked_path_warning_count"] == 1
+    assert report["blocked_path_warning_rows"][0]["state"] == "BLOCKED_PATH_WARNING"
+    assert "Blocked By Path Warning" in render_markdown(report)

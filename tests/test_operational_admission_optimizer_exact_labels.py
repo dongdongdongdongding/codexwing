@@ -108,6 +108,7 @@ def test_promotion_gate_reports_failed_checks():
         "win_ordered_exit_5d_pct": 95.122,
         "avg_ordered_exit_5d_pct": 4.6098,
         "min_ordered_exit_5d_pct": -3.0,
+        "outcome_path_warning_pct": 0.0,
     }
 
     flags = _promotion_flags(metrics, [73.0, 46.667, 80.0], min_n=30, min_days=10, min_folds=3, require_ordered=True)
@@ -115,6 +116,30 @@ def test_promotion_gate_reports_failed_checks():
     assert flags["promotable"] is False
     assert flags["failed_checks"] == ["avg_return_gate", "tail_loss_gate"]
     assert flags["exit_policy_watch"] is True
+
+
+def test_exit_policy_watch_rejects_high_path_warning_rate():
+    metrics = {
+        "n": 72,
+        "active_days": 16,
+        "ordered_path_coverage_pct": 100.0,
+        "ordered_path_label_version": ORDERED_OUTCOME_PATH_LABEL_VERSION,
+        "label_win_pct": 80.0,
+        "avg_5d_pct": 4.0,
+        "bad_path_pct": 30.0,
+        "stop5_pct": 1.0,
+        "min_5d_pct": -10.0,
+        "win_ordered_exit_5d_pct": 98.0,
+        "avg_ordered_exit_5d_pct": 4.5,
+        "min_ordered_exit_5d_pct": -3.0,
+        "outcome_path_warning_pct": 70.0,
+    }
+
+    flags = _promotion_flags(metrics, [80.0, 82.0, 78.0], min_n=30, min_days=10, min_folds=3, require_ordered=True)
+
+    assert flags["promotable"] is False
+    assert flags["failed_checks"] == ["path_warning_gate"]
+    assert flags["exit_policy_watch"] is False
 
 
 def test_load_dataset_prefers_exact_ordered_stop_over_proxy(tmp_path):

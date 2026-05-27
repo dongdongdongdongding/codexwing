@@ -1,6 +1,6 @@
 {
   "report_version": "operational_admission_optimizer_v2",
-  "generated_at": "2026-05-27T07:09:57.978059+00:00",
+  "generated_at": "2026-05-27T07:46:27.958414+00:00",
   "mode": "internal_shadow_no_production_change",
   "input_rows": 4203,
   "search_config": {
@@ -144,6 +144,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.5084,
         "avg_ordered_mae_until_terminal_5d_pct": -1.6013,
         "avg_ordered_mae_before_target_5d_pct": -0.8759,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -158,6 +164,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -166,10 +173,11 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -222,6 +230,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.74,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4799,
         "avg_ordered_mae_before_target_5d_pct": -1.0361,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 73.134,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7612,
@@ -236,6 +250,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -244,10 +259,11 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 52.0
@@ -300,6 +316,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 11.1742,
         "avg_ordered_mae_until_terminal_5d_pct": -2.3107,
         "avg_ordered_mae_before_target_5d_pct": -1.9636,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -314,6 +336,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": true,
           "bad_path_gate": true,
@@ -322,10 +345,11 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -378,6 +402,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.8557,
         "avg_ordered_mae_until_terminal_5d_pct": -1.2288,
         "avg_ordered_mae_before_target_5d_pct": -0.9455,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -392,6 +422,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -400,11 +431,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.333
@@ -457,6 +489,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.3105,
         "avg_ordered_mae_until_terminal_5d_pct": -1.1502,
         "avg_ordered_mae_before_target_5d_pct": -0.9152,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 55,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8788,
@@ -471,6 +509,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -479,11 +518,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 57.895
@@ -536,6 +576,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.8566,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5294,
         "avg_ordered_mae_before_target_5d_pct": -1.1511,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -550,6 +596,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -558,10 +605,11 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.333
@@ -614,6 +662,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.669,
         "avg_ordered_mae_until_terminal_5d_pct": -0.9669,
         "avg_ordered_mae_before_target_5d_pct": -0.9669,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 56,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 47,
+        "outcome_path_warning_pct": 71.212,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -628,6 +682,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -636,11 +691,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 68.0
@@ -693,6 +749,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.4818,
         "avg_ordered_mae_until_terminal_5d_pct": -1.0048,
         "avg_ordered_mae_before_target_5d_pct": -0.7698,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 55,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8788,
@@ -707,6 +769,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -715,12 +778,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 57.895
@@ -773,6 +837,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.9691,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4306,
         "avg_ordered_mae_before_target_5d_pct": -1.2573,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 71.642,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8806,
@@ -787,6 +857,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -795,12 +866,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 56.0
@@ -853,6 +925,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.5558,
         "avg_ordered_mae_until_terminal_5d_pct": -1.3393,
         "avg_ordered_mae_before_target_5d_pct": -0.961,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -867,6 +945,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -875,12 +954,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 58.333
@@ -933,6 +1013,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.4969,
         "avg_ordered_mae_until_terminal_5d_pct": -0.8201,
         "avg_ordered_mae_before_target_5d_pct": -0.8201,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -947,6 +1033,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -955,11 +1042,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -1012,6 +1100,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.1092,
         "avg_ordered_mae_until_terminal_5d_pct": -1.6864,
         "avg_ordered_mae_before_target_5d_pct": -1.474,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 73.134,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8806,
@@ -1026,6 +1120,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1034,12 +1129,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 48.0
@@ -1092,6 +1188,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.8869,
         "avg_ordered_mae_until_terminal_5d_pct": -1.3559,
         "avg_ordered_mae_before_target_5d_pct": -0.9511,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 71.642,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7612,
@@ -1106,6 +1208,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1114,12 +1217,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 52.0
@@ -1172,6 +1276,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.3896,
         "avg_ordered_mae_until_terminal_5d_pct": -2.1873,
         "avg_ordered_mae_before_target_5d_pct": -1.1787,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.4146,
@@ -1186,6 +1296,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1194,12 +1305,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -1252,6 +1364,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 11.3732,
         "avg_ordered_mae_until_terminal_5d_pct": -1.0344,
         "avg_ordered_mae_before_target_5d_pct": -1.0344,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -1266,6 +1384,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1274,12 +1393,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 50.0
@@ -1332,6 +1452,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.5922,
         "avg_ordered_mae_until_terminal_5d_pct": -1.6789,
         "avg_ordered_mae_before_target_5d_pct": -1.6789,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 28,
+        "outcome_path_warning_pct": 70.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -1346,6 +1472,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1354,12 +1481,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -1412,6 +1540,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.1105,
         "avg_ordered_mae_until_terminal_5d_pct": -1.647,
         "avg_ordered_mae_before_target_5d_pct": -1.647,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -1426,6 +1560,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -1434,12 +1569,13 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -1492,6 +1628,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.5515,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5679,
         "avg_ordered_mae_before_target_5d_pct": -1.2208,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -1506,6 +1648,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1514,12 +1657,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.333
@@ -1572,6 +1716,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.469,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4083,
         "avg_ordered_mae_before_target_5d_pct": -1.0035,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 73.134,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7612,
@@ -1586,6 +1736,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1594,12 +1745,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 48.0
@@ -1652,6 +1804,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.9667,
         "avg_ordered_mae_until_terminal_5d_pct": -1.3927,
         "avg_ordered_mae_before_target_5d_pct": -1.1577,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 55,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8788,
@@ -1666,6 +1824,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1674,12 +1833,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 56.0
@@ -1732,6 +1892,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.348,
         "avg_ordered_mae_until_terminal_5d_pct": -1.3352,
         "avg_ordered_mae_before_target_5d_pct": -0.5133,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 28,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 24,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.5152,
@@ -1746,6 +1912,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1754,11 +1921,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 61.538
@@ -1811,6 +1979,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.2148,
         "avg_ordered_mae_until_terminal_5d_pct": -1.502,
         "avg_ordered_mae_before_target_5d_pct": -1.3287,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 71.642,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8806,
@@ -1825,6 +1999,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1833,13 +2008,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 44.0
@@ -1892,6 +2068,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.1546,
         "avg_ordered_mae_until_terminal_5d_pct": -1.7361,
         "avg_ordered_mae_before_target_5d_pct": -1.5205,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 55,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8788,
@@ -1906,6 +2088,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1914,12 +2097,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 56.0
@@ -1972,6 +2156,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.0589,
         "avg_ordered_mae_until_terminal_5d_pct": -1.6147,
         "avg_ordered_mae_before_target_5d_pct": -1.3833,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 73.134,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8806,
@@ -1986,6 +2176,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -1994,13 +2185,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 44.0
@@ -2053,6 +2245,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.9702,
         "avg_ordered_mae_until_terminal_5d_pct": -1.2919,
         "avg_ordered_mae_before_target_5d_pct": -1.0882,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 40,
+        "outcome_path_warning_pct": 70.175,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8596,
@@ -2067,6 +2265,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2075,11 +2274,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 54.546
@@ -2132,6 +2332,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.5126,
         "avg_ordered_mae_until_terminal_5d_pct": -1.8998,
         "avg_ordered_mae_before_target_5d_pct": -1.5121,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 72.5,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8,
@@ -2146,6 +2352,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2154,12 +2361,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -2212,6 +2420,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.2261,
         "avg_ordered_mae_until_terminal_5d_pct": -1.9321,
         "avg_ordered_mae_before_target_5d_pct": -1.585,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -2226,6 +2440,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2234,12 +2449,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -2292,6 +2508,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.9713,
         "avg_ordered_mae_until_terminal_5d_pct": -1.2995,
         "avg_ordered_mae_before_target_5d_pct": -1.0958,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 40,
+        "outcome_path_warning_pct": 70.175,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8596,
@@ -2306,6 +2528,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2314,11 +2537,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 50.0
@@ -2371,6 +2595,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.0982,
         "avg_ordered_mae_until_terminal_5d_pct": -1.3425,
         "avg_ordered_mae_before_target_5d_pct": -0.9642,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -2385,6 +2615,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2393,12 +2624,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 58.333
@@ -2451,6 +2683,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.121,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5749,
         "avg_ordered_mae_before_target_5d_pct": -1.3253,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 48,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 41,
+        "outcome_path_warning_pct": 71.93,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8596,
@@ -2465,6 +2703,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2473,11 +2712,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 50.0
@@ -2530,6 +2770,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.9931,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5231,
         "avg_ordered_mae_before_target_5d_pct": -1.251,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 48,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 41,
+        "outcome_path_warning_pct": 71.93,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8596,
@@ -2544,6 +2790,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2552,11 +2799,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 50.0
@@ -2609,6 +2857,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.1337,
         "avg_ordered_mae_until_terminal_5d_pct": -1.9218,
         "avg_ordered_mae_before_target_5d_pct": -1.5436,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -2623,6 +2877,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -2631,12 +2886,13 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -2689,6 +2945,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.2192,
         "avg_ordered_mae_until_terminal_5d_pct": -1.1703,
         "avg_ordered_mae_before_target_5d_pct": -1.1703,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 56,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 47,
+        "outcome_path_warning_pct": 71.212,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -2703,6 +2965,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2711,12 +2974,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -2769,6 +3033,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.6692,
         "avg_ordered_mae_until_terminal_5d_pct": -1.501,
         "avg_ordered_mae_before_target_5d_pct": -1.501,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -2783,6 +3053,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2791,12 +3062,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.333
@@ -2849,6 +3121,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.779,
         "avg_ordered_mae_until_terminal_5d_pct": -1.1841,
         "avg_ordered_mae_before_target_5d_pct": -1.1841,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 24,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -2863,6 +3141,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2871,12 +3150,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.846
@@ -2929,6 +3209,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.544,
         "avg_ordered_mae_until_terminal_5d_pct": -1.2799,
         "avg_ordered_mae_before_target_5d_pct": -0.8293,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 54,
+          "daily_ohlc": 12
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 74.242,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7576,
@@ -2943,6 +3229,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -2951,12 +3238,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 57.895
@@ -3009,6 +3297,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.0678,
         "avg_ordered_mae_until_terminal_5d_pct": -1.62,
         "avg_ordered_mae_before_target_5d_pct": -1.0983,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 48,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 41,
+        "outcome_path_warning_pct": 71.93,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7193,
@@ -3023,6 +3317,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3031,11 +3326,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 50.0
@@ -3088,6 +3384,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.8411,
         "avg_ordered_mae_until_terminal_5d_pct": -1.449,
         "avg_ordered_mae_before_target_5d_pct": -0.9732,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 40,
+        "outcome_path_warning_pct": 70.175,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7193,
@@ -3102,6 +3404,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3110,11 +3413,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 50.0
@@ -3167,6 +3471,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.4572,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5418,
         "avg_ordered_mae_before_target_5d_pct": -1.0718,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 24,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7576,
@@ -3181,6 +3491,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3189,12 +3500,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 61.538
@@ -3247,6 +3559,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.4572,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5418,
         "avg_ordered_mae_before_target_5d_pct": -1.0718,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 24,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7576,
@@ -3261,6 +3579,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3269,12 +3588,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 61.538
@@ -3327,6 +3647,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.3842,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4841,
         "avg_ordered_mae_before_target_5d_pct": -1.0142,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 24,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7576,
@@ -3341,6 +3667,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3349,12 +3676,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.846
@@ -3407,6 +3735,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.4234,
         "avg_ordered_mae_until_terminal_5d_pct": -1.752,
         "avg_ordered_mae_before_target_5d_pct": -1.3643,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 72.5,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8,
@@ -3421,6 +3755,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3429,12 +3764,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -3487,6 +3823,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.0497,
         "avg_ordered_mae_until_terminal_5d_pct": -1.8552,
         "avg_ordered_mae_before_target_5d_pct": -1.2381,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 73.134,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6418,
@@ -3501,6 +3843,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3509,12 +3852,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 48.0
@@ -3567,6 +3911,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.7696,
         "avg_ordered_mae_until_terminal_5d_pct": -1.2045,
         "avg_ordered_mae_before_target_5d_pct": -0.8527,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 28,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 23,
+        "outcome_path_warning_pct": 69.697,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7576,
@@ -3581,6 +3931,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3589,12 +3940,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.846
@@ -3647,6 +3999,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.7191,
         "avg_ordered_mae_until_terminal_5d_pct": -1.7238,
         "avg_ordered_mae_before_target_5d_pct": -0.9983,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 48,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 41,
+        "outcome_path_warning_pct": 71.93,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.5789,
@@ -3661,6 +4019,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3669,11 +4028,12 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 50.0
@@ -3726,6 +4086,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.2413,
         "avg_ordered_mae_until_terminal_5d_pct": -1.6064,
         "avg_ordered_mae_before_target_5d_pct": -0.8811,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -3740,6 +4106,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3748,12 +4115,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.333
@@ -3806,6 +4174,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.5623,
         "avg_ordered_mae_until_terminal_5d_pct": -1.2865,
         "avg_ordered_mae_before_target_5d_pct": -0.9346,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 24,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7576,
@@ -3820,6 +4194,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3828,12 +4203,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 53.846
@@ -3886,6 +4262,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.444,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4208,
         "avg_ordered_mae_before_target_5d_pct": -1.2052,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 55,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8788,
@@ -3900,6 +4282,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3908,12 +4291,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 48.0
@@ -3966,6 +4350,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.1807,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4485,
         "avg_ordered_mae_before_target_5d_pct": -0.9979,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 54,
+          "daily_ohlc": 12
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 74.242,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7576,
@@ -3980,6 +4370,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -3988,12 +4379,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 56.0
@@ -4046,6 +4438,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.4391,
         "avg_ordered_mae_until_terminal_5d_pct": -1.7128,
         "avg_ordered_mae_before_target_5d_pct": -1.3657,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -4060,6 +4458,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4068,12 +4467,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 58.333
@@ -4126,6 +4526,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.2226,
         "avg_ordered_mae_until_terminal_5d_pct": -1.7399,
         "avg_ordered_mae_before_target_5d_pct": -1.3352,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 73.134,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7612,
@@ -4140,6 +4546,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4148,13 +4555,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 44.0
@@ -4207,6 +4615,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.931,
         "avg_ordered_mae_until_terminal_5d_pct": -1.6068,
         "avg_ordered_mae_before_target_5d_pct": -1.131,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 48,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 41,
+        "outcome_path_warning_pct": 71.93,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7193,
@@ -4221,6 +4635,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4229,12 +4644,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 45.454
@@ -4287,6 +4703,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.6811,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4738,
         "avg_ordered_mae_before_target_5d_pct": -1.1835,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 28,
+        "outcome_path_warning_pct": 70.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8,
@@ -4301,6 +4723,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4309,13 +4732,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -4368,6 +4792,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.8783,
         "avg_ordered_mae_until_terminal_5d_pct": -1.9737,
         "avg_ordered_mae_before_target_5d_pct": -1.2303,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 75.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6,
@@ -4382,6 +4812,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4390,12 +4821,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -4448,6 +4880,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.8157,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5785,
         "avg_ordered_mae_before_target_5d_pct": -1.1027,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 48,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 41,
+        "outcome_path_warning_pct": 71.93,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.7193,
@@ -4462,6 +4900,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4470,12 +4909,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 45.454
@@ -4528,6 +4968,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.4135,
         "avg_ordered_mae_until_terminal_5d_pct": -1.3206,
         "avg_ordered_mae_before_target_5d_pct": -0.9424,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8049,
@@ -4542,6 +4988,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4550,12 +4997,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 58.333
@@ -4608,6 +5056,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.4714,
         "avg_ordered_mae_until_terminal_5d_pct": -1.634,
         "avg_ordered_mae_before_target_5d_pct": -1.634,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 72.5,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -4622,6 +5076,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4630,12 +5085,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 46.667
@@ -4688,6 +5144,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.2867,
         "avg_ordered_mae_until_terminal_5d_pct": -1.5407,
         "avg_ordered_mae_before_target_5d_pct": -0.7189,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 25,
+        "outcome_path_warning_pct": 75.758,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.5152,
@@ -4702,6 +5164,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4710,12 +5173,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 61.538
@@ -4768,6 +5232,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.63,
         "avg_ordered_mae_until_terminal_5d_pct": -1.574,
         "avg_ordered_mae_before_target_5d_pct": -0.7522,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 25,
+        "outcome_path_warning_pct": 75.758,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.5152,
@@ -4782,6 +5252,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4790,12 +5261,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 61.538
@@ -4848,6 +5320,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1003,
         "avg_ordered_mae_until_terminal_5d_pct": -2.0524,
         "avg_ordered_mae_before_target_5d_pct": -1.3909,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -4862,6 +5340,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4870,13 +5349,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -4929,6 +5409,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.5817,
         "avg_ordered_mae_until_terminal_5d_pct": -2.1491,
         "avg_ordered_mae_before_target_5d_pct": -1.7933,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 72.5,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.8,
@@ -4943,6 +5429,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -4951,13 +5438,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -5010,6 +5498,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5024,6 +5518,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5032,12 +5527,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5090,6 +5586,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5104,6 +5606,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5112,12 +5615,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5170,6 +5674,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5184,6 +5694,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5192,12 +5703,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5250,6 +5762,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5264,6 +5782,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5272,12 +5791,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5330,6 +5850,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5344,6 +5870,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5352,12 +5879,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5410,6 +5938,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5424,6 +5958,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5432,12 +5967,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5490,6 +6026,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5504,6 +6046,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5512,12 +6055,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5570,6 +6114,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5584,6 +6134,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5592,12 +6143,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5650,6 +6202,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.1472,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4611,
         "avg_ordered_mae_before_target_5d_pct": -0.7997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 33,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 70.732,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6098,
@@ -5664,6 +6222,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5672,12 +6231,13 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 62.5
@@ -5730,6 +6290,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.3924,
         "avg_ordered_mae_until_terminal_5d_pct": -2.285,
         "avg_ordered_mae_before_target_5d_pct": -1.2513,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 75.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.4,
@@ -5744,6 +6310,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5752,13 +6319,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -5811,6 +6379,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 8.7468,
         "avg_ordered_mae_until_terminal_5d_pct": -2.1792,
         "avg_ordered_mae_before_target_5d_pct": -1.5012,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 5
+        },
+        "outcome_path_warning_rows": 29,
+        "outcome_path_warning_pct": 72.5,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.6,
@@ -5825,6 +6399,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5833,13 +6408,14 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -5892,6 +6468,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.3845,
         "avg_ordered_mae_until_terminal_5d_pct": -3.35,
         "avg_ordered_mae_before_target_5d_pct": -0.5868,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 31,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 1.436,
@@ -5906,6 +6488,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -5914,6 +6497,7 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -5973,6 +6557,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.5546,
         "avg_ordered_mae_until_terminal_5d_pct": -1.0243,
         "avg_ordered_mae_before_target_5d_pct": -1.0243,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 11,
+          "daily_ohlc": 2
+        },
+        "outcome_path_warning_rows": 9,
+        "outcome_path_warning_pct": 69.231,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -5987,6 +6577,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -5996,10 +6587,11 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -6052,6 +6644,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.6267,
         "avg_ordered_mae_until_terminal_5d_pct": -1.0089,
         "avg_ordered_mae_before_target_5d_pct": -1.0089,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 12,
+          "daily_ohlc": 2
+        },
+        "outcome_path_warning_rows": 10,
+        "outcome_path_warning_pct": 71.429,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -6066,6 +6664,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -6075,10 +6674,11 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -6131,6 +6731,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.3783,
         "avg_ordered_mae_until_terminal_5d_pct": -4.3068,
         "avg_ordered_mae_before_target_5d_pct": -0.6974,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 36,
+        "outcome_path_warning_pct": 80.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.7778,
@@ -6145,6 +6751,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -6153,6 +6760,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -6213,6 +6821,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.5875,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1716,
         "avg_ordered_mae_before_target_5d_pct": -1.111,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 1.0178,
@@ -6227,6 +6841,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -6235,6 +6850,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -6295,6 +6911,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.6152,
         "avg_ordered_mae_until_terminal_5d_pct": -1.8074,
         "avg_ordered_mae_before_target_5d_pct": -1.8074,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 12,
+          "daily_ohlc": 2
+        },
+        "outcome_path_warning_rows": 10,
+        "outcome_path_warning_pct": 71.429,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -6309,6 +6931,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": true,
           "bad_path_gate": true,
@@ -6318,10 +6941,11 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -6374,6 +6998,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.8341,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1729,
         "avg_ordered_mae_before_target_5d_pct": -1.2624,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 34,
+        "outcome_path_warning_pct": 75.556,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.5556,
@@ -6388,6 +7018,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -6396,6 +7027,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -6456,6 +7088,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.8539,
         "avg_ordered_mae_until_terminal_5d_pct": -0.3793,
         "avg_ordered_mae_before_target_5d_pct": -0.3793,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 26,
+        "outcome_path_warning_pct": 78.788,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -6470,6 +7108,7 @@
           "enough_days": false,
           "enough_folds": false,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": true,
           "bad_path_gate": false,
@@ -6480,9 +7119,10 @@
         "failed_checks": [
           "enough_days",
           "enough_folds",
+          "path_warning_gate",
           "bad_path_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 2,
         "min_fold_label_win_pct": 70.0
@@ -6535,6 +7175,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.2443,
         "avg_ordered_mae_until_terminal_5d_pct": -4.0291,
         "avg_ordered_mae_before_target_5d_pct": -1.3218,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 1.0,
@@ -6549,6 +7195,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -6557,6 +7204,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -6617,6 +7265,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.771,
         "avg_ordered_mae_until_terminal_5d_pct": -4.412,
         "avg_ordered_mae_before_target_5d_pct": -0.7581,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 36,
+        "outcome_path_warning_pct": 80.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.5235,
@@ -6631,6 +7285,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -6639,6 +7294,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -6699,6 +7355,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.7423,
         "avg_ordered_mae_until_terminal_5d_pct": -1.2945,
         "avg_ordered_mae_before_target_5d_pct": -1.2945,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 12,
+          "daily_ohlc": 2
+        },
+        "outcome_path_warning_rows": 10,
+        "outcome_path_warning_pct": 71.429,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -6713,6 +7375,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -6722,10 +7385,11 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -6778,6 +7442,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.1041,
         "avg_ordered_mae_until_terminal_5d_pct": -1.1462,
         "avg_ordered_mae_before_target_5d_pct": -1.1462,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 11,
+          "daily_ohlc": 2
+        },
+        "outcome_path_warning_rows": 9,
+        "outcome_path_warning_pct": 69.231,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -6792,6 +7462,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -6801,10 +7472,11 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -6857,6 +7529,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.6372,
         "avg_ordered_mae_until_terminal_5d_pct": -3.1476,
         "avg_ordered_mae_before_target_5d_pct": -0.2661,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 34,
+        "outcome_path_warning_pct": 77.273,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.9899,
@@ -6871,6 +7549,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -6879,6 +7558,7 @@
           "fold_stability_gate": true
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -6938,6 +7618,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.352,
         "avg_ordered_mae_until_terminal_5d_pct": -3.5565,
         "avg_ordered_mae_before_target_5d_pct": -0.6898,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 30,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 1.1921,
@@ -6952,6 +7638,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -6960,6 +7647,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7020,6 +7708,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.8564,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1442,
         "avg_ordered_mae_before_target_5d_pct": -1.162,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.8827,
@@ -7034,6 +7728,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7042,6 +7737,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7102,6 +7798,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.2363,
         "avg_ordered_mae_until_terminal_5d_pct": -4.0755,
         "avg_ordered_mae_before_target_5d_pct": -1.4073,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 34,
+        "outcome_path_warning_pct": 75.556,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 1.0861,
@@ -7116,6 +7818,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7124,6 +7827,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7184,6 +7888,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 11.7542,
         "avg_ordered_mae_until_terminal_5d_pct": -1.4224,
         "avg_ordered_mae_before_target_5d_pct": -1.4224,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 11,
+          "daily_ohlc": 2
+        },
+        "outcome_path_warning_rows": 10,
+        "outcome_path_warning_pct": 76.923,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -7198,6 +7908,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": true,
           "bad_path_gate": false,
@@ -7207,11 +7918,12 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "label_win_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -7264,6 +7976,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.7552,
         "avg_ordered_mae_until_terminal_5d_pct": -4.3672,
         "avg_ordered_mae_before_target_5d_pct": -1.1345,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 59,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 59,
+        "outcome_path_warning_pct": 79.73,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.7913,
@@ -7278,6 +7996,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7286,6 +8005,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7346,6 +8066,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.4123,
         "avg_ordered_mae_until_terminal_5d_pct": -4.5289,
         "avg_ordered_mae_before_target_5d_pct": -1.1786,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.6124,
@@ -7360,6 +8086,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7368,6 +8095,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7428,6 +8156,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.0876,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2479,
         "avg_ordered_mae_before_target_5d_pct": -0.8605,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 17
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.5886,
@@ -7442,6 +8176,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7450,6 +8185,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7510,6 +8246,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.2847,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2519,
         "avg_ordered_mae_before_target_5d_pct": -1.1831,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.896,
@@ -7524,6 +8266,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7532,6 +8275,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7592,6 +8336,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.9649,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1381,
         "avg_ordered_mae_before_target_5d_pct": -0.6349,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.6346,
@@ -7606,6 +8356,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7614,6 +8365,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7674,6 +8426,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.3492,
         "avg_ordered_mae_until_terminal_5d_pct": -4.143,
         "avg_ordered_mae_before_target_5d_pct": -0.8515,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 17
+        },
+        "outcome_path_warning_rows": 59,
+        "outcome_path_warning_pct": 79.73,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.5405,
@@ -7688,6 +8446,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7696,6 +8455,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7756,6 +8516,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.3845,
         "avg_ordered_mae_until_terminal_5d_pct": -3.35,
         "avg_ordered_mae_before_target_5d_pct": -0.5868,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 31,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 3.1921,
@@ -7770,6 +8536,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7778,6 +8545,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7838,6 +8606,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.3901,
         "avg_ordered_mae_until_terminal_5d_pct": -3.8376,
         "avg_ordered_mae_before_target_5d_pct": -0.9431,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 31,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.9482,
@@ -7852,6 +8626,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7860,6 +8635,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -7920,6 +8696,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.3164,
         "avg_ordered_mae_until_terminal_5d_pct": -4.5358,
         "avg_ordered_mae_before_target_5d_pct": -1.1628,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 59,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.1351,
@@ -7934,6 +8716,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -7942,6 +8725,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8002,6 +8786,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.9401,
         "avg_ordered_mae_until_terminal_5d_pct": -0.8341,
         "avg_ordered_mae_before_target_5d_pct": -0.8341,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 26,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 27,
+        "outcome_path_warning_pct": 81.818,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -8016,6 +8806,7 @@
           "enough_days": false,
           "enough_folds": false,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": true,
           "bad_path_gate": false,
@@ -8026,10 +8817,11 @@
         "failed_checks": [
           "enough_days",
           "enough_folds",
+          "path_warning_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 2,
         "min_fold_label_win_pct": 70.0
@@ -8082,6 +8874,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.7551,
         "avg_ordered_mae_until_terminal_5d_pct": -4.4378,
         "avg_ordered_mae_before_target_5d_pct": -1.1214,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.4773,
@@ -8096,6 +8894,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8104,6 +8903,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8164,6 +8964,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.1892,
         "avg_ordered_mae_until_terminal_5d_pct": -3.763,
         "avg_ordered_mae_before_target_5d_pct": -0.1411,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 56,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.466,
@@ -8178,6 +8984,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8186,6 +8993,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8246,6 +9054,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.5993,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2065,
         "avg_ordered_mae_before_target_5d_pct": -0.7747,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 14
+        },
+        "outcome_path_warning_rows": 54,
+        "outcome_path_warning_pct": 75.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.0659,
@@ -8260,6 +9074,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8268,6 +9083,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8328,6 +9144,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 9.7869,
         "avg_ordered_mae_until_terminal_5d_pct": -0.6936,
         "avg_ordered_mae_before_target_5d_pct": -0.6936,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 27,
+          "daily_ohlc": 6
+        },
+        "outcome_path_warning_rows": 26,
+        "outcome_path_warning_pct": 78.788,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -8342,6 +9164,7 @@
           "enough_days": false,
           "enough_folds": false,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": true,
           "bad_path_gate": false,
@@ -8352,9 +9175,10 @@
         "failed_checks": [
           "enough_days",
           "enough_folds",
+          "path_warning_gate",
           "bad_path_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 2,
         "min_fold_label_win_pct": 70.0
@@ -8407,6 +9231,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.8341,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1729,
         "avg_ordered_mae_before_target_5d_pct": -1.2624,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 34,
+        "outcome_path_warning_pct": 75.556,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.2222,
@@ -8421,6 +9251,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8429,6 +9260,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8489,6 +9321,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.3783,
         "avg_ordered_mae_until_terminal_5d_pct": -4.3068,
         "avg_ordered_mae_before_target_5d_pct": -0.6974,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 36,
+        "outcome_path_warning_pct": 80.0,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.5111,
@@ -8503,6 +9341,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8511,6 +9350,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8571,6 +9411,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.3208,
         "avg_ordered_mae_until_terminal_5d_pct": -3.8764,
         "avg_ordered_mae_before_target_5d_pct": -0.5997,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 36,
+        "outcome_path_warning_pct": 80.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.5235,
@@ -8585,6 +9431,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8593,6 +9440,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8653,6 +9501,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.1772,
         "avg_ordered_mae_until_terminal_5d_pct": -4.5602,
         "avg_ordered_mae_before_target_5d_pct": -0.9231,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 79.546,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.2273,
@@ -8667,6 +9521,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8675,6 +9530,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8735,6 +9591,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.5875,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1716,
         "avg_ordered_mae_before_target_5d_pct": -1.111,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.7611,
@@ -8749,6 +9611,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8757,6 +9620,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8817,6 +9681,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.8749,
         "avg_ordered_mae_until_terminal_5d_pct": -3.9832,
         "avg_ordered_mae_before_target_5d_pct": -0.7499,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 17
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.5164,
@@ -8831,6 +9701,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8839,6 +9710,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8899,6 +9771,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.2946,
         "avg_ordered_mae_until_terminal_5d_pct": -4.6969,
         "avg_ordered_mae_before_target_5d_pct": -0.7902,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 60,
+          "daily_ohlc": 14
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.1351,
@@ -8913,6 +9791,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -8921,6 +9800,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -8981,6 +9861,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.2614,
         "avg_ordered_mae_until_terminal_5d_pct": -3.6331,
         "avg_ordered_mae_before_target_5d_pct": -0.5757,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 31,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 32,
+        "outcome_path_warning_pct": 78.049,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.5745,
@@ -8995,6 +9881,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9003,6 +9890,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9063,6 +9951,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.901,
         "avg_ordered_mae_until_terminal_5d_pct": -3.7228,
         "avg_ordered_mae_before_target_5d_pct": -0.0303,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 79.167,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.4625,
@@ -9077,6 +9971,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9085,6 +9980,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9145,6 +10041,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.7989,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1691,
         "avg_ordered_mae_before_target_5d_pct": -0.5935,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 17
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.7191,
@@ -9159,6 +10061,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9167,6 +10070,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9227,6 +10131,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.352,
         "avg_ordered_mae_until_terminal_5d_pct": -3.5565,
         "avg_ordered_mae_before_target_5d_pct": -0.6898,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 30,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.875,
@@ -9241,6 +10151,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9249,6 +10160,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9309,6 +10221,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.771,
         "avg_ordered_mae_until_terminal_5d_pct": -4.412,
         "avg_ordered_mae_before_target_5d_pct": -0.7581,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 36,
+        "outcome_path_warning_pct": 80.0,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.1235,
@@ -9323,6 +10241,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9331,6 +10250,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9391,6 +10311,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.971,
         "avg_ordered_mae_until_terminal_5d_pct": -2.2134,
         "avg_ordered_mae_before_target_5d_pct": -1.1969,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 11,
+          "daily_ohlc": 3
+        },
+        "outcome_path_warning_rows": 11,
+        "outcome_path_warning_pct": 78.571,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 4.4286,
@@ -9405,6 +10331,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -9414,11 +10341,12 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate",
           "fold_stability_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 40.0
@@ -9471,6 +10399,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.2671,
         "avg_ordered_mae_until_terminal_5d_pct": -3.5773,
         "avg_ordered_mae_before_target_5d_pct": -0.5006,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 32,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.8184,
@@ -9485,6 +10419,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9493,6 +10428,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9553,6 +10489,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.8804,
         "avg_ordered_mae_until_terminal_5d_pct": -4.6891,
         "avg_ordered_mae_before_target_5d_pct": -1.0984,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 79.546,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": -0.2273,
@@ -9567,6 +10509,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9575,6 +10518,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9635,6 +10579,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.0077,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1977,
         "avg_ordered_mae_before_target_5d_pct": -0.8055,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.3226,
@@ -9649,6 +10599,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9657,6 +10608,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9717,6 +10669,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.2443,
         "avg_ordered_mae_until_terminal_5d_pct": -4.0291,
         "avg_ordered_mae_before_target_5d_pct": -1.3218,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.8,
@@ -9731,6 +10689,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9739,6 +10698,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9799,6 +10759,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.336,
         "avg_ordered_mae_until_terminal_5d_pct": -4.0223,
         "avg_ordered_mae_before_target_5d_pct": -0.4901,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 17
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.3289,
@@ -9813,6 +10779,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9821,6 +10788,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9881,6 +10849,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.2761,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2585,
         "avg_ordered_mae_before_target_5d_pct": -0.6648,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.0411,
@@ -9895,6 +10869,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9903,6 +10878,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -9963,6 +10939,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.7491,
         "avg_ordered_mae_until_terminal_5d_pct": -4.5923,
         "avg_ordered_mae_before_target_5d_pct": -0.2092,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.079,
@@ -9977,6 +10959,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -9985,6 +10968,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10045,6 +11029,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.3713,
         "avg_ordered_mae_until_terminal_5d_pct": -4.6502,
         "avg_ordered_mae_before_target_5d_pct": -1.4265,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 37,
+        "outcome_path_warning_pct": 82.222,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.1111,
@@ -10059,6 +11049,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10067,6 +11058,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10127,6 +11119,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.7532,
         "avg_ordered_mae_until_terminal_5d_pct": -3.9273,
         "avg_ordered_mae_before_target_5d_pct": -0.3252,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 36,
+        "outcome_path_warning_pct": 80.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.3257,
@@ -10141,6 +11139,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10149,6 +11148,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10209,6 +11209,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.3783,
         "avg_ordered_mae_until_terminal_5d_pct": -4.3068,
         "avg_ordered_mae_before_target_5d_pct": -0.6974,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 36,
+        "outcome_path_warning_pct": 80.0,
         "exit_policy_target_pct": 10.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 3.6667,
@@ -10223,6 +11229,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10231,6 +11238,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10291,6 +11299,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.2479,
         "avg_ordered_mae_until_terminal_5d_pct": -4.3852,
         "avg_ordered_mae_before_target_5d_pct": -1.1889,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 59,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.1875,
@@ -10305,6 +11319,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10313,6 +11328,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10373,6 +11389,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.4532,
         "avg_ordered_mae_until_terminal_5d_pct": -4.0226,
         "avg_ordered_mae_before_target_5d_pct": -0.703,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 75.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.2168,
@@ -10387,6 +11409,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10395,6 +11418,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10455,6 +11479,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.9031,
         "avg_ordered_mae_until_terminal_5d_pct": -1.3556,
         "avg_ordered_mae_before_target_5d_pct": -1.3556,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 12,
+          "daily_ohlc": 2
+        },
+        "outcome_path_warning_rows": 10,
+        "outcome_path_warning_pct": 71.429,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -10469,6 +11499,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10478,11 +11509,12 @@
         },
         "failed_checks": [
           "enough_samples",
+          "path_warning_gate",
           "avg_return_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 3,
         "min_fold_label_win_pct": 60.0
@@ -10535,6 +11567,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.3845,
         "avg_ordered_mae_until_terminal_5d_pct": -3.35,
         "avg_ordered_mae_before_target_5d_pct": -0.5868,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 31,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 30,
+        "outcome_path_warning_pct": 73.171,
         "exit_policy_target_pct": 10.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 4.3628,
@@ -10549,6 +11587,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10557,6 +11596,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10617,6 +11657,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.9606,
         "avg_ordered_mae_until_terminal_5d_pct": -3.9752,
         "avg_ordered_mae_before_target_5d_pct": -0.4319,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 75.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.4408,
@@ -10631,6 +11677,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10639,6 +11686,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10699,6 +11747,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.761,
         "avg_ordered_mae_until_terminal_5d_pct": -0.7853,
         "avg_ordered_mae_before_target_5d_pct": -0.7853,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 26,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 27,
+        "outcome_path_warning_pct": 81.818,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -10713,6 +11767,7 @@
           "enough_days": false,
           "enough_folds": false,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": true,
           "bad_path_gate": false,
@@ -10723,10 +11778,11 @@
         "failed_checks": [
           "enough_days",
           "enough_folds",
+          "path_warning_gate",
           "bad_path_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 2,
         "min_fold_label_win_pct": 78.261
@@ -10779,6 +11835,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.8047,
         "avg_ordered_mae_until_terminal_5d_pct": -4.359,
         "avg_ordered_mae_before_target_5d_pct": -0.7524,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 8
+        },
+        "outcome_path_warning_rows": 32,
+        "outcome_path_warning_pct": 72.727,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.0,
@@ -10793,6 +11855,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10801,6 +11864,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10861,6 +11925,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.8564,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1442,
         "avg_ordered_mae_before_target_5d_pct": -1.162,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.5854,
@@ -10875,6 +11945,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10883,6 +11954,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -10943,6 +12015,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.8341,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1729,
         "avg_ordered_mae_before_target_5d_pct": -1.2624,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 34,
+        "outcome_path_warning_pct": 75.556,
         "exit_policy_target_pct": 10.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 3.3333,
@@ -10957,6 +12035,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -10965,6 +12044,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11025,6 +12105,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.2847,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2519,
         "avg_ordered_mae_before_target_5d_pct": -1.1831,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.5626,
@@ -11039,6 +12125,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11047,6 +12134,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11107,6 +12195,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.2363,
         "avg_ordered_mae_until_terminal_5d_pct": -4.0755,
         "avg_ordered_mae_before_target_5d_pct": -1.4073,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 36,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 34,
+        "outcome_path_warning_pct": 75.556,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.7528,
@@ -11121,6 +12215,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11129,6 +12224,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11189,6 +12285,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.471,
         "avg_ordered_mae_until_terminal_5d_pct": -3.9609,
         "avg_ordered_mae_before_target_5d_pct": -0.9615,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 50,
+          "daily_ohlc": 14
+        },
+        "outcome_path_warning_rows": 47,
+        "outcome_path_warning_pct": 73.438,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.2168,
@@ -11203,6 +12305,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11211,6 +12314,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11271,6 +12375,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.4123,
         "avg_ordered_mae_until_terminal_5d_pct": -4.5289,
         "avg_ordered_mae_before_target_5d_pct": -1.1786,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.234,
@@ -11285,6 +12395,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11293,6 +12404,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11353,6 +12465,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.244,
         "avg_ordered_mae_until_terminal_5d_pct": -3.9996,
         "avg_ordered_mae_before_target_5d_pct": -1.1277,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 31,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.2165,
@@ -11367,6 +12485,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11375,6 +12494,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11435,6 +12555,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 10.4871,
         "avg_ordered_mae_until_terminal_5d_pct": -0.5888,
         "avg_ordered_mae_before_target_5d_pct": -0.5888,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 26,
+          "daily_ohlc": 7
+        },
+        "outcome_path_warning_rows": 27,
+        "outcome_path_warning_pct": 81.818,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -3.0,
         "avg_ordered_exit_5d_pct": 5.0,
@@ -11449,6 +12575,7 @@
           "enough_days": false,
           "enough_folds": false,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": true,
           "avg_return_gate": false,
           "bad_path_gate": true,
@@ -11459,10 +12586,11 @@
         "failed_checks": [
           "enough_days",
           "enough_folds",
+          "path_warning_gate",
           "avg_return_gate",
           "tail_loss_gate"
         ],
-        "exit_policy_watch": true,
+        "exit_policy_watch": false,
         "promotable": false,
         "folds": 2,
         "min_fold_label_win_pct": 80.0
@@ -11515,6 +12643,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.8843,
         "avg_ordered_mae_until_terminal_5d_pct": -3.9808,
         "avg_ordered_mae_before_target_5d_pct": -0.698,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 48,
+        "outcome_path_warning_pct": 75.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.2846,
@@ -11529,6 +12663,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11537,6 +12672,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11597,6 +12733,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.352,
         "avg_ordered_mae_until_terminal_5d_pct": -3.5565,
         "avg_ordered_mae_before_target_5d_pct": -0.6898,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 30,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 10.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 3.9969,
@@ -11611,6 +12753,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11619,6 +12762,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11679,6 +12823,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.0387,
         "avg_ordered_mae_until_terminal_5d_pct": -5.5085,
         "avg_ordered_mae_before_target_5d_pct": -1.0052,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 60,
+          "daily_ohlc": 12
+        },
+        "outcome_path_warning_rows": 54,
+        "outcome_path_warning_pct": 75.0,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": -0.2978,
@@ -11693,6 +12843,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11701,6 +12852,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11761,6 +12913,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.0253,
         "avg_ordered_mae_until_terminal_5d_pct": -4.7924,
         "avg_ordered_mae_before_target_5d_pct": -1.109,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": -0.0676,
@@ -11775,6 +12933,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11783,6 +12942,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11843,6 +13003,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.7552,
         "avg_ordered_mae_until_terminal_5d_pct": -4.3672,
         "avg_ordered_mae_before_target_5d_pct": -1.1345,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 59,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 59,
+        "outcome_path_warning_pct": 79.73,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.494,
@@ -11857,6 +13023,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11865,6 +13032,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -11925,6 +13093,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.8072,
         "avg_ordered_mae_until_terminal_5d_pct": -4.0343,
         "avg_ordered_mae_before_target_5d_pct": -0.3861,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 32,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.3659,
@@ -11939,6 +13113,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -11947,6 +13122,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12007,6 +13183,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.2719,
         "avg_ordered_mae_until_terminal_5d_pct": -4.4889,
         "avg_ordered_mae_before_target_5d_pct": -0.1023,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": -0.1432,
@@ -12021,6 +13203,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12029,6 +13212,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12089,6 +13273,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 4.7224,
         "avg_ordered_mae_until_terminal_5d_pct": -3.9407,
         "avg_ordered_mae_before_target_5d_pct": 0.0622,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 35,
+          "daily_ohlc": 9
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 79.546,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": -0.0328,
@@ -12103,6 +13293,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12111,6 +13302,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12171,6 +13363,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.3492,
         "avg_ordered_mae_until_terminal_5d_pct": -4.143,
         "avg_ordered_mae_before_target_5d_pct": -0.8515,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 17
+        },
+        "outcome_path_warning_rows": 59,
+        "outcome_path_warning_pct": 79.73,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.2027,
@@ -12185,6 +13383,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12193,6 +13392,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12253,6 +13453,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.1536,
         "avg_ordered_mae_until_terminal_5d_pct": -4.4639,
         "avg_ordered_mae_before_target_5d_pct": -0.747,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 14
+        },
+        "outcome_path_warning_rows": 55,
+        "outcome_path_warning_pct": 76.389,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.0,
@@ -12267,6 +13473,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12275,6 +13482,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12335,6 +13543,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.3901,
         "avg_ordered_mae_until_terminal_5d_pct": -3.8376,
         "avg_ordered_mae_before_target_5d_pct": -0.9431,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 31,
+          "daily_ohlc": 10
+        },
+        "outcome_path_warning_rows": 31,
+        "outcome_path_warning_pct": 75.61,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.5579,
@@ -12349,6 +13563,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12357,6 +13572,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12417,6 +13633,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.9649,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1381,
         "avg_ordered_mae_before_target_5d_pct": -0.6349,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 34,
+          "daily_ohlc": 11
+        },
+        "outcome_path_warning_rows": 35,
+        "outcome_path_warning_pct": 77.778,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.2346,
@@ -12431,6 +13653,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12439,6 +13662,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12499,6 +13723,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.0876,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2479,
         "avg_ordered_mae_before_target_5d_pct": -0.8605,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 57,
+          "daily_ohlc": 17
+        },
+        "outcome_path_warning_rows": 58,
+        "outcome_path_warning_pct": 78.378,
         "exit_policy_target_pct": 8.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 2.2102,
@@ -12513,6 +13743,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12521,6 +13752,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12581,6 +13813,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.3703,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2375,
         "avg_ordered_mae_before_target_5d_pct": -0.9966,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 76.562,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.0605,
@@ -12595,6 +13833,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12603,6 +13842,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12663,6 +13903,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 5.9875,
         "avg_ordered_mae_until_terminal_5d_pct": -4.2877,
         "avg_ordered_mae_before_target_5d_pct": -0.5767,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 49,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 76.562,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.0605,
@@ -12677,6 +13923,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12685,6 +13932,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12745,6 +13993,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 7.5875,
         "avg_ordered_mae_until_terminal_5d_pct": -4.1716,
         "avg_ordered_mae_before_target_5d_pct": -1.111,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 58,
+          "daily_ohlc": 16
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 10.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 3.9232,
@@ -12759,6 +14013,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12767,6 +14022,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12827,6 +14083,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.507,
         "avg_ordered_mae_until_terminal_5d_pct": -4.3712,
         "avg_ordered_mae_before_target_5d_pct": -0.5081,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 51,
+          "daily_ohlc": 13
+        },
+        "outcome_path_warning_rows": 49,
+        "outcome_path_warning_pct": 76.562,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.2168,
@@ -12841,6 +14103,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12849,6 +14112,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12909,6 +14173,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.027,
         "avg_ordered_mae_until_terminal_5d_pct": -4.7932,
         "avg_ordered_mae_before_target_5d_pct": -0.9038,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 60,
+          "daily_ohlc": 14
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.1156,
@@ -12923,6 +14193,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -12931,6 +14202,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",
@@ -12991,6 +14263,12 @@
         "avg_ordered_mfe_until_terminal_5d_pct": 6.1109,
         "avg_ordered_mae_until_terminal_5d_pct": -4.7826,
         "avg_ordered_mae_before_target_5d_pct": -0.9492,
+        "outcome_path_sources": {
+          "intraday_30m+daily_ohlc": 59,
+          "daily_ohlc": 15
+        },
+        "outcome_path_warning_rows": 57,
+        "outcome_path_warning_pct": 77.027,
         "exit_policy_target_pct": 5.0,
         "exit_policy_stop_pct": -5.0,
         "avg_ordered_exit_5d_pct": 0.1156,
@@ -13005,6 +14283,7 @@
           "enough_days": true,
           "enough_folds": true,
           "ordered_path_gate": true,
+          "path_warning_gate": false,
           "label_win_gate": false,
           "avg_return_gate": false,
           "bad_path_gate": false,
@@ -13013,6 +14292,7 @@
           "fold_stability_gate": false
         },
         "failed_checks": [
+          "path_warning_gate",
           "label_win_gate",
           "avg_return_gate",
           "bad_path_gate",

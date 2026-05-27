@@ -367,6 +367,15 @@ def _metrics(df: pd.DataFrame, idx: pd.Index, label: pd.Series, profile: LabelPr
     out["avg_ordered_mfe_until_terminal_5d_pct"] = _round(terminal_mfe.mean()) if len(terminal_mfe.dropna()) else None
     out["avg_ordered_mae_until_terminal_5d_pct"] = _round(terminal_mae.mean()) if len(terminal_mae.dropna()) else None
     out["avg_ordered_mae_before_target_5d_pct"] = _round(mae_before_target.mean()) if len(mae_before_target.dropna()) else None
+    if ordered_valid_n:
+        valid_idx = ordered_valid[ordered_valid].index
+        source_series = sub.get("outcome_path_source", pd.Series(index=sub.index, dtype=object)).loc[valid_idx].fillna("").astype(str)
+        sources = source_series[source_series.str.strip().ne("")].value_counts().head(3)
+        warning_series = sub.get("outcome_path_warnings", pd.Series(index=sub.index, dtype=object)).loc[valid_idx].fillna("").astype(str)
+        warning_mask = warning_series.str.strip().replace({"[]": "", "nan": "", "None": ""}).ne("")
+        out["outcome_path_sources"] = {str(key): int(value) for key, value in sources.items()}
+        out["outcome_path_warning_rows"] = int(warning_mask.sum())
+        out["outcome_path_warning_pct"] = _pct(warning_mask.mean()) if len(warning_mask) else None
     if profile is not None and _is_ordered_profile(profile) and ordered_valid_n:
         no_touch_exit = pd.to_numeric(sub.get("return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
         exit_returns = pd.Series(np.nan, index=sub.index, dtype=float)
@@ -413,6 +422,7 @@ def _promotion_flags(
     exit_win = _safe_float(metrics.get("win_ordered_exit_5d_pct"))
     exit_avg = _safe_float(metrics.get("avg_ordered_exit_5d_pct"), -999.0)
     exit_min = _safe_float(metrics.get("min_ordered_exit_5d_pct"), -999.0)
+    path_warning = _safe_float(metrics.get("outcome_path_warning_pct"), 100.0)
     folds = len(fold_wins)
     min_fold_win = min(fold_wins) if fold_wins else 0.0
     checks = {
@@ -425,6 +435,7 @@ def _promotion_flags(
             _safe_float(metrics.get("ordered_path_coverage_pct")) >= 95.0
             and str(metrics.get("ordered_path_label_version") or "") == ORDERED_OUTCOME_PATH_LABEL_VERSION
         ),
+        "path_warning_gate": (not require_ordered) or path_warning <= 25.0,
         "label_win_gate": label_win >= 70.0,
         "avg_return_gate": avg5 >= 3.0,
         "bad_path_gate": bad <= 35.0,
@@ -433,7 +444,7 @@ def _promotion_flags(
         "fold_stability_gate": min_fold_win >= 45.0,
     }
     failed_checks = [name for name, passed in checks.items() if not passed]
-    exit_policy_watch = bool(exit_win >= 80.0 and exit_avg >= 3.0 and exit_min >= -5.0 and stop <= 10.0)
+    exit_policy_watch = bool(exit_win >= 80.0 and exit_avg >= 3.0 and exit_min >= -5.0 and stop <= 10.0 and path_warning <= 25.0)
     return {
         "checks": checks,
         "failed_checks": failed_checks,
