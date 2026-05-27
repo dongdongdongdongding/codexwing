@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from multi_agent.tools.mine_loss_exclusion_guards import build_report
+from multi_agent.tools.mine_loss_exclusion_guards import _load_guard_dataset, build_report
 
 
 def test_loss_exclusion_guard_reports_shadow_candidate():
@@ -38,6 +38,7 @@ def test_loss_exclusion_guard_reports_shadow_candidate():
 
     report = build_report(
         pd.DataFrame(rows),
+        scan_mode="SWING",
         markets=["KOSPI"],
         scopes=["top5"],
         horizons=["5d"],
@@ -93,6 +94,7 @@ def test_loss_exclusion_guard_keeps_empty_production_when_holdout_weak():
 
     report = build_report(
         pd.DataFrame(rows),
+        scan_mode="SWING",
         markets=["KOSDAQ"],
         scopes=["top5"],
         horizons=["5d"],
@@ -110,3 +112,35 @@ def test_loss_exclusion_guard_keeps_empty_production_when_holdout_weak():
 
     assert report["guard_count"] >= 0
     assert report["production_candidate_count"] == 0
+
+
+def test_load_guard_dataset_can_load_intraday_archive(tmp_path):
+    path = tmp_path / "archive.csv"
+    pd.DataFrame(
+        [
+            {
+                "ticker": "000001.KQ",
+                "scan_mode": "INTRADAY",
+                "recommended_at": "2026-05-27T09:40:00+09:00",
+                "priority_rank": 1,
+                "return_1d_pct": -4.0,
+                "return_5d_pct": -1.0,
+                "min_return_observed_pct": -6.0,
+                "decision": "WATCHLIST",
+            },
+            {
+                "ticker": "000002.KQ",
+                "scan_mode": "SWING",
+                "recommended_at": "2026-05-27T09:40:00+09:00",
+                "priority_rank": 1,
+                "return_1d_pct": 2.0,
+            },
+        ]
+    ).to_csv(path, index=False)
+
+    rows = _load_guard_dataset(path, "INTRADAY")
+
+    assert rows["market2"].tolist() == ["KOSDAQ"]
+    assert rows["trade_date"].tolist() == ["2026-05-27"]
+    assert rows["bad_path"].tolist() == [True]
+    assert rows["stop5_proxy"].tolist() == [True]

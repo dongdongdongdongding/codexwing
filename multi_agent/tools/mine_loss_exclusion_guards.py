@@ -5,6 +5,7 @@ import argparse
 import json
 import math
 import sys
+import warnings
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -14,6 +15,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
+from pandas.errors import PerformanceWarning
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -42,6 +44,106 @@ class ScopeFrame:
     market: str
     scope: str
     frame: pd.DataFrame
+
+
+def _safe_bool_series(series: pd.Series) -> pd.Series:
+    if series.dtype == "bool":
+        return series.fillna(False)
+    return series.fillna("").astype(str).str.lower().isin({"1", "true", "yes"})
+
+
+def _parse_trade_date(df: pd.DataFrame) -> pd.Series:
+    def parse_col(name: str) -> pd.Series:
+        raw = df.get(name, pd.Series(index=df.index, dtype=object))
+        text = raw.where(raw.notna(), "").astype(str).str.strip()
+        cleaned = raw.where(text.ne(""), pd.NA)
+        return pd.to_datetime(cleaned, errors="coerce", utc=True)
+
+    base = parse_col("base_trade_date")
+    recommended = parse_col("recommended_at")
+    created = parse_col("created_at")
+    return base.combine_first(recommended).combine_first(created).dt.strftime("%Y-%m-%d")
+
+
+def _load_guard_dataset(path: Path, scan_mode: str) -> pd.DataFrame:
+    mode = str(scan_mode or "SWING").upper()
+    if mode == "SWING":
+        return _load_dataset(path)
+    if not path.exists():
+        raise SystemExit(f"input not found: {path}")
+    df = pd.read_csv(path, low_memory=False)
+    for col in [
+        "priority_rank",
+        "return_1d_pct",
+        "return_3d_pct",
+        "return_5d_pct",
+        "min_return_observed_pct",
+        "max_high_return_5d_pct",
+        "mfe_intraday_pct",
+        "mae_intraday_pct",
+        "feature_completeness",
+        "conviction_score",
+    ]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    for col in [
+        "is_dummy_data",
+        "validation_excluded",
+        "label_stop_loss_5pct",
+        "explosive_leader_flag",
+        "core_trend_flag",
+        "target_before_stop_5d",
+        "stop_before_target_5d",
+    ]:
+        if col in df.columns:
+            df[f"{col}_bool"] = _safe_bool_series(df[col])
+
+    ticker = df.get("ticker", pd.Series("", index=df.index)).fillna("").astype(str).str.upper()
+    scan_mode_col = df.get("scan_mode", pd.Series("", index=df.index)).fillna("").astype(str).str.upper()
+    market_col = df.get("market", pd.Series("", index=df.index)).fillna("").astype(str).str.upper()
+    market_type = df.get("market_type", pd.Series("", index=df.index)).fillna("").astype(str).str.upper()
+    mask = scan_mode_col.eq(mode) & (
+        ticker.str.endswith(".KS")
+        | ticker.str.endswith(".KQ")
+        | market_col.isin(["KOSPI", "KOSDAQ"])
+        | market_type.isin(["KOSPI", "KOSDAQ"])
+    )
+    if "is_dummy_data_bool" in df.columns:
+        mask &= ~df["is_dummy_data_bool"]
+    out = df.loc[mask].copy()
+    out["market2"] = ""
+    out.loc[ticker.loc[out.index].str.endswith(".KS"), "market2"] = "KOSPI"
+    out.loc[ticker.loc[out.index].str.endswith(".KQ"), "market2"] = "KOSDAQ"
+    out.loc[out["market2"].eq("") & market_col.loc[out.index].isin(["KOSPI", "KOSDAQ"]), "market2"] = market_col.loc[out.index]
+    out.loc[out["market2"].eq("") & market_type.loc[out.index].isin(["KOSPI", "KOSDAQ"]), "market2"] = market_type.loc[out.index]
+    out["trade_date"] = _parse_trade_date(out)
+    out = out[out["trade_date"].fillna("").astype(str).str.len().ge(8)].copy()
+    if "recommended_at" not in out.columns:
+        out["recommended_at"] = out["trade_date"]
+    out = out.sort_values(["trade_date", "ticker", "priority_rank", "recommended_at"], na_position="last")
+    out = out.copy()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", PerformanceWarning)
+        out = out.groupby(["trade_date", "ticker"], as_index=False, sort=False).first()
+
+    stop = pd.Series(False, index=out.index)
+    if "stop_before_target_5d_bool" in out.columns:
+        stop |= out["stop_before_target_5d_bool"].fillna(False)
+    if "min_return_observed_pct" in out.columns:
+        stop |= out["min_return_observed_pct"].le(-5.0).fillna(False)
+    if "label_stop_loss_5pct_bool" in out.columns:
+        stop |= out["label_stop_loss_5pct_bool"].fillna(False)
+    out["stop5_proxy"] = stop
+    out["bad_path"] = (
+        stop
+        | out.get("return_1d_pct", pd.Series(index=out.index)).lt(-3.0).fillna(False)
+        | out.get("return_5d_pct", pd.Series(index=out.index)).lt(0.0).fillna(False)
+    )
+    out["exception_leader"] = (
+        out.get("decision_bucket", pd.Series("", index=out.index)).fillna("").astype(str).str.lower().eq("exception_leader")
+        | out.get("decision", pd.Series("", index=out.index)).fillna("").astype(str).str.upper().eq("EXCEPTION_LEADER")
+    )
+    return out
 
 
 def _pct(value: Any) -> float | None:
@@ -477,6 +579,7 @@ def _mine_scope(
 def build_report(
     df: pd.DataFrame,
     *,
+    scan_mode: str,
     markets: Sequence[str],
     scopes: Sequence[str],
     horizons: Sequence[str],
@@ -526,6 +629,7 @@ def build_report(
         "input_rows": int(len(df)),
         "markets": df["market2"].value_counts().to_dict() if "market2" in df.columns else {},
         "search_config": {
+            "scan_mode": str(scan_mode or "SWING").upper(),
             "markets": market_list,
             "scopes": [scope.strip() for scope in scopes if scope.strip()] or "default",
             "horizons": horizon_list,
@@ -647,10 +751,11 @@ def _render_markdown(report: Dict[str, Any]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Mine train/holdout KR SWING loss-exclusion guard candidates.")
+    parser = argparse.ArgumentParser(description="Mine train/holdout KR scan loss-exclusion guard candidates.")
     parser.add_argument("--input", default=str(DEFAULT_INPUT))
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--stem", default="loss_exclusion_guards")
+    parser.add_argument("--scan-mode", choices=["SWING", "INTRADAY"], default="SWING")
     parser.add_argument("--markets", default="KOSPI,KOSDAQ")
     parser.add_argument("--scopes", default="top5,exception_leader,top5_exception,ranked_top20")
     parser.add_argument("--horizons", default="1d,3d,5d")
@@ -668,9 +773,10 @@ def main() -> int:
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    df = _load_dataset(Path(args.input))
+    df = _load_guard_dataset(Path(args.input), str(args.scan_mode))
     report = build_report(
         df,
+        scan_mode=str(args.scan_mode),
         markets=[part.strip() for part in str(args.markets).split(",")],
         scopes=[part.strip() for part in str(args.scopes).split(",") if part.strip()],
         horizons=[part.strip() for part in str(args.horizons).split(",") if part.strip()],

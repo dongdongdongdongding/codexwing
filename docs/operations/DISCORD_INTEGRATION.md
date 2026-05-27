@@ -208,10 +208,10 @@ Daily KR automation uses two LaunchAgents:
   `AG_KR_DAILY_SCAN_TARGETS=KOSPI:SWING,KOSDAQ:SWING` when needed.
   After the scan artifacts are refreshed, the runner also regenerates the
   section performance snapshot, scan cohort performance, and segment Top1/Top5
-  validation reports, plus INTRADAY learning readiness/model viability, then
-  posts their status and key excerpts to Discord. These post-scan validations
-  are diagnostic and should not block scan persistence if a report command
-  fails.
+  validation reports, plus INTRADAY learning readiness/model viability and
+  INTRADAY loss-guard watch, then posts their status and key excerpts to
+  Discord. These post-scan validations are diagnostic and should not block scan
+  persistence if a report command fails.
 
 ## Result Rendering Requirement
 
