@@ -45,6 +45,9 @@ def test_build_section_performance_metrics_records_horizons():
             "return_1d_pct": "1.0",
             "return_3d_pct": "-2.0",
             "return_5d_pct": "4.0",
+            "return_7d_pct": "6.0",
+            "return_14d_pct": "8.0",
+            "return_30d_pct": "12.0",
             "base_trade_date": "2026-05-10",
         },
         {
@@ -54,6 +57,9 @@ def test_build_section_performance_metrics_records_horizons():
             "return_1d_pct": "-1.0",
             "return_3d_pct": "3.0",
             "return_5d_pct": "5.0",
+            "return_7d_pct": "7.0",
+            "return_14d_pct": "9.0",
+            "return_30d_pct": "11.0",
             "base_trade_date": "2026-05-11",
         },
     ]
@@ -65,8 +71,13 @@ def test_build_section_performance_metrics_records_horizons():
     assert by_key[("KOSPI", "Shadow", 1)]["sample_n"] == 1
     assert by_key[("KOSPI", "Shadow", 1)]["win_rate_pct"] == 100.0
     assert by_key[("KOSPI", "Top5", 3)]["avg_return_pct"] == -2.0
+    assert by_key[("KOSPI", "Shadow", 14)]["avg_return_pct"] == 8.0
+    assert by_key[("KOSPI", "Shadow", 14)]["active_day_n"] == 1
     assert by_key[("KOSDAQ", "Exception Leader", 5)]["win_rate_pct"] == 100.0
-    assert "worst -2.00% / best -2.00%" in build_latest_performance_markdown(metrics)
+    assert by_key[("KOSDAQ", "Exception Leader", 30)]["sample_n"] == 1
+    markdown = build_latest_performance_markdown(metrics)
+    assert "worst -2.00% / best -2.00%" in markdown
+    assert "14D win 100.0% / avg +8.00% / worst +8.00% / best +8.00% / n=1 / days=1" in markdown
 
 
 def test_section_performance_keeps_swing_and_intraday_separate():

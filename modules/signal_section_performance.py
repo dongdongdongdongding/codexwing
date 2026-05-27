@@ -23,7 +23,7 @@ DEFAULT_JSON_PATH = DEFAULT_REPORT_DIR / "signal_section_performance_daily.json"
 DEFAULT_CSV_PATH = DEFAULT_REPORT_DIR / "signal_section_performance_daily.csv"
 DEFAULT_MD_PATH = DEFAULT_REPORT_DIR / "signal_section_performance_daily.md"
 SECTIONS = ("Shadow", "Top5", "Exception Leader")
-HORIZONS = (1, 3, 5)
+HORIZONS = (1, 3, 5, 7, 14, 30)
 
 
 @dataclass(frozen=True)
@@ -41,6 +41,7 @@ class SectionMetric:
     median_return_pct: float | None
     best_return_pct: float | None
     worst_return_pct: float | None
+    active_day_n: int
     latest_base_trade_date: str
     source: str
 
@@ -59,6 +60,7 @@ class SectionMetric:
             "median_return_pct": self.median_return_pct,
             "best_return_pct": self.best_return_pct,
             "worst_return_pct": self.worst_return_pct,
+            "active_day_n": self.active_day_n,
             "latest_base_trade_date": self.latest_base_trade_date,
             "source": self.source,
         }
@@ -97,6 +99,7 @@ def build_section_performance_metrics(
     generated = generated_at or datetime.now(timezone.utc).isoformat()
     as_of = as_of_date or str(date.today())
     buckets: Dict[tuple[str, str, str, int], List[float]] = {}
+    active_dates: Dict[tuple[str, str, str, int], set[str]] = {}
     latest_dates: Dict[tuple[str, str, str, int], str] = {}
     prepared_rows = attach_display_theme_day_metrics(list(rows or []))
 
@@ -116,6 +119,8 @@ def build_section_performance_metrics(
                     continue
                 key = (market, scan_mode, section, horizon)
                 buckets.setdefault(key, []).append(value)
+                if base_date:
+                    active_dates.setdefault(key, set()).add(base_date)
                 if base_date and base_date > latest_dates.get(key, ""):
                     latest_dates[key] = base_date
 
@@ -142,6 +147,7 @@ def build_section_performance_metrics(
                         median_return_pct=round(float(median(values)), 4) if sample_n else None,
                         best_return_pct=round(max(values), 4) if sample_n else None,
                         worst_return_pct=round(min(values), 4) if sample_n else None,
+                        active_day_n=len(active_dates.get(key, set())),
                         latest_base_trade_date=latest_dates.get(key, ""),
                         source=source,
                     )
@@ -211,7 +217,12 @@ def build_latest_performance_markdown(metrics: List[Dict[str, Any]]) -> str:
                     worst = _fmt_signed(row.get("worst_return_pct"))
                     best = _fmt_signed(row.get("best_return_pct"))
                     sample = int(row.get("sample_n") or 0)
-                    parts.append(f"{row.get('horizon_days')}D win {win} / avg {avg} / worst {worst} / best {best} / n={sample}")
+                    horizon = int(row.get("horizon_days") or 0)
+                    active_days = int(row.get("active_day_n") or 0)
+                    part = f"{horizon}D win {win} / avg {avg} / worst {worst} / best {best} / n={sample}"
+                    if horizon >= 14:
+                        part += f" / days={active_days}"
+                    parts.append(part)
                 lines.append(f"- {section}: " + " | ".join(parts))
             lines.append("")
     return "\n".join(lines).strip() + "\n"
@@ -233,6 +244,7 @@ def _write_csv(rows: List[Dict[str, Any]], path: Path) -> None:
         "median_return_pct",
         "best_return_pct",
         "worst_return_pct",
+        "active_day_n",
         "latest_base_trade_date",
         "source",
     ]

@@ -1,9 +1,11 @@
 import json
 
 from modules.scanner_performance_contract import (
+    PerformanceMetric,
     format_metric,
     latest_section_metric,
     live_policy_summary,
+    min_samples_for_horizon,
     profile_level,
     slice_metric,
 )
@@ -159,3 +161,59 @@ def test_slice_metric_reads_validation_slice(tmp_path, monkeypatch):
     assert metric is not None
     assert metric.sample_n == 55
     assert profile_level(metric) == "pass"
+
+
+def test_long_horizon_metrics_require_mature_samples_and_active_days():
+    immature_30d = PerformanceMetric(
+        market="KOSPI",
+        scan_mode="SWING",
+        section="Top5",
+        horizon_days=30,
+        sample_n=179,
+        win_rate_pct=90.0,
+        avg_return_pct=9.0,
+        median_return_pct=8.0,
+        best_return_pct=25.0,
+        worst_return_pct=-3.0,
+        source="test",
+        active_day_n=20,
+    )
+    mature_14d = PerformanceMetric(
+        market="KOSDAQ",
+        scan_mode="SWING",
+        section="Exception Leader",
+        horizon_days=14,
+        sample_n=120,
+        win_rate_pct=75.0,
+        avg_return_pct=6.0,
+        median_return_pct=5.0,
+        best_return_pct=18.0,
+        worst_return_pct=-4.0,
+        source="test",
+        active_day_n=8,
+    )
+    active_day_immature_14d = PerformanceMetric(
+        market="KOSDAQ",
+        scan_mode="SWING",
+        section="Exception Leader",
+        horizon_days=14,
+        sample_n=140,
+        win_rate_pct=75.0,
+        avg_return_pct=6.0,
+        median_return_pct=5.0,
+        best_return_pct=18.0,
+        worst_return_pct=-4.0,
+        source="test",
+        active_day_n=7,
+    )
+
+    assert min_samples_for_horizon(30) == 180
+    assert immature_30d.production_pass is False
+    assert profile_level(immature_30d) == "immature"
+    assert "gate n 179/180" in format_metric(immature_30d, horizon_label="30D")
+
+    assert mature_14d.production_pass is True
+    assert profile_level(mature_14d) == "pass"
+
+    assert active_day_immature_14d.production_pass is False
+    assert profile_level(active_day_immature_14d) == "immature"

@@ -15,6 +15,24 @@ SLICE_VALIDATION_PATHS = {
     "KOSDAQ": Path("runtime_state/reports/validation/kosdaq_swing_5d_slice_validation.json"),
 }
 
+DEFAULT_PRODUCTION_MIN_SAMPLE_N = 30
+LONG_HORIZON_PRODUCTION_MIN_SAMPLE_N = {
+    14: 120,
+    30: 180,
+}
+LONG_HORIZON_PRODUCTION_MIN_ACTIVE_DAYS = {
+    14: 8,
+    30: 10,
+}
+
+
+def min_samples_for_horizon(horizon_days: int) -> int:
+    return LONG_HORIZON_PRODUCTION_MIN_SAMPLE_N.get(int(horizon_days or 0), DEFAULT_PRODUCTION_MIN_SAMPLE_N)
+
+
+def min_active_days_for_horizon(horizon_days: int) -> int:
+    return LONG_HORIZON_PRODUCTION_MIN_ACTIVE_DAYS.get(int(horizon_days or 0), 0)
+
 
 @dataclass(frozen=True)
 class PerformanceMetric:
@@ -29,11 +47,33 @@ class PerformanceMetric:
     best_return_pct: Optional[float]
     worst_return_pct: Optional[float]
     source: str
+    active_day_n: int = 0
     generated_at: str = ""
     as_of_date: str = ""
 
     @property
+    def min_sample_n_required(self) -> int:
+        return min_samples_for_horizon(self.horizon_days)
+
+    @property
+    def min_active_day_n_required(self) -> int:
+        return min_active_days_for_horizon(self.horizon_days)
+
+    @property
+    def long_horizon_ready(self) -> bool:
+        if self.horizon_days < 14:
+            return True
+        if self.sample_n < self.min_sample_n_required:
+            return False
+        active_required = self.min_active_day_n_required
+        if active_required and self.active_day_n < active_required:
+            return False
+        return True
+
+    @property
     def reliability_level(self) -> str:
+        if not self.long_horizon_ready:
+            return "immature"
         if self.sample_n >= 50:
             return "high"
         if self.sample_n >= 30:
@@ -45,7 +85,8 @@ class PerformanceMetric:
     @property
     def production_pass(self) -> bool:
         return (
-            self.sample_n >= 30
+            self.long_horizon_ready
+            and self.sample_n >= self.min_sample_n_required
             and (self.win_rate_pct or 0.0) >= 70.0
             and (self.avg_return_pct or 0.0) >= 5.0
         )
@@ -54,6 +95,7 @@ class PerformanceMetric:
     def near_pass(self) -> bool:
         return (
             not self.production_pass
+            and self.long_horizon_ready
             and self.sample_n >= 10
             and (self.win_rate_pct or 0.0) >= 65.0
             and (self.avg_return_pct or 0.0) >= 3.0
@@ -107,6 +149,7 @@ def _metric_from_section_row(row: Dict[str, Any]) -> PerformanceMetric:
         best_return_pct=_safe_float(row.get("best_return_pct")),
         worst_return_pct=_safe_float(row.get("worst_return_pct")),
         source=str(row.get("source") or "signal_section_performance_daily"),
+        active_day_n=int(row.get("active_day_n") or 0),
         generated_at=str(row.get("generated_at") or ""),
         as_of_date=str(row.get("as_of_date") or ""),
     )
@@ -183,12 +226,19 @@ def format_metric(metric: Optional[PerformanceMetric], *, horizon_label: str = "
     win = "-" if metric.win_rate_pct is None else f"{metric.win_rate_pct:.1f}%"
     avg = "-" if metric.avg_return_pct is None else f"{metric.avg_return_pct:+.2f}%"
     worst = "-" if metric.worst_return_pct is None else f"{metric.worst_return_pct:+.2f}%"
-    return f"n={metric.sample_n} · win{horizon_label} {win} · avg{horizon_label} {avg} · worst {worst}"
+    suffix = ""
+    if metric.horizon_days >= 14:
+        suffix = f" · gate n {metric.sample_n}/{metric.min_sample_n_required}"
+        if metric.min_active_day_n_required:
+            suffix += f" days {metric.active_day_n}/{metric.min_active_day_n_required}"
+    return f"n={metric.sample_n} · win{horizon_label} {win} · avg{horizon_label} {avg} · worst {worst}{suffix}"
 
 
 def profile_level(metric: Optional[PerformanceMetric]) -> str:
     if metric is None:
         return "fail"
+    if not metric.long_horizon_ready:
+        return "immature"
     if metric.production_pass:
         return "pass"
     if metric.near_pass:
@@ -248,6 +298,8 @@ __all__ = [
     "format_metric",
     "latest_section_metric",
     "live_policy_summary",
+    "min_active_days_for_horizon",
+    "min_samples_for_horizon",
     "profile_level",
     "slice_metric",
 ]
