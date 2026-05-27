@@ -79,9 +79,10 @@ def admission_optimizer_rows(
         if key in seen:
             continue
         seen.add(key)
+        state = "PROMOTE" if promotion.get("promotable") else ("EXIT-WATCH" if promotion.get("exit_policy_watch") else "WATCH")
         rows.append(
             {
-                "state": "PROMOTE" if promotion.get("promotable") else "WATCH",
+                "state": state,
                 "market": policy.get("market"),
                 "cohort": policy.get("cohort"),
                 "label": label_profile.get("name"),
@@ -97,7 +98,12 @@ def admission_optimizer_rows(
                 "target_before_stop_5d_pct": metrics.get("target_before_stop_5d_pct"),
                 "stop_before_target_5d_pct": metrics.get("stop_before_target_5d_pct"),
                 "no_touch_5d_pct": metrics.get("no_touch_5d_pct"),
+                "win_ordered_exit_5d_pct": metrics.get("win_ordered_exit_5d_pct"),
+                "avg_ordered_exit_5d_pct": metrics.get("avg_ordered_exit_5d_pct"),
+                "min_ordered_exit_5d_pct": metrics.get("min_ordered_exit_5d_pct"),
                 "ordered_path_coverage_pct": metrics.get("ordered_path_coverage_pct"),
+                "failed_checks": list(promotion.get("failed_checks") or []),
+                "exit_policy_watch": bool(promotion.get("exit_policy_watch")),
                 "folds": promotion.get("folds"),
                 "min_fold_label_win_pct": promotion.get("min_fold_label_win_pct"),
                 "quality_score": policy.get("quality_score"),
@@ -123,13 +129,22 @@ def admission_optimizer_discord_summary(market: str | None = None, *, limit: int
         return f"{header}\n표시 후보 없음"
     lines = [header]
     for row in rows[:limit]:
+        exit_part = ""
+        if row.get("exit_policy_watch"):
+            exit_part = (
+                f" · exit win {_fmt_pct(row.get('win_ordered_exit_5d_pct'))} "
+                f"avg {_fmt_pct(row.get('avg_ordered_exit_5d_pct'))} "
+                f"min {_fmt_pct(row.get('min_ordered_exit_5d_pct'))}"
+            )
+        failed = ",".join(str(item) for item in (row.get("failed_checks") or [])[:3])
+        failed_part = f" · fail {failed}" if failed else ""
         lines.append(
             (
                 f"{row.get('state')} {row.get('market')}/{row.get('cohort')} "
                 f"{row.get('label')} {row.get('model')} top{row.get('topn')} · "
                 f"win {_fmt_pct(row.get('label_win_pct'))} avg5 {_fmt_pct(row.get('avg_5d_pct'))} "
                 f"stop {_fmt_pct(row.get('stop_before_target_5d_pct'))} "
-                f"n={row.get('n')} days={row.get('days')}"
+                f"n={row.get('n')} days={row.get('days')}{exit_part}{failed_part}"
             )[:900]
         )
     return "\n".join(lines)

@@ -308,7 +308,7 @@ def _daily_top_indices(frame: pd.DataFrame, score: pd.Series, topn: int) -> pd.I
     return chunks[0].append(chunks[1:]) if len(chunks) > 1 else chunks[0]
 
 
-def _metrics(df: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, Any]:
+def _metrics(df: pd.DataFrame, idx: pd.Index, label: pd.Series, profile: LabelProfile | None = None) -> Dict[str, Any]:
     sub = df.loc[idx]
     if sub.empty:
         return {"n": 0, "active_days": 0}
@@ -367,14 +367,33 @@ def _metrics(df: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, Any
     out["avg_ordered_mfe_until_terminal_5d_pct"] = _round(terminal_mfe.mean()) if len(terminal_mfe.dropna()) else None
     out["avg_ordered_mae_until_terminal_5d_pct"] = _round(terminal_mae.mean()) if len(terminal_mae.dropna()) else None
     out["avg_ordered_mae_before_target_5d_pct"] = _round(mae_before_target.mean()) if len(mae_before_target.dropna()) else None
+    if profile is not None and _is_ordered_profile(profile) and ordered_valid_n:
+        no_touch_exit = pd.to_numeric(sub.get("return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
+        exit_returns = pd.Series(np.nan, index=sub.index, dtype=float)
+        valid_idx = ordered_valid[ordered_valid].index
+        exit_returns.loc[valid_idx] = no_touch_exit.loc[valid_idx]
+        exit_returns.loc[valid_idx.intersection(exact_target[exact_target].index)] = float(profile.target_pct)
+        exit_returns.loc[valid_idx.intersection(exact_stop[exact_stop].index)] = -abs(float(profile.stop_pct))
+        realized = exit_returns.loc[valid_idx].dropna()
+        out["exit_policy_target_pct"] = _round(float(profile.target_pct))
+        out["exit_policy_stop_pct"] = _round(-abs(float(profile.stop_pct)))
+        out["avg_ordered_exit_5d_pct"] = _round(realized.mean()) if len(realized) else None
+        out["win_ordered_exit_5d_pct"] = _pct(realized.gt(0).mean()) if len(realized) else None
+        out["min_ordered_exit_5d_pct"] = _round(realized.min()) if len(realized) else None
+        out["max_ordered_exit_5d_pct"] = _round(realized.max()) if len(realized) else None
     return out
 
 
-def _merge_metrics(df: pd.DataFrame, selected_indices: Sequence[pd.Index], label: pd.Series) -> Dict[str, Any]:
+def _merge_metrics(
+    df: pd.DataFrame,
+    selected_indices: Sequence[pd.Index],
+    label: pd.Series,
+    profile: LabelProfile | None = None,
+) -> Dict[str, Any]:
     if not selected_indices:
         return {"n": 0, "active_days": 0}
     idx = selected_indices[0].append(selected_indices[1:]) if len(selected_indices) > 1 else selected_indices[0]
-    return _metrics(df, idx, label)
+    return _metrics(df, idx, label, profile=profile)
 
 
 def _promotion_flags(
@@ -391,6 +410,9 @@ def _promotion_flags(
     bad = _safe_float(metrics.get("bad_path_pct"), 100.0)
     stop = _safe_float(metrics.get("stop5_pct"), 100.0)
     min5 = _safe_float(metrics.get("min_5d_pct"), -999.0)
+    exit_win = _safe_float(metrics.get("win_ordered_exit_5d_pct"))
+    exit_avg = _safe_float(metrics.get("avg_ordered_exit_5d_pct"), -999.0)
+    exit_min = _safe_float(metrics.get("min_ordered_exit_5d_pct"), -999.0)
     folds = len(fold_wins)
     min_fold_win = min(fold_wins) if fold_wins else 0.0
     checks = {
@@ -411,9 +433,11 @@ def _promotion_flags(
         "fold_stability_gate": min_fold_win >= 45.0,
     }
     failed_checks = [name for name, passed in checks.items() if not passed]
+    exit_policy_watch = bool(exit_win >= 80.0 and exit_avg >= 3.0 and exit_min >= -5.0 and stop <= 10.0)
     return {
         "checks": checks,
         "failed_checks": failed_checks,
+        "exit_policy_watch": exit_policy_watch,
         "promotable": all(checks.values()),
         "folds": int(folds),
         "min_fold_label_win_pct": _round(min_fold_win, 4),
@@ -479,9 +503,9 @@ def _score_baseline(
             idx = _daily_top_indices(test, score, topn)
             if len(idx):
                 selected.append(idx)
-                fold_metric = _metrics(scoped, idx, label)
+                fold_metric = _metrics(scoped, idx, label, profile=profile)
                 fold_wins.append(_safe_float(fold_metric.get("label_win_pct")))
-        metrics = _merge_metrics(scoped, selected, label)
+        metrics = _merge_metrics(scoped, selected, label, profile=profile)
         flags = _promotion_flags(metrics, fold_wins, min_n=30, min_days=10, min_folds=3, require_ordered=_is_ordered_profile(profile))
         rows.append(
             {
@@ -550,11 +574,11 @@ def _fit_model_policies(
             idx = _daily_top_indices(test, prob, topn)
             if len(idx):
                 selected_by_topn[topn].append(idx)
-                fold_metric = _metrics(scoped, idx, label)
+                fold_metric = _metrics(scoped, idx, label, profile=profile)
                 fold_wins_by_topn[topn].append(_safe_float(fold_metric.get("label_win_pct")))
     rows: List[Dict[str, Any]] = []
     for topn in TOPNS:
-        metrics = _merge_metrics(scoped, selected_by_topn[topn], label)
+        metrics = _merge_metrics(scoped, selected_by_topn[topn], label, profile=profile)
         flags = _promotion_flags(
             metrics,
             fold_wins_by_topn[topn],
@@ -648,8 +672,8 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         "",
         "## Top Policies",
         "",
-        "| Rank | Promote | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | No Touch | Bad | Stop | Folds | Min Fold Win | Failed Checks | AUC | Score |",
-        "|---:|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|",
+        "| Rank | Promote | Exit Watch | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | Exit Win | Exit Avg | Exit Min | Bad | Stop | Folds | Min Fold Win | Failed Checks | AUC | Score |",
+        "|---:|---|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|",
     ]
     for idx, row in enumerate(report.get("top_policies", [])[:80], start=1):
         metrics = row.get("metrics") or {}
@@ -663,6 +687,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
                 for v in [
                     idx,
                     bool(promo.get("promotable")),
+                    bool(promo.get("exit_policy_watch")),
                     row.get("market"),
                     row.get("cohort"),
                     label,
@@ -677,7 +702,9 @@ def _render_markdown(report: Dict[str, Any]) -> str:
                     metrics.get("min_5d_pct"),
                     metrics.get("target_before_stop_5d_pct"),
                     metrics.get("stop_before_target_5d_pct"),
-                    metrics.get("no_touch_5d_pct"),
+                    metrics.get("win_ordered_exit_5d_pct"),
+                    metrics.get("avg_ordered_exit_5d_pct"),
+                    metrics.get("min_ordered_exit_5d_pct"),
                     metrics.get("bad_path_pct"),
                     metrics.get("stop5_pct"),
                     promo.get("folds"),
@@ -691,6 +718,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         )
     lines.extend(["", "## Promotion Gate", ""])
     lines.append("- `promotable` requires an exact ordered path label profile, enough samples/days/folds, label win >= 70%, 5D avg >= +3%, bad path <= 35%, stop5 <= 25%, 5D tail loss >= -12%, and no fold below 45% label win.")
+    lines.append("- `exit_policy_watch` is diagnostic only: ordered exit win >= 80%, ordered exit avg >= +3%, ordered exit min >= -5%, and stop-first <= 10%. It does not replace the production promotion gate.")
     lines.append(f"- Exact path label version: `{ORDERED_OUTCOME_PATH_LABEL_VERSION}`. Proxy labels remain visible for diagnosis but cannot trigger promotion.")
     if not report.get("promotable_policies"):
         lines.extend(

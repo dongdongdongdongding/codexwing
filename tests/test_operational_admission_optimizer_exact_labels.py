@@ -66,6 +66,34 @@ def test_ordered_metrics_drive_promotion_gate():
     assert flags["failed_checks"] == []
 
 
+def test_ordered_metrics_include_exit_policy_realization():
+    df = pd.DataFrame(
+        {
+            "trade_date": ["2026-05-01", "2026-05-02", "2026-05-03"],
+            "target_before_stop_5d": [True, False, False],
+            "stop_before_target_5d": [False, True, False],
+            "mfe_5d_pct": [7.0, 1.0, 2.0],
+            "mae_5d_pct": [-1.0, -4.0, -1.0],
+            "ordered_mfe_until_terminal_5d_pct": [5.0, 0.0, 2.0],
+            "ordered_mae_until_terminal_5d_pct": [-1.0, -3.0, -1.0],
+            "ordered_mae_before_target_5d_pct": [-1.0, None, None],
+            "outcome_path_terminal_status": ["target_before_stop", "stop_before_target", "no_touch"],
+            "outcome_path_label_version": [ORDERED_OUTCOME_PATH_LABEL_VERSION] * 3,
+            "return_1d_pct": [1.0, -1.0, 0.5],
+            "return_5d_pct": [4.0, -6.0, 2.0],
+        }
+    )
+    label = pd.Series([True, False, False], index=df.index)
+
+    metrics = _metrics(df, df.index, label, profile=_profile("ordered_5d_5v3_lowmae"))
+
+    assert metrics["exit_policy_target_pct"] == 5.0
+    assert metrics["exit_policy_stop_pct"] == -3.0
+    assert metrics["win_ordered_exit_5d_pct"] == 66.667
+    assert metrics["avg_ordered_exit_5d_pct"] == 1.3333
+    assert metrics["min_ordered_exit_5d_pct"] == -3.0
+
+
 def test_promotion_gate_reports_failed_checks():
     metrics = {
         "n": 41,
@@ -77,12 +105,16 @@ def test_promotion_gate_reports_failed_checks():
         "bad_path_pct": 29.268,
         "stop5_pct": 4.878,
         "min_5d_pct": -33.2955,
+        "win_ordered_exit_5d_pct": 95.122,
+        "avg_ordered_exit_5d_pct": 4.6098,
+        "min_ordered_exit_5d_pct": -3.0,
     }
 
     flags = _promotion_flags(metrics, [73.0, 46.667, 80.0], min_n=30, min_days=10, min_folds=3, require_ordered=True)
 
     assert flags["promotable"] is False
     assert flags["failed_checks"] == ["avg_return_gate", "tail_loss_gate"]
+    assert flags["exit_policy_watch"] is True
 
 
 def test_load_dataset_prefers_exact_ordered_stop_over_proxy(tmp_path):

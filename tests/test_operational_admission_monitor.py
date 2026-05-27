@@ -26,8 +26,17 @@ def _report(market: str, score: float):
                     "min_5d_pct": -33.2955,
                     "stop_before_target_5d_pct": 4.878,
                     "target_before_stop_5d_pct": 95.122,
+                    "win_ordered_exit_5d_pct": 95.122,
+                    "avg_ordered_exit_5d_pct": 4.6098,
+                    "min_ordered_exit_5d_pct": -3.0,
                 },
-                "promotion": {"promotable": False, "folds": 3, "min_fold_label_win_pct": 46.667},
+                "promotion": {
+                    "promotable": False,
+                    "exit_policy_watch": True,
+                    "failed_checks": ["avg_return_gate", "tail_loss_gate"],
+                    "folds": 3,
+                    "min_fold_label_win_pct": 46.667,
+                },
             }
         ],
     }
@@ -49,4 +58,7 @@ def test_kosdaq_optimizer_monitor_prefers_theme_report(tmp_path, monkeypatch):
     assert kosdaq_report["top_policies"][0]["market"] == "KOSDAQ"
     assert kospi_report["top_policies"][0]["market"] == "KOSPI"
     assert "KOSDAQ/ranked_top20" in summary
+    assert "EXIT-WATCH" in summary
     assert "win +73.17%" in summary
+    assert "exit win +95.12%" in summary
+    assert "fail avg_return_gate,tail_loss_gate" in summary
