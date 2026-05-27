@@ -194,6 +194,15 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "json_path": "runtime_state/reports/experimental/feature_combo_watchlist_latest.json",
     },
     {
+        "name": "Promotion Challenger Gate",
+        "command": [
+            sys.executable,
+            "multi_agent/tools/report_kr_promotion_challenger_gate.py",
+        ],
+        "md_path": "runtime_state/reports/validation/kr_promotion_challenger_gate.md",
+        "json_path": "runtime_state/reports/validation/kr_promotion_challenger_gate.json",
+    },
+    {
         "name": "Exit Policy Watch",
         "command": [
             sys.executable,

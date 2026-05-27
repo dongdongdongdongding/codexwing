@@ -222,6 +222,7 @@ def test_post_scan_validation_includes_loss_exclusion_guard_watch():
     assert "Exact Path Feature Watch" in names
     assert "Exact Path Feature Watch Strict" in names
     assert "Pinned Feature Combo Watch" in names
+    assert "Promotion Challenger Gate" in names
     assert "INTRADAY Learning Readiness" in names
     assert "INTRADAY Model Viability" in names
     assert "INTRADAY Loss Guard Watch" in names
