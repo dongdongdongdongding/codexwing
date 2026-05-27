@@ -2,6 +2,12 @@ import json
 from pathlib import Path
 
 from modules.discord_integration.config import DiscordIntegrationConfig
+from modules.discord_integration.delivery import (
+    SAFE_MESSAGE_CHARS,
+    chunk_embeds_for_discord,
+    discord_embed_char_count,
+    prepare_embeds_for_discord,
+)
 from modules.discord_integration.permissions import is_authorized_user
 from modules.discord_integration.register import (
     build_discord_command_payloads,
@@ -39,6 +45,32 @@ def test_register_payloads_include_expected_commands_and_options():
     assert top_run["autocomplete"] is True
     archive_market = [opt for opt in by_name["archive"]["options"] if opt["name"] == "market"][0]
     assert [choice["value"] for choice in archive_market["choices"]] == ["KOSPI", "KOSDAQ"]
+
+
+def test_shared_delivery_sanitizes_oversized_embed_payloads():
+    payloads = [
+        {
+            "title": "t" * 500,
+            "description": "d" * 7000,
+            "fields": [
+                {"name": f"field-{idx}" * 80, "value": "v" * 5000, "inline": False}
+                for idx in range(30)
+            ],
+        }
+    ]
+
+    prepared = prepare_embeds_for_discord(payloads)
+    chunks = chunk_embeds_for_discord(prepared)
+
+    assert prepared
+    assert chunks
+    for embed in prepared:
+        assert len(embed.get("title") or "") <= 256
+        assert len(embed.get("description") or "") <= 4096
+        assert len(embed.get("fields") or []) <= 25
+        assert discord_embed_char_count(embed) <= SAFE_MESSAGE_CHARS
+    for chunk in chunks:
+        assert sum(discord_embed_char_count(embed) for embed in chunk) <= SAFE_MESSAGE_CHARS
 
 
 def test_register_application_commands_dry_run_does_not_post():

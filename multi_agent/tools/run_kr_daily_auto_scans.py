@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+import time as time_module
 import urllib.error
 import urllib.request
 from datetime import datetime, time, timezone
@@ -42,7 +43,7 @@ LOG_DIR = Path("runtime_state/discord_jobs")
 KST = ZoneInfo("Asia/Seoul")
 DISCORD_MAX_EMBEDS_PER_MESSAGE = 10
 DISCORD_MAX_MESSAGE_CHARS = 6000
-DISCORD_SAFE_MESSAGE_CHARS = 5400
+DISCORD_SAFE_MESSAGE_CHARS = 4800
 DISCORD_MAX_EMBED_FIELDS = 25
 DISCORD_MAX_EMBED_TITLE_CHARS = 256
 DISCORD_MAX_EMBED_DESCRIPTION_CHARS = 4096
@@ -484,22 +485,45 @@ def _post_discord_content(config: DiscordIntegrationConfig, content: str) -> Non
 
 def _post_discord_message(config: DiscordIntegrationConfig, payload: Dict[str, Any]) -> None:
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    request = urllib.request.Request(
-        f"https://discord.com/api/v10/channels/{config.result_channel_id}/messages",
-        data=body,
-        headers={
-            "Authorization": f"Bot {config.bot_token}",
-            "Content-Type": "application/json",
-            "User-Agent": "CodexSwingDailyAutoScan/1.0",
-        },
-        method="POST",
-    )
+    url = f"https://discord.com/api/v10/channels/{config.result_channel_id}/messages"
+    headers = {
+        "Authorization": f"Bot {config.bot_token}",
+        "Content-Type": "application/json",
+        "User-Agent": "CodexSwingDailyAutoScan/1.0",
+    }
+    last_detail = ""
+    for attempt in range(5):
+        request = urllib.request.Request(url, data=body, headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                response.read()
+                return
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")[:2000]
+            last_detail = detail
+            retry_after = _discord_retry_after(exc, detail)
+            if exc.code == 429 and attempt < 4:
+                time_module.sleep(max(0.3, retry_after) + 0.2)
+                continue
+            if 500 <= exc.code < 600 and attempt < 4:
+                time_module.sleep(min(5.0, 0.5 * (attempt + 1)))
+                continue
+            raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
+    raise RuntimeError(f"Discord post failed after retries: {last_detail}")
+
+
+def _discord_retry_after(exc: urllib.error.HTTPError, detail: str) -> float:
+    header_value = exc.headers.get("Retry-After") if exc.headers else None
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            response.read()
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")[:2000]
-        raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
+        if header_value is not None:
+            return float(header_value)
+    except Exception:
+        pass
+    try:
+        payload = json.loads(detail)
+        return float(payload.get("retry_after") or 0.0)
+    except Exception:
+        return 0.0
 
 
 def _chunk_embeds_for_discord(embeds: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:

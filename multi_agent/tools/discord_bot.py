@@ -13,6 +13,11 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.discord_integration.config import load_discord_config
+from modules.discord_integration.delivery import (
+    chunk_embeds_for_discord,
+    embed_to_content_chunks,
+    prepare_embeds_for_discord,
+)
 from modules.discord_integration.permissions import is_authorized_user
 from modules.discord_integration.renderers import (
     build_archive_embed,
@@ -42,42 +47,46 @@ def _role_ids(interaction) -> Iterable[str]:
     return [str(getattr(role, "id", "")) for role in roles if getattr(role, "id", None)]
 
 
-def _embed_delivery_error_text(embed, exc: Exception) -> str:
-    title = str(getattr(embed, "title", "") or "Discord embed")
-    detail = str(exc)[:1500]
-    return f"`{title[:120]}` 전송 실패: {detail}"
-
-
 async def _send_embed_chunks(discord_module, target, payloads):
-    embeds = [_embed(discord_module, payload) for payload in payloads]
-    for idx in range(0, len(embeds), 10):
-        chunk = embeds[idx : idx + 10]
+    safe_payloads = prepare_embeds_for_discord(list(payloads or []))
+    for chunk_payloads in chunk_embeds_for_discord(safe_payloads):
+        chunk = [_embed(discord_module, payload) for payload in chunk_payloads]
         try:
             await target.send(embeds=chunk)
             continue
         except Exception as exc:
             print(f"Discord embed chunk send failed; retrying singles: {exc}", file=sys.stderr)
-        for embed in chunk:
+        for payload, embed in zip(chunk_payloads, chunk):
             try:
                 await target.send(embed=embed)
             except Exception as exc:
-                await target.send(_embed_delivery_error_text(embed, exc))
+                print(f"Discord single embed send failed; falling back to text: {exc}", file=sys.stderr)
+                for content in embed_to_content_chunks(payload):
+                    try:
+                        await target.send(content)
+                    except Exception as text_exc:
+                        print(f"Discord text fallback send failed: {text_exc}", file=sys.stderr)
 
 
 async def _send_followup_chunks(discord_module, interaction, payloads):
-    embeds = [_embed(discord_module, payload) for payload in payloads]
-    for idx in range(0, len(embeds), 10):
-        chunk = embeds[idx : idx + 10]
+    safe_payloads = prepare_embeds_for_discord(list(payloads or []))
+    for chunk_payloads in chunk_embeds_for_discord(safe_payloads):
+        chunk = [_embed(discord_module, payload) for payload in chunk_payloads]
         try:
             await interaction.followup.send(embeds=chunk, ephemeral=True)
             continue
         except Exception as exc:
             print(f"Discord followup chunk send failed; retrying singles: {exc}", file=sys.stderr)
-        for embed in chunk:
+        for payload, embed in zip(chunk_payloads, chunk):
             try:
                 await interaction.followup.send(embed=embed, ephemeral=True)
             except Exception as exc:
-                await interaction.followup.send(_embed_delivery_error_text(embed, exc), ephemeral=True)
+                print(f"Discord single followup send failed; falling back to text: {exc}", file=sys.stderr)
+                for content in embed_to_content_chunks(payload):
+                    try:
+                        await interaction.followup.send(content, ephemeral=True)
+                    except Exception as text_exc:
+                        print(f"Discord text followup fallback failed: {text_exc}", file=sys.stderr)
 
 
 def main() -> int:

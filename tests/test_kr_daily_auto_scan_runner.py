@@ -1,7 +1,10 @@
+import urllib.error
+
 from multi_agent.tools.run_kr_daily_auto_scans import (
     DISCORD_MAX_CONTENT_CHARS,
     DISCORD_SAFE_MESSAGE_CHARS,
     _chunk_embeds_for_discord,
+    _discord_retry_after,
     _discord_embed_char_count,
     _embed_to_content_chunks,
     _markdown_validation_excerpt,
@@ -67,6 +70,20 @@ def test_discord_embed_text_fallback_chunks_under_content_limit():
     assert len(chunks) > 1
     assert all(0 < len(chunk) <= DISCORD_MAX_CONTENT_CHARS for chunk in chunks)
     assert chunks[0].startswith("**자동 스캔 완료**")
+
+
+def test_discord_retry_after_reads_header_and_json_body():
+    header_exc = urllib.error.HTTPError(
+        "https://discord.test",
+        429,
+        "rate limited",
+        {"Retry-After": "1.25"},
+        None,
+    )
+    body_exc = urllib.error.HTTPError("https://discord.test", 429, "rate limited", {}, None)
+
+    assert _discord_retry_after(header_exc, "{}") == 1.25
+    assert _discord_retry_after(body_exc, '{"retry_after": 0.53}') == 0.53
 
 
 def test_daily_auto_scan_targets_include_kospi_intraday_observer(monkeypatch):
