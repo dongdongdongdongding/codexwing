@@ -147,6 +147,17 @@ if [[ "${AG_OPERATIONAL_ADMISSION_OPTIMIZER_ENABLE:-1}" == "1" ]]; then
       --stem operational_admission_optimizer_latest
 fi
 
+if [[ "${AG_OPERATIONAL_ADMISSION_OPTIMIZER_KOSDAQ_THEME_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] operational_admission_optimizer_kosdaq_theme"
+  run_optional "operational_admission_optimizer_kosdaq_theme" \
+    python3 multi_agent/tools/operational_admission_optimizer.py \
+      --input runtime_state/reports/archive/scan_archive_learning_dataset_all.csv \
+      --output-dir runtime_state/reports/experimental \
+      --stem operational_admission_optimizer_kosdaq_theme_latest \
+      --markets KOSDAQ \
+      --include-theme
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then

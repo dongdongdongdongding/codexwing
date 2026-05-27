@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 
 
 DEFAULT_REPORT_PATH = Path("runtime_state/reports/experimental/operational_admission_optimizer_latest.json")
+KOSDAQ_THEME_REPORT_PATH = Path("runtime_state/reports/experimental/operational_admission_optimizer_kosdaq_theme_latest.json")
 FALLBACK_REPORT_PATH = Path("runtime_state/reports/experimental/operational_admission_optimizer.json")
 
 
@@ -26,8 +27,14 @@ def _fmt_pct(value: Any) -> str:
         return "-"
 
 
-def load_admission_optimizer_report(path: str | Path | None = None) -> Dict[str, Any]:
-    report_path = Path(path) if path else DEFAULT_REPORT_PATH
+def load_admission_optimizer_report(path: str | Path | None = None, *, market: str | None = None) -> Dict[str, Any]:
+    market_key = str(market or "").strip().upper()
+    if path:
+        report_path = Path(path)
+    elif market_key == "KOSDAQ" and KOSDAQ_THEME_REPORT_PATH.exists():
+        report_path = KOSDAQ_THEME_REPORT_PATH
+    else:
+        report_path = DEFAULT_REPORT_PATH
     if not report_path.exists() and not path:
         report_path = FALLBACK_REPORT_PATH
     if not report_path.exists():
@@ -45,7 +52,7 @@ def admission_optimizer_rows(
     market: str | None = None,
     limit: int = 8,
 ) -> List[Dict[str, Any]]:
-    payload = report if isinstance(report, dict) else load_admission_optimizer_report()
+    payload = report if isinstance(report, dict) else load_admission_optimizer_report(market=market)
     if not payload:
         return []
     target_market = str(market or "").strip().upper()
@@ -94,6 +101,7 @@ def admission_optimizer_rows(
                 "folds": promotion.get("folds"),
                 "min_fold_label_win_pct": promotion.get("min_fold_label_win_pct"),
                 "quality_score": policy.get("quality_score"),
+                "report_source": str(payload.get("report_source") or payload.get("stem") or ""),
             }
         )
         if len(rows) >= max(int(limit or 0), 0):
@@ -102,7 +110,7 @@ def admission_optimizer_rows(
 
 
 def admission_optimizer_discord_summary(market: str | None = None, *, limit: int = 3) -> str:
-    report = load_admission_optimizer_report()
+    report = load_admission_optimizer_report(market=market)
     if not report:
         return "optimizer report 없음"
     rows = admission_optimizer_rows(report, market=market, limit=limit)

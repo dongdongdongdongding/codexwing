@@ -1,0 +1,109 @@
+# Operational Admission Optimizer
+
+- generated_at: `2026-05-27T06:54:09.166429+00:00`
+- report_version: `operational_admission_optimizer_v2`
+- input_rows: `4203`
+- evaluated_policies: `5400`
+- promotable_count: `0`
+
+## Top Policies
+
+| Rank | Promote | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | No Touch | Bad | Stop | Folds | Min Fold Win | AUC | Score |
+|---:|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 3 | 41 | 14 | 73.171 | 0.1308 | -33.2955 | 95.122 | 4.878 | 0.0 | 29.268 | 4.878 | 3 | 46.667 | None | 86.3071 |
+| 2 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 5 | 67 | 14 | 73.134 | -0.3388 | -33.2955 | 97.015 | 2.985 | 0.0 | 34.328 | 2.985 | 3 | 52.0 | None | 83.2806 |
+| 3 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 3 | 41 | 14 | 63.415 | 3.1855 | -27.4771 | 97.561 | 2.439 | 0.0 | 34.146 | 2.439 | 3 | 46.667 | None | 82.8655 |
+| 4 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 3 | 41 | 14 | 73.171 | 1.0702 | -21.2887 | 97.561 | 2.439 | 0.0 | 36.585 | 2.439 | 3 | 53.333 | None | 82.5542 |
+| 5 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 5 | 66 | 14 | 71.212 | 1.9978 | -19.6602 | 98.485 | 1.515 | 0.0 | 43.939 | 1.515 | 3 | 57.895 | None | 79.2227 |
+| 6 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 3 | 41 | 14 | 70.732 | -1.034 | -33.2955 | 97.561 | 2.439 | 0.0 | 34.146 | 2.439 | 3 | 53.333 | None | 78.761 |
+| 7 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 5 | 66 | 14 | 75.758 | 0.2151 | -33.0228 | 100.0 | 0.0 | 0.0 | 45.454 | 0.0 | 3 | 68.0 | None | 77.0045 |
+| 8 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 5 | 66 | 14 | 69.697 | 2.8906 | -20.1993 | 98.485 | 1.515 | 0.0 | 42.424 | 1.515 | 3 | 57.895 | None | 76.9193 |
+| 9 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 5 | 67 | 14 | 68.657 | 0.6364 | -24.0506 | 98.508 | 1.493 | 0.0 | 37.313 | 1.493 | 3 | 56.0 | None | 73.2848 |
+| 10 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 3 | 41 | 14 | 68.293 | 2.0782 | -23.4848 | 97.561 | 2.439 | 0.0 | 41.463 | 2.439 | 3 | 58.333 | None | 72.4522 |
+| 11 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 3 | 41 | 14 | 70.732 | -0.388 | -24.0506 | 100.0 | 0.0 | 0.0 | 43.902 | 0.0 | 3 | 60.0 | None | 72.153 |
+| 12 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 5 | 67 | 14 | 68.657 | 0.6547 | -27.4771 | 98.508 | 1.493 | 0.0 | 38.806 | 1.493 | 3 | 48.0 | None | 71.7715 |
+| 13 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 5 | 67 | 14 | 68.657 | -0.0024 | -23.1293 | 97.015 | 2.985 | 0.0 | 37.313 | 2.985 | 3 | 52.0 | None | 71.08 |
+| 14 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 3 | 41 | 14 | 65.854 | 2.3366 | -27.4771 | 92.683 | 7.317 | 0.0 | 36.585 | 7.317 | 3 | 46.667 | None | 71.0359 |
+| 15 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 3 | 41 | 14 | 68.293 | 0.8123 | -33.0228 | 100.0 | 0.0 | 0.0 | 39.024 | 0.0 | 3 | 50.0 | None | 70.7835 |
+| 16 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 3 | 40 | 14 | 65.0 | 1.7072 | -33.2955 | 100.0 | 0.0 | 0.0 | 37.5 | 0.0 | 3 | 46.667 | None | 70.7237 |
+| 17 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 3 | 41 | 14 | 58.537 | 1.9234 | -21.2887 | 100.0 | 0.0 | 0.0 | 31.707 | 0.0 | 3 | 40.0 | None | 70.6873 |
+| 18 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 3 | 41 | 14 | 63.415 | 2.3825 | -23.4848 | 97.561 | 2.439 | 0.0 | 39.024 | 2.439 | 3 | 53.333 | None | 70.0422 |
+| 19 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 5 | 67 | 14 | 68.657 | 0.5749 | -33.2955 | 97.015 | 2.985 | 0.0 | 38.806 | 2.985 | 3 | 48.0 | None | 69.9532 |
+| 20 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 5 | 66 | 14 | 68.182 | 0.8323 | -23.4848 | 98.485 | 1.515 | 0.0 | 42.424 | 1.515 | 3 | 56.0 | None | 69.7657 |
+| 21 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 3 | 33 | 13 | 72.727 | -0.649 | -33.2955 | 93.939 | 6.061 | 0.0 | 42.424 | 6.061 | 3 | 61.538 | None | 69.6229 |
+| 22 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 5 | 67 | 14 | 65.672 | 1.3072 | -23.1293 | 98.508 | 1.493 | 0.0 | 35.821 | 1.493 | 3 | 44.0 | None | 69.1594 |
+| 23 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 5 | 66 | 14 | 68.182 | 1.1464 | -33.0228 | 98.485 | 1.515 | 0.0 | 42.424 | 1.515 | 3 | 56.0 | None | 69.1203 |
+| 24 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 5 | 67 | 14 | 67.164 | 0.9058 | -23.1293 | 98.508 | 1.493 | 0.0 | 37.313 | 1.493 | 3 | 44.0 | None | 68.6035 |
+| 25 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 5 | 57 | 14 | 71.93 | -1.697 | -33.2955 | 98.246 | 1.754 | 0.0 | 43.86 | 1.754 | 3 | 54.546 | None | 68.3242 |
+| 26 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 3 | 40 | 14 | 67.5 | 0.8259 | -33.2955 | 97.5 | 2.5 | 0.0 | 40.0 | 2.5 | 3 | 46.667 | None | 68.0204 |
+| 27 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 3 | 41 | 14 | 65.854 | 0.6925 | -27.4771 | 97.561 | 2.439 | 0.0 | 39.024 | 2.439 | 3 | 46.667 | None | 67.6574 |
+| 28 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 5 | 57 | 14 | 70.175 | -1.4711 | -33.2955 | 98.246 | 1.754 | 0.0 | 43.86 | 1.754 | 3 | 50.0 | None | 67.1339 |
+| 29 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 3 | 41 | 14 | 68.293 | 0.3829 | -19.6602 | 97.561 | 2.439 | 0.0 | 43.902 | 2.439 | 3 | 58.333 | None | 67.0803 |
+| 30 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 5 | 57 | 14 | 71.93 | -1.7185 | -33.2955 | 98.246 | 1.754 | 0.0 | 45.614 | 1.754 | 3 | 50.0 | None | 67.0426 |
+| 31 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 5 | 57 | 14 | 70.175 | -1.6184 | -33.2955 | 98.246 | 1.754 | 0.0 | 43.86 | 1.754 | 3 | 50.0 | None | 66.7657 |
+| 32 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 3 | 41 | 14 | 58.537 | 1.4636 | -21.2887 | 97.561 | 2.439 | 0.0 | 34.146 | 2.439 | 3 | 40.0 | None | 66.611 |
+| 33 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 5 | 66 | 14 | 69.697 | -0.4569 | -33.0228 | 100.0 | 0.0 | 0.0 | 43.939 | 0.0 | 3 | 60.0 | None | 66.324 |
+| 34 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 3 | 41 | 14 | 63.415 | -0.4331 | -21.5797 | 100.0 | 0.0 | 0.0 | 36.585 | 0.0 | 3 | 53.333 | None | 66.2158 |
+| 35 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 3 | 33 | 13 | 66.667 | 0.6466 | -33.2955 | 100.0 | 0.0 | 0.0 | 42.424 | 0.0 | 3 | 53.846 | None | 65.8324 |
+| 36 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 5 | 66 | 14 | 66.667 | 0.9186 | -23.1293 | 96.97 | 3.03 | 0.0 | 45.454 | 3.03 | 3 | 57.895 | None | 65.6413 |
+| 37 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 5 | 57 | 14 | 70.175 | -1.7988 | -33.2955 | 96.491 | 3.509 | 0.0 | 43.86 | 3.509 | 3 | 50.0 | None | 65.4372 |
+| 38 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 5 | 57 | 14 | 70.175 | -1.8161 | -33.2955 | 96.491 | 3.509 | 0.0 | 43.86 | 3.509 | 3 | 50.0 | None | 65.3939 |
+| 39 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 3 | 33 | 13 | 69.697 | -0.1804 | -33.2955 | 96.97 | 3.03 | 0.0 | 42.424 | 3.03 | 3 | 61.538 | None | 65.2799 |
+| 40 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 3 | 33 | 13 | 69.697 | -0.1804 | -33.2955 | 96.97 | 3.03 | 0.0 | 42.424 | 3.03 | 3 | 61.538 | None | 65.2799 |
+| 41 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 3 | 33 | 13 | 69.697 | -0.1936 | -33.2955 | 96.97 | 3.03 | 0.0 | 42.424 | 3.03 | 3 | 53.846 | None | 65.2469 |
+| 42 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 3 | 40 | 14 | 65.0 | 0.7147 | -33.2955 | 97.5 | 2.5 | 0.0 | 40.0 | 2.5 | 3 | 46.667 | None | 65.2424 |
+| 43 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 5 | 67 | 14 | 64.179 | 0.3805 | -27.4771 | 95.522 | 4.478 | 0.0 | 38.806 | 4.478 | 3 | 48.0 | None | 65.1155 |
+| 44 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 3 | 33 | 13 | 66.667 | 0.2911 | -24.0506 | 96.97 | 3.03 | 0.0 | 42.424 | 3.03 | 3 | 53.846 | None | 64.8154 |
+| 45 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 5 | 57 | 14 | 70.175 | -1.9226 | -33.2955 | 94.737 | 5.263 | 0.0 | 43.86 | 5.263 | 3 | 50.0 | None | 64.2507 |
+| 46 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 3 | 41 | 14 | 63.415 | 0.8139 | -19.6602 | 95.122 | 4.878 | 0.0 | 41.463 | 4.878 | 3 | 53.333 | None | 63.7676 |
+| 47 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 3 | 33 | 13 | 66.667 | 0.1912 | -33.2955 | 96.97 | 3.03 | 0.0 | 42.424 | 3.03 | 3 | 53.846 | None | 63.1789 |
+| 48 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 5 | 66 | 14 | 65.151 | 0.4844 | -23.4848 | 98.485 | 1.515 | 0.0 | 46.97 | 1.515 | 3 | 48.0 | None | 62.6828 |
+| 49 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 5 | 66 | 14 | 65.151 | 0.8676 | -27.4771 | 96.97 | 3.03 | 0.0 | 46.97 | 3.03 | 3 | 56.0 | None | 62.2844 |
+| 50 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 3 | 41 | 14 | 60.976 | 1.1684 | -27.4771 | 97.561 | 2.439 | 0.0 | 41.463 | 2.439 | 3 | 58.333 | None | 62.2618 |
+| 51 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 5 | 67 | 14 | 67.164 | 0.4888 | -33.2955 | 97.015 | 2.985 | 0.0 | 41.791 | 2.985 | 3 | 44.0 | None | 62.1555 |
+| 52 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 5 | 57 | 14 | 68.421 | -1.5375 | -33.2955 | 96.491 | 3.509 | 0.0 | 42.105 | 3.509 | 3 | 45.454 | None | 61.5649 |
+| 53 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 3 | 40 | 14 | 62.5 | 1.1102 | -24.0506 | 97.5 | 2.5 | 0.0 | 40.0 | 2.5 | 3 | 40.0 | None | 61.1179 |
+| 54 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 3 | 40 | 14 | 65.0 | -0.7157 | -33.2955 | 95.0 | 5.0 | 0.0 | 40.0 | 5.0 | 3 | 46.667 | None | 60.4164 |
+| 55 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 5 | 57 | 14 | 68.421 | -1.6185 | -33.2955 | 96.491 | 3.509 | 0.0 | 43.86 | 3.509 | 3 | 45.454 | None | 60.1339 |
+| 56 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 3 | 41 | 14 | 65.854 | -1.0277 | -20.1993 | 97.561 | 2.439 | 0.0 | 46.342 | 2.439 | 3 | 58.333 | None | 59.326 |
+| 57 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 3 | 40 | 14 | 65.0 | -0.7549 | -33.2955 | 100.0 | 0.0 | 0.0 | 45.0 | 0.0 | 3 | 46.667 | None | 59.3184 |
+| 58 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 3 | 33 | 13 | 69.697 | -1.4256 | -33.2955 | 93.939 | 6.061 | 0.0 | 48.485 | 6.061 | 3 | 61.538 | None | 56.4087 |
+| 59 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 3 | 33 | 13 | 66.667 | -1.1582 | -33.2955 | 93.939 | 6.061 | 0.0 | 45.454 | 6.061 | 3 | 61.538 | None | 56.1689 |
+| 60 | False | KOSDAQ | ranked_top20 | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 3 | 41 | 14 | 63.415 | -0.0207 | -33.2955 | 95.122 | 4.878 | 0.0 | 41.463 | 4.878 | 3 | 40.0 | None | 55.6358 |
+| 61 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 3 | 40 | 14 | 65.0 | -0.3122 | -33.2955 | 97.5 | 2.5 | 0.0 | 45.0 | 2.5 | 3 | 40.0 | None | 55.1752 |
+| 62 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 63 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 64 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | prob_clean | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 65 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | phase25_prob | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 66 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | phase25_shadow_prob | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 67 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 68 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 69 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 70 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | loss_risk_score | score_column | 5 | 41 | 13 | 68.293 | -2.4306 | -33.2955 | 95.122 | 4.878 | 0.0 | 46.342 | 4.878 | 3 | 62.5 | None | 54.8238 |
+| 71 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | whale_score | score_column | 3 | 40 | 14 | 62.5 | 0.3119 | -33.2955 | 92.5 | 7.5 | 0.0 | 42.5 | 7.5 | 3 | 40.0 | None | 53.4854 |
+| 72 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | decision_score | score_column | 3 | 40 | 14 | 62.5 | -1.7178 | -33.2955 | 95.0 | 5.0 | 0.0 | 42.5 | 5.0 | 3 | 40.0 | None | 49.6612 |
+| 73 | False | KOSDAQ | top5 | ordered_5d_5v5 | score_baseline | prob_clean | score_column | 3 | 41 | 15 | 58.537 | -0.5008 | -33.2955 | 58.537 | 36.585 | 4.878 | 56.098 | 36.585 | 3 | 46.667 | None | 23.7096 |
+| 74 | False | KOSDAQ | top5 | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 1 | 13 | 13 | 76.923 | 0.8871 | -33.2955 | 100.0 | 0.0 | 0.0 | 15.385 | 0.0 | 3 | 60.0 | None | 19.0169 |
+| 75 | False | KOSDAQ | top5_exception | ordered_5d_5v3_lowmae | score_baseline | expected_edge_score | score_column | 1 | 14 | 14 | 71.429 | 1.6241 | -33.2955 | 100.0 | 0.0 | 0.0 | 14.286 | 0.0 | 3 | 60.0 | None | 16.4147 |
+| 76 | False | KOSDAQ | ranked_top20 | ordered_5d_5v5 | score_baseline | whale_score | score_column | 3 | 45 | 15 | 57.778 | -0.5936 | -27.3349 | 57.778 | 42.222 | 0.0 | 57.778 | 42.222 | 3 | 33.333 | None | 15.7382 |
+| 77 | False | KOSDAQ | ranked_top20 | ordered_5d_5v5 | score_baseline | relative_rank_score | score_column | 5 | 74 | 15 | 58.108 | -2.8546 | -26.4111 | 58.108 | 40.541 | 1.351 | 54.054 | 40.541 | 3 | 37.5 | None | 14.8715 |
+| 78 | False | KOSDAQ | core_trend | ordered_5d_5v3_lowmae | score_baseline | volume_ratio | score_column | 1 | 14 | 14 | 71.429 | 4.3908 | -23.4848 | 100.0 | 0.0 | 0.0 | 28.571 | 0.0 | 3 | 40.0 | None | 14.8036 |
+| 79 | False | KOSDAQ | ranked_top20 | ordered_5d_5v5 | score_baseline | phase25_shadow_prob | score_column | 3 | 45 | 15 | 55.556 | -1.4359 | -26.4111 | 55.556 | 44.444 | 0.0 | 53.333 | 44.444 | 3 | 20.0 | None | 13.5495 |
+| 80 | False | KOSDAQ | explosive_leader | ordered_5d_5v3_lowmae | score_baseline | relative_rank_score | score_column | 5 | 33 | 7 | 81.818 | 9.0387 | -11.6528 | 100.0 | 0.0 | 0.0 | 36.364 | 0.0 | 2 | 70.0 | None | 11.952 |
+
+## Promotion Gate
+
+- `promotable` requires an exact ordered path label profile, enough samples/days/folds, label win >= 70%, 5D avg >= +3%, bad path <= 35%, stop5 <= 25%, 5D tail loss >= -12%, and no fold below 45% label win.
+- Exact path label version: `scan_entry_forward_hybrid_30m_daily_stop_first_v2`. Proxy labels remain visible for diagnosis but cannot trigger promotion.
+
+## No-Promotion Diagnosis
+
+- No policy passed the full release gate. This means current scan-time features and archive path labels do not yet justify replacing production logic.
+- Near-misses should be monitored, not deployed. The next data improvement is richer intraday flow/theme acceleration and more exact ordered-label coverage.
+
+## Notes
+- Production scanner/model artifacts are unchanged.
+- Walk-forward windows validate recent contiguous trade-date blocks, using only prior days for training.
+- Score baselines are evaluated alongside ML models so scanner logic and learned models compete under the same promotion gate.
+- Fixed primary theme values are optional because rotating themes can overfit; flow/regime/theme metadata remains available when enabled.
+- Promotion requires exact ordered target/stop labels from scan_entry_forward_hybrid_30m_daily_stop_first_v2; proxy high/low labels are diagnostic only.
