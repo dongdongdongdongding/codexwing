@@ -145,6 +145,23 @@ def test_validation_embed_summarizes_post_scan_reports():
     assert "recent top5 positive-rate" in embed["fields"][0]["value"]
 
 
+def test_validation_embed_keeps_all_registered_validation_fields():
+    results = [
+        {
+            "name": f"Validation {idx}",
+            "ok": True,
+            "returncode": 0,
+            "summary": f"summary {idx}",
+        }
+        for idx in range(len(POST_SCAN_VALIDATION_COMMANDS))
+    ]
+
+    embed = _validation_embed({"generated_at": "now", "ok": True, "results": results})
+
+    assert len(embed["fields"]) == len(POST_SCAN_VALIDATION_COMMANDS)
+    assert embed["fields"][-1]["name"] == f"Validation {len(POST_SCAN_VALIDATION_COMMANDS) - 1}"
+
+
 def test_validation_embed_marks_existing_summary_fallback_as_degraded():
     embed = _validation_embed(
         {
