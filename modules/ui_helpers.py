@@ -444,6 +444,130 @@ def is_kosdaq_operating_challenger_row(rec: Dict[str, Any]) -> bool:
     )
 
 
+def _condition_score(value: float | None, threshold: float, direction: str) -> float:
+    if value is None:
+        return 0.0
+    if direction == "gte":
+        if value >= threshold:
+            return 1.0
+        if threshold <= 0:
+            return 0.0
+        return max(0.0, min(1.0, value / threshold))
+    if direction == "lte":
+        if value <= threshold:
+            return 1.0
+        if value <= 0:
+            return 0.0
+        return max(0.0, min(1.0, threshold / value))
+    return 0.0
+
+
+def _gate_condition_payload(label: str, value: float | None, threshold: float, direction: str, unit: str = "") -> Dict[str, Any]:
+    passed = bool(value is not None and ((value >= threshold) if direction == "gte" else (value <= threshold)))
+    actual = "-" if value is None else f"{value:.4g}{unit}"
+    op = ">=" if direction == "gte" else "<="
+    return {
+        "label": label,
+        "actual": actual,
+        "threshold": f"{op}{threshold:g}{unit}",
+        "passed": passed,
+        "missing": value is None,
+        "score_pct": round(_condition_score(value, threshold, direction) * 100.0, 1),
+    }
+
+
+def build_operating_challenger_gate_diagnostics(
+    records: List[Dict[str, Any]],
+    *,
+    market: str,
+    limit: int = 5,
+) -> List[Dict[str, Any]]:
+    """Rank near-miss rows by operating challenger gate completion.
+
+    The percentage is a deterministic condition-completion score, not a
+    guaranteed win rate. It makes a no-pass scan auditable by showing how close
+    each visible candidate came to the current operating challenger lane.
+    """
+    market_key = str(market or "").upper()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return []
+    diagnostics: List[Dict[str, Any]] = []
+    for row in records or []:
+        if not isinstance(row, dict) or _row_market(row) != market_key:
+            continue
+        if market_key == "KOSPI" and is_exception_leader_row(row):
+            continue
+        ticker = _row_text(row, "ticker", "티커", "Ticker", "symbol").upper()
+        if not ticker:
+            continue
+        if market_key == "KOSPI":
+            conditions = [
+                _gate_condition_payload("Top3", _row_float(row, "priority_rank", "rank", "Rank", "_raw_scan_rank"), 3.0, "lte"),
+                _gate_condition_payload("phase25", _row_float(row, "phase25_prob", "phase25_prob_clean", "phase25_shadow_prob"), 38.3, "lte"),
+                _gate_condition_payload(
+                    "테마강도순위",
+                    _row_float(row, "theme_day_strength_rank", "_theme_day_strength_rank", "display_theme_day_strength_rank"),
+                    8.0,
+                    "lte",
+                ),
+                _gate_condition_payload(
+                    "테마강도",
+                    _row_float(row, "theme_day_strength_score", "_theme_day_strength_score", "display_theme_day_strength_score"),
+                    2.0908,
+                    "gte",
+                ),
+            ]
+        else:
+            conditions = [
+                _gate_condition_payload(
+                    "테마평균 거래",
+                    _row_float(row, "theme_day_avg_volume_ratio", "_theme_day_avg_volume_ratio", "display_theme_day_avg_volume_ratio"),
+                    0.8633,
+                    "gte",
+                ),
+                _gate_condition_payload(
+                    "테마기대1D",
+                    _row_float(row, "theme_day_avg_expected_return_1d_pct", "_theme_day_avg_expected_return_1d_pct", "display_theme_day_avg_expected_return_1d_pct"),
+                    0.1514,
+                    "gte",
+                    "%",
+                ),
+                _gate_condition_payload("Tech", _row_float(row, "tech_score", "Tech", "기술점수"), 65.0, "lte"),
+                _gate_condition_payload(
+                    "테마평균 Alpha",
+                    _row_float(row, "theme_day_avg_alpha_score", "_theme_day_avg_alpha_score", "display_theme_day_avg_alpha_score"),
+                    69.5321,
+                    "lte",
+                ),
+            ]
+        passed_count = sum(1 for item in conditions if item["passed"])
+        missing_count = sum(1 for item in conditions if item["missing"])
+        completion = round(sum(float(item["score_pct"]) for item in conditions) / max(len(conditions), 1), 1)
+        diagnostics.append(
+            {
+                "ticker": ticker,
+                "name": _row_text(row, "stock_name", "종목명", "Name", "name"),
+                "market": market_key,
+                "completion_pct": completion,
+                "passed_count": passed_count,
+                "total_count": len(conditions),
+                "missing_count": missing_count,
+                "conditions": conditions,
+                "rank": _row_float(row, "priority_rank", "rank", "Rank", "_raw_scan_rank"),
+                "decision_score": _row_float(row, "decision_score", "Decision Score", "score"),
+            }
+        )
+    diagnostics.sort(
+        key=lambda item: (
+            -float(item.get("completion_pct") or 0),
+            int(item.get("missing_count") or 0),
+            float(item.get("rank") or 9999),
+            -float(item.get("decision_score") or 0),
+        )
+    )
+    return diagnostics[: max(int(limit or 0), 0)]
+
+
 def is_kosdaq_ordered_rebound_shadow_gate_row(rec: Dict[str, Any]) -> bool:
     """Current KOSDAQ low-loss theme rebound shadow gate.
 

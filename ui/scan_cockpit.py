@@ -15,6 +15,7 @@ import streamlit as st
 
 from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.ui_helpers import (
+    build_operating_challenger_gate_diagnostics,
     build_live_cockpit_summary,
     build_kr_shadow_gate_records,
     build_signal_display_rows,
@@ -195,6 +196,43 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                 st.metric("전일비", str(row.get("day_change") or "-"), day_delta)
 
 
+def render_operating_gate_diagnostics(rows: List[Dict[str, Any]], *, market: str) -> None:
+    diagnostics = build_operating_challenger_gate_diagnostics(rows, market=market, limit=5)
+    if not diagnostics:
+        st.caption("운영 게이트 근접도를 계산할 후보 데이터가 없습니다.")
+        return
+    st.markdown("#### 운영 게이트 근접도")
+    st.caption(
+        "통과 후보가 없을 때도 후보별 조건 충족률을 표시합니다. "
+        "이 %는 승률 보장이 아니라 현재 운영 챌린저 조건의 충족률입니다."
+    )
+    for item in diagnostics:
+        pct = float(item.get("completion_pct") or 0.0)
+        passed = int(item.get("passed_count") or 0)
+        total = int(item.get("total_count") or 0)
+        failed = [cond for cond in item.get("conditions", []) if not cond.get("passed")]
+        passed_items = [cond for cond in item.get("conditions", []) if cond.get("passed")]
+        with st.container(border=True):
+            cols = st.columns([1.15, 0.9, 2.8], vertical_alignment="center")
+            with cols[0]:
+                st.markdown(f"**{item.get('ticker') or '-'}**")
+                if item.get("name"):
+                    st.caption(str(item.get("name")))
+            with cols[1]:
+                st.metric("충족률", f"{pct:.1f}%")
+                st.caption(f"{passed}/{total} 조건")
+            with cols[2]:
+                st.progress(max(0.0, min(1.0, pct / 100.0)))
+                if passed_items:
+                    st.caption("충족: " + " / ".join(str(cond.get("label")) for cond in passed_items[:4]))
+                if failed:
+                    failed_text = " / ".join(
+                        f"{cond.get('label')} {cond.get('actual')} vs {cond.get('threshold')}"
+                        for cond in failed[:4]
+                    )
+                    st.caption("부족/미확보: " + failed_text)
+
+
 def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | None, market: str) -> None:
     # 2026-05-09: 8:2 자본 배분에 따라 카드를 두 섹션으로 분리.
     # Stream A (안전 80%) = PRIORITY/WATCHLIST/OBSERVE 위주
@@ -279,6 +317,8 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
             "손실경로 리스크는 카드의 경고/손절 기준으로 계속 추적합니다."
         )
         render_signal_card_list(operating_rows, empty_text="KOSDAQ 운영 챌린저 조건 통과 후보 없음.")
+        if not operating_rows:
+            render_operating_gate_diagnostics(raw_records, market=market_key)
         st.markdown("### KOSDAQ Shadow 관찰")
         st.caption(
             "Ordered rebound 조건과 Low-loss theme 조건을 별도 섹션명으로 분리합니다. "
@@ -292,6 +332,8 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
             "stop5 초과 리스크는 백그라운드 검증으로 계속 줄입니다."
         )
         render_signal_card_list(operating_rows, empty_text="KOSPI 운영 챌린저 조건 통과 후보 없음.")
+        if not operating_rows:
+            render_operating_gate_diagnostics(raw_records, market=market_key)
         st.markdown("### KOSPI Shadow 관찰")
         st.caption("운영 챌린저와 분리된 검증 관찰 섹션입니다.")
         render_signal_card_list(shadow_rows, empty_text="KOSPI Shadow 조건 통과 후보 없음.")

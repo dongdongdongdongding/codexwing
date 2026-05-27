@@ -9,6 +9,7 @@ from modules.ui_helpers import (
     build_action_display,
     build_kr_shadow_gate_records,
     build_live_cockpit_summary,
+    build_operating_challenger_gate_diagnostics,
     build_signal_display_rows,
     build_top5_plus_exception_records,
     build_top_candidate_rows,
@@ -455,6 +456,37 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual([row["ticker"] for row in groups["kospi_operating"]], ["KSOP.KS"])
         self.assertEqual([row["ticker"] for row in groups["kosdaq_operating"]], ["KQOP.KQ"])
         self.assertEqual(groups["combined"][2]["_analysis_section"], "KOSDAQ Low-loss Shadow")
+
+    def test_operating_gate_diagnostics_show_near_miss_percentages(self):
+        rows = [
+            {
+                "ticker": "NEAR.KS",
+                "market": "KOSPI",
+                "priority_rank": 4,
+                "phase25_prob": 30.0,
+                "theme_day_strength_rank": 3,
+                "theme_day_strength_score": 2.5,
+                "decision_score": 90,
+            },
+            {
+                "ticker": "FAR.KS",
+                "market": "KOSPI",
+                "priority_rank": 9,
+                "phase25_prob": 80.0,
+                "theme_day_strength_rank": 20,
+                "theme_day_strength_score": 0.2,
+                "decision_score": 99,
+            },
+        ]
+
+        diagnostics = build_operating_challenger_gate_diagnostics(rows, market="KOSPI", limit=2)
+
+        self.assertEqual(diagnostics[0]["ticker"], "NEAR.KS")
+        self.assertGreater(diagnostics[0]["completion_pct"], diagnostics[1]["completion_pct"])
+        self.assertEqual(diagnostics[0]["passed_count"], 3)
+        self.assertEqual(diagnostics[0]["total_count"], 4)
+        failed_labels = [item["label"] for item in diagnostics[0]["conditions"] if not item["passed"]]
+        self.assertEqual(failed_labels, ["Top3"])
 
     def test_kr_shadow_gate_separates_kosdaq_ordered_and_low_loss_contracts(self):
         rows = [
