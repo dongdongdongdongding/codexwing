@@ -1,6 +1,6 @@
 {
   "report_version": "feature_combo_watchlist_v1",
-  "generated_at": "2026-05-27T12:16:15.092615+00:00",
+  "generated_at": "2026-05-27T12:18:19.710084+00:00",
   "input_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/archive/scan_archive_learning_dataset_all.csv",
   "production_scanner_changed": false,
   "rules": [
@@ -45,7 +45,11 @@
         "avg_5d_pct": 10.976,
         "median_5d_pct": 5.2922,
         "min_5d_pct": -29.9776,
-        "max_5d_pct": 97.5155
+        "max_5d_pct": 97.5155,
+        "early_drop_1d_pct": 15.625,
+        "loss_5d_pct": 15.625,
+        "avg_min_path_pct": -5.0975,
+        "min_path_pct": -39.821
       },
       "train": {
         "n": 22,
@@ -67,7 +71,11 @@
         "avg_5d_pct": 11.6746,
         "median_5d_pct": 4.6017,
         "min_5d_pct": -29.9776,
-        "max_5d_pct": 97.5155
+        "max_5d_pct": 97.5155,
+        "early_drop_1d_pct": 9.091,
+        "loss_5d_pct": 18.182,
+        "avg_min_path_pct": -6.0426,
+        "min_path_pct": -39.821
       },
       "test": {
         "n": 10,
@@ -89,7 +97,11 @@
         "avg_5d_pct": 7.9019,
         "median_5d_pct": 7.8885,
         "min_5d_pct": -3.2595,
-        "max_5d_pct": 17.5781
+        "max_5d_pct": 17.5781,
+        "early_drop_1d_pct": 30.0,
+        "loss_5d_pct": 10.0,
+        "avg_min_path_pct": -1.884,
+        "min_path_pct": -3.6133
       },
       "gate_checks": [
         {

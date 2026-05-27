@@ -59,6 +59,8 @@ def test_pinned_feature_combo_watch_filters_exact_path_and_conditions():
 
     assert rows[0]["all"]["n"] == 3
     assert rows[0]["all"]["win_5d_pct"] == 100.0
+    assert rows[0]["all"]["early_drop_1d_pct"] == 0.0
+    assert rows[0]["all"]["loss_5d_pct"] == 0.0
     assert rows[0]["missing_features"] == []
     assert rows[0]["status"] == "review_candidate"
 

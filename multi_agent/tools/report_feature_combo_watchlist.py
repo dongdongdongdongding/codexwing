@@ -149,6 +149,22 @@ def _status(metrics: Dict[str, Any], train: Dict[str, Any], test: Dict[str, Any]
     return "watch_failed_current_gate", checks
 
 
+def _with_path_breakdown(df: pd.DataFrame, idx: pd.Index, metrics: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(metrics)
+    sub = df.loc[idx]
+    if sub.empty:
+        out.update({"early_drop_1d_pct": None, "loss_5d_pct": None, "avg_min_path_pct": None, "min_path_pct": None})
+        return out
+    ret1 = pd.to_numeric(sub.get("return_1d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
+    ret5 = pd.to_numeric(sub.get("return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
+    min_path = pd.to_numeric(sub.get("min_return_observed_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce")
+    out["early_drop_1d_pct"] = round(float(ret1.lt(-3.0).mean() * 100.0), 3) if ret1.notna().any() else None
+    out["loss_5d_pct"] = round(float(ret5.lt(0.0).mean() * 100.0), 3) if ret5.notna().any() else None
+    out["avg_min_path_pct"] = round(float(min_path.mean()), 4) if min_path.notna().any() else None
+    out["min_path_pct"] = round(float(min_path.min()), 4) if min_path.notna().any() else None
+    return out
+
+
 def evaluate_watch_rules(df: pd.DataFrame, rules: Sequence[Dict[str, Any]] = WATCH_RULES) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for rule in rules:
@@ -169,9 +185,11 @@ def evaluate_watch_rules(df: pd.DataFrame, rules: Sequence[Dict[str, Any]] = WAT
             selected &= mask.fillna(False)
         selected_idx = scoped.index[selected.fillna(False)]
         label, _valid = _label(scoped, "win_5d_pos")
-        all_metrics = _metrics(scoped, selected_idx, label)
-        train_metrics = _metrics(scoped, selected_idx.intersection(scoped.index[split_train.fillna(False)]), label)
-        test_metrics = _metrics(scoped, selected_idx.intersection(scoped.index[split_test.fillna(False)]), label)
+        train_idx = selected_idx.intersection(scoped.index[split_train.fillna(False)])
+        test_idx = selected_idx.intersection(scoped.index[split_test.fillna(False)])
+        all_metrics = _with_path_breakdown(scoped, selected_idx, _metrics(scoped, selected_idx, label))
+        train_metrics = _with_path_breakdown(scoped, train_idx, _metrics(scoped, train_idx, label))
+        test_metrics = _with_path_breakdown(scoped, test_idx, _metrics(scoped, test_idx, label))
         status, checks = _status(all_metrics, train_metrics, test_metrics, dict(rule.get("gate") or {}), missing)
         rows.append(
             {
@@ -222,7 +240,9 @@ def _metric_text(metric: Dict[str, Any]) -> str:
     return (
         f"n={metric.get('n')} days={metric.get('active_days')} "
         f"win5={metric.get('win_5d_pct')}% avg5={metric.get('avg_5d_pct')}% "
-        f"min5={metric.get('min_5d_pct')}% bad={metric.get('bad_path_pct')}% stop={metric.get('stop5_pct')}%"
+        f"min5={metric.get('min_5d_pct')}% bad={metric.get('bad_path_pct')}% "
+        f"drop1d={metric.get('early_drop_1d_pct')}% loss5={metric.get('loss_5d_pct')}% "
+        f"stop={metric.get('stop5_pct')}%"
     )
 
 
