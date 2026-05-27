@@ -114,6 +114,56 @@ def test_loss_exclusion_guard_keeps_empty_production_when_holdout_weak():
     assert report["production_candidate_count"] == 0
 
 
+def test_loss_exclusion_guard_can_filter_exact_path_scope():
+    rows = []
+    for idx in range(60):
+        exact = idx % 2 == 0
+        bad_signal = idx % 5 == 0
+        rows.append(
+            {
+                "market2": "KOSPI",
+                "trade_date": f"2026-05-{(idx % 12) + 1:02d}",
+                "priority_rank": (idx % 5) + 1,
+                "alpha_score": 88 if not bad_signal else 45,
+                "prob_clean": 30 if not bad_signal else 60,
+                "volume_ratio": 1.4 if not bad_signal else 0.7,
+                "trend": "UP" if not bad_signal else "DOWN",
+                "return_1d_pct": 1.0 if not bad_signal else -4.0,
+                "return_3d_pct": 2.0 if not bad_signal else -5.0,
+                "return_5d_pct": 4.0 if not bad_signal else -7.0,
+                "stop5_proxy": bool(bad_signal),
+                "bad_path": bool(bad_signal),
+                "ordered_path_exact": exact,
+                "exception_leader": False,
+                "core_trend_flag_bool": not bad_signal,
+                "explosive_leader_flag_bool": False,
+            }
+        )
+
+    report = build_report(
+        pd.DataFrame(rows),
+        scan_mode="SWING",
+        markets=["KOSPI"],
+        scopes=["top5"],
+        horizons=["5d"],
+        train_ratio=0.6,
+        min_train=8,
+        min_test=4,
+        min_days=3,
+        min_excluded=3,
+        min_retention=0.5,
+        beam_width=4,
+        max_terms=1,
+        include_primary_theme=False,
+        quality_scope="exact_path",
+        production_horizons=["3d", "5d"],
+    )
+
+    assert report["quality_scope"]["quality_scope"] == "exact_path"
+    assert report["quality_scope"]["input_rows_before_quality_scope"] == 60
+    assert report["quality_scope"]["input_rows_after_quality_scope"] == 30
+
+
 def test_load_guard_dataset_can_load_intraday_archive(tmp_path):
     path = tmp_path / "archive.csv"
     pd.DataFrame(

@@ -241,13 +241,19 @@ def _load_dataset(path: Path) -> pd.DataFrame:
     rec = rec.where(rec.notna() & rec.astype(str).str.strip().ne(""), created)
     out["trade_date"] = pd.to_datetime(rec, errors="coerce", utc=True, format="mixed").dt.strftime("%Y-%m-%d")
     out = out[out["trade_date"].fillna("").astype(str).str.len().ge(8)].copy()
+    # Keep the research loader quiet around this known pandas warning. The
+    # frame is intentionally wide because downstream sweeps inspect many
+    # optional feature columns.
+    out = out.copy()
     # Archive rows can split scan-time features and realized outcomes across
     # sibling rows. Collapse by date/ticker with first non-null per column so a
     # training row can contain both the original feature snapshot and labels.
     if "recommended_at" not in out.columns:
         out["recommended_at"] = out["trade_date"]
     out = out.sort_values(["trade_date", "ticker", "priority_rank", "recommended_at"], na_position="last")
-    out = out.groupby(["trade_date", "ticker"], as_index=False, sort=False).first()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", pd.errors.PerformanceWarning)
+        out = out.groupby(["trade_date", "ticker"], as_index=False, sort=False).first()
 
     exact_path = pd.Series(False, index=out.index)
     if "outcome_path_label_version" in out.columns:

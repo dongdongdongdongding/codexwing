@@ -60,3 +60,49 @@ def test_feature_combination_mining_reports_search_diagnostics():
     assert "5d" in scope["beam_pruning"]
     assert summary["exact_exhaustive"]["enabled_scopes"] == 1
     assert summary["exact_exhaustive"]["checked_combinations"] > 0
+
+
+def test_feature_combination_mining_can_filter_exact_path_scope():
+    rows = []
+    for idx in range(60):
+        exact = idx % 2 == 0
+        rows.append(
+            {
+                "market2": "KOSPI",
+                "trade_date": f"2026-05-{(idx % 12) + 1:02d}",
+                "priority_rank": (idx % 5) + 1,
+                "alpha_score": 60 + idx % 20,
+                "prob_clean": 25 + idx % 10,
+                "volume_ratio": 1.0 + (idx % 4) / 10,
+                "trend": "UP",
+                "return_1d_pct": 1.0,
+                "return_3d_pct": 2.0,
+                "return_5d_pct": 4.0,
+                "stop5_proxy": False,
+                "bad_path": False,
+                "ordered_path_exact": exact,
+                "exception_leader": False,
+                "core_trend_flag_bool": True,
+                "explosive_leader_flag_bool": False,
+            }
+        )
+
+    report = build_report(
+        pd.DataFrame(rows),
+        markets=["KOSPI"],
+        scopes=["top5_exception"],
+        horizons=["5d"],
+        train_ratio=0.6,
+        min_train=8,
+        min_test=4,
+        min_days=3,
+        min_support=4,
+        beam_width=4,
+        max_terms=1,
+        include_primary_theme=False,
+        quality_scope="exact_path",
+    )
+
+    assert report["quality_scope"]["quality_scope"] == "exact_path"
+    assert report["quality_scope"]["input_rows_before_quality_scope"] == 60
+    assert report["quality_scope"]["input_rows_after_quality_scope"] == 30

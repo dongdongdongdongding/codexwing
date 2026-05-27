@@ -861,6 +861,25 @@ def _sort_key(row: Dict[str, Any]) -> Tuple[int, float, float, float, float, int
     )
 
 
+def _apply_quality_scope(df: pd.DataFrame, quality_scope: str) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    scope = str(quality_scope or "all").strip().lower()
+    before = int(len(df))
+    if scope in {"all", ""}:
+        filtered = df.copy()
+    elif scope in {"exact_path", "ordered_path_exact"}:
+        if "ordered_path_exact" not in df.columns:
+            filtered = df.iloc[0:0].copy()
+        else:
+            filtered = df.loc[df["ordered_path_exact"].fillna(False).astype(bool)].copy()
+    else:
+        raise ValueError(f"unsupported quality_scope: {quality_scope}")
+    return filtered, {
+        "quality_scope": scope or "all",
+        "input_rows_before_quality_scope": before,
+        "input_rows_after_quality_scope": int(len(filtered)),
+    }
+
+
 def _render_markdown(report: Dict[str, Any]) -> str:
     lines = [
         "# Significant Feature Combination Mining",
@@ -868,6 +887,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         f"- generated_at: `{report.get('generated_at')}`",
         f"- report_version: `{report.get('report_version')}`",
         f"- input_rows: `{report.get('input_rows')}`",
+        f"- quality_scope: `{((report.get('quality_scope') or {}).get('quality_scope'))}`",
         f"- mined_combinations: `{report.get('mined_combinations')}`",
         f"- production_safe_count: `{report.get('production_safe_count')}`",
         "",
@@ -970,9 +990,11 @@ def build_report(
     beam_width: int,
     max_terms: int,
     include_primary_theme: bool,
+    quality_scope: str = "all",
     exact_exhaustive_max_predicates: int = 0,
     exact_exhaustive_max_combos: int = 50000,
 ) -> Dict[str, Any]:
+    df, quality_payload = _apply_quality_scope(df, quality_scope)
     horizons = [h.strip().lower() for h in horizons if h.strip()]
     all_results: List[Dict[str, Any]] = []
     scope_diagnostics: List[Dict[str, Any]] = []
@@ -1006,8 +1028,10 @@ def build_report(
         "report_version": REPORT_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "input_rows": int(len(df)),
+        "quality_scope": quality_payload,
         "markets": df["market2"].value_counts().to_dict() if "market2" in df.columns else {},
         "search_config": {
+            "quality_scope": quality_payload["quality_scope"],
             "markets": market_list,
             "scopes": sorted(scope_allow) if scope_allow else "all",
             "train_ratio": train_ratio,
@@ -1058,6 +1082,7 @@ def main() -> int:
     parser.add_argument("--beam-width", type=int, default=80)
     parser.add_argument("--max-terms", type=int, default=5)
     parser.add_argument("--include-primary-theme", action="store_true")
+    parser.add_argument("--quality-scope", choices=["all", "exact_path", "ordered_path_exact"], default="all")
     parser.add_argument("--exact-exhaustive-max-predicates", type=int, default=0)
     parser.add_argument("--exact-exhaustive-max-combos", type=int, default=50000)
     args = parser.parse_args()
@@ -1078,6 +1103,7 @@ def main() -> int:
         beam_width=int(args.beam_width),
         max_terms=int(args.max_terms),
         include_primary_theme=bool(args.include_primary_theme),
+        quality_scope=str(args.quality_scope),
         exact_exhaustive_max_predicates=int(args.exact_exhaustive_max_predicates),
         exact_exhaustive_max_combos=int(args.exact_exhaustive_max_combos),
     )

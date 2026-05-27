@@ -592,8 +592,10 @@ def build_report(
     beam_width: int,
     max_terms: int,
     include_primary_theme: bool,
+    quality_scope: str = "all",
     production_horizons: Sequence[str],
 ) -> Dict[str, Any]:
+    df, quality_payload = _apply_quality_scope(df, quality_scope)
     market_list = [market.strip().upper() for market in markets if market.strip()]
     horizon_list = [horizon.strip().lower() for horizon in horizons if horizon.strip()]
     production_horizon_set = {horizon.strip().lower() for horizon in production_horizons if horizon.strip()}
@@ -627,9 +629,11 @@ def build_report(
         "report_version": REPORT_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "input_rows": int(len(df)),
+        "quality_scope": quality_payload,
         "markets": df["market2"].value_counts().to_dict() if "market2" in df.columns else {},
         "search_config": {
             "scan_mode": str(scan_mode or "SWING").upper(),
+            "quality_scope": quality_payload["quality_scope"],
             "markets": market_list,
             "scopes": [scope.strip() for scope in scopes if scope.strip()] or "default",
             "horizons": horizon_list,
@@ -667,6 +671,25 @@ def _metric(row: Dict[str, Any], section: str, horizon: str, key: str) -> Any:
     return (row.get(section) or {}).get(f"{key}_{horizon}_pct")
 
 
+def _apply_quality_scope(df: pd.DataFrame, quality_scope: str) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    scope = str(quality_scope or "all").strip().lower()
+    before = int(len(df))
+    if scope in {"all", ""}:
+        filtered = df.copy()
+    elif scope in {"exact_path", "ordered_path_exact"}:
+        if "ordered_path_exact" not in df.columns:
+            filtered = df.iloc[0:0].copy()
+        else:
+            filtered = df.loc[df["ordered_path_exact"].fillna(False).astype(bool)].copy()
+    else:
+        raise ValueError(f"unsupported quality_scope: {quality_scope}")
+    return filtered, {
+        "quality_scope": scope or "all",
+        "input_rows_before_quality_scope": before,
+        "input_rows_after_quality_scope": int(len(filtered)),
+    }
+
+
 def _render_markdown(report: Dict[str, Any]) -> str:
     lines = [
         "# Loss Exclusion Guard Mining",
@@ -674,6 +697,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         f"- generated_at: `{report.get('generated_at')}`",
         f"- report_version: `{report.get('report_version')}`",
         f"- input_rows: `{report.get('input_rows')}`",
+        f"- quality_scope: `{((report.get('quality_scope') or {}).get('quality_scope'))}`",
         f"- guard_count: `{report.get('guard_count')}`",
         f"- production_candidate_count: `{report.get('production_candidate_count')}`",
         f"- shadow_candidate_count: `{report.get('shadow_candidate_count')}`",
@@ -768,6 +792,7 @@ def main() -> int:
     parser.add_argument("--beam-width", type=int, default=32)
     parser.add_argument("--max-terms", type=int, default=3)
     parser.add_argument("--include-primary-theme", action="store_true")
+    parser.add_argument("--quality-scope", choices=["all", "exact_path", "ordered_path_exact"], default="all")
     parser.add_argument("--production-horizons", default="3d,5d")
     args = parser.parse_args()
 
@@ -789,6 +814,7 @@ def main() -> int:
         beam_width=int(args.beam_width),
         max_terms=int(args.max_terms),
         include_primary_theme=bool(args.include_primary_theme),
+        quality_scope=str(args.quality_scope),
         production_horizons=[part.strip() for part in str(args.production_horizons).split(",") if part.strip()],
     )
     json_path = output_dir / f"{args.stem}.json"
