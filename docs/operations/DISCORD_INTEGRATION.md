@@ -202,15 +202,15 @@ Daily KR automation uses two LaunchAgents:
   `AG_KR_DAILY_PHASE=confirmed`. It runs the actionable KOSPI/KOSDAQ full
   scans after the 09:30 intraday confirmation window and publishes the same
   Top Deep/archive/performance artifacts as the web UI. The default targets are
-  `KOSPI/SWING`, `KOSDAQ/SWING`, and `KOSPI/INTRADAY`; the KOSPI intraday
-  target is a separate observation stream for top-mover capture and does not
-  replace the swing Top5 stream. Override with
+  `KOSPI/SWING`, `KOSDAQ/SWING`, `KOSPI/INTRADAY`, and `KOSDAQ/INTRADAY`;
+  intraday targets are separate observation streams for top-mover capture and
+  do not replace the swing Top5 stream. Override with
   `AG_KR_DAILY_SCAN_TARGETS=KOSPI:SWING,KOSDAQ:SWING` when needed.
   After the scan artifacts are refreshed, the runner also regenerates the
   section performance snapshot, scan cohort performance, and segment Top1/Top5
-  validation reports, then posts their status and key excerpts to Discord. These
-  post-scan validations are diagnostic and should not block scan persistence if
-  a report command fails.
+  validation reports, plus INTRADAY learning readiness, then posts their status
+  and key excerpts to Discord. These post-scan validations are diagnostic and
+  should not block scan persistence if a report command fails.
 
 ## Result Rendering Requirement
 

@@ -93,10 +93,15 @@ def test_discord_backoff_has_conservative_floor():
     assert _discord_backoff_seconds(2.0, 2) > 2.0
 
 
-def test_daily_auto_scan_targets_include_kospi_intraday_observer(monkeypatch):
+def test_daily_auto_scan_targets_include_intraday_observers(monkeypatch):
     monkeypatch.delenv("AG_KR_DAILY_SCAN_TARGETS", raising=False)
 
-    assert _scan_targets() == [("KOSPI", "SWING"), ("KOSDAQ", "SWING"), ("KOSPI", "INTRADAY")]
+    assert _scan_targets() == [
+        ("KOSPI", "SWING"),
+        ("KOSDAQ", "SWING"),
+        ("KOSPI", "INTRADAY"),
+        ("KOSDAQ", "INTRADAY"),
+    ]
 
 
 def test_daily_auto_scan_targets_can_be_overridden(monkeypatch):

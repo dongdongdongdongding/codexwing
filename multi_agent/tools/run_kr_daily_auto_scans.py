@@ -38,7 +38,12 @@ from modules.signal_section_performance import (
     write_daily_section_performance_snapshot,
 )
 
-DEFAULT_SCAN_TARGETS = (("KOSPI", "SWING"), ("KOSDAQ", "SWING"), ("KOSPI", "INTRADAY"))
+DEFAULT_SCAN_TARGETS = (
+    ("KOSPI", "SWING"),
+    ("KOSDAQ", "SWING"),
+    ("KOSPI", "INTRADAY"),
+    ("KOSDAQ", "INTRADAY"),
+)
 LOG_DIR = Path("runtime_state/discord_jobs")
 KST = ZoneInfo("Asia/Seoul")
 DISCORD_MAX_EMBEDS_PER_MESSAGE = 10
@@ -145,7 +150,7 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
         [
             {
                 "title": "KR 자동 스캔 시작",
-                "description": "KST 09:35 확정 작업: 09:30 이후 국장 수급 확인 구간에서 KOSPI/KOSDAQ 병렬 전체 스윙 스캔을 시작합니다.",
+                "description": "KST 09:35 확정 작업: 09:30 이후 국장 수급 확인 구간에서 KOSPI/KOSDAQ 스윙 및 장중 스캔을 병렬 실행합니다.",
                 "color": 0x3498DB,
                 "fields": [
                     {"name": "Targets", "value": ", ".join(f"{m}/{mode}" for m, mode in _scan_targets()), "inline": True},

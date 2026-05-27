@@ -93,7 +93,7 @@ uses `runtime_state/discord_jobs/full_kr_scan.lock`, and posts the result summar
 KR daily automation is split by timing:
 
 - `08:20 KST`: pre-market theme prior only. This uses US lead/macro context and the US-to-KR theme transfer graph, and is not a buy list.
-- `09:35 KST`: confirmed KOSPI/KOSDAQ full scans after the 09:30 intraday confirmation window. These results publish Top Deep, archive, section performance, and Discord embeds.
+- `09:35 KST`: confirmed KOSPI/KOSDAQ full scans after the 09:30 intraday confirmation window. The default run covers `KOSPI/SWING`, `KOSDAQ/SWING`, `KOSPI/INTRADAY`, and `KOSDAQ/INTRADAY`, then publishes Top Deep, archive, section performance, post-scan validation, and Discord embeds.
 
 ## Discord Remote Control
 
