@@ -37,6 +37,8 @@ from modules.discord_integration.scan_executor import (
     run_scan_job,
 )
 
+DISCORD_SEND_PAUSE_SECONDS = 0.6
+
 
 def _embed(discord_module, payload):
     return discord_module.Embed.from_dict(payload)
@@ -49,7 +51,9 @@ def _role_ids(interaction) -> Iterable[str]:
 
 async def _send_embed_chunks(discord_module, target, payloads):
     safe_payloads = prepare_embeds_for_discord(list(payloads or []))
-    for chunk_payloads in chunk_embeds_for_discord(safe_payloads):
+    for chunk_idx, chunk_payloads in enumerate(chunk_embeds_for_discord(safe_payloads)):
+        if chunk_idx > 0:
+            await asyncio.sleep(DISCORD_SEND_PAUSE_SECONDS)
         chunk = [_embed(discord_module, payload) for payload in chunk_payloads]
         try:
             await target.send(embeds=chunk)
@@ -82,7 +86,9 @@ def _interaction_response_done(interaction) -> bool:
 async def _send_interaction_chunks(discord_module, interaction, payloads):
     """Send one or more embed payloads through Discord's interaction limits."""
     safe_payloads = prepare_embeds_for_discord(list(payloads or []))
-    for chunk_payloads in chunk_embeds_for_discord(safe_payloads):
+    for chunk_idx, chunk_payloads in enumerate(chunk_embeds_for_discord(safe_payloads)):
+        if chunk_idx > 0:
+            await asyncio.sleep(DISCORD_SEND_PAUSE_SECONDS)
         chunk = [_embed(discord_module, payload) for payload in chunk_payloads]
         try:
             if not _interaction_response_done(interaction):
@@ -201,7 +207,7 @@ def main() -> int:
             offset=offset,
             limit=limit,
         )
-        await _send_followup_chunks(discord, interaction, payloads[:10])
+        await _send_followup_chunks(discord, interaction, payloads)
 
     @tree.command(name="archive", description="최근 스캔 아카이브와 realized outcome 상태를 조회합니다.")
     @app_commands.describe(

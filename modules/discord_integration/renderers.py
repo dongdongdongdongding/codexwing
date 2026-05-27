@@ -924,7 +924,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     if ok:
         embeds.extend(build_top_deep_embeds(run_id=run_id, limit=TOP_DEEP_DISCORD_LIMIT))
         embeds.append(build_next_day_radar_embed(run_id, market=market, limit=5))
-    return embeds[:10]
+    return embeds
 
 
 def build_macro_refresh_embed(*, market: str = "KR") -> Dict[str, Any]:

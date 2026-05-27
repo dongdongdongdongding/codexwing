@@ -689,6 +689,53 @@ def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_pa
     assert any(field["name"] == "데이터 무결성" for field in fields)
 
 
+def test_scan_result_renderer_does_not_truncate_split_top_deep_pages(monkeypatch, tmp_path):
+    report_dir = tmp_path / "top_deep"
+    report_dir.mkdir()
+    rows = []
+    for idx in range(1, 16):
+        rows.append(
+            {
+                "run_id": "RUN-SPLIT-15",
+                "rank": idx,
+                "ticker": f"001{idx:03d}.KS",
+                "stock_name": f"분할종목{idx}",
+                "selection_alignment": {
+                    "analysis_section": "Top5" if idx <= 10 else "Exception Leader",
+                    "analysis_section_rank": idx if idx <= 10 else idx - 10,
+                },
+                "trade_plan": {"readiness_analysis": {"final_buy_judgment": {"action": "관망"}}},
+            }
+        )
+    (report_dir / "RUN-SPLIT-15.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    monkeypatch.setattr(renderers, "_field_value_for_top_deep", lambda _row: "x" * 4500)
+
+    embeds = build_scan_result_embeds(
+        {
+            "run_id": "RUN-SPLIT-15",
+            "market": "KOSPI",
+            "total_scans": 835,
+            "result_count": 15,
+            "filtered_count": 820,
+            "warnings": [],
+            "discord_job": {"job_id": "DS-SPLIT-15", "market": "KOSPI", "returncode": 0},
+        },
+        config=DiscordIntegrationConfig(web_base_url="http://localhost:8501"),
+    )
+
+    assert len(embeds) > 10
+    fields = [
+        field
+        for embed in embeds
+        if embed["title"] == "Practical + Shadow + Top5 + Exception 자동 정밀분석"
+        for field in embed["fields"]
+    ]
+    candidate_fields = [field for field in fields if field["name"] != "데이터 무결성"]
+    assert len(candidate_fields) == 15
+    assert "분할종목15" in candidate_fields[-1]["name"]
+
+
 def test_top_deep_embed_splits_before_discord_character_limit(monkeypatch, tmp_path):
     report_dir = tmp_path / "top_deep"
     report_dir.mkdir()
