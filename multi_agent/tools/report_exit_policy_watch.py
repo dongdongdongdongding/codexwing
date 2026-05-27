@@ -91,6 +91,14 @@ def _watch_state(row: Dict[str, Any], *, min_n: int, min_days: int, min_net_avg_
     return "EXIT_POLICY_READY_REVIEW"
 
 
+def _state_rank(state: Any) -> int:
+    return {
+        "EXIT_POLICY_READY_REVIEW": 3,
+        "FORWARD_TRACK_LOW_NET_AVG": 2,
+        "FORWARD_TRACK_SMALL_SAMPLE": 1,
+    }.get(str(state or ""), 0)
+
+
 def build_report(
     optimizer_report: Dict[str, Any],
     cohort_report: Dict[str, Any],
@@ -127,6 +135,9 @@ def build_report(
             "close_min_5d_pct": metrics.get("min_5d_pct"),
             "target_before_stop_5d_pct": metrics.get("target_before_stop_5d_pct"),
             "stop_before_target_5d_pct": metrics.get("stop_before_target_5d_pct"),
+            "ordered_path_label_version": metrics.get("ordered_path_label_version"),
+            "exit_policy_target_pct": metrics.get("exit_policy_target_pct"),
+            "exit_policy_stop_pct": metrics.get("exit_policy_stop_pct"),
             "exit_win_5d_pct": metrics.get("win_ordered_exit_5d_pct"),
             "gross_exit_avg_5d_pct": metrics.get("avg_ordered_exit_5d_pct"),
             "net_exit_avg_5d_pct": _round(net_avg),
@@ -138,6 +149,9 @@ def build_report(
         watch_rows.append(row)
     watch_rows.sort(
         key=lambda item: (
+            _state_rank(item.get("state")),
+            int(item.get("n") or 0),
+            int(item.get("days") or 0),
             _safe_float(item.get("net_exit_avg_5d_pct"), -999.0),
             _safe_float(item.get("exit_win_5d_pct"), -999.0),
             _safe_float(item.get("quality_score"), -999.0),
@@ -180,8 +194,8 @@ def render_markdown(report: Dict[str, Any]) -> str:
         "",
         "## Watch Rows",
         "",
-        "| Rank | State | Market | Cohort | Label | Model | TopN | N | Days | Exit Win | Gross Exit Avg | Net Exit Avg | Exit Min | Close Avg5 | Close Min5 | Stop First | Failed Checks |",
-        "|---:|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
+        "| Rank | State | Market | Cohort | Label | Model | TopN | N | Days | Target | Stop | Exit Win | Gross Exit Avg | Net Exit Avg | Exit Min | Close Avg5 | Close Min5 | Stop First | Failed Checks |",
+        "|---:|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for rank, row in enumerate(report.get("watch_rows") or [], start=1):
         lines.append(
@@ -198,6 +212,8 @@ def render_markdown(report: Dict[str, Any]) -> str:
                     row.get("topn"),
                     row.get("n"),
                     row.get("days"),
+                    _fmt_pct(row.get("exit_policy_target_pct")),
+                    _fmt_pct(row.get("exit_policy_stop_pct")),
                     _fmt_pct(row.get("exit_win_5d_pct"), signed=False),
                     _fmt_pct(row.get("gross_exit_avg_5d_pct")),
                     _fmt_pct(row.get("net_exit_avg_5d_pct")),
