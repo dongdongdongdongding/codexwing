@@ -219,10 +219,19 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     stream_b_records = groups["exception_leaders"]
     display_records = groups["combined"]
     shadow_groups = build_kr_shadow_gate_records(raw_score_records, planner_payload, limit=5)
-    shadow_records = shadow_groups["kosdaq" if str(market or "").upper() == "KOSDAQ" else "kospi"]
+    market_key = str(market or "").upper()
+    shadow_records = shadow_groups["kosdaq" if market_key == "KOSDAQ" else "kospi"]
+    operating_records = shadow_groups["kosdaq_operating" if market_key == "KOSDAQ" else "kospi_operating"]
+    operating_sections = {"KOSPI Operating Challenger", "KOSDAQ Operating Challenger"}
+    shadow_records = [
+        row
+        for row in shadow_records
+        if str(row.get("_analysis_section") or "") not in operating_sections
+    ]
     radar_records = build_next_day_radar_records(raw_score_records, limit=5)
 
     practical_rows = build_signal_display_rows(practical_records, limit=5)
+    operating_rows = build_signal_display_rows(operating_records, limit=5)
     stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
     stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
     shadow_rows = build_signal_display_rows(shadow_records, limit=5)
@@ -261,22 +270,31 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     if practical_rows:
         render_signal_card_list(practical_rows, empty_text="실전 우선 후보 없음.")
     else:
-        st.info("실전 우선 후보 없음 - 이번 스캔은 Shadow/Top5/Exception을 조건부로만 확인하세요.")
+        st.info("실전 우선 후보 없음 - 이번 스캔은 운영 챌린저/Shadow/Top5/Exception을 조건부로 확인하세요.")
 
-    if str(market or "").upper() == "KOSDAQ":
+    if market_key == "KOSDAQ":
+        st.markdown("### KOSDAQ 운영 챌린저")
+        st.caption(
+            "기존 KOSDAQ Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. "
+            "손실경로 리스크는 카드의 경고/손절 기준으로 계속 추적합니다."
+        )
+        render_signal_card_list(operating_rows, empty_text="KOSDAQ 운영 챌린저 조건 통과 후보 없음.")
         st.markdown("### KOSDAQ Shadow 관찰")
         st.caption(
             "Ordered rebound 조건과 Low-loss theme 조건을 별도 섹션명으로 분리합니다. "
-            "운영 랭킹 교체가 아니라 상단 관찰 섹션입니다."
+            "운영 챌린저와 분리된 검증 관찰 섹션입니다."
         )
         render_signal_card_list(shadow_rows, empty_text="KOSDAQ shadow 관찰 조건 통과 후보 없음.")
-    elif str(market or "").upper() == "KOSPI":
-        st.markdown("### KOSPI Ordered Shadow")
+    elif market_key == "KOSPI":
+        st.markdown("### KOSPI 운영 챌린저")
         st.caption(
-            "KOSPI Top3 안에서 +10% before -5% ordered 기준을 통과한 별도 관찰 후보입니다. "
-            "기존 운영모델은 유지하고, 상단에서 별도 확인합니다."
+            "기존 KOSPI Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. "
+            "stop5 초과 리스크는 백그라운드 검증으로 계속 줄입니다."
         )
-        render_signal_card_list(shadow_rows, empty_text="KOSPI shadow 조건 통과 후보 없음.")
+        render_signal_card_list(operating_rows, empty_text="KOSPI 운영 챌린저 조건 통과 후보 없음.")
+        st.markdown("### KOSPI Shadow 관찰")
+        st.caption("운영 챌린저와 분리된 검증 관찰 섹션입니다.")
+        render_signal_card_list(shadow_rows, empty_text="KOSPI Shadow 조건 통과 후보 없음.")
 
     st.markdown("### 별도 급등 레이더")
     st.caption(
@@ -287,7 +305,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
 
     st.markdown("### 메인 Top 5")
     st.caption(
-        "서비스의 기본 메인 후보입니다. 기존 Top5 성과 기준으로 먼저 확인하고, "
+        "원본 스캐너 기준의 Top5 감사 섹션입니다. 운영 챌린저/Practical 이후 비교 확인하고, "
         "Exception Leader는 아래 별도 카드에서 추가 확인합니다."
     )
     if stream_a_rows:
