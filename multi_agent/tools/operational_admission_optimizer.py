@@ -98,6 +98,9 @@ SCORE_BASELINES = [
 ]
 
 TOPNS = [1, 3, 5]
+PROBABILITY_THRESHOLDS = [0.5, 0.55, 0.6, 0.65, 0.7, 0.73, 0.75, 0.8, 0.85]
+SCORE_QUANTILE_THRESHOLDS = [0.8, 0.85, 0.9, 0.95]
+PROBABILITY_SCORE_COLUMNS = {"prob_clean", "phase25_prob", "phase25_shadow_prob"}
 
 
 @dataclass(frozen=True)
@@ -114,6 +117,27 @@ LABEL_PROFILES = [
     LabelProfile("ordered_5d_8v5", 8.0, 5.0, "ordered_touch_5d", "Exact path: target-before-stop plus 5D MFE >= +8%"),
     LabelProfile("ordered_5d_10v5", 10.0, 5.0, "ordered_touch_5d", "Exact path: target-before-stop plus 5D MFE >= +10%"),
     LabelProfile("ordered_5d_5v3_lowmae", 5.0, 3.0, "ordered_low_mae_5d", "Exact path: target-before-stop and MAE before target better than -3%"),
+    LabelProfile(
+        "ordered_5d_5v5_sustain35",
+        5.0,
+        5.0,
+        "ordered_sustain35_5d",
+        "Exact path: target touched before stop within 5 sessions, with 3D and 5D closes still positive",
+    ),
+    LabelProfile(
+        "ordered_5d_8v5_sustain35",
+        8.0,
+        5.0,
+        "ordered_sustain35_5d",
+        "Exact path: MFE >= +8% before stop, with 3D and 5D closes still positive",
+    ),
+    LabelProfile(
+        "ordered_5d_5v3_lowmae_sustain35",
+        5.0,
+        3.0,
+        "ordered_low_mae_sustain35_5d",
+        "Exact path: target-before-stop, MAE before target better than -3%, and 3D/5D closes positive",
+    ),
     LabelProfile("fast_1d_2v3", 2.0, 3.0, "close_1d", "1D close >= +2% and 5D path drawdown better than -3%"),
     LabelProfile("clean_3d_4v4", 4.0, 4.0, "close_3d", "3D close >= +4%, 1D not worse than -2%, and drawdown better than -4%"),
     LabelProfile("clean_5d_6v5", 6.0, 5.0, "close_5d", "5D close >= +6% and drawdown better than -5%"),
@@ -159,7 +183,7 @@ def _ordered_path_valid(df: pd.DataFrame) -> pd.Series:
 
 
 def _label(df: pd.DataFrame, profile: LabelProfile) -> Tuple[pd.Series, pd.Series]:
-    if profile.kind in {"ordered_touch_5d", "ordered_low_mae_5d"}:
+    if _is_ordered_profile(profile):
         valid = _ordered_path_valid(df)
         target_first = _bool_series(df.get("target_before_stop_5d", pd.Series(False, index=df.index)))
         stop_first = _bool_series(df.get("stop_before_target_5d", pd.Series(False, index=df.index)))
@@ -171,13 +195,21 @@ def _label(df: pd.DataFrame, profile: LabelProfile) -> Tuple[pd.Series, pd.Serie
         if profile.target_pct > 5.0:
             valid &= mfe.notna()
             label &= mfe.ge(profile.target_pct)
-        if profile.kind == "ordered_low_mae_5d":
+        if "low_mae" in profile.kind:
             mae_before = pd.to_numeric(
                 df.get("ordered_mae_before_target_5d_pct", pd.Series(index=df.index, dtype=float)),
                 errors="coerce",
             )
-            valid &= mae_before.notna()
-            label &= mae_before.ge(-abs(profile.stop_pct))
+            valid &= (~target_first) | mae_before.notna()
+            label &= mae_before.ge(-abs(profile.stop_pct)).fillna(False)
+        if "sustain3" in profile.kind or "sustain35" in profile.kind:
+            r3 = pd.to_numeric(df.get("return_3d_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
+            valid &= r3.notna()
+            label &= r3.gt(0.0)
+        if "sustain5" in profile.kind or "sustain35" in profile.kind:
+            r5 = pd.to_numeric(df.get("return_5d_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
+            valid &= r5.notna()
+            label &= r5.gt(0.0)
         return label.fillna(False), valid
 
     min_path = pd.to_numeric(df.get("min_return_observed_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
@@ -306,6 +338,14 @@ def _daily_top_indices(frame: pd.DataFrame, score: pd.Series, topn: int) -> pd.I
     if not chunks:
         return pd.Index([])
     return chunks[0].append(chunks[1:]) if len(chunks) > 1 else chunks[0]
+
+
+def _normalize_probability_score(score: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(score, errors="coerce")
+    sample = numeric.dropna()
+    if sample.empty:
+        return numeric
+    return numeric / 100.0 if float(sample.quantile(0.95)) > 1.5 else numeric
 
 
 def _metrics(df: pd.DataFrame, idx: pd.Index, label: pd.Series, profile: LabelProfile | None = None) -> Dict[str, Any]:
@@ -501,6 +541,16 @@ def _score_baseline(
     if score_col not in scoped.columns:
         return []
     rows = []
+    selected_by_threshold: Dict[str, List[pd.Index]] = {}
+    fold_wins_by_threshold: Dict[str, List[float]] = {}
+    if score_col in PROBABILITY_SCORE_COLUMNS:
+        for threshold in PROBABILITY_THRESHOLDS:
+            selected_by_threshold[f"probability_abs:{threshold}"] = []
+            fold_wins_by_threshold[f"probability_abs:{threshold}"] = []
+    else:
+        for threshold in SCORE_QUANTILE_THRESHOLDS:
+            selected_by_threshold[f"train_quantile:{threshold}"] = []
+            fold_wins_by_threshold[f"train_quantile:{threshold}"] = []
     for topn in TOPNS:
         selected: List[pd.Index] = []
         fold_wins: List[float] = []
@@ -529,6 +579,56 @@ def _score_baseline(
                 "quality_score": _round(_quality_score(metrics, flags), 4),
             }
         )
+    for train_days, test_days in windows:
+        train = scoped[scoped["trade_date"].isin(train_days)]
+        test = scoped[scoped["trade_date"].isin(test_days)]
+        if test.empty:
+            continue
+        train_score = pd.to_numeric(train[score_col], errors="coerce")
+        test_score = pd.to_numeric(test[score_col], errors="coerce")
+        if score_col == "loss_risk_score":
+            train_score = -train_score
+            test_score = -test_score
+        if score_col in PROBABILITY_SCORE_COLUMNS:
+            probability = _normalize_probability_score(test_score)
+            for threshold in PROBABILITY_THRESHOLDS:
+                key = f"probability_abs:{threshold}"
+                idx = test.index[probability.ge(threshold).fillna(False)]
+                if len(idx):
+                    selected_by_threshold[key].append(idx)
+                    fold_metric = _metrics(scoped, idx, label, profile=profile)
+                    fold_wins_by_threshold[key].append(_safe_float(fold_metric.get("label_win_pct")))
+        else:
+            train_nonnull = train_score.dropna()
+            if train_nonnull.empty:
+                continue
+            for threshold in SCORE_QUANTILE_THRESHOLDS:
+                key = f"train_quantile:{threshold}"
+                cutoff = float(train_nonnull.quantile(threshold))
+                idx = test.index[test_score.ge(cutoff).fillna(False)]
+                if len(idx):
+                    selected_by_threshold[key].append(idx)
+                    fold_metric = _metrics(scoped, idx, label, profile=profile)
+                    fold_wins_by_threshold[key].append(_safe_float(fold_metric.get("label_win_pct")))
+    for key, selected in selected_by_threshold.items():
+        threshold_type, raw_threshold = key.split(":", 1)
+        threshold = float(raw_threshold)
+        fold_wins = fold_wins_by_threshold[key]
+        metrics = _merge_metrics(scoped, selected, label, profile=profile)
+        flags = _promotion_flags(metrics, fold_wins, min_n=30, min_days=10, min_folds=3, require_ordered=_is_ordered_profile(profile))
+        rows.append(
+            {
+                "policy_type": "score_threshold",
+                "model": score_col,
+                "feature_set": "score_column",
+                "topn": None,
+                "threshold_type": threshold_type,
+                "threshold": _round(threshold, 4),
+                "metrics": metrics,
+                "promotion": flags,
+                "quality_score": _round(_quality_score(metrics, flags), 4),
+            }
+        )
     return rows
 
 
@@ -549,6 +649,8 @@ def _fit_model_policies(
         return []
     selected_by_topn = {topn: [] for topn in TOPNS}
     fold_wins_by_topn = {topn: [] for topn in TOPNS}
+    selected_by_threshold = {threshold: [] for threshold in PROBABILITY_THRESHOLDS}
+    fold_wins_by_threshold = {threshold: [] for threshold in PROBABILITY_THRESHOLDS}
     aucs: List[float] = []
     briers: List[float] = []
     used_folds = 0
@@ -587,6 +689,12 @@ def _fit_model_policies(
                 selected_by_topn[topn].append(idx)
                 fold_metric = _metrics(scoped, idx, label, profile=profile)
                 fold_wins_by_topn[topn].append(_safe_float(fold_metric.get("label_win_pct")))
+        for threshold in PROBABILITY_THRESHOLDS:
+            idx = test.index[prob.ge(threshold).fillna(False)]
+            if len(idx):
+                selected_by_threshold[threshold].append(idx)
+                fold_metric = _metrics(scoped, idx, label, profile=profile)
+                fold_wins_by_threshold[threshold].append(_safe_float(fold_metric.get("label_win_pct")))
     rows: List[Dict[str, Any]] = []
     for topn in TOPNS:
         metrics = _merge_metrics(scoped, selected_by_topn[topn], label, profile=profile)
@@ -604,6 +712,32 @@ def _fit_model_policies(
                 "model": model_name,
                 "feature_set": feature_set,
                 "topn": topn,
+                "folds_used": int(used_folds),
+                "auc_mean": _round(float(np.mean(aucs)), 6) if aucs else None,
+                "brier_mean": _round(float(np.mean(briers)), 6) if briers else None,
+                "metrics": metrics,
+                "promotion": flags,
+                "quality_score": _round(_quality_score(metrics, flags), 4),
+            }
+        )
+    for threshold in PROBABILITY_THRESHOLDS:
+        metrics = _merge_metrics(scoped, selected_by_threshold[threshold], label, profile=profile)
+        flags = _promotion_flags(
+            metrics,
+            fold_wins_by_threshold[threshold],
+            min_n=30,
+            min_days=10,
+            min_folds=3,
+            require_ordered=_is_ordered_profile(profile),
+        )
+        rows.append(
+            {
+                "policy_type": "ml_threshold",
+                "model": model_name,
+                "feature_set": feature_set,
+                "topn": None,
+                "threshold_type": "probability_abs",
+                "threshold": _round(float(threshold), 4),
                 "folds_used": int(used_folds),
                 "auc_mean": _round(float(np.mean(aucs)), 6) if aucs else None,
                 "brier_mean": _round(float(np.mean(briers)), 6) if briers else None,
@@ -683,7 +817,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         "",
         "## Top Policies",
         "",
-        "| Rank | Promote | Exit Watch | Market | Cohort | Label | Type | Model | Feature Set | TopN | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | Exit Win | Exit Avg | Exit Min | Bad | Stop | Folds | Min Fold Win | Failed Checks | AUC | Score |",
+        "| Rank | Promote | Exit Watch | Market | Cohort | Label | Type | Model | Feature Set | Selector | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | Exit Win | Exit Avg | Exit Min | Bad | Stop | Folds | Min Fold Win | Failed Checks | AUC | Score |",
         "|---:|---|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|",
     ]
     for idx, row in enumerate(report.get("top_policies", [])[:80], start=1):
@@ -691,6 +825,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         promo = row.get("promotion") or {}
         label = (row.get("label_profile") or {}).get("name")
         failed = ",".join(str(item) for item in (promo.get("failed_checks") or [])[:5]) or "-"
+        selector = f"top{row.get('topn')}" if row.get("topn") is not None else f"{row.get('threshold_type')}={row.get('threshold')}"
         lines.append(
             "| "
             + " | ".join(
@@ -705,7 +840,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
                     row.get("policy_type"),
                     row.get("model"),
                     row.get("feature_set"),
-                    row.get("topn"),
+                    selector,
                     metrics.get("n"),
                     metrics.get("active_days"),
                     metrics.get("label_win_pct"),
@@ -727,6 +862,49 @@ def _render_markdown(report: Dict[str, Any]) -> str:
             )
             + " |"
         )
+    high_win = report.get("high_win_policies") or []
+    if high_win:
+        lines.extend(
+            [
+                "",
+                "## High-Win Diagnostics",
+                "",
+                "| Rank | Market | Cohort | Label | Type | Model | Selector | N | Days | Label Win | Avg5 | Min5 | Target<Stop | Stop<Target | Bad | Failed Checks | Score |",
+                "|---:|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|",
+            ]
+        )
+        for idx, row in enumerate(high_win[:80], start=1):
+            metrics = row.get("metrics") or {}
+            promo = row.get("promotion") or {}
+            label = (row.get("label_profile") or {}).get("name")
+            selector = f"top{row.get('topn')}" if row.get("topn") is not None else f"{row.get('threshold_type')}={row.get('threshold')}"
+            failed = ",".join(str(item) for item in (promo.get("failed_checks") or [])[:5]) or "-"
+            lines.append(
+                "| "
+                + " | ".join(
+                    str(v)
+                    for v in [
+                        idx,
+                        row.get("market"),
+                        row.get("cohort"),
+                        label,
+                        row.get("policy_type"),
+                        row.get("model"),
+                        selector,
+                        metrics.get("n"),
+                        metrics.get("active_days"),
+                        metrics.get("label_win_pct"),
+                        metrics.get("avg_5d_pct"),
+                        metrics.get("min_5d_pct"),
+                        metrics.get("target_before_stop_5d_pct"),
+                        metrics.get("stop_before_target_5d_pct"),
+                        metrics.get("bad_path_pct"),
+                        failed,
+                        row.get("quality_score"),
+                    ]
+                )
+                + " |"
+            )
     lines.extend(["", "## Promotion Gate", ""])
     lines.append("- `promotable` requires an exact ordered path label profile, enough samples/days/folds, label win >= 70%, 5D avg >= +3%, bad path <= 35%, stop5 <= 25%, 5D tail loss >= -12%, and no fold below 45% label win.")
     lines.append("- `exit_policy_watch` is diagnostic only: ordered exit win >= 80%, ordered exit avg >= +3%, ordered exit min >= -5%, and stop-first <= 10%. It does not replace the production promotion gate.")
@@ -781,6 +959,21 @@ def build_report(
                 )
     all_rows.sort(key=lambda row: _safe_float(row.get("quality_score"), -999.0), reverse=True)
     promotable = [row for row in all_rows if (row.get("promotion") or {}).get("promotable")]
+    high_win = [
+        row
+        for row in all_rows
+        if int((row.get("metrics") or {}).get("n") or 0) >= 15
+        and int((row.get("metrics") or {}).get("active_days") or 0) >= 5
+        and _safe_float((row.get("metrics") or {}).get("label_win_pct")) >= 70.0
+    ]
+    high_win.sort(
+        key=lambda row: (
+            _safe_float((row.get("metrics") or {}).get("label_win_pct")),
+            _safe_float((row.get("metrics") or {}).get("avg_5d_pct"), -999.0),
+            _safe_float(row.get("quality_score"), -999.0),
+        ),
+        reverse=True,
+    )
     return {
         "report_version": REPORT_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -801,6 +994,8 @@ def build_report(
         "evaluated_policies": int(len(all_rows)),
         "promotable_count": int(len(promotable)),
         "promotable_policies": promotable[:80],
+        "high_win_count": int(len(high_win)),
+        "high_win_policies": high_win[:200],
         "top_policies": all_rows[:160],
         "notes": [
             "Production scanner/model artifacts are unchanged.",

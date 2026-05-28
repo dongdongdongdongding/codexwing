@@ -37,6 +37,54 @@ def test_ordered_label_uses_target_before_stop_and_mfe_threshold():
     assert label.tolist() == [True, False, False, True]
 
 
+def test_ordered_sustain_label_requires_3d_and_5d_positive_closes():
+    df = pd.DataFrame(
+        {
+            "trade_date": ["2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04"],
+            "target_before_stop_5d": [True, True, True, True],
+            "stop_before_target_5d": [False, False, False, False],
+            "mfe_5d_pct": [6.0, 6.0, 6.0, 6.0],
+            "mae_5d_pct": [-1.0, -1.0, -1.0, -1.0],
+            "ordered_mae_before_target_5d_pct": [-1.0, -1.0, -1.0, -1.0],
+            "outcome_path_terminal_status": ["target_before_stop"] * 4,
+            "outcome_path_label_version": [
+                ORDERED_OUTCOME_PATH_LABEL_VERSION,
+                ORDERED_OUTCOME_PATH_LABEL_VERSION,
+                ORDERED_OUTCOME_PATH_LABEL_VERSION,
+                "old_version",
+            ],
+            "return_3d_pct": [1.0, -0.1, 1.0, 1.0],
+            "return_5d_pct": [2.0, 2.0, -0.1, 2.0],
+        }
+    )
+
+    label, valid = _label(df, _profile("ordered_5d_5v5_sustain35"))
+
+    assert valid.tolist() == [True, True, True, False]
+    assert label.tolist() == [True, False, False, True]
+
+
+def test_ordered_low_mae_keeps_stop_and_no_touch_rows_as_valid_failures():
+    df = pd.DataFrame(
+        {
+            "trade_date": ["2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04"],
+            "target_before_stop_5d": [True, False, False, True],
+            "stop_before_target_5d": [False, True, False, False],
+            "mfe_5d_pct": [6.0, 2.0, 1.0, 6.0],
+            "mae_5d_pct": [-1.0, -4.0, -1.0, -1.0],
+            "ordered_mae_before_target_5d_pct": [-1.0, None, None, None],
+            "outcome_path_terminal_status": ["target_before_stop", "stop_before_target", "no_touch", "target_before_stop"],
+            "outcome_path_label_version": [ORDERED_OUTCOME_PATH_LABEL_VERSION] * 4,
+            "return_5d_pct": [2.0, -4.0, 0.5, 2.0],
+        }
+    )
+
+    label, valid = _label(df, _profile("ordered_5d_5v3_lowmae"))
+
+    assert valid.tolist() == [True, True, True, False]
+    assert label.tolist() == [True, False, False, False]
+
+
 def test_ordered_metrics_drive_promotion_gate():
     df = pd.DataFrame(
         {
