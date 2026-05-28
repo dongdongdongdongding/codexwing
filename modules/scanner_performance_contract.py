@@ -45,6 +45,8 @@ class PerformanceMetric:
     win_rate_pct: Optional[float]
     avg_return_pct: Optional[float]
     median_return_pct: Optional[float]
+    avg_win_return_pct: Optional[float]
+    avg_loss_return_pct: Optional[float]
     best_return_pct: Optional[float]
     worst_return_pct: Optional[float]
     source: str
@@ -147,6 +149,8 @@ def _metric_from_section_row(row: Dict[str, Any]) -> PerformanceMetric:
         win_rate_pct=_safe_float(row.get("win_rate_pct")),
         avg_return_pct=_safe_float(row.get("avg_return_pct")),
         median_return_pct=_safe_float(row.get("median_return_pct")),
+        avg_win_return_pct=_safe_float(row.get("avg_win_return_pct")),
+        avg_loss_return_pct=_safe_float(row.get("avg_loss_return_pct")),
         best_return_pct=_safe_float(row.get("best_return_pct")),
         worst_return_pct=_safe_float(row.get("worst_return_pct")),
         source=str(row.get("source") or "signal_section_performance_daily"),
@@ -213,6 +217,8 @@ def slice_metric(market: Any, slice_name: str) -> Optional[PerformanceMetric]:
         win_rate_pct=_safe_float(target.get("win_5d_pct")),
         avg_return_pct=_safe_float(target.get("avg_5d_pct")),
         median_return_pct=_safe_float(target.get("median_5d_pct")),
+        avg_win_return_pct=None,
+        avg_loss_return_pct=None,
         best_return_pct=_safe_float(target.get("max_5d_pct")),
         worst_return_pct=_safe_float(target.get("min_5d_pct")),
         source=f"{market_key.lower()}_swing_5d_slice_validation:{slice_name}",

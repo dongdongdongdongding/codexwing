@@ -494,17 +494,22 @@ def render_top_deep_reports_page() -> None:
                 )
             c1, c2, c3, c4, c5, c6 = st.columns(6)
             c1.metric("매수점수", fmt_metric_num(row.get("buy_score"), 1))
-            c2.metric("정확성", fmt_metric_pct(row.get("accuracy")))
+            c2.metric("구간 적중률", fmt_metric_pct(row.get("accuracy")), help="후보 개별 확률이 아니라 같은 시장/섹션의 과거 5D 실현 승률입니다.")
             c3.metric("전일비", fmt_metric_pct(row.get("day_change_pct")))
             c4.metric("손실위험", fmt_metric_num(row.get("loss_risk_score"), 1))
             c5.metric("뉴스감성", fmt_metric_num(news.get("sentiment_score"), 2))
             c6.metric("예상순수익 3D", fmt_metric_pct(prediction.get("expected_net_return_3d_pct")))
 
-            a1, a2, a3, a4 = st.columns(4)
-            a1.metric("실현기대 3D", fmt_metric_pct(admission.get("expected_value_3d_pct")))
-            a2.metric("실현기대 5D", fmt_metric_pct(admission.get("expected_value_5d_pct")))
-            a3.metric("5D 랭킹", fmt_metric_num(admission.get("ranking_score_5d"), 1))
-            a4.metric("Stop-first", fmt_metric_pct(admission.get("stop_first_risk_pct")))
+            a1, a2, a3, a4, a5 = st.columns(5)
+            a1.metric("후보 5D확률", fmt_metric_pct(admission.get("5d_prob")), help="구간 승률, 후보 점수, 모멘텀, 손실위험을 반영한 후보별 5D 확률입니다.")
+            a2.metric("기본기대 5D", fmt_metric_pct(admission.get("base_expected_value_5d_pct", admission.get("expected_value_5d_pct"))), help="승리 시 평균수익, 실패 시 평균손실을 쓴 기본 기대값입니다.")
+            a3.metric("꼬리위험 5D", fmt_metric_pct(admission.get("stress_expected_value_5d_pct", admission.get("expected_value_5d_pct"))), help="실패 시 역사적 최악 손실을 쓴 스트레스 기대값입니다.")
+            a4.metric("5D 랭킹", fmt_metric_num(admission.get("ranking_score_5d"), 1))
+            a5.metric("Stop-first", fmt_metric_pct(admission.get("stop_first_risk_pct")))
+            st.caption(
+                "정확도 분리: 구간 적중률은 과거 섹션 통계, 후보 5D확률은 후보별 보정값, "
+                "기본기대는 평균손실 기준, 꼬리위험은 최악손실 기준입니다."
+            )
             regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
             if regime_theme_adjustment:
                 warnings = regime_theme_adjustment.get("warnings") if isinstance(regime_theme_adjustment.get("warnings"), list) else []

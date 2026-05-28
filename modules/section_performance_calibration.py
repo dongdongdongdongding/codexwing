@@ -49,7 +49,18 @@ def normalize_section(value: Any) -> str:
 def _metrics(values: List[float]) -> Dict[str, Any]:
     clean = [float(value) for value in values if value is not None and math.isfinite(float(value))]
     if not clean:
-        return {"n": 0, "win_pct": None, "avg_pct": None, "median_pct": None, "min_pct": None, "max_pct": None}
+        return {
+            "n": 0,
+            "win_pct": None,
+            "avg_pct": None,
+            "median_pct": None,
+            "min_pct": None,
+            "max_pct": None,
+            "avg_win_pct": None,
+            "avg_loss_pct": None,
+        }
+    wins = [value for value in clean if value > 0]
+    losses = [value for value in clean if value <= 0]
     return {
         "n": len(clean),
         "win_pct": round(sum(1 for value in clean if value > 0) / len(clean) * 100.0, 4),
@@ -57,6 +68,8 @@ def _metrics(values: List[float]) -> Dict[str, Any]:
         "median_pct": round(float(median(clean)), 6),
         "min_pct": round(min(clean), 6),
         "max_pct": round(max(clean), 6),
+        "avg_win_pct": round(sum(wins) / len(wins), 6) if wins else None,
+        "avg_loss_pct": round(sum(losses) / len(losses), 6) if losses else None,
     }
 
 

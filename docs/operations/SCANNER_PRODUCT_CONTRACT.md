@@ -85,6 +85,16 @@ Do not present a raw model score as guaranteed win rate. When samples are small,
 display sample size, date range, average/median return, best/worst return, and
 loss-tail metrics alongside win rate.
 
+Operator-facing scan cards must keep these concepts separate:
+
+- `구간 적중률`: historical OOS win rate for the same market/section/scan-mode cohort.
+- `후보 3D/5D 확률`: candidate-level realized-expectancy probability.
+- `기본기대`: expectancy using average losing return as the failure payoff.
+- `꼬리위험`: stress expectancy using historical worst return as the failure payoff.
+
+The old worst-loss-only expectancy is too conservative to label as normal
+expected value. Keep it visible as tail stress, not as the primary expectation.
+
 ## Data-Quality Warnings
 
 - Do not fabricate missing prices, entry prices, stop prices, or flow values.

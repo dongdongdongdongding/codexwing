@@ -26,6 +26,8 @@ class SectionCalibration:
     section_win_5d_pct: float
     avg_return_3d_pct: float
     avg_return_5d_pct: float
+    avg_loss_3d_pct: float
+    avg_loss_5d_pct: float
     min_return_3d_pct: float
     min_return_5d_pct: float
     max_return_3d_pct: float
@@ -34,12 +36,12 @@ class SectionCalibration:
 
 
 DEFAULT_CALIBRATIONS: Dict[tuple, SectionCalibration] = {
-    ("KOSPI", "Top5"): SectionCalibration("KOSPI", "Top5", "validated_profile_default", 55, 62.0, 80.0, 4.2, 8.99, -6.0, -8.0, 18.0, 29.0, 22.0),
-    ("KOSPI", "Exception Leader"): SectionCalibration("KOSPI", "Exception Leader", "validated_profile_default", 45, 66.0, 86.7, 4.8, 8.88, -5.5, -7.0, 20.0, 31.0, 18.0),
-    ("KOSPI", "Shadow"): SectionCalibration("KOSPI", "Shadow", "shadow_observation_default", 30, 58.0, 72.0, 3.2, 6.4, -6.5, -8.5, 15.0, 24.0, 25.0),
-    ("KOSDAQ", "Top5"): SectionCalibration("KOSDAQ", "Top5", "validated_profile_default", 29, 56.0, 65.5, 3.4, 7.35, -8.0, -10.0, 19.0, 35.0, 30.0),
-    ("KOSDAQ", "Exception Leader"): SectionCalibration("KOSDAQ", "Exception Leader", "validated_profile_default", 13, 55.0, 69.2, 2.6, 3.04, -10.0, -12.0, 16.0, 25.0, 34.0),
-    ("KOSDAQ", "Shadow"): SectionCalibration("KOSDAQ", "Shadow", "shadow_observation_default", 20, 54.0, 63.0, 2.8, 5.2, -8.5, -11.0, 17.0, 27.0, 32.0),
+    ("KOSPI", "Top5"): SectionCalibration("KOSPI", "Top5", "validated_profile_default", 55, 62.0, 80.0, 4.2, 8.99, -3.8, -4.9, -6.0, -8.0, 18.0, 29.0, 22.0),
+    ("KOSPI", "Exception Leader"): SectionCalibration("KOSPI", "Exception Leader", "validated_profile_default", 45, 66.0, 86.7, 4.8, 8.88, -3.2, -3.8, -5.5, -7.0, 20.0, 31.0, 18.0),
+    ("KOSPI", "Shadow"): SectionCalibration("KOSPI", "Shadow", "shadow_observation_default", 30, 58.0, 72.0, 3.2, 6.4, -4.2, -5.4, -6.5, -8.5, 15.0, 24.0, 25.0),
+    ("KOSDAQ", "Top5"): SectionCalibration("KOSDAQ", "Top5", "validated_profile_default", 29, 56.0, 65.5, 3.4, 7.35, -5.1, -6.8, -8.0, -10.0, 19.0, 35.0, 30.0),
+    ("KOSDAQ", "Exception Leader"): SectionCalibration("KOSDAQ", "Exception Leader", "validated_profile_default", 13, 55.0, 69.2, 2.6, 3.04, -5.2, -6.6, -10.0, -12.0, 16.0, 25.0, 34.0),
+    ("KOSDAQ", "Shadow"): SectionCalibration("KOSDAQ", "Shadow", "shadow_observation_default", 20, 54.0, 63.0, 2.8, 5.2, -5.7, -7.4, -8.5, -11.0, 17.0, 27.0, 32.0),
 }
 _ARTIFACT_CALIBRATION_CACHE: Dict[str, Dict[tuple, SectionCalibration]] = {}
 _DAILY_CALIBRATION_CACHE: Dict[str, Dict[tuple, SectionCalibration]] = {}
@@ -55,6 +57,13 @@ def _safe_float(value: Any, default: Optional[float] = None) -> Optional[float]:
         return result
     except Exception:
         return default
+
+
+def _loss_anchor(value: Any, fallback: float) -> float:
+    parsed = _safe_float(value)
+    if parsed is None or parsed > 0:
+        return float(fallback)
+    return float(parsed)
 
 
 def _text(value: Any) -> str:
@@ -131,6 +140,8 @@ def _artifact_calibrations() -> Dict[tuple, SectionCalibration]:
             section_win_5d_pct=float(ret5.get("win_pct") if ret5.get("win_pct") is not None else default.section_win_5d_pct),
             avg_return_3d_pct=float(ret3.get("avg_pct") if ret3.get("avg_pct") is not None else default.avg_return_3d_pct),
             avg_return_5d_pct=float(ret5.get("avg_pct") if ret5.get("avg_pct") is not None else default.avg_return_5d_pct),
+            avg_loss_3d_pct=_loss_anchor(ret3.get("avg_loss_pct"), default.avg_loss_3d_pct),
+            avg_loss_5d_pct=_loss_anchor(ret5.get("avg_loss_pct"), default.avg_loss_5d_pct),
             min_return_3d_pct=float(ret3.get("min_pct") if ret3.get("min_pct") is not None else default.min_return_3d_pct),
             min_return_5d_pct=float(ret5.get("min_pct") if ret5.get("min_pct") is not None else default.min_return_5d_pct),
             max_return_3d_pct=float(ret3.get("max_pct") if ret3.get("max_pct") is not None else default.max_return_3d_pct),
@@ -181,6 +192,16 @@ def _daily_section_calibrations() -> Dict[tuple, SectionCalibration]:
                 ),
                 avg_return_5d_pct=(
                     metric5.avg_return_pct if metric5 is not None and metric5.avg_return_pct is not None else default.avg_return_5d_pct
+                ),
+                avg_loss_3d_pct=(
+                    _loss_anchor(metric3.avg_loss_return_pct, default.avg_loss_3d_pct)
+                    if metric3 is not None
+                    else default.avg_loss_3d_pct
+                ),
+                avg_loss_5d_pct=(
+                    _loss_anchor(metric5.avg_loss_return_pct, default.avg_loss_5d_pct)
+                    if metric5 is not None
+                    else default.avg_loss_5d_pct
                 ),
                 min_return_3d_pct=(
                     metric3.worst_return_pct if metric3 is not None and metric3.worst_return_pct is not None else default.min_return_3d_pct
@@ -323,11 +344,19 @@ def build_realized_expectancy_admission(
     prob5 = _clamp(calibration.section_win_5d_pct * 0.45 + anchor5 * 0.35 + momentum * 0.55 + edge_adjust + score_adjust - loss_adjust, 1.0, 99.0)
     avg3 = calibration.avg_return_3d_pct + expected_3d * 0.35 + momentum * 0.08 + expected_edge * 0.18 - loss_adjust * 0.08
     avg5 = calibration.avg_return_5d_pct + expected_5d * 0.35 + momentum * 0.10 + expected_edge * 0.20 - loss_adjust * 0.10
+    unadjusted_base_ev3 = prob3 / 100.0 * avg3 + (1.0 - prob3 / 100.0) * calibration.avg_loss_3d_pct
+    unadjusted_base_ev5 = prob5 / 100.0 * avg5 + (1.0 - prob5 / 100.0) * calibration.avg_loss_5d_pct
+    unadjusted_stress_ev3 = prob3 / 100.0 * avg3 + (1.0 - prob3 / 100.0) * calibration.min_return_3d_pct
+    unadjusted_stress_ev5 = prob5 / 100.0 * avg5 + (1.0 - prob5 / 100.0) * calibration.min_return_5d_pct
     unadjusted = {
         "3d_prob": round(prob3, 6),
         "5d_prob": round(prob5, 6),
         "avg_return_3d_pct": round(avg3, 6),
         "avg_return_5d_pct": round(avg5, 6),
+        "base_expected_value_3d_pct": round(unadjusted_base_ev3, 6),
+        "base_expected_value_5d_pct": round(unadjusted_base_ev5, 6),
+        "stress_expected_value_3d_pct": round(unadjusted_stress_ev3, 6),
+        "stress_expected_value_5d_pct": round(unadjusted_stress_ev5, 6),
         "stop_first_risk_pct": round(stop_first_risk, 6),
     }
     regime_theme_adjustment = build_regime_theme_adjustment(row)
@@ -342,12 +371,14 @@ def build_realized_expectancy_admission(
         avg3 = avg3 * return_multiplier
         avg5 = avg5 * return_multiplier
         stop_first_risk = _clamp(stop_first_risk * stop_multiplier, 5.0, 85.0)
-    ev3 = prob3 / 100.0 * avg3 + (1.0 - prob3 / 100.0) * calibration.min_return_3d_pct
-    ev5 = prob5 / 100.0 * avg5 + (1.0 - prob5 / 100.0) * calibration.min_return_5d_pct
+    base_ev3 = prob3 / 100.0 * avg3 + (1.0 - prob3 / 100.0) * calibration.avg_loss_3d_pct
+    base_ev5 = prob5 / 100.0 * avg5 + (1.0 - prob5 / 100.0) * calibration.avg_loss_5d_pct
+    stress_ev3 = prob3 / 100.0 * avg3 + (1.0 - prob3 / 100.0) * calibration.min_return_3d_pct
+    stress_ev5 = prob5 / 100.0 * avg5 + (1.0 - prob5 / 100.0) * calibration.min_return_5d_pct
     ranking3 = _ranking_score(
         probability=prob3,
         avg_return_pct=avg3,
-        expected_value_pct=ev3,
+        expected_value_pct=base_ev3,
         momentum=momentum,
         rank_prior=rank_prior,
         stop_first_risk=stop_first_risk,
@@ -356,7 +387,7 @@ def build_realized_expectancy_admission(
     ranking5 = _ranking_score(
         probability=prob5,
         avg_return_pct=avg5,
-        expected_value_pct=ev5,
+        expected_value_pct=base_ev5,
         momentum=momentum,
         rank_prior=rank_prior,
         stop_first_risk=stop_first_risk,
@@ -370,7 +401,7 @@ def build_realized_expectancy_admission(
         action = "realized_expectancy_leader"
     elif ranking5 >= 58.0:
         action = "realized_expectancy_watch"
-    elif stop_first_risk >= 45.0 or ev5 < 0.0:
+    elif stop_first_risk >= 45.0 or base_ev5 < 0.0:
         action = "realized_expectancy_risk"
     else:
         action = "realized_expectancy_neutral"
@@ -386,6 +417,8 @@ def build_realized_expectancy_admission(
         "section_win_5d_pct": calibration.section_win_5d_pct,
         "avg_return_3d_pct": round(avg3, 6),
         "avg_return_5d_pct": round(avg5, 6),
+        "avg_loss_3d_pct": calibration.avg_loss_3d_pct,
+        "avg_loss_5d_pct": calibration.avg_loss_5d_pct,
         "min_return_3d_pct": calibration.min_return_3d_pct,
         "min_return_5d_pct": calibration.min_return_5d_pct,
         "max_return_3d_pct": calibration.max_return_3d_pct,
@@ -395,16 +428,22 @@ def build_realized_expectancy_admission(
         "5d_prob": round(prob5, 6),
         "ranking_score_3d": round(ranking3, 6),
         "ranking_score_5d": round(ranking5, 6),
-        "expected_value_3d_pct": round(ev3, 6),
-        "expected_value_5d_pct": round(ev5, 6),
+        "expected_value_3d_pct": round(base_ev3, 6),
+        "expected_value_5d_pct": round(base_ev5, 6),
+        "base_expected_value_3d_pct": round(base_ev3, 6),
+        "base_expected_value_5d_pct": round(base_ev5, 6),
+        "stress_expected_value_3d_pct": round(stress_ev3, 6),
+        "stress_expected_value_5d_pct": round(stress_ev5, 6),
         "unadjusted_expectancy": unadjusted,
         "regime_theme_adjustment": regime_theme_adjustment,
         "expected_value_band": {
             "low_3d_pct": calibration.min_return_3d_pct,
-            "base_3d_pct": round(ev3, 6),
+            "base_3d_pct": round(base_ev3, 6),
+            "stress_3d_pct": round(stress_ev3, 6),
             "high_3d_pct": calibration.max_return_3d_pct,
             "low_5d_pct": calibration.min_return_5d_pct,
-            "base_5d_pct": round(ev5, 6),
+            "base_5d_pct": round(base_ev5, 6),
+            "stress_5d_pct": round(stress_ev5, 6),
             "high_5d_pct": calibration.max_return_5d_pct,
         },
         "action_label_input": action,
@@ -414,6 +453,10 @@ def build_realized_expectancy_admission(
             "expected_edge_score": round(expected_edge, 6),
             "expected_return_3d_pct": round(expected_3d, 6),
             "expected_return_5d_pct": round(expected_5d, 6),
+            "avg_loss_anchor_3d_pct": round(calibration.avg_loss_3d_pct, 6),
+            "avg_loss_anchor_5d_pct": round(calibration.avg_loss_5d_pct, 6),
+            "stress_loss_anchor_3d_pct": round(calibration.min_return_3d_pct, 6),
+            "stress_loss_anchor_5d_pct": round(calibration.min_return_5d_pct, 6),
             "decision_score": round(decision_score, 6),
             "loss_risk_score": round(loss_risk, 6),
             "feature_evidence_count": feature_evidence_count,

@@ -19,6 +19,7 @@ def test_build_section_performance_calibration_groups_market_section_metrics(tmp
     assert top["sample_n"] == 2
     assert top["return_3d"]["win_pct"] == 50.0
     assert top["return_5d"]["avg_pct"] == 1.0
+    assert top["return_5d"]["avg_loss_pct"] == -3.0
     assert top["stop_first_5d_pct"] == 50.0
     assert top["confidence"] == "small_sample"
 
@@ -34,6 +35,8 @@ def test_calibration_for_uses_explicit_table_over_artifact_fallback():
             91,
             1,
             2,
+            -0.5,
+            -0.8,
             -1,
             -2,
             3,

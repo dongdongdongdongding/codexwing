@@ -41,6 +41,10 @@ def _fixture_row():
             "5d_prob": 80.1,
             "expected_value_3d_pct": 2.1,
             "expected_value_5d_pct": 6.3,
+            "base_expected_value_3d_pct": 2.1,
+            "base_expected_value_5d_pct": 6.3,
+            "stress_expected_value_3d_pct": -1.4,
+            "stress_expected_value_5d_pct": -2.7,
             "ranking_score_5d": 77.4,
             "stop_first_risk_pct": 18.2,
         },
@@ -64,6 +68,8 @@ def test_candidate_interpretation_contract_extracts_surface_parity_fields():
     assert interpretation["stop_sl_pct"] == -5.0
     assert interpretation["realized_expectancy_3d_prob"] == 62.5
     assert interpretation["realized_expectancy_5d_prob"] == 80.1
+    assert interpretation["base_expected_value_5d_pct"] == 6.3
+    assert interpretation["stress_expected_value_5d_pct"] == -2.7
     assert interpretation["ranking_score_5d"] == 77.4
     assert interpretation["data_warning_count"] == 1
     assert interpretation["chase_risk_level"] == "높음"
@@ -78,6 +84,8 @@ def test_signal_display_rows_embed_same_candidate_interpretation_contract():
     assert display["original_rank"] == 12
     assert display["planner_rank"] == 3
     assert display["realized_expectancy_5d_prob"] == 80.1
+    assert display["base_expected_value_5d_pct"] == 6.3
+    assert display["stress_expected_value_5d_pct"] == -2.7
     assert interpretation == build_candidate_interpretation({**row, "candidate_data_quality": build_candidate_data_quality(row)})
 
 

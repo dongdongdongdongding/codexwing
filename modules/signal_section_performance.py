@@ -39,6 +39,8 @@ class SectionMetric:
     win_rate_pct: float | None
     avg_return_pct: float | None
     median_return_pct: float | None
+    avg_win_return_pct: float | None
+    avg_loss_return_pct: float | None
     best_return_pct: float | None
     worst_return_pct: float | None
     active_day_n: int
@@ -58,6 +60,8 @@ class SectionMetric:
             "win_rate_pct": self.win_rate_pct,
             "avg_return_pct": self.avg_return_pct,
             "median_return_pct": self.median_return_pct,
+            "avg_win_return_pct": self.avg_win_return_pct,
+            "avg_loss_return_pct": self.avg_loss_return_pct,
             "best_return_pct": self.best_return_pct,
             "worst_return_pct": self.worst_return_pct,
             "active_day_n": self.active_day_n,
@@ -132,6 +136,8 @@ def build_section_performance_metrics(
                     key = (market, scan_mode, section, horizon)
                     values = buckets.get(key, [])
                     win_n = sum(1 for value in values if value > 0)
+                    wins = [value for value in values if value > 0]
+                    losses = [value for value in values if value <= 0]
                     sample_n = len(values)
                     metric = SectionMetric(
                         as_of_date=as_of,
@@ -145,6 +151,8 @@ def build_section_performance_metrics(
                         win_rate_pct=round((win_n / sample_n) * 100.0, 2) if sample_n else None,
                         avg_return_pct=round(sum(values) / sample_n, 4) if sample_n else None,
                         median_return_pct=round(float(median(values)), 4) if sample_n else None,
+                        avg_win_return_pct=round(sum(wins) / len(wins), 4) if wins else None,
+                        avg_loss_return_pct=round(sum(losses) / len(losses), 4) if losses else None,
                         best_return_pct=round(max(values), 4) if sample_n else None,
                         worst_return_pct=round(min(values), 4) if sample_n else None,
                         active_day_n=len(active_dates.get(key, set())),
@@ -214,12 +222,13 @@ def build_latest_performance_markdown(metrics: List[Dict[str, Any]]) -> str:
                 for row in sorted(values, key=lambda item: int(item.get("horizon_days") or 0)):
                     win = _fmt_pct(row.get("win_rate_pct"))
                     avg = _fmt_signed(row.get("avg_return_pct"))
+                    avg_loss = _fmt_signed(row.get("avg_loss_return_pct"))
                     worst = _fmt_signed(row.get("worst_return_pct"))
                     best = _fmt_signed(row.get("best_return_pct"))
                     sample = int(row.get("sample_n") or 0)
                     horizon = int(row.get("horizon_days") or 0)
                     active_days = int(row.get("active_day_n") or 0)
-                    part = f"{horizon}D win {win} / avg {avg} / worst {worst} / best {best} / n={sample}"
+                    part = f"{horizon}D win {win} / avg {avg} / avg_loss {avg_loss} / worst {worst} / best {best} / n={sample}"
                     if horizon >= 14:
                         part += f" / days={active_days}"
                     parts.append(part)
@@ -242,6 +251,8 @@ def _write_csv(rows: List[Dict[str, Any]], path: Path) -> None:
         "win_rate_pct",
         "avg_return_pct",
         "median_return_pct",
+        "avg_win_return_pct",
+        "avg_loss_return_pct",
         "best_return_pct",
         "worst_return_pct",
         "active_day_n",

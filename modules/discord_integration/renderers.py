@@ -406,8 +406,8 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         (
             f"실현기대: 3D확률 {_fmt_pct(interpretation.get('realized_expectancy_3d_prob'))} / "
             f"5D확률 {_fmt_pct(interpretation.get('realized_expectancy_5d_prob'))} · "
-            f"3D값 {_fmt_pct(interpretation.get('expected_value_3d_pct'))} / "
-            f"5D값 {_fmt_pct(interpretation.get('expected_value_5d_pct'))} · "
+            f"기본5D {_fmt_pct(interpretation.get('base_expected_value_5d_pct') or interpretation.get('expected_value_5d_pct'))} · "
+            f"꼬리5D {_fmt_pct(interpretation.get('stress_expected_value_5d_pct'))} · "
             f"5D점수 {_fmt_num(interpretation.get('ranking_score_5d'), 1)}"
         ),
         (

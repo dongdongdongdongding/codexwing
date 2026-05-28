@@ -188,6 +188,8 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
                     "realized_expectancy_admission": {
                         "expected_value_3d_pct": 1.2,
                         "expected_value_5d_pct": 4.5,
+                        "base_expected_value_5d_pct": 4.5,
+                        "stress_expected_value_5d_pct": -3.2,
                         "ranking_score_5d": 72.0,
                     },
                     "flow": {
@@ -231,7 +233,7 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
     assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
     assert "정책: kr_scanner_policy_test · production_champion" in embeds[0]["fields"][0]["value"]
-    assert "실현기대: 3D확률 - / 5D확률 - · 3D값 +1.20% / 5D값 +4.50% · 5D점수 72.0" in embeds[0]["fields"][0]["value"]
+    assert "실현기대: 3D확률 - / 5D확률 - · 기본5D +4.50% · 꼬리5D -3.20% · 5D점수 72.0" in embeds[0]["fields"][0]["value"]
     assert "수급: 외인 +1,200,000 / 기관 -300,000 / 개인 -900,000" in embeds[0]["fields"][0]["value"]
 
 

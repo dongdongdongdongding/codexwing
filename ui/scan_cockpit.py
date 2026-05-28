@@ -59,6 +59,15 @@ def _fmt_score_or_dash(value: Any) -> str:
         return str(value)
 
 
+def _fmt_metric_pct_or_dash(value: Any) -> str:
+    if value is None or value == "":
+        return "-"
+    try:
+        return f"{float(str(value).replace('%', '').replace(',', '').strip()):.1f}%"
+    except Exception:
+        return str(value)
+
+
 def _ticker_of(row: Dict[str, Any]) -> str:
     return str(row.get("ticker") or row.get("티커") or row.get("Ticker") or row.get("symbol") or "").strip()
 
@@ -116,6 +125,9 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         radar_score = row.get("next_day_radar_score")
         radar_plus5 = row.get("next_day_plus5_prob")
         radar_plus10 = row.get("next_day_plus10_prob")
+        candidate_5d_prob = row.get("realized_expectancy_5d_prob")
+        base_ev_5d = row.get("base_expected_value_5d_pct")
+        stress_ev_5d = row.get("stress_expected_value_5d_pct")
         radar_reasons = [str(reason) for reason in (row.get("next_day_radar_reasons") or []) if str(reason).strip()]
         radar_missing = [str(reason) for reason in (row.get("next_day_radar_unavailable") or []) if str(reason).strip()]
         stop_source = str(row.get("stop_display_source") or "")
@@ -127,7 +139,7 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
             risk_line = (risk_line + " · " if risk_line else "") + " / ".join(risk_flags[:3])
 
         with st.container(border=True):
-            cols = st.columns([1.25, 2.3, 0.9, 0.9], vertical_alignment="center")
+            cols = st.columns([1.2, 2.05, 0.85, 0.85, 0.85], vertical_alignment="center")
             with cols[0]:
                 section = str(row.get("analysis_section") or "").strip()
                 section_rank = row.get("analysis_section_rank") or row.get("rank") or "-"
@@ -178,21 +190,35 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     if stop_conflict:
                         label += " 충돌: 더 엄격한 값 적용"
                     st.caption(f"{label} · {stop_source}")
+                expectancy_parts = []
+                if candidate_5d_prob is not None:
+                    expectancy_parts.append(f"후보5D {_fmt_metric_pct_or_dash(candidate_5d_prob)}")
+                if base_ev_5d is not None:
+                    expectancy_parts.append(f"기본기대 {_fmt_metric_pct_or_dash(base_ev_5d)}")
+                if stress_ev_5d is not None:
+                    expectancy_parts.append(f"꼬리위험 {_fmt_metric_pct_or_dash(stress_ev_5d)}")
+                if expectancy_parts:
+                    st.caption(" / ".join(expectancy_parts))
                 if risk_line:
                     st.caption(risk_line)
                 if name and subtitle != "-":
                     st.caption(subtitle)
             with cols[2]:
                 st.metric(
-                    "적중률(OOS)",
+                    "구간 적중률",
                     str(row.get("accuracy") or "-"),
                     help=(
-                        "이 등급/시장의 historical OOS win rate (5d hold). "
-                        "후보별 변동값이 아니라 segment 단위 invariant. "
-                        "raw 모델 score가 아닌 dedup 측정 win rate."
+                        "이 등급/시장/스캔모드의 historical OOS win rate (5d hold). "
+                        "후보별 확률이 아니라 segment 단위 통계입니다."
                     ),
                 )
             with cols[3]:
+                st.metric(
+                    "후보 5D확률",
+                    _fmt_metric_pct_or_dash(candidate_5d_prob),
+                    help="구간 승률, 후보 점수, 모멘텀, 손실위험을 섞어 계산한 후보별 5D 확률입니다.",
+                )
+            with cols[4]:
                 st.metric("전일비", str(row.get("day_change") or "-"), day_delta)
 
 
@@ -409,7 +435,8 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     st.markdown("### 보조 설명 · Top5 운용 기준")
     st.caption(
         "**자본 배분**: 1억이면 8,000만 → 종목당 약 1,600만. "
-        "**정확성** = 이 등급/시장의 historical OOS win rate (5d hold 기준, dedup 측정). "
+        "**구간 적중률** = 이 등급/시장의 historical OOS win rate (5d hold 기준, dedup 측정). "
+        "**후보 5D확률** = 후보별 realized-expectancy 보정값. "
         "엔트리/TP/SL은 시장별 기본 정책 (KOSPI 시가/+20/-5, KOSDAQ -2%지정/+10/-10)."
     )
     st.markdown("### 보조 설명 · Exception Leader 운용 기준")

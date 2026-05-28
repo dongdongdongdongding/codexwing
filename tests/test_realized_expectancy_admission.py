@@ -29,6 +29,9 @@ def test_negative_expected_edge_can_pass_when_momentum_and_section_are_strong():
     assert admission["policy_version"] == ADMISSION_POLICY_VERSION
     assert admission["ranking_score_5d"] >= 58.0
     assert admission["stop_first_risk_pct"] < 28.0
+    assert admission["base_expected_value_5d_pct"] == admission["expected_value_5d_pct"]
+    assert admission["stress_expected_value_5d_pct"] < admission["base_expected_value_5d_pct"]
+    assert admission["expected_value_band"]["stress_5d_pct"] == admission["stress_expected_value_5d_pct"]
 
 
 def test_high_score_with_weak_edge_and_stop_risk_is_penalized():
