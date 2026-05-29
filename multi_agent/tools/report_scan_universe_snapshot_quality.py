@@ -23,6 +23,23 @@ RETURN_COLUMNS = (
     "max_high_return_1d_pct",
     "max_high_return_3d_pct",
     "max_high_return_5d_pct",
+    "min_low_return_1d_pct",
+    "min_low_return_3d_pct",
+    "min_low_return_5d_pct",
+)
+PATH_LABEL_COLUMNS = (
+    "target_hit_1d",
+    "target_hit_3d",
+    "target_hit_5d",
+    "stop_hit_1d",
+    "stop_hit_3d",
+    "stop_hit_5d",
+    "target_before_stop_1d",
+    "target_before_stop_3d",
+    "target_before_stop_5d",
+    "first_touch_1d",
+    "first_touch_3d",
+    "first_touch_5d",
 )
 
 
@@ -32,13 +49,23 @@ def _fetch_rows(page_size: int) -> tuple[int | None, List[Dict[str, Any]]]:
     db = DBManager()
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable.")
-    count_res = db.client.table(TARGET_TABLE).select("snapshot_key", count="exact").limit(1).execute()
-    exact_count = getattr(count_res, "count", None)
+    try:
+        count_res = db.client.table(TARGET_TABLE).select("snapshot_key", count="exact").limit(1).execute()
+        exact_count = getattr(count_res, "count", None)
+    except Exception:
+        exact_count = None
     cols = (
         "id,run_id,market,scan_mode,row_role,passed_current_model,outcome_available,reject_reason,"
         "base_trade_date,entry_reference_price,"
         "return_1d_pct,return_3d_pct,return_5d_pct,"
-        "max_high_return_1d_pct,max_high_return_3d_pct,max_high_return_5d_pct"
+        "max_high_return_1d_pct,max_high_return_3d_pct,max_high_return_5d_pct,"
+        "min_low_return_1d_pct,min_low_return_3d_pct,min_low_return_5d_pct,"
+        "target_hit_1d,target_hit_3d,target_hit_5d,"
+        "stop_hit_1d,stop_hit_3d,stop_hit_5d,"
+        "target_before_stop_1d,target_before_stop_3d,target_before_stop_5d,"
+        "first_touch_1d,first_touch_3d,first_touch_5d,"
+        "feature_coverage_score,feature_missing_keys,has_actual_flow,flow_consensus_buying,retail_dominant,"
+        "flow_source,flow_asof,flow_warnings,normalized_feature_version"
     )
     rows: List[Dict[str, Any]] = []
     last_id = 0
@@ -71,6 +98,20 @@ def build_report(page_size: int) -> Dict[str, Any]:
     return_fill_rates = {
         col: round(count / total * 100.0, 2) if total else 0.0 for col, count in return_fill_counts.items()
     }
+    path_label_counts = {col: sum(1 for row in rows if row.get(col) is not None) for col in PATH_LABEL_COLUMNS}
+    path_label_rates = {
+        col: round(count / total * 100.0, 2) if total else 0.0 for col, count in path_label_counts.items()
+    }
+    feature_coverage_values = [
+        float(row.get("feature_coverage_score"))
+        for row in rows
+        if row.get("feature_coverage_score") is not None
+    ]
+    feature_missing_key_counter: Counter[str] = Counter()
+    for row in rows:
+        missing_keys = row.get("feature_missing_keys") or []
+        if isinstance(missing_keys, list):
+            feature_missing_key_counter.update(str(key) for key in missing_keys)
     incomplete_return_rows = [row for row in rows if any(row.get(col) is None for col in RETURN_COLUMNS)]
     return_5d_missing_rows = [row for row in rows if row.get("return_5d_pct") is None]
     by_market_return_fill: Dict[str, Dict[str, Any]] = {}
@@ -116,6 +157,23 @@ def build_report(page_size: int) -> Dict[str, Any]:
         "entry_reference_price_missing_rows": sum(1 for row in rows if row.get("entry_reference_price") is None),
         "return_fill_counts": return_fill_counts,
         "return_fill_rates_pct": return_fill_rates,
+        "path_label_counts": path_label_counts,
+        "path_label_rates_pct": path_label_rates,
+        "feature_quality": {
+            "filled_rows": len(feature_coverage_values),
+            "avg_feature_coverage_score": round(sum(feature_coverage_values) / len(feature_coverage_values), 6)
+            if feature_coverage_values
+            else None,
+            "has_actual_flow_rows": sum(1 for row in rows if row.get("has_actual_flow") is True),
+            "flow_consensus_buying_rows": sum(1 for row in rows if row.get("flow_consensus_buying") is True),
+            "retail_dominant_rows": sum(1 for row in rows if row.get("retail_dominant") is True),
+            "flow_asof_rows": sum(1 for row in rows if row.get("flow_asof")),
+            "flow_source_counts": dict(Counter(str(row.get("flow_source") or "missing") for row in rows)),
+            "feature_version_counts": dict(
+                Counter(str(row.get("normalized_feature_version") or "missing") for row in rows)
+            ),
+            "top_missing_feature_keys": dict(feature_missing_key_counter.most_common(20)),
+        },
         "by_market_return_fill": by_market_return_fill,
         "incomplete_return_rows": len(incomplete_return_rows),
         "incomplete_return_rows_by_base_trade_date": dict(
@@ -154,6 +212,9 @@ def _markdown(report: Dict[str, Any]) -> str:
         "## Return Coverage",
         f"- return_fill_counts: `{report.get('return_fill_counts')}`",
         f"- return_fill_rates_pct: `{report.get('return_fill_rates_pct')}`",
+        f"- path_label_counts: `{report.get('path_label_counts')}`",
+        f"- path_label_rates_pct: `{report.get('path_label_rates_pct')}`",
+        f"- feature_quality: `{report.get('feature_quality')}`",
         f"- by_market_return_fill: `{report.get('by_market_return_fill')}`",
         f"- incomplete_return_rows_by_base_trade_date: `{report.get('incomplete_return_rows_by_base_trade_date')}`",
         f"- return_5d_missing_rows_by_base_trade_date: `{report.get('return_5d_missing_rows_by_base_trade_date')}`",

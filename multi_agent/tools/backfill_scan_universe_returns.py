@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Backfill forward returns for scan_universe_snapshots.
+"""Backfill forward learning labels for scan_universe_snapshots.
 
 The scan_universe_snapshots table contains every emitted and rejected symbol.
 This tool attaches 1/3/5 trading-day close returns plus 1/3/5 day max-high
-returns without using market_scan_results as the source of truth.
+returns and path labels without using market_scan_results as the source of
+truth.
 """
 from __future__ import annotations
 
@@ -23,7 +24,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 TARGET_TABLE = "scan_universe_snapshots"
-BACKFILL_VERSION = "scan_universe_forward_returns_v1"
+BACKFILL_VERSION = "scan_universe_forward_returns_v2"
+PATH_LABEL_VERSION = "scan_universe_daily_path_target_stop_v1"
+FEATURE_QUALITY_VERSION = "scan_universe_feature_quality_v4"
 DEFAULT_OUT = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "scan_universe_return_backfill.json"
 DEFAULT_ARTIFACT_DIR = PROJECT_ROOT / "runtime_state" / "artifacts"
 RETURN_COLUMNS = (
@@ -33,8 +36,92 @@ RETURN_COLUMNS = (
     "max_high_return_1d_pct",
     "max_high_return_3d_pct",
     "max_high_return_5d_pct",
+    "min_low_return_1d_pct",
+    "min_low_return_3d_pct",
+    "min_low_return_5d_pct",
 )
+PATH_LABEL_COLUMNS = (
+    "target_hit_1d",
+    "target_hit_3d",
+    "target_hit_5d",
+    "stop_hit_1d",
+    "stop_hit_3d",
+    "stop_hit_5d",
+    "target_before_stop_1d",
+    "target_before_stop_3d",
+    "target_before_stop_5d",
+    "stop_before_target_1d",
+    "stop_before_target_3d",
+    "stop_before_target_5d",
+    "target_hit_at_1d",
+    "target_hit_at_3d",
+    "target_hit_at_5d",
+    "stop_hit_at_1d",
+    "stop_hit_at_3d",
+    "stop_hit_at_5d",
+    "days_to_target_1d",
+    "days_to_target_3d",
+    "days_to_target_5d",
+    "days_to_stop_1d",
+    "days_to_stop_3d",
+    "days_to_stop_5d",
+    "first_touch_1d",
+    "first_touch_3d",
+    "first_touch_5d",
+)
+FEATURE_QUALITY_COLUMNS = (
+    "feature_coverage_score",
+    "feature_missing_keys",
+    "has_actual_flow",
+    "normalized_feature_version",
+    "whale_flow_1d",
+    "whale_flow_3d",
+    "whale_flow_10d",
+    "flow_consensus_buying",
+    "retail_dominant",
+    "dominant",
+    "whale_trend",
+    "flow_source",
+    "flow_unit",
+    "flow_asof",
+    "flow_warnings",
+)
+META_WRITE_COLUMNS = (
+    "base_trade_date",
+    "entry_reference_price",
+    "label_target_pct",
+    "label_stop_pct",
+    "path_label_version",
+    "path_label_source",
+    "path_label_updated_at",
+    "outcome_available",
+    "outcome_source",
+    "backfill_version",
+    "updated_at",
+)
+WRITE_COLUMNS = RETURN_COLUMNS + PATH_LABEL_COLUMNS + FEATURE_QUALITY_COLUMNS + META_WRITE_COLUMNS
 HORIZONS = (1, 3, 5)
+FEATURE_KEYS = (
+    "alpha_score",
+    "tech_score",
+    "ml_prob",
+    "prob_clean",
+    "whale_score",
+    "decision_score",
+    "day_return_pct",
+    "volume_ratio",
+    "turnover",
+    "foreigner_1d",
+    "institution_1d",
+    "retail_1d",
+    "foreigner_3d",
+    "institution_3d",
+    "retail_3d",
+    "foreigner_10d",
+    "institution_10d",
+    "retail_10d",
+    "primary_theme",
+)
 
 
 def _load_local_env() -> None:
@@ -64,6 +151,14 @@ def _safe_float(value: Any) -> float | None:
         return numeric
     except Exception:
         return None
+
+
+def _is_present(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    return _safe_float(value) is not None if isinstance(value, (int, float)) else True
 
 
 def _date_text(value: Any) -> str | None:
@@ -250,9 +345,17 @@ def _history_frame_to_bars(hist: Any) -> List[Dict[str, Any]]:
             trade_date = str(idx)[:10]
         close = _safe_float(item.get("Close"))
         high = _safe_float(item.get("High"))
+        low = _safe_float(item.get("Low"))
         if not trade_date or close is None:
             continue
-        rows.append({"date": trade_date, "close": close, "high": high if high is not None else close})
+        rows.append(
+            {
+                "date": trade_date,
+                "close": close,
+                "high": high if high is not None else close,
+                "low": low if low is not None else close,
+            }
+        )
     rows.sort(key=lambda row: str(row.get("date") or ""))
     return rows
 
@@ -260,7 +363,134 @@ def _history_frame_to_bars(hist: Any) -> List[Dict[str, Any]]:
 def _row_needs_backfill(row: Dict[str, Any], *, overwrite: bool) -> bool:
     if overwrite:
         return True
-    return any(row.get(col) is None for col in RETURN_COLUMNS)
+    if str(row.get("normalized_feature_version") or "") != FEATURE_QUALITY_VERSION:
+        return True
+    return any(row.get(col) is None for col in RETURN_COLUMNS + PATH_LABEL_COLUMNS + FEATURE_QUALITY_COLUMNS)
+
+
+def _first_touch_payload(
+    future: Sequence[Dict[str, Any]],
+    *,
+    entry: float,
+    horizon: int,
+    target_pct: float,
+    stop_pct: float,
+) -> Dict[str, Any]:
+    target_price = entry * (1.0 + target_pct / 100.0)
+    stop_price = entry * (1.0 - abs(stop_pct) / 100.0)
+    target_hit = False
+    stop_hit = False
+    target_at = None
+    stop_at = None
+    days_to_target = None
+    days_to_stop = None
+    target_before_stop = False
+    stop_before_target = False
+    first_touch = "no_touch"
+
+    for offset, bar in enumerate(future[:horizon], start=1):
+        high = _safe_float(bar.get("high"))
+        low = _safe_float(bar.get("low"))
+        bar_date = _date_text(bar.get("date"))
+        touched_target = high is not None and high >= target_price
+        touched_stop = low is not None and low <= stop_price
+        if touched_target and target_at is None:
+            target_hit = True
+            target_at = bar_date
+            days_to_target = offset
+        if touched_stop and stop_at is None:
+            stop_hit = True
+            stop_at = bar_date
+            days_to_stop = offset
+        if touched_target and touched_stop:
+            first_touch = "same_bar_stop_first"
+            stop_before_target = True
+            break
+        if touched_stop:
+            first_touch = "stop"
+            stop_before_target = True
+            break
+        if touched_target:
+            first_touch = "target"
+            target_before_stop = True
+            break
+
+    if first_touch == "no_touch":
+        target_before_stop = False
+        stop_before_target = False
+
+    return {
+        f"target_hit_{horizon}d": target_hit,
+        f"stop_hit_{horizon}d": stop_hit,
+        f"target_before_stop_{horizon}d": target_before_stop,
+        f"stop_before_target_{horizon}d": stop_before_target,
+        f"target_hit_at_{horizon}d": target_at,
+        f"stop_hit_at_{horizon}d": stop_at,
+        f"days_to_target_{horizon}d": days_to_target,
+        f"days_to_stop_{horizon}d": days_to_stop,
+        f"first_touch_{horizon}d": first_touch,
+    }
+
+
+def _feature_quality_payload(row: Dict[str, Any], *, overwrite: bool) -> Dict[str, Any]:
+    missing = [key for key in FEATURE_KEYS if not _is_present(row.get(key))]
+    present = len(FEATURE_KEYS) - len(missing)
+    foreigner_1d = _safe_float(row.get("foreigner_1d"))
+    institution_1d = _safe_float(row.get("institution_1d"))
+    retail_1d = _safe_float(row.get("retail_1d"))
+    foreigner_3d = _safe_float(row.get("foreigner_3d"))
+    institution_3d = _safe_float(row.get("institution_3d"))
+    retail_3d = _safe_float(row.get("retail_3d"))
+    foreigner_10d = _safe_float(row.get("foreigner_10d"))
+    institution_10d = _safe_float(row.get("institution_10d"))
+    retail_10d = _safe_float(row.get("retail_10d"))
+    whale_1d = (foreigner_1d or 0.0) + (institution_1d or 0.0) if foreigner_1d is not None or institution_1d is not None else None
+    whale_3d = (foreigner_3d or 0.0) + (institution_3d or 0.0) if foreigner_3d is not None or institution_3d is not None else None
+    whale_10d = (foreigner_10d or 0.0) + (institution_10d or 0.0) if foreigner_10d is not None or institution_10d is not None else None
+    has_flow = any(value is not None for value in (foreigner_1d, institution_1d, retail_1d, foreigner_3d, institution_3d, retail_3d))
+    flow_consensus = None
+    if whale_1d is not None and whale_3d is not None:
+        flow_consensus = whale_1d > 0 and whale_3d > 0
+    retail_dominant = None
+    if retail_1d is not None and whale_1d is not None:
+        retail_dominant = retail_1d > 0 and whale_1d < 0
+    dominant = None
+    contenders = {
+        "foreigner": foreigner_1d,
+        "institution": institution_1d,
+        "retail": retail_1d,
+    }
+    contenders = {key: value for key, value in contenders.items() if value is not None}
+    if contenders:
+        dominant = max(contenders, key=lambda key: abs(float(contenders[key] or 0.0)))
+    whale_trend = None
+    if whale_1d is not None and whale_3d is not None:
+        if whale_1d > 0 and whale_3d > 0:
+            whale_trend = "accumulation"
+        elif whale_1d < 0 and whale_3d < 0:
+            whale_trend = "distribution"
+        else:
+            whale_trend = "mixed"
+    payload = {
+        "feature_coverage_score": round(present / len(FEATURE_KEYS), 6),
+        "feature_missing_keys": missing,
+        "has_actual_flow": has_flow,
+        "normalized_feature_version": FEATURE_QUALITY_VERSION,
+        "whale_flow_1d": whale_1d,
+        "whale_flow_3d": whale_3d,
+        "whale_flow_10d": whale_10d,
+        "flow_consensus_buying": flow_consensus,
+        "retail_dominant": retail_dominant,
+        "dominant": dominant,
+        "whale_trend": whale_trend,
+        "flow_source": "scan_universe_snapshot" if has_flow else None,
+        "flow_unit": "source_units" if has_flow else None,
+        "flow_asof": None,
+        "flow_warnings": [] if has_flow else ["investor_flow_missing_in_scan_archive"],
+    }
+    if overwrite or str(row.get("normalized_feature_version") or "") != FEATURE_QUALITY_VERSION:
+        return payload
+    return {key: value for key, value in payload.items() if row.get(key) is None}
 
 
 def _compute_return_payload(
@@ -269,6 +499,8 @@ def _compute_return_payload(
     *,
     overwrite: bool,
     run_date_index: Dict[str, str] | None = None,
+    target_pct: float = 5.0,
+    stop_pct: float = 5.0,
 ) -> Dict[str, Any]:
     base = _resolved_base_date(row, run_date_index)
     if base is None:
@@ -283,10 +515,13 @@ def _compute_return_payload(
     if entry is None or entry <= 0:
         return {}
     future = eligible[1:]
-    payload: Dict[str, Any] = {}
+    payload: Dict[str, Any] = _feature_quality_payload(row, overwrite=overwrite)
+    if payload.get("has_actual_flow") is True:
+        payload["flow_asof"] = base.isoformat()
     for horizon in HORIZONS:
         ret_col = f"return_{horizon}d_pct"
         high_col = f"max_high_return_{horizon}d_pct"
+        low_col = f"min_low_return_{horizon}d_pct"
         if len(future) >= horizon:
             close = _safe_float(future[horizon - 1].get("close"))
             if close is not None and (overwrite or row.get(ret_col) is None):
@@ -295,11 +530,42 @@ def _compute_return_payload(
             highs = [value for value in highs if value is not None]
             if highs and (overwrite or row.get(high_col) is None):
                 payload[high_col] = round((max(highs) - entry) / entry * 100.0, 6)
+            lows = [_safe_float(bar.get("low")) for bar in future[:horizon]]
+            lows = [value for value in lows if value is not None]
+            if lows and (overwrite or row.get(low_col) is None):
+                payload[low_col] = round((min(lows) - entry) / entry * 100.0, 6)
+            touch_payload = _first_touch_payload(
+                future,
+                entry=float(entry),
+                horizon=horizon,
+                target_pct=float(target_pct),
+                stop_pct=float(stop_pct),
+            )
+            for key, value in touch_payload.items():
+                if overwrite or row.get(key) is None:
+                    payload[key] = value
+    outcome_payload = any(
+        key.startswith("return_")
+        or key.startswith("max_high_return_")
+        or key.startswith("min_low_return_")
+        or key.startswith("target_hit_")
+        or key.startswith("stop_hit_")
+        or key.startswith("target_before_stop_")
+        or key.startswith("stop_before_target_")
+        or key.startswith("first_touch_")
+        for key in payload
+    )
     if payload:
         payload["base_trade_date"] = base.isoformat()
         payload["entry_reference_price"] = entry
-        payload["outcome_available"] = True
-        payload["outcome_source"] = "scan_universe_price_history"
+        payload["label_target_pct"] = float(target_pct)
+        payload["label_stop_pct"] = abs(float(stop_pct))
+        payload["path_label_version"] = PATH_LABEL_VERSION
+        payload["path_label_source"] = "daily_ohlc_stop_first"
+        payload["path_label_updated_at"] = datetime.now(timezone.utc).isoformat()
+        if outcome_payload:
+            payload["outcome_available"] = True
+            payload["outcome_source"] = "scan_universe_price_history"
         payload["backfill_version"] = BACKFILL_VERSION
         payload["updated_at"] = datetime.now(timezone.utc).isoformat()
     return payload
@@ -312,24 +578,59 @@ def fetch_snapshot_rows(*, market: str, scan_mode: str, page_size: int) -> List[
     db = DBManager()
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable.")
-    cols = (
-        "id,snapshot_key,run_id,ticker,market,scan_mode,row_role,base_trade_date,scanned_at,entry_reference_price,"
-        "return_1d_pct,return_3d_pct,return_5d_pct,"
-        "max_high_return_1d_pct,max_high_return_3d_pct,max_high_return_5d_pct"
+    cols = ",".join(
+        [
+            "id",
+            "snapshot_key",
+            "run_id",
+            "ticker",
+            "market",
+            "scan_mode",
+            "row_role",
+            "base_trade_date",
+            "scanned_at",
+            "entry_reference_price",
+            "alpha_score",
+            "tech_score",
+            "ml_prob",
+            "prob_clean",
+            "whale_score",
+            "decision_score",
+            "day_return_pct",
+            "volume_ratio",
+            "turnover",
+            "foreigner_1d",
+            "institution_1d",
+            "retail_1d",
+            "foreigner_3d",
+            "institution_3d",
+            "retail_3d",
+            "foreigner_10d",
+            "institution_10d",
+            "retail_10d",
+            "primary_theme",
+            "outcome_available",
+            "outcome_source",
+            "backfill_version",
+            *RETURN_COLUMNS,
+            *PATH_LABEL_COLUMNS,
+            *FEATURE_QUALITY_COLUMNS,
+        ]
     )
     rows: List[Dict[str, Any]] = []
-    page = 0
+    last_id = 0
     while True:
-        query = db.client.table(TARGET_TABLE).select(cols).order("id").range(page * page_size, page * page_size + page_size - 1)
+        query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(page_size)
         if market != "ALL":
             query = query.eq("market", market)
         if scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
         batch = query.execute().data or []
         rows.extend(batch)
+        if batch:
+            last_id = max(int(row.get("id") or last_id) for row in batch)
         if len(batch) < page_size:
             break
-        page += 1
     return rows
 
 
@@ -340,6 +641,8 @@ def build_updates(
     overwrite: bool,
     max_tickers: int,
     run_date_index: Dict[str, str] | None = None,
+    target_pct: float = 5.0,
+    stop_pct: float = 5.0,
 ) -> Dict[str, Any]:
     run_date_index = run_date_index or {}
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
@@ -378,14 +681,25 @@ def build_updates(
             no_history += len(ticker_rows)
             continue
         for row in ticker_rows:
-            payload = _compute_return_payload(row, bars, overwrite=overwrite, run_date_index=run_date_index)
+            payload = _compute_return_payload(
+                row,
+                bars,
+                overwrite=overwrite,
+                run_date_index=run_date_index,
+                target_pct=target_pct,
+                stop_pct=stop_pct,
+            )
             if not payload:
                 no_payload += 1
                 continue
+            for key in WRITE_COLUMNS:
+                if key not in payload and key in row:
+                    payload[key] = row.get(key)
             payload["id"] = row.get("id")
             payload["snapshot_key"] = row.get("snapshot_key")
             payload["run_id"] = row.get("run_id")
             payload["ticker"] = row.get("ticker")
+            payload["row_role"] = row.get("row_role")
             updates.append(_json_safe(payload))
             by_market[str(row.get("market") or "")] += 1
             by_role[str(row.get("row_role") or "")] += 1
@@ -406,7 +720,7 @@ def build_updates(
     }
 
 
-def upsert_updates(updates: List[Dict[str, Any]], *, batch_size: int) -> int:
+def write_updates(updates: List[Dict[str, Any]], *, batch_size: int, write_method: str = "upsert") -> int:
     if not updates:
         return 0
     _load_local_env()
@@ -415,15 +729,43 @@ def upsert_updates(updates: List[Dict[str, Any]], *, batch_size: int) -> int:
     db = DBManager()
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable.")
-    writable = set(RETURN_COLUMNS) | {
-        "base_trade_date",
-        "entry_reference_price",
-        "outcome_available",
-        "outcome_source",
-        "backfill_version",
-        "updated_at",
-    }
+    writable = set(WRITE_COLUMNS)
     written = 0
+    method = str(write_method or "upsert").lower()
+    if method == "upsert":
+        payload_keys = ("id", "snapshot_key", "run_id", "ticker", "row_role", *WRITE_COLUMNS)
+        for start in range(0, len(updates), max(1, int(batch_size))):
+            batch = updates[start : start + max(1, int(batch_size))]
+            normalized = []
+            for item in batch:
+                if item.get("id") is None:
+                    continue
+                normalized_item = {key: item.get(key) for key in payload_keys}
+                normalized_item["outcome_available"] = bool(item.get("outcome_available"))
+                if normalized_item.get("feature_missing_keys") is None:
+                    normalized_item["feature_missing_keys"] = []
+                if normalized_item.get("flow_warnings") is None:
+                    normalized_item["flow_warnings"] = []
+                normalized.append(normalized_item)
+            if not normalized:
+                continue
+            last_exc = None
+            for attempt in range(1, 4):
+                try:
+                    db.client.table(TARGET_TABLE).upsert(normalized, on_conflict="id").execute()
+                    last_exc = None
+                    break
+                except Exception as exc:
+                    last_exc = exc
+                    import time
+
+                    time.sleep(min(2 * attempt, 5))
+            if last_exc is not None:
+                raise last_exc
+            written += len(normalized)
+            print(f"[INFO] upserted learning labels {written}/{len(updates)}", flush=True)
+        return written
+
     for item in updates:
         row_id = item.get("id")
         if row_id is None:
@@ -473,8 +815,11 @@ def main() -> int:
     parser.add_argument("--provider", choices=["fdr", "yfinance", "auto"], default="fdr")
     parser.add_argument("--page-size", type=int, default=1000)
     parser.add_argument("--batch-size", type=int, default=500)
+    parser.add_argument("--write-method", choices=["upsert", "update"], default="upsert")
     parser.add_argument("--sleep", type=float, default=0.0)
     parser.add_argument("--fetch-timeout", type=float, default=12.0)
+    parser.add_argument("--target-pct", type=float, default=5.0)
+    parser.add_argument("--stop-pct", type=float, default=5.0)
     parser.add_argument("--max-tickers", type=int, default=0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
@@ -495,9 +840,15 @@ def main() -> int:
         overwrite=bool(args.overwrite),
         max_tickers=int(args.max_tickers or 0),
         run_date_index=run_date_index,
+        target_pct=float(args.target_pct or 5.0),
+        stop_pct=float(args.stop_pct or 5.0),
     )
     updates = result.pop("updates")
-    rows_written = 0 if args.dry_run else upsert_updates(updates, batch_size=max(1, int(args.batch_size)))
+    rows_written = (
+        0
+        if args.dry_run
+        else write_updates(updates, batch_size=max(1, int(args.batch_size)), write_method=args.write_method)
+    )
     report = {
         "version": BACKFILL_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -508,7 +859,10 @@ def main() -> int:
         "overwrite": bool(args.overwrite),
         "market": args.market,
         "scan_mode": args.scan_mode,
+        "target_pct": float(args.target_pct or 5.0),
+        "stop_pct": abs(float(args.stop_pct or 5.0)),
         "run_date_index_size": len(run_date_index),
+        "write_method": args.write_method,
         **result,
         "sample_updates": updates[:10],
     }
@@ -527,4 +881,5 @@ __all__ = [
     "_compute_return_payload",
     "build_updates",
     "fetch_snapshot_rows",
+    "write_updates",
 ]
