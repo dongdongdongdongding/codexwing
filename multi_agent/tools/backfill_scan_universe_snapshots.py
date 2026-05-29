@@ -343,6 +343,7 @@ def build_snapshot_rows(
         summary = _load_json(run_dir / "scan_pipeline_summary.json")
         if not isinstance(raw, dict) or not isinstance(summary, dict):
             continue
+        run_context = raw.get("run_context") if isinstance(raw.get("run_context"), dict) else {}
         run_id = _text(summary.get("run_id") or run_dir.name)
         market = _market_from(summary.get("market"))
         scan_mode = _text(summary.get("scan_mode") or "SWING").upper()
@@ -355,8 +356,18 @@ def build_snapshot_rows(
         if scan_mode_filter != "ALL" and scan_mode != scan_mode_filter:
             skipped_mode += 1
             continue
-        created_at = _timestamp_text(summary.get("created_at") or raw.get("created_at"))
-        base_trade_date = _date_text(summary.get("created_at") or raw.get("created_at"))
+        created_at = _timestamp_text(
+            summary.get("created_at")
+            or run_context.get("created_at")
+            or run_context.get("as_of_date")
+            or raw.get("created_at")
+        )
+        base_trade_date = _date_text(
+            summary.get("created_at")
+            or run_context.get("as_of_date")
+            or run_context.get("created_at")
+            or raw.get("created_at")
+        )
         diagnostics = _diagnostics(raw)
         result_rows = _result_rows(raw)
         total_scans = _total_scans(raw, summary, diagnostics, len(result_rows))
