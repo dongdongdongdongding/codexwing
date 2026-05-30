@@ -37,6 +37,12 @@ def test_build_snapshot_rows_includes_emitted_and_rejected_symbols(tmp_path):
                     "decision_bucket": "picked",
                     "alpha_score": 91,
                     "decision_score": 88,
+                    "foreigner_1d": 100,
+                    "institution_1d": 50,
+                    "retail_1d": -150,
+                    "foreigner_3d": 250,
+                    "institution_3d": 100,
+                    "retail_3d": -350,
                     "entry_reference_price": 10000,
                 }
             ],
@@ -133,7 +139,13 @@ def test_build_snapshot_rows_includes_emitted_and_rejected_symbols(tmp_path):
     by_ticker = {row["ticker"]: row for row in rows}
     assert by_ticker["000001.KS"]["passed_current_model"] is True
     assert by_ticker["000001.KS"]["return_5d_pct"] == 4.0
+    assert by_ticker["000001.KS"]["has_actual_flow"] is True
+    assert by_ticker["000001.KS"]["flow_asof"] == "2026-05-20"
+    assert by_ticker["000001.KS"]["flow_consensus_buying"] is True
+    assert by_ticker["000001.KS"]["whale_trend"] == "accumulation"
     assert by_ticker["000002.KS"]["passed_current_model"] is False
     assert by_ticker["000002.KS"]["reject_reason"] == "LIQUIDITY_FILTER_FAIL"
     assert by_ticker["000002.KS"]["return_5d_pct"] == 5.0
     assert by_ticker["000003.KS"]["reject_stage"] == "signal_window"
+    assert by_ticker["000003.KS"]["has_actual_flow"] is False
+    assert "investor_flow_missing_in_scan_archive" in by_ticker["000003.KS"]["flow_warnings"]

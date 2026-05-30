@@ -543,7 +543,35 @@ def run_non_ui_scan_pipeline(
             summary["stale_fallback_alert"] = stale_alert
         except Exception as e:
             summary["stale_fallback_alert_error"] = str(e)
-    write_json(artifact_dir / "scan_pipeline_summary.json", summary)
+    summary_path = artifact_dir / "scan_pipeline_summary.json"
+    write_json(summary_path, summary)
+    try:
+        from modules.scan_persistence import _persist_scan_universe_snapshot
+
+        universe_snapshot_result = _persist_scan_universe_snapshot(
+            run_id=run_id,
+            market=market,
+            scan_mode=str(scan_mode or "SWING").upper(),
+            artifact_dir=artifact_dir,
+            memory=memory,
+        )
+        summary["scan_universe_snapshot"] = universe_snapshot_result
+        summary.setdefault("persistence_contract", {})["scan_universe_snapshots"] = bool(
+            universe_snapshot_result.get("ok")
+            and universe_snapshot_result.get("enabled")
+            and int(universe_snapshot_result.get("rows_upserted") or 0) == int(universe_snapshot_result.get("rows_built") or 0)
+            and int(universe_snapshot_result.get("rows_built") or 0) > 0
+        )
+        write_json(summary_path, summary)
+    except Exception as exc:
+        summary["scan_universe_snapshot"] = {
+            "ok": False,
+            "enabled": True,
+            "error": str(exc),
+            "target_table": "scan_universe_snapshots",
+        }
+        summary.setdefault("persistence_contract", {})["scan_universe_snapshots"] = False
+        write_json(summary_path, summary)
     return summary
 
 

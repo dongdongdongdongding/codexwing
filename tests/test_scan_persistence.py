@@ -15,7 +15,8 @@ class FakeMemory:
         return path
 
 
-def test_persist_scan_run_artifacts_writes_archive_contract(tmp_path):
+def test_persist_scan_run_artifacts_writes_archive_contract(tmp_path, monkeypatch):
+    monkeypatch.setenv("AG_SCAN_UNIVERSE_SNAPSHOT_WRITE_DB", "0")
     top_deep_path = tmp_path / "top_deep" / "RUN-WEB.json"
     top_deep_path.parent.mkdir(parents=True, exist_ok=True)
     top_deep_path.write_text("[]", encoding="utf-8")
@@ -56,6 +57,8 @@ def test_persist_scan_run_artifacts_writes_archive_contract(tmp_path):
     assert summary["manifest_paths"]["planner_handoff"].endswith("planner_handoff.json")
     assert summary["persistence_contract"]["observed_factor_snapshots"] is True
     assert summary["persistence_contract"]["scan_integrity_report"] is True
+    assert summary["persistence_contract"]["scan_universe_snapshots"] is False
+    assert summary["scan_universe_snapshot"]["reason"] == "disabled_by_env"
     assert summary["scan_integrity"]["report"]["snapshot_count"] == 1
     assert summary["portfolio_exposure_summary"]["version"] == "portfolio_exposure_v1"
     assert summary["portfolio_exposure_summary"]["candidate_count"] == 1

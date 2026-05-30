@@ -40,6 +40,28 @@ OUTCOME_COLUMNS = (
     "max_high_return_3d_pct",
     "max_high_return_5d_pct",
 )
+FEATURE_KEYS = (
+    "alpha_score",
+    "tech_score",
+    "ml_prob",
+    "prob_clean",
+    "whale_score",
+    "decision_score",
+    "day_return_pct",
+    "volume_ratio",
+    "turnover",
+    "foreigner_1d",
+    "institution_1d",
+    "retail_1d",
+    "foreigner_3d",
+    "institution_3d",
+    "retail_3d",
+    "foreigner_10d",
+    "institution_10d",
+    "retail_10d",
+    "primary_theme",
+)
+FEATURE_QUALITY_VERSION = "scan_universe_snapshot_feature_quality_v1"
 
 
 def _load_local_env() -> None:
@@ -105,6 +127,16 @@ def _safe_float(value: Any) -> float | None:
         return numeric
     except Exception:
         return None
+
+
+def _is_present(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (int, float)):
+        return _safe_float(value) is not None
+    return True
 
 
 def _safe_int(value: Any) -> int | None:
@@ -195,6 +227,64 @@ def _extract_feature_columns(row: Dict[str, Any]) -> Dict[str, Any]:
         "kr_universe_role": _first_present(row, "kr_universe_role"),
         "scanner_timeframe_profile": _first_present(row, "scanner_timeframe_profile"),
         "entry_reference_price": _feature_number(row, "entry_reference_price", "scan_entry_reference_price", "curr_price", "price"),
+    }
+
+
+def _feature_quality_payload(row: Dict[str, Any]) -> Dict[str, Any]:
+    missing = [key for key in FEATURE_KEYS if not _is_present(row.get(key))]
+    present = len(FEATURE_KEYS) - len(missing)
+    foreigner_1d = _safe_float(row.get("foreigner_1d"))
+    institution_1d = _safe_float(row.get("institution_1d"))
+    retail_1d = _safe_float(row.get("retail_1d"))
+    foreigner_3d = _safe_float(row.get("foreigner_3d"))
+    institution_3d = _safe_float(row.get("institution_3d"))
+    retail_3d = _safe_float(row.get("retail_3d"))
+    foreigner_10d = _safe_float(row.get("foreigner_10d"))
+    institution_10d = _safe_float(row.get("institution_10d"))
+    retail_10d = _safe_float(row.get("retail_10d"))
+    whale_1d = (foreigner_1d or 0.0) + (institution_1d or 0.0) if foreigner_1d is not None or institution_1d is not None else None
+    whale_3d = (foreigner_3d or 0.0) + (institution_3d or 0.0) if foreigner_3d is not None or institution_3d is not None else None
+    whale_10d = (foreigner_10d or 0.0) + (institution_10d or 0.0) if foreigner_10d is not None or institution_10d is not None else None
+    has_flow = any(value is not None for value in (foreigner_1d, institution_1d, retail_1d, foreigner_3d, institution_3d, retail_3d))
+    flow_consensus = None
+    if whale_1d is not None and whale_3d is not None:
+        flow_consensus = whale_1d > 0 and whale_3d > 0
+    retail_dominant = None
+    if retail_1d is not None and whale_1d is not None:
+        retail_dominant = retail_1d > 0 and whale_1d < 0
+    dominant = None
+    contenders = {
+        "foreigner": foreigner_1d,
+        "institution": institution_1d,
+        "retail": retail_1d,
+    }
+    contenders = {key: value for key, value in contenders.items() if value is not None}
+    if contenders:
+        dominant = max(contenders, key=lambda key: abs(float(contenders[key] or 0.0)))
+    whale_trend = None
+    if whale_1d is not None and whale_3d is not None:
+        if whale_1d > 0 and whale_3d > 0:
+            whale_trend = "accumulation"
+        elif whale_1d < 0 and whale_3d < 0:
+            whale_trend = "distribution"
+        else:
+            whale_trend = "mixed"
+    return {
+        "feature_coverage_score": round(present / len(FEATURE_KEYS), 6),
+        "feature_missing_keys": missing,
+        "has_actual_flow": has_flow,
+        "normalized_feature_version": FEATURE_QUALITY_VERSION,
+        "whale_flow_1d": whale_1d,
+        "whale_flow_3d": whale_3d,
+        "whale_flow_10d": whale_10d,
+        "flow_consensus_buying": flow_consensus,
+        "retail_dominant": retail_dominant,
+        "dominant": dominant,
+        "whale_trend": whale_trend,
+        "flow_source": "scan_universe_snapshot" if has_flow else None,
+        "flow_unit": "source_units" if has_flow else None,
+        "flow_asof": row.get("base_trade_date") if has_flow else None,
+        "flow_warnings": [] if has_flow else ["investor_flow_missing_in_scan_archive"],
     }
 
 
@@ -408,6 +498,7 @@ def build_snapshot_rows(
                 "backfill_version": BACKFILL_VERSION,
             }
             row.update(_extract_feature_columns(source_row))
+            row.update(_feature_quality_payload(row))
             row = _apply_outcome(row, realized_index.get((run_id, ticker)))
             rows.append(_json_safe(row))
             pass_count += 1
@@ -453,6 +544,7 @@ def build_snapshot_rows(
                 "backfill_version": BACKFILL_VERSION,
             }
             row.update(_extract_feature_columns(terminal))
+            row.update(_feature_quality_payload(row))
             row = _apply_outcome(row, reject_outcome_index.get((run_id, ticker)))
             rows.append(_json_safe(row))
             reject_count += 1
@@ -526,6 +618,21 @@ def write_local_outputs(rows: List[Dict[str, Any]], csv_path: Path, report_path:
         "kr_universe_role",
         "scanner_timeframe_profile",
         "entry_reference_price",
+        "feature_coverage_score",
+        "feature_missing_keys",
+        "has_actual_flow",
+        "normalized_feature_version",
+        "whale_flow_1d",
+        "whale_flow_3d",
+        "whale_flow_10d",
+        "flow_source",
+        "flow_unit",
+        "flow_asof",
+        "flow_warnings",
+        "flow_consensus_buying",
+        "retail_dominant",
+        "dominant",
+        "whale_trend",
         "return_1d_pct",
         "return_3d_pct",
         "return_5d_pct",
@@ -592,11 +699,19 @@ def upsert_supabase(rows: List[Dict[str, Any]], *, batch_size: int) -> int:
     upserted = 0
     now_ts = datetime.now(timezone.utc).isoformat()
     for start in range(0, len(rows), max(1, int(batch_size))):
-        batch = []
-        for row in rows[start:start + max(1, int(batch_size))]:
+        source_batch = rows[start:start + max(1, int(batch_size))]
+        batch_keys = set()
+        filtered_rows = []
+        for row in source_batch:
             payload = dict(row)
             payload["updated_at"] = now_ts
-            batch.append(_json_safe(payload))
+            if hasattr(db, "_filter_payload_to_existing_columns"):
+                payload = db._filter_payload_to_existing_columns(TARGET_TABLE, payload)
+            filtered_rows.append(payload)
+            batch_keys.update(payload.keys())
+        batch = []
+        for payload in filtered_rows:
+            batch.append(_json_safe({key: payload.get(key) for key in sorted(batch_keys)}))
         db.client.table(TARGET_TABLE).upsert(batch, on_conflict="snapshot_key").execute()
         upserted += len(batch)
         print(f"[INFO] upserted {upserted}/{len(rows)} into {TARGET_TABLE}", flush=True)

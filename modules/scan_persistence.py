@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -43,6 +44,80 @@ def _artifact_manifest(bridge_info: Dict[str, Any] | None) -> Dict[str, Any]:
     if info.get("shared_working_dir"):
         manifest["shared_working_dir"] = str(info.get("shared_working_dir"))
     return manifest
+
+
+def _env_enabled(name: str, default: str = "1") -> bool:
+    value = os.getenv(name, default)
+    return str(value).strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _persist_scan_universe_snapshot(
+    *,
+    run_id: str,
+    market: str,
+    scan_mode: str,
+    artifact_dir: Path,
+    memory: MemoryManager,
+) -> Dict[str, Any]:
+    """Upsert one completed KR run into scan_universe_snapshots.
+
+    Future returns are intentionally left NULL at scan time. They are filled by
+    the outcome/return backfill after enough forward trading days exist.
+    """
+
+    market_key = str(market or "").upper()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {"ok": True, "enabled": False, "reason": "non_kr_market", "rows_built": 0, "rows_upserted": 0}
+    if not _env_enabled("AG_SCAN_UNIVERSE_SNAPSHOT_WRITE_DB", "1"):
+        return {"ok": True, "enabled": False, "reason": "disabled_by_env", "rows_built": 0, "rows_upserted": 0}
+
+    try:
+        from multi_agent.tools.backfill_scan_universe_snapshots import (
+            DEFAULT_REJECT_OUTCOME_CSV,
+            build_snapshot_rows,
+            upsert_supabase,
+        )
+
+        reject_outcome_csv = Path(os.getenv("AG_REJECT_OUTCOME_CSV") or DEFAULT_REJECT_OUTCOME_CSV)
+        rows, summary = build_snapshot_rows(
+            artifact_dir=artifact_dir.parent,
+            shared_dir=memory.root / "shared_working",
+            reject_outcome_csv=reject_outcome_csv,
+            limit_runs=1,
+            market_filter=market_key,
+            scan_mode_filter=str(scan_mode or "SWING").upper(),
+        )
+        run_rows = [row for row in rows if str(row.get("run_id") or "") == run_id]
+        if not run_rows:
+            return {
+                "ok": False,
+                "enabled": True,
+                "reason": "no_run_rows_built",
+                "rows_built": 0,
+                "rows_upserted": 0,
+                "builder_summary": summary,
+            }
+        batch_size = _safe_int(os.getenv("AG_SCAN_UNIVERSE_SNAPSHOT_BATCH_SIZE"), 500)
+        rows_upserted = upsert_supabase(run_rows, batch_size=max(1, batch_size))
+        return {
+            "ok": rows_upserted == len(run_rows),
+            "enabled": True,
+            "rows_built": len(run_rows),
+            "rows_upserted": rows_upserted,
+            "emitted_rows": sum(1 for row in run_rows if row.get("row_role") == "emitted"),
+            "rejected_rows": sum(1 for row in run_rows if row.get("row_role") == "rejected"),
+            "target_table": "scan_universe_snapshots",
+            "builder_version": summary.get("version"),
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "enabled": True,
+            "error": str(exc),
+            "rows_built": 0,
+            "rows_upserted": 0,
+            "target_table": "scan_universe_snapshots",
+        }
 
 
 def persist_scan_run_artifacts(
@@ -160,8 +235,24 @@ def persist_scan_run_artifacts(
             "observed_factor_snapshots": bool(integrity_result.get("ok")),
             "scan_integrity_report": bool(integrity_result.get("ok")),
             "top_deep_local": bool(top_deep_reports.get("local_path") and Path(str(top_deep_reports.get("local_path"))).exists()),
+            "scan_universe_snapshots": False,
         },
     }
+    write_json(summary_path, summary)
+    universe_snapshot_result = _persist_scan_universe_snapshot(
+        run_id=run_id,
+        market=market,
+        scan_mode=scan_mode,
+        artifact_dir=artifact_dir,
+        memory=memory,
+    )
+    summary["scan_universe_snapshot"] = universe_snapshot_result
+    summary["persistence_contract"]["scan_universe_snapshots"] = bool(
+        universe_snapshot_result.get("ok")
+        and universe_snapshot_result.get("enabled")
+        and int(universe_snapshot_result.get("rows_upserted") or 0) == int(universe_snapshot_result.get("rows_built") or 0)
+        and int(universe_snapshot_result.get("rows_built") or 0) > 0
+    )
     write_json(summary_path, summary)
     return {
         "ok": raw_path.exists() and summary_path.exists(),
