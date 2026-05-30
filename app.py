@@ -30,11 +30,9 @@ from modules.scan_policy import (
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
-from modules.next_day_explosive_radar import build_next_day_radar_records
+from modules.scan_universe_admission import build_scan_universe_admission_records, admission_model_summary
 from modules.ui_helpers import (
     BackgroundScanState,
-    build_kr_shadow_gate_records,
-    build_top5_plus_exception_records,
     build_signal_display_rows,
     build_watchlist_display_rows,
     compute_progress_fraction,
@@ -1457,8 +1455,8 @@ if active_main_tab == "🚀 스캐너":
     _render_section_intro(
         "Scanner",
         "전종목 자동 스캔",
-        "시장과 모드만 고르고 큰 버튼 한 번이면 바로 스캔이 시작됩니다. Top 5 후보가 가장 위에, 추가 후보는 그 아래에 나옵니다.",
-        ["Top 5 focus", "Market-aware gate", "Shared trace output"],
+        "시장과 모드만 고르고 큰 버튼 한 번이면 바로 스캔이 시작됩니다. 운영 후보는 신규 admission 모델 통과 여부로 표시합니다.",
+        ["Admission model", "Market-aware gate", "Shared trace output"],
     )
 
     # Row 1: 시장 (좌) · 모드 (우) — 두 핵심 결정만
@@ -2648,14 +2646,7 @@ if active_main_tab == "📚 아카이브":
                     _day_df['현재 수익률(%)'] = _day_df['ticker'].map(_curr_perf_map)
 
                 st.divider()
-                # 스캐너 결과와 동일하게 Top5 메인 + Exception Leader 추가 후보를 분리 표시.
-                _archive_groups = build_top5_plus_exception_records(
-                    _archive_records,
-                    _archive_planner_payload,
-                    top_limit=5,
-                    exception_limit=5,
-                )
-                _archive_shadow_groups = build_kr_shadow_gate_records(_archive_records, _archive_planner_payload, limit=5)
+                # 운영 화면은 신규 scan-universe admission 모델만 노출한다.
                 _archive_market_key = str(((_archive_planner_payload or {}).get("run_context") or {}).get("market") or "").upper()
                 if _archive_market_key not in {"KOSPI", "KOSDAQ"} and "market" in _day_df.columns:
                     _archive_markets = [
@@ -2671,88 +2662,39 @@ if active_main_tab == "📚 아카이브":
                         _archive_market_key = "KOSPI"
                     elif _archive_tickers and all(ticker.endswith(".KQ") for ticker in _archive_tickers if ticker):
                         _archive_market_key = "KOSDAQ"
-                _archive_shadow_records = (
-                    _archive_shadow_groups["kosdaq"]
-                    if _archive_market_key == "KOSDAQ"
-                    else _archive_shadow_groups["kospi"]
-                    if _archive_market_key == "KOSPI"
-                    else _archive_shadow_groups["combined"]
-                )
-                _archive_operating_records = (
-                    _archive_shadow_groups["kosdaq_operating"]
-                    if _archive_market_key == "KOSDAQ"
-                    else _archive_shadow_groups["kospi_operating"]
-                    if _archive_market_key == "KOSPI"
-                    else _archive_shadow_groups["operating"]
-                )
-                _archive_operating_sections = {"KOSPI Operating Challenger", "KOSDAQ Operating Challenger"}
-                _archive_shadow_records = [
-                    row
-                    for row in _archive_shadow_records
-                    if str(row.get("_analysis_section") or "") not in _archive_operating_sections
-                ]
-                _archive_operating = build_signal_display_rows(_archive_operating_records, limit=5)
-                _archive_shadow = build_signal_display_rows(_archive_shadow_records, limit=5)
-                _archive_radar = build_signal_display_rows(build_next_day_radar_records(_archive_records, limit=5), limit=5)
-                _archive_practical = build_signal_display_rows(_archive_groups.get("practical", []), limit=5)
-                _archive_top5 = build_signal_display_rows(_archive_groups["top5"], limit=5)
-                _archive_exception = build_signal_display_rows(_archive_groups["exception_leaders"], limit=5)
-
-                st.markdown("### 실전 우선 Top 후보")
-                st.caption("Practical 80 Gate를 통과한 후보입니다. 같은 종목은 자동 정밀분석에서 최상단 섹션으로 우선 표시합니다.")
-                if _archive_practical:
-                    _render_signal_card_list(_archive_practical, empty_text="실전 우선 후보 없음.")
+                if _archive_market_key in {"KOSPI", "KOSDAQ"}:
+                    try:
+                        _archive_admission = build_scan_universe_admission_records(
+                            enrich_signal_rows_with_planner_trace(_archive_records, _archive_planner_payload),
+                            market=_archive_market_key,
+                            limit=5,
+                            include_near_miss=True,
+                        )
+                        _archive_summary = _archive_admission.get("summary") or admission_model_summary(_archive_market_key)
+                        _archive_validation = _archive_summary.get("validation") if isinstance(_archive_summary.get("validation"), dict) else {}
+                        _archive_pass = build_signal_display_rows(_archive_admission.get("passed", []), limit=1)
+                        _archive_near = build_signal_display_rows(_archive_admission.get("near_miss", []), limit=5)
+                        st.markdown("### 신규 운영 모델")
+                        _model_cols = st.columns(5)
+                        _model_cols[0].metric("모델", str(_archive_summary.get("model_name") or "-"))
+                        _model_cols[1].metric("기준", f"{float(_archive_summary.get('prob_threshold_pct') or 0.0):.1f}%")
+                        _model_cols[2].metric("1D", f"{float(_archive_validation.get('win_1d_pct') or 0.0):.1f}%")
+                        _model_cols[3].metric("3D", f"{float(_archive_validation.get('win_3d_pct') or 0.0):.1f}%")
+                        _model_cols[4].metric("5D", f"{float(_archive_validation.get('win_5d_pct') or 0.0):.1f}%")
+                        st.caption(
+                            f"{_archive_summary.get('label')} · {_archive_summary.get('selection_rule')} · "
+                            f"최저5D {_archive_validation.get('min_5d_pct', '-')}% / 최고5D {_archive_validation.get('max_5d_pct', '-')}% / "
+                            f"표본 n={_archive_validation.get('n', '-')}"
+                        )
+                        st.markdown("### 운영 통과 후보")
+                        _render_signal_card_list(_archive_pass, empty_text="해당 run의 신규 모델 통과 후보 없음.")
+                        st.markdown("### 기준 미달 상위 후보")
+                        st.caption("승격 후보가 아니라 모델 확률 확인용입니다.")
+                        _render_signal_card_list(_archive_near, empty_text="기준 미달 상위 후보 없음.")
+                    except Exception as _archive_model_exc:
+                        st.error(f"신규 admission 모델 표시 실패: {_archive_model_exc}")
                 else:
-                    st.info("실전 우선 후보 없음.")
-
-                if _archive_market_key == "KOSDAQ":
-                    st.markdown("### KOSDAQ 운영 챌린저")
-                    st.caption("기존 KOSDAQ Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. 손실경로 리스크는 카드의 경고/손절 기준으로 계속 추적합니다.")
-                    _render_signal_card_list(_archive_operating, empty_text="KOSDAQ 운영 챌린저 조건 통과 후보 없음.")
-                    st.markdown("### KOSDAQ Shadow 관찰")
-                    st.caption("운영 챌린저와 분리된 검증 관찰 섹션입니다. 운영 교체 후보가 아니라 추적/비교 대상으로 봅니다.")
-                    _render_signal_card_list(_archive_shadow, empty_text="KOSDAQ Shadow 조건 통과 후보 없음.")
-                    _render_exit_policy_watch_panel(_archive_market_key)
-                elif _archive_market_key == "KOSPI":
-                    st.markdown("### KOSPI 운영 챌린저")
-                    st.caption("기존 KOSPI Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. stop5 초과 리스크는 백그라운드 검증으로 계속 줄입니다.")
-                    _render_signal_card_list(_archive_operating, empty_text="KOSPI 운영 챌린저 조건 통과 후보 없음.")
-                    st.markdown("### KOSPI Shadow 관찰")
-                    st.caption("운영 챌린저와 분리된 검증 관찰 섹션입니다. 운영 교체 후보가 아니라 추적/비교 대상으로 봅니다.")
-                    _render_signal_card_list(_archive_shadow, empty_text="KOSPI Shadow 조건 통과 후보 없음.")
-                    _render_exit_policy_watch_panel(_archive_market_key)
-
-                st.markdown("### 별도 급등 레이더")
-                st.caption("익일 +5%/+10% 급등 포착 전용 shadow-only 관찰 섹션입니다. Top5/Exception을 대체하지 않습니다.")
-                _render_signal_card_list(_archive_radar, empty_text="별도 급등 레이더 후보 없음.")
-
-                st.markdown(f"### 메인 Top 5 - {_selected_date}")
-                st.caption("기존 서비스 기준의 메인 후보입니다. Exception Leader는 아래 별도 추가 후보로 분리합니다.")
-                if _archive_top5:
-                    _render_signal_card_list(_archive_top5, empty_text="Top5 후보 없음.")
-                else:
-                    st.info("Top5 후보 없음.")
-
-                st.markdown("### Exception Leader 추가 후보")
-                if _archive_exception:
-                    _render_signal_card_list(_archive_exception, empty_text="Exception Leader 후보 없음.")
-                else:
-                    st.info("Exception Leader 후보 없음.")
-
-                st.divider()
-                with st.expander("📋 기타 후보 (Top 5 외)", expanded=False):
-                    _seen_tickers = {
-                        str(r.get("ticker") or "") for r in (_archive_top5 + _archive_exception)
-                    }
-                    _other_records = [
-                        r for r in _archive_records
-                        if str(r.get("ticker") or "") not in _seen_tickers
-                    ]
-                    _archive_other_rows = build_signal_display_rows(_other_records)
-                    if _archive_other_rows:
-                        _render_signal_card_list(_archive_other_rows)
-                    else:
-                        st.info("Top 5 외에 추가 종목이 없습니다.")
+                    st.info("신규 admission 모델은 KOSPI/KOSDAQ 아카이브에만 적용됩니다.")
 
                 _perf_col = None
                 if 'max_high_return_5d_pct' in _day_df.columns:

@@ -229,7 +229,7 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     embeds = build_top_deep_embeds()
 
     assert status["fields"][3]["value"] == "RUN-TEST"
-    assert embeds[0]["title"] == "Challenger + Practical + Shadow + Top5 + Exception 자동 정밀분석"
+    assert embeds[0]["title"] == "Scan Universe Admission 자동 정밀분석"
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
     assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
     assert "정책: kr_scanner_policy_test · production_champion" in embeds[0]["fields"][0]["value"]
@@ -310,8 +310,8 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
 
     assert "RUN-OLD" in runs["fields"][0]["name"]
     assert run_id_choices(current="OLD") == ["RUN-OLD"]
-    assert "정책 kr_scanner_policy_old" in archive_top["fields"][0]["value"]
-    assert "5D기대점수 64.0" in archive_top["fields"][0]["value"]
+    assert "정책 scan_universe_admission_runtime_v1" in archive_top["fields"][0]["value"]
+    assert "Admission" in archive_top["fields"][0]["value"]
     assert "SK하이닉스" in archive["fields"][0]["name"]
     assert "삼성전자" in top_deep[0]["fields"][0]["name"]
 
@@ -338,7 +338,7 @@ def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_pa
     archive = build_archive_embed(market="KOSDAQ")
 
     assert "RUN-RAW" in archive["description"]
-    assert "shadow_plus_top5_exception" in archive["description"]
+    assert "scan_universe_admission" in archive["description"]
     assert "JYP Ent." in archive["fields"][0]["name"]
 
 
@@ -400,8 +400,8 @@ def test_archive_embed_includes_profile_only_exception_leaders(tmp_path, monkeyp
 
     archive = build_archive_embed(run_id="RUN-PROFILE", limit=10)
 
-    assert "rows 2" in archive["description"]
-    assert any("SK" in field["name"] for field in archive["fields"])
+    assert "rows 1" in archive["description"]
+    assert any("삼성전자" in field["name"] for field in archive["fields"])
 
 
 def test_scan_ack_refuses_execution_while_dry_run():
@@ -549,8 +549,8 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
 
     assert embeds[0]["title"] == "KOSPI 전체 스캔 결과"
     assert embeds[0]["fields"][0]["value"] == "RUN-DISCORD"
-    assert any(field["name"] == "Live Policy Validation" for field in embeds[0]["fields"])
-    assert embeds[1]["title"] == "Challenger + Practical + Shadow + Top5 + Exception 자동 정밀분석"
+    assert any(field["name"] == "Scan Universe Admission" for field in embeds[0]["fields"])
+    assert embeds[1]["title"] == "Scan Universe Admission 자동 정밀분석"
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
 
 
@@ -624,9 +624,9 @@ def test_scan_result_renderer_clarifies_zero_pass_exception_only(monkeypatch, tm
     assert embeds[0]["color"] == 0xF1C40F
     assert any(field["name"] == "Market Gate" for field in embeds[0]["fields"])
     warnings_field = next(field for field in embeds[0]["fields"] if field["name"] == "Warnings")
-    assert "Top5 통과 후보 0개" in warnings_field["value"]
+    assert "신규 admission 모델" in warnings_field["value"]
     assert "운영 상태" == embeds[1]["fields"][0]["name"]
-    assert "Exception Leader는 추가 관찰 후보" in embeds[1]["fields"][0]["value"]
+    assert "Admission 0 / NearMiss 0" in embeds[1]["fields"][0]["value"]
 
 
 def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_path):
@@ -678,7 +678,7 @@ def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_pa
     fields = [
         field
         for embed in embeds
-        if embed["title"] == "Challenger + Practical + Shadow + Top5 + Exception 자동 정밀분석"
+        if embed["title"] == "Scan Universe Admission 자동 정밀분석"
         for field in embed["fields"]
     ]
     candidate_fields = [field for field in fields if field["name"] != "데이터 무결성"]
@@ -730,7 +730,7 @@ def test_scan_result_renderer_does_not_truncate_split_top_deep_pages(monkeypatch
     fields = [
         field
         for embed in embeds
-        if embed["title"] == "Challenger + Practical + Shadow + Top5 + Exception 자동 정밀분석"
+        if embed["title"] == "Scan Universe Admission 자동 정밀분석"
         for field in embed["fields"]
     ]
     candidate_fields = [field for field in fields if field["name"] != "데이터 무결성"]

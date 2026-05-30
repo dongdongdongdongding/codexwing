@@ -7,23 +7,16 @@ candidate cockpit UI and reusable signal-card list.
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, List
 
 import streamlit as st
 
-from modules.next_day_explosive_radar import build_next_day_radar_records
+from modules.scan_universe_admission import build_scan_universe_admission_records, admission_model_summary
 from modules.ui_helpers import (
-    build_operating_challenger_gate_diagnostics,
-    build_live_cockpit_summary,
-    build_kr_shadow_gate_records,
     build_signal_display_rows,
-    build_top5_plus_exception_records,
-    build_top_candidate_compact_view,
     enrich_signal_rows_with_planner_trace,
     merge_profile_exception_leaders_into_planner,
-    sort_signal_rows_by_planner_rank,
 )
 
 
@@ -39,15 +32,6 @@ def _load_json_safe(path_str: str | None) -> Dict[str, Any]:
         return payload if isinstance(payload, dict) else {}
     except Exception:
         return {}
-
-
-def _fmt_pct_or_dash(value: Any) -> str:
-    if value is None or value == "":
-        return "-"
-    try:
-        return f"{float(value):.1f}"
-    except Exception:
-        return "-"
 
 
 def _fmt_score_or_dash(value: Any) -> str:
@@ -125,6 +109,11 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         radar_score = row.get("next_day_radar_score")
         radar_plus5 = row.get("next_day_plus5_prob")
         radar_plus10 = row.get("next_day_plus10_prob")
+        admission_model_name = str(row.get("admission_model_name") or "")
+        admission_probability = row.get("admission_probability_pct")
+        admission_threshold = row.get("admission_threshold_pct")
+        admission_rule = str(row.get("admission_selection_rule") or "")
+        admission_coverage = row.get("admission_feature_coverage")
         candidate_5d_prob = row.get("realized_expectancy_5d_prob")
         base_ev_5d = row.get("base_expected_value_5d_pct")
         stress_ev_5d = row.get("stress_expected_value_5d_pct")
@@ -163,6 +152,13 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                         st.caption("레이더 근거 " + " / ".join(radar_reasons[:4]))
                     if radar_missing:
                         st.caption("미확보 피처 " + " / ".join(radar_missing[:3]))
+                if admission_model_name:
+                    st.caption(
+                        f"신규 모델 {admission_model_name} · 확률 {_fmt_metric_pct_or_dash(admission_probability)} "
+                        f"/ 기준 {_fmt_metric_pct_or_dash(admission_threshold)} · {admission_rule}"
+                    )
+                    if admission_coverage is not None:
+                        st.caption(f"피처 커버리지 {_fmt_metric_pct_or_dash(float(admission_coverage) * 100.0)}")
                 if action_label != "-":
                     action_line = f"액션 {action_label}"
                     if action_condition:
@@ -205,11 +201,12 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     st.caption(subtitle)
             with cols[2]:
                 st.metric(
-                    "구간 적중률",
+                    "검증 5D승률" if admission_model_name else "구간 적중률",
                     str(row.get("accuracy") or "-"),
                     help=(
-                        "이 등급/시장/스캔모드의 historical OOS win rate (5d hold). "
-                        "후보별 확률이 아니라 segment 단위 통계입니다."
+                        "신규 admission 모델의 선택 규칙 기준 OOS 5D win rate입니다."
+                        if admission_model_name
+                        else "이 등급/시장/스캔모드의 historical OOS win rate (5d hold). 후보별 확률이 아니라 segment 단위 통계입니다."
                     ),
                 )
             with cols[3]:
@@ -222,273 +219,79 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                 st.metric("전일비", str(row.get("day_change") or "-"), day_delta)
 
 
-def render_operating_gate_diagnostics(rows: List[Dict[str, Any]], *, market: str) -> None:
-    diagnostics = build_operating_challenger_gate_diagnostics(rows, market=market, limit=5)
-    if not diagnostics:
-        st.caption("운영 게이트 근접도를 계산할 후보 데이터가 없습니다.")
-        return
-    st.markdown("#### 운영 게이트 근접도")
-    st.caption(
-        "통과 후보가 없을 때도 후보별 조건 충족률을 표시합니다. "
-        "이 %는 승률 보장이 아니라 현재 운영 챌린저 조건의 충족률입니다."
-    )
-    for item in diagnostics:
-        pct = float(item.get("completion_pct") or 0.0)
-        passed = int(item.get("passed_count") or 0)
-        total = int(item.get("total_count") or 0)
-        failed = [cond for cond in item.get("conditions", []) if not cond.get("passed")]
-        passed_items = [cond for cond in item.get("conditions", []) if cond.get("passed")]
-        with st.container(border=True):
-            cols = st.columns([1.15, 0.9, 2.8], vertical_alignment="center")
-            with cols[0]:
-                st.markdown(f"**{item.get('ticker') or '-'}**")
-                if item.get("name"):
-                    st.caption(str(item.get("name")))
-            with cols[1]:
-                st.metric("충족률", f"{pct:.1f}%")
-                st.caption(f"{passed}/{total} 조건")
-            with cols[2]:
-                st.progress(max(0.0, min(1.0, pct / 100.0)))
-                if passed_items:
-                    st.caption("충족: " + " / ".join(str(cond.get("label")) for cond in passed_items[:4]))
-                if failed:
-                    failed_text = " / ".join(
-                        f"{cond.get('label')} {cond.get('actual')} vs {cond.get('threshold')}"
-                        for cond in failed[:4]
-                    )
-                    st.caption("부족/미확보: " + failed_text)
-
-
 def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | None, market: str) -> None:
-    # 2026-05-09: 8:2 자본 배분에 따라 카드를 두 섹션으로 분리.
-    # Stream A (안전 80%) = PRIORITY/WATCHLIST/OBSERVE 위주
-    # Stream B (급등 20%) = EXCEPTION_LEADER만
+    """Render production scan candidates with the scan-universe admission model.
+
+    The previous Top5/Exception/Shadow sections remain in historical artifacts,
+    but live operation now exposes only the promoted admission model plus
+    threshold-near diagnostics.
+    """
     planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
     profile_payload = _load_json_safe(bridge_info.get("profile_diagnostics")) if isinstance(bridge_info, dict) else {}
     planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
     raw_score_records = results_df.to_dict("records")
-    enriched_records = enrich_signal_rows_with_planner_trace(
-        raw_score_records,
-        planner_payload,
-    )
-    raw_records = sort_signal_rows_by_planner_rank(enriched_records, planner_payload)
-    groups = build_top5_plus_exception_records(
-        raw_score_records,
-        planner_payload,
-        top_limit=5,
-        exception_limit=5,
-    )
-    practical_records = groups.get("practical", [])
-    stream_a_records = groups["top5"]
-    stream_b_records = groups["exception_leaders"]
-    display_records = groups["combined"]
-    shadow_groups = build_kr_shadow_gate_records(raw_score_records, planner_payload, limit=5)
-    market_key = str(market or "").upper()
-    shadow_records = shadow_groups["kosdaq" if market_key == "KOSDAQ" else "kospi"]
-    operating_records = shadow_groups["kosdaq_operating" if market_key == "KOSDAQ" else "kospi_operating"]
-    operating_sections = {"KOSPI Operating Challenger", "KOSDAQ Operating Challenger"}
-    shadow_records = [
-        row
-        for row in shadow_records
-        if str(row.get("_analysis_section") or "") not in operating_sections
-    ]
-    radar_records = build_next_day_radar_records(raw_score_records, limit=5)
+    enriched_records = enrich_signal_rows_with_planner_trace(raw_score_records, planner_payload)
+    market_key = str(market or "").upper().strip()
 
-    practical_rows = build_signal_display_rows(practical_records, limit=5)
-    operating_rows = build_signal_display_rows(operating_records, limit=5)
-    stream_a_rows = build_signal_display_rows(stream_a_records, limit=5)
-    stream_b_rows = build_signal_display_rows(stream_b_records, limit=5)
-    shadow_rows = build_signal_display_rows(shadow_records, limit=5)
-    radar_rows = build_signal_display_rows(radar_records, limit=5)
-    cockpit = build_live_cockpit_summary(
-        stream_a_rows,
-        stream_b_rows,
-        market=market,
-        strict_quality_gate=str(os.getenv("AG_STRICT_SCAN_QUALITY_GATE", "1")).strip().lower()
-        not in {"0", "", "false", "no", "off"},
-    )
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        st.markdown("### 스캔 후보")
+        st.caption("국장 admission 모델은 KOSPI/KOSDAQ 전용입니다. 해외 시장은 원본 스캔 후보를 진단용으로 표시합니다.")
+        render_signal_card_list(build_signal_display_rows(enriched_records[:5], limit=5), empty_text="표시할 후보 없음.")
+        return
 
-    st.markdown("### 운영 콕핏")
-    cockpit_cols = st.columns(5)
-    cockpit_cols[0].metric("실행 후보", f"{cockpit['actionable_count']}")
-    cockpit_cols[1].metric("Stream A", f"{cockpit['stream_a_count']}")
-    cockpit_cols[2].metric("Stream B", f"{cockpit['stream_b_count']}")
-    cockpit_cols[3].metric("데이터 게이트", cockpit["quality_gate"])
-    cockpit_cols[4].metric("검증 승률", cockpit["validated_win"])
-    st.caption(
-        f"{cockpit['market']} live policy: {cockpit['policy']} | "
-        f"5D target return: {cockpit['validated_return']} | {cockpit['sample']} | "
-        f"{cockpit.get('quality_scope', '-')}"
-    )
-    if not cockpit.get("validation_pass"):
-        st.warning(
-            "현재 라이브 정책은 최신 검증 기준을 완전히 통과하지 못했습니다. "
-            "후보는 표시하되, 액션/손절/수급 확인을 우선하세요."
+    try:
+        admission = build_scan_universe_admission_records(
+            enriched_records,
+            market=market_key,
+            limit=5,
+            include_near_miss=True,
         )
+        summary = admission.get("summary") if isinstance(admission.get("summary"), dict) else admission_model_summary(market_key)
+    except Exception as exc:
+        st.error(f"신규 admission 모델 로드/추론 실패: {exc}")
+        return
 
-    st.markdown("### 실전 우선 Top 후보")
+    validation = summary.get("validation") if isinstance(summary.get("validation"), dict) else {}
+    pass_rows = build_signal_display_rows(admission.get("passed", []), limit=summary.get("topn") or 1)
+    near_rows = build_signal_display_rows(admission.get("near_miss", []), limit=5)
+
+    st.markdown("### 신규 운영 모델")
+    cols = st.columns(6)
+    cols[0].metric("모델", str(summary.get("model_name") or "-"))
+    cols[1].metric("운영 기준", f"{float(summary.get('prob_threshold_pct') or 0.0):.1f}%")
+    cols[2].metric("검증 1D", _fmt_metric_pct_or_dash(validation.get("win_1d_pct")), _fmt_metric_pct_or_dash(validation.get("avg_1d_pct")))
+    cols[3].metric("검증 3D", _fmt_metric_pct_or_dash(validation.get("win_3d_pct")), _fmt_metric_pct_or_dash(validation.get("avg_3d_pct")))
+    cols[4].metric("검증 5D", _fmt_metric_pct_or_dash(validation.get("win_5d_pct")), _fmt_metric_pct_or_dash(validation.get("avg_5d_pct")))
+    cols[5].metric("표본", f"n={validation.get('n') or '-'}", f"{validation.get('active_days') or '-'}일")
     st.caption(
-        "Top5/Exception 중 스캔 시점 피처만으로 Practical 80 Gate를 통과한 후보입니다. "
-        "정밀분석과 디스코드에서도 최상단 섹션으로 분리하며, 동일 종목은 아래 섹션에서 중복 정밀분석하지 않습니다."
+        f"{summary.get('market')} · {summary.get('label')} · {summary.get('feature_set')} · "
+        f"{summary.get('selection_rule')} · 최저5D {_fmt_metric_pct_or_dash(validation.get('min_5d_pct'))} / "
+        f"최고5D {_fmt_metric_pct_or_dash(validation.get('max_5d_pct'))} / "
+        f"bad-path {_fmt_metric_pct_or_dash(validation.get('bad_path_pct'))}"
     )
-    if practical_rows:
-        render_signal_card_list(practical_rows, empty_text="실전 우선 후보 없음.")
+
+    st.markdown("### 운영 통과 후보")
+    st.caption("검증된 selection rule 기준으로 run당 최대 1개만 승격합니다. 이 섹션만 운영 후보로 봅니다.")
+    if pass_rows:
+        render_signal_card_list(pass_rows, empty_text="운영 통과 후보 없음.")
     else:
-        st.info("실전 우선 후보 없음 - 이번 스캔은 운영 챌린저/Shadow/Top5/Exception을 조건부로 확인하세요.")
+        st.warning("이번 스캔은 신규 모델 운영 기준을 통과한 후보가 없습니다.")
 
-    if market_key == "KOSDAQ":
-        st.markdown("### KOSDAQ 운영 챌린저")
-        st.caption(
-            "기존 KOSDAQ Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. "
-            "손실경로 리스크는 카드의 경고/손절 기준으로 계속 추적합니다."
-        )
-        render_signal_card_list(operating_rows, empty_text="KOSDAQ 운영 챌린저 조건 통과 후보 없음.")
-        if not operating_rows:
-            render_operating_gate_diagnostics(raw_records, market=market_key)
-        st.markdown("### KOSDAQ Shadow 관찰")
-        st.caption(
-            "Ordered rebound 조건과 Low-loss theme 조건을 별도 섹션명으로 분리합니다. "
-            "운영 챌린저와 분리된 검증 관찰 섹션입니다."
-        )
-        render_signal_card_list(shadow_rows, empty_text="KOSDAQ shadow 관찰 조건 통과 후보 없음.")
-    elif market_key == "KOSPI":
-        st.markdown("### KOSPI 운영 챌린저")
-        st.caption(
-            "기존 KOSPI Top5/Exception보다 우선 확인하는 챌린저 섹션입니다. "
-            "stop5 초과 리스크는 백그라운드 검증으로 계속 줄입니다."
-        )
-        render_signal_card_list(operating_rows, empty_text="KOSPI 운영 챌린저 조건 통과 후보 없음.")
-        if not operating_rows:
-            render_operating_gate_diagnostics(raw_records, market=market_key)
-        st.markdown("### KOSPI Shadow 관찰")
-        st.caption("운영 챌린저와 분리된 검증 관찰 섹션입니다.")
-        render_signal_card_list(shadow_rows, empty_text="KOSPI Shadow 조건 통과 후보 없음.")
+    st.markdown("### 기준 미달 상위 후보")
+    st.caption("매수 후보가 아니라 모델 확률 진단용입니다. 확률이 운영 기준을 넘기 전까지 승격하지 않습니다.")
+    render_signal_card_list(near_rows, empty_text="기준 미달 상위 후보도 없습니다.")
 
-    st.markdown("### 별도 급등 레이더")
-    st.caption(
-        "익일 +5%/+10% 급등 포착만 별도로 보는 shadow-only 레이더입니다. "
-        "운영 Top5/Exception을 대체하지 않으며 검증 리포트가 기준선을 이길 때만 승격 검토합니다."
-    )
-    render_signal_card_list(radar_rows, empty_text="별도 급등 레이더 후보 없음.")
-
-    st.markdown("### 메인 Top 5")
-    st.caption(
-        "원본 스캐너 기준의 Top5 감사 섹션입니다. 운영 챌린저/Practical 이후 비교 확인하고, "
-        "Exception Leader는 아래 별도 카드에서 추가 확인합니다."
-    )
-    if stream_a_rows:
-        render_signal_card_list(stream_a_rows, empty_text="Top5 후보 없음.")
-    else:
-        st.info("Top5 후보 없음 - 게이트가 모두 demote.")
-
-    st.markdown("### Exception Leader 추가 후보")
-    st.caption(
-        "Top5를 대체하지 않는 별도 고변동 후보입니다. 있으면 Top5 아래에서 같은 카드 형식으로 확인하고, "
-        "자동 정밀분석도 함께 생성됩니다."
-    )
-    if stream_b_rows:
-        render_signal_card_list(stream_b_rows, empty_text="Exception Leader 후보 없음.")
-    else:
-        st.info("Exception Leader 후보 없음 - 이번 스캔에는 별도 급등 후보가 없습니다.")
-
-    planner_top = [_ticker_of(row) for row in display_records[:5]]
-    raw_top = [_ticker_of(row) for row in raw_score_records[:5]]
-    overlap = len(set(planner_top).intersection(raw_top)) if planner_top and raw_top else 0
-    with st.expander("보조 확인 · 원본 Top5 vs 플래너 후보", expanded=False):
-        st.caption(
-            "원본 스캔 상위는 Decision Score 기준 참고 목록입니다. 메인은 기존 Top5이고, "
-            "Exception Leader는 별도 추가 후보입니다."
-        )
-        c_raw, c_plan = st.columns(2)
-        with c_raw:
-            st.markdown("**원본 스캔 상위 5 · Decision Score**")
-            for idx, row in enumerate(raw_score_records[:5], start=1):
-                ticker = _ticker_of(row)
-                st.caption(
-                    f"#{idx} {ticker} {_name_of(row)} · Score {_fmt_score_or_dash(_score_of(row))} · "
-                    f"{row.get('전략') or row.get('strategy') or '-'}"
-                )
-        with c_plan:
-            st.markdown("**플래너 실행 후보 5 · 정밀분석 기준**")
-            for idx, row in enumerate(display_records[:5], start=1):
-                ticker = _ticker_of(row)
-                decision = row.get("decision") or row.get("Decision") or "-"
-                rel = row.get("relative_rank_score")
-                loss = row.get("loss_risk_score")
-                st.caption(
-                    f"#{idx} {ticker} {_name_of(row)} · {decision} · "
-                    f"Rel {_fmt_score_or_dash(rel)} · Loss {_fmt_score_or_dash(loss)}"
-                )
-        if overlap < min(len(raw_top), len(planner_top), 5):
-            st.warning(
-                "두 목록이 다릅니다. 이는 정밀분석이 원본 점수 상위가 아니라 플래너 실행 후보를 분석한다는 뜻입니다."
+    with st.expander("보조 확인 · 원본 점수 상위와 신규 모델 확률", expanded=False):
+        st.caption("후보 선정은 신규 admission 모델 기준입니다. 원본 점수는 왜 후보가 달라졌는지 확인하기 위한 보조 지표입니다.")
+        ranked_by_model = (admission.get("passed", []) or []) + (admission.get("near_miss", []) or [])
+        model_by_ticker = {
+            str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper(): row.get("scan_universe_admission") or {}
+            for row in ranked_by_model
+        }
+        for idx, row in enumerate(raw_score_records[:5], start=1):
+            ticker = _ticker_of(row).upper()
+            model = model_by_ticker.get(ticker) or {}
+            st.caption(
+                f"#{idx} {ticker or '-'} {_name_of(row)} · 원본점수 {_fmt_score_or_dash(_score_of(row))} · "
+                f"모델확률 {_fmt_metric_pct_or_dash(model.get('probability_pct'))} / 기준 {_fmt_metric_pct_or_dash(model.get('prob_threshold_pct'))}"
             )
-
-    if not stream_a_rows and not stream_b_rows:
-        st.markdown("### 🔥 매수 신호")
-        st.info(
-            "현재 매수 신호 없음 - 시장 관망. 모든 후보가 OBSERVE/AVOID로 강등되었거나 "
-            "OOS 검증을 통과하지 못했습니다. Watchlist 표에서 감시 종목을 확인하세요."
-        )
-        return
-
-    st.markdown("### 보조 설명 · Top5 운용 기준")
-    st.caption(
-        "**자본 배분**: 1억이면 8,000만 → 종목당 약 1,600만. "
-        "**구간 적중률** = 이 등급/시장의 historical OOS win rate (5d hold 기준, dedup 측정). "
-        "**후보 5D확률** = 후보별 realized-expectancy 보정값. "
-        "엔트리/TP/SL은 시장별 기본 정책 (KOSPI 시가/+20/-5, KOSDAQ -2%지정/+10/-10)."
-    )
-    st.markdown("### 보조 설명 · Exception Leader 운용 기준")
-    st.caption(
-        "**자본 배분**: 1억이면 2,000만 → 2-3종목 분산해서 종목당 약 700~1,000만. "
-        "EXCEPTION_LEADER는 일반 게이트에 거부됐으나 alpha/conviction 매우 높아 surge 가능성 표시된 픽. "
-        "**변동성 큼** - 손실 한도(SL) 엄수, 이 자본 안에서 큰 손실 났어도 Stream A는 안전."
-    )
-
-    view = build_top_candidate_compact_view(planner_payload, limit=5)
-    detail_by_ticker = view.get("detail_by_ticker", {})
-    all_signal_rows = stream_a_rows + stream_b_rows
-    ticker_options = [str(r.get("ticker", "") or "") for r in all_signal_rows if r.get("ticker")]
-    if not ticker_options:
-        return
-
-    detail_key = f"top_n_detail_select_{market}_{planner_payload.get('produced_at', '')}"
-    selected = st.selectbox(
-        "종목 상세 보기",
-        options=ticker_options,
-        key=detail_key,
-    )
-    detail = detail_by_ticker.get(str(selected) or "")
-    if not detail:
-        return
-
-    with st.expander(f"📊 {detail.get('Name','') or selected} ({selected}) 상세", expanded=True):
-        cols = st.columns(4)
-        cols[0].metric("Decision", str(detail.get("Decision", "") or "-"))
-        cols[1].metric("Theme", str(detail.get("Theme", "") or "-"))
-        cols[2].metric("Trend", str(detail.get("Trend", "") or "-"))
-        cols[3].metric("SigDir", str(detail.get("SigDir", "") or "-"))
-
-        cols2 = st.columns(4)
-        cols2[0].metric("Model Prob", _fmt_pct_or_dash(detail.get("Model Prob")))
-        cols2[1].metric("Gate Thr", _fmt_pct_or_dash(detail.get("Gate Thr")))
-        cols2[2].metric("OOS Win %", _fmt_pct_or_dash(detail.get("OOS Win %")))
-        cols2[3].metric("OOS Ret %", _fmt_pct_or_dash(detail.get("OOS Ret %")))
-
-        cols3 = st.columns(4)
-        cols3[0].metric("Entry", str(detail.get("Entry", "") or "-"))
-        cols3[1].metric("TP", str(detail.get("TP", "") or "-"))
-        cols3[2].metric("SL", str(detail.get("SL", "") or "-"))
-        cols3[3].metric("Hold", str(detail.get("Hold", "") or "-"))
-
-        cols4 = st.columns(2)
-        cols4[0].metric("손실위험", _fmt_pct_or_dash(detail.get("Loss Risk")))
-        cols4[1].metric("리스크 플래그", str(detail.get("Risk Flags", "") or "-"))
-
-        action_text = str(detail.get("Action", "") or "-")
-        entry_condition = str(detail.get("Entry Condition", "") or "-")
-        stop_condition = str(detail.get("Stop Condition", "") or "-")
-        st.markdown(f"**최종 액션:** {action_text}")
-        st.caption(f"매수 조건: {entry_condition}")
-        st.caption(f"손절/제외 조건: {stop_condition}")

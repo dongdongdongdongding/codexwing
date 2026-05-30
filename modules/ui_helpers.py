@@ -1448,7 +1448,13 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
             row.get("prev_pct_change"),
             row.get("1D Change"),
         )
-        score_source = _coalesce_present(row.get("decision_score"), row.get("Decision Score"), row.get("score"))
+        admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
+        score_source = _coalesce_present(
+            admission_model.get("probability_pct"),
+            row.get("decision_score"),
+            row.get("Decision Score"),
+            row.get("score"),
+        )
         loss_risk_source = _coalesce_present(row.get("loss_risk_score"), row.get("Loss Risk"))
         risk_flags = _coerce_text_list(
             _coalesce_present(row.get("theme_risk"), row.get("risk_flags"), row.get("rationale")),
@@ -1524,6 +1530,12 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "next_day_radar_reasons": next_day_radar.get("feature_reasons") if next_day_radar else [],
                 "next_day_radar_unavailable": next_day_radar.get("unavailable_features") if next_day_radar else [],
                 "next_day_radar_version": next_day_radar.get("version") if next_day_radar else None,
+                "admission_model_name": admission_model.get("model_name"),
+                "admission_probability_pct": admission_model.get("probability_pct"),
+                "admission_threshold_pct": admission_model.get("prob_threshold_pct"),
+                "admission_passed": admission_model.get("passed"),
+                "admission_selection_rule": admission_model.get("selection_rule"),
+                "admission_feature_coverage": admission_model.get("feature_coverage_score"),
                 "candidate_interpretation": interpretation,
                 "candidate_data_quality": data_quality,
                 "original_rank": interpretation.get("original_rank"),

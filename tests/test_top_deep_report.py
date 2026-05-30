@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from modules.scan_universe_admission import ADMISSION_SECTION, NEAR_MISS_SECTION
 from modules.top_deep_report import (
     _fetch_investor_flow_snapshot,
     _select_top_candidates,
@@ -86,15 +87,15 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["report_id"] == "RUN-TEST:005930.KS:top_deep_report_v1"
     assert report["signal_label"] == "PRIMARY_BUY"
     assert report["selection_alignment"]["raw_scan_rank"] == 1
-    assert report["selection_alignment"]["source_order"] == "top5_main_plus_exception_addon"
-    assert report["selection_alignment"]["analysis_section"] == "Top5"
+    assert report["selection_alignment"]["source_order"] == "scan_universe_admission_model"
+    assert report["selection_alignment"]["analysis_section"] in {ADMISSION_SECTION, NEAR_MISS_SECTION}
     assert report["loss_risk_score"] == 42.0
     assert report["buy_score"] == 77.5
     assert report["accuracy"] is not None
     assert report["prediction"]["expected_return_3d_pct"] == 2.3
     assert report["policy_metadata"]["active_policy_version"].startswith("kr_scanner_policy_")
     assert report["policy_metadata"]["promotion_status"] == "production_champion"
-    assert report["realized_expectancy_admission"]["policy_version"] == "kr_realized_expectancy_admission_v1"
+    assert report["realized_expectancy_admission"]["policy_version"] == "scan_universe_admission_runtime_v1"
     assert report["prediction"]["ranking_score_5d"] is not None
     assert report["selection_thesis"]["status"] == "planner_priority"
     assert report["selection_thesis"]["scanner_basis"]["expected_return_3d_pct"] == 2.3
@@ -210,7 +211,7 @@ def test_build_top_deep_reports_maps_korean_theme_field():
     assert reports[0]["theme"]["theme_day_avg_decision_score"] == 70.0
     assert reports[0]["market_regime"]["market_gate"] == "GREEN"
     assert reports[0]["market_regime"]["regime_breadth_pct"] == 60.0
-    assert reports[0]["candidate_interpretation"]["section"] == "Top5"
+    assert reports[0]["candidate_interpretation"]["section"] in {ADMISSION_SECTION, NEAR_MISS_SECTION}
     assert reports[0]["candidate_interpretation"]["primary_theme"] == "소비재/유통"
     assert reports[0]["candidate_data_quality"]["display_warning_level"] in {"warning", "critical"}
     assert "volume_ratio" in reports[0]["candidate_data_quality"]["missing_required_fields"]
@@ -465,8 +466,12 @@ def test_build_top_deep_reports_follows_watchlist_meta_order_when_decisions_empt
             top_n=3,
         )
 
-    assert [row["ticker"] for row in reports] == ["AAA.KQ", "BBB.KQ", "CCC.KQ"]
+    assert {row["ticker"] for row in reports} == {"AAA.KQ", "BBB.KQ", "CCC.KQ"}
     assert [row["rank"] for row in reports] == [1, 2, 3]
+    assert all(row["selection_alignment"]["source_order"] == "scan_universe_admission_model" for row in reports)
+    assert [row["scan_universe_admission"]["model_rank"] for row in reports] == sorted(
+        row["scan_universe_admission"]["model_rank"] for row in reports
+    )
 
 
 def test_build_top_deep_reports_adds_exception_after_top5_main():
@@ -498,10 +503,9 @@ def test_build_top_deep_reports_adds_exception_after_top5_main():
             top_n=3,
         )
 
-    assert [row["ticker"] for row in reports] == ["TOP.KS", "RAW.KS", "EX.KS"]
-    assert reports[0]["selection_alignment"]["analysis_section"] == "Top5"
-    assert reports[-1]["selection_alignment"]["analysis_section"] == "Exception Leader"
-    assert reports[-1]["selection_alignment"]["source_order"] == "top5_main_plus_exception_addon"
+    assert {row["ticker"] for row in reports} == {"TOP.KS", "RAW.KS", "EX.KS"}
+    assert all(row["selection_alignment"]["analysis_section"] in {ADMISSION_SECTION, NEAR_MISS_SECTION} for row in reports)
+    assert all(row["selection_alignment"]["source_order"] == "scan_universe_admission_model" for row in reports)
 
 
 def test_top_deep_report_does_not_promote_material_risk_to_primary_buy():
@@ -626,10 +630,11 @@ def test_top_deep_report_prefers_validated_winner_profile_over_raw_priority():
             top_n=5,
         )
 
-    assert [row["ticker"] for row in reports] == ["GOOD.KS", "BAD.KS"]
-    profile = reports[0]["selection_alignment"]["validated_winner_profile"]
-    assert profile["profile"] == "rank_top5__edge_ge_7"
-    assert reports[1]["selection_alignment"]["validated_winner_profile"] is None
+    assert {row["ticker"] for row in reports} == {"GOOD.KS", "BAD.KS"}
+    assert all(row["selection_alignment"]["source_order"] == "scan_universe_admission_model" for row in reports)
+    assert [row["scan_universe_admission"]["model_rank"] for row in reports] == sorted(
+        row["scan_universe_admission"]["model_rank"] for row in reports
+    )
 
 
 def test_select_top_candidates_dedupes_shadow_with_korean_ticker_without_dropping_top5():
@@ -658,10 +663,11 @@ def test_select_top_candidates_dedupes_shadow_with_korean_ticker_without_droppin
 
     selected = _select_top_candidates(rows, {}, 5)
 
-    assert [(row.get("_analysis_section"), row.get("티커")) for row in selected] == [
-        ("KOSPI Shadow", "271560.KS"),
-        ("Top5", "001450.KS"),
-    ]
+    assert {row.get("티커") for row in selected} == {"271560.KS", "001450.KS"}
+    assert all(row.get("_analysis_section") in {ADMISSION_SECTION, NEAR_MISS_SECTION} for row in selected)
+    assert [row["scan_universe_admission"]["model_rank"] for row in selected] == sorted(
+        row["scan_universe_admission"]["model_rank"] for row in selected
+    )
 
 
 def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five():
@@ -707,9 +713,7 @@ def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five()
             top_n=5,
         )
 
-    assert [row["ticker"] for row in reports] == [f"TOP{i}.KQ" for i in range(1, 6)] + [
-        f"EX{i}.KQ" for i in range(1, 6)
-    ]
-    assert len(reports) == 10
-    assert [row["selection_alignment"]["analysis_section"] for row in reports[:5]] == ["Top5"] * 5
-    assert [row["selection_alignment"]["analysis_section"] for row in reports[5:]] == ["Exception Leader"] * 5
+    assert {row["ticker"] for row in reports} == {f"TOP{i}.KQ" for i in range(1, 6)}
+    assert len(reports) == 5
+    assert all(row["selection_alignment"]["analysis_section"] in {ADMISSION_SECTION, NEAR_MISS_SECTION} for row in reports)
+    assert all(not row["ticker"].startswith("EX") for row in reports)

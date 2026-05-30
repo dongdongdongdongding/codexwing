@@ -12,10 +12,14 @@ from modules.candidate_interpretation import build_candidate_interpretation
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
-from modules.operational_admission_monitor import admission_optimizer_discord_summary
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
-from modules.scanner_performance_contract import live_policy_summary
-from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, merge_profile_exception_leaders_into_planner
+from modules.scan_universe_admission import (
+    ADMISSION_SECTION,
+    NEAR_MISS_SECTION,
+    admission_model_summary,
+    build_scan_universe_admission_records,
+)
+from modules.ui_helpers import enrich_signal_rows_with_planner_trace, merge_profile_exception_leaders_into_planner
 
 TOP_DEEP_DIR = Path("runtime_state/reports/top_deep")
 ARTIFACT_DIR = Path("runtime_state/artifacts")
@@ -196,7 +200,7 @@ def _integrity_status_lines(report: Dict[str, Any]) -> List[str]:
     flags = report.get("quality_flags") if isinstance(report.get("quality_flags"), list) else []
     return [
         f"무결성: {completeness_text} · snapshot {report.get('snapshot_count', 0)} / raw {report.get('raw_result_count', 0)}",
-        f"Top5 {report.get('picked_count', 0)} · Exception {report.get('exception_leader_count', 0)} · TopDeep {report.get('top_deep_report_count', '-')}",
+        f"raw pass {report.get('picked_count', 0)} · deep {report.get('top_deep_report_count', '-')}",
         "flags: " + (", ".join(str(flag) for flag in flags[:5]) if flags else "OK"),
     ]
 
@@ -206,29 +210,6 @@ def _safe_int(value: Any, default: int = 0) -> int:
         return int(value)
     except Exception:
         return default
-
-
-def _shadow_section_count(section_counts: Dict[str, int]) -> int:
-    return sum(
-        int(section_counts.get(section, 0) or 0)
-        for section in (
-            "KOSDAQ Ordered Shadow",
-            "KOSDAQ Theme Rank Shadow",
-            "KOSDAQ Low-loss Shadow",
-            "KOSDAQ Shadow",
-            "KOSPI Shadow",
-        )
-    )
-
-
-def _operating_challenger_count(section_counts: Dict[str, int]) -> int:
-    return sum(
-        int(section_counts.get(section, 0) or 0)
-        for section in (
-            "KOSPI Operating Challenger",
-            "KOSDAQ Operating Challenger",
-        )
-    )
 
 
 def _normalize_limit(value: Any, *, default: int, maximum: int) -> int:
@@ -380,8 +361,9 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
     regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
-    section = interpretation.get("section") or alignment.get("analysis_section") or "Top5"
+    section = interpretation.get("section") or alignment.get("analysis_section") or ADMISSION_SECTION
     section_rank = interpretation.get("section_rank") or alignment.get("analysis_section_rank") or row.get("rank")
+    admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
     lines = [
         f"구분: {section} #{section_rank or '-'}",
         (
@@ -440,6 +422,14 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"검증프로필: {winner_profile.get('label') or '-'} · "
             f"{winner_profile.get('metrics') or '-'}"
         )
+    if admission_model:
+        lines.append(
+            "신규모델: "
+            f"{admission_model.get('model_name') or '-'} · "
+            f"확률 {_fmt_num(admission_model.get('probability_pct'), 1)}% / "
+            f"기준 {_fmt_num(admission_model.get('prob_threshold_pct'), 1)}% · "
+            f"{admission_model.get('selection_rule') or '-'}"
+        )
     return "\n".join(lines)[:1024]
 
 
@@ -475,7 +465,7 @@ def build_top_deep_embeds(
     section_counts: Dict[str, int] = {}
     for row in all_rows:
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
-        section = str(alignment.get("analysis_section") or "Top5")
+        section = str(alignment.get("analysis_section") or ADMISSION_SECTION)
         section_counts[section] = section_counts.get(section, 0) + 1
     scan_context = _load_scan_context_for_run(latest_run)
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
@@ -484,30 +474,27 @@ def build_top_deep_embeds(
     exposure_summary = scan_summary.get("portfolio_exposure_summary") if isinstance(scan_summary.get("portfolio_exposure_summary"), dict) else {}
     if not exposure_summary:
         exposure_summary = build_portfolio_exposure_summary(all_rows, run_id=latest_run)
-    result_count = _safe_int(scan_summary.get("result_count"), section_counts.get("Top5", 0))
+    result_count = _safe_int(scan_summary.get("result_count"), section_counts.get(ADMISSION_SECTION, 0))
     filtered_count = _safe_int(scan_summary.get("filtered_count"), 0)
     gate_name = str(market_gate.get("gate") or "").upper()
     gate_msg = str(market_gate.get("msg") or "")
-    zero_primary = result_count == 0 and section_counts.get("Exception Leader", 0) > 0
+    zero_primary = section_counts.get(ADMISSION_SECTION, 0) == 0 and section_counts.get(NEAR_MISS_SECTION, 0) > 0
 
     def _top_deep_sort_key(row: Dict[str, Any]) -> tuple[int, int, int]:
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
-        section = str(alignment.get("analysis_section") or "Top5")
+        section = str(alignment.get("analysis_section") or ADMISSION_SECTION)
         section_order = {
-            "KOSPI Operating Challenger": -150,
-            "KOSDAQ Operating Challenger": -140,
-            "Practical 80 Gate": -100,
-            "KOSDAQ Ordered Shadow": -30,
-            "KOSDAQ Theme Rank Shadow": -25,
-            "KOSDAQ Low-loss Shadow": -20,
-            "KOSDAQ Shadow": -20,
-            "KOSPI Shadow": -10,
-            "Top5": 0,
-            "Exception Leader": 1,
-        }.get(section, 0)
+            ADMISSION_SECTION: 0,
+            NEAR_MISS_SECTION: 10,
+        }.get(section, 50)
+        section_rank = (
+            _safe_int(alignment.get("analysis_section_rank"), _safe_int(row.get("rank"), 9999))
+            if section in {ADMISSION_SECTION, NEAR_MISS_SECTION}
+            else _safe_int(row.get("rank"), 9999)
+        )
         return (
             section_order,
-            _safe_int(alignment.get("analysis_section_rank"), _safe_int(row.get("rank"), 9999)),
+            section_rank,
             _safe_int(row.get("rank"), 9999),
         )
 
@@ -517,17 +504,14 @@ def build_top_deep_embeds(
         status_lines = [
             f"원본 통과: {result_count}개 · 필터: {filtered_count}개",
             (
-                f"섹션: Challenger {_operating_challenger_count(section_counts)} / "
-                f"Practical {section_counts.get('Practical 80 Gate', 0)} / "
-                f"Shadow {_shadow_section_count(section_counts)} / "
-                f"Top5 {section_counts.get('Top5', 0)} / "
-                f"Exception {section_counts.get('Exception Leader', 0)}"
+                f"섹션: Admission {section_counts.get(ADMISSION_SECTION, 0)} / "
+                f"NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
             ),
         ]
         if gate_msg:
             status_lines.append(f"시장 게이트: {gate_msg}")
         if zero_primary:
-            status_lines.append("Top5 통과 후보가 없어 Exception Leader는 추가 관찰 후보로만 표시됩니다.")
+            status_lines.append("신규 모델 통과 후보가 없어 기준 미달 상위 확률만 표시됩니다.")
         status_lines.extend(_integrity_status_lines(integrity_report))
         status_lines.append("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
         fields.append({"name": "운영 상태", "value": "\n".join(status_lines)[:1024], "inline": False})
@@ -555,13 +539,10 @@ def build_top_deep_embeds(
             }
         )
     return _split_embed_fields(
-        title="Challenger + Practical + Shadow + Top5 + Exception 자동 정밀분석",
+        title="Scan Universe Admission 자동 정밀분석",
         description=(
             f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-            f"Challenger {_operating_challenger_count(section_counts)} / "
-            f"Practical {section_counts.get('Practical 80 Gate', 0)} / "
-            f"Shadow {_shadow_section_count(section_counts)} / "
-            f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
+            f"Admission {section_counts.get(ADMISSION_SECTION, 0)} / NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
         ),
         color=0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,
         fields=fields,
@@ -613,7 +594,7 @@ def _load_profile_payload_for_run(run_id: str) -> Dict[str, Any]:
 
 def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
     ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("Symbol") or row.get("티커") or "-"
-    name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or row.get("종목명") or ticker
+    name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or row.get("name") or row.get("종목명") or ticker
     return f"#{rank} {name} ({ticker})"
 
 
@@ -716,14 +697,26 @@ def build_archive_embed(
     if selected_run:
         artifact_rows = _load_archive_rows_from_artifact(selected_run)
         if artifact_rows:
-            source = "shadow_plus_top5_exception(raw+planner)"
+            source = "scan_universe_admission(raw+planner)"
             planner_payload = _load_planner_payload_for_run(selected_run)
             profile_payload = _load_profile_payload_for_run(selected_run)
             planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
-            shadow_rows = build_kr_shadow_gate_records(artifact_rows, planner_payload, limit=5)["combined"]
-            standard_rows = build_top5_plus_exception_records(artifact_rows, planner_payload)["combined"]
-            seen_shadow = {str(row.get("ticker") or "") for row in shadow_rows}
-            run_rows = shadow_rows + [row for row in standard_rows if str(row.get("ticker") or "") not in seen_shadow]
+            market_key = str(market or scan_summary.get("market") or "").upper()
+            if market_key not in {"KOSPI", "KOSDAQ"}:
+                tickers = [str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper() for row in artifact_rows]
+                if tickers and all(ticker.endswith(".KS") for ticker in tickers if ticker):
+                    market_key = "KOSPI"
+                elif tickers and all(ticker.endswith(".KQ") for ticker in tickers if ticker):
+                    market_key = "KOSDAQ"
+            if market_key in {"KOSPI", "KOSDAQ"}:
+                run_rows = build_scan_universe_admission_records(
+                    enrich_signal_rows_with_planner_trace(artifact_rows, planner_payload),
+                    market=market_key,
+                    limit=safe_offset + safe_limit,
+                    include_near_miss=True,
+                )["combined"]
+            else:
+                run_rows = []
             top_deep_by_ticker = {
                 str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper(): row
                 for row in rows
@@ -748,7 +741,11 @@ def build_archive_embed(
     if selected_run and not exposure_summary:
         exposure_summary = build_portfolio_exposure_summary(run_rows, run_id=selected_run)
     fields = []
-    ordered_rows = run_rows if "top5_exception" in str(source) else sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))
+    ordered_rows = (
+        run_rows
+        if "scan_universe_admission" in str(source)
+        else sorted(run_rows, key=lambda r: int(r.get("rank") or r.get("Rank") or 9999))
+    )
     for idx, row in enumerate(ordered_rows[safe_offset : safe_offset + safe_limit], start=safe_offset + 1):
         fields.append(
             {
@@ -879,7 +876,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     )
     gate_msg = str(market_gate.get("msg") or "")
     if result_count == 0 and ok:
-        extra = "원본 Top5 통과 후보 0개. Exception Leader가 있더라도 관찰용으로만 해석하세요."
+        extra = "원본 스캔 통과 후보 0개. 신규 admission 모델도 후보를 만들 수 없습니다."
         warning_text = f"{warning_text}\n- {extra}" if warning_text and warning_text != "-" else f"- {extra}"
     if not warning_text:
         warning_text = "-"
@@ -891,26 +888,28 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
         {"name": "Passed", "value": str(result_count), "inline": True},
         {"name": "Filtered", "value": str(summary.get("filtered_count") or 0), "inline": True},
     ]
-    policy = live_policy_summary(market, strict_quality_gate=True)
-    fields.append(
-        {
-            "name": "Live Policy Validation",
-            "value": (
-                f"{policy.get('policy') or '-'}\n"
-                f"win5 {policy.get('validated_win') or '-'} · avg5 {policy.get('validated_return') or '-'} · "
-                f"{policy.get('sample') or '-'}\n"
-                f"{policy.get('quality_scope') or '-'} · pass={policy.get('validation_pass')}"
-            )[:1024],
-            "inline": False,
-        }
-    )
-    fields.append(
-        {
-            "name": "Admission Optimizer",
-            "value": admission_optimizer_discord_summary(market, limit=3)[:1024],
-            "inline": False,
-        }
-    )
+    market_key = str(market or "").upper()
+    if market_key in {"KOSPI", "KOSDAQ"}:
+        try:
+            model_summary = admission_model_summary(market_key)
+            validation = model_summary.get("validation") if isinstance(model_summary.get("validation"), dict) else {}
+            fields.append(
+                {
+                    "name": "Scan Universe Admission",
+                    "value": (
+                        f"{model_summary.get('model_name') or '-'} · {model_summary.get('label') or '-'} · "
+                        f"{model_summary.get('selection_rule') or '-'} · 기준 {model_summary.get('prob_threshold_pct') or '-'}%\n"
+                        f"1D win {validation.get('win_1d_pct') or '-'}% avg {validation.get('avg_1d_pct') or '-'}% · "
+                        f"3D win {validation.get('win_3d_pct') or '-'}% avg {validation.get('avg_3d_pct') or '-'}% · "
+                        f"5D win {validation.get('win_5d_pct') or '-'}% avg {validation.get('avg_5d_pct') or '-'}%\n"
+                        f"5D min {validation.get('min_5d_pct') or '-'}% / max {validation.get('max_5d_pct') or '-'}% · "
+                        f"n={validation.get('n') or '-'} days={validation.get('active_days') or '-'}"
+                    )[:1024],
+                    "inline": False,
+                }
+            )
+        except Exception as exc:
+            fields.append({"name": "Scan Universe Admission", "value": f"모델 요약 로드 실패: {exc}"[:1024], "inline": False})
     if gate_msg:
         fields.append({"name": "Market Gate", "value": gate_msg[:1024], "inline": False})
     fields.append({"name": "Data Integrity", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})
@@ -937,7 +936,6 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     ]
     if ok:
         embeds.extend(build_top_deep_embeds(run_id=run_id, limit=TOP_DEEP_DISCORD_LIMIT))
-        embeds.append(build_next_day_radar_embed(run_id, market=market, limit=5))
     return embeds
 
 

@@ -16,7 +16,8 @@ from modules.execution_stop_display import build_execution_stop_display
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
-from modules.ui_helpers import build_kr_shadow_gate_records, build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
+from modules.scan_universe_admission import build_scan_universe_admission_records
+from modules.ui_helpers import enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
 from modules.model_governance import active_policy_metadata
 from modules.portfolio_exposure import build_portfolio_exposure_summary
@@ -186,6 +187,15 @@ def _ticker(row: Dict[str, Any]) -> str:
     return str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").strip()
 
 
+def _market_from_ticker(ticker: str) -> str:
+    value = str(ticker or "").upper().strip()
+    if value.endswith(".KS"):
+        return "KOSPI"
+    if value.endswith(".KQ"):
+        return "KOSDAQ"
+    return ""
+
+
 def _first_present(row: Dict[str, Any], *keys: str) -> Any:
     for key in keys:
         value = row.get(key)
@@ -235,33 +245,21 @@ def _select_top_candidates(
         ranked_rows.append(copy)
     enriched = enrich_signal_rows_with_planner_trace(ranked_rows, planner_payload)
     rows = [row for row in enriched if _ticker(row)]
-    groups = build_top5_plus_exception_records(
-        rows,
-        planner_payload,
-        top_limit=max(int(limit or 0), 0),
-        exception_limit=5,
-    )
-    shadow_groups = build_kr_shadow_gate_records(rows, planner_payload, limit=5)
-    practical_rows = groups.get("practical") or []
-    operating_rows = shadow_groups.get("operating") or []
-    seen_operating = {_ticker(row) for row in operating_rows if _ticker(row)}
-    practical_rows = [row for row in practical_rows if _ticker(row) not in seen_operating]
-    seen_practical = {_ticker(row) for row in practical_rows if _ticker(row)}
-    shadow_rows = [
-        row
-        for row in shadow_groups["combined"]
-        if _ticker(row) not in seen_practical
-        and _ticker(row) not in seen_operating
-    ]
-    seen_shadow = {_ticker(row) for row in shadow_rows if _ticker(row)}
-    standard_rows = [
-        row
-        for row in groups["combined"]
-        if _ticker(row) not in seen_operating
-        and _ticker(row) not in seen_practical
-        and _ticker(row) not in seen_shadow
-    ]
-    return operating_rows + practical_rows + shadow_rows + standard_rows
+    market = str(((planner_payload or {}).get("run_context") or {}).get("market") or "").upper()
+    if market not in {"KOSPI", "KOSDAQ"}:
+        inferred = {_market_from_ticker(_ticker(row)) for row in rows}
+        inferred = {item for item in inferred if item in {"KOSPI", "KOSDAQ"}}
+        if len(inferred) == 1:
+            market = next(iter(inferred))
+    if market in {"KOSPI", "KOSDAQ"}:
+        groups = build_scan_universe_admission_records(
+            rows,
+            market=market,
+            limit=max(int(limit or 0), 5),
+            include_near_miss=True,
+        )
+        return groups.get("combined", [])
+    return rows[: max(int(limit or 0), 0)]
 
 
 def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
@@ -1004,11 +1002,13 @@ def build_top_deep_reports(
             TradableCostModel(),
         )
         prediction["tradable_pnl_model_version"] = TradableCostModel().version
-        admission = build_realized_expectancy_admission(
-            {**row, **trace},
-            market=market,
-            section=row.get("_analysis_section") or "Top5",
-        )
+        admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+        if not admission:
+            admission = build_realized_expectancy_admission(
+                {**row, **trace},
+                market=market,
+                section=row.get("_analysis_section") or "Top5",
+            )
         if admission.get("available"):
             prediction["realized_expectancy_3d_prob"] = admission.get("3d_prob")
             prediction["realized_expectancy_5d_prob"] = admission.get("5d_prob")
@@ -1085,7 +1085,7 @@ def build_top_deep_reports(
                 "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
                 "analysis_section": str(row.get("_analysis_section") or "Top5"),
                 "analysis_section_rank": _safe_int(row.get("_analysis_section_rank")),
-                "source_order": str(row.get("_source_order") or "top5_main_plus_exception_addon"),
+                "source_order": str(row.get("_source_order") or "scan_universe_admission_model"),
                 "validated_winner_profile": row.get("_validated_winner_profile"),
             },
             "buy_score": buy_score,
@@ -1096,6 +1096,7 @@ def build_top_deep_reports(
             "risk_flags": trace.get("theme_risk") or row.get("theme_risk") or [],
             "rationale": trace.get("rationale") or row.get("rationale") or [],
             "prediction": prediction,
+            "scan_universe_admission": row.get("scan_universe_admission"),
             "policy_metadata": policy_metadata,
             "realized_expectancy_admission": admission,
             "selection_thesis": selection_thesis,
