@@ -160,8 +160,9 @@ def test_critical_legacy_reject_can_be_scored_but_not_promoted(monkeypatch):
 
     assert result["passed"] == []
     assert result["near_miss"] == []
-    assert len(result["blocked"]) == 1
-    row = result["blocked"][0]
+    assert result["blocked"] == []
+    assert len(result["liquidity_blocked"]) == 1
+    row = result["liquidity_blocked"][0]
     assert row["scan_universe_admission"]["promotion_blocked"] is True
     assert row["scan_universe_admission"]["promotion_block_reason"] == "LIQUIDITY_FILTER_FAIL"
     assert row["scan_result_interpretation"]["model_decision"] == "모델 기준 통과·운영 차단"
@@ -205,6 +206,7 @@ def test_blocked_top_rank_does_not_prevent_next_eligible_promotion(monkeypatch):
     result = build_scan_universe_admission_records(scored, market="KOSPI", limit=2, include_near_miss=True)
 
     assert [row["ticker"] for row in result["passed"]] == ["005930.KS"]
+    assert [row["ticker"] for row in result["liquidity_blocked"]] == ["000001.KS"]
     assert result["passed"][0]["scan_universe_admission"]["model_rank"] == 2
     assert result["all_records"][0]["scan_universe_admission"]["promotion_blocked"] is True
     assert result["all_records"][1]["scan_universe_admission"]["passed"] is True

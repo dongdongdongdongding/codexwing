@@ -344,6 +344,45 @@ def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_pa
     assert "근거" in archive["fields"][0]["value"]
 
 
+def test_archive_embed_includes_low_liquidity_blocked_candidates(tmp_path, monkeypatch):
+    report_dir = tmp_path / "top_deep"
+    artifact_dir = tmp_path / "artifacts"
+    report_dir.mkdir()
+    run_dir = artifact_dir / "RUN-LIQ"
+    run_dir.mkdir(parents=True)
+    (run_dir / "scan_pipeline_summary.json").write_text(
+        json.dumps({"run_id": "RUN-LIQ", "market": "KOSPI", "scan_mode": "SWING"}),
+        encoding="utf-8",
+    )
+    (run_dir / "raw_scan_results.json").write_text(
+        json.dumps({"results_sorted": [{"ticker": "005930.KS", "stock_name": "삼성전자"}]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    low_row = {
+        "ticker": "002410.KS",
+        "stock_name": "저유동성후보",
+        "scan_universe_admission": {
+            "probability_pct": 64.2,
+            "promotion_block_reason": "LIQUIDITY_FILTER_FAIL",
+            "feature_values": {"turnover": 240000000, "volume_ratio": 0.42},
+        },
+        "scan_result_interpretation": {"threshold_gap_pct_points": 4.2},
+    }
+    monkeypatch.setattr(renderers, "TOP_DEEP_DIR", report_dir)
+    monkeypatch.setattr(renderers, "ARTIFACT_DIR", artifact_dir)
+    monkeypatch.setattr(
+        renderers,
+        "_build_admission_result_for_run",
+        lambda *args, **kwargs: {"all_records": [], "liquidity_blocked": [low_row]},
+    )
+
+    archive = build_archive_embed(run_id="RUN-LIQ")
+
+    low_field = next(field for field in archive["fields"] if field["name"] == "저유동성 차단 후보")
+    assert "저유동성후보" in low_field["value"]
+    assert "LIQUIDITY_FILTER_FAIL" in low_field["value"]
+
+
 def test_archive_embed_includes_profile_only_exception_leaders(tmp_path, monkeypatch):
     report_dir = tmp_path / "top_deep"
     artifact_dir = tmp_path / "artifacts"
@@ -554,6 +593,55 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
     assert any(field["name"] == "Admission 모델 기준" for field in embeds[0]["fields"])
     assert embeds[1]["title"] == "Admission 모델 자동 정밀분석"
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
+
+
+def test_scan_result_renderer_includes_low_liquidity_blocked_candidates(monkeypatch):
+    low_row = {
+        "ticker": "065150.KQ",
+        "stock_name": "저유동성코스닥",
+        "scan_universe_admission": {
+            "probability_pct": 57.7,
+            "prob_threshold_pct": 55.0,
+            "promotion_block_reason": "LIQUIDITY_FILTER_FAIL",
+            "feature_values": {"turnover": 180000000, "volume_ratio": 0.38},
+        },
+        "scan_result_interpretation": {"threshold_gap_pct_points": 2.7},
+    }
+    monkeypatch.setattr(
+        renderers,
+        "_build_admission_result_for_run",
+        lambda *args, **kwargs: {
+            "summary": {
+                "market": "KOSDAQ",
+                "model_name": "fake",
+                "label": "fake",
+                "selection_rule": "fake_rule",
+                "prob_threshold_pct": 55.0,
+                "validation": {"win_1d_pct": 50.0, "win_3d_pct": 60.0, "win_5d_pct": 70.0},
+            },
+            "passed": [],
+            "near_miss": [],
+            "liquidity_blocked": [low_row],
+            "threshold": 0.55,
+            "topn": 1,
+        },
+    )
+    embeds = build_scan_result_embeds(
+        {
+            "run_id": "RUN-LIQ-DISCORD",
+            "market": "KOSDAQ",
+            "total_scans": 1720,
+            "result_count": 0,
+            "filtered_count": 1720,
+            "warnings": [],
+            "discord_job": {"job_id": "DS-LIQ", "market": "KOSDAQ", "returncode": 0},
+        },
+        config=DiscordIntegrationConfig(web_base_url="http://localhost:8501"),
+    )
+
+    low_field = next(field for field in embeds[0]["fields"] if field["name"] == "저유동성 차단 후보")
+    assert "저유동성코스닥" in low_field["value"]
+    assert "LIQUIDITY_FILTER_FAIL" in low_field["value"]
 
 
 def test_scan_result_renderer_clarifies_zero_pass_exception_only(monkeypatch, tmp_path):

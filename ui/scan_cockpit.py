@@ -293,6 +293,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     run_status = admission_run_status(admission)
     pass_rows = build_signal_display_rows(admission.get("passed", []), limit=summary.get("topn") or 1)
     near_rows = build_signal_display_rows(admission.get("near_miss", []), limit=5)
+    liquidity_blocked_rows = build_signal_display_rows(admission.get("liquidity_blocked", []), limit=5)
     blocked_rows = build_signal_display_rows(admission.get("blocked", []), limit=5)
     all_rows = build_signal_display_rows(admission.get("all_records", []), limit=None)
 
@@ -363,9 +364,14 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     st.caption("매수 후보가 아니라 모델 확률 진단용입니다. 운영 차단 사유가 없는 후보만 이 섹션에 표시합니다.")
     render_signal_card_list(near_rows, empty_text="기준 미달 상위 후보도 없습니다.")
 
+    if liquidity_blocked_rows:
+        with st.expander("저유동성 차단 후보", expanded=False):
+            st.caption("모델 확률은 높게 나왔지만 거래대금/가격 유동성 기준 미달로 운영 매수 승격하지 않은 종목입니다.")
+            render_signal_card_list(liquidity_blocked_rows, empty_text="저유동성 차단 후보 없음.")
+
     if blocked_rows:
         with st.expander("모델 상위지만 운영 차단된 후보", expanded=False):
-            st.caption("신규 모델 확률은 높게 나왔지만 유동성/데이터/핵심 게이트 때문에 운영 매수 후보로 승격하지 않은 종목입니다.")
+            st.caption("신규 모델 확률은 높게 나왔지만 데이터/핵심 게이트 때문에 운영 매수 후보로 승격하지 않은 종목입니다.")
             render_signal_card_list(blocked_rows, empty_text="운영 차단 후보 없음.")
 
     with st.expander("전체 스캔 결과 해석", expanded=False):

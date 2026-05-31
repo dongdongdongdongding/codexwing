@@ -644,6 +644,78 @@ def _load_profile_payload_for_run(run_id: str) -> Dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
+def _infer_kr_market_key(market: str = "", scan_summary: Dict[str, Any] | None = None, rows: List[Dict[str, Any]] | None = None) -> str:
+    market_key = str(market or (scan_summary or {}).get("market") or "").upper()
+    if market_key in {"KOSPI", "KOSDAQ"}:
+        return market_key
+    tickers = [
+        str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "").upper()
+        for row in rows or []
+        if isinstance(row, dict)
+    ]
+    tickers = [ticker for ticker in tickers if ticker]
+    if tickers and all(ticker.endswith(".KS") for ticker in tickers):
+        return "KOSPI"
+    if tickers and all(ticker.endswith(".KQ") for ticker in tickers):
+        return "KOSDAQ"
+    return ""
+
+
+def _build_admission_result_for_run(
+    run_id: str,
+    *,
+    market: str = "",
+    scan_summary: Dict[str, Any] | None = None,
+    limit: int = 5,
+) -> Dict[str, Any]:
+    if not run_id or run_id == "-":
+        return {}
+    artifact_rows = _load_archive_rows_from_artifact(run_id)
+    if not artifact_rows:
+        return {}
+    summary = scan_summary if isinstance(scan_summary, dict) else {}
+    market_key = _infer_kr_market_key(market, summary, artifact_rows)
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {}
+    planner_payload = _load_planner_payload_for_run(run_id)
+    profile_payload = _load_profile_payload_for_run(run_id)
+    planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
+    artifact_raw = _load_json(ARTIFACT_DIR / str(run_id) / "raw_scan_results.json")
+    diagnostics = artifact_raw.get("diagnostics") if isinstance(artifact_raw, dict) and isinstance(artifact_raw.get("diagnostics"), dict) else {}
+    enriched_rows = enrich_signal_rows_with_planner_trace(artifact_rows, planner_payload)
+    universe_input = build_scan_universe_admission_input_rows(
+        enriched_rows,
+        diagnostics=diagnostics,
+        market=market_key,
+    )
+    return build_scan_universe_admission_records(
+        universe_input.get("rows", enriched_rows),
+        market=market_key,
+        limit=max(1, int(limit or 5)),
+        include_near_miss=True,
+        input_summary=universe_input,
+    )
+
+
+def _low_liquidity_rows_value(rows: List[Dict[str, Any]], *, limit: int = 5) -> str:
+    lines: List[str] = []
+    for idx, row in enumerate(rows[: max(1, int(limit or 5))], start=1):
+        ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "-"
+        name = row.get("stock_name") or row.get("Stock Name") or row.get("name") or row.get("종목명") or ticker
+        admission = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
+        features = admission.get("feature_values") if isinstance(admission.get("feature_values"), dict) else {}
+        interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
+        reason = admission.get("promotion_block_reason") or admission.get("legacy_reject_reason") or "LIQUIDITY_FILTER_FAIL"
+        turnover = _safe_float(features.get("turnover"))
+        turnover_text = "-" if turnover is None else f"{turnover / 100_000_000.0:.1f}억"
+        lines.append(
+            f"#{idx} {name}({ticker}) · 후보확률 {_fmt_num(admission.get('probability_pct'), 1)}% · "
+            f"기준차 {_fmt_num(interpretation.get('threshold_gap_pct_points'), 1)}%p · "
+            f"거래대금 {turnover_text} · 거래량x{_fmt_num(features.get('volume_ratio'), 2)} · {reason}"
+        )
+    return ("\n".join(lines) or "저유동성 차단 후보 없음.")[:1024]
+
+
 def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
     ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("Symbol") or row.get("티커") or "-"
     name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or row.get("name") or row.get("종목명") or ticker
@@ -757,38 +829,18 @@ def build_archive_embed(
     integrity_report = _scan_integrity_from_summary(scan_summary)
     exposure_summary = scan_summary.get("portfolio_exposure_summary") if isinstance(scan_summary.get("portfolio_exposure_summary"), dict) else {}
     source = "top_deep"
+    admission_result: Dict[str, Any] = {}
     if selected_run:
         artifact_rows = _load_archive_rows_from_artifact(selected_run)
         if artifact_rows:
             source = "scan_universe_admission(raw+planner)"
-            planner_payload = _load_planner_payload_for_run(selected_run)
-            profile_payload = _load_profile_payload_for_run(selected_run)
-            planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
-            artifact_raw = _load_json(ARTIFACT_DIR / str(selected_run) / "raw_scan_results.json")
-            diagnostics = artifact_raw.get("diagnostics") if isinstance(artifact_raw, dict) and isinstance(artifact_raw.get("diagnostics"), dict) else {}
-            market_key = str(market or scan_summary.get("market") or "").upper()
-            if market_key not in {"KOSPI", "KOSDAQ"}:
-                tickers = [str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper() for row in artifact_rows]
-                if tickers and all(ticker.endswith(".KS") for ticker in tickers if ticker):
-                    market_key = "KOSPI"
-                elif tickers and all(ticker.endswith(".KQ") for ticker in tickers if ticker):
-                    market_key = "KOSDAQ"
-            if market_key in {"KOSPI", "KOSDAQ"}:
-                enriched_rows = enrich_signal_rows_with_planner_trace(artifact_rows, planner_payload)
-                universe_input = build_scan_universe_admission_input_rows(
-                    enriched_rows,
-                    diagnostics=diagnostics,
-                    market=market_key,
-                )
-                run_rows = build_scan_universe_admission_records(
-                    universe_input.get("rows", enriched_rows),
-                    market=market_key,
-                    limit=safe_offset + safe_limit,
-                    include_near_miss=True,
-                    input_summary=universe_input,
-                ).get("all_records", [])
-            else:
-                run_rows = []
+            admission_result = _build_admission_result_for_run(
+                selected_run,
+                market=market,
+                scan_summary=scan_summary,
+                limit=safe_offset + safe_limit,
+            )
+            run_rows = admission_result.get("all_records", []) if admission_result else []
             top_deep_by_ticker = {
                 str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper(): row
                 for row in rows
@@ -837,6 +889,15 @@ def build_archive_embed(
                 "inline": False,
             }
         )
+        liquidity_rows = admission_result.get("liquidity_blocked", []) if isinstance(admission_result, dict) else []
+        if liquidity_rows:
+            fields.append(
+                {
+                    "name": "저유동성 차단 후보",
+                    "value": _low_liquidity_rows_value(liquidity_rows),
+                    "inline": False,
+                }
+            )
         fields.append(
             {
                 "name": "포트폴리오 노출",
@@ -948,7 +1009,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     )
     gate_msg = str(market_gate.get("msg") or "")
     if result_count == 0 and ok:
-        extra = "원본 스캔 통과 후보 0개. 신규 admission 모델도 후보를 만들 수 없습니다."
+        extra = "원본 스캔 통과 후보 0개. 신규 admission 모델 판정과 저유동성 차단 후보는 아래 섹션에서 확인하세요."
         warning_text = f"{warning_text}\n- {extra}" if warning_text and warning_text != "-" else f"- {extra}"
     if not warning_text:
         warning_text = "-"
@@ -963,7 +1024,17 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
     market_key = str(market or "").upper()
     if market_key in {"KOSPI", "KOSDAQ"}:
         try:
-            model_summary = admission_model_summary(market_key)
+            admission_result = _build_admission_result_for_run(
+                run_id,
+                market=market_key,
+                scan_summary=scan_summary or summary,
+                limit=5,
+            )
+            model_summary = (
+                admission_result.get("summary")
+                if isinstance(admission_result.get("summary"), dict)
+                else admission_model_summary(market_key)
+            )
             validation = model_summary.get("validation") if isinstance(model_summary.get("validation"), dict) else {}
             top_deep_rows = [
                 row
@@ -982,8 +1053,10 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                     or 0.0
                 ),
             )
-            current_status = admission_run_status(
-                {
+            status_payload = (
+                admission_result
+                if admission_result
+                else {
                     "summary": model_summary,
                     "passed": [
                         row
@@ -999,6 +1072,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                     ],
                 }
             )
+            current_status = admission_run_status(status_payload)
             status_line = current_status.get("message") or "-"
             if current_status.get("best_probability_pct") is not None:
                 status_line += (
@@ -1024,6 +1098,15 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                 }
             )
             fields.append({"name": "이번 스캔 판정", "value": status_line[:1024], "inline": False})
+            liquidity_rows = admission_result.get("liquidity_blocked", []) if admission_result else []
+            if liquidity_rows:
+                fields.append(
+                    {
+                        "name": "저유동성 차단 후보",
+                        "value": _low_liquidity_rows_value(liquidity_rows),
+                        "inline": False,
+                    }
+                )
         except Exception as exc:
             fields.append({"name": "Admission 모델 기준", "value": f"모델 요약 로드 실패: {exc}"[:1024], "inline": False})
     if gate_msg:

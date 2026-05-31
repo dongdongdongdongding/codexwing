@@ -32,6 +32,7 @@ CRITICAL_LEGACY_REJECT_REASONS = {
     "MISSING_ANTIGRAV_SCORE",
     "EXHAUSTION_CONTEXT_UNAVAILABLE",
 }
+LOW_LIQUIDITY_REJECT_REASON = "LIQUIDITY_FILTER_FAIL"
 
 FEATURE_KEYS = (
     "alpha_score",
@@ -669,6 +670,12 @@ def _attach_display_payload(
                 "model_path": bundle.get("_model_path"),
                 "feature_coverage_score": features.get("feature_coverage_score"),
                 "feature_missing_keys": features.get("feature_missing_keys") or [],
+                "feature_values": {
+                    "turnover": features.get("turnover"),
+                    "volume_ratio": features.get("volume_ratio"),
+                    "day_return_pct": features.get("day_return_pct"),
+                    "whale_score": features.get("whale_score"),
+                },
                 "validation": admission_model_summary(str(bundle.get("market") or "")).get("validation", {}),
                 "input_source_role": row.get("_admission_source_role") or row.get("row_role"),
                 "legacy_reject_reason": row.get("reject_reason"),
@@ -761,6 +768,7 @@ def build_scan_universe_admission_records(
     pass_records: List[Dict[str, Any]] = []
     near_records: List[Dict[str, Any]] = []
     blocked_records: List[Dict[str, Any]] = []
+    liquidity_blocked_records: List[Dict[str, Any]] = []
     all_records: List[Dict[str, Any]] = []
     selected_tickers: set[str] = set()
     pass_candidates: List[Tuple[int, Dict[str, Any], float]] = []
@@ -818,13 +826,21 @@ def build_scan_universe_admission_records(
                 model_rank=rank,
                 passed=False,
             )
-            if _promotion_block_reason(row):
-                if len(blocked_records) < blocked_limit:
+            block_reason = _promotion_block_reason(row)
+            if block_reason:
+                if block_reason == LOW_LIQUIDITY_REJECT_REASON:
+                    if len(liquidity_blocked_records) < blocked_limit:
+                        liquidity_blocked_records.append(record)
+                elif len(blocked_records) < blocked_limit:
                     blocked_records.append(record)
                 continue
             if len(near_records) < near_limit:
                 near_records.append(record)
-            if len(near_records) >= near_limit and len(blocked_records) >= blocked_limit:
+            if (
+                len(near_records) >= near_limit
+                and len(blocked_records) >= blocked_limit
+                and len(liquidity_blocked_records) >= blocked_limit
+            ):
                 break
 
     return {
@@ -842,6 +858,7 @@ def build_scan_universe_admission_records(
         "passed": pass_records,
         "near_miss": near_records,
         "blocked": blocked_records,
+        "liquidity_blocked": liquidity_blocked_records,
         "combined": pass_records + near_records,
         "all_records": all_records,
         "scored_count": len(scored),

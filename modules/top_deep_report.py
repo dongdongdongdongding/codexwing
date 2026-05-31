@@ -252,6 +252,12 @@ def _select_top_candidates(
     if market not in {"KOSPI", "KOSDAQ"}:
         inferred = {_market_from_ticker(_ticker(row)) for row in rows}
         inferred = {item for item in inferred if item in {"KOSPI", "KOSDAQ"}}
+        if len(inferred) != 1:
+            inferred = {
+                _market_from_ticker(ticker)
+                for ticker in _planner_trace_by_ticker(planner_payload).keys()
+            }
+            inferred = {item for item in inferred if item in {"KOSPI", "KOSDAQ"}}
         if len(inferred) == 1:
             market = next(iter(inferred))
     if market in {"KOSPI", "KOSDAQ"}:

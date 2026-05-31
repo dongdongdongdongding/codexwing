@@ -2697,6 +2697,7 @@ if active_main_tab == "📚 아카이브":
                         _archive_run_status = admission_run_status(_archive_admission)
                         _archive_pass = build_signal_display_rows(_archive_admission.get("passed", []), limit=1)
                         _archive_near = build_signal_display_rows(_archive_admission.get("near_miss", []), limit=5)
+                        _archive_liquidity_blocked = build_signal_display_rows(_archive_admission.get("liquidity_blocked", []), limit=5)
                         _archive_blocked = build_signal_display_rows(_archive_admission.get("blocked", []), limit=5)
                         _archive_all = build_signal_display_rows(_archive_admission.get("all_records", []), limit=None)
                         st.markdown("### 신규 운영 모델")
@@ -2756,9 +2757,13 @@ if active_main_tab == "📚 아카이브":
                         st.markdown("### 기준 미달 상위 후보")
                         st.caption("승격 후보가 아니라 모델 확률 확인용입니다. 운영 차단 사유가 없는 후보만 표시합니다.")
                         _render_signal_card_list(_archive_near, empty_text="기준 미달 상위 후보 없음.")
+                        if _archive_liquidity_blocked:
+                            with st.expander("저유동성 차단 후보", expanded=False):
+                                st.caption("모델 확률은 높게 나왔지만 거래대금/가격 유동성 기준 미달로 운영 매수 승격하지 않은 종목입니다.")
+                                _render_signal_card_list(_archive_liquidity_blocked, empty_text="저유동성 차단 후보 없음.")
                         if _archive_blocked:
                             with st.expander("모델 상위지만 운영 차단된 후보", expanded=False):
-                                st.caption("유동성/데이터/핵심 게이트 때문에 운영 매수 후보로 승격하지 않은 종목입니다.")
+                                st.caption("데이터/핵심 게이트 때문에 운영 매수 후보로 승격하지 않은 종목입니다.")
                                 _render_signal_card_list(_archive_blocked, empty_text="운영 차단 후보 없음.")
                         with st.expander("전체 스캔 결과 해석", expanded=False):
                             st.caption("해당 run에서 올라온 모든 후보를 Admission 모델 확률순으로 해석합니다.")
