@@ -13,6 +13,9 @@ def test_kr_scan_commands_are_fixed_to_full_universe(monkeypatch):
     assert COMMAND_SPECS["kosdaq_scan"].max_scan == FULL_KR_SCAN_MAX
     assert COMMAND_SPECS["kospi_scan"].fixed_options["scan_mode"] == "SWING"
     assert COMMAND_SPECS["kosdaq_scan"].fixed_options["profile"] == "prod"
+    assert "scan_universe_admission.probability_pct" in contract["web_equivalent_result_fields"]["scan_card"]
+    assert "scan_universe_admission.selection_rule" in contract["web_equivalent_result_fields"]["top_deep"]
+    assert "scan_universe_admission.prob_threshold_pct" in contract["web_equivalent_result_fields"]["archive"]
 
 
 def test_discord_config_validation_requires_secret_and_allowlist(monkeypatch):

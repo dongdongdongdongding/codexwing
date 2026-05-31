@@ -55,6 +55,7 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "candidate_data_quality",
     "candidate_interpretation",
     "policy_metadata",
+    "scan_universe_admission",
     "realized_expectancy_admission",
     "entry_action",
     "entry_readiness_contract",

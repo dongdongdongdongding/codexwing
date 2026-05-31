@@ -658,7 +658,7 @@ def build_next_day_radar_embed(run_id: str, *, market: str = "", limit: int = 5)
         fields = [{"name": "후보 없음", "value": "별도 급등 레이더 후보가 없습니다.", "inline": False}]
     return {
         "title": "별도 급등 레이더",
-        "description": f"Run `{run_id or '-'}` · Top5/Exception 대체 아님 · 검증 전 shadow-only",
+        "description": f"Run `{run_id or '-'}` · Admission 모델과 별도인 검증 전 레이더 참고값",
         "color": 0xE67E22,
         "fields": fields[:10],
         "timestamp": datetime.now(timezone.utc).isoformat(),

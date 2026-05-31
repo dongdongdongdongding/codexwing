@@ -11,7 +11,7 @@ Discord commands should expose the same operational information as the web UI:
 - KOSPI full scan: `max_scan=2000`, `scan_mode=SWING`, `profile=prod`
 - KOSDAQ full scan: `max_scan=2000`, `scan_mode=SWING`, `profile=prod`
 - Macro refresh
-- Top deep analysis history and per-ticker detail
+- Scan Universe Admission precision analysis history and per-ticker detail
 - Scan archive lookup
 - Accumulated run lookup with selectable `run_id`
 
@@ -19,7 +19,7 @@ The Discord view should use the same source artifacts as the web UI:
 
 - `planner_handoff.json`
 - `market_scan_results`
-- `scan_deep_reports`
+- `scan_deep_reports` including `scan_universe_admission` and `realized_expectancy_admission`
 - local top-deep JSON reports under `runtime_state/reports/top_deep/`
 
 ## Required Discord Values

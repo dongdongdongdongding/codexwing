@@ -12,6 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.discord_integration.commands import COMMAND_SPECS
 from modules.discord_integration.config import load_discord_config
 from modules.discord_integration.delivery import (
     chunk_embeds_for_discord,
@@ -167,13 +168,13 @@ def main() -> int:
     async def on_ready():
         print(f"Discord bot ready as {client.user} (dry_run={config.dry_run})")
 
-    @tree.command(name="status", description="Discord 연동 설정, 최근 Run, 서버 상태를 확인합니다.")
+    @tree.command(name="status", description=COMMAND_SPECS["status"].description)
     async def status(interaction):
         if not await _guard(interaction):
             return
         await _send_interaction_chunks(discord, interaction, [build_status_embed(config)])
 
-    @tree.command(name="top_deep", description="최근 자동 정밀분석 이력과 종목별 상세 매수 판단을 조회합니다.")
+    @tree.command(name="top_deep", description=COMMAND_SPECS["top_deep"].description)
     @app_commands.describe(
         market="시장 필터",
         ticker="선택 종목 티커 예: 005930.KS",
@@ -209,7 +210,7 @@ def main() -> int:
         )
         await _send_followup_chunks(discord, interaction, payloads)
 
-    @tree.command(name="archive", description="최근 스캔 아카이브와 realized outcome 상태를 조회합니다.")
+    @tree.command(name="archive", description=COMMAND_SPECS["archive"].description)
     @app_commands.describe(
         market="시장 필터",
         ticker="선택 종목 티커 예: 005930.KS",
@@ -245,7 +246,7 @@ def main() -> int:
         )
         await _send_followup_chunks(discord, interaction, [payload])
 
-    @tree.command(name="runs", description="누적된 스캔 Run 목록을 조회하고 run_id를 선택할 수 있게 표시합니다.")
+    @tree.command(name="runs", description=COMMAND_SPECS["runs"].description)
     @app_commands.describe(market="시장 필터", offset="목록 시작 위치", limit="표시 개수")
     @app_commands.choices(
         market=[
@@ -260,19 +261,19 @@ def main() -> int:
         payload = await asyncio.to_thread(build_runs_embed, market=market, offset=offset, limit=limit)
         await _send_followup_chunks(discord, interaction, [payload])
 
-    @tree.command(name="kospi_scan", description="KOSPI 전체 스윙 스캔을 실행합니다. max_scan은 2000으로 고정됩니다.")
+    @tree.command(name="kospi_scan", description=COMMAND_SPECS["kospi_scan"].description)
     async def kospi_scan(interaction):
         if not await _guard(interaction):
             return
         await _handle_scan(interaction, "KOSPI")
 
-    @tree.command(name="kosdaq_scan", description="KOSDAQ 전체 스윙 스캔을 실행합니다. max_scan은 2000으로 고정됩니다.")
+    @tree.command(name="kosdaq_scan", description=COMMAND_SPECS["kosdaq_scan"].description)
     async def kosdaq_scan(interaction):
         if not await _guard(interaction):
             return
         await _handle_scan(interaction, "KOSDAQ")
 
-    @tree.command(name="macro_refresh", description="매크로/마켓 게이트 컨텍스트를 새로고침하고 요약을 표시합니다.")
+    @tree.command(name="macro_refresh", description=COMMAND_SPECS["macro_refresh"].description)
     async def macro_refresh(interaction):
         if not await _guard(interaction):
             return

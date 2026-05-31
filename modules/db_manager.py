@@ -71,6 +71,7 @@ LOCAL_SCHEMA_EXTENSION_COLUMNS = {
         "practical_entry_gate",
         "flow",
         "policy_metadata",
+        "scan_universe_admission",
         "realized_expectancy_admission",
     },
     "agent_realized_outcomes": {

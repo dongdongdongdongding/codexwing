@@ -297,7 +297,7 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
                 "color": 0x3498DB,
                 "fields": [
                     {"name": "Targets", "value": ", ".join(f"{m}/{mode}" for m, mode in _scan_targets()), "inline": True},
-                    {"name": "Top Deep", "value": "Shadow + Top5 + Exception Leader", "inline": True},
+                    {"name": "Admission Model", "value": "Scan Universe Admission + Near Miss", "inline": True},
                     {"name": "Timing Rule", "value": "08:20 prior / 09:30 이후 confirmed scan", "inline": False},
                     {"name": "Started", "value": started_at, "inline": False},
                 ],
@@ -577,7 +577,7 @@ def _performance_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
     paths = payload.get("paths") if isinstance(payload.get("paths"), dict) else {}
     return {
         "title": "섹션별 성과 기록",
-        "description": "Shadow / Top5 / Exception Leader 1D·3D·5D 승률과 평균수익률 스냅샷",
+        "description": "Admission/near-miss 후보와 기존 비교군의 1D·3D·5D 승률·평균수익률 스냅샷",
         "color": 0x1ABC9C,
         "fields": fields[:24]
         + [{"name": "Local Records", "value": "\n".join(str(v) for v in paths.values())[:1024] or "-", "inline": False}],
@@ -607,7 +607,7 @@ def _validation_embed(payload: Dict[str, Any]) -> Dict[str, Any]:
         fields.append({"name": str(item.get("name") or "Post Scan Validation")[:256], "value": "\n".join(value_parts)[:1024], "inline": False})
     return {
         "title": "스캔 후 자동 검증",
-        "description": "Top1/Top5/Shadow/Exception 성능 리포트 갱신 결과입니다. 승률·평균·손실꼬리 확인용입니다.",
+        "description": "Admission 모델과 기존 비교군 성능 리포트 갱신 결과입니다. 승률·평균·손실꼬리 확인용입니다.",
         "color": 0xF1C40F if payload.get("degraded") else 0x2ECC71 if payload.get("ok") else 0xE67E22,
         "fields": fields[:DISCORD_MAX_EMBED_FIELDS] or [{"name": "Status", "value": "검증 결과 없음", "inline": False}],
         "timestamp": payload.get("generated_at") or datetime.now(timezone.utc).isoformat(),
