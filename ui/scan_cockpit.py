@@ -119,6 +119,11 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         admission_threshold = row.get("admission_threshold_pct")
         admission_rule = str(row.get("admission_selection_rule") or "")
         admission_coverage = row.get("admission_feature_coverage")
+        scan_model_decision = str(row.get("scan_model_decision") or "")
+        scan_model_action = str(row.get("scan_model_action") or "")
+        scan_threshold_gap = row.get("scan_threshold_gap_pct_points")
+        scan_drivers = [str(item) for item in (row.get("scan_interpretation_drivers") or []) if str(item).strip()]
+        scan_warnings = [str(item) for item in (row.get("scan_interpretation_warnings") or []) if str(item).strip()]
         candidate_5d_prob = row.get("realized_expectancy_5d_prob")
         base_ev_5d = row.get("base_expected_value_5d_pct")
         stress_ev_5d = row.get("stress_expected_value_5d_pct")
@@ -164,6 +169,16 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     )
                     if admission_coverage is not None:
                         st.caption(f"피처 커버리지 {_fmt_metric_pct_or_dash(float(admission_coverage) * 100.0)}")
+                if scan_model_decision:
+                    gap_text = ""
+                    if scan_threshold_gap is not None:
+                        gap_text = f" · 기준차 {_fmt_score_or_dash(scan_threshold_gap)}%p"
+                    action_text = f" · {scan_model_action}" if scan_model_action else ""
+                    st.caption(f"모델 해석 {scan_model_decision}{gap_text}{action_text}")
+                if scan_drivers:
+                    st.caption("상승/위험 근거 " + " / ".join(scan_drivers[:4]))
+                if scan_warnings:
+                    st.caption("데이터·리스크 경고 " + " / ".join(scan_warnings[:3]))
                 if action_label != "-":
                     action_line = f"액션 {action_label}"
                     if action_condition:
@@ -260,6 +275,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     run_status = admission_run_status(admission)
     pass_rows = build_signal_display_rows(admission.get("passed", []), limit=summary.get("topn") or 1)
     near_rows = build_signal_display_rows(admission.get("near_miss", []), limit=5)
+    all_rows = build_signal_display_rows(admission.get("all_records", []), limit=None)
 
     st.markdown("### 신규 운영 모델")
     cols = st.columns(6)
@@ -319,6 +335,34 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     st.markdown("### 기준 미달 상위 후보")
     st.caption("매수 후보가 아니라 모델 확률 진단용입니다. 확률이 운영 기준을 넘기 전까지 승격하지 않습니다.")
     render_signal_card_list(near_rows, empty_text="기준 미달 상위 후보도 없습니다.")
+
+    with st.expander("전체 스캔 결과 해석", expanded=False):
+        st.caption("이번 스캔에서 올라온 모든 후보를 Admission 모델 확률순으로 해석합니다. 통과 여부, 기준차, 피처/수급/거래량 근거를 같이 봅니다.")
+        table_rows = []
+        for row in all_rows:
+            table_rows.append(
+                {
+                    "순위": row.get("analysis_section_rank") or row.get("rank"),
+                    "티커": row.get("ticker"),
+                    "종목": row.get("name"),
+                    "모델판정": row.get("scan_model_decision") or ("통과" if row.get("admission_passed") else "기준미달"),
+                    "후보확률": _fmt_metric_pct_or_dash(row.get("admission_probability_pct")),
+                    "기준": _fmt_metric_pct_or_dash(row.get("admission_threshold_pct")),
+                    "기준차": (
+                        f"{float(row.get('scan_threshold_gap_pct_points')):+.1f}%p"
+                        if row.get("scan_threshold_gap_pct_points") is not None
+                        else "-"
+                    ),
+                    "피처": _fmt_metric_pct_or_dash(
+                        float(row.get("admission_feature_coverage")) * 100.0
+                        if row.get("admission_feature_coverage") is not None
+                        else None
+                    ),
+                    "전일비": row.get("day_change"),
+                    "해석": row.get("scan_interpretation_text") or row.get("action_condition") or "-",
+                }
+            )
+        st.dataframe(table_rows, use_container_width=True, hide_index=True)
 
     with st.expander("보조 확인 · 원본 점수 상위와 Admission 모델 확률", expanded=False):
         st.caption("후보 선정은 신규 admission 모델 기준입니다. 원본 점수는 왜 후보가 달라졌는지 확인하기 위한 보조 지표입니다.")

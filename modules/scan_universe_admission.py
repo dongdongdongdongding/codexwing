@@ -19,6 +19,7 @@ MODEL_PATHS = {
 ADMISSION_SECTION = "Scan Universe Admission"
 NEAR_MISS_SECTION = "Admission Near Miss"
 RUNTIME_VERSION = "scan_universe_admission_runtime_v1"
+INTERPRETATION_VERSION = "scan_universe_admission_interpretation_v1"
 
 FEATURE_KEYS = (
     "alpha_score",
@@ -262,8 +263,10 @@ def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, A
             features["whale_trend"] = "distribution"
         else:
             features["whale_trend"] = "mixed"
-    present = sum(1 for key in FEATURE_KEYS if _present(features.get(key)))
+    missing = [key for key in FEATURE_KEYS if not _present(features.get(key))]
+    present = len(FEATURE_KEYS) - len(missing)
     features["feature_coverage_score"] = round(present / len(FEATURE_KEYS), 6)
+    features["feature_missing_keys"] = missing
     return features
 
 
@@ -312,6 +315,131 @@ def _round_pct(value: Any) -> float | None:
     if numeric is None:
         return None
     return round(numeric, 4)
+
+
+def _signed(value: float | None, suffix: str = "") -> str:
+    if value is None:
+        return "-"
+    return f"{float(value):+.1f}{suffix}"
+
+
+def _level_for_volume(value: Any) -> str:
+    numeric = _safe_float(value)
+    if numeric is None:
+        return "거래량 데이터 부족"
+    if numeric >= 2.5:
+        return f"거래량 강함({numeric:.2f}x)"
+    if numeric >= 1.2:
+        return f"거래량 양호({numeric:.2f}x)"
+    if numeric >= 0.8:
+        return f"거래량 보통({numeric:.2f}x)"
+    return f"거래량 약함({numeric:.2f}x)"
+
+
+def _flow_label(features: Dict[str, Any]) -> str:
+    whale_1d = _safe_float(features.get("whale_flow_1d"))
+    whale_3d = _safe_float(features.get("whale_flow_3d"))
+    foreigner = _safe_float(features.get("foreigner_1d"))
+    institution = _safe_float(features.get("institution_1d"))
+    retail = _safe_float(features.get("retail_1d"))
+    if whale_1d is None and whale_3d is None and foreigner is None and institution is None and retail is None:
+        return "수급 데이터 부족"
+    direction = "혼조"
+    if whale_1d is not None and whale_3d is not None:
+        if whale_1d > 0 and whale_3d > 0:
+            direction = "외인+기관 누적 매수"
+        elif whale_1d < 0 and whale_3d < 0:
+            direction = "외인+기관 누적 매도"
+    elif whale_1d is not None:
+        direction = "외인+기관 당일 매수" if whale_1d > 0 else "외인+기관 당일 매도" if whale_1d < 0 else "외인+기관 중립"
+    parts = []
+    if foreigner is not None:
+        parts.append(f"외인 {_signed(foreigner)}")
+    if institution is not None:
+        parts.append(f"기관 {_signed(institution)}")
+    if retail is not None:
+        parts.append(f"개인 {_signed(retail)}")
+    return direction + (" · " + " / ".join(parts) if parts else "")
+
+
+def _theme_label(features: Dict[str, Any]) -> str:
+    theme = str(features.get("primary_theme") or "").strip()
+    source = str(features.get("theme_source") or "").strip()
+    if not theme:
+        return "테마 미확정"
+    return f"테마 {theme}" + (f"({source})" if source else "")
+
+
+def _build_result_interpretation(
+    *,
+    features: Dict[str, Any],
+    probability_pct: float,
+    threshold_pct: float,
+    passed: bool,
+    model_rank: int,
+    metrics: Dict[str, Any],
+) -> Dict[str, Any]:
+    coverage = _safe_float(features.get("feature_coverage_score"))
+    coverage_pct = round(float(coverage or 0.0) * 100.0, 1) if coverage is not None else None
+    gap = round(float(probability_pct) - float(threshold_pct), 4)
+    day_return = _safe_float(features.get("day_return_pct"))
+    missing = list(features.get("feature_missing_keys") or [])
+    warnings: List[str] = []
+    if coverage_pct is None or coverage_pct < 80.0:
+        warnings.append(f"피처 커버리지 낮음 {coverage_pct if coverage_pct is not None else '-'}%")
+    if missing:
+        warnings.append("누락피처 " + ",".join(str(key) for key in missing[:5]))
+    if day_return is not None and day_return < -3.0:
+        warnings.append(f"당일 급락 {_signed(day_return, '%')}")
+    if str(features.get("whale_trend") or "").lower() == "distribution":
+        warnings.append("외인+기관 분산/매도 흐름")
+
+    decision = "운영 통과" if passed else "기준 미달"
+    action = "조건부 매수 후보로 표시" if passed else "승격 전 관찰 후보"
+    if not passed and gap < 0:
+        action = f"운영 기준까지 {abs(gap):.1f}%p 부족"
+
+    drivers = [
+        _level_for_volume(features.get("volume_ratio")),
+        _flow_label(features),
+        _theme_label(features),
+    ]
+    if day_return is not None:
+        drivers.append(f"전일비 {_signed(day_return, '%')}")
+    return {
+        "version": INTERPRETATION_VERSION,
+        "model_decision": decision,
+        "action": action,
+        "model_rank": model_rank,
+        "probability_pct": round(float(probability_pct), 4),
+        "threshold_pct": round(float(threshold_pct), 4),
+        "threshold_gap_pct_points": gap,
+        "feature_coverage_pct": coverage_pct,
+        "feature_missing_keys": missing,
+        "drivers": drivers,
+        "warnings": warnings,
+        "validation_summary": {
+            "sample_n": metrics.get("n"),
+            "active_days": metrics.get("active_days"),
+            "win_1d_pct": metrics.get("win_1d_pct"),
+            "avg_1d_pct": metrics.get("avg_1d_pct"),
+            "min_1d_pct": metrics.get("min_1d_pct"),
+            "max_1d_pct": metrics.get("max_1d_pct"),
+            "win_3d_pct": metrics.get("win_3d_pct"),
+            "avg_3d_pct": metrics.get("avg_3d_pct"),
+            "min_3d_pct": metrics.get("min_3d_pct"),
+            "max_3d_pct": metrics.get("max_3d_pct"),
+            "win_5d_pct": metrics.get("win_5d_pct"),
+            "avg_5d_pct": metrics.get("avg_5d_pct"),
+            "min_5d_pct": metrics.get("min_5d_pct"),
+            "max_5d_pct": metrics.get("max_5d_pct"),
+            "bad_path_pct": metrics.get("bad_path_pct"),
+        },
+        "plain_text": (
+            f"{decision}: 후보확률 {probability_pct:.1f}% / 기준 {threshold_pct:.1f}% "
+            f"({gap:+.1f}%p). {action}. " + " · ".join(drivers)
+        ),
+    }
 
 
 def admission_model_summary(market: str) -> Dict[str, Any]:
@@ -416,8 +544,17 @@ def _attach_display_payload(
                 "model_rank": model_rank,
                 "model_path": bundle.get("_model_path"),
                 "feature_coverage_score": features.get("feature_coverage_score"),
+                "feature_missing_keys": features.get("feature_missing_keys") or [],
                 "validation": admission_model_summary(str(bundle.get("market") or "")).get("validation", {}),
             },
+            "scan_result_interpretation": _build_result_interpretation(
+                features=features,
+                probability_pct=probability_pct,
+                threshold_pct=threshold_pct,
+                passed=passed,
+                model_rank=model_rank,
+                metrics=metrics,
+            ),
             "realized_expectancy_admission": {
                 "available": True,
                 "policy_version": RUNTIME_VERSION,
@@ -493,7 +630,21 @@ def build_scan_universe_admission_records(
     scored = score_scan_universe_admission_rows(rows, market=market_key)
     pass_records: List[Dict[str, Any]] = []
     near_records: List[Dict[str, Any]] = []
+    all_records: List[Dict[str, Any]] = []
     selected_tickers: set[str] = set()
+
+    for rank, row in enumerate(scored, start=1):
+        probability = float(row.get("_admission_probability") or 0.0)
+        all_records.append(
+            _attach_display_payload(
+                row,
+                bundle=bundle,
+                features=row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {},
+                probability=probability,
+                model_rank=rank,
+                passed=rank <= topn and probability >= threshold,
+            )
+        )
 
     for rank, row in enumerate(scored[:topn], start=1):
         probability = float(row.get("_admission_probability") or 0.0)
@@ -538,6 +689,7 @@ def build_scan_universe_admission_records(
         "passed": pass_records,
         "near_miss": near_records,
         "combined": pass_records + near_records,
+        "all_records": all_records,
         "scored_count": len(scored),
         "threshold": threshold,
         "topn": topn,

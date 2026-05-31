@@ -2676,6 +2676,7 @@ if active_main_tab == "📚 아카이브":
                         _archive_run_status = admission_run_status(_archive_admission)
                         _archive_pass = build_signal_display_rows(_archive_admission.get("passed", []), limit=1)
                         _archive_near = build_signal_display_rows(_archive_admission.get("near_miss", []), limit=5)
+                        _archive_all = build_signal_display_rows(_archive_admission.get("all_records", []), limit=None)
                         st.markdown("### 신규 운영 모델")
                         _model_cols = st.columns(6)
                         _gap = _archive_run_status.get("best_gap_pct_points")
@@ -2726,6 +2727,30 @@ if active_main_tab == "📚 아카이브":
                         st.markdown("### 기준 미달 상위 후보")
                         st.caption("승격 후보가 아니라 모델 확률 확인용입니다.")
                         _render_signal_card_list(_archive_near, empty_text="기준 미달 상위 후보 없음.")
+                        with st.expander("전체 스캔 결과 해석", expanded=False):
+                            st.caption("해당 run에서 올라온 모든 후보를 Admission 모델 확률순으로 해석합니다.")
+                            _all_rows = []
+                            for _row in _archive_all:
+                                _gap = _row.get("scan_threshold_gap_pct_points")
+                                _all_rows.append(
+                                    {
+                                        "순위": _row.get("analysis_section_rank") or _row.get("rank"),
+                                        "티커": _row.get("ticker"),
+                                        "종목": _row.get("name"),
+                                        "모델판정": _row.get("scan_model_decision") or ("통과" if _row.get("admission_passed") else "기준미달"),
+                                        "후보확률": f"{float(_row.get('admission_probability_pct')):.1f}%" if _row.get("admission_probability_pct") is not None else "-",
+                                        "기준": f"{float(_row.get('admission_threshold_pct')):.1f}%" if _row.get("admission_threshold_pct") is not None else "-",
+                                        "기준차": f"{float(_gap):+.1f}%p" if _gap is not None else "-",
+                                        "피처": (
+                                            f"{float(_row.get('admission_feature_coverage')) * 100.0:.1f}%"
+                                            if _row.get("admission_feature_coverage") is not None
+                                            else "-"
+                                        ),
+                                        "전일비": _row.get("day_change"),
+                                        "해석": _row.get("scan_interpretation_text") or _row.get("action_condition") or "-",
+                                    }
+                                )
+                            st.dataframe(_all_rows, use_container_width=True, hide_index=True)
                     except Exception as _archive_model_exc:
                         st.error(f"신규 admission 모델 표시 실패: {_archive_model_exc}")
                 else:

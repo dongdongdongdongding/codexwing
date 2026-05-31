@@ -1482,6 +1482,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
             next_day_radar = build_next_day_radar_candidate(row)
         data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else build_candidate_data_quality(row)
         interpretation = build_candidate_interpretation({**row, "candidate_data_quality": data_quality})
+        scan_interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
 
         day_change_numeric = _parse_percent_value(day_change_source)
         normalized.append(
@@ -1536,6 +1537,13 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "admission_passed": admission_model.get("passed"),
                 "admission_selection_rule": admission_model.get("selection_rule"),
                 "admission_feature_coverage": admission_model.get("feature_coverage_score"),
+                "scan_result_interpretation": scan_interpretation,
+                "scan_model_decision": scan_interpretation.get("model_decision"),
+                "scan_model_action": scan_interpretation.get("action"),
+                "scan_threshold_gap_pct_points": scan_interpretation.get("threshold_gap_pct_points"),
+                "scan_interpretation_drivers": scan_interpretation.get("drivers") or [],
+                "scan_interpretation_warnings": scan_interpretation.get("warnings") or [],
+                "scan_interpretation_text": scan_interpretation.get("plain_text"),
                 "candidate_interpretation": interpretation,
                 "candidate_data_quality": data_quality,
                 "original_rank": interpretation.get("original_rank"),

@@ -366,6 +366,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     section = interpretation.get("section") or alignment.get("analysis_section") or ADMISSION_SECTION
     section_rank = interpretation.get("section_rank") or alignment.get("analysis_section_rank") or row.get("rank")
     admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
+    scan_interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
     lines = [
         f"구분: {section} #{section_rank or '-'}",
         (
@@ -431,6 +432,17 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"기준 {_fmt_num(admission_model.get('prob_threshold_pct'), 1)}% · "
             f"{admission_model.get('selection_rule') or '-'}"
         )
+    if scan_interpretation:
+        drivers = " / ".join(str(item) for item in (scan_interpretation.get("drivers") or [])[:3]) or "-"
+        warnings = " / ".join(str(item) for item in (scan_interpretation.get("warnings") or [])[:2]) or "-"
+        lines.append(
+            f"모델해석: {scan_interpretation.get('model_decision') or '-'} · "
+            f"기준차 {_fmt_num(scan_interpretation.get('threshold_gap_pct_points'), 1)}%p · "
+            f"{scan_interpretation.get('action') or '-'}"
+        )
+        lines.append(f"근거: {drivers}")
+        if warnings != "-":
+            lines.append(f"경고: {warnings}")
     return "\n".join(lines)[:1024]
 
 
@@ -650,11 +662,12 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     if not policy_metadata:
         policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+    scan_interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
     visible = display_contract.get("display_status") or "VISIBLE"
     raw_rank = interpretation.get("original_rank") or display_contract.get("original_scan_rank") or row.get("_raw_scan_rank") or row.get("rank") or row.get("Rank")
     policy_version = interpretation.get("policy_version") or policy_metadata.get("active_policy_version") or "-"
     regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
-    return (
+    text = (
         f"{section or '후보'} · {visible} · 원본#{raw_rank or '-'} · {decision} · "
         f"정책 {policy_version} · {metric_label('candidate_pass_prob_5d')} {_fmt_pct(interpretation.get('realized_expectancy_5d_prob'))} · "
         f"{metric_label('validation_avg_return_5d')} {_fmt_pct(interpretation.get('base_expected_value_5d_pct') or interpretation.get('expected_value_5d_pct'))} · "
@@ -662,7 +675,15 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
         f"데이터 {data_quality.get('display_warning_level') or interpretation.get('data_quality_level') or '-'} · "
         f"국면/테마x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
         f"점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
-    )[:1024]
+    )
+    if scan_interpretation:
+        drivers = " / ".join(str(item) for item in (scan_interpretation.get("drivers") or [])[:3]) or "-"
+        text += (
+            f"\n모델해석 {scan_interpretation.get('model_decision') or '-'} · "
+            f"기준차 {_fmt_num(scan_interpretation.get('threshold_gap_pct_points'), 1)}%p · "
+            f"{scan_interpretation.get('action') or '-'}\n근거 {drivers}"
+        )
+    return text[:1024]
 
 
 def _radar_row_name(row: Dict[str, Any], rank: int) -> str:
@@ -755,7 +776,7 @@ def build_archive_embed(
                     market=market_key,
                     limit=safe_offset + safe_limit,
                     include_near_miss=True,
-                )["combined"]
+                ).get("all_records", [])
             else:
                 run_rows = []
             top_deep_by_ticker = {

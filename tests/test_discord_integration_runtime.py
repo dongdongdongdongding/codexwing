@@ -340,6 +340,8 @@ def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_pa
     assert "RUN-RAW" in archive["description"]
     assert "scan_universe_admission" in archive["description"]
     assert "JYP Ent." in archive["fields"][0]["name"]
+    assert "모델해석" in archive["fields"][0]["value"]
+    assert "근거" in archive["fields"][0]["value"]
 
 
 def test_archive_embed_includes_profile_only_exception_leaders(tmp_path, monkeypatch):
