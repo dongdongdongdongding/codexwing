@@ -87,10 +87,10 @@ loss-tail metrics alongside win rate.
 
 Operator-facing scan cards must keep these concepts separate:
 
-- `구간 적중률`: historical OOS win rate for the same market/section/scan-mode cohort.
-- `후보 3D/5D 확률`: candidate-level realized-expectancy probability.
-- `기본기대`: expectancy using average losing return as the failure payoff.
-- `꼬리위험`: stress expectancy using historical worst return as the failure payoff.
+- `모델 검증 5D승률`: current Admission model selection-rule cohort win rate. This is not an individual ticker probability.
+- `후보 통과확률`: current ticker probability from the Admission model.
+- `검증 평균 5D수익`: average 5D return from the Admission model validation cohort.
+- `검증 최저 5D수익`: worst 5D return from the Admission model validation cohort.
 
 The old worst-loss-only expectancy is too conservative to label as normal
 expected value. Keep it visible as tail stress, not as the primary expectation.

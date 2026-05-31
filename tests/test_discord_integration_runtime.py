@@ -229,11 +229,11 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     embeds = build_top_deep_embeds()
 
     assert status["fields"][3]["value"] == "RUN-TEST"
-    assert embeds[0]["title"] == "Scan Universe Admission 자동 정밀분석"
+    assert embeds[0]["title"] == "Admission 모델 자동 정밀분석"
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
     assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
     assert "정책: kr_scanner_policy_test · production_champion" in embeds[0]["fields"][0]["value"]
-    assert "실현기대: 3D확률 - / 5D확률 - · 기본5D +4.50% · 꼬리5D -3.20% · 5D점수 72.0" in embeds[0]["fields"][0]["value"]
+    assert "Admission 지표: 후보 통과확률 - · 검증 평균 5D수익 +4.50% · 검증 최저 5D수익 -3.20% · 후보 모델점수 72.0" in embeds[0]["fields"][0]["value"]
     assert "수급: 외인 +1,200,000 / 기관 -300,000 / 개인 -900,000" in embeds[0]["fields"][0]["value"]
 
 
@@ -549,8 +549,8 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
 
     assert embeds[0]["title"] == "KOSPI 전체 스캔 결과"
     assert embeds[0]["fields"][0]["value"] == "RUN-DISCORD"
-    assert any(field["name"] == "Scan Universe Admission" for field in embeds[0]["fields"])
-    assert embeds[1]["title"] == "Scan Universe Admission 자동 정밀분석"
+    assert any(field["name"] == "Admission 모델 기준" for field in embeds[0]["fields"])
+    assert embeds[1]["title"] == "Admission 모델 자동 정밀분석"
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
 
 
@@ -678,7 +678,7 @@ def test_scan_result_renderer_includes_top10_plus_exception5(monkeypatch, tmp_pa
     fields = [
         field
         for embed in embeds
-        if embed["title"] == "Scan Universe Admission 자동 정밀분석"
+        if embed["title"] == "Admission 모델 자동 정밀분석"
         for field in embed["fields"]
     ]
     candidate_fields = [field for field in fields if field["name"] != "데이터 무결성"]
@@ -730,7 +730,7 @@ def test_scan_result_renderer_does_not_truncate_split_top_deep_pages(monkeypatch
     fields = [
         field
         for embed in embeds
-        if embed["title"] == "Scan Universe Admission 자동 정밀분석"
+        if embed["title"] == "Admission 모델 자동 정밀분석"
         for field in embed["fields"]
     ]
     candidate_fields = [field for field in fields if field["name"] != "데이터 무결성"]

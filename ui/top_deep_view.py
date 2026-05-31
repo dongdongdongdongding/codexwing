@@ -9,6 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from modules import db_manager
+from modules.admission_metric_copy import metric_help, metric_label
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from ui.scan_integrity_view import (
     load_scan_context_for_run,
@@ -336,9 +337,9 @@ def render_selection_thesis(row: Dict[str, Any], trade_plan: Dict[str, Any]) -> 
         st.success(str(thesis.get("summary") or "-"))
         basis = thesis.get("scanner_basis") if isinstance(thesis.get("scanner_basis"), dict) else {}
         b1, b2, b3 = st.columns(3)
-        b1.metric("원본 점수", fmt_metric_num(basis.get("raw_decision_score"), 1))
-        b2.metric("상대순위", fmt_metric_num(basis.get("relative_rank_score"), 1))
-        b3.metric("기대엣지", fmt_metric_num(basis.get("expected_edge_score"), 1))
+        b1.metric(metric_label("raw_score"), fmt_metric_num(basis.get("raw_decision_score"), 1), help=metric_help("raw_score"))
+        b2.metric(metric_label("relative_rank"), fmt_metric_num(basis.get("relative_rank_score"), 1), help=metric_help("relative_rank"))
+        b3.metric(metric_label("expected_edge"), fmt_metric_num(basis.get("expected_edge_score"), 1), help=metric_help("expected_edge"))
         reasons = thesis.get("selection_reasons") if isinstance(thesis.get("selection_reasons"), list) else []
         if reasons:
             st.caption("선정 근거: " + " / ".join(str(x) for x in reasons[:5]))
@@ -466,6 +467,7 @@ def render_top_deep_reports_page() -> None:
         display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
         policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}
         admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+        admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
         candidate_data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
         section = alignment.get("analysis_section") or "Top5"
         section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
@@ -491,24 +493,24 @@ def render_top_deep_reports_page() -> None:
                     f"데이터 품질 {candidate_data_quality.get('display_warning_level') or '-'} · "
                     f"필수필드 {candidate_data_quality.get('required_present_pct', '-')}% · "
                     f"경고 {', '.join((candidate_data_quality.get('visible_warnings') or [])[:4]) or '-'}"
-                )
+            )
             c1, c2, c3, c4, c5, c6 = st.columns(6)
-            c1.metric("매수점수", fmt_metric_num(row.get("buy_score"), 1))
-            c2.metric("구간 적중률", fmt_metric_pct(row.get("accuracy")), help="후보 개별 확률이 아니라 같은 시장/섹션의 과거 5D 실현 승률입니다.")
-            c3.metric("전일비", fmt_metric_pct(row.get("day_change_pct")))
-            c4.metric("손실위험", fmt_metric_num(row.get("loss_risk_score"), 1))
-            c5.metric("뉴스감성", fmt_metric_num(news.get("sentiment_score"), 2))
-            c6.metric("예상순수익 3D", fmt_metric_pct(prediction.get("expected_net_return_3d_pct")))
+            c1.metric(metric_label("buy_score"), fmt_metric_num(row.get("buy_score"), 1), help=metric_help("buy_score"))
+            c2.metric(metric_label("cohort_win_5d"), fmt_metric_pct(row.get("accuracy")), help=metric_help("cohort_win_5d"))
+            c3.metric(metric_label("day_change"), fmt_metric_pct(row.get("day_change_pct")), help=metric_help("day_change"))
+            c4.metric(metric_label("loss_risk_score"), fmt_metric_num(row.get("loss_risk_score"), 1), help=metric_help("loss_risk_score"))
+            c5.metric(metric_label("news_sentiment"), fmt_metric_num(news.get("sentiment_score"), 2), help=metric_help("news_sentiment"))
+            c6.metric(metric_label("expected_net_return_3d"), fmt_metric_pct(prediction.get("expected_net_return_3d_pct")), help=metric_help("expected_net_return_3d"))
 
             a1, a2, a3, a4, a5 = st.columns(5)
-            a1.metric("후보 5D확률", fmt_metric_pct(admission.get("5d_prob")), help="구간 승률, 후보 점수, 모멘텀, 손실위험을 반영한 후보별 5D 확률입니다.")
-            a2.metric("기본기대 5D", fmt_metric_pct(admission.get("base_expected_value_5d_pct", admission.get("expected_value_5d_pct"))), help="승리 시 평균수익, 실패 시 평균손실을 쓴 기본 기대값입니다.")
-            a3.metric("꼬리위험 5D", fmt_metric_pct(admission.get("stress_expected_value_5d_pct", admission.get("expected_value_5d_pct"))), help="실패 시 역사적 최악 손실을 쓴 스트레스 기대값입니다.")
-            a4.metric("5D 랭킹", fmt_metric_num(admission.get("ranking_score_5d"), 1))
-            a5.metric("Stop-first", fmt_metric_pct(admission.get("stop_first_risk_pct")))
+            a1.metric(metric_label("candidate_pass_prob_5d"), fmt_metric_pct(admission.get("5d_prob")), help=metric_help("candidate_pass_prob_5d"))
+            a2.metric(metric_label("validation_avg_return_5d"), fmt_metric_pct(admission.get("base_expected_value_5d_pct", admission.get("expected_value_5d_pct"))), help=metric_help("validation_avg_return_5d"))
+            a3.metric(metric_label("validation_worst_return_5d"), fmt_metric_pct(admission.get("stress_expected_value_5d_pct", admission.get("expected_value_5d_pct"))), help=metric_help("validation_worst_return_5d"))
+            a4.metric(metric_label("model_rank"), f"#{admission_model.get('model_rank') or '-'}", help=metric_help("model_rank"))
+            a5.metric(metric_label("stop_first_risk_5d"), fmt_metric_pct(admission.get("stop_first_risk_pct")), help=metric_help("stop_first_risk_5d"))
             st.caption(
-                "정확도 분리: 구간 적중률은 과거 섹션 통계, 후보 5D확률은 후보별 보정값, "
-                "기본기대는 평균손실 기준, 꼬리위험은 최악손실 기준입니다."
+                "지표 구분: 모델 검증 5D승률/검증 평균/검증 최저는 같은 모델 선택규칙의 과거 표본값이고, "
+                "후보 통과확률/모델 순위는 이번 스캔 후보별 값입니다."
             )
             regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
             if regime_theme_adjustment:

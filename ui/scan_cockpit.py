@@ -12,6 +12,7 @@ from typing import Any, Dict, List
 
 import streamlit as st
 
+from modules.admission_metric_copy import metric_help, metric_label
 from modules.scan_universe_admission import build_scan_universe_admission_records, admission_model_summary
 from modules.ui_helpers import (
     build_signal_display_rows,
@@ -154,7 +155,7 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                         st.caption("미확보 피처 " + " / ".join(radar_missing[:3]))
                 if admission_model_name:
                     st.caption(
-                        f"신규 모델 {admission_model_name} · 확률 {_fmt_metric_pct_or_dash(admission_probability)} "
+                        f"Admission 모델 {admission_model_name} · {metric_label('candidate_pass_prob_5d')} {_fmt_metric_pct_or_dash(admission_probability)} "
                         f"/ 기준 {_fmt_metric_pct_or_dash(admission_threshold)} · {admission_rule}"
                     )
                     if admission_coverage is not None:
@@ -188,11 +189,11 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     st.caption(f"{label} · {stop_source}")
                 expectancy_parts = []
                 if candidate_5d_prob is not None:
-                    expectancy_parts.append(f"후보5D {_fmt_metric_pct_or_dash(candidate_5d_prob)}")
+                    expectancy_parts.append(f"{metric_label('candidate_pass_prob_5d')} {_fmt_metric_pct_or_dash(candidate_5d_prob)}")
                 if base_ev_5d is not None:
-                    expectancy_parts.append(f"기본기대 {_fmt_metric_pct_or_dash(base_ev_5d)}")
+                    expectancy_parts.append(f"{metric_label('validation_avg_return_5d')} {_fmt_metric_pct_or_dash(base_ev_5d)}")
                 if stress_ev_5d is not None:
-                    expectancy_parts.append(f"꼬리위험 {_fmt_metric_pct_or_dash(stress_ev_5d)}")
+                    expectancy_parts.append(f"{metric_label('validation_worst_return_5d')} {_fmt_metric_pct_or_dash(stress_ev_5d)}")
                 if expectancy_parts:
                     st.caption(" / ".join(expectancy_parts))
                 if risk_line:
@@ -201,19 +202,19 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     st.caption(subtitle)
             with cols[2]:
                 st.metric(
-                    "검증 5D승률" if admission_model_name else "구간 적중률",
+                    metric_label("cohort_win_5d"),
                     str(row.get("accuracy") or "-"),
                     help=(
-                        "신규 admission 모델의 선택 규칙 기준 OOS 5D win rate입니다."
+                        metric_help("cohort_win_5d")
                         if admission_model_name
                         else "이 등급/시장/스캔모드의 historical OOS win rate (5d hold). 후보별 확률이 아니라 segment 단위 통계입니다."
                     ),
                 )
             with cols[3]:
                 st.metric(
-                    "후보 5D확률",
+                    metric_label("candidate_pass_prob_5d"),
                     _fmt_metric_pct_or_dash(candidate_5d_prob),
-                    help="구간 승률, 후보 점수, 모멘텀, 손실위험을 섞어 계산한 후보별 5D 확률입니다.",
+                    help=metric_help("candidate_pass_prob_5d"),
                 )
             with cols[4]:
                 st.metric("전일비", str(row.get("day_change") or "-"), day_delta)
@@ -275,13 +276,13 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     if pass_rows:
         render_signal_card_list(pass_rows, empty_text="운영 통과 후보 없음.")
     else:
-        st.warning("이번 스캔은 신규 모델 운영 기준을 통과한 후보가 없습니다.")
+        st.warning("이번 스캔은 Admission 모델 운영 기준을 통과한 후보가 없습니다.")
 
     st.markdown("### 기준 미달 상위 후보")
     st.caption("매수 후보가 아니라 모델 확률 진단용입니다. 확률이 운영 기준을 넘기 전까지 승격하지 않습니다.")
     render_signal_card_list(near_rows, empty_text="기준 미달 상위 후보도 없습니다.")
 
-    with st.expander("보조 확인 · 원본 점수 상위와 신규 모델 확률", expanded=False):
+    with st.expander("보조 확인 · 원본 점수 상위와 Admission 모델 확률", expanded=False):
         st.caption("후보 선정은 신규 admission 모델 기준입니다. 원본 점수는 왜 후보가 달라졌는지 확인하기 위한 보조 지표입니다.")
         ranked_by_model = (admission.get("passed", []) or []) + (admission.get("near_miss", []) or [])
         model_by_ticker = {

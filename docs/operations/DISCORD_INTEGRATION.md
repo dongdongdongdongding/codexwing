@@ -11,7 +11,7 @@ Discord commands should expose the same operational information as the web UI:
 - KOSPI full scan: `max_scan=2000`, `scan_mode=SWING`, `profile=prod`
 - KOSDAQ full scan: `max_scan=2000`, `scan_mode=SWING`, `profile=prod`
 - Macro refresh
-- Scan Universe Admission precision analysis history and per-ticker detail
+- Admission model precision analysis history and per-ticker detail
 - Scan archive lookup
 - Accumulated run lookup with selectable `run_id`
 

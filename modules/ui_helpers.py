@@ -1389,7 +1389,7 @@ def sort_signal_rows_by_planner_rank(
 def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = None) -> List[Dict[str, Any]]:
     """Normalize scanner/archive rows into a compact decision list.
 
-    Card '구간 적중률' = (decision × market × scan_mode) segment의 historical OOS
+    Card '모델 검증 5D승률' = (decision × market × scan_mode) segment의 historical OOS
     win rate. raw model score (phase25_prob, prob_clean, ml_prob)는
     calibrated probability가 아니라 정렬용 score이므로 정확도로 표시 금지.
     """
@@ -1410,7 +1410,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         strategy = str(_coalesce_present(row.get("strategy"), row.get("전략"), row.get("strategy_family")) or "").strip()
         buy_signal = " · ".join(part for part in (decision, tier, strategy) if part) or "-"
 
-        # 카드 UI '구간 적중률' 일관화 (스캐너 ↔ 아카이브 같은 RUN/티커에 동일 값).
+        # 카드 UI '모델 검증 5D승률' 일관화 (스캐너 ↔ 아카이브 같은 RUN/티커에 동일 값).
         #
         # coalesce 순서 — 양쪽 source 가 모두 보유한 키만 사용해서 결정성을 보장한다.
         #   1) segment_win  : (decision × market × scan_mode) 별 historical OOS
@@ -1836,7 +1836,7 @@ TOP_N_COMPACT_COLUMNS = (
     "Rank", "Ticker", "Name", "Decision", "Entry", "TP", "SL",
 )
 
-# Card '구간 적중률' = segment historical OOS win rate (5d). 카드에 별도 컬럼.
+# Card '모델 검증 5D승률' = segment historical OOS win rate (5d). 카드에 별도 컬럼.
 TOP_N_CARD_COLUMNS = (
     "Rank", "Ticker", "Name", "Decision", "Accuracy", "Entry", "TP", "SL",
 )
@@ -1854,7 +1854,7 @@ def build_top_candidate_compact_view(planner_payload: Dict[str, Any], limit: int
             "compact_rows": Stream A + B 합본 (legacy 호환)
         }
 
-    카드 구간 적중률('Accuracy') = segment historical OOS win rate (5d, dedup 측정).
+    카드 모델 검증 5D승률('Accuracy') = segment historical OOS win rate (5d, dedup 측정).
     raw model score는 정확도로 노출 안 함.
     """
     from modules.segment_accuracy import lookup_segment_win_rate

@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
+from modules.admission_metric_copy import metric_label
 from modules.candidate_interpretation import build_candidate_interpretation
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
@@ -386,11 +387,10 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         ),
         f"예상순수익(3D): {_fmt_pct(prediction.get('expected_net_return_3d_pct'))} · 모델 {prediction.get('tradable_pnl_model_version') or '-'}",
         (
-            f"실현기대: 3D확률 {_fmt_pct(interpretation.get('realized_expectancy_3d_prob'))} / "
-            f"5D확률 {_fmt_pct(interpretation.get('realized_expectancy_5d_prob'))} · "
-            f"기본5D {_fmt_pct(interpretation.get('base_expected_value_5d_pct') or interpretation.get('expected_value_5d_pct'))} · "
-            f"꼬리5D {_fmt_pct(interpretation.get('stress_expected_value_5d_pct'))} · "
-            f"5D점수 {_fmt_num(interpretation.get('ranking_score_5d'), 1)}"
+            f"Admission 지표: {metric_label('candidate_pass_prob_5d')} {_fmt_pct(interpretation.get('realized_expectancy_5d_prob'))} · "
+            f"{metric_label('validation_avg_return_5d')} {_fmt_pct(interpretation.get('base_expected_value_5d_pct') or interpretation.get('expected_value_5d_pct'))} · "
+            f"{metric_label('validation_worst_return_5d')} {_fmt_pct(interpretation.get('stress_expected_value_5d_pct'))} · "
+            f"{metric_label('candidate_model_score_5d')} {_fmt_num(interpretation.get('ranking_score_5d'), 1)}"
         ),
         (
             f"국면/테마: 확률x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
@@ -424,9 +424,9 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         )
     if admission_model:
         lines.append(
-            "신규모델: "
+            "Admission 모델: "
             f"{admission_model.get('model_name') or '-'} · "
-            f"확률 {_fmt_num(admission_model.get('probability_pct'), 1)}% / "
+            f"{metric_label('candidate_pass_prob_5d')} {_fmt_num(admission_model.get('probability_pct'), 1)}% / "
             f"기준 {_fmt_num(admission_model.get('prob_threshold_pct'), 1)}% · "
             f"{admission_model.get('selection_rule') or '-'}"
         )
@@ -511,7 +511,7 @@ def build_top_deep_embeds(
         if gate_msg:
             status_lines.append(f"시장 게이트: {gate_msg}")
         if zero_primary:
-            status_lines.append("신규 모델 통과 후보가 없어 기준 미달 상위 확률만 표시됩니다.")
+            status_lines.append("Admission 모델 통과 후보가 없어 기준 미달 상위 확률만 표시됩니다.")
         status_lines.extend(_integrity_status_lines(integrity_report))
         status_lines.append("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
         fields.append({"name": "운영 상태", "value": "\n".join(status_lines)[:1024], "inline": False})
@@ -539,7 +539,7 @@ def build_top_deep_embeds(
             }
         )
     return _split_embed_fields(
-        title="Scan Universe Admission 자동 정밀분석",
+        title="Admission 모델 자동 정밀분석",
         description=(
             f"Run `{latest_run or '-'}` · offset {safe_offset} · "
             f"Admission {section_counts.get(ADMISSION_SECTION, 0)} / NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
@@ -617,7 +617,9 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
     return (
         f"{section or '후보'} · {visible} · 원본#{raw_rank or '-'} · {decision} · "
-        f"정책 {policy_version} · 5D기대점수 {_fmt_num(interpretation.get('ranking_score_5d'), 1)} · "
+        f"정책 {policy_version} · {metric_label('candidate_pass_prob_5d')} {_fmt_pct(interpretation.get('realized_expectancy_5d_prob'))} · "
+        f"{metric_label('validation_avg_return_5d')} {_fmt_pct(interpretation.get('base_expected_value_5d_pct') or interpretation.get('expected_value_5d_pct'))} · "
+        f"{metric_label('validation_worst_return_5d')} {_fmt_pct(interpretation.get('stress_expected_value_5d_pct'))} · "
         f"데이터 {data_quality.get('display_warning_level') or interpretation.get('data_quality_level') or '-'} · "
         f"국면/테마x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
         f"점수 {_fmt_num(score, 1)} · 손실위험 {_fmt_num(loss, 1)} · 당일 {_fmt_pct(day)}"
@@ -895,21 +897,22 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
             validation = model_summary.get("validation") if isinstance(model_summary.get("validation"), dict) else {}
             fields.append(
                 {
-                    "name": "Scan Universe Admission",
+                    "name": "Admission 모델 기준",
                     "value": (
-                        f"{model_summary.get('model_name') or '-'} · {model_summary.get('label') or '-'} · "
-                        f"{model_summary.get('selection_rule') or '-'} · 기준 {model_summary.get('prob_threshold_pct') or '-'}%\n"
-                        f"1D win {validation.get('win_1d_pct') or '-'}% avg {validation.get('avg_1d_pct') or '-'}% · "
-                        f"3D win {validation.get('win_3d_pct') or '-'}% avg {validation.get('avg_3d_pct') or '-'}% · "
-                        f"5D win {validation.get('win_5d_pct') or '-'}% avg {validation.get('avg_5d_pct') or '-'}%\n"
-                        f"5D min {validation.get('min_5d_pct') or '-'}% / max {validation.get('max_5d_pct') or '-'}% · "
-                        f"n={validation.get('n') or '-'} days={validation.get('active_days') or '-'}"
+                        f"모델 {model_summary.get('model_name') or '-'} · 라벨 {model_summary.get('label') or '-'} · "
+                        f"선택규칙 {model_summary.get('selection_rule') or '-'} · 통과기준 {model_summary.get('prob_threshold_pct') or '-'}%\n"
+                        f"검증 승률: 1D {validation.get('win_1d_pct') or '-'}% / "
+                        f"3D {validation.get('win_3d_pct') or '-'}% / 5D {validation.get('win_5d_pct') or '-'}%\n"
+                        f"검증 5D수익: 평균 {validation.get('avg_5d_pct') or '-'}% · "
+                        f"최저 {validation.get('min_5d_pct') or '-'}% · 최고 {validation.get('max_5d_pct') or '-'}% · "
+                        f"표본 n={validation.get('n') or '-'}, active days={validation.get('active_days') or '-'}\n"
+                        "주의: 검증 승률/평균/최저는 후보 개별 예측이 아니라 이 모델 선택규칙의 과거 표본 성과입니다."
                     )[:1024],
                     "inline": False,
                 }
             )
         except Exception as exc:
-            fields.append({"name": "Scan Universe Admission", "value": f"모델 요약 로드 실패: {exc}"[:1024], "inline": False})
+            fields.append({"name": "Admission 모델 기준", "value": f"모델 요약 로드 실패: {exc}"[:1024], "inline": False})
     if gate_msg:
         fields.append({"name": "Market Gate", "value": gate_msg[:1024], "inline": False})
     fields.append({"name": "Data Integrity", "value": "\n".join(_integrity_status_lines(integrity_report))[:1024], "inline": False})

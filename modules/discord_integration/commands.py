@@ -139,7 +139,7 @@ COMMAND_SPECS: Dict[str, DiscordCommandSpec] = {
     ),
     "top_deep": DiscordCommandSpec(
         name="top_deep",
-        description="최근 Scan Universe Admission 정밀분석 이력과 종목별 매수 판단을 조회합니다.",
+        description="최근 Admission 모델 정밀분석 이력과 종목별 매수 판단을 조회합니다.",
         kind="top_deep_lookup",
         response_style="embed_with_select_menu",
         web_equivalent_sections=["top_deep"],

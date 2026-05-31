@@ -845,6 +845,37 @@ div[data-testid="stTable"] {
   margin: 0.2rem 0 0.4rem;
 }
 
+/* Streamlit-compatible component polish inspired by shadcn/ui, Kibo UI,
+   ReUI, Origin UI, Magic UI, and assistant-ui primitives. */
+div[data-testid="stMetric"] {
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 12px 24px rgba(15, 23, 42, 0.045);
+}
+
+div[data-testid="stMetric"] div[data-testid="stMetricLabel"] {
+  font-size: 0.78rem;
+  letter-spacing: 0;
+}
+
+div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
+  font-size: clamp(1.3rem, 1.6vw, 1.75rem);
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"] {
+  border-radius: 16px;
+  border-color: rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+div[data-testid="stExpander"] {
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
 @media (max-width: 980px) {
   .block-container {
     padding-top: 1rem;

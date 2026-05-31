@@ -310,7 +310,7 @@ def _attach_display_payload(
             "decision_bucket": "admission_pass" if passed else "admission_near_miss",
             "phase25_oos_win_rate_pct": _round_pct(metrics.get("win_5d_pct")),
             "loss_risk_score": _round_pct(_first_present(row, "loss_risk_score", "Loss Risk") or loss_risk_score),
-            "final_action": "신규 모델 통과 - 조건부 매수 후보" if passed else "모델 기준 미달 - 신규 매수 대기",
+            "final_action": "Admission 모델 통과 - 조건부 매수 후보" if passed else "Admission 모델 기준 미달 - 신규 매수 대기",
             "entry_condition_text": (
                 f"모델확률 {probability_pct:.1f}% >= 운영기준 {threshold_pct:.1f}%"
                 if passed
