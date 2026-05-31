@@ -713,7 +713,9 @@ def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five()
             top_n=5,
         )
 
-    assert {row["ticker"] for row in reports} == {f"TOP{i}.KQ" for i in range(1, 6)}
-    assert len(reports) == 5
-    assert all(row["selection_alignment"]["analysis_section"] in {ADMISSION_SECTION, NEAR_MISS_SECTION} for row in reports)
-    assert all(not row["ticker"].startswith("EX") for row in reports)
+    assert {row["ticker"] for row in reports} == {f"TOP{i}.KQ" for i in range(1, 6)} | {f"EX{i}.KQ" for i in range(1, 6)}
+    assert len(reports) == 10
+    sections = [row["selection_alignment"]["analysis_section"] for row in reports]
+    assert sum(1 for section in sections if section in {ADMISSION_SECTION, NEAR_MISS_SECTION}) == 5
+    assert sections.count("Exception Leader") == 5
+    assert all(row.get("scan_result_interpretation") for row in reports)

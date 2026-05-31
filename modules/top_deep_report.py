@@ -17,7 +17,7 @@ from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
 from modules.scan_universe_admission import build_scan_universe_admission_records
-from modules.ui_helpers import enrich_signal_rows_with_planner_trace
+from modules.ui_helpers import build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
 from modules.model_governance import active_policy_metadata
 from modules.portfolio_exposure import build_portfolio_exposure_summary
@@ -56,6 +56,7 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "candidate_interpretation",
     "policy_metadata",
     "scan_universe_admission",
+    "scan_result_interpretation",
     "realized_expectancy_admission",
     "entry_action",
     "entry_readiness_contract",
@@ -259,7 +260,41 @@ def _select_top_candidates(
             limit=max(int(limit or 0), 5),
             include_near_miss=True,
         )
-        return groups.get("combined", [])
+        primary_rows = list(groups.get("combined", []) or [])
+        selected = {_ticker(row) for row in primary_rows if _ticker(row)}
+        exception_limit = max(int(limit or 0), 5)
+        exception_groups = build_top5_plus_exception_records(
+            ranked_rows,
+            planner_payload,
+            top_limit=0,
+            exception_limit=exception_limit,
+        )
+        exception_rows = list(exception_groups.get("exception_leaders") or [])
+        if exception_rows:
+            scored_exceptions = build_scan_universe_admission_records(
+                exception_rows,
+                market=market,
+                limit=exception_limit,
+                include_near_miss=True,
+            )
+            scored_by_ticker = {
+                _ticker(row): row
+                for row in scored_exceptions.get("all_records", []) or []
+                if _ticker(row)
+            }
+            for idx, row in enumerate(exception_rows, start=1):
+                ticker = _ticker(row)
+                if not ticker or ticker in selected:
+                    continue
+                scored = scored_by_ticker.get(ticker)
+                copy = {**row, **scored} if isinstance(scored, dict) else dict(row)
+                copy["_analysis_section"] = "Exception Leader"
+                copy["_analysis_section_order"] = 1
+                copy["_analysis_section_rank"] = idx
+                copy["_source_order"] = "scan_universe_admission_model_plus_exception"
+                primary_rows.append(copy)
+                selected.add(ticker)
+        return primary_rows
     return rows[: max(int(limit or 0), 0)]
 
 
@@ -1098,6 +1133,7 @@ def build_top_deep_reports(
             "rationale": trace.get("rationale") or row.get("rationale") or [],
             "prediction": prediction,
             "scan_universe_admission": row.get("scan_universe_admission"),
+            "scan_result_interpretation": row.get("scan_result_interpretation"),
             "policy_metadata": policy_metadata,
             "realized_expectancy_admission": admission,
             "selection_thesis": selection_thesis,
