@@ -149,3 +149,90 @@ def test_build_snapshot_rows_includes_emitted_and_rejected_symbols(tmp_path):
     assert by_ticker["000003.KS"]["reject_stage"] == "signal_window"
     assert by_ticker["000003.KS"]["has_actual_flow"] is False
     assert "investor_flow_missing_in_scan_archive" in by_ticker["000003.KS"]["flow_warnings"]
+
+
+def test_build_snapshot_rows_parses_runtime_display_and_nested_features(tmp_path):
+    artifact_dir = tmp_path / "artifacts"
+    shared_dir = tmp_path / "shared_working"
+    reject_csv = tmp_path / "reject_outcomes.csv"
+    run_dir = artifact_dir / "RUN-DISPLAY"
+
+    _write_json(
+        run_dir / "scan_pipeline_summary.json",
+        {
+            "run_id": "RUN-DISPLAY",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "created_at": "2026-05-21T09:35:00+09:00",
+        },
+    )
+    _write_json(
+        run_dir / "raw_scan_results.json",
+        {
+            "results_sorted": [
+                {
+                    "ticker": "000004.KS",
+                    "종목명": "표시행",
+                    "Antigrav": 84,
+                    "AI확률": "53.5%",
+                    "정밀확률": "49.2%",
+                    "수급": "67점 축적",
+                    "거래량": "✅ 2.35",
+                    "전일비": "+3.8%",
+                    "매수가(-2%)": "12,300",
+                    "Decision Score": 81.4,
+                    "leader_metrics": {
+                        "kr_foreign_flow": -120.5,
+                        "kr_institution_flow": 310.25,
+                        "kr_retail_flow": -189.75,
+                        "kr_volume_ratio": 2.35,
+                        "kr_turnover": 9876543210,
+                        "kr_flow_consensus_buying": True,
+                    },
+                    "flow": {
+                        "foreigner_3d": 40.0,
+                        "institution_3d": 80.0,
+                        "retail_3d": -120.0,
+                        "foreigner_10d": 100.0,
+                        "institution_10d": 150.0,
+                        "retail_10d": -250.0,
+                    },
+                    "theme_context": {
+                        "primary_theme": "전력기기",
+                        "theme_source": "dynamic",
+                        "theme_inference_status": "resolved",
+                    },
+                }
+            ],
+            "scan_result": {"total_scans": 1, "diagnostics": {"filtered_count": 0}},
+        },
+    )
+
+    rows, summary = build_snapshot_rows(
+        artifact_dir=artifact_dir,
+        shared_dir=shared_dir,
+        reject_outcome_csv=reject_csv,
+        limit_runs=0,
+        market_filter="ALL",
+        scan_mode_filter="ALL",
+    )
+
+    assert summary["rows_built"] == 1
+    row = rows[0]
+    assert row["alpha_score"] == 84.0
+    assert row["tech_score"] == 84.0
+    assert row["ml_prob"] == 53.5
+    assert row["prob_clean"] == 49.2
+    assert row["whale_score"] == 67.0
+    assert row["volume_ratio"] == 2.35
+    assert row["turnover"] == 9876543210.0
+    assert row["day_return_pct"] == 3.8
+    assert row["entry_reference_price"] == 12300.0
+    assert row["foreigner_1d"] == -120.5
+    assert row["institution_1d"] == 310.25
+    assert row["retail_1d"] == -189.75
+    assert row["whale_flow_1d"] == 189.75
+    assert row["whale_flow_3d"] == 120.0
+    assert row["whale_flow_10d"] == 250.0
+    assert row["primary_theme"] == "전력기기"
+    assert row["feature_coverage_score"] > 0.9

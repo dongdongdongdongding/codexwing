@@ -2140,6 +2140,7 @@ def compute_kr_flow_leader_signal(
             "is_market_leader": is_market_leader,
             "leader_score": leader_score,
             "volume_ratio": round(float(volume_ratio), 3),
+            "turnover": round(float(turnover_today), 2),
             "turnover_ratio_20d": round(float(turnover_ratio), 3),
             "close_location_score": round(float(close_location_score), 1),
             "breakout_quality_score": round(float(breakout_quality), 1),
@@ -2158,6 +2159,7 @@ def compute_kr_flow_leader_signal(
             "is_market_leader": False,
             "leader_score": 0.0,
             "volume_ratio": 0.0,
+            "turnover": None,
             "turnover_ratio_20d": 0.0,
             "close_location_score": 0.0,
             "breakout_quality_score": 0.0,
@@ -2608,6 +2610,7 @@ def build_kr_scan_outputs(
     volume_ratio_display = f"{volume_ratio_value:.2f}" if volume_ratio_value is not None else "?"
     table_volume = f"{'✅' if volume_confirmed else '⚠️'} {volume_ratio_display}"
     db_volume = f"{'✅' if volume_confirmed else '⚠️'} x{volume_ratio_display}"
+    turnover_value = _optional_float((leader_metrics or {}).get("kr_turnover")) if isinstance(leader_metrics, dict) else None
     context_text = news_tag if news_tag else "-"
     stored_prob_5 = None if inference_failed else round(float(prob_5), 1)
     stored_prob_clean = None if inference_failed else round(float(prob_clean), 1)
@@ -2686,6 +2689,8 @@ def build_kr_scan_outputs(
         "보유한도": f"{setup.get('Max Hold Days', 3)}일",
         "거래량": table_volume,
         "volume_ratio": volume_ratio_value,
+        "거래대금": turnover_value,
+        "turnover": turnover_value,
         "시장맥락": context_text,
         "전략": strategy_tag,
         "급등예측": surge_tag,
@@ -3866,6 +3871,7 @@ def evaluate_app_kr_candidate(
         "close_location_score": round(max(float(leader_metrics.get("close_location_score", 0.0) or 0.0), float(leader_signal.get("close_location_score", 0.0) or 0.0)), 1),
         "kr_flow_leader": bool(leader_signal.get("is_market_leader", False)),
         "kr_flow_leader_score": round(float(leader_signal.get("leader_score", 0.0) or 0.0), 1),
+        "kr_turnover": _optional_float(leader_signal.get("turnover")),
         "kr_turnover_ratio_20d": round(float(leader_signal.get("turnover_ratio_20d", 0.0) or 0.0), 3),
         "kr_volume_ratio": round(float(leader_signal.get("volume_ratio", 0.0) or 0.0), 3),
         "kr_flow_consensus_buying": bool(leader_signal.get("flow_consensus_buying", False)),

@@ -195,7 +195,7 @@ def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, A
         "decision_score": _feature_number_any(row, "decision_score", "Decision Score", "score", "buy_score", "feature_snapshot.decision_score"),
         "day_return_pct": _feature_number_any(row, "day_return_pct", "day_change_pct", "day_ret", "Change %", "전일비", "price.day_change_pct"),
         "volume_ratio": _feature_number(row, "volume_ratio", "vol_ratio", "Volume Ratio"),
-        "turnover": _feature_number_any(row, "turnover", "trading_value", "amount", "거래대금"),
+        "turnover": _feature_number_any(row, "turnover", "trading_value", "amount", "거래대금", "leader_metrics.kr_turnover"),
         "foreigner_1d": _feature_number_any(row, "foreigner_1d", "foreign_1d", "foreign_flow_1d", "flow.foreigner_1d", "leader_metrics.kr_foreign_flow"),
         "institution_1d": _feature_number_any(row, "institution_1d", "inst_1d", "institution_flow_1d", "flow.institution_1d", "leader_metrics.kr_institution_flow"),
         "retail_1d": _feature_number_any(row, "retail_1d", "individual_1d", "flow.retail_1d", "leader_metrics.kr_retail_flow"),

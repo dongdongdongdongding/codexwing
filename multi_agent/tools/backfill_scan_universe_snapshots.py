@@ -23,13 +23,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.scan_universe_admission import _extract_feature_columns as _extract_admission_feature_columns
+
 DEFAULT_ARTIFACT_DIR = PROJECT_ROOT / "runtime_state" / "artifacts"
 DEFAULT_SHARED_DIR = PROJECT_ROOT / "runtime_state" / "shared_working"
 DEFAULT_REJECT_OUTCOME_CSV = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "kr_rejected_symbol_outcomes.csv"
 DEFAULT_OUTPUT_CSV = PROJECT_ROOT / "runtime_state" / "reports" / "archive" / "scan_universe_snapshots_kr.csv"
 DEFAULT_REPORT_JSON = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "scan_universe_snapshot_backfill.json"
 
-BACKFILL_VERSION = "scan_universe_snapshot_backfill_v1"
+BACKFILL_VERSION = "scan_universe_snapshot_backfill_v2"
 TARGET_TABLE = "scan_universe_snapshots"
 KR_MARKETS = {"KOSPI", "KOSDAQ"}
 OUTCOME_COLUMNS = (
@@ -61,7 +63,7 @@ FEATURE_KEYS = (
     "retail_10d",
     "primary_theme",
 )
-FEATURE_QUALITY_VERSION = "scan_universe_snapshot_feature_quality_v1"
+FEATURE_QUALITY_VERSION = "scan_universe_snapshot_feature_quality_v2"
 
 
 def _load_local_env() -> None:
@@ -197,37 +199,27 @@ def _normalize_reason_codes(value: Any) -> List[str]:
     return [str(value)]
 
 
-def _feature_number(row: Dict[str, Any], *keys: str) -> float | None:
-    return _safe_float(_first_present(row, *keys))
-
-
 def _extract_feature_columns(row: Dict[str, Any]) -> Dict[str, Any]:
-    return {
-        "alpha_score": _feature_number(row, "alpha_score", "Antigrav", "Alpha", "alpha"),
-        "tech_score": _feature_number(row, "tech_score", "technical_score", "Tech"),
-        "ml_prob": _feature_number(row, "ml_prob", "prob_5", "phase25_prob", "probability"),
-        "prob_clean": _feature_number(row, "prob_clean", "phase25_prob_clean", "clean_prob"),
-        "whale_score": _feature_number(row, "whale_score", "whale", "Whale"),
-        "decision_score": _feature_number(row, "decision_score", "Decision Score", "score", "buy_score"),
-        "day_return_pct": _feature_number(row, "day_return_pct", "day_change_pct", "day_ret", "Change %", "전일비"),
-        "volume_ratio": _feature_number(row, "volume_ratio", "vol_ratio", "volume", "Volume Ratio"),
-        "turnover": _feature_number(row, "turnover", "trading_value", "amount", "거래대금"),
-        "foreigner_1d": _feature_number(row, "foreigner_1d", "foreign_1d", "foreign_flow_1d"),
-        "institution_1d": _feature_number(row, "institution_1d", "inst_1d", "institution_flow_1d"),
-        "retail_1d": _feature_number(row, "retail_1d", "individual_1d"),
-        "foreigner_3d": _feature_number(row, "foreigner_3d", "foreign_3d"),
-        "institution_3d": _feature_number(row, "institution_3d", "inst_3d"),
-        "retail_3d": _feature_number(row, "retail_3d", "individual_3d"),
-        "foreigner_10d": _feature_number(row, "foreigner_10d", "foreign_10d"),
-        "institution_10d": _feature_number(row, "institution_10d", "inst_10d"),
-        "retail_10d": _feature_number(row, "retail_10d", "individual_10d"),
-        "primary_theme": _first_present(row, "primary_theme", "theme", "Theme", "테마"),
-        "theme_source": _first_present(row, "theme_source"),
-        "theme_inference_status": _first_present(row, "theme_inference_status"),
-        "kr_universe_role": _first_present(row, "kr_universe_role"),
-        "scanner_timeframe_profile": _first_present(row, "scanner_timeframe_profile"),
-        "entry_reference_price": _feature_number(row, "entry_reference_price", "scan_entry_reference_price", "curr_price", "price"),
-    }
+    ticker = _ticker(row)
+    market = _market_from(_first_present(row, "market", "Market", "market_subtype", "liquidity_market"), ticker)
+    # Keep backfill parsing identical to runtime admission parsing. This avoids
+    # drift where display rows such as "✅ 2.20", "65점 축적", or nested
+    # leader_metrics/flow fields are lost during historical repair.
+    features = dict(_extract_admission_feature_columns(row, market=market or ""))
+    for builder_owned_key in (
+        "market",
+        "row_role",
+        "passed_current_model",
+        "priority_rank",
+        "total_scans",
+        "filtered_count",
+        "decision",
+        "decision_bucket",
+        "reject_stage",
+        "reject_reason",
+    ):
+        features.pop(builder_owned_key, None)
+    return _json_safe(features)
 
 
 def _feature_quality_payload(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -712,7 +704,10 @@ def upsert_supabase(rows: List[Dict[str, Any]], *, batch_size: int) -> int:
         batch = []
         for payload in filtered_rows:
             batch.append(_json_safe({key: payload.get(key) for key in sorted(batch_keys)}))
-        db.client.table(TARGET_TABLE).upsert(batch, on_conflict="snapshot_key").execute()
+        if hasattr(db, "_upsert_with_schema_drift_retry"):
+            db._upsert_with_schema_drift_retry(TARGET_TABLE, batch, on_conflict="snapshot_key")
+        else:
+            db.client.table(TARGET_TABLE).upsert(batch, on_conflict="snapshot_key").execute()
         upserted += len(batch)
         print(f"[INFO] upserted {upserted}/{len(rows)} into {TARGET_TABLE}", flush=True)
     return upserted

@@ -13,6 +13,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.db_manager import DBManager
+from modules.scan_universe_admission import _extract_feature_columns as _extract_admission_feature_columns
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -52,6 +53,15 @@ def _parse_whale(value: Any) -> int | None:
     return int(float(match.group(1)))
 
 
+def _round_or_none(value: Any, ndigits: int = 1) -> float | None:
+    try:
+        if value is None or value == "":
+            return None
+        return round(float(value), ndigits)
+    except Exception:
+        return None
+
+
 def _extract_strategy(reasons: Any) -> str:
     for reason in list(reasons or []):
         text = str(reason or "").strip()
@@ -80,26 +90,76 @@ def _is_missing(value: Any) -> bool:
 
 def _shared_feature_row(candidate: Dict[str, Any]) -> Dict[str, Any]:
     snapshot = candidate.get("feature_snapshot", {}) if isinstance(candidate.get("feature_snapshot"), dict) else {}
-    theme_context = snapshot.get("theme_context", {}) if isinstance(snapshot.get("theme_context"), dict) else {}
-    decision_score = _safe_float(snapshot.get("decision_score", candidate.get("score")), 0.0)
-    alpha_score = _safe_int(snapshot.get("alpha_score"), 0)
-    if alpha_score <= 0:
-        alpha_score = _safe_int(snapshot.get("antigrav"), 0)
+    candidate_theme_context = candidate.get("theme_context", {}) if isinstance(candidate.get("theme_context"), dict) else {}
+    theme_context = snapshot.get("theme_context", {}) if isinstance(snapshot.get("theme_context"), dict) else candidate_theme_context
+    leader_metrics = candidate.get("leader_metrics", {}) if isinstance(candidate.get("leader_metrics"), dict) else {}
+    if not leader_metrics and isinstance(snapshot.get("leader_metrics"), dict):
+        leader_metrics = snapshot.get("leader_metrics", {})
+    combined_row = dict(snapshot)
+    combined_row.setdefault("ticker", candidate.get("ticker"))
+    combined_row.setdefault("score", candidate.get("score"))
+    combined_row.setdefault("decision_score", snapshot.get("decision_score") or candidate.get("score"))
+    combined_row["feature_snapshot"] = snapshot
+    if leader_metrics:
+        combined_row["leader_metrics"] = leader_metrics
+    if theme_context:
+        combined_row["theme_context"] = theme_context
+    features = _extract_admission_feature_columns(combined_row, market=str(snapshot.get("market") or ""))
+    decision_score = _safe_float(features.get("decision_score"), _safe_float(snapshot.get("decision_score", candidate.get("score")), 0.0))
+    alpha_score = _safe_int(features.get("alpha_score"), 0)
+    tech_score = _safe_int(features.get("tech_score"), 0)
+    whale_score = _parse_whale(features.get("whale_score"))
+    if whale_score is None:
+        whale_score = _parse_whale(snapshot.get("whale"))
+    ml_prob = _round_or_none(features.get("ml_prob"), 1)
+    prob_clean = _round_or_none(features.get("prob_clean"), 1)
+    volume_ratio = _round_or_none(features.get("volume_ratio"), 3)
+    foreigner_1d = _round_or_none(features.get("foreigner_1d"), 6)
+    institution_1d = _round_or_none(features.get("institution_1d"), 6)
+    retail_1d = _round_or_none(features.get("retail_1d"), 6)
+    has_flow = any(value is not None for value in (foreigner_1d, institution_1d, retail_1d))
     return {
         "stock_name": snapshot.get("stock_name"),
         "alpha_score": alpha_score or None,
-        "tech_score": alpha_score or None,
-        "ml_prob": round(_safe_float(snapshot.get("prob_5", snapshot.get("ml_prob")), 0.0), 1),
-        "whale_score": _parse_whale(snapshot.get("whale")),
+        "tech_score": tech_score or alpha_score or None,
+        "ml_prob": ml_prob,
+        "prob_clean": prob_clean,
+        "whale_score": whale_score,
+        "foreigner": foreigner_1d,
+        "foreign_flow": foreigner_1d,
+        "institution": institution_1d,
+        "institution_flow": institution_1d,
+        "retail": retail_1d,
+        "retail_flow": retail_1d,
+        "foreigner_1d": foreigner_1d,
+        "institution_1d": institution_1d,
+        "retail_1d": retail_1d,
+        "foreigner_3d": _round_or_none(features.get("foreigner_3d"), 6),
+        "institution_3d": _round_or_none(features.get("institution_3d"), 6),
+        "retail_3d": _round_or_none(features.get("retail_3d"), 6),
+        "foreigner_10d": _round_or_none(features.get("foreigner_10d"), 6),
+        "institution_10d": _round_or_none(features.get("institution_10d"), 6),
+        "retail_10d": _round_or_none(features.get("retail_10d"), 6),
+        "whale_flow_1d": _round_or_none(features.get("whale_flow_1d"), 6),
+        "whale_flow_3d": _round_or_none(features.get("whale_flow_3d"), 6),
+        "whale_flow_10d": _round_or_none(features.get("whale_flow_10d"), 6),
+        "flow_window": snapshot.get("flow_window") or ("1d/3d/10d" if has_flow else None),
+        "flow_asof": snapshot.get("flow_asof") or (snapshot.get("base_trade_date") if has_flow else None),
+        "flow_consensus_buying": features.get("flow_consensus_buying"),
+        "retail_dominant": features.get("retail_dominant"),
+        "dominant": features.get("dominant"),
+        "whale_trend": features.get("whale_trend"),
         "trend": snapshot.get("real_trend") or snapshot.get("trend"),
         "position": snapshot.get("position"),
         "strategy": _extract_strategy(candidate.get("reasons") or []),
         "tier": snapshot.get("tier") or _derive_tier(decision_score),
         "volume": snapshot.get("volume"),
+        "volume_ratio": volume_ratio,
+        "day_return_pct": _round_or_none(features.get("day_return_pct"), 3),
         "surge": snapshot.get("surge"),
         "decision_score": round(decision_score, 1),
         "strategy_family": snapshot.get("strategy_family"),
-        "entry_reference_price": snapshot.get("entry_reference_price"),
+        "entry_reference_price": features.get("entry_reference_price") or snapshot.get("entry_reference_price"),
         "phase25_variant": snapshot.get("phase25_variant"),
         "phase25_shadow_variant": snapshot.get("phase25_shadow_variant"),
         "phase25_shadow_prob": snapshot.get("phase25_shadow_prob"),
@@ -111,9 +171,9 @@ def _shared_feature_row(candidate: Dict[str, Any]) -> Dict[str, Any]:
         "kr_universe_role": snapshot.get("kr_universe_role"),
         "explosive_leader_flag": snapshot.get("explosive_leader_flag"),
         "core_trend_flag": snapshot.get("core_trend_flag"),
-        "primary_theme": theme_context.get("primary_theme"),
-        "theme_source": theme_context.get("theme_source"),
-        "theme_inference_status": theme_context.get("theme_inference_status"),
+        "primary_theme": features.get("primary_theme") or theme_context.get("primary_theme"),
+        "theme_source": features.get("theme_source") or theme_context.get("theme_source"),
+        "theme_inference_status": features.get("theme_inference_status") or theme_context.get("theme_inference_status"),
         "secondary_themes": theme_context.get("secondary_themes"),
         "theme_routing_path": snapshot.get("routing_path") or theme_context.get("routing_path"),
     }
@@ -157,7 +217,31 @@ def _iter_market_rows(db: DBManager, market: str, scan_mode: str, page_size: int
     return rows
 
 
-def run_backfill(*, market: str, scan_mode: str, dry_run: bool, page_size: int, max_rows: int) -> Dict[str, Any]:
+def _write_updates(db: DBManager, updates: List[Dict[str, Any]], *, batch_size: int) -> int:
+    if not updates:
+        return 0
+    written = 0
+    total = len(updates)
+    progress_every = max(1, int(batch_size))
+    for update in updates:
+        row_id = update.get("id")
+        if row_id is None:
+            continue
+        payload = {key: value for key, value in update.items() if key != "id"}
+        payload = db._filter_payload_to_existing_columns("market_scan_results", payload)
+        if not payload:
+            continue
+        db.client.table("market_scan_results").update(payload).eq("id", row_id).execute()
+        written += 1
+        if written % progress_every == 0 or written == total:
+            print(
+                f"[INFO] updated market_scan_results feature rows {written}/{total}",
+                flush=True,
+            )
+    return written
+
+
+def run_backfill(*, market: str, scan_mode: str, dry_run: bool, page_size: int, max_rows: int, batch_size: int) -> Dict[str, Any]:
     db = DBManager()
     if not db.client:
         raise RuntimeError("Supabase client unavailable. Check SUPABASE_URL / SUPABASE_KEY.")
@@ -172,8 +256,10 @@ def run_backfill(*, market: str, scan_mode: str, dry_run: bool, page_size: int, 
         "rows_matched": 0,
         "rows_updated": 0,
         "fields_updated": 0,
+        "write_method": "dry_run" if dry_run else "row_update_by_id",
         "unmatched_examples": [],
     }
+    updates: List[Dict[str, Any]] = []
 
     for row in rows:
         run_id = str(row.get("run_id") or "").strip()
@@ -200,8 +286,13 @@ def run_backfill(*, market: str, scan_mode: str, dry_run: bool, page_size: int, 
             continue
         stats["fields_updated"] += len(payload)
         if not dry_run:
-            db.client.table("market_scan_results").update(payload).eq("id", row["id"]).execute()
+            updates.append({"id": row["id"], **payload})
         stats["rows_updated"] += 1
+
+    if updates:
+        stats["rows_written"] = _write_updates(db, updates, batch_size=batch_size)
+    else:
+        stats["rows_written"] = 0
 
     return stats
 
@@ -213,6 +304,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--page-size", type=int, default=1000)
     parser.add_argument("--max-rows", type=int, default=10000)
+    parser.add_argument("--batch-size", type=int, default=100)
     args = parser.parse_args()
 
     result = run_backfill(
@@ -221,6 +313,7 @@ def main() -> None:
         dry_run=bool(args.dry_run),
         page_size=int(args.page_size),
         max_rows=int(args.max_rows),
+        batch_size=int(args.batch_size),
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
