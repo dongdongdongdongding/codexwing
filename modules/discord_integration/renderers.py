@@ -19,6 +19,7 @@ from modules.scan_universe_admission import (
     NEAR_MISS_SECTION,
     admission_model_summary,
     admission_run_status,
+    build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
 )
 from modules.ui_helpers import enrich_signal_rows_with_planner_trace, merge_profile_exception_leaders_into_planner
@@ -763,6 +764,8 @@ def build_archive_embed(
             planner_payload = _load_planner_payload_for_run(selected_run)
             profile_payload = _load_profile_payload_for_run(selected_run)
             planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
+            artifact_raw = _load_json(ARTIFACT_DIR / str(selected_run) / "raw_scan_results.json")
+            diagnostics = artifact_raw.get("diagnostics") if isinstance(artifact_raw, dict) and isinstance(artifact_raw.get("diagnostics"), dict) else {}
             market_key = str(market or scan_summary.get("market") or "").upper()
             if market_key not in {"KOSPI", "KOSDAQ"}:
                 tickers = [str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper() for row in artifact_rows]
@@ -771,11 +774,18 @@ def build_archive_embed(
                 elif tickers and all(ticker.endswith(".KQ") for ticker in tickers if ticker):
                     market_key = "KOSDAQ"
             if market_key in {"KOSPI", "KOSDAQ"}:
+                enriched_rows = enrich_signal_rows_with_planner_trace(artifact_rows, planner_payload)
+                universe_input = build_scan_universe_admission_input_rows(
+                    enriched_rows,
+                    diagnostics=diagnostics,
+                    market=market_key,
+                )
                 run_rows = build_scan_universe_admission_records(
-                    enrich_signal_rows_with_planner_trace(artifact_rows, planner_payload),
+                    universe_input.get("rows", enriched_rows),
                     market=market_key,
                     limit=safe_offset + safe_limit,
                     include_near_miss=True,
+                    input_summary=universe_input,
                 ).get("all_records", [])
             else:
                 run_rows = []

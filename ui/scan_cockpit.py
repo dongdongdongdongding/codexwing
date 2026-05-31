@@ -16,6 +16,7 @@ from modules.admission_metric_copy import metric_help, metric_label
 from modules.scan_universe_admission import (
     admission_model_summary,
     admission_run_status,
+    build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
 )
 from modules.ui_helpers import (
@@ -124,6 +125,9 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         scan_threshold_gap = row.get("scan_threshold_gap_pct_points")
         scan_drivers = [str(item) for item in (row.get("scan_interpretation_drivers") or []) if str(item).strip()]
         scan_warnings = [str(item) for item in (row.get("scan_interpretation_warnings") or []) if str(item).strip()]
+        admission_source_role = str(row.get("admission_input_source_role") or "")
+        admission_reject_reason = str(row.get("admission_legacy_reject_reason") or "")
+        admission_block_reason = str(row.get("admission_promotion_block_reason") or "")
         candidate_5d_prob = row.get("realized_expectancy_5d_prob")
         base_ev_5d = row.get("base_expected_value_5d_pct")
         stress_ev_5d = row.get("stress_expected_value_5d_pct")
@@ -177,6 +181,12 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     st.caption(f"모델 해석 {scan_model_decision}{gap_text}{action_text}")
                 if scan_drivers:
                     st.caption("상승/위험 근거 " + " / ".join(scan_drivers[:4]))
+                if admission_source_role:
+                    source_label = "기존 통과 후보" if admission_source_role == "emitted" else "기존 필터 탈락 종목"
+                    reject_text = f" · 기존탈락 {admission_reject_reason}" if admission_reject_reason else ""
+                    st.caption(f"Admission 입력 {source_label}{reject_text}")
+                if admission_block_reason:
+                    st.caption(f"운영 승격 차단 {admission_block_reason}")
                 if scan_warnings:
                     st.caption("데이터·리스크 경고 " + " / ".join(scan_warnings[:3]))
                 if action_label != "-":
@@ -249,8 +259,15 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
     profile_payload = _load_json_safe(bridge_info.get("profile_diagnostics")) if isinstance(bridge_info, dict) else {}
     planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
+    diagnostics = bridge_info.get("scan_diagnostics") if isinstance(bridge_info, dict) and isinstance(bridge_info.get("scan_diagnostics"), dict) else {}
     raw_score_records = results_df.to_dict("records")
     enriched_records = enrich_signal_rows_with_planner_trace(raw_score_records, planner_payload)
+    universe_input = build_scan_universe_admission_input_rows(
+        enriched_records,
+        diagnostics=diagnostics,
+        market=market,
+    )
+    admission_input_rows = universe_input.get("rows") if isinstance(universe_input.get("rows"), list) else enriched_records
     market_key = str(market or "").upper().strip()
 
     if market_key not in {"KOSPI", "KOSDAQ"}:
@@ -261,10 +278,11 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
 
     try:
         admission = build_scan_universe_admission_records(
-            enriched_records,
+            admission_input_rows,
             market=market_key,
             limit=5,
             include_near_miss=True,
+            input_summary=universe_input,
         )
         summary = admission.get("summary") if isinstance(admission.get("summary"), dict) else admission_model_summary(market_key)
     except Exception as exc:
@@ -275,6 +293,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     run_status = admission_run_status(admission)
     pass_rows = build_signal_display_rows(admission.get("passed", []), limit=summary.get("topn") or 1)
     near_rows = build_signal_display_rows(admission.get("near_miss", []), limit=5)
+    blocked_rows = build_signal_display_rows(admission.get("blocked", []), limit=5)
     all_rows = build_signal_display_rows(admission.get("all_records", []), limit=None)
 
     st.markdown("### 신규 운영 모델")
@@ -317,6 +336,14 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         f"최고5D {_fmt_metric_pct_or_dash(validation.get('max_5d_pct'))} / "
         f"bad-path {_fmt_metric_pct_or_dash(validation.get('bad_path_pct'))}"
     )
+    input_summary = admission.get("input_summary") if isinstance(admission.get("input_summary"), dict) else {}
+    st.caption(
+        "Admission 직접 채점 universe "
+        f"{input_summary.get('total_input_rows', len(admission_input_rows))}개 "
+        f"(기존 통과 {input_summary.get('emitted_count', len(enriched_records))}개 / "
+        f"기존 필터 탈락 feature {input_summary.get('rejected_feature_rows', 0)}개). "
+        "Top5/Exception은 이제 보조 설명 레인입니다."
+    )
     if pass_rows:
         st.success(run_status.get("message") or "운영 통과 후보가 있습니다.")
     else:
@@ -333,8 +360,13 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         st.warning("이번 스캔은 Admission 모델 운영 기준을 통과한 후보가 없습니다.")
 
     st.markdown("### 기준 미달 상위 후보")
-    st.caption("매수 후보가 아니라 모델 확률 진단용입니다. 확률이 운영 기준을 넘기 전까지 승격하지 않습니다.")
+    st.caption("매수 후보가 아니라 모델 확률 진단용입니다. 운영 차단 사유가 없는 후보만 이 섹션에 표시합니다.")
     render_signal_card_list(near_rows, empty_text="기준 미달 상위 후보도 없습니다.")
+
+    if blocked_rows:
+        with st.expander("모델 상위지만 운영 차단된 후보", expanded=False):
+            st.caption("신규 모델 확률은 높게 나왔지만 유동성/데이터/핵심 게이트 때문에 운영 매수 후보로 승격하지 않은 종목입니다.")
+            render_signal_card_list(blocked_rows, empty_text="운영 차단 후보 없음.")
 
     with st.expander("전체 스캔 결과 해석", expanded=False):
         st.caption("이번 스캔에서 올라온 모든 후보를 Admission 모델 확률순으로 해석합니다. 통과 여부, 기준차, 피처/수급/거래량 근거를 같이 봅니다.")
@@ -358,6 +390,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
                         if row.get("admission_feature_coverage") is not None
                         else None
                     ),
+                    "입력": "기존통과" if row.get("admission_input_source_role") == "emitted" else "기존탈락",
                     "전일비": row.get("day_change"),
                     "해석": row.get("scan_interpretation_text") or row.get("action_condition") or "-",
                 }

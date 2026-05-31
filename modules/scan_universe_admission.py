@@ -20,6 +20,18 @@ ADMISSION_SECTION = "Scan Universe Admission"
 NEAR_MISS_SECTION = "Admission Near Miss"
 RUNTIME_VERSION = "scan_universe_admission_runtime_v1"
 INTERPRETATION_VERSION = "scan_universe_admission_interpretation_v1"
+UNIVERSE_INPUT_VERSION = "scan_universe_admission_universe_input_v1"
+CRITICAL_LEGACY_REJECT_REASONS = {
+    "FETCH_DATA_FAIL",
+    "INTRADAY_FETCH_FAIL",
+    "RATE_LIMIT_EXHAUSTED",
+    "LIQUIDITY_FILTER_FAIL",
+    "ML_INFERENCE_FAILED",
+    "ML_PROB_MISSING",
+    "KR_SIGNAL_COLUMN_MISSING",
+    "MISSING_ANTIGRAV_SCORE",
+    "EXHAUSTION_CONTEXT_UNAVAILABLE",
+}
 
 FEATURE_KEYS = (
     "alpha_score",
@@ -317,6 +329,110 @@ def _round_pct(value: Any) -> float | None:
     return round(numeric, 4)
 
 
+def _reason_codes(value: Any) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [part.strip() for part in value.replace(",", "|").split("|") if part.strip()]
+    if isinstance(value, dict):
+        return [str(key) for key, enabled in value.items() if enabled]
+    if isinstance(value, (list, tuple, set)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value)]
+
+
+def _promotion_block_reason(row: Dict[str, Any]) -> str:
+    source_role = str(row.get("_admission_source_role") or row.get("row_role") or "").strip()
+    if source_role not in {"legacy_rejected", "rejected"}:
+        return ""
+    codes = _reason_codes(row.get("reject_reason_codes") or row.get("reject_reason"))
+    normalized = {str(code).upper().strip() for code in codes}
+    for reason in CRITICAL_LEGACY_REJECT_REASONS:
+        if reason in normalized:
+            return reason
+    return ""
+
+
+def build_scan_universe_admission_input_rows(
+    emitted_rows: List[Dict[str, Any]],
+    *,
+    diagnostics: Dict[str, Any] | None = None,
+    market: str = "",
+) -> Dict[str, Any]:
+    """Build the runtime admission universe from emitted and rejected rows.
+
+    The legacy scanner only emits rows after its hard filters. For the new
+    admission model, those emitted rows are not enough: feature-rich rejected
+    diagnostics are also valid scoring input because they represent symbols the
+    scanner actually inspected before a legacy gate stopped them. Rows with
+    sparse diagnostics stay in the universe with low feature coverage and
+    visible warnings; they are not hidden behind Top5/Exception lanes.
+    """
+
+    market_key = str(market or "").upper().strip()
+    diagnostics = diagnostics if isinstance(diagnostics, dict) else {}
+    emitted: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for idx, source in enumerate(emitted_rows or [], start=1):
+        if not isinstance(source, dict):
+            continue
+        ticker = _ticker(source)
+        if not ticker:
+            continue
+        copy = dict(source)
+        copy.setdefault("_raw_scan_rank", idx)
+        copy.setdefault("_admission_source_role", "emitted")
+        copy.setdefault("row_role", "emitted")
+        copy.setdefault("feature_origin", copy.get("feature_origin") or "raw_scan_results")
+        copy.setdefault("passed_current_model", True)
+        emitted.append(copy)
+        seen.add(ticker)
+
+    rejected: List[Dict[str, Any]] = []
+    details_by_symbol = diagnostics.get("reject_details_by_symbol") if isinstance(diagnostics.get("reject_details_by_symbol"), dict) else {}
+    reasons_by_symbol = diagnostics.get("reject_reasons_by_symbol") if isinstance(diagnostics.get("reject_reasons_by_symbol"), dict) else {}
+    for raw_ticker, raw_history in details_by_symbol.items():
+        ticker = str(raw_ticker or "").strip().upper()
+        if not ticker or ticker in seen:
+            continue
+        if isinstance(raw_history, list):
+            history = [item for item in raw_history if isinstance(item, dict)]
+        elif isinstance(raw_history, dict):
+            history = [raw_history]
+        else:
+            history = []
+        if not history:
+            continue
+        terminal = dict(history[-1])
+        terminal.setdefault("ticker", ticker)
+        terminal.setdefault("티커", ticker)
+        terminal.setdefault("market", market_key)
+        terminal.setdefault("stock_name", terminal.get("stock_name") or terminal.get("종목명") or ticker)
+        terminal["row_role"] = "rejected"
+        terminal["passed_current_model"] = False
+        terminal["decision_bucket"] = terminal.get("decision_bucket") or "legacy_rejected"
+        terminal["reject_reason"] = terminal.get("reject_reason") or reasons_by_symbol.get(raw_ticker) or reasons_by_symbol.get(ticker)
+        terminal["reject_reason_codes"] = _reason_codes(terminal.get("reject_reason"))
+        terminal["reject_detail_history"] = history
+        terminal["_admission_source_role"] = "legacy_rejected"
+        terminal["_raw_scan_rank"] = len(emitted) + len(rejected) + 1
+        terminal["feature_origin"] = terminal.get("feature_origin") or "reject_diagnostics"
+        rejected.append(terminal)
+        seen.add(ticker)
+
+    rows = emitted + rejected
+    return {
+        "version": UNIVERSE_INPUT_VERSION,
+        "market": market_key,
+        "rows": rows,
+        "emitted_count": len(emitted),
+        "rejected_feature_rows": len(rejected),
+        "total_input_rows": len(rows),
+        "legacy_top5_auxiliary": True,
+        "diagnostics_available": bool(diagnostics),
+    }
+
+
 def _signed(value: float | None, suffix: str = "") -> str:
     if value is None:
         return "-"
@@ -378,6 +494,7 @@ def _build_result_interpretation(
     passed: bool,
     model_rank: int,
     metrics: Dict[str, Any],
+    promotion_block_reason: str = "",
 ) -> Dict[str, Any]:
     coverage = _safe_float(features.get("feature_coverage_score"))
     coverage_pct = round(float(coverage or 0.0) * 100.0, 1) if coverage is not None else None
@@ -393,10 +510,14 @@ def _build_result_interpretation(
         warnings.append(f"당일 급락 {_signed(day_return, '%')}")
     if str(features.get("whale_trend") or "").lower() == "distribution":
         warnings.append("외인+기관 분산/매도 흐름")
+    if promotion_block_reason:
+        warnings.append(f"운영 차단 {promotion_block_reason}")
 
-    decision = "운영 통과" if passed else "기준 미달"
+    decision = "운영 통과" if passed else ("모델 기준 통과·운영 차단" if promotion_block_reason and gap >= 0 else "기준 미달")
     action = "조건부 매수 후보로 표시" if passed else "승격 전 관찰 후보"
-    if not passed and gap < 0:
+    if promotion_block_reason:
+        action = f"모델 확률은 높지만 {promotion_block_reason} 때문에 운영 매수 차단"
+    elif not passed and gap < 0:
         action = f"운영 기준까지 {abs(gap):.1f}%p 부족"
 
     drivers = [
@@ -414,6 +535,8 @@ def _build_result_interpretation(
         "probability_pct": round(float(probability_pct), 4),
         "threshold_pct": round(float(threshold_pct), 4),
         "threshold_gap_pct_points": gap,
+        "promotion_blocked": bool(promotion_block_reason),
+        "promotion_block_reason": promotion_block_reason,
         "feature_coverage_pct": coverage_pct,
         "feature_missing_keys": missing,
         "drivers": drivers,
@@ -492,6 +615,7 @@ def _attach_display_payload(
 ) -> Dict[str, Any]:
     metrics = _metrics(bundle)
     threshold = float(bundle.get("prob_threshold") or 0.0)
+    promotion_block = _promotion_block_reason(row)
     probability_pct = round(probability * 100.0, 4)
     threshold_pct = round(threshold * 100.0, 4)
     section = ADMISSION_SECTION if passed else NEAR_MISS_SECTION
@@ -546,6 +670,10 @@ def _attach_display_payload(
                 "feature_coverage_score": features.get("feature_coverage_score"),
                 "feature_missing_keys": features.get("feature_missing_keys") or [],
                 "validation": admission_model_summary(str(bundle.get("market") or "")).get("validation", {}),
+                "input_source_role": row.get("_admission_source_role") or row.get("row_role"),
+                "legacy_reject_reason": row.get("reject_reason"),
+                "promotion_blocked": bool(promotion_block),
+                "promotion_block_reason": promotion_block,
             },
             "scan_result_interpretation": _build_result_interpretation(
                 features=features,
@@ -554,6 +682,7 @@ def _attach_display_payload(
                 passed=passed,
                 model_rank=model_rank,
                 metrics=metrics,
+                promotion_block_reason=promotion_block,
             ),
             "realized_expectancy_admission": {
                 "available": True,
@@ -622,6 +751,7 @@ def build_scan_universe_admission_records(
     market: str,
     limit: int = 5,
     include_near_miss: bool = True,
+    input_summary: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     market_key = str(market or "").upper().strip()
     bundle = load_admission_model(market_key)
@@ -630,11 +760,24 @@ def build_scan_universe_admission_records(
     scored = score_scan_universe_admission_rows(rows, market=market_key)
     pass_records: List[Dict[str, Any]] = []
     near_records: List[Dict[str, Any]] = []
+    blocked_records: List[Dict[str, Any]] = []
     all_records: List[Dict[str, Any]] = []
     selected_tickers: set[str] = set()
+    pass_candidates: List[Tuple[int, Dict[str, Any], float]] = []
 
     for rank, row in enumerate(scored, start=1):
         probability = float(row.get("_admission_probability") or 0.0)
+        ticker = _ticker(row)
+        if not ticker or probability < threshold or _promotion_block_reason(row):
+            continue
+        pass_candidates.append((rank, row, probability))
+        selected_tickers.add(ticker)
+        if len(pass_candidates) >= topn:
+            break
+
+    for rank, row in enumerate(scored, start=1):
+        probability = float(row.get("_admission_probability") or 0.0)
+        ticker = _ticker(row)
         all_records.append(
             _attach_display_payload(
                 row,
@@ -642,16 +785,12 @@ def build_scan_universe_admission_records(
                 features=row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {},
                 probability=probability,
                 model_rank=rank,
-                passed=rank <= topn and probability >= threshold,
+                passed=bool(ticker and ticker in selected_tickers),
             )
         )
 
-    for rank, row in enumerate(scored[:topn], start=1):
-        probability = float(row.get("_admission_probability") or 0.0)
-        if probability < threshold:
-            continue
+    for rank, row, probability in pass_candidates:
         ticker = _ticker(row)
-        selected_tickers.add(ticker)
         pass_records.append(
             _attach_display_payload(
                 row,
@@ -665,29 +804,44 @@ def build_scan_universe_admission_records(
 
     if include_near_miss:
         near_limit = max(0, int(limit or 0))
+        blocked_limit = near_limit
         for rank, row in enumerate(scored, start=1):
             ticker = _ticker(row)
             if not ticker or ticker in selected_tickers:
                 continue
             probability = float(row.get("_admission_probability") or 0.0)
-            near_records.append(
-                _attach_display_payload(
-                    row,
-                    bundle=bundle,
-                    features=row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {},
-                    probability=probability,
-                    model_rank=rank,
-                    passed=False,
-                )
+            record = _attach_display_payload(
+                row,
+                bundle=bundle,
+                features=row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {},
+                probability=probability,
+                model_rank=rank,
+                passed=False,
             )
-            if len(near_records) >= near_limit:
+            if _promotion_block_reason(row):
+                if len(blocked_records) < blocked_limit:
+                    blocked_records.append(record)
+                continue
+            if len(near_records) < near_limit:
+                near_records.append(record)
+            if len(near_records) >= near_limit and len(blocked_records) >= blocked_limit:
                 break
 
     return {
         "market": market_key,
         "summary": admission_model_summary(market_key),
+        "input_summary": input_summary if isinstance(input_summary, dict) else {
+            "version": UNIVERSE_INPUT_VERSION,
+            "market": market_key,
+            "rows": "direct_rows",
+            "emitted_count": len(rows or []),
+            "rejected_feature_rows": 0,
+            "total_input_rows": len(rows or []),
+            "legacy_top5_auxiliary": True,
+        },
         "passed": pass_records,
         "near_miss": near_records,
+        "blocked": blocked_records,
         "combined": pass_records + near_records,
         "all_records": all_records,
         "scored_count": len(scored),
@@ -766,8 +920,10 @@ __all__ = [
     "ADMISSION_SECTION",
     "NEAR_MISS_SECTION",
     "RUNTIME_VERSION",
+    "UNIVERSE_INPUT_VERSION",
     "admission_model_summary",
     "admission_run_status",
+    "build_scan_universe_admission_input_rows",
     "build_scan_universe_admission_records",
     "score_scan_universe_admission_rows",
 ]

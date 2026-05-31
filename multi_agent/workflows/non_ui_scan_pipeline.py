@@ -64,6 +64,7 @@ def _generate_top_deep_reports_for_run(
     run_id: str,
     market: str,
     scan_mode: str,
+    diagnostics: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     planner_path = Path(str(manifest_paths.get("planner_handoff") or ""))
     if not planner_path.exists():
@@ -86,6 +87,7 @@ def _generate_top_deep_reports_for_run(
             scan_mode=str(scan_mode or "SWING").upper(),
             top_n=top_n,
             write_db=write_db,
+            diagnostics=diagnostics,
         )
     except Exception as exc:
         return {"count": 0, "error": str(exc)}
@@ -419,6 +421,7 @@ def run_non_ui_scan_pipeline(
         run_id=run_id,
         market=market,
         scan_mode=str(scan_mode or "SWING").upper(),
+        diagnostics=diagnostics,
     )
     if isinstance(top_deep_reports, dict) and top_deep_reports.get("local_path"):
         manifest_paths["top_deep_reports"] = str(top_deep_reports.get("local_path"))

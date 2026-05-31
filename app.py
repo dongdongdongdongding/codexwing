@@ -31,7 +31,12 @@ from modules.scan_policy import (
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
-from modules.scan_universe_admission import build_scan_universe_admission_records, admission_model_summary, admission_run_status
+from modules.scan_universe_admission import (
+    admission_model_summary,
+    admission_run_status,
+    build_scan_universe_admission_input_rows,
+    build_scan_universe_admission_records,
+)
 from modules.ui_helpers import (
     BackgroundScanState,
     build_signal_display_rows,
@@ -609,6 +614,8 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
             run_id=scan_state.run_id,
             logger=lambda line: scan_state.append_log("info", line),
         )
+        if isinstance(bridge_info, dict):
+            bridge_info["scan_diagnostics"] = diagnostics
         deep_result = {}
         try:
             planner_payload = _load_json_safe(bridge_info.get("planner_handoff")) if isinstance(bridge_info, dict) else {}
@@ -622,6 +629,7 @@ def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt,
                 scan_mode=scan_mode,
                 top_n=5,
                 write_db=os.getenv("AG_TOP_DEEP_WRITE_DB", "1") != "0",
+                diagnostics=diagnostics,
             )
             if isinstance(bridge_info, dict):
                 bridge_info["top_deep_reports"] = deep_result
@@ -2584,6 +2592,7 @@ if active_main_tab == "📚 아카이브":
                 c_mode3.metric("스윙", swing_count)
 
                 _archive_planner_payload = {}
+                _archive_diagnostics = {}
                 if _selected_run_id:
                     _archive_planner_payload = _load_json_safe(
                         str(Path("runtime_state/shared_working") / str(_selected_run_id) / "planner_handoff.json")
@@ -2595,6 +2604,11 @@ if active_main_tab == "📚 아카이브":
                         _archive_planner_payload,
                         _archive_profile_payload,
                     )
+                    _archive_raw_payload = _load_json_safe(
+                        str(Path("runtime_state/artifacts") / str(_selected_run_id) / "raw_scan_results.json")
+                    )
+                    if isinstance(_archive_raw_payload.get("diagnostics"), dict):
+                        _archive_diagnostics = _archive_raw_payload["diagnostics"]
 
                 if _selected_run_id:
                     _archive_scan_context = _load_scan_context_for_run(str(_selected_run_id))
@@ -2665,17 +2679,25 @@ if active_main_tab == "📚 아카이브":
                         _archive_market_key = "KOSDAQ"
                 if _archive_market_key in {"KOSPI", "KOSDAQ"}:
                     try:
+                        _archive_enriched_records = enrich_signal_rows_with_planner_trace(_archive_records, _archive_planner_payload)
+                        _archive_universe_input = build_scan_universe_admission_input_rows(
+                            _archive_enriched_records,
+                            diagnostics=_archive_diagnostics,
+                            market=_archive_market_key,
+                        )
                         _archive_admission = build_scan_universe_admission_records(
-                            enrich_signal_rows_with_planner_trace(_archive_records, _archive_planner_payload),
+                            _archive_universe_input.get("rows", _archive_enriched_records),
                             market=_archive_market_key,
                             limit=5,
                             include_near_miss=True,
+                            input_summary=_archive_universe_input,
                         )
                         _archive_summary = _archive_admission.get("summary") or admission_model_summary(_archive_market_key)
                         _archive_validation = _archive_summary.get("validation") if isinstance(_archive_summary.get("validation"), dict) else {}
                         _archive_run_status = admission_run_status(_archive_admission)
                         _archive_pass = build_signal_display_rows(_archive_admission.get("passed", []), limit=1)
                         _archive_near = build_signal_display_rows(_archive_admission.get("near_miss", []), limit=5)
+                        _archive_blocked = build_signal_display_rows(_archive_admission.get("blocked", []), limit=5)
                         _archive_all = build_signal_display_rows(_archive_admission.get("all_records", []), limit=None)
                         st.markdown("### 신규 운영 모델")
                         _model_cols = st.columns(6)
@@ -2715,6 +2737,13 @@ if active_main_tab == "📚 아카이브":
                             f"{_archive_summary.get('selection_rule')} · 최고5D {_archive_validation.get('max_5d_pct', '-')}% / "
                             f"bad-path {_archive_validation.get('bad_path_pct', '-')}%"
                         )
+                        _archive_input_summary = _archive_admission.get("input_summary") if isinstance(_archive_admission.get("input_summary"), dict) else {}
+                        st.caption(
+                            "Admission 직접 채점 universe "
+                            f"{_archive_input_summary.get('total_input_rows', len(_archive_enriched_records))}개 "
+                            f"(기존 통과 {_archive_input_summary.get('emitted_count', len(_archive_enriched_records))}개 / "
+                            f"기존 필터 탈락 feature {_archive_input_summary.get('rejected_feature_rows', 0)}개)."
+                        )
                         if _archive_pass:
                             st.success(_archive_run_status.get("message") or "운영 통과 후보가 있습니다.")
                         else:
@@ -2725,8 +2754,12 @@ if active_main_tab == "📚 아카이브":
                         st.markdown("### 운영 통과 후보")
                         _render_signal_card_list(_archive_pass, empty_text="해당 run의 신규 모델 통과 후보 없음.")
                         st.markdown("### 기준 미달 상위 후보")
-                        st.caption("승격 후보가 아니라 모델 확률 확인용입니다.")
+                        st.caption("승격 후보가 아니라 모델 확률 확인용입니다. 운영 차단 사유가 없는 후보만 표시합니다.")
                         _render_signal_card_list(_archive_near, empty_text="기준 미달 상위 후보 없음.")
+                        if _archive_blocked:
+                            with st.expander("모델 상위지만 운영 차단된 후보", expanded=False):
+                                st.caption("유동성/데이터/핵심 게이트 때문에 운영 매수 후보로 승격하지 않은 종목입니다.")
+                                _render_signal_card_list(_archive_blocked, empty_text="운영 차단 후보 없음.")
                         with st.expander("전체 스캔 결과 해석", expanded=False):
                             st.caption("해당 run에서 올라온 모든 후보를 Admission 모델 확률순으로 해석합니다.")
                             _all_rows = []
@@ -2746,6 +2779,7 @@ if active_main_tab == "📚 아카이브":
                                             if _row.get("admission_feature_coverage") is not None
                                             else "-"
                                         ),
+                                        "입력": "기존통과" if _row.get("admission_input_source_role") == "emitted" else "기존탈락",
                                         "전일비": _row.get("day_change"),
                                         "해석": _row.get("scan_interpretation_text") or _row.get("action_condition") or "-",
                                     }
