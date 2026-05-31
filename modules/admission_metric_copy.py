@@ -11,6 +11,10 @@ METRIC_LABELS: Dict[str, str] = {
     "news_sentiment": "뉴스 감성",
     "expected_net_return_3d": "예상 순수익 3D",
     "candidate_pass_prob_5d": "후보 통과확률",
+    "candidate_top_prob_5d": "이번 최고 후보확률",
+    "admission_threshold": "운영 통과기준",
+    "admission_threshold_gap": "기준까지 차이",
+    "admission_pass_count": "운영 통과수",
     "validation_avg_return_5d": "검증 평균 5D수익",
     "validation_worst_return_5d": "검증 최저 5D수익",
     "model_rank": "모델 순위",
@@ -41,6 +45,21 @@ METRIC_HELP: Dict[str, str] = {
     "candidate_pass_prob_5d": (
         "현재 후보의 피처를 Admission 모델에 넣어 계산한 후보별 확률입니다. "
         "운영 기준을 넘으면 Admission 통과, 못 넘으면 Near Miss로 표시됩니다."
+    ),
+    "candidate_top_prob_5d": (
+        "이번 스캔 후보 중 Admission 모델이 가장 높게 평가한 후보의 확률입니다. "
+        "이 값이 운영 통과기준보다 낮으면 승격 후보가 0개일 수 있습니다."
+    ),
+    "admission_threshold": (
+        "운영 승격에 필요한 후보별 Admission 모델 확률 기준입니다. "
+        "검증 승률이 아니라 현재 후보가 넘어야 하는 컷오프입니다."
+    ),
+    "admission_threshold_gap": (
+        "이번 최고 후보확률과 운영 통과기준의 차이입니다. 음수면 기준보다 부족한 상태입니다."
+    ),
+    "admission_pass_count": (
+        "이번 스캔에서 운영 통과기준을 넘은 후보 수입니다. "
+        "0개는 상승 종목이 없다는 뜻이 아니라 모델 기준상 매수 승격할 만큼 강한 후보가 없다는 뜻입니다."
     ),
     "validation_avg_return_5d": (
         "후보별 예상 수익이 아니라 현재 Admission 모델 선택규칙의 과거 검증 표본에서 나온 평균 5거래일 수익률입니다."

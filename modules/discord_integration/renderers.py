@@ -18,6 +18,7 @@ from modules.scan_universe_admission import (
     ADMISSION_SECTION,
     NEAR_MISS_SECTION,
     admission_model_summary,
+    admission_run_status,
     build_scan_universe_admission_records,
 )
 from modules.ui_helpers import enrich_signal_rows_with_planner_trace, merge_profile_exception_leaders_into_planner
@@ -479,6 +480,43 @@ def build_top_deep_embeds(
     gate_name = str(market_gate.get("gate") or "").upper()
     gate_msg = str(market_gate.get("msg") or "")
     zero_primary = section_counts.get(ADMISSION_SECTION, 0) == 0 and section_counts.get(NEAR_MISS_SECTION, 0) > 0
+    admission_sorted_rows = sorted(
+        all_rows,
+        key=lambda row: -float(
+            (
+                row.get("scan_universe_admission")
+                if isinstance(row.get("scan_universe_admission"), dict)
+                else {}
+            ).get("probability_pct")
+            or 0.0
+        ),
+    )
+    admission_summary = {}
+    for row in admission_sorted_rows:
+        model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
+        if model:
+            admission_summary = {
+                "prob_threshold_pct": model.get("prob_threshold_pct"),
+                "topn": model.get("topn"),
+            }
+            break
+    admission_status = admission_run_status(
+        {
+            "summary": admission_summary,
+            "passed": [
+                row
+                for row in admission_sorted_rows
+                if isinstance(row.get("scan_universe_admission"), dict)
+                and row.get("scan_universe_admission", {}).get("passed")
+            ],
+            "near_miss": [
+                row
+                for row in admission_sorted_rows
+                if isinstance(row.get("scan_universe_admission"), dict)
+                and not row.get("scan_universe_admission", {}).get("passed")
+            ],
+        }
+    )
 
     def _top_deep_sort_key(row: Dict[str, Any]) -> tuple[int, int, int]:
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
@@ -511,7 +549,8 @@ def build_top_deep_embeds(
         if gate_msg:
             status_lines.append(f"시장 게이트: {gate_msg}")
         if zero_primary:
-            status_lines.append("Admission 모델 통과 후보가 없어 기준 미달 상위 확률만 표시됩니다.")
+            status_lines.append(admission_status.get("message") or "Admission 모델 통과 후보가 없습니다.")
+            status_lines.append("의미: 상승 종목이 없다는 확정이 아니라, 이번 후보가 운영 컷을 넘지 못했다는 뜻입니다.")
         status_lines.extend(_integrity_status_lines(integrity_report))
         status_lines.append("포트폴리오 노출: " + " / ".join(render_portfolio_exposure_lines(exposure_summary)[:3]))
         fields.append({"name": "운영 상태", "value": "\n".join(status_lines)[:1024], "inline": False})
@@ -895,6 +934,48 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
         try:
             model_summary = admission_model_summary(market_key)
             validation = model_summary.get("validation") if isinstance(model_summary.get("validation"), dict) else {}
+            top_deep_rows = [
+                row
+                for row in _load_local_top_deep_reports(limit=500)
+                if str(row.get("run_id") or "") == run_id
+                and str(row.get("market") or "").upper() == market_key
+            ]
+            top_deep_rows = sorted(
+                top_deep_rows,
+                key=lambda row: -float(
+                    (
+                        row.get("scan_universe_admission")
+                        if isinstance(row.get("scan_universe_admission"), dict)
+                        else {}
+                    ).get("probability_pct")
+                    or 0.0
+                ),
+            )
+            current_status = admission_run_status(
+                {
+                    "summary": model_summary,
+                    "passed": [
+                        row
+                        for row in top_deep_rows
+                        if isinstance(row.get("scan_universe_admission"), dict)
+                        and row.get("scan_universe_admission", {}).get("passed")
+                    ],
+                    "near_miss": [
+                        row
+                        for row in top_deep_rows
+                        if isinstance(row.get("scan_universe_admission"), dict)
+                        and not row.get("scan_universe_admission", {}).get("passed")
+                    ],
+                }
+            )
+            status_line = current_status.get("message") or "-"
+            if current_status.get("best_probability_pct") is not None:
+                status_line += (
+                    f"\n관찰 1순위: {current_status.get('best_name') or current_status.get('best_ticker') or '-'} "
+                    f"({current_status.get('best_ticker') or '-'}) · "
+                    f"{metric_label('candidate_top_prob_5d')} {_fmt_num(current_status.get('best_probability_pct'), 1)}% · "
+                    f"{metric_label('admission_threshold')} {_fmt_num(current_status.get('threshold_pct'), 1)}%"
+                )
             fields.append(
                 {
                     "name": "Admission 모델 기준",
@@ -911,6 +992,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                     "inline": False,
                 }
             )
+            fields.append({"name": "이번 스캔 판정", "value": status_line[:1024], "inline": False})
         except Exception as exc:
             fields.append({"name": "Admission 모델 기준", "value": f"모델 요약 로드 실패: {exc}"[:1024], "inline": False})
     if gate_msg:

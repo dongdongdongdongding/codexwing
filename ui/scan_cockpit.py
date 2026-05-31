@@ -13,7 +13,11 @@ from typing import Any, Dict, List
 import streamlit as st
 
 from modules.admission_metric_copy import metric_help, metric_label
-from modules.scan_universe_admission import build_scan_universe_admission_records, admission_model_summary
+from modules.scan_universe_admission import (
+    admission_model_summary,
+    admission_run_status,
+    build_scan_universe_admission_records,
+)
 from modules.ui_helpers import (
     build_signal_display_rows,
     enrich_signal_rows_with_planner_trace,
@@ -253,23 +257,57 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         return
 
     validation = summary.get("validation") if isinstance(summary.get("validation"), dict) else {}
+    run_status = admission_run_status(admission)
     pass_rows = build_signal_display_rows(admission.get("passed", []), limit=summary.get("topn") or 1)
     near_rows = build_signal_display_rows(admission.get("near_miss", []), limit=5)
 
     st.markdown("### 신규 운영 모델")
     cols = st.columns(6)
-    cols[0].metric("모델", str(summary.get("model_name") or "-"))
-    cols[1].metric("운영 기준", f"{float(summary.get('prob_threshold_pct') or 0.0):.1f}%")
-    cols[2].metric("검증 1D", _fmt_metric_pct_or_dash(validation.get("win_1d_pct")), _fmt_metric_pct_or_dash(validation.get("avg_1d_pct")))
-    cols[3].metric("검증 3D", _fmt_metric_pct_or_dash(validation.get("win_3d_pct")), _fmt_metric_pct_or_dash(validation.get("avg_3d_pct")))
-    cols[4].metric("검증 5D", _fmt_metric_pct_or_dash(validation.get("win_5d_pct")), _fmt_metric_pct_or_dash(validation.get("avg_5d_pct")))
+    gap = run_status.get("best_gap_pct_points")
+    gap_text = "-" if gap is None else f"{float(gap):+.1f}%p"
+    pass_count = int(run_status.get("passed_count") or 0)
+    topn = int(run_status.get("topn") or 1)
+    cols[0].metric(
+        metric_label("admission_pass_count"),
+        f"{pass_count}/{topn}",
+        help=metric_help("admission_pass_count"),
+    )
+    cols[1].metric(
+        metric_label("candidate_top_prob_5d"),
+        _fmt_metric_pct_or_dash(run_status.get("best_probability_pct")),
+        gap_text,
+        help=metric_help("candidate_top_prob_5d"),
+    )
+    cols[2].metric(
+        metric_label("admission_threshold"),
+        _fmt_metric_pct_or_dash(run_status.get("threshold_pct")),
+        help=metric_help("admission_threshold"),
+    )
+    cols[3].metric(
+        metric_label("cohort_win_5d"),
+        _fmt_metric_pct_or_dash(validation.get("win_5d_pct")),
+        _fmt_metric_pct_or_dash(validation.get("avg_5d_pct")),
+        help=metric_help("cohort_win_5d"),
+    )
+    cols[4].metric(
+        metric_label("validation_worst_return_5d"),
+        _fmt_metric_pct_or_dash(validation.get("min_5d_pct")),
+        help=metric_help("validation_worst_return_5d"),
+    )
     cols[5].metric("표본", f"n={validation.get('n') or '-'}", f"{validation.get('active_days') or '-'}일")
     st.caption(
         f"{summary.get('market')} · {summary.get('label')} · {summary.get('feature_set')} · "
-        f"{summary.get('selection_rule')} · 최저5D {_fmt_metric_pct_or_dash(validation.get('min_5d_pct'))} / "
+        f"{summary.get('model_name')} · {summary.get('selection_rule')} · "
         f"최고5D {_fmt_metric_pct_or_dash(validation.get('max_5d_pct'))} / "
         f"bad-path {_fmt_metric_pct_or_dash(validation.get('bad_path_pct'))}"
     )
+    if pass_rows:
+        st.success(run_status.get("message") or "운영 통과 후보가 있습니다.")
+    else:
+        st.warning(
+            (run_status.get("message") or "운영 통과 후보가 없습니다.")
+            + " 이 상태는 내일 상승 종목이 없다는 확정이 아니라, 현재 운영 모델 기준으로 매수 승격할 만큼 강한 후보가 없다는 뜻입니다."
+        )
 
     st.markdown("### 운영 통과 후보")
     st.caption("검증된 selection rule 기준으로 run당 최대 1개만 승격합니다. 이 섹션만 운영 후보로 봅니다.")

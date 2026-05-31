@@ -472,3 +472,80 @@ def build_scan_universe_admission_records(
         "threshold": threshold,
         "topn": topn,
     }
+
+
+def admission_run_status(admission: Dict[str, Any]) -> Dict[str, Any]:
+    """Return operator-facing admission status for one scan run.
+
+    This separates the model's historical validation metrics from the current
+    run's candidate-level probability, which is the value that controls
+    admission/pass.
+    """
+    if not isinstance(admission, dict):
+        return {
+            "passed_count": 0,
+            "near_miss_count": 0,
+            "topn": 1,
+            "threshold_pct": None,
+            "best_probability_pct": None,
+            "best_gap_pct_points": None,
+            "best_ticker": "",
+            "best_name": "",
+            "status": "no_candidates",
+            "message": "Admission 모델로 채점할 후보가 없습니다.",
+        }
+    summary = admission.get("summary") if isinstance(admission.get("summary"), dict) else {}
+    passed = admission.get("passed") if isinstance(admission.get("passed"), list) else []
+    near_miss = admission.get("near_miss") if isinstance(admission.get("near_miss"), list) else []
+    combined = passed + near_miss
+    threshold_pct = _safe_float(summary.get("prob_threshold_pct"))
+    if threshold_pct is None:
+        threshold_pct = _safe_float(admission.get("threshold"))
+        if threshold_pct is not None and threshold_pct <= 1.0:
+            threshold_pct *= 100.0
+    topn = max(1, _safe_int(summary.get("topn")) or _safe_int(admission.get("topn")) or 1)
+    best = combined[0] if combined else {}
+    best_model = best.get("scan_universe_admission") if isinstance(best.get("scan_universe_admission"), dict) else {}
+    best_probability_pct = _safe_float(best_model.get("probability_pct"))
+    best_gap = None
+    if best_probability_pct is not None and threshold_pct is not None:
+        best_gap = round(best_probability_pct - threshold_pct, 4)
+    passed_count = len(passed)
+    if not combined:
+        status = "no_candidates"
+        message = "Admission 모델로 채점할 후보가 없습니다."
+    elif passed_count:
+        status = "passed"
+        message = f"운영 통과 후보 {passed_count}개가 있습니다."
+    else:
+        status = "near_miss_only"
+        if best_probability_pct is None or threshold_pct is None or best_gap is None:
+            message = "운영 통과 후보는 없고 기준 미달 후보만 있습니다."
+        else:
+            message = (
+                f"운영 통과 후보 0개: 최고 후보확률 {best_probability_pct:.1f}%가 "
+                f"기준 {threshold_pct:.1f}%보다 {abs(best_gap):.1f}%p 낮습니다."
+            )
+    return {
+        "passed_count": passed_count,
+        "near_miss_count": len(near_miss),
+        "topn": topn,
+        "threshold_pct": round(threshold_pct, 4) if threshold_pct is not None else None,
+        "best_probability_pct": round(best_probability_pct, 4) if best_probability_pct is not None else None,
+        "best_gap_pct_points": best_gap,
+        "best_ticker": _ticker(best) if isinstance(best, dict) else "",
+        "best_name": _stock_name(best, _ticker(best)) if isinstance(best, dict) and best else "",
+        "status": status,
+        "message": message,
+    }
+
+
+__all__ = [
+    "ADMISSION_SECTION",
+    "NEAR_MISS_SECTION",
+    "RUNTIME_VERSION",
+    "admission_model_summary",
+    "admission_run_status",
+    "build_scan_universe_admission_records",
+    "score_scan_universe_admission_rows",
+]

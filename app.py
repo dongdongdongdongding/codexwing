@@ -17,6 +17,7 @@ load_dotenv(".env.local")
 
 from modules import quant_analysis, db_manager, market_intelligence
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
+from modules.admission_metric_copy import metric_help, metric_label
 from modules.macro_scheduler import get_macro_context
 from modules.scanner_bridge import run_legacy_agent_bridge
 from modules.scan_persistence import persist_scan_run_artifacts
@@ -30,7 +31,7 @@ from modules.scan_policy import (
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
-from modules.scan_universe_admission import build_scan_universe_admission_records, admission_model_summary
+from modules.scan_universe_admission import build_scan_universe_admission_records, admission_model_summary, admission_run_status
 from modules.ui_helpers import (
     BackgroundScanState,
     build_signal_display_rows,
@@ -2672,20 +2673,54 @@ if active_main_tab == "📚 아카이브":
                         )
                         _archive_summary = _archive_admission.get("summary") or admission_model_summary(_archive_market_key)
                         _archive_validation = _archive_summary.get("validation") if isinstance(_archive_summary.get("validation"), dict) else {}
+                        _archive_run_status = admission_run_status(_archive_admission)
                         _archive_pass = build_signal_display_rows(_archive_admission.get("passed", []), limit=1)
                         _archive_near = build_signal_display_rows(_archive_admission.get("near_miss", []), limit=5)
                         st.markdown("### 신규 운영 모델")
-                        _model_cols = st.columns(5)
-                        _model_cols[0].metric("모델", str(_archive_summary.get("model_name") or "-"))
-                        _model_cols[1].metric("기준", f"{float(_archive_summary.get('prob_threshold_pct') or 0.0):.1f}%")
-                        _model_cols[2].metric("1D", f"{float(_archive_validation.get('win_1d_pct') or 0.0):.1f}%")
-                        _model_cols[3].metric("3D", f"{float(_archive_validation.get('win_3d_pct') or 0.0):.1f}%")
-                        _model_cols[4].metric("5D", f"{float(_archive_validation.get('win_5d_pct') or 0.0):.1f}%")
-                        st.caption(
-                            f"{_archive_summary.get('label')} · {_archive_summary.get('selection_rule')} · "
-                            f"최저5D {_archive_validation.get('min_5d_pct', '-')}% / 최고5D {_archive_validation.get('max_5d_pct', '-')}% / "
-                            f"표본 n={_archive_validation.get('n', '-')}"
+                        _model_cols = st.columns(6)
+                        _gap = _archive_run_status.get("best_gap_pct_points")
+                        _gap_text = "-" if _gap is None else f"{float(_gap):+.1f}%p"
+                        _model_cols[0].metric(
+                            metric_label("admission_pass_count"),
+                            f"{int(_archive_run_status.get('passed_count') or 0)}/{int(_archive_run_status.get('topn') or 1)}",
+                            help=metric_help("admission_pass_count"),
                         )
+                        _model_cols[1].metric(
+                            metric_label("candidate_top_prob_5d"),
+                            f"{float(_archive_run_status.get('best_probability_pct') or 0.0):.1f}%" if _archive_run_status.get("best_probability_pct") is not None else "-",
+                            _gap_text,
+                            help=metric_help("candidate_top_prob_5d"),
+                        )
+                        _model_cols[2].metric(
+                            metric_label("admission_threshold"),
+                            f"{float(_archive_run_status.get('threshold_pct') or 0.0):.1f}%" if _archive_run_status.get("threshold_pct") is not None else "-",
+                            help=metric_help("admission_threshold"),
+                        )
+                        _model_cols[3].metric(
+                            metric_label("cohort_win_5d"),
+                            f"{float(_archive_validation.get('win_5d_pct') or 0.0):.1f}%",
+                            f"{float(_archive_validation.get('avg_5d_pct') or 0.0):+.1f}%",
+                            help=metric_help("cohort_win_5d"),
+                        )
+                        _model_cols[4].metric(
+                            metric_label("validation_worst_return_5d"),
+                            f"{float(_archive_validation.get('min_5d_pct') or 0.0):+.1f}%",
+                            help=metric_help("validation_worst_return_5d"),
+                        )
+                        _model_cols[5].metric("표본", f"n={_archive_validation.get('n', '-')}", f"{_archive_validation.get('active_days', '-')}일")
+                        st.caption(
+                            f"{_archive_summary.get('market')} · {_archive_summary.get('label')} · "
+                            f"{_archive_summary.get('feature_set')} · {_archive_summary.get('model_name')} · "
+                            f"{_archive_summary.get('selection_rule')} · 최고5D {_archive_validation.get('max_5d_pct', '-')}% / "
+                            f"bad-path {_archive_validation.get('bad_path_pct', '-')}%"
+                        )
+                        if _archive_pass:
+                            st.success(_archive_run_status.get("message") or "운영 통과 후보가 있습니다.")
+                        else:
+                            st.warning(
+                                (_archive_run_status.get("message") or "운영 통과 후보가 없습니다.")
+                                + " 이 상태는 내일 상승 종목이 없다는 확정이 아니라, 현재 운영 모델 기준으로 매수 승격할 만큼 강한 후보가 없다는 뜻입니다."
+                            )
                         st.markdown("### 운영 통과 후보")
                         _render_signal_card_list(_archive_pass, empty_text="해당 run의 신규 모델 통과 후보 없음.")
                         st.markdown("### 기준 미달 상위 후보")
