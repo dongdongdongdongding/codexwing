@@ -18,6 +18,8 @@ class ScorePipelineTests(unittest.TestCase):
                     "Decision Score": 91.2,
                     "AI확률": "55.0%",
                     "정밀확률": "48.0%",
+                    "수급": "83.0점 당일+3일 순매수",
+                    "거래량": "✅ 2.40",
                     "추세": "UP",
                     "매수가(-2%)": "73,200",
                     "scan_mode": "SWING",
@@ -31,6 +33,9 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(snap["prob_5"], 55.0)
         self.assertEqual(snap["prob_clean"], 48.0)
         self.assertEqual(snap["entry_reference_price"], 73200.0)
+        self.assertEqual(snap["whale_score"], 83.0)
+        self.assertEqual(snap["volume_ratio"], 2.4)
+        self.assertEqual(snap["tech_score"], 100.0)
 
     def test_planner_handoff_preserves_alpha_and_conviction_scores(self):
         planner = build_planner_handoff(

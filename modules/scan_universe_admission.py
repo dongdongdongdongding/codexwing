@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -72,6 +73,52 @@ def _safe_float(value: Any) -> float | None:
     return numeric
 
 
+_NUMERIC_PATTERN = re.compile(r"[-+]?\d+(?:,\d{3})*(?:\.\d+)?")
+
+
+def _numeric_from_text(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return _safe_float(value)
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    match = _NUMERIC_PATTERN.search(text)
+    if not match:
+        return None
+    return _safe_float(match.group(0))
+
+
+def _nested_dict(row: Dict[str, Any], key: str) -> Dict[str, Any]:
+    value = row.get(key)
+    return value if isinstance(value, dict) else {}
+
+
+def _nested_present(row: Dict[str, Any], *paths: str) -> Any:
+    for path in paths:
+        current: Any = row
+        ok = True
+        for part in path.split("."):
+            if not isinstance(current, dict):
+                ok = False
+                break
+            current = current.get(part)
+        if ok and _present(current):
+            return current
+    return None
+
+
+def _feature_number_any(row: Dict[str, Any], *keys_or_paths: str) -> float | None:
+    value = _first_present(row, *keys_or_paths)
+    if value is None:
+        value = _nested_present(row, *keys_or_paths)
+    numeric = _safe_float(value)
+    if numeric is not None:
+        return numeric
+    return _numeric_from_text(value)
+
+
 def _safe_int(value: Any) -> int | None:
     numeric = _safe_float(value)
     if numeric is None:
@@ -117,47 +164,70 @@ def _feature_number(row: Dict[str, Any], *keys: str) -> float | None:
 
 
 def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, Any]:
+    feature_snapshot = _nested_dict(row, "feature_snapshot")
+    leader_metrics = _nested_dict(row, "leader_metrics") or _nested_dict(feature_snapshot, "leader_metrics")
+    tech_score = _feature_number_any(row, "tech_score", "Tech", "기술점수", "feature_snapshot.tech_score")
+    alpha_score = _feature_number_any(row, "alpha_score", "Antigrav", "Alpha", "alpha", "feature_snapshot.alpha_score", "feature_snapshot.antigrav")
+    if tech_score is None:
+        # KR scanner writes tech_score equal to Antigrav in DB payload, while
+        # table/artifact rows often only keep Antigrav.
+        tech_score = alpha_score
+    whale_score = _feature_number_any(row, "whale_score", "Whale", "수급", "feature_snapshot.whale", "leader_metrics.whale_score")
+    if whale_score is None:
+        whale_score = _feature_number_any(leader_metrics, "kr_flow_leader_score")
+    volume_ratio = _feature_number_any(
+        row,
+        "volume_ratio",
+        "vol_ratio",
+        "Volume Ratio",
+        "거래량",
+        "feature_snapshot.volume",
+        "leader_metrics.kr_volume_ratio",
+        "leader_metrics.volume_ratio",
+        "price.volume_ratio_20d",
+    )
     features = {
-        "alpha_score": _feature_number(row, "alpha_score", "Antigrav", "Alpha", "alpha"),
-        "tech_score": _feature_number(row, "tech_score", "technical_score", "Tech"),
-        "ml_prob": _feature_number(row, "ml_prob", "prob_5", "phase25_prob", "probability", "AI확률"),
-        "prob_clean": _feature_number(row, "prob_clean", "phase25_prob_clean", "clean_prob", "_prob_clean", "정밀확률"),
-        "whale_score": _feature_number(row, "whale_score", "whale", "Whale"),
-        "decision_score": _feature_number(row, "decision_score", "Decision Score", "score", "buy_score"),
-        "day_return_pct": _feature_number(row, "day_return_pct", "day_change_pct", "day_ret", "Change %", "전일비"),
+        "alpha_score": alpha_score,
+        "tech_score": tech_score,
+        "ml_prob": _feature_number_any(row, "ml_prob", "prob_5", "phase25_prob", "probability", "AI확률", "feature_snapshot.prob_5", "prediction.phase25_prob"),
+        "prob_clean": _feature_number_any(row, "prob_clean", "phase25_prob_clean", "clean_prob", "_prob_clean", "정밀확률", "feature_snapshot.prob_clean"),
+        "whale_score": whale_score,
+        "decision_score": _feature_number_any(row, "decision_score", "Decision Score", "score", "buy_score", "feature_snapshot.decision_score"),
+        "day_return_pct": _feature_number_any(row, "day_return_pct", "day_change_pct", "day_ret", "Change %", "전일비", "price.day_change_pct"),
         "volume_ratio": _feature_number(row, "volume_ratio", "vol_ratio", "Volume Ratio"),
-        "turnover": _feature_number(row, "turnover", "trading_value", "amount", "거래대금"),
-        "foreigner_1d": _feature_number(row, "foreigner_1d", "foreign_1d", "foreign_flow_1d"),
-        "institution_1d": _feature_number(row, "institution_1d", "inst_1d", "institution_flow_1d"),
-        "retail_1d": _feature_number(row, "retail_1d", "individual_1d"),
-        "foreigner_3d": _feature_number(row, "foreigner_3d", "foreign_3d"),
-        "institution_3d": _feature_number(row, "institution_3d", "inst_3d"),
-        "retail_3d": _feature_number(row, "retail_3d", "individual_3d"),
-        "foreigner_10d": _feature_number(row, "foreigner_10d", "foreign_10d"),
-        "institution_10d": _feature_number(row, "institution_10d", "inst_10d"),
-        "retail_10d": _feature_number(row, "retail_10d", "individual_10d"),
-        "entry_reference_price": _feature_number(row, "entry_reference_price", "scan_entry_reference_price", "Entry", "매수가(-2%)", "curr_price", "price"),
-        "priority_rank": _safe_int(_first_present(row, "priority_rank", "_raw_scan_rank", "rank", "Rank")),
-        "total_scans": _safe_int(_first_present(row, "total_scans", "_total_scans")),
-        "filtered_count": _safe_int(_first_present(row, "filtered_count", "_filtered_count")),
+        "turnover": _feature_number_any(row, "turnover", "trading_value", "amount", "거래대금"),
+        "foreigner_1d": _feature_number_any(row, "foreigner_1d", "foreign_1d", "foreign_flow_1d", "flow.foreigner_1d", "leader_metrics.kr_foreign_flow"),
+        "institution_1d": _feature_number_any(row, "institution_1d", "inst_1d", "institution_flow_1d", "flow.institution_1d", "leader_metrics.kr_institution_flow"),
+        "retail_1d": _feature_number_any(row, "retail_1d", "individual_1d", "flow.retail_1d", "leader_metrics.kr_retail_flow"),
+        "foreigner_3d": _feature_number_any(row, "foreigner_3d", "foreign_3d", "flow.foreigner_3d"),
+        "institution_3d": _feature_number_any(row, "institution_3d", "inst_3d", "flow.institution_3d"),
+        "retail_3d": _feature_number_any(row, "retail_3d", "individual_3d", "flow.retail_3d"),
+        "foreigner_10d": _feature_number_any(row, "foreigner_10d", "foreign_10d", "flow.foreigner_10d"),
+        "institution_10d": _feature_number_any(row, "institution_10d", "inst_10d", "flow.institution_10d"),
+        "retail_10d": _feature_number_any(row, "retail_10d", "individual_10d", "flow.retail_10d"),
+        "entry_reference_price": _feature_number_any(row, "entry_reference_price", "scan_entry_reference_price", "Entry", "매수가(-2%)", "curr_price", "price", "feature_snapshot.entry_reference_price", "trade_plan.entry_reference_price"),
+        "priority_rank": _safe_int(_nested_present(row, "priority_rank", "_raw_scan_rank", "rank", "Rank", "selection_alignment.raw_scan_rank")),
+        "total_scans": _safe_int(_nested_present(row, "total_scans", "_total_scans")),
+        "filtered_count": _safe_int(_nested_present(row, "filtered_count", "_filtered_count")),
         "market": market,
-        "row_role": str(_first_present(row, "row_role") or "emitted"),
-        "passed_current_model": _safe_bool(_first_present(row, "passed_current_model")) if _present(row.get("passed_current_model")) else True,
-        "decision": _first_present(row, "decision", "Decision", "strategy"),
-        "decision_bucket": _first_present(row, "decision_bucket", "selection_lane"),
-        "reject_stage": _first_present(row, "reject_stage"),
-        "reject_reason": _first_present(row, "reject_reason"),
-        "primary_theme": _first_present(row, "primary_theme", "theme", "Theme", "테마"),
-        "theme_source": _first_present(row, "theme_source"),
-        "theme_inference_status": _first_present(row, "theme_inference_status"),
-        "kr_universe_role": _first_present(row, "kr_universe_role"),
-        "scanner_timeframe_profile": _first_present(row, "scanner_timeframe_profile"),
-        "has_actual_flow": _safe_bool(_first_present(row, "has_actual_flow")),
-        "flow_consensus_buying": _safe_bool(_first_present(row, "flow_consensus_buying")),
-        "retail_dominant": _safe_bool(_first_present(row, "retail_dominant")),
-        "dominant": _first_present(row, "dominant"),
-        "whale_trend": _first_present(row, "whale_trend"),
+        "row_role": str(_nested_present(row, "row_role", "feature_snapshot.row_role") or "emitted"),
+        "passed_current_model": _safe_bool(_nested_present(row, "passed_current_model", "feature_snapshot.passed_current_model")) if _present(_nested_present(row, "passed_current_model", "feature_snapshot.passed_current_model")) else True,
+        "decision": _nested_present(row, "decision", "Decision", "strategy"),
+        "decision_bucket": _nested_present(row, "decision_bucket", "selection_lane"),
+        "reject_stage": _nested_present(row, "reject_stage"),
+        "reject_reason": _nested_present(row, "reject_reason"),
+        "primary_theme": _nested_present(row, "primary_theme", "theme.primary_theme", "theme_context.primary_theme", "feature_snapshot.theme_context.primary_theme", "theme", "Theme", "테마"),
+        "theme_source": _nested_present(row, "theme_source", "theme_context.theme_source", "feature_snapshot.theme_context.theme_source"),
+        "theme_inference_status": _nested_present(row, "theme_inference_status", "theme_context.theme_inference_status", "feature_snapshot.theme_context.theme_inference_status"),
+        "kr_universe_role": _nested_present(row, "kr_universe_role", "feature_snapshot.kr_universe_role"),
+        "scanner_timeframe_profile": _nested_present(row, "scanner_timeframe_profile", "feature_snapshot.scanner_timeframe_profile"),
+        "has_actual_flow": _safe_bool(_nested_present(row, "has_actual_flow", "flow.valid")),
+        "flow_consensus_buying": _safe_bool(_nested_present(row, "flow_consensus_buying", "leader_metrics.kr_flow_consensus_buying")),
+        "retail_dominant": _safe_bool(_nested_present(row, "retail_dominant", "leader_metrics.kr_retail_dominant")),
+        "dominant": _nested_present(row, "dominant", "flow.dominant"),
+        "whale_trend": _nested_present(row, "whale_trend", "flow.whale_trend"),
     }
+    features["volume_ratio"] = volume_ratio
     whale_1d = None
     if features["foreigner_1d"] is not None or features["institution_1d"] is not None:
         whale_1d = float(features["foreigner_1d"] or 0.0) + float(features["institution_1d"] or 0.0)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+import re
 from typing import Any, Dict, List
 from uuid import uuid4
 
@@ -33,6 +34,24 @@ def _extract_whale_num(row: Dict[str, Any]) -> float:
     whale = row.get("Whale") or row.get("수급") or row.get("whale_score")
     if whale is None:
         return 0.0
+    return _extract_first_numeric(whale) or 0.0
+
+
+def _extract_first_numeric(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, (int, float)):
+        try:
+            return float(value)
+        except Exception:
+            return None
+    match = re.search(r"[-+]?\d+(?:,\d{3})*(?:\.\d+)?", str(value))
+    if not match:
+        return None
+    try:
+        return float(match.group(0).replace(",", ""))
+    except Exception:
+        return None
 
 
 def _pick_numeric(row: Dict[str, Any], *keys: str) -> float | None:
@@ -50,14 +69,10 @@ def _pick_numeric(row: Dict[str, Any], *keys: str) -> float | None:
         try:
             return float(value)
         except Exception:
-            continue
+            numeric = _extract_first_numeric(value)
+            if numeric is not None:
+                return numeric
     return None
-    s = str(whale)
-    digits = "".join(ch for ch in s if (ch.isdigit() or ch == "."))
-    try:
-        return float(digits) if digits else 0.0
-    except Exception:
-        return 0.0
 
 
 def build_scanner_handoff_from_legacy_results(
@@ -100,11 +115,14 @@ def build_scanner_handoff_from_legacy_results(
             "stock_name": row.get("종목명") or row.get("Name") or row.get("name"),
             "antigrav": row.get("Antigrav"),
             "whale": row.get("Whale") or row.get("수급"),
+            "whale_score": whale_score,
             "trend": row.get("추세") or row.get("Trend"),
             "position": row.get("위치") or row.get("Position"),
             "volume": row.get("거래량") or row.get("Volume"),
+            "volume_ratio": _pick_numeric(row, "volume_ratio", "Volume Ratio", "거래량"),
             "surge": row.get("급등예측") or row.get("Surge"),
             "alpha_score": _pick_numeric(row, "alpha_score", "Alpha", "AI점수", "Antigrav"),
+            "tech_score": _pick_numeric(row, "tech_score", "Tech", "기술점수", "Antigrav"),
             "conviction_score": _pick_numeric(row, "conviction_score", "Conviction", "확신도"),
             "decision_score": row.get("Decision Score") or row.get("decision_score"),
             "entry_reference_price": _pick_numeric(
