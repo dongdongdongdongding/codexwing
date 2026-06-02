@@ -12,14 +12,14 @@ import pandas as pd
 
 MODEL_DIR = Path("models/scan_universe_challengers")
 MODEL_PATHS = {
-    "KOSPI": MODEL_DIR / "kospi__clean_5d__wide_no_theme__xgboost__top1_p0p60.pkl",
-    "KOSDAQ": MODEL_DIR / "kosdaq__pos_5d__wide_no_theme__hist_gb__top1_p0p55.pkl",
+    "KOSPI": MODEL_DIR / "kospi__touch10_guard_5d__wide_theme__xgboost__top1_p0p45.pkl",
+    "KOSDAQ": MODEL_DIR / "kosdaq__touch5_guard_5d__flow_no_gate__lightgbm__top1.pkl",
 }
 
 ADMISSION_SECTION = "Scan Universe Admission"
 NEAR_MISS_SECTION = "Admission Near Miss"
-RUNTIME_VERSION = "scan_universe_admission_runtime_v1"
-INTERPRETATION_VERSION = "scan_universe_admission_interpretation_v1"
+RUNTIME_VERSION = "scan_universe_admission_runtime_v2_entry_touch"
+INTERPRETATION_VERSION = "scan_universe_admission_interpretation_v2_entry_touch"
 UNIVERSE_INPUT_VERSION = "scan_universe_admission_universe_input_v1"
 CRITICAL_LEGACY_REJECT_REASONS = {
     "FETCH_DATA_FAIL",
@@ -323,6 +323,41 @@ def _metrics(bundle: Dict[str, Any]) -> Dict[str, Any]:
     return metrics
 
 
+def _target_pct_from_label(label: Any) -> float:
+    text = str(label or "").lower()
+    return 10.0 if "10" in text else 5.0
+
+
+def _objective_text(bundle: Dict[str, Any]) -> str:
+    target = _target_pct_from_label(bundle.get("label"))
+    label = str(bundle.get("label") or "")
+    guard = "guard" in label
+    suffix = " 및 -5% 선행손절 회피" if guard else ""
+    return f"스캔 이후 5거래일 내 +{target:.0f}% 고가 터치{suffix}"
+
+
+def _primary_validation_rate(metrics: Dict[str, Any]) -> float | None:
+    return _round_pct(
+        _first_present(
+            metrics,
+            "label_win_pct",
+            "hit10_guard_5d_pct",
+            "hit5_guard_5d_pct",
+            "hit10_5d_pct",
+            "hit5_5d_pct",
+            "win_5d_pct",
+        )
+    )
+
+
+def _touch_expected_value(metrics: Dict[str, Any]) -> float | None:
+    return _round_pct(_first_present(metrics, "avg_max_high_5d_pct", "avg_5d_pct"))
+
+
+def _touch_stress_value(metrics: Dict[str, Any]) -> float | None:
+    return _round_pct(_first_present(metrics, "min_max_high_5d_pct", "min_5d_pct"))
+
+
 def _round_pct(value: Any) -> float | None:
     numeric = _safe_float(value)
     if numeric is None:
@@ -491,7 +526,7 @@ def _build_result_interpretation(
     *,
     features: Dict[str, Any],
     probability_pct: float,
-    threshold_pct: float,
+    threshold_pct: float | None,
     passed: bool,
     model_rank: int,
     metrics: Dict[str, Any],
@@ -499,7 +534,7 @@ def _build_result_interpretation(
 ) -> Dict[str, Any]:
     coverage = _safe_float(features.get("feature_coverage_score"))
     coverage_pct = round(float(coverage or 0.0) * 100.0, 1) if coverage is not None else None
-    gap = round(float(probability_pct) - float(threshold_pct), 4)
+    gap = round(float(probability_pct) - float(threshold_pct), 4) if threshold_pct is not None else None
     day_return = _safe_float(features.get("day_return_pct"))
     missing = list(features.get("feature_missing_keys") or [])
     warnings: List[str] = []
@@ -514,11 +549,16 @@ def _build_result_interpretation(
     if promotion_block_reason:
         warnings.append(f"운영 차단 {promotion_block_reason}")
 
-    decision = "운영 통과" if passed else ("모델 기준 통과·운영 차단" if promotion_block_reason and gap >= 0 else "기준 미달")
-    action = "조건부 매수 후보로 표시" if passed else "승격 전 관찰 후보"
+    target_pct = _safe_float(metrics.get("target_return_pct")) or 5.0
+    decision = "운영 통과" if passed else (
+        "모델 기준 통과·운영 차단"
+        if promotion_block_reason and (gap is None or gap >= 0)
+        else "기준 미달"
+    )
+    action = f"5거래일 내 +{target_pct:.0f}% 목표터치 후보" if passed else "승격 전 관찰 후보"
     if promotion_block_reason:
         action = f"모델 확률은 높지만 {promotion_block_reason} 때문에 운영 매수 차단"
-    elif not passed and gap < 0:
+    elif not passed and gap is not None and gap < 0:
         action = f"운영 기준까지 {abs(gap):.1f}%p 부족"
 
     drivers = [
@@ -534,7 +574,7 @@ def _build_result_interpretation(
         "action": action,
         "model_rank": model_rank,
         "probability_pct": round(float(probability_pct), 4),
-        "threshold_pct": round(float(threshold_pct), 4),
+        "threshold_pct": round(float(threshold_pct), 4) if threshold_pct is not None else None,
         "threshold_gap_pct_points": gap,
         "promotion_blocked": bool(promotion_block_reason),
         "promotion_block_reason": promotion_block_reason,
@@ -545,6 +585,14 @@ def _build_result_interpretation(
         "validation_summary": {
             "sample_n": metrics.get("n"),
             "active_days": metrics.get("active_days"),
+            "label_win_pct": metrics.get("label_win_pct"),
+            "hit5_5d_pct": metrics.get("hit5_5d_pct"),
+            "hit10_5d_pct": metrics.get("hit10_5d_pct"),
+            "hit5_guard_5d_pct": metrics.get("hit5_guard_5d_pct"),
+            "hit10_guard_5d_pct": metrics.get("hit10_guard_5d_pct"),
+            "avg_max_high_5d_pct": metrics.get("avg_max_high_5d_pct"),
+            "min_max_high_5d_pct": metrics.get("min_max_high_5d_pct"),
+            "max_max_high_5d_pct": metrics.get("max_max_high_5d_pct"),
             "win_1d_pct": metrics.get("win_1d_pct"),
             "avg_1d_pct": metrics.get("avg_1d_pct"),
             "min_1d_pct": metrics.get("min_1d_pct"),
@@ -560,8 +608,14 @@ def _build_result_interpretation(
             "bad_path_pct": metrics.get("bad_path_pct"),
         },
         "plain_text": (
-            f"{decision}: 후보확률 {probability_pct:.1f}% / 기준 {threshold_pct:.1f}% "
-            f"({gap:+.1f}%p). {action}. " + " · ".join(drivers)
+            (
+                f"{decision}: 5D 목표터치 확률 {probability_pct:.1f}% / 기준 {threshold_pct:.1f}% "
+                f"({gap:+.1f}%p). "
+                if threshold_pct is not None and gap is not None
+                else f"{decision}: 5D 목표터치 확률 {probability_pct:.1f}% / Top{model_rank} 선발. "
+            )
+            + f"{action}. "
+            + " · ".join(drivers)
         ),
     }
 
@@ -569,22 +623,40 @@ def _build_result_interpretation(
 def admission_model_summary(market: str) -> Dict[str, Any]:
     bundle = load_admission_model(market)
     metrics = _metrics(bundle)
-    threshold = float(bundle.get("prob_threshold") or 0.0)
+    raw_threshold = bundle.get("prob_threshold")
+    has_probability_floor = raw_threshold is not None
+    threshold = float(raw_threshold) if has_probability_floor else 0.0
+    target_pct = _target_pct_from_label(bundle.get("label"))
     return {
         "version": RUNTIME_VERSION,
         "market": bundle.get("market"),
         "model_name": bundle.get("model_name"),
         "label": bundle.get("label"),
+        "label_description": bundle.get("label_description"),
+        "objective": _objective_text(bundle),
+        "target_return_pct": target_pct,
         "feature_set": bundle.get("feature_set"),
         "selection_rule": bundle.get("selection_rule"),
-        "prob_threshold": threshold,
-        "prob_threshold_pct": round(threshold * 100.0, 2),
+        "prob_threshold": threshold if has_probability_floor else None,
+        "prob_threshold_pct": round(threshold * 100.0, 2) if has_probability_floor else None,
         "topn": int(bundle.get("topn") or 1),
         "model_path": bundle.get("_model_path"),
+        "has_probability_floor": has_probability_floor,
+        "threshold_label": f"{round(threshold * 100.0, 2):g}%" if has_probability_floor else f"Top{int(bundle.get('topn') or 1)} 선발",
         "validation": {
             "n": metrics.get("n"),
             "active_runs": metrics.get("active_runs"),
             "active_days": metrics.get("active_days"),
+            "label_win_pct": metrics.get("label_win_pct"),
+            "hit5_5d_pct": metrics.get("hit5_5d_pct"),
+            "hit10_5d_pct": metrics.get("hit10_5d_pct"),
+            "hit5_guard_5d_pct": metrics.get("hit5_guard_5d_pct"),
+            "hit10_guard_5d_pct": metrics.get("hit10_guard_5d_pct"),
+            "avg_max_high_5d_pct": metrics.get("avg_max_high_5d_pct"),
+            "min_max_high_5d_pct": metrics.get("min_max_high_5d_pct"),
+            "max_max_high_5d_pct": metrics.get("max_max_high_5d_pct"),
+            "avg_min_low_5d_pct": metrics.get("avg_min_low_5d_pct"),
+            "min_min_low_5d_pct": metrics.get("min_min_low_5d_pct"),
             "win_1d_pct": metrics.get("win_1d_pct"),
             "avg_1d_pct": metrics.get("avg_1d_pct"),
             "min_1d_pct": metrics.get("min_1d_pct"),
@@ -615,15 +687,33 @@ def _attach_display_payload(
     passed: bool,
 ) -> Dict[str, Any]:
     metrics = _metrics(bundle)
-    threshold = float(bundle.get("prob_threshold") or 0.0)
+    raw_threshold = bundle.get("prob_threshold")
+    has_probability_floor = raw_threshold is not None
+    threshold = float(raw_threshold) if has_probability_floor else 0.0
     promotion_block = _promotion_block_reason(row)
     probability_pct = round(probability * 100.0, 4)
-    threshold_pct = round(threshold * 100.0, 4)
+    threshold_pct = round(threshold * 100.0, 4) if has_probability_floor else None
+    threshold_label = f"{threshold_pct:.1f}%" if threshold_pct is not None else f"Top{int(bundle.get('topn') or 1)} 선발"
+    target_pct = _target_pct_from_label(bundle.get("label"))
     section = ADMISSION_SECTION if passed else NEAR_MISS_SECTION
     stop_risk = _safe_float(metrics.get("stop_before_target_5d_pct"))
+    stop5 = _safe_float(metrics.get("stop5_pct"))
     bad_path = _safe_float(metrics.get("bad_path_pct"))
     loss_risk_score = max(value for value in (stop_risk, bad_path, 0.0) if value is not None)
+    if stop5 is not None:
+        loss_risk_score = max(loss_risk_score, stop5)
     stock_name = _stock_name(row, _ticker(row))
+    metrics_for_interpretation = {**metrics, "target_return_pct": target_pct}
+    target_rate = _round_pct(
+        _first_present(
+            metrics,
+            "label_win_pct",
+            "hit10_guard_5d_pct" if target_pct >= 10 else "hit5_guard_5d_pct",
+            "hit10_5d_pct" if target_pct >= 10 else "hit5_5d_pct",
+        )
+    )
+    expected_mfe = _touch_expected_value(metrics)
+    stress_mfe = _touch_stress_value(metrics)
     enriched = dict(row)
     enriched.update(
         {
@@ -631,22 +721,32 @@ def _attach_display_payload(
             "market": bundle.get("market"),
             "decision": "ADMISSION_PASS" if passed else "ADMISSION_NEAR_MISS",
             "decision_bucket": "admission_pass" if passed else "admission_near_miss",
-            "phase25_oos_win_rate_pct": _round_pct(metrics.get("win_5d_pct")),
+            "phase25_oos_win_rate_pct": target_rate,
             "loss_risk_score": _round_pct(_first_present(row, "loss_risk_score", "Loss Risk") or loss_risk_score),
-            "final_action": "Admission 모델 통과 - 조건부 매수 후보" if passed else "Admission 모델 기준 미달 - 신규 매수 대기",
-            "entry_condition_text": (
-                f"모델확률 {probability_pct:.1f}% >= 운영기준 {threshold_pct:.1f}%"
+            "final_action": (
+                f"Admission 모델 통과 - 5D +{target_pct:.0f}% 목표터치 후보"
                 if passed
-                else f"모델확률 {probability_pct:.1f}% < 운영기준 {threshold_pct:.1f}%"
+                else "Admission 모델 기준 미달 - 신규 매수 대기"
+            ),
+            "entry_condition_text": (
+                (
+                    f"5D +{target_pct:.0f}% 목표터치 확률 {probability_pct:.1f}% >= 운영기준 {threshold_pct:.1f}%"
+                    if passed
+                    else f"5D +{target_pct:.0f}% 목표터치 확률 {probability_pct:.1f}% < 운영기준 {threshold_pct:.1f}%"
+                )
+                if threshold_pct is not None
+                else f"5D +{target_pct:.0f}% 목표터치 확률순 {threshold_label}"
             ),
             "stop_condition_text": (
-                f"검증 최저5D {_round_pct(metrics.get('min_5d_pct'))}% · "
-                f"stop-first {_round_pct(metrics.get('stop_before_target_5d_pct'))}% 기준"
+                f"검증 최저 5D고가 {_round_pct(metrics.get('min_max_high_5d_pct'))}% · "
+                f"최저 5D종가 {_round_pct(metrics.get('min_5d_pct'))}% · "
+                f"stop5 {_round_pct(metrics.get('stop5_pct'))}% 기준"
             ),
             "risk_flags": [
                 "SCAN_UNIVERSE_ADMISSION_MODEL",
                 f"model={bundle.get('model_name')}",
-                f"threshold={threshold_pct:.1f}%",
+                f"objective=5d_touch_{target_pct:.0f}",
+                f"threshold={threshold_pct:.1f}%" if threshold_pct is not None else f"selection={threshold_label}",
             ]
             + ([] if passed else ["ADMISSION_THRESHOLD_NOT_MET"]),
             "_analysis_section": section,
@@ -658,13 +758,18 @@ def _attach_display_payload(
                 "market": bundle.get("market"),
                 "model_name": bundle.get("model_name"),
                 "label": bundle.get("label"),
+                "label_description": bundle.get("label_description"),
+                "objective": _objective_text(bundle),
+                "target_return_pct": target_pct,
                 "feature_set": bundle.get("feature_set"),
                 "selection_rule": bundle.get("selection_rule"),
                 "topn": int(bundle.get("topn") or 1),
                 "probability": probability,
                 "probability_pct": probability_pct,
-                "prob_threshold": threshold,
+                "prob_threshold": raw_threshold,
                 "prob_threshold_pct": threshold_pct,
+                "threshold_label": threshold_label,
+                "has_probability_floor": has_probability_floor,
                 "passed": passed,
                 "model_rank": model_rank,
                 "model_path": bundle.get("_model_path"),
@@ -688,7 +793,7 @@ def _attach_display_payload(
                 threshold_pct=threshold_pct,
                 passed=passed,
                 model_rank=model_rank,
-                metrics=metrics,
+                metrics=metrics_for_interpretation,
                 promotion_block_reason=promotion_block,
             ),
             "realized_expectancy_admission": {
@@ -697,10 +802,19 @@ def _attach_display_payload(
                 "source": "scan_universe_admission_model",
                 "5d_prob": probability_pct,
                 "ranking_score_5d": probability_pct,
-                "base_expected_value_5d_pct": _round_pct(metrics.get("avg_5d_pct")),
-                "expected_value_5d_pct": _round_pct(metrics.get("avg_5d_pct")),
-                "stress_expected_value_5d_pct": _round_pct(metrics.get("min_5d_pct")),
+                "target_return_pct": target_pct,
+                "target_touch_win_pct": target_rate,
+                "hit5_5d_pct": _round_pct(metrics.get("hit5_5d_pct")),
+                "hit10_5d_pct": _round_pct(metrics.get("hit10_5d_pct")),
+                "hit5_guard_5d_pct": _round_pct(metrics.get("hit5_guard_5d_pct")),
+                "hit10_guard_5d_pct": _round_pct(metrics.get("hit10_guard_5d_pct")),
+                "base_expected_value_5d_pct": expected_mfe,
+                "expected_value_5d_pct": expected_mfe,
+                "stress_expected_value_5d_pct": stress_mfe,
+                "expected_max_high_5d_pct": expected_mfe,
+                "worst_max_high_5d_pct": stress_mfe,
                 "stop_first_risk_pct": _round_pct(metrics.get("stop_before_target_5d_pct")),
+                "stop5_pct": _round_pct(metrics.get("stop5_pct")),
             },
             "prediction": {
                 **(row.get("prediction") if isinstance(row.get("prediction"), dict) else {}),
@@ -762,7 +876,8 @@ def build_scan_universe_admission_records(
 ) -> Dict[str, Any]:
     market_key = str(market or "").upper().strip()
     bundle = load_admission_model(market_key)
-    threshold = float(bundle.get("prob_threshold") or 0.0)
+    raw_threshold = bundle.get("prob_threshold")
+    threshold = float(raw_threshold) if raw_threshold is not None else 0.0
     topn = max(1, int(bundle.get("topn") or 1))
     scored = score_scan_universe_admission_rows(rows, market=market_key)
     pass_records: List[Dict[str, Any]] = []
@@ -891,8 +1006,9 @@ def admission_run_status(admission: Dict[str, Any]) -> Dict[str, Any]:
     passed = admission.get("passed") if isinstance(admission.get("passed"), list) else []
     near_miss = admission.get("near_miss") if isinstance(admission.get("near_miss"), list) else []
     combined = passed + near_miss
-    threshold_pct = _safe_float(summary.get("prob_threshold_pct"))
-    if threshold_pct is None:
+    has_probability_floor = summary.get("has_probability_floor")
+    threshold_pct = None if has_probability_floor is False else _safe_float(summary.get("prob_threshold_pct"))
+    if threshold_pct is None and has_probability_floor is not False:
         threshold_pct = _safe_float(admission.get("threshold"))
         if threshold_pct is not None and threshold_pct <= 1.0:
             threshold_pct *= 100.0
@@ -909,7 +1025,10 @@ def admission_run_status(admission: Dict[str, Any]) -> Dict[str, Any]:
         message = "Admission 모델로 채점할 후보가 없습니다."
     elif passed_count:
         status = "passed"
-        message = f"운영 통과 후보 {passed_count}개가 있습니다."
+        if has_probability_floor is False:
+            message = f"운영 통과 후보 {passed_count}개가 있습니다. 확률 바닥 없이 Top{topn} 선택규칙으로 선발했습니다."
+        else:
+            message = f"운영 통과 후보 {passed_count}개가 있습니다."
     else:
         status = "near_miss_only"
         if best_probability_pct is None or threshold_pct is None or best_gap is None:

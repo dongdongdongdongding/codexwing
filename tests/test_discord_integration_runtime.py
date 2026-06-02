@@ -233,7 +233,7 @@ def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
     assert "조건부 매수 가능" in embeds[0]["fields"][0]["value"]
     assert "전일비: -3.21%" in embeds[0]["fields"][0]["value"]
     assert "정책: kr_scanner_policy_test · production_champion" in embeds[0]["fields"][0]["value"]
-    assert "Admission 지표: 후보 통과확률 - · 검증 평균 5D수익 +4.50% · 검증 최저 5D수익 -3.20% · 후보 모델점수 72.0" in embeds[0]["fields"][0]["value"]
+    assert "Admission 지표: 후보 목표터치 확률 - · 검증 평균 5D고가상승 +4.50% · 검증 최저 5D고가상승 -3.20% · 후보 모델점수 72.0" in embeds[0]["fields"][0]["value"]
     assert "수급: 외인 +1,200,000 / 기관 -300,000 / 개인 -900,000" in embeds[0]["fields"][0]["value"]
 
 
@@ -310,7 +310,7 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
 
     assert "RUN-OLD" in runs["fields"][0]["name"]
     assert run_id_choices(current="OLD") == ["RUN-OLD"]
-    assert "정책 scan_universe_admission_runtime_v1" in archive_top["fields"][0]["value"]
+    assert "정책 scan_universe_admission_runtime_v2_entry_touch" in archive_top["fields"][0]["value"]
     assert "Admission" in archive_top["fields"][0]["value"]
     assert "SK하이닉스" in archive["fields"][0]["name"]
     assert "삼성전자" in top_deep[0]["fields"][0]["name"]

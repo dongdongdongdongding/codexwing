@@ -270,6 +270,10 @@ LABEL_SPECS = [
     LabelSpec("target_first_5d", "5d", "5D target touched before stop"),
     LabelSpec("target_first_sustain_5d", "5d", "5D target touched before stop, 3D and 5D closes positive"),
     LabelSpec("target_hit_no_stop_5d", "5d", "5D target hit and stop not hit"),
+    LabelSpec("touch5_5d", "5d", "5D high touches entry +5% at least once"),
+    LabelSpec("touch10_5d", "5d", "5D high touches entry +10% at least once"),
+    LabelSpec("touch5_guard_5d", "5d", "5D high touches +5% while 5D low stays above -5%"),
+    LabelSpec("touch10_guard_5d", "5d", "5D high touches +10% while 5D low stays above -5%"),
 ]
 
 TOPNS = [1, 3, 5]
@@ -336,8 +340,9 @@ def fetch_rows(*, market: str, scan_mode: str, page_size: int) -> pd.DataFrame:
     rows: List[Dict[str, Any]] = []
     last_id = 0
     cols = ",".join(SELECT_COLUMNS)
+    safe_page_size = min(max(1, int(page_size or 1000)), 1000)
     while True:
-        query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(page_size)
+        query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(safe_page_size)
         if market != "ALL":
             query = query.eq("market", market)
         if scan_mode != "ALL":
@@ -346,7 +351,7 @@ def fetch_rows(*, market: str, scan_mode: str, page_size: int) -> pd.DataFrame:
         rows.extend(batch)
         if batch:
             last_id = max(int(row.get("id") or last_id) for row in batch)
-        if len(batch) < page_size:
+        if len(batch) < safe_page_size:
             break
     return pd.DataFrame(rows)
 
@@ -482,6 +487,16 @@ def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Serie
             df.get("target_hit_5d_bool", false).fillna(False)
             & ~df.get("stop_hit_5d_bool", false).fillna(False)
         ).fillna(False), valid
+    if spec.name in {"touch5_5d", "touch10_5d", "touch5_guard_5d", "touch10_guard_5d"}:
+        target = 10.0 if "10" in spec.name else 5.0
+        mfe = pd.to_numeric(df.get("max_high_return_5d_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
+        mae = pd.to_numeric(df.get("min_low_return_5d_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
+        valid = mfe.notna()
+        hit = mfe.ge(target).fillna(False)
+        if "guard" in spec.name:
+            valid &= mae.notna()
+            hit &= mae.gt(-5.0).fillna(False)
+        return hit, valid
     raise KeyError(spec.name)
 
 
@@ -633,6 +648,14 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
             out[f"stop_before_target_{horizon}_pct"] = _pct(_bool_series(stop.loc[target_valid]).mean())
     mfe = pd.to_numeric(sub.get("max_high_return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
     mae = pd.to_numeric(sub.get("min_low_return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
+    if len(mfe):
+        out["hit5_5d_pct"] = _pct(mfe.ge(5.0).mean())
+        out["hit10_5d_pct"] = _pct(mfe.ge(10.0).mean())
+    if len(mfe) and len(mae):
+        aligned = sub[["max_high_return_5d_pct", "min_low_return_5d_pct"]].apply(pd.to_numeric, errors="coerce").dropna()
+        if not aligned.empty:
+            out["hit5_guard_5d_pct"] = _pct((aligned["max_high_return_5d_pct"].ge(5.0) & aligned["min_low_return_5d_pct"].gt(-5.0)).mean())
+            out["hit10_guard_5d_pct"] = _pct((aligned["max_high_return_5d_pct"].ge(10.0) & aligned["min_low_return_5d_pct"].gt(-5.0)).mean())
     out["avg_max_high_5d_pct"] = _round(mfe.mean()) if len(mfe) else None
     out["min_max_high_5d_pct"] = _round(mfe.min()) if len(mfe) else None
     out["max_max_high_5d_pct"] = _round(mfe.max()) if len(mfe) else None
@@ -658,6 +681,12 @@ def quality_score(result_metrics: Dict[str, Any], *, topn: int) -> float:
     bad = float(result_metrics.get("bad_path_pct") if result_metrics.get("bad_path_pct") is not None else 100.0)
     stop = float(result_metrics.get("stop5_pct") if result_metrics.get("stop5_pct") is not None else 100.0)
     target_first = float(result_metrics.get("target_before_stop_5d_pct") or 0.0)
+    hit5 = float(result_metrics.get("hit5_5d_pct") or 0.0)
+    hit10 = float(result_metrics.get("hit10_5d_pct") or 0.0)
+    hit5_guard = float(result_metrics.get("hit5_guard_5d_pct") or 0.0)
+    hit10_guard = float(result_metrics.get("hit10_guard_5d_pct") or 0.0)
+    avg_mfe = float(result_metrics.get("avg_max_high_5d_pct") or -20.0)
+    min_mfe = float(result_metrics.get("min_max_high_5d_pct") or -20.0)
     sample_penalty = 0.0
     if runs < MIN_PROMOTION_RUNS:
         sample_penalty += (MIN_PROMOTION_RUNS - runs) * 18.0
@@ -674,6 +703,12 @@ def quality_score(result_metrics: Dict[str, Any], *, topn: int) -> float:
         + avg3 * 12.0
         + avg5 * 16.0
         + target_first * 0.25
+        + hit5 * 0.35
+        + hit10 * 0.70
+        + hit5_guard * 0.45
+        + hit10_guard * 0.90
+        + avg_mfe * 20.0
+        + min_mfe * 8.0
         - bad * 0.8
         - stop * 0.6
         - tail_penalty
@@ -838,14 +873,29 @@ def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
         reasons.append("active_days_lt_6")
     if int(m.get("n") or 0) < max(MIN_PROMOTION_ROWS, topn * 8):
         reasons.append("sample_too_small")
-    if _metric_float(m, "win_3d_pct", 0.0) < 70.0:
-        reasons.append("win_3d_lt_70")
-    if _metric_float(m, "win_5d_pct", 0.0) < 70.0:
-        reasons.append("win_5d_lt_70")
-    if _metric_float(m, "avg_3d_pct", -999.0) <= 0.0:
-        reasons.append("avg_3d_not_positive")
-    if _metric_float(m, "avg_5d_pct", -999.0) <= 0.0:
-        reasons.append("avg_5d_not_positive")
+    label_name = str(candidate.get("label") or "")
+    is_touch_label = label_name.startswith("touch") or label_name.startswith("target_")
+    if is_touch_label:
+        min_label_win = 45.0 if "10" in label_name else 65.0
+        if _metric_float(m, "label_win_pct", 0.0) < min_label_win:
+            reasons.append(f"label_win_lt_{int(min_label_win)}")
+        if _metric_float(m, "hit5_5d_pct", 0.0) < 65.0:
+            reasons.append("hit5_5d_lt_65")
+        if "10" in label_name and _metric_float(m, "hit10_5d_pct", 0.0) < 35.0:
+            reasons.append("hit10_5d_lt_35")
+        if _metric_float(m, "avg_max_high_5d_pct", -999.0) < 5.0:
+            reasons.append("avg_mfe_5d_lt_5")
+        if m.get("min_max_high_5d_pct") is not None and _metric_float(m, "min_max_high_5d_pct", -999.0) < 1.5:
+            reasons.append("min_mfe_5d_lt_1p5")
+    else:
+        if _metric_float(m, "win_3d_pct", 0.0) < 70.0:
+            reasons.append("win_3d_lt_70")
+        if _metric_float(m, "win_5d_pct", 0.0) < 70.0:
+            reasons.append("win_5d_lt_70")
+        if _metric_float(m, "avg_3d_pct", -999.0) <= 0.0:
+            reasons.append("avg_3d_not_positive")
+        if _metric_float(m, "avg_5d_pct", -999.0) <= 0.0:
+            reasons.append("avg_5d_not_positive")
     if _metric_float(m, "min_1d_pct", -999.0) < -5.0:
         reasons.append("min_1d_below_stop")
     if m.get("min_5d_pct") is not None and _metric_float(m, "min_5d_pct", -999.0) < -12.0:
@@ -1076,6 +1126,9 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- 3d win/avg/min/max: `{m.get('win_3d_pct')}` / `{m.get('avg_3d_pct')}` / `{m.get('min_3d_pct')}` / `{m.get('max_3d_pct')}`",
         f"- 5d win/avg/min/max: `{m.get('win_5d_pct')}` / `{m.get('avg_5d_pct')}` / `{m.get('min_5d_pct')}` / `{m.get('max_5d_pct')}`",
         f"- target_before_stop_5d_pct: `{m.get('target_before_stop_5d_pct')}`",
+        f"- hit5/hit10 5d pct: `{m.get('hit5_5d_pct')}` / `{m.get('hit10_5d_pct')}`",
+        f"- guarded hit5/hit10 5d pct: `{m.get('hit5_guard_5d_pct')}` / `{m.get('hit10_guard_5d_pct')}`",
+        f"- 5d max-high avg/min/max: `{m.get('avg_max_high_5d_pct')}` / `{m.get('min_max_high_5d_pct')}` / `{m.get('max_max_high_5d_pct')}`",
         f"- stop5_pct / bad_path_pct: `{m.get('stop5_pct')}` / `{m.get('bad_path_pct')}`",
         "",
         "## Baselines",
@@ -1087,7 +1140,8 @@ def _markdown(report: Dict[str, Any]) -> str:
             f"n={bm.get('n')}, 1d={bm.get('win_1d_pct')}%/{bm.get('avg_1d_pct')}%, "
             f"3d={bm.get('win_3d_pct')}%/{bm.get('avg_3d_pct')}%, "
             f"5d={bm.get('win_5d_pct')}%/{bm.get('avg_5d_pct')}%, "
-            f"min5={bm.get('min_5d_pct')}%, max5={bm.get('max_5d_pct')}%"
+            f"hit5={bm.get('hit5_5d_pct')}%, hit10={bm.get('hit10_5d_pct')}%, "
+            f"mfe5={bm.get('avg_max_high_5d_pct')}%, min5={bm.get('min_5d_pct')}%, max5={bm.get('max_5d_pct')}%"
         )
     lines.extend(["", "## Top Results"])
     for idx, row in enumerate(report.get("top_results") or [], start=1):
@@ -1099,7 +1153,8 @@ def _markdown(report: Dict[str, Any]) -> str:
             f"1d={rm.get('win_1d_pct')}%/{rm.get('avg_1d_pct')}%, "
             f"3d={rm.get('win_3d_pct')}%/{rm.get('avg_3d_pct')}%, "
             f"5d={rm.get('win_5d_pct')}%/{rm.get('avg_5d_pct')}%, "
-            f"min5={rm.get('min_5d_pct')}%, max5={rm.get('max_5d_pct')}%"
+            f"hit5={rm.get('hit5_5d_pct')}%, hit10={rm.get('hit10_5d_pct')}%, "
+            f"mfe5={rm.get('avg_max_high_5d_pct')}%, min5={rm.get('min_5d_pct')}%, max5={rm.get('max_5d_pct')}%"
         )
     return "\n".join(lines) + "\n"
 

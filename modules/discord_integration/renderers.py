@@ -431,7 +431,8 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"{admission_model.get('model_name') or '-'} · "
             f"{metric_label('candidate_pass_prob_5d')} {_fmt_num(admission_model.get('probability_pct'), 1)}% / "
             f"기준 {_fmt_num(admission_model.get('prob_threshold_pct'), 1)}% · "
-            f"{admission_model.get('selection_rule') or '-'}"
+            f"{admission_model.get('selection_rule') or '-'} · "
+            f"{admission_model.get('objective') or admission_model.get('label') or '-'}"
         )
     if scan_interpretation:
         drivers = " / ".join(str(item) for item in (scan_interpretation.get("drivers") or [])[:3]) or "-"
@@ -510,6 +511,8 @@ def build_top_deep_embeds(
         if model:
             admission_summary = {
                 "prob_threshold_pct": model.get("prob_threshold_pct"),
+                "has_probability_floor": model.get("has_probability_floor"),
+                "threshold_label": model.get("threshold_label"),
                 "topn": model.get("topn"),
             }
             break
@@ -1079,20 +1082,23 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                     f"\n관찰 1순위: {current_status.get('best_name') or current_status.get('best_ticker') or '-'} "
                     f"({current_status.get('best_ticker') or '-'}) · "
                     f"{metric_label('candidate_top_prob_5d')} {_fmt_num(current_status.get('best_probability_pct'), 1)}% · "
-                    f"{metric_label('admission_threshold')} {_fmt_num(current_status.get('threshold_pct'), 1)}%"
+                    f"{metric_label('admission_threshold')} "
+                    f"{_fmt_num(current_status.get('threshold_pct'), 1) + '%' if current_status.get('threshold_pct') is not None else (admission_summary.get('threshold_label') or model_summary.get('threshold_label') or '-')}"
                 )
             fields.append(
                 {
                     "name": "Admission 모델 기준",
                     "value": (
-                        f"모델 {model_summary.get('model_name') or '-'} · 라벨 {model_summary.get('label') or '-'} · "
-                        f"선택규칙 {model_summary.get('selection_rule') or '-'} · 통과기준 {model_summary.get('prob_threshold_pct') or '-'}%\n"
-                        f"검증 승률: 1D {validation.get('win_1d_pct') or '-'}% / "
-                        f"3D {validation.get('win_3d_pct') or '-'}% / 5D {validation.get('win_5d_pct') or '-'}%\n"
-                        f"검증 5D수익: 평균 {validation.get('avg_5d_pct') or '-'}% · "
-                        f"최저 {validation.get('min_5d_pct') or '-'}% · 최고 {validation.get('max_5d_pct') or '-'}% · "
+                        f"모델 {model_summary.get('model_name') or '-'} · 목적 {model_summary.get('objective') or model_summary.get('label') or '-'} · "
+                        f"선택규칙 {model_summary.get('selection_rule') or '-'} · "
+                        f"통과기준 {model_summary.get('threshold_label') or (str(model_summary.get('prob_threshold_pct')) + '%' if model_summary.get('prob_threshold_pct') is not None else '-')}\n"
+                        f"검증 목표터치: label {validation.get('label_win_pct') or '-'}% · "
+                        f"hit5 {validation.get('hit5_5d_pct') or '-'}% · hit10 {validation.get('hit10_5d_pct') or '-'}%\n"
+                        f"검증 5D고가상승: 평균 {validation.get('avg_max_high_5d_pct') or '-'}% · "
+                        f"최저 {validation.get('min_max_high_5d_pct') or '-'}% · 최고 {validation.get('max_max_high_5d_pct') or '-'}% · "
+                        f"stop5 {validation.get('stop5_pct') or '-'}% · "
                         f"표본 n={validation.get('n') or '-'}, active days={validation.get('active_days') or '-'}\n"
-                        "주의: 검증 승률/평균/최저는 후보 개별 예측이 아니라 이 모델 선택규칙의 과거 표본 성과입니다."
+                        "주의: 검증 터치율/고가상승은 후보 개별 확정 수익이 아니라 이 모델 선택규칙의 과거 표본 성과입니다."
                     )[:1024],
                     "inline": False,
                 }

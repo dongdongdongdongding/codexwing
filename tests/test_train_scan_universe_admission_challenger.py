@@ -1,6 +1,7 @@
 import pandas as pd
 
 from multi_agent.tools.train_scan_universe_admission_challenger import (
+    fetch_rows,
     LABEL_SPECS,
     candidate_verdict,
     current_top_indices,
@@ -9,6 +10,7 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
     prepare_dataset,
     top_indices_by_run,
 )
+import multi_agent.tools.train_scan_universe_admission_challenger as trainer
 
 
 def _spec(name):
@@ -120,6 +122,104 @@ def test_top_indices_and_metrics_report_all_horizons():
     assert got["max_5d_pct"] == 5.0
     assert got["target_before_stop_5d_pct"] == 100.0
     assert current["avg_5d_pct"] == 5.0
+
+
+def test_touch_labels_use_entry_price_high_and_guard_low_path():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": 1,
+                "run_id": "RUN-A",
+                "ticker": "000001.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "max_high_return_5d_pct": 12.0,
+                "min_low_return_5d_pct": -4.9,
+            },
+            {
+                "id": 2,
+                "run_id": "RUN-A",
+                "ticker": "000002.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "max_high_return_5d_pct": 12.0,
+                "min_low_return_5d_pct": -5.1,
+            },
+            {
+                "id": 3,
+                "run_id": "RUN-A",
+                "ticker": "000003.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "max_high_return_5d_pct": 4.0,
+                "min_low_return_5d_pct": -1.0,
+            },
+        ]
+    )
+
+    df, _sanity = prepare_dataset(raw)
+    touch10, valid = label_series(df, _spec("touch10_5d"))
+    touch10_guard, guard_valid = label_series(df, _spec("touch10_guard_5d"))
+    touch5_guard, _ = label_series(df, _spec("touch5_guard_5d"))
+
+    assert valid.tolist() == [True, True, True]
+    assert guard_valid.tolist() == [True, True, True]
+    assert touch10.tolist() == [True, True, False]
+    assert touch10_guard.tolist() == [True, False, False]
+    assert touch5_guard.tolist() == [True, False, False]
+
+
+def test_fetch_rows_clamps_supabase_page_size_to_1000(monkeypatch):
+    calls = []
+    rows = [{"id": i, "ticker": f"{i:06d}.KS", "market": "KOSPI", "scan_mode": "SWING"} for i in range(1, 1002)]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            calls.append(self._limit)
+            return self
+
+        def eq(self, _field, _value):
+            return self
+
+        def execute(self):
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    monkeypatch.setattr(trainer, "DBManager", lambda: FakeDB())
+
+    got = fetch_rows(market="ALL", scan_mode="ALL", page_size=2000)
+
+    assert len(got) == 1001
+    assert calls == [1000, 1000]
 
 
 def test_prepare_dataset_filters_impossible_kr_return_labels():

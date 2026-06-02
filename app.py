@@ -2717,26 +2717,32 @@ if active_main_tab == "📚 아카이브":
                         )
                         _model_cols[2].metric(
                             metric_label("admission_threshold"),
-                            f"{float(_archive_run_status.get('threshold_pct') or 0.0):.1f}%" if _archive_run_status.get("threshold_pct") is not None else "-",
+                            (
+                                f"{float(_archive_run_status.get('threshold_pct') or 0.0):.1f}%"
+                                if _archive_run_status.get("threshold_pct") is not None
+                                else str(_archive_summary.get("threshold_label") or "-")
+                            ),
                             help=metric_help("admission_threshold"),
                         )
                         _model_cols[3].metric(
                             metric_label("cohort_win_5d"),
-                            f"{float(_archive_validation.get('win_5d_pct') or 0.0):.1f}%",
-                            f"{float(_archive_validation.get('avg_5d_pct') or 0.0):+.1f}%",
+                            f"{float(_archive_validation.get('label_win_pct') or 0.0):.1f}%",
+                            f"MFE {float(_archive_validation.get('avg_max_high_5d_pct') or 0.0):+.1f}%",
                             help=metric_help("cohort_win_5d"),
                         )
                         _model_cols[4].metric(
                             metric_label("validation_worst_return_5d"),
-                            f"{float(_archive_validation.get('min_5d_pct') or 0.0):+.1f}%",
+                            f"{float(_archive_validation.get('min_max_high_5d_pct') or 0.0):+.1f}%",
                             help=metric_help("validation_worst_return_5d"),
                         )
                         _model_cols[5].metric("표본", f"n={_archive_validation.get('n', '-')}", f"{_archive_validation.get('active_days', '-')}일")
                         st.caption(
-                            f"{_archive_summary.get('market')} · {_archive_summary.get('label')} · "
+                            f"{_archive_summary.get('market')} · {_archive_summary.get('objective') or _archive_summary.get('label')} · "
                             f"{_archive_summary.get('feature_set')} · {_archive_summary.get('model_name')} · "
-                            f"{_archive_summary.get('selection_rule')} · 최고5D {_archive_validation.get('max_5d_pct', '-')}% / "
-                            f"bad-path {_archive_validation.get('bad_path_pct', '-')}%"
+                            f"{_archive_summary.get('selection_rule')} · "
+                            f"hit5 {_archive_validation.get('hit5_5d_pct', '-')}% / "
+                            f"hit10 {_archive_validation.get('hit10_5d_pct', '-')}% / "
+                            f"stop5 {_archive_validation.get('stop5_pct', '-')}%"
                         )
                         _archive_input_summary = _archive_admission.get("input_summary") if isinstance(_archive_admission.get("input_summary"), dict) else {}
                         st.caption(
