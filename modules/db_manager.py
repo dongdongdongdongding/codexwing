@@ -124,6 +124,26 @@ LOCAL_SCHEMA_EXTENSION_COLUMNS = {
         "outcome_path_source",
         "outcome_path_warnings",
     },
+    "runtime_artifacts": {
+        "id",
+        "run_id",
+        "artifact_key",
+        "artifact_type",
+        "market",
+        "scan_mode",
+        "source",
+        "source_path",
+        "content_type",
+        "payload",
+        "content_text",
+        "payload_rows",
+        "size_bytes",
+        "checksum",
+        "metadata",
+        "artifact_version",
+        "created_at",
+        "updated_at",
+    },
 }
 
 class DBManager:
@@ -560,6 +580,76 @@ class DBManager:
         if not feature_quality.get("validation_excluded"):
             return False
         return self._quality_gate_applies_to_origin(feature_quality.get("feature_origin"))
+
+    def upsert_runtime_artifact(self, payload):
+        if not self.client or not isinstance(payload, dict):
+            return 0
+        filtered = self._filter_payload_to_existing_columns("runtime_artifacts", payload)
+        if not filtered.get("run_id") or not filtered.get("artifact_key"):
+            return 0
+        return self._upsert_with_schema_drift_retry(
+            "runtime_artifacts",
+            [filtered],
+            on_conflict="run_id,artifact_key",
+        )
+
+    def upsert_runtime_artifacts(self, payloads):
+        if not self.client:
+            return 0
+        filtered_rows = []
+        for payload in payloads or []:
+            if not isinstance(payload, dict):
+                continue
+            filtered = self._filter_payload_to_existing_columns("runtime_artifacts", payload)
+            if filtered.get("run_id") and filtered.get("artifact_key"):
+                filtered_rows.append(filtered)
+        if not filtered_rows:
+            return 0
+        return self._upsert_with_schema_drift_retry(
+            "runtime_artifacts",
+            filtered_rows,
+            on_conflict="run_id,artifact_key",
+        )
+
+    def fetch_runtime_artifact(self, run_id, artifact_key):
+        if not self.client or not run_id or not artifact_key:
+            return {}
+        try:
+            rows = (
+                self.client.table("runtime_artifacts")
+                .select("*")
+                .eq("run_id", str(run_id))
+                .eq("artifact_key", str(artifact_key))
+                .limit(1)
+                .execute()
+                .data
+                or []
+            )
+            return rows[0] if rows else {}
+        except Exception:
+            return {}
+
+    def list_runtime_artifacts(self, *, artifact_key=None, market=None, run_id=None, limit=100):
+        if not self.client:
+            return []
+        try:
+            query = self.client.table("runtime_artifacts").select("*")
+            if artifact_key:
+                query = query.eq("artifact_key", str(artifact_key))
+            if market:
+                query = query.eq("market", str(market).upper())
+            if run_id:
+                query = query.eq("run_id", str(run_id))
+            rows = (
+                query.order("updated_at", desc=True)
+                .limit(max(1, int(limit or 100)))
+                .execute()
+                .data
+                or []
+            )
+            return rows
+        except Exception:
+            return []
     
     def save_signal(self, ticker, price, alpha_score, ai_prediction, signal_type="BUY", stock_name=None, 
                    entry_price=None, target_price=None, stop_loss=None):

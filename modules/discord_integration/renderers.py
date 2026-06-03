@@ -14,6 +14,7 @@ from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
+from modules.runtime_artifact_store import load_runtime_artifact_payload, list_runtime_artifact_payloads
 from modules.scan_universe_admission import (
     ADMISSION_SECTION,
     NEAR_MISS_SECTION,
@@ -143,6 +144,34 @@ def _load_local_top_deep_reports(limit: int = 100) -> List[Dict[str, Any]]:
     return rows
 
 
+def _load_top_deep_reports(limit: int = 100, *, market: str = "", run_id: str = "", ticker: str = "") -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    try:
+        from modules.db_manager import DBManager
+
+        db = DBManager()
+        if db.client:
+            query = db.client.table("scan_deep_reports").select("*")
+            if market:
+                query = query.eq("market", str(market).upper())
+            if run_id:
+                query = query.eq("run_id", str(run_id))
+            if ticker:
+                query = query.eq("ticker", str(ticker).upper())
+            rows = (
+                query.order("generated_at", desc=True)
+                .limit(max(1, int(limit or 100)))
+                .execute()
+                .data
+                or []
+            )
+    except Exception:
+        rows = []
+    if rows:
+        return [row for row in rows if isinstance(row, dict)]
+    return _load_local_top_deep_reports(limit=limit)
+
+
 def _load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -153,17 +182,18 @@ def _load_json(path: Path) -> Any:
 def _load_scan_context_for_run(run_id: str) -> Dict[str, Any]:
     if not run_id:
         return {}
-    summary_path = ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json"
-    summary = _load_json(summary_path)
-    if not isinstance(summary, dict):
-        summary = {}
+    summary_payload = load_runtime_artifact_payload(
+        run_id,
+        "scan_pipeline_summary",
+        local_path=ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json",
+    )
+    summary = summary_payload if isinstance(summary_payload, dict) else {}
     scanner_payload: Dict[str, Any] = {}
     manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
     scanner_path = manifest.get("scanner_handoff")
-    if scanner_path:
-        payload = _load_json(Path(str(scanner_path)))
-        if isinstance(payload, dict):
-            scanner_payload = payload
+    payload = load_runtime_artifact_payload(run_id, "scanner_handoff", local_path=scanner_path)
+    if isinstance(payload, dict):
+        scanner_payload = payload
     if not scanner_payload:
         payload = _load_json(Path("runtime_state/shared_working") / str(run_id) / "scanner_handoff.json")
         if isinstance(payload, dict):
@@ -191,7 +221,11 @@ def _scan_integrity_from_summary(summary: Dict[str, Any]) -> Dict[str, Any]:
         artifact_dir = summary.get("artifact_dir")
         if artifact_dir:
             report_path = str(Path(str(artifact_dir)) / "scan_integrity_report.json")
-    payload = _load_json(Path(str(report_path))) if report_path else None
+    payload = load_runtime_artifact_payload(
+        str(summary.get("run_id") or ""),
+        "scan_integrity_report",
+        local_path=report_path,
+    ) if report_path or summary.get("run_id") else None
     return payload if isinstance(payload, dict) else {}
 
 
@@ -232,9 +266,50 @@ def _run_sort_ts(path: Path | None, fallback: float = 0.0) -> float:
         return fallback
 
 
+def _parse_ts(value: Any) -> float:
+    text = str(value or "").strip()
+    if not text:
+        return 0.0
+    try:
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        return datetime.fromisoformat(text).timestamp()
+    except Exception:
+        return 0.0
+
+
 def collect_run_index(*, market: str = "", limit: int = 200) -> List[Dict[str, Any]]:
     runs: Dict[str, Dict[str, Any]] = {}
     market_filter = str(market or "").upper()
+
+    for payload in list_runtime_artifact_payloads(
+        artifact_key="scan_pipeline_summary",
+        market=market_filter,
+        limit=max(1, int(limit or 200)),
+    ):
+        run_id = str(payload.get("run_id") or "").strip()
+        if not run_id:
+            continue
+        run_market = str(payload.get("market") or "")
+        if market_filter and run_market.upper() != market_filter:
+            continue
+        row = runs.setdefault(run_id, {"run_id": run_id})
+        row.update(
+            {
+                "market": run_market or row.get("market") or "",
+                "scan_mode": str(payload.get("scan_mode") or row.get("scan_mode") or ""),
+                "result_count": _safe_int(payload.get("result_count"), _safe_int(row.get("result_count"), 0)),
+                "total_scans": _safe_int(payload.get("total_scans"), _safe_int(row.get("total_scans"), 0)),
+                "filtered_count": _safe_int(payload.get("filtered_count"), _safe_int(row.get("filtered_count"), 0)),
+                "artifact_dir": str(payload.get("artifact_dir") or row.get("artifact_dir") or ""),
+                "summary_path": "supabase:runtime_artifacts:scan_pipeline_summary",
+                "mtime": max(
+                    float(row.get("mtime") or 0),
+                    _parse_ts(payload.get("updated_at") or payload.get("created_at")),
+                ),
+                "latest_generated_at": payload.get("created_at") or payload.get("updated_at") or row.get("latest_generated_at"),
+            }
+        )
 
     if ARTIFACT_DIR.exists():
         for summary_path in ARTIFACT_DIR.glob("RUN-*/scan_pipeline_summary.json"):
@@ -307,7 +382,7 @@ def _latest_run_id(rows: List[Dict[str, Any]]) -> str:
 
 
 def build_status_embed(config: DiscordIntegrationConfig) -> Dict[str, Any]:
-    rows = _load_local_top_deep_reports(limit=20)
+    rows = _load_top_deep_reports(limit=20)
     runs = collect_run_index(limit=200)
     validation = config.validate()
     return {
@@ -458,7 +533,7 @@ def build_top_deep_embeds(
 ) -> List[Dict[str, Any]]:
     safe_offset = _normalize_offset(offset)
     safe_limit = _normalize_limit(limit, default=TOP_DEEP_DISCORD_LIMIT, maximum=TOP_DEEP_DISCORD_LIMIT)
-    rows = _load_local_top_deep_reports(limit=500)
+    rows = _load_top_deep_reports(limit=500, market=market, run_id=run_id, ticker=ticker)
     if market:
         rows = [row for row in rows if str(row.get("market") or "").upper() == str(market).upper()]
     if run_id:
@@ -606,8 +681,11 @@ def build_top_deep_embeds(
 
 
 def _load_archive_rows_from_artifact(run_id: str) -> List[Dict[str, Any]]:
-    raw_path = ARTIFACT_DIR / str(run_id) / "raw_scan_results.json"
-    payload = _load_json(raw_path)
+    payload = load_runtime_artifact_payload(
+        run_id,
+        "raw_scan_results",
+        local_path=ARTIFACT_DIR / str(run_id) / "raw_scan_results.json",
+    )
     if not isinstance(payload, dict):
         return []
     rows = payload.get("results_sorted")
@@ -618,30 +696,36 @@ def _load_archive_rows_from_artifact(run_id: str) -> List[Dict[str, Any]]:
 
 
 def _load_planner_payload_for_run(run_id: str) -> Dict[str, Any]:
-    summary_path = ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json"
-    summary = _load_json(summary_path)
+    summary_payload = load_runtime_artifact_payload(
+        run_id,
+        "scan_pipeline_summary",
+        local_path=ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json",
+    )
+    summary = summary_payload if isinstance(summary_payload, dict) else {}
     if isinstance(summary, dict):
         manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
         planner_path = manifest.get("planner_handoff")
-        if planner_path:
-            payload = _load_json(Path(str(planner_path)))
-            if isinstance(payload, dict):
-                return payload
+        payload = load_runtime_artifact_payload(run_id, "planner_handoff", local_path=planner_path)
+        if isinstance(payload, dict):
+            return payload
     fallback = Path("runtime_state/shared_working") / str(run_id) / "planner_handoff.json"
     payload = _load_json(fallback)
     return payload if isinstance(payload, dict) else {}
 
 
 def _load_profile_payload_for_run(run_id: str) -> Dict[str, Any]:
-    summary_path = ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json"
-    summary = _load_json(summary_path)
+    summary_payload = load_runtime_artifact_payload(
+        run_id,
+        "scan_pipeline_summary",
+        local_path=ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json",
+    )
+    summary = summary_payload if isinstance(summary_payload, dict) else {}
     if isinstance(summary, dict):
         manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
         profile_path = manifest.get("profile_diagnostics")
-        if profile_path:
-            payload = _load_json(Path(str(profile_path)))
-            if isinstance(payload, dict):
-                return payload
+        payload = load_runtime_artifact_payload(run_id, "profile_diagnostics", local_path=profile_path)
+        if isinstance(payload, dict):
+            return payload
     fallback = Path("runtime_state/shared_working") / str(run_id) / "profile_diagnostics.json"
     payload = _load_json(fallback)
     return payload if isinstance(payload, dict) else {}
@@ -683,7 +767,11 @@ def _build_admission_result_for_run(
     planner_payload = _load_planner_payload_for_run(run_id)
     profile_payload = _load_profile_payload_for_run(run_id)
     planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
-    artifact_raw = _load_json(ARTIFACT_DIR / str(run_id) / "raw_scan_results.json")
+    artifact_raw = load_runtime_artifact_payload(
+        run_id,
+        "raw_scan_results",
+        local_path=ARTIFACT_DIR / str(run_id) / "raw_scan_results.json",
+    )
     diagnostics = artifact_raw.get("diagnostics") if isinstance(artifact_raw, dict) and isinstance(artifact_raw.get("diagnostics"), dict) else {}
     enriched_rows = enrich_signal_rows_with_planner_trace(artifact_rows, planner_payload)
     universe_input = build_scan_universe_admission_input_rows(
@@ -813,7 +901,7 @@ def build_archive_embed(
 ) -> Dict[str, Any]:
     safe_offset = _normalize_offset(offset)
     safe_limit = _normalize_limit(limit, default=10, maximum=10)
-    rows = _load_local_top_deep_reports(limit=500)
+    rows = _load_top_deep_reports(limit=500, market=market, run_id=run_id, ticker=ticker)
     if market:
         rows = [row for row in rows if str(row.get("market") or "").upper() == str(market).upper()]
     if ticker:
@@ -1041,7 +1129,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
             validation = model_summary.get("validation") if isinstance(model_summary.get("validation"), dict) else {}
             top_deep_rows = [
                 row
-                for row in _load_local_top_deep_reports(limit=500)
+                for row in _load_top_deep_reports(limit=500, market=market_key, run_id=run_id)
                 if str(row.get("run_id") or "") == run_id
                 and str(row.get("market") or "").upper() == market_key
             ]

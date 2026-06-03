@@ -575,6 +575,43 @@ def run_non_ui_scan_pipeline(
         }
         summary.setdefault("persistence_contract", {})["scan_universe_snapshots"] = False
         write_json(summary_path, summary)
+    try:
+        from modules.runtime_artifact_store import persist_run_runtime_artifacts, upsert_runtime_artifact_payload
+
+        runtime_artifact_result = persist_run_runtime_artifacts(
+            run_id=run_id,
+            market=market,
+            scan_mode=str(scan_mode or "SWING").upper(),
+            artifact_dir=artifact_dir,
+            summary=summary,
+            manifest_paths=manifest_paths,
+            source=source,
+        )
+        summary["runtime_artifacts"] = runtime_artifact_result
+        summary.setdefault("persistence_contract", {})["runtime_artifacts"] = bool(
+            runtime_artifact_result.get("ok")
+            or runtime_artifact_result.get("enabled") is False
+        )
+        write_json(summary_path, summary)
+        upsert_runtime_artifact_payload(
+            run_id=run_id,
+            artifact_key="scan_pipeline_summary",
+            payload=summary,
+            market=market,
+            scan_mode=str(scan_mode or "SWING").upper(),
+            source=source,
+            source_path=str(summary_path),
+            metadata={"artifact_dir": str(artifact_dir), "source": source, "final_summary": True},
+        )
+    except Exception as exc:
+        summary["runtime_artifacts"] = {
+            "ok": False,
+            "enabled": True,
+            "error": str(exc),
+            "target_table": "runtime_artifacts",
+        }
+        summary.setdefault("persistence_contract", {})["runtime_artifacts"] = False
+        write_json(summary_path, summary)
     return summary
 
 

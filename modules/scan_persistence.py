@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from modules.portfolio_exposure import build_portfolio_exposure_summary
+from modules.runtime_artifact_store import persist_run_runtime_artifacts, upsert_runtime_artifact_payload
 from modules.scan_integrity import write_scan_integrity_artifacts
 from multi_agent.contracts.serialization import write_json
 from multi_agent.storage.memory_layers import MemoryManager
@@ -236,6 +237,7 @@ def persist_scan_run_artifacts(
             "scan_integrity_report": bool(integrity_result.get("ok")),
             "top_deep_local": bool(top_deep_reports.get("local_path") and Path(str(top_deep_reports.get("local_path"))).exists()),
             "scan_universe_snapshots": False,
+            "runtime_artifacts": False,
         },
     }
     write_json(summary_path, summary)
@@ -254,6 +256,31 @@ def persist_scan_run_artifacts(
         and int(universe_snapshot_result.get("rows_built") or 0) > 0
     )
     write_json(summary_path, summary)
+    runtime_artifact_result = persist_run_runtime_artifacts(
+        run_id=run_id,
+        market=market,
+        scan_mode=scan_mode,
+        artifact_dir=artifact_dir,
+        summary=summary,
+        manifest_paths=manifest_paths,
+        source=source,
+    )
+    summary["runtime_artifacts"] = runtime_artifact_result
+    summary["persistence_contract"]["runtime_artifacts"] = bool(
+        runtime_artifact_result.get("ok")
+        or runtime_artifact_result.get("enabled") is False
+    )
+    write_json(summary_path, summary)
+    upsert_runtime_artifact_payload(
+        run_id=run_id,
+        artifact_key="scan_pipeline_summary",
+        payload=summary,
+        market=market,
+        scan_mode=scan_mode,
+        source=source,
+        source_path=str(summary_path),
+        metadata={"artifact_dir": str(artifact_dir), "source": source, "final_summary": True},
+    )
     return {
         "ok": raw_path.exists() and summary_path.exists(),
         "artifact_dir": str(artifact_dir),

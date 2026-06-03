@@ -31,6 +31,7 @@ from modules.scan_policy import (
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
 from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
+from modules.runtime_artifact_store import load_runtime_artifact_payload
 from modules.scan_universe_admission import (
     admission_model_summary,
     admission_run_status,
@@ -2429,13 +2430,14 @@ if active_main_tab == "📚 아카이브":
 
         _db6 = _DBM()
 
-        _local_archive_rows = load_local_scan_archive_rows(limit_runs=300)
+        _local_archive_rows = []
         _archive_rows = []
         if not _db6.client:
             st.warning("⚠️ Supabase 연결 없음. 로컬 스캔 artifact 기준으로 표시합니다.")
+            _local_archive_rows = load_local_scan_archive_rows(limit_runs=300)
             _archive_rows = _local_archive_rows
         else:
-            with st.spinner("📡 DB/로컬 artifact에서 스캔 이력 로드 중..."):
+            with st.spinner("📡 Supabase에서 스캔 이력 로드 중..."):
                 _batch_size = 1000
                 _max_rows = 25000
                 _offset = 0
@@ -2454,10 +2456,12 @@ if active_main_tab == "📚 아카이브":
                     if len(_batch) < _batch_size:
                         break
                     _offset += _batch_size
-                _before_local_merge = len(_archive_rows)
-                _archive_rows = merge_archive_rows_with_local_artifacts(_archive_rows, _local_archive_rows)
-                if len(_archive_rows) > _before_local_merge:
-                    st.caption(f"로컬 artifact 보강: {len(_archive_rows) - _before_local_merge}건")
+                if os.getenv("AG_SCAN_ARCHIVE_LOCAL_FALLBACK", "1").strip().lower() not in {"0", "false", "no", "off"}:
+                    _local_archive_rows = load_local_scan_archive_rows(limit_runs=300)
+                    _before_local_merge = len(_archive_rows)
+                    _archive_rows = merge_archive_rows_with_local_artifacts(_archive_rows, _local_archive_rows)
+                    if len(_archive_rows) > _before_local_merge:
+                        st.caption(f"로컬 artifact fallback 보강: {len(_archive_rows) - _before_local_merge}건")
         _df6 = pd.DataFrame(_archive_rows)
         if True:
             _contaminated_map = _load_contaminated_run_map()
@@ -2594,19 +2598,28 @@ if active_main_tab == "📚 아카이브":
                 _archive_planner_payload = {}
                 _archive_diagnostics = {}
                 if _selected_run_id:
-                    _archive_planner_payload = _load_json_safe(
-                        str(Path("runtime_state/shared_working") / str(_selected_run_id) / "planner_handoff.json")
+                    _planner_payload = load_runtime_artifact_payload(
+                        str(_selected_run_id),
+                        "planner_handoff",
+                        local_path=Path("runtime_state/shared_working") / str(_selected_run_id) / "planner_handoff.json",
                     )
-                    _archive_profile_payload = _load_json_safe(
-                        str(Path("runtime_state/shared_working") / str(_selected_run_id) / "profile_diagnostics.json")
+                    _archive_planner_payload = _planner_payload if isinstance(_planner_payload, dict) else {}
+                    _profile_payload = load_runtime_artifact_payload(
+                        str(_selected_run_id),
+                        "profile_diagnostics",
+                        local_path=Path("runtime_state/shared_working") / str(_selected_run_id) / "profile_diagnostics.json",
                     )
+                    _archive_profile_payload = _profile_payload if isinstance(_profile_payload, dict) else {}
                     _archive_planner_payload = merge_profile_exception_leaders_into_planner(
                         _archive_planner_payload,
                         _archive_profile_payload,
                     )
-                    _archive_raw_payload = _load_json_safe(
-                        str(Path("runtime_state/artifacts") / str(_selected_run_id) / "raw_scan_results.json")
+                    _raw_payload = load_runtime_artifact_payload(
+                        str(_selected_run_id),
+                        "raw_scan_results",
+                        local_path=Path("runtime_state/artifacts") / str(_selected_run_id) / "raw_scan_results.json",
                     )
+                    _archive_raw_payload = _raw_payload if isinstance(_raw_payload, dict) else {}
                     if isinstance(_archive_raw_payload.get("diagnostics"), dict):
                         _archive_diagnostics = _archive_raw_payload["diagnostics"]
 

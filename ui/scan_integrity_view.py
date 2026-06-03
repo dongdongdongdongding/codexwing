@@ -6,16 +6,24 @@ from typing import Any, Dict
 
 import streamlit as st
 
+from modules.runtime_artifact_store import load_runtime_artifact_payload
+
 
 def load_scan_context_for_run(run_id: str) -> Dict[str, Any]:
     if not run_id:
         return {}
-    summary = _load_json_safe(f"runtime_state/artifacts/{run_id}/scan_pipeline_summary.json")
+    summary_payload = load_runtime_artifact_payload(
+        run_id,
+        "scan_pipeline_summary",
+        local_path=f"runtime_state/artifacts/{run_id}/scan_pipeline_summary.json",
+    )
+    summary = summary_payload if isinstance(summary_payload, dict) else {}
     scanner_payload: Dict[str, Any] = {}
     manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
     scanner_path = manifest.get("scanner_handoff")
-    if scanner_path:
-        scanner_payload = _load_json_safe(scanner_path)
+    scanner_loaded = load_runtime_artifact_payload(run_id, "scanner_handoff", local_path=scanner_path)
+    if isinstance(scanner_loaded, dict):
+        scanner_payload = scanner_loaded
     if not scanner_payload:
         scanner_payload = _load_json_safe(f"runtime_state/shared_working/{run_id}/scanner_handoff.json")
     scanner_summary = scanner_payload.get("summary") if isinstance(scanner_payload.get("summary"), dict) else {}
@@ -40,9 +48,13 @@ def scan_integrity_report_for_context(scan_context: Dict[str, Any]) -> Dict[str,
     report_path = manifest.get("scan_integrity_report")
     if not report_path and summary.get("artifact_dir"):
         report_path = str(Path(str(summary.get("artifact_dir"))) / "scan_integrity_report.json")
-    if report_path:
-        payload = _load_json_safe(str(report_path))
-        return payload if isinstance(payload, dict) else {}
+    payload = load_runtime_artifact_payload(
+        str(summary.get("run_id") or ""),
+        "scan_integrity_report",
+        local_path=report_path,
+    )
+    if isinstance(payload, dict):
+        return payload
     return {}
 
 

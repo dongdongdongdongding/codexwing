@@ -1293,4 +1293,27 @@ def generate_and_store_top_deep_reports(
         report["portfolio_exposure_summary"] = exposure_summary
     local_path = save_reports_local(reports, run_id)
     db_result = upsert_reports_to_supabase(reports) if write_db else {"rows_seen": len(reports), "rows_upserted": 0, "warning": "write_db_disabled"}
-    return {"count": len(reports), "local_path": local_path, "db_result": db_result, "portfolio_exposure_summary": exposure_summary}
+    runtime_artifact_result = {"enabled": False, "rows_upserted": 0, "reason": "write_db_disabled"}
+    if write_db:
+        try:
+            from modules.runtime_artifact_store import upsert_runtime_artifact_payload
+
+            runtime_artifact_result = upsert_runtime_artifact_payload(
+                run_id=run_id,
+                artifact_key="top_deep_reports",
+                payload=reports,
+                market=market,
+                scan_mode=scan_mode,
+                source="top_deep_report",
+                source_path=local_path,
+                metadata={"report_count": len(reports), "table": "scan_deep_reports"},
+            )
+        except Exception as exc:
+            runtime_artifact_result = {"ok": False, "enabled": True, "rows_upserted": 0, "error": str(exc)}
+    return {
+        "count": len(reports),
+        "local_path": local_path,
+        "db_result": db_result,
+        "runtime_artifact_result": runtime_artifact_result,
+        "portfolio_exposure_summary": exposure_summary,
+    }
