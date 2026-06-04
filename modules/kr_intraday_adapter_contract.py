@@ -148,6 +148,15 @@ def storage_budget_policy(
 
 
 def adapter_decision_contract() -> Dict[str, Any]:
+    try:
+        from modules.kis_openapi import KIS_ENDPOINTS
+
+        kis_endpoint_count = len(KIS_ENDPOINTS)
+        kis_implemented_endpoint_keys = sorted(KIS_ENDPOINTS.keys())
+    except Exception:
+        kis_endpoint_count = 0
+        kis_implemented_endpoint_keys = []
+
     return {
         "version": KR_INTRADAY_ADAPTER_CONTRACT_VERSION,
         "recommended_primary": "kis_openapi",
@@ -164,6 +173,14 @@ def adapter_decision_contract() -> Dict[str, Any]:
         },
         "source_profiles": {key: asdict(profile) for key, profile in SOURCE_PROFILES.items()},
         "storage_budget": storage_budget_policy(),
+        "kis_adapter_implementation": {
+            "module": "modules.kis_openapi",
+            "implemented": bool(kis_endpoint_count),
+            "endpoint_count": kis_endpoint_count,
+            "implemented_endpoint_keys": kis_implemented_endpoint_keys,
+            "scanner_default_wired": False,
+            "order_submission_included": False,
+        },
     }
 
 
@@ -182,6 +199,13 @@ def kis_env_status(env: Dict[str, str] | None = None) -> Dict[str, Any]:
 
 def build_kr_intraday_adapter_health(env: Dict[str, str] | None = None) -> Dict[str, Any]:
     status = kis_env_status(env)
+    try:
+        from modules.kis_openapi import build_kis_adapter_health
+
+        kis_adapter = build_kis_adapter_health(env)
+    except Exception as exc:
+        kis_adapter = {"source": "kis_openapi", "error": str(exc), "credentials_present": False}
+
     checks: List[Dict[str, Any]] = [
         {
             "name": "kis_credentials",
@@ -197,6 +221,7 @@ def build_kr_intraday_adapter_health(env: Dict[str, str] | None = None) -> Dict[
         "dry_run": True,
         "network_called": False,
         "kis": status,
+        "kis_adapter": kis_adapter,
         "checks": checks,
         "ok_for_contract_only": True,
         "ok_for_live_kis_promotion": all(check["ok"] for check in checks if check["name"] == "kis_credentials"),
