@@ -53,6 +53,17 @@ def test_kis_health_is_non_operational_by_default():
     assert "stock_investor_daily" in health["implemented_endpoint_keys"]
 
 
+def test_kis_health_can_report_effective_run_config():
+    config = KISConfig(app_key="k", app_secret="s", mode="real", live_network_allowed=True)
+
+    health = build_kis_adapter_health(config=config)
+
+    assert health["mode"] == "real"
+    assert health["live_network_allowed"] is True
+    assert health["credentials_present"] is True
+    assert health["scanner_default_wired"] is False
+
+
 def test_live_network_is_blocked_without_flag_or_transport():
     client = KISOpenAPIClient(config=KISConfig(app_key="k", app_secret="s"))
     with pytest.raises(KISOpenAPIError, match="Live KIS network calls are disabled"):

@@ -901,8 +901,12 @@ def parse_investor_flow_snapshot(symbol: str, payload: Mapping[str, Any]) -> Dic
     }
 
 
-def build_kis_adapter_health(env: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
-    config = KISConfig.from_env(env)
+def build_kis_adapter_health(
+    env: Optional[Mapping[str, str]] = None,
+    *,
+    config: Optional[KISConfig] = None,
+) -> Dict[str, Any]:
+    config = config or KISConfig.from_env(env)
     missing_credentials = []
     if not config.app_key:
         missing_credentials.append("KIS_APP_KEY")
