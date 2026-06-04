@@ -22,6 +22,15 @@ def _today_yyyymmdd() -> str:
     return datetime.now().strftime("%Y%m%d")
 
 
+def _live_error(name: str, exc: Exception) -> Dict[str, Any]:
+    return {
+        "name": name,
+        "ok": False,
+        "error_type": type(exc).__name__,
+        "error": str(exc),
+    }
+
+
 def run_check(args: argparse.Namespace) -> Dict[str, Any]:
     load_dotenv()
     load_dotenv(".env.local")
@@ -56,31 +65,44 @@ def run_check(args: argparse.Namespace) -> Dict[str, Any]:
         )
         return report
 
-    token = client.get_access_token(force=True)
-    report["live_checks"].append({"name": "token", "ok": bool(token), "token_prefix": token[:8] + "..."})
+    try:
+        token = client.get_access_token(force=True)
+        report["live_checks"].append({"name": "token", "ok": bool(token)})
+    except Exception as exc:
+        report["live_checks"].append(_live_error("token", exc))
+        return report
 
     if args.quote:
-        snapshot = client.quote_snapshot(args.quote, market_div=args.market_div)
-        report["live_checks"].append({"name": "quote_snapshot", "ok": snapshot.get("source_status") == "ok", "snapshot": snapshot})
+        try:
+            snapshot = client.quote_snapshot(args.quote, market_div=args.market_div)
+            report["live_checks"].append({"name": "quote_snapshot", "ok": snapshot.get("source_status") == "ok", "snapshot": snapshot})
+        except Exception as exc:
+            report["live_checks"].append(_live_error("quote_snapshot", exc))
 
     if args.daily:
-        payload = client.daily_bars(
-            args.daily,
-            start_date=args.start_date or _today_yyyymmdd(),
-            end_date=args.end_date or _today_yyyymmdd(),
-            market_div=args.market_div,
-        )
-        report["live_checks"].append(
-            {
-                "name": "daily_bars",
-                "ok": payload.get("rt_cd") in (None, "0"),
-                "row_count": len(payload.get("output2") or payload.get("output") or []),
-            }
-        )
+        try:
+            payload = client.daily_bars(
+                args.daily,
+                start_date=args.start_date or _today_yyyymmdd(),
+                end_date=args.end_date or _today_yyyymmdd(),
+                market_div=args.market_div,
+            )
+            report["live_checks"].append(
+                {
+                    "name": "daily_bars",
+                    "ok": payload.get("rt_cd") in (None, "0"),
+                    "row_count": len(payload.get("output2") or payload.get("output") or []),
+                }
+            )
+        except Exception as exc:
+            report["live_checks"].append(_live_error("daily_bars", exc))
 
     if args.investor:
-        payload = client.investor_flow_snapshot(args.investor, trade_date=args.investor_date or _today_yyyymmdd())
-        report["live_checks"].append({"name": "investor_flow_snapshot", "ok": payload.get("source_status") == "ok", "snapshot": payload})
+        try:
+            payload = client.investor_flow_snapshot(args.investor, trade_date=args.investor_date or _today_yyyymmdd())
+            report["live_checks"].append({"name": "investor_flow_snapshot", "ok": payload.get("source_status") == "ok", "snapshot": payload})
+        except Exception as exc:
+            report["live_checks"].append(_live_error("investor_flow_snapshot", exc))
 
     return report
 
