@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -51,6 +52,22 @@ def _to_fdr_symbol(symbol: str) -> str:
     if upper.endswith(".KS") or upper.endswith(".KQ"):
         return upper.split(".")[0]
     return raw
+
+
+def _is_kr_symbol(symbol: str) -> bool:
+    upper = str(symbol or "").strip().upper()
+    return upper.endswith(".KS") or upper.endswith(".KQ") or (upper.isdigit() and len(upper) <= 6)
+
+
+def _kis_provider_mode() -> str:
+    raw = str(os.getenv("AG_KR_MARKET_DATA_PROVIDER") or "").strip().lower()
+    if raw in {"kis", "kis_first", "kis_openapi"}:
+        return "kis_first"
+    if raw in {"kis_only", "kis_openapi_only"}:
+        return "kis_only"
+    if str(os.getenv("AG_ENABLE_KIS_MARKET_DATA") or "").strip().lower() in {"1", "true", "yes", "on"}:
+        return "kis_first"
+    return "legacy"
 
 
 def _normalize_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
@@ -105,6 +122,63 @@ def _normalize_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
     return out.dropna(how="all")
 
 
+def _resample_intraday(frame: pd.DataFrame, interval: str) -> pd.DataFrame:
+    if frame is None or frame.empty:
+        return pd.DataFrame()
+    freq_map = {
+        "5m": "5min",
+        "15m": "15min",
+        "30m": "30min",
+        "60m": "60min",
+        "1h": "1h",
+    }
+    freq = freq_map.get(str(interval or "").lower())
+    if not freq:
+        return frame
+    return (
+        frame.resample(freq)
+        .agg({"Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum"})
+        .dropna()
+    )
+
+
+def _fetch_kis_history(
+    symbol: str,
+    *,
+    period: str = "1mo",
+    interval: str = "1d",
+    timeout: int = 8,
+    client: Optional[object] = None,
+) -> pd.DataFrame:
+    """Fetch KRX OHLCV through KIS and normalize it to the local OHLCV contract."""
+
+    if not _is_kr_symbol(symbol):
+        return pd.DataFrame()
+
+    from modules.kis_openapi import KISOpenAPIClient
+    from modules.kis_operational_adapter import normalize_kis_daily_bars, normalize_kis_minute_bars
+
+    kis_client = client or KISOpenAPIClient(timeout=timeout)
+    today = datetime.now()
+    start = _period_to_start(period) or (today - timedelta(days=365))
+    interval_key = str(interval or "").strip().lower()
+    if interval_key in {"1d", "1wk", "1mo"}:
+        payload = kis_client.daily_bars(
+            symbol,
+            start_date=start.strftime("%Y%m%d"),
+            end_date=today.strftime("%Y%m%d"),
+            period={"1wk": "W", "1mo": "M"}.get(interval_key, "D"),
+        )
+        return _normalize_ohlcv(normalize_kis_daily_bars(symbol, payload))
+
+    if interval_key in {"1m", "5m", "15m", "30m", "60m", "1h"}:
+        payload = kis_client.today_minute_bars(symbol, input_hour="153000", include_past=True)
+        frame = normalize_kis_minute_bars(symbol, payload, trade_date=today.strftime("%Y%m%d"))
+        return _normalize_ohlcv(_resample_intraday(frame, interval_key))
+
+    return pd.DataFrame()
+
+
 def get_history(
     symbol: str,
     *,
@@ -121,6 +195,18 @@ def get_history(
     upper_symbol = str(symbol or "").strip().upper()
     is_kr_symbol = upper_symbol.endswith(".KS") or upper_symbol.endswith(".KQ") or upper_symbol in {"^KS11", "^KQ11", "KRW=X"}
     is_daily_like = interval in ("1d", "1wk", "1mo")
+    kis_mode = _kis_provider_mode()
+
+    # 0) Optional KIS-first source replacement for KRX equities.
+    if kis_mode in {"kis_first", "kis_only"} and _is_kr_symbol(symbol):
+        try:
+            kis_df = _fetch_kis_history(symbol, period=period, interval=interval, timeout=timeout)
+            if not kis_df.empty:
+                return kis_df
+        except Exception:
+            pass
+        if kis_mode == "kis_only":
+            return pd.DataFrame()
 
     # 1) FinanceDataReader first for KR daily-like paths
     if is_kr_symbol and is_daily_like:

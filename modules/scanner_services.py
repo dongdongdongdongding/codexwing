@@ -117,6 +117,92 @@ def _theme_flat_fields(theme_context: Optional[Dict[str, Any]]) -> Dict[str, Any
     }
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return bool(default)
+    return str(raw).strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def _build_optional_kis_sidecar(
+    sym: str,
+    *,
+    market: str,
+    daily_bars: Any = None,
+    whale_data: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    if not _env_bool("AG_ENABLE_KIS_SIDECAR", False):
+        return {}
+
+    from modules.kis_operational_adapter import build_kis_sidecar_snapshot, normalize_kis_daily_bars, normalize_kis_minute_bars
+
+    quote_snapshot: Optional[Dict[str, Any]] = None
+    sidecar_daily = None
+    sidecar_minute = None
+    investor_flow: Optional[Dict[str, Any]] = None
+    warnings = []
+
+    market_data_provider = str(os.getenv("AG_KR_MARKET_DATA_PROVIDER") or "").strip().lower()
+    if market_data_provider in {"kis", "kis_first", "kis_only", "kis_openapi", "kis_openapi_only"}:
+        sidecar_daily = daily_bars
+
+    try:
+        from modules.kis_openapi import KISOpenAPIClient
+
+        client = KISOpenAPIClient()
+        if _env_bool("AG_KIS_SIDECAR_FETCH_QUOTE", True):
+            try:
+                quote_snapshot = client.quote_snapshot(sym)
+            except Exception as exc:
+                warnings.append(f"kis_quote_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_DAILY", False):
+            try:
+                from datetime import datetime, timedelta
+
+                end_dt = datetime.now()
+                start_dt = end_dt - timedelta(days=int(_env_float("AG_KIS_SIDECAR_DAILY_LOOKBACK_DAYS", 90)))
+                payload = client.daily_bars(
+                    sym,
+                    start_date=start_dt.strftime("%Y%m%d"),
+                    end_date=end_dt.strftime("%Y%m%d"),
+                )
+                sidecar_daily = normalize_kis_daily_bars(sym, payload)
+            except Exception as exc:
+                warnings.append(f"kis_daily_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_MINUTE", False):
+            try:
+                from datetime import datetime
+
+                payload = client.today_minute_bars(sym, input_hour="153000", include_past=True)
+                sidecar_minute = normalize_kis_minute_bars(sym, payload, trade_date=datetime.now().strftime("%Y%m%d"))
+            except Exception as exc:
+                warnings.append(f"kis_minute_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_FLOW", False):
+            try:
+                from datetime import datetime
+
+                investor_flow = client.investor_flow_snapshot(sym, trade_date=datetime.now().strftime("%Y%m%d"))
+            except Exception as exc:
+                warnings.append(f"kis_flow_sidecar_failed:{exc}")
+    except Exception as exc:
+        warnings.append(f"kis_sidecar_client_failed:{exc}")
+
+    if investor_flow is None and isinstance(whale_data, dict) and str(whale_data.get("flow_source") or "") == "kis_openapi":
+        investor_flow = {**whale_data, "source_status": "ok"}
+
+    sidecar = build_kis_sidecar_snapshot(
+        sym,
+        market=market,
+        quote_snapshot=quote_snapshot,
+        daily_bars=sidecar_daily,
+        minute_bars=sidecar_minute,
+        investor_flow=investor_flow,
+    )
+    if warnings:
+        sidecar["warnings"] = sorted(set(list(sidecar.get("warnings") or []) + warnings))
+    return sidecar
+
+
 def _macro_context_summary(macro_ctx: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     ctx = macro_ctx if isinstance(macro_ctx, dict) else {}
     keys = [
@@ -2602,6 +2688,7 @@ def build_kr_scan_outputs(
     continuation_evidence: int = 0,
     continuation_gate_reasons: Optional[list[str]] = None,
     whale_data: Optional[Dict[str, Any]] = None,
+    daily_bars: Any = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Build KR scanner table row + DB payload with legacy field compatibility."""
     curr_fmt = "{:,.0f}"
@@ -2641,6 +2728,15 @@ def build_kr_scan_outputs(
         expected_edge_score=expected_edge_score,
     )
     flow_fields = _flow_persistence_fields(whale_data, leader_metrics)
+    kis_sidecar = _build_optional_kis_sidecar(
+        sym,
+        market=str(m_type),
+        daily_bars=daily_bars,
+        whale_data=whale_data,
+    )
+    leader_metrics_payload = dict(leader_metrics or {})
+    if kis_sidecar:
+        leader_metrics_payload["kis_sidecar"] = kis_sidecar
 
     res_data = {
         "Tier": tier,
@@ -2716,8 +2812,9 @@ def build_kr_scan_outputs(
         "continuation_prob_3d": continuation_prob_3d,
         "continuation_evidence": int(continuation_evidence),
         "continuation_gate_reasons": list(continuation_gate_reasons or []),
+        "_kis_sidecar": kis_sidecar,
         "_theme_context": theme_context or {},
-        "_leader_metrics": leader_metrics or {},
+        "_leader_metrics": leader_metrics_payload,
         "_routing_path": routing_path or "",
         "테마": (theme_context or {}).get("primary_theme", "-") if isinstance(theme_context, dict) else "-",
         "phase25_variant": phase25_variant,
@@ -2806,11 +2903,33 @@ def build_kr_scan_outputs(
         "stop_sl_pct": DEFAULT_EXIT_SL_PCT,
         "hold_days": DEFAULT_EXIT_HOLD_DAYS,
         "theme_context": theme_context or {},
-        "leader_metrics": leader_metrics or {},
+        "leader_metrics": leader_metrics_payload,
         "routing_path": routing_path or "",
         "theme_score_adjustment": round(float(theme_score_adjustment or 0.0), 2),
         **_theme_flat_fields(theme_context),
     }
+    if kis_sidecar:
+        db_payload["kis_sidecar"] = kis_sidecar
+        db_payload["feature_snapshot"] = {
+            "ticker": sym,
+            "stock_name": stock_name,
+            "market": m_type,
+            "scan_mode": str(scan_mode or "SWING").upper(),
+            "alpha_score": int(alpha_score),
+            "tech_score": int(tech_score),
+            "ml_prob": stored_prob_5,
+            "prob_clean": stored_prob_clean,
+            "whale_score": int(whale_score),
+            "decision_score": decision_score,
+            "conviction_score": round(float(conviction_score), 1),
+            "volume_ratio": volume_ratio_value,
+            "volume_confirmed": volume_confirmed,
+            "entry_reference_price": _optional_float(setup.get("Entry Price")),
+            "theme_context": theme_context or {},
+            "leader_metrics": leader_metrics_payload,
+            "kis_sidecar": kis_sidecar,
+            "kis_model_candidate_features": kis_sidecar.get("model_candidate_features", {}),
+        }
     return {"res_data": res_data, "db_payload": db_payload}
 
 
@@ -4091,6 +4210,7 @@ def evaluate_app_kr_candidate(
         continuation_evidence=int(continuation_signal.get("evidence", 0) or 0),
         continuation_gate_reasons=list(continuation_signal.get("reasons", []) or []),
         whale_data=whale_data,
+        daily_bars=qs.df,
     )
     outputs["res_data"]["_segment_overlay"] = segment_overlay
     outputs["res_data"]["_continuation_signal"] = continuation_signal

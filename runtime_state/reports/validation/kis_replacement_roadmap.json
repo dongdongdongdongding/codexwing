@@ -1,0 +1,139 @@
+{
+  "contract_version": "kis_operational_adapter_v1",
+  "implemented_now": {
+    "investor_flow_toggle": "AG_KR_INVESTOR_FLOW_PROVIDER=kis_first or kis_only",
+    "legacy_fallback_preserved": true,
+    "market_data_toggle": "AG_KR_MARKET_DATA_PROVIDER=kis_first or kis_only",
+    "production_default_changed": false,
+    "scanner_sidecar_toggle": "AG_ENABLE_KIS_SIDECAR=1",
+    "sidecar_adapter": "modules.kis_operational_adapter"
+  },
+  "model_upgrade_plan": [
+    {
+      "action": "Persist KIS quote, OHLCV summary, flow, rank, VI, news-title, and financial fields next to KR scanner rows.",
+      "step": "sidecar_persistence",
+      "success_metric": "No recommendation order change; complete KIS sidecar for eligible KR candidates."
+    },
+    {
+      "action": "Compare KIS-first and legacy outputs for scanner rows, archive rows, Discord lookup, and top-deep reports.",
+      "step": "dual_run_quality_report",
+      "success_metric": "No silent missing-field drift; all consumer payloads carry source warnings."
+    },
+    {
+      "action": "Train KIS-augmented segment challengers with feature groups on/off.",
+      "step": "challenger_training",
+      "success_metric": "Segment Top5 positive-rate, average 5D return, bad-path rate, and stop-first rate improve."
+    },
+    {
+      "action": "Promote KIS primary with explicit fallback after gates pass.",
+      "step": "promotion",
+      "success_metric": "Production KR scanner uses KIS primary without lowering current release gates."
+    }
+  ],
+  "replacement_gates": [
+    {
+      "current_status": "implemented_and_unit_tested",
+      "gate": "source_contract",
+      "promotion_required": false,
+      "target": "KIS payloads map to existing OHLCV, quote, and whale-flow fields"
+    },
+    {
+      "current_status": {
+        "effective_quote_success_rate_pct": 100.0,
+        "source": "prior live KIS readiness sweep"
+      },
+      "gate": "quote_universe",
+      "promotion_required": true,
+      "target": "100% effective KR quote coverage with retry/cache"
+    },
+    {
+      "current_status": "adapter_added; live dual-run not complete",
+      "gate": "ohlcv_history",
+      "promotion_required": true,
+      "target": ">=99% KOSPI/KOSDAQ daily OHLCV availability for scanner candidates and archive replay"
+    },
+    {
+      "current_status": "adapter_added; production replay not complete",
+      "gate": "intraday_bars",
+      "promotion_required": true,
+      "target": "same-day minute bars support intraday refresh without stale yfinance dependency"
+    },
+    {
+      "current_status": "KIS-first toggle added; prior live check saw time-gated failures",
+      "gate": "investor_flow",
+      "promotion_required": true,
+      "target": "KIS stock investor flow works after the exchange time gate and falls back explicitly when unavailable"
+    },
+    {
+      "current_status": "sidecar contract and scanner payload hook added; live rank/VI/news persistence still pending",
+      "gate": "rank_vi_news_financial",
+      "promotion_required": true,
+      "target": "rank membership, VI status, news-title count, and financial ratios persist as model sidecar fields"
+    },
+    {
+      "current_status": "not promoted to production default",
+      "gate": "consumer_parity",
+      "promotion_required": true,
+      "target": "scanner, Discord, archive, top-deep, Supabase, and learning outputs consume the same normalized contract"
+    },
+    {
+      "current_status": "needs sidecar archive and challenger training",
+      "gate": "model_lift",
+      "promotion_required": true,
+      "target": "KIS-augmented challenger beats current segment gates without worse tail loss"
+    }
+  ],
+  "roadmap": {
+    "high_value_kis_features": [
+      "trade value and previous-volume ratio from official quote snapshots",
+      "foreign/institution/retail daily flow when the time-gated endpoint is available",
+      "volume, fluctuation, execution-strength, and VI rank membership",
+      "financial ratios and 250-day high/low distance",
+      "same-day minute bars for intraday volume curve and VWAP features",
+      "KIS news-title count as a low-cost event-intensity feature"
+    ],
+    "phases": [
+      {
+        "exit_gate": "KIS quote, daily, minute, and flow payloads normalize to existing OHLCV/flow contracts in tests.",
+        "name": "contract_adapter",
+        "phase": 1,
+        "status": "implemented_in_this_issue"
+      },
+      {
+        "exit_gate": "Every KR scanner candidate persists KIS sidecar features without changing recommendation order.",
+        "name": "sidecar_archive",
+        "phase": 2,
+        "status": "next"
+      },
+      {
+        "exit_gate": "KIS primary vs legacy fallback produces >=99% price/OHLCV parity on eligible KR candidates for 10 trading days.",
+        "name": "dual_run_parity",
+        "phase": 3,
+        "status": "planned"
+      },
+      {
+        "exit_gate": "KIS primary with legacy fallback passes scanner, Discord, archive, top-deep, and learning replay checks.",
+        "name": "production_source_promotion",
+        "phase": 4,
+        "status": "planned"
+      },
+      {
+        "exit_gate": "KIS-augmented challenger beats current gate by segment without worsening tail-loss metrics.",
+        "name": "model_lift_promotion",
+        "phase": 5,
+        "status": "planned"
+      }
+    ],
+    "principle": "Change source adapters first, then promote only after dual-run gates pass.",
+    "target": "KIS-backed KR operation with existing scanner/planner contracts preserved"
+  },
+  "summary": {
+    "current_replacement_level": "contract-ready, not production-promoted",
+    "endpoint_failed_count": 2,
+    "endpoint_ok_count": 17,
+    "operator_answer": "KIS can become the KR primary operational data source, but the current safe state is KIS-first test mode plus sidecar collection, not unconditional production default.",
+    "prior_readiness_verdict": "KR 운영 전체를 지금 KIS로 일괄 전환하면 안 된다. 먼저 KIS를 단계적 보강 데이터 소스로 써야 한다.",
+    "source_only_change": "The implementation keeps scanner/planner decisions unchanged by default and changes only optional source adapters behind explicit environment toggles."
+  },
+  "tool": "report_kis_replacement_roadmap"
+}

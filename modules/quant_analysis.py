@@ -3001,6 +3001,28 @@ class QuantStrategy:
             _flow_df = None
             _col_map: typing.Dict[str, typing.Any] = {}
 
+            kis_flow_mode_raw = str(os.getenv("AG_KR_INVESTOR_FLOW_PROVIDER") or "").strip().lower()
+            kis_flow_mode = "kis_first" if kis_flow_mode_raw in {"kis", "kis_first", "kis_openapi"} else kis_flow_mode_raw
+            if kis_flow_mode in {"kis_first", "kis_only", "kis_openapi_only"} or str(
+                os.getenv("AG_ENABLE_KIS_INVESTOR_FLOW") or ""
+            ).strip().lower() in {"1", "true", "yes", "on"}:
+                try:
+                    from modules.kis_openapi import KISOpenAPIClient
+                    from modules.kis_operational_adapter import normalize_kis_flow_for_whale_contract
+
+                    trade_date = datetime.now().strftime("%Y%m%d")
+                    kis_flow = KISOpenAPIClient().investor_flow_snapshot(code, trade_date=trade_date)
+                    kis_res = normalize_kis_flow_for_whale_contract(kis_flow)
+                    if kis_res.get("valid"):
+                        kis_res["warnings"] = list(kis_res.get("warnings") or []) + ["kis_flow_primary"]
+                        return {**res, **kis_res}
+                    res["warnings"].append("kis_flow_empty_or_invalid")
+                except Exception as exc:
+                    res["warnings"].append(f"kis_flow_failed:{exc}")
+                if kis_flow_mode in {"kis_only", "kis_openapi_only"}:
+                    res["reason"] = "KIS investor flow failed and kis_only is enabled"
+                    return res
+
             # Prefer official KRX investor trading value. Naver remains a fallback
             # because pykrx can fail on holidays, transient network errors, or
             # environment-specific KRX throttling.
