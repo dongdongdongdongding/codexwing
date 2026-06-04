@@ -124,6 +124,36 @@ def test_universe_input_rows_include_feature_rich_rejected_diagnostics():
     assert rejected["reject_reason"] == "KR_PRECISION_GATE_FAIL"
 
 
+def test_universe_input_rows_preserve_rejected_day_change_diagnostics():
+    result = build_scan_universe_admission_input_rows(
+        [],
+        market="KOSDAQ",
+        diagnostics={
+            "reject_reasons_by_symbol": {"322310.KQ": "LOW_LIQUIDITY"},
+            "reject_details_by_symbol": {
+                "322310.KQ": [
+                    {
+                        "ticker": "322310.KQ",
+                        "stock_name": "오성첨단소재",
+                        "stage": "liquidity_gate",
+                        "day_return_pct": -4.32,
+                        "전일비": "-4.32%",
+                        "alpha_score": 72.0,
+                        "ml_prob": 61.0,
+                        "volume_ratio": 2.1,
+                    }
+                ]
+            },
+        },
+    )
+
+    rejected = result["rows"][0]
+    features = _extract_feature_columns(rejected, market="KOSDAQ")
+    assert rejected["day_return_pct"] == -4.32
+    assert rejected["전일비"] == "-4.32%"
+    assert features["day_return_pct"] == -4.32
+
+
 def test_critical_legacy_reject_can_be_scored_but_not_promoted(monkeypatch):
     bundle = {
         "market": "KOSPI",

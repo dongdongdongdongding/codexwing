@@ -118,6 +118,21 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["day_change"], "-")
         self.assertEqual(rows[0]["day_change_value"], None)
 
+    def test_build_signal_display_rows_uses_admission_feature_day_change(self):
+        rows = build_signal_display_rows([
+            {
+                "ticker": "322310.KQ",
+                "stock_name": "오성첨단소재",
+                "scan_universe_admission": {
+                    "probability_pct": 61.2,
+                    "feature_values": {"day_return_pct": -4.32},
+                },
+            }
+        ])
+
+        self.assertEqual(rows[0]["day_change"], "-4.32%")
+        self.assertEqual(rows[0]["day_change_value"], -4.32)
+
     def test_build_action_display_maps_existing_trace_without_core_policy_change(self):
         self.assertEqual(
             build_action_display({

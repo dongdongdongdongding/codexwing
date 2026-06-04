@@ -84,6 +84,33 @@ def _fmt_pct(value: Any) -> str:
     return f"{numeric:+.2f}%"
 
 
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        return value
+    return None
+
+
+def _row_day_change(row: Dict[str, Any]) -> Any:
+    admission = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
+    features = admission.get("feature_values") if isinstance(admission.get("feature_values"), dict) else {}
+    price = row.get("price") if isinstance(row.get("price"), dict) else {}
+    return _first_present(
+        row.get("day_change_pct"),
+        row.get("day_return_pct"),
+        row.get("prev_pct_change"),
+        row.get("Change %"),
+        row.get("Day Change"),
+        row.get("1D Change"),
+        row.get("전일비"),
+        features.get("day_return_pct"),
+        price.get("day_change_pct"),
+    )
+
+
 def _embed_char_count(embed: Dict[str, Any]) -> int:
     total = len(str(embed.get("title") or "")) + len(str(embed.get("description") or ""))
     fields = embed.get("fields") if isinstance(embed.get("fields"), list) else []
@@ -476,7 +503,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"손절x{_fmt_num(regime_theme_adjustment.get('stop_risk_multiplier'), 2)} · "
             f"신뢰도 {_fmt_num((_safe_float(regime_theme_adjustment.get('confidence')) or 0.0) * 100.0, 0)}%"
         ),
-        f"전일비: {_fmt_pct(row.get('day_change_pct'))}",
+        f"전일비: {_fmt_pct(_row_day_change(row))}",
         _fmt_flow_line(flow),
         (
             f"Entry {trade_plan.get('entry_policy') or '-'} {_fmt_num(interpretation.get('entry_reference_price'), 0)} · "
@@ -819,7 +846,7 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
     decision = row.get("decision") or row.get("Decision") or row.get("signal_label") or row.get("Strategy") or row.get("전략") or "-"
     score = row.get("buy_score") or row.get("Decision Score") or row.get("Score")
     loss = row.get("loss_risk_score") or row.get("Loss Risk")
-    day = row.get("day_change_pct") or row.get("Change %") or row.get("Day Change") or row.get("전일비")
+    day = _row_day_change(row)
     section = interpretation.get("section") or row.get("_analysis_section")
     display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
     policy_metadata = row.get("policy_metadata") if isinstance(row.get("policy_metadata"), dict) else {}

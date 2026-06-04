@@ -1442,13 +1442,22 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
             row.get("_prob_clean"),
             row.get("정밀확률"),
         )
+        admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
+        admission_features = (
+            admission_model.get("feature_values")
+            if isinstance(admission_model.get("feature_values"), dict)
+            else {}
+        )
+        price_payload = row.get("price") if isinstance(row.get("price"), dict) else {}
         day_change_source = _coalesce_present(
             row.get("전일비"),
             row.get("day_return_pct"),
             row.get("prev_pct_change"),
+            row.get("day_change_pct"),
             row.get("1D Change"),
+            admission_features.get("day_return_pct"),
+            price_payload.get("day_change_pct"),
         )
-        admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
         score_source = _coalesce_present(
             admission_model.get("probability_pct"),
             row.get("decision_score"),

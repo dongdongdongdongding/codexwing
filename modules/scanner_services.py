@@ -3010,7 +3010,15 @@ def evaluate_app_us_candidate(
         if reject_meta_fn is None:
             return
         try:
-            payload = {"reason": reason}
+            payload = {
+                "ticker": sym,
+                "stock_name": stock_name,
+                "reason": reason,
+                "prev_pct_change": round(float(prev_pct_change), 2),
+                "day_return_pct": round(float(prev_pct_change), 2),
+                "day_change_pct": round(float(prev_pct_change), 2),
+                "1D Change": f"{float(prev_pct_change):+.2f}%",
+            }
             if isinstance(meta, dict):
                 payload.update(meta)
             reject_meta_fn(payload)
@@ -3458,7 +3466,14 @@ def evaluate_app_kr_candidate(
         if reject_meta_fn is None:
             return
         try:
-            reject_meta_fn(meta)
+            payload = dict(meta or {})
+            payload.setdefault("ticker", sym)
+            payload.setdefault("stock_name", stock_name)
+            payload.setdefault("prev_pct_change", round(float(prev_pct_change), 2))
+            payload.setdefault("day_return_pct", round(float(prev_pct_change), 2))
+            payload.setdefault("day_change_pct", round(float(prev_pct_change), 2))
+            payload.setdefault("전일비", f"{float(prev_pct_change):+.2f}%")
+            reject_meta_fn(payload)
         except Exception:
             pass
 
