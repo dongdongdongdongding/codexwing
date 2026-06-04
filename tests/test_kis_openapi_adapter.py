@@ -170,6 +170,25 @@ def test_quote_request_and_snapshot_parser_preserve_current_price_and_status():
     assert snapshot["status_warning"] is None
 
 
+def test_retryable_kis_rate_limit_payload_is_retried(monkeypatch):
+    monkeypatch.setenv("KIS_LIVE_RETRY_SLEEP_SEC", "0")
+    quote_attempts = {"count": 0}
+
+    def responder(call):
+        if call["path"] == "/oauth2/tokenP":
+            return {"access_token": "token-123", "token_type": "Bearer", "expires_in": 86400}
+        quote_attempts["count"] += 1
+        if quote_attempts["count"] == 1:
+            return {"rt_cd": "1", "msg_cd": "EGW00201", "msg1": "초당 거래건수를 초과하였습니다."}
+        return {"rt_cd": "0", "output": {"stck_prpr": "81200"}}
+
+    client, _calls = _client_with_transport(responder)
+    snapshot = client.quote_snapshot("005930.KS")
+
+    assert snapshot["last_price"] == 81200
+    assert quote_attempts["count"] == 2
+
+
 def test_quote_parser_maps_risk_status_code():
     snapshot = parse_quote_snapshot("005930", {"output": {"iscd_stat_cls_code": "51"}})
     assert snapshot["status_warning"] == "management_stock"
@@ -239,6 +258,40 @@ def test_investor_flow_parser_prefers_amount_and_keeps_quantity_fields():
     assert snapshot["institution_3d"] == 100000
     assert snapshot["foreigner_1d_qty"] == 100
     assert snapshot["institution_1d_qty"] == -20
+
+
+def test_investor_flow_snapshot_falls_back_to_current_endpoint_when_daily_time_limited():
+    def responder(call):
+        if call["path"] == "/oauth2/tokenP":
+            return {"access_token": "token-123", "token_type": "Bearer", "expires_in": 86400}
+        if call["path"].endswith("investor-trade-by-stock-daily"):
+            return {"rt_cd": "1", "msg_cd": "OPSQ2001", "msg1": "TIME LIMIT 00:00 ~ 15:40"}
+        assert call["path"].endswith("inquire-investor")
+        return {
+            "rt_cd": "0",
+            "output": [
+                {
+                    "stck_bsop_date": "20260604",
+                    "frgn_ntby_tr_pbmn": "1000",
+                    "orgn_ntby_tr_pbmn": "2000",
+                    "prsn_ntby_tr_pbmn": "-3000",
+                    "frgn_ntby_qty": "10",
+                    "orgn_ntby_qty": "20",
+                    "prsn_ntby_qty": "-30",
+                }
+            ],
+        }
+
+    client, calls = _client_with_transport(responder)
+    snapshot = client.investor_flow_snapshot("005930.KS", trade_date="20260605")
+
+    assert snapshot["source_status"] == "ok"
+    assert snapshot["flow_endpoint"] == "stock_investor_current"
+    assert snapshot["flow_date_fallback"] is True
+    assert snapshot["requested_trade_date"] == "20260605"
+    assert snapshot["resolved_trade_date"] == "20260604"
+    assert snapshot["whale_flow_1d"] == 3000
+    assert any(call["path"].endswith("inquire-investor") for call in calls)
 
 
 def test_ranking_and_context_requests_are_available_without_scanner_wiring():

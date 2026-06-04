@@ -443,7 +443,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         report["note"] = "Dry run only. Pass --allow-live-network to call KIS read-only endpoints."
         return report
 
-    client.get_access_token(force=True)
+    client.get_access_token(force=bool(args.force_token_refresh))
     quote_rows = _quote_universe(
         client,
         universe,
@@ -474,6 +474,7 @@ def main() -> int:
     parser.add_argument("--retry-count", type=int, default=1)
     parser.add_argument("--progress-every", type=int, default=100)
     parser.add_argument("--timeout", type=float, default=8.0)
+    parser.add_argument("--force-token-refresh", action="store_true", help="Bypass cached KIS token before the run.")
     parser.add_argument(
         "--tickers",
         default="",

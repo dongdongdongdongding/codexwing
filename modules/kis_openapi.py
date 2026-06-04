@@ -340,6 +340,8 @@ class KISTokenState:
 
 _TOKEN_CACHE_LOCK = threading.Lock()
 _TOKEN_CACHE: Dict[tuple, KISTokenState] = {}
+_LIVE_REQUEST_RATE_LOCK = threading.Lock()
+_LIVE_REQUEST_LAST_AT = 0.0
 
 
 def _token_file_cache_path() -> str:
@@ -409,6 +411,40 @@ def _save_token_file_cache(cache_key: tuple, state: KISTokenState) -> None:
     except Exception:
         pass
     os.replace(tmp_path, path)
+
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, str(default)))
+    except Exception:
+        return float(default)
+
+
+def _live_request_throttle() -> None:
+    spacing_sec = max(0.0, _env_float("KIS_LIVE_CALL_SLEEP_SEC", 0.12))
+    if spacing_sec <= 0:
+        return
+    global _LIVE_REQUEST_LAST_AT
+    with _LIVE_REQUEST_RATE_LOCK:
+        elapsed = time.monotonic() - _LIVE_REQUEST_LAST_AT
+        if elapsed < spacing_sec:
+            time.sleep(spacing_sec - elapsed)
+        _LIVE_REQUEST_LAST_AT = time.monotonic()
+
+
+def _retryable_kis_text(text: str) -> bool:
+    return any(token in str(text or "") for token in ("EGW00201", "초당 거래건수", "rate limit", "too many requests"))
+
+
+def _retryable_kis_payload(payload: Mapping[str, Any]) -> bool:
+    if not isinstance(payload, Mapping):
+        return False
+    return _retryable_kis_text(
+        " ".join(
+            str(payload.get(key) or "")
+            for key in ("msg_cd", "msg1", "error_code", "error_description", "msg")
+        )
+    )
 
 
 def normalize_kr_stock_code(symbol: str) -> str:
@@ -538,6 +574,7 @@ class KISOpenAPIClient:
                 "Live KIS network calls are disabled. Set KIS_ENABLE_LIVE_CALLS=1 "
                 "or inject a test transport."
             )
+        _live_request_throttle()
         request = urllib.request.Request(url, data=body, headers=headers, method=method)
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
@@ -585,7 +622,28 @@ class KISOpenAPIClient:
                 token = self.get_access_token()
                 headers["authorization"] = f"{self._token_state.token_type or 'Bearer'} {token}"
 
-        payload = self._raw_request(method, url, headers, body)
+        retry_count = max(0, int(_env_float("KIS_LIVE_RETRY_COUNT", 3)))
+        retry_sleep_sec = max(0.0, _env_float("KIS_LIVE_RETRY_SLEEP_SEC", 0.8))
+        payload: Dict[str, Any] = {}
+        last_exc: Optional[Exception] = None
+        for attempt in range(retry_count + 1):
+            try:
+                payload = self._raw_request(method, url, headers, body)
+                if (
+                    endpoint_key not in {"token", "approval_key"}
+                    and _retryable_kis_payload(payload)
+                    and attempt < retry_count
+                ):
+                    time.sleep(retry_sleep_sec * float(attempt + 1))
+                    continue
+                break
+            except KISOpenAPIError as exc:
+                last_exc = exc
+                if endpoint_key in {"token", "approval_key"} or attempt >= retry_count or not _retryable_kis_text(str(exc)):
+                    raise
+                time.sleep(retry_sleep_sec * float(attempt + 1))
+        if not payload and last_exc is not None:
+            raise last_exc
         if endpoint_key not in {"token", "approval_key"}:
             rt_cd = payload.get("rt_cd")
             if rt_cd not in (None, "", "0"):
@@ -769,9 +827,36 @@ class KISOpenAPIClient:
             },
         )
 
+    def investor_trading_current(self, symbol: str, *, market_div: str = "J") -> Dict[str, Any]:
+        code = normalize_kr_stock_code(symbol)
+        return self._request_json(
+            "stock_investor_current",
+            params={"FID_COND_MRKT_DIV_CODE": market_div, "FID_INPUT_ISCD": code},
+        )
+
     def investor_flow_snapshot(self, symbol: str, *, trade_date: str, market_div: str = "J") -> Dict[str, Any]:
-        payload = self.investor_trading_daily(symbol, trade_date=trade_date, market_div=market_div)
-        return parse_investor_flow_snapshot(symbol, payload)
+        requested_trade_date = str(trade_date or "").strip()
+        try:
+            payload = self.investor_trading_daily(symbol, trade_date=requested_trade_date, market_div=market_div)
+            snapshot = parse_investor_flow_snapshot(symbol, payload)
+            snapshot["requested_trade_date"] = requested_trade_date
+            snapshot["resolved_trade_date"] = snapshot.get("flow_asof")
+            snapshot["flow_endpoint"] = "stock_investor_daily"
+            snapshot["flow_date_fallback"] = False
+            return snapshot
+        except KISOpenAPIError as exc:
+            if not any(token in str(exc) for token in ("OPSQ2001", "TIME LIMIT")):
+                raise
+            payload = self.investor_trading_current(symbol, market_div=market_div)
+            snapshot = parse_investor_flow_snapshot(symbol, payload)
+            snapshot["requested_trade_date"] = requested_trade_date
+            snapshot["resolved_trade_date"] = snapshot.get("flow_asof")
+            snapshot["flow_endpoint"] = "stock_investor_current"
+            snapshot["flow_date_fallback"] = True
+            warnings = list(snapshot.get("warnings") or [])
+            warnings.append(f"stock_investor_daily_time_limited:{requested_trade_date}")
+            snapshot["warnings"] = sorted(set(str(item) for item in warnings if item))
+            return snapshot
 
     def investor_trend_estimate(self, symbol: str) -> Dict[str, Any]:
         return self._request_json(
