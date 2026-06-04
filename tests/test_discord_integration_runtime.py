@@ -457,6 +457,7 @@ def test_scan_ack_refuses_execution_while_dry_run():
 def test_scan_executor_command_is_fixed_full_kr_scan(monkeypatch, tmp_path):
     from modules.discord_integration import scan_executor
 
+    monkeypatch.delenv("AG_KIS_OPERATIONAL_PREFILTER", raising=False)
     monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
     job = create_scan_job("KOSDAQ")
     cmd = build_scan_command(job)
@@ -468,9 +469,26 @@ def test_scan_executor_command_is_fixed_full_kr_scan(monkeypatch, tmp_path):
     assert cmd[cmd.index("--scan-mode") + 1] == "SWING"
 
 
+def test_scan_executor_command_can_use_kis_operational_prefilter(monkeypatch, tmp_path):
+    from modules.discord_integration import scan_executor
+
+    monkeypatch.setenv("AG_KIS_OPERATIONAL_PREFILTER", "1")
+    monkeypatch.setenv("AG_KIS_PREFILTER_MAX_CANDIDATES", "60")
+    monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
+    job = create_scan_job("KOSDAQ")
+    cmd = build_scan_command(job)
+
+    assert "multi_agent.tools.run_kis_operational_kr_scan" in cmd
+    assert cmd[cmd.index("--market") + 1] == "KOSDAQ"
+    assert cmd[cmd.index("--scan-mode") + 1] == "SWING"
+    assert cmd[cmd.index("--max-candidates-per-market") + 1] == "60"
+    assert "--allow-live-network" in cmd
+
+
 def test_scan_executor_command_supports_intraday_observation_mode(monkeypatch, tmp_path):
     from modules.discord_integration import scan_executor
 
+    monkeypatch.delenv("AG_KIS_OPERATIONAL_PREFILTER", raising=False)
     monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
     job = create_scan_job("KOSPI", scan_mode="INTRADAY")
     cmd = build_scan_command(job)

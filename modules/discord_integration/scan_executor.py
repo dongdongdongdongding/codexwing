@@ -123,7 +123,35 @@ def create_scan_job(market: str, scan_mode: str = "SWING") -> DiscordScanJob:
     )
 
 
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.getenv(name, str(default)) or default)
+    except Exception:
+        return int(default)
+
+
 def build_scan_command(job: DiscordScanJob) -> List[str]:
+    if str(os.getenv("AG_KIS_OPERATIONAL_PREFILTER") or "").strip().lower() in {"1", "true", "yes", "on", "y"}:
+        return [
+            sys.executable,
+            "-m",
+            "multi_agent.tools.run_kis_operational_kr_scan",
+            "--market",
+            job.market,
+            "--scan-mode",
+            job.scan_mode,
+            "--profile",
+            "prod",
+            "--max-candidates-per-market",
+            str(_env_int("AG_KIS_PREFILTER_MAX_CANDIDATES", 80)),
+            "--rank-limit-per-source",
+            str(_env_int("AG_KIS_PREFILTER_RANK_LIMIT", 80)),
+            "--workers",
+            str(_env_int("AG_KIS_OPERATIONAL_SCAN_WORKERS", 4)),
+            "--max-retries",
+            str(_env_int("AG_KIS_OPERATIONAL_SCAN_RETRIES", 1)),
+            "--allow-live-network",
+        ]
     return [
         sys.executable,
         "-m",
