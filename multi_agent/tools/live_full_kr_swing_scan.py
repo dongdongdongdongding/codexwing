@@ -30,6 +30,7 @@ Usage
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from collections import Counter
@@ -66,6 +67,11 @@ def _load_kr_universe(limit_per_market: int) -> pd.DataFrame:
     fail the turnover filter. Use KOSPI/KOSDAQ listing endpoints which carry
     Marcap, and filter out 스팩/ETN/ETF.
     """
+    if _prefers_kis_universe():
+        kis_df = _load_kis_rank_universe(limit_per_market)
+        if not kis_df.empty:
+            return kis_df
+
     import FinanceDataReader as fdr
     parts = []
     for market_label, suffix in (("KOSPI", ".KS"), ("KOSDAQ", ".KQ")):
@@ -82,17 +88,92 @@ def _load_kr_universe(limit_per_market: int) -> pd.DataFrame:
         except Exception as exc:
             print(f"  ⚠️ failed to load {market_label}: {exc}")
     if not parts:
+        return _load_kis_rank_universe(limit_per_market)
+    return pd.concat(parts).reset_index(drop=True)
+
+
+def _prefers_kis_universe() -> bool:
+    raw = str(os.getenv("AG_KR_UNIVERSE_PROVIDER") or os.getenv("AG_KR_MARKET_DATA_PROVIDER") or "")
+    return raw.strip().lower() in {"kis", "kis_first", "kis_rank", "kis_openapi"}
+
+
+def _load_kis_rank_universe(limit_per_market: int) -> pd.DataFrame:
+    """Load a small real KIS universe from domestic volume ranking endpoints."""
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+        load_dotenv(PROJECT_ROOT / ".env.local")
+        from modules.kis_openapi import KISConfig, KISOpenAPIClient, normalize_kr_stock_code
+
+        config = KISConfig.from_env()
+        client = KISOpenAPIClient(config=config, timeout=float(os.getenv("AG_KIS_UNIVERSE_TIMEOUT_SEC", "8")))
+    except Exception as exc:
+        print(f"  ⚠️ failed to initialize KIS universe client: {exc}")
+        return pd.DataFrame(columns=["Code", "Name"])
+
+    parts = []
+    for market_label, suffix in (("KOSPI", ".KS"), ("KOSDAQ", ".KQ")):
+        try:
+            payload = client.volume_rank(market=market_label)
+            if payload.get("rt_cd") not in (None, "0"):
+                raise RuntimeError(f"{payload.get('msg_cd')}: {payload.get('msg1') or payload.get('msg')}")
+            rows = payload.get("output") or payload.get("output2") or []
+            if not isinstance(rows, list):
+                rows = []
+            selected = []
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                code = normalize_kr_stock_code(row.get("mksc_shrn_iscd") or row.get("stck_shrn_iscd") or "")
+                name = str(row.get("hts_kor_isnm") or row.get("prdt_name") or code).strip()
+                if not code or not name:
+                    continue
+                selected.append({"Code": f"{code}{suffix}", "Name": name})
+                if limit_per_market > 0 and len(selected) >= limit_per_market:
+                    break
+            if selected:
+                parts.append(pd.DataFrame(selected))
+            else:
+                print(f"  ⚠️ KIS {market_label} volume_rank returned no usable symbols")
+        except Exception as exc:
+            print(f"  ⚠️ failed to load KIS {market_label} volume_rank universe: {exc}")
+    if not parts:
         return pd.DataFrame(columns=["Code", "Name"])
     return pd.concat(parts).reset_index(drop=True)
+
+
+def _load_requested_tickers(raw: str) -> pd.DataFrame:
+    rows = []
+    for item in str(raw or "").split(","):
+        text = item.strip()
+        if not text:
+            continue
+        if "=" in text:
+            symbol, name = text.split("=", 1)
+            symbol = symbol.strip().upper()
+            name = name.strip() or symbol
+        else:
+            symbol = text.upper()
+            name = symbol
+        if not symbol:
+            continue
+        rows.append({"Code": symbol, "Name": name})
+    return pd.DataFrame(rows, columns=["Code", "Name"])
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--limit", type=int, default=50, help="Tickers per market (default 50)")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument(
+        "--tickers",
+        default="",
+        help="Optional comma-separated ticker override, with optional name as TICKER=NAME.",
+    )
     args = parser.parse_args()
 
-    df = _load_kr_universe(args.limit)
+    df = _load_requested_tickers(args.tickers) if args.tickers else _load_kr_universe(args.limit)
     tickers_dict: Dict[str, str] = {row["Code"]: row["Name"] for _, row in df.iterrows()}
     print(f"🔬 Live full KR SWING scan: {len(tickers_dict)} tickers (KOSPI + KOSDAQ)")
 
@@ -163,7 +244,7 @@ def main() -> int:
     print(f"\nphase25_signal_direction: {dict(sigs)}")
     print("\nTop 10 by alpha_score:")
     for r in sorted(results, key=lambda x: -float(x.get("Antigrav") or 0))[:10]:
-        sym = r.get("Ticker")
+        sym = r.get("Ticker") or r.get("ticker")
         alpha = r.get("Antigrav")
         ph25 = r.get("phase25_prob")
         sig = r.get("phase25_signal_direction")

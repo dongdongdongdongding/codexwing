@@ -122,6 +122,59 @@ def _normalize_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
     return out.dropna(how="all")
 
 
+def _with_source(frame: pd.DataFrame, source_provider: str) -> pd.DataFrame:
+    if frame is not None and not frame.empty:
+        frame.attrs["source_provider"] = source_provider
+    return frame
+
+
+def _fetch_kis_daily_history(
+    kis_client: object,
+    symbol: str,
+    *,
+    start: datetime,
+    end: datetime,
+    period: str = "D",
+) -> pd.DataFrame:
+    from modules.kis_operational_adapter import normalize_kis_daily_bars
+
+    frames = []
+    cursor_end = end
+    max_chunks = max(1, int(os.getenv("AG_KIS_DAILY_MAX_CHUNKS", "8") or "8"))
+    seen_earliest = set()
+
+    for _chunk in range(max_chunks):
+        payload = kis_client.daily_bars(
+            symbol,
+            start_date=start.strftime("%Y%m%d"),
+            end_date=cursor_end.strftime("%Y%m%d"),
+            period=period,
+        )
+        frame = _normalize_ohlcv(normalize_kis_daily_bars(symbol, payload))
+        if frame.empty:
+            break
+        frames.append(frame)
+        earliest = frame.index.min()
+        if earliest is None:
+            break
+        earliest_key = str(pd.Timestamp(earliest).date())
+        if earliest_key in seen_earliest:
+            break
+        seen_earliest.add(earliest_key)
+        if pd.Timestamp(earliest).to_pydatetime() <= start:
+            break
+        if len(frame) < int(os.getenv("AG_KIS_DAILY_PAGE_SOFT_LIMIT", "95") or "95"):
+            break
+        cursor_end = pd.Timestamp(earliest).to_pydatetime() - timedelta(days=1)
+
+    if not frames:
+        return pd.DataFrame()
+    combined = pd.concat(frames).sort_index()
+    combined = combined[~combined.index.duplicated(keep="last")]
+    combined = combined[combined.index >= pd.Timestamp(start)]
+    return combined
+
+
 def _resample_intraday(frame: pd.DataFrame, interval: str) -> pd.DataFrame:
     if frame is None or frame.empty:
         return pd.DataFrame()
@@ -163,18 +216,19 @@ def _fetch_kis_history(
     start = _period_to_start(period) or (today - timedelta(days=365))
     interval_key = str(interval or "").strip().lower()
     if interval_key in {"1d", "1wk", "1mo"}:
-        payload = kis_client.daily_bars(
+        frame = _fetch_kis_daily_history(
+            kis_client,
             symbol,
-            start_date=start.strftime("%Y%m%d"),
-            end_date=today.strftime("%Y%m%d"),
+            start=start,
+            end=today,
             period={"1wk": "W", "1mo": "M"}.get(interval_key, "D"),
         )
-        return _normalize_ohlcv(normalize_kis_daily_bars(symbol, payload))
+        return _with_source(frame, "kis_openapi")
 
     if interval_key in {"1m", "5m", "15m", "30m", "60m", "1h"}:
         payload = kis_client.today_minute_bars(symbol, input_hour="153000", include_past=True)
         frame = normalize_kis_minute_bars(symbol, payload, trade_date=today.strftime("%Y%m%d"))
-        return _normalize_ohlcv(_resample_intraday(frame, interval_key))
+        return _with_source(_normalize_ohlcv(_resample_intraday(frame, interval_key)), "kis_openapi")
 
     return pd.DataFrame()
 
@@ -218,7 +272,7 @@ def get_history(
             fdr_df = fdr.DataReader(fdr_symbol, start) if start else fdr.DataReader(fdr_symbol)
             fdr_df = _normalize_ohlcv(fdr_df)
             if not fdr_df.empty:
-                return fdr_df
+                return _with_source(fdr_df, "finance_data_reader")
         except Exception:
             pass
 
@@ -231,7 +285,7 @@ def get_history(
             yf_df = ticker.history(period=period, interval=interval, timeout=timeout)
         yf_df = _normalize_ohlcv(yf_df)
         if not yf_df.empty:
-            return yf_df
+            return _with_source(yf_df, "yfinance")
     except Exception:
         pass
 
@@ -247,7 +301,7 @@ def get_history(
         fdr_df = fdr.DataReader(fdr_symbol, start) if start else fdr.DataReader(fdr_symbol)
         fdr_df = _normalize_ohlcv(fdr_df)
         if not fdr_df.empty:
-            return fdr_df
+            return _with_source(fdr_df, "finance_data_reader")
     except Exception:
         pass
 

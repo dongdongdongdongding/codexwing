@@ -239,6 +239,7 @@ SCAN_RESULT_COLUMNS: tuple = (
     # Theme
     ("theme_context",                   "theme_context",                   _passthrough),
     ("leader_metrics",                  "leader_metrics",                  _passthrough),
+    ("feature_snapshot",                "feature_snapshot",                _passthrough),
     ("routing_path",                    "routing_path",                    _passthrough),
     ("theme_score_adjustment",          "theme_score_adjustment",          _to_float_or_none),
     ("primary_theme",                   "primary_theme",                   _passthrough),

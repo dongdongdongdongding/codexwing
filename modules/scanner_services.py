@@ -129,6 +129,7 @@ def _build_optional_kis_sidecar(
     *,
     market: str,
     daily_bars: Any = None,
+    daily_bars_source: str = "",
     whale_data: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     if not _env_bool("AG_ENABLE_KIS_SIDECAR", False):
@@ -142,9 +143,11 @@ def _build_optional_kis_sidecar(
     investor_flow: Optional[Dict[str, Any]] = None
     warnings = []
 
-    market_data_provider = str(os.getenv("AG_KR_MARKET_DATA_PROVIDER") or "").strip().lower()
-    if market_data_provider in {"kis", "kis_first", "kis_only", "kis_openapi", "kis_openapi_only"}:
+    daily_source = str(daily_bars_source or getattr(daily_bars, "attrs", {}).get("source_provider") or "").strip().lower()
+    if daily_source == "kis_openapi":
         sidecar_daily = daily_bars
+    elif daily_bars is not None:
+        warnings.append(f"kis_daily_sidecar_skipped_unverified_source:{daily_source or 'unknown'}")
 
     try:
         from modules.kis_openapi import KISOpenAPIClient
@@ -2689,6 +2692,7 @@ def build_kr_scan_outputs(
     continuation_gate_reasons: Optional[list[str]] = None,
     whale_data: Optional[Dict[str, Any]] = None,
     daily_bars: Any = None,
+    daily_bars_source: str = "",
 ) -> Dict[str, Dict[str, Any]]:
     """Build KR scanner table row + DB payload with legacy field compatibility."""
     curr_fmt = "{:,.0f}"
@@ -2732,6 +2736,7 @@ def build_kr_scan_outputs(
         sym,
         market=str(m_type),
         daily_bars=daily_bars,
+        daily_bars_source=daily_bars_source,
         whale_data=whale_data,
     )
     leader_metrics_payload = dict(leader_metrics or {})
@@ -4211,6 +4216,7 @@ def evaluate_app_kr_candidate(
         continuation_gate_reasons=list(continuation_signal.get("reasons", []) or []),
         whale_data=whale_data,
         daily_bars=qs.df,
+        daily_bars_source=str(getattr(qs, "data_source_provider", "") or ""),
     )
     outputs["res_data"]["_segment_overlay"] = segment_overlay
     outputs["res_data"]["_continuation_signal"] = continuation_signal

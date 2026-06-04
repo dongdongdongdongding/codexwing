@@ -1,0 +1,205 @@
+{
+  "db_contract": {
+    "issues": [],
+    "local_schema_extensions": [
+      "feature_snapshot",
+      "leader_metrics"
+    ],
+    "mapped_fields": [
+      "feature_snapshot",
+      "leader_metrics"
+    ],
+    "payload_preserves_feature_snapshot": true,
+    "payload_preserves_leader_metrics": true
+  },
+  "issues": [
+    {
+      "code": "KIS_PRODUCTION_REPLACEMENT_NOT_READY",
+      "items": [
+        {
+          "replacement_readiness": {
+            "flow_ready": false,
+            "intraday_ready": false,
+            "model_sidecar_ready": true,
+            "price_snapshot_ready": true,
+            "production_replacement_ready": false,
+            "scanner_daily_ready": true
+          },
+          "ticker": "267250.KS",
+          "warnings": [
+            "flow_ready=false",
+            "intraday_ready=false",
+            "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+            "production_replacement_ready=false"
+          ]
+        },
+        {
+          "replacement_readiness": {
+            "flow_ready": false,
+            "intraday_ready": false,
+            "model_sidecar_ready": true,
+            "price_snapshot_ready": true,
+            "production_replacement_ready": false,
+            "scanner_daily_ready": true
+          },
+          "ticker": "023530.KS",
+          "warnings": [
+            "flow_ready=false",
+            "intraday_ready=false",
+            "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+            "production_replacement_ready=false"
+          ]
+        },
+        {
+          "replacement_readiness": {
+            "flow_ready": false,
+            "intraday_ready": false,
+            "model_sidecar_ready": true,
+            "price_snapshot_ready": true,
+            "production_replacement_ready": false,
+            "scanner_daily_ready": true
+          },
+          "ticker": "089970.KQ",
+          "warnings": [
+            "flow_ready=false",
+            "intraday_ready=false",
+            "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+            "production_replacement_ready=false"
+          ]
+        },
+        {
+          "replacement_readiness": {
+            "flow_ready": false,
+            "intraday_ready": false,
+            "model_sidecar_ready": true,
+            "price_snapshot_ready": true,
+            "production_replacement_ready": false,
+            "scanner_daily_ready": true
+          },
+          "ticker": "140860.KQ",
+          "warnings": [
+            "flow_ready=false",
+            "intraday_ready=false",
+            "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+            "production_replacement_ready=false"
+          ]
+        }
+      ],
+      "severity": "warning"
+    }
+  ],
+  "runs": [
+    {
+      "planner": {
+        "decision_count": 0,
+        "issues": [],
+        "present": true,
+        "run_id": "RUN-0B74C4AB"
+      },
+      "run_dir": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/shared_working/RUN-0B74C4AB",
+      "scanner": {
+        "candidate_count": 4,
+        "issues": [
+          {
+            "code": "KIS_PRODUCTION_REPLACEMENT_NOT_READY",
+            "items": [
+              {
+                "replacement_readiness": {
+                  "flow_ready": false,
+                  "intraday_ready": false,
+                  "model_sidecar_ready": true,
+                  "price_snapshot_ready": true,
+                  "production_replacement_ready": false,
+                  "scanner_daily_ready": true
+                },
+                "ticker": "267250.KS",
+                "warnings": [
+                  "flow_ready=false",
+                  "intraday_ready=false",
+                  "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+                  "production_replacement_ready=false"
+                ]
+              },
+              {
+                "replacement_readiness": {
+                  "flow_ready": false,
+                  "intraday_ready": false,
+                  "model_sidecar_ready": true,
+                  "price_snapshot_ready": true,
+                  "production_replacement_ready": false,
+                  "scanner_daily_ready": true
+                },
+                "ticker": "023530.KS",
+                "warnings": [
+                  "flow_ready=false",
+                  "intraday_ready=false",
+                  "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+                  "production_replacement_ready=false"
+                ]
+              },
+              {
+                "replacement_readiness": {
+                  "flow_ready": false,
+                  "intraday_ready": false,
+                  "model_sidecar_ready": true,
+                  "price_snapshot_ready": true,
+                  "production_replacement_ready": false,
+                  "scanner_daily_ready": true
+                },
+                "ticker": "089970.KQ",
+                "warnings": [
+                  "flow_ready=false",
+                  "intraday_ready=false",
+                  "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+                  "production_replacement_ready=false"
+                ]
+              },
+              {
+                "replacement_readiness": {
+                  "flow_ready": false,
+                  "intraday_ready": false,
+                  "model_sidecar_ready": true,
+                  "price_snapshot_ready": true,
+                  "production_replacement_ready": false,
+                  "scanner_daily_ready": true
+                },
+                "ticker": "140860.KQ",
+                "warnings": [
+                  "flow_ready=false",
+                  "intraday_ready=false",
+                  "kis_daily_sidecar_skipped_unverified_source:finance_data_reader",
+                  "production_replacement_ready=false"
+                ]
+              }
+            ],
+            "severity": "warning"
+          }
+        ],
+        "present": true,
+        "run_id": "RUN-0B74C4AB",
+        "sidecar_candidate_count": 4,
+        "sidecar_coverage_pct": 100.0,
+        "sidecar_model_ready_candidate_count": 4,
+        "sidecar_production_ready_candidate_count": 0,
+        "sidecar_warning_candidate_count": 4
+      }
+    }
+  ],
+  "source": {
+    "limit_runs": 1,
+    "run_count": 1,
+    "shared_dir": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/shared_working"
+  },
+  "summary": {
+    "dummy_policy": "No dummy, synthetic, or fabricated KIS data is allowed. Missing KIS values must stay missing with warnings.",
+    "error_count": 0,
+    "promotion_ready": false,
+    "scanner_candidate_count": 4,
+    "scanner_sidecar_candidate_count": 4,
+    "scanner_sidecar_coverage_pct": 100.0,
+    "scanner_sidecar_model_ready_candidate_count": 4,
+    "scanner_sidecar_production_ready_candidate_count": 0,
+    "warning_count": 1
+  },
+  "tool": "report_kis_consumer_parity"
+}

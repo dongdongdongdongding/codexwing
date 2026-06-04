@@ -47,6 +47,8 @@ LOCAL_SCHEMA_EXTENSION_COLUMNS = {
         "outcome_path_bar_count",
         "outcome_path_source",
         "outcome_path_warnings",
+        "feature_snapshot",
+        "leader_metrics",
     },
     "scan_deep_reports": {
         "selection_alignment",
@@ -216,6 +218,47 @@ class DBManager:
                     cached.discard(column)
                 payloads = [{key: value for key, value in row.items() if key != column} for row in payloads]
         raise RuntimeError(f"{table_name} schema drift retry exhausted; dropped={','.join(dropped)}")
+
+    def _execute_payload_with_schema_drift_retry(self, table_name, payload, execute_fn, *, max_attempts=32):
+        """
+        Retry single-row insert/update writes when PostgREST has not yet seen an
+        additive column. Missing values remain absent; they are not fabricated.
+        """
+        current = dict(payload or {})
+        if not current:
+            return None
+
+        dropped = []
+        for _attempt in range(max_attempts):
+            try:
+                result = execute_fn(current)
+                if dropped:
+                    print(f"⚠️ {table_name} schema drift columns dropped for this save: {','.join(dropped)}")
+                return result
+            except Exception as exc:
+                column = self._extract_missing_schema_column(exc)
+                if not column:
+                    raise
+                dropped.append(column)
+                cached = self._table_columns_cache.get(table_name)
+                if isinstance(cached, set):
+                    cached.discard(column)
+                current = {key: value for key, value in current.items() if key != column}
+        raise RuntimeError(f"{table_name} schema drift retry exhausted; dropped={','.join(dropped)}")
+
+    def _insert_with_schema_drift_retry(self, table_name, payload):
+        return self._execute_payload_with_schema_drift_retry(
+            table_name,
+            payload,
+            lambda current: self.client.table(table_name).insert(current).execute(),
+        )
+
+    def _update_by_id_with_schema_drift_retry(self, table_name, row_id, payload):
+        return self._execute_payload_with_schema_drift_retry(
+            table_name,
+            payload,
+            lambda current: self.client.table(table_name).update(current).eq("id", row_id).execute(),
+        )
 
     def _classify_decision_bucket(self, decision):
         value = str(decision or "").strip().upper()
@@ -827,7 +870,7 @@ class DBManager:
                     row_id = target["id"]
                     merged_payload = self._merge_non_empty_payload(dict(target), payload)
                     merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
-                    self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                    self._update_by_id_with_schema_drift_retry("market_scan_results", row_id, merged_payload)
                     deleted = self._delete_shadow_scan_rows(run_id, ticker, row_id)
                     suffix = f", shadows_deleted={deleted}" if deleted else ""
                     print(f"☁️ DB Upsert→Merge: {data.get('name', ticker)} id={row_id}{suffix}")
@@ -846,7 +889,7 @@ class DBManager:
             # never update a different run's row because that corrupts Top
             # parity between scan-time planner output and Supabase archive.
             try:
-                self.client.table("market_scan_results").insert(payload).execute()
+                self._insert_with_schema_drift_retry("market_scan_results", payload)
                 print(f"☁️ DB Upserted: {data.get('name', ticker)} [{data.get('market_type')}]")
             except Exception as ie:
                 if "23505" in str(ie) or "duplicate key" in str(ie):
@@ -855,7 +898,7 @@ class DBManager:
                         row_id = existing["id"]
                         merged_payload = self._merge_non_empty_payload(dict(existing), payload)
                         merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
-                        self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                        self._update_by_id_with_schema_drift_retry("market_scan_results", row_id, merged_payload)
                         print(f"☁️ DB Upsert→Merge on same-run conflict: {ticker} id={row_id}")
                         return
                     if run_id:
@@ -1482,7 +1525,7 @@ class DBManager:
                     merged_payload = self._merge_non_empty_payload(existing_payload, payload)
                     merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
                     try:
-                        self.client.table("market_scan_results").update(merged_payload).eq("id", row_id).execute()
+                        self._update_by_id_with_schema_drift_retry("market_scan_results", row_id, merged_payload)
                         self._delete_shadow_scan_rows(run_id, ticker, row_id)
                     except Exception as ue:
                         if "23505" not in str(ue) and "duplicate key" not in str(ue):
@@ -1496,7 +1539,7 @@ class DBManager:
                         consumed_row_ids.add(cid)
                         conflict_merged_payload = self._merge_non_empty_payload(dict(conflict_payload), payload)
                         conflict_merged_payload = self._filter_payload_to_existing_columns("market_scan_results", conflict_merged_payload)
-                        self.client.table("market_scan_results").update(conflict_merged_payload).eq("id", cid).execute()
+                        self._update_by_id_with_schema_drift_retry("market_scan_results", cid, conflict_merged_payload)
                         self._delete_shadow_scan_rows(run_id, ticker, cid)
                     merged += 1
                 else:
@@ -1507,7 +1550,7 @@ class DBManager:
                     # UPDATE로 fallback. 이전엔 같은 키에 stub이 반복 INSERT되어
                     # 73% 중복(max 237회)이 누적됐음.
                     try:
-                        self.client.table("market_scan_results").insert(payload).execute()
+                        self._insert_with_schema_drift_retry("market_scan_results", payload)
                         inserted_stub += 1
                     except Exception as ie:
                         if "23505" in str(ie) or "duplicate key" in str(ie):
@@ -1520,7 +1563,7 @@ class DBManager:
                             consumed_row_ids.add(cid)
                             merged_payload = self._merge_non_empty_payload(dict(conflict_payload), payload)
                             merged_payload = self._filter_payload_to_existing_columns("market_scan_results", merged_payload)
-                            self.client.table("market_scan_results").update(merged_payload).eq("id", cid).execute()
+                            self._update_by_id_with_schema_drift_retry("market_scan_results", cid, merged_payload)
                             self._delete_shadow_scan_rows(run_id, ticker, cid)
                             merged += 1
                         else:

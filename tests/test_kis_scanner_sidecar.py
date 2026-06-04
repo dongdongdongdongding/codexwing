@@ -6,7 +6,7 @@ from modules.scanner_services import _build_optional_kis_sidecar, build_kr_scan_
 
 
 def _daily_frame() -> pd.DataFrame:
-    return pd.DataFrame(
+    frame = pd.DataFrame(
         {
             "Open": [100.0] * 55,
             "High": [105.0] * 55,
@@ -16,6 +16,8 @@ def _daily_frame() -> pd.DataFrame:
         },
         index=pd.date_range("2026-04-01", periods=55, freq="D"),
     )
+    frame.attrs["source_provider"] = "kis_openapi"
+    return frame
 
 
 def _kis_flow() -> dict:
@@ -48,6 +50,7 @@ def test_optional_kis_sidecar_uses_active_kis_provider_and_flow(monkeypatch):
         "005930.KS",
         market="KOSPI",
         daily_bars=_daily_frame(),
+        daily_bars_source="kis_openapi",
         whale_data=_kis_flow(),
     )
 
@@ -99,9 +102,27 @@ def test_kr_scan_outputs_embed_kis_sidecar_without_decision_change(monkeypatch):
         kospi_chg=0.4,
         whale_data=_kis_flow(),
         daily_bars=_daily_frame(),
+        daily_bars_source="kis_openapi",
     )
 
     sidecar = output["db_payload"]["leader_metrics"]["kis_sidecar"]
     assert output["db_payload"]["decision_score"] == 83
     assert sidecar["model_candidate_features"]["kis_daily_return_5d_pct"] is not None
     assert output["db_payload"]["feature_snapshot"]["kis_sidecar"]["feature_origin"] == "kis_openapi_sidecar"
+
+
+def test_optional_kis_sidecar_does_not_label_unknown_daily_source_as_kis(monkeypatch):
+    monkeypatch.setenv("AG_ENABLE_KIS_SIDECAR", "1")
+    monkeypatch.setenv("AG_KIS_SIDECAR_FETCH_QUOTE", "0")
+    frame = _daily_frame()
+    frame.attrs["source_provider"] = "finance_data_reader"
+
+    sidecar = _build_optional_kis_sidecar(
+        "005930.KS",
+        market="KOSPI",
+        daily_bars=frame,
+        whale_data=_kis_flow(),
+    )
+
+    assert sidecar["coverage"]["daily_ohlcv"] is False
+    assert "kis_daily_sidecar_skipped_unverified_source:finance_data_reader" in sidecar["warnings"]

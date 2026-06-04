@@ -98,6 +98,7 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
             "phase25_degraded": True,
             "theme_context": {"primary_theme": "semis"},
             "leader_metrics": {"leader_score": 81.0},
+            "feature_snapshot": {"kis_sidecar": {"feature_origin": "kis_openapi_sidecar"}},
             "routing_path": "theme_routed",
             "theme_score_adjustment": 2.5,
             "model_prob_available_count": 3,
@@ -161,6 +162,7 @@ def test_scanner_trace_fields_are_mapped_by_ssot():
     assert payload["phase25_degraded"] is True
     assert payload["theme_context"] == {"primary_theme": "semis"}
     assert payload["leader_metrics"] == {"leader_score": 81.0}
+    assert payload["feature_snapshot"] == {"kis_sidecar": {"feature_origin": "kis_openapi_sidecar"}}
     assert payload["routing_path"] == "theme_routed"
     assert payload["theme_routing_path"] == "theme_routed"
     assert payload["theme_score_adjustment"] == 2.5

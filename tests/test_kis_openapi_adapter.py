@@ -15,6 +15,7 @@ from modules.kis_openapi import (
     parse_investor_flow_snapshot,
     parse_quote_snapshot,
 )
+import modules.kis_openapi as kis_openapi_module
 
 
 def _client_with_transport(responder):
@@ -68,6 +69,22 @@ def test_live_network_is_blocked_without_flag_or_transport():
     client = KISOpenAPIClient(config=KISConfig(app_key="k", app_secret="s"))
     with pytest.raises(KISOpenAPIError, match="Live KIS network calls are disabled"):
         client.get_access_token(force=True)
+
+
+def test_live_clients_reuse_process_token_cache(monkeypatch):
+    kis_openapi_module._TOKEN_CACHE.clear()
+    calls = []
+
+    def fake_raw_request(self, method, url, headers, body):
+        calls.append({"method": method, "url": url, "body": json.loads(body.decode("utf-8"))})
+        return {"access_token": "shared-token", "token_type": "Bearer", "expires_in": 86400}
+
+    monkeypatch.setattr(KISOpenAPIClient, "_raw_request", fake_raw_request)
+    config = KISConfig(app_key="cache-key", app_secret="cache-secret", mode="real", live_network_allowed=True)
+
+    assert KISOpenAPIClient(config=config).get_access_token() == "shared-token"
+    assert KISOpenAPIClient(config=config).get_access_token() == "shared-token"
+    assert len(calls) == 1
 
 
 def test_normalize_kr_stock_code_and_market_input_code():

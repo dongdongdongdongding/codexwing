@@ -111,6 +111,13 @@ def build_scanner_handoff_from_legacy_results(
                 )
             )
 
+        leader_metrics = row.get("_leader_metrics") or row.get("leader_metrics") or {}
+        if not isinstance(leader_metrics, dict):
+            leader_metrics = {}
+        kis_sidecar = row.get("_kis_sidecar")
+        if not isinstance(kis_sidecar, dict):
+            kis_sidecar = leader_metrics.get("kis_sidecar") if isinstance(leader_metrics.get("kis_sidecar"), dict) else {}
+
         feature_snapshot = {
             "stock_name": row.get("종목명") or row.get("Name") or row.get("name"),
             "antigrav": row.get("Antigrav"),
@@ -163,7 +170,9 @@ def build_scanner_handoff_from_legacy_results(
             "model_trace_status": row.get("model_trace_status"),
             "model_error": row.get("model_error"),
             "theme_context": row.get("_theme_context") or row.get("theme_context") or {},
-            "leader_metrics": row.get("_leader_metrics") or row.get("leader_metrics") or {},
+            "leader_metrics": leader_metrics,
+            "kis_sidecar": kis_sidecar,
+            "kis_model_candidate_features": kis_sidecar.get("model_candidate_features", {}) if isinstance(kis_sidecar, dict) else {},
             "routing_path": row.get("_routing_path") or row.get("routing_path") or "",
             "market_gate": row.get("market_gate"),
             "scanner_timeframe_profile": row.get("scanner_timeframe_profile"),

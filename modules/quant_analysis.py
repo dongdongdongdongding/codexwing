@@ -421,6 +421,7 @@ class QuantStrategy:
                     
                 # 1. Fetch Primary Data with fallback providers.
                 self.df = get_history(self.ticker, period=fetch_period, interval=fetch_interval)
+                self.data_source_provider = str(getattr(self.df, "attrs", {}).get("source_provider") or "")
                 
                 # Handle multi-index columns (safety)
                 if isinstance(self.df.columns, pd.MultiIndex):

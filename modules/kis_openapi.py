@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -336,6 +337,10 @@ class KISTokenState:
         return bool(self.access_token) and (self.expires_at_epoch - time.time()) > float(min_ttl_seconds)
 
 
+_TOKEN_CACHE_LOCK = threading.Lock()
+_TOKEN_CACHE: Dict[tuple, KISTokenState] = {}
+
+
 def normalize_kr_stock_code(symbol: str) -> str:
     raw = str(symbol or "").strip().upper()
     if raw.endswith(".KS") or raw.endswith(".KQ"):
@@ -423,6 +428,14 @@ class KISOpenAPIClient:
         self.transport = transport
         self.timeout = float(timeout)
         self._token_state = KISTokenState()
+
+    def _token_cache_key(self) -> tuple:
+        return (
+            self.config.mode,
+            self.config.rest_domain,
+            self.config.app_key,
+            self.config.cust_type,
+        )
 
     def endpoint_contract(self) -> Dict[str, Any]:
         return {
@@ -512,17 +525,42 @@ class KISOpenAPIClient:
     def get_access_token(self, *, force: bool = False) -> str:
         if not force and self._token_state.valid():
             return self._token_state.access_token
+        use_shared_cache = self.transport is None
+        cache_key = self._token_cache_key()
+        if use_shared_cache and not force:
+            with _TOKEN_CACHE_LOCK:
+                cached = _TOKEN_CACHE.get(cache_key)
+                if cached and cached.valid():
+                    self._token_state = cached
+                    return cached.access_token
         if not self.config.credentials_present:
             raise KISOpenAPIError("Missing KIS_APP_KEY or KIS_APP_SECRET")
-        payload = self._request_json(
-            "token",
-            json_body={
-                "grant_type": "client_credentials",
-                "appkey": self.config.app_key,
-                "appsecret": self.config.app_secret,
-            },
-            authorize=False,
-        )
+        if use_shared_cache:
+            with _TOKEN_CACHE_LOCK:
+                if not force:
+                    cached = _TOKEN_CACHE.get(cache_key)
+                    if cached and cached.valid():
+                        self._token_state = cached
+                        return cached.access_token
+                payload = self._request_json(
+                    "token",
+                    json_body={
+                        "grant_type": "client_credentials",
+                        "appkey": self.config.app_key,
+                        "appsecret": self.config.app_secret,
+                    },
+                    authorize=False,
+                )
+        else:
+            payload = self._request_json(
+                "token",
+                json_body={
+                    "grant_type": "client_credentials",
+                    "appkey": self.config.app_key,
+                    "appsecret": self.config.app_secret,
+                },
+                authorize=False,
+            )
         token = str(payload.get("access_token") or "").strip()
         if not token:
             raise KISOpenAPIError("KIS token response missing access_token")
@@ -533,6 +571,9 @@ class KISOpenAPIClient:
             expires_at_epoch=time.time() + max(60.0, expires_in - 300.0),
             raw=dict(payload),
         )
+        if use_shared_cache:
+            with _TOKEN_CACHE_LOCK:
+                _TOKEN_CACHE[cache_key] = self._token_state
         return token
 
     def get_approval_key(self) -> str:

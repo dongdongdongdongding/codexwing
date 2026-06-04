@@ -37,6 +37,31 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(snap["volume_ratio"], 2.4)
         self.assertEqual(snap["tech_score"], 100.0)
 
+    def test_legacy_export_preserves_kis_sidecar_in_feature_snapshot(self):
+        kis_sidecar = {
+            "feature_origin": "kis_openapi_sidecar",
+            "model_candidate_features": {"kis_value_traded": 12345.0},
+            "replacement_readiness": {"production_replacement_ready": False},
+        }
+        handoff = build_scanner_handoff_from_legacy_results(
+            results=[
+                {
+                    "티커": "005930.KS",
+                    "종목명": "삼성전자",
+                    "Antigrav": 80,
+                    "Decision Score": 82.5,
+                    "수급": "70점",
+                    "_leader_metrics": {"kis_sidecar": kis_sidecar},
+                }
+            ],
+            context=RunContext(run_id="RUN-KIS", market="KOSPI"),
+        )
+
+        snap = handoff.candidates[0].feature_snapshot
+        self.assertEqual(snap["kis_sidecar"]["feature_origin"], "kis_openapi_sidecar")
+        self.assertEqual(snap["kis_model_candidate_features"]["kis_value_traded"], 12345.0)
+        self.assertEqual(handoff.candidates[0].leader_metrics["kis_sidecar"], kis_sidecar)
+
     def test_planner_handoff_preserves_alpha_and_conviction_scores(self):
         planner = build_planner_handoff(
             context=RunContext(run_id="RUN-TEST", market="KOSPI"),
