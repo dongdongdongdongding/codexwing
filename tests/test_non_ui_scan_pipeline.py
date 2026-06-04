@@ -1,11 +1,38 @@
 import json
 
+from multi_agent.workflows import non_ui_scan_pipeline as pipeline
 from multi_agent.workflows.non_ui_scan_pipeline import _generate_top_deep_reports_for_run, _pipeline_source
 
 
 def test_pipeline_source_marks_discord_executor():
     assert _pipeline_source("discord-full-kr-v1", "discord-scan-executor-v1") == "discord_scan_executor"
     assert _pipeline_source("legacy-cli-v1", "non-ui-scan-v1") == "non_ui_scan_pipeline"
+
+
+def test_manual_kospi_tickers_are_exchange_qualified(monkeypatch):
+    def fake_market_tickers(market):
+        assert market == "KOSPI"
+        return {
+            "005930.KS": "삼성전자",
+            "000660.KS": "SK하이닉스",
+            "035420.KS": "NAVER",
+        }
+
+    monkeypatch.setattr(pipeline.quant_analysis.QuantStrategy, "get_market_tickers", staticmethod(fake_market_tickers))
+
+    ticker_map = pipeline._resolve_ticker_map("KOSPI", "005930,000660,035420")
+
+    assert list(ticker_map.keys()) == ["005930.KS", "000660.KS", "035420.KS"]
+    assert ticker_map["005930.KS"] == "삼성전자"
+    assert ticker_map["000660.KS"] == "SK하이닉스"
+
+
+def test_manual_kosdaq_ticker_falls_back_to_market_suffix(monkeypatch):
+    monkeypatch.setattr(pipeline.quant_analysis.QuantStrategy, "get_market_tickers", staticmethod(lambda _market: {}))
+
+    ticker_map = pipeline._resolve_ticker_map("KOSDAQ", "123456")
+
+    assert ticker_map == {"123456.KQ": "123456.KQ"}
 
 
 def test_non_ui_top_deep_keeps_profile_exception_when_raw_results_empty(tmp_path, monkeypatch):

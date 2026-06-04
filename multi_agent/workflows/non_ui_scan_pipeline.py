@@ -19,6 +19,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules import quant_analysis
+from modules.kis_openapi import normalize_kr_stock_code
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
 from modules.macro_scheduler import get_macro_context
 from modules.scan_integrity import write_scan_integrity_artifacts
@@ -103,13 +104,39 @@ def _pipeline_source(strategy_version: str, code_version: str) -> str:
 def _parse_ticker_list(raw: str | None) -> List[str]:
     if not raw:
         return []
-    return [token.strip() for token in str(raw).split(",") if token.strip()]
+    return [token.strip().upper() for token in str(raw).split(",") if token.strip()]
+
+
+def _normalize_manual_ticker_map(market: str, manual_tickers: List[str]) -> Dict[str, str]:
+    market_key = str(market or "").upper()
+    market_map = quant_analysis.QuantStrategy.get_market_tickers(market_key) or {}
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {ticker: market_map.get(ticker, ticker) for ticker in manual_tickers}
+
+    suffix = ".KS" if market_key == "KOSPI" else ".KQ"
+    by_code = {normalize_kr_stock_code(ticker): ticker for ticker in market_map}
+    resolved: Dict[str, str] = {}
+    for ticker in manual_tickers:
+        if ticker in market_map:
+            resolved[ticker] = market_map[ticker]
+            continue
+        code = normalize_kr_stock_code(ticker)
+        mapped_ticker = by_code.get(code)
+        if mapped_ticker:
+            resolved[mapped_ticker] = market_map.get(mapped_ticker, mapped_ticker)
+            continue
+        if ticker.endswith(".KS") or ticker.endswith(".KQ"):
+            resolved[ticker] = ticker
+            continue
+        resolved_ticker = f"{code}{suffix}" if code.isdigit() and len(code) == 6 else ticker
+        resolved[resolved_ticker] = market_map.get(resolved_ticker, resolved_ticker)
+    return resolved
 
 
 def _resolve_ticker_map(market: str, tickers_raw: str | None) -> Dict[str, str]:
     manual = _parse_ticker_list(tickers_raw)
     if manual:
-        return {ticker: ticker for ticker in manual}
+        return _normalize_manual_ticker_map(market, manual)
     return quant_analysis.QuantStrategy.get_market_tickers(market) or {}
 
 
