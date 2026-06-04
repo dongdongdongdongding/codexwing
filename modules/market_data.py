@@ -59,6 +59,23 @@ def _is_kr_symbol(symbol: str) -> bool:
     return upper.endswith(".KS") or upper.endswith(".KQ") or (upper.isdigit() and len(upper) <= 6)
 
 
+def _kis_index_code(symbol: str) -> Optional[str]:
+    upper = str(symbol or "").strip().upper()
+    mapping = {
+        "^KS11": "0001",
+        "KS11": "0001",
+        "KOSPI": "0001",
+        "^KQ11": "1001",
+        "KQ11": "1001",
+        "KOSDAQ": "1001",
+        "KS200": "2001",
+        "$KS200": "2001",
+        "KOSPI200": "2001",
+        "^KS200": "2001",
+    }
+    return mapping.get(upper)
+
+
 def _kis_provider_mode() -> str:
     raw = str(os.getenv("AG_KR_MARKET_DATA_PROVIDER") or "").strip().lower()
     if raw in {"kis", "kis_first", "kis_openapi"}:
@@ -175,6 +192,91 @@ def _fetch_kis_daily_history(
     return combined
 
 
+def _normalize_kis_index_bars(payload: object) -> pd.DataFrame:
+    rows = []
+    source = payload if isinstance(payload, dict) else {}
+    raw_rows = source.get("output2") or source.get("output") or []
+    if isinstance(raw_rows, dict):
+        raw_rows = [raw_rows]
+    for raw in raw_rows if isinstance(raw_rows, list) else []:
+        if not isinstance(raw, dict):
+            continue
+        try:
+            date_idx = pd.to_datetime(str(raw.get("stck_bsop_date") or ""), format="%Y%m%d")
+        except Exception:
+            continue
+        rows.append(
+            {
+                "Date": date_idx,
+                "Open": raw.get("bstp_nmix_oprc"),
+                "High": raw.get("bstp_nmix_hgpr"),
+                "Low": raw.get("bstp_nmix_lwpr"),
+                "Close": raw.get("bstp_nmix_prpr"),
+                "Volume": raw.get("acml_vol"),
+            }
+        )
+    if not rows:
+        return pd.DataFrame()
+    frame = pd.DataFrame(rows).set_index("Date").sort_index()
+    for col in ["Open", "High", "Low", "Close", "Volume"]:
+        frame[col] = pd.to_numeric(frame[col], errors="coerce")
+    return frame.dropna(subset=["Open", "High", "Low", "Close"], how="any")
+
+
+def _fetch_kis_index_history(
+    symbol: str,
+    *,
+    period: str = "1mo",
+    interval: str = "1d",
+    timeout: int = 8,
+    client: Optional[object] = None,
+) -> pd.DataFrame:
+    index_code = _kis_index_code(symbol)
+    if not index_code:
+        return pd.DataFrame()
+    interval_key = str(interval or "").strip().lower()
+    if interval_key not in {"1d", "1wk", "1mo"}:
+        return pd.DataFrame()
+
+    from modules.kis_openapi import KISOpenAPIClient
+
+    kis_client = client or KISOpenAPIClient(timeout=timeout)
+    today = datetime.now()
+    start = _period_to_start(period) or (today - timedelta(days=365))
+    cursor_end = today
+    frames = []
+    seen_earliest = set()
+    max_chunks = max(1, int(os.getenv("AG_KIS_INDEX_DAILY_MAX_CHUNKS", "8") or "8"))
+    period_code = {"1wk": "W", "1mo": "M"}.get(interval_key, "D")
+    for _chunk in range(max_chunks):
+        payload = kis_client.industry_daily_bars(
+            index_code=index_code,
+            start_date=start.strftime("%Y%m%d"),
+            end_date=cursor_end.strftime("%Y%m%d"),
+            period=period_code,
+        )
+        frame = _normalize_kis_index_bars(payload)
+        if frame.empty:
+            break
+        frames.append(frame)
+        earliest = frame.index.min()
+        earliest_key = str(pd.Timestamp(earliest).date())
+        if earliest_key in seen_earliest:
+            break
+        seen_earliest.add(earliest_key)
+        if pd.Timestamp(earliest).to_pydatetime() <= start:
+            break
+        if len(frame) < int(os.getenv("AG_KIS_DAILY_PAGE_SOFT_LIMIT", "95") or "95"):
+            break
+        cursor_end = pd.Timestamp(earliest).to_pydatetime() - timedelta(days=1)
+    if not frames:
+        return pd.DataFrame()
+    combined = pd.concat(frames).sort_index()
+    combined = combined[~combined.index.duplicated(keep="last")]
+    combined = combined[combined.index >= pd.Timestamp(start)]
+    return _with_source(combined, "kis_openapi")
+
+
 def _resample_intraday(frame: pd.DataFrame, interval: str) -> pd.DataFrame:
     if frame is None or frame.empty:
         return pd.DataFrame()
@@ -251,7 +353,17 @@ def get_history(
     is_daily_like = interval in ("1d", "1wk", "1mo")
     kis_mode = _kis_provider_mode()
 
-    # 0) Optional KIS-first source replacement for KRX equities.
+    # 0) Optional KIS-first source replacement for KRX equities and indices.
+    if kis_mode in {"kis_first", "kis_only"} and _kis_index_code(symbol):
+        try:
+            kis_index_df = _fetch_kis_index_history(symbol, period=period, interval=interval, timeout=timeout)
+            if not kis_index_df.empty:
+                return kis_index_df
+        except Exception:
+            pass
+        if kis_mode == "kis_only":
+            return pd.DataFrame()
+
     if kis_mode in {"kis_first", "kis_only"} and _is_kr_symbol(symbol):
         try:
             kis_df = _fetch_kis_history(symbol, period=period, interval=interval, timeout=timeout)

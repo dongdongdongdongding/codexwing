@@ -8,7 +8,10 @@ from modules.kis_operational_adapter import (
     normalize_kis_daily_bars,
     normalize_kis_flow_for_whale_contract,
     normalize_kis_minute_bars,
+    normalize_kis_news_titles,
     normalize_kis_quote_for_operational_fields,
+    normalize_kis_rank_membership,
+    normalize_kis_vi_status,
 )
 
 
@@ -103,6 +106,30 @@ def test_quote_and_flow_normalize_to_operational_contracts():
     assert flow["whale_flow_1d"] == 150
 
 
+def test_rank_vi_and_news_contracts_track_checked_state_without_fabrication():
+    rank = normalize_kis_rank_membership(
+        "005930.KS",
+        volume_rank_payload={
+            "output": [
+                {"mksc_shrn_iscd": "005930", "hts_kor_isnm": "삼성전자", "data_rank": "2"},
+                {"mksc_shrn_iscd": "000660", "hts_kor_isnm": "SK하이닉스", "data_rank": "1"},
+            ]
+        },
+        fluctuation_rank_payload={"output": []},
+        volume_power_rank_payload={"output": []},
+    )
+    vi = normalize_kis_vi_status("005930.KS", {"output": []})
+    news = normalize_kis_news_titles({"output": []})
+
+    assert rank["checked"] is True
+    assert rank["volume_rank"] == 2
+    assert rank["fluctuation_rank"] is None
+    assert vi["checked"] is True
+    assert vi["triggered"] is False
+    assert news["checked"] is True
+    assert news["news_count"] == 0
+
+
 def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_present():
     daily = pd.DataFrame(
         {
@@ -131,12 +158,23 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
             "retail_1d": -30,
         },
         rank_membership={"volume_rank": 5},
+        vi_status={"checked": True, "triggered": False},
+        news_titles=[{"title": "one"}, {"title": "two"}],
+        news_titles_checked=True,
+        news_title_count=40,
     )
 
     assert snapshot["feature_origin"] == "kis_openapi_sidecar"
     assert snapshot["coverage"]["daily_ohlcv_50d"] is True
     assert snapshot["replacement_readiness"]["production_replacement_ready"] is True
     assert snapshot["model_candidate_features"]["kis_daily_return_5d_pct"] is not None
+    assert snapshot["coverage"]["vi_status"] is True
+    assert snapshot["coverage"]["news_titles"] is True
+    assert snapshot["news_contract"]["news_count"] == 40
+    assert len(snapshot["news_contract"]["rows"]) == 2
+    assert snapshot["news_contract"]["rows_stored_count"] == 2
+    assert snapshot["news_contract"]["rows_truncated"] is True
+    assert snapshot["model_candidate_features"]["kis_news_title_count"] == 40
 
 
 def test_kis_replacement_roadmap_keeps_source_adapter_promotion_order():

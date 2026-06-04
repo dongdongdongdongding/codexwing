@@ -49,6 +49,89 @@ def _output_rows(payload: Mapping[str, Any]) -> List[Dict[str, Any]]:
     return []
 
 
+def _rank_value(row: Mapping[str, Any]) -> Optional[int]:
+    value = _first_present(row, "data_rank", "rank", "rn", "순위")
+    number = _to_int(value)
+    return number if number is not None else None
+
+
+def _find_symbol_row(symbol: str, rows: Iterable[Mapping[str, Any]]) -> Optional[Dict[str, Any]]:
+    code = normalize_kr_stock_code(symbol)
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        row_code = normalize_kr_stock_code(
+            str(_first_present(row, "mksc_shrn_iscd", "stck_shrn_iscd", "isu_cd", "pdno", "ticker") or "")
+        )
+        if row_code == code:
+            return dict(row)
+    return None
+
+
+def normalize_kis_rank_membership(
+    symbol: str,
+    *,
+    volume_rank_payload: Optional[Mapping[str, Any]] = None,
+    fluctuation_rank_payload: Optional[Mapping[str, Any]] = None,
+    volume_power_rank_payload: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
+    rank_payloads = {
+        "volume_rank": volume_rank_payload,
+        "fluctuation_rank": fluctuation_rank_payload,
+        "volume_power_rank": volume_power_rank_payload,
+    }
+    result: Dict[str, Any] = {
+        "source": "kis_openapi",
+        "source_status": "ok",
+        "checked": False,
+        "ticker": normalize_kr_stock_code(symbol),
+        "present_in_any_rank": False,
+    }
+    for key, payload in rank_payloads.items():
+        if not isinstance(payload, Mapping):
+            continue
+        rows = _output_rows(payload)
+        result["checked"] = True
+        result[f"{key}_row_count"] = len(rows)
+        row = _find_symbol_row(symbol, rows)
+        result[f"{key}_present"] = bool(row)
+        result[key] = _rank_value(row or {}) if row else None
+        if row:
+            result["present_in_any_rank"] = True
+            result[f"{key}_name"] = _first_present(row, "hts_kor_isnm", "prdt_name", "name")
+            result[f"{key}_raw"] = row
+    return result if result["checked"] else {}
+
+
+def normalize_kis_vi_status(symbol: str, payload: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        return {}
+    rows = _output_rows(payload)
+    row = _find_symbol_row(symbol, rows)
+    return {
+        "source": "kis_openapi",
+        "source_status": "ok",
+        "checked": True,
+        "ticker": normalize_kr_stock_code(symbol),
+        "row_count": len(rows),
+        "triggered": bool(row),
+        "raw": row or {},
+    }
+
+
+def normalize_kis_news_titles(payload: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        return {"source": "kis_openapi", "source_status": "not_requested", "checked": False, "rows": []}
+    rows = _output_rows(payload)
+    return {
+        "source": "kis_openapi",
+        "source_status": "ok",
+        "checked": True,
+        "news_count": len(rows),
+        "rows": rows,
+    }
+
+
 def _parse_date(value: Any) -> Optional[pd.Timestamp]:
     text = str(value or "").strip()
     if not text:
@@ -290,6 +373,8 @@ def build_kis_sidecar_snapshot(
     rank_membership: Optional[Mapping[str, Any]] = None,
     vi_status: Optional[Mapping[str, Any]] = None,
     news_titles: Optional[Iterable[Mapping[str, Any]]] = None,
+    news_titles_checked: bool = False,
+    news_title_count: Optional[int] = None,
     generated_at: str = "",
 ) -> Dict[str, Any]:
     quote_fields = normalize_kis_quote_for_operational_fields(quote_snapshot or {}) if quote_snapshot else {}
@@ -299,6 +384,8 @@ def build_kis_sidecar_snapshot(
     rank = dict(rank_membership or {})
     vi = dict(vi_status or {})
     news_list = [dict(item) for item in (news_titles or []) if isinstance(item, Mapping)]
+    news_checked = bool(news_titles_checked or news_list)
+    news_count = int(news_title_count) if news_title_count is not None else len(news_list)
 
     coverage = {
         "quote_snapshot": bool(quote_fields and quote_fields.get("current_price") is not None),
@@ -306,9 +393,9 @@ def build_kis_sidecar_snapshot(
         "daily_ohlcv_50d": bool(not daily.empty and len(daily) >= 50),
         "minute_ohlcv": bool(not minute.empty),
         "investor_flow": bool(flow_fields.get("valid")),
-        "rank_membership": bool(rank),
-        "vi_status": bool(vi),
-        "news_titles": bool(news_list),
+        "rank_membership": bool(rank.get("checked") or rank),
+        "vi_status": bool(vi.get("checked") or vi),
+        "news_titles": bool(news_checked),
         "financial_style": any(quote_fields.get(key) is not None for key in ("per", "pbr", "eps", "bps")),
     }
 
@@ -337,7 +424,7 @@ def build_kis_sidecar_snapshot(
         "kis_rank_fluctuation": rank.get("fluctuation_rank"),
         "kis_rank_volume_power": rank.get("volume_power_rank"),
         "kis_vi_triggered": vi.get("triggered"),
-        "kis_news_title_count": len(news_list),
+        "kis_news_title_count": news_count,
     }
 
     ready = {
@@ -352,6 +439,8 @@ def build_kis_sidecar_snapshot(
             and coverage["minute_ohlcv"]
             and coverage["investor_flow"]
             and coverage["rank_membership"]
+            and coverage["vi_status"]
+            and coverage["news_titles"]
         ),
     }
     warnings = list(quote_fields.get("warnings") or []) + list(flow_fields.get("warnings") or [])
@@ -367,6 +456,17 @@ def build_kis_sidecar_snapshot(
         "generated_at": generated_at or datetime.now().isoformat(),
         "operational_fields": quote_fields,
         "flow_contract": flow_fields,
+        "rank_contract": rank,
+        "vi_contract": vi,
+        "news_contract": {
+            "source": "kis_openapi",
+            "source_status": "ok" if news_checked else "not_requested",
+            "checked": news_checked,
+            "news_count": news_count,
+            "rows_stored_count": len(news_list),
+            "rows_truncated": bool(news_count > len(news_list)),
+            "rows": news_list,
+        },
         "model_candidate_features": model_features,
         "coverage": coverage,
         "replacement_readiness": ready,

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import os
 import re
-from typing import Any, Callable, Dict, Optional
+import threading
+import time
+from typing import Any, Callable, Dict, Mapping, Optional
 
 from multi_agent.agents.kr_quant_reranker import compute_kr_quant_rerank
 from modules import quant_analysis
@@ -40,6 +42,10 @@ def _clamp_float(value: float, low: float, high: float) -> float:
 DEFAULT_EXIT_TP_PCT = _env_float("EXIT_RULE_TP_PCT", 15.0)
 DEFAULT_EXIT_SL_PCT = _env_float("EXIT_RULE_SL_PCT", -10.0)
 DEFAULT_EXIT_HOLD_DAYS = int(_env_float("EXIT_RULE_HOLD_DAYS", 5.0))
+_KIS_SIDECAR_CACHE: Dict[str, Any] = {}
+_KIS_SIDECAR_CACHE_LOCK = threading.Lock()
+_KIS_SIDECAR_RATE_LOCK = threading.Lock()
+_KIS_SIDECAR_LAST_CALL_AT = 0.0
 
 
 def _safe_last(series: Any, default: float = 0.0) -> float:
@@ -124,6 +130,60 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return str(raw).strip().lower() in {"1", "true", "yes", "on", "y"}
 
 
+def _kis_sidecar_throttle() -> None:
+    spacing_sec = max(0.0, _env_float("AG_KIS_SIDECAR_CALL_SLEEP_SEC", 0.35))
+    if spacing_sec <= 0:
+        return
+    global _KIS_SIDECAR_LAST_CALL_AT
+    with _KIS_SIDECAR_RATE_LOCK:
+        elapsed = time.monotonic() - _KIS_SIDECAR_LAST_CALL_AT
+        if elapsed < spacing_sec:
+            time.sleep(spacing_sec - elapsed)
+        _KIS_SIDECAR_LAST_CALL_AT = time.monotonic()
+
+
+def _is_kis_retryable_rate_error(exc: Exception) -> bool:
+    text = str(exc)
+    return any(token in text for token in ("EGW00201", "초당 거래건수", "rate limit", "too many requests"))
+
+
+def _kis_sidecar_call(fetch_fn: Callable[[], Any]) -> Any:
+    retry_count = max(0, int(_env_float("AG_KIS_SIDECAR_RETRY_COUNT", 3)))
+    retry_sleep_sec = max(0.0, _env_float("AG_KIS_SIDECAR_RETRY_SLEEP_SEC", 0.9))
+    last_exc: Optional[Exception] = None
+    for attempt in range(retry_count + 1):
+        _kis_sidecar_throttle()
+        try:
+            return fetch_fn()
+        except Exception as exc:
+            last_exc = exc
+            if attempt >= retry_count or not _is_kis_retryable_rate_error(exc):
+                raise
+            time.sleep(retry_sleep_sec * float(attempt + 1))
+    if last_exc is not None:
+        raise last_exc
+    return fetch_fn()
+
+
+def _kis_sidecar_cache_get(key: str, fetch_fn: Callable[[], Any]) -> Any:
+    with _KIS_SIDECAR_CACHE_LOCK:
+        if key in _KIS_SIDECAR_CACHE:
+            return _KIS_SIDECAR_CACHE[key]
+        value = fetch_fn()
+        _KIS_SIDECAR_CACHE[key] = value
+        return value
+
+
+def _kis_market_for_symbol(sym: str, market: str) -> str:
+    upper = str(sym or "").upper()
+    market_upper = str(market or "").upper()
+    if upper.endswith(".KQ") or market_upper == "KOSDAQ":
+        return "KOSDAQ"
+    if upper.endswith(".KS") or market_upper == "KOSPI":
+        return "KOSPI"
+    return market_upper or "ALL"
+
+
 def _build_optional_kis_sidecar(
     sym: str,
     *,
@@ -135,19 +195,33 @@ def _build_optional_kis_sidecar(
     if not _env_bool("AG_ENABLE_KIS_SIDECAR", False):
         return {}
 
-    from modules.kis_operational_adapter import build_kis_sidecar_snapshot, normalize_kis_daily_bars, normalize_kis_minute_bars
+    from modules.kis_operational_adapter import (
+        build_kis_sidecar_snapshot,
+        normalize_kis_daily_bars,
+        normalize_kis_minute_bars,
+        normalize_kis_news_titles,
+        normalize_kis_rank_membership,
+        normalize_kis_vi_status,
+    )
 
     quote_snapshot: Optional[Dict[str, Any]] = None
     sidecar_daily = None
     sidecar_minute = None
     investor_flow: Optional[Dict[str, Any]] = None
+    rank_membership: Dict[str, Any] = {}
+    vi_status: Dict[str, Any] = {}
+    news_rows = []
+    news_checked = False
+    news_count = 0
+    daily_source_warning = None
     warnings = []
+    sidecar_market = _kis_market_for_symbol(sym, market)
 
     daily_source = str(daily_bars_source or getattr(daily_bars, "attrs", {}).get("source_provider") or "").strip().lower()
     if daily_source == "kis_openapi":
         sidecar_daily = daily_bars
     elif daily_bars is not None:
-        warnings.append(f"kis_daily_sidecar_skipped_unverified_source:{daily_source or 'unknown'}")
+        daily_source_warning = f"kis_daily_sidecar_skipped_unverified_source:{daily_source or 'unknown'}"
 
     try:
         from modules.kis_openapi import KISOpenAPIClient
@@ -155,7 +229,7 @@ def _build_optional_kis_sidecar(
         client = KISOpenAPIClient()
         if _env_bool("AG_KIS_SIDECAR_FETCH_QUOTE", True):
             try:
-                quote_snapshot = client.quote_snapshot(sym)
+                quote_snapshot = _kis_sidecar_call(lambda: client.quote_snapshot(sym))
             except Exception as exc:
                 warnings.append(f"kis_quote_sidecar_failed:{exc}")
         if _env_bool("AG_KIS_SIDECAR_FETCH_DAILY", False):
@@ -164,34 +238,92 @@ def _build_optional_kis_sidecar(
 
                 end_dt = datetime.now()
                 start_dt = end_dt - timedelta(days=int(_env_float("AG_KIS_SIDECAR_DAILY_LOOKBACK_DAYS", 90)))
-                payload = client.daily_bars(
-                    sym,
-                    start_date=start_dt.strftime("%Y%m%d"),
-                    end_date=end_dt.strftime("%Y%m%d"),
+                payload = _kis_sidecar_call(
+                    lambda: client.daily_bars(
+                        sym,
+                        start_date=start_dt.strftime("%Y%m%d"),
+                        end_date=end_dt.strftime("%Y%m%d"),
+                    )
                 )
                 sidecar_daily = normalize_kis_daily_bars(sym, payload)
             except Exception as exc:
                 warnings.append(f"kis_daily_sidecar_failed:{exc}")
-        if _env_bool("AG_KIS_SIDECAR_FETCH_MINUTE", False):
+        if _env_bool("AG_KIS_SIDECAR_FETCH_MINUTE", True):
             try:
                 from datetime import datetime
 
-                payload = client.today_minute_bars(sym, input_hour="153000", include_past=True)
+                payload = _kis_sidecar_call(lambda: client.today_minute_bars(sym, input_hour="153000", include_past=True))
                 sidecar_minute = normalize_kis_minute_bars(sym, payload, trade_date=datetime.now().strftime("%Y%m%d"))
             except Exception as exc:
                 warnings.append(f"kis_minute_sidecar_failed:{exc}")
-        if _env_bool("AG_KIS_SIDECAR_FETCH_FLOW", False):
+        if _env_bool("AG_KIS_SIDECAR_FETCH_FLOW", True):
             try:
                 from datetime import datetime
 
-                investor_flow = client.investor_flow_snapshot(sym, trade_date=datetime.now().strftime("%Y%m%d"))
+                investor_flow = _kis_sidecar_call(
+                    lambda: client.investor_flow_snapshot(sym, trade_date=datetime.now().strftime("%Y%m%d"))
+                )
             except Exception as exc:
                 warnings.append(f"kis_flow_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_RANK", True):
+            try:
+                volume_payload = _kis_sidecar_cache_get(
+                    f"volume_rank:{sidecar_market}",
+                    lambda: _kis_sidecar_call(lambda: client.volume_rank(market=sidecar_market)),
+                )
+                fluctuation_payload = _kis_sidecar_cache_get(
+                    f"fluctuation_rank:{sidecar_market}",
+                    lambda: _kis_sidecar_call(lambda: client.fluctuation_rank(market=sidecar_market)),
+                )
+                volume_power_payload = _kis_sidecar_cache_get(
+                    f"volume_power_rank:{sidecar_market}",
+                    lambda: _kis_sidecar_call(lambda: client.volume_power_rank(market=sidecar_market)),
+                )
+                rank_membership = normalize_kis_rank_membership(
+                    sym,
+                    volume_rank_payload=volume_payload,
+                    fluctuation_rank_payload=fluctuation_payload,
+                    volume_power_rank_payload=volume_power_payload,
+                )
+            except Exception as exc:
+                warnings.append(f"kis_rank_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_VI", True):
+            try:
+                from datetime import datetime
+
+                vi_payload = _kis_sidecar_cache_get(
+                    f"vi_status:{sidecar_market}:{datetime.now().strftime('%Y%m%d')}",
+                    lambda: _kis_sidecar_call(
+                        lambda: client.vi_status(market=sidecar_market, trade_date=datetime.now().strftime("%Y%m%d"))
+                    ),
+                )
+                vi_status = normalize_kis_vi_status(sym, vi_payload)
+            except Exception as exc:
+                warnings.append(f"kis_vi_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_NEWS", True):
+            try:
+                from datetime import datetime
+
+                news_payload = _kis_sidecar_call(
+                    lambda: client.news_titles(symbol=sym, trade_date=datetime.now().strftime("%Y%m%d"))
+                )
+                news_contract = normalize_kis_news_titles(news_payload)
+                raw_news_rows = list(news_contract.get("rows") or [])
+                news_limit = max(0, int(_env_float("AG_KIS_SIDECAR_NEWS_MAX_ROWS", 12)))
+                news_rows = raw_news_rows[:news_limit] if news_limit else raw_news_rows
+                news_checked = bool(news_contract.get("checked"))
+                news_count = int(news_contract.get("news_count") or len(raw_news_rows))
+            except Exception as exc:
+                warnings.append(f"kis_news_sidecar_failed:{exc}")
     except Exception as exc:
         warnings.append(f"kis_sidecar_client_failed:{exc}")
 
     if investor_flow is None and isinstance(whale_data, dict) and str(whale_data.get("flow_source") or "") == "kis_openapi":
         investor_flow = {**whale_data, "source_status": "ok"}
+
+    sidecar_daily_ready = hasattr(sidecar_daily, "empty") and not bool(getattr(sidecar_daily, "empty"))
+    if daily_source_warning and not sidecar_daily_ready:
+        warnings.append(daily_source_warning)
 
     sidecar = build_kis_sidecar_snapshot(
         sym,
@@ -200,6 +332,11 @@ def _build_optional_kis_sidecar(
         daily_bars=sidecar_daily,
         minute_bars=sidecar_minute,
         investor_flow=investor_flow,
+        rank_membership=rank_membership,
+        vi_status=vi_status,
+        news_titles=news_rows,
+        news_titles_checked=news_checked,
+        news_title_count=news_count,
     )
     if warnings:
         sidecar["warnings"] = sorted(set(list(sidecar.get("warnings") or []) + warnings))

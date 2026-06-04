@@ -72,6 +72,7 @@ def test_live_network_is_blocked_without_flag_or_transport():
 
 
 def test_live_clients_reuse_process_token_cache(monkeypatch):
+    monkeypatch.setenv("KIS_DISABLE_TOKEN_FILE_CACHE", "1")
     kis_openapi_module._TOKEN_CACHE.clear()
     calls = []
 
@@ -84,6 +85,32 @@ def test_live_clients_reuse_process_token_cache(monkeypatch):
 
     assert KISOpenAPIClient(config=config).get_access_token() == "shared-token"
     assert KISOpenAPIClient(config=config).get_access_token() == "shared-token"
+    assert len(calls) == 1
+
+
+def test_live_clients_reuse_file_token_cache(monkeypatch, tmp_path):
+    kis_openapi_module._TOKEN_CACHE.clear()
+    monkeypatch.delenv("KIS_DISABLE_TOKEN_FILE_CACHE", raising=False)
+    monkeypatch.setenv("KIS_TOKEN_CACHE_PATH", str(tmp_path / "kis_token_cache.json"))
+    calls = []
+
+    def fake_raw_request(self, method, url, headers, body):
+        calls.append({"method": method, "url": url, "body": json.loads(body.decode("utf-8"))})
+        return {"access_token": "file-token", "token_type": "Bearer", "expires_in": 86400}
+
+    monkeypatch.setattr(KISOpenAPIClient, "_raw_request", fake_raw_request)
+    config = KISConfig(app_key="file-cache-key", app_secret="cache-secret", mode="real", live_network_allowed=True)
+
+    assert KISOpenAPIClient(config=config).get_access_token() == "file-token"
+    assert len(calls) == 1
+
+    kis_openapi_module._TOKEN_CACHE.clear()
+
+    def fail_raw_request(self, method, url, headers, body):
+        raise AssertionError("token endpoint should not be called when file cache is valid")
+
+    monkeypatch.setattr(KISOpenAPIClient, "_raw_request", fail_raw_request)
+    assert KISOpenAPIClient(config=config).get_access_token() == "file-token"
     assert len(calls) == 1
 
 
@@ -157,15 +184,19 @@ def test_daily_and_minute_bar_requests_use_documented_parameters():
 
     client, calls = _client_with_transport(responder)
     client.daily_bars("005930", start_date="20260501", end_date="20260604")
+    client.industry_daily_bars(index_code="1001", start_date="20260501", end_date="20260604")
     client.today_minute_bars("005930", input_hour="093500")
     client.daily_minute_bars("005930", trade_date="20260604", input_hour="093500")
 
     daily_call = next(call for call in calls if call["path"].endswith("inquire-daily-itemchartprice"))
+    index_daily_call = next(call for call in calls if call["path"].endswith("inquire-daily-indexchartprice"))
     today_minute_call = next(call for call in calls if call["path"].endswith("inquire-time-itemchartprice"))
     daily_minute_call = next(call for call in calls if call["path"].endswith("inquire-time-dailychartprice"))
 
     assert daily_call["query"]["FID_PERIOD_DIV_CODE"] == "D"
     assert daily_call["query"]["FID_ORG_ADJ_PRC"] == "0"
+    assert index_daily_call["query"]["FID_COND_MRKT_DIV_CODE"] == "U"
+    assert index_daily_call["query"]["FID_INPUT_ISCD"] == "1001"
     assert today_minute_call["query"]["FID_INPUT_HOUR_1"] == "093500"
     assert today_minute_call["query"]["FID_PW_DATA_INCU_YN"] == "Y"
     assert daily_minute_call["query"]["FID_INPUT_DATE_1"] == "20260604"

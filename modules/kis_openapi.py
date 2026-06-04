@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import threading
 import time
@@ -341,6 +342,75 @@ _TOKEN_CACHE_LOCK = threading.Lock()
 _TOKEN_CACHE: Dict[tuple, KISTokenState] = {}
 
 
+def _token_file_cache_path() -> str:
+    raw = str(os.getenv("KIS_TOKEN_CACHE_PATH") or "runtime_state/local_short_term/kis_token_cache.json").strip()
+    return raw if os.path.isabs(raw) else os.path.abspath(raw)
+
+
+def _token_file_cache_enabled() -> bool:
+    raw = str(os.getenv("KIS_DISABLE_TOKEN_FILE_CACHE") or "").strip().lower()
+    return raw not in {"1", "true", "yes", "on", "y"}
+
+
+def _token_file_cache_key(cache_key: tuple) -> str:
+    encoded = json.dumps([str(item) for item in cache_key], ensure_ascii=False, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _load_token_file_cache(cache_key: tuple) -> Optional[KISTokenState]:
+    if not _token_file_cache_enabled():
+        return None
+    path = _token_file_cache_path()
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    item = payload.get(_token_file_cache_key(cache_key))
+    if not isinstance(item, dict):
+        return None
+    state = KISTokenState(
+        access_token=str(item.get("access_token") or "").strip(),
+        token_type=str(item.get("token_type") or "Bearer"),
+        expires_at_epoch=float(item.get("expires_at_epoch") or 0.0),
+        raw={"cache_source": "file"},
+    )
+    return state if state.valid() else None
+
+
+def _save_token_file_cache(cache_key: tuple, state: KISTokenState) -> None:
+    if not _token_file_cache_enabled() or not state.valid(min_ttl_seconds=60):
+        return
+    path = _token_file_cache_path()
+    payload: Dict[str, Any] = {}
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            loaded = json.load(handle)
+        if isinstance(loaded, dict):
+            payload = loaded
+    except Exception:
+        payload = {}
+    payload[_token_file_cache_key(cache_key)] = {
+        "access_token": state.access_token,
+        "token_type": state.token_type or "Bearer",
+        "expires_at_epoch": float(state.expires_at_epoch or 0.0),
+        "updated_at_epoch": time.time(),
+    }
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    tmp_path = f"{path}.tmp.{os.getpid()}"
+    with open(tmp_path, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, ensure_ascii=False, sort_keys=True)
+    try:
+        os.chmod(tmp_path, 0o600)
+    except Exception:
+        pass
+    os.replace(tmp_path, path)
+
+
 def normalize_kr_stock_code(symbol: str) -> str:
     raw = str(symbol or "").strip().upper()
     if raw.endswith(".KS") or raw.endswith(".KQ"):
@@ -533,6 +603,11 @@ class KISOpenAPIClient:
                 if cached and cached.valid():
                     self._token_state = cached
                     return cached.access_token
+                file_cached = _load_token_file_cache(cache_key)
+                if file_cached and file_cached.valid():
+                    self._token_state = file_cached
+                    _TOKEN_CACHE[cache_key] = file_cached
+                    return file_cached.access_token
         if not self.config.credentials_present:
             raise KISOpenAPIError("Missing KIS_APP_KEY or KIS_APP_SECRET")
         if use_shared_cache:
@@ -542,6 +617,11 @@ class KISOpenAPIClient:
                     if cached and cached.valid():
                         self._token_state = cached
                         return cached.access_token
+                    file_cached = _load_token_file_cache(cache_key)
+                    if file_cached and file_cached.valid():
+                        self._token_state = file_cached
+                        _TOKEN_CACHE[cache_key] = file_cached
+                        return file_cached.access_token
                 payload = self._request_json(
                     "token",
                     json_body={
@@ -574,6 +654,7 @@ class KISOpenAPIClient:
         if use_shared_cache:
             with _TOKEN_CACHE_LOCK:
                 _TOKEN_CACHE[cache_key] = self._token_state
+                _save_token_file_cache(cache_key, self._token_state)
         return token
 
     def get_approval_key(self) -> str:
@@ -785,6 +866,26 @@ class KISOpenAPIClient:
         return self._request_json(
             "industry_price",
             params={"FID_COND_MRKT_DIV_CODE": "U", "FID_INPUT_ISCD": index_code},
+        )
+
+    def industry_daily_bars(
+        self,
+        *,
+        index_code: str = "0001",
+        start_date: str,
+        end_date: str,
+        period: str = "D",
+        market_div: str = "U",
+    ) -> Dict[str, Any]:
+        return self._request_json(
+            "industry_daily_bars",
+            params={
+                "FID_COND_MRKT_DIV_CODE": market_div,
+                "FID_INPUT_ISCD": index_code,
+                "FID_INPUT_DATE_1": start_date,
+                "FID_INPUT_DATE_2": end_date,
+                "FID_PERIOD_DIV_CODE": period,
+            },
         )
 
     def vi_status(self, *, market: str = "ALL", trade_date: str) -> Dict[str, Any]:

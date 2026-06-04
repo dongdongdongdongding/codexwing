@@ -78,11 +78,37 @@ class FakePagedKISClient:
         return {"output2": rows}
 
 
+class FakeKISIndexClient:
+    def industry_daily_bars(self, *, index_code, start_date, end_date, period="D", market_div="U"):
+        assert index_code == "1001"
+        assert market_div == "U"
+        return {
+            "output2": [
+                {
+                    "stck_bsop_date": "20260604",
+                    "bstp_nmix_oprc": "1032.91",
+                    "bstp_nmix_hgpr": "1065.90",
+                    "bstp_nmix_lwpr": "1032.29",
+                    "bstp_nmix_prpr": "1049.73",
+                    "acml_vol": "622960",
+                }
+            ]
+        }
+
+
 def test_fetch_kis_history_daily_returns_normalized_ohlcv():
     frame = market_data._fetch_kis_history("005930.KS", period="1mo", interval="1d", client=FakeKISClient())
 
     assert list(frame.columns) == ["Open", "High", "Low", "Close", "Volume"]
     assert float(frame["Close"].iloc[-1]) == 111.0
+    assert frame.attrs["source_provider"] == "kis_openapi"
+
+
+def test_fetch_kis_index_history_returns_normalized_ohlcv():
+    frame = market_data._fetch_kis_index_history("^KQ11", period="1mo", interval="1d", client=FakeKISIndexClient())
+
+    assert list(frame.columns) == ["Open", "High", "Low", "Close", "Volume"]
+    assert float(frame["Close"].iloc[-1]) == 1049.73
     assert frame.attrs["source_provider"] == "kis_openapi"
 
 

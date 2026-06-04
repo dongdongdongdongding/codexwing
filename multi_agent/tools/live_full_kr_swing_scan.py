@@ -244,7 +244,7 @@ def main() -> int:
     print(f"\nphase25_signal_direction: {dict(sigs)}")
     print("\nTop 10 by alpha_score:")
     for r in sorted(results, key=lambda x: -float(x.get("Antigrav") or 0))[:10]:
-        sym = r.get("Ticker") or r.get("ticker")
+        sym = r.get("Ticker") or r.get("ticker") or r.get("티커") or r.get("종목코드") or r.get("symbol")
         alpha = r.get("Antigrav")
         ph25 = r.get("phase25_prob")
         sig = r.get("phase25_signal_direction")
