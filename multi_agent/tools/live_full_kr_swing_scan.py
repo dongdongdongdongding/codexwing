@@ -171,6 +171,11 @@ def main() -> int:
         default="",
         help="Optional comma-separated ticker override, with optional name as TICKER=NAME.",
     )
+    parser.add_argument(
+        "--allow-empty-results",
+        action="store_true",
+        help="Return success when the scan finishes but no symbols pass recommendation gates.",
+    )
     args = parser.parse_args()
 
     df = _load_requested_tickers(args.tickers) if args.tickers else _load_kr_universe(args.limit)
@@ -227,7 +232,7 @@ def main() -> int:
         for reason, count in reject_counter.most_common(10):
             print(f"  {reason}: {count}")
     if not results:
-        return 1
+        return 0 if args.allow_empty_results else 1
 
     # Bridge to orchestrator/planner
     print("📝 Running legacy bridge for orchestrator + planner handoffs…")
