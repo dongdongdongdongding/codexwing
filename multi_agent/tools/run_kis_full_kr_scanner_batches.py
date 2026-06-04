@@ -44,8 +44,31 @@ def _chunk_rows(rows: Sequence[Mapping[str, str]], batch_size: int) -> List[List
     return [[dict(item) for item in rows[idx : idx + size]] for idx in range(0, len(rows), size)]
 
 
+def _chunk_rows_by_count(rows: Sequence[Mapping[str, str]], batch_count: int) -> List[List[Dict[str, str]]]:
+    count = max(1, int(batch_count))
+    if not rows:
+        return []
+    count = min(count, len(rows))
+    base_size, remainder = divmod(len(rows), count)
+    chunks: List[List[Dict[str, str]]] = []
+    offset = 0
+    for index in range(count):
+        size = base_size + (1 if index < remainder else 0)
+        chunk = rows[offset : offset + size]
+        chunks.append([dict(item) for item in chunk])
+        offset += size
+    return chunks
+
+
 def _ticker_arg(rows: Sequence[Mapping[str, str]]) -> str:
     return ",".join(f"{str(row.get('Code') or '').strip()}={str(row.get('Name') or '').strip()}" for row in rows)
+
+
+def _ticker_preview(tickers: Sequence[str], max_items: int = 8) -> str:
+    items = [str(item) for item in tickers]
+    if len(items) <= max_items:
+        return str(items)
+    return f"{items[:max_items]} ... (+{len(items) - max_items} more)"
 
 
 def _default_state_path(batch_size: int) -> Path:
@@ -192,6 +215,8 @@ def _initial_state(args: argparse.Namespace, rows: Sequence[Mapping[str, str]], 
         "run_id": _kst_timestamp(),
         "tool": "run_kis_full_kr_scanner_batches",
         "batch_size": int(args.batch_size),
+        "batch_count_requested": int(args.batch_count),
+        "chunk_mode": "batch_count" if int(args.batch_count) > 0 else "batch_size",
         "workers": int(args.workers),
         "limit_per_market": int(args.limit),
         "retries": int(args.retries),
@@ -236,7 +261,11 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         for _, row in df.iterrows()
         if str(row.get("Code") or "").strip()
     ]
-    batches = _chunk_rows(rows, int(args.batch_size))
+    batches = (
+        _chunk_rows_by_count(rows, int(args.batch_count))
+        if int(args.batch_count) > 0
+        else _chunk_rows(rows, int(args.batch_size))
+    )
     state_path = Path(args.state_path).resolve() if args.state_path else _default_state_path(int(args.batch_size))
     state = _load_state(state_path) if args.resume else {}
     if not state:
@@ -278,7 +307,11 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             "--allow-empty-results",
         ]
         record["command"] = command
-        print(f"[batch {batch_index + 1}/{len(batches)}] start {record['tickers']}", flush=True)
+        print(
+            f"[batch {batch_index + 1}/{len(batches)}] start "
+            f"ticker_count={record['ticker_count']} tickers={_ticker_preview(record['tickers'])}",
+            flush=True,
+        )
         if args.dry_run:
             record.update({"status": "skipped", "returncode": None, "elapsed_sec": 0.0, "output_tail": []})
         else:
@@ -318,6 +351,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run KIS-only full KR scanner in small checkpointed batches.")
     parser.add_argument("--batch-size", type=int, default=3, help="Tickers per batch. Use 2 or 3 for conservative KIS runs.")
+    parser.add_argument("--batch-count", type=int, default=0, help="Split the whole universe into this many batches; overrides --batch-size.")
     parser.add_argument("--workers", type=int, default=1, help="Workers passed to each live_full_kr_swing_scan batch.")
     parser.add_argument("--limit", type=int, default=100000, help="Per-market universe limit passed to loader.")
     parser.add_argument("--start-batch", type=int, default=0, help="0-based batch index to start from.")

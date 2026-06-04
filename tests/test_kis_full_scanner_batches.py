@@ -13,6 +13,7 @@ from multi_agent.tools import run_kis_full_kr_scanner_batches as batches
 def _args(tmp_path: Path, **overrides):
     values = {
         "batch_size": 2,
+        "batch_count": 0,
         "workers": 1,
         "limit": 100000,
         "start_batch": 0,
@@ -54,6 +55,16 @@ def test_chunk_rows_and_ticker_arg_keep_requested_batch_size():
     assert batches._ticker_arg(chunks[0]) == "000001=Alpha,000002=Beta"
 
 
+def test_chunk_rows_by_count_splits_whole_universe_into_requested_batches():
+    rows = [{"Code": f"{idx:06d}", "Name": f"Name {idx}"} for idx in range(1, 11)]
+
+    chunks = batches._chunk_rows_by_count(rows, 3)
+
+    assert [len(chunk) for chunk in chunks] == [4, 3, 3]
+    assert chunks[0][0]["Code"] == "000001"
+    assert chunks[-1][-1]["Code"] == "000010"
+
+
 def test_load_batch_universe_forces_fdr_provider_and_restores_env(monkeypatch):
     observed = []
 
@@ -85,6 +96,19 @@ def test_dry_run_writes_checkpoint_for_two_ticker_batches(tmp_path, monkeypatch)
     assert persisted["summary"] == {"completed": 0, "failed": 0, "skipped": 2, "pending": 1}
     assert [item["tickers"] for item in persisted["batches"]] == [["000001", "000002"], ["000003", "000004"]]
     assert latest_path.exists()
+
+
+def test_dry_run_can_split_full_universe_into_three_batches(tmp_path, monkeypatch):
+    monkeypatch.setattr(batches, "REPORT_DIR", tmp_path / "reports")
+    monkeypatch.setattr(batches, "_load_batch_universe", lambda limit: _universe(10))
+
+    state = batches.run(_args(tmp_path, batch_count=3, max_batches=3, dry_run=True))
+
+    assert state["chunk_mode"] == "batch_count"
+    assert state["batch_count_requested"] == 3
+    assert state["batch_count"] == 3
+    assert [item["ticker_count"] for item in state["batches"]] == [4, 3, 3]
+    assert state["summary"] == {"completed": 0, "failed": 0, "skipped": 3, "pending": 0}
 
 
 def test_resume_skips_completed_batch_and_runs_next_batch(tmp_path, monkeypatch):
