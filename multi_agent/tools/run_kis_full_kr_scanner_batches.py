@@ -75,6 +75,20 @@ def _tail_lines(lines: Sequence[str], max_lines: int = 80) -> List[str]:
     return [str(line).rstrip("\n") for line in list(lines)[-max(1, int(max_lines)) :]]
 
 
+def _scan_exception_reasons(lines: Sequence[str]) -> List[str]:
+    reasons: List[str] = []
+    for line in lines:
+        text = str(line).strip()
+        if "EXCEPTION:" not in text:
+            continue
+        reason = text
+        if reason.startswith("- "):
+            reason = reason[2:].strip()
+        if reason and reason not in reasons:
+            reasons.append(reason)
+    return reasons
+
+
 def _kis_batch_env(args: argparse.Namespace) -> Dict[str, str]:
     env = dict(os.environ)
     env.update(
@@ -149,6 +163,7 @@ def _run_command(command: Sequence[str], *, env: Mapping[str, str], timeout_sec:
         "returncode": returncode,
         "elapsed_sec": round(time.monotonic() - started, 3),
         "timeout": timed_out,
+        "scan_exception_reasons": _scan_exception_reasons(output_lines),
         "output_tail": _tail_lines(output_lines),
     }
 
@@ -274,7 +289,13 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
                 timeout_sec=max(0.0, float(args.batch_timeout_sec)),
             )
             record.update(result)
-            record["status"] = "completed" if int(result.get("returncode") or 0) == 0 else "failed"
+            record["status"] = (
+                "completed"
+                if int(result.get("returncode") or 0) == 0
+                and not result.get("timeout")
+                and not result.get("scan_exception_reasons")
+                else "failed"
+            )
 
         state_batches = [item for item in list(state.get("batches") or []) if int(item.get("batch_index")) != batch_index]
         state_batches.append(record)

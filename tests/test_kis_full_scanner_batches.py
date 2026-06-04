@@ -143,3 +143,25 @@ def test_run_with_retries_records_attempt_accounting(monkeypatch):
     assert result["retry_count"] == 1
     assert [attempt["attempt"] for attempt in result["attempts"]] == [1, 2]
     assert calls == [3.5, 3.5]
+
+
+def test_scan_exception_reason_marks_batch_failed(tmp_path, monkeypatch):
+    monkeypatch.setattr(batches, "REPORT_DIR", tmp_path / "reports")
+    monkeypatch.setattr(batches, "_load_batch_universe", lambda limit: _universe(2))
+
+    def fake_run_with_retries(command, *, env, retries, timeout_sec):
+        return {
+            "returncode": 0,
+            "elapsed_sec": 0.01,
+            "timeout": False,
+            "scan_exception_reasons": ["EXCEPTION:ValueError: 1"],
+            "output_tail": ["EXCEPTION:ValueError: 1"],
+            "attempts": [],
+        }
+
+    monkeypatch.setattr(batches, "_run_with_retries", fake_run_with_retries)
+
+    state = batches.run(_args(tmp_path, batch_size=2, max_batches=1))
+
+    assert state["batches"][0]["status"] == "failed"
+    assert state["summary"] == {"completed": 0, "failed": 1, "skipped": 0, "pending": 0}
