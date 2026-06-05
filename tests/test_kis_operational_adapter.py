@@ -234,6 +234,9 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
     assert snapshot["coverage"]["daily_ohlcv_50d"] is True
     assert snapshot["replacement_readiness"]["production_replacement_ready"] is True
     assert snapshot["model_candidate_features"]["kis_daily_return_5d_pct"] is not None
+    assert snapshot["model_candidate_features"]["kis_daily_ma20"] is not None
+    assert snapshot["model_candidate_features"]["kis_daily_prior_20d_high"] is not None
+    assert snapshot["daily_ohlcv_summary"]["latest_close"] == 154.0
     assert snapshot["coverage"]["vi_status"] is True
     assert snapshot["coverage"]["news_titles"] is True
     assert snapshot["news_contract"]["news_count"] == 40
@@ -251,5 +254,6 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
 def test_kis_replacement_roadmap_keeps_source_adapter_promotion_order():
     roadmap = kis_replacement_roadmap()
     phase_names = [phase["name"] for phase in roadmap["phases"]]
-    assert phase_names[:3] == ["contract_adapter", "sidecar_archive", "dual_run_parity"]
+    assert phase_names[:4] == ["contract_adapter", "sidecar_archive", "deep_analysis_source_contract", "dual_run_parity"]
+    assert "KIS daily MA/range/return features for Top Deep readiness and chase-risk checks" in roadmap["high_value_kis_features"]
     assert "same-day minute bars for intraday volume curve and VWAP features" in roadmap["high_value_kis_features"]

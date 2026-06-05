@@ -474,6 +474,56 @@ def _volume_ratio(frame: pd.DataFrame, lookback: int = 20) -> Optional[float]:
     return round(float(latest) / avg, 4)
 
 
+def _daily_ohlcv_summary(frame: pd.DataFrame) -> Dict[str, Any]:
+    if frame is None or frame.empty or "Close" not in frame.columns:
+        return {"source": "kis_openapi", "bar_count": 0}
+
+    close = pd.to_numeric(frame["Close"], errors="coerce").dropna()
+    high = pd.to_numeric(frame["High"], errors="coerce").dropna() if "High" in frame.columns else pd.Series(dtype=float)
+    low = pd.to_numeric(frame["Low"], errors="coerce").dropna() if "Low" in frame.columns else pd.Series(dtype=float)
+    if close.empty:
+        return {"source": "kis_openapi", "bar_count": int(len(frame))}
+
+    latest_close = _to_float(close.iloc[-1])
+    latest_high = _to_float(high.iloc[-1]) if not high.empty else None
+    latest_low = _to_float(low.iloc[-1]) if not low.empty else None
+
+    close_location_pct = None
+    if latest_close is not None and latest_high is not None and latest_low is not None and latest_high > latest_low:
+        close_location_pct = round((latest_close - latest_low) / (latest_high - latest_low) * 100.0, 4)
+
+    high_52w = _to_float(high.tail(252).max()) if not high.empty else None
+    pct_from_52w_high = None
+    if latest_close is not None and high_52w not in (None, 0):
+        pct_from_52w_high = round((latest_close - float(high_52w)) / float(high_52w) * 100.0, 4)
+
+    latest_index = frame.index[-1] if len(frame.index) else None
+    if hasattr(latest_index, "isoformat"):
+        latest_date = latest_index.isoformat()
+    else:
+        latest_date = str(latest_index) if latest_index is not None else None
+
+    return {
+        "source": "kis_openapi",
+        "bar_count": int(len(frame)),
+        "latest_date": latest_date,
+        "latest_close": latest_close,
+        "ma5": _to_float(close.tail(5).mean()) if len(close) >= 5 else None,
+        "ma20": _to_float(close.tail(20).mean()) if len(close) >= 20 else None,
+        "ma60": _to_float(close.tail(60).mean()) if len(close) >= 60 else None,
+        "return_5d_pct": _return_pct(frame, 5),
+        "return_20d_pct": _return_pct(frame, 20),
+        "return_60d_pct": _return_pct(frame, 60),
+        "volume_ratio_20d": _volume_ratio(frame, 20),
+        "prior_20d_high": _to_float(high.iloc[:-1].tail(20).max()) if not high.empty and len(high) >= 21 else None,
+        "range_20d_high": _to_float(high.tail(20).max()) if not high.empty else None,
+        "range_20d_low": _to_float(low.tail(20).min()) if not low.empty else None,
+        "close_location_pct": close_location_pct,
+        "high_52w": high_52w,
+        "pct_from_52w_high": pct_from_52w_high,
+    }
+
+
 def build_kis_sidecar_snapshot(
     symbol: str,
     *,
@@ -502,6 +552,7 @@ def build_kis_sidecar_snapshot(
     news_count = int(news_title_count) if news_title_count is not None else len(news_list)
     stock = dict(stock_info or {})
     financial = dict(financial_ratio or {})
+    daily_summary = _daily_ohlcv_summary(daily)
     has_financial_ratio = any(
         financial.get(key) is not None
         for key in (
@@ -552,7 +603,17 @@ def build_kis_sidecar_snapshot(
         "kis_daily_bar_count": int(len(daily)) if not daily.empty else 0,
         "kis_daily_return_5d_pct": _return_pct(daily, 5),
         "kis_daily_return_20d_pct": _return_pct(daily, 20),
+        "kis_daily_return_60d_pct": daily_summary.get("return_60d_pct"),
         "kis_daily_volume_ratio_20d": _volume_ratio(daily, 20),
+        "kis_daily_ma5": daily_summary.get("ma5"),
+        "kis_daily_ma20": daily_summary.get("ma20"),
+        "kis_daily_ma60": daily_summary.get("ma60"),
+        "kis_daily_prior_20d_high": daily_summary.get("prior_20d_high"),
+        "kis_daily_range_20d_high": daily_summary.get("range_20d_high"),
+        "kis_daily_range_20d_low": daily_summary.get("range_20d_low"),
+        "kis_daily_close_location_pct": daily_summary.get("close_location_pct"),
+        "kis_daily_high_52w": daily_summary.get("high_52w"),
+        "kis_daily_pct_from_52w_high": daily_summary.get("pct_from_52w_high"),
         "kis_minute_bar_count": int(len(minute)) if not minute.empty else 0,
         "kis_rank_volume": rank.get("volume_rank"),
         "kis_rank_fluctuation": rank.get("fluctuation_rank"),
@@ -616,6 +677,7 @@ def build_kis_sidecar_snapshot(
         "market": market,
         "generated_at": generated_at or datetime.now().isoformat(),
         "operational_fields": quote_fields,
+        "daily_ohlcv_summary": daily_summary,
         "flow_contract": flow_fields,
         "rank_contract": rank,
         "vi_contract": vi,
@@ -651,23 +713,29 @@ def kis_replacement_roadmap() -> Dict[str, Any]:
             {
                 "phase": 2,
                 "name": "sidecar_archive",
-                "status": "next",
+                "status": "implemented",
                 "exit_gate": "Every KR scanner candidate persists KIS sidecar features without changing recommendation order.",
             },
             {
                 "phase": 3,
+                "name": "deep_analysis_source_contract",
+                "status": "implemented",
+                "exit_gate": "Top Deep consumes KIS sidecar evidence first and stores scan/deep as-of source timing.",
+            },
+            {
+                "phase": 4,
                 "name": "dual_run_parity",
                 "status": "planned",
                 "exit_gate": "KIS primary vs legacy fallback produces >=99% price/OHLCV parity on eligible KR candidates for 10 trading days.",
             },
             {
-                "phase": 4,
+                "phase": 5,
                 "name": "production_source_promotion",
                 "status": "planned",
                 "exit_gate": "KIS primary with legacy fallback passes scanner, Discord, archive, top-deep, and learning replay checks.",
             },
             {
-                "phase": 5,
+                "phase": 6,
                 "name": "model_lift_promotion",
                 "status": "planned",
                 "exit_gate": "KIS-augmented challenger beats current gate by segment without worsening tail-loss metrics.",
@@ -679,6 +747,7 @@ def kis_replacement_roadmap() -> Dict[str, Any]:
             "volume, fluctuation, execution-strength, and VI rank membership",
             "stock information such as market, listing date, and sale/status flags",
             "financial ratios and 250-day high/low distance",
+            "KIS daily MA/range/return features for Top Deep readiness and chase-risk checks",
             "same-day minute bars for intraday volume curve and VWAP features",
             "KIS news-title count as a low-cost event-intensity feature",
         ],

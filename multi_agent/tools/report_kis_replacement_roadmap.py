@@ -73,8 +73,26 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
         {
             "gate": "consumer_parity",
             "target": "scanner, Discord, archive, top-deep, Supabase, and learning outputs consume the same normalized contract",
-            "current_status": "daily KR autoscan defaults to KIS operational primary with explicit legacy fallback; Supabase compatibility was verified on live KIS rows",
+            "current_status": "daily KR autoscan defaults to KIS operational primary with explicit legacy fallback; Supabase compatibility was verified on live KIS rows; Top Deep now records KIS source timing when sidecar evidence is present",
             "promotion_required": True,
+        },
+        {
+            "gate": "candidate_only_deep_analysis",
+            "target": "Deep analysis runs only on emitted Top/Admission/Exception candidates, never on the whole raw universe",
+            "current_status": "implemented_and_unit_tested",
+            "promotion_required": False,
+        },
+        {
+            "gate": "deep_analysis_source_timing",
+            "target": "scan_as_of and deep_analysis_as_of are stored separately with price/flow/news source snapshots",
+            "current_status": "implemented_and_unit_tested",
+            "promotion_required": False,
+        },
+        {
+            "gate": "nightly_full_universe_validation",
+            "target": "Full-universe KIS validation is checkpointed per item and remains a validation lane, not the operational scan path",
+            "current_status": "implemented_and_unit_tested",
+            "promotion_required": False,
         },
         {
             "gate": "model_lift",
@@ -100,6 +118,8 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
             "investor_flow_toggle": "AG_KR_INVESTOR_FLOW_PROVIDER=kis_first or kis_only",
             "scanner_sidecar_toggle": "AG_ENABLE_KIS_SIDECAR=1",
             "sidecar_adapter": "modules.kis_operational_adapter",
+            "top_deep_kis_source_timing": "scan_as_of/deep_analysis_as_of/source_timing persisted in scan_deep_reports",
+            "candidate_only_deep_analysis": "Top Deep consumes scan_universe_admission + Exception Leader candidates, not all tickers",
             "daily_scan_engine_default": "AG_KR_DAILY_SCAN_ENGINE=kis_operational",
             "production_default_changed": True,
             "legacy_fallback_preserved": True,
@@ -112,6 +132,11 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
                 "step": "sidecar_persistence",
                 "action": "Persist KIS quote, OHLCV summary, flow, rank, VI, news-title, and financial fields next to KR scanner rows.",
                 "success_metric": "No recommendation order change; complete KIS sidecar for eligible KR candidates.",
+            },
+            {
+                "step": "source_timing_contract",
+                "action": "Separate scan snapshot time from Top Deep generation time and record source snapshots for price, flow, and news.",
+                "success_metric": "Every Top Deep row explains whether KIS sidecar, scan proxy, or fallback fetch supplied each field.",
             },
             {
                 "step": "dual_run_quality_report",
@@ -129,6 +154,33 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
                 "success_metric": "Production KR scanner uses KIS primary without lowering current release gates.",
             },
         ],
+        "scan_logic_maximization_plan": [
+            {
+                "layer": "prefilter",
+                "action": "Use KIS rank, quote activity, VI, trade value, and flow availability to bound the candidate universe before expensive scanner work.",
+                "guardrail": "Prefilter must store selected and rejected evidence; no dummy rows and no silent empty candidate success.",
+            },
+            {
+                "layer": "admission",
+                "action": "Score only KIS-prefiltered candidates with current scan_universe_admission lanes, preserving Top5/Exception/Shadow section traces.",
+                "guardrail": "Promotion requires live outcome gates by market/section/horizon, including bad-path and stop-first risk.",
+            },
+            {
+                "layer": "deep_analysis",
+                "action": "Use KIS sidecar as the primary Top Deep evidence source and keep fallback sources visible in source_timing.",
+                "guardrail": "scan_as_of and deep_analysis_as_of must differ when data is refreshed after scan time.",
+            },
+            {
+                "layer": "learning",
+                "action": "Export KIS model_candidate_features into challenger datasets with feature-group ablations.",
+                "guardrail": "Only promote a KIS-augmented challenger if it beats current champion on win, average return, tail loss, bad path, and stop-first.",
+            },
+            {
+                "layer": "operations",
+                "action": "Keep operational scan KIS-prefiltered and reserve 3-way full-universe KIS scans for checkpointed nightly validation.",
+                "guardrail": "Full-universe validation failure cannot block candidate-only operational persistence unless source contract gates fail.",
+            },
+        ],
     }
 
 
@@ -137,6 +189,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     implemented = report.get("implemented_now") if isinstance(report.get("implemented_now"), dict) else {}
     gates = report.get("replacement_gates") if isinstance(report.get("replacement_gates"), list) else []
     model_plan = report.get("model_upgrade_plan") if isinstance(report.get("model_upgrade_plan"), list) else []
+    scan_plan = report.get("scan_logic_maximization_plan") if isinstance(report.get("scan_logic_maximization_plan"), list) else []
 
     lines = [
         "# KIS Replacement Roadmap",
@@ -174,6 +227,11 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         if not isinstance(item, dict):
             continue
         lines.append(f"- {item.get('step')}: {item.get('action')} Success: {item.get('success_metric')}")
+    lines.extend(["", "## Scan Logic Maximization Plan"])
+    for item in scan_plan:
+        if not isinstance(item, dict):
+            continue
+        lines.append(f"- {item.get('layer')}: {item.get('action')} Guardrail: {item.get('guardrail')}")
     lines.append("")
     return "\n".join(lines)
 

@@ -135,6 +135,122 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["news"]["headlines"][0]["title"] == "real headline"
 
 
+def test_build_top_deep_reports_prefers_kis_sidecar_for_deep_snapshot():
+    kis_sidecar = {
+        "feature_origin": "kis_openapi_sidecar",
+        "contract_version": "kis_operational_adapter_v1",
+        "generated_at": "2026-06-05T09:35:10+09:00",
+        "operational_fields": {
+            "source_status": "ok",
+            "current_price": 81200,
+            "day_change_pct": 2.15,
+            "volume": 1234567,
+            "value_traded": 100000000000,
+            "prev_volume_ratio": 155.2,
+            "snapshot_at": "2026-06-05T09:35:08+09:00",
+            "per": 15.1,
+            "pbr": 1.2,
+        },
+        "daily_ohlcv_summary": {
+            "source": "kis_openapi",
+            "bar_count": 61,
+            "latest_date": "2026-06-05T00:00:00",
+            "latest_close": 81200,
+            "ma5": 79000,
+            "ma20": 76000,
+            "ma60": 72000,
+            "return_5d_pct": 4.2,
+            "return_20d_pct": 12.5,
+            "volume_ratio_20d": 2.4,
+            "prior_20d_high": 80500,
+            "range_20d_high": 82000,
+            "range_20d_low": 70000,
+            "close_location_pct": 93.3,
+            "high_52w": 90000,
+            "pct_from_52w_high": -9.7778,
+        },
+        "flow_contract": {
+            "valid": True,
+            "type": "KR",
+            "flow_source": "kis_openapi",
+            "flow_unit": "KRW",
+            "flow_asof": "20260605",
+            "whale_score": 71,
+            "foreigner_1d": 10,
+            "institution_1d": 20,
+            "retail_1d": -30,
+            "foreigner_3d": 30,
+            "institution_3d": 40,
+            "retail_3d": -70,
+            "foreigner_10d": 100,
+            "institution_10d": 200,
+            "retail_10d": -300,
+            "whale_flow_1d": 30,
+            "whale_flow_3d": 70,
+            "whale_flow_10d": 300,
+            "buy_dominant": "institution",
+            "sell_dominant": "retail",
+        },
+        "news_contract": {
+            "source_status": "ok",
+            "checked": True,
+            "news_count": 1,
+            "rows": [
+                {
+                    "dorg": "연합뉴스",
+                    "data_dt": "20260605",
+                    "data_tm": "093000",
+                    "hts_pbnt_titl_cntt": "KIS headline",
+                }
+            ],
+        },
+        "coverage": {"quote_snapshot": True, "daily_ohlcv_50d": True, "investor_flow": True},
+        "replacement_readiness": {"production_replacement_ready": True},
+    }
+    with (
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {"source": "yfinance_daily_history", "warnings": [], "current_price": 100.0}
+
+        reports = build_top_deep_reports(
+            scan_rows=[
+                {
+                    "ticker": "005930.KS",
+                    "stock_name": "삼성전자",
+                    "Decision Score": 88.0,
+                    "entry_reference_price": 81200,
+                    "_leader_metrics": {"kis_sidecar": kis_sidecar},
+                }
+            ],
+            planner_payload={"decisions": []},
+            run_id="RUN-KIS-DEEP",
+            market="KOSPI",
+            scan_mode="SWING",
+            top_n=1,
+        )
+
+    news.assert_not_called()
+    flow.assert_not_called()
+    report = reports[0]
+    assert report["price"]["source"] == "kis_openapi_sidecar"
+    assert report["price"]["current_price"] == 81200.0
+    assert report["price"]["ma20"] == 76000.0
+    assert report["price"]["fallback_sources"] == ["yfinance_daily_history"]
+    assert report["flow"]["source"] == "kis_openapi_sidecar:kis_openapi"
+    assert report["flow"]["foreigner_1d"] == 10
+    assert report["news"]["source"] == "kis_openapi_sidecar"
+    assert report["news"]["headlines"][0]["title"] == "KIS headline"
+    assert report["scan_as_of"] == "2026-06-05T09:35:10+09:00"
+    assert report["deep_analysis_as_of"] == report["generated_at"]
+    assert report["source_timing"]["version"] == "scan_deep_source_timing_v1"
+    assert report["scan_source_snapshot"]["kis_sidecar_present"] is True
+    assert report["scan_source_snapshot"]["kis_production_replacement_ready"] is True
+    assert report["deep_analysis_source_snapshot"]["used_kis_sidecar"] is True
+    assert report["candidate_data_quality"]["price_asof"] == "2026-06-05T09:35:08+09:00"
+
+
 def test_generate_and_store_top_deep_reports_attaches_portfolio_exposure_summary(tmp_path):
     with (
         patch("modules.top_deep_report._fetch_price_snapshot") as price,

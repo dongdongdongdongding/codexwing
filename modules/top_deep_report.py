@@ -27,6 +27,7 @@ from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
 
 REPORT_VERSION = "top_deep_report_v1"
+SOURCE_TIMING_VERSION = "scan_deep_source_timing_v1"
 LOCAL_REPORT_DIR = Path("runtime_state/reports/top_deep")
 
 SCAN_DEEP_REPORT_COLUMNS = {
@@ -39,6 +40,8 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "ticker",
     "stock_name",
     "generated_at",
+    "scan_as_of",
+    "deep_analysis_as_of",
     "signal_label",
     "analysis_section",
     "analysis_section_rank",
@@ -84,6 +87,9 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "theme",
     "price",
     "news",
+    "source_timing",
+    "scan_source_snapshot",
+    "deep_analysis_source_snapshot",
     "data_warnings",
 }
 
@@ -208,6 +214,43 @@ def _first_present(row: Dict[str, Any], *keys: str) -> Any:
         if _present(value):
             return value
     return None
+
+
+def _nested_dict(row: Dict[str, Any], *keys: str) -> Dict[str, Any]:
+    current: Any = row
+    for key in keys:
+        if not isinstance(current, dict):
+            return {}
+        current = current.get(key)
+    return dict(current) if isinstance(current, dict) else {}
+
+
+def _extract_kis_sidecar(row: Dict[str, Any], trace: Dict[str, Any]) -> Dict[str, Any]:
+    candidates = [
+        row.get("_kis_sidecar"),
+        row.get("kis_sidecar"),
+        _nested_dict(row, "_leader_metrics", "kis_sidecar"),
+        _nested_dict(row, "leader_metrics", "kis_sidecar"),
+        _nested_dict(row, "feature_snapshot", "kis_sidecar"),
+        _nested_dict(row, "feature_snapshot", "leader_metrics", "kis_sidecar"),
+        trace.get("_kis_sidecar"),
+        trace.get("kis_sidecar"),
+        _nested_dict(trace, "_leader_metrics", "kis_sidecar"),
+        _nested_dict(trace, "leader_metrics", "kis_sidecar"),
+        _nested_dict(trace, "feature_snapshot", "kis_sidecar"),
+    ]
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        if candidate.get("feature_origin") == "kis_openapi_sidecar":
+            return dict(candidate)
+        if candidate.get("contract_version") and (
+            isinstance(candidate.get("operational_fields"), dict)
+            or isinstance(candidate.get("flow_contract"), dict)
+            or isinstance(candidate.get("model_candidate_features"), dict)
+        ):
+            return dict(candidate)
+    return {}
 
 
 def _coerce_jsonable(value: Any) -> Any:
@@ -405,6 +448,8 @@ def _fetch_price_snapshot(ticker: str) -> Dict[str, Any]:
         )
 
     return {
+        "source": "yfinance_daily_history",
+        "asof": ohlcv_tail[-1]["date"] if ohlcv_tail else None,
         "warnings": warnings,
         "current_price": close,
         "prev_close": prev_close,
@@ -495,6 +540,227 @@ def _merge_price_snapshot_with_scan_row(
                 warnings.append(warning)
         price["warnings"] = warnings
     return price
+
+
+def _price_snapshot_from_kis_sidecar(kis_sidecar: Dict[str, Any]) -> Dict[str, Any]:
+    sidecar = kis_sidecar if isinstance(kis_sidecar, dict) else {}
+    fields = sidecar.get("operational_fields") if isinstance(sidecar.get("operational_fields"), dict) else {}
+    features = sidecar.get("model_candidate_features") if isinstance(sidecar.get("model_candidate_features"), dict) else {}
+    daily = sidecar.get("daily_ohlcv_summary") if isinstance(sidecar.get("daily_ohlcv_summary"), dict) else {}
+    if not (fields or features or daily):
+        return {}
+
+    snapshot_at = (
+        _first_present(fields, "snapshot_at", "updated_at", "asof", "as_of")
+        or daily.get("latest_date")
+        or sidecar.get("generated_at")
+    )
+    price = {
+        "source": "kis_openapi_sidecar",
+        "source_status": fields.get("source_status") or ("ok" if _present(fields.get("current_price") or features.get("kis_current_price")) else "partial"),
+        "asof": snapshot_at,
+        "snapshot_at": snapshot_at,
+        "current_price": _safe_float(fields.get("current_price") or fields.get("last_price") or features.get("kis_current_price") or daily.get("latest_close")),
+        "day_change_pct": _safe_float(fields.get("day_change_pct") or fields.get("prev_pct_change") or features.get("kis_day_change_pct")),
+        "volume": _safe_int(fields.get("volume")),
+        "value_traded": _safe_float(fields.get("value_traded") or features.get("kis_value_traded")),
+        "prev_volume_ratio": _safe_float(fields.get("prev_volume_ratio") or fields.get("volume_ratio") or features.get("kis_prev_volume_ratio")),
+        "volume_ratio_20d": _safe_float(daily.get("volume_ratio_20d") or features.get("kis_daily_volume_ratio_20d")),
+        "market_cap": _safe_float(fields.get("market_cap") or features.get("kis_market_cap")),
+        "per": _safe_float(fields.get("per") or features.get("kis_per")),
+        "pbr": _safe_float(fields.get("pbr") or features.get("kis_pbr")),
+        "ma5": _safe_float(daily.get("ma5") or features.get("kis_daily_ma5")),
+        "ma20": _safe_float(daily.get("ma20") or features.get("kis_daily_ma20")),
+        "ma60": _safe_float(daily.get("ma60") or features.get("kis_daily_ma60")),
+        "return_5d_pct": _safe_float(daily.get("return_5d_pct") or features.get("kis_daily_return_5d_pct")),
+        "return_20d_pct": _safe_float(daily.get("return_20d_pct") or features.get("kis_daily_return_20d_pct")),
+        "return_60d_pct": _safe_float(daily.get("return_60d_pct") or features.get("kis_daily_return_60d_pct")),
+        "high_52w": _safe_float(daily.get("high_52w") or features.get("kis_daily_high_52w")),
+        "pct_from_52w_high": _safe_float(daily.get("pct_from_52w_high") or features.get("kis_daily_pct_from_52w_high") or fields.get("high_250d_gap_pct")),
+        "prior_20d_high": _safe_float(daily.get("prior_20d_high") or features.get("kis_daily_prior_20d_high")),
+        "range_20d_high": _safe_float(daily.get("range_20d_high") or features.get("kis_daily_range_20d_high")),
+        "range_20d_low": _safe_float(daily.get("range_20d_low") or features.get("kis_daily_range_20d_low")),
+        "close_location_pct": _safe_float(daily.get("close_location_pct") or features.get("kis_daily_close_location_pct")),
+        "warnings": list(sidecar.get("warnings") or []),
+    }
+    if price["current_price"] is None:
+        price["warnings"].append("kis_sidecar_current_price_missing")
+    if price["volume_ratio_20d"] is None and price["prev_volume_ratio"] is not None:
+        price["warnings"].append("kis_prev_volume_ratio_available_but_20d_volume_ratio_missing")
+    return {key: value for key, value in price.items() if key == "warnings" or _present(value)}
+
+
+def _merge_kis_price_snapshot(
+    price: Dict[str, Any],
+    kis_sidecar: Dict[str, Any],
+) -> Dict[str, Any]:
+    kis_price = _price_snapshot_from_kis_sidecar(kis_sidecar)
+    if not kis_price:
+        return price
+    merged = dict(price if isinstance(price, dict) else {})
+    existing_source = str(merged.get("source") or "").strip()
+    fallback_sources = list(merged.get("fallback_sources") or [])
+    if not existing_source and (merged.get("ohlcv_tail") or merged.get("warnings")):
+        fallback_sources.append("yfinance_daily_history")
+    elif existing_source and existing_source != "kis_openapi_sidecar":
+        fallback_sources.append(existing_source)
+
+    for key, value in kis_price.items():
+        if key == "warnings":
+            continue
+        if _present(value):
+            merged[key] = value
+    warnings = list(merged.get("warnings") or [])
+    for warning in list(kis_price.get("warnings") or []) + ["price_source:kis_openapi_sidecar"]:
+        if warning and warning not in warnings:
+            warnings.append(warning)
+    merged["warnings"] = warnings
+    if fallback_sources:
+        merged["fallback_sources"] = sorted(set(str(item) for item in fallback_sources if item))
+    return merged
+
+
+def _flow_snapshot_from_kis_sidecar(kis_sidecar: Dict[str, Any]) -> Dict[str, Any]:
+    sidecar = kis_sidecar if isinstance(kis_sidecar, dict) else {}
+    flow = sidecar.get("flow_contract") if isinstance(sidecar.get("flow_contract"), dict) else {}
+    if not flow:
+        return {}
+    if not flow.get("valid") and not any(_present(flow.get(key)) for key in ("foreigner_1d", "institution_1d", "retail_1d", "whale_score")):
+        return {}
+    warnings = list(flow.get("warnings") or [])
+    for warning in sidecar.get("warnings") or []:
+        if warning not in warnings:
+            warnings.append(str(warning))
+    return {
+        "valid": bool(flow.get("valid")),
+        "type": flow.get("type") or "KR",
+        "source": f"kis_openapi_sidecar:{flow.get('flow_source') or 'kis_openapi'}",
+        "flow_unit": flow.get("flow_unit"),
+        "whale_score": _safe_float(flow.get("whale_score")),
+        "foreigner": _safe_float(flow.get("foreigner_1d") if _present(flow.get("foreigner_1d")) else flow.get("foreigner")),
+        "institution": _safe_float(flow.get("institution_1d") if _present(flow.get("institution_1d")) else flow.get("institution")),
+        "retail": _safe_float(flow.get("retail_1d") if _present(flow.get("retail_1d")) else flow.get("retail")),
+        "dominant": flow.get("dominant"),
+        "dominant_side": flow.get("dominant_side"),
+        "dominant_flow": flow.get("dominant_flow"),
+        "buy_dominant": flow.get("buy_dominant"),
+        "buy_dominant_flow": flow.get("buy_dominant_flow"),
+        "sell_dominant": flow.get("sell_dominant"),
+        "sell_dominant_flow": flow.get("sell_dominant_flow"),
+        "foreigner_1d": flow.get("foreigner_1d"),
+        "institution_1d": flow.get("institution_1d"),
+        "retail_1d": flow.get("retail_1d"),
+        "foreigner_3d": flow.get("foreigner_3d"),
+        "institution_3d": flow.get("institution_3d"),
+        "retail_3d": flow.get("retail_3d"),
+        "foreigner_10d": flow.get("foreigner_10d"),
+        "institution_10d": flow.get("institution_10d"),
+        "retail_10d": flow.get("retail_10d"),
+        "whale_flow": flow.get("whale_flow"),
+        "whale_flow_1d": flow.get("whale_flow_1d"),
+        "whale_flow_3d": flow.get("whale_flow_3d"),
+        "whale_flow_10d": flow.get("whale_flow_10d"),
+        "flow_window": flow.get("flow_window") or "1d",
+        "flow_asof": flow.get("flow_asof"),
+        "whale_trend": flow.get("whale_trend"),
+        "warnings": warnings,
+    }
+
+
+def _news_snapshot_from_kis_sidecar(kis_sidecar: Dict[str, Any]) -> Dict[str, Any]:
+    sidecar = kis_sidecar if isinstance(kis_sidecar, dict) else {}
+    news = sidecar.get("news_contract") if isinstance(sidecar.get("news_contract"), dict) else {}
+    if not news.get("checked"):
+        return {}
+    rows = [row for row in news.get("rows") or [] if isinstance(row, dict)]
+    headlines = []
+    for row in rows[:5]:
+        title = row.get("title") or row.get("hts_pbnt_titl_cntt") or row.get("headline")
+        if not title:
+            continue
+        date_value = row.get("date")
+        if not date_value and (row.get("data_dt") or row.get("data_tm")):
+            date_value = f"{row.get('data_dt') or ''} {row.get('data_tm') or ''}".strip()
+        headlines.append(
+            {
+                "title": str(title),
+                "score": None,
+                "source": str(row.get("source") or row.get("dorg") or "KIS"),
+                "date": date_value,
+                "url": row.get("url"),
+            }
+        )
+    warnings = []
+    if news.get("rows_truncated"):
+        warnings.append("kis_news_rows_truncated")
+    return {
+        "status": "OK" if str(news.get("source_status") or "").lower() in {"ok", ""} else news.get("source_status"),
+        "source": "kis_openapi_sidecar",
+        "sentiment_score": None,
+        "headlines": headlines,
+        "news_count": news.get("news_count"),
+        "warnings": warnings,
+    }
+
+
+def _source_timing_payload(
+    *,
+    row: Dict[str, Any],
+    trace: Dict[str, Any],
+    kis_sidecar: Dict[str, Any],
+    price: Dict[str, Any],
+    flow: Dict[str, Any],
+    news: Dict[str, Any],
+    generated_at: str,
+) -> Dict[str, Any]:
+    scan_as_of = (
+        row.get("scan_as_of")
+        or trace.get("scan_as_of")
+        or row.get("created_at")
+        or trace.get("created_at")
+        or row.get("generated_at")
+        or trace.get("generated_at")
+        or kis_sidecar.get("generated_at")
+    )
+    price_as_of = price.get("asof") or price.get("as_of") or price.get("snapshot_at") or price.get("updated_at")
+    flow_as_of = flow.get("flow_asof") or flow.get("asof") or flow.get("as_of") or flow.get("updated_at")
+    news_as_of = None
+    for headline in news.get("headlines") or []:
+        if isinstance(headline, dict) and _present(headline.get("date")):
+            news_as_of = headline.get("date")
+            break
+    coverage = kis_sidecar.get("coverage") if isinstance(kis_sidecar.get("coverage"), dict) else {}
+    readiness = kis_sidecar.get("replacement_readiness") if isinstance(kis_sidecar.get("replacement_readiness"), dict) else {}
+    scan_source = {
+        "feature_origin": row.get("feature_origin") or trace.get("feature_origin") or ("kis_openapi_sidecar" if kis_sidecar else "raw_scan_results"),
+        "kis_sidecar_present": bool(kis_sidecar),
+        "kis_sidecar_generated_at": kis_sidecar.get("generated_at"),
+        "kis_sidecar_contract_version": kis_sidecar.get("contract_version"),
+        "kis_sidecar_coverage": coverage,
+        "kis_replacement_readiness": readiness,
+        "kis_production_replacement_ready": readiness.get("production_replacement_ready"),
+    }
+    deep_source = {
+        "price_source": price.get("source") or ("scan_row_proxy" if "price_proxy_from_scan_row" in (price.get("warnings") or []) else "unknown"),
+        "flow_source": flow.get("source") or flow.get("flow_source") or "unknown",
+        "news_source": news.get("source") or "news_analyzer",
+        "used_kis_sidecar": bool(
+            price.get("source") == "kis_openapi_sidecar"
+            or str(flow.get("source") or "").startswith("kis_openapi_sidecar")
+            or news.get("source") == "kis_openapi_sidecar"
+        ),
+        "fallback_sources": price.get("fallback_sources") or [],
+    }
+    return {
+        "version": SOURCE_TIMING_VERSION,
+        "scan_as_of": scan_as_of,
+        "deep_analysis_as_of": generated_at,
+        "price_as_of": price_as_of,
+        "flow_as_of": flow_as_of,
+        "news_as_of": news_as_of,
+        "scan_source_snapshot": scan_source,
+        "deep_analysis_source_snapshot": deep_source,
+    }
 
 
 def _fetch_news_snapshot(ticker: str, stock_name: str) -> Dict[str, Any]:
@@ -1030,6 +1296,7 @@ def build_top_deep_reports(
     for rank, row in enumerate(_select_top_candidates(scan_rows, planner_payload, top_n, diagnostics=diagnostics), start=1):
         ticker = _ticker(row)
         trace = traces.get(ticker, {})
+        kis_sidecar = _extract_kis_sidecar(row, trace)
         stock_name = str(_first_present(row, "stock_name", "종목명", "Name", "name") or trace.get("stock_name") or ticker)
         price = _merge_price_snapshot_with_scan_row(
             _fetch_price_snapshot(ticker),
@@ -1037,12 +1304,14 @@ def build_top_deep_reports(
             trace,
             generated_at=generated_at,
         )
-        news = _fetch_news_snapshot(ticker, stock_name)
+        if kis_sidecar:
+            price = _merge_kis_price_snapshot(price, kis_sidecar)
+        news = _news_snapshot_from_kis_sidecar(kis_sidecar) or _fetch_news_snapshot(ticker, stock_name)
         loss_risk = _safe_float(_first_present(row, "loss_risk_score") or trace.get("loss_risk_score"))
         day_change = _safe_float(_first_present(row, "day_return_pct", "전일비") or price.get("day_change_pct"))
         buy_score = _safe_float(_first_present(row, "relative_rank_score", "decision_score", "Decision Score", "score"))
         trade_policy = _trade_policy(row, trace, ticker, price)
-        flow = _fetch_investor_flow_snapshot(ticker, row, trace)
+        flow = _flow_snapshot_from_kis_sidecar(kis_sidecar) or _fetch_investor_flow_snapshot(ticker, row, trace)
         prediction = {
             "phase25_prob": _safe_float(trace.get("phase25_prob") or row.get("phase25_prob")),
             "expected_return_1d_pct": _safe_float(trace.get("expected_return_1d_pct") or row.get("expected_return_1d_pct")),
@@ -1137,6 +1406,15 @@ def build_top_deep_reports(
             or _first_present(row, "theme_routing_path", "theme_routing_path")
             or ("stock_theme_master" if theme_master_primary and primary_theme == theme_master_primary else None)
         )
+        source_timing = _source_timing_payload(
+            row=row,
+            trace=trace,
+            kis_sidecar=kis_sidecar,
+            price=price,
+            flow=flow,
+            news=news,
+            generated_at=generated_at,
+        )
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -1147,6 +1425,8 @@ def build_top_deep_reports(
             "ticker": ticker,
             "stock_name": stock_name,
             "generated_at": generated_at,
+            "scan_as_of": source_timing.get("scan_as_of"),
+            "deep_analysis_as_of": source_timing.get("deep_analysis_as_of"),
             "analysis_section": analysis_section,
             "analysis_section_rank": analysis_section_rank,
             "source_order": source_order,
@@ -1228,6 +1508,9 @@ def build_top_deep_reports(
             },
             "price": price,
             "news": news,
+            "source_timing": source_timing,
+            "scan_source_snapshot": source_timing.get("scan_source_snapshot"),
+            "deep_analysis_source_snapshot": source_timing.get("deep_analysis_source_snapshot"),
             "data_warnings": (
                 list(price.get("warnings") or [])
                 + list(news.get("warnings") or [])

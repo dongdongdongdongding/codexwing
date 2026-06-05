@@ -528,6 +528,8 @@ create table if not exists public.scan_deep_reports (
   ticker text not null,
   stock_name text,
   generated_at timestamptz not null default now(),
+  scan_as_of timestamptz,
+  deep_analysis_as_of timestamptz,
   signal_label text,
   decision text,
   decision_bucket text,
@@ -554,6 +556,9 @@ create table if not exists public.scan_deep_reports (
   theme jsonb default '{}'::jsonb,
   price jsonb default '{}'::jsonb,
   news jsonb default '{}'::jsonb,
+  source_timing jsonb default '{}'::jsonb,
+  scan_source_snapshot jsonb default '{}'::jsonb,
+  deep_analysis_source_snapshot jsonb default '{}'::jsonb,
   data_warnings jsonb default '[]'::jsonb
 );
 
@@ -578,4 +583,9 @@ alter table public.scan_deep_reports
   add column if not exists realized_expectancy_admission jsonb default '{}'::jsonb,
   add column if not exists entry_action jsonb default '{}'::jsonb,
   add column if not exists practical_entry_gate jsonb default '{}'::jsonb,
-  add column if not exists flow jsonb default '{}'::jsonb;
+  add column if not exists flow jsonb default '{}'::jsonb,
+  add column if not exists scan_as_of timestamptz,
+  add column if not exists deep_analysis_as_of timestamptz,
+  add column if not exists source_timing jsonb default '{}'::jsonb,
+  add column if not exists scan_source_snapshot jsonb default '{}'::jsonb,
+  add column if not exists deep_analysis_source_snapshot jsonb default '{}'::jsonb;
