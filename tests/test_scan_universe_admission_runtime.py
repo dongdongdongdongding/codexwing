@@ -43,6 +43,52 @@ def test_runtime_feature_extractor_reads_display_and_nested_scan_fields():
     assert features["flow_consensus_buying"] is True
 
 
+def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
+    row = {
+        "ticker": "005930.KS",
+        "feature_snapshot": {
+            "kis_sidecar": {
+                "contract_version": "kis_operational_contract_v1",
+                "feature_origin": "kis_openapi_sidecar",
+                "coverage": {"quote_snapshot": True, "daily_ohlcv": True, "rank_membership": True},
+                "replacement_readiness": {"model_sidecar_ready": True, "production_replacement_ready": False},
+                "model_candidate_features": {
+                    "kis_value_traded": 123456789.0,
+                    "kis_daily_return_20d_pct": 6.7,
+                    "kis_rank_volume": 4,
+                    "kis_stock_sector_name": "semiconductor",
+                },
+            },
+            "kis_operational_prefilter": {
+                "feature_origin": "kis_openapi_prefilter",
+                "sources": ["volume_rank", "vi_status"],
+                "rank": {"volume_rank": 1, "volume_power_rank": 3},
+                "selection_score": 122.5,
+                "vi_triggered": True,
+                "quote_ok": True,
+                "quote": {"source_status": "ok", "value_traded": 111000000.0, "prev_volume_ratio": 155.2},
+                "flow_ok": True,
+                "flow": {"flow_source": "kis_openapi", "valid": True, "whale_score": 71.0},
+            },
+        },
+    }
+
+    features = _extract_feature_columns(row, market="KOSPI")
+
+    assert features["kis_sidecar_present"] == 1.0
+    assert features["kis_sidecar_model_ready"] == 1.0
+    assert features["kis_sidecar_coverage_rank_membership"] == 1.0
+    assert features["kis_value_traded"] == 123456789.0
+    assert features["kis_daily_return_20d_pct"] == 6.7
+    assert features["kis_rank_volume"] == 4.0
+    assert features["kis_stock_sector_name"] == "semiconductor"
+    assert features["kis_prefilter_present"] == 1.0
+    assert features["kis_prefilter_selection_score"] == 122.5
+    assert features["kis_prefilter_rank_volume_power"] == 3.0
+    assert features["kis_prefilter_quote_prev_volume_ratio"] == 155.2
+    assert features["kis_prefilter_flow_whale_score"] == 71.0
+
+
 def test_admission_records_include_full_result_interpretation():
     rows = [
         {

@@ -28,6 +28,13 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
     summary = readiness.get("summary") if isinstance(readiness.get("summary"), dict) else {}
     quote_coverage = readiness.get("quote_coverage") if isinstance(readiness.get("quote_coverage"), dict) else {}
     endpoint_rollup = readiness.get("endpoint_rollup") if isinstance(readiness.get("endpoint_rollup"), dict) else {}
+    kis_challenger = _read_json(PROJECT_ROOT / "runtime_state" / "reports" / "learning" / "kis_augmented_challenger_readiness.json")
+    kis_feature_readiness = (
+        kis_challenger.get("kis_feature_readiness")
+        if isinstance(kis_challenger.get("kis_feature_readiness"), dict)
+        else {}
+    )
+    kis_families = kis_feature_readiness.get("families") if isinstance(kis_feature_readiness.get("families"), dict) else {}
     roadmap = kis_replacement_roadmap()
 
     gates: List[Dict[str, Any]] = [
@@ -97,7 +104,16 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
         {
             "gate": "model_lift",
             "target": "KIS-augmented challenger beats current segment gates without worse tail loss",
-            "current_status": "needs sidecar archive and challenger training",
+            "current_status": {
+                "readiness_status": kis_feature_readiness.get("status") or "not_checked",
+                "required_rows": kis_feature_readiness.get("required_rows"),
+                "required_days": kis_feature_readiness.get("required_days"),
+                "sidecar_rows": (kis_families.get("sidecar") or {}).get("rows"),
+                "sidecar_outcome_label_rows": (kis_families.get("sidecar") or {}).get("outcome_label_rows"),
+                "prefilter_rows": (kis_families.get("prefilter") or {}).get("rows"),
+                "prefilter_outcome_label_rows": (kis_families.get("prefilter") or {}).get("outcome_label_rows"),
+                "challenger_report": "runtime_state/reports/learning/kis_augmented_challenger_readiness.json",
+            },
             "promotion_required": True,
         },
     ]
@@ -106,12 +122,13 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
         "tool": "report_kis_replacement_roadmap",
         "contract_version": KIS_OPERATIONAL_CONTRACT_VERSION,
         "summary": {
-            "operator_answer": "KIS is now the default KR daily operational scan source with a legacy scanner fallback. It is suitable for controlled production replacement, while challenger model lift still needs accumulated sidecar outcomes.",
-            "source_only_change": "The promotion changes the daily operational execution path and archives KIS prefilter sidecar features; scanner/planner scoring contracts remain compatible.",
+            "operator_answer": "KIS is now the default KR daily operational scan source with a legacy scanner fallback. Controlled production replacement is acceptable for the source path, but KIS-augmented model promotion remains blocked until real KIS sidecar/prefilter rows have enough resolved outcomes.",
+            "source_only_change": "The promotion changes the daily operational execution path, archives KIS prefilter/sidecar features, and now exposes those features to challenger training with maturity gates; scanner/planner scoring contracts remain compatible.",
             "current_replacement_level": "production-primary default with legacy fallback; model lift pending",
             "prior_readiness_verdict": summary.get("operational_replacement_verdict"),
             "endpoint_ok_count": endpoint_rollup.get("ok_count"),
             "endpoint_failed_count": endpoint_rollup.get("failed_count"),
+            "kis_model_readiness_status": kis_feature_readiness.get("status"),
         },
         "implemented_now": {
             "market_data_toggle": "AG_KR_MARKET_DATA_PROVIDER=kis_first or kis_only",
@@ -119,6 +136,8 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
             "scanner_sidecar_toggle": "AG_ENABLE_KIS_SIDECAR=1",
             "sidecar_adapter": "modules.kis_operational_adapter",
             "top_deep_kis_source_timing": "scan_as_of/deep_analysis_as_of/source_timing persisted in scan_deep_reports",
+            "kis_challenger_feature_pipeline": "scan_universe_snapshots.feature_snapshot KIS sidecar/prefilter payload is flattened into KIS-only and KIS-augmented challenger feature sets",
+            "kis_challenger_maturity_gate": "KIS feature sets train only on real KIS payload rows and require configured rows/days; no dummy rows are accepted",
             "candidate_only_deep_analysis": "Top Deep consumes scan_universe_admission + Exception Leader candidates, not all tickers",
             "daily_scan_engine_default": "AG_KR_DAILY_SCAN_ENGINE=kis_operational",
             "production_default_changed": True,
@@ -145,8 +164,8 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
             },
             {
                 "step": "challenger_training",
-                "action": "Train KIS-augmented segment challengers with feature groups on/off.",
-                "success_metric": "Segment Top5 positive-rate, average 5D return, bad-path rate, and stop-first rate improve.",
+                "action": "Run KIS sidecar-only, prefilter-only, sidecar-augmented, prefilter-augmented, and full KIS-augmented challengers after the maturity gate passes.",
+                "success_metric": "Segment Top5 positive-rate, average 5D return, bad-path rate, and stop-first rate improve on real resolved KIS rows.",
             },
             {
                 "step": "promotion",
@@ -172,8 +191,8 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
             },
             {
                 "layer": "learning",
-                "action": "Export KIS model_candidate_features into challenger datasets with feature-group ablations.",
-                "guardrail": "Only promote a KIS-augmented challenger if it beats current champion on win, average return, tail loss, bad path, and stop-first.",
+                "action": "Use flattened KIS sidecar and prefilter features in explicit feature-group ablations.",
+                "guardrail": "Only train/promote a KIS-augmented challenger on real KIS payload rows with enough resolved outcomes; no dummy or missing-only KIS rows.",
             },
             {
                 "layer": "operations",

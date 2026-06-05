@@ -32,11 +32,14 @@ def test_replacement_roadmap_report_uses_prior_readiness_and_contract(tmp_path):
     assert report["implemented_now"]["daily_scan_engine_default"] == "AG_KR_DAILY_SCAN_ENGINE=kis_operational"
     assert report["implemented_now"]["legacy_fallback_preserved"] is True
     assert report["implemented_now"]["top_deep_kis_source_timing"].startswith("scan_as_of")
+    assert "feature_snapshot" in report["implemented_now"]["kis_challenger_feature_pipeline"]
+    assert "real KIS payload rows" in report["implemented_now"]["kis_challenger_maturity_gate"]
     assert report["replacement_gates"][0]["current_status"] == "implemented_and_unit_tested"
     assert {gate["gate"] for gate in report["replacement_gates"]} >= {
         "candidate_only_deep_analysis",
         "deep_analysis_source_timing",
         "nightly_full_universe_validation",
+        "model_lift",
     }
     assert report["roadmap"]["phases"][0]["name"] == "contract_adapter"
     assert report["scan_logic_maximization_plan"][-1]["layer"] == "operations"

@@ -275,6 +275,119 @@ def test_prepare_dataset_empty_result_still_returns_sanity_tuple():
     assert sanity["removed_rows"] == 0
 
 
+def test_prepare_dataset_flattens_kis_sidecar_and_prefilter_features():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": 1,
+                "run_id": "RUN-KIS",
+                "ticker": "000001.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "row_role": "emitted",
+                "return_5d_pct": 2.0,
+                "feature_snapshot": {
+                    "kis_sidecar": {
+                        "contract_version": "kis_operational_contract_v1",
+                        "feature_origin": "kis_openapi_sidecar",
+                        "coverage": {"quote_snapshot": True, "daily_ohlcv": True},
+                        "replacement_readiness": {"model_sidecar_ready": True, "production_replacement_ready": False},
+                        "model_candidate_features": {
+                            "kis_value_traded": 123456789.0,
+                            "kis_daily_return_5d_pct": 3.4,
+                            "kis_stock_sector_name": "semiconductor",
+                        },
+                    },
+                    "kis_operational_prefilter": {
+                        "feature_origin": "kis_openapi_prefilter",
+                        "snapshot_feature_version": "kis_operational_prefilter_snapshot_v1",
+                        "sources": ["volume_rank", "vi_status"],
+                        "rank": {"volume_rank": 2},
+                        "selection_score": 91.25,
+                        "vi_triggered": True,
+                        "quote_ok": True,
+                        "quote": {"source_status": "ok", "value_traded": 987654321.0, "prev_volume_ratio": 155.2},
+                        "flow_ok": True,
+                        "flow": {"valid": True, "whale_score": 71.0, "foreigner_1d": 10, "institution_1d": 20},
+                        "score_components": {"value_traded": 20.0, "vi_triggered": 8.0},
+                    },
+                },
+            }
+        ]
+    )
+
+    df, _sanity = prepare_dataset(raw)
+    feature_map = trainer.feature_sets(df)
+
+    assert df.loc[df.index[0], "kis_sidecar_present"] == 1.0
+    assert df.loc[df.index[0], "kis_sidecar_model_ready"] == 1.0
+    assert df.loc[df.index[0], "kis_value_traded"] == 123456789.0
+    assert df.loc[df.index[0], "kis_daily_return_5d_pct"] == 3.4
+    assert df.loc[df.index[0], "kis_stock_sector_name"] == "semiconductor"
+    assert df.loc[df.index[0], "kis_prefilter_present"] == 1.0
+    assert df.loc[df.index[0], "kis_prefilter_selection_score"] == 91.25
+    assert df.loc[df.index[0], "kis_prefilter_rank_volume"] == 2.0
+    assert df.loc[df.index[0], "kis_prefilter_flow_whale_score"] == 71.0
+    assert "kis_sidecar_augmented" in feature_map
+    assert "kis_prefilter_augmented" in feature_map
+    assert "kis_full_augmented" in feature_map
+
+
+def test_kis_feature_set_training_requires_mature_real_kis_rows():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": idx,
+                "run_id": f"RUN-{idx // 2}",
+                "ticker": f"{idx:06d}.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20" if idx <= 3 else "2026-05-21",
+                "row_role": "emitted",
+                "return_5d_pct": 1.0 if idx % 2 else -1.0,
+                "feature_snapshot": {
+                    "kis_sidecar": {
+                        "coverage": {"quote_snapshot": True, "daily_ohlcv": True},
+                        "replacement_readiness": {"model_sidecar_ready": True},
+                        "model_candidate_features": {
+                            "kis_value_traded": float(idx * 1000),
+                            "kis_daily_return_5d_pct": float(idx),
+                        },
+                    }
+                },
+            }
+            for idx in range(1, 7)
+        ]
+    )
+    df, _sanity = prepare_dataset(raw)
+    numeric, categorical = trainer.feature_sets(df)["kis_sidecar_augmented"]
+
+    result = trainer.run_candidate(
+        df,
+        market="KOSPI",
+        label_spec=_spec("pos_5d"),
+        feature_name="kis_sidecar_augmented",
+        numeric=numeric,
+        categorical=categorical,
+        model_name="logistic",
+        topn=1,
+        prob_threshold=None,
+        min_train_rows=2,
+        min_test_rows=1,
+        min_train_days=1,
+        test_days=1,
+        max_folds=1,
+        min_kis_rows=3,
+        min_kis_days=3,
+    )
+
+    assert result["status"] == "skipped"
+    assert result["skip_reason"] == "insufficient_kis_feature_days"
+    assert result["kis_valid_label_rows"] == 6
+    assert result["kis_valid_label_days"] == 2
+
+
 def test_candidate_verdict_blocks_sparse_high_score_candidate():
     sparse = {
         "topn": 1,

@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Tuple
 import joblib
 import pandas as pd
 
+from modules.kis_model_features import flatten_kis_model_features
+
 
 MODEL_DIR = Path("models/scan_universe_challengers")
 MODEL_PATHS = {
@@ -254,6 +256,7 @@ def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, A
     features["whale_flow_1d"] = whale_1d
     features["whale_flow_3d"] = whale_3d
     features["whale_flow_10d"] = whale_10d
+    features.update(flatten_kis_model_features(row))
     if features["has_actual_flow"] is None:
         features["has_actual_flow"] = any(features.get(key) is not None for key in ("foreigner_1d", "institution_1d", "retail_1d", "foreigner_3d", "institution_3d", "retail_3d"))
     if features["flow_consensus_buying"] is None and whale_1d is not None and whale_3d is not None:

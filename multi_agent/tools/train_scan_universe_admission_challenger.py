@@ -45,6 +45,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from modules.db_manager import DBManager
+from modules.kis_model_features import (
+    KIS_CATEGORICAL_FEATURES,
+    KIS_NUMERIC_FEATURES,
+    KIS_PREFILTER_CATEGORICAL_FEATURES,
+    KIS_PREFILTER_NUMERIC_FEATURES,
+    KIS_SIDECAR_CATEGORICAL_FEATURES,
+    KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES,
+    KIS_SIDECAR_MODEL_NUMERIC_FEATURES,
+    flatten_kis_model_features,
+)
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -57,6 +67,7 @@ MODEL_DIR = ROOT / "models" / "scan_universe_challengers"
 MIN_PROMOTION_RUNS = 12
 MIN_PROMOTION_DAYS = 6
 MIN_PROMOTION_ROWS = 15
+MIN_KIS_TRAIN_DAYS = 10
 
 KR_RETURN_SANITY_BOUNDS = {
     "return_1d_pct": (-35.0, 35.0),
@@ -210,6 +221,8 @@ SELECT_COLUMNS = [
     "decision_bucket",
     "reject_stage",
     "reject_reason",
+    "feature_snapshot",
+    "feature_origin",
     "total_scans",
     "filtered_count",
     "alpha_score",
@@ -380,6 +393,19 @@ def apply_return_sanity(df: pd.DataFrame, *, mode: str) -> Tuple[pd.DataFrame, D
     }
 
 
+def _attach_kis_features(out: pd.DataFrame) -> pd.DataFrame:
+    if out.empty:
+        return out
+    flattened = [flatten_kis_model_features(row) for row in out.to_dict(orient="records")]
+    if not flattened:
+        return out
+    kis_columns = list(KIS_NUMERIC_FEATURES) + list(KIS_CATEGORICAL_FEATURES)
+    kis_frame = pd.DataFrame(flattened, index=out.index).reindex(columns=kis_columns)
+    existing_kis = [col for col in kis_columns if col in out.columns]
+    base = out.drop(columns=existing_kis) if existing_kis else out
+    return pd.concat([base, kis_frame], axis=1)
+
+
 def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") -> Tuple[pd.DataFrame, Dict[str, Any]]:
     if df.empty:
         return df.copy(), {"mode": return_sanity, "removed_rows": 0}
@@ -390,16 +416,32 @@ def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") 
     out = out[(ticker.str.endswith(".KS") | ticker.str.endswith(".KQ") | market.isin(["KOSPI", "KOSDAQ"])) & scan_mode.eq("SWING")].copy()
     if out.empty:
         return out, {"mode": return_sanity, "removed_rows": 0}
-    for col in sorted(set(NUMERIC_FEATURES + LABEL_RETURN_COLUMNS + ["priority_rank", "total_scans", "filtered_count"])):
+    out = _attach_kis_features(out)
+    numeric_for_coercion = list(NUMERIC_FEATURES) + list(KIS_NUMERIC_FEATURES)
+    categorical_for_coercion = list(CATEGORICAL_FEATURES) + list(KIS_CATEGORICAL_FEATURES)
+    for col in sorted(set(numeric_for_coercion + LABEL_RETURN_COLUMNS + ["priority_rank", "total_scans", "filtered_count"])):
         if col in out.columns:
             out[col] = pd.to_numeric(out[col], errors="coerce")
+    bool_columns: Dict[str, pd.Series] = {}
     for col in PATH_COLUMNS + ["passed_current_model", "has_actual_flow", "flow_consensus_buying", "retail_dominant"]:
         if col in out.columns:
-            out[f"{col}_bool"] = _bool_series(out[col])
-    for col in CATEGORICAL_FEATURES:
-        if col not in out.columns:
-            out[col] = "UNKNOWN"
-        out[col] = out[col].fillna("UNKNOWN").astype(str)
+            bool_columns[f"{col}_bool"] = _bool_series(out[col])
+    if bool_columns:
+        out = pd.concat([out, pd.DataFrame(bool_columns, index=out.index)], axis=1)
+    categorical_columns: Dict[str, pd.Series] = {}
+    for col in categorical_for_coercion:
+        if col in out.columns:
+            categorical_columns[col] = out[col].fillna("UNKNOWN").astype(str)
+        else:
+            categorical_columns[col] = pd.Series("UNKNOWN", index=out.index, dtype="object")
+    if categorical_columns:
+        out = pd.concat(
+            [
+                out.drop(columns=[col for col in categorical_columns if col in out.columns]),
+                pd.DataFrame(categorical_columns, index=out.index),
+            ],
+            axis=1,
+        )
     rec = out.get("base_trade_date", pd.Series(index=out.index, dtype=object))
     scanned = out.get("scanned_at", pd.Series(index=out.index, dtype=object))
     rec = rec.where(rec.notna() & rec.astype(str).str.strip().ne(""), scanned)
@@ -507,12 +549,52 @@ def feature_sets(df: pd.DataFrame) -> Dict[str, Tuple[List[str], List[str]]]:
     non_gate_cats = [col for col in CATEGORICAL_FEATURES if col in df.columns and col not in set(GATE_CATEGORICAL + THEME_CATEGORICAL)]
     gate_cats = [col for col in CATEGORICAL_FEATURES if col in df.columns and col not in set(THEME_CATEGORICAL)]
     theme_cats = [col for col in CATEGORICAL_FEATURES if col in df.columns]
+    kis_sidecar_num = [
+        col
+        for col in list(KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES) + list(KIS_SIDECAR_MODEL_NUMERIC_FEATURES)
+        if col in df.columns
+    ]
+    kis_sidecar_cat = [col for col in KIS_SIDECAR_CATEGORICAL_FEATURES if col in df.columns]
+    kis_prefilter_num = [col for col in KIS_PREFILTER_NUMERIC_FEATURES if col in df.columns]
+    kis_prefilter_cat = [col for col in KIS_PREFILTER_CATEGORICAL_FEATURES if col in df.columns]
+    kis_all_num = [col for col in KIS_NUMERIC_FEATURES if col in df.columns]
+    kis_all_cat = [col for col in KIS_CATEGORICAL_FEATURES if col in df.columns]
     return {
         "core_no_gate": (core, non_gate_cats),
         "flow_no_gate": (flow, non_gate_cats),
         "wide_no_theme": (all_num, gate_cats),
         "wide_theme": (all_num, theme_cats),
+        "kis_sidecar_only": (kis_sidecar_num, kis_sidecar_cat),
+        "kis_prefilter_only": (kis_prefilter_num, kis_prefilter_cat),
+        "kis_sidecar_augmented": (list(dict.fromkeys(flow + kis_sidecar_num)), list(dict.fromkeys(non_gate_cats + kis_sidecar_cat))),
+        "kis_prefilter_augmented": (list(dict.fromkeys(flow + kis_prefilter_num)), list(dict.fromkeys(non_gate_cats + kis_prefilter_cat))),
+        "kis_full_augmented": (list(dict.fromkeys(all_num + kis_all_num)), list(dict.fromkeys(theme_cats + kis_all_cat))),
     }
+
+
+def kis_feature_family(feature_name: str) -> str:
+    name = str(feature_name or "")
+    if name.startswith("kis_sidecar"):
+        return "sidecar"
+    if name.startswith("kis_prefilter"):
+        return "prefilter"
+    if name.startswith("kis_full"):
+        return "any_kis"
+    return ""
+
+
+def kis_presence_mask(frame: pd.DataFrame, feature_name: str) -> pd.Series:
+    false = pd.Series(False, index=frame.index)
+    sidecar = pd.to_numeric(frame.get("kis_sidecar_present", pd.Series(0, index=frame.index)), errors="coerce").fillna(0).gt(0)
+    prefilter = pd.to_numeric(frame.get("kis_prefilter_present", pd.Series(0, index=frame.index)), errors="coerce").fillna(0).gt(0)
+    family = kis_feature_family(feature_name)
+    if family == "sidecar":
+        return sidecar
+    if family == "prefilter":
+        return prefilter
+    if family == "any_kis":
+        return sidecar | prefilter
+    return false
 
 
 def preprocessor(numeric: Sequence[str], categorical: Sequence[str], *, scale_numeric: bool) -> ColumnTransformer:
@@ -750,9 +832,24 @@ def run_candidate(
     min_train_days: int,
     test_days: int,
     max_folds: int,
+    min_kis_rows: int = 0,
+    min_kis_days: int = MIN_KIS_TRAIN_DAYS,
 ) -> Dict[str, Any]:
     label, valid = label_series(work, label_spec)
     scoped = work.loc[valid & work["market"].eq(market)].copy()
+    kis_family = kis_feature_family(feature_name)
+    kis_scope_summary: Dict[str, Any] = {}
+    if kis_family:
+        required_rows = max(int(min_kis_rows or 0), int(min_train_rows) + int(min_test_rows))
+        kis_mask = kis_presence_mask(scoped, feature_name)
+        kis_scope_summary = {
+            "kis_feature_family": kis_family,
+            "kis_valid_label_rows": int(kis_mask.sum()),
+            "kis_valid_label_days": int(scoped.loc[kis_mask, "trade_date"].nunique()) if "trade_date" in scoped.columns else 0,
+            "min_kis_rows": required_rows,
+            "min_kis_days": int(min_kis_days),
+        }
+        scoped = scoped.loc[kis_mask].copy()
     y = label.loc[scoped.index].astype(int)
     base = {
         "market": market,
@@ -766,7 +863,13 @@ def run_candidate(
         "rows": int(len(scoped)),
         "positive_rate_pct": _pct(y.mean()) if len(y) else None,
         "status": "skipped",
+        **kis_scope_summary,
     }
+    if kis_family:
+        if int(base.get("kis_valid_label_rows") or 0) < int(base.get("min_kis_rows") or 0):
+            return {**base, "skip_reason": "insufficient_kis_feature_rows"}
+        if int(base.get("kis_valid_label_days") or 0) < int(base.get("min_kis_days") or 0):
+            return {**base, "skip_reason": "insufficient_kis_feature_days"}
     if len(scoped) < min_train_rows + min_test_rows:
         return {**base, "skip_reason": "insufficient_rows"}
     if y.nunique() < 2:
@@ -871,6 +974,8 @@ def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
         reasons.append("active_runs_lt_12")
     if int(m.get("active_days") or 0) < MIN_PROMOTION_DAYS:
         reasons.append("active_days_lt_6")
+    if str(candidate.get("feature_set") or "").startswith("kis_") and int(m.get("active_days") or 0) < MIN_KIS_TRAIN_DAYS:
+        reasons.append(f"kis_active_days_lt_{MIN_KIS_TRAIN_DAYS}")
     if int(m.get("n") or 0) < max(MIN_PROMOTION_ROWS, topn * 8):
         reasons.append("sample_too_small")
     label_name = str(candidate.get("label") or "")
@@ -934,6 +1039,114 @@ def promotion_verdict(best: Dict[str, Any] | None, baselines: List[Dict[str, Any
         **candidate_verdict(best),
         "blocking_reasons": reasons,
         "baseline_rows_considered": baseline_rows,
+    }
+
+
+def _series_present_pct(frame: pd.DataFrame, col: str) -> float:
+    if frame.empty or col not in frame.columns:
+        return 0.0
+    values = frame[col]
+    if col in KIS_CATEGORICAL_FEATURES:
+        present = values.fillna("").astype(str).str.strip().ne("") & ~values.fillna("").astype(str).str.upper().eq("UNKNOWN")
+    else:
+        numeric = pd.to_numeric(values, errors="coerce")
+        diagnostic_presence = (
+            col.endswith("_present")
+            or col.endswith("_ready")
+            or "_coverage_" in col
+            or col.endswith("_ok")
+            or col.endswith("_valid")
+            or col.endswith("_triggered")
+            or col.endswith("_source_count")
+            or col.endswith("_warning_count")
+            or col.endswith("_rejected")
+        )
+        present = numeric.gt(0) if diagnostic_presence else numeric.notna()
+    return round(float(present.mean() * 100.0), 3) if len(present) else 0.0
+
+
+def _kis_family_scope(frame: pd.DataFrame, family: str) -> pd.Series:
+    if family == "sidecar":
+        return kis_presence_mask(frame, "kis_sidecar_only")
+    if family == "prefilter":
+        return kis_presence_mask(frame, "kis_prefilter_only")
+    if family == "any_kis":
+        return kis_presence_mask(frame, "kis_full_augmented")
+    return pd.Series(False, index=frame.index)
+
+
+def kis_feature_readiness(
+    data: pd.DataFrame,
+    *,
+    min_train_rows: int,
+    min_test_rows: int,
+    min_kis_rows: int,
+    min_kis_days: int,
+) -> Dict[str, Any]:
+    required_rows = max(int(min_kis_rows or 0), int(min_train_rows) + int(min_test_rows))
+    required_days = int(min_kis_days)
+    if data.empty:
+        return {
+            "status": "blocked",
+            "reason": "no_prepared_rows",
+            "required_rows": required_rows,
+            "required_days": required_days,
+        }
+    outcome_mask = (
+        data.get("return_5d_pct", pd.Series(index=data.index, dtype=float)).notna()
+        | data.get("max_high_return_5d_pct", pd.Series(index=data.index, dtype=float)).notna()
+        | data.get("target_before_stop_5d", pd.Series(index=data.index, dtype=object)).notna()
+    )
+    families = {}
+    for family in ("sidecar", "prefilter", "any_kis"):
+        mask = _kis_family_scope(data, family)
+        rows = data.loc[mask]
+        outcome_rows = data.loc[mask & outcome_mask]
+        families[family] = {
+            "rows": int(len(rows)),
+            "outcome_label_rows": int(len(outcome_rows)),
+            "unique_runs": int(rows["run_id"].nunique()) if "run_id" in rows.columns and not rows.empty else 0,
+            "unique_days": int(rows["trade_date"].nunique()) if "trade_date" in rows.columns and not rows.empty else 0,
+            "mature_for_training": bool(len(outcome_rows) >= required_rows and (rows["trade_date"].nunique() if "trade_date" in rows.columns and not rows.empty else 0) >= required_days),
+        }
+    by_market = {}
+    for market in sorted(str(item) for item in data.get("market", pd.Series(dtype=object)).dropna().unique()):
+        scoped = data[data["market"].eq(market)].copy()
+        by_market[market] = {}
+        for family in ("sidecar", "prefilter", "any_kis"):
+            mask = _kis_family_scope(scoped, family)
+            rows = scoped.loc[mask]
+            outcome_rows = scoped.loc[mask & outcome_mask.reindex(scoped.index).fillna(False)]
+            unique_days = int(rows["trade_date"].nunique()) if "trade_date" in rows.columns and not rows.empty else 0
+            by_market[market][family] = {
+                "rows": int(len(rows)),
+                "outcome_label_rows": int(len(outcome_rows)),
+                "unique_runs": int(rows["run_id"].nunique()) if "run_id" in rows.columns and not rows.empty else 0,
+                "unique_days": unique_days,
+                "mature_for_training": bool(len(outcome_rows) >= required_rows and unique_days >= required_days),
+            }
+    sidecar_cols = list(KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES) + list(KIS_SIDECAR_MODEL_NUMERIC_FEATURES) + list(KIS_SIDECAR_CATEGORICAL_FEATURES)
+    prefilter_cols = list(KIS_PREFILTER_NUMERIC_FEATURES) + list(KIS_PREFILTER_CATEGORICAL_FEATURES)
+    coverage = {
+        "sidecar_top_feature_fill_pct": {
+            col: _series_present_pct(data, col)
+            for col in sidecar_cols
+            if col in data.columns and _series_present_pct(data, col) > 0
+        },
+        "prefilter_top_feature_fill_pct": {
+            col: _series_present_pct(data, col)
+            for col in prefilter_cols
+            if col in data.columns and _series_present_pct(data, col) > 0
+        },
+    }
+    return {
+        "status": "ok" if any(item.get("mature_for_training") for item in families.values()) else "blocked",
+        "required_rows": required_rows,
+        "required_days": required_days,
+        "families": families,
+        "by_market": by_market,
+        "feature_fill": coverage,
+        "promotion_rule": "KIS feature sets only train on rows with real KIS payload; no dummy or missing-only KIS rows are used.",
     }
 
 
@@ -1035,6 +1248,8 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
                                 min_train_days=int(args.min_train_days),
                                 test_days=int(args.test_days),
                                 max_folds=int(args.max_folds),
+                                min_kis_rows=int(args.min_kis_rows),
+                                min_kis_days=int(args.min_kis_days),
                             )
                             all_results.append(result)
                             if len(all_results) % 25 == 0:
@@ -1051,6 +1266,8 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         reverse=True,
     )
     best = ok_results[0] if ok_results else None
+    kis_ok_results = [row for row in ok_results if str(row.get("feature_set") or "").startswith("kis_")]
+    best_kis = kis_ok_results[0] if kis_ok_results else None
     holdout_days = set()
     if best and best.get("fold_metrics"):
         for item in best.get("fold_metrics") or []:
@@ -1060,7 +1277,26 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         best_label = next(item for item in LABEL_SPECS if item.name == best["label"])
         for topn in topns:
             baselines.extend(baseline_results(data, market=best["market"], label_spec=best_label, topn=topn, holdout_days=holdout_days))
+    kis_holdout_days = set()
+    if best_kis and best_kis.get("fold_metrics"):
+        for item in best_kis.get("fold_metrics") or []:
+            kis_holdout_days.update(str(day) for day in item.get("test_days") or [])
+    kis_baselines: List[Dict[str, Any]] = []
+    if best_kis:
+        best_kis_label = next(item for item in LABEL_SPECS if item.name == best_kis["label"])
+        for topn in topns:
+            kis_baselines.extend(
+                baseline_results(data, market=best_kis["market"], label_spec=best_kis_label, topn=topn, holdout_days=kis_holdout_days)
+            )
     verdict = promotion_verdict(best, baselines)
+    kis_verdict = promotion_verdict(best_kis, kis_baselines)
+    readiness = kis_feature_readiness(
+        data,
+        min_train_rows=int(args.min_train_rows),
+        min_test_rows=int(args.min_test_rows),
+        min_kis_rows=int(args.min_kis_rows),
+        min_kis_days=int(args.min_kis_days),
+    )
     final_model = (
         train_final_model(data, best, output_dir=Path(args.model_dir))
         if best and verdict.get("promotable") and not args.no_save_model
@@ -1077,15 +1313,23 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "evaluated_combinations": int(len(all_results)),
         "ok_combinations": int(len(ok_results)),
         "best": best,
+        "best_kis": best_kis,
         "top_results": ok_results[: int(args.top_results)],
+        "top_kis_results": kis_ok_results[: int(args.top_results)],
         "baselines_for_best_holdout": baselines,
+        "baselines_for_best_kis_holdout": kis_baselines,
         "promotion_verdict": verdict,
+        "kis_promotion_verdict": kis_verdict,
         "final_model": final_model,
+        "kis_feature_readiness": readiness,
         "selection_policy": {
             "description": "Promotable candidates are ranked ahead of sparse or blocked high-score candidates.",
             "min_active_runs": MIN_PROMOTION_RUNS,
             "min_active_days": MIN_PROMOTION_DAYS,
             "min_rows": MIN_PROMOTION_ROWS,
+            "min_kis_train_days": MIN_KIS_TRAIN_DAYS,
+            "configured_min_kis_days": int(args.min_kis_days),
+            "configured_min_kis_rows": max(int(args.min_kis_rows or 0), int(args.min_train_rows) + int(args.min_test_rows)),
         },
         "data_quality": {
             "return_sanity": return_sanity,
@@ -1101,7 +1345,10 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
 
 def _markdown(report: Dict[str, Any]) -> str:
     best = report.get("best") or {}
+    best_kis = report.get("best_kis") or {}
     m = best.get("metrics") or {}
+    km = best_kis.get("metrics") or {}
+    readiness = report.get("kis_feature_readiness") or {}
     lines = [
         "# Scan Universe Admission Challenger",
         "",
@@ -1131,6 +1378,24 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- 5d max-high avg/min/max: `{m.get('avg_max_high_5d_pct')}` / `{m.get('min_max_high_5d_pct')}` / `{m.get('max_max_high_5d_pct')}`",
         f"- stop5_pct / bad_path_pct: `{m.get('stop5_pct')}` / `{m.get('bad_path_pct')}`",
         "",
+        "## Best KIS",
+        f"- market: `{best_kis.get('market')}`",
+        f"- label: `{best_kis.get('label')}`",
+        f"- feature_set: `{best_kis.get('feature_set')}`",
+        f"- model: `{best_kis.get('model')}`",
+        f"- selection_rule: `{best_kis.get('selection_rule')}`",
+        f"- quality_score: `{best_kis.get('quality_score')}`",
+        f"- n / active_runs / active_days: `{km.get('n')}` / `{km.get('active_runs')}` / `{km.get('active_days')}`",
+        f"- 5d win/avg/min/max: `{km.get('win_5d_pct')}` / `{km.get('avg_5d_pct')}` / `{km.get('min_5d_pct')}` / `{km.get('max_5d_pct')}`",
+        f"- hit5/hit10 5d pct: `{km.get('hit5_5d_pct')}` / `{km.get('hit10_5d_pct')}`",
+        f"- promotion_verdict: `{report.get('kis_promotion_verdict')}`",
+        "",
+        "## KIS Feature Readiness",
+        f"- status: `{readiness.get('status')}`",
+        f"- required_rows / required_days: `{readiness.get('required_rows')}` / `{readiness.get('required_days')}`",
+        f"- families: `{readiness.get('families')}`",
+        f"- by_market: `{readiness.get('by_market')}`",
+        "",
         "## Baselines",
     ]
     for row in report.get("baselines_for_best_holdout") or []:
@@ -1156,6 +1421,17 @@ def _markdown(report: Dict[str, Any]) -> str:
             f"hit5={rm.get('hit5_5d_pct')}%, hit10={rm.get('hit10_5d_pct')}%, "
             f"mfe5={rm.get('avg_max_high_5d_pct')}%, min5={rm.get('min_5d_pct')}%, max5={rm.get('max_5d_pct')}%"
         )
+    lines.extend(["", "## Top KIS Results"])
+    for idx, row in enumerate(report.get("top_kis_results") or [], start=1):
+        rm = row.get("metrics") or {}
+        lines.append(
+            f"{idx}. `{row.get('market')}` `{row.get('label')}` `{row.get('feature_set')}` "
+            f"`{row.get('model')}` {row.get('selection_rule') or ('top' + str(row.get('topn')))}: "
+            f"score={row.get('quality_score')}, n={rm.get('n')}, "
+            f"5d={rm.get('win_5d_pct')}%/{rm.get('avg_5d_pct')}%, "
+            f"hit5={rm.get('hit5_5d_pct')}%, hit10={rm.get('hit10_5d_pct')}%, "
+            f"mfe5={rm.get('avg_max_high_5d_pct')}%, min5={rm.get('min_5d_pct')}%, max5={rm.get('max_5d_pct')}%"
+        )
     return "\n".join(lines) + "\n"
 
 
@@ -1174,6 +1450,8 @@ def main() -> int:
     parser.add_argument("--min-train-days", type=int, default=3)
     parser.add_argument("--test-days", type=int, default=2)
     parser.add_argument("--max-folds", type=int, default=5)
+    parser.add_argument("--min-kis-rows", type=int, default=0, help="Minimum valid-label KIS rows for KIS feature-set training. 0 means min_train_rows + min_test_rows.")
+    parser.add_argument("--min-kis-days", type=int, default=MIN_KIS_TRAIN_DAYS, help="Minimum unique trade dates for KIS feature-set training.")
     parser.add_argument("--top-results", type=int, default=20)
     parser.add_argument("--no-theme", action="store_true")
     parser.add_argument("--return-sanity", choices=["kr_price_limit", "off"], default="kr_price_limit")
