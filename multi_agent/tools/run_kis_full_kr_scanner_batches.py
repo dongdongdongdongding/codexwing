@@ -17,7 +17,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, MutableMapping, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Sequence
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -58,6 +58,12 @@ def _chunk_rows_by_count(rows: Sequence[Mapping[str, str]], batch_count: int) ->
         chunks.append([dict(item) for item in chunk])
         offset += size
     return chunks
+
+
+def _iter_chunks(rows: Sequence[Mapping[str, str]], chunk_size: int) -> Iterable[List[Dict[str, str]]]:
+    size = max(1, int(chunk_size))
+    for idx in range(0, len(rows), size):
+        yield [dict(item) for item in rows[idx : idx + size]]
 
 
 def _ticker_arg(rows: Sequence[Mapping[str, str]]) -> str:
@@ -217,6 +223,8 @@ def _initial_state(args: argparse.Namespace, rows: Sequence[Mapping[str, str]], 
         "run_id": _kst_timestamp(),
         "tool": "run_kis_full_kr_scanner_batches",
         "batch_size": int(args.batch_size),
+        "item_batch_size": int(args.item_batch_size),
+        "item_checkpointing": True,
         "batch_count_requested": int(args.batch_count),
         "chunk_mode": "batch_count" if int(args.batch_count) > 0 else "batch_size",
         "workers": int(args.workers),
@@ -229,12 +237,57 @@ def _initial_state(args: argparse.Namespace, rows: Sequence[Mapping[str, str]], 
         "kis_only": True,
         "dry_run": bool(args.dry_run),
         "batches": [],
+        "items": [],
         "summary": {
             "completed": 0,
             "failed": 0,
             "skipped": 0,
             "pending": len(batches),
         },
+        "item_summary": {
+            "completed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "pending": len(rows),
+        },
+    }
+
+
+def _code(row: Mapping[str, Any]) -> str:
+    return str(row.get("Code") or row.get("ticker") or "").strip()
+
+
+def _completed_item_codes(state: Mapping[str, Any]) -> set[str]:
+    completed = {
+        str(item.get("ticker") or "").strip()
+        for item in list(state.get("items") or [])
+        if item.get("status") == "completed" and str(item.get("ticker") or "").strip()
+    }
+    # Backward compatibility: older checkpoint files only had completed batch records.
+    for batch in list(state.get("batches") or []):
+        if batch.get("status") != "completed":
+            continue
+        completed.update(str(ticker).strip() for ticker in list(batch.get("tickers") or []) if str(ticker).strip())
+    return completed
+
+
+def _summarize_items(state: MutableMapping[str, Any], rows: Sequence[Mapping[str, str]]) -> None:
+    latest_by_ticker: Dict[str, Mapping[str, Any]] = {}
+    for item in list(state.get("items") or []):
+        ticker = str(item.get("ticker") or "").strip()
+        if ticker:
+            latest_by_ticker[ticker] = item
+    counts = {"completed": 0, "failed": 0, "skipped": 0}
+    for item in latest_by_ticker.values():
+        status = str(item.get("status") or "")
+        if status in counts:
+            counts[status] += 1
+    tracked = {_code(row) for row in rows if _code(row)}
+    state["item_summary"] = {
+        "completed": counts["completed"],
+        "failed": counts["failed"],
+        "skipped": counts["skipped"],
+        "pending": max(0, len(tracked) - counts["completed"] - counts["failed"] - counts["skipped"]),
     }
 
 
@@ -249,6 +302,92 @@ def _summarize(state: MutableMapping[str, Any], total_batches: int) -> None:
         "skipped": skipped,
         "pending": max(0, total_batches - completed - failed - skipped),
     }
+
+
+def _upsert_item_records(
+    state: MutableMapping[str, Any],
+    *,
+    batch_index: int,
+    rows: Sequence[Mapping[str, str]],
+    status: str,
+    result: Mapping[str, Any],
+) -> None:
+    existing = {
+        str(item.get("ticker") or "").strip(): dict(item)
+        for item in list(state.get("items") or [])
+        if str(item.get("ticker") or "").strip()
+    }
+    now = datetime.now().isoformat()
+    for row in rows:
+        ticker = _code(row)
+        if not ticker:
+            continue
+        record = {
+            "ticker": ticker,
+            "name": str(row.get("Name") or "").strip(),
+            "batch_index": int(batch_index),
+            "status": str(status),
+            "updated_at": now,
+            "returncode": result.get("returncode"),
+            "elapsed_sec": result.get("elapsed_sec"),
+            "timeout": bool(result.get("timeout")),
+            "retry_count": result.get("retry_count", 0),
+            "scan_exception_reasons": list(result.get("scan_exception_reasons") or []),
+        }
+        if status != "completed" or result.get("output_tail"):
+            record["output_tail"] = _tail_lines(list(result.get("output_tail") or []), max_lines=40)
+        if result.get("attempts"):
+            record["attempts"] = result.get("attempts")
+        existing[ticker] = record
+    state["items"] = sorted(existing.values(), key=lambda item: str(item.get("ticker") or ""))
+
+
+def _batch_status_from_items(state: Mapping[str, Any], batch_rows: Sequence[Mapping[str, str]], *, dry_run: bool) -> str:
+    statuses = {
+        str(item.get("ticker") or "").strip(): str(item.get("status") or "")
+        for item in list(state.get("items") or [])
+        if str(item.get("ticker") or "").strip()
+    }
+    expected = [_code(row) for row in batch_rows if _code(row)]
+    item_statuses = [statuses.get(code, "pending") for code in expected]
+    if item_statuses and all(status == "completed" for status in item_statuses):
+        return "completed"
+    if any(status == "failed" for status in item_statuses):
+        return "failed"
+    if dry_run and item_statuses and all(status == "skipped" for status in item_statuses):
+        return "skipped"
+    return "pending"
+
+
+def _seed_items_from_completed_batches(
+    state: MutableMapping[str, Any],
+    batches: Sequence[Sequence[Mapping[str, str]]],
+) -> None:
+    existing_codes = {
+        str(item.get("ticker") or "").strip()
+        for item in list(state.get("items") or [])
+        if str(item.get("ticker") or "").strip()
+    }
+    for record in list(state.get("batches") or []):
+        if record.get("status") != "completed":
+            continue
+        try:
+            batch_index = int(record.get("batch_index"))
+        except Exception:
+            continue
+        if batch_index < 0 or batch_index >= len(batches):
+            continue
+        rows = [dict(row) for row in batches[batch_index] if _code(row) not in existing_codes]
+        if not rows:
+            continue
+        _upsert_item_records(
+            state,
+            batch_index=batch_index,
+            rows=rows,
+            status="completed",
+            result={"returncode": 0, "elapsed_sec": 0.0, "timeout": False, "retry_count": 0},
+        )
+        existing_codes.update(_code(row) for row in rows if _code(row))
 
 
 def run(args: argparse.Namespace) -> Dict[str, Any]:
@@ -274,6 +413,8 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         state = _initial_state(args, rows, batches)
 
     existing_by_index = {int(item.get("batch_index")): item for item in list(state.get("batches") or [])}
+    if args.resume:
+        _seed_items_from_completed_batches(state, batches)
     env = _kis_batch_env(args)
     executed = 0
 
@@ -283,60 +424,111 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         if args.max_batches > 0 and executed >= int(args.max_batches):
             break
 
+        completed_codes = _completed_item_codes(state) if args.resume else set()
+        pending_rows = [dict(row) for row in batch_rows if _code(row) not in completed_codes]
         prior = existing_by_index.get(batch_index)
-        if args.resume and prior and prior.get("status") == "completed":
+        if args.resume and not pending_rows:
             print(f"[batch {batch_index + 1}/{len(batches)}] skip completed", flush=True)
+            if not prior:
+                prior = {
+                    "batch_index": batch_index,
+                    "batch_number": batch_index + 1,
+                    "batch_count": len(batches),
+                    "ticker_count": len(batch_rows),
+                    "tickers": [row["Code"] for row in batch_rows],
+                    "names": {row["Code"]: row["Name"] for row in batch_rows},
+                    "status": "completed",
+                }
+                state_batches = [item for item in list(state.get("batches") or []) if int(item.get("batch_index")) != batch_index]
+                state_batches.append(prior)
+                state["batches"] = sorted(state_batches, key=lambda item: int(item.get("batch_index")))
+                _summarize(state, len(batches))
+                _summarize_items(state, rows)
+                _write_state(state_path, state)
             continue
 
-        tickers = _ticker_arg(batch_rows)
         record: Dict[str, Any] = {
             "batch_index": batch_index,
             "batch_number": batch_index + 1,
             "batch_count": len(batches),
             "ticker_count": len(batch_rows),
+            "pending_ticker_count": len(pending_rows),
             "tickers": [row["Code"] for row in batch_rows],
+            "pending_tickers": [row["Code"] for row in pending_rows],
             "names": {row["Code"]: row["Name"] for row in batch_rows},
             "started_at": datetime.now().isoformat(),
+            "item_batch_size": int(args.item_batch_size) if int(args.item_batch_size) > 0 else len(pending_rows),
+            "item_groups": [],
         }
 
-        command = [
-            sys.executable,
-            str(LIVE_SCAN_TOOL),
-            "--workers",
-            str(args.workers),
-            "--tickers",
-            tickers,
-            "--allow-empty-results",
-        ]
-        record["command"] = command
         print(
             f"[batch {batch_index + 1}/{len(batches)}] start "
-            f"ticker_count={record['ticker_count']} tickers={_ticker_preview(record['tickers'])}",
+            f"ticker_count={record['ticker_count']} pending={record['pending_ticker_count']} "
+            f"tickers={_ticker_preview(record['pending_tickers'])}",
             flush=True,
         )
-        if args.dry_run:
-            record.update({"status": "skipped", "returncode": None, "elapsed_sec": 0.0, "output_tail": []})
-        else:
-            result = _run_with_retries(
-                command,
-                env=env,
-                retries=max(0, int(args.retries)),
-                timeout_sec=max(0.0, float(args.batch_timeout_sec)),
-            )
-            record.update(result)
-            record["status"] = (
-                "completed"
-                if int(result.get("returncode") or 0) == 0
-                and not result.get("timeout")
-                and not result.get("scan_exception_reasons")
-                else "failed"
-            )
+        item_batch_size = int(args.item_batch_size) if int(args.item_batch_size) > 0 else max(1, len(pending_rows))
+        for item_group_index, item_rows in enumerate(_iter_chunks(pending_rows, item_batch_size)):
+            tickers = _ticker_arg(item_rows)
+            command = [
+                sys.executable,
+                str(LIVE_SCAN_TOOL),
+                "--workers",
+                str(args.workers),
+                "--tickers",
+                tickers,
+                "--allow-empty-results",
+            ]
+            group_record: Dict[str, Any] = {
+                "item_group_index": item_group_index,
+                "ticker_count": len(item_rows),
+                "tickers": [row["Code"] for row in item_rows],
+                "started_at": datetime.now().isoformat(),
+                "command": command,
+            }
+            if args.dry_run:
+                result = {"returncode": None, "elapsed_sec": 0.0, "timeout": False, "output_tail": [], "retry_count": 0}
+                group_status = "skipped"
+            else:
+                result = _run_with_retries(
+                    command,
+                    env=env,
+                    retries=max(0, int(args.retries)),
+                    timeout_sec=max(0.0, float(args.batch_timeout_sec)),
+                )
+                group_status = (
+                    "completed"
+                    if int(result.get("returncode") or 0) == 0
+                    and not result.get("timeout")
+                    and not result.get("scan_exception_reasons")
+                    else "failed"
+                )
+            group_record.update(result)
+            group_record["status"] = group_status
+            group_record["finished_at"] = datetime.now().isoformat()
+            record["item_groups"].append(group_record)
+            _upsert_item_records(state, batch_index=batch_index, rows=item_rows, status=group_status, result=result)
+
+            state_batches = [item for item in list(state.get("batches") or []) if int(item.get("batch_index")) != batch_index]
+            current_record = dict(record)
+            current_record["status"] = _batch_status_from_items(state, batch_rows, dry_run=bool(args.dry_run))
+            state_batches.append(current_record)
+            state["batches"] = sorted(state_batches, key=lambda item: int(item.get("batch_index")))
+            state["updated_at"] = datetime.now().isoformat()
+            _summarize(state, len(batches))
+            _summarize_items(state, rows)
+            _write_state(state_path, state)
+            if group_status == "failed" and args.fail_fast:
+                break
+
+        record["status"] = _batch_status_from_items(state, batch_rows, dry_run=bool(args.dry_run))
 
         state_batches = [item for item in list(state.get("batches") or []) if int(item.get("batch_index")) != batch_index]
         state_batches.append(record)
         state["batches"] = sorted(state_batches, key=lambda item: int(item.get("batch_index")))
         state["updated_at"] = datetime.now().isoformat()
         _summarize(state, len(batches))
+        _summarize_items(state, rows)
         _write_state(state_path, state)
         print(f"[batch {batch_index + 1}/{len(batches)}] {record['status']} state={state_path}", flush=True)
 
@@ -345,6 +537,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             break
 
     _summarize(state, len(batches))
+    _summarize_items(state, rows)
     _write_state(state_path, state)
     print(json.dumps({"state_path": str(state_path), "summary": state.get("summary")}, ensure_ascii=False, indent=2))
     return dict(state)
@@ -354,6 +547,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run KIS-only full KR scanner in small checkpointed batches.")
     parser.add_argument("--batch-size", type=int, default=3, help="Tickers per batch. Use 2 or 3 for conservative KIS runs.")
     parser.add_argument("--batch-count", type=int, default=0, help="Split the whole universe into this many batches; overrides --batch-size.")
+    parser.add_argument("--item-batch-size", type=int, default=0, help="Tickers per resumable item checkpoint inside each batch. Use 1 for per-symbol nightly validation; 0 uses the whole pending batch.")
     parser.add_argument("--workers", type=int, default=1, help="Workers passed to each live_full_kr_swing_scan batch.")
     parser.add_argument("--limit", type=int, default=100000, help="Per-market universe limit passed to loader.")
     parser.add_argument("--start-batch", type=int, default=0, help="0-based batch index to start from.")

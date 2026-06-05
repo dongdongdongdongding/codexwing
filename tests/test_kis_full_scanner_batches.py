@@ -14,6 +14,7 @@ def _args(tmp_path: Path, **overrides):
     values = {
         "batch_size": 2,
         "batch_count": 0,
+        "item_batch_size": 0,
         "workers": 1,
         "limit": 100000,
         "start_batch": 0,
@@ -94,6 +95,7 @@ def test_dry_run_writes_checkpoint_for_two_ticker_batches(tmp_path, monkeypatch)
 
     assert state["batch_count"] == 3
     assert persisted["summary"] == {"completed": 0, "failed": 0, "skipped": 2, "pending": 1}
+    assert persisted["item_summary"] == {"completed": 0, "failed": 0, "skipped": 4, "pending": 1}
     assert [item["tickers"] for item in persisted["batches"]] == [["000001", "000002"], ["000003", "000004"]]
     assert latest_path.exists()
 
@@ -109,6 +111,7 @@ def test_dry_run_can_split_full_universe_into_three_batches(tmp_path, monkeypatc
     assert state["batch_count"] == 3
     assert [item["ticker_count"] for item in state["batches"]] == [4, 3, 3]
     assert state["summary"] == {"completed": 0, "failed": 0, "skipped": 3, "pending": 0}
+    assert state["item_summary"] == {"completed": 0, "failed": 0, "skipped": 10, "pending": 0}
 
 
 def test_resume_skips_completed_batch_and_runs_next_batch(tmp_path, monkeypatch):
@@ -150,6 +153,69 @@ def test_resume_skips_completed_batch_and_runs_next_batch(tmp_path, monkeypatch)
     assert commands[0][2] == 0
     assert commands[0][3] == 0.0
     assert state["summary"] == {"completed": 2, "failed": 0, "skipped": 0, "pending": 0}
+    assert state["item_summary"] == {"completed": 4, "failed": 0, "skipped": 0, "pending": 0}
+
+
+def test_item_batch_size_persists_one_record_per_symbol(tmp_path, monkeypatch):
+    monkeypatch.setattr(batches, "REPORT_DIR", tmp_path / "reports")
+    monkeypatch.setattr(batches, "_load_batch_universe", lambda limit: _universe(3))
+    commands = []
+
+    def fake_run_with_retries(command, *, env, retries, timeout_sec):
+        commands.append(command)
+        return {"returncode": 0, "elapsed_sec": 0.01, "timeout": False, "output_tail": ["ok"], "attempts": []}
+
+    monkeypatch.setattr(batches, "_run_with_retries", fake_run_with_retries)
+
+    state = batches.run(_args(tmp_path, batch_size=3, max_batches=1, item_batch_size=1))
+
+    assert [command[-2] for command in commands] == ["000001=Name 1", "000002=Name 2", "000003=Name 3"]
+    assert state["summary"] == {"completed": 1, "failed": 0, "skipped": 0, "pending": 0}
+    assert state["item_summary"] == {"completed": 3, "failed": 0, "skipped": 0, "pending": 0}
+    assert [item["ticker"] for item in state["items"]] == ["000001", "000002", "000003"]
+    assert all(item["status"] == "completed" for item in state["items"])
+    persisted = json.loads((tmp_path / "state.json").read_text(encoding="utf-8"))
+    assert len(persisted["batches"][0]["item_groups"]) == 3
+
+
+def test_item_resume_skips_completed_symbol_inside_partial_batch(tmp_path, monkeypatch):
+    monkeypatch.setattr(batches, "REPORT_DIR", tmp_path / "reports")
+    monkeypatch.setattr(batches, "_load_batch_universe", lambda limit: _universe(3))
+    commands = []
+
+    def fake_run_with_retries(command, *, env, retries, timeout_sec):
+        commands.append(command)
+        return {"returncode": 0, "elapsed_sec": 0.01, "timeout": False, "output_tail": ["ok"], "attempts": []}
+
+    monkeypatch.setattr(batches, "_run_with_retries", fake_run_with_retries)
+    state_path = tmp_path / "state.json"
+    state_path.write_text(
+        json.dumps(
+            {
+                "run_id": "existing",
+                "batches": [
+                    {
+                        "batch_index": 0,
+                        "batch_number": 1,
+                        "status": "pending",
+                        "tickers": ["000001", "000002", "000003"],
+                    }
+                ],
+                "items": [
+                    {"ticker": "000001", "name": "Name 1", "batch_index": 0, "status": "completed"},
+                    {"ticker": "000002", "name": "Name 2", "batch_index": 0, "status": "completed"},
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    state = batches.run(_args(tmp_path, batch_size=3, max_batches=1, resume=True, item_batch_size=1))
+
+    assert [command[-2] for command in commands] == ["000003=Name 3"]
+    assert state["summary"] == {"completed": 1, "failed": 0, "skipped": 0, "pending": 0}
+    assert state["item_summary"] == {"completed": 3, "failed": 0, "skipped": 0, "pending": 0}
 
 
 def test_run_with_retries_records_attempt_accounting(monkeypatch):
@@ -194,3 +260,30 @@ def test_scan_exception_reason_marks_batch_failed(tmp_path, monkeypatch):
 
     assert state["batches"][0]["status"] == "failed"
     assert state["summary"] == {"completed": 0, "failed": 1, "skipped": 0, "pending": 0}
+    assert state["item_summary"] == {"completed": 0, "failed": 2, "skipped": 0, "pending": 0}
+    assert all(item["scan_exception_reasons"] == ["EXCEPTION:ValueError: 1"] for item in state["items"])
+
+
+def test_item_timeout_records_failed_symbol_tail(tmp_path, monkeypatch):
+    monkeypatch.setattr(batches, "REPORT_DIR", tmp_path / "reports")
+    monkeypatch.setattr(batches, "_load_batch_universe", lambda limit: _universe(2))
+
+    def fake_run_with_retries(command, *, env, retries, timeout_sec):
+        return {
+            "returncode": -9,
+            "elapsed_sec": 1.0,
+            "timeout": True,
+            "retry_count": 1,
+            "output_tail": ["still running", "killed"],
+            "attempts": [{"attempt": 1, "timeout": True}],
+        }
+
+    monkeypatch.setattr(batches, "_run_with_retries", fake_run_with_retries)
+
+    state = batches.run(_args(tmp_path, batch_size=2, max_batches=1, item_batch_size=1, batch_timeout_sec=2.5))
+
+    assert state["batches"][0]["status"] == "failed"
+    assert state["item_summary"] == {"completed": 0, "failed": 2, "skipped": 0, "pending": 0}
+    assert all(item["timeout"] is True for item in state["items"])
+    assert all(item["retry_count"] == 1 for item in state["items"])
+    assert state["items"][0]["output_tail"] == ["still running", "killed"]
