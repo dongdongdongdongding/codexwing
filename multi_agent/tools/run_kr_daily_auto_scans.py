@@ -19,7 +19,7 @@ import urllib.error
 import urllib.request
 from datetime import datetime, time, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Mapping
 from zoneinfo import ZoneInfo
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -297,6 +297,7 @@ async def main_async(*, phase: str = "confirmed", allow_before_confirm_window: b
                 "color": 0x3498DB,
                 "fields": [
                     {"name": "Targets", "value": ", ".join(f"{m}/{mode}" for m, mode in _scan_targets()), "inline": True},
+                    {"name": "Scan Engine", "value": _daily_scan_engine_label(), "inline": True},
                     {"name": "Admission Model", "value": "Scan Universe Admission + Near Miss", "inline": True},
                     {"name": "Timing Rule", "value": "08:20 prior / 09:30 이후 confirmed scan", "inline": False},
                     {"name": "Started", "value": started_at, "inline": False},
@@ -381,6 +382,77 @@ def _scan_targets() -> List[tuple[str, str]]:
     return targets or list(DEFAULT_SCAN_TARGETS)
 
 
+def _env_enabled(name: str, default: str = "0") -> bool:
+    return str(os.getenv(name, default) or "").strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def _daily_scan_engine() -> str:
+    raw = str(os.getenv("AG_KR_DAILY_SCAN_ENGINE", "kis_operational") or "").strip().lower()
+    if raw in {"kis", "kis_primary", "kis-primary", "kis_operational", "kis-operational"}:
+        return "kis_operational"
+    if raw in {"legacy", "legacy_operational", "legacy-operational", "classic"}:
+        return "legacy"
+    return raw or "kis_operational"
+
+
+def _daily_scan_engine_label() -> str:
+    engine = _daily_scan_engine()
+    if engine == "kis_operational":
+        fallback = "on" if _env_enabled("AG_KR_DAILY_LEGACY_FALLBACK", "1") else "off"
+        shadow = "on" if _env_enabled("AG_KR_DAILY_LEGACY_SHADOW", "0") else "off"
+        return f"KIS operational primary · legacy fallback {fallback} · shadow {shadow}"
+    if engine == "legacy":
+        return "Legacy operational scanner"
+    return f"Custom scanner engine: {engine}"
+
+
+def _kis_primary_env_overrides() -> Dict[str, Any]:
+    return {
+        "AG_KIS_OPERATIONAL_PREFILTER": "1",
+        "AG_KR_MARKET_DATA_PROVIDER": "kis_only",
+        "AG_ENABLE_KIS_MARKET_DATA": "1",
+        "AG_ENABLE_KIS_SIDECAR": "1",
+        "AG_KIS_OPERATIONAL_ENABLE_SIDECAR": "1",
+        "KIS_ENABLE_LIVE_CALLS": "1",
+    }
+
+
+def _legacy_scan_env_overrides() -> Dict[str, Any]:
+    legacy_provider = str(os.getenv("AG_KR_DAILY_LEGACY_MARKET_DATA_PROVIDER") or "").strip()
+    return {
+        "AG_KIS_OPERATIONAL_PREFILTER": "0",
+        "AG_KR_MARKET_DATA_PROVIDER": legacy_provider or None,
+        "AG_ENABLE_KIS_MARKET_DATA": None,
+        "AG_ENABLE_KIS_SIDECAR": None,
+        "AG_KIS_OPERATIONAL_ENABLE_SIDECAR": None,
+        "KIS_ENABLE_LIVE_CALLS": None,
+    }
+
+
+def _compact_scan_summary(summary: Mapping[str, Any]) -> Dict[str, Any]:
+    job = summary.get("discord_job") if isinstance(summary.get("discord_job"), dict) else {}
+    return {
+        "run_id": summary.get("run_id"),
+        "market": summary.get("market") or job.get("market"),
+        "scan_mode": summary.get("scan_mode") or job.get("scan_mode"),
+        "result_count": summary.get("result_count"),
+        "total_scans": summary.get("total_scans"),
+        "returncode": job.get("returncode"),
+        "log_path": job.get("log_path"),
+        "ok": _summary_ok(dict(summary)),
+        "error": summary.get("error") or summary.get("error_type"),
+        "warning_count": len(summary.get("warnings") or []) if isinstance(summary.get("warnings"), list) else 0,
+    }
+
+
+def _append_summary_warning(summary: Dict[str, Any], warning: Dict[str, Any]) -> None:
+    warnings = summary.get("warnings")
+    if not isinstance(warnings, list):
+        warnings = []
+    warnings.append(warning)
+    summary["warnings"] = warnings
+
+
 async def _run_market_scan(market: str, scan_mode: str = "SWING") -> Dict[str, Any]:
     job = create_scan_job(market, scan_mode=scan_mode)
     lock = DiscordScanLock()
@@ -400,7 +472,49 @@ async def _run_market_scan(market: str, scan_mode: str = "SWING") -> Dict[str, A
             },
         }
     try:
-        return await run_scan_job(job)
+        engine = _daily_scan_engine()
+        if engine == "kis_operational":
+            primary = await run_scan_job(job, env_overrides=_kis_primary_env_overrides())
+            primary["scan_engine"] = "kis_operational"
+            primary["legacy_fallback_enabled"] = _env_enabled("AG_KR_DAILY_LEGACY_FALLBACK", "1")
+            primary["legacy_shadow_enabled"] = _env_enabled("AG_KR_DAILY_LEGACY_SHADOW", "0")
+            if _summary_ok(primary):
+                if primary["legacy_shadow_enabled"]:
+                    shadow_job = create_scan_job(market, scan_mode=scan_mode)
+                    shadow = await run_scan_job(shadow_job, env_overrides=_legacy_scan_env_overrides())
+                    primary["legacy_shadow_summary"] = _compact_scan_summary(shadow)
+                    primary["legacy_shadow_ok"] = _summary_ok(shadow)
+                    if not primary["legacy_shadow_ok"]:
+                        _append_summary_warning(
+                            primary,
+                            {
+                                "code": "LEGACY_SHADOW_SCAN_DEGRADED",
+                                "message": "KIS primary succeeded but legacy shadow scan did not complete cleanly.",
+                                "shadow": primary["legacy_shadow_summary"],
+                            },
+                        )
+                return primary
+            if primary["legacy_fallback_enabled"]:
+                fallback_job = create_scan_job(market, scan_mode=scan_mode)
+                fallback = await run_scan_job(fallback_job, env_overrides=_legacy_scan_env_overrides())
+                fallback["scan_engine"] = "legacy_fallback"
+                fallback["fallback_used"] = True
+                fallback["primary_engine"] = "kis_operational"
+                fallback["primary_failed_summary"] = _compact_scan_summary(primary)
+                _append_summary_warning(
+                    fallback,
+                    {
+                        "code": "KIS_PRIMARY_FALLBACK_USED",
+                        "message": "KIS operational primary scan failed, so the legacy operational scanner was used for this target.",
+                        "primary": fallback["primary_failed_summary"],
+                    },
+                )
+                return fallback
+            return primary
+
+        summary = await run_scan_job(job, env_overrides=_legacy_scan_env_overrides())
+        summary["scan_engine"] = "legacy"
+        return summary
     finally:
         lock.release()
 

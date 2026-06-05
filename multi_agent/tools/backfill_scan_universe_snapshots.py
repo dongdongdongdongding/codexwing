@@ -34,6 +34,7 @@ DEFAULT_REPORT_JSON = PROJECT_ROOT / "runtime_state" / "reports" / "validation" 
 BACKFILL_VERSION = "scan_universe_snapshot_backfill_v2"
 TARGET_TABLE = "scan_universe_snapshots"
 KR_MARKETS = {"KOSPI", "KOSDAQ"}
+KIS_PREFILTER_FEATURE_VERSION = "kis_operational_prefilter_snapshot_v1"
 OUTCOME_COLUMNS = (
     "return_1d_pct",
     "return_3d_pct",
@@ -380,6 +381,41 @@ def _diagnostics(raw: Dict[str, Any]) -> Dict[str, Any]:
     return diagnostics if isinstance(diagnostics, dict) else {}
 
 
+def _kis_prefilter_index(summary: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    payload = summary.get("kis_operational_prefilter") if isinstance(summary.get("kis_operational_prefilter"), dict) else {}
+    selected = payload.get("selected") if isinstance(payload.get("selected"), list) else []
+    rejected = payload.get("rejected_sample") if isinstance(payload.get("rejected_sample"), list) else []
+    index: Dict[str, Dict[str, Any]] = {}
+    for row in list(selected) + list(rejected):
+        if not isinstance(row, dict):
+            continue
+        ticker = _ticker(row)
+        if not ticker:
+            continue
+        feature = _json_safe(dict(row))
+        feature["snapshot_feature_version"] = KIS_PREFILTER_FEATURE_VERSION
+        feature.setdefault("feature_origin", "kis_openapi_prefilter")
+        feature.setdefault("is_dummy_data", False)
+        index[ticker] = feature
+    return index
+
+
+def _feature_snapshot_with_kis_prefilter(source_row: Dict[str, Any], prefilter: Dict[str, Any] | None) -> Dict[str, Any]:
+    snapshot = _json_safe(source_row)
+    if not isinstance(snapshot, dict):
+        snapshot = {}
+    if prefilter:
+        snapshot["kis_operational_prefilter"] = _json_safe(prefilter)
+    return snapshot
+
+
+def _feature_origin_with_kis_prefilter(base: Any, prefilter: Dict[str, Any] | None, fallback: str) -> str:
+    origin = _text(base) or fallback
+    if prefilter and "kis_openapi_prefilter" not in origin:
+        return f"{origin}+kis_openapi_prefilter"
+    return origin
+
+
 def _total_scans(raw: Dict[str, Any], summary: Dict[str, Any], diagnostics: Dict[str, Any], result_count: int) -> int | None:
     scan_result = raw.get("scan_result") if isinstance(raw.get("scan_result"), dict) else {}
     for value in (scan_result.get("total_scans"), summary.get("total_scans")):
@@ -417,6 +453,7 @@ def build_snapshot_rows(
     run_count = 0
     pass_count = 0
     reject_count = 0
+    kis_prefilter_feature_rows = 0
     skipped_non_kr = 0
     skipped_mode = 0
 
@@ -454,6 +491,7 @@ def build_snapshot_rows(
         result_rows = _result_rows(raw)
         total_scans = _total_scans(raw, summary, diagnostics, len(result_rows))
         filtered_count = _safe_int(diagnostics.get("filtered_count"))
+        kis_prefilter_by_ticker = _kis_prefilter_index(summary)
         run_count += 1
 
         emitted_tickers = set()
@@ -462,7 +500,10 @@ def build_snapshot_rows(
             if not ticker:
                 continue
             emitted_tickers.add(ticker)
-            feature_snapshot = _json_safe(source_row)
+            kis_prefilter_feature = kis_prefilter_by_ticker.get(ticker)
+            if kis_prefilter_feature:
+                kis_prefilter_feature_rows += 1
+            feature_snapshot = _feature_snapshot_with_kis_prefilter(source_row, kis_prefilter_feature)
             priority_rank = _safe_int(_first_present(source_row, "priority_rank", "rank", "Rank")) or idx
             row = {
                 "snapshot_key": f"{run_id}:{ticker}",
@@ -483,7 +524,11 @@ def build_snapshot_rows(
                 "reject_reason_codes": [],
                 "reject_detail_history": [],
                 "feature_snapshot": feature_snapshot,
-                "feature_origin": _first_present(source_row, "feature_origin") or "raw_scan_results",
+                "feature_origin": _feature_origin_with_kis_prefilter(
+                    _first_present(source_row, "feature_origin"),
+                    kis_prefilter_feature,
+                    "raw_scan_results",
+                ),
                 "source_ref": _first_present(source_row, "source_ref") or f"artifact:{run_id}:{ticker}:emitted",
                 "total_scans": total_scans,
                 "filtered_count": filtered_count,
@@ -508,6 +553,9 @@ def build_snapshot_rows(
             else:
                 history = []
             terminal = history[-1] if history else {}
+            kis_prefilter_feature = kis_prefilter_by_ticker.get(ticker)
+            if kis_prefilter_feature:
+                kis_prefilter_feature_rows += 1
             reason_codes = _normalize_reason_codes(reasons_by_symbol.get(raw_ticker) or terminal.get("reason") or terminal.get("reject_reason"))
             reject_reason = "|".join(reason_codes) if reason_codes else _text(terminal.get("reason") or terminal.get("reject_reason")) or None
             row = {
@@ -528,8 +576,12 @@ def build_snapshot_rows(
                 "reject_reason": reject_reason,
                 "reject_reason_codes": reason_codes,
                 "reject_detail_history": _json_safe(history),
-                "feature_snapshot": _json_safe(terminal),
-                "feature_origin": "raw_reject_diagnostics",
+                "feature_snapshot": _feature_snapshot_with_kis_prefilter(terminal, kis_prefilter_feature),
+                "feature_origin": _feature_origin_with_kis_prefilter(
+                    terminal.get("feature_origin"),
+                    kis_prefilter_feature,
+                    "raw_reject_diagnostics",
+                ),
                 "source_ref": f"artifact:{run_id}:{ticker}:rejected",
                 "total_scans": total_scans,
                 "filtered_count": filtered_count,
@@ -554,6 +606,7 @@ def build_snapshot_rows(
         "rows_built": len(rows),
         "emitted_rows": pass_count,
         "rejected_rows": reject_count,
+        "kis_prefilter_feature_rows": kis_prefilter_feature_rows,
         "outcome_available_rows": sum(1 for row in rows if row.get("outcome_available")),
         "skipped_non_kr_or_market": skipped_non_kr,
         "skipped_scan_mode": skipped_mode,

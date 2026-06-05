@@ -1,5 +1,8 @@
+import asyncio
 import urllib.error
+from pathlib import Path
 
+from multi_agent.tools import run_kr_daily_auto_scans as daily_runner
 from multi_agent.tools.run_kr_daily_auto_scans import (
     DISCORD_MAX_CONTENT_CHARS,
     DISCORD_SAFE_MESSAGE_CHARS,
@@ -9,6 +12,9 @@ from multi_agent.tools.run_kr_daily_auto_scans import (
     _discord_retry_after,
     _discord_embed_char_count,
     _embed_to_content_chunks,
+    _daily_scan_engine,
+    _kis_primary_env_overrides,
+    _legacy_scan_env_overrides,
     _markdown_validation_excerpt,
     _parse_last_json_line,
     _prepare_embeds_for_discord,
@@ -108,6 +114,83 @@ def test_daily_auto_scan_targets_can_be_overridden(monkeypatch):
     monkeypatch.setenv("AG_KR_DAILY_SCAN_TARGETS", "KOSPI:SWING,KOSDAQ/SWING,KOSPI:SWING,bad")
 
     assert _scan_targets() == [("KOSPI", "SWING"), ("KOSDAQ", "SWING")]
+
+
+def test_daily_auto_scan_defaults_to_kis_primary_with_legacy_fallback(monkeypatch):
+    monkeypatch.delenv("AG_KR_DAILY_SCAN_ENGINE", raising=False)
+    monkeypatch.delenv("AG_KR_DAILY_LEGACY_MARKET_DATA_PROVIDER", raising=False)
+
+    kis_env = _kis_primary_env_overrides()
+    legacy_env = _legacy_scan_env_overrides()
+
+    assert _daily_scan_engine() == "kis_operational"
+    assert kis_env["AG_KIS_OPERATIONAL_PREFILTER"] == "1"
+    assert kis_env["AG_KR_MARKET_DATA_PROVIDER"] == "kis_only"
+    assert kis_env["AG_ENABLE_KIS_SIDECAR"] == "1"
+    assert legacy_env["AG_KIS_OPERATIONAL_PREFILTER"] == "0"
+    assert legacy_env["AG_KR_MARKET_DATA_PROVIDER"] is None
+
+
+def test_daily_auto_scan_falls_back_to_legacy_when_kis_primary_fails(monkeypatch, tmp_path):
+    from modules.discord_integration.scan_executor import DiscordScanJob
+
+    class FakeLock:
+        def try_acquire(self, *, job_id, market, scan_mode="SWING"):
+            return True
+
+        def release(self):
+            return None
+
+    created = {"count": 0}
+    calls = []
+
+    def fake_create_scan_job(market, scan_mode="SWING"):
+        created["count"] += 1
+        return DiscordScanJob(
+            job_id=f"DS-{created['count']}",
+            market=market,
+            scan_mode=scan_mode,
+            log_path=Path(tmp_path) / f"DS-{created['count']}.log",
+            started_at="2026-06-05T00:00:00+00:00",
+        )
+
+    async def fake_run_scan_job(job, *, env_overrides=None):
+        calls.append((job, dict(env_overrides or {})))
+        if len(calls) == 1:
+            return {
+                "market": job.market,
+                "scan_mode": job.scan_mode,
+                "discord_job": {"job_id": job.job_id, "returncode": 1, "log_path": str(job.log_path)},
+                "error": "kis failure",
+            }
+        return {
+            "run_id": "RUN-LEGACY",
+            "market": job.market,
+            "scan_mode": job.scan_mode,
+            "result_count": 3,
+            "total_scans": 2000,
+            "discord_job": {"job_id": job.job_id, "returncode": 0, "log_path": str(job.log_path)},
+        }
+
+    monkeypatch.setenv("AG_KR_DAILY_SCAN_ENGINE", "kis_operational")
+    monkeypatch.setenv("AG_KR_DAILY_LEGACY_FALLBACK", "1")
+    monkeypatch.setenv("AG_KR_DAILY_LEGACY_SHADOW", "0")
+    monkeypatch.setattr(daily_runner, "DiscordScanLock", FakeLock)
+    monkeypatch.setattr(daily_runner, "create_scan_job", fake_create_scan_job)
+    monkeypatch.setattr(daily_runner, "run_scan_job", fake_run_scan_job)
+
+    summary = asyncio.run(daily_runner._run_market_scan("KOSPI", "SWING"))
+
+    assert len(calls) == 2
+    assert calls[0][1]["AG_KIS_OPERATIONAL_PREFILTER"] == "1"
+    assert calls[0][1]["AG_KR_MARKET_DATA_PROVIDER"] == "kis_only"
+    assert calls[1][1]["AG_KIS_OPERATIONAL_PREFILTER"] == "0"
+    assert calls[1][1]["AG_KR_MARKET_DATA_PROVIDER"] is None
+    assert summary["run_id"] == "RUN-LEGACY"
+    assert summary["scan_engine"] == "legacy_fallback"
+    assert summary["fallback_used"] is True
+    assert summary["primary_failed_summary"]["returncode"] == 1
+    assert summary["warnings"][0]["code"] == "KIS_PRIMARY_FALLBACK_USED"
 
 
 def test_post_scan_validation_json_parser_reads_last_json_line():

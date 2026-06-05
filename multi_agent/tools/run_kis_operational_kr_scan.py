@@ -211,6 +211,279 @@ def _write_summary(summary: Mapping[str, Any]) -> Dict[str, str]:
     return artifacts
 
 
+def _env_enabled(name: str, default: str = "1") -> bool:
+    return str(os.getenv(name, default) or "").strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _compact_prefilter_candidate(row: Mapping[str, Any]) -> Dict[str, Any]:
+    quote = row.get("quote") if isinstance(row.get("quote"), Mapping) else {}
+    flow = row.get("flow") if isinstance(row.get("flow"), Mapping) else {}
+
+    quote_fields: Dict[str, Any] = {}
+    for key in (
+        "source_status",
+        "current_price",
+        "day_change_pct",
+        "value_traded",
+        "volume",
+        "prev_volume_ratio",
+        "market_cap",
+        "per",
+        "pbr",
+        "status_warning",
+    ):
+        value = row.get(key)
+        if value is None:
+            value = quote.get(key)
+        if value not in (None, ""):
+            quote_fields[key] = value
+
+    flow_fields: Dict[str, Any] = {}
+    for key in (
+        "flow_source",
+        "source_status",
+        "valid",
+        "flow_unit",
+        "whale_score",
+        "foreigner_1d",
+        "institution_1d",
+        "retail_1d",
+        "foreigner_3d",
+        "institution_3d",
+        "retail_3d",
+        "foreigner_10d",
+        "institution_10d",
+        "retail_10d",
+    ):
+        value = flow.get(key)
+        if value not in (None, ""):
+            flow_fields[key] = value
+
+    payload = {
+        "feature_origin": "kis_openapi_prefilter",
+        "is_dummy_data": False,
+        "market": row.get("market"),
+        "ticker": row.get("ticker"),
+        "code": row.get("code"),
+        "name": row.get("name"),
+        "sources": list(row.get("sources") or []) if isinstance(row.get("sources"), list) else [],
+        "rank": dict(row.get("rank") or {}) if isinstance(row.get("rank"), Mapping) else {},
+        "selection_score": row.get("selection_score"),
+        "score_components": dict(row.get("score_components") or {}) if isinstance(row.get("score_components"), Mapping) else {},
+        "vi_triggered": bool(row.get("vi_triggered")),
+        "quote_ok": bool(row.get("quote_ok")),
+        "flow_ok": bool(row.get("flow_ok")),
+        "quote": quote_fields,
+        "flow": flow_fields,
+        "warnings": list(row.get("warnings") or []) if isinstance(row.get("warnings"), list) else [],
+    }
+    if row.get("reject_reason"):
+        payload["reject_reason"] = row.get("reject_reason")
+    return payload
+
+
+def _prefilter_market_payload(prefilter: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    markets = prefilter.get("markets") if isinstance(prefilter.get("markets"), Mapping) else {}
+    market_payload = markets.get(str(market or "").upper()) if isinstance(markets, Mapping) else {}
+    market_payload = market_payload if isinstance(market_payload, Mapping) else {}
+    selected = market_payload.get("selected") if isinstance(market_payload.get("selected"), list) else []
+    rejected = market_payload.get("rejected_sample") if isinstance(market_payload.get("rejected_sample"), list) else []
+    return {
+        "tool": "kis_operational_prefilter",
+        "contract_version": prefilter.get("contract_version"),
+        "generated_at": prefilter.get("generated_at"),
+        "market": str(market or "").upper(),
+        "kis_only": True,
+        "is_dummy_data": False,
+        "artifacts": prefilter.get("artifacts") if isinstance(prefilter.get("artifacts"), Mapping) else {},
+        "summary": {
+            "seed_count": market_payload.get("seed_count"),
+            "vi_seed_count": market_payload.get("vi_seed_count"),
+            "quote_fetch_count": market_payload.get("quote_fetch_count"),
+            "flow_fetch_count": market_payload.get("flow_fetch_count"),
+            "selected_count": market_payload.get("selected_count"),
+            "rejected_count": market_payload.get("rejected_count"),
+        },
+        "endpoint_summary": market_payload.get("endpoint_summary") or [],
+        "selected_tickers": market_payload.get("selected_tickers") or [],
+        "selected": [_compact_prefilter_candidate(row) for row in selected if isinstance(row, Mapping)],
+        "rejected_sample": [_compact_prefilter_candidate(row) for row in rejected if isinstance(row, Mapping)],
+        "warnings": list(prefilter.get("warnings") or []) if isinstance(prefilter.get("warnings"), list) else [],
+    }
+
+
+def _pipeline_summary_path(summary: Mapping[str, Any]) -> Path | None:
+    raw_path = summary.get("scan_pipeline_summary")
+    if raw_path:
+        return Path(str(raw_path))
+    artifact_dir = summary.get("artifact_dir")
+    if artifact_dir:
+        return Path(str(artifact_dir)) / "scan_pipeline_summary.json"
+    return None
+
+
+def _write_pipeline_summary_with_prefilter(summary: Dict[str, Any], prefilter_payload: Mapping[str, Any]) -> Path | None:
+    summary["kis_operational_prefilter"] = dict(prefilter_payload)
+    summary.setdefault("persistence_contract", {})
+    if isinstance(summary.get("persistence_contract"), dict):
+        summary["persistence_contract"]["kis_operational_prefilter"] = True
+    path = _pipeline_summary_path(summary)
+    if path is None:
+        return None
+    payload = dict(summary)
+    if path.exists():
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(existing, dict):
+                existing.update(payload)
+                payload = existing
+        except Exception:
+            pass
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
+    return path
+
+
+def _refresh_scan_universe_snapshot_with_prefilter(
+    *,
+    run_id: str,
+    market: str,
+    scan_mode: str,
+    summary: Mapping[str, Any],
+) -> Dict[str, Any]:
+    if not _env_enabled("AG_SCAN_UNIVERSE_SNAPSHOT_WRITE_DB", "1"):
+        return {"ok": True, "enabled": False, "reason": "disabled_by_env", "rows_built": 0, "rows_upserted": 0}
+    artifact_dir_raw = str(summary.get("artifact_dir") or "").strip()
+    if not artifact_dir_raw:
+        return {"ok": False, "enabled": True, "reason": "artifact_dir_missing", "rows_built": 0, "rows_upserted": 0}
+    artifact_dir = Path(artifact_dir_raw)
+    try:
+        from multi_agent.tools.backfill_scan_universe_snapshots import (
+            DEFAULT_REJECT_OUTCOME_CSV,
+            build_snapshot_rows,
+            upsert_supabase,
+        )
+
+        reject_outcome_csv = Path(os.getenv("AG_REJECT_OUTCOME_CSV") or DEFAULT_REJECT_OUTCOME_CSV)
+        limit_runs = max(1, int(os.getenv("AG_KIS_PREFILTER_SNAPSHOT_REFRESH_LIMIT_RUNS", "8")))
+        rows, builder_summary = build_snapshot_rows(
+            artifact_dir=artifact_dir.parent,
+            shared_dir=PROJECT_ROOT / "runtime_state" / "shared_working",
+            reject_outcome_csv=reject_outcome_csv,
+            limit_runs=limit_runs,
+            market_filter=str(market or "").upper(),
+            scan_mode_filter=str(scan_mode or "SWING").upper(),
+        )
+        run_rows = [row for row in rows if str(row.get("run_id") or "") == str(run_id)]
+        if not run_rows:
+            return {
+                "ok": False,
+                "enabled": True,
+                "reason": "no_run_rows_built",
+                "rows_built": 0,
+                "rows_upserted": 0,
+                "builder_summary": builder_summary,
+            }
+        batch_size = max(1, int(os.getenv("AG_SCAN_UNIVERSE_SNAPSHOT_BATCH_SIZE", "500")))
+        rows_upserted = upsert_supabase(run_rows, batch_size=batch_size)
+        return {
+            "ok": rows_upserted == len(run_rows),
+            "enabled": True,
+            "rows_built": len(run_rows),
+            "rows_upserted": rows_upserted,
+            "target_table": "scan_universe_snapshots",
+            "builder_version": builder_summary.get("version"),
+            "kis_prefilter_feature_rows": sum(
+                1
+                for row in run_rows
+                if isinstance(row.get("feature_snapshot"), dict)
+                and isinstance(row["feature_snapshot"].get("kis_operational_prefilter"), dict)
+            ),
+        }
+    except BaseException as exc:
+        return {
+            "ok": False,
+            "enabled": True,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "rows_built": 0,
+            "rows_upserted": 0,
+            "target_table": "scan_universe_snapshots",
+        }
+
+
+def _persist_prefilter_artifact_for_run(
+    *,
+    summary: Dict[str, Any],
+    market: str,
+    scan_mode: str,
+    prefilter_payload: Mapping[str, Any],
+) -> Dict[str, Any]:
+    run_id = str(summary.get("run_id") or "").strip()
+    if not run_id:
+        return {"ok": False, "enabled": True, "error": "run_id_missing"}
+    summary_path = _write_pipeline_summary_with_prefilter(summary, prefilter_payload)
+    summary_runtime_result: Dict[str, Any] = {"ok": False, "enabled": True, "rows_upserted": 0, "reason": "not_attempted"}
+    try:
+        from modules.runtime_artifact_store import upsert_runtime_artifact_payload
+
+        runtime_result = upsert_runtime_artifact_payload(
+            run_id=run_id,
+            artifact_key="kis_operational_prefilter",
+            payload=dict(prefilter_payload),
+            market=market,
+            scan_mode=scan_mode,
+            source="kis_operational_prefilter",
+            source_path=str((prefilter_payload.get("artifacts") or {}).get("json") or ""),
+            metadata={
+                "summary_path": str(summary_path) if summary_path else "",
+                "feature_contract": "feature_snapshot.kis_operational_prefilter",
+            },
+        )
+        summary["kis_prefilter_runtime_artifact"] = runtime_result
+    except Exception as exc:
+        runtime_result = {"ok": False, "enabled": True, "rows_upserted": 0, "artifact_key": "kis_operational_prefilter", "error": str(exc)}
+        summary["kis_prefilter_runtime_artifact"] = runtime_result
+    snapshot_result = _refresh_scan_universe_snapshot_with_prefilter(
+        run_id=run_id,
+        market=market,
+        scan_mode=scan_mode,
+        summary=summary,
+    )
+    summary["kis_prefilter_scan_universe_snapshot"] = snapshot_result
+    summary_path = _write_pipeline_summary_with_prefilter(summary, prefilter_payload)
+    try:
+        from modules.runtime_artifact_store import upsert_runtime_artifact_payload
+
+        summary_runtime_result = upsert_runtime_artifact_payload(
+            run_id=run_id,
+            artifact_key="scan_pipeline_summary",
+            payload=summary,
+            market=market,
+            scan_mode=scan_mode,
+            source="kis_operational_prefilter",
+            source_path=str(summary_path) if summary_path else "",
+            metadata={
+                "summary_path": str(summary_path) if summary_path else "",
+                "feature_contract": "feature_snapshot.kis_operational_prefilter",
+                "refreshed_after_kis_prefilter": True,
+            },
+        )
+    except Exception as exc:
+        summary_runtime_result = {"ok": False, "enabled": True, "rows_upserted": 0, "artifact_key": "scan_pipeline_summary", "error": str(exc)}
+    summary["kis_prefilter_scan_pipeline_summary_artifact"] = summary_runtime_result
+    _write_pipeline_summary_with_prefilter(summary, prefilter_payload)
+    return {
+        "ok": bool(runtime_result.get("ok") or runtime_result.get("enabled") is False)
+        and bool(snapshot_result.get("ok") or snapshot_result.get("enabled") is False)
+        and bool(summary_runtime_result.get("ok") or summary_runtime_result.get("enabled") is False),
+        "runtime_artifact": runtime_result,
+        "scan_pipeline_summary_artifact": summary_runtime_result,
+        "scan_universe_snapshot": snapshot_result,
+        "summary_path": str(summary_path) if summary_path else None,
+    }
+
+
 def run(args: argparse.Namespace) -> Dict[str, Any]:
     load_dotenv()
     load_dotenv(PROJECT_ROOT / ".env.local")
@@ -252,12 +525,20 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         tickers_with_names = selected_ticker_arg(prefilter, market)
         tickers = selected_ticker_symbols(prefilter, market)
         selected_count = len([item for item in tickers.split(",") if item.strip()])
+        prefilter_market_payload = _prefilter_market_payload(prefilter, market)
         item: Dict[str, Any] = {
             "market": market,
             "selected_count": selected_count,
             "tickers": tickers,
             "tickers_with_names": tickers_with_names,
             "dry_run": bool(args.dry_run),
+            "kis_prefilter": {
+                "artifact_key": "kis_operational_prefilter",
+                "contract_version": prefilter_market_payload.get("contract_version"),
+                "selected_count": selected_count,
+                "selected_tickers": prefilter_market_payload.get("selected_tickers") or [],
+                "feature_contract": "feature_snapshot.kis_operational_prefilter",
+            },
         }
         if selected_count <= 0:
             item["ok"] = bool(args.allow_empty_prefilter)
@@ -276,6 +557,13 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
                 result["summary"] = _load_recent_pipeline_summary(
                     market=market,
                     started_epoch=float(result.get("started_epoch") or 0.0),
+                )
+            if isinstance(result.get("summary"), dict) and result["summary"].get("run_id"):
+                result["kis_prefilter_persistence"] = _persist_prefilter_artifact_for_run(
+                    summary=result["summary"],
+                    market=market,
+                    scan_mode=str(args.scan_mode).upper(),
+                    prefilter_payload=prefilter_market_payload,
                 )
             item.update(result)
             item["ok"] = int(result.get("returncode") or 0) == 0 and not result.get("timeout")

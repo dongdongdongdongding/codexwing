@@ -8,7 +8,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Mapping
 from uuid import uuid4
 
 from .commands import FULL_KR_SCAN_MAX
@@ -123,15 +123,21 @@ def create_scan_job(market: str, scan_mode: str = "SWING") -> DiscordScanJob:
     )
 
 
-def _env_int(name: str, default: int) -> int:
+def _env_int(name: str, default: int, *, env: Mapping[str, Any] | None = None) -> int:
+    source = env if env is not None else os.environ
     try:
-        return int(os.getenv(name, str(default)) or default)
+        return int(source.get(name, str(default)) or default)
     except Exception:
         return int(default)
 
 
-def build_scan_command(job: DiscordScanJob) -> List[str]:
-    if str(os.getenv("AG_KIS_OPERATIONAL_PREFILTER") or "").strip().lower() in {"1", "true", "yes", "on", "y"}:
+def _env_enabled(name: str, *, env: Mapping[str, Any] | None = None, default: str = "0") -> bool:
+    source = env if env is not None else os.environ
+    return str(source.get(name, default) or "").strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def build_scan_command(job: DiscordScanJob, *, env: Mapping[str, Any] | None = None) -> List[str]:
+    if _env_enabled("AG_KIS_OPERATIONAL_PREFILTER", env=env):
         return [
             sys.executable,
             "-m",
@@ -143,13 +149,13 @@ def build_scan_command(job: DiscordScanJob) -> List[str]:
             "--profile",
             "prod",
             "--max-candidates-per-market",
-            str(_env_int("AG_KIS_PREFILTER_MAX_CANDIDATES", 80)),
+            str(_env_int("AG_KIS_PREFILTER_MAX_CANDIDATES", 80, env=env)),
             "--rank-limit-per-source",
-            str(_env_int("AG_KIS_PREFILTER_RANK_LIMIT", 80)),
+            str(_env_int("AG_KIS_PREFILTER_RANK_LIMIT", 80, env=env)),
             "--workers",
-            str(_env_int("AG_KIS_OPERATIONAL_SCAN_WORKERS", 4)),
+            str(_env_int("AG_KIS_OPERATIONAL_SCAN_WORKERS", 4, env=env)),
             "--max-retries",
-            str(_env_int("AG_KIS_OPERATIONAL_SCAN_RETRIES", 1)),
+            str(_env_int("AG_KIS_OPERATIONAL_SCAN_RETRIES", 1, env=env)),
             "--allow-live-network",
         ]
     return [
@@ -177,14 +183,19 @@ def build_scan_command(job: DiscordScanJob) -> List[str]:
     ]
 
 
-async def run_scan_job(job: DiscordScanJob) -> Dict[str, Any]:
-    return await asyncio.to_thread(_run_scan_job_sync, job)
+async def run_scan_job(job: DiscordScanJob, *, env_overrides: Mapping[str, Any] | None = None) -> Dict[str, Any]:
+    return await asyncio.to_thread(_run_scan_job_sync, job, env_overrides)
 
 
-def _run_scan_job_sync(job: DiscordScanJob) -> Dict[str, Any]:
+def _run_scan_job_sync(job: DiscordScanJob, env_overrides: Mapping[str, Any] | None = None) -> Dict[str, Any]:
     env = dict(os.environ)
+    for key, value in (env_overrides or {}).items():
+        if value is None:
+            env.pop(str(key), None)
+        else:
+            env[str(key)] = str(value)
     env.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
-    cmd = build_scan_command(job)
+    cmd = build_scan_command(job, env=env)
     with job.log_path.open("w", encoding="utf-8") as log:
         log.write(f"[{job.started_at}] Starting Discord scan job {job.job_id} {job.market}\n")
         log.write("Command: " + " ".join(cmd) + "\n\n")

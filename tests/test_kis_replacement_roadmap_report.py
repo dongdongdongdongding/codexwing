@@ -28,7 +28,9 @@ def test_replacement_roadmap_report_uses_prior_readiness_and_contract(tmp_path):
 
     assert report["summary"]["prior_readiness_verdict"] == "prior verdict"
     assert report["summary"]["endpoint_ok_count"] == 17
-    assert report["implemented_now"]["production_default_changed"] is False
+    assert report["implemented_now"]["production_default_changed"] is True
+    assert report["implemented_now"]["daily_scan_engine_default"] == "AG_KR_DAILY_SCAN_ENGINE=kis_operational"
+    assert report["implemented_now"]["legacy_fallback_preserved"] is True
     assert report["replacement_gates"][0]["current_status"] == "implemented_and_unit_tested"
     assert report["roadmap"]["phases"][0]["name"] == "contract_adapter"
 

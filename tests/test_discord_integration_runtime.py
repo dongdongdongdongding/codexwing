@@ -485,6 +485,30 @@ def test_scan_executor_command_can_use_kis_operational_prefilter(monkeypatch, tm
     assert "--allow-live-network" in cmd
 
 
+def test_scan_executor_command_can_use_explicit_env_without_global_toggle(monkeypatch, tmp_path):
+    from modules.discord_integration import scan_executor
+
+    monkeypatch.delenv("AG_KIS_OPERATIONAL_PREFILTER", raising=False)
+    monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
+    job = create_scan_job("KOSPI", scan_mode="INTRADAY")
+    cmd = build_scan_command(
+        job,
+        env={
+            "AG_KIS_OPERATIONAL_PREFILTER": "1",
+            "AG_KIS_PREFILTER_MAX_CANDIDATES": "42",
+            "AG_KIS_PREFILTER_RANK_LIMIT": "43",
+            "AG_KIS_OPERATIONAL_SCAN_WORKERS": "2",
+        },
+    )
+
+    assert "multi_agent.tools.run_kis_operational_kr_scan" in cmd
+    assert cmd[cmd.index("--market") + 1] == "KOSPI"
+    assert cmd[cmd.index("--scan-mode") + 1] == "INTRADAY"
+    assert cmd[cmd.index("--max-candidates-per-market") + 1] == "42"
+    assert cmd[cmd.index("--rank-limit-per-source") + 1] == "43"
+    assert cmd[cmd.index("--workers") + 1] == "2"
+
+
 def test_scan_executor_command_supports_intraday_observation_mode(monkeypatch, tmp_path):
     from modules.discord_integration import scan_executor
 
