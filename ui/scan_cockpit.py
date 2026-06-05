@@ -144,8 +144,21 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "í‘
         with st.container(border=True):
             cols = st.columns([1.2, 2.05, 0.85, 0.85, 0.85], vertical_alignment="center")
             with cols[0]:
-                section = str(row.get("analysis_section") or "").strip()
-                section_rank = row.get("analysis_section_rank") or row.get("rank") or "-"
+                alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+                display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
+                section = str(
+                    row.get("analysis_section")
+                    or alignment.get("analysis_section")
+                    or display_contract.get("analysis_section")
+                    or ""
+                ).strip()
+                section_rank = (
+                    row.get("analysis_section_rank")
+                    or alignment.get("analysis_section_rank")
+                    or display_contract.get("analysis_section_rank")
+                    or row.get("rank")
+                    or "-"
+                )
                 st.caption(f"#{section_rank}" + (f" Â· {section}" if section else ""))
                 st.markdown(f"**{ticker or '-'}**")
                 st.caption(name or subtitle)

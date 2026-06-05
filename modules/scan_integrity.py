@@ -87,6 +87,7 @@ COMMON_FIELD_ALIASES: Dict[str, Tuple[str, ...]] = {
     "theme_risk": ("theme_risk",),
     "source_ref": ("source_ref",),
     "feature_origin": ("feature_origin",),
+    "analysis_section": ("analysis_section", "_analysis_section", "section"),
 }
 
 CORE_REQUIRED_FIELDS = (
@@ -122,6 +123,8 @@ KR_REQUIRED_FIELDS = CORE_REQUIRED_FIELDS + (
     "retail_10d",
     "flow_asof",
 )
+
+TOP_DEEP_ONLY_NOT_APPLICABLE_FIELDS = frozenset({"alpha_score", "tech_score"})
 
 US_REQUIRED_FIELDS = CORE_REQUIRED_FIELDS + (
     "phase25_variant",
@@ -332,9 +335,16 @@ def _canonical_snapshot(
                 _nested(row, "scan_universe_admission", "probability_pct"),
                 row.get("accuracy"),
             ),
+            "ml_prob": (
+                row.get("ml_prob"),
+                row.get("prob_clean"),
+                _nested(row, "scan_universe_admission", "probability_pct"),
+                _nested(row, "prediction", "realized_expectancy_5d_prob"),
+            ),
             "day_return_pct": (
                 row.get("day_return_pct"),
                 row.get("day_change_pct"),
+                _nested(row, "price", "day_change_pct"),
                 _nested(row, "scan_universe_admission", "feature_values", "day_return_pct"),
             ),
             "entry_reference_price": (
@@ -362,8 +372,49 @@ def _canonical_snapshot(
             ),
             "theme_routing_path": (
                 row.get("theme_routing_path"),
+                _nested(row, "theme", "theme_routing_path"),
                 _nested(row, "selection_alignment", "source_order"),
                 "top_deep_report",
+            ),
+            "loss_risk_score": (
+                row.get("loss_risk_score"),
+                _nested(row, "risk_management", "loss_risk_score"),
+                _nested(row, "trade_plan", "risk_management", "loss_risk_score"),
+                _nested(row, "entry_action", "risk_management", "loss_risk_score"),
+            ),
+            "volume_ratio": (
+                row.get("volume_ratio"),
+                row.get("volume_ratio_20d"),
+                _nested(row, "price", "volume_ratio_20d"),
+            ),
+            "trend": (
+                row.get("trend"),
+                row.get("real_trend"),
+                _nested(row, "price", "trend"),
+            ),
+            "whale_score": (
+                row.get("whale_score"),
+                _nested(row, "flow", "whale_score"),
+            ),
+            "primary_theme": (
+                row.get("primary_theme"),
+                _nested(row, "theme", "primary_theme"),
+            ),
+            "foreigner_1d": (row.get("foreigner_1d"), _nested(row, "flow", "foreigner_1d")),
+            "institution_1d": (row.get("institution_1d"), _nested(row, "flow", "institution_1d")),
+            "retail_1d": (row.get("retail_1d"), _nested(row, "flow", "retail_1d")),
+            "foreigner_3d": (row.get("foreigner_3d"), _nested(row, "flow", "foreigner_3d")),
+            "institution_3d": (row.get("institution_3d"), _nested(row, "flow", "institution_3d")),
+            "retail_3d": (row.get("retail_3d"), _nested(row, "flow", "retail_3d")),
+            "foreigner_10d": (row.get("foreigner_10d"), _nested(row, "flow", "foreigner_10d")),
+            "institution_10d": (row.get("institution_10d"), _nested(row, "flow", "institution_10d")),
+            "retail_10d": (row.get("retail_10d"), _nested(row, "flow", "retail_10d")),
+            "flow_asof": (row.get("flow_asof"), _nested(row, "flow", "flow_asof")),
+            "analysis_section": (
+                row.get("analysis_section"),
+                row.get("_analysis_section"),
+                _nested(row, "selection_alignment", "analysis_section"),
+                _nested(row, "display_contract", "analysis_section"),
             ),
         }
         for field, values in fallbacks.items():
@@ -373,6 +424,24 @@ def _canonical_snapshot(
             if not _is_missing(value):
                 factors[field] = _json_safe(value)
                 field_sources[field] = "top_deep_report"
+
+    section = str(
+        factors.get("analysis_section")
+        or _nested(row, "selection_alignment", "analysis_section")
+        or row.get("_analysis_section")
+        or ""
+    ).strip()
+    if section:
+        factors["analysis_section"] = section
+        field_sources.setdefault("analysis_section", "top_deep_report")
+    if section == "Exception Leader":
+        factors["decision"] = "EXCEPTION_LEADER"
+        factors["decision_bucket"] = "exception_leader"
+        field_sources.setdefault("decision", "top_deep_report")
+        field_sources.setdefault("decision_bucket", "top_deep_report")
+    elif section == "Admission Near Miss" and _is_missing(factors.get("decision_bucket")):
+        factors["decision_bucket"] = "admission_near_miss"
+        field_sources["decision_bucket"] = "top_deep_report"
 
     ticker = str(factors.get("ticker") or _ticker(row) or _ticker(planner)).strip().upper()
     rank = _safe_int(factors.get("priority_rank")) or raw_rank
@@ -447,14 +516,13 @@ def build_observed_factor_snapshots(
             seen.add(snapshot["ticker"])
             snapshots.append(snapshot)
 
-    for ticker, planner in planner_by_ticker.items():
+    for ticker, top_deep_row in top_deep_by_ticker.items():
         if ticker in seen:
             continue
-        source = str(planner.get("_planner_source") or "planner")
-        top_deep_row = top_deep_by_ticker.get(ticker, {})
-        sources = [source]
-        if top_deep_row:
-            sources.append("top_deep_report")
+        planner = planner_by_ticker.get(ticker, {})
+        sources = ["top_deep_report"]
+        if planner:
+            sources.append(str(planner.get("_planner_source") or "planner"))
         snapshot = _canonical_snapshot(
             row=top_deep_row,
             planner_row=planner,
@@ -462,8 +530,29 @@ def build_observed_factor_snapshots(
             market=market,
             scan_mode=scan_mode,
             created_at=created_at,
-            raw_rank=None,
+            raw_rank=_safe_int(top_deep_row.get("rank")),
             source_sections=sources,
+        )
+        if snapshot["ticker"]:
+            seen.add(snapshot["ticker"])
+            snapshots.append(snapshot)
+
+    if top_deep_by_ticker:
+        return snapshots
+
+    for ticker, planner in planner_by_ticker.items():
+        if ticker in seen:
+            continue
+        source = str(planner.get("_planner_source") or "planner")
+        snapshot = _canonical_snapshot(
+            row={},
+            planner_row=planner,
+            run_id=run_id,
+            market=market,
+            scan_mode=scan_mode,
+            created_at=created_at,
+            raw_rank=None,
+            source_sections=[source],
         )
         if snapshot["ticker"]:
             snapshots.append(snapshot)
@@ -487,26 +576,45 @@ def build_scan_integrity_report(
     diagnostics = diagnostics if isinstance(diagnostics, dict) else {}
     top_deep_reports = top_deep_reports if isinstance(top_deep_reports, dict) else {}
     field_missing_counts = {field: 0 for field in required_fields}
+    field_not_applicable_counts = {field: 0 for field in required_fields}
     missing_by_ticker: Dict[str, List[str]] = {}
     picked = 0
     exception = 0
     raw_present = 0
     planner_only = 0
+    section_counts: Dict[str, int] = {}
+    total_required_values = 0
 
     for snapshot in snapshots or []:
         factors = snapshot.get("factors") if isinstance(snapshot.get("factors"), dict) else {}
         ticker = str(snapshot.get("ticker") or "").strip()
-        missing: List[str] = []
+        source_sections = snapshot.get("source_sections") if isinstance(snapshot.get("source_sections"), list) else []
+        is_top_deep_only = "top_deep_report" in source_sections and not bool(snapshot.get("raw_scan_present"))
+        required_for_snapshot = [
+            field
+            for field in required_fields
+            if not (is_top_deep_only and field in TOP_DEEP_ONLY_NOT_APPLICABLE_FIELDS)
+        ]
         for field in required_fields:
+            if field not in required_for_snapshot:
+                field_not_applicable_counts[field] += 1
+        total_required_values += len(required_for_snapshot)
+        missing: List[str] = []
+        for field in required_for_snapshot:
             if _is_missing(factors.get(field)):
                 field_missing_counts[field] += 1
                 missing.append(field)
         if ticker and missing:
             missing_by_ticker[ticker] = missing
         bucket = str(snapshot.get("decision_bucket") or factors.get("decision_bucket") or "").lower()
-        if bucket == "exception_leader":
+        section = str(factors.get("analysis_section") or "").strip()
+        section_key = section or ("Exception Leader" if bucket == "exception_leader" else "Top5" if bucket == "picked" else "UNSPECIFIED")
+        section_counts[section_key] = int(section_counts.get(section_key, 0) or 0) + 1
+        if bucket == "exception_leader" or section == "Exception Leader":
             exception += 1
-        elif bucket == "picked" or snapshot.get("priority_rank"):
+        elif section and section not in {"Top5", "Scan Universe Admission"}:
+            pass
+        elif bucket in {"picked", "admission_pass"} or snapshot.get("priority_rank"):
             picked += 1
         if snapshot.get("raw_scan_present"):
             raw_present += 1
@@ -514,7 +622,7 @@ def build_scan_integrity_report(
             planner_only += 1
 
     total_snapshots = len(snapshots or [])
-    total_required_values = max(1, total_snapshots * len(required_fields))
+    total_required_values = max(1, total_required_values)
     missing_total = sum(field_missing_counts.values())
     completeness = 1.0 - (missing_total / total_required_values)
     quality_flags: List[str] = []
@@ -553,10 +661,12 @@ def build_scan_integrity_report(
         "executor_exception_count": int(diagnostics.get("executor_exception_count", 0) or 0),
         "picked_count": picked,
         "exception_leader_count": exception,
+        "section_counts": section_counts,
         "top_deep_report_count": top_deep_reports.get("count"),
         "required_fields": list(required_fields),
         "feature_completeness": round(float(completeness), 4),
         "field_missing_counts": field_missing_counts,
+        "field_not_applicable_counts": field_not_applicable_counts,
         "missing_by_ticker": missing_by_ticker,
         "quality_flags": quality_flags,
         "validation_excluded": bool(quality_flags),

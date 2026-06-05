@@ -243,3 +243,104 @@ def test_scan_integrity_enriches_planner_only_rows_from_top_deep_reports(tmp_pat
     assert factors["theme_routing_path"] == "scan_universe_admission_model"
     assert report["feature_completeness"] == 1.0
     assert report["quality_flags"] == []
+
+
+def test_scan_integrity_uses_top_deep_rows_as_displayed_candidate_set(tmp_path):
+    profile_path = tmp_path / "profile.json"
+    top_deep_path = tmp_path / "top_deep.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "exception_leaders": {
+                    "watchlist_meta": [
+                        {
+                            "ticker": "999999.KS",
+                            "stock_name": "표시되지않는후보",
+                            "decision": "EXCEPTION_LEADER",
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    top_deep_path.write_text(
+        json.dumps(
+            [
+                {
+                    "report_version": "top_deep_report_v1",
+                    "rank": 1,
+                    "ticker": "005930.KS",
+                    "stock_name": "삼성전자",
+                    "decision_score": 13.4,
+                    "loss_risk_score": 24,
+                    "scan_universe_admission": {"probability_pct": 13.4},
+                    "selection_alignment": {
+                        "analysis_section": "Admission Near Miss",
+                        "analysis_section_rank": 1,
+                        "source_order": "scan_universe_admission_model",
+                    },
+                    "price": {
+                        "day_change_pct": -1.2,
+                        "volume_ratio_20d": 1.4,
+                        "trend": "UP",
+                    },
+                    "trade_plan": {"entry_reference_price": 100.0},
+                    "theme": {
+                        "primary_theme": "반도체",
+                        "theme_routing_path": "theme_master",
+                    },
+                    "prediction": {
+                        "expected_edge_score": 7,
+                        "expected_return_1d_pct": 1,
+                        "expected_return_3d_pct": 3,
+                    },
+                    "flow": {
+                        "whale_score": 55,
+                        "foreigner_1d": 1000,
+                        "institution_1d": 500,
+                        "retail_1d": -1500,
+                        "foreigner_3d": 1100,
+                        "institution_3d": 600,
+                        "retail_3d": -1700,
+                        "foreigner_10d": 1200,
+                        "institution_10d": 700,
+                        "retail_10d": -1900,
+                        "flow_asof": "2026.06.05",
+                    },
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    snapshots = build_observed_factor_snapshots(
+        run_id="RUN-TOP-ONLY",
+        market="KOSPI",
+        scan_mode="SWING",
+        created_at="2026-06-05T00:00:00Z",
+        results=[],
+        bridge_info={"profile_diagnostics": str(profile_path)},
+        top_deep_reports={"local_path": str(top_deep_path)},
+    )
+    report = build_scan_integrity_report(
+        run_id="RUN-TOP-ONLY",
+        market="KOSPI",
+        scan_mode="SWING",
+        snapshots=snapshots,
+        raw_result_count=0,
+        total_scans=835,
+        top_deep_reports={"count": 1},
+    )
+
+    assert [snapshot["ticker"] for snapshot in snapshots] == ["005930.KS"]
+    assert snapshots[0]["factors"]["analysis_section"] == "Admission Near Miss"
+    assert snapshots[0]["factors"]["ml_prob"] == 13.4
+    assert report["section_counts"] == {"Admission Near Miss": 1}
+    assert report["picked_count"] == 0
+    assert report["field_not_applicable_counts"]["alpha_score"] == 1
+    assert report["field_not_applicable_counts"]["tech_score"] == 1
+    assert report["feature_completeness"] == 1.0
+    assert report["quality_flags"] == []

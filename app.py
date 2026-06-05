@@ -2789,9 +2789,16 @@ if active_main_tab == "📚 아카이브":
                             _all_rows = []
                             for _row in _archive_all:
                                 _gap = _row.get("scan_threshold_gap_pct_points")
+                                _alignment = _row.get("selection_alignment") if isinstance(_row.get("selection_alignment"), dict) else {}
+                                _display_contract = _row.get("display_contract") if isinstance(_row.get("display_contract"), dict) else {}
                                 _all_rows.append(
                                     {
-                                        "순위": _row.get("analysis_section_rank") or _row.get("rank"),
+                                        "순위": (
+                                            _row.get("analysis_section_rank")
+                                            or _alignment.get("analysis_section_rank")
+                                            or _display_contract.get("analysis_section_rank")
+                                            or _row.get("rank")
+                                        ),
                                         "티커": _row.get("ticker"),
                                         "종목": _row.get("name"),
                                         "모델판정": _row.get("scan_model_decision") or ("통과" if _row.get("admission_passed") else "기준미달"),

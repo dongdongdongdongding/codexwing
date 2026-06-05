@@ -19,6 +19,7 @@ from modules.candidate_interpretation import build_candidate_interpretation
 from modules.scan_universe_admission import build_scan_universe_admission_input_rows, build_scan_universe_admission_records
 from modules.ui_helpers import build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
+from modules.kr_stock_theme_master import get_stock_theme_record
 from modules.model_governance import active_policy_metadata
 from modules.portfolio_exposure import build_portfolio_exposure_summary
 from modules.realized_expectancy_admission import build_realized_expectancy_admission
@@ -39,6 +40,9 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "stock_name",
     "generated_at",
     "signal_label",
+    "analysis_section",
+    "analysis_section_rank",
+    "source_order",
     "decision",
     "decision_bucket",
     "buy_score",
@@ -1066,6 +1070,16 @@ def build_top_deep_reports(
             prediction["ranking_score_3d"] = admission.get("ranking_score_3d")
             prediction["ranking_score_5d"] = admission.get("ranking_score_5d")
             prediction["admission_policy_version"] = admission.get("policy_version")
+        analysis_section = str(row.get("_analysis_section") or "Top5")
+        analysis_section_rank = _safe_int(row.get("_analysis_section_rank"))
+        source_order = str(row.get("_source_order") or "scan_universe_admission_model")
+        decision = str(_first_present(row, "decision", "Decision") or trace.get("decision") or "")
+        decision_bucket = str(_first_present(row, "decision_bucket") or trace.get("decision_bucket") or "")
+        if analysis_section == "Exception Leader":
+            decision = "EXCEPTION_LEADER"
+            decision_bucket = "exception_leader"
+        elif analysis_section == "Admission Near Miss" and not decision_bucket:
+            decision_bucket = "admission_near_miss"
         readiness_analysis = build_entry_readiness_analysis(
             candidate={**row, **trace},
             price=price,
@@ -1109,6 +1123,20 @@ def build_top_deep_reports(
         trade_policy["practical_entry_gate"] = practical_gate
         execution_stop = build_execution_stop_display({**row, **trace}, trade_policy)
         trade_policy["execution_stop"] = execution_stop
+        theme_master = get_stock_theme_record(ticker)
+        theme_master_primary = str(theme_master.get("primary_theme") or "").strip()
+        if theme_master_primary == "unclassified":
+            theme_master_primary = ""
+        primary_theme = (
+            _first_present(trace, "primary_theme", "테마", "Theme")
+            or _first_present(row, "primary_theme", "테마", "Theme")
+            or theme_master_primary
+        )
+        theme_routing_path = (
+            _first_present(trace, "theme_routing_path", "theme_routing_path")
+            or _first_present(row, "theme_routing_path", "theme_routing_path")
+            or ("stock_theme_master" if theme_master_primary and primary_theme == theme_master_primary else None)
+        )
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -1119,14 +1147,17 @@ def build_top_deep_reports(
             "ticker": ticker,
             "stock_name": stock_name,
             "generated_at": generated_at,
+            "analysis_section": analysis_section,
+            "analysis_section_rank": analysis_section_rank,
+            "source_order": source_order,
             "signal_label": _signal_label(
                 {**row, **trace},
                 loss_risk,
                 readiness=readiness_analysis,
                 practical_gate=practical_gate,
             ),
-            "decision": str(_first_present(row, "decision", "Decision") or trace.get("decision") or ""),
-            "decision_bucket": str(_first_present(row, "decision_bucket") or trace.get("decision_bucket") or ""),
+            "decision": decision,
+            "decision_bucket": decision_bucket,
             "selection_alignment": {
                 "raw_scan_rank": _safe_int(row.get("_raw_scan_rank")),
                 "planner_priority_rank": _safe_int(trace.get("priority_rank") or row.get("priority_rank")),
@@ -1134,9 +1165,9 @@ def build_top_deep_reports(
                 "planner_decision": str(trace.get("decision") or row.get("decision") or ""),
                 "relative_rank_score": _safe_float(trace.get("relative_rank_score") or row.get("relative_rank_score")),
                 "relative_rank_pct": _safe_float(trace.get("relative_rank_pct") or row.get("relative_rank_pct")),
-                "analysis_section": str(row.get("_analysis_section") or "Top5"),
-                "analysis_section_rank": _safe_int(row.get("_analysis_section_rank")),
-                "source_order": str(row.get("_source_order") or "scan_universe_admission_model"),
+                "analysis_section": analysis_section,
+                "analysis_section_rank": analysis_section_rank,
+                "source_order": source_order,
                 "validated_winner_profile": row.get("_validated_winner_profile"),
             },
             "buy_score": buy_score,
@@ -1172,10 +1203,10 @@ def build_top_deep_reports(
             "trade_plan": trade_policy,
             "flow": flow,
             "theme": {
-                "primary_theme": _first_present(trace, "primary_theme", "테마", "Theme")
-                or _first_present(row, "primary_theme", "테마", "Theme"),
-                "theme_routing_path": _first_present(trace, "theme_routing_path", "theme_routing_path")
-                or _first_present(row, "theme_routing_path", "theme_routing_path"),
+                "primary_theme": primary_theme,
+                "theme_routing_path": theme_routing_path,
+                "theme_inference_status": theme_master.get("theme_inference_status") if theme_master_primary and primary_theme == theme_master_primary else None,
+                "theme_source": theme_master.get("source_theme_reference") if theme_master_primary and primary_theme == theme_master_primary else None,
                 "theme_score_adjustment": _safe_float(_first_present(trace, "theme_score_adjustment") or row.get("theme_score_adjustment")),
                 "theme_day_symbol_count": _safe_float(_first_present(trace, "theme_day_symbol_count", "_theme_day_symbol_count") or _first_present(row, "theme_day_symbol_count", "_theme_day_symbol_count")),
                 "theme_day_avg_alpha_score": _safe_float(_first_present(trace, "theme_day_avg_alpha_score", "_theme_day_avg_alpha_score") or _first_present(row, "theme_day_avg_alpha_score", "_theme_day_avg_alpha_score")),

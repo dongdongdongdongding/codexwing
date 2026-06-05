@@ -108,6 +108,8 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["trade_plan"]["execution_stop"]["display_stop_sl_pct"] == report["execution_stop"]["display_stop_sl_pct"]
     assert report["trade_plan"]["hold_days"] is not None
     assert report["trade_plan"]["entry_policy"]
+    assert report["theme"]["primary_theme"] == "반도체"
+    assert report["theme"]["theme_routing_path"] == "stock_theme_master"
     assert report["trade_plan"]["entry_reference_price"] == 73200.0
     assert report["trade_plan"]["target_price"] is not None
     assert report["trade_plan"]["stop_price"] is not None
@@ -718,4 +720,9 @@ def test_build_top_deep_reports_adds_planner_only_exception_leaders_up_to_five()
     sections = [row["selection_alignment"]["analysis_section"] for row in reports]
     assert sum(1 for section in sections if section in {ADMISSION_SECTION, NEAR_MISS_SECTION}) == 5
     assert sections.count("Exception Leader") == 5
+    assert all(row["analysis_section"] == row["selection_alignment"]["analysis_section"] for row in reports)
+    assert all(row["analysis_section_rank"] == row["selection_alignment"]["analysis_section_rank"] for row in reports)
+    exception_reports = [row for row in reports if row["analysis_section"] == "Exception Leader"]
+    assert all(row["decision"] == "EXCEPTION_LEADER" for row in exception_reports)
+    assert all(row["decision_bucket"] == "exception_leader" for row in exception_reports)
     assert all(row.get("scan_result_interpretation") for row in reports)

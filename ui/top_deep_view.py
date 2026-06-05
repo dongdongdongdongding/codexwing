@@ -32,6 +32,17 @@ TOP_DEEP_SECTION_ORDER = {
     "Exception Leader": 1,
 }
 
+LOCAL_AUTHORITATIVE_TOP_DEEP_FIELDS = {
+    "analysis_section",
+    "analysis_section_rank",
+    "source_order",
+    "decision",
+    "decision_bucket",
+    "selection_alignment",
+    "display_contract",
+    "candidate_interpretation",
+}
+
 
 def load_top_deep_reports(limit: int = 500) -> Tuple[List[Dict[str, Any]], str]:
     db_rows: List[Dict[str, Any]] = []
@@ -71,7 +82,9 @@ def load_top_deep_reports(limit: int = 500) -> Tuple[List[Dict[str, Any]], str]:
         if key and key in merged_by_key:
             existing = merged_by_key[key]
             for item_key, value in row.items():
-                if item_key not in existing or existing.get(item_key) in (None, "", [], {}):
+                if item_key in LOCAL_AUTHORITATIVE_TOP_DEEP_FIELDS and value not in (None, "", [], {}):
+                    existing[item_key] = value
+                elif item_key not in existing or existing.get(item_key) in (None, "", [], {}):
                     existing[item_key] = value
             continue
         if key:
@@ -416,11 +429,15 @@ def render_top_deep_reports_page() -> None:
         int(section_counts.get(section, 0) or 0)
         for section in ("KOSPI Operating Challenger", "KOSDAQ Operating Challenger")
     )
+    near_miss_count = int(section_counts.get("Admission Near Miss", 0) or 0)
+    admission_count = int(section_counts.get("Scan Universe Admission", 0) or 0)
+    exception_count = int(section_counts.get("Exception Leader", 0) or 0)
     st.caption(
         f"섹션: Challenger {operating_count} / "
         f"Practical {section_counts.get('Practical 80 Gate', 0)} / "
         f"Shadow {sum(int(section_counts.get(section, 0) or 0) for section in TOP_DEEP_SECTION_ORDER if 'Shadow' in section)} / "
-        f"Top5 {section_counts.get('Top5', 0)} / Exception {section_counts.get('Exception Leader', 0)}"
+        f"Admission {admission_count} / Near Miss {near_miss_count} / "
+        f"Top5 {section_counts.get('Top5', 0)} / Exception {exception_count}"
     )
     scan_context = load_scan_context_for_run(str(selected_run))
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
@@ -429,10 +446,11 @@ def render_top_deep_reports_page() -> None:
     result_count = int(scan_summary.get("result_count") or section_counts.get("Top5", 0) or 0)
     filtered_count = int(scan_summary.get("filtered_count") or 0)
     gate_msg = str(market_gate.get("msg") or "")
-    if result_count == 0 and section_counts.get("Exception Leader", 0):
+    if result_count == 0 and (near_miss_count or exception_count):
         st.warning(
             "원본 Top5 통과 후보 0개입니다. "
-            f"필터 {filtered_count}개 · Exception Leader {section_counts.get('Exception Leader', 0)}개는 추가 관찰 후보로만 표시됩니다."
+            f"필터 {filtered_count}개 · Near Miss {near_miss_count}개 · "
+            f"Exception Leader {exception_count}개는 추가 관찰 후보로만 표시됩니다."
         )
     if gate_msg:
         gate = str(market_gate.get("gate") or "-").upper()
