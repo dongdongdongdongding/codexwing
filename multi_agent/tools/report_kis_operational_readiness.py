@@ -22,14 +22,18 @@ def _load_readiness_reports(report_dir: Path = REPORT_DIR) -> Dict[str, Dict[str
     full_candidates: List[Dict[str, Any]] = []
     fallback_full_candidates: List[Dict[str, Any]] = []
     retry_candidates: List[Dict[str, Any]] = []
+    feature_candidates: List[Dict[str, Any]] = []
     for path in sorted(report_dir.glob("kis_kr_universe_readiness_*.json")):
         payload = _read_json(path)
         if not payload:
             continue
         payload["_path"] = str(path)
         requested = payload.get("requested_tickers") if isinstance(payload.get("requested_tickers"), list) else []
+        feature_checks = payload.get("feature_checks") if isinstance(payload.get("feature_checks"), list) else []
         universe = payload.get("universe") if isinstance(payload.get("universe"), dict) else {}
         selected_total = sum(int((meta or {}).get("selected_count") or 0) for meta in universe.values() if isinstance(meta, dict))
+        if feature_checks:
+            feature_candidates.append(payload)
         if requested:
             retry_candidates.append(payload)
         elif selected_total > 1000:
@@ -39,6 +43,7 @@ def _load_readiness_reports(report_dir: Path = REPORT_DIR) -> Dict[str, Dict[str
     return {
         "full": full_candidates[-1] if full_candidates else (fallback_full_candidates[-1] if fallback_full_candidates else {}),
         "retry": retry_candidates[-1] if retry_candidates else {},
+        "feature": feature_candidates[-1] if feature_candidates else {},
     }
 
 
@@ -123,7 +128,55 @@ def _effective_quote_coverage(full: Mapping[str, Any], retry: Mapping[str, Any])
     }
 
 
-def _requirement_matrix() -> List[Dict[str, Any]]:
+def _post_close_feature_evidence(endpoint_map: Mapping[str, Mapping[str, Any]]) -> Dict[str, Any]:
+    investor_checks = [
+        dict(item)
+        for name, item in endpoint_map.items()
+        if str(name).endswith(":investor_flow_snapshot")
+    ]
+    investor_ok = [item for item in investor_checks if item.get("ok")]
+    investor_failed = [item for item in investor_checks if not item.get("ok")]
+    kosdaq_volume_rank = dict(endpoint_map.get("KOSDAQ:volume_rank") or {})
+    return {
+        "investor_flow_snapshot": {
+            "checked_count": len(investor_checks),
+            "ok_count": len(investor_ok),
+            "failed_count": len(investor_failed),
+            "failed_sample": [
+                {"name": item.get("name"), "error": item.get("error")}
+                for item in investor_failed[:5]
+            ],
+        },
+        "kosdaq_volume_rank": {
+            "checked": bool(kosdaq_volume_rank),
+            "ok": bool(kosdaq_volume_rank.get("ok")),
+            "row_count": int(kosdaq_volume_rank.get("row_count") or 0),
+            "error": kosdaq_volume_rank.get("error"),
+        },
+    }
+
+
+def _requirement_matrix(post_close_evidence: Optional[Mapping[str, Any]] = None) -> List[Dict[str, Any]]:
+    evidence = post_close_evidence if isinstance(post_close_evidence, Mapping) else {}
+    flow_evidence = evidence.get("investor_flow_snapshot") if isinstance(evidence.get("investor_flow_snapshot"), Mapping) else {}
+    rank_evidence = evidence.get("kosdaq_volume_rank") if isinstance(evidence.get("kosdaq_volume_rank"), Mapping) else {}
+    flow_ok = int(flow_evidence.get("ok_count") or 0)
+    flow_checked = int(flow_evidence.get("checked_count") or 0)
+    kosdaq_rank_rows = int(rank_evidence.get("row_count") or 0)
+    investor_readiness = "ready_post_close_sampled" if flow_checked and flow_ok else "partial_time_gated"
+    investor_decision = (
+        f"15:40 KST 이후 샘플 {flow_ok}/{flow_checked}건에서 종목별 수급 조회가 성공했다. "
+        "운영에는 장후/장중 시간대별 경고와 fallback을 유지한다."
+        if investor_readiness == "ready_post_close_sampled"
+        else "시장 단위 수급은 동작했다. 종목별 수급은 시간 제한이 있어 15:40 KST 이후 재검증해야 한다."
+    )
+    rank_readiness = "ready_with_verified_kosdaq_params" if kosdaq_rank_rows > 1 else "ready_with_parameter_review"
+    rank_decision = (
+        f"KOSDAQ volume_rank가 {kosdaq_rank_rows}행을 반환해 기존 1행 의심은 해소됐다. "
+        "랭킹 endpoint는 호출 제한과 캐시 정책을 두고 운영 보강 피처로 사용할 수 있다."
+        if rank_readiness == "ready_with_verified_kosdaq_params"
+        else "대부분의 랭킹 endpoint는 동작했다. 다만 KOSDAQ volume_rank는 1행만 반환되어 파라미터 재검토가 필요하다."
+    )
     return [
         {
             "area": "scanner_price_snapshot",
@@ -150,15 +203,15 @@ def _requirement_matrix() -> List[Dict[str, Any]]:
             "area": "investor_flow",
             "current_need": "foreigner/institution/retail 1d/3d/10d and whale score",
             "kis_support": "stock_investor_daily, foreign_institution_total",
-            "readiness": "partial_time_gated",
-            "decision": "시장 단위 수급은 동작했다. 종목별 수급은 시간 제한이 있어 15:40 KST 이후 재검증해야 한다.",
+            "readiness": investor_readiness,
+            "decision": investor_decision,
         },
         {
             "area": "rank_and_market_microstructure",
             "current_need": "volume rank, fluctuation rank, execution strength, VI status",
             "kis_support": "volume_rank, fluctuation_rank, volume_power_rank, vi_status",
-            "readiness": "ready_with_parameter_review",
-            "decision": "대부분의 랭킹 endpoint는 동작했다. 다만 KOSDAQ volume_rank는 1행만 반환되어 파라미터 재검토가 필요하다.",
+            "readiness": rank_readiness,
+            "decision": rank_decision,
         },
         {
             "area": "top_deep_price_news_flow",
@@ -191,7 +244,20 @@ def _requirement_matrix() -> List[Dict[str, Any]]:
     ]
 
 
-def _model_lift_assessment(coverage: Mapping[str, Any], endpoint_rollup: Mapping[str, Any]) -> Dict[str, Any]:
+def _model_lift_assessment(
+    coverage: Mapping[str, Any],
+    endpoint_rollup: Mapping[str, Any],
+    post_close_evidence: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
+    evidence = post_close_evidence if isinstance(post_close_evidence, Mapping) else {}
+    flow_evidence = evidence.get("investor_flow_snapshot") if isinstance(evidence.get("investor_flow_snapshot"), Mapping) else {}
+    flow_checked = int(flow_evidence.get("checked_count") or 0)
+    flow_ok = int(flow_evidence.get("ok_count") or 0)
+    flow_gap_reason = (
+        "장후 종목별 수급 샘플은 성공했지만, 장중 시간제한과 fallback 정책은 운영에서 계속 검증해야 한다."
+        if flow_checked and flow_ok
+        else "실측 당시 종목별 투자자 수급 endpoint가 시간 제한에 걸렸다."
+    )
     return {
         "verdict": "KIS 보강 모델은 가능성이 있다. 그러나 KIS 단독 즉시 대체와 모델 성능 개선은 아직 증명되지 않았다.",
         "high_value_candidate_features": [
@@ -204,7 +270,7 @@ def _model_lift_assessment(coverage: Mapping[str, Any], endpoint_rollup: Mapping
         ],
         "why_not_proven_yet": [
             "KIS 피처의 과거 아카이브가 아직 없어 직접적인 OOS 성능 개선을 측정할 수 없다.",
-            "실측 당시 종목별 투자자 수급 endpoint가 시간 제한에 걸렸다.",
+            flow_gap_reason,
             "quote_snapshot의 sector_name 커버리지가 부족해 테마 컨텍스트를 대체할 수 없다.",
             "운영 스캐너는 아직 yfinance/PyKrx 형태의 OHLCV DataFrame을 기대한다.",
         ],
@@ -227,9 +293,11 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
     reports = _load_readiness_reports(report_dir)
     full = reports.get("full") or {}
     retry = reports.get("retry") or {}
+    feature = reports.get("feature") or full
     coverage = _effective_quote_coverage(full, retry)
-    endpoint_rollup = _endpoint_rollup(full)
-    matrix = _requirement_matrix()
+    endpoint_rollup = _endpoint_rollup(feature)
+    post_close_evidence = _post_close_feature_evidence(_endpoint_result_map(feature))
+    matrix = _requirement_matrix(post_close_evidence)
     blockers = [
         item
         for item in matrix
@@ -240,6 +308,7 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
         "source_reports": {
             "full_universe": full.get("_path"),
             "retry_subset": retry.get("_path"),
+            "feature_checks": feature.get("_path"),
         },
         "summary": {
             "operational_replacement_verdict": "KR 운영 전체를 지금 KIS로 일괄 전환하면 안 된다. 먼저 KIS를 단계적 보강 데이터 소스로 써야 한다.",
@@ -248,9 +317,10 @@ def build_report(report_dir: Path = REPORT_DIR) -> Dict[str, Any]:
         },
         "quote_coverage": coverage,
         "endpoint_rollup": endpoint_rollup,
+        "post_close_feature_evidence": post_close_evidence,
         "requirement_matrix": matrix,
         "blockers_or_gaps": blockers,
-        "model_lift_assessment": _model_lift_assessment(coverage, endpoint_rollup),
+        "model_lift_assessment": _model_lift_assessment(coverage, endpoint_rollup, post_close_evidence),
     }
 
 
@@ -268,6 +338,9 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     coverage = report.get("quote_coverage") if isinstance(report.get("quote_coverage"), dict) else {}
     markets = coverage.get("markets") if isinstance(coverage.get("markets"), dict) else {}
     endpoint = report.get("endpoint_rollup") if isinstance(report.get("endpoint_rollup"), dict) else {}
+    post_close = report.get("post_close_feature_evidence") if isinstance(report.get("post_close_feature_evidence"), dict) else {}
+    flow_evidence = post_close.get("investor_flow_snapshot") if isinstance(post_close.get("investor_flow_snapshot"), dict) else {}
+    rank_evidence = post_close.get("kosdaq_volume_rank") if isinstance(post_close.get("kosdaq_volume_rank"), dict) else {}
     model = report.get("model_lift_assessment") if isinstance(report.get("model_lift_assessment"), dict) else {}
     lines = [
         "# KIS 운영 전환 및 모델 개선 가능성 검증",
@@ -290,6 +363,8 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     lines.extend(
         [
             f"- 기능 endpoint 체크: {endpoint.get('ok_count')}/{endpoint.get('checked_count')} 성공, 실패 {endpoint.get('failed_count')}건",
+            f"- 장후 종목별 수급 샘플: {flow_evidence.get('ok_count', 0)}/{flow_evidence.get('checked_count', 0)} 성공",
+            f"- KOSDAQ volume_rank 행 수: {rank_evidence.get('row_count', 0)}",
             "",
             "## 운영 기능별 판단",
             *_md_table(report.get("requirement_matrix", []) if isinstance(report.get("requirement_matrix"), list) else []),

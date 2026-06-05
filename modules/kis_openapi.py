@@ -893,6 +893,9 @@ class KISOpenAPIClient:
             "trade_value": "3",
             "avg_trade_value_turnover": "4",
         }
+        market_key = str(market or "").strip().upper()
+        target_cls_code = "0" if market_key in {"KOSDAQ", "KQ", "1001"} else "111111111"
+        target_exclude_code = "0" if market_key in {"KOSDAQ", "KQ", "1001"} else "1111111111"
         return self._request_json(
             "volume_rank",
             params={
@@ -901,8 +904,8 @@ class KISOpenAPIClient:
                 "FID_INPUT_ISCD": market_input_code(market),
                 "FID_DIV_CLS_CODE": "1",
                 "FID_BLNG_CLS_CODE": rank_map.get(str(rank_by).lower(), "3"),
-                "FID_TRGT_CLS_CODE": "111111111",
-                "FID_TRGT_EXLS_CLS_CODE": "1111111111",
+                "FID_TRGT_CLS_CODE": target_cls_code,
+                "FID_TRGT_EXLS_CLS_CODE": target_exclude_code,
                 "FID_INPUT_PRICE_1": "",
                 "FID_INPUT_PRICE_2": "",
                 "FID_VOL_CNT": "",

@@ -127,6 +127,8 @@ def _load_kis_rank_universe(limit_per_market: int) -> pd.DataFrame:
                     continue
                 code = normalize_kr_stock_code(row.get("mksc_shrn_iscd") or row.get("stck_shrn_iscd") or "")
                 name = str(row.get("hts_kor_isnm") or row.get("prdt_name") or code).strip()
+                if not (code.isdigit() and len(code) == 6):
+                    continue
                 if not code or not name:
                     continue
                 selected.append({"Code": f"{code}{suffix}", "Name": name})

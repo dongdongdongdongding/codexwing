@@ -322,6 +322,10 @@ def test_ranking_and_context_requests_are_available_without_scanner_wiring():
     assert "/uapi/domestic-stock/v1/quotations/search-stock-info" in paths
     assert "/uapi/domestic-stock/v1/finance/financial-ratio" in paths
 
+    volume_rank = next(call for call in calls if call["path"].endswith("volume-rank"))
+    assert volume_rank["query"]["FID_INPUT_ISCD"] == "1001"
+    assert volume_rank["query"]["FID_TRGT_CLS_CODE"] == "0"
+    assert volume_rank["query"]["FID_TRGT_EXLS_CLS_CODE"] == "0"
     foreign_total = next(call for call in calls if call["path"].endswith("foreign-institution-total"))
     assert foreign_total["query"]["FID_INPUT_ISCD"] == "1001"
     assert foreign_total["query"]["FID_ETC_CLS_CODE"] == "2"

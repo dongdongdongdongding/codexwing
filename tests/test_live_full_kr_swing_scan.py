@@ -38,3 +38,26 @@ def test_empty_results_still_fail_without_allow_empty_option(monkeypatch):
     )
 
     assert scan.main() == 1
+
+
+def test_kis_rank_universe_skips_non_numeric_rank_codes(monkeypatch):
+    class FakeKISClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def volume_rank(self, *, market="ALL"):
+            return {
+                "rt_cd": "0",
+                "output": [
+                    {"mksc_shrn_iscd": "0134X0", "hts_kor_isnm": "스팩"},
+                    {"mksc_shrn_iscd": "090360", "hts_kor_isnm": "로보스타"},
+                ],
+            }
+
+    monkeypatch.setattr("modules.kis_openapi.KISOpenAPIClient", FakeKISClient)
+
+    frame = scan._load_kis_rank_universe(5)
+
+    assert "0134X0.KS" not in set(frame["Code"])
+    assert "0134X0.KQ" not in set(frame["Code"])
+    assert set(frame["Code"]) == {"090360.KS", "090360.KQ"}

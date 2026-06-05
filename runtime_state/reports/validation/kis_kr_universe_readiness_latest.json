@@ -1,5 +1,5 @@
 {
-  "run_id": "20260605_021518",
+  "run_id": "20260605_195145",
   "tool": "verify_kis_kr_universe_readiness",
   "dry_run": false,
   "mode": "real",
@@ -7,11 +7,11 @@
     "KOSPI",
     "KOSDAQ"
   ],
-  "quote_sleep_sec": 0.02,
-  "feature_sleep_sec": 0.1,
+  "quote_sleep_sec": 0.18,
+  "feature_sleep_sec": 0.25,
   "live_network_enabled_for_run": true,
-  "max_per_market": 0,
-  "samples_per_market": 3,
+  "max_per_market": 3,
+  "samples_per_market": 2,
   "requested_tickers": [],
   "missing_requested_tickers": [],
   "write_latest": true,
@@ -68,33 +68,29 @@
   "universe": {
     "KOSPI": {
       "original_count": 835,
-      "selected_count": 835,
-      "elapsed_sec": 0.885,
+      "selected_count": 3,
+      "elapsed_sec": 1.851,
       "first_tickers": [
         "005930.KS",
         "000660.KS",
-        "402340.KS",
-        "005380.KS",
-        "009150.KS"
+        "402340.KS"
       ]
     },
     "KOSDAQ": {
       "original_count": 1719,
-      "selected_count": 1719,
-      "elapsed_sec": 0.908,
+      "selected_count": 3,
+      "elapsed_sec": 1.6,
       "first_tickers": [
-        "247540.KQ",
         "196170.KQ",
-        "086520.KQ",
-        "277810.KQ",
-        "036930.KQ"
+        "247540.KQ",
+        "086520.KQ"
       ]
     }
   },
   "quote_summary": {
     "KOSPI": {
-      "universe_count": 835,
-      "quote_ok_count": 835,
+      "universe_count": 3,
+      "quote_ok_count": 3,
       "quote_error_count": 0,
       "quote_success_rate_pct": 100.0,
       "core_field_missing_count": {
@@ -108,7 +104,7 @@
         "value_traded": 0,
         "prev_volume_ratio": 0,
         "market_name": 0,
-        "sector_name": 450,
+        "sector_name": 0,
         "status_code": 0,
         "foreigner_net_qty": 0,
         "program_net_qty": 0,
@@ -121,8 +117,8 @@
       "failed_tickers_sample": []
     },
     "KOSDAQ": {
-      "universe_count": 1719,
-      "quote_ok_count": 1719,
+      "universe_count": 3,
+      "quote_ok_count": 3,
       "quote_error_count": 0,
       "quote_success_rate_pct": 100.0,
       "core_field_missing_count": {
@@ -136,7 +132,7 @@
         "value_traded": 0,
         "prev_volume_ratio": 0,
         "market_name": 0,
-        "sector_name": 1421,
+        "sector_name": 0,
         "status_code": 0,
         "foreigner_net_qty": 0,
         "program_net_qty": 0,
@@ -153,7 +149,7 @@
     {
       "name": "KOSPI:005930.KS:daily_bars",
       "ok": true,
-      "elapsed_sec": 0.051,
+      "elapsed_sec": 0.04,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 1
@@ -161,7 +157,7 @@
     {
       "name": "KOSPI:005930.KS:today_minute_bars",
       "ok": true,
-      "elapsed_sec": 0.945,
+      "elapsed_sec": 0.085,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -169,7 +165,7 @@
     {
       "name": "KOSPI:005930.KS:investor_flow_snapshot",
       "ok": true,
-      "elapsed_sec": 0.27,
+      "elapsed_sec": 0.077,
       "rt_cd": null,
       "msg_cd": null,
       "row_count": 0
@@ -177,7 +173,7 @@
     {
       "name": "KOSPI:000660.KS:daily_bars",
       "ok": true,
-      "elapsed_sec": 0.077,
+      "elapsed_sec": 0.925,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 1
@@ -185,7 +181,7 @@
     {
       "name": "KOSPI:000660.KS:today_minute_bars",
       "ok": true,
-      "elapsed_sec": 0.071,
+      "elapsed_sec": 0.062,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -193,31 +189,7 @@
     {
       "name": "KOSPI:000660.KS:investor_flow_snapshot",
       "ok": true,
-      "elapsed_sec": 1.972,
-      "rt_cd": null,
-      "msg_cd": null,
-      "row_count": 0
-    },
-    {
-      "name": "KOSPI:402340.KS:daily_bars",
-      "ok": true,
-      "elapsed_sec": 0.071,
-      "rt_cd": "0",
-      "msg_cd": "MCA00000",
-      "row_count": 1
-    },
-    {
-      "name": "KOSPI:402340.KS:today_minute_bars",
-      "ok": true,
-      "elapsed_sec": 0.091,
-      "rt_cd": "0",
-      "msg_cd": "MCA00000",
-      "row_count": 30
-    },
-    {
-      "name": "KOSPI:402340.KS:investor_flow_snapshot",
-      "ok": true,
-      "elapsed_sec": 1.1,
+      "elapsed_sec": 0.086,
       "rt_cd": null,
       "msg_cd": null,
       "row_count": 0
@@ -225,7 +197,7 @@
     {
       "name": "KOSPI:volume_rank",
       "ok": true,
-      "elapsed_sec": 0.93,
+      "elapsed_sec": 0.066,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -233,7 +205,7 @@
     {
       "name": "KOSPI:fluctuation_rank",
       "ok": true,
-      "elapsed_sec": 0.943,
+      "elapsed_sec": 0.916,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -241,7 +213,7 @@
     {
       "name": "KOSPI:volume_power_rank",
       "ok": true,
-      "elapsed_sec": 0.928,
+      "elapsed_sec": 0.92,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -249,7 +221,7 @@
     {
       "name": "KOSPI:foreign_institution_total",
       "ok": true,
-      "elapsed_sec": 0.126,
+      "elapsed_sec": 0.115,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -257,39 +229,15 @@
     {
       "name": "KOSPI:vi_status",
       "ok": true,
-      "elapsed_sec": 0.672,
-      "rt_cd": "0",
-      "msg_cd": "MCA00000",
-      "row_count": 0
-    },
-    {
-      "name": "KOSDAQ:247540.KQ:daily_bars",
-      "ok": true,
-      "elapsed_sec": 0.051,
-      "rt_cd": "0",
-      "msg_cd": "MCA00000",
-      "row_count": 1
-    },
-    {
-      "name": "KOSDAQ:247540.KQ:today_minute_bars",
-      "ok": true,
-      "elapsed_sec": 0.08,
+      "elapsed_sec": 0.916,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
     },
     {
-      "name": "KOSDAQ:247540.KQ:investor_flow_snapshot",
-      "ok": true,
-      "elapsed_sec": 0.281,
-      "rt_cd": null,
-      "msg_cd": null,
-      "row_count": 0
-    },
-    {
       "name": "KOSDAQ:196170.KQ:daily_bars",
       "ok": true,
-      "elapsed_sec": 0.07,
+      "elapsed_sec": 0.061,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 1
@@ -297,7 +245,7 @@
     {
       "name": "KOSDAQ:196170.KQ:today_minute_bars",
       "ok": true,
-      "elapsed_sec": 0.93,
+      "elapsed_sec": 0.061,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -305,31 +253,31 @@
     {
       "name": "KOSDAQ:196170.KQ:investor_flow_snapshot",
       "ok": true,
-      "elapsed_sec": 1.127,
+      "elapsed_sec": 0.939,
       "rt_cd": null,
       "msg_cd": null,
       "row_count": 0
     },
     {
-      "name": "KOSDAQ:086520.KQ:daily_bars",
+      "name": "KOSDAQ:247540.KQ:daily_bars",
       "ok": true,
-      "elapsed_sec": 0.08,
+      "elapsed_sec": 0.064,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 1
     },
     {
-      "name": "KOSDAQ:086520.KQ:today_minute_bars",
+      "name": "KOSDAQ:247540.KQ:today_minute_bars",
       "ok": true,
-      "elapsed_sec": 0.922,
+      "elapsed_sec": 0.063,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
     },
     {
-      "name": "KOSDAQ:086520.KQ:investor_flow_snapshot",
+      "name": "KOSDAQ:247540.KQ:investor_flow_snapshot",
       "ok": true,
-      "elapsed_sec": 0.282,
+      "elapsed_sec": 0.08,
       "rt_cd": null,
       "msg_cd": null,
       "row_count": 0
@@ -337,15 +285,15 @@
     {
       "name": "KOSDAQ:volume_rank",
       "ok": true,
-      "elapsed_sec": 0.087,
+      "elapsed_sec": 0.062,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
-      "row_count": 1
+      "row_count": 30
     },
     {
       "name": "KOSDAQ:fluctuation_rank",
       "ok": true,
-      "elapsed_sec": 0.089,
+      "elapsed_sec": 0.924,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -353,7 +301,7 @@
     {
       "name": "KOSDAQ:volume_power_rank",
       "ok": true,
-      "elapsed_sec": 0.055,
+      "elapsed_sec": 0.068,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -361,7 +309,7 @@
     {
       "name": "KOSDAQ:foreign_institution_total",
       "ok": true,
-      "elapsed_sec": 0.13,
+      "elapsed_sec": 0.12,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 30
@@ -369,15 +317,15 @@
     {
       "name": "KOSDAQ:vi_status",
       "ok": true,
-      "elapsed_sec": 0.677,
+      "elapsed_sec": 1.655,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
-      "row_count": 0
+      "row_count": 30
     },
     {
       "name": "KOSPI:industry_price",
       "ok": true,
-      "elapsed_sec": 0.053,
+      "elapsed_sec": 0.055,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 1
@@ -385,7 +333,7 @@
     {
       "name": "KOSDAQ:industry_price",
       "ok": true,
-      "elapsed_sec": 0.077,
+      "elapsed_sec": 0.068,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 1
@@ -393,7 +341,7 @@
     {
       "name": "ALL:news_titles",
       "ok": true,
-      "elapsed_sec": 0.095,
+      "elapsed_sec": 0.061,
       "rt_cd": "0",
       "msg_cd": "MCA00000",
       "row_count": 40

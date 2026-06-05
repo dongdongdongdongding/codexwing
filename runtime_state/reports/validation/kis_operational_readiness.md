@@ -6,10 +6,12 @@
 - 모델 개선 판단: 모델 개선 가능성은 있지만 아직 증명되지 않았다. KIS 피처 병렬 아카이브와 challenger 검증이 필요하다.
 
 ## 실측 근거
-- 전체+재시도 기준 quote 유효 커버리지: 2555/2555 (100.0%)
-- KOSPI: 전체 스윕 830/835 성공, rate-limit 재시도 회복 5건, 실효 성공률 100.0%, sector_name 결측 53.976%
-- KOSDAQ: 전체 스윕 1713/1720 성공, rate-limit 재시도 회복 7건, 실효 성공률 100.0%, sector_name 결측 82.662%
-- 기능 endpoint 체크: 17/19 성공, 실패 2건
+- 전체+재시도 기준 quote 유효 커버리지: 2554/2554 (100.0%)
+- KOSPI: 전체 스윕 835/835 성공, rate-limit 재시도 회복 0건, 실효 성공률 100.0%, sector_name 결측 53.892%
+- KOSDAQ: 전체 스윕 1719/1719 성공, rate-limit 재시도 회복 0건, 실효 성공률 100.0%, sector_name 결측 82.664%
+- 기능 endpoint 체크: 25/25 성공, 실패 0건
+- 장후 종목별 수급 샘플: 4/4 성공
+- KOSDAQ volume_rank 행 수: 30
 
 ## 운영 기능별 판단
 | 영역 | KIS 준비도 | 판단 |
@@ -17,8 +19,8 @@
 | scanner_price_snapshot | ready_with_throttle | KIS가 이 경로를 지원할 수 있다. 운영 적용 전 초당 제한 대응, 캐시, 재시도 정책이 필요하다. |
 | scanner_daily_ohlcv | adapter_work_needed | 샘플 endpoint는 동작했다. 다만 KIS 응답을 OHLCV DataFrame으로 바꾸는 이력 adapter와 장기간 커버리지 검증이 필요하다. |
 | scanner_intraday_ohlcv | adapter_work_needed | 당일 분봉 샘플은 성공했다. 운영에는 기간/시간창 adapter와 fallback 정책이 필요하다. |
-| investor_flow | partial_time_gated | 시장 단위 수급은 동작했다. 종목별 수급은 시간 제한이 있어 15:40 KST 이후 재검증해야 한다. |
-| rank_and_market_microstructure | ready_with_parameter_review | 대부분의 랭킹 endpoint는 동작했다. 다만 KOSDAQ volume_rank는 1행만 반환되어 파라미터 재검토가 필요하다. |
+| investor_flow | ready_post_close_sampled | 15:40 KST 이후 샘플 4/4건에서 종목별 수급 조회가 성공했다. 운영에는 장후/장중 시간대별 경고와 fallback을 유지한다. |
+| rank_and_market_microstructure | ready_with_verified_kosdaq_params | KOSDAQ volume_rank가 30행을 반환해 기존 1행 의심은 해소됐다. 랭킹 endpoint는 호출 제한과 캐시 정책을 두고 운영 보강 피처로 사용할 수 있다. |
 | top_deep_price_news_flow | partial | KIS가 가격과 뉴스 제목은 보강할 수 있다. 감성 분석과 시간 제한 수급은 기존 provider 또는 wrapper가 필요하다. |
 | sector_theme_context | not_enough_alone | KIS quote의 sector_name 커버리지가 부족하다. 기존 테마/종목 마스터 파이프라인은 유지해야 한다. |
 | macro_context | partial | KIS는 KR 지수 조회를 보강할 수 있지만 FX/VIX/TNX/글로벌 리스크 컨텍스트는 대체하지 못한다. |
@@ -35,7 +37,7 @@
   - PER/PBR/EPS/BPS 저빈도 스타일/레짐 통제 피처
 - 아직 증명되지 않은 이유:
   - KIS 피처의 과거 아카이브가 아직 없어 직접적인 OOS 성능 개선을 측정할 수 없다.
-  - 실측 당시 종목별 투자자 수급 endpoint가 시간 제한에 걸렸다.
+  - 장후 종목별 수급 샘플은 성공했지만, 장중 시간제한과 fallback 정책은 운영에서 계속 검증해야 한다.
   - quote_snapshot의 sector_name 커버리지가 부족해 테마 컨텍스트를 대체할 수 없다.
   - 운영 스캐너는 아직 yfinance/PyKrx 형태의 OHLCV DataFrame을 기대한다.
 - 권장 검증 순서:
@@ -46,5 +48,3 @@
   - 현재 운영 release gate를 넘고 tail loss가 악화되지 않을 때만 승격한다.
 
 ## 실패/제약 endpoint
-- KOSPI:005930.KS:investor_flow_snapshot: KIS API error OPSQ2001: TIME LIMIT 00:00 ~ 15:40
-- KOSDAQ:247540.KQ:investor_flow_snapshot: KIS API error OPSQ2001: TIME LIMIT 00:00 ~ 15:40

@@ -1,8 +1,9 @@
 {
   "tool": "report_kis_operational_readiness",
   "source_reports": {
-    "full_universe": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/validation/kis_kr_universe_readiness_latest.json",
-    "retry_subset": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/validation/kis_kr_universe_readiness_20260604_140215.json"
+    "full_universe": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/validation/kis_kr_universe_readiness_20260605_021518.json",
+    "retry_subset": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/validation/kis_kr_universe_readiness_20260604_140215.json",
+    "feature_checks": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/validation/kis_kr_universe_readiness_latest.json"
   },
   "summary": {
     "operational_replacement_verdict": "KR 운영 전체를 지금 KIS로 일괄 전환하면 안 된다. 먼저 KIS를 단계적 보강 데이터 소스로 써야 한다.",
@@ -13,115 +14,56 @@
     "markets": {
       "KOSPI": {
         "universe_count": 835,
-        "quote_ok_count": 830,
-        "quote_error_count": 5,
-        "quote_success_rate_pct": 99.401,
-        "sector_name_missing_count": 448,
-        "sector_name_missing_rate_pct": 53.976,
-        "failed_tickers_sample": [
-          {
-            "ticker": "267250.KS",
-            "name": "HD현대",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "010060.KS",
-            "name": "OCI홀딩스",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "357120.KS",
-            "name": "코람코라이프인프라리츠",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "009180.KS",
-            "name": "한솔로지스틱스",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "100220.KS",
-            "name": "비상교육",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          }
-        ],
+        "quote_ok_count": 835,
+        "quote_error_count": 0,
+        "quote_success_rate_pct": 100.0,
+        "sector_name_missing_count": 450,
+        "sector_name_missing_rate_pct": 53.892,
+        "failed_tickers_sample": [],
         "retry_ok_count": 5,
         "retry_error_count": 0,
-        "recovered_rate_limit_count": 5,
+        "recovered_rate_limit_count": 0,
         "effective_quote_ok_count": 835,
         "effective_quote_success_rate_pct": 100.0
       },
       "KOSDAQ": {
-        "universe_count": 1720,
-        "quote_ok_count": 1713,
-        "quote_error_count": 7,
-        "quote_success_rate_pct": 99.593,
-        "sector_name_missing_count": 1416,
-        "sector_name_missing_rate_pct": 82.662,
-        "failed_tickers_sample": [
-          {
-            "ticker": "215200.KQ",
-            "name": "메가스터디교육",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "144960.KQ",
-            "name": "뉴파워프라즈마",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "093190.KQ",
-            "name": "빅솔론",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "489460.KQ",
-            "name": "바이오비쥬",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "124560.KQ",
-            "name": "태웅로직스",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "003310.KQ",
-            "name": "대주산업",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          },
-          {
-            "ticker": "065370.KQ",
-            "name": "위세아이텍",
-            "error": "KIS HTTP 500: {\"rt_cd\":\"1\",\"msg1\":\"초당 거래건수를 초과하였습니다.\",\"msg_cd\":\"EGW00201\",\"message\":\"EGW00201\"}"
-          }
-        ],
+        "universe_count": 1719,
+        "quote_ok_count": 1719,
+        "quote_error_count": 0,
+        "quote_success_rate_pct": 100.0,
+        "sector_name_missing_count": 1421,
+        "sector_name_missing_rate_pct": 82.664,
+        "failed_tickers_sample": [],
         "retry_ok_count": 7,
         "retry_error_count": 0,
-        "recovered_rate_limit_count": 7,
-        "effective_quote_ok_count": 1720,
+        "recovered_rate_limit_count": 0,
+        "effective_quote_ok_count": 1719,
         "effective_quote_success_rate_pct": 100.0
       }
     },
-    "total_universe_count": 2555,
-    "total_effective_quote_ok_count": 2555,
+    "total_universe_count": 2554,
+    "total_effective_quote_ok_count": 2554,
     "total_effective_quote_success_rate_pct": 100.0
   },
   "endpoint_rollup": {
-    "checked_count": 19,
-    "ok_count": 17,
-    "failed_count": 2,
-    "failed": [
-      {
-        "name": "KOSPI:005930.KS:investor_flow_snapshot",
-        "error_type": "KISOpenAPIError",
-        "error": "KIS API error OPSQ2001: TIME LIMIT 00:00 ~ 15:40"
-      },
-      {
-        "name": "KOSDAQ:247540.KQ:investor_flow_snapshot",
-        "error_type": "KISOpenAPIError",
-        "error": "KIS API error OPSQ2001: TIME LIMIT 00:00 ~ 15:40"
-      }
-    ]
+    "checked_count": 25,
+    "ok_count": 25,
+    "failed_count": 0,
+    "failed": []
+  },
+  "post_close_feature_evidence": {
+    "investor_flow_snapshot": {
+      "checked_count": 4,
+      "ok_count": 4,
+      "failed_count": 0,
+      "failed_sample": []
+    },
+    "kosdaq_volume_rank": {
+      "checked": true,
+      "ok": true,
+      "row_count": 30,
+      "error": null
+    }
   },
   "requirement_matrix": [
     {
@@ -149,15 +91,15 @@
       "area": "investor_flow",
       "current_need": "foreigner/institution/retail 1d/3d/10d and whale score",
       "kis_support": "stock_investor_daily, foreign_institution_total",
-      "readiness": "partial_time_gated",
-      "decision": "시장 단위 수급은 동작했다. 종목별 수급은 시간 제한이 있어 15:40 KST 이후 재검증해야 한다."
+      "readiness": "ready_post_close_sampled",
+      "decision": "15:40 KST 이후 샘플 4/4건에서 종목별 수급 조회가 성공했다. 운영에는 장후/장중 시간대별 경고와 fallback을 유지한다."
     },
     {
       "area": "rank_and_market_microstructure",
       "current_need": "volume rank, fluctuation rank, execution strength, VI status",
       "kis_support": "volume_rank, fluctuation_rank, volume_power_rank, vi_status",
-      "readiness": "ready_with_parameter_review",
-      "decision": "대부분의 랭킹 endpoint는 동작했다. 다만 KOSDAQ volume_rank는 1행만 반환되어 파라미터 재검토가 필요하다."
+      "readiness": "ready_with_verified_kosdaq_params",
+      "decision": "KOSDAQ volume_rank가 30행을 반환해 기존 1행 의심은 해소됐다. 랭킹 endpoint는 호출 제한과 캐시 정책을 두고 운영 보강 피처로 사용할 수 있다."
     },
     {
       "area": "top_deep_price_news_flow",
@@ -204,13 +146,6 @@
       "decision": "당일 분봉 샘플은 성공했다. 운영에는 기간/시간창 adapter와 fallback 정책이 필요하다."
     },
     {
-      "area": "investor_flow",
-      "current_need": "foreigner/institution/retail 1d/3d/10d and whale score",
-      "kis_support": "stock_investor_daily, foreign_institution_total",
-      "readiness": "partial_time_gated",
-      "decision": "시장 단위 수급은 동작했다. 종목별 수급은 시간 제한이 있어 15:40 KST 이후 재검증해야 한다."
-    },
-    {
       "area": "sector_theme_context",
       "current_need": "sector rotation, instrument master, theme membership, theme day strength",
       "kis_support": "quote sector_name, stock_info/financial endpoints",
@@ -237,7 +172,7 @@
     ],
     "why_not_proven_yet": [
       "KIS 피처의 과거 아카이브가 아직 없어 직접적인 OOS 성능 개선을 측정할 수 없다.",
-      "실측 당시 종목별 투자자 수급 endpoint가 시간 제한에 걸렸다.",
+      "장후 종목별 수급 샘플은 성공했지만, 장중 시간제한과 fallback 정책은 운영에서 계속 검증해야 한다.",
       "quote_snapshot의 sector_name 커버리지가 부족해 테마 컨텍스트를 대체할 수 없다.",
       "운영 스캐너는 아직 yfinance/PyKrx 형태의 OHLCV DataFrame을 기대한다."
     ],
@@ -250,8 +185,8 @@
     ],
     "coverage_reference": {
       "effective_quote_success_rate_pct": 100.0,
-      "endpoint_ok_count": 17,
-      "endpoint_failed_count": 2
+      "endpoint_ok_count": 25,
+      "endpoint_failed_count": 0
     }
   }
 }
