@@ -85,6 +85,29 @@ def test_table_column_probe_includes_local_schema_extensions():
     assert "outcome_path_warnings" in cols
 
 
+def test_feature_quality_payload_accepts_display_aliases():
+    db = DBManager.__new__(DBManager)
+
+    quality = db._feature_quality_payload(
+        {
+            "alpha_score": 38,
+            "tech_score": 77,
+            "ml_prob": 76.7,
+            "whale_score": 65,
+            "추세": "UP",
+            "volume_ratio": 2.1,
+            "위치": "🚀 상승 (Rising)",
+            "Tier": "⚡T3",
+            "Decision Score": 82.5,
+            "매수가(-2%)": "1,195,600",
+        }
+    )
+
+    assert quality["feature_quality"] == "complete"
+    assert quality["feature_missing_fields"] == []
+    assert quality["validation_excluded"] is False
+
+
 class _SchemaDriftTable:
     def __init__(self, captured, missing_column):
         self.captured = captured

@@ -540,12 +540,12 @@ class DBManager:
             "tech_score": data.get("tech_score"),
             "ml_prob": data.get("ml_prob"),
             "whale_score": data.get("whale_score"),
-            "trend": data.get("initial_trend") or data.get("trend") or data.get("real_trend"),
+            "trend": data.get("initial_trend") or data.get("trend") or data.get("real_trend") or data.get("추세"),
             "volume_ratio": data.get("volume_ratio"),
-            "position": data.get("position"),
-            "tier": data.get("tier"),
-            "decision_score": data.get("decision_score"),
-            "entry_reference_price": data.get("entry_reference_price"),
+            "position": data.get("position") or data.get("위치"),
+            "tier": data.get("tier") or data.get("Tier"),
+            "decision_score": data.get("decision_score") or data.get("Decision Score"),
+            "entry_reference_price": data.get("entry_reference_price") or data.get("매수가(-2%)"),
         }
         missing = []
         for key, value in required.items():
@@ -1408,12 +1408,26 @@ class DBManager:
             # Keep `row` intact; build a thin adapter dict.
             schema_data = {
                 **row,
-                "name": row.get("stock_name") or row.get("resolved_stock_name") or ticker,
+                "ticker": row.get("ticker") or row.get("티커") or ticker,
+                "name": row.get("stock_name") or row.get("resolved_stock_name") or row.get("종목명") or ticker,
                 "note": row.get("source_ref"),                # strategy ← source_ref
-                "initial_trend": row.get("real_trend"),       # trend ← real_trend
-                "ml_prob": row.get("prob_5"),                 # ml_prob ← prob_5
+                "initial_trend": row.get("real_trend") or row.get("추세") or row.get("trend"),
+                "ml_prob": row.get("prob_5") or row.get("_prob_5") or row.get("ml_prob"),
+                "prob_clean": row.get("prob_clean") or row.get("_prob_clean"),
                 "outcome_status": row.get("status"),          # outcome_status ← status
                 "volume": row.get("volume") if row.get("volume") is not None else row.get("volume_ratio"),
+                "position": row.get("position") or row.get("위치"),
+                "tier": row.get("tier") or row.get("Tier"),
+                "leader_metrics": row.get("leader_metrics") or row.get("_leader_metrics"),
+                "feature_snapshot": row.get("feature_snapshot")
+                or (
+                    {
+                        "kis_sidecar": row.get("_kis_sidecar"),
+                        "leader_metrics": row.get("_leader_metrics"),
+                    }
+                    if row.get("_kis_sidecar") or row.get("_leader_metrics")
+                    else None
+                ),
             }
             overrides = {
                 "run_id": run_id,

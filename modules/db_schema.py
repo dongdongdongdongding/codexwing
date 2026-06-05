@@ -9,6 +9,7 @@ Only deterministic value coercion (string→int/float) is applied here.
 """
 from __future__ import annotations
 
+import re
 from typing import Any, Callable, Dict, Optional
 
 
@@ -25,6 +26,16 @@ def _to_float_or_none(value: Any) -> Optional[float]:
     try:
         if value is None or value == "":
             return None
+        if isinstance(value, str):
+            cleaned = value.replace(",", "").replace("%", "").replace("점", "").strip()
+            try:
+                value = cleaned
+            except Exception:
+                pass
+            if cleaned and not re.fullmatch(r"[-+]?\d+(?:\.\d+)?", cleaned):
+                match = re.search(r"[-+]?\d+(?:\.\d+)?", cleaned)
+                if match:
+                    value = match.group(0)
         result = float(value)
         if result != result:  # NaN
             return None
@@ -297,6 +308,15 @@ def build_scan_result_payload(
 
 # Default fallback chain for known scanner aliases (cumulative — column then source).
 DEFAULT_FALLBACK_KEYS: Dict[str, str] = {
+    "ticker": "티커",
+    "name": "종목명",
+    "initial_trend": "추세",
+    "tier": "Tier",
+    "position": "위치",
+    "ml_prob": "_prob_5",
+    "prob_clean": "_prob_clean",
+    "decision_score": "Decision Score",
+    "entry_reference_price": "매수가(-2%)",
     "theme_routing_path": "routing_path",
 }
 

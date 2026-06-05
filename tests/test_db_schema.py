@@ -210,6 +210,34 @@ def test_fallback_keys_only_used_when_primary_missing():
     assert payload["theme_routing_path"] == "fallback"
 
 
+def test_display_aliases_map_to_archive_schema_without_dummy_defaults():
+    payload = build_scan_result_payload(
+        {
+            "티커": "011070.KS",
+            "종목명": "LG이노텍",
+            "추세": "UP",
+            "Tier": "⚡T3",
+            "위치": "🚀 상승 (Rising)",
+            "_prob_5": "76.7%",
+            "_prob_clean": 63.2,
+            "Decision Score": 82.5,
+            "매수가(-2%)": "1,195,600",
+        },
+        overrides={},
+        fallback_keys=DEFAULT_FALLBACK_KEYS,
+    )
+
+    assert payload["ticker"] == "011070.KS"
+    assert payload["stock_name"] == "LG이노텍"
+    assert payload["trend"] == "UP"
+    assert payload["tier"] == "⚡T3"
+    assert payload["position"] == "🚀 상승 (Rising)"
+    assert payload["ml_prob"] == 76.7
+    assert payload["prob_clean"] == 63.2
+    assert payload["decision_score"] == 82.5
+    assert payload["entry_reference_price"] == 1195600.0
+
+
 def test_all_columns_unique():
     cols = [c[0] for c in SCAN_RESULT_COLUMNS]
     assert len(cols) == len(set(cols)), f"duplicate columns: {[c for c in cols if cols.count(c) > 1]}"
