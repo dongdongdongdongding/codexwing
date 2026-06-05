@@ -6,11 +6,13 @@ from modules.kis_operational_adapter import (
     build_kis_sidecar_snapshot,
     kis_replacement_roadmap,
     normalize_kis_daily_bars,
+    normalize_kis_financial_ratio,
     normalize_kis_flow_for_whale_contract,
     normalize_kis_minute_bars,
     normalize_kis_news_titles,
     normalize_kis_quote_for_operational_fields,
     normalize_kis_rank_membership,
+    normalize_kis_stock_info,
     normalize_kis_vi_status,
 )
 
@@ -130,6 +132,54 @@ def test_rank_vi_and_news_contracts_track_checked_state_without_fabrication():
     assert news["news_count"] == 0
 
 
+def test_stock_info_and_financial_ratio_contracts_preserve_real_fields():
+    stock = normalize_kis_stock_info(
+        "005930.KS",
+        {
+            "output": {
+                "pdno": "005930",
+                "prdt_name": "삼성전자",
+                "mket_id_cd": "STK",
+                "mket_id_cd_name": "유가증권",
+                "scty_dvsn_name": "주권",
+                "lstg_dt": "19750611",
+                "bstp_kor_isnm": "전기전자",
+                "prdt_sale_stat_cd": "00",
+            }
+        },
+    )
+    financial = normalize_kis_financial_ratio(
+        "005930.KS",
+        {
+            "output": [
+                {
+                    "stac_yymm": "202512",
+                    "grs": "3.4",
+                    "bsop_prfi_inrt": "18.2",
+                    "ntin_inrt": "13.1",
+                    "roe_val": "9.8",
+                    "eps": "5500",
+                    "bps": "52000",
+                    "per": "14.2",
+                    "pbr": "1.3",
+                    "lblt_rate": "28.7",
+                    "crnt_rate": "262.0",
+                    "rsrv_rate": "5300.1",
+                }
+            ]
+        },
+    )
+
+    assert stock["checked"] is True
+    assert stock["source_status"] == "ok"
+    assert stock["product_name"] == "삼성전자"
+    assert stock["listed_date"] == "19750611"
+    assert financial["checked"] is True
+    assert financial["statement_period"] == "202512"
+    assert financial["roe"] == 9.8
+    assert financial["debt_ratio"] == 28.7
+
+
 def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_present():
     daily = pd.DataFrame(
         {
@@ -162,6 +212,22 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
         news_titles=[{"title": "one"}, {"title": "two"}],
         news_titles_checked=True,
         news_title_count=40,
+        stock_info={
+            "checked": True,
+            "source_status": "ok",
+            "market_name": "유가증권",
+            "stock_type": "주권",
+            "listed_date": "19750611",
+            "status_code": "00",
+        },
+        financial_ratio={
+            "checked": True,
+            "source_status": "ok",
+            "statement_period": "202512",
+            "roe": 9.8,
+            "debt_ratio": 28.7,
+            "current_ratio": 262.0,
+        },
     )
 
     assert snapshot["feature_origin"] == "kis_openapi_sidecar"
@@ -175,6 +241,11 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
     assert snapshot["news_contract"]["rows_stored_count"] == 2
     assert snapshot["news_contract"]["rows_truncated"] is True
     assert snapshot["model_candidate_features"]["kis_news_title_count"] == 40
+    assert snapshot["coverage"]["stock_info"] is True
+    assert snapshot["coverage"]["financial_ratio"] is True
+    assert snapshot["stock_info_contract"]["listed_date"] == "19750611"
+    assert snapshot["financial_ratio_contract"]["roe"] == 9.8
+    assert snapshot["model_candidate_features"]["kis_financial_debt_ratio"] == 28.7
 
 
 def test_kis_replacement_roadmap_keeps_source_adapter_promotion_order():

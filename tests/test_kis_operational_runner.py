@@ -1,4 +1,6 @@
-from multi_agent.tools.run_kis_operational_kr_scan import _prefilter_market_payload
+import argparse
+
+from multi_agent.tools.run_kis_operational_kr_scan import _prefilter_market_payload, _scan_env
 
 
 def test_prefilter_market_payload_compacts_kis_features_without_dummy_values():
@@ -63,3 +65,28 @@ def test_prefilter_market_payload_compacts_kis_features_without_dummy_values():
     assert candidate["quote"]["per"] == 15.1
     assert candidate["flow"]["flow_source"] == "kis_openapi"
     assert candidate["score_components"]["vi_triggered"] == 8.0
+
+
+def test_scan_env_enables_kis_sidecar_context_fields_by_default(monkeypatch):
+    monkeypatch.delenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_RANK", raising=False)
+    args = argparse.Namespace(
+        enable_sidecar=True,
+        enable_sidecar_quote=True,
+        enable_sidecar_flow=True,
+        enable_sidecar_rank=True,
+        enable_sidecar_vi=True,
+        enable_sidecar_news=True,
+        enable_sidecar_stock_info=True,
+        enable_sidecar_financial=True,
+        kis_call_sleep_sec=0.12,
+        sidecar_call_sleep_sec=0.25,
+        deep_kis_daily_max_chunks=3,
+    )
+
+    env = _scan_env(args)
+
+    assert env["AG_KIS_SIDECAR_FETCH_RANK"] == "1"
+    assert env["AG_KIS_SIDECAR_FETCH_VI"] == "1"
+    assert env["AG_KIS_SIDECAR_FETCH_NEWS"] == "1"
+    assert env["AG_KIS_SIDECAR_FETCH_STOCK_INFO"] == "1"
+    assert env["AG_KIS_SIDECAR_FETCH_FINANCIAL"] == "1"

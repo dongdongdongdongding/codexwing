@@ -128,6 +128,8 @@ def _kis_batch_env(args: argparse.Namespace) -> Dict[str, str]:
             "AG_KIS_SIDECAR_FETCH_RANK": "1",
             "AG_KIS_SIDECAR_FETCH_VI": "1",
             "AG_KIS_SIDECAR_FETCH_NEWS": "1",
+            "AG_KIS_SIDECAR_FETCH_STOCK_INFO": "1",
+            "AG_KIS_SIDECAR_FETCH_FINANCIAL": "1",
             "KIS_LIVE_CALL_SLEEP_SEC": str(args.kis_call_sleep_sec),
             "AG_KIS_SIDECAR_CALL_SLEEP_SEC": str(args.sidecar_call_sleep_sec),
             "MPLCONFIGDIR": str(PROJECT_ROOT / "runtime_state" / "local_short_term" / "matplotlib_cache"),

@@ -199,9 +199,11 @@ def _build_optional_kis_sidecar(
         build_kis_sidecar_snapshot,
         kis_intraday_input_hour,
         normalize_kis_daily_bars,
+        normalize_kis_financial_ratio,
         normalize_kis_minute_bars,
         normalize_kis_news_titles,
         normalize_kis_rank_membership,
+        normalize_kis_stock_info,
         normalize_kis_vi_status,
     )
 
@@ -214,6 +216,8 @@ def _build_optional_kis_sidecar(
     news_rows = []
     news_checked = False
     news_count = 0
+    stock_info_contract: Dict[str, Any] = {}
+    financial_ratio_contract: Dict[str, Any] = {}
     daily_source_warning = None
     warnings = []
     sidecar_market = _kis_market_for_symbol(sym, market)
@@ -319,6 +323,22 @@ def _build_optional_kis_sidecar(
                 news_count = int(news_contract.get("news_count") or len(raw_news_rows))
             except Exception as exc:
                 warnings.append(f"kis_news_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_STOCK_INFO", True):
+            try:
+                stock_info_contract = normalize_kis_stock_info(
+                    sym,
+                    _kis_sidecar_call(lambda: client.stock_info(sym)),
+                )
+            except Exception as exc:
+                warnings.append(f"kis_stock_info_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_FINANCIAL", True):
+            try:
+                financial_ratio_contract = normalize_kis_financial_ratio(
+                    sym,
+                    _kis_sidecar_call(lambda: client.financial_ratio(sym)),
+                )
+            except Exception as exc:
+                warnings.append(f"kis_financial_ratio_sidecar_failed:{exc}")
     except Exception as exc:
         warnings.append(f"kis_sidecar_client_failed:{exc}")
 
@@ -341,6 +361,8 @@ def _build_optional_kis_sidecar(
         news_titles=news_rows,
         news_titles_checked=news_checked,
         news_title_count=news_count,
+        stock_info=stock_info_contract,
+        financial_ratio=financial_ratio_contract,
     )
     if warnings:
         sidecar["warnings"] = sorted(set(list(sidecar.get("warnings") or []) + warnings))

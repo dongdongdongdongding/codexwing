@@ -126,3 +126,64 @@ def test_optional_kis_sidecar_does_not_label_unknown_daily_source_as_kis(monkeyp
 
     assert sidecar["coverage"]["daily_ohlcv"] is False
     assert "kis_daily_sidecar_skipped_unverified_source:finance_data_reader" in sidecar["warnings"]
+
+
+def test_optional_kis_sidecar_persists_live_rank_news_stock_and_financial_contracts(monkeypatch):
+    class FakeKISClient:
+        def quote_snapshot(self, symbol):
+            return {"ticker": symbol, "source_status": "ok", "last_price": 75500, "per": 14.0, "pbr": 1.2}
+
+        def volume_rank(self, *, market="ALL"):
+            return {"output": [{"mksc_shrn_iscd": "005930", "hts_kor_isnm": "삼성전자", "data_rank": "4"}]}
+
+        def fluctuation_rank(self, *, market="ALL"):
+            return {"output": []}
+
+        def volume_power_rank(self, *, market="ALL"):
+            return {"output": [{"mksc_shrn_iscd": "005930", "hts_kor_isnm": "삼성전자", "data_rank": "9"}]}
+
+        def vi_status(self, *, market="ALL", trade_date):
+            return {"output": [{"mksc_shrn_iscd": "005930", "hts_kor_isnm": "삼성전자"}]}
+
+        def news_titles(self, *, symbol="", trade_date="", hour=""):
+            return {"output": [{"title": "one"}, {"title": "two"}, {"title": "three"}]}
+
+        def stock_info(self, symbol):
+            return {
+                "output": {
+                    "pdno": "005930",
+                    "prdt_name": "삼성전자",
+                    "mket_id_cd_name": "유가증권",
+                    "scty_dvsn_name": "주권",
+                    "lstg_dt": "19750611",
+                }
+            }
+
+        def financial_ratio(self, symbol):
+            return {"output": [{"stac_yymm": "202512", "roe_val": "9.8", "lblt_rate": "28.7"}]}
+
+    monkeypatch.setattr("modules.kis_openapi.KISOpenAPIClient", FakeKISClient)
+    monkeypatch.setenv("AG_ENABLE_KIS_SIDECAR", "1")
+    monkeypatch.setenv("AG_KIS_SIDECAR_NEWS_MAX_ROWS", "2")
+    monkeypatch.setenv("AG_KIS_SIDECAR_FETCH_MINUTE", "0")
+
+    sidecar = _build_optional_kis_sidecar(
+        "005930.KS",
+        market="KOSPI",
+        daily_bars=_daily_frame(),
+        daily_bars_source="kis_openapi",
+        whale_data=_kis_flow(),
+    )
+
+    features = sidecar["model_candidate_features"]
+    assert sidecar["rank_contract"]["volume_rank"] == 4
+    assert sidecar["rank_contract"]["volume_power_rank"] == 9
+    assert sidecar["vi_contract"]["triggered"] is True
+    assert sidecar["news_contract"]["news_count"] == 3
+    assert sidecar["news_contract"]["rows_stored_count"] == 2
+    assert sidecar["stock_info_contract"]["listed_date"] == "19750611"
+    assert sidecar["financial_ratio_contract"]["roe"] == 9.8
+    assert features["kis_rank_volume"] == 4
+    assert features["kis_news_title_count"] == 3
+    assert features["kis_stock_listed_date"] == "19750611"
+    assert features["kis_financial_debt_ratio"] == 28.7

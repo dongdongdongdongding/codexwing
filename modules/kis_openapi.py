@@ -1003,6 +1003,27 @@ class KISOpenAPIClient:
             },
         )
 
+    def stock_info(self, symbol: str, *, product_type: str = "300") -> Dict[str, Any]:
+        code = normalize_kr_stock_code(symbol)
+        return self._request_json(
+            "stock_info",
+            params={
+                "PDNO": code,
+                "PRDT_TYPE_CD": str(product_type or "300"),
+            },
+        )
+
+    def financial_ratio(self, symbol: str, *, market_div: str = "J", div_cls_code: str = "0") -> Dict[str, Any]:
+        code = normalize_kr_stock_code(symbol)
+        return self._request_json(
+            "financial_ratio",
+            params={
+                "FID_DIV_CLS_CODE": str(div_cls_code or "0"),
+                "FID_COND_MRKT_DIV_CODE": market_div,
+                "FID_INPUT_ISCD": code,
+            },
+        )
+
 
 def parse_quote_snapshot(symbol: str, payload: Mapping[str, Any]) -> Dict[str, Any]:
     output = _output_dict(payload)

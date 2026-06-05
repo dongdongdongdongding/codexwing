@@ -158,6 +158,92 @@ def normalize_kis_news_titles(payload: Optional[Mapping[str, Any]]) -> Dict[str,
     }
 
 
+def _first_row(payload: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        return {}
+    rows = _output_rows(payload)
+    return dict(rows[0]) if rows else {}
+
+
+def normalize_kis_stock_info(symbol: str, payload: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        return {"source": "kis_openapi", "source_status": "not_requested", "checked": False}
+    row = _first_row(payload)
+    row_count = len(_output_rows(payload))
+    market_code = _first_present(row, "mket_id_cd", "mrkt_div_cls_code", "market_code")
+    market_name = _first_present(row, "mket_id_cd_name", "rprs_mrkt_kor_name", "market_name")
+    if not market_name:
+        market_name = {"STK": "KOSPI", "KSQ": "KOSDAQ", "KNX": "KONEX"}.get(str(market_code or "").upper())
+    return {
+        "source": "kis_openapi",
+        "source_status": "ok" if row else "empty_output",
+        "checked": True,
+        "ticker": normalize_kr_stock_code(symbol),
+        "row_count": row_count,
+        "product_code": _first_present(row, "pdno", "PDNO", "stck_shrn_iscd", "mksc_shrn_iscd"),
+        "product_name": _first_present(row, "prdt_name", "prdt_abrv_name", "hts_kor_isnm", "name"),
+        "market_code": market_code,
+        "market_name": market_name,
+        "stock_type": _first_present(row, "scty_dvsn_name", "prdt_clsf_name", "stock_type", "stck_kind_cd", "scty_grp_id_cd"),
+        "listed_date": _first_present(
+            row,
+            "lstg_dt",
+            "list_dt",
+            "listed_date",
+            "scts_mket_lstg_dt",
+            "kosdaq_mket_lstg_dt",
+            "frbd_mket_lstg_dt",
+        ),
+        "sector_name": _first_present(
+            row,
+            "bstp_kor_isnm",
+            "sector_name",
+            "industry_name",
+            "std_idst_clsf_cd_name",
+            "idx_bztp_mcls_cd_name",
+        ),
+        "standard_industry_code": _first_present(row, "std_idst_clsf_cd", "industry_code"),
+        "large_sector_name": _first_present(row, "idx_bztp_lcls_cd_name"),
+        "mid_sector_name": _first_present(row, "idx_bztp_mcls_cd_name"),
+        "small_sector_name": _first_present(row, "idx_bztp_scls_cd_name"),
+        "listed_shares": _to_int(_first_present(row, "lstg_stqt", "listed_shares")),
+        "capital_amount": _to_float(_first_present(row, "cpta", "capital_amount")),
+        "par_value": _to_float(_first_present(row, "papr", "par_value")),
+        "kospi200_item": _first_present(row, "kospi200_item_yn"),
+        "trade_stop": _first_present(row, "tr_stop_yn", "nxt_tr_stop_yn"),
+        "admin_item": _first_present(row, "admn_item_yn"),
+        "status_code": _first_present(row, "prdt_sale_stat_cd", "iscd_stat_cls_code", "status_code"),
+        "raw": row,
+    }
+
+
+def normalize_kis_financial_ratio(symbol: str, payload: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        return {"source": "kis_openapi", "source_status": "not_requested", "checked": False}
+    row = _first_row(payload)
+    row_count = len(_output_rows(payload))
+    return {
+        "source": "kis_openapi",
+        "source_status": "ok" if row else "empty_output",
+        "checked": True,
+        "ticker": normalize_kr_stock_code(symbol),
+        "row_count": row_count,
+        "statement_period": _first_present(row, "stac_yymm", "stac_month", "statement_period"),
+        "revenue_growth_rate": _to_float(_first_present(row, "grs", "revenue_growth_rate", "sale_inrt")),
+        "operating_profit_margin": _to_float(_first_present(row, "bsop_prfi_inrt", "operating_profit_margin")),
+        "net_income_margin": _to_float(_first_present(row, "ntin_inrt", "net_income_margin")),
+        "roe": _to_float(_first_present(row, "roe_val", "roe", "self_cptl_ntin_inrt")),
+        "eps": _to_float(_first_present(row, "eps", "eps_val")),
+        "bps": _to_float(_first_present(row, "bps", "bps_val")),
+        "per": _to_float(_first_present(row, "per", "per_val")),
+        "pbr": _to_float(_first_present(row, "pbr", "pbr_val")),
+        "debt_ratio": _to_float(_first_present(row, "lblt_rate", "debt_ratio")),
+        "current_ratio": _to_float(_first_present(row, "crnt_rate", "current_ratio")),
+        "reserve_ratio": _to_float(_first_present(row, "rsrv_rate", "reserve_ratio")),
+        "raw": row,
+    }
+
+
 def _parse_date(value: Any) -> Optional[pd.Timestamp]:
     text = str(value or "").strip()
     if not text:
@@ -401,6 +487,8 @@ def build_kis_sidecar_snapshot(
     news_titles: Optional[Iterable[Mapping[str, Any]]] = None,
     news_titles_checked: bool = False,
     news_title_count: Optional[int] = None,
+    stock_info: Optional[Mapping[str, Any]] = None,
+    financial_ratio: Optional[Mapping[str, Any]] = None,
     generated_at: str = "",
 ) -> Dict[str, Any]:
     quote_fields = normalize_kis_quote_for_operational_fields(quote_snapshot or {}) if quote_snapshot else {}
@@ -412,6 +500,24 @@ def build_kis_sidecar_snapshot(
     news_list = [dict(item) for item in (news_titles or []) if isinstance(item, Mapping)]
     news_checked = bool(news_titles_checked or news_list)
     news_count = int(news_title_count) if news_title_count is not None else len(news_list)
+    stock = dict(stock_info or {})
+    financial = dict(financial_ratio or {})
+    has_financial_ratio = any(
+        financial.get(key) is not None
+        for key in (
+            "revenue_growth_rate",
+            "operating_profit_margin",
+            "net_income_margin",
+            "roe",
+            "eps",
+            "bps",
+            "per",
+            "pbr",
+            "debt_ratio",
+            "current_ratio",
+            "reserve_ratio",
+        )
+    )
 
     coverage = {
         "quote_snapshot": bool(quote_fields and quote_fields.get("current_price") is not None),
@@ -422,7 +528,9 @@ def build_kis_sidecar_snapshot(
         "rank_membership": bool(rank.get("checked") or rank),
         "vi_status": bool(vi.get("checked") or vi),
         "news_titles": bool(news_checked),
-        "financial_style": any(quote_fields.get(key) is not None for key in ("per", "pbr", "eps", "bps")),
+        "stock_info": bool(stock.get("checked") or stock),
+        "financial_ratio": bool(financial.get("checked") or financial),
+        "financial_style": any(quote_fields.get(key) is not None for key in ("per", "pbr", "eps", "bps")) or has_financial_ratio,
     }
 
     model_features = {
@@ -451,6 +559,31 @@ def build_kis_sidecar_snapshot(
         "kis_rank_volume_power": rank.get("volume_power_rank"),
         "kis_vi_triggered": vi.get("triggered"),
         "kis_news_title_count": news_count,
+        "kis_stock_market_code": stock.get("market_code"),
+        "kis_stock_market_name": stock.get("market_name"),
+        "kis_stock_type": stock.get("stock_type"),
+        "kis_stock_listed_date": stock.get("listed_date"),
+        "kis_stock_status_code": stock.get("status_code"),
+        "kis_stock_sector_name": stock.get("sector_name"),
+        "kis_stock_standard_industry_code": stock.get("standard_industry_code"),
+        "kis_stock_listed_shares": stock.get("listed_shares"),
+        "kis_stock_capital_amount": stock.get("capital_amount"),
+        "kis_stock_par_value": stock.get("par_value"),
+        "kis_stock_kospi200_item": stock.get("kospi200_item"),
+        "kis_stock_trade_stop": stock.get("trade_stop"),
+        "kis_stock_admin_item": stock.get("admin_item"),
+        "kis_financial_statement_period": financial.get("statement_period"),
+        "kis_financial_revenue_growth_rate": financial.get("revenue_growth_rate"),
+        "kis_financial_operating_profit_margin": financial.get("operating_profit_margin"),
+        "kis_financial_net_income_margin": financial.get("net_income_margin"),
+        "kis_financial_roe": financial.get("roe"),
+        "kis_financial_eps": financial.get("eps"),
+        "kis_financial_bps": financial.get("bps"),
+        "kis_financial_per": financial.get("per"),
+        "kis_financial_pbr": financial.get("pbr"),
+        "kis_financial_debt_ratio": financial.get("debt_ratio"),
+        "kis_financial_current_ratio": financial.get("current_ratio"),
+        "kis_financial_reserve_ratio": financial.get("reserve_ratio"),
     }
 
     ready = {
@@ -467,6 +600,8 @@ def build_kis_sidecar_snapshot(
             and coverage["rank_membership"]
             and coverage["vi_status"]
             and coverage["news_titles"]
+            and coverage["stock_info"]
+            and coverage["financial_ratio"]
         ),
     }
     warnings = list(quote_fields.get("warnings") or []) + list(flow_fields.get("warnings") or [])
@@ -493,6 +628,8 @@ def build_kis_sidecar_snapshot(
             "rows_truncated": bool(news_count > len(news_list)),
             "rows": news_list,
         },
+        "stock_info_contract": stock,
+        "financial_ratio_contract": financial,
         "model_candidate_features": model_features,
         "coverage": coverage,
         "replacement_readiness": ready,
@@ -540,6 +677,7 @@ def kis_replacement_roadmap() -> Dict[str, Any]:
             "trade value and previous-volume ratio from official quote snapshots",
             "foreign/institution/retail daily flow when the time-gated endpoint is available",
             "volume, fluctuation, execution-strength, and VI rank membership",
+            "stock information such as market, listing date, and sale/status flags",
             "financial ratios and 250-day high/low distance",
             "same-day minute bars for intraday volume curve and VWAP features",
             "KIS news-title count as a low-cost event-intensity feature",
@@ -553,7 +691,12 @@ __all__ = [
     "kis_intraday_input_hour",
     "kis_replacement_roadmap",
     "normalize_kis_daily_bars",
+    "normalize_kis_financial_ratio",
     "normalize_kis_flow_for_whale_contract",
     "normalize_kis_minute_bars",
+    "normalize_kis_news_titles",
     "normalize_kis_quote_for_operational_fields",
+    "normalize_kis_rank_membership",
+    "normalize_kis_stock_info",
+    "normalize_kis_vi_status",
 ]

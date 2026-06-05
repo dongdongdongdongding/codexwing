@@ -308,6 +308,8 @@ def test_ranking_and_context_requests_are_available_without_scanner_wiring():
     client.industry_price(index_code="1001")
     client.vi_status(market="KOSDAQ", trade_date="20260604")
     client.news_titles(symbol="005930", trade_date="20260604")
+    client.stock_info("005930.KS")
+    client.financial_ratio("005930.KS")
 
     paths = [call["path"] for call in calls]
     assert "/uapi/domestic-stock/v1/quotations/volume-rank" in paths
@@ -317,7 +319,14 @@ def test_ranking_and_context_requests_are_available_without_scanner_wiring():
     assert "/uapi/domestic-stock/v1/quotations/inquire-index-price" in paths
     assert "/uapi/domestic-stock/v1/quotations/inquire-vi-status" in paths
     assert "/uapi/domestic-stock/v1/quotations/news-title" in paths
+    assert "/uapi/domestic-stock/v1/quotations/search-stock-info" in paths
+    assert "/uapi/domestic-stock/v1/finance/financial-ratio" in paths
 
     foreign_total = next(call for call in calls if call["path"].endswith("foreign-institution-total"))
     assert foreign_total["query"]["FID_INPUT_ISCD"] == "1001"
     assert foreign_total["query"]["FID_ETC_CLS_CODE"] == "2"
+    stock_info = next(call for call in calls if call["path"].endswith("search-stock-info"))
+    assert stock_info["query"]["PDNO"] == "005930"
+    assert stock_info["query"]["PRDT_TYPE_CD"] == "300"
+    financial = next(call for call in calls if call["path"].endswith("financial-ratio"))
+    assert financial["query"]["FID_INPUT_ISCD"] == "005930"

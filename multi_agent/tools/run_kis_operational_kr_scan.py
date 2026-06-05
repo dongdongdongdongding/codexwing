@@ -155,9 +155,11 @@ def _scan_env(args: argparse.Namespace) -> Dict[str, str]:
             "AG_KIS_SIDECAR_FETCH_DAILY": "0",
             "AG_KIS_SIDECAR_FETCH_MINUTE": "0",
             "AG_KIS_SIDECAR_FETCH_FLOW": "1" if args.enable_sidecar_flow else "0",
-            "AG_KIS_SIDECAR_FETCH_RANK": "0",
-            "AG_KIS_SIDECAR_FETCH_VI": "0",
-            "AG_KIS_SIDECAR_FETCH_NEWS": "0",
+            "AG_KIS_SIDECAR_FETCH_RANK": "1" if args.enable_sidecar_rank else "0",
+            "AG_KIS_SIDECAR_FETCH_VI": "1" if args.enable_sidecar_vi else "0",
+            "AG_KIS_SIDECAR_FETCH_NEWS": "1" if args.enable_sidecar_news else "0",
+            "AG_KIS_SIDECAR_FETCH_STOCK_INFO": "1" if args.enable_sidecar_stock_info else "0",
+            "AG_KIS_SIDECAR_FETCH_FINANCIAL": "1" if args.enable_sidecar_financial else "0",
             "KIS_LIVE_CALL_SLEEP_SEC": str(args.kis_call_sleep_sec),
             "AG_KIS_SIDECAR_CALL_SLEEP_SEC": str(args.sidecar_call_sleep_sec),
             "AG_KIS_DAILY_MAX_CHUNKS": str(args.deep_kis_daily_max_chunks),
@@ -636,6 +638,11 @@ def main() -> int:
     parser.add_argument("--enable-sidecar", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR", "1").lower() in {"1", "true", "yes", "on"})
     parser.add_argument("--enable-sidecar-quote", action="store_true", default=True)
     parser.add_argument("--enable-sidecar-flow", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_FLOW", "1").lower() in {"1", "true", "yes", "on"})
+    parser.add_argument("--enable-sidecar-rank", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_RANK", "1").lower() in {"1", "true", "yes", "on"})
+    parser.add_argument("--enable-sidecar-vi", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_VI", "1").lower() in {"1", "true", "yes", "on"})
+    parser.add_argument("--enable-sidecar-news", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_NEWS", "1").lower() in {"1", "true", "yes", "on"})
+    parser.add_argument("--enable-sidecar-stock-info", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_STOCK_INFO", "1").lower() in {"1", "true", "yes", "on"})
+    parser.add_argument("--enable-sidecar-financial", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_FINANCIAL", "1").lower() in {"1", "true", "yes", "on"})
     args = parser.parse_args()
     try:
         summary = run(args)

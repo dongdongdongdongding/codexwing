@@ -142,6 +142,11 @@ def test_resume_skips_completed_batch_and_runs_next_batch(tmp_path, monkeypatch)
     assert commands[0][0][-1] == "--allow-empty-results"
     assert commands[0][1]["AG_KR_MARKET_DATA_PROVIDER"] == "kis_only"
     assert commands[0][1]["AG_ENABLE_KIS_SIDECAR"] == "1"
+    assert commands[0][1]["AG_KIS_SIDECAR_FETCH_RANK"] == "1"
+    assert commands[0][1]["AG_KIS_SIDECAR_FETCH_VI"] == "1"
+    assert commands[0][1]["AG_KIS_SIDECAR_FETCH_NEWS"] == "1"
+    assert commands[0][1]["AG_KIS_SIDECAR_FETCH_STOCK_INFO"] == "1"
+    assert commands[0][1]["AG_KIS_SIDECAR_FETCH_FINANCIAL"] == "1"
     assert commands[0][2] == 0
     assert commands[0][3] == 0.0
     assert state["summary"] == {"completed": 2, "failed": 0, "skipped": 0, "pending": 0}
