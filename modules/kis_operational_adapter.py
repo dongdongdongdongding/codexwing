@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -9,6 +10,31 @@ from modules.kis_openapi import normalize_kr_stock_code
 
 
 KIS_OPERATIONAL_CONTRACT_VERSION = "kis_operational_adapter_v1"
+
+
+def kis_intraday_input_hour(now: Optional[datetime] = None) -> str:
+    """Return the KIS minute-chart input hour for the current KR session."""
+
+    override = str(os.getenv("AG_KIS_INTRADAY_INPUT_HOUR") or "").strip().replace(":", "")
+    if override.isdigit() and len(override) >= 4:
+        return override.zfill(6)[:6]
+
+    try:
+        from zoneinfo import ZoneInfo
+
+        kst = ZoneInfo("Asia/Seoul")
+        current = now.astimezone(kst) if now is not None and now.tzinfo is not None else (now or datetime.now(kst))
+    except Exception:
+        current = now or datetime.now()
+
+    seconds = (int(current.hour) * 3600) + (int(current.minute) * 60) + int(current.second)
+    open_seconds = 9 * 3600
+    close_seconds = (15 * 3600) + (30 * 60)
+    if seconds < open_seconds:
+        return "090000"
+    if seconds > close_seconds:
+        return "153000"
+    return f"{int(current.hour):02d}{int(current.minute):02d}{int(current.second):02d}"
 
 
 def _to_float(value: Any) -> Optional[float]:
@@ -524,6 +550,7 @@ def kis_replacement_roadmap() -> Dict[str, Any]:
 __all__ = [
     "KIS_OPERATIONAL_CONTRACT_VERSION",
     "build_kis_sidecar_snapshot",
+    "kis_intraday_input_hour",
     "kis_replacement_roadmap",
     "normalize_kis_daily_bars",
     "normalize_kis_flow_for_whale_contract",

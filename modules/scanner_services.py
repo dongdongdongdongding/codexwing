@@ -197,6 +197,7 @@ def _build_optional_kis_sidecar(
 
     from modules.kis_operational_adapter import (
         build_kis_sidecar_snapshot,
+        kis_intraday_input_hour,
         normalize_kis_daily_bars,
         normalize_kis_minute_bars,
         normalize_kis_news_titles,
@@ -252,8 +253,11 @@ def _build_optional_kis_sidecar(
             try:
                 from datetime import datetime
 
-                payload = _kis_sidecar_call(lambda: client.today_minute_bars(sym, input_hour="153000", include_past=True))
-                sidecar_minute = normalize_kis_minute_bars(sym, payload, trade_date=datetime.now().strftime("%Y%m%d"))
+                now = datetime.now()
+                payload = _kis_sidecar_call(
+                    lambda: client.today_minute_bars(sym, input_hour=kis_intraday_input_hour(now=now), include_past=True)
+                )
+                sidecar_minute = normalize_kis_minute_bars(sym, payload, trade_date=now.strftime("%Y%m%d"))
             except Exception as exc:
                 warnings.append(f"kis_minute_sidecar_failed:{exc}")
         if _env_bool("AG_KIS_SIDECAR_FETCH_FLOW", True):
@@ -837,6 +841,18 @@ def evaluate_intraday_candidate(
         surge_tag=str(surge_tag),
     )
     timeframe_profile = resolve_kr_timeframe_profile("INTRADAY", sym)
+    kis_sidecar: Dict[str, Any] = {}
+    intraday_flow_fields: Dict[str, Any] = _flow_persistence_fields(None, None)
+    if not is_us:
+        kis_sidecar = _build_optional_kis_sidecar(sym, market=market_key)
+        intraday_flow_fields = _flow_persistence_fields(
+            kis_sidecar.get("flow_contract") if isinstance(kis_sidecar, dict) else None,
+            None,
+        )
+    leader_metrics_payload = dict(theme_overlay.get("leader_metrics", {}) or {})
+    if kis_sidecar:
+        leader_metrics_payload["kis_sidecar"] = kis_sidecar
+    selection_lane = str(kr_intraday_role.get("role") or "EXPLOSIVE_LEADER")
 
     if is_us:
         res_data = {
@@ -883,7 +899,7 @@ def evaluate_intraday_candidate(
             "stop_sl_pct": -2.0,
             "hold_days": 0,
             "_theme_context": theme_overlay.get("theme_context", {}),
-            "_leader_metrics": theme_overlay.get("leader_metrics", {}),
+            "_leader_metrics": leader_metrics_payload,
             "_routing_path": theme_overlay.get("routing_path", "core_only"),
             "Theme": (theme_overlay.get("theme_context", {}) or {}).get("primary_theme", "-"),
             "scan_mode": "INTRADAY",
@@ -943,6 +959,7 @@ def evaluate_intraday_candidate(
             "시장맥락": news_tag,
             "전략": strategy_tag,
             "급등예측": surge_tag,
+            "selection_lane": selection_lane,
             "승률": "-",
             "AI확률": f"{prob_5:.1f}%",
             "정밀확률": f"{prob_clean:.1f}%",
@@ -967,16 +984,46 @@ def evaluate_intraday_candidate(
             "target_tp_pct": 3.5,
             "stop_sl_pct": -2.0,
             "hold_days": 0,
+            "foreigner": intraday_flow_fields["foreigner"],
+            "institution": intraday_flow_fields["institution"],
+            "retail": intraday_flow_fields["retail"],
+            "foreigner_1d": intraday_flow_fields["foreigner_1d"],
+            "institution_1d": intraday_flow_fields["institution_1d"],
+            "retail_1d": intraday_flow_fields["retail_1d"],
+            "foreigner_3d": intraday_flow_fields["foreigner_3d"],
+            "institution_3d": intraday_flow_fields["institution_3d"],
+            "retail_3d": intraday_flow_fields["retail_3d"],
+            "foreigner_10d": intraday_flow_fields["foreigner_10d"],
+            "institution_10d": intraday_flow_fields["institution_10d"],
+            "retail_10d": intraday_flow_fields["retail_10d"],
+            "dominant": intraday_flow_fields["dominant"],
+            "dominant_side": intraday_flow_fields["dominant_side"],
+            "dominant_flow": intraday_flow_fields["dominant_flow"],
+            "buy_dominant": intraday_flow_fields["buy_dominant"],
+            "buy_dominant_flow": intraday_flow_fields["buy_dominant_flow"],
+            "sell_dominant": intraday_flow_fields["sell_dominant"],
+            "sell_dominant_flow": intraday_flow_fields["sell_dominant_flow"],
+            "whale_flow": intraday_flow_fields["whale_flow"],
+            "whale_flow_1d": intraday_flow_fields["whale_flow_1d"],
+            "whale_flow_3d": intraday_flow_fields["whale_flow_3d"],
+            "whale_flow_10d": intraday_flow_fields["whale_flow_10d"],
+            "flow_source": intraday_flow_fields["flow_source"],
+            "flow_unit": intraday_flow_fields["flow_unit"],
+            "flow_window": intraday_flow_fields["flow_window"],
+            "flow_asof": intraday_flow_fields["flow_asof"],
+            "flow_warnings": intraday_flow_fields["flow_warnings"],
             "_theme_context": theme_overlay.get("theme_context", {}),
-            "_leader_metrics": theme_overlay.get("leader_metrics", {}),
+            "_leader_metrics": leader_metrics_payload,
             "_routing_path": theme_overlay.get("routing_path", "core_only"),
             "테마": (theme_overlay.get("theme_context", {}) or {}).get("primary_theme", "-"),
             "scan_mode": "INTRADAY",
             "strategy_family": resolve_strategy_family("KR"),
             "scanner_timeframe_profile": timeframe_profile,
-            "kr_universe_role": str(kr_intraday_role.get("role") or "EXPLOSIVE_LEADER"),
+            "kr_universe_role": selection_lane,
             "explosive_leader_flag": bool(kr_intraday_role.get("explosive_leader_flag", True)),
             "core_trend_flag": bool(kr_intraday_role.get("core_trend_flag", False)),
+            "_kis_sidecar": kis_sidecar,
+            "kis_model_candidate_features": kis_sidecar.get("model_candidate_features", {}) if kis_sidecar else {},
         }
         db_payload = {
             "ticker": sym,
@@ -1013,14 +1060,29 @@ def evaluate_intraday_candidate(
             "target_tp_pct": 3.5,
             "stop_sl_pct": -2.0,
             "hold_days": 0,
+            "foreigner_1d": intraday_flow_fields["foreigner_1d"],
+            "institution_1d": intraday_flow_fields["institution_1d"],
+            "retail_1d": intraday_flow_fields["retail_1d"],
+            "foreigner_3d": intraday_flow_fields["foreigner_3d"],
+            "institution_3d": intraday_flow_fields["institution_3d"],
+            "retail_3d": intraday_flow_fields["retail_3d"],
+            "foreigner_10d": intraday_flow_fields["foreigner_10d"],
+            "institution_10d": intraday_flow_fields["institution_10d"],
+            "retail_10d": intraday_flow_fields["retail_10d"],
+            "flow_source": intraday_flow_fields["flow_source"],
+            "flow_unit": intraday_flow_fields["flow_unit"],
+            "flow_window": intraday_flow_fields["flow_window"],
+            "flow_asof": intraday_flow_fields["flow_asof"],
+            "flow_warnings": intraday_flow_fields["flow_warnings"],
             "theme_context": theme_overlay.get("theme_context", {}),
-            "leader_metrics": theme_overlay.get("leader_metrics", {}),
+            "leader_metrics": leader_metrics_payload,
             "routing_path": theme_overlay.get("routing_path", "core_only"),
             "theme_score_adjustment": round(float(theme_overlay.get("score_adjustment", 0.0) or 0.0), 2),
             "scanner_timeframe_profile": timeframe_profile,
-            "kr_universe_role": str(kr_intraday_role.get("role") or "EXPLOSIVE_LEADER"),
+            "kr_universe_role": selection_lane,
             "explosive_leader_flag": bool(kr_intraday_role.get("explosive_leader_flag", True)),
             "core_trend_flag": bool(kr_intraday_role.get("core_trend_flag", False)),
+            "kis_sidecar": kis_sidecar,
             **_theme_flat_fields(theme_overlay.get("theme_context", {})),
         }
 

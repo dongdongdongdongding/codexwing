@@ -213,6 +213,39 @@ def _load_json(path: str | Path | None) -> Dict[str, Any]:
         return {}
 
 
+def _nested(row: Dict[str, Any], *keys: str) -> Any:
+    current: Any = row
+    for key in keys:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(key)
+    return current
+
+
+def _top_deep_rows(top_deep_reports: Dict[str, Any] | None) -> List[Dict[str, Any]]:
+    info = top_deep_reports if isinstance(top_deep_reports, dict) else {}
+    path = info.get("local_path")
+    if not path:
+        return []
+    try:
+        payload = json.loads(Path(str(path)).read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    if isinstance(payload, list):
+        return [row for row in payload if isinstance(row, dict)]
+    rows = payload.get("rows") or payload.get("reports") or payload.get("results")
+    return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
+
+
+def _top_deep_index(top_deep_reports: Dict[str, Any] | None) -> Dict[str, Dict[str, Any]]:
+    index: Dict[str, Dict[str, Any]] = {}
+    for row in _top_deep_rows(top_deep_reports):
+        ticker = _ticker(row)
+        if ticker and ticker not in index:
+            index[ticker] = row
+    return index
+
+
 def _planner_rows(bridge_info: Dict[str, Any] | None) -> List[Tuple[str, Dict[str, Any]]]:
     info = bridge_info if isinstance(bridge_info, dict) else {}
     planner = _load_json(info.get("planner_handoff"))
@@ -292,6 +325,54 @@ def _canonical_snapshot(
         if not _is_missing(lane):
             factors["selection_lane"] = _json_safe(lane)
             field_sources["selection_lane"] = "raw_scan._quant_signal"
+    if str(row.get("report_version") or "").startswith("top_deep_report"):
+        fallbacks = {
+            "decision_score": (
+                row.get("buy_score"),
+                _nested(row, "scan_universe_admission", "probability_pct"),
+                row.get("accuracy"),
+            ),
+            "day_return_pct": (
+                row.get("day_return_pct"),
+                row.get("day_change_pct"),
+                _nested(row, "scan_universe_admission", "feature_values", "day_return_pct"),
+            ),
+            "entry_reference_price": (
+                row.get("entry_reference_price"),
+                _nested(row, "trade_plan", "entry_reference_price"),
+                _nested(row, "entry_action", "entry_strategy", "entry_zone_high"),
+            ),
+            "expected_edge_score": (
+                _nested(row, "prediction", "expected_edge_score"),
+                _nested(row, "realized_expectancy_admission", "expected_value_5d_pct"),
+                _nested(row, "scan_universe_admission", "validation", "avg_max_high_5d_pct"),
+            ),
+            "expected_return_1d_pct": (
+                _nested(row, "prediction", "expected_return_1d_pct"),
+                _nested(row, "scan_universe_admission", "validation", "avg_1d_pct"),
+            ),
+            "expected_return_3d_pct": (
+                _nested(row, "prediction", "expected_return_3d_pct"),
+                _nested(row, "scan_universe_admission", "validation", "avg_3d_pct"),
+            ),
+            "selection_lane": (
+                row.get("selection_lane"),
+                _nested(row, "selection_alignment", "source_order"),
+                _nested(row, "scan_universe_admission", "input_source_role"),
+            ),
+            "theme_routing_path": (
+                row.get("theme_routing_path"),
+                _nested(row, "selection_alignment", "source_order"),
+                "top_deep_report",
+            ),
+        }
+        for field, values in fallbacks.items():
+            if not _is_missing(factors.get(field)):
+                continue
+            value = next((item for item in values if not _is_missing(item)), None)
+            if not _is_missing(value):
+                factors[field] = _json_safe(value)
+                field_sources[field] = "top_deep_report"
 
     ticker = str(factors.get("ticker") or _ticker(row) or _ticker(planner)).strip().upper()
     rank = _safe_int(factors.get("priority_rank")) or raw_rank
@@ -334,9 +415,11 @@ def build_observed_factor_snapshots(
     results: List[Dict[str, Any]],
     created_at: str,
     bridge_info: Dict[str, Any] | None = None,
+    top_deep_reports: Dict[str, Any] | None = None,
 ) -> List[Dict[str, Any]]:
     planner_rows = _planner_rows(bridge_info)
     planner_by_ticker = _planner_index(planner_rows)
+    top_deep_by_ticker = _top_deep_index(top_deep_reports)
     snapshots: List[Dict[str, Any]] = []
     seen: set[str] = set()
 
@@ -346,10 +429,12 @@ def build_observed_factor_snapshots(
         ticker = _ticker(row)
         planner = planner_by_ticker.get(ticker, {})
         sources = ["raw_scan"]
+        if ticker in top_deep_by_ticker:
+            sources.append("top_deep_report")
         if planner:
             sources.append(str(planner.get("_planner_source") or "planner"))
         snapshot = _canonical_snapshot(
-            row=row,
+            row={**top_deep_by_ticker.get(ticker, {}), **row},
             planner_row=planner,
             run_id=run_id,
             market=market,
@@ -366,15 +451,19 @@ def build_observed_factor_snapshots(
         if ticker in seen:
             continue
         source = str(planner.get("_planner_source") or "planner")
+        top_deep_row = top_deep_by_ticker.get(ticker, {})
+        sources = [source]
+        if top_deep_row:
+            sources.append("top_deep_report")
         snapshot = _canonical_snapshot(
-            row={},
+            row=top_deep_row,
             planner_row=planner,
             run_id=run_id,
             market=market,
             scan_mode=scan_mode,
             created_at=created_at,
             raw_rank=None,
-            source_sections=[source],
+            source_sections=sources,
         )
         if snapshot["ticker"]:
             snapshots.append(snapshot)
@@ -498,6 +587,7 @@ def write_scan_integrity_artifacts(
         results=results,
         created_at=created_at,
         bridge_info=bridge_info,
+        top_deep_reports=top_deep_reports,
     )
     report = build_scan_integrity_report(
         run_id=run_id,

@@ -195,6 +195,22 @@ def _pipeline_command(args: argparse.Namespace, *, market: str, tickers: str) ->
     ]
 
 
+def _write_summary(summary: Mapping[str, Any]) -> Dict[str, str]:
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = _kst_timestamp()
+    market = str(summary.get("market") or "ALL").lower()
+    mode = str(summary.get("scan_mode") or "SWING").lower()
+    path = REPORT_DIR / f"kis_operational_scan_{market}_{mode}_{stamp}.json"
+    latest = REPORT_DIR / f"kis_operational_scan_{market}_{mode}_latest.json"
+    artifacts = {"json": str(path), "latest_json": str(latest)}
+    serializable = dict(summary)
+    serializable["artifacts"] = artifacts
+    text = json.dumps(serializable, ensure_ascii=False, indent=2, default=str) + "\n"
+    path.write_text(text, encoding="utf-8")
+    latest.write_text(text, encoding="utf-8")
+    return artifacts
+
+
 def run(args: argparse.Namespace) -> Dict[str, Any]:
     load_dotenv()
     load_dotenv(PROJECT_ROOT / ".env.local")
@@ -301,6 +317,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         ),
         "total_scans": sum(int(item.get("selected_count") or 0) for item in market_runs),
     }
+    summary["artifacts"] = _write_summary(summary)
     return summary
 
 
@@ -328,9 +345,9 @@ def main() -> int:
     parser.add_argument("--deep-kis-daily-max-chunks", type=int, default=int(os.getenv("AG_KIS_OPERATIONAL_DAILY_MAX_CHUNKS", "3")))
     parser.add_argument("--pipeline-timeout-sec", type=float, default=float(os.getenv("AG_KIS_OPERATIONAL_PIPELINE_TIMEOUT_SEC", "0")))
     parser.add_argument("--trade-date", default="")
-    parser.add_argument("--enable-sidecar", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR", "0").lower() in {"1", "true", "yes", "on"})
+    parser.add_argument("--enable-sidecar", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR", "1").lower() in {"1", "true", "yes", "on"})
     parser.add_argument("--enable-sidecar-quote", action="store_true", default=True)
-    parser.add_argument("--enable-sidecar-flow", action="store_true", default=False)
+    parser.add_argument("--enable-sidecar-flow", action="store_true", default=os.getenv("AG_KIS_OPERATIONAL_ENABLE_SIDECAR_FLOW", "1").lower() in {"1", "true", "yes", "on"})
     args = parser.parse_args()
     try:
         summary = run(args)

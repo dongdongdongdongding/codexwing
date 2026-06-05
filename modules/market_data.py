@@ -4,7 +4,7 @@ import contextlib
 import io
 import os
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 
@@ -297,6 +297,80 @@ def _resample_intraday(frame: pd.DataFrame, interval: str) -> pd.DataFrame:
     )
 
 
+def _fetch_kis_intraday_history(
+    kis_client: object,
+    symbol: str,
+    *,
+    today: datetime,
+    start: datetime,
+    interval: str,
+) -> pd.DataFrame:
+    from modules.kis_operational_adapter import kis_intraday_input_hour, normalize_kis_minute_bars
+
+    max_days = max(1, int(os.getenv("AG_KIS_INTRADAY_LOOKBACK_DAYS", "15") or "15"))
+    min_bars = max(1, int(os.getenv("AG_KIS_INTRADAY_MIN_BARS", "50") or "50"))
+    input_hour = kis_intraday_input_hour(now=today)
+    frames = []
+
+    def _query_hours(last_hour: str) -> List[str]:
+        cleaned = str(last_hour or "153000").strip().replace(":", "")
+        if not (cleaned.isdigit() and len(cleaned) >= 4):
+            cleaned = "153000"
+        cleaned = cleaned.zfill(6)[:6]
+        hours = [cleaned]
+        for anchor in ("153000", "133000", "113000", "093000"):
+            if anchor < cleaned and anchor not in hours:
+                hours.append(anchor)
+        return hours
+
+    def _append_payload(payload: object, trade_date: str) -> pd.DataFrame:
+        frame = normalize_kis_minute_bars(symbol, payload, trade_date=trade_date)
+        if frame.empty:
+            return pd.DataFrame()
+        return _normalize_ohlcv(frame)
+
+    for day_offset in range(max_days):
+        trade_dt = today - timedelta(days=day_offset)
+        if pd.Timestamp(trade_dt).to_pydatetime() < start:
+            break
+        trade_date = trade_dt.strftime("%Y%m%d")
+        for query_hour in _query_hours(input_hour if day_offset == 0 else "153000"):
+            frame = pd.DataFrame()
+            if day_offset == 0 and query_hour == input_hour:
+                try:
+                    payload = kis_client.today_minute_bars(symbol, input_hour=query_hour, include_past=True)
+                    frame = _append_payload(payload, trade_date)
+                except Exception:
+                    frame = pd.DataFrame()
+            if frame.empty:
+                try:
+                    payload = kis_client.daily_minute_bars(
+                        symbol,
+                        trade_date=trade_date,
+                        input_hour=query_hour,
+                        include_past=True,
+                    )
+                    frame = _append_payload(payload, trade_date)
+                except Exception:
+                    frame = pd.DataFrame()
+            if not frame.empty:
+                frames.append(frame)
+                combined = pd.concat(frames).sort_index()
+                combined = combined[~combined.index.duplicated(keep="last")]
+                resampled = _normalize_ohlcv(_resample_intraday(combined, interval))
+                if len(resampled) >= min_bars:
+                    return resampled
+
+            if query_hour == "093000":
+                break
+
+    if not frames:
+        return pd.DataFrame()
+    combined = pd.concat(frames).sort_index()
+    combined = combined[~combined.index.duplicated(keep="last")]
+    return _normalize_ohlcv(_resample_intraday(combined, interval))
+
+
 def _fetch_kis_history(
     symbol: str,
     *,
@@ -311,7 +385,6 @@ def _fetch_kis_history(
         return pd.DataFrame()
 
     from modules.kis_openapi import KISOpenAPIClient
-    from modules.kis_operational_adapter import normalize_kis_daily_bars, normalize_kis_minute_bars
 
     kis_client = client or KISOpenAPIClient(timeout=timeout)
     today = datetime.now()
@@ -328,9 +401,14 @@ def _fetch_kis_history(
         return _with_source(frame, "kis_openapi")
 
     if interval_key in {"1m", "5m", "15m", "30m", "60m", "1h"}:
-        payload = kis_client.today_minute_bars(symbol, input_hour="153000", include_past=True)
-        frame = normalize_kis_minute_bars(symbol, payload, trade_date=today.strftime("%Y%m%d"))
-        return _with_source(_normalize_ohlcv(_resample_intraday(frame, interval_key)), "kis_openapi")
+        frame = _fetch_kis_intraday_history(
+            kis_client,
+            symbol,
+            today=today,
+            start=start,
+            interval=interval_key,
+        )
+        return _with_source(frame, "kis_openapi")
 
     return pd.DataFrame()
 

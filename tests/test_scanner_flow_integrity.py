@@ -1,3 +1,5 @@
+import json
+
 from modules.scan_integrity import build_scan_integrity_report, build_observed_factor_snapshots
 from modules.scanner_services import _flow_persistence_fields
 
@@ -143,5 +145,101 @@ def test_scan_integrity_accepts_display_aliases_from_raw_scanner_rows():
     assert factors["whale_score"] == "77.0점 🔥 당일+3일 순매수"
     assert factors["volume_ratio"] == "✅ 3.20"
     assert factors["selection_lane"] == "3d"
+    assert report["feature_completeness"] == 1.0
+    assert report["quality_flags"] == []
+
+
+def test_scan_integrity_enriches_planner_only_rows_from_top_deep_reports(tmp_path):
+    profile_path = tmp_path / "profile.json"
+    top_deep_path = tmp_path / "top_deep.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "exception_leaders": {
+                    "watchlist_meta": [
+                        {
+                            "ticker": "128940.KS",
+                            "stock_name": "한미약품",
+                            "alpha_score": 77,
+                            "tech_score": 68,
+                            "ml_prob": 13.4,
+                            "whale_score": 71,
+                            "volume_ratio": 2.2,
+                            "trend": "UP",
+                            "loss_risk_score": 24,
+                            "primary_theme": "제약/바이오",
+                            "foreigner_1d": 1000,
+                            "institution_1d": 2000,
+                            "retail_1d": -3000,
+                            "foreigner_3d": 1100,
+                            "institution_3d": 2100,
+                            "retail_3d": -3200,
+                            "foreigner_10d": 1200,
+                            "institution_10d": 2200,
+                            "retail_10d": -3400,
+                            "flow_asof": "2026.06.05",
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    top_deep_path.write_text(
+        json.dumps(
+            [
+                {
+                    "report_version": "top_deep_report_v1",
+                    "ticker": "128940.KS",
+                    "stock_name": "한미약품",
+                    "day_change_pct": 2.14,
+                    "scan_universe_admission": {
+                        "probability_pct": 13.4,
+                        "input_source_role": "legacy_rejected",
+                        "feature_values": {"day_return_pct": 2.14},
+                        "validation": {
+                            "avg_1d_pct": 9.8,
+                            "avg_3d_pct": 43.1,
+                            "avg_max_high_5d_pct": 68.8,
+                        },
+                    },
+                    "realized_expectancy_admission": {"expected_value_5d_pct": 68.8},
+                    "trade_plan": {"entry_reference_price": 499000.0},
+                    "selection_alignment": {"source_order": "scan_universe_admission_model"},
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    snapshots = build_observed_factor_snapshots(
+        run_id="RUN-TOP",
+        market="KOSPI",
+        scan_mode="SWING",
+        created_at="2026-06-05T00:00:00Z",
+        results=[],
+        bridge_info={"profile_diagnostics": str(profile_path)},
+        top_deep_reports={"local_path": str(top_deep_path)},
+    )
+    report = build_scan_integrity_report(
+        run_id="RUN-TOP",
+        market="KOSPI",
+        scan_mode="SWING",
+        snapshots=snapshots,
+        raw_result_count=0,
+        total_scans=5,
+    )
+
+    factors = snapshots[0]["factors"]
+    assert factors["decision_score"] == 13.4
+    assert factors["day_return_pct"] == 2.14
+    assert factors["entry_reference_price"] == 499000.0
+    assert factors["expected_edge_score"] == 68.8
+    assert factors["expected_return_1d_pct"] == 9.8
+    assert factors["expected_return_3d_pct"] == 43.1
+    assert factors["selection_lane"] == "scan_universe_admission_model"
+    assert factors["theme_routing_path"] == "scan_universe_admission_model"
     assert report["feature_completeness"] == 1.0
     assert report["quality_flags"] == []
