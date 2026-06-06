@@ -5,6 +5,7 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
     LABEL_SPECS,
     candidate_verdict,
     current_top_indices,
+    kis_feature_readiness,
     label_series,
     metrics,
     prepare_dataset,
@@ -303,6 +304,64 @@ def test_fetch_rows_applies_chunk_filters_and_limit(monkeypatch):
     assert calls["limit"][:2] == [3, 3]
 
 
+def test_fetch_rows_retries_statement_timeout_with_smaller_page(monkeypatch):
+    calls = {"limit": []}
+    rows = [
+        {"id": 1, "ticker": "000001.KS", "market": "KOSPI", "scan_mode": "SWING"},
+        {"id": 2, "ticker": "000002.KS", "market": "KOSPI", "scan_mode": "SWING"},
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        failures = 0
+
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            calls["limit"].append(self._limit)
+            return self
+
+        def eq(self, _field, _value):
+            return self
+
+        def execute(self):
+            if self._limit == 1000 and Query.failures == 0:
+                Query.failures += 1
+                raise RuntimeError("57014 canceling statement due to statement timeout")
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    monkeypatch.setattr(trainer, "DBManager", lambda: FakeDB())
+
+    got = fetch_rows(market="ALL", scan_mode="ALL", page_size=1000)
+
+    assert got["id"].tolist() == [1, 2]
+    assert calls["limit"][:2] == [1000, 500]
+
+
 def test_prepare_dataset_filters_impossible_kr_return_labels():
     raw = pd.DataFrame(
         [
@@ -467,6 +526,40 @@ def test_kis_feature_set_training_requires_mature_real_kis_rows():
     assert result["skip_reason"] == "insufficient_kis_feature_days"
     assert result["kis_valid_label_rows"] == 6
     assert result["kis_valid_label_days"] == 2
+
+
+def test_kis_feature_readiness_reports_date_coverage():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": idx,
+                "run_id": f"RUN-{idx // 2}",
+                "ticker": f"{idx:06d}.KS",
+                "market": "KOSPI" if idx <= 2 else "KOSDAQ",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20" if idx <= 3 else "2026-05-21",
+                "return_5d_pct": 1.0,
+                "feature_snapshot": {
+                    "kis_sidecar": {
+                        "coverage": {"quote_snapshot": True, "daily_ohlcv": True},
+                        "replacement_readiness": {"model_sidecar_ready": True},
+                        "model_candidate_features": {"kis_value_traded": float(idx * 1000)},
+                    }
+                },
+            }
+            for idx in range(1, 5)
+        ]
+    )
+    df, _sanity = prepare_dataset(raw)
+
+    readiness = kis_feature_readiness(df, min_train_rows=2, min_test_rows=1, min_kis_rows=3, min_kis_days=2)
+    coverage = readiness["families"]["sidecar"]["date_coverage"]
+
+    assert readiness["families"]["sidecar"]["mature_for_training"] is True
+    assert coverage["2026-05-20"]["rows"] == 3
+    assert coverage["2026-05-20"]["outcome_label_rows"] == 3
+    assert coverage["2026-05-20"]["rows_by_market"] == {"KOSDAQ": 1, "KOSPI": 2}
+    assert readiness["by_market"]["KOSDAQ"]["sidecar"]["date_coverage"]["2026-05-21"]["rows"] == 1
 
 
 def test_candidate_verdict_blocks_sparse_high_score_candidate():

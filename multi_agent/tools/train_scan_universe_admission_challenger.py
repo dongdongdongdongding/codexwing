@@ -391,7 +391,19 @@ def fetch_rows(
             query = query.gte("base_trade_date", min_base_date)
         if max_base_date:
             query = query.lte("base_trade_date", max_base_date)
-        batch = query.execute().data or []
+        try:
+            batch = query.execute().data or []
+        except Exception as exc:
+            message = str(exc)
+            if safe_page_size > 100 and ("statement timeout" in message or "57014" in message):
+                next_page_size = max(100, safe_page_size // 2)
+                print(
+                    f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
+                    flush=True,
+                )
+                safe_page_size = next_page_size
+                continue
+            raise
         rows.extend(batch)
         if limit and len(rows) >= int(limit):
             return pd.DataFrame(rows[: int(limit)])
@@ -1132,6 +1144,23 @@ def kis_feature_readiness(
         | data.get("max_high_return_5d_pct", pd.Series(index=data.index, dtype=float)).notna()
         | data.get("target_before_stop_5d", pd.Series(index=data.index, dtype=object)).notna()
     )
+
+    def _date_coverage(rows: pd.DataFrame, outcomes: pd.Series) -> Dict[str, Any]:
+        if rows.empty or "trade_date" not in rows.columns:
+            return {}
+        scoped_outcomes = outcomes.reindex(rows.index).fillna(False)
+        out: Dict[str, Any] = {}
+        for day, day_rows in rows.groupby("trade_date", dropna=False):
+            day_outcomes = scoped_outcomes.reindex(day_rows.index).fillna(False)
+            market_values = day_rows.get("market", pd.Series(dtype=object)).fillna("UNKNOWN").astype(str)
+            out[str(day)] = {
+                "rows": int(len(day_rows)),
+                "outcome_label_rows": int(day_outcomes.sum()),
+                "unique_runs": int(day_rows["run_id"].nunique()) if "run_id" in day_rows.columns else 0,
+                "rows_by_market": {str(key): int(value) for key, value in market_values.value_counts().to_dict().items()},
+            }
+        return dict(sorted(out.items()))
+
     families = {}
     for family in ("sidecar", "prefilter", "any_kis"):
         mask = _kis_family_scope(data, family)
@@ -1143,6 +1172,7 @@ def kis_feature_readiness(
             "unique_runs": int(rows["run_id"].nunique()) if "run_id" in rows.columns and not rows.empty else 0,
             "unique_days": int(rows["trade_date"].nunique()) if "trade_date" in rows.columns and not rows.empty else 0,
             "mature_for_training": bool(len(outcome_rows) >= required_rows and (rows["trade_date"].nunique() if "trade_date" in rows.columns and not rows.empty else 0) >= required_days),
+            "date_coverage": _date_coverage(rows, outcome_mask),
         }
     by_market = {}
     for market in sorted(str(item) for item in data.get("market", pd.Series(dtype=object)).dropna().unique()):
@@ -1159,6 +1189,7 @@ def kis_feature_readiness(
                 "unique_runs": int(rows["run_id"].nunique()) if "run_id" in rows.columns and not rows.empty else 0,
                 "unique_days": unique_days,
                 "mature_for_training": bool(len(outcome_rows) >= required_rows and unique_days >= required_days),
+                "date_coverage": _date_coverage(rows, outcome_mask.reindex(scoped.index).fillna(False)),
             }
     sidecar_cols = list(KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES) + list(KIS_SIDECAR_MODEL_NUMERIC_FEATURES) + list(KIS_SIDECAR_CATEGORICAL_FEATURES)
     prefilter_cols = list(KIS_PREFILTER_NUMERIC_FEATURES) + list(KIS_PREFILTER_CATEGORICAL_FEATURES)
@@ -1509,6 +1540,7 @@ def main() -> int:
     parser.add_argument("--no-theme", action="store_true")
     parser.add_argument("--return-sanity", choices=["kr_price_limit", "off"], default="kr_price_limit")
     parser.add_argument("--no-save-model", action="store_true")
+    parser.add_argument("--quiet", action="store_true", help="Write full report files but print only a compact JSON summary.")
     parser.add_argument("--output", default=str(REPORT_DIR / "scan_universe_admission_challenger.json"))
     parser.add_argument("--model-dir", default=str(MODEL_DIR))
     args = parser.parse_args()
@@ -1517,7 +1549,39 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, default=_json_default), encoding="utf-8")
     out.with_suffix(".md").write_text(_markdown(report), encoding="utf-8")
-    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, default=_json_default))
+    if args.quiet:
+        best = report.get("best") or {}
+        best_kis = report.get("best_kis") or {}
+        summary = {
+            "output": str(out),
+            "raw_rows": report.get("raw_rows"),
+            "prepared_rows": report.get("prepared_rows"),
+            "evaluated_combinations": report.get("evaluated_combinations"),
+            "ok_combinations": report.get("ok_combinations"),
+            "best": {
+                "market": best.get("market"),
+                "label": best.get("label"),
+                "feature_set": best.get("feature_set"),
+                "model": best.get("model"),
+                "topn": best.get("topn"),
+                "quality_score": best.get("quality_score"),
+                "promotable": (best.get("promotion_candidate") or {}).get("promotable"),
+            },
+            "best_kis": {
+                "market": best_kis.get("market"),
+                "label": best_kis.get("label"),
+                "feature_set": best_kis.get("feature_set"),
+                "model": best_kis.get("model"),
+                "topn": best_kis.get("topn"),
+                "quality_score": best_kis.get("quality_score"),
+                "promotable": (best_kis.get("promotion_candidate") or {}).get("promotable"),
+            },
+            "promotion_verdict": report.get("promotion_verdict"),
+            "kis_promotion_verdict": report.get("kis_promotion_verdict"),
+        }
+        print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True, default=_json_default))
+    else:
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, default=_json_default))
     return 0
 
 
