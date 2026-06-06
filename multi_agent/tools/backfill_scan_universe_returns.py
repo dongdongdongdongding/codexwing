@@ -571,7 +571,18 @@ def _compute_return_payload(
     return payload
 
 
-def fetch_snapshot_rows(*, market: str, scan_mode: str, page_size: int) -> List[Dict[str, Any]]:
+def fetch_snapshot_rows(
+    *,
+    market: str,
+    scan_mode: str,
+    page_size: int,
+    min_id: int = 0,
+    max_id: int = 0,
+    base_date: str = "",
+    min_base_date: str = "",
+    max_base_date: str = "",
+    limit: int = 0,
+) -> List[Dict[str, Any]]:
     _load_local_env()
     from modules.db_manager import DBManager
 
@@ -618,18 +629,44 @@ def fetch_snapshot_rows(*, market: str, scan_mode: str, page_size: int) -> List[
         ]
     )
     rows: List[Dict[str, Any]] = []
-    last_id = 0
+    last_id = max(0, int(min_id or 0) - 1)
+    safe_page_size = max(1, int(page_size))
     while True:
-        query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(page_size)
+        take = safe_page_size
+        query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(take)
+        if max_id and int(max_id) > 0:
+            query = query.lte("id", int(max_id))
         if market != "ALL":
             query = query.eq("market", market)
         if scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
-        batch = query.execute().data or []
+        if base_date:
+            query = query.eq("base_trade_date", base_date)
+        if min_base_date:
+            query = query.gte("base_trade_date", min_base_date)
+        if max_base_date:
+            query = query.lte("base_trade_date", max_base_date)
+        try:
+            batch = query.execute().data or []
+        except Exception as exc:
+            message = str(exc)
+            if safe_page_size > 100 and ("statement timeout" in message or "57014" in message):
+                next_page_size = max(100, safe_page_size // 2)
+                print(
+                    f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
+                    flush=True,
+                )
+                safe_page_size = next_page_size
+                continue
+            raise
         rows.extend(batch)
+        if limit and len(rows) >= int(limit):
+            return rows[: int(limit)]
         if batch:
             last_id = max(int(row.get("id") or last_id) for row in batch)
-        if len(batch) < page_size:
+        if len(batch) < take:
+            break
+        if max_id and last_id >= int(max_id):
             break
     return rows
 
@@ -816,6 +853,12 @@ def main() -> int:
     parser.add_argument("--page-size", type=int, default=1000)
     parser.add_argument("--batch-size", type=int, default=500)
     parser.add_argument("--write-method", choices=["upsert", "update"], default="upsert")
+    parser.add_argument("--limit", type=int, default=0, help="Maximum source rows to process after filters; 0 means all.")
+    parser.add_argument("--min-id", type=int, default=0, help="Inclusive lower id bound for chunked Supabase reads.")
+    parser.add_argument("--max-id", type=int, default=0, help="Inclusive upper id bound for chunked Supabase reads.")
+    parser.add_argument("--base-date", default="", help="Exact base_trade_date filter, YYYY-MM-DD.")
+    parser.add_argument("--min-base-date", default="", help="Inclusive base_trade_date lower bound, YYYY-MM-DD.")
+    parser.add_argument("--max-base-date", default="", help="Inclusive base_trade_date upper bound, YYYY-MM-DD.")
     parser.add_argument("--sleep", type=float, default=0.0)
     parser.add_argument("--fetch-timeout", type=float, default=12.0)
     parser.add_argument("--target-pct", type=float, default=5.0)
@@ -827,7 +870,17 @@ def main() -> int:
     parser.add_argument("--artifact-dir", default=str(DEFAULT_ARTIFACT_DIR))
     args = parser.parse_args()
 
-    rows = fetch_snapshot_rows(market=args.market, scan_mode=args.scan_mode, page_size=max(1, int(args.page_size)))
+    rows = fetch_snapshot_rows(
+        market=args.market,
+        scan_mode=args.scan_mode,
+        page_size=max(1, int(args.page_size)),
+        min_id=int(args.min_id or 0),
+        max_id=int(args.max_id or 0),
+        base_date=_date_text(args.base_date) or "",
+        min_base_date=_date_text(args.min_base_date) or "",
+        max_base_date=_date_text(args.max_base_date) or "",
+        limit=int(args.limit or 0),
+    )
     run_date_index = _load_run_date_index(Path(args.artifact_dir))
     provider = PriceHistoryProvider(
         provider=args.provider,
@@ -859,6 +912,12 @@ def main() -> int:
         "overwrite": bool(args.overwrite),
         "market": args.market,
         "scan_mode": args.scan_mode,
+        "limit": int(args.limit or 0),
+        "min_id": int(args.min_id or 0),
+        "max_id": int(args.max_id or 0),
+        "base_date": _date_text(args.base_date) or "",
+        "min_base_date": _date_text(args.min_base_date) or "",
+        "max_base_date": _date_text(args.max_base_date) or "",
         "target_pct": float(args.target_pct or 5.0),
         "stop_pct": abs(float(args.stop_pct or 5.0)),
         "run_date_index_size": len(run_date_index),

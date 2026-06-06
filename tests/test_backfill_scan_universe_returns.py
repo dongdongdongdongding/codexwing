@@ -1,4 +1,4 @@
-from multi_agent.tools.backfill_scan_universe_returns import _compute_return_payload, build_updates
+from multi_agent.tools.backfill_scan_universe_returns import _compute_return_payload, build_updates, fetch_snapshot_rows
 
 
 def test_compute_return_payload_uses_future_trading_days_and_preserves_existing_values():
@@ -129,3 +129,86 @@ def test_compute_return_payload_marks_stop_before_target_conservatively():
     assert payload["target_before_stop_1d"] is False
     assert payload["stop_before_target_1d"] is True
     assert payload["first_touch_1d"] == "same_bar_stop_first"
+
+
+def test_fetch_snapshot_rows_applies_filters_and_retries_timeout(monkeypatch):
+    calls = {"limit": [], "eq": [], "gte": [], "lte": []}
+    rows = [
+        {"id": 1, "ticker": "000001.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-22"},
+        {"id": 2, "ticker": "000002.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-22"},
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        failures = 0
+
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            calls["limit"].append(self._limit)
+            return self
+
+        def eq(self, field, value):
+            calls["eq"].append((field, value))
+            return self
+
+        def gte(self, field, value):
+            calls["gte"].append((field, value))
+            return self
+
+        def lte(self, field, value):
+            calls["lte"].append((field, value))
+            return self
+
+        def execute(self):
+            if self._limit == 1000 and Query.failures == 0:
+                Query.failures += 1
+                raise RuntimeError("57014 canceling statement due to statement timeout")
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    got = fetch_snapshot_rows(
+        market="KOSPI",
+        scan_mode="SWING",
+        page_size=1000,
+        min_id=0,
+        max_id=10,
+        base_date="2026-05-22",
+        min_base_date="",
+        max_base_date="",
+        limit=0,
+    )
+
+    assert [row["id"] for row in got] == [1, 2]
+    assert calls["limit"][:2] == [1000, 500]
+    assert ("market", "KOSPI") in calls["eq"]
+    assert ("scan_mode", "SWING") in calls["eq"]
+    assert ("base_trade_date", "2026-05-22") in calls["eq"]
+    assert ("id", 10) in calls["lte"]

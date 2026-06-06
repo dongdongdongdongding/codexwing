@@ -547,8 +547,9 @@ def fetch_snapshot_rows(
     rows: List[Dict[str, Any]] = []
     last_id = max(0, int(min_id or 0) - 1)
     columns = ",".join(SNAPSHOT_SELECT_COLUMNS)
+    safe_page_size = max(1, int(page_size))
     while True:
-        take = max(1, int(page_size))
+        take = safe_page_size
         query = db.client.table(TARGET_TABLE).select(columns).order("id").gt("id", last_id).limit(take)
         if max_id and int(max_id) > 0:
             query = query.lte("id", int(max_id))
@@ -564,7 +565,19 @@ def fetch_snapshot_rows(
             query = query.lte("base_trade_date", max_base_date)
         if only_outcome_available:
             query = query.eq("outcome_available", True)
-        batch = query.execute().data or []
+        try:
+            batch = query.execute().data or []
+        except Exception as exc:
+            message = str(exc)
+            if safe_page_size > 100 and ("statement timeout" in message or "57014" in message):
+                next_page_size = max(100, safe_page_size // 2)
+                print(
+                    f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
+                    flush=True,
+                )
+                safe_page_size = next_page_size
+                continue
+            raise
         if not batch:
             break
         for row in batch:

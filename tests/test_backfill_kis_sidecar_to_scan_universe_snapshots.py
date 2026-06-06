@@ -8,6 +8,7 @@ from multi_agent.tools.backfill_kis_sidecar_to_scan_universe_snapshots import (
     BackfillOptions,
     build_daily_quote_proxy,
     build_updates,
+    fetch_snapshot_rows,
     summarize_candidate_rows,
     verify_existing_sidecars,
 )
@@ -267,3 +268,98 @@ def test_summarize_candidate_rows_reports_date_distribution():
     assert summary["id_min"] == 10
     assert summary["id_max"] == 12
     assert summary["sample_candidate_rows"][1]["has_kis_sidecar"] is True
+
+
+def test_fetch_snapshot_rows_retries_statement_timeout(monkeypatch):
+    calls = {"limit": []}
+    rows = [
+        {
+            "id": 1,
+            "ticker": "000001.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "base_trade_date": "2026-05-28",
+            "return_5d_pct": 1.0,
+            "feature_snapshot": {},
+        },
+        {
+            "id": 2,
+            "ticker": "000002.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "base_trade_date": "2026-05-28",
+            "return_5d_pct": 2.0,
+            "feature_snapshot": {},
+        },
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        failures = 0
+
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            calls["limit"].append(self._limit)
+            return self
+
+        def lte(self, _field, _value):
+            return self
+
+        def gte(self, _field, _value):
+            return self
+
+        def eq(self, _field, _value):
+            return self
+
+        def execute(self):
+            if self._limit == 1000 and Query.failures == 0:
+                Query.failures += 1
+                raise RuntimeError("57014 canceling statement due to statement timeout")
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    got = fetch_snapshot_rows(
+        market="ALL",
+        scan_mode="ALL",
+        page_size=1000,
+        limit=0,
+        min_id=0,
+        max_id=0,
+        base_date="",
+        min_base_date="",
+        max_base_date="",
+        overwrite=False,
+        only_outcome_available=False,
+        require_outcome_label=False,
+    )
+
+    assert [row["id"] for row in got] == [1, 2]
+    assert calls["limit"][:2] == [1000, 500]
