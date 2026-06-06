@@ -222,6 +222,87 @@ def test_fetch_rows_clamps_supabase_page_size_to_1000(monkeypatch):
     assert calls == [1000, 1000]
 
 
+def test_fetch_rows_applies_chunk_filters_and_limit(monkeypatch):
+    calls = {"eq": [], "gte": [], "lte": [], "gt": [], "limit": []}
+    rows = [
+        {"id": i, "ticker": f"{i:06d}.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-21"}
+        for i in range(100, 111)
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+            self._max_id = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, field, value):
+            calls["gt"].append((field, value))
+            self._last_id = int(value)
+            return self
+
+        def gte(self, field, value):
+            calls["gte"].append((field, value))
+            return self
+
+        def lte(self, field, value):
+            calls["lte"].append((field, value))
+            if field == "id":
+                self._max_id = int(value)
+            return self
+
+        def limit(self, value):
+            calls["limit"].append(int(value))
+            self._limit = int(value)
+            return self
+
+        def eq(self, field, value):
+            calls["eq"].append((field, value))
+            return self
+
+        def execute(self):
+            batch = [row for row in rows if row["id"] > self._last_id and (self._max_id is None or row["id"] <= self._max_id)]
+            return Result(batch[: self._limit])
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    monkeypatch.setattr(trainer, "DBManager", lambda: FakeDB())
+
+    got = fetch_rows(
+        market="KOSPI",
+        scan_mode="SWING",
+        page_size=3,
+        min_id=101,
+        max_id=109,
+        min_base_date="2026-05-20",
+        max_base_date="2026-05-22",
+        limit=5,
+    )
+
+    assert got["id"].tolist() == [101, 102, 103, 104, 105]
+    assert calls["gt"][0] == ("id", 100)
+    assert ("id", 109) in calls["lte"]
+    assert ("market", "KOSPI") in calls["eq"]
+    assert ("scan_mode", "SWING") in calls["eq"]
+    assert ("base_trade_date", "2026-05-20") in calls["gte"]
+    assert ("base_trade_date", "2026-05-22") in calls["lte"]
+    assert calls["limit"][:2] == [3, 3]
+
+
 def test_prepare_dataset_filters_impossible_kr_return_labels():
     raw = pd.DataFrame(
         [

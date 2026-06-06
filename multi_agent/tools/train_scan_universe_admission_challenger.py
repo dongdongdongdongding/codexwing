@@ -346,25 +346,60 @@ def _onehot_encoder() -> Any:
         return OneHotEncoder(handle_unknown="ignore", sparse=False)
 
 
-def fetch_rows(*, market: str, scan_mode: str, page_size: int) -> pd.DataFrame:
+def _date_text(value: Any) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    if len(text) >= 10 and text[4] == "-" and text[7] == "-":
+        return text[:10]
+    try:
+        return pd.to_datetime(text).date().isoformat()
+    except Exception:
+        return ""
+
+
+def fetch_rows(
+    *,
+    market: str,
+    scan_mode: str,
+    page_size: int,
+    min_id: int = 0,
+    max_id: int = 0,
+    base_date: str = "",
+    min_base_date: str = "",
+    max_base_date: str = "",
+    limit: int = 0,
+) -> pd.DataFrame:
     db = DBManager()
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable.")
     rows: List[Dict[str, Any]] = []
-    last_id = 0
+    last_id = max(0, int(min_id or 0) - 1)
     cols = ",".join(SELECT_COLUMNS)
     safe_page_size = min(max(1, int(page_size or 1000)), 1000)
     while True:
         query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(safe_page_size)
+        if max_id and int(max_id) > 0:
+            query = query.lte("id", int(max_id))
         if market != "ALL":
             query = query.eq("market", market)
         if scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
+        if base_date:
+            query = query.eq("base_trade_date", base_date)
+        if min_base_date:
+            query = query.gte("base_trade_date", min_base_date)
+        if max_base_date:
+            query = query.lte("base_trade_date", max_base_date)
         batch = query.execute().data or []
         rows.extend(batch)
+        if limit and len(rows) >= int(limit):
+            return pd.DataFrame(rows[: int(limit)])
         if batch:
             last_id = max(int(row.get("id") or last_id) for row in batch)
         if len(batch) < safe_page_size:
+            break
+        if max_id and last_id >= int(max_id):
             break
     return pd.DataFrame(rows)
 
@@ -1201,7 +1236,18 @@ def train_final_model(work: pd.DataFrame, best: Dict[str, Any], *, output_dir: P
 
 
 def build_report(args: argparse.Namespace) -> Dict[str, Any]:
-    raw = fetch_rows(market=args.market, scan_mode=args.scan_mode, page_size=max(1, int(args.page_size)))
+    fetch_filters = {
+        "market": args.market,
+        "scan_mode": args.scan_mode,
+        "page_size": max(1, int(args.page_size)),
+        "min_id": int(args.min_id or 0),
+        "max_id": int(args.max_id or 0),
+        "base_date": _date_text(args.base_date),
+        "min_base_date": _date_text(args.min_base_date),
+        "max_base_date": _date_text(args.max_base_date),
+        "limit": int(args.limit or 0),
+    }
+    raw = fetch_rows(**fetch_filters)
     data, return_sanity = prepare_dataset(raw, return_sanity=args.return_sanity)
     feature_map = feature_sets(data)
     model_names = [name.strip() for name in str(args.models).split(",") if name.strip()]
@@ -1306,6 +1352,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "version": REPORT_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": TARGET_TABLE,
+        "fetch_filters": fetch_filters,
         "raw_rows": int(len(raw)),
         "prepared_rows": int(len(data)),
         "markets": markets,
@@ -1440,6 +1487,12 @@ def main() -> int:
     parser.add_argument("--market", choices=["ALL", "KOSPI", "KOSDAQ"], default="ALL")
     parser.add_argument("--scan-mode", choices=["ALL", "SWING", "INTRADAY"], default="SWING")
     parser.add_argument("--page-size", type=int, default=1000)
+    parser.add_argument("--limit", type=int, default=0, help="Maximum rows to read after filters; 0 means all matching rows.")
+    parser.add_argument("--min-id", type=int, default=0, help="Inclusive lower id bound for chunked Supabase reads.")
+    parser.add_argument("--max-id", type=int, default=0, help="Inclusive upper id bound for chunked Supabase reads.")
+    parser.add_argument("--base-date", default="", help="Exact base_trade_date filter, YYYY-MM-DD.")
+    parser.add_argument("--min-base-date", default="", help="Inclusive base_trade_date lower bound, YYYY-MM-DD.")
+    parser.add_argument("--max-base-date", default="", help="Inclusive base_trade_date upper bound, YYYY-MM-DD.")
     parser.add_argument("--models", default="logistic,hist_gb,extra_trees,random_forest,xgboost,lightgbm")
     parser.add_argument("--labels", default="", help="Comma-separated label names. Empty means all labels.")
     parser.add_argument("--feature-sets", default="", help="Comma-separated feature-set names. Empty means all feature sets.")
