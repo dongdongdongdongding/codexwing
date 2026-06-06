@@ -9,6 +9,7 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
     label_series,
     metrics,
     prepare_dataset,
+    rank_candidate_results,
     top_indices_by_run,
 )
 import multi_agent.tools.train_scan_universe_admission_challenger as trainer
@@ -597,3 +598,70 @@ def test_candidate_verdict_blocks_sparse_high_score_candidate():
     assert candidate_verdict(sparse)["promotable"] is False
     assert "sample_too_small" in candidate_verdict(sparse)["blocking_reasons"]
     assert candidate_verdict(stable)["promotable"] is True
+
+
+def test_risk_first_ranking_prefers_lower_path_risk_before_quality():
+    high_quality_high_risk = {
+        "label": "touch10_5d",
+        "feature_set": "kis_sidecar_only",
+        "topn": 1,
+        "quality_score": 2000.0,
+        "metrics": {
+            "n": 20,
+            "active_runs": 15,
+            "active_days": 10,
+            "label_win_pct": 90.0,
+            "hit5_5d_pct": 100.0,
+            "hit10_5d_pct": 90.0,
+            "hit10_guard_5d_pct": 30.0,
+            "avg_max_high_5d_pct": 30.0,
+            "min_max_high_5d_pct": 5.0,
+            "min_1d_pct": -6.1,
+            "min_5d_pct": 5.0,
+            "min_min_low_5d_pct": -11.0,
+            "stop5_pct": 57.0,
+            "bad_path_pct": 57.0,
+            "target_before_stop_5d_pct": 30.0,
+            "stop_before_target_5d_pct": 57.0,
+        },
+        "fold_metrics": [
+            {"stop5_pct": 100.0, "bad_path_pct": 100.0, "target_before_stop_5d_pct": 10.0},
+            {"stop5_pct": 14.0, "bad_path_pct": 14.0, "target_before_stop_5d_pct": 86.0},
+        ],
+    }
+    lower_quality_lower_risk = {
+        "label": "touch10_5d",
+        "feature_set": "kis_sidecar_only",
+        "topn": 1,
+        "quality_score": 800.0,
+        "metrics": {
+            "n": 20,
+            "active_runs": 15,
+            "active_days": 10,
+            "label_win_pct": 70.0,
+            "hit5_5d_pct": 90.0,
+            "hit10_5d_pct": 60.0,
+            "hit10_guard_5d_pct": 50.0,
+            "avg_max_high_5d_pct": 15.0,
+            "min_max_high_5d_pct": 3.0,
+            "min_1d_pct": -2.0,
+            "min_5d_pct": 1.0,
+            "min_min_low_5d_pct": -4.0,
+            "stop5_pct": 10.0,
+            "bad_path_pct": 15.0,
+            "target_before_stop_5d_pct": 70.0,
+            "stop_before_target_5d_pct": 10.0,
+        },
+        "fold_metrics": [
+            {"stop5_pct": 10.0, "bad_path_pct": 15.0, "target_before_stop_5d_pct": 70.0},
+            {"stop5_pct": 12.0, "bad_path_pct": 16.0, "target_before_stop_5d_pct": 68.0},
+        ],
+    }
+
+    ranked = rank_candidate_results([high_quality_high_risk, lower_quality_lower_risk])
+
+    assert ranked[0]["quality_score"] == 800.0
+    assert ranked[0]["risk_gate"]["pass"] is True
+    assert ranked[1]["promotion_candidate"]["promotable"] is False
+    assert "fold_stop5_above_50" in ranked[1]["risk_gate"]["blocking_reasons"]
+    assert "hit10_guard_5d_pct_raw_ratio_lt_70" in ranked[1]["risk_gate"]["blocking_reasons"]

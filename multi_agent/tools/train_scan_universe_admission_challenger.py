@@ -68,6 +68,16 @@ MIN_PROMOTION_RUNS = 12
 MIN_PROMOTION_DAYS = 6
 MIN_PROMOTION_ROWS = 15
 MIN_KIS_TRAIN_DAYS = 10
+MAX_PROMOTION_STOP5_PCT = 35.0
+MAX_PROMOTION_BAD_PATH_PCT = 45.0
+MAX_PROMOTION_STOP_BEFORE_TARGET_5D_PCT = 35.0
+MAX_PROMOTION_FOLD_STOP5_PCT = 50.0
+MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT = 50.0
+MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT = 35.0
+MIN_PROMOTION_TOUCH10_GUARD_PCT = 45.0
+MIN_PROMOTION_TOUCH5_GUARD_PCT = 55.0
+MIN_PROMOTION_GUARD_RAW_RATIO = 0.70
+MIN_PROMOTION_MIN_LOW_5D_PCT = -10.0
 
 KR_RETURN_SANITY_BOUNDS = {
     "return_1d_pct": (-35.0, 35.0),
@@ -328,6 +338,11 @@ def _metric_float(metrics_map: Dict[str, Any], key: str, default: float) -> floa
     if math.isnan(number) or math.isinf(number):
         return default
     return number
+
+
+def _append_unique(values: List[str], value: str) -> None:
+    if value not in values:
+        values.append(value)
 
 
 def _bool_series(series: pd.Series) -> pd.Series:
@@ -1011,6 +1026,106 @@ def parse_thresholds(raw: str) -> List[float | None]:
     return values
 
 
+def candidate_risk_gate(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
+    if not candidate:
+        return {"pass": False, "risk_score": None, "blocking_reasons": ["no_valid_challenger"]}
+    m = candidate.get("metrics") or {}
+    folds = [item for item in candidate.get("fold_metrics") or [] if isinstance(item, dict)]
+    label_name = str(candidate.get("label") or "")
+    is_touch_label = label_name.startswith("touch") or label_name.startswith("target_")
+    is_touch10 = "10" in label_name
+    reasons: List[str] = []
+
+    stop5 = _metric_float(m, "stop5_pct", 100.0)
+    bad_path = _metric_float(m, "bad_path_pct", stop5 if "stop5_pct" in m else 0.0)
+    stop_before_target_5d = _metric_float(m, "stop_before_target_5d_pct", stop5)
+    target_before_stop_5d = _metric_float(m, "target_before_stop_5d_pct", 100.0)
+    min_1d = _metric_float(m, "min_1d_pct", -999.0)
+    min_low_5d = _metric_float(m, "min_min_low_5d_pct", 0.0)
+    max_fold_stop5 = max((_metric_float(item, "stop5_pct", stop5) for item in folds), default=stop5)
+    max_fold_bad_path = max((_metric_float(item, "bad_path_pct", bad_path) for item in folds), default=bad_path)
+    fold_target_values = [
+        _metric_float(item, "target_before_stop_5d_pct", target_before_stop_5d)
+        for item in folds
+        if "target_before_stop_5d_pct" in item
+    ]
+    min_fold_target_before_stop = min(
+        fold_target_values,
+        default=target_before_stop_5d,
+    )
+
+    if stop5 > MAX_PROMOTION_STOP5_PCT:
+        _append_unique(reasons, "stop5_above_35")
+    if bad_path > MAX_PROMOTION_BAD_PATH_PCT:
+        _append_unique(reasons, "bad_path_above_45")
+    if stop_before_target_5d > MAX_PROMOTION_STOP_BEFORE_TARGET_5D_PCT:
+        _append_unique(reasons, "stop_before_target_5d_above_35")
+    if "target_before_stop_5d_pct" in m and target_before_stop_5d < MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT:
+        _append_unique(reasons, "target_before_stop_5d_lt_50")
+    if min_1d < -5.0:
+        _append_unique(reasons, "min_1d_below_stop")
+    if "min_min_low_5d_pct" in m and min_low_5d < MIN_PROMOTION_MIN_LOW_5D_PCT:
+        _append_unique(reasons, "min_low_5d_below_10")
+    if max_fold_stop5 > MAX_PROMOTION_FOLD_STOP5_PCT:
+        _append_unique(reasons, "fold_stop5_above_50")
+    if max_fold_bad_path > 60.0:
+        _append_unique(reasons, "fold_bad_path_above_60")
+    if fold_target_values and min_fold_target_before_stop < MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT:
+        _append_unique(reasons, "fold_target_before_stop_5d_lt_35")
+
+    guard_shortfall = 0.0
+    guard_ratio_shortfall = 0.0
+    guard_components: Dict[str, Any] = {}
+    if is_touch_label:
+        raw_key = "hit10_5d_pct" if is_touch10 else "hit5_5d_pct"
+        guard_key = "hit10_guard_5d_pct" if is_touch10 else "hit5_guard_5d_pct"
+        min_guard = MIN_PROMOTION_TOUCH10_GUARD_PCT if is_touch10 else MIN_PROMOTION_TOUCH5_GUARD_PCT
+        raw_value = _metric_float(m, raw_key, 0.0)
+        guard_value = _metric_float(m, guard_key, raw_value if guard_key not in m else 0.0)
+        guard_components = {"raw_key": raw_key, "raw_pct": _round(raw_value), "guard_key": guard_key, "guard_pct": _round(guard_value)}
+        if guard_key in m:
+            if guard_value < min_guard:
+                _append_unique(reasons, f"{guard_key}_lt_{int(min_guard)}")
+                guard_shortfall = max(guard_shortfall, min_guard - guard_value)
+            if raw_value > 0:
+                ratio = guard_value / raw_value
+                guard_components["guard_raw_ratio"] = _round(ratio)
+                if ratio < MIN_PROMOTION_GUARD_RAW_RATIO:
+                    _append_unique(reasons, f"{guard_key}_raw_ratio_lt_70")
+                    guard_ratio_shortfall = max(guard_ratio_shortfall, (MIN_PROMOTION_GUARD_RAW_RATIO - ratio) * 100.0)
+
+    risk_score = (
+        stop5 * 1.4
+        + bad_path * 0.8
+        + stop_before_target_5d * 1.2
+        + max_fold_stop5 * 1.7
+        + max_fold_bad_path * 0.8
+        + max(0.0, MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT - target_before_stop_5d) * 1.1
+        + max(0.0, MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT - min_fold_target_before_stop) * 1.2
+        + max(0.0, -5.0 - min_1d) * 8.0
+        + max(0.0, MIN_PROMOTION_MIN_LOW_5D_PCT - min_low_5d) * 4.0
+        + guard_shortfall * 1.1
+        + guard_ratio_shortfall * 1.4
+    )
+    return {
+        "pass": not reasons,
+        "risk_score": _round(risk_score),
+        "blocking_reasons": reasons,
+        "components": {
+            "stop5_pct": _round(stop5),
+            "bad_path_pct": _round(bad_path),
+            "stop_before_target_5d_pct": _round(stop_before_target_5d),
+            "target_before_stop_5d_pct": _round(target_before_stop_5d),
+            "min_1d_pct": _round(min_1d),
+            "min_min_low_5d_pct": _round(min_low_5d),
+            "max_fold_stop5_pct": _round(max_fold_stop5),
+            "max_fold_bad_path_pct": _round(max_fold_bad_path),
+            "min_fold_target_before_stop_5d_pct": _round(min_fold_target_before_stop),
+            **guard_components,
+        },
+    }
+
+
 def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
     if not candidate:
         return ["no_valid_challenger"]
@@ -1052,14 +1167,40 @@ def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
         reasons.append("min_1d_below_stop")
     if m.get("min_5d_pct") is not None and _metric_float(m, "min_5d_pct", -999.0) < -12.0:
         reasons.append("min_5d_tail_below_12")
-    if _metric_float(m, "stop5_pct", 100.0) > 35.0:
-        reasons.append("stop5_above_35")
+    risk_gate = candidate_risk_gate(candidate)
+    for reason in risk_gate.get("blocking_reasons") or []:
+        _append_unique(reasons, str(reason))
     return reasons
 
 
 def candidate_verdict(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
     reasons = candidate_blocking_reasons(candidate)
-    return {"promotable": not reasons, "blocking_reasons": reasons}
+    risk_gate = candidate_risk_gate(candidate)
+    return {"promotable": not reasons, "blocking_reasons": reasons, "risk_gate": risk_gate}
+
+
+def risk_first_sort_key(candidate: Dict[str, Any]) -> Tuple[Any, ...]:
+    promotion = candidate.get("promotion_candidate") or candidate_verdict(candidate)
+    risk_gate = candidate.get("risk_gate") or promotion.get("risk_gate") or candidate_risk_gate(candidate)
+    m = candidate.get("metrics") or {}
+    return (
+        bool(promotion.get("promotable")),
+        bool(risk_gate.get("pass")),
+        -float(risk_gate.get("risk_score") if risk_gate.get("risk_score") is not None else 1e9),
+        int(m.get("active_days") or 0),
+        int(m.get("active_runs") or 0),
+        int(m.get("n") or 0),
+        float(candidate.get("quality_score") or -1e9),
+    )
+
+
+def rank_candidate_results(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    ranked = []
+    for row in results:
+        row["risk_gate"] = candidate_risk_gate(row)
+        row["promotion_candidate"] = candidate_verdict(row)
+        ranked.append(row)
+    return sorted(ranked, key=risk_first_sort_key, reverse=True)
 
 
 def promotion_verdict(best: Dict[str, Any] | None, baselines: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -1331,17 +1472,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
                             all_results.append(result)
                             if len(all_results) % 25 == 0:
                                 print(f"[INFO] evaluated {len(all_results)} challenger combinations", flush=True)
-    ok_results = [row for row in all_results if row.get("status") == "ok"]
-    for row in ok_results:
-        row["promotion_candidate"] = candidate_verdict(row)
-    ok_results = sorted(
-        ok_results,
-        key=lambda row: (
-            bool((row.get("promotion_candidate") or {}).get("promotable")),
-            float(row.get("quality_score") or -1e9),
-        ),
-        reverse=True,
-    )
+    ok_results = rank_candidate_results([row for row in all_results if row.get("status") == "ok"])
     best = ok_results[0] if ok_results else None
     kis_ok_results = [row for row in ok_results if str(row.get("feature_set") or "").startswith("kis_")]
     best_kis = kis_ok_results[0] if kis_ok_results else None
@@ -1401,11 +1532,21 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "final_model": final_model,
         "kis_feature_readiness": readiness,
         "selection_policy": {
-            "description": "Promotable candidates are ranked ahead of sparse or blocked high-score candidates.",
+            "description": "Candidates are ranked by promotability and path risk before raw quality score.",
             "min_active_runs": MIN_PROMOTION_RUNS,
             "min_active_days": MIN_PROMOTION_DAYS,
             "min_rows": MIN_PROMOTION_ROWS,
             "min_kis_train_days": MIN_KIS_TRAIN_DAYS,
+            "max_stop5_pct": MAX_PROMOTION_STOP5_PCT,
+            "max_bad_path_pct": MAX_PROMOTION_BAD_PATH_PCT,
+            "max_stop_before_target_5d_pct": MAX_PROMOTION_STOP_BEFORE_TARGET_5D_PCT,
+            "max_fold_stop5_pct": MAX_PROMOTION_FOLD_STOP5_PCT,
+            "min_target_before_stop_5d_pct": MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT,
+            "min_fold_target_before_stop_5d_pct": MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT,
+            "min_touch10_guard_5d_pct": MIN_PROMOTION_TOUCH10_GUARD_PCT,
+            "min_touch5_guard_5d_pct": MIN_PROMOTION_TOUCH5_GUARD_PCT,
+            "min_guard_raw_ratio": MIN_PROMOTION_GUARD_RAW_RATIO,
+            "min_min_low_5d_pct": MIN_PROMOTION_MIN_LOW_5D_PCT,
             "configured_min_kis_days": int(args.min_kis_days),
             "configured_min_kis_rows": max(int(args.min_kis_rows or 0), int(args.min_train_rows) + int(args.min_test_rows)),
         },
