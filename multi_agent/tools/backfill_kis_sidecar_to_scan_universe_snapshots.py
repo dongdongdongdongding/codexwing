@@ -529,6 +529,9 @@ def fetch_snapshot_rows(
     limit: int,
     min_id: int,
     max_id: int,
+    base_date: str,
+    min_base_date: str,
+    max_base_date: str,
     overwrite: bool,
     only_outcome_available: bool,
     require_outcome_label: bool,
@@ -553,6 +556,12 @@ def fetch_snapshot_rows(
             query = query.eq("market", market)
         if scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
+        if base_date:
+            query = query.eq("base_trade_date", base_date)
+        if min_base_date:
+            query = query.gte("base_trade_date", min_base_date)
+        if max_base_date:
+            query = query.lte("base_trade_date", max_base_date)
         if only_outcome_available:
             query = query.eq("outcome_available", True)
         batch = query.execute().data or []
@@ -576,6 +585,46 @@ def fetch_snapshot_rows(
         if max_id and last_id >= int(max_id):
             break
     return rows
+
+
+def summarize_candidate_rows(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
+    rows_list = [dict(row) for row in rows]
+    by_date: Counter[str] = Counter()
+    by_market: Counter[str] = Counter()
+    by_role: Counter[str] = Counter()
+    ids: List[int] = []
+    for row in rows_list:
+        base = _date_text(row.get("base_trade_date") or row.get("scanned_at")) or ""
+        if base:
+            by_date[base] += 1
+        by_market[str(row.get("market") or "")] += 1
+        by_role[str(row.get("row_role") or "")] += 1
+        try:
+            ids.append(int(row.get("id")))
+        except Exception:
+            pass
+    return {
+        "candidate_rows": len(rows_list),
+        "unique_base_dates": len(by_date),
+        "candidate_rows_by_base_date": dict(sorted(by_date.items())),
+        "candidate_rows_by_market": dict(by_market),
+        "candidate_rows_by_role": dict(by_role),
+        "id_min": min(ids) if ids else None,
+        "id_max": max(ids) if ids else None,
+        "sample_candidate_rows": [
+            {
+                "id": row.get("id"),
+                "snapshot_key": row.get("snapshot_key"),
+                "ticker": row.get("ticker"),
+                "market": row.get("market"),
+                "row_role": row.get("row_role"),
+                "base_trade_date": _date_text(row.get("base_trade_date") or row.get("scanned_at")),
+                "has_outcome_label": _has_outcome_label(row),
+                "has_kis_sidecar": _has_kis_sidecar(row),
+            }
+            for row in rows_list[:10]
+        ],
+    }
 
 
 def verify_existing_sidecars(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
@@ -763,6 +812,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--page-size", type=int, default=100)
     parser.add_argument("--min-id", type=int, default=0, help="Inclusive lower id bound for chunked Supabase reads.")
     parser.add_argument("--max-id", type=int, default=0, help="Inclusive upper id bound for chunked Supabase reads.")
+    parser.add_argument("--base-date", default="", help="Exact base_trade_date filter, YYYY-MM-DD.")
+    parser.add_argument("--min-base-date", default="", help="Inclusive base_trade_date lower bound, YYYY-MM-DD.")
+    parser.add_argument("--max-base-date", default="", help="Inclusive base_trade_date upper bound, YYYY-MM-DD.")
     parser.add_argument("--batch-size", type=int, default=25)
     parser.add_argument("--daily-lookback-days", type=int, default=140)
     parser.add_argument("--only-outcome-available", action="store_true")
@@ -773,6 +825,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--plan-only", action="store_true", help="Only summarize eligible candidate rows; no KIS calls or writes.")
     parser.add_argument("--verify-only", action="store_true", help="Only count existing KIS sidecars in the selected rows.")
     parser.add_argument("--live", action="store_true", help="Set KIS_ENABLE_LIVE_CALLS=1 for this run.")
     parser.add_argument("--kis-timeout-sec", type=float, default=8.0)
@@ -802,11 +855,45 @@ def main() -> int:
         limit=args.limit,
         min_id=args.min_id,
         max_id=args.max_id,
+        base_date=_date_text(args.base_date) or "",
+        min_base_date=_date_text(args.min_base_date) or "",
+        max_base_date=_date_text(args.max_base_date) or "",
         overwrite=args.overwrite,
         only_outcome_available=args.only_outcome_available,
         require_outcome_label=args.require_outcome_label,
         skip_existing=not args.verify_only,
     )
+    if args.plan_only:
+        planning = summarize_candidate_rows(rows)
+        report = {
+            "contract_version": BACKFILL_VERSION,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "dry_run": True,
+            "plan_only": True,
+            "args": {
+                "market": args.market,
+                "scan_mode": args.scan_mode,
+                "limit": args.limit,
+                "min_id": args.min_id,
+                "max_id": args.max_id,
+                "base_date": _date_text(args.base_date) or "",
+                "min_base_date": _date_text(args.min_base_date) or "",
+                "max_base_date": _date_text(args.max_base_date) or "",
+                "only_outcome_available": bool(args.only_outcome_available),
+                "require_outcome_label": bool(args.require_outcome_label),
+            },
+            "summary": {
+                **planning,
+                "fetched_rows": len(rows),
+                "rows_written": 0,
+                "no_dummy_data": True,
+            },
+        }
+        _write_report(report, args.output)
+        print(json.dumps(_json_safe(report["summary"]), ensure_ascii=False, indent=2, sort_keys=True))
+        print(f"[INFO] wrote report {args.output}")
+        return 0
+
     if args.verify_only:
         verification = verify_existing_sidecars(rows)
         report = {
@@ -820,6 +907,9 @@ def main() -> int:
                 "limit": args.limit,
                 "min_id": args.min_id,
                 "max_id": args.max_id,
+                "base_date": _date_text(args.base_date) or "",
+                "min_base_date": _date_text(args.min_base_date) or "",
+                "max_base_date": _date_text(args.max_base_date) or "",
                 "only_outcome_available": bool(args.only_outcome_available),
                 "require_outcome_label": bool(args.require_outcome_label),
             },
@@ -863,6 +953,9 @@ def main() -> int:
             "limit": args.limit,
             "min_id": args.min_id,
             "max_id": args.max_id,
+            "base_date": _date_text(args.base_date) or "",
+            "min_base_date": _date_text(args.min_base_date) or "",
+            "max_base_date": _date_text(args.max_base_date) or "",
             "only_outcome_available": bool(args.only_outcome_available),
             "require_outcome_label": bool(args.require_outcome_label),
             "overwrite": bool(args.overwrite),

@@ -8,6 +8,7 @@ from multi_agent.tools.backfill_kis_sidecar_to_scan_universe_snapshots import (
     BackfillOptions,
     build_daily_quote_proxy,
     build_updates,
+    summarize_candidate_rows,
     verify_existing_sidecars,
 )
 
@@ -232,3 +233,37 @@ def test_verify_existing_sidecars_counts_label_ready_rows():
     assert summary["kis_sidecar_rows"] == 2
     assert summary["kis_sidecar_outcome_label_rows"] == 1
     assert summary["kis_sidecar_origins"]["kis_openapi_backfill"] == 1
+
+
+def test_summarize_candidate_rows_reports_date_distribution():
+    rows = [
+        {
+            "id": 10,
+            "snapshot_key": "A",
+            "ticker": "000001.KS",
+            "market": "KOSPI",
+            "row_role": "emitted",
+            "base_trade_date": "2026-05-28",
+            "return_5d_pct": 1.0,
+            "feature_snapshot": {},
+        },
+        {
+            "id": 12,
+            "snapshot_key": "B",
+            "ticker": "000002.KQ",
+            "market": "KOSDAQ",
+            "row_role": "rejected",
+            "base_trade_date": "2026-05-29",
+            "max_high_return_5d_pct": 6.0,
+            "feature_snapshot": {"kis_sidecar": {"feature_origin": "existing"}},
+        },
+    ]
+
+    summary = summarize_candidate_rows(rows)
+
+    assert summary["candidate_rows"] == 2
+    assert summary["unique_base_dates"] == 2
+    assert summary["candidate_rows_by_base_date"] == {"2026-05-28": 1, "2026-05-29": 1}
+    assert summary["id_min"] == 10
+    assert summary["id_max"] == 12
+    assert summary["sample_candidate_rows"][1]["has_kis_sidecar"] is True
