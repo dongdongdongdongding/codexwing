@@ -122,6 +122,8 @@ FEATURE_KEYS = (
     "retail_10d",
     "primary_theme",
 )
+MIN_RETRY_PAGE_SIZE = 25
+MIN_WRITE_BATCH_SIZE = 25
 
 
 def _load_local_env() -> None:
@@ -582,6 +584,7 @@ def fetch_snapshot_rows(
     min_base_date: str = "",
     max_base_date: str = "",
     limit: int = 0,
+    client_filter: bool = False,
 ) -> List[Dict[str, Any]]:
     _load_local_env()
     from modules.db_manager import DBManager
@@ -636,22 +639,22 @@ def fetch_snapshot_rows(
         query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(take)
         if max_id and int(max_id) > 0:
             query = query.lte("id", int(max_id))
-        if market != "ALL":
+        if not client_filter and market != "ALL":
             query = query.eq("market", market)
-        if scan_mode != "ALL":
+        if not client_filter and scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
-        if base_date:
+        if not client_filter and base_date:
             query = query.eq("base_trade_date", base_date)
-        if min_base_date:
+        if not client_filter and min_base_date:
             query = query.gte("base_trade_date", min_base_date)
-        if max_base_date:
+        if not client_filter and max_base_date:
             query = query.lte("base_trade_date", max_base_date)
         try:
             batch = query.execute().data or []
         except Exception as exc:
             message = str(exc)
-            if safe_page_size > 100 and ("statement timeout" in message or "57014" in message):
-                next_page_size = max(100, safe_page_size // 2)
+            if safe_page_size > MIN_RETRY_PAGE_SIZE and ("statement timeout" in message or "57014" in message):
+                next_page_size = max(MIN_RETRY_PAGE_SIZE, safe_page_size // 2)
                 print(
                     f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
                     flush=True,
@@ -659,7 +662,25 @@ def fetch_snapshot_rows(
                 safe_page_size = next_page_size
                 continue
             raise
-        rows.extend(batch)
+        eligible_batch = batch
+        if client_filter:
+            eligible_batch = []
+            for row in batch:
+                row_market = str(row.get("market") or "")
+                row_scan_mode = str(row.get("scan_mode") or "")
+                row_base = _date_text(row.get("base_trade_date") or row.get("scanned_at")) or ""
+                if market != "ALL" and row_market != market:
+                    continue
+                if scan_mode != "ALL" and row_scan_mode != scan_mode:
+                    continue
+                if base_date and row_base != base_date:
+                    continue
+                if min_base_date and row_base < min_base_date:
+                    continue
+                if max_base_date and row_base > max_base_date:
+                    continue
+                eligible_batch.append(row)
+        rows.extend(eligible_batch)
         if limit and len(rows) >= int(limit):
             return rows[: int(limit)]
         if batch:
@@ -771,8 +792,10 @@ def write_updates(updates: List[Dict[str, Any]], *, batch_size: int, write_metho
     method = str(write_method or "upsert").lower()
     if method == "upsert":
         payload_keys = ("id", "snapshot_key", "run_id", "ticker", "row_role", *WRITE_COLUMNS)
-        for start in range(0, len(updates), max(1, int(batch_size))):
-            batch = updates[start : start + max(1, int(batch_size))]
+        start = 0
+        adaptive_batch_size = max(1, int(batch_size))
+        while start < len(updates):
+            batch = updates[start : start + adaptive_batch_size]
             normalized = []
             for item in batch:
                 if item.get("id") is None:
@@ -785,6 +808,7 @@ def write_updates(updates: List[Dict[str, Any]], *, batch_size: int, write_metho
                     normalized_item["flow_warnings"] = []
                 normalized.append(normalized_item)
             if not normalized:
+                start += adaptive_batch_size
                 continue
             last_exc = None
             for attempt in range(1, 4):
@@ -793,13 +817,45 @@ def write_updates(updates: List[Dict[str, Any]], *, batch_size: int, write_metho
                     last_exc = None
                     break
                 except Exception as exc:
+                    message = str(exc)
+                    if adaptive_batch_size > MIN_WRITE_BATCH_SIZE and (
+                        "statement timeout" in message or "57014" in message
+                    ):
+                        next_batch_size = max(MIN_WRITE_BATCH_SIZE, adaptive_batch_size // 2)
+                        print(
+                            f"[WARN] Supabase upsert timed out at batch_size={adaptive_batch_size}; "
+                            f"retrying with batch_size={next_batch_size}",
+                            flush=True,
+                        )
+                        adaptive_batch_size = next_batch_size
+                        last_exc = None
+                        break
                     last_exc = exc
                     import time
 
                     time.sleep(min(2 * attempt, 5))
             if last_exc is not None:
                 raise last_exc
+            if len(normalized) != len(batch) and not normalized:
+                start += adaptive_batch_size
+                continue
+            if len(normalized) != len(batch):
+                start += len(batch)
+                continue
+            if adaptive_batch_size < len(batch):
+                continue
+            if last_exc is None and len(batch) == adaptive_batch_size:
+                written += len(normalized)
+                start += adaptive_batch_size
+                print(f"[INFO] upserted learning labels {written}/{len(updates)}", flush=True)
+                continue
+            if last_exc is None and len(batch) < adaptive_batch_size:
+                written += len(normalized)
+                start += len(batch)
+                print(f"[INFO] upserted learning labels {written}/{len(updates)}", flush=True)
+                continue
             written += len(normalized)
+            start += len(batch)
             print(f"[INFO] upserted learning labels {written}/{len(updates)}", flush=True)
         return written
 
@@ -854,6 +910,11 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=500)
     parser.add_argument("--write-method", choices=["upsert", "update"], default="upsert")
     parser.add_argument("--limit", type=int, default=0, help="Maximum source rows to process after filters; 0 means all.")
+    parser.add_argument(
+        "--client-filter",
+        action="store_true",
+        help="Read by indexed id pages and apply market/date filters client-side to avoid filtered-query timeouts.",
+    )
     parser.add_argument("--min-id", type=int, default=0, help="Inclusive lower id bound for chunked Supabase reads.")
     parser.add_argument("--max-id", type=int, default=0, help="Inclusive upper id bound for chunked Supabase reads.")
     parser.add_argument("--base-date", default="", help="Exact base_trade_date filter, YYYY-MM-DD.")
@@ -880,6 +941,7 @@ def main() -> int:
         min_base_date=_date_text(args.min_base_date) or "",
         max_base_date=_date_text(args.max_base_date) or "",
         limit=int(args.limit or 0),
+        client_filter=bool(args.client_filter),
     )
     run_date_index = _load_run_date_index(Path(args.artifact_dir))
     provider = PriceHistoryProvider(
@@ -918,6 +980,7 @@ def main() -> int:
         "base_date": _date_text(args.base_date) or "",
         "min_base_date": _date_text(args.min_base_date) or "",
         "max_base_date": _date_text(args.max_base_date) or "",
+        "client_filter": bool(args.client_filter),
         "target_pct": float(args.target_pct or 5.0),
         "stop_pct": abs(float(args.stop_pct or 5.0)),
         "run_date_index_size": len(run_date_index),

@@ -16,6 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 DEFAULT_OUT = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "scan_universe_snapshot_quality.json"
 TARGET_TABLE = "scan_universe_snapshots"
+MIN_RETRY_PAGE_SIZE = 25
 RETURN_COLUMNS = (
     "return_1d_pct",
     "return_3d_pct",
@@ -69,21 +70,35 @@ def _fetch_rows(page_size: int) -> tuple[int | None, List[Dict[str, Any]]]:
     )
     rows: List[Dict[str, Any]] = []
     last_id = 0
+    safe_page_size = max(1, int(page_size))
     while True:
-        batch = (
-            db.client.table(TARGET_TABLE)
-            .select(cols)
-            .order("id")
-            .gt("id", last_id)
-            .limit(page_size)
-            .execute()
-            .data
-            or []
-        )
+        try:
+            batch = (
+                db.client.table(TARGET_TABLE)
+                .select(cols)
+                .order("id")
+                .gt("id", last_id)
+                .limit(safe_page_size)
+                .execute()
+                .data
+                or []
+            )
+        except Exception as exc:
+            message = str(exc)
+            if safe_page_size > MIN_RETRY_PAGE_SIZE and ("statement timeout" in message or "57014" in message):
+                next_page_size = max(MIN_RETRY_PAGE_SIZE, safe_page_size // 2)
+                print(
+                    f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; "
+                    f"retrying with page_size={next_page_size}",
+                    flush=True,
+                )
+                safe_page_size = next_page_size
+                continue
+            raise
         rows.extend(batch)
         if batch:
             last_id = max(int(row.get("id") or last_id) for row in batch)
-        if len(batch) < page_size:
+        if len(batch) < safe_page_size:
             break
     return exact_count, rows
 

@@ -12,7 +12,9 @@ import json
 import math
 import os
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
@@ -59,6 +61,8 @@ SNAPSHOT_SELECT_COLUMNS = (
     "feature_snapshot",
 )
 OUTCOME_LABEL_COLUMNS = ("return_5d_pct", "max_high_return_5d_pct", "target_before_stop_5d")
+MIN_RETRY_PAGE_SIZE = 25
+MIN_WRITE_BATCH_SIZE = 25
 
 
 def _load_local_env() -> None:
@@ -315,6 +319,7 @@ class BackfillOptions:
     sleep_sec: float = 0.0
     overwrite: bool = False
     require_outcome_label: bool = False
+    max_workers: int = 1
 
 
 class KISSidecarBackfillBuilder:
@@ -327,13 +332,17 @@ class KISSidecarBackfillBuilder:
         self._financial_cache: Dict[str, Dict[str, Any]] = {}
         self._vi_cache: Dict[Tuple[str, str], Dict[str, Any]] = {}
         self._rank_cache: Dict[str, Dict[str, Any]] = {}
+        self._counter_lock = threading.Lock()
+        self._cache_lock = threading.Lock()
 
     def _call(self, label: str, fn) -> Any:
-        self.call_counts[label] += 1
+        with self._counter_lock:
+            self.call_counts[label] += 1
         try:
             result = fn()
         except Exception as exc:
-            self.failures[f"{label}:{type(exc).__name__}"] += 1
+            with self._counter_lock:
+                self.failures[f"{label}:{type(exc).__name__}"] += 1
             return {"_kis_backfill_error": str(exc)}
         finally:
             if self.options.sleep_sec > 0:
@@ -388,10 +397,14 @@ class KISSidecarBackfillBuilder:
         if not self.options.include_vi:
             return {}
         key = (str(market or "ALL").upper(), _yyyymmdd(base_date))
-        if key not in self._vi_cache:
+        with self._cache_lock:
+            cached = self._vi_cache.get(key)
+        if cached is None:
             payload = self._call("vi_status", lambda: self.client.vi_status(market=key[0], trade_date=key[1]))
-            self._vi_cache[key] = dict(payload) if isinstance(payload, Mapping) and not payload.get("_kis_backfill_error") else {}
-        return normalize_kis_vi_status(symbol, self._vi_cache.get(key) or {})
+            normalized = dict(payload) if isinstance(payload, Mapping) and not payload.get("_kis_backfill_error") else {}
+            with self._cache_lock:
+                cached = self._vi_cache.setdefault(key, normalized)
+        return normalize_kis_vi_status(symbol, cached or {})
 
     def _news(self, symbol: str, base_date: date) -> Dict[str, Any]:
         if not self.options.include_news:
@@ -408,40 +421,52 @@ class KISSidecarBackfillBuilder:
         if not self.options.include_stock_info:
             return {}
         code = normalize_kr_stock_code(symbol)
-        if code not in self._stock_info_cache:
+        with self._cache_lock:
+            cached = self._stock_info_cache.get(code)
+        if cached is None:
             payload = self._call("stock_info", lambda: self.client.stock_info(symbol))
-            self._stock_info_cache[code] = (
+            normalized = (
                 normalize_kis_stock_info(symbol, payload) if isinstance(payload, Mapping) and not payload.get("_kis_backfill_error") else {}
             )
-        return dict(self._stock_info_cache.get(code) or {})
+            with self._cache_lock:
+                cached = self._stock_info_cache.setdefault(code, normalized)
+        return dict(cached or {})
 
     def _financial(self, symbol: str) -> Dict[str, Any]:
         if not self.options.include_financial:
             return {}
         code = normalize_kr_stock_code(symbol)
-        if code not in self._financial_cache:
+        with self._cache_lock:
+            cached = self._financial_cache.get(code)
+        if cached is None:
             payload = self._call("financial_ratio", lambda: self.client.financial_ratio(symbol, market_div="J", div_cls_code="0"))
-            self._financial_cache[code] = (
+            normalized = (
                 normalize_kis_financial_ratio(symbol, payload)
                 if isinstance(payload, Mapping) and not payload.get("_kis_backfill_error")
                 else {}
             )
-        return dict(self._financial_cache.get(code) or {})
+            with self._cache_lock:
+                cached = self._financial_cache.setdefault(code, normalized)
+        return dict(cached or {})
 
     def _rank(self, symbol: str, market: str) -> Dict[str, Any]:
         if not self.options.include_current_rank:
             return {}
         market_key = str(market or "ALL").upper()
-        if market_key not in self._rank_cache:
+        with self._cache_lock:
+            cached = self._rank_cache.get(market_key)
+        if cached is None:
             volume = self._call("volume_rank_current", lambda: self.client.volume_rank(market=market_key, rank_by="trade_value"))
             fluctuation = self._call("fluctuation_rank_current", lambda: self.client.fluctuation_rank(market=market_key, sort="up"))
             power = self._call("volume_power_rank_current", lambda: self.client.volume_power_rank(market=market_key))
-            self._rank_cache[market_key] = {
+            normalized = {
                 "volume": dict(volume) if isinstance(volume, Mapping) and not volume.get("_kis_backfill_error") else {},
                 "fluctuation": dict(fluctuation) if isinstance(fluctuation, Mapping) and not fluctuation.get("_kis_backfill_error") else {},
                 "power": dict(power) if isinstance(power, Mapping) and not power.get("_kis_backfill_error") else {},
             }
-        cached = self._rank_cache.get(market_key) or {}
+            with self._cache_lock:
+                cached = self._rank_cache.setdefault(market_key, normalized)
+        cached = cached or {}
         rank = normalize_kis_rank_membership(
             symbol,
             volume_rank_payload=cached.get("volume"),
@@ -535,6 +560,7 @@ def fetch_snapshot_rows(
     overwrite: bool,
     only_outcome_available: bool,
     require_outcome_label: bool,
+    client_filter: bool = False,
     skip_existing: bool = True,
 ) -> List[Dict[str, Any]]:
     _load_local_env()
@@ -553,24 +579,24 @@ def fetch_snapshot_rows(
         query = db.client.table(TARGET_TABLE).select(columns).order("id").gt("id", last_id).limit(take)
         if max_id and int(max_id) > 0:
             query = query.lte("id", int(max_id))
-        if market != "ALL":
+        if not client_filter and market != "ALL":
             query = query.eq("market", market)
-        if scan_mode != "ALL":
+        if not client_filter and scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
-        if base_date:
+        if not client_filter and base_date:
             query = query.eq("base_trade_date", base_date)
-        if min_base_date:
+        if not client_filter and min_base_date:
             query = query.gte("base_trade_date", min_base_date)
-        if max_base_date:
+        if not client_filter and max_base_date:
             query = query.lte("base_trade_date", max_base_date)
-        if only_outcome_available:
+        if not client_filter and only_outcome_available:
             query = query.eq("outcome_available", True)
         try:
             batch = query.execute().data or []
         except Exception as exc:
             message = str(exc)
-            if safe_page_size > 100 and ("statement timeout" in message or "57014" in message):
-                next_page_size = max(100, safe_page_size // 2)
+            if safe_page_size > MIN_RETRY_PAGE_SIZE and ("statement timeout" in message or "57014" in message):
+                next_page_size = max(MIN_RETRY_PAGE_SIZE, safe_page_size // 2)
                 print(
                     f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
                     flush=True,
@@ -581,6 +607,22 @@ def fetch_snapshot_rows(
         if not batch:
             break
         for row in batch:
+            if client_filter:
+                row_market = str(row.get("market") or "")
+                row_scan_mode = str(row.get("scan_mode") or "")
+                row_base = _date_text(row.get("base_trade_date") or row.get("scanned_at")) or ""
+                if market != "ALL" and row_market != market:
+                    continue
+                if scan_mode != "ALL" and row_scan_mode != scan_mode:
+                    continue
+                if base_date and row_base != base_date:
+                    continue
+                if min_base_date and row_base < min_base_date:
+                    continue
+                if max_base_date and row_base > max_base_date:
+                    continue
+                if only_outcome_available and row.get("outcome_available") is not True:
+                    continue
             if skip_existing and not overwrite and _has_kis_sidecar(row):
                 continue
             if require_outcome_label and not _has_outcome_label(row):
@@ -705,25 +747,30 @@ def build_updates(
         market = str(row.get("market") or "ALL").upper()
         grouped[(normalize_kr_stock_code(ticker), market, base.isoformat())].append(row)
 
-    updates: List[Dict[str, Any]] = []
-    key_failures: Counter[str] = Counter()
-    rows_by_market: Counter[str] = Counter()
-    rows_by_role: Counter[str] = Counter()
-    built_keys = 0
-    for idx, ((symbol, market, base_text), key_rows) in enumerate(sorted(grouped.items()), start=1):
+    def _process_group(group_item: Tuple[Tuple[str, str, str], List[Dict[str, Any]]]) -> Dict[str, Any]:
+        (symbol, market, base_text), key_rows = group_item
         base = date.fromisoformat(base_text)
         sidecar = builder.build_sidecar_for_key(symbol, market, base, generated_at=generated_at)
+        result_updates: List[Dict[str, Any]] = []
+        result_key_failures: Counter[str] = Counter()
+        result_rows_by_market: Counter[str] = Counter()
+        result_rows_by_role: Counter[str] = Counter()
         skip_reason = str(sidecar.get("_skip_reason") or "").strip()
         if skip_reason:
-            key_failures[skip_reason] += len(key_rows)
+            result_key_failures[skip_reason] += len(key_rows)
             warning = str(sidecar.get("_warning") or "").strip()
             if warning:
-                key_failures[f"{skip_reason}:{warning[:80]}"] += len(key_rows)
-            continue
-        built_keys += 1
+                result_key_failures[f"{skip_reason}:{warning[:80]}"] += len(key_rows)
+            return {
+                "updates": result_updates,
+                "built_key": 0,
+                "key_failures": result_key_failures,
+                "rows_by_market": result_rows_by_market,
+                "rows_by_role": result_rows_by_role,
+            }
         for row in key_rows:
             feature_snapshot = _merge_kis_sidecar(row, sidecar, generated_at=generated_at)
-            updates.append(
+            result_updates.append(
                 _json_safe(
                     {
                         "id": row.get("id"),
@@ -738,16 +785,53 @@ def build_updates(
                     }
                 )
             )
-            rows_by_market[str(row.get("market") or "")] += 1
-            rows_by_role[str(row.get("row_role") or "")] += 1
-        if idx % 25 == 0:
-            print(f"[INFO] built KIS sidecars {idx}/{len(grouped)} keys, updates={len(updates)}", flush=True)
+            result_rows_by_market[str(row.get("market") or "")] += 1
+            result_rows_by_role[str(row.get("row_role") or "")] += 1
+        return {
+            "updates": result_updates,
+            "built_key": 1,
+            "key_failures": result_key_failures,
+            "rows_by_market": result_rows_by_market,
+            "rows_by_role": result_rows_by_role,
+        }
+
+    updates: List[Dict[str, Any]] = []
+    key_failures: Counter[str] = Counter()
+    rows_by_market: Counter[str] = Counter()
+    rows_by_role: Counter[str] = Counter()
+    built_keys = 0
+    grouped_items = sorted(grouped.items())
+    max_workers = max(1, int(options.max_workers or 1))
+
+    def _merge_result(result: Mapping[str, Any]) -> None:
+        nonlocal built_keys
+        updates.extend(result.get("updates") or [])
+        built_keys += int(result.get("built_key") or 0)
+        key_failures.update(result.get("key_failures") or {})
+        rows_by_market.update(result.get("rows_by_market") or {})
+        rows_by_role.update(result.get("rows_by_role") or {})
+
+    if max_workers <= 1 or len(grouped_items) <= 1:
+        for idx, group_item in enumerate(grouped_items, start=1):
+            _merge_result(_process_group(group_item))
+            if idx % 25 == 0:
+                print(f"[INFO] built KIS sidecars {idx}/{len(grouped_items)} keys, updates={len(updates)}", flush=True)
+    else:
+        print(f"[INFO] building KIS sidecars with max_workers={max_workers}", flush=True)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(_process_group, group_item) for group_item in grouped_items]
+            for idx, future in enumerate(as_completed(futures), start=1):
+                _merge_result(future.result())
+                if idx % 25 == 0:
+                    print(f"[INFO] built KIS sidecars {idx}/{len(grouped_items)} keys, updates={len(updates)}", flush=True)
+    updates.sort(key=lambda item: int(item.get("id") or 0))
 
     return {
         "updates": updates,
         "candidate_rows": sum(len(items) for items in grouped.values()),
         "unique_keys": len(grouped),
         "sidecar_keys_built": built_keys,
+        "max_workers": max_workers,
         "skipped_existing_rows": skipped_existing,
         "skipped_missing_date_rows": skipped_missing_date,
         "skipped_missing_ticker_rows": skipped_missing_ticker,
@@ -772,21 +856,60 @@ def write_updates(updates: List[Dict[str, Any]], *, batch_size: int) -> int:
         raise SystemExit("Supabase client unavailable.")
 
     written = 0
-    for item in updates:
-        row_id = item.get("id")
-        if row_id is None:
+    start = 0
+    adaptive_batch_size = max(1, int(batch_size))
+    while start < len(updates):
+        batch = updates[start : start + adaptive_batch_size]
+        normalized = []
+        for item in batch:
+            row_id = item.get("id")
+            if row_id is None:
+                continue
+            normalized.append(
+                {
+                    "id": row_id,
+                    "snapshot_key": item.get("snapshot_key"),
+                    "run_id": item.get("run_id"),
+                    "ticker": item.get("ticker"),
+                    "market": item.get("market"),
+                    "row_role": item.get("row_role"),
+                    "base_trade_date": item.get("base_trade_date"),
+                    "feature_snapshot": item.get("feature_snapshot"),
+                    "updated_at": item.get("updated_at") or datetime.now(timezone.utc).isoformat(),
+                }
+            )
+        if not normalized:
+            start += adaptive_batch_size
             continue
-        payload = {
-            "feature_snapshot": item.get("feature_snapshot"),
-            "updated_at": item.get("updated_at") or datetime.now(timezone.utc).isoformat(),
-        }
-        try:
-            db.client.table(TARGET_TABLE).update(payload).eq("id", row_id).execute()
-        except Exception:
-            db.client.table(TARGET_TABLE).update({"feature_snapshot": payload["feature_snapshot"]}).eq("id", row_id).execute()
-        written += 1
-        if written % max(1, int(batch_size)) == 0 or written == len(updates):
-            print(f"[INFO] updated KIS sidecars {written}/{len(updates)}", flush=True)
+        last_exc = None
+        for attempt in range(1, 4):
+            try:
+                db.client.table(TARGET_TABLE).upsert(normalized, on_conflict="snapshot_key").execute()
+                last_exc = None
+                break
+            except Exception as exc:
+                message = str(exc)
+                if adaptive_batch_size > MIN_WRITE_BATCH_SIZE and (
+                    "statement timeout" in message or "57014" in message
+                ):
+                    next_batch_size = max(MIN_WRITE_BATCH_SIZE, adaptive_batch_size // 2)
+                    print(
+                        f"[WARN] Supabase sidecar upsert timed out at batch_size={adaptive_batch_size}; "
+                        f"retrying with batch_size={next_batch_size}",
+                        flush=True,
+                    )
+                    adaptive_batch_size = next_batch_size
+                    last_exc = None
+                    break
+                last_exc = exc
+                time.sleep(min(2 * attempt, 5))
+        if last_exc is not None:
+            raise last_exc
+        if adaptive_batch_size < len(batch):
+            continue
+        written += len(normalized)
+        start += len(batch)
+        print(f"[INFO] updated KIS sidecars {written}/{len(updates)}", flush=True)
     return written
 
 
@@ -822,6 +945,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--market", choices=["ALL", "KOSPI", "KOSDAQ"], default="ALL")
     parser.add_argument("--scan-mode", choices=["ALL", "SWING", "INTRADAY"], default="ALL")
     parser.add_argument("--limit", type=int, default=0, help="Maximum eligible rows to process; 0 means all.")
+    parser.add_argument(
+        "--client-filter",
+        action="store_true",
+        help="Read by indexed id pages and apply market/date filters client-side to avoid filtered-query timeouts.",
+    )
     parser.add_argument("--page-size", type=int, default=100)
     parser.add_argument("--min-id", type=int, default=0, help="Inclusive lower id bound for chunked Supabase reads.")
     parser.add_argument("--max-id", type=int, default=0, help="Inclusive upper id bound for chunked Supabase reads.")
@@ -829,6 +957,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-base-date", default="", help="Inclusive base_trade_date lower bound, YYYY-MM-DD.")
     parser.add_argument("--max-base-date", default="", help="Inclusive base_trade_date upper bound, YYYY-MM-DD.")
     parser.add_argument("--batch-size", type=int, default=25)
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=1,
+        help="KIS sidecar build workers. Keep low because live KIS calls are globally rate-limited.",
+    )
     parser.add_argument("--daily-lookback-days", type=int, default=140)
     parser.add_argument("--only-outcome-available", action="store_true")
     parser.add_argument(
@@ -874,6 +1008,7 @@ def main() -> int:
         overwrite=args.overwrite,
         only_outcome_available=args.only_outcome_available,
         require_outcome_label=args.require_outcome_label,
+        client_filter=bool(args.client_filter),
         skip_existing=not args.verify_only,
     )
     if args.plan_only:
@@ -894,6 +1029,8 @@ def main() -> int:
                 "max_base_date": _date_text(args.max_base_date) or "",
                 "only_outcome_available": bool(args.only_outcome_available),
                 "require_outcome_label": bool(args.require_outcome_label),
+                "client_filter": bool(args.client_filter),
+                "max_workers": int(args.max_workers or 1),
             },
             "summary": {
                 **planning,
@@ -925,6 +1062,8 @@ def main() -> int:
                 "max_base_date": _date_text(args.max_base_date) or "",
                 "only_outcome_available": bool(args.only_outcome_available),
                 "require_outcome_label": bool(args.require_outcome_label),
+                "client_filter": bool(args.client_filter),
+                "max_workers": int(args.max_workers or 1),
             },
             "summary": {
                 **verification,
@@ -951,6 +1090,7 @@ def main() -> int:
         sleep_sec=max(0.0, float(args.sleep_sec or 0.0)),
         overwrite=bool(args.overwrite),
         require_outcome_label=bool(args.require_outcome_label),
+        max_workers=max(1, int(args.max_workers or 1)),
     )
     client = KISOpenAPIClient(timeout=float(args.kis_timeout_sec or 8.0))
     built = build_updates(rows, client=client, options=options)
@@ -971,6 +1111,7 @@ def main() -> int:
             "max_base_date": _date_text(args.max_base_date) or "",
             "only_outcome_available": bool(args.only_outcome_available),
             "require_outcome_label": bool(args.require_outcome_label),
+            "client_filter": bool(args.client_filter),
             "overwrite": bool(args.overwrite),
             "include_flow": options.include_flow,
             "include_minute": options.include_minute,
@@ -979,6 +1120,7 @@ def main() -> int:
             "include_stock_info": options.include_stock_info,
             "include_financial": options.include_financial,
             "include_current_rank": options.include_current_rank,
+            "max_workers": options.max_workers,
         },
         "summary": {
             **built,

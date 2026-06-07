@@ -1,4 +1,4 @@
-from multi_agent.tools.backfill_scan_universe_returns import _compute_return_payload, build_updates, fetch_snapshot_rows
+from multi_agent.tools.backfill_scan_universe_returns import _compute_return_payload, build_updates, fetch_snapshot_rows, write_updates
 
 
 def test_compute_return_payload_uses_future_trading_days_and_preserves_existing_values():
@@ -212,3 +212,202 @@ def test_fetch_snapshot_rows_applies_filters_and_retries_timeout(monkeypatch):
     assert ("scan_mode", "SWING") in calls["eq"]
     assert ("base_trade_date", "2026-05-22") in calls["eq"]
     assert ("id", 10) in calls["lte"]
+
+
+def test_fetch_snapshot_rows_retries_timeout_below_100(monkeypatch):
+    calls = {"limit": []}
+    rows = [
+        {"id": 1, "ticker": "000001.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-22"}
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        failures = 0
+
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            calls["limit"].append(self._limit)
+            return self
+
+        def eq(self, _field, _value):
+            return self
+
+        def gte(self, _field, _value):
+            return self
+
+        def lte(self, _field, _value):
+            return self
+
+        def execute(self):
+            if self._limit == 100 and Query.failures == 0:
+                Query.failures += 1
+                raise RuntimeError("57014 canceling statement due to statement timeout")
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    got = fetch_snapshot_rows(
+        market="ALL",
+        scan_mode="ALL",
+        page_size=100,
+        min_id=0,
+        max_id=0,
+        base_date="",
+        min_base_date="",
+        max_base_date="",
+        limit=0,
+    )
+
+    assert [row["id"] for row in got] == [1]
+    assert calls["limit"][:2] == [100, 50]
+
+
+def test_fetch_snapshot_rows_can_filter_client_side(monkeypatch):
+    calls = {"eq": []}
+    rows = [
+        {"id": 1, "ticker": "000001.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-22"},
+        {"id": 2, "ticker": "000002.KQ", "market": "KOSDAQ", "scan_mode": "SWING", "base_trade_date": "2026-05-22"},
+        {"id": 3, "ticker": "000003.KS", "market": "KOSPI", "scan_mode": "INTRADAY", "base_trade_date": "2026-05-22"},
+        {"id": 4, "ticker": "000004.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-29"},
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            return self
+
+        def eq(self, field, value):
+            calls["eq"].append((field, value))
+            return self
+
+        def gte(self, _field, _value):
+            return self
+
+        def lte(self, _field, _value):
+            return self
+
+        def execute(self):
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    got = fetch_snapshot_rows(
+        market="KOSPI",
+        scan_mode="SWING",
+        page_size=10,
+        min_id=0,
+        max_id=0,
+        base_date="",
+        min_base_date="2026-05-22",
+        max_base_date="2026-05-28",
+        limit=0,
+        client_filter=True,
+    )
+
+    assert [row["id"] for row in got] == [1]
+    assert calls["eq"] == []
+
+
+def test_write_updates_reduces_upsert_batch_on_timeout(monkeypatch):
+    calls = {"batch_lengths": []}
+
+    class Result:
+        data = []
+
+    class Query:
+        def __init__(self):
+            self._payload = []
+
+        def upsert(self, payload, **_kwargs):
+            self._payload = list(payload)
+            return self
+
+        def execute(self):
+            calls["batch_lengths"].append(len(self._payload))
+            if len(self._payload) > 25:
+                raise RuntimeError("57014 canceling statement due to statement timeout")
+            return Result()
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    written = write_updates(
+        [
+            {
+                "id": idx,
+                "snapshot_key": f"KEY-{idx}",
+                "run_id": "RUN",
+                "ticker": f"{idx:06d}.KS",
+                "row_role": "rejected",
+            }
+            for idx in range(1, 51)
+        ],
+        batch_size=50,
+        write_method="upsert",
+    )
+
+    assert written == 50
+    assert calls["batch_lengths"] == [50, 25, 25]

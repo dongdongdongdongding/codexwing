@@ -11,6 +11,7 @@ from multi_agent.tools.backfill_kis_sidecar_to_scan_universe_snapshots import (
     fetch_snapshot_rows,
     summarize_candidate_rows,
     verify_existing_sidecars,
+    write_updates,
 )
 
 
@@ -156,6 +157,40 @@ def test_build_updates_dedupes_same_ticker_and_merges_feature_snapshot():
     assert snapshot["kis_model_candidate_features"]["kis_current_price"] == 10500.0
     assert snapshot["kis_model_candidate_features"]["kis_daily_bar_count"] == 2
     assert snapshot["kis_sidecar_backfill"]["no_dummy_data"] is True
+
+
+def test_build_updates_supports_bounded_parallel_workers():
+    client = FakeKISClient()
+    rows = [
+        {
+            "id": 2,
+            "snapshot_key": "RUN-A:000002.KS:rejected",
+            "run_id": "RUN-A",
+            "ticker": "000002.KS",
+            "market": "KOSPI",
+            "row_role": "rejected",
+            "base_trade_date": "2026-05-28",
+            "feature_snapshot": {},
+        },
+        {
+            "id": 1,
+            "snapshot_key": "RUN-A:000001.KS:emitted",
+            "run_id": "RUN-A",
+            "ticker": "000001.KS",
+            "market": "KOSPI",
+            "row_role": "emitted",
+            "base_trade_date": "2026-05-28",
+            "feature_snapshot": {},
+        },
+    ]
+
+    built = build_updates(rows, client=client, options=BackfillOptions(include_vi=False, max_workers=2))
+
+    assert built["max_workers"] == 2
+    assert built["unique_keys"] == 2
+    assert built["sidecar_keys_built"] == 2
+    assert [item["id"] for item in built["updates"]] == [1, 2]
+    assert client.calls["daily_bars"] == 2
 
 
 def test_existing_sidecar_is_skipped_without_overwrite():
@@ -363,3 +398,253 @@ def test_fetch_snapshot_rows_retries_statement_timeout(monkeypatch):
 
     assert [row["id"] for row in got] == [1, 2]
     assert calls["limit"][:2] == [1000, 500]
+
+
+def test_fetch_snapshot_rows_retries_statement_timeout_below_100(monkeypatch):
+    calls = {"limit": []}
+    rows = [
+        {
+            "id": 1,
+            "ticker": "000001.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "base_trade_date": "2026-05-28",
+            "return_5d_pct": 1.0,
+            "feature_snapshot": {},
+        }
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        failures = 0
+
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            calls["limit"].append(self._limit)
+            return self
+
+        def lte(self, _field, _value):
+            return self
+
+        def gte(self, _field, _value):
+            return self
+
+        def eq(self, _field, _value):
+            return self
+
+        def execute(self):
+            if self._limit == 100 and Query.failures == 0:
+                Query.failures += 1
+                raise RuntimeError("57014 canceling statement due to statement timeout")
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    got = fetch_snapshot_rows(
+        market="ALL",
+        scan_mode="ALL",
+        page_size=100,
+        limit=0,
+        min_id=0,
+        max_id=0,
+        base_date="",
+        min_base_date="",
+        max_base_date="",
+        overwrite=False,
+        only_outcome_available=False,
+        require_outcome_label=False,
+    )
+
+    assert [row["id"] for row in got] == [1]
+    assert calls["limit"][:2] == [100, 50]
+
+
+def test_fetch_snapshot_rows_can_filter_client_side(monkeypatch):
+    calls = {"eq": []}
+    rows = [
+        {
+            "id": 1,
+            "ticker": "000001.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "base_trade_date": "2026-05-22",
+            "return_5d_pct": 1.0,
+            "feature_snapshot": {},
+        },
+        {
+            "id": 2,
+            "ticker": "000002.KQ",
+            "market": "KOSDAQ",
+            "scan_mode": "SWING",
+            "base_trade_date": "2026-05-22",
+            "return_5d_pct": 1.0,
+            "feature_snapshot": {},
+        },
+        {
+            "id": 3,
+            "ticker": "000003.KS",
+            "market": "KOSPI",
+            "scan_mode": "INTRADAY",
+            "base_trade_date": "2026-05-22",
+            "return_5d_pct": 1.0,
+            "feature_snapshot": {},
+        },
+        {
+            "id": 4,
+            "ticker": "000004.KS",
+            "market": "KOSPI",
+            "scan_mode": "SWING",
+            "base_trade_date": "2026-05-29",
+            "return_5d_pct": 1.0,
+            "feature_snapshot": {},
+        },
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, _field, value):
+            self._last_id = int(value)
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            return self
+
+        def lte(self, _field, _value):
+            return self
+
+        def gte(self, _field, _value):
+            return self
+
+        def eq(self, field, value):
+            calls["eq"].append((field, value))
+            return self
+
+        def execute(self):
+            batch = [row for row in rows if row["id"] > self._last_id][: self._limit]
+            return Result(batch)
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    got = fetch_snapshot_rows(
+        market="KOSPI",
+        scan_mode="SWING",
+        page_size=10,
+        limit=0,
+        min_id=0,
+        max_id=0,
+        base_date="",
+        min_base_date="2026-05-22",
+        max_base_date="2026-05-28",
+        overwrite=False,
+        only_outcome_available=False,
+        require_outcome_label=True,
+        client_filter=True,
+    )
+
+    assert [row["id"] for row in got] == [1]
+    assert calls["eq"] == []
+
+
+def test_write_updates_reduces_upsert_batch_on_timeout(monkeypatch):
+    calls = {"batch_lengths": [], "conflicts": []}
+
+    class Result:
+        data = []
+
+    class Query:
+        def __init__(self):
+            self._payload = []
+
+        def upsert(self, payload, **kwargs):
+            self._payload = list(payload)
+            calls["conflicts"].append(kwargs.get("on_conflict"))
+            return self
+
+        def execute(self):
+            calls["batch_lengths"].append(len(self._payload))
+            if len(self._payload) > 25:
+                raise RuntimeError("57014 canceling statement due to statement timeout")
+            return Result()
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    import modules.db_manager as db_manager
+
+    monkeypatch.setattr(db_manager, "DBManager", lambda: FakeDB())
+
+    written = write_updates(
+        [
+            {
+                "id": idx,
+                "snapshot_key": f"RUN:{idx:06d}.KS",
+                "run_id": "RUN",
+                "ticker": f"{idx:06d}.KS",
+                "market": "KOSPI",
+                "row_role": "rejected",
+                "base_trade_date": "2026-05-28",
+                "feature_snapshot": {"kis_sidecar": {"idx": idx}},
+                "updated_at": "2026-06-06T00:00:00+00:00",
+            }
+            for idx in range(1, 51)
+        ],
+        batch_size=50,
+    )
+
+    assert written == 50
+    assert calls["batch_lengths"] == [50, 25, 25]
+    assert calls["conflicts"] == ["snapshot_key", "snapshot_key", "snapshot_key"]
