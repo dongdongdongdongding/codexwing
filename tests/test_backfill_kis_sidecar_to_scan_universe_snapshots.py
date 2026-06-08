@@ -99,11 +99,13 @@ class FakeKISClient:
             }
         }
 
-    def news_titles(self, *_args, **_kwargs):
+    def news_titles(self, *_args, **kwargs):
         self.calls["news_titles"] += 1
+        symbol = kwargs.get("symbol") or "005930"
         return {
             "output": [
                 {
+                    "mksc_shrn_iscd": str(symbol).split(".")[0],
                     "hts_pbnt_titl_cntt": "AI 반도체 공급 계약 수주",
                     "data_dt": "20260528",
                     "data_tm": "090000",

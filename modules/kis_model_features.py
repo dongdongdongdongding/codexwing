@@ -43,6 +43,9 @@ KIS_SIDECAR_MODEL_NUMERIC_FEATURES = (
     "kis_rank_volume_power",
     "kis_vi_triggered",
     "kis_news_title_count",
+    "kis_news_source_scope_confidence",
+    "kis_news_source_scope_ambiguous",
+    "kis_news_promotion_blocked",
     "kis_stock_listed_shares",
     "kis_stock_capital_amount",
     "kis_stock_par_value",
@@ -90,6 +93,7 @@ KIS_SIDECAR_CATEGORICAL_FEATURES = (
     "kis_stock_kospi200_item",
     "kis_stock_trade_stop",
     "kis_stock_admin_item",
+    "kis_news_source_scope",
     "kis_financial_statement_period",
 )
 
@@ -157,6 +161,8 @@ KIS_THEME_NEWS_NUMERIC_FEATURES = (
     "kis_theme_news_headline_count",
     "kis_theme_news_positive_tag_count",
     "kis_theme_news_risk_tag_count",
+    "kis_theme_news_source_scope_confidence",
+    "kis_theme_news_promotion_blocked",
     "kis_theme_news_vi_triggered",
     "kis_theme_news_prefilter_source_count",
 )
@@ -166,6 +172,7 @@ KIS_THEME_NEWS_CATEGORICAL_FEATURES = (
     "kis_theme_news_primary_theme",
     "kis_theme_news_kis_sector_name",
     "kis_theme_news_standard_industry_code",
+    "kis_theme_news_source_scope",
     "kis_theme_news_top_positive_tag",
     "kis_theme_news_top_risk_tag",
 )
@@ -419,12 +426,15 @@ def flatten_kis_model_features(row: Mapping[str, Any]) -> Dict[str, Any]:
     out["kis_theme_news_headline_count"] = float(len(headlines))
     out["kis_theme_news_positive_tag_count"] = float(len(positive_tags))
     out["kis_theme_news_risk_tag_count"] = float(len(risk_tags))
+    out["kis_theme_news_source_scope_confidence"] = _safe_float(news_payload.get("source_scope_confidence"))
+    out["kis_theme_news_promotion_blocked"] = _flag(news_payload.get("promotion_blocked") or theme_news.get("promotion_blocked"))
     out["kis_theme_news_vi_triggered"] = _flag(action_payload.get("vi_triggered"))
     out["kis_theme_news_prefilter_source_count"] = float(len(prefilter_sources))
     out["kis_theme_news_level"] = _text(theme_news.get("evidence_strength_level"))
     out["kis_theme_news_primary_theme"] = _text(theme_payload.get("primary_theme"))
     out["kis_theme_news_kis_sector_name"] = _text(theme_payload.get("kis_sector_name"))
     out["kis_theme_news_standard_industry_code"] = _text(theme_payload.get("kis_standard_industry_code"))
+    out["kis_theme_news_source_scope"] = _text(news_payload.get("source_scope"))
     out["kis_theme_news_top_positive_tag"] = _text(positive_tags[0]) if positive_tags else None
     out["kis_theme_news_top_risk_tag"] = _text(risk_tags[0]) if risk_tags else None
     return out

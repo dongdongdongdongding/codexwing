@@ -315,7 +315,7 @@ def _build_optional_kis_sidecar(
                 news_payload = _kis_sidecar_call(
                     lambda: client.news_titles(symbol=sym, trade_date=datetime.now().strftime("%Y%m%d"))
                 )
-                news_contract = normalize_kis_news_titles(news_payload)
+                news_contract = normalize_kis_news_titles(news_payload, symbol=sym)
                 raw_news_rows = list(news_contract.get("rows") or [])
                 news_limit = max(0, int(_env_float("AG_KIS_SIDECAR_NEWS_MAX_ROWS", 12)))
                 news_rows = raw_news_rows[:news_limit] if news_limit else raw_news_rows

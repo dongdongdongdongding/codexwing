@@ -6,6 +6,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import pandas as pd
 
+from modules.kis_news_scope import classify_kis_news_source_scope
 from modules.kis_openapi import normalize_kr_stock_code
 
 
@@ -145,16 +146,33 @@ def normalize_kis_vi_status(symbol: str, payload: Optional[Mapping[str, Any]]) -
     }
 
 
-def normalize_kis_news_titles(payload: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+def normalize_kis_news_titles(
+    payload: Optional[Mapping[str, Any]],
+    *,
+    symbol: str = "",
+    stock_name: str = "",
+) -> Dict[str, Any]:
     if not isinstance(payload, Mapping):
         return {"source": "kis_openapi", "source_status": "not_requested", "checked": False, "rows": []}
     rows = _output_rows(payload)
+    scope = classify_kis_news_source_scope(
+        symbol=symbol,
+        stock_name=stock_name,
+        rows=rows,
+        checked=True,
+        news_count=len(rows),
+    )
     return {
         "source": "kis_openapi",
         "source_status": "ok",
         "checked": True,
         "news_count": len(rows),
         "rows": rows,
+        "source_scope": scope.get("source_scope"),
+        "source_scope_confidence": scope.get("source_scope_confidence"),
+        "source_scope_metadata": scope,
+        "promotion_blocked": bool(scope.get("promotion_blocked")),
+        "promotion_block_reason": scope.get("promotion_block_reason"),
     }
 
 
@@ -552,6 +570,13 @@ def build_kis_sidecar_snapshot(
     news_count = int(news_title_count) if news_title_count is not None else len(news_list)
     stock = dict(stock_info or {})
     financial = dict(financial_ratio or {})
+    news_scope = classify_kis_news_source_scope(
+        symbol=symbol,
+        stock_name=str(stock.get("product_name") or ""),
+        rows=news_list,
+        checked=news_checked,
+        news_count=news_count,
+    )
     daily_summary = _daily_ohlcv_summary(daily)
     has_financial_ratio = any(
         financial.get(key) is not None
@@ -620,6 +645,10 @@ def build_kis_sidecar_snapshot(
         "kis_rank_volume_power": rank.get("volume_power_rank"),
         "kis_vi_triggered": vi.get("triggered"),
         "kis_news_title_count": news_count,
+        "kis_news_source_scope_confidence": news_scope.get("source_scope_confidence"),
+        "kis_news_source_scope_ambiguous": bool(news_scope.get("promotion_blocked")),
+        "kis_news_promotion_blocked": bool(news_scope.get("promotion_blocked")),
+        "kis_news_source_scope": news_scope.get("source_scope"),
         "kis_stock_market_code": stock.get("market_code"),
         "kis_stock_market_name": stock.get("market_name"),
         "kis_stock_type": stock.get("stock_type"),
@@ -661,6 +690,7 @@ def build_kis_sidecar_snapshot(
             and coverage["rank_membership"]
             and coverage["vi_status"]
             and coverage["news_titles"]
+            and not bool(news_scope.get("promotion_blocked"))
             and coverage["stock_info"]
             and coverage["financial_ratio"]
         ),
@@ -669,6 +699,9 @@ def build_kis_sidecar_snapshot(
     for key, ok in ready.items():
         if not ok:
             warnings.append(f"{key}=false")
+    warnings.extend(news_scope.get("warnings") or [])
+    if news_scope.get("promotion_blocked"):
+        warnings.append(str(news_scope.get("promotion_block_reason") or "KIS_NEWS_SCOPE_AMBIGUOUS"))
 
     return {
         "contract_version": KIS_OPERATIONAL_CONTRACT_VERSION,
@@ -689,6 +722,12 @@ def build_kis_sidecar_snapshot(
             "rows_stored_count": len(news_list),
             "rows_truncated": bool(news_count > len(news_list)),
             "rows": news_list,
+            "source_scope": news_scope.get("source_scope"),
+            "source_scope_confidence": news_scope.get("source_scope_confidence"),
+            "source_scope_metadata": news_scope,
+            "promotion_blocked": bool(news_scope.get("promotion_blocked")),
+            "promotion_block_reason": news_scope.get("promotion_block_reason"),
+            "promotion_blocking_reasons": news_scope.get("promotion_blocking_reasons") or [],
         },
         "stock_info_contract": stock,
         "financial_ratio_contract": financial,

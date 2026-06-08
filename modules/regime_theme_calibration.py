@@ -46,6 +46,14 @@ def _row_value(row: Dict[str, Any], *keys: str) -> Any:
     return None
 
 
+def _row_dict(row: Dict[str, Any], *keys: str) -> Dict[str, Any]:
+    for key in keys:
+        value = _row_value(row, key)
+        if isinstance(value, dict):
+            return value
+    return {}
+
+
 def load_theme_cache(path: Path = DEFAULT_THEME_CACHE_PATH) -> Dict[str, Any]:
     if not path.exists():
         return {}
@@ -100,6 +108,7 @@ def build_regime_theme_adjustment(
     theme_score_adj = _safe_float(_row_value(row, "theme_score_adjustment"), 0.0) or 0.0
     breadth = _safe_float(_row_value(row, "regime_breadth_pct"))
     regime_avg_chg = _safe_float(_row_value(row, "regime_avg_chg"))
+    kis_industry_regime = _row_dict(row, "kis_industry_regime", "kis_industry_regime_overlay")
 
     warnings = []
     confidence_parts = []
@@ -172,6 +181,30 @@ def build_regime_theme_adjustment(
     elif primary_theme:
         warnings.append("theme_cache_miss")
 
+    if kis_industry_regime:
+        if kis_industry_regime.get("source_ok"):
+            confidence_parts.append("kis_industry_regime")
+            trend = _upper(kis_industry_regime.get("trend"))
+            industry_return_5d = _safe_float(kis_industry_regime.get("return_5d_pct"))
+            industry_return_20d = _safe_float(kis_industry_regime.get("return_20d_pct"))
+            if trend == "STRONG_POSITIVE" or (industry_return_5d is not None and industry_return_5d >= 3.0):
+                prob_multiplier *= 1.04
+                return_multiplier *= 1.05
+                stop_risk_multiplier *= 0.97
+            elif trend == "POSITIVE" or (industry_return_5d is not None and industry_return_5d >= 1.0):
+                prob_multiplier *= 1.02
+                return_multiplier *= 1.025
+            elif trend == "STRONG_NEGATIVE" or (industry_return_20d is not None and industry_return_20d <= -5.0):
+                prob_multiplier *= 0.92
+                return_multiplier *= 0.92
+                stop_risk_multiplier *= 1.1
+            elif trend == "NEGATIVE" or (industry_return_5d is not None and industry_return_5d <= -1.5):
+                prob_multiplier *= 0.96
+                return_multiplier *= 0.96
+                stop_risk_multiplier *= 1.05
+        else:
+            warnings.append("kis_industry_regime_not_source_ok")
+
     cache_age = _age_hours(cache.get("theme_momentum_updated_at") or cache.get("generated_at"), now)
     if cache and cache_age is not None and cache_age > 24:
         warnings.append("stale_theme_cache")
@@ -197,6 +230,7 @@ def build_regime_theme_adjustment(
         "regime_breadth_pct": breadth,
         "regime_avg_chg": regime_avg_chg,
         "theme_momentum": theme_momentum,
+        "kis_industry_regime": kis_industry_regime or None,
         "theme_cache_age_hours": round(cache_age, 3) if cache_age is not None else None,
         "warnings": warnings,
         "evidence": sorted(set(confidence_parts)),

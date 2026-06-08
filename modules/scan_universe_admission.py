@@ -739,6 +739,19 @@ def _reason_codes(value: Any) -> List[str]:
 
 
 def _promotion_block_reason(row: Dict[str, Any]) -> str:
+    existing_evidence = row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else {}
+    theme_block = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+    if not existing_evidence and isinstance(theme_block.get("kis_theme_news_evidence"), dict):
+        existing_evidence = theme_block.get("kis_theme_news_evidence") or {}
+    try:
+        evidence = existing_evidence or build_kis_theme_news_evidence(row)
+    except Exception:
+        evidence = existing_evidence
+    if isinstance(evidence, dict) and evidence.get("promotion_blocked"):
+        reason = str(evidence.get("promotion_block_reason") or "").strip()
+        if reason:
+            return reason
+
     source_role = str(row.get("_admission_source_role") or row.get("row_role") or "").strip()
     if source_role not in {"legacy_rejected", "rejected"}:
         return ""

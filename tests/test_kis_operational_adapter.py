@@ -121,7 +121,7 @@ def test_rank_vi_and_news_contracts_track_checked_state_without_fabrication():
         volume_power_rank_payload={"output": []},
     )
     vi = normalize_kis_vi_status("005930.KS", {"output": []})
-    news = normalize_kis_news_titles({"output": []})
+    news = normalize_kis_news_titles({"output": []}, symbol="005930.KS")
 
     assert rank["checked"] is True
     assert rank["volume_rank"] == 2
@@ -130,6 +130,7 @@ def test_rank_vi_and_news_contracts_track_checked_state_without_fabrication():
     assert vi["triggered"] is False
     assert news["checked"] is True
     assert news["news_count"] == 0
+    assert news["source_scope"] == "empty"
 
 
 def test_stock_info_and_financial_ratio_contracts_preserve_real_fields():
@@ -209,12 +210,13 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
         },
         rank_membership={"volume_rank": 5},
         vi_status={"checked": True, "triggered": False},
-        news_titles=[{"title": "one"}, {"title": "two"}],
+        news_titles=[{"title": "one", "mksc_shrn_iscd": "005930"}, {"title": "two", "mksc_shrn_iscd": "005930"}],
         news_titles_checked=True,
         news_title_count=40,
         stock_info={
             "checked": True,
             "source_status": "ok",
+            "product_name": "삼성전자",
             "market_name": "유가증권",
             "stock_type": "주권",
             "listed_date": "19750611",
@@ -240,6 +242,8 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
     assert snapshot["coverage"]["vi_status"] is True
     assert snapshot["coverage"]["news_titles"] is True
     assert snapshot["news_contract"]["news_count"] == 40
+    assert snapshot["news_contract"]["source_scope"] == "symbol_specific"
+    assert snapshot["news_contract"]["promotion_blocked"] is False
     assert len(snapshot["news_contract"]["rows"]) == 2
     assert snapshot["news_contract"]["rows_stored_count"] == 2
     assert snapshot["news_contract"]["rows_truncated"] is True
@@ -249,6 +253,22 @@ def test_sidecar_snapshot_marks_production_replacement_only_when_all_gates_prese
     assert snapshot["stock_info_contract"]["listed_date"] == "19750611"
     assert snapshot["financial_ratio_contract"]["roe"] == 9.8
     assert snapshot["model_candidate_features"]["kis_financial_debt_ratio"] == 28.7
+
+
+def test_sidecar_snapshot_blocks_production_ready_for_ambiguous_news_scope():
+    snapshot = build_kis_sidecar_snapshot(
+        "005930.KS",
+        quote_snapshot={"ticker": "005930", "source_status": "ok", "last_price": 155, "volume": 1000},
+        news_titles=[{"title": "AI 반도체 공급 계약 수주"}],
+        news_titles_checked=True,
+        stock_info={"checked": True, "source_status": "ok", "product_name": "삼성전자"},
+    )
+
+    assert snapshot["news_contract"]["source_scope"] == "ambiguous"
+    assert snapshot["news_contract"]["promotion_blocked"] is True
+    assert snapshot["replacement_readiness"]["production_replacement_ready"] is False
+    assert snapshot["model_candidate_features"]["kis_news_promotion_blocked"] is True
+    assert "KIS_NEWS_SCOPE_AMBIGUOUS" in snapshot["warnings"]
 
 
 def test_kis_replacement_roadmap_keeps_source_adapter_promotion_order():

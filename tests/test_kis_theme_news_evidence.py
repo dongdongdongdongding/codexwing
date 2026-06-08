@@ -14,12 +14,19 @@ def _kis_sidecar():
             "checked": True,
             "news_count": 2,
             "rows": [
-                {"dorg": "KIS", "data_dt": "20260608", "data_tm": "091500", "hts_pbnt_titl_cntt": "AI 반도체 공급 계약 수주"},
-                {"dorg": "KIS", "data_dt": "20260608", "data_tm": "092000", "title": "신규 정책 지원 기대"},
+                {
+                    "dorg": "KIS",
+                    "data_dt": "20260608",
+                    "data_tm": "091500",
+                    "mksc_shrn_iscd": "005930",
+                    "hts_pbnt_titl_cntt": "AI 반도체 공급 계약 수주",
+                },
+                {"dorg": "KIS", "data_dt": "20260608", "data_tm": "092000", "mksc_shrn_iscd": "005930", "title": "신규 정책 지원 기대"},
             ],
         },
         "stock_info_contract": {
             "checked": True,
+            "product_name": "삼성전자",
             "sector_name": "반도체",
             "standard_industry_code": "C261",
             "market_name": "KOSPI",
@@ -60,6 +67,8 @@ def test_build_kis_theme_news_evidence_combines_real_sidecar_prefilter_and_theme
     assert evidence["theme"]["primary_theme"] == "AI반도체"
     assert evidence["theme"]["kis_sector_name"] == "반도체"
     assert evidence["news"]["news_count"] == 2
+    assert evidence["news"]["source_scope"] == "symbol_specific"
+    assert evidence["promotion_blocked"] is False
     assert "contract_order" in evidence["news"]["positive_tags"]
     assert evidence["market_action"]["vi_triggered"] is True
     assert evidence["evidence_strength_level"] == "strong"
@@ -75,3 +84,31 @@ def test_format_kis_theme_news_summary_does_not_label_local_theme_as_kis_backed(
     assert evidence["available"] is True
     assert evidence["kis_backed"] is False
     assert format_kis_theme_news_summary(evidence) == ""
+
+
+def test_build_kis_theme_news_evidence_blocks_ambiguous_kis_news_scope():
+    sidecar = _kis_sidecar()
+    sidecar["news_contract"]["rows"] = [{"title": "AI 반도체 공급 계약 수주"}]
+    sidecar["news_contract"]["news_count"] = 1
+    row = {"ticker": "005930.KS", "feature_snapshot": {"kis_sidecar": sidecar}}
+
+    evidence = build_kis_theme_news_evidence(row)
+
+    assert evidence["news"]["source_scope"] == "ambiguous"
+    assert evidence["promotion_blocked"] is True
+    assert evidence["promotion_block_reason"] == "KIS_NEWS_SCOPE_AMBIGUOUS"
+    assert evidence["evidence_strength_level"] != "strong"
+    assert "kis_news_scope_ambiguous" in evidence["warnings"]
+
+
+def test_build_kis_theme_news_evidence_marks_market_wide_kis_news_scope():
+    sidecar = _kis_sidecar()
+    sidecar["news_contract"]["rows"] = [{"title": "SK하이닉스 공급 계약", "iscd1": "000660", "kor_isnm1": "SK하이닉스"}]
+    sidecar["news_contract"]["news_count"] = 1
+    row = {"ticker": "005930.KS", "feature_snapshot": {"kis_sidecar": sidecar}}
+
+    evidence = build_kis_theme_news_evidence(row)
+
+    assert evidence["news"]["source_scope"] == "market_wide"
+    assert evidence["promotion_block_reason"] == "KIS_NEWS_SCOPE_MARKET_WIDE"
+    assert "kis_news_scope_market_wide" in evidence["warnings"]

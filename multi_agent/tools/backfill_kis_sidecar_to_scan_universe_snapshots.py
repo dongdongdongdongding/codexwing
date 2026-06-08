@@ -433,7 +433,7 @@ class KISSidecarBackfillBuilder:
         )
         if isinstance(payload, Mapping) and payload.get("_kis_backfill_error"):
             return normalize_kis_news_titles(None)
-        return normalize_kis_news_titles(payload if isinstance(payload, Mapping) else {})
+        return normalize_kis_news_titles(payload if isinstance(payload, Mapping) else {}, symbol=symbol)
 
     def _stock_info(self, symbol: str) -> Dict[str, Any]:
         if not self.options.include_stock_info:

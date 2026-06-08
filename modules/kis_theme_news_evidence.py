@@ -5,6 +5,12 @@ import math
 import re
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
+from modules.kis_news_scope import (
+    KIS_NEWS_SCOPE_AMBIGUOUS_BLOCK_REASON,
+    KIS_NEWS_SCOPE_MARKET_WIDE_BLOCK_REASON,
+    classify_kis_news_source_scope,
+)
+
 
 KIS_THEME_NEWS_EVIDENCE_VERSION = "kis_theme_news_evidence_v1"
 
@@ -260,9 +266,40 @@ def _extract_news_rows(news_contract: Mapping[str, Any]) -> List[Dict[str, Any]]
                 "date": str(date_value) if date_value else None,
                 "time": str(time_value) if time_value else None,
                 "url": row.get("url"),
+                "symbol": _first_present(
+                    row.get("symbol"),
+                    row.get("ticker"),
+                    row.get("pdno"),
+                    row.get("stck_shrn_iscd"),
+                    row.get("mksc_shrn_iscd"),
+                    row.get("stock_code"),
+                ),
+                "stock_name": _first_present(row.get("stock_name"), row.get("hts_kor_isnm"), row.get("prdt_name"), row.get("name")),
             }
         )
     return out
+
+
+def _news_scope_from_contract(
+    *,
+    ticker: str,
+    stock_name: str = "",
+    news_contract: Mapping[str, Any],
+    news_rows: Iterable[Mapping[str, Any]],
+    news_checked: bool,
+    news_count: int,
+) -> Dict[str, Any]:
+    existing = _json_dict(news_contract.get("source_scope_metadata"))
+    if existing and existing.get("source_scope"):
+        return existing
+    raw_rows = news_contract.get("rows") if isinstance(news_contract.get("rows"), list) else list(news_rows)
+    return classify_kis_news_source_scope(
+        symbol=ticker,
+        stock_name=stock_name,
+        rows=raw_rows,
+        checked=news_checked,
+        news_count=news_count,
+    )
 
 
 def _classify_news_titles(titles: Iterable[str]) -> Dict[str, Any]:
@@ -385,6 +422,27 @@ def build_kis_theme_news_evidence(
     )
     news_checked = bool(news_contract.get("checked"))
     news_count = int(_safe_float(news_contract.get("news_count")) or len(news_rows) or 0)
+    ticker = str(_first_present(source.get("ticker"), source.get("Ticker"), source.get("티커"), trace_source.get("ticker"), ""))
+    stock_name = str(
+        _first_present(
+            stock_info.get("product_name"),
+            source.get("stock_name"),
+            source.get("name"),
+            source.get("종목명"),
+            trace_source.get("stock_name"),
+            trace_source.get("name"),
+            "",
+        )
+    )
+    news_scope = _news_scope_from_contract(
+        ticker=ticker,
+        stock_name=stock_name,
+        news_contract=news_contract,
+        news_rows=news_rows,
+        news_checked=news_checked,
+        news_count=news_count,
+    )
+    news_promotion_blocked = bool(news_scope.get("promotion_blocked")) and news_checked and news_count > 0
 
     score = 0.0
     if kis_backed:
@@ -406,6 +464,8 @@ def build_kis_theme_news_evidence(
         score += 5.0
     if news_classification["risk_tags"]:
         score = max(0.0, score - min(20.0, 5.0 * len(news_classification["risk_tags"])))
+    if news_promotion_blocked:
+        score = min(score, 60.0)
     score = round(min(100.0, score), 2)
     if score >= 70:
         strength = "strong"
@@ -427,7 +487,7 @@ def build_kis_theme_news_evidence(
         drivers.append("KIS 랭킹 " + ",".join(rank["prefilter_sources"][:3]))
     if rank.get("vi_triggered"):
         drivers.append("KIS VI 포착")
-    if news_classification["positive_tags"]:
+    if news_classification["positive_tags"] and not news_promotion_blocked:
         drivers.append("뉴스 긍정태그 " + ",".join(news_classification["positive_tags"][:3]))
 
     warnings: List[str] = []
@@ -441,16 +501,28 @@ def build_kis_theme_news_evidence(
         warnings.append("kis_news_risk_tags:" + ",".join(news_classification["risk_tags"][:4]))
     if news_contract.get("rows_truncated"):
         warnings.append("kis_news_rows_truncated")
+    warnings.extend(news_scope.get("warnings") or [])
+    promotion_blocking_reasons = list(news_scope.get("promotion_blocking_reasons") or [])
+    if news_promotion_blocked:
+        if not promotion_blocking_reasons:
+            promotion_blocking_reasons.append(KIS_NEWS_SCOPE_AMBIGUOUS_BLOCK_REASON)
+        if promotion_blocking_reasons[0] == KIS_NEWS_SCOPE_MARKET_WIDE_BLOCK_REASON:
+            warnings.append("kis_news_scope_market_wide")
+        else:
+            warnings.append("kis_news_scope_ambiguous")
 
     return {
         "contract_version": KIS_THEME_NEWS_EVIDENCE_VERSION,
         "available": bool(kis_backed or primary_theme or news_checked or kis_sector),
         "kis_backed": kis_backed,
-        "ticker": str(_first_present(source.get("ticker"), source.get("Ticker"), source.get("티커"), trace_source.get("ticker"), "")),
+        "ticker": ticker,
         "market": str(_first_present(market, source.get("market"), source.get("Market"), trace_source.get("market"), "")),
         "sources_present": source_names,
         "evidence_strength_score": score,
         "evidence_strength_level": strength,
+        "promotion_blocked": news_promotion_blocked,
+        "promotion_block_reason": promotion_blocking_reasons[0] if promotion_blocking_reasons else None,
+        "promotion_blocking_reasons": promotion_blocking_reasons,
         "theme": {
             "primary_theme": primary_theme,
             "secondary_themes": secondary_themes,
@@ -467,6 +539,11 @@ def build_kis_theme_news_evidence(
             "news_count": news_count,
             "rows_stored_count": len(news_rows),
             "headlines": news_rows[:5],
+            "source_scope": news_scope.get("source_scope"),
+            "source_scope_confidence": news_scope.get("source_scope_confidence"),
+            "source_scope_metadata": news_scope,
+            "promotion_blocked": news_promotion_blocked,
+            "promotion_block_reason": promotion_blocking_reasons[0] if promotion_blocking_reasons else None,
             **news_classification,
         },
         "market_action": rank,
@@ -492,6 +569,8 @@ def format_kis_theme_news_summary(evidence: Mapping[str, Any], *, max_headlines:
         parts.append(f"테마 {theme_label}{sector}")
     if news.get("checked"):
         parts.append(f"뉴스 {news.get('news_count') or 0}건")
+        if news.get("source_scope") and news.get("source_scope") not in {"symbol_specific", "empty"}:
+            parts.append(f"뉴스범위 {news.get('source_scope')}")
     if action.get("vi_triggered"):
         parts.append("VI")
     if action.get("prefilter_sources"):

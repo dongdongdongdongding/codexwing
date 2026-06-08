@@ -588,7 +588,7 @@ def test_prepare_dataset_flattens_kis_sidecar_and_prefilter_features():
                             "checked": True,
                             "source_status": "ok",
                             "news_count": 1,
-                            "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                            "rows": [{"title": "AI 반도체 공급 계약 수주", "mksc_shrn_iscd": "000001"}],
                         },
                         "stock_info_contract": {
                             "checked": True,
@@ -630,6 +630,8 @@ def test_prepare_dataset_flattens_kis_sidecar_and_prefilter_features():
     assert df.loc[df.index[0], "kis_theme_news_kis_backed"] == 1.0
     assert df.loc[df.index[0], "kis_theme_news_news_count"] == 1.0
     assert df.loc[df.index[0], "kis_theme_news_kis_sector_name"] == "semiconductor"
+    assert df.loc[df.index[0], "kis_theme_news_source_scope"] == "symbol_specific"
+    assert df.loc[df.index[0], "kis_theme_news_promotion_blocked"] == 0.0
     assert df.loc[df.index[0], "kis_theme_news_top_positive_tag"] == "contract_order"
     assert df.loc[df.index[0], "kis_prefilter_present"] == 1.0
     assert df.loc[df.index[0], "kis_prefilter_selection_score"] == 91.25
@@ -714,7 +716,7 @@ def test_kis_feature_readiness_reports_date_coverage():
                         "news_contract": {
                             "checked": True,
                             "news_count": 1,
-                            "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                            "rows": [{"title": "AI 반도체 공급 계약 수주", "mksc_shrn_iscd": f"{idx:06d}"}],
                         },
                         "stock_info_contract": {
                             "checked": True,

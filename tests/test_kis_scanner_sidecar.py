@@ -146,7 +146,14 @@ def test_optional_kis_sidecar_persists_live_rank_news_stock_and_financial_contra
             return {"output": [{"mksc_shrn_iscd": "005930", "hts_kor_isnm": "삼성전자"}]}
 
         def news_titles(self, *, symbol="", trade_date="", hour=""):
-            return {"output": [{"title": "one"}, {"title": "two"}, {"title": "three"}]}
+            code = str(symbol or "005930").split(".")[0]
+            return {
+                "output": [
+                    {"title": "one", "mksc_shrn_iscd": code},
+                    {"title": "two", "mksc_shrn_iscd": code},
+                    {"title": "three", "mksc_shrn_iscd": code},
+                ]
+            }
 
         def stock_info(self, symbol):
             return {
@@ -181,6 +188,7 @@ def test_optional_kis_sidecar_persists_live_rank_news_stock_and_financial_contra
     assert sidecar["vi_contract"]["triggered"] is True
     assert sidecar["news_contract"]["news_count"] == 3
     assert sidecar["news_contract"]["rows_stored_count"] == 2
+    assert sidecar["news_contract"]["source_scope"] == "symbol_specific"
     assert sidecar["stock_info_contract"]["listed_date"] == "19750611"
     assert sidecar["financial_ratio_contract"]["roe"] == 9.8
     assert features["kis_rank_volume"] == 4

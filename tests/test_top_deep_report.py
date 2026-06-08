@@ -198,6 +198,7 @@ def test_build_top_deep_reports_prefers_kis_sidecar_for_deep_snapshot():
             "rows": [
                 {
                     "dorg": "연합뉴스",
+                    "mksc_shrn_iscd": "005930",
                     "data_dt": "20260605",
                     "data_tm": "093000",
                     "hts_pbnt_titl_cntt": "KIS headline",

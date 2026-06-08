@@ -107,3 +107,35 @@ def test_small_theme_sample_keeps_adjustment_low_confidence():
 
     assert "small_theme_sample" in adjustment["warnings"]
     assert adjustment["confidence"] < 0.35
+
+
+def test_kis_industry_regime_overlay_boosts_matching_positive_regime():
+    now = datetime(2026, 5, 19, tzinfo=timezone.utc)
+    base = {
+        "market_gate": "GREEN",
+        "primary_theme": "semiconductor",
+        "theme_day_avg_decision_score": 68,
+        "theme_day_symbol_count": 5,
+    }
+    without_overlay = build_regime_theme_adjustment(
+        base,
+        theme_cache={"generated_at": now.isoformat(), "theme_states": []},
+        now=now,
+    )
+    with_overlay = build_regime_theme_adjustment(
+        {
+            **base,
+            "kis_industry_regime": {
+                "source_ok": True,
+                "trend": "positive",
+                "return_5d_pct": 2.1,
+                "return_20d_pct": 4.3,
+            },
+        },
+        theme_cache={"generated_at": now.isoformat(), "theme_states": []},
+        now=now,
+    )
+
+    assert with_overlay["prob_multiplier"] > without_overlay["prob_multiplier"]
+    assert with_overlay["return_multiplier"] > without_overlay["return_multiplier"]
+    assert "kis_industry_regime" in with_overlay["evidence"]

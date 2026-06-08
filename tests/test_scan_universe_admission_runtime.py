@@ -59,7 +59,7 @@ def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
                     "checked": True,
                     "source_status": "ok",
                     "news_count": 1,
-                    "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                    "rows": [{"title": "AI 반도체 공급 계약 수주", "mksc_shrn_iscd": "005930"}],
                 },
                 "stock_info_contract": {
                     "checked": True,
@@ -99,6 +99,8 @@ def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
     assert features["kis_theme_news_kis_backed"] == 1.0
     assert features["kis_theme_news_news_count"] == 1.0
     assert features["kis_theme_news_kis_sector_name"] == "semiconductor"
+    assert features["kis_theme_news_source_scope"] == "symbol_specific"
+    assert features["kis_theme_news_promotion_blocked"] == 0.0
     assert features["kis_theme_news_top_positive_tag"] == "contract_order"
     assert features["kis_prefilter_present"] == 1.0
     assert features["kis_prefilter_selection_score"] == 122.5
@@ -169,7 +171,7 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
                         "checked": True,
                         "source_status": "ok",
                         "news_count": 1,
-                        "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                        "rows": [{"title": "AI 반도체 공급 계약 수주", "mksc_shrn_iscd": "005930"}],
                     },
                     "stock_info_contract": {
                         "checked": True,
@@ -450,3 +452,46 @@ def test_blocked_top_rank_does_not_prevent_next_eligible_promotion(monkeypatch):
     assert result["passed"][0]["scan_universe_admission"]["model_rank"] == 2
     assert result["all_records"][0]["scan_universe_admission"]["promotion_blocked"] is True
     assert result["all_records"][1]["scan_universe_admission"]["passed"] is True
+
+
+def test_ambiguous_kis_news_scope_blocks_admission_promotion(monkeypatch):
+    bundle = {
+        "market": "KOSPI",
+        "model_name": "fake",
+        "label": "fake",
+        "feature_set": "fake",
+        "selection_rule": "fake_rule",
+        "prob_threshold": 0.6,
+        "topn": 1,
+        "_model_path": "fake.pkl",
+    }
+    scored = [
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "_admission_probability": 0.9,
+            "_admission_source_role": "emitted",
+            "row_role": "emitted",
+            "_admission_features": {"feature_coverage_score": 1.0, "feature_missing_keys": [], "volume_ratio": 1.5},
+            "feature_snapshot": {
+                "kis_sidecar": {
+                    "coverage": {"news_titles": True, "stock_info": True},
+                    "news_contract": {
+                        "checked": True,
+                        "source_status": "ok",
+                        "news_count": 1,
+                        "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                    },
+                    "stock_info_contract": {"checked": True, "product_name": "삼성전자", "sector_name": "반도체"},
+                }
+            },
+        }
+    ]
+    monkeypatch.setattr(admission, "load_admission_model", lambda _market: bundle)
+    monkeypatch.setattr(admission, "score_scan_universe_admission_rows", lambda _rows, market: scored)
+
+    result = build_scan_universe_admission_records(scored, market="KOSPI", limit=1, include_near_miss=True)
+
+    assert result["passed"] == []
+    assert len(result["blocked"]) == 1
+    assert result["blocked"][0]["scan_universe_admission"]["promotion_block_reason"] == "KIS_NEWS_SCOPE_AMBIGUOUS"
