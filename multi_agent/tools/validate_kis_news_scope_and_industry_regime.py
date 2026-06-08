@@ -17,7 +17,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from modules.kis_industry_regime import build_kis_industry_regime_overlay
+from modules.kis_industry_regime import build_kis_industry_regime_overlay, resolve_kis_stock_industry_index_code
 from modules.kis_operational_adapter import normalize_kis_news_titles, normalize_kis_stock_info
 from modules.kis_openapi import KISConfig, KISOpenAPIClient, normalize_kr_stock_code
 
@@ -91,6 +91,7 @@ def _news_scope_rows(
         except Exception as exc:
             stock = {"checked": False, "source_status": "error", "error": _compact_error(exc)}
         stock_name = str(stock.get("product_name") or "")
+        industry_mapping = resolve_kis_stock_industry_index_code(stock) if isinstance(stock, Mapping) else {}
         try:
             _sleep(sleep_sec)
             news = normalize_kis_news_titles(
@@ -104,6 +105,7 @@ def _news_scope_rows(
                     "ticker": symbol,
                     "stock_name": stock_name or None,
                     "stock_info": stock,
+                    "stock_industry_index_mapping": industry_mapping,
                     "news": news,
                     "source_scope": scope.get("source_scope"),
                     "source_scope_confidence": scope.get("source_scope_confidence"),
@@ -119,6 +121,7 @@ def _news_scope_rows(
                     "ticker": symbol,
                     "stock_name": stock_name or None,
                     "stock_info": stock,
+                    "stock_industry_index_mapping": industry_mapping,
                     "ok": False,
                     "error": _compact_error(exc),
                     "promotion_blocked": True,
@@ -202,6 +205,11 @@ def build_validation_report(
         scope_counts[scope] = scope_counts.get(scope, 0) + 1
     blocked = [row for row in news_rows if row.get("promotion_blocked")]
     industry_ready = [row for row in industry_rows if row.get("ok")]
+    mapping_rows = [
+        row.get("stock_industry_index_mapping")
+        for row in news_rows
+        if isinstance(row.get("stock_industry_index_mapping"), Mapping)
+    ]
     verdict = "ready_with_symbol_specific_news"
     if blocked:
         verdict = "promotion_block_required_for_ambiguous_news"
@@ -222,11 +230,26 @@ def build_validation_report(
             "news_ok_count": sum(1 for row in news_rows if row.get("ok")),
             "news_source_scope_counts": scope_counts,
             "news_promotion_blocked_count": len(blocked),
+            "news_raw_count_total": sum(
+                int(((row.get("news") if isinstance(row.get("news"), Mapping) else {}).get("raw_news_count") or 0))
+                for row in news_rows
+            ),
+            "news_rows_filtered_out_total": sum(
+                int(((row.get("news") if isinstance(row.get("news"), Mapping) else {}).get("rows_filtered_out_count") or 0))
+                for row in news_rows
+            ),
             "industry_indices_checked": len(industry_rows),
             "industry_overlay_ready_count": len(industry_ready),
+            "stock_industry_index_mapping_verified_count": sum(
+                1 for row in mapping_rows if bool(row.get("mapping_verified"))
+            ),
+            "stock_industry_index_mapping_unverified_count": sum(
+                1 for row in mapping_rows if not bool(row.get("mapping_verified"))
+            ),
             "industry_overlay_missing_mapping_note": (
-                "KIS industry_price/industry_daily_bars validate market/industry-index regime, "
-                "but stock_info standard_industry_code is not an official one-to-one index_code mapping."
+                "KIS industry_price/industry_daily_bars are used only with verified market index codes. "
+                "stock_info standard_industry_code is recorded but blocked from stock-specific index boosts "
+                "until an official one-to-one KIS index_code mapping is verified."
             ),
         },
         "news_scope_rows": news_rows,
@@ -247,8 +270,12 @@ def _write_report(report: Mapping[str, Any], *, output_json: Path, output_md: Pa
         f"- live_network_enabled_for_run: `{report.get('live_network_enabled_for_run')}`",
         f"- symbols_checked: `{summary.get('symbols_checked')}`",
         f"- news_scope_counts: `{summary.get('news_source_scope_counts')}`",
+        f"- news_raw_count_total: `{summary.get('news_raw_count_total')}`",
+        f"- news_rows_filtered_out_total: `{summary.get('news_rows_filtered_out_total')}`",
         f"- news_promotion_blocked_count: `{summary.get('news_promotion_blocked_count')}`",
         f"- industry_overlay_ready_count: `{summary.get('industry_overlay_ready_count')}/{summary.get('industry_indices_checked')}`",
+        f"- stock_industry_index_mapping_verified_count: `{summary.get('stock_industry_index_mapping_verified_count')}`",
+        f"- stock_industry_index_mapping_unverified_count: `{summary.get('stock_industry_index_mapping_unverified_count')}`",
         f"- mapping_note: {summary.get('industry_overlay_missing_mapping_note')}",
     ]
     lines.extend(["", "## News Scope Rows", ""])
@@ -256,14 +283,23 @@ def _write_report(report: Mapping[str, Any], *, output_json: Path, output_md: Pa
         if not isinstance(row, Mapping):
             continue
         news = row.get("news") if isinstance(row.get("news"), Mapping) else {}
+        mapping = (
+            row.get("stock_industry_index_mapping")
+            if isinstance(row.get("stock_industry_index_mapping"), Mapping)
+            else {}
+        )
         lines.append(
             "- "
             f"{row.get('ticker')} {row.get('stock_name') or ''}: "
             f"scope=`{row.get('source_scope') or 'error'}`, "
             f"confidence=`{row.get('source_scope_confidence')}`, "
             f"news_count=`{news.get('news_count')}`, "
+            f"raw_news_count=`{news.get('raw_news_count')}`, "
+            f"rows_filtered_out=`{news.get('rows_filtered_out_count')}`, "
             f"blocked=`{row.get('promotion_blocked')}`, "
-            f"reason=`{row.get('promotion_block_reason')}`"
+            f"reason=`{row.get('promotion_block_reason')}`, "
+            f"stock_industry_mapping=`{mapping.get('mapping_status')}`, "
+            f"market_index_code=`{mapping.get('market_index_code')}`"
         )
     lines.extend(["", "## Industry Regime Rows", ""])
     for row in report.get("industry_regime_rows") or []:

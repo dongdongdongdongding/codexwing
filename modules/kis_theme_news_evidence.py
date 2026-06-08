@@ -273,8 +273,15 @@ def _extract_news_rows(news_contract: Mapping[str, Any]) -> List[Dict[str, Any]]
                     row.get("stck_shrn_iscd"),
                     row.get("mksc_shrn_iscd"),
                     row.get("stock_code"),
+                    row.get("iscd1"),
                 ),
-                "stock_name": _first_present(row.get("stock_name"), row.get("hts_kor_isnm"), row.get("prdt_name"), row.get("name")),
+                "stock_name": _first_present(
+                    row.get("stock_name"),
+                    row.get("hts_kor_isnm"),
+                    row.get("prdt_name"),
+                    row.get("name"),
+                    row.get("kor_isnm1"),
+                ),
             }
         )
     return out
@@ -537,8 +544,12 @@ def build_kis_theme_news_evidence(
             "checked": news_checked,
             "source_status": news_contract.get("source_status") or ("not_requested" if not news_checked else "ok"),
             "news_count": news_count,
+            "raw_news_count": _safe_float(news_contract.get("raw_news_count")),
+            "rows_filtered_out_count": _safe_float(news_contract.get("rows_filtered_out_count")),
             "rows_stored_count": len(news_rows),
             "headlines": news_rows[:5],
+            "source_scope_filter_applied": bool(news_contract.get("source_scope_filter_applied")),
+            "source_scope_filter_policy": news_contract.get("source_scope_filter_policy"),
             "source_scope": news_scope.get("source_scope"),
             "source_scope_confidence": news_scope.get("source_scope_confidence"),
             "source_scope_metadata": news_scope,

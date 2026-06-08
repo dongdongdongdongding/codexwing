@@ -43,6 +43,8 @@ KIS_SIDECAR_MODEL_NUMERIC_FEATURES = (
     "kis_rank_volume_power",
     "kis_vi_triggered",
     "kis_news_title_count",
+    "kis_news_raw_title_count",
+    "kis_news_rows_filtered_out_count",
     "kis_news_source_scope_confidence",
     "kis_news_source_scope_ambiguous",
     "kis_news_promotion_blocked",
@@ -158,6 +160,8 @@ KIS_THEME_NEWS_NUMERIC_FEATURES = (
     "kis_theme_news_evidence_score",
     "kis_theme_news_news_checked",
     "kis_theme_news_news_count",
+    "kis_theme_news_raw_news_count",
+    "kis_theme_news_rows_filtered_out_count",
     "kis_theme_news_headline_count",
     "kis_theme_news_positive_tag_count",
     "kis_theme_news_risk_tag_count",
@@ -423,6 +427,8 @@ def flatten_kis_model_features(row: Mapping[str, Any]) -> Dict[str, Any]:
     out["kis_theme_news_evidence_score"] = _safe_float(theme_news.get("evidence_strength_score"))
     out["kis_theme_news_news_checked"] = _flag(news_payload.get("checked"))
     out["kis_theme_news_news_count"] = _safe_float(news_payload.get("news_count"))
+    out["kis_theme_news_raw_news_count"] = _safe_float(news_payload.get("raw_news_count"))
+    out["kis_theme_news_rows_filtered_out_count"] = _safe_float(news_payload.get("rows_filtered_out_count"))
     out["kis_theme_news_headline_count"] = float(len(headlines))
     out["kis_theme_news_positive_tag_count"] = float(len(positive_tags))
     out["kis_theme_news_risk_tag_count"] = float(len(risk_tags))

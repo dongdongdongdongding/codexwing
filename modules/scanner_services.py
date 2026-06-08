@@ -213,6 +213,7 @@ def _build_optional_kis_sidecar(
     investor_flow: Optional[Dict[str, Any]] = None
     rank_membership: Dict[str, Any] = {}
     vi_status: Dict[str, Any] = {}
+    news_contract: Dict[str, Any] = {}
     news_rows = []
     news_checked = False
     news_count = 0
@@ -308,21 +309,6 @@ def _build_optional_kis_sidecar(
                 vi_status = normalize_kis_vi_status(sym, vi_payload)
             except Exception as exc:
                 warnings.append(f"kis_vi_sidecar_failed:{exc}")
-        if _env_bool("AG_KIS_SIDECAR_FETCH_NEWS", True):
-            try:
-                from datetime import datetime
-
-                news_payload = _kis_sidecar_call(
-                    lambda: client.news_titles(symbol=sym, trade_date=datetime.now().strftime("%Y%m%d"))
-                )
-                news_contract = normalize_kis_news_titles(news_payload, symbol=sym)
-                raw_news_rows = list(news_contract.get("rows") or [])
-                news_limit = max(0, int(_env_float("AG_KIS_SIDECAR_NEWS_MAX_ROWS", 12)))
-                news_rows = raw_news_rows[:news_limit] if news_limit else raw_news_rows
-                news_checked = bool(news_contract.get("checked"))
-                news_count = int(news_contract.get("news_count") or len(raw_news_rows))
-            except Exception as exc:
-                warnings.append(f"kis_news_sidecar_failed:{exc}")
         if _env_bool("AG_KIS_SIDECAR_FETCH_STOCK_INFO", True):
             try:
                 stock_info_contract = normalize_kis_stock_info(
@@ -331,6 +317,25 @@ def _build_optional_kis_sidecar(
                 )
             except Exception as exc:
                 warnings.append(f"kis_stock_info_sidecar_failed:{exc}")
+        if _env_bool("AG_KIS_SIDECAR_FETCH_NEWS", True):
+            try:
+                from datetime import datetime
+
+                news_payload = _kis_sidecar_call(
+                    lambda: client.news_titles(symbol=sym, trade_date=datetime.now().strftime("%Y%m%d"))
+                )
+                news_contract = normalize_kis_news_titles(
+                    news_payload,
+                    symbol=sym,
+                    stock_name=str(stock_info_contract.get("product_name") or ""),
+                )
+                raw_news_rows = list(news_contract.get("rows") or [])
+                news_limit = max(0, int(_env_float("AG_KIS_SIDECAR_NEWS_MAX_ROWS", 12)))
+                news_rows = raw_news_rows[:news_limit] if news_limit else raw_news_rows
+                news_checked = bool(news_contract.get("checked"))
+                news_count = int(news_contract.get("news_count") or len(raw_news_rows))
+            except Exception as exc:
+                warnings.append(f"kis_news_sidecar_failed:{exc}")
         if _env_bool("AG_KIS_SIDECAR_FETCH_FINANCIAL", True):
             try:
                 financial_ratio_contract = normalize_kis_financial_ratio(
@@ -361,6 +366,19 @@ def _build_optional_kis_sidecar(
         news_titles=news_rows,
         news_titles_checked=news_checked,
         news_title_count=news_count,
+        news_raw_count=news_contract.get("raw_news_count") if isinstance(news_contract, dict) else None,
+        news_rows_filtered_out_count=(
+            news_contract.get("rows_filtered_out_count") if isinstance(news_contract, dict) else None
+        ),
+        news_scope_filter_applied=(
+            news_contract.get("source_scope_filter_applied") if isinstance(news_contract, dict) else None
+        ),
+        news_scope_filter_policy=(
+            str(news_contract.get("source_scope_filter_policy") or "") if isinstance(news_contract, dict) else ""
+        ),
+        news_scope_filter_warnings=(
+            news_contract.get("source_scope_filter_warnings") if isinstance(news_contract, dict) else None
+        ),
         stock_info=stock_info_contract,
         financial_ratio=financial_ratio_contract,
     )

@@ -6,6 +6,17 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 
 KIS_INDUSTRY_REGIME_VERSION = "kis_industry_regime_v1"
+KIS_STOCK_INDUSTRY_INDEX_MAPPING_WARNING = "kis_stock_industry_index_mapping_unverified"
+
+KIS_MARKET_INDEX_CODES = {
+    "KOSPI": {"index_code": "0001", "market": "KOSPI", "industry_name": "KOSPI"},
+    "STK": {"index_code": "0001", "market": "KOSPI", "industry_name": "KOSPI"},
+    "유가증권": {"index_code": "0001", "market": "KOSPI", "industry_name": "KOSPI"},
+    "코스피": {"index_code": "0001", "market": "KOSPI", "industry_name": "KOSPI"},
+    "KOSDAQ": {"index_code": "1001", "market": "KOSDAQ", "industry_name": "KOSDAQ"},
+    "KSQ": {"index_code": "1001", "market": "KOSDAQ", "industry_name": "KOSDAQ"},
+    "코스닥": {"index_code": "1001", "market": "KOSDAQ", "industry_name": "KOSDAQ"},
+}
 
 
 def _safe_float(value: Any) -> float | None:
@@ -28,6 +39,68 @@ def _first_present(row: Mapping[str, Any], *keys: str) -> Any:
         if value not in (None, ""):
             return value
     return None
+
+
+def _norm_key(value: Any) -> str:
+    return str(value or "").strip().upper()
+
+
+def resolve_kis_market_index_code(market: Any) -> Dict[str, Any]:
+    key = _norm_key(market)
+    mapping = KIS_MARKET_INDEX_CODES.get(key) or KIS_MARKET_INDEX_CODES.get(str(market or "").strip())
+    if not mapping:
+        return {
+            "version": KIS_INDUSTRY_REGIME_VERSION,
+            "mapping_type": "market_index",
+            "mapping_status": "unsupported_market",
+            "mapping_verified": False,
+            "requested_market": str(market or "") or None,
+            "index_code": None,
+            "market": None,
+            "industry_name": None,
+            "warnings": ["kis_market_index_code_unsupported"],
+            "no_dummy_data": True,
+        }
+    return {
+        "version": KIS_INDUSTRY_REGIME_VERSION,
+        "mapping_type": "market_index",
+        "mapping_status": "verified_market_index",
+        "mapping_verified": True,
+        "requested_market": str(market or "") or None,
+        "index_code": mapping["index_code"],
+        "market": mapping["market"],
+        "industry_name": mapping["industry_name"],
+        "warnings": [],
+        "no_dummy_data": True,
+    }
+
+
+def resolve_kis_stock_industry_index_code(stock_info: Mapping[str, Any]) -> Dict[str, Any]:
+    stock = dict(stock_info or {}) if isinstance(stock_info, Mapping) else {}
+    market_value = _first_present(stock, "market_name", "market_code", "mket_id_cd_name", "mket_id_cd")
+    market_mapping = resolve_kis_market_index_code(market_value)
+    standard_industry_code = _first_present(stock, "standard_industry_code", "std_idst_clsf_cd", "industry_code")
+    sector_name = _first_present(stock, "sector_name", "bstp_kor_isnm", "large_sector_name", "mid_sector_name")
+    warnings = [KIS_STOCK_INDUSTRY_INDEX_MAPPING_WARNING]
+    if not standard_industry_code:
+        warnings.append("kis_stock_standard_industry_code_missing")
+    warnings.extend(market_mapping.get("warnings") or [])
+    return {
+        "version": KIS_INDUSTRY_REGIME_VERSION,
+        "mapping_type": "stock_industry_index",
+        "mapping_status": "unmapped_unverified",
+        "mapping_verified": False,
+        "ticker": _first_present(stock, "ticker", "product_code", "pdno", "stck_shrn_iscd"),
+        "standard_industry_code": str(standard_industry_code) if standard_industry_code else None,
+        "sector_name": str(sector_name) if sector_name else None,
+        "index_code": None,
+        "market_index_code": market_mapping.get("index_code"),
+        "market": market_mapping.get("market"),
+        "industry_name": None,
+        "warnings": list(dict.fromkeys(str(item) for item in warnings if str(item).strip())),
+        "market_mapping": market_mapping,
+        "no_dummy_data": True,
+    }
 
 
 def _output_rows(payload: Optional[Mapping[str, Any]]) -> List[Dict[str, Any]]:
@@ -212,8 +285,12 @@ def build_kis_industry_regime_overlay(
 
 
 __all__ = [
+    "KIS_MARKET_INDEX_CODES",
     "KIS_INDUSTRY_REGIME_VERSION",
+    "KIS_STOCK_INDUSTRY_INDEX_MAPPING_WARNING",
     "build_kis_industry_regime_overlay",
     "normalize_kis_industry_daily_bars",
     "normalize_kis_industry_price",
+    "resolve_kis_market_index_code",
+    "resolve_kis_stock_industry_index_code",
 ]

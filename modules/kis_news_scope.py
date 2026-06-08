@@ -5,6 +5,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 
 KIS_NEWS_SCOPE_VERSION = "kis_news_scope_v1"
+KIS_NEWS_SCOPE_FILTER_POLICY = "strict_symbol_or_stock_name_row_filter_v1"
 KIS_NEWS_SCOPE_AMBIGUOUS_BLOCK_REASON = "KIS_NEWS_SCOPE_AMBIGUOUS"
 KIS_NEWS_SCOPE_MARKET_WIDE_BLOCK_REASON = "KIS_NEWS_SCOPE_MARKET_WIDE"
 
@@ -102,6 +103,84 @@ def _rows(value: Optional[Iterable[Mapping[str, Any]]]) -> List[Dict[str, Any]]:
         if isinstance(row, Mapping):
             out.append(dict(row))
     return out
+
+
+def kis_news_row_matches_symbol(
+    row: Mapping[str, Any],
+    *,
+    symbol: str = "",
+    stock_name: str = "",
+) -> bool:
+    """Return whether one KIS news row proves relevance to the requested stock."""
+
+    if not isinstance(row, Mapping):
+        return False
+    requested_symbol = normalize_kr_news_symbol(symbol)
+    requested_name = _text(stock_name)
+    row_symbols = _row_symbols(row)
+    if row_symbols:
+        return bool(requested_symbol and requested_symbol in row_symbols)
+
+    title_body = " ".join(part for part in (_row_title(row), _row_text(row, _BODY_FIELDS)) if part)
+    name_text = " ".join(part for part in (_row_text(row, _NAME_FIELDS), title_body) if part)
+    if requested_symbol and _mentions_symbol(title_body, requested_symbol):
+        return True
+    if requested_name and _mentions_name(name_text, requested_name):
+        return True
+    return False
+
+
+def filter_kis_news_rows_for_symbol(
+    rows: Optional[Iterable[Mapping[str, Any]]],
+    *,
+    symbol: str = "",
+    stock_name: str = "",
+) -> Dict[str, Any]:
+    """Filter mixed KIS news rows down to rows with explicit stock evidence."""
+
+    row_list = _rows(rows)
+    requested_symbol = normalize_kr_news_symbol(symbol)
+    requested_name = _text(stock_name)
+    if not requested_symbol and not requested_name:
+        return {
+            "version": KIS_NEWS_SCOPE_VERSION,
+            "filter_policy": "not_applied_missing_symbol_and_name",
+            "filter_applied": False,
+            "requested_symbol": None,
+            "requested_stock_name": None,
+            "raw_news_count": len(row_list),
+            "rows_filtered_out_count": 0,
+            "matched_rows_count": len(row_list),
+            "rows": row_list,
+            "warnings": ["kis_news_scope_filter_missing_symbol_and_name"] if row_list else [],
+        }
+
+    matched: List[Dict[str, Any]] = []
+    filtered_out = 0
+    for row in row_list:
+        if kis_news_row_matches_symbol(row, symbol=requested_symbol, stock_name=requested_name):
+            matched.append(dict(row))
+        else:
+            filtered_out += 1
+
+    warnings: List[str] = []
+    if filtered_out:
+        warnings.append("kis_news_scope_rows_filtered_out")
+    if row_list and not matched:
+        warnings.append("kis_news_scope_no_symbol_specific_rows_after_filter")
+
+    return {
+        "version": KIS_NEWS_SCOPE_VERSION,
+        "filter_policy": KIS_NEWS_SCOPE_FILTER_POLICY,
+        "filter_applied": True,
+        "requested_symbol": requested_symbol or None,
+        "requested_stock_name": requested_name or None,
+        "raw_news_count": len(row_list),
+        "rows_filtered_out_count": filtered_out,
+        "matched_rows_count": len(matched),
+        "rows": matched,
+        "warnings": warnings,
+    }
 
 
 def classify_kis_news_source_scope(
@@ -241,8 +320,11 @@ def classify_kis_news_source_scope(
 
 __all__ = [
     "KIS_NEWS_SCOPE_AMBIGUOUS_BLOCK_REASON",
+    "KIS_NEWS_SCOPE_FILTER_POLICY",
     "KIS_NEWS_SCOPE_MARKET_WIDE_BLOCK_REASON",
     "KIS_NEWS_SCOPE_VERSION",
     "classify_kis_news_source_scope",
+    "filter_kis_news_rows_for_symbol",
+    "kis_news_row_matches_symbol",
     "normalize_kr_news_symbol",
 ]

@@ -6,7 +6,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import pandas as pd
 
-from modules.kis_news_scope import classify_kis_news_source_scope
+from modules.kis_news_scope import classify_kis_news_source_scope, filter_kis_news_rows_for_symbol
 from modules.kis_openapi import normalize_kr_stock_code
 
 
@@ -154,7 +154,10 @@ def normalize_kis_news_titles(
 ) -> Dict[str, Any]:
     if not isinstance(payload, Mapping):
         return {"source": "kis_openapi", "source_status": "not_requested", "checked": False, "rows": []}
-    rows = _output_rows(payload)
+    raw_rows = _output_rows(payload)
+    filter_result = filter_kis_news_rows_for_symbol(raw_rows, symbol=symbol, stock_name=stock_name)
+    filtered_rows = filter_result.get("rows")
+    rows = list(filtered_rows) if isinstance(filtered_rows, list) else raw_rows
     scope = classify_kis_news_source_scope(
         symbol=symbol,
         stock_name=stock_name,
@@ -162,11 +165,34 @@ def normalize_kis_news_titles(
         checked=True,
         news_count=len(rows),
     )
+    scope = dict(scope)
+    scope_warnings = list(scope.get("warnings") or [])
+    for warning in filter_result.get("warnings") or []:
+        if warning not in scope_warnings:
+            scope_warnings.append(str(warning))
+    scope["warnings"] = scope_warnings
+    evidence = dict(scope.get("evidence") or {})
+    evidence.update(
+        {
+            "raw_news_count": int(filter_result.get("raw_news_count") or len(raw_rows)),
+            "rows_filtered_out_count": int(filter_result.get("rows_filtered_out_count") or 0),
+            "matched_rows_count": int(filter_result.get("matched_rows_count") or len(rows)),
+            "scope_filter_policy": filter_result.get("filter_policy"),
+            "scope_filter_applied": bool(filter_result.get("filter_applied")),
+        }
+    )
+    scope["evidence"] = evidence
     return {
         "source": "kis_openapi",
         "source_status": "ok",
         "checked": True,
         "news_count": len(rows),
+        "raw_news_count": int(filter_result.get("raw_news_count") or len(raw_rows)),
+        "rows_filtered_out_count": int(filter_result.get("rows_filtered_out_count") or 0),
+        "matched_rows_count": int(filter_result.get("matched_rows_count") or len(rows)),
+        "source_scope_filter_applied": bool(filter_result.get("filter_applied")),
+        "source_scope_filter_policy": filter_result.get("filter_policy"),
+        "source_scope_filter_warnings": list(filter_result.get("warnings") or []),
         "rows": rows,
         "source_scope": scope.get("source_scope"),
         "source_scope_confidence": scope.get("source_scope_confidence"),
@@ -555,6 +581,11 @@ def build_kis_sidecar_snapshot(
     news_titles: Optional[Iterable[Mapping[str, Any]]] = None,
     news_titles_checked: bool = False,
     news_title_count: Optional[int] = None,
+    news_raw_count: Optional[int] = None,
+    news_rows_filtered_out_count: Optional[int] = None,
+    news_scope_filter_applied: Optional[bool] = None,
+    news_scope_filter_policy: str = "",
+    news_scope_filter_warnings: Optional[Iterable[str]] = None,
     stock_info: Optional[Mapping[str, Any]] = None,
     financial_ratio: Optional[Mapping[str, Any]] = None,
     generated_at: str = "",
@@ -568,6 +599,10 @@ def build_kis_sidecar_snapshot(
     news_list = [dict(item) for item in (news_titles or []) if isinstance(item, Mapping)]
     news_checked = bool(news_titles_checked or news_list)
     news_count = int(news_title_count) if news_title_count is not None else len(news_list)
+    raw_news_count = int(news_raw_count) if news_raw_count is not None else news_count
+    rows_filtered_out_count = int(news_rows_filtered_out_count or 0)
+    scope_filter_applied = bool(news_scope_filter_applied) if news_scope_filter_applied is not None else False
+    scope_filter_warnings = [str(item) for item in (news_scope_filter_warnings or []) if str(item).strip()]
     stock = dict(stock_info or {})
     financial = dict(financial_ratio or {})
     news_scope = classify_kis_news_source_scope(
@@ -577,6 +612,23 @@ def build_kis_sidecar_snapshot(
         checked=news_checked,
         news_count=news_count,
     )
+    news_scope = dict(news_scope)
+    news_scope_warnings = list(news_scope.get("warnings") or [])
+    for warning in scope_filter_warnings:
+        if warning not in news_scope_warnings:
+            news_scope_warnings.append(warning)
+    news_scope["warnings"] = news_scope_warnings
+    news_scope_evidence = dict(news_scope.get("evidence") or {})
+    news_scope_evidence.update(
+        {
+            "raw_news_count": raw_news_count,
+            "rows_filtered_out_count": rows_filtered_out_count,
+            "matched_rows_count": news_count,
+            "scope_filter_applied": scope_filter_applied,
+            "scope_filter_policy": news_scope_filter_policy or None,
+        }
+    )
+    news_scope["evidence"] = news_scope_evidence
     daily_summary = _daily_ohlcv_summary(daily)
     has_financial_ratio = any(
         financial.get(key) is not None
@@ -645,6 +697,8 @@ def build_kis_sidecar_snapshot(
         "kis_rank_volume_power": rank.get("volume_power_rank"),
         "kis_vi_triggered": vi.get("triggered"),
         "kis_news_title_count": news_count,
+        "kis_news_raw_title_count": raw_news_count,
+        "kis_news_rows_filtered_out_count": rows_filtered_out_count,
         "kis_news_source_scope_confidence": news_scope.get("source_scope_confidence"),
         "kis_news_source_scope_ambiguous": bool(news_scope.get("promotion_blocked")),
         "kis_news_promotion_blocked": bool(news_scope.get("promotion_blocked")),
@@ -700,6 +754,9 @@ def build_kis_sidecar_snapshot(
         if not ok:
             warnings.append(f"{key}=false")
     warnings.extend(news_scope.get("warnings") or [])
+    warnings.extend(scope_filter_warnings)
+    if rows_filtered_out_count > 0:
+        warnings.append("kis_news_scope_rows_filtered_out")
     if news_scope.get("promotion_blocked"):
         warnings.append(str(news_scope.get("promotion_block_reason") or "KIS_NEWS_SCOPE_AMBIGUOUS"))
 
@@ -719,9 +776,15 @@ def build_kis_sidecar_snapshot(
             "source_status": "ok" if news_checked else "not_requested",
             "checked": news_checked,
             "news_count": news_count,
+            "raw_news_count": raw_news_count,
+            "rows_filtered_out_count": rows_filtered_out_count,
+            "matched_rows_count": news_count,
             "rows_stored_count": len(news_list),
             "rows_truncated": bool(news_count > len(news_list)),
             "rows": news_list,
+            "source_scope_filter_applied": scope_filter_applied,
+            "source_scope_filter_policy": news_scope_filter_policy or None,
+            "source_scope_filter_warnings": scope_filter_warnings,
             "source_scope": news_scope.get("source_scope"),
             "source_scope_confidence": news_scope.get("source_scope_confidence"),
             "source_scope_metadata": news_scope,

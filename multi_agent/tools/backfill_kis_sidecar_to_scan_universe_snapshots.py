@@ -424,7 +424,7 @@ class KISSidecarBackfillBuilder:
                 cached = self._vi_cache.setdefault(key, normalized)
         return normalize_kis_vi_status(symbol, cached or {})
 
-    def _news(self, symbol: str, base_date: date) -> Dict[str, Any]:
+    def _news(self, symbol: str, base_date: date, *, stock_name: str = "") -> Dict[str, Any]:
         if not self.options.include_news and not self.options.news_only_existing_sidecar:
             return normalize_kis_news_titles(None)
         payload = self._call(
@@ -433,7 +433,7 @@ class KISSidecarBackfillBuilder:
         )
         if isinstance(payload, Mapping) and payload.get("_kis_backfill_error"):
             return normalize_kis_news_titles(None)
-        return normalize_kis_news_titles(payload if isinstance(payload, Mapping) else {}, symbol=symbol)
+        return normalize_kis_news_titles(payload if isinstance(payload, Mapping) else {}, symbol=symbol, stock_name=stock_name)
 
     def _stock_info(self, symbol: str) -> Dict[str, Any]:
         if not self.options.include_stock_info:
@@ -517,8 +517,8 @@ class KISSidecarBackfillBuilder:
         minute_bars = self._minute_bars(symbol, base_date)
         flow = self._flow(symbol, base_date)
         vi = self._vi(symbol, market, base_date)
-        news = self._news(symbol, base_date)
         stock = self._stock_info(symbol)
+        news = self._news(symbol, base_date, stock_name=str(stock.get("product_name") or ""))
         financial = self._financial(symbol)
         rank = self._rank(symbol, market)
         sidecar = build_kis_sidecar_snapshot(
@@ -533,6 +533,11 @@ class KISSidecarBackfillBuilder:
             news_titles=news.get("rows") if isinstance(news, Mapping) else [],
             news_titles_checked=bool(news.get("checked")) if isinstance(news, Mapping) else False,
             news_title_count=news.get("news_count") if isinstance(news, Mapping) else None,
+            news_raw_count=news.get("raw_news_count") if isinstance(news, Mapping) else None,
+            news_rows_filtered_out_count=news.get("rows_filtered_out_count") if isinstance(news, Mapping) else None,
+            news_scope_filter_applied=news.get("source_scope_filter_applied") if isinstance(news, Mapping) else None,
+            news_scope_filter_policy=str(news.get("source_scope_filter_policy") or "") if isinstance(news, Mapping) else "",
+            news_scope_filter_warnings=news.get("source_scope_filter_warnings") if isinstance(news, Mapping) else None,
             stock_info=stock,
             financial_ratio=financial,
             generated_at=generated_at,
@@ -805,7 +810,8 @@ def build_updates(
                     "rows_by_role": result_rows_by_role,
                 }
             sidecar = dict(existing_sidecar)
-            news = builder._news(symbol, base)
+            stock_info = _json_dict(sidecar.get("stock_info_contract"))
+            news = builder._news(symbol, base, stock_name=str(stock_info.get("product_name") or ""))
             coverage = _json_dict(sidecar.get("coverage"))
             news_checked = bool(news.get("checked")) if isinstance(news, Mapping) else False
             coverage["news_titles"] = news_checked
@@ -813,6 +819,12 @@ def build_updates(
             sidecar["news_contract"] = news if isinstance(news, Mapping) else {}
             model_features = _json_dict(sidecar.get("model_candidate_features"))
             model_features["kis_news_title_count"] = _safe_float(news.get("news_count")) if isinstance(news, Mapping) else None
+            model_features["kis_news_raw_title_count"] = (
+                _safe_float(news.get("raw_news_count")) if isinstance(news, Mapping) else None
+            )
+            model_features["kis_news_rows_filtered_out_count"] = (
+                _safe_float(news.get("rows_filtered_out_count")) if isinstance(news, Mapping) else None
+            )
             sidecar["model_candidate_features"] = model_features
             warnings = list(sidecar.get("warnings") or [])
             warnings.append("kis_news_titles_backfilled_from_existing_sidecar")

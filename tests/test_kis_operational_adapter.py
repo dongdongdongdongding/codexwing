@@ -133,6 +133,36 @@ def test_rank_vi_and_news_contracts_track_checked_state_without_fabrication():
     assert news["source_scope"] == "empty"
 
 
+def test_normalize_kis_news_titles_filters_mixed_kis_rows_to_candidate_symbol():
+    news = normalize_kis_news_titles(
+        {
+            "output": [
+                {
+                    "iscd1": "005930",
+                    "kor_isnm1": "삼성전자",
+                    "hts_pbnt_titl_cntt": "삼성전자 AI 반도체 공급 계약",
+                },
+                {
+                    "iscd1": "000660",
+                    "kor_isnm1": "SK하이닉스",
+                    "hts_pbnt_titl_cntt": "SK하이닉스 HBM 공급",
+                },
+            ]
+        },
+        symbol="005930.KS",
+        stock_name="삼성전자",
+    )
+
+    assert news["checked"] is True
+    assert news["raw_news_count"] == 2
+    assert news["news_count"] == 1
+    assert news["rows_filtered_out_count"] == 1
+    assert news["rows"][0]["iscd1"] == "005930"
+    assert news["source_scope"] == "symbol_specific"
+    assert news["promotion_blocked"] is False
+    assert news["source_scope_metadata"]["evidence"]["raw_news_count"] == 2
+
+
 def test_stock_info_and_financial_ratio_contracts_preserve_real_fields():
     stock = normalize_kis_stock_info(
         "005930.KS",

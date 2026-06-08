@@ -1,21 +1,25 @@
 # KIS News Scope and Industry Regime Validation
 
-- generated_at: `2026-06-08T17:41:39.985778+09:00`
-- verdict: `promotion_block_required_for_ambiguous_news`
+- generated_at: `2026-06-08T18:01:49.686560+09:00`
+- verdict: `ready_with_symbol_specific_news`
 - no_dummy_data: `True`
 - live_network_enabled_for_run: `True`
 - symbols_checked: `4`
-- news_scope_counts: `{'market_wide': 4}`
-- news_promotion_blocked_count: `4`
+- news_scope_counts: `{'symbol_specific': 4}`
+- news_raw_count_total: `160`
+- news_rows_filtered_out_total: `83`
+- news_promotion_blocked_count: `0`
 - industry_overlay_ready_count: `2/2`
-- mapping_note: KIS industry_price/industry_daily_bars validate market/industry-index regime, but stock_info standard_industry_code is not an official one-to-one index_code mapping.
+- stock_industry_index_mapping_verified_count: `0`
+- stock_industry_index_mapping_unverified_count: `4`
+- mapping_note: KIS industry_price/industry_daily_bars are used only with verified market index codes. stock_info standard_industry_code is recorded but blocked from stock-specific index boosts until an official one-to-one KIS index_code mapping is verified.
 
 ## News Scope Rows
 
-- 005930 삼성전자보통주: scope=`market_wide`, confidence=`0.2`, news_count=`40`, blocked=`True`, reason=`KIS_NEWS_SCOPE_MARKET_WIDE`
-- 000660 에스케이하이닉스보통주: scope=`market_wide`, confidence=`0.2`, news_count=`40`, blocked=`True`, reason=`KIS_NEWS_SCOPE_MARKET_WIDE`
-- 091990 셀트리온헬스케어: scope=`market_wide`, confidence=`0.2`, news_count=`40`, blocked=`True`, reason=`KIS_NEWS_SCOPE_MARKET_WIDE`
-- 196170 알테오젠: scope=`market_wide`, confidence=`0.2`, news_count=`40`, blocked=`True`, reason=`KIS_NEWS_SCOPE_MARKET_WIDE`
+- 005930 삼성전자보통주: scope=`symbol_specific`, confidence=`0.95`, news_count=`27`, raw_news_count=`40`, rows_filtered_out=`13`, blocked=`False`, reason=`None`, stock_industry_mapping=`unmapped_unverified`, market_index_code=`0001`
+- 000660 에스케이하이닉스보통주: scope=`symbol_specific`, confidence=`0.95`, news_count=`11`, raw_news_count=`40`, rows_filtered_out=`29`, blocked=`False`, reason=`None`, stock_industry_mapping=`unmapped_unverified`, market_index_code=`0001`
+- 091990 셀트리온헬스케어: scope=`symbol_specific`, confidence=`0.95`, news_count=`32`, raw_news_count=`40`, rows_filtered_out=`8`, blocked=`False`, reason=`None`, stock_industry_mapping=`unmapped_unverified`, market_index_code=`1001`
+- 196170 알테오젠: scope=`symbol_specific`, confidence=`0.95`, news_count=`7`, raw_news_count=`40`, rows_filtered_out=`33`, blocked=`False`, reason=`None`, stock_industry_mapping=`unmapped_unverified`, market_index_code=`1001`
 
 ## Industry Regime Rows
 

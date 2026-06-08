@@ -150,6 +150,7 @@ def test_optional_kis_sidecar_persists_live_rank_news_stock_and_financial_contra
             return {
                 "output": [
                     {"title": "one", "mksc_shrn_iscd": code},
+                    {"title": "other", "iscd1": "000660", "kor_isnm1": "SK하이닉스"},
                     {"title": "two", "mksc_shrn_iscd": code},
                     {"title": "three", "mksc_shrn_iscd": code},
                 ]
@@ -187,11 +188,15 @@ def test_optional_kis_sidecar_persists_live_rank_news_stock_and_financial_contra
     assert sidecar["rank_contract"]["volume_power_rank"] == 9
     assert sidecar["vi_contract"]["triggered"] is True
     assert sidecar["news_contract"]["news_count"] == 3
+    assert sidecar["news_contract"]["raw_news_count"] == 4
+    assert sidecar["news_contract"]["rows_filtered_out_count"] == 1
     assert sidecar["news_contract"]["rows_stored_count"] == 2
     assert sidecar["news_contract"]["source_scope"] == "symbol_specific"
     assert sidecar["stock_info_contract"]["listed_date"] == "19750611"
     assert sidecar["financial_ratio_contract"]["roe"] == 9.8
     assert features["kis_rank_volume"] == 4
     assert features["kis_news_title_count"] == 3
+    assert features["kis_news_raw_title_count"] == 4
+    assert features["kis_news_rows_filtered_out_count"] == 1
     assert features["kis_stock_listed_date"] == "19750611"
     assert features["kis_financial_debt_ratio"] == 28.7

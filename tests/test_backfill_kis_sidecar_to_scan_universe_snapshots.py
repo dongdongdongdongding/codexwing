@@ -110,7 +110,14 @@ class FakeKISClient:
                     "data_dt": "20260528",
                     "data_tm": "090000",
                     "dorg": "KIS",
-                }
+                },
+                {
+                    "mksc_shrn_iscd": "000660",
+                    "hts_pbnt_titl_cntt": "SK하이닉스 HBM 공급",
+                    "data_dt": "20260528",
+                    "data_tm": "091000",
+                    "dorg": "KIS",
+                },
             ]
         }
 
@@ -266,8 +273,12 @@ def test_news_only_existing_sidecar_backfills_news_without_rebuilding_sidecar():
     assert client.calls["news_titles"] == 1
     assert snapshot["kis_sidecar"]["coverage"]["news_titles"] is True
     assert snapshot["kis_sidecar"]["news_contract"]["news_count"] == 1
+    assert snapshot["kis_sidecar"]["news_contract"]["raw_news_count"] == 2
+    assert snapshot["kis_sidecar"]["news_contract"]["rows_filtered_out_count"] == 1
     assert snapshot["kis_model_candidate_features"]["kis_news_title_count"] == 1.0
+    assert snapshot["kis_model_candidate_features"]["kis_news_raw_title_count"] == 2.0
     assert snapshot["kis_theme_news_evidence"]["news"]["news_count"] == 1
+    assert snapshot["kis_theme_news_evidence"]["news"]["rows_filtered_out_count"] == 1.0
     assert "contract_order" in snapshot["kis_theme_news_evidence"]["news"]["positive_tags"]
     assert snapshot["kis_theme_news_evidence"]["no_dummy_data"] is True
 
