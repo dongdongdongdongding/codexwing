@@ -10,6 +10,7 @@ import streamlit as st
 
 from modules import db_manager
 from modules.admission_metric_copy import metric_help, metric_label
+from modules.kis_theme_news_evidence import format_kis_theme_news_summary
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from ui.scan_integrity_view import (
     load_scan_context_for_run,
@@ -481,6 +482,10 @@ def render_top_deep_reports_page() -> None:
             execution_stop = trade_plan["execution_stop"]
         readiness = trade_plan.get("readiness_analysis") if isinstance(trade_plan.get("readiness_analysis"), dict) else {}
         theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+        kis_theme_news = row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else {}
+        if not kis_theme_news and isinstance(theme.get("kis_theme_news_evidence"), dict):
+            kis_theme_news = theme["kis_theme_news_evidence"]
+        kis_theme_news_summary = format_kis_theme_news_summary(kis_theme_news)
         flow = row.get("flow") if isinstance(row.get("flow"), dict) else {}
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
         display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
@@ -541,6 +546,13 @@ def render_top_deep_reports_page() -> None:
                     f"손절위험x{fmt_metric_num(regime_theme_adjustment.get('stop_risk_multiplier'), 2)} · "
                     f"신뢰도 {fmt_metric_pct((regime_theme_adjustment.get('confidence') or 0) * 100)}"
                     + (f" · 경고 {', '.join(str(item) for item in warnings[:3])}" if warnings else "")
+                )
+            if kis_theme_news_summary:
+                evidence_warnings = kis_theme_news.get("warnings") if isinstance(kis_theme_news.get("warnings"), list) else []
+                st.caption(
+                    "KIS 테마/뉴스 "
+                    + kis_theme_news_summary
+                    + (f" · 경고 {', '.join(str(item) for item in evidence_warnings[:2])}" if evidence_warnings else "")
                 )
 
             render_selection_thesis(row, trade_plan)

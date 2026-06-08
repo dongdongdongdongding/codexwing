@@ -204,6 +204,12 @@ def test_build_top_deep_reports_prefers_kis_sidecar_for_deep_snapshot():
                 }
             ],
         },
+        "stock_info_contract": {
+            "checked": True,
+            "sector_name": "반도체",
+            "standard_industry_code": "C261",
+            "market_name": "KOSPI",
+        },
         "coverage": {"quote_snapshot": True, "daily_ohlcv_50d": True, "investor_flow": True},
         "replacement_readiness": {"production_replacement_ready": True},
     }
@@ -242,6 +248,10 @@ def test_build_top_deep_reports_prefers_kis_sidecar_for_deep_snapshot():
     assert report["flow"]["foreigner_1d"] == 10
     assert report["news"]["source"] == "kis_openapi_sidecar"
     assert report["news"]["headlines"][0]["title"] == "KIS headline"
+    assert report["kis_theme_news_evidence"]["kis_backed"] is True
+    assert report["kis_theme_news_evidence"]["news"]["news_count"] == 1
+    assert report["theme"]["kis_theme_news_evidence"]["theme"]["kis_sector_name"] == "반도체"
+    assert report["theme"]["kis_evidence_strength_level"] in {"medium", "strong"}
     assert report["scan_as_of"] == "2026-06-05T09:35:10+09:00"
     assert report["deep_analysis_as_of"] == report["generated_at"]
     assert report["source_timing"]["version"] == "scan_deep_source_timing_v1"

@@ -710,6 +710,23 @@ def test_scan_result_renderer_surfaces_kis_shadow_candidates_first(monkeypatch):
             "runtime_model_rank": 2,
             "source": "real_kis_sidecar_or_prefilter_evidence",
         },
+        "kis_theme_news_evidence": {
+            "contract_version": "kis_theme_news_evidence_v1",
+            "available": True,
+            "kis_backed": True,
+            "evidence_strength_score": 76.0,
+            "evidence_strength_level": "strong",
+            "theme": {"primary_theme": "AI반도체", "kis_sector_name": "반도체"},
+            "news": {
+                "checked": True,
+                "news_count": 1,
+                "headlines": [{"title": "KIS headline"}],
+                "positive_tags": ["contract_order"],
+                "risk_tags": [],
+            },
+            "market_action": {"prefilter_sources": ["volume_rank"], "vi_triggered": True},
+            "warnings": [],
+        },
     }
     monkeypatch.setattr(renderers, "_load_scan_context_for_run", lambda _run_id: {})
     monkeypatch.setattr(renderers, "_load_top_deep_reports", lambda *args, **kwargs: [])
@@ -754,6 +771,38 @@ def test_scan_result_renderer_surfaces_kis_shadow_candidates_first(monkeypatch):
     assert "삼성전자" in kis_field["value"]
     assert "KIS shadow" in kis_field["value"]
     assert "5D win 75.0%" in kis_field["value"]
+    assert "KIS headline" in kis_field["value"]
+
+
+def test_top_deep_field_value_includes_kis_theme_news_evidence():
+    value = renderers._field_value_for_top_deep(
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "market": "KOSPI",
+            "selection_alignment": {"analysis_section": "KIS Shadow Candidate", "analysis_section_rank": 1},
+            "kis_theme_news_evidence": {
+                "contract_version": "kis_theme_news_evidence_v1",
+                "available": True,
+                "kis_backed": True,
+                "evidence_strength_score": 78.0,
+                "evidence_strength_level": "strong",
+                "theme": {"primary_theme": "AI반도체", "kis_sector_name": "반도체"},
+                "news": {
+                    "checked": True,
+                    "news_count": 1,
+                    "headlines": [{"title": "KIS headline"}],
+                    "positive_tags": ["contract_order"],
+                    "risk_tags": [],
+                },
+                "market_action": {"prefilter_sources": ["volume_rank"], "vi_triggered": True},
+                "warnings": [],
+            },
+        }
+    )
+
+    assert "KIS테마/뉴스" in value
+    assert "KIS headline" in value
 
 
 def test_scan_result_renderer_clarifies_zero_pass_exception_only(monkeypatch, tmp_path):

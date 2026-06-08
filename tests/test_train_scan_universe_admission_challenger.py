@@ -432,8 +432,19 @@ def test_prepare_dataset_flattens_kis_sidecar_and_prefilter_features():
                     "kis_sidecar": {
                         "contract_version": "kis_operational_contract_v1",
                         "feature_origin": "kis_openapi_sidecar",
-                        "coverage": {"quote_snapshot": True, "daily_ohlcv": True},
+                        "coverage": {"quote_snapshot": True, "daily_ohlcv": True, "news_titles": True, "stock_info": True},
                         "replacement_readiness": {"model_sidecar_ready": True, "production_replacement_ready": False},
+                        "news_contract": {
+                            "checked": True,
+                            "source_status": "ok",
+                            "news_count": 1,
+                            "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                        },
+                        "stock_info_contract": {
+                            "checked": True,
+                            "sector_name": "semiconductor",
+                            "standard_industry_code": "C261",
+                        },
                         "model_candidate_features": {
                             "kis_value_traded": 123456789.0,
                             "kis_daily_return_5d_pct": 3.4,
@@ -466,6 +477,10 @@ def test_prepare_dataset_flattens_kis_sidecar_and_prefilter_features():
     assert df.loc[df.index[0], "kis_value_traded"] == 123456789.0
     assert df.loc[df.index[0], "kis_daily_return_5d_pct"] == 3.4
     assert df.loc[df.index[0], "kis_stock_sector_name"] == "semiconductor"
+    assert df.loc[df.index[0], "kis_theme_news_kis_backed"] == 1.0
+    assert df.loc[df.index[0], "kis_theme_news_news_count"] == 1.0
+    assert df.loc[df.index[0], "kis_theme_news_kis_sector_name"] == "semiconductor"
+    assert df.loc[df.index[0], "kis_theme_news_top_positive_tag"] == "contract_order"
     assert df.loc[df.index[0], "kis_prefilter_present"] == 1.0
     assert df.loc[df.index[0], "kis_prefilter_selection_score"] == 91.25
     assert df.loc[df.index[0], "kis_prefilter_rank_volume"] == 2.0
@@ -473,6 +488,8 @@ def test_prepare_dataset_flattens_kis_sidecar_and_prefilter_features():
     assert "kis_sidecar_augmented" in feature_map
     assert "kis_prefilter_augmented" in feature_map
     assert "kis_full_augmented" in feature_map
+    assert "kis_theme_news_evidence_score" in feature_map["kis_sidecar_augmented"][0]
+    assert "kis_theme_news_kis_sector_name" in feature_map["kis_sidecar_augmented"][1]
 
 
 def test_kis_feature_set_training_requires_mature_real_kis_rows():

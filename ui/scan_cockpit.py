@@ -113,6 +113,8 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         shadow_gate_conditions = str(row.get("shadow_gate_conditions") or "")
         shadow_gate_metrics = str(row.get("shadow_gate_metrics") or "")
         shadow_gate_note = str(row.get("shadow_gate_note") or "")
+        kis_theme_news_summary = str(row.get("kis_theme_news_summary") or "")
+        kis_theme_news_warnings = [str(item) for item in (row.get("kis_theme_news_warnings") or []) if str(item).strip()]
         radar_score = row.get("next_day_radar_score")
         radar_plus5 = row.get("next_day_plus5_prob")
         radar_plus10 = row.get("next_day_plus10_prob")
@@ -195,6 +197,10 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     st.caption(f"모델 해석 {scan_model_decision}{gap_text}{action_text}")
                 if scan_drivers:
                     st.caption("상승/위험 근거 " + " / ".join(scan_drivers[:4]))
+                if kis_theme_news_summary:
+                    st.caption(f"KIS 테마/뉴스 {kis_theme_news_summary}")
+                    if kis_theme_news_warnings:
+                        st.caption("KIS 경고 " + " / ".join(kis_theme_news_warnings[:2]))
                 if admission_source_role:
                     source_label = "기존 통과 후보" if admission_source_role == "emitted" else "기존 필터 탈락 종목"
                     reject_text = f" · 기존탈락 {admission_reject_reason}" if admission_reject_reason else ""

@@ -53,6 +53,8 @@ from modules.kis_model_features import (
     KIS_SIDECAR_CATEGORICAL_FEATURES,
     KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES,
     KIS_SIDECAR_MODEL_NUMERIC_FEATURES,
+    KIS_THEME_NEWS_CATEGORICAL_FEATURES,
+    KIS_THEME_NEWS_NUMERIC_FEATURES,
     flatten_kis_model_features,
 )
 
@@ -613,12 +615,26 @@ def feature_sets(df: pd.DataFrame) -> Dict[str, Tuple[List[str], List[str]]]:
     theme_cats = [col for col in CATEGORICAL_FEATURES if col in df.columns]
     kis_sidecar_num = [
         col
-        for col in list(KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES) + list(KIS_SIDECAR_MODEL_NUMERIC_FEATURES)
+        for col in list(KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES)
+        + list(KIS_SIDECAR_MODEL_NUMERIC_FEATURES)
+        + list(KIS_THEME_NEWS_NUMERIC_FEATURES)
         if col in df.columns
     ]
-    kis_sidecar_cat = [col for col in KIS_SIDECAR_CATEGORICAL_FEATURES if col in df.columns]
-    kis_prefilter_num = [col for col in KIS_PREFILTER_NUMERIC_FEATURES if col in df.columns]
-    kis_prefilter_cat = [col for col in KIS_PREFILTER_CATEGORICAL_FEATURES if col in df.columns]
+    kis_sidecar_cat = [
+        col
+        for col in list(KIS_SIDECAR_CATEGORICAL_FEATURES) + list(KIS_THEME_NEWS_CATEGORICAL_FEATURES)
+        if col in df.columns
+    ]
+    kis_prefilter_num = [
+        col
+        for col in list(KIS_PREFILTER_NUMERIC_FEATURES) + list(KIS_THEME_NEWS_NUMERIC_FEATURES)
+        if col in df.columns
+    ]
+    kis_prefilter_cat = [
+        col
+        for col in list(KIS_PREFILTER_CATEGORICAL_FEATURES) + list(KIS_THEME_NEWS_CATEGORICAL_FEATURES)
+        if col in df.columns
+    ]
     kis_all_num = [col for col in KIS_NUMERIC_FEATURES if col in df.columns]
     kis_all_cat = [col for col in KIS_CATEGORICAL_FEATURES if col in df.columns]
     return {

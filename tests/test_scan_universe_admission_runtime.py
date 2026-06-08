@@ -55,6 +55,17 @@ def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
                 "feature_origin": "kis_openapi_sidecar",
                 "coverage": {"quote_snapshot": True, "daily_ohlcv": True, "rank_membership": True},
                 "replacement_readiness": {"model_sidecar_ready": True, "production_replacement_ready": False},
+                "news_contract": {
+                    "checked": True,
+                    "source_status": "ok",
+                    "news_count": 1,
+                    "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                },
+                "stock_info_contract": {
+                    "checked": True,
+                    "sector_name": "semiconductor",
+                    "standard_industry_code": "C261",
+                },
                 "model_candidate_features": {
                     "kis_value_traded": 123456789.0,
                     "kis_daily_return_20d_pct": 6.7,
@@ -85,6 +96,10 @@ def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
     assert features["kis_daily_return_20d_pct"] == 6.7
     assert features["kis_rank_volume"] == 4.0
     assert features["kis_stock_sector_name"] == "semiconductor"
+    assert features["kis_theme_news_kis_backed"] == 1.0
+    assert features["kis_theme_news_news_count"] == 1.0
+    assert features["kis_theme_news_kis_sector_name"] == "semiconductor"
+    assert features["kis_theme_news_top_positive_tag"] == "contract_order"
     assert features["kis_prefilter_present"] == 1.0
     assert features["kis_prefilter_selection_score"] == 122.5
     assert features["kis_prefilter_rank_volume_power"] == 3.0
@@ -148,9 +163,22 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
             "feature_snapshot": {
                 "kis_sidecar": {
                     "feature_origin": "kis_openapi_sidecar",
+                    "coverage": {"news_titles": True, "stock_info": True},
                     "replacement_readiness": {"model_sidecar_ready": True},
+                    "news_contract": {
+                        "checked": True,
+                        "source_status": "ok",
+                        "news_count": 1,
+                        "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                    },
+                    "stock_info_contract": {
+                        "checked": True,
+                        "sector_name": "반도체",
+                        "standard_industry_code": "C261",
+                    },
                 }
             },
+            "theme_context": {"primary_theme": "AI반도체"},
             "_admission_features": {
                 "feature_coverage_score": 1.0,
                 "feature_missing_keys": [],
@@ -209,6 +237,9 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
     assert row["decision"] == "KIS_SHADOW"
     assert row["kis_shadow_candidate"]["shadow_only"] is True
     assert row["kis_shadow_candidate"]["source"] == "real_kis_sidecar_or_prefilter_evidence"
+    assert row["kis_theme_news_evidence"]["kis_backed"] is True
+    assert row["kis_theme_news_evidence"]["theme"]["kis_sector_name"] == "반도체"
+    assert "AI 반도체 공급 계약 수주" in row["kis_shadow_candidate"]["theme_news_evidence"]["summary"]
     assert row["realized_expectancy_admission"]["source"] == "kis_shadow_validation_report"
     assert row["realized_expectancy_admission"]["5d_prob"] == 75.0
 

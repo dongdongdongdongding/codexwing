@@ -9,6 +9,10 @@ from typing import Any, Dict, List, Tuple
 import joblib
 import pandas as pd
 
+from modules.kis_theme_news_evidence import (
+    build_kis_theme_news_evidence,
+    format_kis_theme_news_summary,
+)
 from modules.kis_model_features import flatten_kis_model_features
 
 
@@ -409,6 +413,11 @@ def build_kis_shadow_admission_records(
             model_rank=model_rank,
             passed=False,
         )
+        theme_news_evidence = build_kis_theme_news_evidence(
+            record,
+            market=market_key,
+        )
+        theme_news_summary = format_kis_theme_news_summary(theme_news_evidence)
         shadow_rank = len(selected) + 1
         record.update(
             {
@@ -430,6 +439,7 @@ def build_kis_shadow_admission_records(
                 "_analysis_section_rank": shadow_rank,
                 "_source_order": "kis_shadow_admission_candidate",
                 "_shadow_gate": gate,
+                "kis_theme_news_evidence": theme_news_evidence,
                 "kis_shadow_candidate": {
                     "version": KIS_SHADOW_RUNTIME_VERSION,
                     "market": market_key,
@@ -440,6 +450,13 @@ def build_kis_shadow_admission_records(
                     "source": "real_kis_sidecar_or_prefilter_evidence",
                     "identity": identity,
                     "metrics": metrics,
+                    "theme_news_evidence": {
+                        "available": theme_news_evidence.get("available"),
+                        "kis_backed": theme_news_evidence.get("kis_backed"),
+                        "strength_score": theme_news_evidence.get("evidence_strength_score"),
+                        "strength_level": theme_news_evidence.get("evidence_strength_level"),
+                        "summary": theme_news_summary,
+                    },
                     "promotion_blocking_reasons": gate.get("blocking_reasons") or [],
                 },
                 "realized_expectancy_admission": {
@@ -465,11 +482,17 @@ def build_kis_shadow_admission_records(
             }
         )
         interpretation = record.get("scan_result_interpretation") if isinstance(record.get("scan_result_interpretation"), dict) else {}
+        drivers = list(interpretation.get("drivers") or [])
+        if theme_news_summary:
+            drivers.append(f"KIS테마/뉴스 {theme_news_summary}")
         record["scan_result_interpretation"] = {
             **interpretation,
             "model_decision": "KIS shadow 후보",
             "action": "운영 승격 전 최상단 관찰",
-            "warnings": list(interpretation.get("warnings") or []) + ["KIS_SHADOW_NOT_PRODUCTION_PROMOTED"],
+            "drivers": drivers[:8],
+            "warnings": list(interpretation.get("warnings") or [])
+            + list(theme_news_evidence.get("warnings") or [])[:3]
+            + ["KIS_SHADOW_NOT_PRODUCTION_PROMOTED"],
             "plain_text": (
                 f"KIS shadow 후보: runtime admission score {probability * 100.0:.1f}%. "
                 f"{gate.get('metrics') or ''} 운영 승격 전 관찰 레인입니다."

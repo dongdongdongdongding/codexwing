@@ -133,6 +133,35 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["day_change"], "-4.32%")
         self.assertEqual(rows[0]["day_change_value"], -4.32)
 
+    def test_build_signal_display_rows_preserves_kis_theme_news_summary(self):
+        rows = build_signal_display_rows([
+            {
+                "ticker": "005930.KS",
+                "stock_name": "삼성전자",
+                "kis_theme_news_evidence": {
+                    "contract_version": "kis_theme_news_evidence_v1",
+                    "available": True,
+                    "kis_backed": True,
+                    "evidence_strength_score": 78.0,
+                    "evidence_strength_level": "strong",
+                    "theme": {"primary_theme": "AI반도체", "kis_sector_name": "반도체"},
+                    "news": {
+                        "checked": True,
+                        "news_count": 1,
+                        "headlines": [{"title": "KIS headline"}],
+                        "positive_tags": ["contract_order"],
+                        "risk_tags": [],
+                    },
+                    "market_action": {"prefilter_sources": ["volume_rank"], "vi_triggered": True},
+                    "warnings": [],
+                },
+            }
+        ])
+
+        self.assertTrue(rows[0]["kis_theme_news_kis_backed"])
+        self.assertEqual(rows[0]["kis_theme_news_score"], 78.0)
+        self.assertIn("KIS headline", rows[0]["kis_theme_news_summary"])
+
     def test_build_action_display_maps_existing_trace_without_core_policy_change(self):
         self.assertEqual(
             build_action_display({

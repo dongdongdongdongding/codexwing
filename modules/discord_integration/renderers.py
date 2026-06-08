@@ -15,6 +15,10 @@ from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from modules.runtime_artifact_store import load_runtime_artifact_payload, list_runtime_artifact_payloads
+from modules.kis_theme_news_evidence import (
+    build_kis_theme_news_evidence,
+    format_kis_theme_news_summary,
+)
 from modules.scan_universe_admission import (
     ADMISSION_SECTION,
     KIS_SHADOW_SECTION,
@@ -482,6 +486,15 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     section_rank = interpretation.get("section_rank") or alignment.get("analysis_section_rank") or row.get("rank")
     admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
     scan_interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
+    kis_theme_news = row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else {}
+    if not kis_theme_news:
+        theme_block = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+        kis_theme_news = (
+            theme_block.get("kis_theme_news_evidence")
+            if isinstance(theme_block.get("kis_theme_news_evidence"), dict)
+            else build_kis_theme_news_evidence(row)
+        )
+    kis_theme_news_summary = format_kis_theme_news_summary(kis_theme_news)
     lines = [
         f"구분: {section} #{section_rank or '-'}",
         (
@@ -515,6 +528,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"손절x{_fmt_num(regime_theme_adjustment.get('stop_risk_multiplier'), 2)} · "
             f"신뢰도 {_fmt_num((_safe_float(regime_theme_adjustment.get('confidence')) or 0.0) * 100.0, 0)}%"
         ),
+        f"KIS테마/뉴스: {kis_theme_news_summary}" if kis_theme_news_summary else "",
         f"전일비: {_fmt_pct(_row_day_change(row))}",
         _fmt_flow_line(flow),
         (
@@ -559,7 +573,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         lines.append(f"근거: {drivers}")
         if warnings != "-":
             lines.append(f"경고: {warnings}")
-    return "\n".join(lines)[:1024]
+    return "\n".join(line for line in lines if line)[:1024]
 
 
 def build_top_deep_embeds(
@@ -886,11 +900,15 @@ def _kis_shadow_rows_value(rows: List[Dict[str, Any]], *, limit: int = 3) -> str
         expectancy = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
         shadow = row.get("kis_shadow_candidate") if isinstance(row.get("kis_shadow_candidate"), dict) else {}
         model_rank = shadow.get("runtime_model_rank") or admission.get("model_rank") or "-"
+        theme_news_summary = format_kis_theme_news_summary(
+            row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else build_kis_theme_news_evidence(row)
+        )
+        theme_news_tail = f" · {theme_news_summary}" if theme_news_summary else ""
         lines.append(
             f"#{idx} {name}({ticker}) · KIS shadow · score {_fmt_num(admission.get('probability_pct'), 1)}% "
             f"(model#{model_rank}) · 5D win {_fmt_num(expectancy.get('5d_prob'), 1)}% · "
             f"avg5D {_fmt_pct(expectancy.get('base_expected_value_5d_pct'))} · "
-            f"min5D {_fmt_pct(expectancy.get('stress_expected_value_5d_pct'))} · shadow_only"
+            f"min5D {_fmt_pct(expectancy.get('stress_expected_value_5d_pct'))} · shadow_only{theme_news_tail}"
         )
     return ("\n".join(lines) or "KIS shadow 후보 없음.")[:1024]
 

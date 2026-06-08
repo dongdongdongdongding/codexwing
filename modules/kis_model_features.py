@@ -4,6 +4,8 @@ import json
 import math
 from typing import Any, Dict, Mapping
 
+from modules.kis_theme_news_evidence import build_kis_theme_news_evidence
+
 
 KIS_SIDECAR_MODEL_NUMERIC_FEATURES = (
     "kis_current_price",
@@ -146,14 +148,38 @@ KIS_PREFILTER_CATEGORICAL_FEATURES = (
     "kis_prefilter_flow_unit",
 )
 
+KIS_THEME_NEWS_NUMERIC_FEATURES = (
+    "kis_theme_news_available",
+    "kis_theme_news_kis_backed",
+    "kis_theme_news_evidence_score",
+    "kis_theme_news_news_checked",
+    "kis_theme_news_news_count",
+    "kis_theme_news_headline_count",
+    "kis_theme_news_positive_tag_count",
+    "kis_theme_news_risk_tag_count",
+    "kis_theme_news_vi_triggered",
+    "kis_theme_news_prefilter_source_count",
+)
+
+KIS_THEME_NEWS_CATEGORICAL_FEATURES = (
+    "kis_theme_news_level",
+    "kis_theme_news_primary_theme",
+    "kis_theme_news_kis_sector_name",
+    "kis_theme_news_standard_industry_code",
+    "kis_theme_news_top_positive_tag",
+    "kis_theme_news_top_risk_tag",
+)
+
 KIS_NUMERIC_FEATURES = (
     *KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES,
     *KIS_SIDECAR_MODEL_NUMERIC_FEATURES,
     *KIS_PREFILTER_NUMERIC_FEATURES,
+    *KIS_THEME_NEWS_NUMERIC_FEATURES,
 )
 KIS_CATEGORICAL_FEATURES = (
     *KIS_SIDECAR_CATEGORICAL_FEATURES,
     *KIS_PREFILTER_CATEGORICAL_FEATURES,
+    *KIS_THEME_NEWS_CATEGORICAL_FEATURES,
 )
 
 
@@ -372,6 +398,35 @@ def flatten_kis_model_features(row: Mapping[str, Any]) -> Dict[str, Any]:
     out["kis_prefilter_flow_source"] = _text(flow.get("flow_source"))
     out["kis_prefilter_flow_source_status"] = _text(flow.get("source_status"))
     out["kis_prefilter_flow_unit"] = _text(flow.get("flow_unit"))
+
+    theme_news = build_kis_theme_news_evidence(row)
+    theme_payload = _json_dict(theme_news.get("theme"))
+    news_payload = _json_dict(theme_news.get("news"))
+    action_payload = _json_dict(theme_news.get("market_action"))
+    positive_tags = news_payload.get("positive_tags") if isinstance(news_payload.get("positive_tags"), list) else []
+    risk_tags = news_payload.get("risk_tags") if isinstance(news_payload.get("risk_tags"), list) else []
+    headlines = news_payload.get("headlines") if isinstance(news_payload.get("headlines"), list) else []
+    prefilter_sources = (
+        action_payload.get("prefilter_sources")
+        if isinstance(action_payload.get("prefilter_sources"), list)
+        else []
+    )
+    out["kis_theme_news_available"] = _flag(theme_news.get("available"))
+    out["kis_theme_news_kis_backed"] = _flag(theme_news.get("kis_backed"))
+    out["kis_theme_news_evidence_score"] = _safe_float(theme_news.get("evidence_strength_score"))
+    out["kis_theme_news_news_checked"] = _flag(news_payload.get("checked"))
+    out["kis_theme_news_news_count"] = _safe_float(news_payload.get("news_count"))
+    out["kis_theme_news_headline_count"] = float(len(headlines))
+    out["kis_theme_news_positive_tag_count"] = float(len(positive_tags))
+    out["kis_theme_news_risk_tag_count"] = float(len(risk_tags))
+    out["kis_theme_news_vi_triggered"] = _flag(action_payload.get("vi_triggered"))
+    out["kis_theme_news_prefilter_source_count"] = float(len(prefilter_sources))
+    out["kis_theme_news_level"] = _text(theme_news.get("evidence_strength_level"))
+    out["kis_theme_news_primary_theme"] = _text(theme_payload.get("primary_theme"))
+    out["kis_theme_news_kis_sector_name"] = _text(theme_payload.get("kis_sector_name"))
+    out["kis_theme_news_standard_industry_code"] = _text(theme_payload.get("kis_standard_industry_code"))
+    out["kis_theme_news_top_positive_tag"] = _text(positive_tags[0]) if positive_tags else None
+    out["kis_theme_news_top_risk_tag"] = _text(risk_tags[0]) if risk_tags else None
     return out
 
 
@@ -383,6 +438,8 @@ __all__ = [
     "KIS_SIDECAR_CATEGORICAL_FEATURES",
     "KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES",
     "KIS_SIDECAR_MODEL_NUMERIC_FEATURES",
+    "KIS_THEME_NEWS_CATEGORICAL_FEATURES",
+    "KIS_THEME_NEWS_NUMERIC_FEATURES",
     "extract_kis_prefilter",
     "extract_kis_sidecar",
     "flatten_kis_model_features",

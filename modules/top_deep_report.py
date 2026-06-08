@@ -25,6 +25,7 @@ from modules.scan_universe_admission import (
 from modules.ui_helpers import build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
 from modules.kr_stock_theme_master import get_stock_theme_record
+from modules.kis_theme_news_evidence import build_kis_theme_news_evidence
 from modules.model_governance import active_policy_metadata
 from modules.portfolio_exposure import build_portfolio_exposure_summary
 from modules.realized_expectancy_admission import build_realized_expectancy_admission
@@ -1433,6 +1434,12 @@ def build_top_deep_reports(
             or _first_present(row, "theme_routing_path", "theme_routing_path")
             or ("stock_theme_master" if theme_master_primary and primary_theme == theme_master_primary else None)
         )
+        kis_theme_news_evidence = build_kis_theme_news_evidence(
+            row,
+            trace=trace,
+            market=market,
+            theme_master=theme_master,
+        )
         source_timing = _source_timing_payload(
             row=row,
             trace=trace,
@@ -1524,6 +1531,15 @@ def build_top_deep_reports(
                 "theme_day_strength_rank": _safe_float(_first_present(trace, "theme_day_strength_rank", "_theme_day_strength_rank") or _first_present(row, "theme_day_strength_rank", "_theme_day_strength_rank")),
                 "theme_day_strength_bucket": _first_present(trace, "theme_day_strength_bucket", "_theme_day_strength_bucket")
                 or _first_present(row, "theme_day_strength_bucket", "_theme_day_strength_bucket"),
+                "kis_theme_news_evidence": kis_theme_news_evidence,
+                "kis_evidence_strength_score": kis_theme_news_evidence.get("evidence_strength_score"),
+                "kis_evidence_strength_level": kis_theme_news_evidence.get("evidence_strength_level"),
+                "kis_sector_name": (kis_theme_news_evidence.get("theme") or {}).get("kis_sector_name")
+                if isinstance(kis_theme_news_evidence.get("theme"), dict)
+                else None,
+                "kis_standard_industry_code": (kis_theme_news_evidence.get("theme") or {}).get("kis_standard_industry_code")
+                if isinstance(kis_theme_news_evidence.get("theme"), dict)
+                else None,
             },
             "market_regime": {
                 "market_gate": _first_present(trace, "market_gate") or row.get("market_gate"),
@@ -1535,6 +1551,7 @@ def build_top_deep_reports(
             },
             "price": price,
             "news": news,
+            "kis_theme_news_evidence": kis_theme_news_evidence,
             "source_timing": source_timing,
             "scan_source_snapshot": source_timing.get("scan_source_snapshot"),
             "deep_analysis_source_snapshot": source_timing.get("deep_analysis_source_snapshot"),

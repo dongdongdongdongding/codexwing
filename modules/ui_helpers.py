@@ -11,6 +11,10 @@ from uuid import uuid4
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
 from modules.execution_stop_display import build_execution_stop_display
+from modules.kis_theme_news_evidence import (
+    build_kis_theme_news_evidence,
+    format_kis_theme_news_summary,
+)
 from modules.next_day_explosive_radar import build_next_day_radar_candidate
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.segment_accuracy import lookup_segment_win_rate
@@ -1492,6 +1496,15 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else build_candidate_data_quality(row)
         interpretation = build_candidate_interpretation({**row, "candidate_data_quality": data_quality})
         scan_interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
+        kis_theme_news = row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else {}
+        if not kis_theme_news:
+            theme_block = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+            kis_theme_news = (
+                theme_block.get("kis_theme_news_evidence")
+                if isinstance(theme_block.get("kis_theme_news_evidence"), dict)
+                else build_kis_theme_news_evidence(row)
+            )
+        kis_theme_news_summary = format_kis_theme_news_summary(kis_theme_news)
 
         day_change_numeric = _parse_percent_value(day_change_source)
         normalized.append(
@@ -1534,6 +1547,13 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "shadow_gate_conditions": shadow_gate.get("conditions"),
                 "shadow_gate_metrics": shadow_gate.get("metrics"),
                 "shadow_gate_note": shadow_gate.get("note"),
+                "kis_theme_news_evidence": kis_theme_news,
+                "kis_theme_news_summary": kis_theme_news_summary,
+                "kis_theme_news_score": kis_theme_news.get("evidence_strength_score"),
+                "kis_theme_news_level": kis_theme_news.get("evidence_strength_level"),
+                "kis_theme_news_drivers": kis_theme_news.get("drivers") or [],
+                "kis_theme_news_warnings": kis_theme_news.get("warnings") or [],
+                "kis_theme_news_kis_backed": kis_theme_news.get("kis_backed"),
                 "next_day_radar_score": next_day_radar.get("radar_score") if next_day_radar else None,
                 "next_day_plus5_prob": next_day_radar.get("next_day_plus5_prob") if next_day_radar else None,
                 "next_day_plus10_prob": next_day_radar.get("next_day_plus10_prob") if next_day_radar else None,
