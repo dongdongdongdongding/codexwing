@@ -1605,6 +1605,8 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- selection_rule: `{best_kis.get('selection_rule')}`",
         f"- quality_score: `{best_kis.get('quality_score')}`",
         f"- n / active_runs / active_days: `{km.get('n')}` / `{km.get('active_runs')}` / `{km.get('active_days')}`",
+        f"- 1d win/avg/min/max: `{km.get('win_1d_pct')}` / `{km.get('avg_1d_pct')}` / `{km.get('min_1d_pct')}` / `{km.get('max_1d_pct')}`",
+        f"- 3d win/avg/min/max: `{km.get('win_3d_pct')}` / `{km.get('avg_3d_pct')}` / `{km.get('min_3d_pct')}` / `{km.get('max_3d_pct')}`",
         f"- 5d win/avg/min/max: `{km.get('win_5d_pct')}` / `{km.get('avg_5d_pct')}` / `{km.get('min_5d_pct')}` / `{km.get('max_5d_pct')}`",
         f"- hit5/hit10 5d pct: `{km.get('hit5_5d_pct')}` / `{km.get('hit10_5d_pct')}`",
         f"- promotion_verdict: `{report.get('kis_promotion_verdict')}`",

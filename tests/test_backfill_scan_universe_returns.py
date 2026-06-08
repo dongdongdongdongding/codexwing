@@ -1,4 +1,10 @@
-from multi_agent.tools.backfill_scan_universe_returns import _compute_return_payload, build_updates, fetch_snapshot_rows, write_updates
+from multi_agent.tools.backfill_scan_universe_returns import (
+    PriceHistoryProvider,
+    _compute_return_payload,
+    build_updates,
+    fetch_snapshot_rows,
+    write_updates,
+)
 
 
 def test_compute_return_payload_uses_future_trading_days_and_preserves_existing_values():
@@ -29,6 +35,47 @@ def test_compute_return_payload_uses_future_trading_days_and_preserves_existing_
     assert payload["target_before_stop_5d"] is True
     assert payload["first_touch_5d"] == "target"
     assert payload["outcome_available"] is True
+
+
+def test_price_history_provider_can_fetch_kis_daily_bars(monkeypatch):
+    class FakeKISClient:
+        def __init__(self, timeout=8):
+            self.timeout = timeout
+
+        def daily_bars(self, symbol, *, start_date, end_date, period="D"):
+            assert symbol == "005930.KS"
+            assert start_date == "20260520"
+            assert end_date == "20260522"
+            assert period == "D"
+            return {
+                "output2": [
+                    {
+                        "stck_bsop_date": "20260522",
+                        "stck_oprc": "1000",
+                        "stck_hgpr": "1150",
+                        "stck_lwpr": "990",
+                        "stck_clpr": "1100",
+                        "acml_vol": "1000",
+                    },
+                    {
+                        "stck_bsop_date": "20260520",
+                        "stck_oprc": "900",
+                        "stck_hgpr": "1010",
+                        "stck_lwpr": "880",
+                        "stck_clpr": "1000",
+                        "acml_vol": "800",
+                    },
+                ]
+            }
+
+    monkeypatch.setattr("modules.kis_openapi.KISOpenAPIClient", FakeKISClient)
+
+    provider = PriceHistoryProvider(provider="kis", fetch_timeout=0)
+    bars = provider.fetch("005930.KS", "2026-05-20", "2026-05-22")
+
+    assert provider.fetch_counts["kis"] == 1
+    assert [bar["date"] for bar in bars] == ["2026-05-20", "2026-05-22"]
+    assert bars[-1]["close"] == 1100.0
 
 
 def test_compute_return_payload_can_fill_from_entry_close_when_entry_missing():

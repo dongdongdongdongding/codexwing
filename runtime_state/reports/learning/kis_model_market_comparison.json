@@ -1,0 +1,383 @@
+{
+  "generated_at": "2026-06-08T02:11:26.848878+00:00",
+  "horizons": [
+    "1d",
+    "3d",
+    "5d"
+  ],
+  "markets": {
+    "KOSDAQ": {
+      "current_kis_model": {
+        "identity": {
+          "feature_set": "kis_sidecar_only",
+          "label": "touch10_guard_5d",
+          "market": "KOSDAQ",
+          "model": "random_forest",
+          "prob_threshold": 0.65,
+          "promotion_candidate": {
+            "blocking_reasons": [
+              "active_runs_lt_12",
+              "active_days_lt_6",
+              "kis_active_days_lt_10",
+              "sample_too_small",
+              "min_1d_below_stop",
+              "min_5d_tail_below_12",
+              "bad_path_above_45",
+              "min_low_5d_below_10"
+            ],
+            "promotable": false,
+            "risk_gate": {
+              "blocking_reasons": [
+                "bad_path_above_45",
+                "min_1d_below_stop",
+                "min_low_5d_below_10"
+              ],
+              "components": {
+                "bad_path_pct": 45.4545,
+                "guard_key": "hit10_guard_5d_pct",
+                "guard_pct": 90.9091,
+                "guard_raw_ratio": 1.0,
+                "max_fold_bad_path_pct": 50.0,
+                "max_fold_stop5_pct": 10.0,
+                "min_1d_pct": -5.850091,
+                "min_fold_target_before_stop_5d_pct": 90.0,
+                "min_min_low_5d_pct": -21.389397,
+                "raw_key": "hit10_5d_pct",
+                "raw_pct": 90.9091,
+                "stop5_pct": 9.0909,
+                "stop_before_target_5d_pct": 9.0909,
+                "target_before_stop_5d_pct": 90.9091
+              },
+              "pass": false,
+              "risk_score": 169.358256
+            }
+          },
+          "quality_score": 1343.850056,
+          "risk_gate": {
+            "blocking_reasons": [
+              "bad_path_above_45",
+              "min_1d_below_stop",
+              "min_low_5d_below_10"
+            ],
+            "components": {
+              "bad_path_pct": 45.4545,
+              "guard_key": "hit10_guard_5d_pct",
+              "guard_pct": 90.9091,
+              "guard_raw_ratio": 1.0,
+              "max_fold_bad_path_pct": 50.0,
+              "max_fold_stop5_pct": 10.0,
+              "min_1d_pct": -5.850091,
+              "min_fold_target_before_stop_5d_pct": 90.0,
+              "min_min_low_5d_pct": -21.389397,
+              "raw_key": "hit10_5d_pct",
+              "raw_pct": 90.9091,
+              "stop5_pct": 9.0909,
+              "stop_before_target_5d_pct": 9.0909,
+              "target_before_stop_5d_pct": 90.9091
+            },
+            "pass": false,
+            "risk_score": 169.358256
+          },
+          "selection_rule": "top3_p0.65",
+          "topn": 3
+        },
+        "kind": "current_kis_challenger",
+        "metrics": {
+          "active_days": 3,
+          "active_runs": 5,
+          "avg_1d_pct": 10.905887,
+          "avg_3d_pct": 20.671425,
+          "avg_5d_pct": 15.806625,
+          "avg_max_high_5d_pct": 36.939935,
+          "bad_path_pct": 45.4545,
+          "max_1d_pct": 18.831169,
+          "max_3d_pct": 62.76771,
+          "max_5d_pct": 62.108731,
+          "max_min_low_5d_pct": 4.61285,
+          "min_1d_pct": -5.850091,
+          "min_3d_pct": -16.819013,
+          "min_5d_pct": -21.023766,
+          "min_min_low_5d_pct": -21.389397,
+          "n": 11,
+          "stop5_pct": 9.0909,
+          "win_1d_pct": 90.9091,
+          "win_3d_pct": 90.9091,
+          "win_5d_pct": 54.5455
+        }
+      },
+      "existing_production_baselines": [
+        {
+          "kind": "existing_production",
+          "label": "touch10_guard_5d",
+          "market": "KOSDAQ",
+          "metrics": {
+            "active_days": 6,
+            "active_runs": 13,
+            "avg_1d_pct": 0.988744,
+            "avg_3d_pct": -4.26646,
+            "avg_5d_pct": -11.07179,
+            "avg_max_high_5d_pct": 10.547068,
+            "bad_path_pct": 100.0,
+            "max_1d_pct": 17.616034,
+            "max_3d_pct": 17.616034,
+            "max_5d_pct": 12.783505,
+            "max_min_low_5d_pct": -7.42268,
+            "min_1d_pct": -9.345794,
+            "min_3d_pct": -18.161926,
+            "min_5d_pct": -23.413567,
+            "min_min_low_5d_pct": -25.528811,
+            "n": 13,
+            "stop5_pct": 100.0,
+            "win_1d_pct": 61.5385,
+            "win_3d_pct": 30.7692,
+            "win_5d_pct": 7.6923
+          },
+          "name": "current_top1",
+          "topn": 1
+        },
+        {
+          "kind": "existing_production",
+          "label": "touch10_guard_5d",
+          "market": "KOSDAQ",
+          "metrics": {
+            "active_days": 6,
+            "active_runs": 14,
+            "avg_1d_pct": -0.083283,
+            "avg_3d_pct": -4.581027,
+            "avg_5d_pct": -7.726492,
+            "avg_max_high_5d_pct": 10.346473,
+            "bad_path_pct": 91.4286,
+            "max_1d_pct": 19.56912,
+            "max_3d_pct": 17.953321,
+            "max_5d_pct": 21.723519,
+            "max_min_low_5d_pct": -0.969529,
+            "min_1d_pct": -14.62307,
+            "min_3d_pct": -23.796549,
+            "min_5d_pct": -30.971844,
+            "min_min_low_5d_pct": -34.968211,
+            "n": 35,
+            "stop5_pct": 91.4286,
+            "win_1d_pct": 51.4286,
+            "win_3d_pct": 25.7143,
+            "win_5d_pct": 20.0
+          },
+          "name": "current_top3",
+          "topn": 3
+        },
+        {
+          "kind": "existing_production",
+          "label": "touch10_guard_5d",
+          "market": "KOSDAQ",
+          "metrics": {
+            "active_days": 6,
+            "active_runs": 15,
+            "avg_1d_pct": 0.224849,
+            "avg_3d_pct": -3.095675,
+            "avg_5d_pct": -6.274281,
+            "avg_max_high_5d_pct": 12.956631,
+            "bad_path_pct": 94.3396,
+            "max_1d_pct": 19.56912,
+            "max_3d_pct": 17.953321,
+            "max_5d_pct": 32.414257,
+            "max_min_low_5d_pct": -0.969529,
+            "min_1d_pct": -14.62307,
+            "min_3d_pct": -23.796549,
+            "min_5d_pct": -30.971844,
+            "min_min_low_5d_pct": -34.968211,
+            "n": 53,
+            "stop5_pct": 92.4528,
+            "win_1d_pct": 49.0566,
+            "win_3d_pct": 35.8491,
+            "win_5d_pct": 24.5283
+          },
+          "name": "current_top5",
+          "topn": 5
+        }
+      ],
+      "source_evaluated_combinations": 216,
+      "source_generated_at": "2026-06-06T18:22:53.364105+00:00",
+      "source_ok_combinations": 216,
+      "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_kosdaq_after_20260526_27_backfill.json",
+      "source_prepared_rows": 67512,
+      "source_raw_rows": 71023
+    },
+    "KOSPI": {
+      "current_kis_model": {
+        "identity": {
+          "feature_set": "kis_sidecar_only",
+          "label": "pos_5d",
+          "market": "KOSPI",
+          "model": "random_forest",
+          "prob_threshold": null,
+          "promotion_candidate": {
+            "blocking_reasons": [
+              "kis_active_days_lt_10",
+              "min_low_5d_below_10"
+            ],
+            "promotable": false,
+            "risk_gate": {
+              "blocking_reasons": [
+                "min_low_5d_below_10"
+              ],
+              "components": {
+                "bad_path_pct": 3.4483,
+                "max_fold_bad_path_pct": 14.2857,
+                "max_fold_stop5_pct": 14.2857,
+                "min_1d_pct": 0.882353,
+                "min_fold_target_before_stop_5d_pct": 85.7143,
+                "min_min_low_5d_pct": -18.025078,
+                "stop5_pct": 3.4483,
+                "stop_before_target_5d_pct": 3.4483,
+                "target_before_stop_5d_pct": 96.5517
+              },
+              "pass": false,
+              "risk_score": 79.538782
+            }
+          },
+          "quality_score": 1987.785614,
+          "risk_gate": {
+            "blocking_reasons": [
+              "min_low_5d_below_10"
+            ],
+            "components": {
+              "bad_path_pct": 3.4483,
+              "max_fold_bad_path_pct": 14.2857,
+              "max_fold_stop5_pct": 14.2857,
+              "min_1d_pct": 0.882353,
+              "min_fold_target_before_stop_5d_pct": 85.7143,
+              "min_min_low_5d_pct": -18.025078,
+              "stop5_pct": 3.4483,
+              "stop_before_target_5d_pct": 3.4483,
+              "target_before_stop_5d_pct": 96.5517
+            },
+            "pass": false,
+            "risk_score": 79.538782
+          },
+          "selection_rule": "top1",
+          "topn": 1
+        },
+        "kind": "current_kis_challenger",
+        "metrics": {
+          "active_days": 9,
+          "active_runs": 26,
+          "avg_1d_pct": 5.734196,
+          "avg_3d_pct": 20.038118,
+          "avg_5d_pct": 23.24624,
+          "avg_max_high_5d_pct": 39.163594,
+          "bad_path_pct": 3.4483,
+          "max_1d_pct": 11.295681,
+          "max_3d_pct": 46.551724,
+          "max_5d_pct": 76.910299,
+          "max_min_low_5d_pct": 1.184211,
+          "min_1d_pct": 0.882353,
+          "min_3d_pct": -10.344828,
+          "min_5d_pct": -1.567398,
+          "min_min_low_5d_pct": -18.025078,
+          "n": 29,
+          "stop5_pct": 3.4483,
+          "win_1d_pct": 100.0,
+          "win_3d_pct": 96.5517,
+          "win_5d_pct": 96.5517
+        }
+      },
+      "existing_production_baselines": [
+        {
+          "kind": "existing_production",
+          "label": "pos_5d",
+          "market": "KOSPI",
+          "metrics": {
+            "active_days": 7,
+            "active_runs": 25,
+            "avg_1d_pct": 2.549606,
+            "avg_3d_pct": 6.046739,
+            "avg_5d_pct": 8.430412,
+            "avg_max_high_5d_pct": 18.738215,
+            "bad_path_pct": 48.0,
+            "max_1d_pct": 14.11339,
+            "max_3d_pct": 37.273824,
+            "max_5d_pct": 63.691194,
+            "max_min_low_5d_pct": 1.707317,
+            "min_1d_pct": -7.647258,
+            "min_3d_pct": -23.076923,
+            "min_5d_pct": -24.090551,
+            "min_min_low_5d_pct": -26.680933,
+            "n": 25,
+            "stop5_pct": 48.0,
+            "win_1d_pct": 60.0,
+            "win_3d_pct": 68.0,
+            "win_5d_pct": 68.0
+          },
+          "name": "current_top1",
+          "topn": 1
+        },
+        {
+          "kind": "existing_production",
+          "label": "pos_5d",
+          "market": "KOSPI",
+          "metrics": {
+            "active_days": 7,
+            "active_runs": 25,
+            "avg_1d_pct": 2.724055,
+            "avg_3d_pct": 9.421086,
+            "avg_5d_pct": 9.216202,
+            "avg_max_high_5d_pct": 23.162292,
+            "bad_path_pct": 54.2857,
+            "max_1d_pct": 30.0,
+            "max_3d_pct": 68.70229,
+            "max_5d_pct": 98.727735,
+            "max_min_low_5d_pct": 10.588235,
+            "min_1d_pct": -19.155447,
+            "min_3d_pct": -23.076923,
+            "min_5d_pct": -27.784578,
+            "min_min_low_5d_pct": -32.374541,
+            "n": 70,
+            "stop5_pct": 50.0,
+            "win_1d_pct": 52.8571,
+            "win_3d_pct": 62.8571,
+            "win_5d_pct": 64.2857
+          },
+          "name": "current_top3",
+          "topn": 3
+        },
+        {
+          "kind": "existing_production",
+          "label": "pos_5d",
+          "market": "KOSPI",
+          "metrics": {
+            "active_days": 7,
+            "active_runs": 25,
+            "avg_1d_pct": 1.727095,
+            "avg_3d_pct": 6.050123,
+            "avg_5d_pct": 5.686973,
+            "avg_max_high_5d_pct": 19.187786,
+            "bad_path_pct": 63.6364,
+            "max_1d_pct": 30.0,
+            "max_3d_pct": 68.70229,
+            "max_5d_pct": 98.727735,
+            "max_min_low_5d_pct": 10.588235,
+            "min_1d_pct": -19.155447,
+            "min_3d_pct": -23.076923,
+            "min_5d_pct": -27.784578,
+            "min_min_low_5d_pct": -32.374541,
+            "n": 110,
+            "stop5_pct": 60.0,
+            "win_1d_pct": 50.0,
+            "win_3d_pct": 55.4545,
+            "win_5d_pct": 54.5455
+          },
+          "name": "current_top5",
+          "topn": 5
+        }
+      ],
+      "source_evaluated_combinations": 4212,
+      "source_generated_at": "2026-06-07T20:47:05.647154+00:00",
+      "source_ok_combinations": 3276,
+      "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_after_full_kis_sidecar_backfill.json",
+      "source_prepared_rows": 95822,
+      "source_raw_rows": 101755
+    }
+  },
+  "metric_contract": "2d is intentionally excluded; report uses completed 1d/3d/5d scan_universe outcome labels only.",
+  "version": "kis_model_market_comparison_v1",
+  "warnings": []
+}

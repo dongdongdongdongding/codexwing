@@ -266,6 +266,17 @@ class PriceHistoryProvider:
         self.cache: Dict[tuple[str, str, str], List[Dict[str, Any]]] = {}
         self.fetch_counts: Counter[str] = Counter()
         self.fetch_failures: Counter[str] = Counter()
+        self.kis_client = None
+        self.normalize_kis_daily_bars = None
+        if self.provider in {"kis", "kis_first", "auto"}:
+            try:
+                from modules.kis_openapi import KISOpenAPIClient
+                from modules.kis_operational_adapter import normalize_kis_daily_bars
+
+                self.kis_client = KISOpenAPIClient(timeout=int(max(1, self.fetch_timeout or 8)))
+                self.normalize_kis_daily_bars = normalize_kis_daily_bars
+            except Exception:
+                self.fetch_failures["kis_unavailable"] += 1
         try:
             import FinanceDataReader as fdr  # type: ignore
         except Exception:
@@ -282,9 +293,18 @@ class PriceHistoryProvider:
         if key in self.cache:
             return self.cache[key]
         rows: List[Dict[str, Any]] = []
-        if self.provider in {"fdr", "auto"}:
+        if self.provider in {"kis", "kis_first"}:
+            rows = self._fetch_kis(ticker, start, end)
+        if not rows and self.provider == "kis":
+            self.cache[key] = rows
+            if self.sleep_sec > 0:
+                import time
+
+                time.sleep(self.sleep_sec)
+            return rows
+        if not rows and self.provider in {"fdr", "auto", "kis_first"}:
             rows = self._fetch_fdr(ticker, start, end)
-        if not rows and self.provider in {"yf", "yfinance", "auto", "fdr"}:
+        if not rows and self.provider in {"yf", "yfinance", "auto", "fdr", "kis_first"}:
             rows = self._fetch_yfinance(ticker, start, end)
         self.cache[key] = rows
         if self.sleep_sec > 0:
@@ -292,6 +312,33 @@ class PriceHistoryProvider:
 
             time.sleep(self.sleep_sec)
         return rows
+
+    def _fetch_kis(self, ticker: str, start: str, end: str) -> List[Dict[str, Any]]:
+        if self.kis_client is None or self.normalize_kis_daily_bars is None:
+            self.fetch_failures["kis_unavailable"] += 1
+            return []
+        try:
+            payload = _run_with_timeout(
+                self.fetch_timeout,
+                lambda: self.kis_client.daily_bars(
+                    ticker,
+                    start_date=str(start).replace("-", "")[:8],
+                    end_date=str(end).replace("-", "")[:8],
+                    period="D",
+                ),
+            )
+            frame = self.normalize_kis_daily_bars(ticker, payload if isinstance(payload, dict) else {})
+        except _FetchTimeout:
+            self.fetch_failures["kis_timeout"] += 1
+            return []
+        except Exception:
+            self.fetch_failures["kis_exception"] += 1
+            return []
+        if frame is None or frame.empty:
+            self.fetch_failures["kis_empty"] += 1
+            return []
+        self.fetch_counts["kis"] += 1
+        return _history_frame_to_bars(frame)
 
     def _fetch_fdr(self, ticker: str, start: str, end: str) -> List[Dict[str, Any]]:
         if self.fdr is None:
@@ -905,7 +952,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--market", choices=["ALL", "KOSPI", "KOSDAQ"], default="ALL")
     parser.add_argument("--scan-mode", choices=["ALL", "SWING", "INTRADAY"], default="ALL")
-    parser.add_argument("--provider", choices=["fdr", "yfinance", "auto"], default="fdr")
+    parser.add_argument("--provider", choices=["kis", "kis_first", "fdr", "yfinance", "auto"], default="fdr")
     parser.add_argument("--page-size", type=int, default=1000)
     parser.add_argument("--batch-size", type=int, default=500)
     parser.add_argument("--write-method", choices=["upsert", "update"], default="upsert")
