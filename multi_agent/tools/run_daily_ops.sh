@@ -177,4 +177,10 @@ if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/emit_daily_backtest.py "${DRIFT_ARGS[@]}"
 fi
 
+if [[ "${AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] report_daily_model_foundation_gate"
+  run_optional "report_daily_model_foundation_gate" \
+    python3 multi_agent/tools/report_daily_model_foundation_gate.py
+fi
+
 echo "[DONE] daily_ops completed"
