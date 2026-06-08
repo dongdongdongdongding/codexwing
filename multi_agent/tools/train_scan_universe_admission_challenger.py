@@ -5,12 +5,15 @@ import argparse
 import json
 import math
 import os
+import signal
 import sys
 import warnings
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple
+from time import perf_counter
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 os.environ.setdefault("MPLCONFIGDIR", "/private/tmp/codex_swing_matplotlib")
 
@@ -67,6 +70,7 @@ TARGET_TABLE = "scan_universe_snapshots"
 REPORT_VERSION = "scan_universe_admission_challenger_v1"
 REPORT_DIR = ROOT / "runtime_state" / "reports" / "learning"
 MODEL_DIR = ROOT / "models" / "scan_universe_challengers"
+MIN_RETRY_PAGE_SIZE = 5
 MIN_PROMOTION_RUNS = 12
 MIN_PROMOTION_DAYS = 6
 MIN_PROMOTION_ROWS = 15
@@ -286,6 +290,18 @@ class LabelSpec:
     description: str
 
 
+@dataclass(frozen=True)
+class CandidateJob:
+    market: str
+    label_spec: LabelSpec
+    feature_name: str
+    numeric: Tuple[str, ...]
+    categorical: Tuple[str, ...]
+    model_name: str
+    topn: int
+    prob_threshold: float | None
+
+
 LABEL_SPECS = [
     LabelSpec("pos_1d", "1d", "1D close return > 0"),
     LabelSpec("pos_3d", "3d", "3D close return > 0"),
@@ -376,6 +392,94 @@ def _date_text(value: Any) -> str:
         return ""
 
 
+def _log(enabled: bool, message: str) -> None:
+    if enabled:
+        print(message, flush=True)
+
+
+def _date_chunks(min_base_date: str, max_base_date: str, chunk_days: int) -> List[Tuple[str, str]]:
+    if chunk_days <= 0 or not min_base_date or not max_base_date:
+        return []
+    start = date.fromisoformat(min_base_date)
+    end = date.fromisoformat(max_base_date)
+    if end < start:
+        return []
+    chunks: List[Tuple[str, str]] = []
+    cursor = start
+    while cursor <= end:
+        chunk_end = min(end, cursor + timedelta(days=max(1, int(chunk_days)) - 1))
+        chunks.append((cursor.isoformat(), chunk_end.isoformat()))
+        cursor = chunk_end + timedelta(days=1)
+    return chunks
+
+
+def _id_chunks(min_id: int, max_id: int, chunk_size: int) -> List[Tuple[int, int]]:
+    if chunk_size <= 0 or max_id <= 0:
+        return []
+    start = max(1, int(min_id or 1))
+    if start > max_id:
+        return []
+    chunks: List[Tuple[int, int]] = []
+    cursor = start
+    while cursor <= max_id:
+        chunk_end = min(max_id, cursor + int(chunk_size) - 1)
+        chunks.append((cursor, chunk_end))
+        cursor = chunk_end + 1
+    return chunks
+
+
+def _combine_frames(frames: Sequence[pd.DataFrame]) -> pd.DataFrame:
+    non_empty = [frame for frame in frames if frame is not None and not frame.empty]
+    if not non_empty:
+        return pd.DataFrame()
+    out = pd.concat(non_empty, ignore_index=True)
+    if "id" in out.columns:
+        out = out.drop_duplicates(subset=["id"], keep="last").sort_values("id")
+    return out.reset_index(drop=True)
+
+
+def _matches_fetch_filters(
+    row: Mapping[str, Any],
+    *,
+    market: str,
+    scan_mode: str,
+    base_date: str,
+    min_base_date: str,
+    max_base_date: str,
+) -> bool:
+    if market != "ALL" and str(row.get("market") or "") != market:
+        return False
+    if scan_mode != "ALL" and str(row.get("scan_mode") or "") != scan_mode:
+        return False
+    row_date = _date_text(row.get("base_trade_date") or row.get("scanned_at"))
+    if base_date and row_date != base_date:
+        return False
+    if min_base_date and row_date < min_base_date:
+        return False
+    if max_base_date and row_date > max_base_date:
+        return False
+    return True
+
+
+def _execute_query(query: Any, *, timeout_sec: float = 0.0) -> Any:
+    timeout = float(timeout_sec or 0.0)
+    if timeout <= 0 or not hasattr(signal, "SIGALRM"):
+        return query.execute()
+
+    previous_handler = signal.getsignal(signal.SIGALRM)
+
+    def _timeout_handler(_signum: int, _frame: Any) -> None:
+        raise TimeoutError(f"Supabase query exceeded fetch_timeout_sec={timeout:g}")
+
+    signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.setitimer(signal.ITIMER_REAL, timeout)
+    try:
+        return query.execute()
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
+
+
 def fetch_rows(
     *,
     market: str,
@@ -387,6 +491,8 @@ def fetch_rows(
     min_base_date: str = "",
     max_base_date: str = "",
     limit: int = 0,
+    client_filter: bool = False,
+    fetch_timeout_sec: float = 0.0,
 ) -> pd.DataFrame:
     db = DBManager()
     if not getattr(db, "client", None):
@@ -399,22 +505,24 @@ def fetch_rows(
         query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(safe_page_size)
         if max_id and int(max_id) > 0:
             query = query.lte("id", int(max_id))
-        if market != "ALL":
+        if not client_filter and market != "ALL":
             query = query.eq("market", market)
-        if scan_mode != "ALL":
+        if not client_filter and scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
-        if base_date:
+        if not client_filter and base_date:
             query = query.eq("base_trade_date", base_date)
-        if min_base_date:
+        if not client_filter and min_base_date:
             query = query.gte("base_trade_date", min_base_date)
-        if max_base_date:
+        if not client_filter and max_base_date:
             query = query.lte("base_trade_date", max_base_date)
         try:
-            batch = query.execute().data or []
+            batch = _execute_query(query, timeout_sec=fetch_timeout_sec).data or []
         except Exception as exc:
             message = str(exc)
-            if safe_page_size > 25 and ("statement timeout" in message or "57014" in message):
-                next_page_size = max(25, safe_page_size // 2)
+            if safe_page_size > MIN_RETRY_PAGE_SIZE and (
+                "statement timeout" in message or "57014" in message or "fetch_timeout_sec" in message
+            ):
+                next_page_size = max(MIN_RETRY_PAGE_SIZE, safe_page_size // 2)
                 print(
                     f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
                     flush=True,
@@ -422,7 +530,23 @@ def fetch_rows(
                 safe_page_size = next_page_size
                 continue
             raise
-        rows.extend(batch)
+        accepted_batch = (
+            [
+                row
+                for row in batch
+                if _matches_fetch_filters(
+                    row,
+                    market=market,
+                    scan_mode=scan_mode,
+                    base_date=base_date,
+                    min_base_date=min_base_date,
+                    max_base_date=max_base_date,
+                )
+            ]
+            if client_filter
+            else batch
+        )
+        rows.extend(accepted_batch)
         if limit and len(rows) >= int(limit):
             return pd.DataFrame(rows[: int(limit)])
         if batch:
@@ -432,6 +556,117 @@ def fetch_rows(
         if max_id and last_id >= int(max_id):
             break
     return pd.DataFrame(rows)
+
+
+def fetch_rows_chunked(
+    *,
+    market: str,
+    scan_mode: str,
+    page_size: int,
+    min_id: int = 0,
+    max_id: int = 0,
+    base_date: str = "",
+    min_base_date: str = "",
+    max_base_date: str = "",
+    limit: int = 0,
+    fetch_chunk_days: int = 0,
+    fetch_id_chunk_size: int = 0,
+    client_filter: bool = False,
+    fetch_timeout_sec: float = 0.0,
+    max_fetch_chunks: int = 0,
+    progress: bool = True,
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    base_filters = {
+        "market": market,
+        "scan_mode": scan_mode,
+        "page_size": page_size,
+        "min_id": min_id,
+        "max_id": max_id,
+        "base_date": base_date,
+        "min_base_date": min_base_date,
+        "max_base_date": max_base_date,
+        "limit": limit,
+        "client_filter": client_filter,
+        "fetch_timeout_sec": fetch_timeout_sec,
+    }
+    date_windows = _date_chunks(min_base_date, max_base_date, fetch_chunk_days) if not base_date and not client_filter else []
+    id_windows = _id_chunks(min_id, max_id, fetch_id_chunk_size)
+    fetch_meta: Dict[str, Any] = {
+        "mode": "single",
+        "chunks": [],
+        "requested_limit": int(limit or 0),
+        "fetch_chunk_days": int(fetch_chunk_days or 0),
+        "fetch_id_chunk_size": int(fetch_id_chunk_size or 0),
+        "fetch_timeout_sec": _round(fetch_timeout_sec),
+        "max_fetch_chunks": int(max_fetch_chunks or 0),
+        "truncated_by_max_fetch_chunks": False,
+    }
+    started = perf_counter()
+    if date_windows:
+        frames: List[pd.DataFrame] = []
+        fetch_meta["mode"] = "date_chunks"
+        for idx, (start, end) in enumerate(date_windows, start=1):
+            if max_fetch_chunks and idx > int(max_fetch_chunks):
+                fetch_meta["truncated_by_max_fetch_chunks"] = True
+                break
+            _log(progress, f"[INFO] fetching date chunk {idx}/{len(date_windows)}: {start}..{end}")
+            chunk_dates = {
+                "base_date": start,
+                "min_base_date": "",
+                "max_base_date": "",
+            } if start == end else {
+                "base_date": "",
+                "min_base_date": start,
+                "max_base_date": end,
+            }
+            chunk = fetch_rows(
+                **{
+                    **base_filters,
+                    **chunk_dates,
+                    "limit": max(0, int(limit or 0) - sum(len(frame) for frame in frames)) if limit else 0,
+                }
+            )
+            frames.append(chunk)
+            fetch_meta["chunks"].append({"type": "date", "min_base_date": start, "max_base_date": end, "rows": int(len(chunk))})
+            if limit and sum(len(frame) for frame in frames) >= int(limit):
+                break
+        out = _combine_frames(frames)
+        if limit and len(out) > int(limit):
+            out = out.head(int(limit)).copy()
+        fetch_meta["elapsed_sec"] = _round(perf_counter() - started, 3)
+        fetch_meta["rows"] = int(len(out))
+        return out, fetch_meta
+    if id_windows:
+        frames = []
+        fetch_meta["mode"] = "id_chunks"
+        for idx, (start_id, end_id) in enumerate(id_windows, start=1):
+            if max_fetch_chunks and idx > int(max_fetch_chunks):
+                fetch_meta["truncated_by_max_fetch_chunks"] = True
+                break
+            _log(progress, f"[INFO] fetching id chunk {idx}/{len(id_windows)}: {start_id}..{end_id}")
+            chunk = fetch_rows(
+                **{
+                    **base_filters,
+                    "min_id": start_id,
+                    "max_id": end_id,
+                    "limit": max(0, int(limit or 0) - sum(len(frame) for frame in frames)) if limit else 0,
+                }
+            )
+            frames.append(chunk)
+            fetch_meta["chunks"].append({"type": "id", "min_id": start_id, "max_id": end_id, "rows": int(len(chunk))})
+            if limit and sum(len(frame) for frame in frames) >= int(limit):
+                break
+        out = _combine_frames(frames)
+        if limit and len(out) > int(limit):
+            out = out.head(int(limit)).copy()
+        fetch_meta["elapsed_sec"] = _round(perf_counter() - started, 3)
+        fetch_meta["rows"] = int(len(out))
+        return out, fetch_meta
+
+    out = fetch_rows(**base_filters)
+    fetch_meta["elapsed_sec"] = _round(perf_counter() - started, 3)
+    fetch_meta["rows"] = int(len(out))
+    return out, fetch_meta
 
 
 def apply_return_sanity(df: pd.DataFrame, *, mode: str) -> Tuple[pd.DataFrame, Dict[str, Any]]:
@@ -533,6 +768,75 @@ def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") 
     )
     out, sanity = apply_return_sanity(out, mode=return_sanity)
     return out.sort_values(["trade_date", "run_id", "ticker"]).copy(), sanity
+
+
+def _cache_meta_path(cache_path: Path) -> Path:
+    return cache_path.with_suffix(cache_path.suffix + ".meta.json")
+
+
+def _dataset_cache_signature(fetch_filters: Mapping[str, Any], *, return_sanity: str) -> Dict[str, Any]:
+    return {
+        "source": TARGET_TABLE,
+        "fetch_filters": {key: fetch_filters.get(key) for key in sorted(fetch_filters)},
+        "return_sanity": return_sanity,
+        "version": REPORT_VERSION,
+    }
+
+
+def load_prepared_dataset_cache(cache_path: Path, *, signature: Mapping[str, Any]) -> Tuple[pd.DataFrame, Dict[str, Any]] | None:
+    meta_path = _cache_meta_path(cache_path)
+    if not cache_path.exists() or not meta_path.exists():
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if meta.get("signature") != dict(signature):
+        return None
+    try:
+        frame = pd.read_pickle(cache_path)
+    except Exception:
+        return None
+    cache_info = {
+        "enabled": True,
+        "mode": "hit",
+        "path": str(cache_path),
+        "meta_path": str(meta_path),
+        "prepared_rows": int(len(frame)),
+        "raw_rows": meta.get("raw_rows"),
+        "return_sanity": meta.get("return_sanity") or {},
+        "created_at": meta.get("created_at"),
+    }
+    return frame, cache_info
+
+
+def write_prepared_dataset_cache(
+    cache_path: Path,
+    *,
+    signature: Mapping[str, Any],
+    data: pd.DataFrame,
+    raw_rows: int,
+    return_sanity: Mapping[str, Any],
+) -> Dict[str, Any]:
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    data.to_pickle(cache_path)
+    meta = {
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "signature": dict(signature),
+        "raw_rows": int(raw_rows),
+        "prepared_rows": int(len(data)),
+        "return_sanity": dict(return_sanity),
+    }
+    meta_path = _cache_meta_path(cache_path)
+    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2, sort_keys=True, default=_json_default), encoding="utf-8")
+    return {
+        "enabled": True,
+        "mode": "write",
+        "path": str(cache_path),
+        "meta_path": str(meta_path),
+        "prepared_rows": int(len(data)),
+        "raw_rows": int(raw_rows),
+    }
 
 
 def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Series]:
@@ -1043,6 +1347,146 @@ def parse_thresholds(raw: str) -> List[float | None]:
     return values
 
 
+def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
+    preset = str(getattr(args, "grid_preset", "custom") or "custom")
+    if preset == "custom":
+        return args
+    if preset == "kis_operational_fast":
+        args.labels = "pos_5d,touch5_guard_5d,touch10_guard_5d,target_first_sustain_5d"
+        args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
+        args.models = "random_forest,hist_gb,lightgbm"
+        args.topns = "1,3"
+        args.prob_thresholds = "0.60,0.65"
+        args.max_folds = min(int(args.max_folds), 3)
+        args.test_days = max(1, min(int(args.test_days), 2))
+        return args
+    if preset == "kis_operational_full":
+        args.labels = "pos_5d,clean_5d,touch5_guard_5d,touch10_guard_5d,target_first_sustain_5d"
+        args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
+        args.models = "random_forest,extra_trees,hist_gb,lightgbm"
+        args.topns = "1,3,5"
+        args.prob_thresholds = "0.55,0.60,0.65"
+        return args
+    raise ValueError(f"unknown grid preset: {preset}")
+
+
+def candidate_jobs(
+    *,
+    data: pd.DataFrame,
+    args: argparse.Namespace,
+    feature_map: Mapping[str, Tuple[List[str], List[str]]],
+    markets: Sequence[str],
+    selected_specs: Sequence[LabelSpec],
+    model_names: Sequence[str],
+    topns: Sequence[int],
+    prob_thresholds: Sequence[float | None],
+) -> List[CandidateJob]:
+    feature_filters = {
+        item.strip()
+        for item in str(args.feature_sets).split(",")
+        if item.strip()
+    }
+    jobs: List[CandidateJob] = []
+    for market in markets:
+        market_df = data[data["market"].eq(market)]
+        if market_df.empty:
+            continue
+        for spec in selected_specs:
+            for feature_name, (numeric, categorical) in feature_map.items():
+                if args.no_theme and "theme" in feature_name:
+                    continue
+                if feature_filters and feature_name not in feature_filters:
+                    continue
+                for model_name in model_names:
+                    for topn in topns:
+                        for prob_threshold in prob_thresholds:
+                            jobs.append(
+                                CandidateJob(
+                                    market=market,
+                                    label_spec=spec,
+                                    feature_name=feature_name,
+                                    numeric=tuple(numeric),
+                                    categorical=tuple(categorical),
+                                    model_name=model_name,
+                                    topn=int(topn),
+                                    prob_threshold=prob_threshold,
+                                )
+                            )
+    return jobs
+
+
+def _run_candidate_job(work: pd.DataFrame, job: CandidateJob, args: argparse.Namespace) -> Dict[str, Any]:
+    return run_candidate(
+        work,
+        market=job.market,
+        label_spec=job.label_spec,
+        feature_name=job.feature_name,
+        numeric=list(job.numeric),
+        categorical=list(job.categorical),
+        model_name=job.model_name,
+        topn=job.topn,
+        prob_threshold=job.prob_threshold,
+        min_train_rows=int(args.min_train_rows),
+        min_test_rows=int(args.min_test_rows),
+        min_train_days=int(args.min_train_days),
+        test_days=int(args.test_days),
+        max_folds=int(args.max_folds),
+        min_kis_rows=int(args.min_kis_rows),
+        min_kis_days=int(args.min_kis_days),
+    )
+
+
+def evaluate_candidate_jobs(
+    work: pd.DataFrame,
+    jobs: Sequence[CandidateJob],
+    args: argparse.Namespace,
+    *,
+    progress: bool = True,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    workers = max(1, int(getattr(args, "eval_workers", 1) or 1))
+    progress_every = max(1, int(getattr(args, "progress_every", 25) or 25))
+    started = perf_counter()
+    results: List[Dict[str, Any]] = []
+    total = len(jobs)
+    _log(progress, f"[INFO] evaluating {total} challenger combinations with eval_workers={workers}")
+    if workers == 1 or total <= 1:
+        for idx, job in enumerate(jobs, start=1):
+            results.append(_run_candidate_job(work, job, args))
+            if idx % progress_every == 0 or idx == total:
+                _log(progress, f"[INFO] evaluated {idx}/{total} challenger combinations")
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_map = {executor.submit(_run_candidate_job, work, job, args): job for job in jobs}
+            for idx, future in enumerate(as_completed(future_map), start=1):
+                try:
+                    results.append(future.result())
+                except Exception as exc:
+                    job = future_map[future]
+                    results.append(
+                        {
+                            "market": job.market,
+                            "label": job.label_spec.name,
+                            "feature_set": job.feature_name,
+                            "model": job.model_name,
+                            "topn": job.topn,
+                            "prob_threshold": _round(job.prob_threshold) if job.prob_threshold is not None else None,
+                            "selection_rule": f"top{job.topn}" if job.prob_threshold is None else f"top{job.topn}_p{job.prob_threshold:.2f}",
+                            "status": "skipped",
+                            "skip_reason": f"{type(exc).__name__}: {exc}",
+                        }
+                    )
+                if idx % progress_every == 0 or idx == total:
+                    _log(progress, f"[INFO] evaluated {idx}/{total} challenger combinations")
+    elapsed = perf_counter() - started
+    return results, {
+        "planned_combinations": int(total),
+        "evaluated_combinations": int(len(results)),
+        "eval_workers": int(workers),
+        "elapsed_sec": _round(elapsed, 3),
+        "combinations_per_sec": _round(len(results) / elapsed, 3) if elapsed > 0 else None,
+    }
+
+
 def candidate_risk_gate(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
     if not candidate:
         return {"pass": False, "risk_score": None, "blocking_reasons": ["no_valid_challenger"]}
@@ -1466,6 +1910,7 @@ def train_final_model(work: pd.DataFrame, best: Dict[str, Any], *, output_dir: P
 
 
 def build_report(args: argparse.Namespace) -> Dict[str, Any]:
+    args = apply_grid_preset(args)
     fetch_filters = {
         "market": args.market,
         "scan_mode": args.scan_mode,
@@ -1476,9 +1921,57 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "min_base_date": _date_text(args.min_base_date),
         "max_base_date": _date_text(args.max_base_date),
         "limit": int(args.limit or 0),
+        "client_filter": bool(args.client_filter),
     }
-    raw = fetch_rows(**fetch_filters)
-    data, return_sanity = prepare_dataset(raw, return_sanity=args.return_sanity)
+    progress_enabled = not bool(getattr(args, "no_progress", False))
+    cache_path = Path(args.prepared_cache) if str(getattr(args, "prepared_cache", "") or "").strip() else None
+    cache_mode = str(getattr(args, "cache_mode", "off") or "off")
+    signature_filters = {**fetch_filters, "max_fetch_chunks": int(args.max_fetch_chunks or 0)}
+    signature = _dataset_cache_signature(signature_filters, return_sanity=args.return_sanity)
+    cache_info: Dict[str, Any] = {"enabled": bool(cache_path), "mode": "off"}
+    fetch_meta: Dict[str, Any] = {}
+    raw_rows = 0
+    data: pd.DataFrame
+    return_sanity: Dict[str, Any]
+
+    cached = None
+    if cache_path and cache_mode in {"read", "readwrite"}:
+        cached = load_prepared_dataset_cache(cache_path, signature=signature)
+        if cached is not None:
+            data, cache_info = cached
+            raw_rows = int(cache_info.get("raw_rows") or len(data))
+            return_sanity = cache_info.get("return_sanity") if isinstance(cache_info.get("return_sanity"), dict) else {}
+            fetch_meta = {"mode": "prepared_cache_hit", "rows": raw_rows, "elapsed_sec": 0.0}
+            _log(progress_enabled, f"[INFO] loaded prepared dataset cache: {cache_path} rows={len(data)}")
+        elif cache_mode == "read":
+            raise SystemExit(f"Prepared dataset cache miss or signature mismatch: {cache_path}")
+
+    if cached is None:
+        raw, fetch_meta = fetch_rows_chunked(
+            **fetch_filters,
+            fetch_chunk_days=int(args.fetch_chunk_days or 0),
+            fetch_id_chunk_size=int(args.fetch_id_chunk_size or 0),
+            fetch_timeout_sec=float(args.fetch_timeout_sec or 0.0),
+            max_fetch_chunks=int(args.max_fetch_chunks or 0),
+            progress=progress_enabled,
+        )
+        raw_rows = int(len(raw))
+        prepare_started = perf_counter()
+        data, return_sanity = prepare_dataset(raw, return_sanity=args.return_sanity)
+        prepare_elapsed = _round(perf_counter() - prepare_started, 3)
+        if cache_path and cache_mode in {"write", "readwrite"}:
+            cache_info = write_prepared_dataset_cache(
+                cache_path,
+                signature=signature,
+                data=data,
+                raw_rows=raw_rows,
+                return_sanity=return_sanity,
+            )
+            _log(progress_enabled, f"[INFO] wrote prepared dataset cache: {cache_path} rows={len(data)}")
+        elif cache_path:
+            cache_info = {"enabled": True, "mode": "miss_no_write", "path": str(cache_path)}
+        cache_info["prepare_elapsed_sec"] = prepare_elapsed
+
     feature_map = feature_sets(data)
     model_names = [name.strip() for name in str(args.models).split(",") if name.strip()]
     markets = ["KOSPI", "KOSDAQ"] if args.market == "ALL" else [args.market]
@@ -1488,48 +1981,19 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         if item.strip()
     }
     selected_specs = [spec for spec in LABEL_SPECS if not labels or spec.name in labels]
-    feature_filters = {
-        item.strip()
-        for item in str(args.feature_sets).split(",")
-        if item.strip()
-    }
     topns = [int(item.strip()) for item in str(args.topns).split(",") if item.strip()]
     prob_thresholds = parse_thresholds(args.prob_thresholds)
-    all_results: List[Dict[str, Any]] = []
-    for market in markets:
-        market_df = data[data["market"].eq(market)]
-        if market_df.empty:
-            continue
-        for spec in selected_specs:
-            for feature_name, (numeric, categorical) in feature_map.items():
-                if args.no_theme and "theme" in feature_name:
-                    continue
-                if feature_filters and feature_name not in feature_filters:
-                    continue
-                for model_name in model_names:
-                    for topn in topns:
-                        for prob_threshold in prob_thresholds:
-                            result = run_candidate(
-                                data,
-                                market=market,
-                                label_spec=spec,
-                                feature_name=feature_name,
-                                numeric=numeric,
-                                categorical=categorical,
-                                model_name=model_name,
-                                topn=topn,
-                                prob_threshold=prob_threshold,
-                                min_train_rows=int(args.min_train_rows),
-                                min_test_rows=int(args.min_test_rows),
-                                min_train_days=int(args.min_train_days),
-                                test_days=int(args.test_days),
-                                max_folds=int(args.max_folds),
-                                min_kis_rows=int(args.min_kis_rows),
-                                min_kis_days=int(args.min_kis_days),
-                            )
-                            all_results.append(result)
-                            if len(all_results) % 25 == 0:
-                                print(f"[INFO] evaluated {len(all_results)} challenger combinations", flush=True)
+    jobs = candidate_jobs(
+        data=data,
+        args=args,
+        feature_map=feature_map,
+        markets=markets,
+        selected_specs=selected_specs,
+        model_names=model_names,
+        topns=topns,
+        prob_thresholds=prob_thresholds,
+    )
+    all_results, eval_meta = evaluate_candidate_jobs(data, jobs, args, progress=progress_enabled)
     ok_results = rank_candidate_results([row for row in all_results if row.get("status") == "ok"])
     best = ok_results[0] if ok_results else None
     kis_ok_results = [row for row in ok_results if str(row.get("feature_set") or "").startswith("kis_")]
@@ -1573,7 +2037,11 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": TARGET_TABLE,
         "fetch_filters": fetch_filters,
-        "raw_rows": int(len(raw)),
+        "fetch_strategy": fetch_meta,
+        "prepared_cache": cache_info,
+        "grid_preset": str(getattr(args, "grid_preset", "custom") or "custom"),
+        "evaluation": eval_meta,
+        "raw_rows": int(raw_rows),
         "prepared_rows": int(len(data)),
         "markets": markets,
         "scan_mode": args.scan_mode,
@@ -1631,6 +2099,10 @@ def _markdown(report: Dict[str, Any]) -> str:
         "",
         f"- generated_at: `{report.get('generated_at')}`",
         f"- source: `{report.get('source')}`",
+        f"- grid_preset: `{report.get('grid_preset')}`",
+        f"- fetch_strategy: `{report.get('fetch_strategy')}`",
+        f"- prepared_cache: `{report.get('prepared_cache')}`",
+        f"- evaluation: `{report.get('evaluation')}`",
         f"- prepared_rows: `{report.get('prepared_rows')}`",
         f"- evaluated_combinations: `{report.get('evaluated_combinations')}`",
         f"- ok_combinations: `{report.get('ok_combinations')}`",
@@ -1726,11 +2198,31 @@ def main() -> int:
     parser.add_argument("--base-date", default="", help="Exact base_trade_date filter, YYYY-MM-DD.")
     parser.add_argument("--min-base-date", default="", help="Inclusive base_trade_date lower bound, YYYY-MM-DD.")
     parser.add_argument("--max-base-date", default="", help="Inclusive base_trade_date upper bound, YYYY-MM-DD.")
+    parser.add_argument("--client-filter", action="store_true", help="Fetch by id order only, then apply market/mode/date filters locally to avoid slow Supabase filtered queries.")
+    parser.add_argument("--fetch-chunk-days", type=int, default=0, help="Split Supabase reads into N-day base_trade_date chunks when min/max base dates are supplied.")
+    parser.add_argument("--fetch-id-chunk-size", type=int, default=0, help="Split Supabase reads into id chunks when max-id is supplied.")
+    parser.add_argument("--fetch-timeout-sec", type=float, default=0.0, help="Fail a single Supabase query after N seconds and retry with a smaller page; 0 disables the local alarm.")
+    parser.add_argument("--max-fetch-chunks", type=int, default=0, help="Optional smoke-test guard that stops after N fetch chunks; 0 means all chunks.")
+    parser.add_argument("--prepared-cache", default="", help="Optional pickle path for prepared training data cache.")
+    parser.add_argument(
+        "--cache-mode",
+        choices=["off", "read", "write", "readwrite"],
+        default="off",
+        help="Prepared dataset cache behavior. read/readwrite require matching fetch filters and return_sanity.",
+    )
+    parser.add_argument(
+        "--grid-preset",
+        choices=["custom", "kis_operational_fast", "kis_operational_full"],
+        default="custom",
+        help="Bounded operational KIS grids for faster promotion iteration.",
+    )
     parser.add_argument("--models", default="logistic,hist_gb,extra_trees,random_forest,xgboost,lightgbm")
     parser.add_argument("--labels", default="", help="Comma-separated label names. Empty means all labels.")
     parser.add_argument("--feature-sets", default="", help="Comma-separated feature-set names. Empty means all feature sets.")
     parser.add_argument("--topns", default="1,3,5", help="Comma-separated top-N cutoffs to evaluate.")
     parser.add_argument("--prob-thresholds", default="", help="Comma-separated probability floors. Empty means top-N without a floor.")
+    parser.add_argument("--eval-workers", type=int, default=1, help="Parallel candidate-grid evaluation workers. Keep low when tree models use internal n_jobs.")
+    parser.add_argument("--progress-every", type=int, default=25, help="Progress log frequency in evaluated candidate combinations.")
     parser.add_argument("--min-train-rows", type=int, default=1000)
     parser.add_argument("--min-test-rows", type=int, default=200)
     parser.add_argument("--min-train-days", type=int, default=3)
@@ -1743,6 +2235,7 @@ def main() -> int:
     parser.add_argument("--return-sanity", choices=["kr_price_limit", "off"], default="kr_price_limit")
     parser.add_argument("--no-save-model", action="store_true")
     parser.add_argument("--quiet", action="store_true", help="Write full report files but print only a compact JSON summary.")
+    parser.add_argument("--no-progress", action="store_true", help="Suppress progress logs even during chunked fetch/evaluation.")
     parser.add_argument("--output", default=str(REPORT_DIR / "scan_universe_admission_challenger.json"))
     parser.add_argument("--model-dir", default=str(MODEL_DIR))
     args = parser.parse_args()
@@ -1760,6 +2253,10 @@ def main() -> int:
             "prepared_rows": report.get("prepared_rows"),
             "evaluated_combinations": report.get("evaluated_combinations"),
             "ok_combinations": report.get("ok_combinations"),
+            "grid_preset": report.get("grid_preset"),
+            "fetch_strategy": report.get("fetch_strategy"),
+            "prepared_cache": report.get("prepared_cache"),
+            "evaluation": report.get("evaluation"),
             "best": {
                 "market": best.get("market"),
                 "label": best.get("label"),

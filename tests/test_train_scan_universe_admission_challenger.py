@@ -1,16 +1,24 @@
+import argparse
+
 import pandas as pd
 
 from multi_agent.tools.train_scan_universe_admission_challenger import (
+    apply_grid_preset,
+    candidate_jobs,
+    evaluate_candidate_jobs,
     fetch_rows,
+    fetch_rows_chunked,
     LABEL_SPECS,
     candidate_verdict,
     current_top_indices,
     kis_feature_readiness,
     label_series,
+    load_prepared_dataset_cache,
     metrics,
     prepare_dataset,
     rank_candidate_results,
     top_indices_by_run,
+    write_prepared_dataset_cache,
 )
 import multi_agent.tools.train_scan_universe_admission_challenger as trainer
 
@@ -363,6 +371,148 @@ def test_fetch_rows_retries_statement_timeout_with_smaller_page(monkeypatch):
     assert calls["limit"][:2] == [1000, 500]
 
 
+def test_fetch_rows_client_filter_uses_id_scan_and_filters_locally(monkeypatch):
+    calls = {"eq": [], "gte": [], "lte": [], "gt": []}
+    rows = [
+        {"id": 1, "ticker": "000001.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-20"},
+        {"id": 2, "ticker": "000002.KQ", "market": "KOSDAQ", "scan_mode": "SWING", "base_trade_date": "2026-05-20"},
+        {"id": 3, "ticker": "000003.KS", "market": "KOSPI", "scan_mode": "INTRADAY", "base_trade_date": "2026-05-21"},
+        {"id": 4, "ticker": "000004.KS", "market": "KOSPI", "scan_mode": "SWING", "base_trade_date": "2026-05-22"},
+    ]
+
+    class Result:
+        def __init__(self, data):
+            self.data = data
+
+    class Query:
+        def __init__(self):
+            self._last_id = 0
+            self._limit = None
+
+        def select(self, _cols):
+            return self
+
+        def order(self, _field):
+            return self
+
+        def gt(self, field, value):
+            calls["gt"].append((field, value))
+            self._last_id = int(value)
+            return self
+
+        def lte(self, field, value):
+            calls["lte"].append((field, value))
+            return self
+
+        def gte(self, field, value):
+            calls["gte"].append((field, value))
+            return self
+
+        def limit(self, value):
+            self._limit = int(value)
+            return self
+
+        def eq(self, field, value):
+            calls["eq"].append((field, value))
+            return self
+
+        def execute(self):
+            return Result([row for row in rows if row["id"] > self._last_id][: self._limit])
+
+    class Client:
+        def table(self, _table):
+            return Query()
+
+    class FakeDB:
+        client = Client()
+
+    monkeypatch.setattr(trainer, "DBManager", lambda: FakeDB())
+
+    got = fetch_rows(
+        market="KOSPI",
+        scan_mode="SWING",
+        page_size=10,
+        min_base_date="2026-05-20",
+        max_base_date="2026-05-21",
+        client_filter=True,
+    )
+
+    assert got["id"].tolist() == [1]
+    assert calls["eq"] == []
+    assert calls["gte"] == []
+    assert calls["lte"] == []
+    assert calls["gt"] == [("id", 0)]
+
+
+def test_fetch_rows_chunked_splits_date_windows_and_dedupes(monkeypatch):
+    calls = []
+
+    def fake_fetch_rows(**kwargs):
+        calls.append(kwargs)
+        start = kwargs["base_date"] or kwargs["min_base_date"]
+        row_id = {"2026-05-20": 1, "2026-05-22": 2, "2026-05-24": 2}[start]
+        return pd.DataFrame(
+            [
+                {
+                    "id": row_id,
+                    "ticker": f"{row_id:06d}.KS",
+                    "market": "KOSPI",
+                    "scan_mode": "SWING",
+                    "base_trade_date": start,
+                }
+            ]
+        )
+
+    monkeypatch.setattr(trainer, "fetch_rows", fake_fetch_rows)
+
+    got, meta = fetch_rows_chunked(
+        market="KOSPI",
+        scan_mode="SWING",
+        page_size=100,
+        min_base_date="2026-05-20",
+        max_base_date="2026-05-24",
+        fetch_chunk_days=2,
+        progress=False,
+    )
+
+    assert [(call["min_base_date"], call["max_base_date"]) for call in calls] == [
+        ("2026-05-20", "2026-05-21"),
+        ("2026-05-22", "2026-05-23"),
+        ("", ""),
+    ]
+    assert calls[-1]["base_date"] == "2026-05-24"
+    assert got["id"].tolist() == [1, 2]
+    assert meta["mode"] == "date_chunks"
+    assert meta["rows"] == 2
+
+
+def test_prepared_dataset_cache_roundtrip_requires_matching_signature(tmp_path):
+    cache_path = tmp_path / "prepared.pkl"
+    data = pd.DataFrame([{"ticker": "000001.KS", "market": "KOSPI", "trade_date": "2026-05-20"}])
+    signature = trainer._dataset_cache_signature({"market": "KOSPI", "scan_mode": "SWING"}, return_sanity="kr_price_limit")
+
+    written = write_prepared_dataset_cache(
+        cache_path,
+        signature=signature,
+        data=data,
+        raw_rows=3,
+        return_sanity={"removed_rows": 1},
+    )
+    loaded = load_prepared_dataset_cache(cache_path, signature=signature)
+    miss = load_prepared_dataset_cache(
+        cache_path,
+        signature=trainer._dataset_cache_signature({"market": "KOSDAQ", "scan_mode": "SWING"}, return_sanity="kr_price_limit"),
+    )
+
+    assert written["mode"] == "write"
+    assert loaded is not None
+    loaded_frame, cache_info = loaded
+    assert loaded_frame.to_dict(orient="records") == data.to_dict(orient="records")
+    assert cache_info["mode"] == "hit"
+    assert cache_info["raw_rows"] == 3
+    assert miss is None
+
+
 def test_prepare_dataset_filters_impossible_kr_return_labels():
     raw = pd.DataFrame(
         [
@@ -594,6 +744,70 @@ def test_kis_feature_readiness_reports_date_coverage():
     assert coverage["2026-05-20"]["rows_by_market"] == {"KOSDAQ": 1, "KOSPI": 2}
     assert readiness["by_market"]["KOSDAQ"]["sidecar"]["date_coverage"]["2026-05-21"]["rows"] == 1
     assert readiness["feature_fill"]["theme_news_top_feature_fill_pct"]["kis_theme_news_news_checked"] == 100.0
+
+
+def test_kis_operational_fast_grid_preset_bounds_jobs_and_parallel_eval(monkeypatch):
+    args = argparse.Namespace(
+        grid_preset="kis_operational_fast",
+        labels="",
+        feature_sets="",
+        models="",
+        topns="",
+        prob_thresholds="",
+        max_folds=5,
+        test_days=3,
+        no_theme=False,
+        eval_workers=2,
+        progress_every=1,
+        min_train_rows=1,
+        min_test_rows=1,
+        min_train_days=1,
+        min_kis_rows=0,
+        min_kis_days=1,
+    )
+    apply_grid_preset(args)
+    data = pd.DataFrame({"market": ["KOSPI", "KOSPI"], "trade_date": ["2026-05-20", "2026-05-21"]})
+    feature_map = {
+        "kis_sidecar_only": (["kis_value_traded"], []),
+        "wide_theme": (["decision_score"], ["primary_theme"]),
+    }
+    selected = [_spec("pos_5d")]
+    jobs = candidate_jobs(
+        data=data,
+        args=args,
+        feature_map=feature_map,
+        markets=["KOSPI"],
+        selected_specs=selected,
+        model_names=["random_forest"],
+        topns=[1],
+        prob_thresholds=[None, 0.6],
+    )
+
+    def fake_run_candidate(_work, **kwargs):
+        return {
+            "status": "ok",
+            "market": kwargs["market"],
+            "label": kwargs["label_spec"].name,
+            "feature_set": kwargs["feature_name"],
+            "model": kwargs["model_name"],
+            "topn": kwargs["topn"],
+            "prob_threshold": kwargs["prob_threshold"],
+            "metrics": {"n": 1, "active_runs": 1, "active_days": 1},
+        }
+
+    monkeypatch.setattr(trainer, "run_candidate", fake_run_candidate)
+    results, meta = evaluate_candidate_jobs(data, jobs, args, progress=False)
+
+    assert args.labels == "pos_5d,touch5_guard_5d,touch10_guard_5d,target_first_sustain_5d"
+    assert args.feature_sets == "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
+    assert args.models == "random_forest,hist_gb,lightgbm"
+    assert args.topns == "1,3"
+    assert args.prob_thresholds == "0.60,0.65"
+    assert args.max_folds == 3
+    assert {job.feature_name for job in jobs} == {"kis_sidecar_only"}
+    assert len(results) == 2
+    assert meta["eval_workers"] == 2
+    assert meta["evaluated_combinations"] == 2
 
 
 def test_candidate_verdict_blocks_sparse_high_score_candidate():
