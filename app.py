@@ -66,6 +66,9 @@ from ui.scan_integrity_view import (
 from ui.top_deep_view import (
     render_top_deep_reports_page as _render_top_deep_reports_page,
 )
+from ui.kis_theme_network_view import (
+    render_kis_theme_network_page as _render_kis_theme_network_page,
+)
 from ui.view_chrome import (
     coerce_text_rows as _coerce_text_rows,
     render_section_intro as _render_section_intro,
@@ -1427,7 +1430,7 @@ with st.expander("운영 데이터 상태 · 정확성 원천", expanded=False):
 # 연구/진단 도구는 AG_UI_ADVANCED=1 에서만 열어 UI 잡음을 줄인다.
 MAIN_TABS = ["🚀 스캐너", "🔬 Top 분석", "📚 아카이브"]
 if ENABLE_ADVANCED_UI:
-    MAIN_TABS = ["🚀 스캐너", "🔬 Top 분석", "🧠 인텔리전스", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
+    MAIN_TABS = ["🚀 스캐너", "🔬 Top 분석", "🧠 인텔리전스", "🕸️ 테마 네트워크", "📈 성과", "📚 아카이브", "🔎 정밀분석"]
 if "active_main_tab" not in st.session_state:
     st.session_state["active_main_tab"] = MAIN_TABS[0]
 elif st.session_state["active_main_tab"] not in MAIN_TABS:
@@ -1459,6 +1462,9 @@ if active_main_tab == "🔬 Top 분석":
 
 if active_main_tab == "🧠 인텔리전스":
     _render_intelligence_workspace()
+
+if active_main_tab == "🕸️ 테마 네트워크":
+    _render_kis_theme_network_page()
 
 # TAB 1: MARKET SCANNER
 if active_main_tab == "🚀 스캐너":

@@ -41,6 +41,8 @@ runtime_state/long_term/orchestrator/
 runtime_state/long_term/outcomes/
 runtime_state/long_term/runs/
 runtime_state/long_term/theme_membership/
+runtime_state/long_term/kis_theme_valuechain/*.json
+!runtime_state/long_term/kis_theme_valuechain/verified_sources.json
 runtime_state/reports/daily/
 runtime_state/reports/archive/
 runtime_state/reports/data_quality/
@@ -49,6 +51,7 @@ runtime_state/reports/instrument_master/
 runtime_state/reports/top_deep/
 runtime_state/reports/data_health/
 runtime_state/reports/theme_validation/
+runtime_state/reports/kis_theme_valuechain/
 runtime_state/reports/trading/signal_section_performance_daily.*
 runtime_state/reports/validation/*.json
 runtime_state/reports/validation/*.md

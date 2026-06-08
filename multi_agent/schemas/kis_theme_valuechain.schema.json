@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kis_theme_valuechain.schema.json",
+  "title": "KisThemeValuechain",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_at",
+    "market",
+    "market_scope",
+    "confidence_floor",
+    "source_policy",
+    "summary",
+    "ticker_category_records",
+    "theme_daily_state",
+    "nodes",
+    "edges",
+    "verified_valuechain_edges",
+    "blocked_valuechain_edges",
+    "warnings"
+  ],
+  "properties": {
+    "version": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "market": {"type": "string"},
+    "market_region": {"type": "string"},
+    "market_scope": {"type": "string"},
+    "confidence_floor": {"type": "number", "minimum": 0.95},
+    "no_dummy_data": {"type": "boolean"},
+    "source_policy": {
+      "type": "object",
+      "required": [
+        "production_valuechain_requires_confidence_gte",
+        "trusted_source_types",
+        "unverified_source_type_caps",
+        "news_only_edges_blocked_from_production_valuechain"
+      ],
+      "properties": {
+        "production_valuechain_requires_confidence_gte": {"type": "number", "minimum": 0.95},
+        "trusted_source_types": {"type": "object"},
+        "unverified_source_type_caps": {"type": "object"},
+        "news_only_edges_blocked_from_production_valuechain": {"type": "boolean"}
+      }
+    },
+    "summary": {"type": "object"},
+    "ticker_category_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["version", "ticker", "market", "trade_date", "no_dummy_data"],
+        "properties": {
+          "version": {"type": "string"},
+          "ticker": {"type": "string"},
+          "market": {"type": "string"},
+          "market_scope": {"type": "string"},
+          "market_key": {"type": "string"},
+          "trade_date": {"type": "string"},
+          "stock_name": {"type": "string"},
+          "primary_theme": {"type": "string"},
+          "secondary_themes": {"type": "array", "items": {"type": "string"}},
+          "theme_source": {"type": ["string", "null"]},
+          "sector_name": {"type": "string"},
+          "standard_industry_code": {"type": ["string", "null"]},
+          "per": {"type": ["number", "null"]},
+          "pbr": {"type": ["number", "null"]},
+          "roe": {"type": ["number", "null"]},
+          "debt_ratio": {"type": ["number", "null"]},
+          "revenue_growth_rate": {"type": ["number", "null"]},
+          "value_traded": {"type": ["number", "null"]},
+          "day_return_pct": {"type": ["number", "null"]},
+          "volume_rank": {"type": ["number", "null"]},
+          "fluctuation_rank": {"type": ["number", "null"]},
+          "volume_power_rank": {"type": ["number", "null"]},
+          "vi_triggered": {"type": "boolean"},
+          "news_count": {"type": "integer"},
+          "raw_news_count": {"type": "integer"},
+          "news_positive_tags": {"type": "array", "items": {"type": "string"}},
+          "news_risk_tags": {"type": "array", "items": {"type": "string"}},
+          "kis_evidence_strength_score": {"type": ["number", "null"]},
+          "kis_evidence_strength_level": {"type": ["string", "null"]},
+          "source_ref": {"type": ["string", "null"]},
+          "no_dummy_data": {"type": "boolean"}
+        }
+      }
+    },
+    "theme_daily_state": {"type": "array", "items": {"type": "object"}},
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "type", "weight"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "type": {"type": "string"},
+          "weight": {"type": "number"}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "edge_kind", "relationship", "confidence", "weight"],
+        "properties": {
+          "source": {"type": "string"},
+          "target": {"type": "string"},
+          "edge_kind": {"type": "string"},
+          "relationship": {"type": "string"},
+          "confidence": {"type": "number"},
+          "weight": {"type": "number"},
+          "production_valuechain": {"type": "boolean"},
+          "source_type": {"type": ["string", "null"]},
+          "source_urls": {"type": "array", "items": {"type": "string"}},
+          "evidence": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "verified_valuechain_edges": {"type": "array", "items": {"type": "object"}},
+    "blocked_valuechain_edges": {"type": "array", "items": {"type": "object"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  }
+}

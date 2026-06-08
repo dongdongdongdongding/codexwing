@@ -1,0 +1,19 @@
+{
+  "version": "kis_theme_valuechain_verified_sources_v1",
+  "records": [
+    {
+      "from_symbol": "095610.KQ",
+      "to_symbol": "005930.KS",
+      "relationship": "semiconductor_equipment_supplier_to_customer",
+      "theme_name": "반도체",
+      "confidence": 0.99,
+      "source_type": "exchange_disclosure",
+      "source_title": "KIND 단일판매ㆍ공급계약 체결: 테스 반도체 제조장비 공급계약",
+      "source_urls": [
+        "https://kind.krx.co.kr/external/2025/02/06/000180/20250206000436/70012.htm"
+      ],
+      "evidence_text": "KIND disclosure reports a semiconductor manufacturing equipment supply contract with Samsung Electronics / Samsung (China) Semiconductor, contract date 2025-02-05.",
+      "evidence_collected_at": "2026-06-08T00:00:00+09:00"
+    }
+  ]
+}
