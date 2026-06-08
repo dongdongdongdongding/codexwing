@@ -149,6 +149,11 @@ Scanner Agent input without touching `app.py` execution semantics.
 - Cron wrapper:
   - `bash multi_agent/tools/run_outcome_updater.sh --dry-run --resolve-all`
   - full daily ops: `bash multi_agent/tools/run_daily_ops.sh`
+- Primary KOSPI/KOSDAQ/NASDAQ session ops:
+  - print schedule: `python3 multi_agent/tools/run_primary_market_session_ops.py --print-schedule`
+  - dry-run one window: `python3 multi_agent/tools/run_primary_market_session_ops.py --session nasdaq_regular_open --dry-run`
+  - due-check runner: `python3 multi_agent/tools/run_primary_market_session_ops.py --run-due --continue-on-error`
+  - windows: KR regular close 15:40 KST, NXT close 20:05 KST, NASDAQ 04:15/09:35/16:05/16:15 ET
 - Learning automation:
   - nightly refresh: `python3 multi_agent/tools/run_learning_cycle.py --mode nightly`
   - weekly retrain: `python3 multi_agent/tools/run_learning_cycle.py --mode weekly`

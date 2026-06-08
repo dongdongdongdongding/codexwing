@@ -77,31 +77,18 @@ cat > "${PLIST_PATH}" <<EOF
     <string>${LAUNCHER_PATH}</string>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>DAILY_OPS_MARKETS=KOSPI,KOSDAQ,NASDAQ,AMEX DAILY_OPS_DRY_RUN=0 AG_STALE_FALLBACK_ALERT_DRY_RUN=0 /bin/bash multi_agent/tools/run_daily_ops.sh</string>
+    <string>PRIMARY_OPS_MARKETS=KOSPI,KOSDAQ,NASDAQ DAILY_OPS_DRY_RUN=0 AG_STALE_FALLBACK_ALERT_DRY_RUN=0 python3 multi_agent/tools/run_primary_market_session_ops.py --run-due --continue-on-error</string>
   </array>
   <key>WorkingDirectory</key>
   <string>${APP_SUPPORT_DIR}</string>
   <key>RunAtLoad</key>
   <true/>
-  <key>StartCalendarInterval</key>
-  <array>
-    <dict>
-      <key>Hour</key>
-      <integer>18</integer>
-      <key>Minute</key>
-      <integer>30</integer>
-    </dict>
-    <dict>
-      <key>Hour</key>
-      <integer>23</integer>
-      <key>Minute</key>
-      <integer>30</integer>
-    </dict>
-  </array>
+  <key>StartInterval</key>
+  <integer>300</integer>
   <key>StandardOutPath</key>
-  <string>${LOG_DIR}/launchd_daily_ops.log</string>
+  <string>${LOG_DIR}/launchd_primary_market_session_ops.log</string>
   <key>StandardErrorPath</key>
-  <string>${LOG_DIR}/launchd_daily_ops.err.log</string>
+  <string>${LOG_DIR}/launchd_primary_market_session_ops.err.log</string>
 </dict>
 </plist>
 EOF
