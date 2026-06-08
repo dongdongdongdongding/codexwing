@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import math
+from dataclasses import asdict
 from typing import Any, Dict, List, Mapping
 
+from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
-KIS_MODEL_GATE_VERSION = "kis_model_gate_v1"
+
+KIS_MODEL_GATE_VERSION = "kis_model_gate_v2"
 
 _COMMON_SHADOW = {
     "min_n": 8,
@@ -65,6 +68,17 @@ _PROFILES: Dict[str, Dict[str, Any]] = {
             "max_stop5_pct": 25.0,
             "min_1d_pct": -4.0,
         },
+    },
+}
+
+_PRODUCTION_ECONOMICS: Dict[str, Dict[str, float]] = {
+    "KOSPI": {
+        "min_net_avg_3d_pct": 0.25,
+        "min_net_avg_5d_pct": 0.50,
+    },
+    "KOSDAQ": {
+        "min_net_avg_3d_pct": 0.50,
+        "min_net_avg_5d_pct": 1.00,
     },
 }
 
@@ -198,6 +212,53 @@ def _threshold_checks(
     return blockers
 
 
+def _metric_or_computed_net(metrics: Mapping[str, Any], *, net_key: str, gross_key: str) -> float | None:
+    explicit = _safe_float(metrics.get(net_key))
+    if explicit is not None:
+        return explicit
+    gross = _safe_float(metrics.get(gross_key))
+    return compute_net_return_pct(gross)
+
+
+def _production_economic_checks(
+    *,
+    market_key: str,
+    metrics: Mapping[str, Any],
+    checks: List[Dict[str, Any]],
+) -> tuple[List[str], Dict[str, Any]]:
+    blockers: List[str] = []
+    thresholds = _PRODUCTION_ECONOMICS.get(market_key, {})
+    cost_model = TradableCostModel()
+    economics: Dict[str, Any] = {
+        "cost_model": asdict(cost_model),
+        "gross_avg_3d_pct": _safe_float(metrics.get("avg_3d_pct")),
+        "gross_avg_5d_pct": _safe_float(metrics.get("avg_5d_pct")),
+        "net_avg_3d_pct": _metric_or_computed_net(metrics, net_key="net_avg_3d_pct", gross_key="avg_3d_pct"),
+        "net_avg_5d_pct": _metric_or_computed_net(metrics, net_key="net_avg_5d_pct", gross_key="avg_5d_pct"),
+    }
+    for threshold_key, metric_key in (
+        ("min_net_avg_3d_pct", "net_avg_3d_pct"),
+        ("min_net_avg_5d_pct", "net_avg_5d_pct"),
+    ):
+        if threshold_key not in thresholds:
+            continue
+        actual = _safe_float(economics.get(metric_key))
+        expected = float(thresholds[threshold_key])
+        label = metric_key.replace("_pct", "")
+        _check(
+            checks,
+            gate="production_economics",
+            name=metric_key,
+            actual=actual,
+            expected=f">={expected:g}",
+            passed=actual is not None and actual >= expected,
+            reason=f"{label}_lt_{_reason_value(expected)}",
+            blockers=blockers,
+        )
+    economics["thresholds"] = thresholds
+    return blockers, economics
+
+
 def evaluate_kis_model_gate(
     *,
     identity: Mapping[str, Any] | None,
@@ -272,8 +333,14 @@ def evaluate_kis_model_gate(
         thresholds=profile["risk_review"],
         checks=checks,
     )
+    economic_blockers, economics = _production_economic_checks(
+        market_key=market_key,
+        metrics=metrics,
+        checks=checks,
+    )
 
-    production_ready = not production_blockers
+    production_blocking_reasons = list(dict.fromkeys([*production_blockers, *economic_blockers]))
+    production_ready = not production_blocking_reasons
     shadow_ready = production_ready or not shadow_blockers
     risk_review_required = bool(risk_review_reasons) and shadow_ready and not production_ready
     if production_ready:
@@ -298,10 +365,11 @@ def evaluate_kis_model_gate(
         "deep_analysis_allowed": shadow_ready,
         "risk_review_required": risk_review_required,
         "source_ok": True,
-        "production_blocking_reasons": production_blockers,
+        "production_economics": economics,
+        "production_blocking_reasons": production_blocking_reasons,
         "shadow_blocking_reasons": shadow_blockers,
         "risk_review_reasons": risk_review_reasons,
-        "blocking_reasons": production_blockers if not production_ready else [],
+        "blocking_reasons": production_blocking_reasons if not production_ready else [],
         "checks": checks,
         "action": action,
     }

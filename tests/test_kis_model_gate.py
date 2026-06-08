@@ -82,3 +82,68 @@ def test_kis_gate_blocks_non_kis_identity():
     assert gate["shadow_display_allowed"] is False
     assert gate["status"] == "blocked"
     assert "feature_set_not_kis" in gate["blocking_reasons"]
+
+
+def test_kis_gate_requires_positive_net_expectancy_after_cost_for_production():
+    gate = evaluate_kis_model_gate(
+        identity={
+            "market": "KOSPI",
+            "feature_set": "kis_sidecar_only",
+            "label": "pos_5d",
+            "model": "random_forest",
+            "selection_rule": "top1",
+        },
+        metrics={
+            "n": 80,
+            "active_days": 24,
+            "active_runs": 30,
+            "win_3d_pct": 80.0,
+            "win_5d_pct": 78.0,
+            "avg_3d_pct": 0.20,
+            "avg_5d_pct": 0.45,
+            "min_1d_pct": -1.0,
+            "min_min_low_5d_pct": -4.0,
+            "bad_path_pct": 5.0,
+            "stop5_pct": 5.0,
+            "stop_before_target_5d_pct": 5.0,
+            "target_before_stop_5d_pct": 90.0,
+        },
+    )
+
+    assert gate["production_ready"] is False
+    assert gate["shadow_display_allowed"] is True
+    assert "avg_3d_lt_3" in gate["production_blocking_reasons"]
+    assert "net_avg_3d_lt_0p25" in gate["production_blocking_reasons"]
+    assert gate["production_economics"]["net_avg_3d_pct"] < 0.0
+
+
+def test_kis_gate_allows_production_only_when_net_expectancy_and_risk_clear():
+    gate = evaluate_kis_model_gate(
+        identity={
+            "market": "KOSPI",
+            "feature_set": "kis_sidecar_only",
+            "label": "pos_5d",
+            "model": "random_forest",
+            "selection_rule": "top1",
+        },
+        metrics={
+            "n": 80,
+            "active_days": 24,
+            "active_runs": 30,
+            "win_3d_pct": 80.0,
+            "win_5d_pct": 78.0,
+            "avg_3d_pct": 3.2,
+            "avg_5d_pct": 5.5,
+            "min_1d_pct": -1.0,
+            "min_min_low_5d_pct": -4.0,
+            "bad_path_pct": 5.0,
+            "stop5_pct": 5.0,
+            "stop_before_target_5d_pct": 5.0,
+            "target_before_stop_5d_pct": 90.0,
+        },
+    )
+
+    assert gate["production_ready"] is True
+    assert gate["status"] == "production_ready"
+    assert gate["production_economics"]["net_avg_3d_pct"] >= 0.25
+    assert gate["production_economics"]["net_avg_5d_pct"] >= 0.5

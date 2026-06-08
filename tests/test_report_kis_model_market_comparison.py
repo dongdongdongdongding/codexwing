@@ -94,8 +94,11 @@ def test_build_report_excludes_2d_and_keeps_market_sections(tmp_path):
 
     assert report["horizons"] == ["1d", "3d", "5d"]
     assert "2d" in report["metric_contract"]
+    assert report["promotion_decision"]["status"] == "blocked"
+    assert report["promotion_decision"]["all_required_markets_production_ready"] is False
     assert report["markets"]["KOSPI"]["current_kis_model"]["metrics"]["win_3d_pct"] == 50.0
     assert report["markets"]["KOSPI"]["current_kis_model"]["kis_model_gate"]["status"] == "blocked"
+    assert "production_economics" in report["markets"]["KOSPI"]["current_kis_model"]["kis_model_gate"]
     assert report["markets"]["KOSDAQ"]["existing_production_baselines"][0]["name"] == "current_top5"
     comparison = report["markets"]["KOSPI"]["performance_comparison_vs_existing"][0]
     assert comparison["win_5d_delta_pct"] == 16.6667

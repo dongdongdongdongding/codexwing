@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-08T05:44:44.616517+00:00",
+  "generated_at": "2026-06-08T16:08:25.098540+00:00",
   "horizons": [
     "1d",
     "3d",
@@ -293,6 +293,22 @@
               "name": "stop5_pct",
               "passed": true,
               "reason": null
+            },
+            {
+              "actual": 20.2134,
+              "expected": ">=0.5",
+              "gate": "production_economics",
+              "name": "net_avg_3d_pct",
+              "passed": true,
+              "reason": null
+            },
+            {
+              "actual": 15.367065,
+              "expected": ">=1",
+              "gate": "production_economics",
+              "name": "net_avg_5d_pct",
+              "passed": true,
+              "reason": null
             }
           ],
           "deep_analysis_allowed": true,
@@ -306,6 +322,26 @@
             "min_low_5d_lt_neg12",
             "bad_path_gt_15"
           ],
+          "production_economics": {
+            "cost_model": {
+              "buy_fee_bps": 1.5,
+              "buy_slippage_bps": 8.0,
+              "fill_rate": 1.0,
+              "sell_fee_bps": 1.5,
+              "sell_slippage_bps": 8.0,
+              "sell_tax_bps": 15.0,
+              "spread_bps": 4.0,
+              "version": "kr_tradable_pnl_cost_v1"
+            },
+            "gross_avg_3d_pct": 20.671425,
+            "gross_avg_5d_pct": 15.806625,
+            "net_avg_3d_pct": 20.2134,
+            "net_avg_5d_pct": 15.367065,
+            "thresholds": {
+              "min_net_avg_3d_pct": 0.5,
+              "min_net_avg_5d_pct": 1.0
+            }
+          },
           "production_ready": false,
           "risk_review_reasons": [
             "min_1d_lt_neg4",
@@ -317,7 +353,7 @@
           "shadow_display_allowed": true,
           "source_ok": true,
           "status": "shadow_risk_review",
-          "version": "kis_model_gate_v1"
+          "version": "kis_model_gate_v2"
         },
         "metrics": {
           "active_days": 3,
@@ -1640,6 +1676,22 @@
               "name": "stop5_pct",
               "passed": true,
               "reason": null
+            },
+            {
+              "actual": 19.582497,
+              "expected": ">=0.25",
+              "gate": "production_economics",
+              "name": "net_avg_3d_pct",
+              "passed": true,
+              "reason": null
+            },
+            {
+              "actual": 22.778442,
+              "expected": ">=0.5",
+              "gate": "production_economics",
+              "name": "net_avg_5d_pct",
+              "passed": true,
+              "reason": null
             }
           ],
           "deep_analysis_allowed": true,
@@ -1649,6 +1701,26 @@
             "active_days_lt_15",
             "min_low_5d_lt_neg15"
           ],
+          "production_economics": {
+            "cost_model": {
+              "buy_fee_bps": 1.5,
+              "buy_slippage_bps": 8.0,
+              "fill_rate": 1.0,
+              "sell_fee_bps": 1.5,
+              "sell_slippage_bps": 8.0,
+              "sell_tax_bps": 15.0,
+              "spread_bps": 4.0,
+              "version": "kr_tradable_pnl_cost_v1"
+            },
+            "gross_avg_3d_pct": 20.038118,
+            "gross_avg_5d_pct": 23.24624,
+            "net_avg_3d_pct": 19.582497,
+            "net_avg_5d_pct": 22.778442,
+            "thresholds": {
+              "min_net_avg_3d_pct": 0.25,
+              "min_net_avg_5d_pct": 0.5
+            }
+          },
           "production_ready": false,
           "risk_review_reasons": [
             "min_low_5d_lt_neg15"
@@ -1658,7 +1730,7 @@
           "shadow_display_allowed": true,
           "source_ok": true,
           "status": "shadow_risk_review",
-          "version": "kis_model_gate_v1"
+          "version": "kis_model_gate_v2"
         },
         "metrics": {
           "active_days": 9,
@@ -3244,6 +3316,85 @@
     }
   },
   "metric_contract": "2d is intentionally excluded; report uses completed 1d/3d/5d scan_universe outcome labels only.",
-  "version": "kis_model_market_comparison_v3_operational_ui_plan",
+  "promotion_decision": {
+    "all_required_markets_production_ready": false,
+    "all_required_markets_shadow_display_allowed": true,
+    "market_gate_rows": {
+      "KOSDAQ": {
+        "gate_status": "shadow_risk_review",
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20",
+          "win_5d_lt_73",
+          "min_1d_lt_neg4",
+          "min_low_5d_lt_neg12",
+          "bad_path_gt_15"
+        ],
+        "production_economics": {
+          "cost_model": {
+            "buy_fee_bps": 1.5,
+            "buy_slippage_bps": 8.0,
+            "fill_rate": 1.0,
+            "sell_fee_bps": 1.5,
+            "sell_slippage_bps": 8.0,
+            "sell_tax_bps": 15.0,
+            "spread_bps": 4.0,
+            "version": "kr_tradable_pnl_cost_v1"
+          },
+          "gross_avg_3d_pct": 20.671425,
+          "gross_avg_5d_pct": 15.806625,
+          "net_avg_3d_pct": 20.2134,
+          "net_avg_5d_pct": 15.367065,
+          "thresholds": {
+            "min_net_avg_3d_pct": 0.5,
+            "min_net_avg_5d_pct": 1.0
+          }
+        },
+        "production_ready": false,
+        "risk_review_required": true,
+        "shadow_display_allowed": true
+      },
+      "KOSPI": {
+        "gate_status": "shadow_risk_review",
+        "production_blocking_reasons": [
+          "n_lt_30",
+          "active_days_lt_15",
+          "min_low_5d_lt_neg15"
+        ],
+        "production_economics": {
+          "cost_model": {
+            "buy_fee_bps": 1.5,
+            "buy_slippage_bps": 8.0,
+            "fill_rate": 1.0,
+            "sell_fee_bps": 1.5,
+            "sell_slippage_bps": 8.0,
+            "sell_tax_bps": 15.0,
+            "spread_bps": 4.0,
+            "version": "kr_tradable_pnl_cost_v1"
+          },
+          "gross_avg_3d_pct": 20.038118,
+          "gross_avg_5d_pct": 23.24624,
+          "net_avg_3d_pct": 19.582497,
+          "net_avg_5d_pct": 22.778442,
+          "thresholds": {
+            "min_net_avg_3d_pct": 0.25,
+            "min_net_avg_5d_pct": 0.5
+          }
+        },
+        "production_ready": false,
+        "risk_review_required": true,
+        "shadow_display_allowed": true
+      }
+    },
+    "no_dummy_data": true,
+    "recommended_action": "keep_existing_production_and_show_kis_shadow_top_section",
+    "required_markets": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
+    "status": "shadow_only"
+  },
+  "version": "kis_model_market_comparison_v4_net_expectancy_gate",
   "warnings": []
 }

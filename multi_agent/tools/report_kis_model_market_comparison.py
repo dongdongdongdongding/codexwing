@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 
 from modules.kis_model_gate import evaluate_kis_model_gate
 
-REPORT_VERSION = "kis_model_market_comparison_v3_operational_ui_plan"
+REPORT_VERSION = "kis_model_market_comparison_v4_net_expectancy_gate"
 DEFAULT_OUTPUT = ROOT / "runtime_state" / "reports" / "learning" / "kis_model_market_comparison.json"
 DEFAULT_SOURCES = {
     "KOSPI": ROOT
@@ -184,6 +184,43 @@ def _ui_recommendations(gate: Dict[str, Any], theme_news: Dict[str, Any]) -> Lis
     return rows
 
 
+def _promotion_decision(markets: Dict[str, Any]) -> Dict[str, Any]:
+    required_markets = ("KOSPI", "KOSDAQ")
+    market_gate_rows: Dict[str, Any] = {}
+    for market in required_markets:
+        payload = markets.get(market) if isinstance(markets.get(market), dict) else {}
+        current = payload.get("current_kis_model") if isinstance(payload.get("current_kis_model"), dict) else {}
+        gate = current.get("kis_model_gate") if isinstance(current.get("kis_model_gate"), dict) else {}
+        market_gate_rows[market] = {
+            "gate_status": gate.get("status") or "missing",
+            "production_ready": bool(gate.get("production_ready")),
+            "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+            "risk_review_required": bool(gate.get("risk_review_required")),
+            "production_blocking_reasons": gate.get("production_blocking_reasons") or ["missing_kis_model_gate"],
+            "production_economics": gate.get("production_economics") or {},
+        }
+    all_production_ready = all(row.get("production_ready") for row in market_gate_rows.values())
+    all_shadow_allowed = all(row.get("shadow_display_allowed") for row in market_gate_rows.values())
+    if all_production_ready:
+        status = "production_replacement_candidate"
+        recommended_action = "human_review_then_controlled_promotion"
+    elif all_shadow_allowed:
+        status = "shadow_only"
+        recommended_action = "keep_existing_production_and_show_kis_shadow_top_section"
+    else:
+        status = "blocked"
+        recommended_action = "do_not_show_as_trade_candidate_until_gate_recovers"
+    return {
+        "status": status,
+        "recommended_action": recommended_action,
+        "all_required_markets_production_ready": all_production_ready,
+        "all_required_markets_shadow_display_allowed": all_shadow_allowed,
+        "required_markets": list(required_markets),
+        "market_gate_rows": market_gate_rows,
+        "no_dummy_data": True,
+    }
+
+
 def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
     markets: Dict[str, Any] = {}
     warnings: List[str] = []
@@ -229,6 +266,7 @@ def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "horizons": list(HORIZONS),
         "metric_contract": "2d is intentionally excluded; report uses completed 1d/3d/5d scan_universe outcome labels only.",
+        "promotion_decision": _promotion_decision(markets),
         "markets": markets,
         "warnings": warnings,
     }
@@ -263,11 +301,25 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- metric_contract: `{report.get('metric_contract')}`",
         "",
     ]
+    decision = report.get("promotion_decision") if isinstance(report.get("promotion_decision"), dict) else {}
+    if decision:
+        lines.extend(
+            [
+                "## Promotion Decision",
+                f"- status: `{decision.get('status')}`",
+                f"- recommended_action: `{decision.get('recommended_action')}`",
+                f"- all_required_markets_production_ready: `{decision.get('all_required_markets_production_ready')}`",
+                f"- all_required_markets_shadow_display_allowed: `{decision.get('all_required_markets_shadow_display_allowed')}`",
+                "",
+            ]
+        )
     for market, payload in (report.get("markets") or {}).items():
         current = payload.get("current_kis_model") or {}
         ident = current.get("identity") or {}
         metrics = current.get("metrics") or {}
         kis_gate = current.get("kis_model_gate") or {}
+        economics = kis_gate.get("production_economics") if isinstance(kis_gate.get("production_economics"), dict) else {}
+        cost_model = economics.get("cost_model") if isinstance(economics.get("cost_model"), dict) else {}
         lines.extend(
             [
                 f"## {market}",
@@ -276,6 +328,7 @@ def _markdown(report: Dict[str, Any]) -> str:
                 f"- current_kis: `{ident.get('label')}` / `{ident.get('feature_set')}` / `{ident.get('model')}` / `{ident.get('selection_rule')}`",
                 f"- current_kis sample: n=`{metrics.get('n')}`, active_days=`{metrics.get('active_days')}`, active_runs=`{metrics.get('active_runs')}`",
                 f"- current_kis returns: {_metric_line(metrics)}",
+                f"- current_kis net expectancy: 3d=`{_fmt(economics.get('net_avg_3d_pct'))}%`, 5d=`{_fmt(economics.get('net_avg_5d_pct'))}%`, cost_model=`{cost_model.get('version') or '-'}`",
                 f"- current_kis 5d path: avg_max_high=`{_fmt(metrics.get('avg_max_high_5d_pct'))}%`, min_low=`{_fmt(metrics.get('min_min_low_5d_pct'))}%`, max_low=`{_fmt(metrics.get('max_min_low_5d_pct'))}%`",
                 f"- kis_model_gate: status=`{kis_gate.get('status')}`, production_ready=`{kis_gate.get('production_ready')}`, shadow_display_allowed=`{kis_gate.get('shadow_display_allowed')}`, risk_review_required=`{kis_gate.get('risk_review_required')}`",
                 f"- kis_model_gate blockers: `{kis_gate.get('production_blocking_reasons') or []}`",

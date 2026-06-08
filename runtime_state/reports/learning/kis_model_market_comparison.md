@@ -1,7 +1,13 @@
 # KIS Model Market Comparison
 
-- generated_at: `2026-06-08T05:44:44.616517+00:00`
+- generated_at: `2026-06-08T16:08:25.098540+00:00`
 - metric_contract: `2d is intentionally excluded; report uses completed 1d/3d/5d scan_universe outcome labels only.`
+
+## Promotion Decision
+- status: `shadow_only`
+- recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
+- all_required_markets_production_ready: `False`
+- all_required_markets_shadow_display_allowed: `True`
 
 ## KOSPI
 - source: `runtime_state/reports/learning/scan_universe_admission_challenger_after_full_kis_sidecar_backfill.json`
@@ -9,6 +15,7 @@
 - current_kis: `pos_5d` / `kis_sidecar_only` / `random_forest` / `top1`
 - current_kis sample: n=`29`, active_days=`9`, active_runs=`26`
 - current_kis returns: 1d 승률/평균/최저/최고 100%/5.7342%/0.8824%/11.2957%; 3d 승률/평균/최저/최고 96.5517%/20.0381%/-10.3448%/46.5517%; 5d 승률/평균/최저/최고 96.5517%/23.2462%/-1.5674%/76.9103%
+- current_kis net expectancy: 3d=`19.5825%`, 5d=`22.7784%`, cost_model=`kr_tradable_pnl_cost_v1`
 - current_kis 5d path: avg_max_high=`39.1636%`, min_low=`-18.0251%`, max_low=`1.1842%`
 - kis_model_gate: status=`shadow_risk_review`, production_ready=`False`, shadow_display_allowed=`True`, risk_review_required=`True`
 - kis_model_gate blockers: `['n_lt_30', 'active_days_lt_15', 'min_low_5d_lt_neg15']`
@@ -41,6 +48,7 @@
 - current_kis: `touch10_guard_5d` / `kis_sidecar_only` / `random_forest` / `top3_p0.65`
 - current_kis sample: n=`11`, active_days=`3`, active_runs=`5`
 - current_kis returns: 1d 승률/평균/최저/최고 90.9091%/10.9059%/-5.8501%/18.8312%; 3d 승률/평균/최저/최고 90.9091%/20.6714%/-16.819%/62.7677%; 5d 승률/평균/최저/최고 54.5455%/15.8066%/-21.0238%/62.1087%
+- current_kis net expectancy: 3d=`20.2134%`, 5d=`15.3671%`, cost_model=`kr_tradable_pnl_cost_v1`
 - current_kis 5d path: avg_max_high=`36.9399%`, min_low=`-21.3894%`, max_low=`4.6128%`
 - kis_model_gate: status=`shadow_risk_review`, production_ready=`False`, shadow_display_allowed=`True`, risk_review_required=`True`
 - kis_model_gate blockers: `['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20', 'win_5d_lt_73', 'min_1d_lt_neg4', 'min_low_5d_lt_neg12', 'bad_path_gt_15']`

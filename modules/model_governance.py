@@ -7,8 +7,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
-GOVERNANCE_VERSION = "model_governance_v1"
+
+GOVERNANCE_VERSION = "model_governance_v2"
 ACTIVE_KR_POLICY_VERSION = "kr_scanner_policy_2026_05_19"
 ROLLBACK_KR_POLICY_VERSION = "kr_scanner_policy_2026_05_18"
 ROLLBACK_ENV_FLAG = "KR_SCANNER_POLICY_ROLLBACK"
@@ -36,6 +38,18 @@ def _safe_int(value: Any, default: int = 0) -> int:
         return int(default)
 
 
+def _optional_float(value: Any) -> Optional[float]:
+    try:
+        if value in (None, "", "nan", "None"):
+            return None
+        result = float(value)
+        if result != result or result in (float("inf"), float("-inf")):
+            return None
+        return result
+    except Exception:
+        return None
+
+
 def _truthy_env(value: Any) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on", "rollback"}
 
@@ -52,9 +66,13 @@ class PolicyMetricSet:
     worst_loss_pct: float = 0.0
     stop_first_rate_pct: float = 0.0
     capture_rate_pct: float = 0.0
+    net_avg_return_pct: Optional[float] = None
+    cost_model_version: str = ""
 
     @classmethod
     def from_mapping(cls, payload: Dict[str, Any]) -> "PolicyMetricSet":
+        avg_return_pct = _safe_float(payload.get("avg_return_pct"))
+        net_avg_return = _optional_float(payload.get("net_avg_return_pct"))
         return cls(
             market=str(payload.get("market") or "").upper(),
             section=str(payload.get("section") or "Top5"),
@@ -62,10 +80,12 @@ class PolicyMetricSet:
             samples=_safe_int(payload.get("samples")),
             active_days=_safe_int(payload.get("active_days")),
             win_rate_pct=_safe_float(payload.get("win_rate_pct")),
-            avg_return_pct=_safe_float(payload.get("avg_return_pct")),
+            avg_return_pct=avg_return_pct,
             worst_loss_pct=_safe_float(payload.get("worst_loss_pct")),
             stop_first_rate_pct=_safe_float(payload.get("stop_first_rate_pct")),
             capture_rate_pct=_safe_float(payload.get("capture_rate_pct")),
+            net_avg_return_pct=net_avg_return if net_avg_return is not None else compute_net_return_pct(avg_return_pct),
+            cost_model_version=str(payload.get("cost_model_version") or TradableCostModel().version),
         )
 
 
@@ -78,6 +98,8 @@ class ReleaseGateThresholds:
     max_worst_loss_deterioration_pct: float = 0.0
     max_stop_first_deterioration_pct: float = 0.0
     min_capture_rate_lift_pct: float = 0.0
+    min_net_avg_return_pct: float = 0.25
+    min_net_avg_return_lift_pct: float = 0.0
 
     @classmethod
     def from_mapping(cls, payload: Optional[Dict[str, Any]]) -> "ReleaseGateThresholds":
@@ -90,6 +112,8 @@ class ReleaseGateThresholds:
             max_worst_loss_deterioration_pct=_safe_float(payload.get("max_worst_loss_deterioration_pct"), 0.0),
             max_stop_first_deterioration_pct=_safe_float(payload.get("max_stop_first_deterioration_pct"), 0.0),
             min_capture_rate_lift_pct=_safe_float(payload.get("min_capture_rate_lift_pct"), 0.0),
+            min_net_avg_return_pct=_safe_float(payload.get("min_net_avg_return_pct"), 0.25),
+            min_net_avg_return_lift_pct=_safe_float(payload.get("min_net_avg_return_lift_pct"), 0.0),
         )
 
 
@@ -140,6 +164,12 @@ def _iter_matching_keys(champion: Dict[tuple, PolicyMetricSet], challenger: Dict
     return [key for key in keys if key[0] in REQUIRED_KR_MARKETS]
 
 
+def _net_avg_return(metric: PolicyMetricSet) -> Optional[float]:
+    if metric.net_avg_return_pct is not None:
+        return metric.net_avg_return_pct
+    return compute_net_return_pct(metric.avg_return_pct)
+
+
 def evaluate_policy_release_gate(
     *,
     spec: PolicyReleaseSpec,
@@ -180,6 +210,8 @@ def evaluate_policy_release_gate(
         challenger = challenger_by_key.get(key)
         if not champion or not challenger:
             continue
+        champion_net_avg = _net_avg_return(champion)
+        challenger_net_avg = _net_avg_return(challenger)
         row_checks = [
             _check(
                 challenger.samples >= threshold.min_samples,
@@ -230,6 +262,31 @@ def evaluate_policy_release_gate(
                 market,
                 horizon,
             ),
+            _check(
+                challenger_net_avg is not None and challenger_net_avg >= threshold.min_net_avg_return_pct,
+                "NET_AVG_RETURN_AFTER_COST_POSITIVE",
+                (
+                    f"{section} net_avg={challenger_net_avg:+.3f}% "
+                    f"min={threshold.min_net_avg_return_pct:+.3f}%"
+                    if challenger_net_avg is not None
+                    else f"{section} net_avg=missing"
+                ),
+                market,
+                horizon,
+            ),
+            _check(
+                champion_net_avg is not None
+                and challenger_net_avg is not None
+                and challenger_net_avg >= champion_net_avg + threshold.min_net_avg_return_lift_pct,
+                "NET_AVG_RETURN_NOT_WORSE",
+                (
+                    f"{section} champion_net={champion_net_avg:+.3f}% challenger_net={challenger_net_avg:+.3f}%"
+                    if champion_net_avg is not None and challenger_net_avg is not None
+                    else f"{section} champion_net={champion_net_avg} challenger_net={challenger_net_avg}"
+                ),
+                market,
+                horizon,
+            ),
         ]
         checks.extend(row_checks)
         market_results.setdefault(market, {"market": market, "sections": []})["sections"].append(
@@ -251,6 +308,7 @@ def evaluate_policy_release_gate(
         "promotion_status": "promote_allowed" if release_ready else "shadow_only",
         "spec": asdict(spec),
         "thresholds": asdict(threshold),
+        "cost_model": asdict(TradableCostModel()),
         "market_results": [market_results[key] for key in sorted(market_results.keys())],
         "all_checks": checks,
         "rollback": {
@@ -321,9 +379,17 @@ def policy_release_report_markdown(report: Dict[str, Any]) -> str:
         f"- champion: `{spec.get('champion_policy_version') or '-'}`",
         f"- challenger: `{spec.get('challenger_policy_version') or '-'}`",
         f"- promotion_status: `{report.get('promotion_status')}`",
-        "",
-        "## Checks",
     ]
+    cost_model = report.get("cost_model") if isinstance(report.get("cost_model"), dict) else {}
+    if cost_model:
+        lines.append(
+            "- cost_model: "
+            f"`{cost_model.get('version')}` "
+            f"buy_slip={cost_model.get('buy_slippage_bps')}bps "
+            f"sell_slip={cost_model.get('sell_slippage_bps')}bps "
+            f"tax={cost_model.get('sell_tax_bps')}bps"
+        )
+    lines.extend(["", "## Checks"])
     for check in report.get("all_checks") or []:
         mark = "PASS" if check.get("passed") else "FAIL"
         market = check.get("market") or "-"

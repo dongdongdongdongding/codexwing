@@ -68,6 +68,24 @@ def test_release_gate_fails_when_one_market_or_risk_metric_regresses():
     assert report["rollback"]["enabled"] is True
 
 
+def test_release_gate_fails_when_net_return_after_cost_is_too_low():
+    spec = PolicyReleaseSpec(champion_policy_version="champion_v1", challenger_policy_version="challenger_v2")
+    report = evaluate_policy_release_gate(
+        spec=spec,
+        champion_metrics=[_metric("KOSPI", avg=0.10), _metric("KOSDAQ", avg=0.10)],
+        challenger_metrics=[
+            _metric("KOSPI", win=72.0, avg=0.40, worst=-3.5, stop=20.0, capture=45.0),
+            _metric("KOSDAQ", win=72.0, avg=0.40, worst=-3.5, stop=20.0, capture=45.0),
+        ],
+        thresholds=ReleaseGateThresholds(min_samples=30, min_active_days=5, min_net_avg_return_pct=0.25),
+    )
+
+    failed_codes = {row["code"] for row in report["all_checks"] if not row["passed"]}
+    assert report["release_ready"] is False
+    assert "NET_AVG_RETURN_AFTER_COST_POSITIVE" in failed_codes
+    assert report["cost_model"]["version"] == "kr_tradable_pnl_cost_v1"
+
+
 def test_active_policy_metadata_supports_env_rollback(monkeypatch):
     monkeypatch.delenv(ROLLBACK_ENV_FLAG, raising=False)
     active = active_policy_metadata(market="kospi", scan_mode="swing")
