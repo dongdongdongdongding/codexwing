@@ -5,6 +5,7 @@ from modules.kis_theme_valuechain import (
     kis_theme_valuechain_path,
     normalize_verified_valuechain_edge,
 )
+from modules.kis_ticker_valuechain_master import build_ticker_valuechain_master
 
 
 def _scan_row(ticker="005930.KS", market="KOSPI", stock_name="삼성전자"):
@@ -138,22 +139,31 @@ def test_news_or_web_search_only_edge_is_blocked_below_production_threshold():
 
 
 def test_build_kis_theme_valuechain_payload_filters_market_and_counts_verified_edges():
+    official_edge = {
+        "from_symbol": "095610.KQ",
+        "to_symbol": "005930.KS",
+        "relationship": "equipment_supplier_to_customer",
+        "confidence": 0.99,
+        "source_type": "exchange_disclosure",
+        "source_urls": ["https://kind.krx.co.kr/external/2025/02/06/000180/20250206000436/70012.htm"],
+        "evidence_text": "KIND disclosure states a semiconductor equipment supply contract with Samsung Electronics.",
+    }
+    ticker_master = build_ticker_valuechain_master(
+        [official_edge],
+        ticker_metadata_records=[
+            {"ticker": "095610.KQ", "stock_name": "테스", "market_scope": "KOSDAQ", "primary_theme": "반도체"},
+            {"ticker": "005930.KS", "stock_name": "삼성전자", "market_scope": "KOSPI", "primary_theme": "AI반도체"},
+        ],
+    )
     payload = build_kis_theme_valuechain_payload(
         [
             _scan_row("005930.KS", "KOSPI", "삼성전자"),
             _scan_row("086520.KQ", "KOSDAQ", "에코프로"),
         ],
         market="KOSPI",
+        ticker_valuechain_master=ticker_master,
         verified_valuechain_sources=[
-            {
-                "from_symbol": "095610.KQ",
-                "to_symbol": "005930.KS",
-                "relationship": "equipment_supplier_to_customer",
-                "confidence": 0.99,
-                "source_type": "exchange_disclosure",
-                "source_urls": ["https://kind.krx.co.kr/external/2025/02/06/000180/20250206000436/70012.htm"],
-                "evidence_text": "KIND disclosure states a semiconductor equipment supply contract with Samsung Electronics.",
-            },
+            official_edge,
             {
                 "from_symbol": "086520.KQ",
                 "to_symbol": "005930.KS",
@@ -168,9 +178,11 @@ def test_build_kis_theme_valuechain_payload_filters_market_and_counts_verified_e
 
     assert payload["market_scope"] == "KOSPI"
     assert payload["summary"]["ticker_category_records"] == 1
+    assert payload["summary"]["ticker_valuechain_profiles"] == 2
     assert payload["summary"]["verified_valuechain_edges"] == 1
-    assert payload["summary"]["blocked_valuechain_edges"] == 1
+    assert payload["summary"]["blocked_valuechain_edges"] == 0
     assert any(edge["edge_kind"] == "verified_valuechain" for edge in payload["edges"])
+    assert payload["ticker_valuechain_profiles"][0]["durability"] == "static_until_official_evidence_changes"
     assert payload["theme_daily_state"][0]["theme_name"] == "AI반도체"
 
 

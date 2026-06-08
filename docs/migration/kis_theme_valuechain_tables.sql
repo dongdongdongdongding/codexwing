@@ -71,6 +71,32 @@ create table if not exists public.kis_theme_daily_state (
 create index if not exists idx_kis_theme_daily_state_trade_market
   on public.kis_theme_daily_state (trade_date desc, market_scope, theme_name);
 
+create table if not exists public.kis_ticker_valuechain_profiles (
+  profile_key text primary key,
+  ticker text not null,
+  market_scope text,
+  stock_name text,
+  primary_theme text,
+  valuechain_positions jsonb not null default '[]'::jsonb,
+  valuechain_roles jsonb not null default '[]'::jsonb,
+  upstream_symbols jsonb not null default '[]'::jsonb,
+  downstream_symbols jsonb not null default '[]'::jsonb,
+  verified_edge_count integer not null default 0,
+  max_confidence numeric,
+  source_types jsonb not null default '[]'::jsonb,
+  themes jsonb not null default '[]'::jsonb,
+  last_verified_at timestamptz,
+  refresh_cadence_days integer not null default 90,
+  durability text not null default 'static_until_official_evidence_changes',
+  payload jsonb not null default '{}'::jsonb,
+  no_dummy_data boolean not null default true,
+  generated_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_kis_ticker_valuechain_profiles_market_role
+  on public.kis_ticker_valuechain_profiles (market_scope, verified_edge_count desc);
+
 create table if not exists public.kis_valuechain_evidence (
   evidence_key text primary key,
   from_symbol text not null,

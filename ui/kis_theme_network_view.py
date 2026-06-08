@@ -201,6 +201,54 @@ def _timeline_frame(payload: Mapping[str, Any]) -> pd.DataFrame:
     return frame[[col for col in keep if col in frame.columns]].sort_values(["trade_date", "theme_name"])
 
 
+def build_ticker_valuechain_profile_frame(payload: Mapping[str, Any]) -> pd.DataFrame:
+    rows = [dict(row) for row in (payload.get("ticker_valuechain_profiles") or []) if isinstance(row, Mapping)]
+    if not rows:
+        return pd.DataFrame()
+    frame = pd.DataFrame(
+        [
+            {
+                "ticker": row.get("ticker"),
+                "stock_name": row.get("stock_name"),
+                "market_scope": row.get("market_scope"),
+                "primary_theme": row.get("primary_theme"),
+                "positions": ", ".join(row.get("valuechain_positions") or []),
+                "roles": ", ".join(row.get("valuechain_roles") or []),
+                "upstream": ", ".join(row.get("upstream_symbols") or []),
+                "downstream": ", ".join(row.get("downstream_symbols") or []),
+                "verified_edge_count": int(row.get("verified_edge_count") or 0),
+                "max_confidence": row.get("max_confidence"),
+                "last_verified_at": row.get("last_verified_at"),
+                "refresh_cadence_days": row.get("refresh_cadence_days"),
+            }
+            for row in rows
+        ]
+    )
+    return frame.sort_values(["verified_edge_count", "ticker"], ascending=[False, True])
+
+
+def _edge_frame_for_profile(profile: Mapping[str, Any]) -> pd.DataFrame:
+    rows: List[Dict[str, Any]] = []
+    for direction, edge_rows in (("upstream", profile.get("incoming_edges")), ("downstream", profile.get("outgoing_edges"))):
+        for edge in edge_rows if isinstance(edge_rows, list) else []:
+            if not isinstance(edge, Mapping):
+                continue
+            rows.append(
+                {
+                    "direction": direction,
+                    "from": edge.get("from_symbol"),
+                    "to": edge.get("to_symbol"),
+                    "relationship": edge.get("relationship"),
+                    "theme": edge.get("theme_name"),
+                    "confidence": edge.get("confidence"),
+                    "source_type": edge.get("source_type"),
+                    "source_title": edge.get("source_title"),
+                    "source_urls": ", ".join(edge.get("source_urls") or []),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def _load_or_build_payload(market: str) -> Dict[str, Any]:
     payload = load_kis_theme_valuechain_payload(market)
     if payload:
@@ -237,9 +285,9 @@ def render_kis_theme_network_page() -> None:
     summary = payload.get("summary") if isinstance(payload.get("summary"), Mapping) else {}
     metric_cols = st.columns(5)
     metric_cols[0].metric("티커 카테고리", int(summary.get("ticker_category_records") or 0))
-    metric_cols[1].metric("노드", int(summary.get("nodes") or 0))
-    metric_cols[2].metric("전체 edge", int(summary.get("edges") or 0))
-    metric_cols[3].metric("검증 밸류체인", int(summary.get("verified_valuechain_edges") or 0))
+    metric_cols[1].metric("티커 밸류체인", int(summary.get("ticker_valuechain_profiles") or 0))
+    metric_cols[2].metric("노드", int(summary.get("nodes") or 0))
+    metric_cols[3].metric("검증 edge", int(summary.get("verified_valuechain_edges") or 0))
     metric_cols[4].metric("차단 edge", int(summary.get("blocked_valuechain_edges") or 0))
 
     if summary.get("verified_valuechain_edges", 0) == 0:
@@ -256,6 +304,25 @@ def render_kis_theme_network_page() -> None:
         confidence_floor=float(confidence_floor),
     )
     st.plotly_chart(build_kis_theme_network_figure(plot_payload), use_container_width=True)
+
+    profile_frame = build_ticker_valuechain_profile_frame(payload)
+    st.markdown("### 티커별 상시 밸류체인")
+    if profile_frame.empty:
+        st.caption("공식근거로 검증된 티커별 밸류체인 마스터가 없습니다.")
+    else:
+        st.dataframe(profile_frame, use_container_width=True, hide_index=True)
+        profile_rows = [dict(row) for row in (payload.get("ticker_valuechain_profiles") or []) if isinstance(row, Mapping)]
+        selected_ticker = st.selectbox(
+            "티커 상세",
+            [str(row.get("ticker")) for row in profile_rows if row.get("ticker")],
+            key="kis_ticker_valuechain_profile_detail",
+        )
+        selected_profile = next((row for row in profile_rows if str(row.get("ticker")) == selected_ticker), {})
+        edge_frame = _edge_frame_for_profile(selected_profile)
+        if edge_frame.empty:
+            st.caption("선택한 티커의 공식근거 edge가 없습니다.")
+        else:
+            st.dataframe(edge_frame, use_container_width=True, hide_index=True)
 
     timeline = _timeline_frame(payload)
     st.markdown("### 일별 테마 타임라인")
@@ -289,5 +356,6 @@ def render_kis_theme_network_page() -> None:
 __all__ = [
     "build_kis_theme_network_figure",
     "build_kis_theme_network_plot_payload",
+    "build_ticker_valuechain_profile_frame",
     "render_kis_theme_network_page",
 ]

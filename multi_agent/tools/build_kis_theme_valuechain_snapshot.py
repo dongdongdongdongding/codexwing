@@ -17,7 +17,15 @@ from modules.kis_theme_valuechain import (  # noqa: E402
     VALUECHAIN_CONFIDENCE_FLOOR,
     VALUECHAIN_REPORT_DIR,
     build_kis_theme_valuechain_payload,
+    extract_kis_ticker_category_records,
     write_kis_theme_valuechain_payload,
+)
+from modules.kis_ticker_valuechain_master import (  # noqa: E402
+    TICKER_VALUECHAIN_MASTER_PATH,
+    TICKER_VALUECHAIN_SOURCE_PATH,
+    build_ticker_valuechain_master,
+    load_verified_valuechain_sources,
+    write_ticker_valuechain_master,
 )
 from modules.scan_artifact_archive import load_local_scan_archive_rows  # noqa: E402
 
@@ -36,17 +44,6 @@ def _read_json(path: Path) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return None
-
-
-def _load_verified_sources(path: Path) -> List[Dict[str, Any]]:
-    payload = _read_json(path)
-    if isinstance(payload, list):
-        return [dict(row) for row in payload if isinstance(row, Mapping)]
-    if isinstance(payload, Mapping):
-        edges = payload.get("edges") or payload.get("verified_valuechain_sources") or payload.get("records")
-        if isinstance(edges, list):
-            return [dict(row) for row in edges if isinstance(row, Mapping)]
-    return []
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> Path:
@@ -136,6 +133,39 @@ def _theme_state_db_rows(payload: Mapping[str, Any]) -> List[Dict[str, Any]]:
                 "vi_triggered_count": int(record.get("vi_triggered_count") or 0),
                 "avg_kis_evidence_strength_score": record.get("avg_kis_evidence_strength_score"),
                 "top_symbols": record.get("top_symbols") or [],
+                "payload": dict(record),
+                "no_dummy_data": True,
+            }
+        )
+    return rows
+
+
+def _profile_db_rows(payload: Mapping[str, Any]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for record in payload.get("ticker_valuechain_profiles") or []:
+        if not isinstance(record, Mapping):
+            continue
+        ticker = _text(record.get("ticker"))
+        if not ticker:
+            continue
+        rows.append(
+            {
+                "profile_key": ticker,
+                "ticker": ticker,
+                "market_scope": record.get("market_scope"),
+                "stock_name": record.get("stock_name"),
+                "primary_theme": record.get("primary_theme"),
+                "valuechain_positions": record.get("valuechain_positions") or [],
+                "valuechain_roles": record.get("valuechain_roles") or [],
+                "upstream_symbols": record.get("upstream_symbols") or [],
+                "downstream_symbols": record.get("downstream_symbols") or [],
+                "verified_edge_count": int(record.get("verified_edge_count") or 0),
+                "max_confidence": record.get("max_confidence"),
+                "source_types": record.get("source_types") or [],
+                "themes": record.get("themes") or [],
+                "last_verified_at": record.get("last_verified_at") or None,
+                "refresh_cadence_days": int(record.get("refresh_cadence_days") or 90),
+                "durability": record.get("durability"),
                 "payload": dict(record),
                 "no_dummy_data": True,
             }
@@ -242,6 +272,7 @@ def _verify_supabase(db: Any, payload: Mapping[str, Any]) -> Dict[str, Any]:
     return {
         "kis_ticker_category_daily": _count_table(db, "kis_ticker_category_daily", market_scope=category_scope),
         "kis_theme_daily_state": _count_table(db, "kis_theme_daily_state", market_scope=category_scope),
+        "kis_ticker_valuechain_profiles": _count_table(db, "kis_ticker_valuechain_profiles"),
         "kis_valuechain_evidence_production": _count_table(
             db, "kis_valuechain_evidence", production_valuechain=True
         ),
@@ -260,6 +291,7 @@ def _write_supabase(payload: Mapping[str, Any], *, batch_size: int) -> Dict[str,
         raise RuntimeError("Supabase client unavailable. Check SUPABASE_URL/SUPABASE_KEY.")
     category_rows = _category_db_rows(payload)
     theme_rows = _theme_state_db_rows(payload)
+    profile_rows = _profile_db_rows(payload)
     evidence_rows = _evidence_db_rows(payload)
     edge_rows = _network_edge_db_rows(payload)
     upserted = {
@@ -268,6 +300,9 @@ def _write_supabase(payload: Mapping[str, Any], *, batch_size: int) -> Dict[str,
         ),
         "kis_theme_daily_state": _upsert_table(
             db, "kis_theme_daily_state", theme_rows, on_conflict="theme_state_key", batch_size=batch_size
+        ),
+        "kis_ticker_valuechain_profiles": _upsert_table(
+            db, "kis_ticker_valuechain_profiles", profile_rows, on_conflict="profile_key", batch_size=batch_size
         ),
         "kis_valuechain_evidence": _upsert_table(
             db, "kis_valuechain_evidence", evidence_rows, on_conflict="evidence_key", batch_size=batch_size
@@ -291,6 +326,7 @@ def _write_markdown(path: Path, payload: Mapping[str, Any], *, source_path: Path
         f"- market_scope: `{payload.get('market_scope')}`",
         f"- artifact_rows_loaded: `{artifact_rows}`",
         f"- ticker_category_records: `{summary.get('ticker_category_records', 0)}`",
+        f"- ticker_valuechain_profiles: `{summary.get('ticker_valuechain_profiles', 0)}`",
         f"- theme_daily_state_rows: `{summary.get('theme_daily_state_rows', 0)}`",
         f"- nodes: `{summary.get('nodes', 0)}`",
         f"- edges: `{summary.get('edges', 0)}`",
@@ -325,9 +361,10 @@ def main() -> int:
     parser.add_argument(
         "--verified-valuechain-json",
         type=str,
-        default="runtime_state/long_term/kis_theme_valuechain/verified_sources.json",
-        help="Optional JSON list of official/disclosure-backed value-chain edge evidence.",
+        default=str(TICKER_VALUECHAIN_SOURCE_PATH),
+        help="JSON list of official/disclosure-backed ticker-level value-chain edge evidence.",
     )
+    parser.add_argument("--master-json", type=str, default=str(TICKER_VALUECHAIN_MASTER_PATH))
     parser.add_argument("--output-json", type=str, default="")
     parser.add_argument("--output-md", type=str, default="")
     parser.add_argument(
@@ -342,10 +379,17 @@ def main() -> int:
 
     rows = load_local_scan_archive_rows(limit_runs=max(1, int(args.limit_runs or 120)))
     source_path = PROJECT_ROOT / args.verified_valuechain_json
-    verified_sources = _load_verified_sources(source_path) if source_path.exists() else []
+    verified_sources = load_verified_valuechain_sources(source_path)
+    category_records = extract_kis_ticker_category_records(rows)
+    ticker_master = build_ticker_valuechain_master(
+        verified_sources,
+        ticker_metadata_records=category_records,
+        confidence_floor=VALUECHAIN_CONFIDENCE_FLOOR,
+    )
     payload = build_kis_theme_valuechain_payload(
         rows,
         verified_valuechain_sources=verified_sources,
+        ticker_valuechain_master=ticker_master,
         market=args.market,
         confidence_floor=VALUECHAIN_CONFIDENCE_FLOOR,
     )
@@ -353,8 +397,11 @@ def main() -> int:
     output_json = Path(args.output_json) if args.output_json else None
     output_md = Path(args.output_md) if args.output_md else VALUECHAIN_REPORT_DIR / f"{payload.get('market_scope', args.market)}.md"
     if not args.dry_run:
+        master_path = write_ticker_valuechain_master(ticker_master, PROJECT_ROOT / args.master_json)
         output_json = _write_json(output_json, payload) if output_json else write_kis_theme_valuechain_payload(payload, market=args.market)
         output_md = _write_markdown(output_md, payload, source_path=source_path, artifact_rows=len(rows))
+    else:
+        master_path = PROJECT_ROOT / args.master_json
     db_rows = {}
     if args.write_db and not args.dry_run:
         db_rows = _write_supabase(payload, batch_size=max(1, int(args.db_batch_size or 500)))
@@ -365,6 +412,7 @@ def main() -> int:
             "market_scope": payload.get("market_scope"),
             "output_json": str(output_json) if output_json else "",
             "output_md": str(output_md) if output_md else "",
+            "ticker_valuechain_master_json": str(master_path),
             "verified_source_input": str(source_path),
             "supabase_rows_upserted": db_rows.get("upserted", db_rows) if isinstance(db_rows, Mapping) else {},
             "supabase_verified_counts": db_rows.get("verified_counts", {}) if isinstance(db_rows, Mapping) else {},

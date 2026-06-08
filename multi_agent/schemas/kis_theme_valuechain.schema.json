@@ -11,6 +11,8 @@
     "confidence_floor",
     "source_policy",
     "summary",
+    "ticker_valuechain_master",
+    "ticker_valuechain_profiles",
     "ticker_category_records",
     "theme_daily_state",
     "nodes",
@@ -43,6 +45,42 @@
       }
     },
     "summary": {"type": "object"},
+    "ticker_valuechain_master": {
+      "type": "object",
+      "properties": {
+        "version": {"type": ["string", "null"]},
+        "generated_at": {"type": ["string", "null"]},
+        "refresh_policy": {"type": "object"},
+        "summary": {"type": "object"}
+      }
+    },
+    "ticker_valuechain_profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "valuechain_positions", "valuechain_roles", "verified_edge_count", "no_dummy_data"],
+        "properties": {
+          "ticker": {"type": "string"},
+          "market_scope": {"type": "string"},
+          "stock_name": {"type": "string"},
+          "primary_theme": {"type": "string"},
+          "valuechain_positions": {"type": "array", "items": {"type": "string"}},
+          "valuechain_roles": {"type": "array", "items": {"type": "string"}},
+          "upstream_symbols": {"type": "array", "items": {"type": "string"}},
+          "downstream_symbols": {"type": "array", "items": {"type": "string"}},
+          "incoming_edges": {"type": "array", "items": {"type": "object"}},
+          "outgoing_edges": {"type": "array", "items": {"type": "object"}},
+          "verified_edge_count": {"type": "integer"},
+          "max_confidence": {"type": "number"},
+          "source_types": {"type": "array", "items": {"type": "string"}},
+          "themes": {"type": "array", "items": {"type": "string"}},
+          "last_verified_at": {"type": "string"},
+          "refresh_cadence_days": {"type": "integer"},
+          "durability": {"type": "string"},
+          "no_dummy_data": {"type": "boolean"}
+        }
+      }
+    },
     "ticker_category_records": {
       "type": "array",
       "items": {

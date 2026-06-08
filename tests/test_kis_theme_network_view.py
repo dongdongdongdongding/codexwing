@@ -1,4 +1,4 @@
-from ui.kis_theme_network_view import build_kis_theme_network_plot_payload
+from ui.kis_theme_network_view import build_kis_theme_network_plot_payload, build_ticker_valuechain_profile_frame
 
 
 def test_network_plot_payload_filters_low_confidence_valuechain_and_context_toggle():
@@ -49,3 +49,30 @@ def test_network_plot_payload_filters_low_confidence_valuechain_and_context_togg
     assert valuechain_only["summary"]["verified_valuechain_edges"] == 1
     assert valuechain_only["summary"]["context_edges"] == 0
     assert [edge["relationship"] for edge in valuechain_only["edges"]] == ["equipment_supplier_to_customer"]
+
+
+def test_ticker_valuechain_profile_frame_is_ticker_centric():
+    frame = build_ticker_valuechain_profile_frame(
+        {
+            "ticker_valuechain_profiles": [
+                {
+                    "ticker": "095610.KQ",
+                    "stock_name": "테스",
+                    "market_scope": "KOSDAQ",
+                    "primary_theme": "반도체",
+                    "valuechain_positions": ["upstream"],
+                    "valuechain_roles": ["equipment_supplier", "supplier", "upstream"],
+                    "upstream_symbols": [],
+                    "downstream_symbols": ["005930.KS"],
+                    "verified_edge_count": 1,
+                    "max_confidence": 0.99,
+                    "last_verified_at": "2026-06-08T00:00:00+09:00",
+                    "refresh_cadence_days": 90,
+                }
+            ]
+        }
+    )
+
+    assert frame.iloc[0]["ticker"] == "095610.KQ"
+    assert frame.iloc[0]["downstream"] == "005930.KS"
+    assert "equipment_supplier" in frame.iloc[0]["roles"]

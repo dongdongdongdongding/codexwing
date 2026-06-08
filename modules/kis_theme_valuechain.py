@@ -485,6 +485,7 @@ def build_kis_theme_valuechain_payload(
     rows: Iterable[Mapping[str, Any]],
     *,
     verified_valuechain_sources: Optional[Iterable[Mapping[str, Any]]] = None,
+    ticker_valuechain_master: Optional[Mapping[str, Any]] = None,
     market: str = "KR",
     confidence_floor: float = VALUECHAIN_CONFIDENCE_FLOOR,
 ) -> Dict[str, Any]:
@@ -565,7 +566,10 @@ def build_kis_theme_valuechain_payload(
 
     verified_edges: List[Dict[str, Any]] = []
     blocked_edges: List[Dict[str, Any]] = []
-    for raw_edge in verified_valuechain_sources or []:
+    static_master = dict(ticker_valuechain_master or {})
+    static_master_edges = static_master.get("edges") if isinstance(static_master.get("edges"), list) else []
+    valuechain_sources = static_master_edges or list(verified_valuechain_sources or [])
+    for raw_edge in valuechain_sources:
         if not isinstance(raw_edge, Mapping):
             continue
         normalized = normalize_verified_valuechain_edge(raw_edge, confidence_floor=confidence_floor)
@@ -595,6 +599,11 @@ def build_kis_theme_valuechain_payload(
         warnings.append("verified_valuechain_edges_empty_requires_official_web_or_disclosure_evidence")
     source_distribution = Counter(str(row.get("source_type") or "unknown") for row in verified_edges)
     timeline = build_theme_daily_state(records)
+    ticker_profiles = [
+        dict(row)
+        for row in (static_master.get("ticker_profiles") or [])
+        if isinstance(row, Mapping)
+    ]
     payload = {
         "version": KIS_THEME_VALUECHAIN_VERSION,
         "generated_at": generated_at,
@@ -611,6 +620,7 @@ def build_kis_theme_valuechain_payload(
         },
         "summary": {
             "ticker_category_records": len(records),
+            "ticker_valuechain_profiles": len(ticker_profiles),
             "nodes": len(nodes),
             "edges": len(edges),
             "verified_valuechain_edges": len(verified_edges),
@@ -619,7 +629,19 @@ def build_kis_theme_valuechain_payload(
             "markets": dict(Counter(str(row.get("market") or "") for row in records)),
             "themes": dict(Counter(str(row.get("primary_theme") or "") for row in records if row.get("primary_theme"))),
             "verified_valuechain_source_distribution": dict(source_distribution),
+            "ticker_valuechain_role_distribution": (
+                dict(static_master.get("summary", {}).get("role_distribution") or {})
+                if isinstance(static_master.get("summary"), Mapping)
+                else {}
+            ),
         },
+        "ticker_valuechain_master": {
+            "version": static_master.get("version"),
+            "generated_at": static_master.get("generated_at"),
+            "refresh_policy": static_master.get("refresh_policy") or {},
+            "summary": static_master.get("summary") or {},
+        },
+        "ticker_valuechain_profiles": ticker_profiles,
         "ticker_category_records": records,
         "theme_daily_state": timeline,
         "nodes": sorted(nodes.values(), key=lambda row: (str(row.get("type") or ""), str(row.get("label") or ""))),
