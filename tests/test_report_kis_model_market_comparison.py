@@ -75,4 +75,5 @@ def test_build_report_excludes_2d_and_keeps_market_sections(tmp_path):
     assert report["horizons"] == ["1d", "3d", "5d"]
     assert "2d" in report["metric_contract"]
     assert report["markets"]["KOSPI"]["current_kis_model"]["metrics"]["win_3d_pct"] == 50.0
+    assert report["markets"]["KOSPI"]["current_kis_model"]["kis_model_gate"]["status"] == "blocked"
     assert report["markets"]["KOSDAQ"]["existing_production_baselines"][0]["name"] == "current_top5"

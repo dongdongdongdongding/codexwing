@@ -17,7 +17,9 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-REPORT_VERSION = "kis_model_market_comparison_v1"
+from modules.kis_model_gate import evaluate_kis_model_gate
+
+REPORT_VERSION = "kis_model_market_comparison_v2_kis_gate"
 DEFAULT_OUTPUT = ROOT / "runtime_state" / "reports" / "learning" / "kis_model_market_comparison.json"
 DEFAULT_SOURCES = {
     "KOSPI": ROOT
@@ -56,6 +58,12 @@ def _metric_subset(metrics: Dict[str, Any]) -> Dict[str, Any]:
     out["max_min_low_5d_pct"] = metrics.get("max_min_low_5d_pct")
     out["bad_path_pct"] = metrics.get("bad_path_pct")
     out["stop5_pct"] = metrics.get("stop5_pct")
+    out["target_before_stop_5d_pct"] = metrics.get("target_before_stop_5d_pct")
+    out["stop_before_target_5d_pct"] = metrics.get("stop_before_target_5d_pct")
+    out["hit5_5d_pct"] = metrics.get("hit5_5d_pct")
+    out["hit10_5d_pct"] = metrics.get("hit10_5d_pct")
+    out["hit5_guard_5d_pct"] = metrics.get("hit5_guard_5d_pct")
+    out["hit10_guard_5d_pct"] = metrics.get("hit10_guard_5d_pct")
     return out
 
 
@@ -108,6 +116,9 @@ def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
         best_kis = report.get("best_kis") or {}
         if best_kis.get("market") != market:
             warnings.append(f"{market}: best_kis market mismatch or missing in {path}")
+        identity = _model_identity(best_kis)
+        metrics = _metric_subset(best_kis.get("metrics") or {})
+        kis_model_gate = evaluate_kis_model_gate(identity=identity, metrics=metrics, market=market)
         markets[market] = {
             "source_path": _path_text(path),
             "source_generated_at": report.get("generated_at"),
@@ -117,8 +128,9 @@ def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
             "source_ok_combinations": report.get("ok_combinations"),
             "current_kis_model": {
                 "kind": "current_kis_challenger",
-                "identity": _model_identity(best_kis),
-                "metrics": _metric_subset(best_kis.get("metrics") or {}),
+                "identity": identity,
+                "metrics": metrics,
+                "kis_model_gate": kis_model_gate,
             },
             "existing_production_baselines": _baseline_rows(report, market),
         }
@@ -165,6 +177,7 @@ def _markdown(report: Dict[str, Any]) -> str:
         current = payload.get("current_kis_model") or {}
         ident = current.get("identity") or {}
         metrics = current.get("metrics") or {}
+        kis_gate = current.get("kis_model_gate") or {}
         lines.extend(
             [
                 f"## {market}",
@@ -174,6 +187,8 @@ def _markdown(report: Dict[str, Any]) -> str:
                 f"- current_kis sample: n=`{metrics.get('n')}`, active_days=`{metrics.get('active_days')}`, active_runs=`{metrics.get('active_runs')}`",
                 f"- current_kis returns: {_metric_line(metrics)}",
                 f"- current_kis 5d path: avg_max_high=`{_fmt(metrics.get('avg_max_high_5d_pct'))}%`, min_low=`{_fmt(metrics.get('min_min_low_5d_pct'))}%`, max_low=`{_fmt(metrics.get('max_min_low_5d_pct'))}%`",
+                f"- kis_model_gate: status=`{kis_gate.get('status')}`, production_ready=`{kis_gate.get('production_ready')}`, shadow_display_allowed=`{kis_gate.get('shadow_display_allowed')}`, risk_review_required=`{kis_gate.get('risk_review_required')}`",
+                f"- kis_model_gate blockers: `{kis_gate.get('production_blocking_reasons') or []}`",
                 "",
                 "| baseline | n | active_days | 1d win/avg/min/max | 3d win/avg/min/max | 5d win/avg/min/max | 5d avg_high/min_low |",
                 "|---|---:|---:|---|---|---|---|",

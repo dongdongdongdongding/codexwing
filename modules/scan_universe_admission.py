@@ -14,6 +14,7 @@ from modules.kis_theme_news_evidence import (
     format_kis_theme_news_summary,
 )
 from modules.kis_model_features import flatten_kis_model_features
+from modules.kis_model_gate import evaluate_kis_model_gate
 
 
 MODEL_DIR = Path("models/scan_universe_challengers")
@@ -245,6 +246,9 @@ def _load_kis_shadow_report(market: str) -> Dict[str, Any]:
     current = block.get("current_kis_model") if isinstance(block.get("current_kis_model"), dict) else {}
     identity = current.get("identity") if isinstance(current.get("identity"), dict) else {}
     metrics = current.get("metrics") if isinstance(current.get("metrics"), dict) else {}
+    kis_model_gate = current.get("kis_model_gate") if isinstance(current.get("kis_model_gate"), dict) else {}
+    if not kis_model_gate:
+        kis_model_gate = evaluate_kis_model_gate(identity=identity, metrics=metrics, market=market_key)
     if not identity and not metrics:
         return {}
     return {
@@ -254,6 +258,7 @@ def _load_kis_shadow_report(market: str) -> Dict[str, Any]:
         "source_path": block.get("source_path"),
         "identity": identity,
         "metrics": metrics,
+        "kis_model_gate": kis_model_gate,
     }
 
 
@@ -268,10 +273,16 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
     report = _load_kis_shadow_report(market)
     identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
     metrics = report.get("metrics") if isinstance(report.get("metrics"), dict) else {}
+    kis_model_gate = report.get("kis_model_gate") if isinstance(report.get("kis_model_gate"), dict) else {}
+    if not kis_model_gate:
+        kis_model_gate = evaluate_kis_model_gate(identity=identity, metrics=metrics, market=market)
     blockers = []
-    promotion = identity.get("promotion_candidate") if isinstance(identity.get("promotion_candidate"), dict) else {}
-    if isinstance(promotion.get("blocking_reasons"), list):
-        blockers = [str(item) for item in promotion.get("blocking_reasons") if str(item).strip()]
+    if isinstance(kis_model_gate.get("production_blocking_reasons"), list):
+        blockers = [str(item) for item in kis_model_gate.get("production_blocking_reasons") if str(item).strip()]
+    if not blockers:
+        promotion = identity.get("promotion_candidate") if isinstance(identity.get("promotion_candidate"), dict) else {}
+        if isinstance(promotion.get("blocking_reasons"), list):
+            blockers = [str(item) for item in promotion.get("blocking_reasons") if str(item).strip()]
     profile = " / ".join(
         str(value)
         for value in (
@@ -300,6 +311,12 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
         "report_generated_at": report.get("report_generated_at"),
         "source_path": report.get("source_path"),
         "blocking_reasons": blockers,
+        "kis_model_gate": kis_model_gate,
+        "status": kis_model_gate.get("status"),
+        "production_ready": bool(kis_model_gate.get("production_ready")),
+        "shadow_display_allowed": bool(kis_model_gate.get("shadow_display_allowed")),
+        "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
+        "risk_review_reasons": list(kis_model_gate.get("risk_review_reasons") or []),
     }
 
 
@@ -396,9 +413,12 @@ def build_kis_shadow_admission_records(
     if not scored:
         return []
     gate = _kis_shadow_gate_payload(market_key)
+    if not gate.get("shadow_display_allowed"):
+        return []
     report = _load_kis_shadow_report(market_key)
     metrics = report.get("metrics") if isinstance(report.get("metrics"), dict) else {}
     identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
+    kis_model_gate = report.get("kis_model_gate") if isinstance(report.get("kis_model_gate"), dict) else gate.get("kis_model_gate") or {}
     selected: List[Dict[str, Any]] = []
     for model_rank, row in enumerate(scored, start=1):
         features = row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {}
@@ -423,7 +443,11 @@ def build_kis_shadow_admission_records(
             {
                 "decision": "KIS_SHADOW",
                 "decision_bucket": "kis_shadow",
-                "final_action": "KIS shadow 관찰 - 운영 승격 전 후보",
+                "final_action": (
+                    "KIS shadow 위험검토 - 운영 승격 차단"
+                    if kis_model_gate.get("risk_review_required")
+                    else "KIS shadow 관찰 - 운영 승격 전 후보"
+                ),
                 "entry_condition_text": (
                     f"KIS evidence 기반 shadow 후보 #{shadow_rank}: "
                     f"runtime admission score {probability * 100.0:.1f}%"
@@ -450,6 +474,10 @@ def build_kis_shadow_admission_records(
                     "source": "real_kis_sidecar_or_prefilter_evidence",
                     "identity": identity,
                     "metrics": metrics,
+                    "kis_model_gate": kis_model_gate,
+                    "gate_status": kis_model_gate.get("status"),
+                    "production_ready": bool(kis_model_gate.get("production_ready")),
+                    "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
                     "theme_news_evidence": {
                         "available": theme_news_evidence.get("available"),
                         "kis_backed": theme_news_evidence.get("kis_backed"),
@@ -458,12 +486,15 @@ def build_kis_shadow_admission_records(
                         "summary": theme_news_summary,
                     },
                     "promotion_blocking_reasons": gate.get("blocking_reasons") or [],
+                    "risk_review_reasons": gate.get("risk_review_reasons") or [],
                 },
                 "realized_expectancy_admission": {
                     **(record.get("realized_expectancy_admission") if isinstance(record.get("realized_expectancy_admission"), dict) else {}),
                     "available": bool(metrics),
                     "policy_version": KIS_SHADOW_RUNTIME_VERSION,
                     "source": "kis_shadow_validation_report",
+                    "kis_model_gate_status": kis_model_gate.get("status"),
+                    "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
                     "5d_prob": metrics.get("win_5d_pct"),
                     "ranking_score_5d": round(probability * 100.0, 4),
                     "base_expected_value_5d_pct": metrics.get("avg_5d_pct"),
@@ -478,6 +509,7 @@ def build_kis_shadow_admission_records(
                     "realized_expectancy_5d_prob": metrics.get("win_5d_pct"),
                     "ranking_score_5d": round(probability * 100.0, 4),
                     "admission_policy_version": KIS_SHADOW_RUNTIME_VERSION,
+                    "kis_model_gate_status": kis_model_gate.get("status"),
                 },
             }
         )
@@ -492,10 +524,11 @@ def build_kis_shadow_admission_records(
             "drivers": drivers[:8],
             "warnings": list(interpretation.get("warnings") or [])
             + list(theme_news_evidence.get("warnings") or [])[:3]
-            + ["KIS_SHADOW_NOT_PRODUCTION_PROMOTED"],
+            + ["KIS_SHADOW_NOT_PRODUCTION_PROMOTED"]
+            + (["KIS_SHADOW_RISK_REVIEW_REQUIRED"] if kis_model_gate.get("risk_review_required") else []),
             "plain_text": (
                 f"KIS shadow 후보: runtime admission score {probability * 100.0:.1f}%. "
-                f"{gate.get('metrics') or ''} 운영 승격 전 관찰 레인입니다."
+                f"{gate.get('metrics') or ''} gate={kis_model_gate.get('status') or '-'}."
             ).strip(),
         }
         selected.append(record)

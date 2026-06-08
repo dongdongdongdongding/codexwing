@@ -682,3 +682,43 @@ def test_risk_first_ranking_prefers_lower_path_risk_before_quality():
     assert ranked[1]["promotion_candidate"]["promotable"] is False
     assert "fold_stop5_above_50" in ranked[1]["risk_gate"]["blocking_reasons"]
     assert "hit10_guard_5d_pct_raw_ratio_lt_70" in ranked[1]["risk_gate"]["blocking_reasons"]
+
+
+def test_kis_candidate_verdict_uses_kis_model_gate_for_kosdaq_drawdown():
+    candidate = {
+        "market": "KOSDAQ",
+        "label": "touch10_guard_5d",
+        "feature_set": "kis_sidecar_only",
+        "model": "random_forest",
+        "selection_rule": "top3_p0.65",
+        "topn": 3,
+        "metrics": {
+            "n": 11,
+            "active_runs": 5,
+            "active_days": 3,
+            "label_win_pct": 70.0,
+            "hit5_5d_pct": 90.0,
+            "hit10_5d_pct": 60.0,
+            "hit10_guard_5d_pct": 50.0,
+            "avg_max_high_5d_pct": 15.0,
+            "min_max_high_5d_pct": 3.0,
+            "win_3d_pct": 90.9,
+            "win_5d_pct": 54.55,
+            "avg_3d_pct": 20.67,
+            "avg_5d_pct": 15.8,
+            "min_1d_pct": -5.85,
+            "min_5d_pct": -21.02,
+            "min_min_low_5d_pct": -21.39,
+            "bad_path_pct": 45.45,
+            "stop5_pct": 9.09,
+            "stop_before_target_5d_pct": 9.09,
+            "target_before_stop_5d_pct": 90.9,
+        },
+    }
+
+    verdict = candidate_verdict(candidate)
+
+    assert verdict["promotable"] is False
+    assert verdict["kis_model_gate"]["status"] == "shadow_risk_review"
+    assert verdict["kis_model_gate"]["shadow_display_allowed"] is True
+    assert "bad_path_gt_15" in verdict["blocking_reasons"]

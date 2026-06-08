@@ -358,7 +358,7 @@ def _fetch_kis_intraday_history(
                 combined = pd.concat(frames).sort_index()
                 combined = combined[~combined.index.duplicated(keep="last")]
                 resampled = _normalize_ohlcv(_resample_intraday(combined, interval))
-                if len(resampled) >= min_bars:
+                if len(resampled) >= min_bars and (max_days <= 1 or day_offset > 0):
                     return resampled
 
             if query_hour == "093000":

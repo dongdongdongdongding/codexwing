@@ -57,6 +57,7 @@ from modules.kis_model_features import (
     KIS_THEME_NEWS_NUMERIC_FEATURES,
     flatten_kis_model_features,
 )
+from modules.kis_model_gate import evaluate_kis_model_gate
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -1186,13 +1187,42 @@ def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
     risk_gate = candidate_risk_gate(candidate)
     for reason in risk_gate.get("blocking_reasons") or []:
         _append_unique(reasons, str(reason))
+    if str(candidate.get("feature_set") or "").lower().startswith("kis"):
+        kis_gate = evaluate_kis_model_gate(
+            identity={
+                "market": candidate.get("market"),
+                "label": candidate.get("label"),
+                "feature_set": candidate.get("feature_set"),
+                "model": candidate.get("model"),
+                "topn": candidate.get("topn"),
+                "selection_rule": candidate.get("selection_rule"),
+            },
+            metrics=m,
+            market=str(candidate.get("market") or ""),
+        )
+        for reason in kis_gate.get("production_blocking_reasons") or []:
+            _append_unique(reasons, str(reason))
     return reasons
 
 
 def candidate_verdict(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
     reasons = candidate_blocking_reasons(candidate)
     risk_gate = candidate_risk_gate(candidate)
-    return {"promotable": not reasons, "blocking_reasons": reasons, "risk_gate": risk_gate}
+    out = {"promotable": not reasons, "blocking_reasons": reasons, "risk_gate": risk_gate}
+    if candidate and str(candidate.get("feature_set") or "").lower().startswith("kis"):
+        out["kis_model_gate"] = evaluate_kis_model_gate(
+            identity={
+                "market": candidate.get("market"),
+                "label": candidate.get("label"),
+                "feature_set": candidate.get("feature_set"),
+                "model": candidate.get("model"),
+                "topn": candidate.get("topn"),
+                "selection_rule": candidate.get("selection_rule"),
+            },
+            metrics=candidate.get("metrics") or {},
+            market=str(candidate.get("market") or ""),
+        )
+    return out
 
 
 def risk_first_sort_key(candidate: Dict[str, Any]) -> Tuple[Any, ...]:
@@ -1215,6 +1245,8 @@ def rank_candidate_results(results: List[Dict[str, Any]]) -> List[Dict[str, Any]
     for row in results:
         row["risk_gate"] = candidate_risk_gate(row)
         row["promotion_candidate"] = candidate_verdict(row)
+        if str(row.get("feature_set") or "").lower().startswith("kis"):
+            row["kis_model_gate"] = row["promotion_candidate"].get("kis_model_gate")
         ranked.append(row)
     return sorted(ranked, key=risk_first_sort_key, reverse=True)
 

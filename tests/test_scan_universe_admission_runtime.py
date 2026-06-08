@@ -217,13 +217,18 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
             "metrics": {
                 "n": 12,
                 "active_days": 6,
+                "active_runs": 8,
                 "win_1d_pct": 58.3,
                 "avg_1d_pct": 0.8,
+                "min_1d_pct": 0.0,
                 "win_3d_pct": 66.7,
                 "avg_3d_pct": 1.4,
                 "win_5d_pct": 75.0,
                 "avg_5d_pct": 2.5,
                 "min_5d_pct": -1.2,
+                "min_min_low_5d_pct": -4.0,
+                "bad_path_pct": 10.0,
+                "stop5_pct": 5.0,
             },
         },
     )
@@ -237,10 +242,14 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
     assert row["decision"] == "KIS_SHADOW"
     assert row["kis_shadow_candidate"]["shadow_only"] is True
     assert row["kis_shadow_candidate"]["source"] == "real_kis_sidecar_or_prefilter_evidence"
+    assert row["kis_shadow_candidate"]["gate_status"] == "shadow_ready"
+    assert row["kis_shadow_candidate"]["production_ready"] is False
+    assert row["kis_shadow_candidate"]["kis_model_gate"]["shadow_display_allowed"] is True
     assert row["kis_theme_news_evidence"]["kis_backed"] is True
     assert row["kis_theme_news_evidence"]["theme"]["kis_sector_name"] == "반도체"
     assert "AI 반도체 공급 계약 수주" in row["kis_shadow_candidate"]["theme_news_evidence"]["summary"]
     assert row["realized_expectancy_admission"]["source"] == "kis_shadow_validation_report"
+    assert row["realized_expectancy_admission"]["kis_model_gate_status"] == "shadow_ready"
     assert row["realized_expectancy_admission"]["5d_prob"] == 75.0
 
 
