@@ -36,6 +36,26 @@ def _source(path, market):
                 "min_min_low_5d_pct": -4.0,
             },
         },
+        "kis_feature_readiness": {
+            "by_market": {
+                market: {
+                    "theme_news": {
+                        "rows": 4,
+                        "outcome_label_rows": 4,
+                        "unique_runs": 2,
+                        "unique_days": 2,
+                        "mature_for_training": False,
+                    }
+                }
+            },
+            "feature_fill": {
+                "theme_news_top_feature_fill_pct": {
+                    "kis_theme_news_kis_backed": 50.0,
+                    "kis_theme_news_news_checked": 25.0,
+                    "kis_theme_news_evidence_score": 50.0,
+                }
+            },
+        },
         "baselines_for_best_kis_holdout": [
             {
                 "market": market,
@@ -77,3 +97,10 @@ def test_build_report_excludes_2d_and_keeps_market_sections(tmp_path):
     assert report["markets"]["KOSPI"]["current_kis_model"]["metrics"]["win_3d_pct"] == 50.0
     assert report["markets"]["KOSPI"]["current_kis_model"]["kis_model_gate"]["status"] == "blocked"
     assert report["markets"]["KOSDAQ"]["existing_production_baselines"][0]["name"] == "current_top5"
+    comparison = report["markets"]["KOSPI"]["performance_comparison_vs_existing"][0]
+    assert comparison["win_5d_delta_pct"] == 16.6667
+    assert comparison["avg_5d_delta_pct"] == 4.5
+    reflection = report["markets"]["KOSPI"]["operational_reflection"]
+    assert reflection["action"] == "blocked_do_not_display_as_candidate"
+    assert any("theme_news" in item for item in reflection["ui_recommendations"])
+    assert report["markets"]["KOSPI"]["theme_news_readiness"]["news_checked_fill_pct"] == 25.0

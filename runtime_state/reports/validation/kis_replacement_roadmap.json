@@ -1,5 +1,257 @@
 {
   "contract_version": "kis_operational_adapter_v1",
+  "final_operational_reflection_plan": {
+    "performance_report": {
+      "comparison_contract": "For each market, show existing production Top1/Top3/Top5 versus the current KIS challenger on n, active_days, active_runs, win_1d/3d/5d, avg_1d/3d/5d, min_1d/5d, max_5d, min_low_5d, bad_path, and promotion-gate blockers.",
+      "current_market_reflections": {
+        "KOSDAQ": {
+          "current_metrics": {
+            "active_days": 3,
+            "active_runs": 5,
+            "avg_1d_pct": 10.905887,
+            "avg_3d_pct": 20.671425,
+            "avg_5d_pct": 15.806625,
+            "bad_path_pct": 45.4545,
+            "max_5d_pct": 62.108731,
+            "min_1d_pct": -5.850091,
+            "min_5d_pct": -21.023766,
+            "min_min_low_5d_pct": -21.389397,
+            "n": 11,
+            "win_1d_pct": 90.9091,
+            "win_3d_pct": 90.9091,
+            "win_5d_pct": 54.5455
+          },
+          "gate": {
+            "production_blocking_reasons": [
+              "n_lt_45",
+              "active_days_lt_20",
+              "active_runs_lt_20",
+              "win_5d_lt_73",
+              "min_1d_lt_neg4",
+              "min_low_5d_lt_neg12",
+              "bad_path_gt_15"
+            ],
+            "production_ready": false,
+            "risk_review_reasons": [
+              "min_1d_lt_neg4",
+              "min_low_5d_lt_neg18",
+              "bad_path_gt_35"
+            ],
+            "risk_review_required": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_risk_review"
+          },
+          "kis_candidate": {
+            "feature_set": "kis_sidecar_only",
+            "label": "touch10_guard_5d",
+            "model": "random_forest",
+            "selection_rule": "top3_p0.65",
+            "topn": 3
+          },
+          "operational_action": "shadow_top_section_only_until_gate_passes",
+          "performance_delta_vs_existing": [
+            {
+              "active_days_delta": -3.0,
+              "avg_1d_delta_pct": 9.9171,
+              "avg_3d_delta_pct": 24.9379,
+              "avg_5d_delta_pct": 26.8784,
+              "baseline": "current_top1",
+              "min_1d_delta_pct": 3.4957,
+              "min_5d_delta_pct": 2.3898,
+              "min_low_5d_delta_pct": 4.1394,
+              "sample_delta_n": -2.0,
+              "topn": 1,
+              "win_1d_delta_pct": 29.3706,
+              "win_3d_delta_pct": 60.1399,
+              "win_5d_delta_pct": 46.8532
+            },
+            {
+              "active_days_delta": -3.0,
+              "avg_1d_delta_pct": 10.9892,
+              "avg_3d_delta_pct": 25.2525,
+              "avg_5d_delta_pct": 23.5331,
+              "baseline": "current_top3",
+              "min_1d_delta_pct": 8.773,
+              "min_5d_delta_pct": 9.9481,
+              "min_low_5d_delta_pct": 13.5788,
+              "sample_delta_n": -24.0,
+              "topn": 3,
+              "win_1d_delta_pct": 39.4805,
+              "win_3d_delta_pct": 65.1948,
+              "win_5d_delta_pct": 34.5455
+            },
+            {
+              "active_days_delta": -3.0,
+              "avg_1d_delta_pct": 10.681,
+              "avg_3d_delta_pct": 23.7671,
+              "avg_5d_delta_pct": 22.0809,
+              "baseline": "current_top5",
+              "min_1d_delta_pct": 8.773,
+              "min_5d_delta_pct": 9.9481,
+              "min_low_5d_delta_pct": 13.5788,
+              "sample_delta_n": -42.0,
+              "topn": 5,
+              "win_1d_delta_pct": 41.8525,
+              "win_3d_delta_pct": 55.06,
+              "win_5d_delta_pct": 30.0172
+            }
+          ],
+          "ui_recommendations": [
+            "웹 최상단 KIS Shadow 섹션에 gate status, production_ready, risk_review_required를 함께 표시",
+            "후보 카드와 TopDeep 상세에 KIS 테마/뉴스 summary, evidence score, KIS-backed 여부, 뉴스 checked 여부를 표시",
+            "Discord 스캔 결과와 정밀분석 lookup에 동일한 KIS gate와 테마/뉴스 summary를 표시",
+            "운영 승격 전에는 기존 운영 Top 후보와 KIS 후보를 같은 run_id 기준으로 나란히 비교",
+            "production_ready=false이면 매수 후보 문구 대신 shadow_only/risk_review 문구를 유지",
+            "theme_news mature_for_training=false이면 UI에 evidence coverage 부족 배지를 표시하고 승격 판단에서 제외"
+          ]
+        },
+        "KOSPI": {
+          "current_metrics": {
+            "active_days": 9,
+            "active_runs": 26,
+            "avg_1d_pct": 5.734196,
+            "avg_3d_pct": 20.038118,
+            "avg_5d_pct": 23.24624,
+            "bad_path_pct": 3.4483,
+            "max_5d_pct": 76.910299,
+            "min_1d_pct": 0.882353,
+            "min_5d_pct": -1.567398,
+            "min_min_low_5d_pct": -18.025078,
+            "n": 29,
+            "win_1d_pct": 100.0,
+            "win_3d_pct": 96.5517,
+            "win_5d_pct": 96.5517
+          },
+          "gate": {
+            "production_blocking_reasons": [
+              "n_lt_30",
+              "active_days_lt_15",
+              "min_low_5d_lt_neg15"
+            ],
+            "production_ready": false,
+            "risk_review_reasons": [
+              "min_low_5d_lt_neg15"
+            ],
+            "risk_review_required": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_risk_review"
+          },
+          "kis_candidate": {
+            "feature_set": "kis_sidecar_only",
+            "label": "pos_5d",
+            "model": "random_forest",
+            "selection_rule": "top1",
+            "topn": 1
+          },
+          "operational_action": "shadow_top_section_only_until_gate_passes",
+          "performance_delta_vs_existing": [
+            {
+              "active_days_delta": 2.0,
+              "avg_1d_delta_pct": 3.1846,
+              "avg_3d_delta_pct": 13.9914,
+              "avg_5d_delta_pct": 14.8158,
+              "baseline": "current_top1",
+              "min_1d_delta_pct": 8.5296,
+              "min_5d_delta_pct": 22.5232,
+              "min_low_5d_delta_pct": 8.6559,
+              "sample_delta_n": 4.0,
+              "topn": 1,
+              "win_1d_delta_pct": 40.0,
+              "win_3d_delta_pct": 28.5517,
+              "win_5d_delta_pct": 28.5517
+            },
+            {
+              "active_days_delta": 2.0,
+              "avg_1d_delta_pct": 3.0101,
+              "avg_3d_delta_pct": 10.617,
+              "avg_5d_delta_pct": 14.03,
+              "baseline": "current_top3",
+              "min_1d_delta_pct": 20.0378,
+              "min_5d_delta_pct": 26.2172,
+              "min_low_5d_delta_pct": 14.3495,
+              "sample_delta_n": -41.0,
+              "topn": 3,
+              "win_1d_delta_pct": 47.1429,
+              "win_3d_delta_pct": 33.6946,
+              "win_5d_delta_pct": 32.266
+            },
+            {
+              "active_days_delta": 2.0,
+              "avg_1d_delta_pct": 4.0071,
+              "avg_3d_delta_pct": 13.988,
+              "avg_5d_delta_pct": 17.5593,
+              "baseline": "current_top5",
+              "min_1d_delta_pct": 20.0378,
+              "min_5d_delta_pct": 26.2172,
+              "min_low_5d_delta_pct": 14.3495,
+              "sample_delta_n": -81.0,
+              "topn": 5,
+              "win_1d_delta_pct": 50.0,
+              "win_3d_delta_pct": 41.0972,
+              "win_5d_delta_pct": 42.0062
+            }
+          ],
+          "ui_recommendations": [
+            "웹 최상단 KIS Shadow 섹션에 gate status, production_ready, risk_review_required를 함께 표시",
+            "후보 카드와 TopDeep 상세에 KIS 테마/뉴스 summary, evidence score, KIS-backed 여부, 뉴스 checked 여부를 표시",
+            "Discord 스캔 결과와 정밀분석 lookup에 동일한 KIS gate와 테마/뉴스 summary를 표시",
+            "운영 승격 전에는 기존 운영 Top 후보와 KIS 후보를 같은 run_id 기준으로 나란히 비교",
+            "production_ready=false이면 매수 후보 문구 대신 shadow_only/risk_review 문구를 유지",
+            "theme_news mature_for_training=false이면 UI에 evidence coverage 부족 배지를 표시하고 승격 판단에서 제외"
+          ]
+        }
+      },
+      "metric_contract": "2d is intentionally excluded; report uses completed 1d/3d/5d scan_universe outcome labels only.",
+      "required_markets": [
+        "KOSPI",
+        "KOSDAQ"
+      ],
+      "source": "runtime_state/reports/learning/kis_model_market_comparison.json"
+    },
+    "theme_news_backfill": {
+      "candidate_rows": 3029,
+      "evidence_rows": 3029,
+      "key_failures": {},
+      "kis_backed_rows": 3029,
+      "kis_failures": {},
+      "kis_news_api_calls": 1425,
+      "latency_policy": "candidate-only existing-sidecar news enrichment with ticker/date de-duplication; not full-universe news calls during live scan",
+      "news_checked_rows": 3029,
+      "no_dummy_data": true,
+      "rows_by_market": {
+        "KOSDAQ": 1263,
+        "KOSPI": 1766
+      },
+      "rows_written": 3029,
+      "source_backfill_report": "runtime_state/reports/learning/kis_theme_news_emitted_news_backfill.json",
+      "source_verify_report": "runtime_state/reports/learning/kis_theme_news_emitted_news_backfill_verify.json",
+      "strength_levels": {
+        "medium": 2611,
+        "strong": 418
+      },
+      "unique_ticker_date_keys": 1425,
+      "verified_rows": 3029
+    },
+    "ui_report": {
+      "discord": [
+        "Include the same KIS gate, Shadow/Risk Review status, and theme/news summary in scan-result and precision-analysis messages.",
+        "Avoid promotion wording in Discord until the same gate used by the web UI passes."
+      ],
+      "promotion_guard": [
+        "Production switch requires both markets to have completed comparison reports and no hidden missing-field drift across web, archive, Top Deep, Discord, and Supabase rows.",
+        "KIS model promotion remains blocked when tail-risk gates fail even if average return delta is positive."
+      ],
+      "top_deep": [
+        "Show KIS theme/news summary, evidence score/level, kis_backed, news_checked, and source_timing for each candidate.",
+        "Display coverage warnings when theme/news evidence is missing or not mature for training."
+      ],
+      "web": [
+        "Place KIS Shadow candidates above the normal result sections, with gate status, production_ready, risk_review_required, and blocking reasons visible.",
+        "Keep production_ready=false candidates labeled as Shadow/Risk Review, not as final buy candidates.",
+        "Show existing Top1/Top3/Top5 versus KIS challenger delta in the same market/run context before any promotion decision."
+      ]
+    }
+  },
   "implemented_now": {
     "candidate_only_deep_analysis": "Top Deep consumes scan_universe_admission + Exception Leader candidates, not all tickers",
     "daily_scan_engine_default": "AG_KR_DAILY_SCAN_ENGINE=kis_operational",
@@ -76,7 +328,19 @@
       "target": "KIS stock investor flow works after the exchange time gate and falls back explicitly when unavailable"
     },
     {
-      "current_status": "KIS operational prefilter rank/VI/quote/flow payload is archived per run; news enrichment remains opt-in because of latency budget",
+      "current_status": {
+        "emitted_kis_backed_rows": 3029,
+        "emitted_news_checked_rows": 3029,
+        "emitted_strength_levels": {
+          "medium": 2611,
+          "strong": 418
+        },
+        "emitted_theme_news_rows": 3029,
+        "kis_news_api_calls": 1425,
+        "latency_policy": "candidate-only existing-sidecar news enrichment with ticker/date de-duplication; not full-universe news calls during live scan",
+        "no_dummy_data": true,
+        "status": "KIS operational prefilter rank/VI/quote/flow payload is archived per run; emitted candidate theme/news evidence is backfilled from real KIS news-title API results"
+      },
       "gate": "rank_vi_news_financial",
       "promotion_required": true,
       "target": "rank membership, VI status, news-title count, and financial ratios persist as model sidecar fields"
@@ -107,14 +371,16 @@
     },
     {
       "current_status": {
-        "challenger_report": "runtime_state/reports/learning/kis_augmented_challenger_readiness.json",
+        "challenger_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
         "prefilter_outcome_label_rows": 0,
-        "prefilter_rows": 0,
-        "readiness_status": "blocked",
+        "prefilter_rows": 36,
+        "readiness_status": "ok",
         "required_days": 10,
-        "required_rows": 60,
-        "sidecar_outcome_label_rows": 0,
-        "sidecar_rows": 2
+        "required_rows": 1200,
+        "sidecar_outcome_label_rows": 105299,
+        "sidecar_rows": 105299,
+        "theme_news_outcome_label_rows": null,
+        "theme_news_rows": null
       },
       "gate": "model_lift",
       "promotion_required": true,
@@ -201,13 +467,17 @@
     }
   ],
   "summary": {
-    "current_replacement_level": "production-primary default with legacy fallback; model lift pending",
+    "current_replacement_level": "production-primary source default with legacy fallback; KIS model promotion remains shadow/risk-review",
+    "emitted_theme_news_backfill_rows": 3029,
+    "emitted_theme_news_news_checked_rows": 3029,
+    "emitted_theme_news_no_dummy_data": true,
     "endpoint_failed_count": 0,
     "endpoint_ok_count": 25,
-    "kis_model_readiness_status": "blocked",
-    "operator_answer": "KIS is now the default KR daily operational scan source with a legacy scanner fallback. Controlled production replacement is acceptable for the source path, but KIS-augmented model promotion remains blocked until real KIS sidecar/prefilter rows have enough resolved outcomes.",
+    "kis_model_readiness_status": "ok",
+    "model_comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
+    "operator_answer": "KIS can stay as the KR daily operational source path with legacy fallback. KIS model candidates must remain in the top Shadow/Risk Review lane until the market-specific promotion gates pass, and final production replacement must report existing Top1/Top3/Top5 versus KIS metrics side by side.",
     "prior_readiness_verdict": "KR 운영 전체를 지금 KIS로 일괄 전환하면 안 된다. 먼저 KIS를 단계적 보강 데이터 소스로 써야 한다.",
-    "source_only_change": "The promotion changes the daily operational execution path, archives KIS prefilter/sidecar features, and now exposes those features to challenger training with maturity gates; scanner/planner scoring contracts remain compatible."
+    "source_only_change": "The promotion changes the daily operational execution path, archives KIS prefilter/sidecar/theme-news features, and exposes those real KIS fields to challenger training with maturity gates; scanner/planner scoring contracts remain compatible."
   },
   "tool": "report_kis_replacement_roadmap"
 }

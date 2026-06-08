@@ -413,8 +413,8 @@ def fetch_rows(
             batch = query.execute().data or []
         except Exception as exc:
             message = str(exc)
-            if safe_page_size > 100 and ("statement timeout" in message or "57014" in message):
-                next_page_size = max(100, safe_page_size // 2)
+            if safe_page_size > 25 and ("statement timeout" in message or "57014" in message):
+                next_page_size = max(25, safe_page_size // 2)
                 print(
                     f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
                     flush=True,
@@ -1308,6 +1308,10 @@ def _kis_family_scope(frame: pd.DataFrame, family: str) -> pd.Series:
         return kis_presence_mask(frame, "kis_prefilter_only")
     if family == "any_kis":
         return kis_presence_mask(frame, "kis_full_augmented")
+    if family == "theme_news":
+        backed = pd.to_numeric(frame.get("kis_theme_news_kis_backed", pd.Series(0, index=frame.index)), errors="coerce").fillna(0).gt(0)
+        score = pd.to_numeric(frame.get("kis_theme_news_evidence_score", pd.Series(0, index=frame.index)), errors="coerce").fillna(0).gt(0)
+        return backed & score
     return pd.Series(False, index=frame.index)
 
 
@@ -1351,7 +1355,7 @@ def kis_feature_readiness(
         return dict(sorted(out.items()))
 
     families = {}
-    for family in ("sidecar", "prefilter", "any_kis"):
+    for family in ("sidecar", "prefilter", "theme_news", "any_kis"):
         mask = _kis_family_scope(data, family)
         rows = data.loc[mask]
         outcome_rows = data.loc[mask & outcome_mask]
@@ -1367,7 +1371,7 @@ def kis_feature_readiness(
     for market in sorted(str(item) for item in data.get("market", pd.Series(dtype=object)).dropna().unique()):
         scoped = data[data["market"].eq(market)].copy()
         by_market[market] = {}
-        for family in ("sidecar", "prefilter", "any_kis"):
+        for family in ("sidecar", "prefilter", "theme_news", "any_kis"):
             mask = _kis_family_scope(scoped, family)
             rows = scoped.loc[mask]
             outcome_rows = scoped.loc[mask & outcome_mask.reindex(scoped.index).fillna(False)]
@@ -1382,6 +1386,7 @@ def kis_feature_readiness(
             }
     sidecar_cols = list(KIS_SIDECAR_DIAGNOSTIC_NUMERIC_FEATURES) + list(KIS_SIDECAR_MODEL_NUMERIC_FEATURES) + list(KIS_SIDECAR_CATEGORICAL_FEATURES)
     prefilter_cols = list(KIS_PREFILTER_NUMERIC_FEATURES) + list(KIS_PREFILTER_CATEGORICAL_FEATURES)
+    theme_news_cols = list(KIS_THEME_NEWS_NUMERIC_FEATURES) + list(KIS_THEME_NEWS_CATEGORICAL_FEATURES)
     coverage = {
         "sidecar_top_feature_fill_pct": {
             col: _series_present_pct(data, col)
@@ -1391,6 +1396,11 @@ def kis_feature_readiness(
         "prefilter_top_feature_fill_pct": {
             col: _series_present_pct(data, col)
             for col in prefilter_cols
+            if col in data.columns and _series_present_pct(data, col) > 0
+        },
+        "theme_news_top_feature_fill_pct": {
+            col: _series_present_pct(data, col)
+            for col in theme_news_cols
             if col in data.columns and _series_present_pct(data, col) > 0
         },
     }
@@ -1664,6 +1674,7 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- required_rows / required_days: `{readiness.get('required_rows')}` / `{readiness.get('required_days')}`",
         f"- families: `{readiness.get('families')}`",
         f"- by_market: `{readiness.get('by_market')}`",
+        f"- theme_news_feature_fill: `{(readiness.get('feature_fill') or {}).get('theme_news_top_feature_fill_pct')}`",
         "",
         "## Baselines",
     ]

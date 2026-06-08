@@ -38,6 +38,7 @@ from modules.kis_operational_adapter import (
     normalize_kis_stock_info,
     normalize_kis_vi_status,
 )
+from modules.kis_theme_news_evidence import build_kis_theme_news_evidence
 
 
 TARGET_TABLE = "scan_universe_snapshots"
@@ -61,7 +62,7 @@ SNAPSHOT_SELECT_COLUMNS = (
     "feature_snapshot",
 )
 OUTCOME_LABEL_COLUMNS = ("return_5d_pct", "max_high_return_5d_pct", "target_before_stop_5d")
-MIN_RETRY_PAGE_SIZE = 25
+MIN_RETRY_PAGE_SIZE = 5
 MIN_WRITE_BATCH_SIZE = 25
 
 
@@ -270,6 +271,16 @@ def _has_kis_sidecar(row: Mapping[str, Any]) -> bool:
     return bool(_json_dict(snapshot.get("kis_sidecar")) or _json_dict(snapshot.get("_kis_sidecar")))
 
 
+def _existing_kis_sidecar(row: Mapping[str, Any]) -> Dict[str, Any]:
+    snapshot = _json_dict(row.get("feature_snapshot"))
+    return _json_dict(snapshot.get("kis_sidecar")) or _json_dict(snapshot.get("_kis_sidecar"))
+
+
+def _theme_news_evidence_payload(row: Mapping[str, Any]) -> Dict[str, Any]:
+    snapshot = _json_dict(row.get("feature_snapshot"))
+    return _json_dict(snapshot.get("kis_theme_news_evidence")) or _json_dict(row.get("kis_theme_news_evidence"))
+
+
 def _has_outcome_label(row: Mapping[str, Any]) -> bool:
     for key in OUTCOME_LABEL_COLUMNS:
         value = row.get(key)
@@ -287,7 +298,7 @@ def _merge_kis_sidecar(
     snapshot = _json_dict(row.get("feature_snapshot"))
     merged = dict(snapshot)
     sidecar_payload = dict(sidecar)
-    sidecar_payload["feature_origin"] = "kis_openapi_backfill"
+    sidecar_payload["feature_origin"] = sidecar_payload.get("feature_origin") or "kis_openapi_backfill"
     sidecar_payload["backfill_contract_version"] = BACKFILL_VERSION
     sidecar_payload["backfilled_at"] = generated_at
     sidecar_payload["backfill_base_trade_date"] = _date_text(row.get("base_trade_date") or row.get("scanned_at"))
@@ -302,6 +313,12 @@ def _merge_kis_sidecar(
         "source_snapshot_key": row.get("snapshot_key"),
         "no_dummy_data": True,
     }
+    evidence_row = dict(row)
+    evidence_row["feature_snapshot"] = merged
+    merged["kis_theme_news_evidence"] = build_kis_theme_news_evidence(
+        evidence_row,
+        market=str(row.get("market") or ""),
+    )
     return merged
 
 
@@ -315,6 +332,7 @@ class BackfillOptions:
     include_stock_info: bool = True
     include_financial: bool = True
     include_current_rank: bool = False
+    news_only_existing_sidecar: bool = False
     input_hour: str = "153000"
     sleep_sec: float = 0.0
     overwrite: bool = False
@@ -407,7 +425,7 @@ class KISSidecarBackfillBuilder:
         return normalize_kis_vi_status(symbol, cached or {})
 
     def _news(self, symbol: str, base_date: date) -> Dict[str, Any]:
-        if not self.options.include_news:
+        if not self.options.include_news and not self.options.news_only_existing_sidecar:
             return normalize_kis_news_titles(None)
         payload = self._call(
             "news_titles",
@@ -560,6 +578,7 @@ def fetch_snapshot_rows(
     overwrite: bool,
     only_outcome_available: bool,
     require_outcome_label: bool,
+    row_role: str = "ALL",
     client_filter: bool = False,
     skip_existing: bool = True,
 ) -> List[Dict[str, Any]]:
@@ -583,6 +602,8 @@ def fetch_snapshot_rows(
             query = query.eq("market", market)
         if not client_filter and scan_mode != "ALL":
             query = query.eq("scan_mode", scan_mode)
+        if not client_filter and row_role != "ALL":
+            query = query.eq("row_role", row_role)
         if not client_filter and base_date:
             query = query.eq("base_trade_date", base_date)
         if not client_filter and min_base_date:
@@ -614,6 +635,8 @@ def fetch_snapshot_rows(
                 if market != "ALL" and row_market != market:
                     continue
                 if scan_mode != "ALL" and row_scan_mode != scan_mode:
+                    continue
+                if row_role != "ALL" and str(row.get("row_role") or "") != row_role:
                     continue
                 if base_date and row_base != base_date:
                     continue
@@ -686,14 +709,26 @@ def verify_existing_sidecars(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any
     rows_list = [dict(row) for row in rows]
     sidecar_rows = [row for row in rows_list if _has_kis_sidecar(row)]
     sidecar_label_rows = [row for row in sidecar_rows if _has_outcome_label(row)]
+    theme_news_rows = [row for row in sidecar_rows if _theme_news_evidence_payload(row)]
+    theme_news_kis_backed_rows = []
+    theme_news_news_checked_rows = []
     origins: Counter[str] = Counter()
     by_market: Counter[str] = Counter()
     by_role: Counter[str] = Counter()
+    theme_news_levels: Counter[str] = Counter()
     for row in sidecar_rows:
         sidecar = _json_dict(_json_dict(row.get("feature_snapshot")).get("kis_sidecar"))
         origins[str(sidecar.get("feature_origin") or "unknown")] += 1
         by_market[str(row.get("market") or "")] += 1
         by_role[str(row.get("row_role") or "")] += 1
+        evidence = _theme_news_evidence_payload(row)
+        if evidence:
+            theme_news_levels[str(evidence.get("evidence_strength_level") or "unknown")] += 1
+            if evidence.get("kis_backed") is True:
+                theme_news_kis_backed_rows.append(row)
+            news = _json_dict(evidence.get("news"))
+            if news.get("checked") is True:
+                theme_news_news_checked_rows.append(row)
     return {
         "checked_rows": len(rows_list),
         "kis_sidecar_rows": len(sidecar_rows),
@@ -701,6 +736,10 @@ def verify_existing_sidecars(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any
         "kis_sidecar_origins": dict(origins),
         "kis_sidecar_by_market": dict(by_market),
         "kis_sidecar_by_role": dict(by_role),
+        "kis_theme_news_evidence_rows": len(theme_news_rows),
+        "kis_theme_news_kis_backed_rows": len(theme_news_kis_backed_rows),
+        "kis_theme_news_news_checked_rows": len(theme_news_news_checked_rows),
+        "kis_theme_news_levels": dict(theme_news_levels),
         "sample_sidecar_rows": [
             {
                 "id": row.get("id"),
@@ -710,6 +749,7 @@ def verify_existing_sidecars(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any
                 "row_role": row.get("row_role"),
                 "base_trade_date": _date_text(row.get("base_trade_date") or row.get("scanned_at")),
                 "has_outcome_label": _has_outcome_label(row),
+                "has_kis_theme_news_evidence": bool(_theme_news_evidence_payload(row)),
             }
             for row in sidecar_rows[:5]
         ],
@@ -730,7 +770,7 @@ def build_updates(
     skipped_missing_ticker = 0
     skipped_missing_label = 0
     for row in rows:
-        if not options.overwrite and _has_kis_sidecar(row):
+        if not options.overwrite and not options.news_only_existing_sidecar and _has_kis_sidecar(row):
             skipped_existing += 1
             continue
         if options.require_outcome_label and all(key in row for key in OUTCOME_LABEL_COLUMNS) and not _has_outcome_label(row):
@@ -750,11 +790,44 @@ def build_updates(
     def _process_group(group_item: Tuple[Tuple[str, str, str], List[Dict[str, Any]]]) -> Dict[str, Any]:
         (symbol, market, base_text), key_rows = group_item
         base = date.fromisoformat(base_text)
-        sidecar = builder.build_sidecar_for_key(symbol, market, base, generated_at=generated_at)
         result_updates: List[Dict[str, Any]] = []
         result_key_failures: Counter[str] = Counter()
         result_rows_by_market: Counter[str] = Counter()
         result_rows_by_role: Counter[str] = Counter()
+        if options.news_only_existing_sidecar:
+            existing_sidecar = _existing_kis_sidecar(key_rows[0])
+            if not existing_sidecar:
+                return {
+                    "updates": result_updates,
+                    "built_key": 0,
+                    "key_failures": Counter({"existing_sidecar_missing_for_news_only": len(key_rows)}),
+                    "rows_by_market": result_rows_by_market,
+                    "rows_by_role": result_rows_by_role,
+                }
+            sidecar = dict(existing_sidecar)
+            news = builder._news(symbol, base)
+            coverage = _json_dict(sidecar.get("coverage"))
+            news_checked = bool(news.get("checked")) if isinstance(news, Mapping) else False
+            coverage["news_titles"] = news_checked
+            sidecar["coverage"] = coverage
+            sidecar["news_contract"] = news if isinstance(news, Mapping) else {}
+            model_features = _json_dict(sidecar.get("model_candidate_features"))
+            model_features["kis_news_title_count"] = _safe_float(news.get("news_count")) if isinstance(news, Mapping) else None
+            sidecar["model_candidate_features"] = model_features
+            warnings = list(sidecar.get("warnings") or [])
+            warnings.append("kis_news_titles_backfilled_from_existing_sidecar")
+            if not news_checked:
+                warnings.append("kis_news_titles_unavailable_no_dummy_written")
+            sidecar["warnings"] = sorted(set(str(item) for item in warnings if item))
+            sidecar["news_backfill"] = {
+                "contract_version": BACKFILL_VERSION,
+                "feature_origin": "kis_openapi_news_backfill",
+                "backfilled_at": generated_at,
+                "base_trade_date": base.isoformat(),
+                "no_dummy_data": True,
+            }
+        else:
+            sidecar = builder.build_sidecar_for_key(symbol, market, base, generated_at=generated_at)
         skip_reason = str(sidecar.get("_skip_reason") or "").strip()
         if skip_reason:
             result_key_failures[skip_reason] += len(key_rows)
@@ -929,6 +1002,8 @@ def _write_report(report: Mapping[str, Any], path: Path) -> None:
         f"- sidecar_keys_built: `{summary.get('sidecar_keys_built')}`",
         f"- updates_built: `{summary.get('updates_built')}`",
         f"- rows_written: `{summary.get('rows_written')}`",
+        f"- kis_theme_news_evidence_rows: `{summary.get('kis_theme_news_evidence_rows')}`",
+        f"- kis_theme_news_news_checked_rows: `{summary.get('kis_theme_news_news_checked_rows')}`",
         f"- no_dummy_data: `{summary.get('no_dummy_data')}`",
         "",
         "## Limitations",
@@ -965,6 +1040,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--daily-lookback-days", type=int, default=140)
     parser.add_argument("--only-outcome-available", action="store_true")
+    parser.add_argument("--row-role", choices=["ALL", "emitted", "rejected"], default="ALL")
     parser.add_argument(
         "--require-outcome-label",
         action="store_true",
@@ -980,6 +1056,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-hour", default="153000")
     parser.add_argument("--include-minute", action="store_true")
     parser.add_argument("--include-news", action="store_true")
+    parser.add_argument(
+        "--news-only-existing-sidecar",
+        action="store_true",
+        help="Fetch only KIS news titles and merge them into rows that already have a real KIS sidecar.",
+    )
     parser.add_argument("--include-current-rank", action="store_true")
     parser.add_argument("--no-flow", action="store_true")
     parser.add_argument("--no-vi", action="store_true")
@@ -1008,8 +1089,9 @@ def main() -> int:
         overwrite=args.overwrite,
         only_outcome_available=args.only_outcome_available,
         require_outcome_label=args.require_outcome_label,
+        row_role=args.row_role,
         client_filter=bool(args.client_filter),
-        skip_existing=not args.verify_only,
+        skip_existing=not args.verify_only and not args.news_only_existing_sidecar,
     )
     if args.plan_only:
         planning = summarize_candidate_rows(rows)
@@ -1029,6 +1111,7 @@ def main() -> int:
                 "max_base_date": _date_text(args.max_base_date) or "",
                 "only_outcome_available": bool(args.only_outcome_available),
                 "require_outcome_label": bool(args.require_outcome_label),
+                "row_role": args.row_role,
                 "client_filter": bool(args.client_filter),
                 "max_workers": int(args.max_workers or 1),
             },
@@ -1062,6 +1145,7 @@ def main() -> int:
                 "max_base_date": _date_text(args.max_base_date) or "",
                 "only_outcome_available": bool(args.only_outcome_available),
                 "require_outcome_label": bool(args.require_outcome_label),
+                "row_role": args.row_role,
                 "client_filter": bool(args.client_filter),
                 "max_workers": int(args.max_workers or 1),
             },
@@ -1082,10 +1166,11 @@ def main() -> int:
         include_flow=not args.no_flow,
         include_minute=bool(args.include_minute),
         include_vi=not args.no_vi,
-        include_news=bool(args.include_news),
+        include_news=bool(args.include_news or args.news_only_existing_sidecar),
         include_stock_info=not args.no_stock_info,
         include_financial=not args.no_financial,
         include_current_rank=bool(args.include_current_rank),
+        news_only_existing_sidecar=bool(args.news_only_existing_sidecar),
         input_hour=str(args.input_hour or "153000"),
         sleep_sec=max(0.0, float(args.sleep_sec or 0.0)),
         overwrite=bool(args.overwrite),
@@ -1117,6 +1202,7 @@ def main() -> int:
             "include_minute": options.include_minute,
             "include_vi": options.include_vi,
             "include_news": options.include_news,
+            "news_only_existing_sidecar": options.news_only_existing_sidecar,
             "include_stock_info": options.include_stock_info,
             "include_financial": options.include_financial,
             "include_current_rank": options.include_current_rank,

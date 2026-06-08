@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 
 from modules.kis_model_gate import evaluate_kis_model_gate
 
-REPORT_VERSION = "kis_model_market_comparison_v2_kis_gate"
+REPORT_VERSION = "kis_model_market_comparison_v3_operational_ui_plan"
 DEFAULT_OUTPUT = ROOT / "runtime_state" / "reports" / "learning" / "kis_model_market_comparison.json"
 DEFAULT_SOURCES = {
     "KOSPI": ROOT
@@ -108,6 +108,82 @@ def _baseline_rows(report: Dict[str, Any], market: str) -> List[Dict[str, Any]]:
     return out
 
 
+def _delta(a: Any, b: Any) -> float | None:
+    try:
+        if a is None or b is None:
+            return None
+        return round(float(a) - float(b), 4)
+    except Exception:
+        return None
+
+
+def _performance_comparison(kis_metrics: Dict[str, Any], baselines: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for baseline in baselines:
+        metrics = baseline.get("metrics") if isinstance(baseline.get("metrics"), dict) else {}
+        rows.append(
+            {
+                "baseline": baseline.get("name"),
+                "topn": baseline.get("topn"),
+                "sample_delta_n": _delta(kis_metrics.get("n"), metrics.get("n")),
+                "active_days_delta": _delta(kis_metrics.get("active_days"), metrics.get("active_days")),
+                "win_1d_delta_pct": _delta(kis_metrics.get("win_1d_pct"), metrics.get("win_1d_pct")),
+                "avg_1d_delta_pct": _delta(kis_metrics.get("avg_1d_pct"), metrics.get("avg_1d_pct")),
+                "min_1d_delta_pct": _delta(kis_metrics.get("min_1d_pct"), metrics.get("min_1d_pct")),
+                "max_1d_delta_pct": _delta(kis_metrics.get("max_1d_pct"), metrics.get("max_1d_pct")),
+                "win_3d_delta_pct": _delta(kis_metrics.get("win_3d_pct"), metrics.get("win_3d_pct")),
+                "avg_3d_delta_pct": _delta(kis_metrics.get("avg_3d_pct"), metrics.get("avg_3d_pct")),
+                "min_3d_delta_pct": _delta(kis_metrics.get("min_3d_pct"), metrics.get("min_3d_pct")),
+                "max_3d_delta_pct": _delta(kis_metrics.get("max_3d_pct"), metrics.get("max_3d_pct")),
+                "win_5d_delta_pct": _delta(kis_metrics.get("win_5d_pct"), metrics.get("win_5d_pct")),
+                "avg_5d_delta_pct": _delta(kis_metrics.get("avg_5d_pct"), metrics.get("avg_5d_pct")),
+                "min_5d_delta_pct": _delta(kis_metrics.get("min_5d_pct"), metrics.get("min_5d_pct")),
+                "max_5d_delta_pct": _delta(kis_metrics.get("max_5d_pct"), metrics.get("max_5d_pct")),
+                "avg_max_high_5d_delta_pct": _delta(kis_metrics.get("avg_max_high_5d_pct"), metrics.get("avg_max_high_5d_pct")),
+                "min_low_5d_delta_pct": _delta(kis_metrics.get("min_min_low_5d_pct"), metrics.get("min_min_low_5d_pct")),
+            }
+        )
+    return rows
+
+
+def _theme_news_readiness(readiness: Dict[str, Any], market: str) -> Dict[str, Any]:
+    by_market = readiness.get("by_market") if isinstance(readiness.get("by_market"), dict) else {}
+    market_payload = by_market.get(market) if isinstance(by_market.get(market), dict) else {}
+    theme_news = market_payload.get("theme_news") if isinstance(market_payload.get("theme_news"), dict) else {}
+    feature_fill = readiness.get("feature_fill") if isinstance(readiness.get("feature_fill"), dict) else {}
+    fill = feature_fill.get("theme_news_top_feature_fill_pct") if isinstance(feature_fill.get("theme_news_top_feature_fill_pct"), dict) else {}
+    return {
+        "market_scope": theme_news,
+        "feature_fill_pct": fill,
+        "mature_for_training": bool(theme_news.get("mature_for_training")),
+        "news_checked_fill_pct": fill.get("kis_theme_news_news_checked"),
+        "evidence_score_fill_pct": fill.get("kis_theme_news_evidence_score"),
+        "kis_backed_fill_pct": fill.get("kis_theme_news_kis_backed"),
+    }
+
+
+def _operational_action(gate: Dict[str, Any]) -> str:
+    if gate.get("production_ready"):
+        return "production_replacement_candidate"
+    if gate.get("shadow_display_allowed"):
+        return "shadow_top_section_only_until_gate_passes"
+    return "blocked_do_not_display_as_candidate"
+
+
+def _ui_recommendations(gate: Dict[str, Any], theme_news: Dict[str, Any]) -> List[str]:
+    rows = [
+        "웹 최상단 KIS Shadow 섹션에 gate status, production_ready, risk_review_required를 함께 표시",
+        "후보 카드와 TopDeep 상세에 KIS 테마/뉴스 summary, evidence score, KIS-backed 여부, 뉴스 checked 여부를 표시",
+        "Discord 스캔 결과와 정밀분석 lookup에 동일한 KIS gate와 테마/뉴스 summary를 표시",
+        "운영 승격 전에는 기존 운영 Top 후보와 KIS 후보를 같은 run_id 기준으로 나란히 비교",
+    ]
+    if not gate.get("production_ready"):
+        rows.append("production_ready=false이면 매수 후보 문구 대신 shadow_only/risk_review 문구를 유지")
+    if not theme_news.get("mature_for_training"):
+        rows.append("theme_news mature_for_training=false이면 UI에 evidence coverage 부족 배지를 표시하고 승격 판단에서 제외")
+    return rows
+
+
 def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
     markets: Dict[str, Any] = {}
     warnings: List[str] = []
@@ -119,6 +195,9 @@ def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
         identity = _model_identity(best_kis)
         metrics = _metric_subset(best_kis.get("metrics") or {})
         kis_model_gate = evaluate_kis_model_gate(identity=identity, metrics=metrics, market=market)
+        baselines = _baseline_rows(report, market)
+        source_readiness = report.get("kis_feature_readiness") if isinstance(report.get("kis_feature_readiness"), dict) else {}
+        theme_news = _theme_news_readiness(source_readiness, market)
         markets[market] = {
             "source_path": _path_text(path),
             "source_generated_at": report.get("generated_at"),
@@ -126,13 +205,24 @@ def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
             "source_prepared_rows": report.get("prepared_rows"),
             "source_evaluated_combinations": report.get("evaluated_combinations"),
             "source_ok_combinations": report.get("ok_combinations"),
+            "source_kis_feature_readiness": source_readiness,
             "current_kis_model": {
                 "kind": "current_kis_challenger",
                 "identity": identity,
                 "metrics": metrics,
                 "kis_model_gate": kis_model_gate,
             },
-            "existing_production_baselines": _baseline_rows(report, market),
+            "existing_production_baselines": baselines,
+            "performance_comparison_vs_existing": _performance_comparison(metrics, baselines),
+            "theme_news_readiness": theme_news,
+            "operational_reflection": {
+                "action": _operational_action(kis_model_gate),
+                "gate_status": kis_model_gate.get("status"),
+                "production_ready": bool(kis_model_gate.get("production_ready")),
+                "shadow_display_allowed": bool(kis_model_gate.get("shadow_display_allowed")),
+                "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
+                "ui_recommendations": _ui_recommendations(kis_model_gate, theme_news),
+            },
         }
     return {
         "version": REPORT_VERSION,
@@ -189,6 +279,8 @@ def _markdown(report: Dict[str, Any]) -> str:
                 f"- current_kis 5d path: avg_max_high=`{_fmt(metrics.get('avg_max_high_5d_pct'))}%`, min_low=`{_fmt(metrics.get('min_min_low_5d_pct'))}%`, max_low=`{_fmt(metrics.get('max_min_low_5d_pct'))}%`",
                 f"- kis_model_gate: status=`{kis_gate.get('status')}`, production_ready=`{kis_gate.get('production_ready')}`, shadow_display_allowed=`{kis_gate.get('shadow_display_allowed')}`, risk_review_required=`{kis_gate.get('risk_review_required')}`",
                 f"- kis_model_gate blockers: `{kis_gate.get('production_blocking_reasons') or []}`",
+                f"- operational_action: `{(payload.get('operational_reflection') or {}).get('action')}`",
+                f"- theme_news_readiness: `{payload.get('theme_news_readiness')}`",
                 "",
                 "| baseline | n | active_days | 1d win/avg/min/max | 3d win/avg/min/max | 5d win/avg/min/max | 5d avg_high/min_low |",
                 "|---|---:|---:|---|---|---|---|",
@@ -211,6 +303,37 @@ def _markdown(report: Dict[str, Any]) -> str:
                 )
                 + " |"
             )
+        comparison = payload.get("performance_comparison_vs_existing") or []
+        if comparison:
+            lines.extend(
+                [
+                    "",
+                    "| baseline | d_win1 | d_avg1 | d_win3 | d_avg3 | d_win5 | d_avg5 | d_min5 | d_avg_high5 | d_min_low5 |",
+                    "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+                ]
+            )
+            for row in comparison:
+                lines.append(
+                    "| "
+                    + " | ".join(
+                        [
+                            str(row.get("baseline")),
+                            _fmt(row.get("win_1d_delta_pct")),
+                            _fmt(row.get("avg_1d_delta_pct")),
+                            _fmt(row.get("win_3d_delta_pct")),
+                            _fmt(row.get("avg_3d_delta_pct")),
+                            _fmt(row.get("win_5d_delta_pct")),
+                            _fmt(row.get("avg_5d_delta_pct")),
+                            _fmt(row.get("min_5d_delta_pct")),
+                            _fmt(row.get("avg_max_high_5d_delta_pct")),
+                            _fmt(row.get("min_low_5d_delta_pct")),
+                        ]
+                    )
+                    + " |"
+                )
+        ui_items = ((payload.get("operational_reflection") or {}).get("ui_recommendations") or [])
+        if ui_items:
+            lines.extend(["", "### UI 반영", *[f"- {item}" for item in ui_items]])
         lines.append("")
     if report.get("warnings"):
         lines.extend(["## Warnings", *[f"- {item}" for item in report["warnings"]], ""])

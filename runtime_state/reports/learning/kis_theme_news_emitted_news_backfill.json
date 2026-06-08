@@ -1,0 +1,55 @@
+{
+  "args": {
+    "base_date": "",
+    "client_filter": false,
+    "include_current_rank": false,
+    "include_financial": true,
+    "include_flow": true,
+    "include_minute": false,
+    "include_news": true,
+    "include_stock_info": true,
+    "include_vi": true,
+    "limit": 0,
+    "market": "ALL",
+    "max_base_date": "",
+    "max_id": 0,
+    "max_workers": 2,
+    "min_base_date": "",
+    "min_id": 0,
+    "news_only_existing_sidecar": true,
+    "only_outcome_available": true,
+    "overwrite": false,
+    "require_outcome_label": true,
+    "scan_mode": "SWING"
+  },
+  "contract_version": "kis_scan_universe_sidecar_backfill_v1",
+  "dry_run": false,
+  "generated_at": "2026-06-08T05:14:16.155052+00:00",
+  "summary": {
+    "candidate_rows": 3029,
+    "fetched_rows": 3029,
+    "generated_at": "2026-06-08T05:09:47.681263+00:00",
+    "key_failures": {},
+    "kis_call_counts": {
+      "news_titles": 1425
+    },
+    "kis_failures": {},
+    "max_workers": 2,
+    "no_dummy_data": true,
+    "rows_by_market": {
+      "KOSDAQ": 1263,
+      "KOSPI": 1766
+    },
+    "rows_by_role": {
+      "emitted": 3029
+    },
+    "rows_written": 3029,
+    "sidecar_keys_built": 1425,
+    "skipped_existing_rows": 0,
+    "skipped_missing_date_rows": 0,
+    "skipped_missing_outcome_label_rows": 0,
+    "skipped_missing_ticker_rows": 0,
+    "unique_keys": 1425,
+    "updates_built": 3029
+  }
+}

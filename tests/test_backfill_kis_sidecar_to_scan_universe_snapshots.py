@@ -48,6 +48,7 @@ class FakeKISClient:
             "vi_status": 0,
             "stock_info": 0,
             "financial_ratio": 0,
+            "news_titles": 0,
         }
 
     def daily_bars(self, *_args, **_kwargs):
@@ -96,6 +97,19 @@ class FakeKISClient:
                 "per": "9.1",
                 "pbr": "1.2",
             }
+        }
+
+    def news_titles(self, *_args, **_kwargs):
+        self.calls["news_titles"] += 1
+        return {
+            "output": [
+                {
+                    "hts_pbnt_titl_cntt": "AI 반도체 공급 계약 수주",
+                    "data_dt": "20260528",
+                    "data_tm": "090000",
+                    "dorg": "KIS",
+                }
+            ]
         }
 
 
@@ -157,6 +171,8 @@ def test_build_updates_dedupes_same_ticker_and_merges_feature_snapshot():
     assert snapshot["kis_model_candidate_features"]["kis_current_price"] == 10500.0
     assert snapshot["kis_model_candidate_features"]["kis_daily_bar_count"] == 2
     assert snapshot["kis_sidecar_backfill"]["no_dummy_data"] is True
+    assert snapshot["kis_theme_news_evidence"]["no_dummy_data"] is True
+    assert snapshot["kis_theme_news_evidence"]["kis_backed"] is True
 
 
 def test_build_updates_supports_bounded_parallel_workers():
@@ -215,6 +231,45 @@ def test_existing_sidecar_is_skipped_without_overwrite():
     assert client.calls["daily_bars"] == 0
 
 
+def test_news_only_existing_sidecar_backfills_news_without_rebuilding_sidecar():
+    client = FakeKISClient()
+    row = {
+        "id": 1,
+        "snapshot_key": "RUN-A:000001.KS:emitted",
+        "run_id": "RUN-A",
+        "ticker": "000001.KS",
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "base_trade_date": "2026-05-28",
+        "feature_snapshot": {
+            "theme_context": {"primary_theme": "AI반도체"},
+            "kis_sidecar": {
+                "feature_origin": "kis_openapi_backfill",
+                "coverage": {"quote_snapshot": True, "daily_ohlcv": True, "stock_info": True},
+                "stock_info_contract": {"checked": True, "sector_name": "반도체", "standard_industry_code": "C261"},
+                "model_candidate_features": {
+                    "kis_current_price": 10500.0,
+                    "kis_stock_sector_name": "반도체",
+                    "kis_stock_standard_industry_code": "C261",
+                },
+            },
+        },
+    }
+
+    built = build_updates([row], client=client, options=BackfillOptions(news_only_existing_sidecar=True))
+    snapshot = built["updates"][0]["feature_snapshot"]
+
+    assert built["sidecar_keys_built"] == 1
+    assert client.calls["daily_bars"] == 0
+    assert client.calls["news_titles"] == 1
+    assert snapshot["kis_sidecar"]["coverage"]["news_titles"] is True
+    assert snapshot["kis_sidecar"]["news_contract"]["news_count"] == 1
+    assert snapshot["kis_model_candidate_features"]["kis_news_title_count"] == 1.0
+    assert snapshot["kis_theme_news_evidence"]["news"]["news_count"] == 1
+    assert "contract_order" in snapshot["kis_theme_news_evidence"]["news"]["positive_tags"]
+    assert snapshot["kis_theme_news_evidence"]["no_dummy_data"] is True
+
+
 def test_missing_outcome_label_only_skips_when_required():
     client = FakeKISClient()
     row = {
@@ -249,7 +304,14 @@ def test_verify_existing_sidecars_counts_label_ready_rows():
             "row_role": "emitted",
             "base_trade_date": "2026-05-28",
             "return_5d_pct": 7.5,
-            "feature_snapshot": {"kis_sidecar": {"feature_origin": "kis_openapi_backfill"}},
+            "feature_snapshot": {
+                "kis_sidecar": {"feature_origin": "kis_openapi_backfill"},
+                "kis_theme_news_evidence": {
+                    "kis_backed": True,
+                    "evidence_strength_level": "strong",
+                    "news": {"checked": True},
+                },
+            },
         },
         {
             "id": 2,
@@ -269,6 +331,10 @@ def test_verify_existing_sidecars_counts_label_ready_rows():
     assert summary["kis_sidecar_rows"] == 2
     assert summary["kis_sidecar_outcome_label_rows"] == 1
     assert summary["kis_sidecar_origins"]["kis_openapi_backfill"] == 1
+    assert summary["kis_theme_news_evidence_rows"] == 1
+    assert summary["kis_theme_news_kis_backed_rows"] == 1
+    assert summary["kis_theme_news_news_checked_rows"] == 1
+    assert summary["kis_theme_news_levels"] == {"strong": 1}
 
 
 def test_summarize_candidate_rows_reports_date_distribution():

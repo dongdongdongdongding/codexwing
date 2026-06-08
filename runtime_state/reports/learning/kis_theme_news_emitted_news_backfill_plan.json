@@ -1,0 +1,157 @@
+{
+  "args": {
+    "base_date": "",
+    "client_filter": false,
+    "limit": 0,
+    "market": "ALL",
+    "max_base_date": "",
+    "max_id": 0,
+    "max_workers": 1,
+    "min_base_date": "",
+    "min_id": 0,
+    "only_outcome_available": true,
+    "require_outcome_label": true,
+    "row_role": "emitted",
+    "scan_mode": "SWING"
+  },
+  "contract_version": "kis_scan_universe_sidecar_backfill_v1",
+  "dry_run": true,
+  "generated_at": "2026-06-08T05:07:55.296367+00:00",
+  "plan_only": true,
+  "summary": {
+    "candidate_rows": 3029,
+    "candidate_rows_by_base_date": {
+      "2026-04-09": 4,
+      "2026-04-10": 8,
+      "2026-04-21": 33,
+      "2026-05-08": 8,
+      "2026-05-11": 148,
+      "2026-05-13": 229,
+      "2026-05-14": 785,
+      "2026-05-15": 373,
+      "2026-05-18": 219,
+      "2026-05-19": 99,
+      "2026-05-20": 18,
+      "2026-05-21": 149,
+      "2026-05-22": 292,
+      "2026-05-26": 485,
+      "2026-05-27": 171,
+      "2026-05-28": 8
+    },
+    "candidate_rows_by_market": {
+      "KOSDAQ": 1263,
+      "KOSPI": 1766
+    },
+    "candidate_rows_by_role": {
+      "emitted": 3029
+    },
+    "fetched_rows": 3029,
+    "id_max": 110464,
+    "id_min": 1,
+    "no_dummy_data": true,
+    "rows_written": 0,
+    "sample_candidate_rows": [
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 1,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-AE31DAB9:006400.KS",
+        "ticker": "006400.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 2,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-AE31DAB9:007810.KS",
+        "ticker": "007810.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 832,
+        "market": "KOSDAQ",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-745E7353:232680.KQ",
+        "ticker": "232680.KQ"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 833,
+        "market": "KOSDAQ",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-745E7353:126730.KQ",
+        "ticker": "126730.KQ"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 834,
+        "market": "KOSDAQ",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-745E7353:052710.KQ",
+        "ticker": "052710.KQ"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 2518,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-D0FF9BBB:012200.KS",
+        "ticker": "012200.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 2519,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-D0FF9BBB:278470.KS",
+        "ticker": "278470.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 2520,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-D0FF9BBB:036570.KS",
+        "ticker": "036570.KS"
+      },
+      {
+        "base_trade_date": "2026-05-27",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 5404,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-8609FC5D:402340.KS",
+        "ticker": "402340.KS"
+      },
+      {
+        "base_trade_date": "2026-05-27",
+        "has_kis_sidecar": true,
+        "has_outcome_label": true,
+        "id": 5405,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-8609FC5D:009540.KS",
+        "ticker": "009540.KS"
+      }
+    ],
+    "unique_base_dates": 16
+  }
+}

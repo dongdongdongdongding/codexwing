@@ -559,9 +559,23 @@ def test_kis_feature_readiness_reports_date_coverage():
                 "return_5d_pct": 1.0,
                 "feature_snapshot": {
                     "kis_sidecar": {
-                        "coverage": {"quote_snapshot": True, "daily_ohlcv": True},
+                        "coverage": {"quote_snapshot": True, "daily_ohlcv": True, "news_titles": True, "stock_info": True},
                         "replacement_readiness": {"model_sidecar_ready": True},
-                        "model_candidate_features": {"kis_value_traded": float(idx * 1000)},
+                        "news_contract": {
+                            "checked": True,
+                            "news_count": 1,
+                            "rows": [{"title": "AI 반도체 공급 계약 수주"}],
+                        },
+                        "stock_info_contract": {
+                            "checked": True,
+                            "sector_name": "semiconductor",
+                            "standard_industry_code": "C261",
+                        },
+                        "model_candidate_features": {
+                            "kis_value_traded": float(idx * 1000),
+                            "kis_stock_sector_name": "semiconductor",
+                            "kis_stock_standard_industry_code": "C261",
+                        },
                     }
                 },
             }
@@ -574,10 +588,12 @@ def test_kis_feature_readiness_reports_date_coverage():
     coverage = readiness["families"]["sidecar"]["date_coverage"]
 
     assert readiness["families"]["sidecar"]["mature_for_training"] is True
+    assert readiness["families"]["theme_news"]["mature_for_training"] is True
     assert coverage["2026-05-20"]["rows"] == 3
     assert coverage["2026-05-20"]["outcome_label_rows"] == 3
     assert coverage["2026-05-20"]["rows_by_market"] == {"KOSDAQ": 1, "KOSPI": 2}
     assert readiness["by_market"]["KOSDAQ"]["sidecar"]["date_coverage"]["2026-05-21"]["rows"] == 1
+    assert readiness["feature_fill"]["theme_news_top_feature_fill_pct"]["kis_theme_news_news_checked"] == 100.0
 
 
 def test_candidate_verdict_blocks_sparse_high_score_candidate():
