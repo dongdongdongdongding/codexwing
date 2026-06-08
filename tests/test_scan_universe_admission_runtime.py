@@ -1,8 +1,11 @@
 import modules.scan_universe_admission as admission
 from modules.scan_universe_admission import (
+    KIS_SHADOW_SECTION,
     _extract_feature_columns,
+    build_kis_shadow_admission_records,
     build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
+    merge_kis_prefilter_evidence_into_rows,
 )
 
 
@@ -87,6 +90,127 @@ def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
     assert features["kis_prefilter_rank_volume_power"] == 3.0
     assert features["kis_prefilter_quote_prev_volume_ratio"] == 155.2
     assert features["kis_prefilter_flow_whale_score"] == 71.0
+
+
+def test_merge_kis_prefilter_evidence_into_rows_uses_real_summary_payload_only():
+    rows = [
+        {"ticker": "005930.KS", "feature_snapshot": {"alpha_score": 91}},
+        {"ticker": "000660.KS", "feature_snapshot": {"alpha_score": 88}},
+    ]
+    summary = {
+        "kis_operational_prefilter": {
+            "selected": [
+                {
+                    "ticker": "005930.KS",
+                    "feature_origin": "kis_openapi_prefilter",
+                    "is_dummy_data": False,
+                    "quote_ok": True,
+                    "quote": {"value_traded": 123456789.0},
+                },
+                {
+                    "ticker": "000660.KS",
+                    "feature_origin": "kis_openapi_prefilter",
+                    "is_dummy_data": True,
+                    "quote_ok": True,
+                },
+            ]
+        }
+    }
+
+    merged = merge_kis_prefilter_evidence_into_rows(rows, summary)
+
+    first_snapshot = merged[0]["feature_snapshot"]
+    assert first_snapshot["kis_operational_prefilter"]["ticker"] == "005930.KS"
+    assert first_snapshot["kis_operational_prefilter"]["is_dummy_data"] is False
+    assert merged[0]["kis_operational_prefilter"]["feature_origin"] == "kis_openapi_prefilter"
+    assert "kis_openapi_prefilter" in merged[0]["feature_origin"]
+    assert "kis_operational_prefilter" not in merged[1]["feature_snapshot"]
+
+
+def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
+    bundle = {
+        "market": "KOSPI",
+        "model_name": "fake",
+        "label": "fake",
+        "feature_set": "fake",
+        "selection_rule": "fake_rule",
+        "prob_threshold": 0.99,
+        "topn": 1,
+        "_model_path": "fake.pkl",
+        "validation": {"metrics": {"n": 10, "win_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_5d_pct": -2.0}},
+    }
+    scored = [
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "_admission_probability": 0.88,
+            "_admission_source_role": "emitted",
+            "feature_snapshot": {
+                "kis_sidecar": {
+                    "feature_origin": "kis_openapi_sidecar",
+                    "replacement_readiness": {"model_sidecar_ready": True},
+                }
+            },
+            "_admission_features": {
+                "feature_coverage_score": 1.0,
+                "feature_missing_keys": [],
+                "volume_ratio": 1.8,
+                "kis_sidecar_present": 1.0,
+                "kis_sidecar_model_ready": 1.0,
+            },
+        },
+        {
+            "ticker": "000660.KS",
+            "stock_name": "SK하이닉스",
+            "_admission_probability": 0.99,
+            "_admission_source_role": "emitted",
+            "_admission_features": {
+                "feature_coverage_score": 1.0,
+                "feature_missing_keys": [],
+                "volume_ratio": 2.1,
+            },
+        },
+    ]
+    monkeypatch.setattr(admission, "load_admission_model", lambda _market: bundle)
+    monkeypatch.setattr(admission, "score_scan_universe_admission_rows", lambda _rows, market: scored)
+    monkeypatch.setattr(
+        admission,
+        "_load_kis_shadow_report",
+        lambda _market: {
+            "report_path": "runtime_state/reports/learning/kis_model_market_comparison.json",
+            "identity": {
+                "label": "kis",
+                "feature_set": "kis",
+                "model": "xgboost",
+                "selection_rule": "top1",
+                "topn": 3,
+                "promotion_candidate": {"blocking_reasons": ["active_day_sample_below_gate"]},
+            },
+            "metrics": {
+                "n": 12,
+                "active_days": 6,
+                "win_1d_pct": 58.3,
+                "avg_1d_pct": 0.8,
+                "win_3d_pct": 66.7,
+                "avg_3d_pct": 1.4,
+                "win_5d_pct": 75.0,
+                "avg_5d_pct": 2.5,
+                "min_5d_pct": -1.2,
+            },
+        },
+    )
+
+    records = build_kis_shadow_admission_records(scored, market="KOSPI", limit=3)
+
+    assert [row["ticker"] for row in records] == ["005930.KS"]
+    row = records[0]
+    assert row["_analysis_section"] == KIS_SHADOW_SECTION
+    assert row["_analysis_section_order"] == -250
+    assert row["decision"] == "KIS_SHADOW"
+    assert row["kis_shadow_candidate"]["shadow_only"] is True
+    assert row["kis_shadow_candidate"]["source"] == "real_kis_sidecar_or_prefilter_evidence"
+    assert row["realized_expectancy_admission"]["source"] == "kis_shadow_validation_report"
+    assert row["realized_expectancy_admission"]["5d_prob"] == 75.0
 
 
 def test_admission_records_include_full_result_interpretation():

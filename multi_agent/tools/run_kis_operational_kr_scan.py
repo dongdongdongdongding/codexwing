@@ -414,6 +414,100 @@ def _refresh_scan_universe_snapshot_with_prefilter(
         }
 
 
+def _load_raw_scan_payload(summary: Mapping[str, Any]) -> Dict[str, Any]:
+    artifact_dir_raw = str(summary.get("artifact_dir") or "").strip()
+    if not artifact_dir_raw:
+        return {}
+    raw_path = Path(artifact_dir_raw) / "raw_scan_results.json"
+    try:
+        payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _raw_result_rows(raw: Mapping[str, Any]) -> List[Dict[str, Any]]:
+    rows = raw.get("results_sorted") if isinstance(raw, Mapping) else None
+    if isinstance(rows, list):
+        return [row for row in rows if isinstance(row, dict)]
+    scan_result = raw.get("scan_result") if isinstance(raw.get("scan_result"), Mapping) else {}
+    rows = scan_result.get("results")
+    return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
+
+
+def _raw_diagnostics(raw: Mapping[str, Any]) -> Dict[str, Any]:
+    diagnostics = raw.get("diagnostics") if isinstance(raw.get("diagnostics"), Mapping) else {}
+    if diagnostics:
+        return dict(diagnostics)
+    scan_result = raw.get("scan_result") if isinstance(raw.get("scan_result"), Mapping) else {}
+    diagnostics = scan_result.get("diagnostics") if isinstance(scan_result.get("diagnostics"), Mapping) else {}
+    return dict(diagnostics)
+
+
+def _refresh_top_deep_reports_with_prefilter(
+    *,
+    summary: Dict[str, Any],
+    market: str,
+    scan_mode: str,
+) -> Dict[str, Any]:
+    run_id = str(summary.get("run_id") or "").strip()
+    if not run_id:
+        return {"ok": False, "enabled": True, "reason": "run_id_missing"}
+    manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), Mapping) else {}
+    planner_path = Path(str(manifest.get("planner_handoff") or ""))
+    if not planner_path.exists():
+        return {"ok": False, "enabled": True, "reason": "planner_handoff_missing"}
+    raw = _load_raw_scan_payload(summary)
+    if not raw:
+        return {"ok": False, "enabled": True, "reason": "raw_scan_results_missing"}
+    try:
+        from modules.top_deep_report import generate_and_store_top_deep_reports
+        from modules.ui_helpers import merge_profile_exception_leaders_into_planner
+
+        planner_payload = json.loads(planner_path.read_text(encoding="utf-8"))
+        profile_path = Path(str(manifest.get("profile_diagnostics") or ""))
+        profile_payload = json.loads(profile_path.read_text(encoding="utf-8")) if profile_path.exists() else {}
+        planner_payload = merge_profile_exception_leaders_into_planner(
+            planner_payload if isinstance(planner_payload, dict) else {},
+            profile_payload if isinstance(profile_payload, dict) else {},
+        )
+        top_n = max(1, int(os.getenv("AG_TOP_DEEP_N", "5") or 5))
+        write_db = os.getenv("AG_TOP_DEEP_WRITE_DB", "1").strip() not in {"0", "false", "False"}
+        result = generate_and_store_top_deep_reports(
+            scan_rows=_raw_result_rows(raw),
+            planner_payload=planner_payload,
+            run_id=run_id,
+            market=market,
+            scan_mode=str(scan_mode or "SWING").upper(),
+            top_n=top_n,
+            write_db=write_db,
+            diagnostics=_raw_diagnostics(raw),
+            scan_summary=summary,
+        )
+        result["enabled"] = True
+        db_result = result.get("db_result") if isinstance(result.get("db_result"), Mapping) else {}
+        runtime_result = (
+            result.get("runtime_artifact_result")
+            if isinstance(result.get("runtime_artifact_result"), Mapping)
+            else {}
+        )
+        count = int(result.get("count") or 0)
+        db_ok = (not write_db) or int(db_result.get("rows_upserted") or 0) == count
+        runtime_ok = (not write_db) or bool(runtime_result.get("ok") or runtime_result.get("enabled") is False)
+        result["ok"] = bool(count >= 0 and db_ok and runtime_ok)
+        summary["top_deep_reports"] = result
+        if isinstance(summary.get("manifest_paths"), dict) and result.get("local_path"):
+            summary["manifest_paths"]["top_deep_reports"] = str(result.get("local_path"))
+        return result
+    except BaseException as exc:
+        return {
+            "ok": False,
+            "enabled": True,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+
+
 def _persist_prefilter_artifact_for_run(
     *,
     summary: Dict[str, Any],
@@ -453,6 +547,12 @@ def _persist_prefilter_artifact_for_run(
         summary=summary,
     )
     summary["kis_prefilter_scan_universe_snapshot"] = snapshot_result
+    top_deep_refresh = _refresh_top_deep_reports_with_prefilter(
+        summary=summary,
+        market=market,
+        scan_mode=scan_mode,
+    )
+    summary["kis_prefilter_top_deep_refresh"] = top_deep_refresh
     summary_path = _write_pipeline_summary_with_prefilter(summary, prefilter_payload)
     try:
         from modules.runtime_artifact_store import upsert_runtime_artifact_payload
@@ -478,10 +578,12 @@ def _persist_prefilter_artifact_for_run(
     return {
         "ok": bool(runtime_result.get("ok") or runtime_result.get("enabled") is False)
         and bool(snapshot_result.get("ok") or snapshot_result.get("enabled") is False)
-        and bool(summary_runtime_result.get("ok") or summary_runtime_result.get("enabled") is False),
+        and bool(summary_runtime_result.get("ok") or summary_runtime_result.get("enabled") is False)
+        and bool(top_deep_refresh.get("ok") or top_deep_refresh.get("enabled") is False),
         "runtime_artifact": runtime_result,
         "scan_pipeline_summary_artifact": summary_runtime_result,
         "scan_universe_snapshot": snapshot_result,
+        "top_deep_refresh": top_deep_refresh,
         "summary_path": str(summary_path) if summary_path else None,
     }
 

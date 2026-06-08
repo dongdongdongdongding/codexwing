@@ -137,7 +137,7 @@ def _env_enabled(name: str, *, env: Mapping[str, Any] | None = None, default: st
 
 
 def build_scan_command(job: DiscordScanJob, *, env: Mapping[str, Any] | None = None) -> List[str]:
-    if _env_enabled("AG_KIS_OPERATIONAL_PREFILTER", env=env):
+    if _env_enabled("AG_KIS_OPERATIONAL_PREFILTER", env=env, default="1"):
         return [
             sys.executable,
             "-m",

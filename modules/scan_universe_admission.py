@@ -13,6 +13,7 @@ from modules.kis_model_features import flatten_kis_model_features
 
 
 MODEL_DIR = Path("models/scan_universe_challengers")
+KIS_MODEL_COMPARISON_PATH = Path("runtime_state/reports/learning/kis_model_market_comparison.json")
 MODEL_PATHS = {
     "KOSPI": MODEL_DIR / "kospi__touch10_guard_5d__wide_theme__xgboost__top1_p0p45.pkl",
     "KOSDAQ": MODEL_DIR / "kosdaq__touch5_guard_5d__flow_no_gate__lightgbm__top1.pkl",
@@ -20,9 +21,12 @@ MODEL_PATHS = {
 
 ADMISSION_SECTION = "Scan Universe Admission"
 NEAR_MISS_SECTION = "Admission Near Miss"
+KIS_SHADOW_SECTION = "KIS Shadow Candidate"
 RUNTIME_VERSION = "scan_universe_admission_runtime_v2_entry_touch"
+KIS_SHADOW_RUNTIME_VERSION = "kis_shadow_admission_runtime_v1"
 INTERPRETATION_VERSION = "scan_universe_admission_interpretation_v2_entry_touch"
 UNIVERSE_INPUT_VERSION = "scan_universe_admission_universe_input_v1"
+KIS_PREFILTER_FEATURE_VERSION = "kis_operational_prefilter_snapshot_v1"
 CRITICAL_LEGACY_REJECT_REASONS = {
     "FETCH_DATA_FAIL",
     "INTRADAY_FETCH_FAIL",
@@ -111,6 +115,15 @@ def _nested_dict(row: Dict[str, Any], key: str) -> Dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _nested_mapping(row: Dict[str, Any], *path: str) -> Dict[str, Any]:
+    current: Any = row
+    for key in path:
+        if not isinstance(current, dict):
+            return {}
+        current = current.get(key)
+    return current if isinstance(current, dict) else {}
+
+
 def _nested_present(row: Dict[str, Any], *paths: str) -> Any:
     for path in paths:
         current: Any = row
@@ -177,6 +190,295 @@ def _market_from(row: Dict[str, Any], fallback: str = "") -> str:
 
 def _feature_number(row: Dict[str, Any], *keys: str) -> float | None:
     return _safe_float(_first_present(row, *keys))
+
+
+def _has_kis_runtime_evidence(row: Dict[str, Any], features: Dict[str, Any]) -> bool:
+    if not isinstance(row, dict):
+        return False
+    numeric_evidence = (
+        features.get("kis_sidecar_present"),
+        features.get("kis_prefilter_present"),
+        features.get("kis_sidecar_model_ready"),
+        features.get("kis_prefilter_quote_ok"),
+        features.get("kis_prefilter_flow_ok"),
+    )
+    if any((_safe_float(value) or 0.0) > 0.0 for value in numeric_evidence):
+        return True
+    origin_values = [
+        row.get("feature_origin"),
+        _nested_present(row, "feature_snapshot.feature_origin"),
+        _nested_present(row, "feature_snapshot.kis_sidecar.feature_origin"),
+        _nested_present(row, "feature_snapshot.kis_operational_prefilter.feature_origin"),
+        _nested_present(row, "kis_sidecar.feature_origin"),
+        _nested_present(row, "_kis_sidecar.feature_origin"),
+    ]
+    if any(str(value or "").startswith("kis_openapi") for value in origin_values):
+        return True
+    if _nested_mapping(row, "feature_snapshot", "kis_sidecar"):
+        return True
+    if _nested_mapping(row, "feature_snapshot", "kis_operational_prefilter"):
+        return True
+    if _nested_mapping(row, "leader_metrics", "kis_sidecar"):
+        return True
+    if _nested_mapping(row, "_leader_metrics", "kis_sidecar"):
+        return True
+    return False
+
+
+@lru_cache(maxsize=4)
+def _load_kis_shadow_report(market: str) -> Dict[str, Any]:
+    market_key = str(market or "").upper().strip()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {}
+    try:
+        import json
+
+        payload = json.loads(KIS_MODEL_COMPARISON_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    markets = payload.get("markets") if isinstance(payload.get("markets"), dict) else {}
+    block = markets.get(market_key) if isinstance(markets.get(market_key), dict) else {}
+    current = block.get("current_kis_model") if isinstance(block.get("current_kis_model"), dict) else {}
+    identity = current.get("identity") if isinstance(current.get("identity"), dict) else {}
+    metrics = current.get("metrics") if isinstance(current.get("metrics"), dict) else {}
+    if not identity and not metrics:
+        return {}
+    return {
+        "report_path": str(KIS_MODEL_COMPARISON_PATH),
+        "report_generated_at": payload.get("generated_at"),
+        "source_generated_at": block.get("source_generated_at"),
+        "source_path": block.get("source_path"),
+        "identity": identity,
+        "metrics": metrics,
+    }
+
+
+def _fmt_pct_short(value: Any) -> str:
+    numeric = _safe_float(value)
+    if numeric is None:
+        return "-"
+    return f"{numeric:.2f}%"
+
+
+def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
+    report = _load_kis_shadow_report(market)
+    identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
+    metrics = report.get("metrics") if isinstance(report.get("metrics"), dict) else {}
+    blockers = []
+    promotion = identity.get("promotion_candidate") if isinstance(identity.get("promotion_candidate"), dict) else {}
+    if isinstance(promotion.get("blocking_reasons"), list):
+        blockers = [str(item) for item in promotion.get("blocking_reasons") if str(item).strip()]
+    profile = " / ".join(
+        str(value)
+        for value in (
+            identity.get("label"),
+            identity.get("feature_set"),
+            identity.get("model"),
+            identity.get("selection_rule"),
+        )
+        if value
+    )
+    metrics_line = (
+        f"n={metrics.get('n', '-')} · active_days={metrics.get('active_days', '-')} · "
+        f"1D win/avg {_fmt_pct_short(metrics.get('win_1d_pct'))}/{_fmt_pct_short(metrics.get('avg_1d_pct'))} · "
+        f"3D {_fmt_pct_short(metrics.get('win_3d_pct'))}/{_fmt_pct_short(metrics.get('avg_3d_pct'))} · "
+        f"5D {_fmt_pct_short(metrics.get('win_5d_pct'))}/{_fmt_pct_short(metrics.get('avg_5d_pct'))}"
+        if metrics
+        else "KIS 비교 리포트 미확보"
+    )
+    return {
+        "label": "KIS Shadow",
+        "profile": profile or "kis_runtime_evidence",
+        "conditions": "실제 KIS sidecar/prefilter evidence가 있는 현재 스캔 row만 shadow 채점",
+        "metrics": metrics_line,
+        "note": "운영 승격 전 관찰 레인입니다. 기존 운영 Top/Admission 후보를 대체하지 않습니다.",
+        "report_path": report.get("report_path"),
+        "report_generated_at": report.get("report_generated_at"),
+        "source_path": report.get("source_path"),
+        "blocking_reasons": blockers,
+    }
+
+
+def _kis_shadow_topn(market: str, fallback: int = 3) -> int:
+    report = _load_kis_shadow_report(market)
+    identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
+    topn = _safe_int(identity.get("topn"))
+    return max(1, int(topn or fallback or 3))
+
+
+def _kis_prefilter_feature_index(summary: Dict[str, Any] | None) -> Dict[str, Dict[str, Any]]:
+    payload = summary.get("kis_operational_prefilter") if isinstance(summary, dict) and isinstance(summary.get("kis_operational_prefilter"), dict) else {}
+    candidates: List[Dict[str, Any]] = []
+    for key in ("selected", "rejected_sample"):
+        rows = payload.get(key) if isinstance(payload.get(key), list) else []
+        candidates.extend(row for row in rows if isinstance(row, dict))
+    markets = payload.get("markets") if isinstance(payload.get("markets"), dict) else {}
+    for market_payload in markets.values():
+        if not isinstance(market_payload, dict):
+            continue
+        for key in ("selected", "rejected_sample"):
+            rows = market_payload.get(key) if isinstance(market_payload.get(key), list) else []
+            candidates.extend(row for row in rows if isinstance(row, dict))
+
+    indexed: Dict[str, Dict[str, Any]] = {}
+    for row in candidates:
+        if row.get("is_dummy_data") is True:
+            continue
+        ticker = _ticker(row)
+        if not ticker:
+            continue
+        feature = dict(row)
+        feature.setdefault("snapshot_feature_version", KIS_PREFILTER_FEATURE_VERSION)
+        feature.setdefault("feature_origin", "kis_openapi_prefilter")
+        feature.setdefault("is_dummy_data", False)
+        indexed[ticker] = feature
+    return indexed
+
+
+def merge_kis_prefilter_evidence_into_rows(
+    rows: List[Dict[str, Any]],
+    summary: Dict[str, Any] | None,
+) -> List[Dict[str, Any]]:
+    """Attach real KIS operational-prefilter evidence from scan summary rows.
+
+    This only merges KIS OpenAPI payloads already persisted in
+    ``scan_pipeline_summary.kis_operational_prefilter``. It does not synthesize
+    candidates or fabricate missing KIS fields.
+    """
+
+    index = _kis_prefilter_feature_index(summary)
+    if not index:
+        return rows
+    merged: List[Dict[str, Any]] = []
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        ticker = _ticker(row)
+        feature = index.get(ticker)
+        if not feature:
+            merged.append(row)
+            continue
+        copy = dict(row)
+        snapshot = copy.get("feature_snapshot") if isinstance(copy.get("feature_snapshot"), dict) else {}
+        snapshot = dict(snapshot)
+        snapshot["kis_operational_prefilter"] = dict(feature)
+        copy["feature_snapshot"] = snapshot
+        copy["kis_operational_prefilter"] = dict(feature)
+        origin = str(copy.get("feature_origin") or "").strip()
+        if "kis_openapi_prefilter" not in origin:
+            copy["feature_origin"] = f"{origin}+kis_openapi_prefilter" if origin else "kis_openapi_prefilter"
+        merged.append(copy)
+    return merged
+
+
+def build_kis_shadow_admission_records(
+    rows: List[Dict[str, Any]],
+    *,
+    market: str,
+    limit: int | None = None,
+) -> List[Dict[str, Any]]:
+    """Return display-only KIS shadow candidates for the current run.
+
+    No synthetic rows are created. A row is eligible only when the current scan
+    payload contains real KIS sidecar or KIS operational-prefilter evidence.
+    """
+
+    market_key = str(market or "").upper().strip()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return []
+    limit_n = max(1, int(limit if limit is not None else _kis_shadow_topn(market_key)))
+    bundle = load_admission_model(market_key)
+    scored = score_scan_universe_admission_rows(rows, market=market_key)
+    if not scored:
+        return []
+    gate = _kis_shadow_gate_payload(market_key)
+    report = _load_kis_shadow_report(market_key)
+    metrics = report.get("metrics") if isinstance(report.get("metrics"), dict) else {}
+    identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
+    selected: List[Dict[str, Any]] = []
+    for model_rank, row in enumerate(scored, start=1):
+        features = row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {}
+        if not _has_kis_runtime_evidence(row, features):
+            continue
+        probability = float(row.get("_admission_probability") or 0.0)
+        record = _attach_display_payload(
+            row,
+            bundle=bundle,
+            features=features,
+            probability=probability,
+            model_rank=model_rank,
+            passed=False,
+        )
+        shadow_rank = len(selected) + 1
+        record.update(
+            {
+                "decision": "KIS_SHADOW",
+                "decision_bucket": "kis_shadow",
+                "final_action": "KIS shadow 관찰 - 운영 승격 전 후보",
+                "entry_condition_text": (
+                    f"KIS evidence 기반 shadow 후보 #{shadow_rank}: "
+                    f"runtime admission score {probability * 100.0:.1f}%"
+                ),
+                "stop_condition_text": (
+                    f"KIS shadow 검증 최저 5D {metrics.get('min_5d_pct', '-')}% · "
+                    f"bad-path {metrics.get('bad_path_pct', '-')}%"
+                    if metrics
+                    else "KIS shadow 검증 메타 미확보"
+                ),
+                "_analysis_section": KIS_SHADOW_SECTION,
+                "_analysis_section_order": -250,
+                "_analysis_section_rank": shadow_rank,
+                "_source_order": "kis_shadow_admission_candidate",
+                "_shadow_gate": gate,
+                "kis_shadow_candidate": {
+                    "version": KIS_SHADOW_RUNTIME_VERSION,
+                    "market": market_key,
+                    "shadow_only": True,
+                    "runtime_model_probability_pct": round(probability * 100.0, 4),
+                    "runtime_model_rank": model_rank,
+                    "selection_rank": shadow_rank,
+                    "source": "real_kis_sidecar_or_prefilter_evidence",
+                    "identity": identity,
+                    "metrics": metrics,
+                    "promotion_blocking_reasons": gate.get("blocking_reasons") or [],
+                },
+                "realized_expectancy_admission": {
+                    **(record.get("realized_expectancy_admission") if isinstance(record.get("realized_expectancy_admission"), dict) else {}),
+                    "available": bool(metrics),
+                    "policy_version": KIS_SHADOW_RUNTIME_VERSION,
+                    "source": "kis_shadow_validation_report",
+                    "5d_prob": metrics.get("win_5d_pct"),
+                    "ranking_score_5d": round(probability * 100.0, 4),
+                    "base_expected_value_5d_pct": metrics.get("avg_5d_pct"),
+                    "expected_value_5d_pct": metrics.get("avg_5d_pct"),
+                    "stress_expected_value_5d_pct": metrics.get("min_5d_pct"),
+                    "expected_max_high_5d_pct": metrics.get("avg_max_high_5d_pct"),
+                    "stop5_pct": metrics.get("stop5_pct"),
+                },
+                "prediction": {
+                    **(record.get("prediction") if isinstance(record.get("prediction"), dict) else {}),
+                    "kis_shadow_runtime_probability_pct": round(probability * 100.0, 4),
+                    "realized_expectancy_5d_prob": metrics.get("win_5d_pct"),
+                    "ranking_score_5d": round(probability * 100.0, 4),
+                    "admission_policy_version": KIS_SHADOW_RUNTIME_VERSION,
+                },
+            }
+        )
+        interpretation = record.get("scan_result_interpretation") if isinstance(record.get("scan_result_interpretation"), dict) else {}
+        record["scan_result_interpretation"] = {
+            **interpretation,
+            "model_decision": "KIS shadow 후보",
+            "action": "운영 승격 전 최상단 관찰",
+            "warnings": list(interpretation.get("warnings") or []) + ["KIS_SHADOW_NOT_PRODUCTION_PROMOTED"],
+            "plain_text": (
+                f"KIS shadow 후보: runtime admission score {probability * 100.0:.1f}%. "
+                f"{gate.get('metrics') or ''} 운영 승격 전 관찰 레인입니다."
+            ).strip(),
+        }
+        selected.append(record)
+        if len(selected) >= limit_n:
+            break
+    return selected
 
 
 def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, Any]:
@@ -1057,11 +1359,14 @@ def admission_run_status(admission: Dict[str, Any]) -> Dict[str, Any]:
 
 __all__ = [
     "ADMISSION_SECTION",
+    "KIS_SHADOW_SECTION",
     "NEAR_MISS_SECTION",
     "RUNTIME_VERSION",
     "UNIVERSE_INPUT_VERSION",
     "admission_model_summary",
     "admission_run_status",
+    "build_kis_shadow_admission_records",
+    "merge_kis_prefilter_evidence_into_rows",
     "build_scan_universe_admission_input_rows",
     "build_scan_universe_admission_records",
     "score_scan_universe_admission_rows",

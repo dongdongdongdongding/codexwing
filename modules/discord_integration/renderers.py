@@ -17,11 +17,14 @@ from modules.portfolio_exposure import build_portfolio_exposure_summary, render_
 from modules.runtime_artifact_store import load_runtime_artifact_payload, list_runtime_artifact_payloads
 from modules.scan_universe_admission import (
     ADMISSION_SECTION,
+    KIS_SHADOW_SECTION,
     NEAR_MISS_SECTION,
     admission_model_summary,
     admission_run_status,
+    build_kis_shadow_admission_records,
     build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
+    merge_kis_prefilter_evidence_into_rows,
 )
 from modules.ui_helpers import enrich_signal_rows_with_planner_trace, merge_profile_exception_leaders_into_planner
 
@@ -206,6 +209,14 @@ def _load_json(path: Path) -> Any:
         return None
 
 
+def _load_pipeline_summary_for_run(run_id: str, base: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    summary = dict(base) if isinstance(base, dict) else {}
+    local = _load_json(ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json")
+    if isinstance(local, dict):
+        summary.update(local)
+    return summary
+
+
 def _load_scan_context_for_run(run_id: str) -> Dict[str, Any]:
     if not run_id:
         return {}
@@ -215,6 +226,7 @@ def _load_scan_context_for_run(run_id: str) -> Dict[str, Any]:
         local_path=ARTIFACT_DIR / str(run_id) / "scan_pipeline_summary.json",
     )
     summary = summary_payload if isinstance(summary_payload, dict) else {}
+    summary = _load_pipeline_summary_for_run(run_id, summary)
     scanner_payload: Dict[str, Any] = {}
     manifest = summary.get("manifest_paths") if isinstance(summary.get("manifest_paths"), dict) else {}
     scanner_path = manifest.get("scanner_handoff")
@@ -466,7 +478,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
         policy_metadata = active_policy_metadata(market=str(row.get("market") or row.get("Market") or ""), scan_mode=str(row.get("scan_mode") or row.get("Scan Mode") or ""))
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
     regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
-    section = interpretation.get("section") or alignment.get("analysis_section") or ADMISSION_SECTION
+    section = interpretation.get("section") or alignment.get("analysis_section") or row.get("analysis_section") or ADMISSION_SECTION
     section_rank = interpretation.get("section_rank") or alignment.get("analysis_section_rank") or row.get("rank")
     admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
     scan_interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
@@ -582,7 +594,7 @@ def build_top_deep_embeds(
     section_counts: Dict[str, int] = {}
     for row in all_rows:
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
-        section = str(alignment.get("analysis_section") or ADMISSION_SECTION)
+        section = str(alignment.get("analysis_section") or row.get("analysis_section") or ADMISSION_SECTION)
         section_counts[section] = section_counts.get(section, 0) + 1
     scan_context = _load_scan_context_for_run(latest_run)
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}
@@ -638,14 +650,20 @@ def build_top_deep_embeds(
 
     def _top_deep_sort_key(row: Dict[str, Any]) -> tuple[int, int, int]:
         alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
-        section = str(alignment.get("analysis_section") or ADMISSION_SECTION)
+        section = str(alignment.get("analysis_section") or row.get("analysis_section") or ADMISSION_SECTION)
         section_order = {
+            KIS_SHADOW_SECTION: -250,
             ADMISSION_SECTION: 0,
             NEAR_MISS_SECTION: 10,
         }.get(section, 50)
         section_rank = (
-            _safe_int(alignment.get("analysis_section_rank"), _safe_int(row.get("rank"), 9999))
-            if section in {ADMISSION_SECTION, NEAR_MISS_SECTION}
+            _safe_int(
+                alignment.get("analysis_section_rank")
+                or row.get("analysis_section_rank")
+                or row.get("_analysis_section_rank"),
+                _safe_int(row.get("rank"), 9999),
+            )
+            if section in {KIS_SHADOW_SECTION, ADMISSION_SECTION, NEAR_MISS_SECTION}
             else _safe_int(row.get("rank"), 9999)
         )
         return (
@@ -660,7 +678,8 @@ def build_top_deep_embeds(
         status_lines = [
             f"원본 통과: {result_count}개 · 필터: {filtered_count}개",
             (
-                f"섹션: Admission {section_counts.get(ADMISSION_SECTION, 0)} / "
+                f"섹션: KIS Shadow {section_counts.get(KIS_SHADOW_SECTION, 0)} / "
+                f"Admission {section_counts.get(ADMISSION_SECTION, 0)} / "
                 f"NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
             ),
         ]
@@ -699,7 +718,9 @@ def build_top_deep_embeds(
         title="Admission 모델 자동 정밀분석",
         description=(
             f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-            f"Admission {section_counts.get(ADMISSION_SECTION, 0)} / NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
+            f"KIS Shadow {section_counts.get(KIS_SHADOW_SECTION, 0)} / "
+            f"Admission {section_counts.get(ADMISSION_SECTION, 0)} / "
+            f"NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
         ),
         color=0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,
         fields=fields,
@@ -785,34 +806,56 @@ def _build_admission_result_for_run(
     if not run_id or run_id == "-":
         return {}
     artifact_rows = _load_archive_rows_from_artifact(run_id)
-    if not artifact_rows:
-        return {}
     summary = scan_summary if isinstance(scan_summary, dict) else {}
-    market_key = _infer_kr_market_key(market, summary, artifact_rows)
-    if market_key not in {"KOSPI", "KOSDAQ"}:
-        return {}
-    planner_payload = _load_planner_payload_for_run(run_id)
-    profile_payload = _load_profile_payload_for_run(run_id)
-    planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
+    summary = _load_pipeline_summary_for_run(run_id, summary)
     artifact_raw = load_runtime_artifact_payload(
         run_id,
         "raw_scan_results",
         local_path=ARTIFACT_DIR / str(run_id) / "raw_scan_results.json",
     )
     diagnostics = artifact_raw.get("diagnostics") if isinstance(artifact_raw, dict) and isinstance(artifact_raw.get("diagnostics"), dict) else {}
+    reject_details = diagnostics.get("reject_details_by_symbol") if isinstance(diagnostics.get("reject_details_by_symbol"), dict) else {}
+    if not artifact_rows and not reject_details:
+        return {}
+    market_key = _infer_kr_market_key(market, summary, artifact_rows)
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {}
+    planner_payload = _load_planner_payload_for_run(run_id)
+    profile_payload = _load_profile_payload_for_run(run_id)
+    planner_payload = merge_profile_exception_leaders_into_planner(planner_payload, profile_payload)
     enriched_rows = enrich_signal_rows_with_planner_trace(artifact_rows, planner_payload)
     universe_input = build_scan_universe_admission_input_rows(
         enriched_rows,
         diagnostics=diagnostics,
         market=market_key,
     )
-    return build_scan_universe_admission_records(
-        universe_input.get("rows", enriched_rows),
+    universe_rows = universe_input.get("rows", enriched_rows)
+    universe_rows = merge_kis_prefilter_evidence_into_rows(universe_rows, summary)
+    result = build_scan_universe_admission_records(
+        universe_rows,
         market=market_key,
         limit=max(1, int(limit or 5)),
         include_near_miss=True,
         input_summary=universe_input,
     )
+    kis_shadow = build_kis_shadow_admission_records(
+        universe_rows,
+        market=market_key,
+        limit=max(3, _safe_int(limit, 5)),
+    )
+    shadow_tickers = {
+        str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "").upper()
+        for row in kis_shadow
+        if isinstance(row, dict)
+    }
+    result["kis_shadow"] = kis_shadow
+    result["display_records"] = kis_shadow + [
+        row
+        for row in result.get("all_records", []) or []
+        if str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "").upper()
+        not in shadow_tickers
+    ]
+    return result
 
 
 def _low_liquidity_rows_value(rows: List[Dict[str, Any]], *, limit: int = 5) -> str:
@@ -832,6 +875,24 @@ def _low_liquidity_rows_value(rows: List[Dict[str, Any]], *, limit: int = 5) -> 
             f"거래대금 {turnover_text} · 거래량x{_fmt_num(features.get('volume_ratio'), 2)} · {reason}"
         )
     return ("\n".join(lines) or "저유동성 차단 후보 없음.")[:1024]
+
+
+def _kis_shadow_rows_value(rows: List[Dict[str, Any]], *, limit: int = 3) -> str:
+    lines: List[str] = []
+    for idx, row in enumerate(rows[: max(1, int(limit or 3))], start=1):
+        ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "-"
+        name = row.get("stock_name") or row.get("Stock Name") or row.get("name") or row.get("종목명") or ticker
+        admission = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
+        expectancy = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+        shadow = row.get("kis_shadow_candidate") if isinstance(row.get("kis_shadow_candidate"), dict) else {}
+        model_rank = shadow.get("runtime_model_rank") or admission.get("model_rank") or "-"
+        lines.append(
+            f"#{idx} {name}({ticker}) · KIS shadow · score {_fmt_num(admission.get('probability_pct'), 1)}% "
+            f"(model#{model_rank}) · 5D win {_fmt_num(expectancy.get('5d_prob'), 1)}% · "
+            f"avg5D {_fmt_pct(expectancy.get('base_expected_value_5d_pct'))} · "
+            f"min5D {_fmt_pct(expectancy.get('stress_expected_value_5d_pct'))} · shadow_only"
+        )
+    return ("\n".join(lines) or "KIS shadow 후보 없음.")[:1024]
 
 
 def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
@@ -958,7 +1019,10 @@ def build_archive_embed(
                 scan_summary=scan_summary,
                 limit=safe_offset + safe_limit,
             )
-            run_rows = admission_result.get("all_records", []) if admission_result else []
+            run_rows = (
+                admission_result.get("display_records")
+                or admission_result.get("all_records", [])
+            ) if admission_result else []
             top_deep_by_ticker = {
                 str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper(): row
                 for row in rows
@@ -1198,7 +1262,16 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                     f"({current_status.get('best_ticker') or '-'}) · "
                     f"{metric_label('candidate_top_prob_5d')} {_fmt_num(current_status.get('best_probability_pct'), 1)}% · "
                     f"{metric_label('admission_threshold')} "
-                    f"{_fmt_num(current_status.get('threshold_pct'), 1) + '%' if current_status.get('threshold_pct') is not None else (admission_summary.get('threshold_label') or model_summary.get('threshold_label') or '-')}"
+                    f"{_fmt_num(current_status.get('threshold_pct'), 1) + '%' if current_status.get('threshold_pct') is not None else (model_summary.get('threshold_label') or '-')}"
+                )
+            kis_shadow_rows = admission_result.get("kis_shadow", []) if admission_result else []
+            if kis_shadow_rows:
+                fields.append(
+                    {
+                        "name": "KIS Shadow 후보",
+                        "value": _kis_shadow_rows_value(kis_shadow_rows, limit=3),
+                        "inline": False,
+                    }
                 )
             fields.append(
                 {

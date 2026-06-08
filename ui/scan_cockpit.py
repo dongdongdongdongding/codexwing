@@ -16,6 +16,7 @@ from modules.admission_metric_copy import metric_help, metric_label
 from modules.scan_universe_admission import (
     admission_model_summary,
     admission_run_status,
+    build_kis_shadow_admission_records,
     build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
 )
@@ -309,6 +310,16 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     liquidity_blocked_rows = build_signal_display_rows(admission.get("liquidity_blocked", []), limit=5)
     blocked_rows = build_signal_display_rows(admission.get("blocked", []), limit=5)
     all_rows = build_signal_display_rows(admission.get("all_records", []), limit=None)
+    kis_shadow_records = build_kis_shadow_admission_records(
+        admission_input_rows,
+        market=market_key,
+        limit=3,
+    )
+    kis_shadow_rows = build_signal_display_rows(kis_shadow_records, limit=None)
+
+    st.markdown("### KIS Shadow 후보")
+    st.caption("실제 KIS sidecar/prefilter evidence가 있는 후보만 최상단에 shadow로 표시합니다. 운영 통과 후보로 승격하지 않고 관찰/검증 레인으로 분리합니다.")
+    render_signal_card_list(kis_shadow_rows, empty_text="현재 스캔 payload에서 KIS shadow 후보가 없습니다.")
 
     st.markdown("### 신규 운영 모델")
     cols = st.columns(6)

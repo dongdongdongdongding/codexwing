@@ -16,7 +16,12 @@ from modules.execution_stop_display import build_execution_stop_display
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.candidate_data_quality import build_candidate_data_quality
 from modules.candidate_interpretation import build_candidate_interpretation
-from modules.scan_universe_admission import build_scan_universe_admission_input_rows, build_scan_universe_admission_records
+from modules.scan_universe_admission import (
+    build_kis_shadow_admission_records,
+    build_scan_universe_admission_input_rows,
+    build_scan_universe_admission_records,
+    merge_kis_prefilter_evidence_into_rows,
+)
 from modules.ui_helpers import build_top5_plus_exception_records, enrich_signal_rows_with_planner_trace
 from modules.incident_regression import detect_failure_risk_reason_codes
 from modules.kr_stock_theme_master import get_stock_theme_record
@@ -285,6 +290,7 @@ def _select_top_candidates(
     planner_payload: Dict[str, Any],
     limit: int,
     diagnostics: Dict[str, Any] | None = None,
+    scan_summary: Dict[str, Any] | None = None,
 ) -> List[Dict[str, Any]]:
     ranked_rows = []
     for idx, row in enumerate(scan_rows or [], start=1):
@@ -314,6 +320,7 @@ def _select_top_candidates(
             market=market,
         )
         admission_rows = universe_input.get("rows") if isinstance(universe_input.get("rows"), list) else rows
+        admission_rows = merge_kis_prefilter_evidence_into_rows(admission_rows, scan_summary)
         groups = build_scan_universe_admission_records(
             admission_rows,
             market=market,
@@ -321,8 +328,18 @@ def _select_top_candidates(
             include_near_miss=True,
             input_summary=universe_input,
         )
-        primary_rows = list(groups.get("combined", []) or [])
-        selected = {_ticker(row) for row in primary_rows if _ticker(row)}
+        shadow_rows = build_kis_shadow_admission_records(
+            admission_rows,
+            market=market,
+            limit=max(int(limit or 0), 3),
+        )
+        shadow_tickers = {_ticker(row) for row in shadow_rows if _ticker(row)}
+        primary_rows = [
+            row
+            for row in list(groups.get("combined", []) or [])
+            if _ticker(row) not in shadow_tickers
+        ]
+        selected = shadow_tickers | {_ticker(row) for row in primary_rows if _ticker(row)}
         exception_limit = max(int(limit or 0), 5)
         exception_groups = build_top5_plus_exception_records(
             ranked_rows,
@@ -355,7 +372,7 @@ def _select_top_candidates(
                 copy["_source_order"] = "scan_universe_admission_model_plus_exception"
                 primary_rows.append(copy)
                 selected.add(ticker)
-        return primary_rows
+        return shadow_rows + primary_rows
     return rows[: max(int(limit or 0), 0)]
 
 
@@ -1288,12 +1305,22 @@ def build_top_deep_reports(
     scan_mode: str,
     top_n: int = 5,
     diagnostics: Dict[str, Any] | None = None,
+    scan_summary: Dict[str, Any] | None = None,
 ) -> List[Dict[str, Any]]:
     traces = _planner_trace_by_ticker(planner_payload)
     reports: List[Dict[str, Any]] = []
     generated_at = datetime.now(timezone.utc).isoformat()
     policy_metadata = active_policy_metadata(market=market, scan_mode=scan_mode)
-    for rank, row in enumerate(_select_top_candidates(scan_rows, planner_payload, top_n, diagnostics=diagnostics), start=1):
+    for rank, row in enumerate(
+        _select_top_candidates(
+            scan_rows,
+            planner_payload,
+            top_n,
+            diagnostics=diagnostics,
+            scan_summary=scan_summary,
+        ),
+        start=1,
+    ):
         ticker = _ticker(row)
         trace = traces.get(ticker, {})
         kis_sidecar = _extract_kis_sidecar(row, trace)
@@ -1592,6 +1619,7 @@ def generate_and_store_top_deep_reports(
     top_n: int = 5,
     write_db: bool = True,
     diagnostics: Dict[str, Any] | None = None,
+    scan_summary: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     reports = build_top_deep_reports(
         scan_rows=scan_rows,
@@ -1601,6 +1629,7 @@ def generate_and_store_top_deep_reports(
         scan_mode=scan_mode,
         top_n=top_n,
         diagnostics=diagnostics,
+        scan_summary=scan_summary,
     )
     exposure_summary = build_portfolio_exposure_summary(reports, run_id=run_id)
     for report in reports:

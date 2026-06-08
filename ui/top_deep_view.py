@@ -20,6 +20,7 @@ from ui.view_chrome import render_section_intro
 
 
 TOP_DEEP_SECTION_ORDER = {
+    "KIS Shadow Candidate": -250,
     "KOSPI Operating Challenger": -150,
     "KOSDAQ Operating Challenger": -140,
     "Practical 80 Gate": -100,

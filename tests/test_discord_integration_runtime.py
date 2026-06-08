@@ -454,35 +454,37 @@ def test_scan_ack_refuses_execution_while_dry_run():
     assert "막혀" in embed["description"]
 
 
-def test_scan_executor_command_is_fixed_full_kr_scan(monkeypatch, tmp_path):
+def test_scan_executor_command_defaults_to_kis_operational_prefilter(monkeypatch, tmp_path):
     from modules.discord_integration import scan_executor
 
     monkeypatch.delenv("AG_KIS_OPERATIONAL_PREFILTER", raising=False)
-    monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
-    job = create_scan_job("KOSDAQ")
-    cmd = build_scan_command(job)
-
-    assert "--market" in cmd
-    assert cmd[cmd.index("--market") + 1] == "KOSDAQ"
-    assert cmd[cmd.index("--max-scan") + 1] == "2000"
-    assert cmd[cmd.index("--profile") + 1] == "prod"
-    assert cmd[cmd.index("--scan-mode") + 1] == "SWING"
-
-
-def test_scan_executor_command_can_use_kis_operational_prefilter(monkeypatch, tmp_path):
-    from modules.discord_integration import scan_executor
-
-    monkeypatch.setenv("AG_KIS_OPERATIONAL_PREFILTER", "1")
     monkeypatch.setenv("AG_KIS_PREFILTER_MAX_CANDIDATES", "60")
     monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
     job = create_scan_job("KOSDAQ")
     cmd = build_scan_command(job)
 
     assert "multi_agent.tools.run_kis_operational_kr_scan" in cmd
+    assert "--market" in cmd
     assert cmd[cmd.index("--market") + 1] == "KOSDAQ"
+    assert cmd[cmd.index("--profile") + 1] == "prod"
     assert cmd[cmd.index("--scan-mode") + 1] == "SWING"
     assert cmd[cmd.index("--max-candidates-per-market") + 1] == "60"
     assert "--allow-live-network" in cmd
+
+
+def test_scan_executor_command_can_use_legacy_full_scan_opt_out(monkeypatch, tmp_path):
+    from modules.discord_integration import scan_executor
+
+    monkeypatch.setenv("AG_KIS_OPERATIONAL_PREFILTER", "0")
+    monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
+    job = create_scan_job("KOSDAQ")
+    cmd = build_scan_command(job)
+
+    assert "multi_agent.workflows.non_ui_scan_pipeline" in cmd
+    assert cmd[cmd.index("--market") + 1] == "KOSDAQ"
+    assert cmd[cmd.index("--max-scan") + 1] == "2000"
+    assert cmd[cmd.index("--profile") + 1] == "prod"
+    assert cmd[cmd.index("--scan-mode") + 1] == "SWING"
 
 
 def test_scan_executor_command_can_use_explicit_env_without_global_toggle(monkeypatch, tmp_path):
@@ -512,7 +514,7 @@ def test_scan_executor_command_can_use_explicit_env_without_global_toggle(monkey
 def test_scan_executor_command_supports_intraday_observation_mode(monkeypatch, tmp_path):
     from modules.discord_integration import scan_executor
 
-    monkeypatch.delenv("AG_KIS_OPERATIONAL_PREFILTER", raising=False)
+    monkeypatch.setenv("AG_KIS_OPERATIONAL_PREFILTER", "0")
     monkeypatch.setattr(scan_executor, "JOB_DIR", tmp_path)
     job = create_scan_job("KOSPI", scan_mode="INTRADAY")
     cmd = build_scan_command(job)
@@ -685,6 +687,73 @@ def test_scan_result_renderer_includes_low_liquidity_blocked_candidates(monkeypa
     low_field = next(field for field in embeds[0]["fields"] if field["name"] == "저유동성 차단 후보")
     assert "저유동성코스닥" in low_field["value"]
     assert "LIQUIDITY_FILTER_FAIL" in low_field["value"]
+
+
+def test_scan_result_renderer_surfaces_kis_shadow_candidates_first(monkeypatch):
+    shadow_row = {
+        "ticker": "005930.KS",
+        "stock_name": "삼성전자",
+        "decision": "KIS_SHADOW",
+        "scan_universe_admission": {
+            "probability_pct": 88.4,
+            "prob_threshold_pct": 99.0,
+            "model_rank": 2,
+            "selection_rule": "top1",
+        },
+        "realized_expectancy_admission": {
+            "5d_prob": 75.0,
+            "base_expected_value_5d_pct": 2.5,
+            "stress_expected_value_5d_pct": -1.2,
+        },
+        "kis_shadow_candidate": {
+            "shadow_only": True,
+            "runtime_model_rank": 2,
+            "source": "real_kis_sidecar_or_prefilter_evidence",
+        },
+    }
+    monkeypatch.setattr(renderers, "_load_scan_context_for_run", lambda _run_id: {})
+    monkeypatch.setattr(renderers, "_load_top_deep_reports", lambda *args, **kwargs: [])
+    monkeypatch.setattr(renderers, "build_top_deep_embeds", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        renderers,
+        "_build_admission_result_for_run",
+        lambda *args, **kwargs: {
+            "summary": {
+                "market": "KOSPI",
+                "model_name": "fake",
+                "label": "fake",
+                "selection_rule": "fake_rule",
+                "threshold_label": "99.0%",
+                "prob_threshold_pct": 99.0,
+                "validation": {"n": 12, "active_days": 6, "win_5d_pct": 75.0},
+            },
+            "passed": [],
+            "near_miss": [],
+            "liquidity_blocked": [],
+            "kis_shadow": [shadow_row],
+            "display_records": [shadow_row],
+        },
+    )
+
+    embeds = build_scan_result_embeds(
+        {
+            "run_id": "RUN-KIS-SHADOW",
+            "market": "KOSPI",
+            "total_scans": 835,
+            "result_count": 3,
+            "filtered_count": 832,
+            "warnings": [],
+            "discord_job": {"job_id": "DS-KIS-SHADOW", "market": "KOSPI", "returncode": 0},
+        },
+        config=DiscordIntegrationConfig(web_base_url="http://localhost:8501"),
+    )
+
+    field_names = [field["name"] for field in embeds[0]["fields"]]
+    assert field_names.index("KIS Shadow 후보") < field_names.index("Admission 모델 기준")
+    kis_field = next(field for field in embeds[0]["fields"] if field["name"] == "KIS Shadow 후보")
+    assert "삼성전자" in kis_field["value"]
+    assert "KIS shadow" in kis_field["value"]
+    assert "5D win 75.0%" in kis_field["value"]
 
 
 def test_scan_result_renderer_clarifies_zero_pass_exception_only(monkeypatch, tmp_path):
