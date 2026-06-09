@@ -1,24 +1,26 @@
 # Paper Trade Shadow Ledger
 
-- generated_at: `2026-05-27T10:53:32.779335+00:00`
-- mode: `close_to_close_shadow_v1`
-- ledger_rows: `273`
-- closed_rows: `273`
-- unresolved_rows: `0`
+- generated_at: `2026-06-09T06:29:54.862003+00:00`
+- mode: `close_to_close_shadow_buy_premium_v2`
+- ledger_rows: `305`
+- closed_rows: `295`
+- unresolved_rows: `10`
 - fee_bps: `0.0`
 - slippage_bps: `0.0`
+- buy_premium_pct: `2.0`
 
 ## Market Metrics
-- KOSDAQ: n=273 win=60.07 avg=0.924 median=1.6854 max=15.0 min=-10.0 hit5=31.5 loss5=19.78
+- KOSDAQ: n=295 win=42.71 avg=-1.2467 median=-0.9563 max=15.0 min=-10.0 hit5=25.76 loss5=35.93
 
 ## Rank Metrics
-- KOSDAQ rank 1: n=50 win=58.0 avg=-0.6203 median=0.7723 max=10.0 min=-10.0
-- KOSDAQ rank 2: n=53 win=47.17 avg=-0.4706 median=0.0 max=10.0 min=-10.0
-- KOSDAQ rank 3: n=59 win=64.41 avg=1.6294 median=1.8097 max=15.0 min=-10.0
-- KOSDAQ rank 4: n=54 win=77.78 avg=3.5302 median=4.5156 max=10.0 min=-10.0
-- KOSDAQ rank 5: n=57 win=52.63 avg=0.3761 median=1.9143 max=12.894 min=-10.0
+- KOSDAQ rank 1: n=53 win=37.74 avg=-2.3718 median=-1.305 max=10.0 min=-10.0
+- KOSDAQ rank 2: n=58 win=32.76 avg=-2.4571 median=-2.9328 max=10.0 min=-10.0
+- KOSDAQ rank 3: n=63 win=46.03 avg=-0.3854 median=-0.3084 max=15.0 min=-10.0
+- KOSDAQ rank 4: n=58 win=53.45 avg=0.7928 median=1.7286 max=10.0 min=-10.0
+- KOSDAQ rank 5: n=63 win=42.86 avg=-1.9248 median=-4.7619 max=10.6804 min=-10.0
 
 ## Interpretation
 - This is a real-data shadow ledger, not a broker fill ledger.
+- Return paths are evaluated after assuming the actual buy happens above the scan reference price by buy_premium_pct.
 - Rows without realized return data remain unresolved instead of being filled as losses or wins.
 - The schema is Supabase-friendly and can be upserted when the execution table is added.
