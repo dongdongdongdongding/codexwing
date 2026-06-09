@@ -199,6 +199,36 @@ THEME_CATEGORICAL = [
     "theme_inference_status",
 ]
 
+CLOSE_FAILURE_RISK_GROUPS = [
+    ("ticker", "ticker"),
+    ("theme", "primary_theme"),
+    ("kis_theme", "kis_theme_news_primary_theme"),
+    ("kis_sector", "kis_stock_sector_name"),
+    ("market", "market"),
+]
+
+CLOSE_FAILURE_RISK_METRICS = [
+    "touch5_n",
+    "failure_rate_pct",
+    "clean_defense_rate_pct",
+    "stop5_rate_pct",
+    "avg_close_5d_pct",
+    "avg_mfe_5d_pct",
+    "avg_mae_5d_pct",
+    "risk_score",
+]
+
+CLOSE_FAILURE_RISK_NUMERIC = [
+    f"close_failure_prior_{prefix}_{metric}"
+    for prefix, _column in CLOSE_FAILURE_RISK_GROUPS
+    for metric in CLOSE_FAILURE_RISK_METRICS
+]
+
+CLOSE_FAILURE_RISK_CATEGORICAL = [
+    f"close_failure_prior_{prefix}_risk_bucket"
+    for prefix, _column in CLOSE_FAILURE_RISK_GROUPS
+]
+
 LABEL_RETURN_COLUMNS = [
     "return_1d_pct",
     "return_3d_pct",
@@ -352,6 +382,16 @@ def _round(value: Any, digits: int = 6) -> float | None:
 def _pct(value: Any) -> float | None:
     number = _round(value, 8)
     return round(number * 100.0, 4) if number is not None else None
+
+
+def _safe_float(value: Any, default: float | None = None) -> float | None:
+    try:
+        number = float(value)
+    except Exception:
+        return default
+    if math.isnan(number) or math.isinf(number):
+        return default
+    return number
 
 
 def _metric_float(metrics_map: Dict[str, Any], key: str, default: float) -> float:
@@ -736,6 +776,127 @@ def _attach_kis_features(out: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([base, kis_frame], axis=1)
 
 
+def _risk_bucket(count: float, score: float | None) -> str:
+    if count < 3 or score is None or not math.isfinite(float(score)):
+        return "INSUFFICIENT_HISTORY"
+    if score >= 80.0:
+        return "EXTREME"
+    if score >= 60.0:
+        return "HIGH"
+    if score >= 40.0:
+        return "MODERATE"
+    return "LOW"
+
+
+def _attach_close_failure_prior_for_group(
+    out: pd.DataFrame,
+    *,
+    group_col: str,
+    prefix: str,
+    touch_base: pd.Series,
+    failure: pd.Series,
+    clean_defense: pd.Series,
+    stop5: pd.Series,
+    close5: pd.Series,
+    mfe5: pd.Series,
+    mae5: pd.Series,
+) -> pd.DataFrame:
+    if group_col not in out.columns:
+        for metric in CLOSE_FAILURE_RISK_METRICS:
+            out[f"close_failure_prior_{prefix}_{metric}"] = np.nan
+        out[f"close_failure_prior_{prefix}_risk_bucket"] = "INSUFFICIENT_HISTORY"
+        return out
+
+    order = out.sort_values(["trade_date", "run_id", "ticker"]).index
+    frame = pd.DataFrame(index=order)
+    frame["group"] = out.loc[order, group_col].fillna("UNKNOWN").astype(str).str.strip().replace("", "UNKNOWN")
+    frame["trade_date"] = out.loc[order, "trade_date"].fillna("").astype(str)
+    frame["touch"] = touch_base.loc[order].astype(float)
+    frame["failure"] = failure.loc[order].astype(float)
+    frame["clean"] = clean_defense.loc[order].astype(float)
+    frame["stop"] = stop5.loc[order].astype(float)
+    frame["close_sum"] = pd.to_numeric(close5.loc[order], errors="coerce").where(touch_base.loc[order], 0.0).fillna(0.0)
+    frame["mfe_sum"] = pd.to_numeric(mfe5.loc[order], errors="coerce").where(touch_base.loc[order], 0.0).fillna(0.0)
+    frame["mae_sum"] = pd.to_numeric(mae5.loc[order], errors="coerce").where(touch_base.loc[order], 0.0).fillna(0.0)
+
+    daily = (
+        frame.groupby(["group", "trade_date"], sort=True)[
+            ["touch", "failure", "clean", "stop", "close_sum", "mfe_sum", "mae_sum"]
+        ]
+        .sum()
+        .sort_index()
+    )
+    prior_daily = daily.groupby(level=0).cumsum() - daily
+    row_keys = pd.MultiIndex.from_frame(frame[["group", "trade_date"]])
+    prior_touch = prior_daily["touch"].reindex(row_keys).to_numpy(dtype=float)
+    prior_failure = prior_daily["failure"].reindex(row_keys).to_numpy(dtype=float)
+    prior_clean = prior_daily["clean"].reindex(row_keys).to_numpy(dtype=float)
+    prior_stop = prior_daily["stop"].reindex(row_keys).to_numpy(dtype=float)
+    prior_close_sum = prior_daily["close_sum"].reindex(row_keys).to_numpy(dtype=float)
+    prior_mfe_sum = prior_daily["mfe_sum"].reindex(row_keys).to_numpy(dtype=float)
+    prior_mae_sum = prior_daily["mae_sum"].reindex(row_keys).to_numpy(dtype=float)
+
+    prior_touch_series = pd.Series(prior_touch, index=order)
+    denom = prior_touch_series.replace(0.0, np.nan)
+    failure_rate = (prior_failure / denom) * 100.0
+    clean_rate = (prior_clean / denom) * 100.0
+    stop_rate = (prior_stop / denom) * 100.0
+    risk_score = (failure_rate.fillna(0.0) * 0.7 + stop_rate.fillna(0.0) * 0.35 - clean_rate.fillna(0.0) * 0.25).clip(0.0, 100.0)
+
+    result = pd.DataFrame(index=order)
+    result[f"close_failure_prior_{prefix}_touch5_n"] = prior_touch_series
+    result[f"close_failure_prior_{prefix}_failure_rate_pct"] = failure_rate
+    result[f"close_failure_prior_{prefix}_clean_defense_rate_pct"] = clean_rate
+    result[f"close_failure_prior_{prefix}_stop5_rate_pct"] = stop_rate
+    result[f"close_failure_prior_{prefix}_avg_close_5d_pct"] = prior_close_sum / denom
+    result[f"close_failure_prior_{prefix}_avg_mfe_5d_pct"] = prior_mfe_sum / denom
+    result[f"close_failure_prior_{prefix}_avg_mae_5d_pct"] = prior_mae_sum / denom
+    result[f"close_failure_prior_{prefix}_risk_score"] = risk_score.where(prior_touch_series.gt(0), np.nan)
+    result[f"close_failure_prior_{prefix}_risk_bucket"] = [
+        _risk_bucket(float(count), _safe_float(score))
+        for count, score in zip(
+            result[f"close_failure_prior_{prefix}_touch5_n"].tolist(),
+            result[f"close_failure_prior_{prefix}_risk_score"].tolist(),
+        )
+    ]
+    for column in result.columns:
+        out[column] = result[column].reindex(out.index)
+    return out
+
+
+def attach_close_failure_risk_features(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df.copy()
+    out = df.copy()
+    required_order_cols = {"trade_date", "run_id", "ticker"}
+    if not required_order_cols.issubset(out.columns):
+        return out
+    return1 = _adjusted_return_series(out, "return_1d_pct")
+    return5 = _adjusted_return_series(out, "return_5d_pct")
+    mfe5 = _adjusted_return_series(out, "max_high_return_5d_pct")
+    mae5 = _adjusted_return_series(out, "min_low_return_5d_pct")
+    touch_base = mfe5.ge(PRIMARY_TARGET_RETURN_PCT).fillna(False) & return5.notna()
+    failure = touch_base & return5.lt(0.0).fillna(False)
+    stop5 = touch_base & mae5.le(-5.0).fillna(False)
+    if "stop_before_target_5d_bool" in out.columns:
+        stop5 = stop5 | (touch_base & out["stop_before_target_5d_bool"].fillna(False).astype(bool))
+    clean_defense = touch_base & return5.gt(0.0).fillna(False) & mae5.gt(-5.0).fillna(False) & return1.ge(-3.0).fillna(False)
+    for prefix, group_col in CLOSE_FAILURE_RISK_GROUPS:
+        out = _attach_close_failure_prior_for_group(
+            out,
+            group_col=group_col,
+            prefix=prefix,
+            touch_base=touch_base,
+            failure=failure,
+            clean_defense=clean_defense,
+            stop5=stop5,
+            close5=return5,
+            mfe5=mfe5,
+            mae5=mae5,
+        )
+    return out
+
+
 def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") -> Tuple[pd.DataFrame, Dict[str, Any]]:
     if df.empty:
         return df.copy(), {"mode": return_sanity, "removed_rows": 0}
@@ -796,6 +957,7 @@ def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") 
     out["stop5_proxy"] = out.get("stop_before_target_5d_bool", pd.Series(False, index=out.index)).fillna(False)
     out["stop5_proxy"] |= low5.le(-5.0).fillna(False)
     out["bad_path"] = out["stop5_proxy"] | return1.lt(-3.0).fillna(False) | return5.lt(0.0).fillna(False)
+    out = attach_close_failure_risk_features(out)
     return out.sort_values(["trade_date", "run_id", "ticker"]).copy(), sanity
 
 
@@ -842,6 +1004,7 @@ def load_prepared_dataset_cache(cache_path: Path, *, signature: Mapping[str, Any
         frame = pd.read_pickle(cache_path)
     except Exception:
         return None
+    frame = attach_close_failure_risk_features(frame)
     cache_info = {
         "enabled": True,
         "mode": "hit",
@@ -985,6 +1148,8 @@ def feature_sets(df: pd.DataFrame) -> Dict[str, Tuple[List[str], List[str]]]:
     core = [col for col in CORE_NUMERIC if col in df.columns]
     flow = [col for col in CORE_NUMERIC + FLOW_NUMERIC if col in df.columns]
     all_num = [col for col in NUMERIC_FEATURES if col in df.columns]
+    failure_risk_num = [col for col in CLOSE_FAILURE_RISK_NUMERIC if col in df.columns]
+    failure_risk_cat = [col for col in CLOSE_FAILURE_RISK_CATEGORICAL if col in df.columns]
     non_gate_cats = [col for col in CATEGORICAL_FEATURES if col in df.columns and col not in set(GATE_CATEGORICAL + THEME_CATEGORICAL)]
     gate_cats = [col for col in CATEGORICAL_FEATURES if col in df.columns and col not in set(THEME_CATEGORICAL)]
     theme_cats = [col for col in CATEGORICAL_FEATURES if col in df.columns]
@@ -1017,11 +1182,35 @@ def feature_sets(df: pd.DataFrame) -> Dict[str, Tuple[List[str], List[str]]]:
         "flow_no_gate": (flow, non_gate_cats),
         "wide_no_theme": (all_num, gate_cats),
         "wide_theme": (all_num, theme_cats),
+        "failure_risk_augmented": (
+            list(dict.fromkeys(all_num + failure_risk_num)),
+            list(dict.fromkeys(theme_cats + failure_risk_cat)),
+        ),
+        "failure_risk_numeric": (
+            list(dict.fromkeys(all_num + failure_risk_num)),
+            [],
+        ),
         "kis_sidecar_only": (kis_sidecar_num, kis_sidecar_cat),
         "kis_prefilter_only": (kis_prefilter_num, kis_prefilter_cat),
         "kis_sidecar_augmented": (list(dict.fromkeys(flow + kis_sidecar_num)), list(dict.fromkeys(non_gate_cats + kis_sidecar_cat))),
+        "kis_sidecar_failure_risk_numeric": (
+            list(dict.fromkeys(flow + kis_sidecar_num + failure_risk_num)),
+            [],
+        ),
+        "kis_sidecar_failure_risk_augmented": (
+            list(dict.fromkeys(flow + kis_sidecar_num + failure_risk_num)),
+            list(dict.fromkeys(non_gate_cats + kis_sidecar_cat + failure_risk_cat)),
+        ),
         "kis_prefilter_augmented": (list(dict.fromkeys(flow + kis_prefilter_num)), list(dict.fromkeys(non_gate_cats + kis_prefilter_cat))),
         "kis_full_augmented": (list(dict.fromkeys(all_num + kis_all_num)), list(dict.fromkeys(theme_cats + kis_all_cat))),
+        "kis_failure_risk_augmented": (
+            list(dict.fromkeys(all_num + kis_all_num + failure_risk_num)),
+            list(dict.fromkeys(theme_cats + kis_all_cat + failure_risk_cat)),
+        ),
+        "kis_failure_risk_numeric": (
+            list(dict.fromkeys(all_num + kis_all_num + failure_risk_num)),
+            [],
+        ),
     }
 
 
@@ -1456,7 +1645,7 @@ def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
         return args
     if preset == "kis_operational_fast":
         args.labels = "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
-        args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
+        args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_sidecar_failure_risk_numeric,kis_full_augmented,kis_failure_risk_numeric"
         args.models = "random_forest,hist_gb,lightgbm"
         args.topns = "1,3"
         args.prob_thresholds = "0.60,0.65"
@@ -1465,7 +1654,7 @@ def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
         return args
     if preset == "kis_operational_full":
         args.labels = "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
-        args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
+        args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_sidecar_failure_risk_numeric,kis_sidecar_failure_risk_augmented,kis_full_augmented,kis_failure_risk_numeric,kis_failure_risk_augmented"
         args.models = "random_forest,extra_trees,hist_gb,lightgbm"
         args.topns = "1,3,5"
         args.prob_thresholds = "0.55,0.60,0.65"

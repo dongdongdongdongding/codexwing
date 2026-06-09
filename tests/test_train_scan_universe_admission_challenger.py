@@ -5,8 +5,10 @@ import pandas as pd
 
 from multi_agent.tools.train_scan_universe_admission_challenger import (
     apply_grid_preset,
+    attach_close_failure_risk_features,
     candidate_jobs,
     evaluate_candidate_jobs,
+    feature_sets,
     fetch_rows,
     fetch_rows_chunked,
     LABEL_SPECS,
@@ -79,6 +81,84 @@ def test_prepare_dataset_and_labels_use_scan_universe_path_fields():
     assert clean_valid.tolist() == [True, True]
     assert clean.tolist() == [True, False]
     assert df["bad_path"].tolist() == [False, True]
+
+
+def test_close_failure_risk_features_use_prior_dates_only_and_enter_feature_sets():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": 1,
+                "run_id": "RUN-A",
+                "ticker": "000001.KQ",
+                "market": "KOSDAQ",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "primary_theme": "EV",
+                "return_1d_pct": 1.0,
+                "return_5d_pct": 1.0,
+                "max_high_return_5d_pct": 7.2,
+                "min_low_return_5d_pct": -1.0,
+            },
+            {
+                "id": 2,
+                "run_id": "RUN-B",
+                "ticker": "000001.KQ",
+                "market": "KOSDAQ",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-21",
+                "primary_theme": "EV",
+                "return_1d_pct": 2.0,
+                "return_5d_pct": 8.0,
+                "max_high_return_5d_pct": 10.0,
+                "min_low_return_5d_pct": -1.0,
+            },
+            {
+                "id": 3,
+                "run_id": "RUN-B",
+                "ticker": "000002.KQ",
+                "market": "KOSDAQ",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-21",
+                "primary_theme": "EV",
+                "return_1d_pct": 2.0,
+                "return_5d_pct": 8.0,
+                "max_high_return_5d_pct": 10.0,
+                "min_low_return_5d_pct": -1.0,
+            },
+            {
+                "id": 4,
+                "run_id": "RUN-C",
+                "ticker": "000002.KQ",
+                "market": "KOSDAQ",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-22",
+                "primary_theme": "EV",
+                "return_1d_pct": 2.0,
+                "return_5d_pct": 8.0,
+                "max_high_return_5d_pct": 10.0,
+                "min_low_return_5d_pct": -1.0,
+            },
+        ]
+    )
+
+    df, _sanity = prepare_dataset(raw)
+    by_id = df.set_index("id")
+
+    assert by_id.loc[1, "close_failure_prior_ticker_touch5_n"] == 0.0
+    assert pd.isna(by_id.loc[1, "close_failure_prior_ticker_failure_rate_pct"])
+    assert by_id.loc[2, "close_failure_prior_ticker_touch5_n"] == 1.0
+    assert by_id.loc[2, "close_failure_prior_ticker_failure_rate_pct"] == 100.0
+    assert by_id.loc[3, "close_failure_prior_theme_touch5_n"] == 1.0
+    assert by_id.loc[3, "close_failure_prior_theme_failure_rate_pct"] == 100.0
+    assert by_id.loc[3, "close_failure_prior_ticker_touch5_n"] == 0.0
+    assert by_id.loc[4, "close_failure_prior_theme_touch5_n"] == 3.0
+    assert round(by_id.loc[4, "close_failure_prior_theme_failure_rate_pct"], 6) == 33.333333
+    assert by_id.loc[4, "close_failure_prior_theme_risk_bucket"] in {"MODERATE", "LOW"}
+
+    enriched = attach_close_failure_risk_features(df)
+    fmap = feature_sets(enriched)
+    assert "close_failure_prior_ticker_failure_rate_pct" in fmap["failure_risk_augmented"][0]
+    assert "close_failure_prior_theme_risk_bucket" in fmap["kis_failure_risk_augmented"][1]
 
 
 def test_top_indices_and_metrics_report_all_horizons():
@@ -831,7 +911,10 @@ def test_kis_operational_fast_grid_preset_bounds_jobs_and_parallel_eval(monkeypa
     results, meta = evaluate_candidate_jobs(data, jobs, args, progress=False)
 
     assert args.labels == "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
-    assert args.feature_sets == "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
+    assert args.feature_sets == (
+        "kis_sidecar_only,kis_sidecar_augmented,kis_sidecar_failure_risk_numeric,"
+        "kis_full_augmented,kis_failure_risk_numeric"
+    )
     assert args.models == "random_forest,hist_gb,lightgbm"
     assert args.topns == "1,3"
     assert args.prob_thresholds == "0.60,0.65"

@@ -1,0 +1,603 @@
+{
+  "best_shadow_candidate": {
+    "delta_vs_baseline": {
+      "avg_5d_pct": 11.862383,
+      "bad_path_pct": -49.2064,
+      "close_win_5d_pct": 49.7355,
+      "hit5_5d_pct": 21.164,
+      "min_min_low_5d_pct": 9.792215,
+      "stop5_pct": -20.6349,
+      "target_before_stop_5d_pct": 35.4497
+    },
+    "evaluated_combinations": 108,
+    "feature_set": "kis_failure_risk_numeric",
+    "final_model": {
+      "reason": "not_promotable",
+      "saved": false
+    },
+    "gate_action": "show_shadow_with_risk_review",
+    "gate_status": "shadow_risk_review",
+    "label": "target_first_sustain_5d",
+    "market": "KOSPI",
+    "metrics": {
+      "active_days": 9,
+      "active_runs": 26,
+      "avg_3d_pct": 13.957875,
+      "avg_5d_pct": 8.39219,
+      "bad_path_pct": 22.2222,
+      "close_win_5d_pct": 92.5926,
+      "hit10_5d_pct": 77.7778,
+      "hit5_5d_pct": 92.5926,
+      "min_1d_pct": 0.049828,
+      "min_min_low_5d_pct": -11.340683,
+      "n": 27,
+      "stop5_pct": 22.2222,
+      "stop_before_target_5d_pct": 22.2222,
+      "target_before_stop_5d_pct": 92.5926
+    },
+    "model": "hist_gb",
+    "path": "runtime_state/reports/learning/scan_universe_admission_challenger_failure_risk_numeric_20260401_20260528.json",
+    "production_blocking_reasons": [
+      "n_lt_30",
+      "active_days_lt_15",
+      "bad_path_gt_15",
+      "stop5_gt_10",
+      "stop_before_target_5d_gt_15"
+    ],
+    "production_ready": false,
+    "promotable": false,
+    "quality_score": 1524.018139,
+    "risk_review_reasons": [
+      "stop5_gt_15"
+    ],
+    "selection_rule": "top1_p0.60",
+    "shadow_display_allowed": true
+  },
+  "close_failure_traits_used": {
+    "conditional_rates": {
+      "bad_path_given_touch5_pct": 80.8348,
+      "close_defense_given_touch5_pct": 46.4799,
+      "close_loss_given_touch5_pct": 53.5163,
+      "stop5_given_touch5_pct": 74.8466,
+      "touch10_given_touch5_pct": 53.7297
+    },
+    "input_rows": 95822,
+    "markets_touch5_base": {
+      "KOSDAQ": {
+        "active_days": 22,
+        "active_runs": 41,
+        "avg_close_5d_pct": -1.055032,
+        "avg_mae_5d_pct": -10.669027,
+        "avg_mfe_5d_pct": 15.417236,
+        "bad_path_5d_pct": 84.014,
+        "clean_touch5_close_defense_pct": 15.986,
+        "median_close_5d_pct": -2.176729,
+        "min_close_5d_pct": -42.933977,
+        "min_mae_5d_pct": -46.704848,
+        "n": 14544,
+        "stop5_5d_pct": 79.5448,
+        "touch10_5d_pct": 55.4249,
+        "touch5_5d_pct": 100.0,
+        "touch5_close_defense_pct": 41.8111,
+        "touch5_close_loss_pct": 58.1821
+      },
+      "KOSPI": {
+        "active_days": 24,
+        "active_runs": 85,
+        "avg_close_5d_pct": 2.220219,
+        "avg_mae_5d_pct": -8.421007,
+        "avg_mfe_5d_pct": 15.417772,
+        "bad_path_5d_pct": 76.8797,
+        "clean_touch5_close_defense_pct": 23.1203,
+        "median_close_5d_pct": 0.550565,
+        "min_close_5d_pct": -41.045945,
+        "min_mae_5d_pct": -43.003828,
+        "n": 11691,
+        "stop5_5d_pct": 69.0018,
+        "touch10_5d_pct": 51.6209,
+        "touch5_5d_pct": 100.0,
+        "touch5_close_defense_pct": 52.2881,
+        "touch5_close_loss_pct": 47.7119
+      }
+    },
+    "overall_touch5_base": {
+      "active_days": 25,
+      "active_runs": 126,
+      "avg_close_5d_pct": 0.404505,
+      "avg_mae_5d_pct": -9.667251,
+      "avg_mfe_5d_pct": 15.417475,
+      "bad_path_5d_pct": 80.8348,
+      "clean_touch5_close_defense_pct": 19.1652,
+      "median_close_5d_pct": -0.833897,
+      "min_close_5d_pct": -42.933977,
+      "min_mae_5d_pct": -46.704848,
+      "n": 26235,
+      "stop5_5d_pct": 74.8466,
+      "touch10_5d_pct": 53.7297,
+      "touch5_5d_pct": 100.0,
+      "touch5_close_defense_pct": 46.4799,
+      "touch5_close_loss_pct": 53.5163
+    },
+    "path": "runtime_state/reports/learning/close_return_failure_traits_20260401_20260528.json",
+    "worst_actionable_hypotheses": [
+      {
+        "category": "202601",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -4.349987,
+          "failure_lift": 2.0959,
+          "failure_rate_pct": 100.0,
+          "n": 23,
+          "stop5_rate_pct": 43.4783
+        },
+        "feature": "kis_financial_statement_period",
+        "segment": "KOSPI",
+        "type": "category"
+      },
+      {
+        "category": "Y",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -10.178017,
+          "failure_lift": 2.0959,
+          "failure_rate_pct": 100.0,
+          "n": 22,
+          "stop5_rate_pct": 95.4545
+        },
+        "feature": "kis_stock_trade_stop",
+        "segment": "KOSPI",
+        "type": "category"
+      },
+      {
+        "category": "202601",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -4.349987,
+          "failure_lift": 1.8686,
+          "failure_rate_pct": 100.0,
+          "n": 23,
+          "stop5_rate_pct": 43.4783
+        },
+        "feature": "kis_financial_statement_period",
+        "segment": "ALL",
+        "type": "category"
+      },
+      {
+        "category": "policy_risk",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -8.283225,
+          "failure_lift": 1.7873,
+          "failure_rate_pct": 95.6522,
+          "n": 23,
+          "stop5_rate_pct": 100.0
+        },
+        "feature": "kis_theme_news_top_risk_tag",
+        "segment": "ALL",
+        "type": "category"
+      },
+      {
+        "category": "2차전지",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -5.559212,
+          "failure_lift": 1.6767,
+          "failure_rate_pct": 80.0,
+          "n": 20,
+          "stop5_rate_pct": 90.0
+        },
+        "feature": "primary_theme",
+        "segment": "KOSPI",
+        "type": "category"
+      },
+      {
+        "category": "2차전지",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -5.559212,
+          "failure_lift": 1.6767,
+          "failure_rate_pct": 80.0,
+          "n": 20,
+          "stop5_rate_pct": 90.0
+        },
+        "feature": "kis_theme_news_primary_theme",
+        "segment": "KOSPI",
+        "type": "category"
+      },
+      {
+        "category": "산업재/기계",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -7.870179,
+          "failure_lift": 1.653,
+          "failure_rate_pct": 88.4615,
+          "n": 26,
+          "stop5_rate_pct": 88.4615
+        },
+        "feature": "primary_theme",
+        "segment": "ALL",
+        "type": "category"
+      },
+      {
+        "category": "산업재/기계",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -7.870179,
+          "failure_lift": 1.653,
+          "failure_rate_pct": 88.4615,
+          "n": 26,
+          "stop5_rate_pct": 88.4615
+        },
+        "feature": "kis_theme_news_primary_theme",
+        "segment": "ALL",
+        "type": "category"
+      },
+      {
+        "category": "2차전지",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -7.709544,
+          "failure_lift": 1.5349,
+          "failure_rate_pct": 82.1429,
+          "n": 28,
+          "stop5_rate_pct": 89.2857
+        },
+        "feature": "primary_theme",
+        "segment": "ALL",
+        "type": "category"
+      },
+      {
+        "category": "산업재/기계",
+        "dynamic_exit_implication": "Treat this category as a separate exit regime before allowing +10% hold targets.",
+        "evidence": {
+          "avg_close_5d_pct": -7.902229,
+          "failure_lift": 1.5125,
+          "failure_rate_pct": 88.0,
+          "n": 25,
+          "stop5_rate_pct": 88.0
+        },
+        "feature": "primary_theme",
+        "segment": "KOSDAQ",
+        "type": "category"
+      }
+    ]
+  },
+  "comparisons": {
+    "baseline_kis_sidecar_smoke": {
+      "delta_vs_baseline": {
+        "avg_5d_pct": 0.0,
+        "bad_path_pct": 0.0,
+        "close_win_5d_pct": 0.0,
+        "hit5_5d_pct": 0.0,
+        "min_min_low_5d_pct": 0.0,
+        "stop5_pct": 0.0,
+        "target_before_stop_5d_pct": 0.0
+      },
+      "evaluated_combinations": 32,
+      "feature_set": "kis_sidecar_augmented",
+      "final_model": {
+        "reason": "not_promotable",
+        "saved": false
+      },
+      "gate_action": "block",
+      "gate_status": "blocked",
+      "label": "touch5_guard_5d",
+      "market": "KOSDAQ",
+      "metrics": {
+        "active_days": 4,
+        "active_runs": 7,
+        "avg_3d_pct": -1.163043,
+        "avg_5d_pct": -3.470193,
+        "bad_path_pct": 71.4286,
+        "close_win_5d_pct": 42.8571,
+        "hit10_5d_pct": 71.4286,
+        "hit5_5d_pct": 71.4286,
+        "min_1d_pct": -6.045752,
+        "min_min_low_5d_pct": -21.132898,
+        "n": 7,
+        "stop5_pct": 42.8571,
+        "stop_before_target_5d_pct": 42.8571,
+        "target_before_stop_5d_pct": 57.1429
+      },
+      "model": "hist_gb",
+      "path": "runtime_state/reports/learning/scan_universe_admission_challenger_target_touch_v3_smoke_20260401_20260528.json",
+      "production_blocking_reasons": [
+        "n_lt_45",
+        "active_days_lt_20",
+        "active_runs_lt_20",
+        "win_3d_lt_65",
+        "win_5d_lt_73",
+        "avg_3d_lt_3",
+        "avg_5d_lt_5",
+        "min_1d_lt_neg4",
+        "min_low_5d_lt_neg12",
+        "target_before_stop_5d_lt_75",
+        "bad_path_gt_15",
+        "stop5_gt_10",
+        "stop_before_target_5d_gt_12",
+        "net_avg_3d_lt_0p5",
+        "net_avg_5d_lt_1"
+      ],
+      "production_ready": false,
+      "promotable": false,
+      "quality_score": 305.398729,
+      "risk_review_reasons": [
+        "min_1d_lt_neg4",
+        "min_low_5d_lt_neg18",
+        "bad_path_gt_35",
+        "stop5_gt_25"
+      ],
+      "selection_rule": "top1",
+      "shadow_display_allowed": false
+    },
+    "failure_risk_focused_tree": {
+      "delta_vs_baseline": {
+        "avg_5d_pct": 9.598419,
+        "bad_path_pct": -39.2857,
+        "close_win_5d_pct": 39.2858,
+        "hit5_5d_pct": 28.5714,
+        "min_min_low_5d_pct": 14.184654,
+        "stop5_pct": -25.0,
+        "target_before_stop_5d_pct": 28.5714
+      },
+      "evaluated_combinations": 96,
+      "feature_set": "kis_sidecar_failure_risk_numeric",
+      "final_model": {
+        "reason": "not_promotable",
+        "saved": false
+      },
+      "gate_action": "show_shadow_with_risk_review",
+      "gate_status": "shadow_risk_review",
+      "label": "target_first_sustain_5d",
+      "market": "KOSPI",
+      "metrics": {
+        "active_days": 10,
+        "active_runs": 26,
+        "avg_3d_pct": 8.174754,
+        "avg_5d_pct": 6.128226,
+        "bad_path_pct": 32.1429,
+        "close_win_5d_pct": 82.1429,
+        "hit10_5d_pct": 89.2857,
+        "hit5_5d_pct": 100.0,
+        "min_1d_pct": -2.245782,
+        "min_min_low_5d_pct": -6.948244,
+        "n": 28,
+        "stop5_pct": 17.8571,
+        "stop_before_target_5d_pct": 17.8571,
+        "target_before_stop_5d_pct": 85.7143
+      },
+      "model": "random_forest",
+      "path": "runtime_state/reports/learning/scan_universe_admission_challenger_failure_risk_focused_20260401_20260528.json",
+      "production_blocking_reasons": [
+        "n_lt_30",
+        "active_days_lt_15",
+        "bad_path_gt_15",
+        "stop5_gt_10",
+        "stop_before_target_5d_gt_15"
+      ],
+      "production_ready": false,
+      "promotable": false,
+      "quality_score": 1327.776383,
+      "risk_review_reasons": [
+        "bad_path_gt_25",
+        "stop5_gt_15"
+      ],
+      "selection_rule": "top1_p0.60",
+      "shadow_display_allowed": true
+    },
+    "failure_risk_numeric_hist_gb": {
+      "delta_vs_baseline": {
+        "avg_5d_pct": 11.862383,
+        "bad_path_pct": -49.2064,
+        "close_win_5d_pct": 49.7355,
+        "hit5_5d_pct": 21.164,
+        "min_min_low_5d_pct": 9.792215,
+        "stop5_pct": -20.6349,
+        "target_before_stop_5d_pct": 35.4497
+      },
+      "evaluated_combinations": 108,
+      "feature_set": "kis_failure_risk_numeric",
+      "final_model": {
+        "reason": "not_promotable",
+        "saved": false
+      },
+      "gate_action": "show_shadow_with_risk_review",
+      "gate_status": "shadow_risk_review",
+      "label": "target_first_sustain_5d",
+      "market": "KOSPI",
+      "metrics": {
+        "active_days": 9,
+        "active_runs": 26,
+        "avg_3d_pct": 13.957875,
+        "avg_5d_pct": 8.39219,
+        "bad_path_pct": 22.2222,
+        "close_win_5d_pct": 92.5926,
+        "hit10_5d_pct": 77.7778,
+        "hit5_5d_pct": 92.5926,
+        "min_1d_pct": 0.049828,
+        "min_min_low_5d_pct": -11.340683,
+        "n": 27,
+        "stop5_pct": 22.2222,
+        "stop_before_target_5d_pct": 22.2222,
+        "target_before_stop_5d_pct": 92.5926
+      },
+      "model": "hist_gb",
+      "path": "runtime_state/reports/learning/scan_universe_admission_challenger_failure_risk_numeric_20260401_20260528.json",
+      "production_blocking_reasons": [
+        "n_lt_30",
+        "active_days_lt_15",
+        "bad_path_gt_15",
+        "stop5_gt_10",
+        "stop_before_target_5d_gt_15"
+      ],
+      "production_ready": false,
+      "promotable": false,
+      "quality_score": 1524.018139,
+      "risk_review_reasons": [
+        "stop5_gt_15"
+      ],
+      "selection_rule": "top1_p0.60",
+      "shadow_display_allowed": true
+    },
+    "failure_risk_top5_hist_gb": {
+      "delta_vs_baseline": {
+        "avg_5d_pct": 25.961961,
+        "bad_path_pct": -25.2748,
+        "close_win_5d_pct": 34.066,
+        "hit5_5d_pct": 26.6483,
+        "min_min_low_5d_pct": 4.988379,
+        "stop5_pct": -2.4725,
+        "target_before_stop_5d_pct": 37.0879
+      },
+      "evaluated_combinations": 54,
+      "feature_set": "kis_sidecar_failure_risk_numeric",
+      "final_model": {
+        "reason": "not_promotable",
+        "saved": false
+      },
+      "gate_action": "show_shadow_with_risk_review",
+      "gate_status": "shadow_risk_review",
+      "label": "touch10_guard_5d",
+      "market": "KOSDAQ",
+      "metrics": {
+        "active_days": 6,
+        "active_runs": 11,
+        "avg_3d_pct": 29.197143,
+        "avg_5d_pct": 22.491768,
+        "bad_path_pct": 46.1538,
+        "close_win_5d_pct": 76.9231,
+        "hit10_5d_pct": 96.1538,
+        "hit5_5d_pct": 98.0769,
+        "min_1d_pct": -4.507258,
+        "min_min_low_5d_pct": -16.144519,
+        "n": 52,
+        "stop5_pct": 40.3846,
+        "stop_before_target_5d_pct": 40.3846,
+        "target_before_stop_5d_pct": 94.2308
+      },
+      "model": "hist_gb",
+      "path": "runtime_state/reports/learning/scan_universe_admission_challenger_failure_risk_top5_20260401_20260528.json",
+      "production_blocking_reasons": [
+        "active_days_lt_20",
+        "active_runs_lt_20",
+        "min_1d_lt_neg4",
+        "min_low_5d_lt_neg12",
+        "bad_path_gt_15",
+        "stop5_gt_10",
+        "stop_before_target_5d_gt_12"
+      ],
+      "production_ready": false,
+      "promotable": false,
+      "quality_score": 2057.650299,
+      "risk_review_reasons": [
+        "min_1d_lt_neg4",
+        "bad_path_gt_35",
+        "stop5_gt_25"
+      ],
+      "selection_rule": "top5_p0.60",
+      "shadow_display_allowed": true
+    }
+  },
+  "generated_at": "2026-06-09T10:38:46.610500+00:00",
+  "model_changes": {
+    "added_fold_safe_prior_features": [
+      "ticker",
+      "primary_theme",
+      "kis_theme_news_primary_theme",
+      "kis_stock_sector_name",
+      "market"
+    ],
+    "fast_preset_control": "kis_operational_fast uses numeric failure-risk priors to avoid category one-hot slowdown",
+    "leakage_control": "same trade_date rows are excluded; each prior is computed from earlier trade dates only",
+    "prior_metrics": [
+      "touch5_n",
+      "failure_rate_pct",
+      "clean_defense_rate_pct",
+      "stop5_rate_pct",
+      "avg_close_5d_pct",
+      "avg_mfe_5d_pct",
+      "avg_mae_5d_pct",
+      "risk_score",
+      "risk_bucket"
+    ]
+  },
+  "production_decision": {
+    "next_required_work": [
+      "add dynamic TP/SL and early-exit policy by ticker/theme/sector risk prior",
+      "forward-track shadow candidates until active_days and active_runs gates clear",
+      "show Top1 as primary shadow and Top5 as risk-reviewed candidates, not production replacement"
+    ],
+    "promote_to_production": false,
+    "reason": "Failure-risk retraining materially improves the admission model, but production gates still fail on bad_path, stop5, stop_before_target and active-day/sample requirements.",
+    "save_final_model": false
+  },
+  "report_version": "failure_risk_retrain_summary_v1",
+  "tested_combinations_total_including_baseline": 290,
+  "tested_new_failure_risk_combinations_total": 258,
+  "top5_candidate_note": {
+    "candidate": {
+      "delta_vs_baseline": {
+        "avg_5d_pct": 25.961961,
+        "bad_path_pct": -25.2748,
+        "close_win_5d_pct": 34.066,
+        "hit5_5d_pct": 26.6483,
+        "min_min_low_5d_pct": 4.988379,
+        "stop5_pct": -2.4725,
+        "target_before_stop_5d_pct": 37.0879
+      },
+      "evaluated_combinations": 54,
+      "feature_set": "kis_sidecar_failure_risk_numeric",
+      "final_model": {
+        "reason": "not_promotable",
+        "saved": false
+      },
+      "gate_action": "show_shadow_with_risk_review",
+      "gate_status": "shadow_risk_review",
+      "label": "touch10_guard_5d",
+      "market": "KOSDAQ",
+      "metrics": {
+        "active_days": 6,
+        "active_runs": 11,
+        "avg_3d_pct": 29.197143,
+        "avg_5d_pct": 22.491768,
+        "bad_path_pct": 46.1538,
+        "close_win_5d_pct": 76.9231,
+        "hit10_5d_pct": 96.1538,
+        "hit5_5d_pct": 98.0769,
+        "min_1d_pct": -4.507258,
+        "min_min_low_5d_pct": -16.144519,
+        "n": 52,
+        "stop5_pct": 40.3846,
+        "stop_before_target_5d_pct": 40.3846,
+        "target_before_stop_5d_pct": 94.2308
+      },
+      "model": "hist_gb",
+      "path": "runtime_state/reports/learning/scan_universe_admission_challenger_failure_risk_top5_20260401_20260528.json",
+      "production_blocking_reasons": [
+        "active_days_lt_20",
+        "active_runs_lt_20",
+        "min_1d_lt_neg4",
+        "min_low_5d_lt_neg12",
+        "bad_path_gt_15",
+        "stop5_gt_10",
+        "stop_before_target_5d_gt_12"
+      ],
+      "production_ready": false,
+      "promotable": false,
+      "quality_score": 2057.650299,
+      "risk_review_reasons": [
+        "min_1d_lt_neg4",
+        "bad_path_gt_35",
+        "stop5_gt_25"
+      ],
+      "selection_rule": "top5_p0.60",
+      "shadow_display_allowed": true
+    },
+    "interpretation": "Top5 has strong average returns but bad_path/stop remain too high, so it is shadow-only with risk review rather than production promotion."
+  },
+  "training_window": {
+    "buy_premium_pct": 2.0,
+    "max_base_date": "2026-05-28",
+    "min_base_date": "2026-04-01"
+  }
+}
