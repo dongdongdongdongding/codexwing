@@ -295,9 +295,9 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
     )
     metrics_line = (
         f"n={metrics.get('n', '-')} · active_days={metrics.get('active_days', '-')} · "
-        f"1D win/avg {_fmt_pct_short(metrics.get('win_1d_pct'))}/{_fmt_pct_short(metrics.get('avg_1d_pct'))} · "
-        f"3D {_fmt_pct_short(metrics.get('win_3d_pct'))}/{_fmt_pct_short(metrics.get('avg_3d_pct'))} · "
-        f"5D {_fmt_pct_short(metrics.get('win_5d_pct'))}/{_fmt_pct_short(metrics.get('avg_5d_pct'))}"
+        f"1D 목표/방어/평균 {_fmt_pct_short(metrics.get('win_1d_pct'))}/{_fmt_pct_short(metrics.get('close_win_1d_pct'))}/{_fmt_pct_short(metrics.get('avg_1d_pct'))} · "
+        f"3D {_fmt_pct_short(metrics.get('win_3d_pct'))}/{_fmt_pct_short(metrics.get('close_win_3d_pct'))}/{_fmt_pct_short(metrics.get('avg_3d_pct'))} · "
+        f"5D {_fmt_pct_short(metrics.get('win_5d_pct'))}/{_fmt_pct_short(metrics.get('close_win_5d_pct'))}/{_fmt_pct_short(metrics.get('avg_5d_pct'))}"
         if metrics
         else "KIS 비교 리포트 미확보"
     )
@@ -496,6 +496,9 @@ def build_kis_shadow_admission_records(
                     "kis_model_gate_status": kis_model_gate.get("status"),
                     "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
                     "5d_prob": metrics.get("win_5d_pct"),
+                    "target_touch_win_pct": metrics.get("win_5d_pct"),
+                    "close_defense_5d_pct": metrics.get("close_win_5d_pct"),
+                    "win_metric_semantics": metrics.get("win_metric_semantics"),
                     "ranking_score_5d": round(probability * 100.0, 4),
                     "base_expected_value_5d_pct": metrics.get("avg_5d_pct"),
                     "expected_value_5d_pct": metrics.get("avg_5d_pct"),
@@ -959,6 +962,8 @@ def _build_result_interpretation(
         "validation_summary": {
             "sample_n": metrics.get("n"),
             "active_days": metrics.get("active_days"),
+            "win_metric_semantics": metrics.get("win_metric_semantics"),
+            "close_win_metric_semantics": metrics.get("close_win_metric_semantics"),
             "label_win_pct": metrics.get("label_win_pct"),
             "hit5_5d_pct": metrics.get("hit5_5d_pct"),
             "hit10_5d_pct": metrics.get("hit10_5d_pct"),
@@ -972,6 +977,9 @@ def _build_result_interpretation(
             "min_1d_pct": metrics.get("min_1d_pct"),
             "max_1d_pct": metrics.get("max_1d_pct"),
             "win_3d_pct": metrics.get("win_3d_pct"),
+            "close_win_1d_pct": metrics.get("close_win_1d_pct"),
+            "close_win_3d_pct": metrics.get("close_win_3d_pct"),
+            "close_win_5d_pct": metrics.get("close_win_5d_pct"),
             "avg_3d_pct": metrics.get("avg_3d_pct"),
             "min_3d_pct": metrics.get("min_3d_pct"),
             "max_3d_pct": metrics.get("max_3d_pct"),
@@ -1021,6 +1029,8 @@ def admission_model_summary(market: str) -> Dict[str, Any]:
             "n": metrics.get("n"),
             "active_runs": metrics.get("active_runs"),
             "active_days": metrics.get("active_days"),
+            "win_metric_semantics": metrics.get("win_metric_semantics"),
+            "close_win_metric_semantics": metrics.get("close_win_metric_semantics"),
             "label_win_pct": metrics.get("label_win_pct"),
             "hit5_5d_pct": metrics.get("hit5_5d_pct"),
             "hit10_5d_pct": metrics.get("hit10_5d_pct"),
@@ -1036,6 +1046,9 @@ def admission_model_summary(market: str) -> Dict[str, Any]:
             "min_1d_pct": metrics.get("min_1d_pct"),
             "max_1d_pct": metrics.get("max_1d_pct"),
             "win_3d_pct": metrics.get("win_3d_pct"),
+            "close_win_1d_pct": metrics.get("close_win_1d_pct"),
+            "close_win_3d_pct": metrics.get("close_win_3d_pct"),
+            "close_win_5d_pct": metrics.get("close_win_5d_pct"),
             "avg_3d_pct": metrics.get("avg_3d_pct"),
             "min_3d_pct": metrics.get("min_3d_pct"),
             "max_3d_pct": metrics.get("max_3d_pct"),
@@ -1178,6 +1191,8 @@ def _attach_display_payload(
                 "ranking_score_5d": probability_pct,
                 "target_return_pct": target_pct,
                 "target_touch_win_pct": target_rate,
+                "close_defense_5d_pct": _round_pct(metrics.get("close_win_5d_pct")),
+                "win_metric_semantics": metrics.get("win_metric_semantics"),
                 "hit5_5d_pct": _round_pct(metrics.get("hit5_5d_pct")),
                 "hit10_5d_pct": _round_pct(metrics.get("hit10_5d_pct")),
                 "hit5_guard_5d_pct": _round_pct(metrics.get("hit5_guard_5d_pct")),

@@ -187,6 +187,9 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     raw_ret1 = _numeric(df, "return_1d_pct")
     raw_ret3 = _numeric(df, "return_3d_pct")
     raw_ret5 = _numeric(df, "return_5d_pct")
+    raw_mfe1 = _numeric(df, "max_high_return_1d_pct")
+    raw_mfe3 = _numeric(df, "max_high_return_3d_pct")
+    raw_mfe5 = _numeric(df, "max_high_return_5d_pct")
     ret1 = raw_ret1.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
     ret3 = raw_ret3.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
     ret5 = raw_ret5.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
@@ -206,6 +209,9 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     ret1 = ret1.loc[sub.index]
     ret3 = ret3.loc[sub.index]
     ret5 = ret5.loc[sub.index]
+    mfe1 = raw_mfe1.loc[sub.index].map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
+    mfe3 = raw_mfe3.loc[sub.index].map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
+    mfe5 = raw_mfe5.loc[sub.index].map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
     stop = _bool_series(_series(sub, "stop5_proxy", False))
     if "min_return_observed_pct" in sub.columns:
         premium_min_path = _numeric(sub, "min_return_observed_pct").map(
@@ -216,12 +222,15 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     bad |= ret5.lt(0.0).fillna(False)
     early_drop = ret1.lt(-3.0).fillna(False)
     loss5 = ret5.lt(0.0).fillna(False)
-    practical_win5 = ret5.gt(0.0).fillna(False) & ret1.ge(-3.0).fillna(False) & ~stop
+    target_touch5 = mfe5.ge(5.0).fillna(False)
+    target_touch10 = mfe5.ge(10.0).fillna(False)
+    close_win5 = ret5.gt(0.0).fillna(False)
+    practical_win5 = target_touch5 & ret1.ge(-3.0).fillna(False) & ~stop
     target_before_stop = pd.Series(False, index=sub.index)
     if "target_before_stop_5d" in sub.columns:
-        target_before_stop = _bool_series(sub["target_before_stop_5d"])
+        target_before_stop = _bool_series(sub["target_before_stop_5d"]) & target_touch5 & ~stop
     elif "max_high_return_5d_pct" in sub.columns:
-        target_before_stop = _numeric(sub, "max_high_return_5d_pct").ge(5.0).fillna(False) & ~stop
+        target_before_stop = target_touch5 & ~stop
     successes = int(practical_win5.sum())
     n = int(len(sub))
     out: Dict[str, Any] = {
@@ -229,6 +238,10 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
         "active_days": int(sub["trade_date"].nunique()) if "trade_date" in sub.columns else 0,
         "effective_win_5d_pct": _pct(practical_win5.mean()),
         "practical_win_5d_pct": _pct(practical_win5.mean()),
+        "close_win_5d_pct": _pct(close_win5.mean()),
+        "defense_close_win_5d_pct": _pct(close_win5.mean()),
+        "hit5_5d_pct": _pct(target_touch5.mean()),
+        "hit10_5d_pct": _pct(target_touch10.mean()),
         "calibrated_effective_win_5d_pct": _posterior_pct(successes, n),
         "wilson_lower_effective_win_5d_pct": _wilson_lower_pct(successes, n),
         "target_before_stop_5d_pct": _pct(target_before_stop.mean()),
@@ -237,11 +250,14 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
         "loss_5d_pct": _pct(loss5.mean()),
         "stop5_pct": _pct(stop.mean()),
         "buy_premium_pct": float(DEFAULT_BUY_PREMIUM_PCT),
+        "win_metric_semantics": "effective_win_5d_pct means +5% target-touch with early-drop/stop guard after buy premium; close-positive defense is close_win_5d_pct",
     }
-    for horizon, values in [("1d", ret1), ("3d", ret3), ("5d", ret5)]:
+    for horizon, values, mfes in [("1d", ret1, mfe1), ("3d", ret3, mfe3), ("5d", ret5, mfe5)]:
         valid = values.dropna()
         out[f"n_{horizon}"] = int(len(valid))
-        out[f"win_{horizon}_pct"] = _pct(valid.gt(0).mean()) if len(valid) else None
+        out[f"close_win_{horizon}_pct"] = _pct(valid.gt(0).mean()) if len(valid) else None
+        valid_mfe = mfes.dropna()
+        out[f"win_{horizon}_pct"] = _pct(valid_mfe.ge(5.0).mean()) if len(valid_mfe) else None
         out[f"avg_{horizon}_pct"] = _round(valid.mean()) if len(valid) else None
         out[f"median_{horizon}_pct"] = _round(valid.median()) if len(valid) else None
         out[f"min_{horizon}_pct"] = _round(valid.min()) if len(valid) else None
@@ -291,10 +307,10 @@ def _gate_checks(train: Mapping[str, Any], test: Mapping[str, Any], gate: Mappin
             _num_metric(test, "effective_win_5d_pct", 0.0) >= float(gate["min_test_effective_win_5d_pct"]),
         ),
         _check(
-            "test_win_3d",
-            test.get("win_3d_pct"),
+            "test_close_defense_3d",
+            test.get("close_win_3d_pct", test.get("win_3d_pct")),
             f">={gate['min_test_win_3d_pct']}%",
-            _num_metric(test, "win_3d_pct", 0.0) >= float(gate["min_test_win_3d_pct"]),
+            _num_metric(test, "close_win_3d_pct", _num_metric(test, "win_3d_pct", 0.0)) >= float(gate["min_test_win_3d_pct"]),
         ),
         _check(
             "test_avg_5d",
@@ -535,12 +551,21 @@ def evaluate_ordered_watch_candidates(
 
 
 def _combo_effective_metrics(raw: Mapping[str, Any], horizon: str) -> Dict[str, Any]:
+    target_win_source = None
+    target_win = None
+    for source_key in ("hit5_5d_pct", "target_before_stop_5d_pct", "ordered_win_5d_pct"):
+        if raw.get(source_key) is not None:
+            target_win_source = source_key
+            target_win = raw.get(source_key)
+            break
     out: Dict[str, Any] = {
         "n": int(raw.get("n_5d") or raw.get("n") or 0),
         "active_days": int(raw.get("active_days_5d") or raw.get("active_days") or 0),
         "selected_horizon": horizon,
         "selected_horizon_win_pct": _round(raw.get(f"win_{horizon}_pct")),
-        "effective_win_5d_pct": _round(raw.get("win_5d_pct")),
+        "effective_win_5d_pct": _round(target_win),
+        "target_touch_metric_source": target_win_source or "missing_target_touch_metric",
+        "legacy_close_win_5d_pct": _round(raw.get("win_5d_pct")),
         "calibrated_effective_win_5d_pct": None,
         "wilson_lower_effective_win_5d_pct": None,
         "bad_path_pct": _round(raw.get("bad_path_5d_pct", raw.get("bad_path_pct"))),
@@ -552,6 +577,8 @@ def _combo_effective_metrics(raw: Mapping[str, Any], horizon: str) -> Dict[str, 
             out[f"scan_reference_{key}"] = _round(value)
             value = adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT)
         out[key] = _round(value)
+    if out.get("close_win_5d_pct") is None:
+        out["close_win_5d_pct"] = out.get("legacy_close_win_5d_pct")
     out["buy_premium_pct"] = float(DEFAULT_BUY_PREMIUM_PCT)
     if horizon == "3d":
         out.setdefault("win_3d_pct", _round(raw.get("win_3d_pct")))
@@ -739,7 +766,7 @@ def build_report(
             f"Return and average-return gates use the operational assumption that actual buy price is scan reference price +{DEFAULT_BUY_PREMIUM_PCT:.1f}%. scan_reference_* metrics preserve the unadjusted archive values.",
             "Current Top5, Exception Leader, Practical 80, KOSPI exact-path, ordered shadow rules, and mined dynamic combos are compared under one gate.",
             "If internal retrain sweep artifacts exist, model-sweep candidates are included as challengers but never auto-promoted.",
-            "effective_win_5d_pct is practical close-return win for archive cohorts and ordered target-before-stop win for ordered profiles.",
+            "effective_win_5d_pct is an operational target-touch win: +5% target reached with early-drop/stop guard for archive cohorts, or ordered target-before-stop for ordered profiles. Close-positive defense is reported separately as close_win_5d_pct.",
             "promotion_review_candidate means report-to-operator before any code promotion, not automatic deployment.",
             "Primary theme identities are not required for promotion; dynamic theme context is allowed only when backed by same-day theme profile metrics.",
         ],

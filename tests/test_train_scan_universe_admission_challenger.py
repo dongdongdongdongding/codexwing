@@ -1,4 +1,5 @@
 import argparse
+import json
 
 import pandas as pd
 
@@ -130,7 +131,9 @@ def test_top_indices_and_metrics_report_all_horizons():
     current = metrics(df, current_idx, label)
 
     assert got["n"] == 1
-    assert got["win_1d_pct"] == 100.0
+    assert got["close_win_1d_pct"] == 100.0
+    assert got["close_win_5d_pct"] == 100.0
+    assert got["win_5d_pct"] == 100.0
     assert got["buy_premium_pct"] == 2.0
     assert got["avg_5d_pct"] == 4.901961
     assert got["min_5d_pct"] == 4.901961
@@ -519,6 +522,27 @@ def test_prepared_dataset_cache_roundtrip_requires_matching_signature(tmp_path):
     assert miss is None
 
 
+def test_prepared_dataset_cache_accepts_legacy_report_version_signature(tmp_path):
+    cache_path = tmp_path / "prepared.pkl"
+    data = pd.DataFrame([{"ticker": "000001.KS", "market": "KOSPI", "trade_date": "2026-05-20"}])
+    signature = trainer._dataset_cache_signature({"market": "KOSPI", "scan_mode": "SWING"}, return_sanity="kr_price_limit")
+    write_prepared_dataset_cache(
+        cache_path,
+        signature=signature,
+        data=data,
+        raw_rows=3,
+        return_sanity={"removed_rows": 1},
+    )
+    meta_path = trainer._cache_meta_path(cache_path)
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta["signature"]["version"] = "scan_universe_admission_challenger_v2_buy_premium"
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+
+    loaded = load_prepared_dataset_cache(cache_path, signature=signature)
+
+    assert loaded is not None
+
+
 def test_prepare_dataset_filters_impossible_kr_return_labels():
     raw = pd.DataFrame(
         [
@@ -806,7 +830,7 @@ def test_kis_operational_fast_grid_preset_bounds_jobs_and_parallel_eval(monkeypa
     monkeypatch.setattr(trainer, "run_candidate", fake_run_candidate)
     results, meta = evaluate_candidate_jobs(data, jobs, args, progress=False)
 
-    assert args.labels == "pos_5d,touch5_guard_5d,touch10_guard_5d,target_first_sustain_5d"
+    assert args.labels == "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
     assert args.feature_sets == "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
     assert args.models == "random_forest,hist_gb,lightgbm"
     assert args.topns == "1,3"
@@ -820,11 +844,17 @@ def test_kis_operational_fast_grid_preset_bounds_jobs_and_parallel_eval(monkeypa
 
 def test_candidate_verdict_blocks_sparse_high_score_candidate():
     sparse = {
+        "label": "touch5_guard_5d",
         "topn": 1,
         "metrics": {
             "n": 7,
             "active_runs": 7,
             "active_days": 3,
+            "label_win_pct": 100.0,
+            "hit5_5d_pct": 100.0,
+            "hit5_guard_5d_pct": 100.0,
+            "avg_max_high_5d_pct": 10.0,
+            "min_max_high_5d_pct": 5.0,
             "win_3d_pct": 100.0,
             "win_5d_pct": 100.0,
             "avg_3d_pct": 10.0,
@@ -835,11 +865,17 @@ def test_candidate_verdict_blocks_sparse_high_score_candidate():
         },
     }
     stable = {
+        "label": "touch5_guard_5d",
         "topn": 1,
         "metrics": {
             "n": 18,
             "active_runs": 15,
             "active_days": 8,
+            "label_win_pct": 90.0,
+            "hit5_5d_pct": 90.0,
+            "hit5_guard_5d_pct": 80.0,
+            "avg_max_high_5d_pct": 12.0,
+            "min_max_high_5d_pct": 5.0,
             "win_3d_pct": 90.0,
             "win_5d_pct": 90.0,
             "avg_3d_pct": 7.0,

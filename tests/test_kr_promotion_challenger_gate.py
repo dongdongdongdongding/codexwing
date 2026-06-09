@@ -22,6 +22,9 @@ def _row(day: str, ticker: str, ret5: float, *, ret1: float = 0.5, ret3: float =
         "return_1d_pct": ret1,
         "return_3d_pct": ret3,
         "return_5d_pct": ret5,
+        "max_high_return_1d_pct": max(ret1, 0.5),
+        "max_high_return_3d_pct": max(ret3, 8.0),
+        "max_high_return_5d_pct": max(ret5, 8.0),
         "min_return_observed_pct": -1.0 if not bad else -6.0,
         "stop5_proxy": bad,
         "bad_path": bad or ret1 < -3.0 or ret5 < 0,
@@ -150,6 +153,7 @@ def test_combo_candidate_effective_win_uses_5d_not_selected_3d_horizon():
             "n_5d": 8,
             "active_days_5d": 5,
             "win_5d_pct": 50.0,
+            "hit5_5d_pct": 50.0,
             "bad_path_5d_pct": 25.0,
             "stop5_5d_pct": 0.0,
         },
@@ -158,4 +162,5 @@ def test_combo_candidate_effective_win_uses_5d_not_selected_3d_horizon():
 
     assert metrics["selected_horizon_win_pct"] == 90.0
     assert metrics["effective_win_5d_pct"] == 50.0
+    assert metrics["target_touch_metric_source"] == "hit5_5d_pct"
     assert metrics["n"] == 8

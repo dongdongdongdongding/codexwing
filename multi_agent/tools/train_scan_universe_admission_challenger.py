@@ -68,10 +68,16 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 TARGET_TABLE = "scan_universe_snapshots"
-REPORT_VERSION = "scan_universe_admission_challenger_v2_buy_premium"
+REPORT_VERSION = "scan_universe_admission_challenger_v3_target_touch_win"
+PREPARED_DATASET_CACHE_VERSION = "scan_universe_admission_prepared_v2_buy_premium"
+LEGACY_PREPARED_DATASET_CACHE_VERSIONS = {
+    "scan_universe_admission_challenger_v2_buy_premium",
+}
 REPORT_DIR = ROOT / "runtime_state" / "reports" / "learning"
 MODEL_DIR = ROOT / "models" / "scan_universe_challengers"
 OPERATIONAL_BUY_PREMIUM_PCT = DEFAULT_BUY_PREMIUM_PCT
+PRIMARY_TARGET_RETURN_PCT = 5.0
+EXTENDED_TARGET_RETURN_PCT = 10.0
 MIN_RETRY_PAGE_SIZE = 5
 MIN_PROMOTION_RUNS = 12
 MIN_PROMOTION_DAYS = 6
@@ -305,12 +311,12 @@ class CandidateJob:
 
 
 LABEL_SPECS = [
-    LabelSpec("pos_1d", "1d", "1D close return > 0"),
-    LabelSpec("pos_3d", "3d", "3D close return > 0"),
-    LabelSpec("pos_5d", "5d", "5D close return > 0"),
-    LabelSpec("clean_3d", "3d", "3D close > 0, 1D not worse than -2%, and 3D low above -5%"),
-    LabelSpec("clean_5d", "5d", "5D close > 0, 1D not worse than -3%, and 5D low above -5%"),
-    LabelSpec("sustain_1_3_5_lowdd", "5d", "1D/3D/5D all positive and 5D low above -5%"),
+    LabelSpec("pos_1d", "1d", "1D defensive close return > 0 (not an operational win objective)"),
+    LabelSpec("pos_3d", "3d", "3D defensive close return > 0 (not an operational win objective)"),
+    LabelSpec("pos_5d", "5d", "5D defensive close return > 0 (not an operational win objective)"),
+    LabelSpec("clean_3d", "3d", "3D defensive close > 0, 1D not worse than -2%, and 3D low above -5%"),
+    LabelSpec("clean_5d", "5d", "5D defensive close > 0, 1D not worse than -3%, and 5D low above -5%"),
+    LabelSpec("sustain_1_3_5_lowdd", "5d", "1D/3D/5D defensive closes positive and 5D low above -5%"),
     LabelSpec("target_first_5d", "5d", "5D target touched before stop"),
     LabelSpec("target_first_sustain_5d", "5d", "5D target touched before stop, 3D and 5D closes positive"),
     LabelSpec("target_hit_no_stop_5d", "5d", "5D target hit and stop not hit"),
@@ -802,8 +808,24 @@ def _dataset_cache_signature(fetch_filters: Mapping[str, Any], *, return_sanity:
         "source": TARGET_TABLE,
         "fetch_filters": {key: fetch_filters.get(key) for key in sorted(fetch_filters)},
         "return_sanity": return_sanity,
-        "version": REPORT_VERSION,
+        "version": PREPARED_DATASET_CACHE_VERSION,
     }
+
+
+def _cache_signature_compatible(actual: Mapping[str, Any], expected: Mapping[str, Any]) -> bool:
+    actual_dict = dict(actual)
+    expected_dict = dict(expected)
+    if actual_dict == expected_dict:
+        return True
+    actual_version = str(actual_dict.get("version") or "")
+    expected_version = str(expected_dict.get("version") or "")
+    if expected_version != PREPARED_DATASET_CACHE_VERSION:
+        return False
+    if actual_version not in LEGACY_PREPARED_DATASET_CACHE_VERSIONS:
+        return False
+    actual_no_version = {key: value for key, value in actual_dict.items() if key != "version"}
+    expected_no_version = {key: value for key, value in expected_dict.items() if key != "version"}
+    return actual_no_version == expected_no_version
 
 
 def load_prepared_dataset_cache(cache_path: Path, *, signature: Mapping[str, Any]) -> Tuple[pd.DataFrame, Dict[str, Any]] | None:
@@ -814,7 +836,7 @@ def load_prepared_dataset_cache(cache_path: Path, *, signature: Mapping[str, Any
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
     except Exception:
         return None
-    if meta.get("signature") != dict(signature):
+    if not _cache_signature_compatible(meta.get("signature") or {}, signature):
         return None
     try:
         frame = pd.read_pickle(cache_path)
@@ -1145,14 +1167,21 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
         "bad_path_pct": _pct(sub.get("bad_path", pd.Series(False, index=sub.index)).fillna(False).mean()),
         "stop5_pct": _pct(sub.get("stop5_proxy", pd.Series(False, index=sub.index)).fillna(False).mean()),
         "buy_premium_pct": float(OPERATIONAL_BUY_PREMIUM_PCT),
+        "win_metric_semantics": "target_touch_mfe_ge_5pct_after_buy_premium",
+        "close_win_metric_semantics": "defensive_close_return_gt_0_after_buy_premium",
     }
     for horizon, col in [("1d", "return_1d_pct"), ("3d", "return_3d_pct"), ("5d", "return_5d_pct")]:
         ret = _adjusted_return_series(sub, col).dropna()
-        out[f"win_{horizon}_pct"] = _pct(ret.gt(0).mean()) if len(ret) else None
+        out[f"close_win_{horizon}_pct"] = _pct(ret.gt(0).mean()) if len(ret) else None
+        out[f"defense_close_win_{horizon}_pct"] = out[f"close_win_{horizon}_pct"]
         out[f"avg_{horizon}_pct"] = _round(ret.mean()) if len(ret) else None
         out[f"median_{horizon}_pct"] = _round(ret.median()) if len(ret) else None
         out[f"min_{horizon}_pct"] = _round(ret.min()) if len(ret) else None
         out[f"max_{horizon}_pct"] = _round(ret.max()) if len(ret) else None
+        mfe_horizon = _adjusted_return_series(sub, f"max_high_return_{horizon}_pct").dropna()
+        out[f"win_{horizon}_pct"] = _pct(mfe_horizon.ge(PRIMARY_TARGET_RETURN_PCT).mean()) if len(mfe_horizon) else None
+        out[f"hit5_{horizon}_pct"] = out[f"win_{horizon}_pct"]
+        out[f"hit10_{horizon}_pct"] = _pct(mfe_horizon.ge(EXTENDED_TARGET_RETURN_PCT).mean()) if len(mfe_horizon) else None
         scan_ret = pd.to_numeric(sub.get(col, pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
         out[f"scan_reference_avg_{horizon}_pct"] = _round(scan_ret.mean()) if len(scan_ret) else None
         out[f"scan_reference_min_{horizon}_pct"] = _round(scan_ret.min()) if len(scan_ret) else None
@@ -1162,13 +1191,18 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
         stop = sub.get(f"stop_before_target_{horizon}", pd.Series(index=sub.index, dtype=object))
         target_valid = target.notna()
         if target_valid.any():
-            out[f"target_before_stop_{horizon}_pct"] = _pct(_bool_series(target.loc[target_valid]).mean())
-            out[f"stop_before_target_{horizon}_pct"] = _pct(_bool_series(stop.loc[target_valid]).mean())
+            mfe_horizon = _adjusted_return_series(sub.loc[target_valid], f"max_high_return_{horizon}_pct")
+            mae_horizon = _adjusted_return_series(sub.loc[target_valid], f"min_low_return_{horizon}_pct")
+            adjusted_target = _bool_series(target.loc[target_valid]) & mfe_horizon.ge(PRIMARY_TARGET_RETURN_PCT).fillna(False)
+            adjusted_stop = _bool_series(stop.loc[target_valid]) | mae_horizon.le(-PRIMARY_TARGET_RETURN_PCT).fillna(False)
+            out[f"target_before_stop_{horizon}_pct"] = _pct(adjusted_target.mean())
+            out[f"stop_before_target_{horizon}_pct"] = _pct(adjusted_stop.mean())
     mfe = _adjusted_return_series(sub, "max_high_return_5d_pct").dropna()
     mae = _adjusted_return_series(sub, "min_low_return_5d_pct").dropna()
     if len(mfe):
-        out["hit5_5d_pct"] = _pct(mfe.ge(5.0).mean())
-        out["hit10_5d_pct"] = _pct(mfe.ge(10.0).mean())
+        out["hit5_5d_pct"] = _pct(mfe.ge(PRIMARY_TARGET_RETURN_PCT).mean())
+        out["hit10_5d_pct"] = _pct(mfe.ge(EXTENDED_TARGET_RETURN_PCT).mean())
+        out["win_5d_pct"] = out["hit5_5d_pct"]
     if len(mfe) and len(mae):
         aligned = pd.DataFrame(
             {
@@ -1200,6 +1234,9 @@ def quality_score(result_metrics: Dict[str, Any], *, topn: int) -> float:
     avg1 = float(result_metrics.get("avg_1d_pct") or -20.0)
     avg3 = float(result_metrics.get("avg_3d_pct") or -20.0)
     avg5 = float(result_metrics.get("avg_5d_pct") or -20.0)
+    close_win1 = float(result_metrics.get("close_win_1d_pct") or 0.0)
+    close_win3 = float(result_metrics.get("close_win_3d_pct") or 0.0)
+    close_win5 = float(result_metrics.get("close_win_5d_pct") or 0.0)
     win1 = float(result_metrics.get("win_1d_pct") or 0.0)
     win3 = float(result_metrics.get("win_3d_pct") or 0.0)
     win5 = float(result_metrics.get("win_5d_pct") or 0.0)
@@ -1224,17 +1261,20 @@ def quality_score(result_metrics: Dict[str, Any], *, topn: int) -> float:
         sample_penalty += (max(MIN_PROMOTION_ROWS, topn * 8) - n) * 12.0
     tail_penalty = max(0.0, -5.0 - min1) * 2.5 + max(0.0, -8.0 - min3) * 1.5 + max(0.0, -12.0 - min5)
     return (
-        win1 * 0.5
-        + win3 * 0.8
-        + win5 * 1.0
-        + avg1 * 8.0
-        + avg3 * 12.0
-        + avg5 * 16.0
+        win1 * 0.7
+        + win3 * 1.0
+        + win5 * 1.8
+        + close_win1 * 0.15
+        + close_win3 * 0.20
+        + close_win5 * 0.25
+        + avg1 * 3.0
+        + avg3 * 5.0
+        + avg5 * 7.0
         + target_first * 0.25
-        + hit5 * 0.35
-        + hit10 * 0.70
-        + hit5_guard * 0.45
-        + hit10_guard * 0.90
+        + hit5 * 0.60
+        + hit10 * 1.10
+        + hit5_guard * 0.85
+        + hit10_guard * 1.35
         + avg_mfe * 20.0
         + min_mfe * 8.0
         - bad * 0.8
@@ -1415,7 +1455,7 @@ def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
     if preset == "custom":
         return args
     if preset == "kis_operational_fast":
-        args.labels = "pos_5d,touch5_guard_5d,touch10_guard_5d,target_first_sustain_5d"
+        args.labels = "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
         args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
         args.models = "random_forest,hist_gb,lightgbm"
         args.topns = "1,3"
@@ -1424,7 +1464,7 @@ def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
         args.test_days = max(1, min(int(args.test_days), 2))
         return args
     if preset == "kis_operational_full":
-        args.labels = "pos_5d,clean_5d,touch5_guard_5d,touch10_guard_5d,target_first_sustain_5d"
+        args.labels = "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
         args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_full_augmented"
         args.models = "random_forest,extra_trees,hist_gb,lightgbm"
         args.topns = "1,3,5"
@@ -1687,6 +1727,7 @@ def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
             reasons.append("avg_3d_not_positive")
         if _metric_float(m, "avg_5d_pct", -999.0) <= 0.0:
             reasons.append("avg_5d_not_positive")
+        reasons.append("label_not_target_touch_objective")
     if _metric_float(m, "min_1d_pct", -999.0) < -5.0:
         reasons.append("min_1d_below_stop")
     if m.get("min_5d_pct") is not None and _metric_float(m, "min_5d_pct", -999.0) < -12.0:
@@ -2181,9 +2222,11 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- selection_rule: `{best.get('selection_rule')}`",
         f"- quality_score: `{best.get('quality_score')}`",
         f"- n / active_runs / active_days: `{m.get('n')}` / `{m.get('active_runs')}` / `{m.get('active_days')}`",
-        f"- 1d win/avg/min/max: `{m.get('win_1d_pct')}` / `{m.get('avg_1d_pct')}` / `{m.get('min_1d_pct')}` / `{m.get('max_1d_pct')}`",
-        f"- 3d win/avg/min/max: `{m.get('win_3d_pct')}` / `{m.get('avg_3d_pct')}` / `{m.get('min_3d_pct')}` / `{m.get('max_3d_pct')}`",
-        f"- 5d win/avg/min/max: `{m.get('win_5d_pct')}` / `{m.get('avg_5d_pct')}` / `{m.get('min_5d_pct')}` / `{m.get('max_5d_pct')}`",
+        f"- win_metric_semantics: `{m.get('win_metric_semantics')}`",
+        f"- close_win_metric_semantics: `{m.get('close_win_metric_semantics')}`",
+        f"- 1d target-touch win / close defense / close avg/min/max: `{m.get('win_1d_pct')}` / `{m.get('close_win_1d_pct')}` / `{m.get('avg_1d_pct')}` / `{m.get('min_1d_pct')}` / `{m.get('max_1d_pct')}`",
+        f"- 3d target-touch win / close defense / close avg/min/max: `{m.get('win_3d_pct')}` / `{m.get('close_win_3d_pct')}` / `{m.get('avg_3d_pct')}` / `{m.get('min_3d_pct')}` / `{m.get('max_3d_pct')}`",
+        f"- 5d target-touch win / close defense / close avg/min/max: `{m.get('win_5d_pct')}` / `{m.get('close_win_5d_pct')}` / `{m.get('avg_5d_pct')}` / `{m.get('min_5d_pct')}` / `{m.get('max_5d_pct')}`",
         f"- target_before_stop_5d_pct: `{m.get('target_before_stop_5d_pct')}`",
         f"- hit5/hit10 5d pct: `{m.get('hit5_5d_pct')}` / `{m.get('hit10_5d_pct')}`",
         f"- guarded hit5/hit10 5d pct: `{m.get('hit5_guard_5d_pct')}` / `{m.get('hit10_guard_5d_pct')}`",
@@ -2198,9 +2241,10 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- selection_rule: `{best_kis.get('selection_rule')}`",
         f"- quality_score: `{best_kis.get('quality_score')}`",
         f"- n / active_runs / active_days: `{km.get('n')}` / `{km.get('active_runs')}` / `{km.get('active_days')}`",
-        f"- 1d win/avg/min/max: `{km.get('win_1d_pct')}` / `{km.get('avg_1d_pct')}` / `{km.get('min_1d_pct')}` / `{km.get('max_1d_pct')}`",
-        f"- 3d win/avg/min/max: `{km.get('win_3d_pct')}` / `{km.get('avg_3d_pct')}` / `{km.get('min_3d_pct')}` / `{km.get('max_3d_pct')}`",
-        f"- 5d win/avg/min/max: `{km.get('win_5d_pct')}` / `{km.get('avg_5d_pct')}` / `{km.get('min_5d_pct')}` / `{km.get('max_5d_pct')}`",
+        f"- win_metric_semantics: `{km.get('win_metric_semantics')}`",
+        f"- 1d target-touch win / close defense / close avg/min/max: `{km.get('win_1d_pct')}` / `{km.get('close_win_1d_pct')}` / `{km.get('avg_1d_pct')}` / `{km.get('min_1d_pct')}` / `{km.get('max_1d_pct')}`",
+        f"- 3d target-touch win / close defense / close avg/min/max: `{km.get('win_3d_pct')}` / `{km.get('close_win_3d_pct')}` / `{km.get('avg_3d_pct')}` / `{km.get('min_3d_pct')}` / `{km.get('max_3d_pct')}`",
+        f"- 5d target-touch win / close defense / close avg/min/max: `{km.get('win_5d_pct')}` / `{km.get('close_win_5d_pct')}` / `{km.get('avg_5d_pct')}` / `{km.get('min_5d_pct')}` / `{km.get('max_5d_pct')}`",
         f"- hit5/hit10 5d pct: `{km.get('hit5_5d_pct')}` / `{km.get('hit10_5d_pct')}`",
         f"- promotion_verdict: `{report.get('kis_promotion_verdict')}`",
         "",
@@ -2217,9 +2261,9 @@ def _markdown(report: Dict[str, Any]) -> str:
         bm = row.get("metrics") or {}
         lines.append(
             f"- `{row.get('baseline')}` top{row.get('topn')}: "
-            f"n={bm.get('n')}, 1d={bm.get('win_1d_pct')}%/{bm.get('avg_1d_pct')}%, "
-            f"3d={bm.get('win_3d_pct')}%/{bm.get('avg_3d_pct')}%, "
-            f"5d={bm.get('win_5d_pct')}%/{bm.get('avg_5d_pct')}%, "
+            f"n={bm.get('n')}, 1d_target={bm.get('win_1d_pct')}% close={bm.get('close_win_1d_pct')}%/{bm.get('avg_1d_pct')}%, "
+            f"3d_target={bm.get('win_3d_pct')}% close={bm.get('close_win_3d_pct')}%/{bm.get('avg_3d_pct')}%, "
+            f"5d_target={bm.get('win_5d_pct')}% close={bm.get('close_win_5d_pct')}%/{bm.get('avg_5d_pct')}%, "
             f"hit5={bm.get('hit5_5d_pct')}%, hit10={bm.get('hit10_5d_pct')}%, "
             f"mfe5={bm.get('avg_max_high_5d_pct')}%, min5={bm.get('min_5d_pct')}%, max5={bm.get('max_5d_pct')}%"
         )
@@ -2230,9 +2274,9 @@ def _markdown(report: Dict[str, Any]) -> str:
             f"{idx}. `{row.get('market')}` `{row.get('label')}` `{row.get('feature_set')}` "
             f"`{row.get('model')}` {row.get('selection_rule') or ('top' + str(row.get('topn')))}: "
             f"score={row.get('quality_score')}, n={rm.get('n')}, "
-            f"1d={rm.get('win_1d_pct')}%/{rm.get('avg_1d_pct')}%, "
-            f"3d={rm.get('win_3d_pct')}%/{rm.get('avg_3d_pct')}%, "
-            f"5d={rm.get('win_5d_pct')}%/{rm.get('avg_5d_pct')}%, "
+            f"1d_target={rm.get('win_1d_pct')}% close={rm.get('close_win_1d_pct')}%/{rm.get('avg_1d_pct')}%, "
+            f"3d_target={rm.get('win_3d_pct')}% close={rm.get('close_win_3d_pct')}%/{rm.get('avg_3d_pct')}%, "
+            f"5d_target={rm.get('win_5d_pct')}% close={rm.get('close_win_5d_pct')}%/{rm.get('avg_5d_pct')}%, "
             f"hit5={rm.get('hit5_5d_pct')}%, hit10={rm.get('hit10_5d_pct')}%, "
             f"mfe5={rm.get('avg_max_high_5d_pct')}%, min5={rm.get('min_5d_pct')}%, max5={rm.get('max_5d_pct')}%"
         )
@@ -2243,7 +2287,7 @@ def _markdown(report: Dict[str, Any]) -> str:
             f"{idx}. `{row.get('market')}` `{row.get('label')}` `{row.get('feature_set')}` "
             f"`{row.get('model')}` {row.get('selection_rule') or ('top' + str(row.get('topn')))}: "
             f"score={row.get('quality_score')}, n={rm.get('n')}, "
-            f"5d={rm.get('win_5d_pct')}%/{rm.get('avg_5d_pct')}%, "
+            f"5d_target={rm.get('win_5d_pct')}% close={rm.get('close_win_5d_pct')}%/{rm.get('avg_5d_pct')}%, "
             f"hit5={rm.get('hit5_5d_pct')}%, hit10={rm.get('hit10_5d_pct')}%, "
             f"mfe5={rm.get('avg_max_high_5d_pct')}%, min5={rm.get('min_5d_pct')}%, max5={rm.get('max_5d_pct')}%"
         )

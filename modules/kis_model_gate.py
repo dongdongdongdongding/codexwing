@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Mapping
 from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
 
-KIS_MODEL_GATE_VERSION = "kis_model_gate_v2"
+KIS_MODEL_GATE_VERSION = "kis_model_gate_v3_target_touch_win"
+WIN_METRIC_SEMANTICS = "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; close-positive defense lives in close_win_5d_pct."
 
 _COMMON_SHADOW = {
     "min_n": 8,
@@ -270,7 +271,8 @@ def evaluate_kis_model_gate(
     This gate is intentionally stricter than generic challenger ranking. It
     separates the action decision from the model score so high-upside KIS
     models can remain visible as shadow candidates without being promoted when
-    path risk or sample maturity is not strong enough.
+    path risk or sample maturity is not strong enough. Win-rate thresholds use
+    target-touch outcomes, not close-return-above-zero defensive outcomes.
     """
 
     identity = identity if isinstance(identity, Mapping) else {}
@@ -299,6 +301,7 @@ def evaluate_kis_model_gate(
     if source_blockers:
         return {
             "version": KIS_MODEL_GATE_VERSION,
+            "win_metric_semantics": WIN_METRIC_SEMANTICS,
             "market": market_key,
             "status": "blocked",
             "production_ready": False,
@@ -358,6 +361,7 @@ def evaluate_kis_model_gate(
 
     return {
         "version": KIS_MODEL_GATE_VERSION,
+        "win_metric_semantics": WIN_METRIC_SEMANTICS,
         "market": market_key,
         "status": status,
         "production_ready": production_ready,
@@ -375,4 +379,4 @@ def evaluate_kis_model_gate(
     }
 
 
-__all__ = ["KIS_MODEL_GATE_VERSION", "evaluate_kis_model_gate"]
+__all__ = ["KIS_MODEL_GATE_VERSION", "WIN_METRIC_SEMANTICS", "evaluate_kis_model_gate"]
