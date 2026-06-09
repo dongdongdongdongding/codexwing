@@ -109,6 +109,41 @@ def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
     assert features["kis_prefilter_flow_whale_score"] == 71.0
 
 
+def test_runtime_feature_extractor_attaches_close_failure_prior_profile(monkeypatch):
+    monkeypatch.setattr(
+        admission,
+        "load_close_failure_prior_profile",
+        lambda: {
+            "groups": {
+                "ticker": {
+                    "values": {
+                        "005930.KS": {
+                            "touch5_n": 5,
+                            "failure_rate_pct": 20.0,
+                            "clean_defense_rate_pct": 60.0,
+                            "stop5_rate_pct": 10.0,
+                            "avg_close_5d_pct": 4.0,
+                            "avg_mfe_5d_pct": 12.0,
+                            "avg_mae_5d_pct": -3.0,
+                            "risk_score": 2.5,
+                            "risk_bucket": "LOW",
+                        }
+                    }
+                },
+                "market": {"values": {"KOSPI": {"touch5_n": 20, "risk_score": 45.0, "risk_bucket": "MODERATE"}}},
+            }
+        },
+    )
+
+    features = _extract_feature_columns({"ticker": "005930.KS", "market": "KOSPI"}, market="KOSPI")
+
+    assert features["close_failure_prior_ticker_touch5_n"] == 5
+    assert features["close_failure_prior_ticker_failure_rate_pct"] == 20.0
+    assert features["close_failure_prior_ticker_risk_bucket"] == "LOW"
+    assert features["close_failure_prior_market_touch5_n"] == 20
+    assert features["close_failure_prior_market_risk_bucket"] == "MODERATE"
+
+
 def test_merge_kis_prefilter_evidence_into_rows_uses_real_summary_payload_only():
     rows = [
         {"ticker": "005930.KS", "feature_snapshot": {"alpha_score": 91}},
@@ -201,8 +236,8 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
             },
         },
     ]
-    monkeypatch.setattr(admission, "load_admission_model", lambda _market: bundle)
-    monkeypatch.setattr(admission, "score_scan_universe_admission_rows", lambda _rows, market: scored)
+    monkeypatch.setattr(admission, "load_kis_shadow_model", lambda _market: {**bundle, "_shadow_model_loaded": True})
+    monkeypatch.setattr(admission, "_score_scan_universe_admission_rows_with_bundle", lambda _rows, market, bundle: scored)
     monkeypatch.setattr(
         admission,
         "_load_kis_shadow_report",
@@ -243,6 +278,7 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
     assert row["_analysis_section_order"] == -250
     assert row["decision"] == "KIS_SHADOW"
     assert row["kis_shadow_candidate"]["shadow_only"] is True
+    assert row["kis_shadow_candidate"]["shadow_model_loaded"] is True
     assert row["kis_shadow_candidate"]["source"] == "real_kis_sidecar_or_prefilter_evidence"
     assert row["kis_shadow_candidate"]["gate_status"] == "shadow_ready"
     assert row["kis_shadow_candidate"]["production_ready"] is False
@@ -253,6 +289,10 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
     assert row["realized_expectancy_admission"]["source"] == "kis_shadow_validation_report"
     assert row["realized_expectancy_admission"]["kis_model_gate_status"] == "shadow_ready"
     assert row["realized_expectancy_admission"]["5d_prob"] == 75.0
+    assert row["trade_plan"]["target_tp_pct"] == 7.0
+    assert row["trade_plan"]["stop_sl_pct"] == -5.0
+    assert row["execution_stop"]["display_stop_source"] == "kis_shadow_dynamic_exit_policy"
+    assert row["kis_shadow_candidate"]["dynamic_exit_policy"]["version"] == "kis_shadow_dynamic_exit_policy_v1"
 
 
 def test_admission_records_include_full_result_interpretation():

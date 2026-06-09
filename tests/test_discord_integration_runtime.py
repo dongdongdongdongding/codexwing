@@ -709,6 +709,13 @@ def test_scan_result_renderer_surfaces_kis_shadow_candidates_first(monkeypatch):
             "shadow_only": True,
             "runtime_model_rank": 2,
             "source": "real_kis_sidecar_or_prefilter_evidence",
+            "dynamic_exit_policy": {
+                "version": "kis_shadow_dynamic_exit_policy_v1",
+                "target_tp_pct": 5.0,
+                "stop_sl_pct": -3.0,
+                "hold_days": 3,
+                "risk_level": "HIGH",
+            },
         },
         "kis_theme_news_evidence": {
             "contract_version": "kis_theme_news_evidence_v1",
@@ -771,6 +778,7 @@ def test_scan_result_renderer_surfaces_kis_shadow_candidates_first(monkeypatch):
     assert "삼성전자" in kis_field["value"]
     assert "KIS shadow" in kis_field["value"]
     assert "5D win 75.0%" in kis_field["value"]
+    assert "TP +5.00%/SL -3.00%/3일" in kis_field["value"]
     assert "KIS headline" in kis_field["value"]
 
 

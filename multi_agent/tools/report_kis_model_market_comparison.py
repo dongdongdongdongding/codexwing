@@ -26,12 +26,12 @@ DEFAULT_SOURCES = {
     / "runtime_state"
     / "reports"
     / "learning"
-    / "scan_universe_admission_challenger_after_full_kis_sidecar_backfill.json",
+    / "scan_universe_admission_challenger_failure_risk_numeric_20260401_20260528.json",
     "KOSDAQ": ROOT
     / "runtime_state"
     / "reports"
     / "learning"
-    / "scan_universe_admission_challenger_kosdaq_after_20260526_27_backfill.json",
+    / "scan_universe_admission_challenger_failure_risk_top5_20260401_20260528.json",
 }
 HORIZONS = ("1d", "3d", "5d")
 BASELINES = ("current_top1", "current_top3", "current_top5")

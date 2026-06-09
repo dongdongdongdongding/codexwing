@@ -9,6 +9,11 @@ from typing import Any, Dict, List, Tuple
 import joblib
 import pandas as pd
 
+from modules.close_failure_prior_profile import (
+    apply_close_failure_prior_profile_to_features,
+    load_close_failure_prior_profile,
+)
+from modules.kis_shadow_exit_policy import build_kis_shadow_exit_policy
 from modules.kis_theme_news_evidence import (
     build_kis_theme_news_evidence,
     format_kis_theme_news_summary,
@@ -22,6 +27,10 @@ KIS_MODEL_COMPARISON_PATH = Path("runtime_state/reports/learning/kis_model_marke
 MODEL_PATHS = {
     "KOSPI": MODEL_DIR / "kospi__touch10_guard_5d__wide_theme__xgboost__top1_p0p45.pkl",
     "KOSDAQ": MODEL_DIR / "kosdaq__touch5_guard_5d__flow_no_gate__lightgbm__top1.pkl",
+}
+KIS_SHADOW_MODEL_PATHS = {
+    "KOSPI": MODEL_DIR / "kospi__target_first_sustain_5d__kis_failure_risk_numeric__hist_gb__top1_p0p60.pkl",
+    "KOSDAQ": MODEL_DIR / "kosdaq__touch10_guard_5d__kis_sidecar_failure_risk_numeric__hist_gb__top5_p0p60.pkl",
 }
 
 ADMISSION_SECTION = "Scan Universe Admission"
@@ -408,8 +417,8 @@ def build_kis_shadow_admission_records(
     if market_key not in {"KOSPI", "KOSDAQ"}:
         return []
     limit_n = max(1, int(limit if limit is not None else _kis_shadow_topn(market_key)))
-    bundle = load_admission_model(market_key)
-    scored = score_scan_universe_admission_rows(rows, market=market_key)
+    bundle = load_kis_shadow_model(market_key)
+    scored = _score_scan_universe_admission_rows_with_bundle(rows, market=market_key, bundle=bundle)
     if not scored:
         return []
     gate = _kis_shadow_gate_payload(market_key)
@@ -439,6 +448,14 @@ def build_kis_shadow_admission_records(
         )
         theme_news_summary = format_kis_theme_news_summary(theme_news_evidence)
         shadow_rank = len(selected) + 1
+        dynamic_exit_policy = build_kis_shadow_exit_policy(
+            features=features,
+            metrics=metrics,
+            identity=identity,
+            market=market_key,
+        )
+        trade_plan = record.get("trade_plan") if isinstance(record.get("trade_plan"), dict) else {}
+        execution_stop = record.get("execution_stop") if isinstance(record.get("execution_stop"), dict) else {}
         record.update(
             {
                 "decision": "KIS_SHADOW",
@@ -450,10 +467,12 @@ def build_kis_shadow_admission_records(
                 ),
                 "entry_condition_text": (
                     f"KIS evidence 기반 shadow 후보 #{shadow_rank}: "
-                    f"runtime admission score {probability * 100.0:.1f}%"
+                    f"runtime admission score {probability * 100.0:.1f}% · "
+                    f"동적 TP {dynamic_exit_policy.get('target_tp_pct')}% / SL {dynamic_exit_policy.get('stop_sl_pct')}%"
                 ),
                 "stop_condition_text": (
-                    f"KIS shadow 검증 최저 5D {metrics.get('min_5d_pct', '-')}% · "
+                    f"동적 손절 {dynamic_exit_policy.get('stop_sl_pct')}% · "
+                    f"최대보유 {dynamic_exit_policy.get('hold_days')}일 · "
                     f"bad-path {metrics.get('bad_path_pct', '-')}%"
                     if metrics
                     else "KIS shadow 검증 메타 미확보"
@@ -463,9 +482,26 @@ def build_kis_shadow_admission_records(
                 "_analysis_section_rank": shadow_rank,
                 "_source_order": "kis_shadow_admission_candidate",
                 "_shadow_gate": gate,
+                "trade_plan": {
+                    **trade_plan,
+                    "entry_policy": dynamic_exit_policy.get("entry_policy"),
+                    "entry_premium_assumption_pct": dynamic_exit_policy.get("entry_premium_assumption_pct"),
+                    "target_tp_pct": dynamic_exit_policy.get("target_tp_pct"),
+                    "stop_sl_pct": dynamic_exit_policy.get("stop_sl_pct"),
+                    "hold_days": dynamic_exit_policy.get("hold_days"),
+                    "dynamic_exit_policy": dynamic_exit_policy,
+                },
+                "execution_stop": {
+                    **execution_stop,
+                    "display_stop_sl_pct": dynamic_exit_policy.get("stop_sl_pct"),
+                    "display_stop_source": "kis_shadow_dynamic_exit_policy",
+                    "dynamic_exit_policy": dynamic_exit_policy,
+                },
                 "kis_theme_news_evidence": theme_news_evidence,
                 "kis_shadow_candidate": {
                     "version": KIS_SHADOW_RUNTIME_VERSION,
+                    "runtime_model_path": bundle.get("_model_path"),
+                    "shadow_model_loaded": bool(bundle.get("_shadow_model_loaded")),
                     "market": market_key,
                     "shadow_only": True,
                     "runtime_model_probability_pct": round(probability * 100.0, 4),
@@ -478,6 +514,7 @@ def build_kis_shadow_admission_records(
                     "gate_status": kis_model_gate.get("status"),
                     "production_ready": bool(kis_model_gate.get("production_ready")),
                     "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
+                    "dynamic_exit_policy": dynamic_exit_policy,
                     "theme_news_evidence": {
                         "available": theme_news_evidence.get("available"),
                         "kis_backed": theme_news_evidence.get("kis_backed"),
@@ -505,6 +542,12 @@ def build_kis_shadow_admission_records(
                     "stress_expected_value_5d_pct": metrics.get("min_5d_pct"),
                     "expected_max_high_5d_pct": metrics.get("avg_max_high_5d_pct"),
                     "stop5_pct": metrics.get("stop5_pct"),
+                    "dynamic_exit_policy_version": dynamic_exit_policy.get("version"),
+                    "target_tp_pct": dynamic_exit_policy.get("target_tp_pct"),
+                    "stop_sl_pct": dynamic_exit_policy.get("stop_sl_pct"),
+                    "hold_days": dynamic_exit_policy.get("hold_days"),
+                    "dynamic_risk_level": dynamic_exit_policy.get("risk_level"),
+                    "dynamic_expected_net_avg_5d_pct": dynamic_exit_policy.get("expected_net_avg_5d_pct"),
                 },
                 "prediction": {
                     **(record.get("prediction") if isinstance(record.get("prediction"), dict) else {}),
@@ -513,6 +556,7 @@ def build_kis_shadow_admission_records(
                     "ranking_score_5d": round(probability * 100.0, 4),
                     "admission_policy_version": KIS_SHADOW_RUNTIME_VERSION,
                     "kis_model_gate_status": kis_model_gate.get("status"),
+                    "dynamic_exit_policy_version": dynamic_exit_policy.get("version"),
                 },
             }
         )
@@ -523,7 +567,10 @@ def build_kis_shadow_admission_records(
         record["scan_result_interpretation"] = {
             **interpretation,
             "model_decision": "KIS shadow 후보",
-            "action": "운영 승격 전 최상단 관찰",
+            "action": (
+                "운영 승격 전 최상단 관찰 · "
+                f"동적 TP {dynamic_exit_policy.get('target_tp_pct')}% / SL {dynamic_exit_policy.get('stop_sl_pct')}%"
+            ),
             "drivers": drivers[:8],
             "warnings": list(interpretation.get("warnings") or [])
             + list(theme_news_evidence.get("warnings") or [])[:3]
@@ -531,7 +578,8 @@ def build_kis_shadow_admission_records(
             + (["KIS_SHADOW_RISK_REVIEW_REQUIRED"] if kis_model_gate.get("risk_review_required") else []),
             "plain_text": (
                 f"KIS shadow 후보: runtime admission score {probability * 100.0:.1f}%. "
-                f"{gate.get('metrics') or ''} gate={kis_model_gate.get('status') or '-'}."
+                f"{gate.get('metrics') or ''} gate={kis_model_gate.get('status') or '-'} "
+                f"dynamic_exit={dynamic_exit_policy.get('target_tp_pct')}%/{dynamic_exit_policy.get('stop_sl_pct')}%."
             ).strip(),
         }
         selected.append(record)
@@ -618,6 +666,11 @@ def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, A
     features["whale_flow_3d"] = whale_3d
     features["whale_flow_10d"] = whale_10d
     features.update(flatten_kis_model_features(row))
+    features = apply_close_failure_prior_profile_to_features(
+        features,
+        row=row,
+        profile=load_close_failure_prior_profile(),
+    )
     if features["has_actual_flow"] is None:
         features["has_actual_flow"] = any(features.get(key) is not None for key in ("foreigner_1d", "institution_1d", "retail_1d", "foreigner_3d", "institution_3d", "retail_3d"))
     if features["flow_consensus_buying"] is None and whale_1d is not None and whale_3d is not None:
@@ -657,6 +710,20 @@ def load_admission_model(market: str) -> Dict[str, Any]:
         raise FileNotFoundError(f"admission_model_missing:{path}")
     bundle = joblib.load(path)
     bundle["_model_path"] = str(path)
+    return bundle
+
+
+@lru_cache(maxsize=4)
+def load_kis_shadow_model(market: str) -> Dict[str, Any]:
+    market_key = str(market or "").upper().strip()
+    path = KIS_SHADOW_MODEL_PATHS.get(market_key)
+    if path and path.exists():
+        bundle = joblib.load(path)
+        bundle["_model_path"] = str(path)
+        bundle["_shadow_model_loaded"] = True
+        return bundle
+    bundle = load_admission_model(market_key)
+    bundle["_shadow_model_loaded"] = False
     return bundle
 
 
@@ -1224,6 +1291,16 @@ def score_scan_universe_admission_rows(
 ) -> List[Dict[str, Any]]:
     market_key = str(market or "").upper().strip()
     bundle = load_admission_model(market_key)
+    return _score_scan_universe_admission_rows_with_bundle(rows, market=market_key, bundle=bundle)
+
+
+def _score_scan_universe_admission_rows_with_bundle(
+    rows: List[Dict[str, Any]],
+    *,
+    market: str,
+    bundle: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    market_key = str(market or "").upper().strip()
     prepared: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
     for idx, row in enumerate(rows or [], start=1):
         if not isinstance(row, dict):
@@ -1450,6 +1527,7 @@ __all__ = [
     "admission_model_summary",
     "admission_run_status",
     "build_kis_shadow_admission_records",
+    "load_kis_shadow_model",
     "merge_kis_prefilter_evidence_into_rows",
     "build_scan_universe_admission_input_rows",
     "build_scan_universe_admission_records",

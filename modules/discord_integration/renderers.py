@@ -906,9 +906,20 @@ def _kis_shadow_rows_value(rows: List[Dict[str, Any]], *, limit: int = 3) -> str
         admission = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
         expectancy = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
         shadow = row.get("kis_shadow_candidate") if isinstance(row.get("kis_shadow_candidate"), dict) else {}
+        exit_policy = shadow.get("dynamic_exit_policy") if isinstance(shadow.get("dynamic_exit_policy"), dict) else {}
+        if not exit_policy and isinstance(row.get("trade_plan"), dict):
+            exit_policy = row["trade_plan"].get("dynamic_exit_policy") if isinstance(row["trade_plan"].get("dynamic_exit_policy"), dict) else {}
         model_rank = shadow.get("runtime_model_rank") or admission.get("model_rank") or "-"
         gate_status = shadow.get("gate_status") or expectancy.get("kis_model_gate_status") or "shadow"
         risk_review = " · risk_review" if shadow.get("risk_review_required") or expectancy.get("risk_review_required") else ""
+        exit_text = ""
+        if exit_policy:
+            exit_text = (
+                f" · TP {_fmt_pct(exit_policy.get('target_tp_pct'))}"
+                f"/SL {_fmt_pct(exit_policy.get('stop_sl_pct'))}"
+                f"/{exit_policy.get('hold_days') or '-'}일"
+                f" · {exit_policy.get('risk_level') or 'risk'}"
+            )
         theme_news_summary = format_kis_theme_news_summary(
             row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else build_kis_theme_news_evidence(row)
         )
@@ -918,7 +929,7 @@ def _kis_shadow_rows_value(rows: List[Dict[str, Any]], *, limit: int = 3) -> str
             f"(model#{model_rank}) · 5D win {_fmt_num(expectancy.get('5d_prob'), 1)}% · "
             f"avg5D {_fmt_pct(expectancy.get('base_expected_value_5d_pct'))} · "
             f"min5D {_fmt_pct(expectancy.get('stress_expected_value_5d_pct'))} · "
-            f"gate {gate_status}{risk_review} · shadow_only{theme_news_tail}"
+            f"gate {gate_status}{risk_review}{exit_text} · shadow_only{theme_news_tail}"
         )
     return ("\n".join(lines) or "KIS shadow 후보 없음.")[:1024]
 
