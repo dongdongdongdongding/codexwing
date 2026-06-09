@@ -699,7 +699,7 @@ def build_top_deep_embeds(
         status_lines = [
             f"원본 통과: {result_count}개 · 필터: {filtered_count}개",
             (
-                f"섹션: KIS Shadow {section_counts.get(KIS_SHADOW_SECTION, 0)} / "
+                f"섹션: KIS 쉐도우 {section_counts.get(KIS_SHADOW_SECTION, 0)} / "
                 f"Admission {section_counts.get(ADMISSION_SECTION, 0)} / "
                 f"NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
             ),
@@ -739,7 +739,7 @@ def build_top_deep_embeds(
         title="Admission 모델 자동 정밀분석",
         description=(
             f"Run `{latest_run or '-'}` · offset {safe_offset} · "
-            f"KIS Shadow {section_counts.get(KIS_SHADOW_SECTION, 0)} / "
+            f"KIS 쉐도우 {section_counts.get(KIS_SHADOW_SECTION, 0)} / "
             f"Admission {section_counts.get(ADMISSION_SECTION, 0)} / "
             f"NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
         ),
@@ -925,13 +925,13 @@ def _kis_shadow_rows_value(rows: List[Dict[str, Any]], *, limit: int = 3) -> str
         )
         theme_news_tail = f" · {theme_news_summary}" if theme_news_summary else ""
         lines.append(
-            f"#{idx} {name}({ticker}) · KIS shadow · score {_fmt_num(admission.get('probability_pct'), 1)}% "
+            f"#{idx} {name}({ticker}) · KIS 쉐도우 · score {_fmt_num(admission.get('probability_pct'), 1)}% "
             f"(model#{model_rank}) · 5D win {_fmt_num(expectancy.get('5d_prob'), 1)}% · "
             f"avg5D {_fmt_pct(expectancy.get('base_expected_value_5d_pct'))} · "
             f"min5D {_fmt_pct(expectancy.get('stress_expected_value_5d_pct'))} · "
             f"gate {gate_status}{risk_review}{exit_text} · shadow_only{theme_news_tail}"
         )
-    return ("\n".join(lines) or "KIS shadow 후보 없음.")[:1024]
+    return ("\n".join(lines) or "KIS 쉐도우 후보 없음.")[:1024]
 
 
 def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
@@ -1307,7 +1307,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
             if kis_shadow_rows:
                 fields.append(
                     {
-                        "name": "KIS Shadow 후보",
+                        "name": "KIS 쉐도우 후보",
                         "value": _kis_shadow_rows_value(kis_shadow_rows, limit=3),
                         "inline": False,
                     }

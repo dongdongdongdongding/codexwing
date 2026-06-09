@@ -311,7 +311,7 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
         else "KIS 비교 리포트 미확보"
     )
     return {
-        "label": "KIS Shadow",
+        "label": "KIS 쉐도우",
         "profile": profile or "kis_runtime_evidence",
         "conditions": "실제 KIS sidecar/prefilter evidence가 있는 현재 스캔 row만 shadow 채점",
         "metrics": metrics_line,
@@ -461,9 +461,9 @@ def build_kis_shadow_admission_records(
                 "decision": "KIS_SHADOW",
                 "decision_bucket": "kis_shadow",
                 "final_action": (
-                    "KIS shadow 위험검토 - 운영 승격 차단"
+                    "KIS 쉐도우 위험검토 - 운영 승격 차단"
                     if kis_model_gate.get("risk_review_required")
-                    else "KIS shadow 관찰 - 운영 승격 전 후보"
+                    else "KIS 쉐도우 관찰 - 운영 승격 전 후보"
                 ),
                 "entry_condition_text": (
                     f"KIS evidence 기반 shadow 후보 #{shadow_rank}: "
@@ -475,7 +475,7 @@ def build_kis_shadow_admission_records(
                     f"최대보유 {dynamic_exit_policy.get('hold_days')}일 · "
                     f"bad-path {metrics.get('bad_path_pct', '-')}%"
                     if metrics
-                    else "KIS shadow 검증 메타 미확보"
+                    else "KIS 쉐도우 검증 메타 미확보"
                 ),
                 "_analysis_section": KIS_SHADOW_SECTION,
                 "_analysis_section_order": -250,
@@ -566,7 +566,7 @@ def build_kis_shadow_admission_records(
             drivers.append(f"KIS테마/뉴스 {theme_news_summary}")
         record["scan_result_interpretation"] = {
             **interpretation,
-            "model_decision": "KIS shadow 후보",
+            "model_decision": "KIS 쉐도우 후보",
             "action": (
                 "운영 승격 전 최상단 관찰 · "
                 f"동적 TP {dynamic_exit_policy.get('target_tp_pct')}% / SL {dynamic_exit_policy.get('stop_sl_pct')}%"
@@ -577,7 +577,7 @@ def build_kis_shadow_admission_records(
             + ["KIS_SHADOW_NOT_PRODUCTION_PROMOTED"]
             + (["KIS_SHADOW_RISK_REVIEW_REQUIRED"] if kis_model_gate.get("risk_review_required") else []),
             "plain_text": (
-                f"KIS shadow 후보: runtime admission score {probability * 100.0:.1f}%. "
+                f"KIS 쉐도우 후보: runtime admission score {probability * 100.0:.1f}%. "
                 f"{gate.get('metrics') or ''} gate={kis_model_gate.get('status') or '-'} "
                 f"dynamic_exit={dynamic_exit_policy.get('target_tp_pct')}%/{dynamic_exit_policy.get('stop_sl_pct')}%."
             ).strip(),

@@ -773,10 +773,10 @@ def test_scan_result_renderer_surfaces_kis_shadow_candidates_first(monkeypatch):
     )
 
     field_names = [field["name"] for field in embeds[0]["fields"]]
-    assert field_names.index("KIS Shadow 후보") < field_names.index("Admission 모델 기준")
-    kis_field = next(field for field in embeds[0]["fields"] if field["name"] == "KIS Shadow 후보")
+    assert field_names.index("KIS 쉐도우 후보") < field_names.index("Admission 모델 기준")
+    kis_field = next(field for field in embeds[0]["fields"] if field["name"] == "KIS 쉐도우 후보")
     assert "삼성전자" in kis_field["value"]
-    assert "KIS shadow" in kis_field["value"]
+    assert "KIS 쉐도우" in kis_field["value"]
     assert "5D win 75.0%" in kis_field["value"]
     assert "TP +5.00%/SL -3.00%/3일" in kis_field["value"]
     assert "KIS headline" in kis_field["value"]
