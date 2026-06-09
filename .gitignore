@@ -48,6 +48,8 @@ runtime_state/reports/daily/
 runtime_state/reports/archive/
 runtime_state/reports/data_quality/
 runtime_state/reports/learning/smoke/
+runtime_state/reports/learning/*.pkl
+runtime_state/reports/learning/*.pkl.meta.json
 runtime_state/reports/instrument_master/
 runtime_state/reports/top_deep/
 runtime_state/reports/data_health/

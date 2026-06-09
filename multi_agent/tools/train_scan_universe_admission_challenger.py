@@ -61,15 +61,17 @@ from modules.kis_model_features import (
     flatten_kis_model_features,
 )
 from modules.kis_model_gate import evaluate_kis_model_gate
+from modules.operational_candidate_scoring import DEFAULT_BUY_PREMIUM_PCT, adjust_return_for_buy_premium
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 TARGET_TABLE = "scan_universe_snapshots"
-REPORT_VERSION = "scan_universe_admission_challenger_v1"
+REPORT_VERSION = "scan_universe_admission_challenger_v2_buy_premium"
 REPORT_DIR = ROOT / "runtime_state" / "reports" / "learning"
 MODEL_DIR = ROOT / "models" / "scan_universe_challengers"
+OPERATIONAL_BUY_PREMIUM_PCT = DEFAULT_BUY_PREMIUM_PCT
 MIN_RETRY_PAGE_SIZE = 5
 MIN_PROMOTION_RUNS = 12
 MIN_PROMOTION_DAYS = 6
@@ -362,6 +364,28 @@ def _metric_float(metrics_map: Dict[str, Any], key: str, default: float) -> floa
 def _append_unique(values: List[str], value: str) -> None:
     if value not in values:
         values.append(value)
+
+
+def _premium_col(column: str) -> str:
+    return f"buy_premium_{column}"
+
+
+def _adjusted_return_series(df: pd.DataFrame, column: str) -> pd.Series:
+    if _premium_col(column) in df.columns:
+        return pd.to_numeric(df[_premium_col(column)], errors="coerce")
+    raw = pd.to_numeric(df.get(column, pd.Series(index=df.index, dtype=float)), errors="coerce")
+    return raw.map(lambda value: adjust_return_for_buy_premium(value, OPERATIONAL_BUY_PREMIUM_PCT))
+
+
+def attach_operational_outcome_columns(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    for column in LABEL_RETURN_COLUMNS:
+        if column in out.columns:
+            out[_premium_col(column)] = pd.to_numeric(out[column], errors="coerce").map(
+                lambda value: adjust_return_for_buy_premium(value, OPERATIONAL_BUY_PREMIUM_PCT)
+            )
+    out["operational_buy_premium_pct"] = float(OPERATIONAL_BUY_PREMIUM_PCT)
+    return out
 
 
 def _bool_series(series: pd.Series) -> pd.Series:
@@ -758,15 +782,14 @@ def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") 
         "KOSDAQ",
     )
     out["market"] = out["market"].fillna("").astype(str).str.upper()
-    out["stop5_proxy"] = out.get("stop_before_target_5d_bool", pd.Series(False, index=out.index)).fillna(False)
-    if "min_low_return_5d_pct" in out.columns:
-        out["stop5_proxy"] |= out["min_low_return_5d_pct"].le(-5.0).fillna(False)
-    out["bad_path"] = (
-        out["stop5_proxy"]
-        | out.get("return_1d_pct", pd.Series(index=out.index, dtype=float)).lt(-3.0).fillna(False)
-        | out.get("return_5d_pct", pd.Series(index=out.index, dtype=float)).lt(0.0).fillna(False)
-    )
     out, sanity = apply_return_sanity(out, mode=return_sanity)
+    out = attach_operational_outcome_columns(out)
+    return1 = _adjusted_return_series(out, "return_1d_pct")
+    return5 = _adjusted_return_series(out, "return_5d_pct")
+    low5 = _adjusted_return_series(out, "min_low_return_5d_pct")
+    out["stop5_proxy"] = out.get("stop_before_target_5d_bool", pd.Series(False, index=out.index)).fillna(False)
+    out["stop5_proxy"] |= low5.le(-5.0).fillna(False)
+    out["bad_path"] = out["stop5_proxy"] | return1.lt(-3.0).fillna(False) | return5.lt(0.0).fillna(False)
     return out.sort_values(["trade_date", "run_id", "ticker"]).copy(), sanity
 
 
@@ -842,66 +865,91 @@ def write_prepared_dataset_cache(
 def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Series]:
     false = pd.Series(False, index=df.index)
     if spec.name == "pos_1d":
-        valid = df["return_1d_pct"].notna()
-        return df["return_1d_pct"].gt(0).fillna(False), valid
+        ret1 = _adjusted_return_series(df, "return_1d_pct")
+        valid = ret1.notna()
+        return ret1.gt(0).fillna(False), valid
     if spec.name == "pos_3d":
-        valid = df["return_3d_pct"].notna()
-        return df["return_3d_pct"].gt(0).fillna(False), valid
+        ret3 = _adjusted_return_series(df, "return_3d_pct")
+        valid = ret3.notna()
+        return ret3.gt(0).fillna(False), valid
     if spec.name == "pos_5d":
-        valid = df["return_5d_pct"].notna()
-        return df["return_5d_pct"].gt(0).fillna(False), valid
+        ret5 = _adjusted_return_series(df, "return_5d_pct")
+        valid = ret5.notna()
+        return ret5.gt(0).fillna(False), valid
     if spec.name == "clean_3d":
-        valid = df["return_1d_pct"].notna() & df["return_3d_pct"].notna() & df["min_low_return_3d_pct"].notna()
+        ret1 = _adjusted_return_series(df, "return_1d_pct")
+        ret3 = _adjusted_return_series(df, "return_3d_pct")
+        low3 = _adjusted_return_series(df, "min_low_return_3d_pct")
+        valid = ret1.notna() & ret3.notna() & low3.notna()
         return (
-            df["return_3d_pct"].gt(0)
-            & df["return_1d_pct"].ge(-2.0)
-            & df["min_low_return_3d_pct"].gt(-5.0)
+            ret3.gt(0)
+            & ret1.ge(-2.0)
+            & low3.gt(-5.0)
         ).fillna(False), valid
     if spec.name == "clean_5d":
-        valid = df["return_1d_pct"].notna() & df["return_5d_pct"].notna() & df["min_low_return_5d_pct"].notna()
+        ret1 = _adjusted_return_series(df, "return_1d_pct")
+        ret5 = _adjusted_return_series(df, "return_5d_pct")
+        low5 = _adjusted_return_series(df, "min_low_return_5d_pct")
+        valid = ret1.notna() & ret5.notna() & low5.notna()
         return (
-            df["return_5d_pct"].gt(0)
-            & df["return_1d_pct"].ge(-3.0)
-            & df["min_low_return_5d_pct"].gt(-5.0)
+            ret5.gt(0)
+            & ret1.ge(-3.0)
+            & low5.gt(-5.0)
         ).fillna(False), valid
     if spec.name == "sustain_1_3_5_lowdd":
-        valid = (
-            df["return_1d_pct"].notna()
-            & df["return_3d_pct"].notna()
-            & df["return_5d_pct"].notna()
-            & df["min_low_return_5d_pct"].notna()
-        )
+        ret1 = _adjusted_return_series(df, "return_1d_pct")
+        ret3 = _adjusted_return_series(df, "return_3d_pct")
+        ret5 = _adjusted_return_series(df, "return_5d_pct")
+        low5 = _adjusted_return_series(df, "min_low_return_5d_pct")
+        valid = ret1.notna() & ret3.notna() & ret5.notna() & low5.notna()
         return (
-            df["return_1d_pct"].gt(0)
-            & df["return_3d_pct"].gt(0)
-            & df["return_5d_pct"].gt(0)
-            & df["min_low_return_5d_pct"].gt(-5.0)
+            ret1.gt(0)
+            & ret3.gt(0)
+            & ret5.gt(0)
+            & low5.gt(-5.0)
         ).fillna(False), valid
     if spec.name == "target_first_5d":
-        valid = df.get("target_before_stop_5d").notna() & df.get("stop_before_target_5d").notna()
-        return df.get("target_before_stop_5d_bool", false).fillna(False), valid
+        mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
+        mae = _adjusted_return_series(df, "min_low_return_5d_pct")
+        valid = df.get("target_before_stop_5d").notna() & df.get("stop_before_target_5d").notna() & mfe.notna() & mae.notna()
+        return (
+            df.get("target_before_stop_5d_bool", false).fillna(False)
+            & mfe.ge(5.0).fillna(False)
+            & mae.gt(-5.0).fillna(False)
+        ).fillna(False), valid
     if spec.name == "target_first_sustain_5d":
+        ret3 = _adjusted_return_series(df, "return_3d_pct")
+        ret5 = _adjusted_return_series(df, "return_5d_pct")
+        mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
+        mae = _adjusted_return_series(df, "min_low_return_5d_pct")
         valid = (
             df.get("target_before_stop_5d").notna()
             & df.get("stop_before_target_5d").notna()
-            & df["return_3d_pct"].notna()
-            & df["return_5d_pct"].notna()
+            & ret3.notna()
+            & ret5.notna()
+            & mfe.notna()
+            & mae.notna()
         )
         return (
             df.get("target_before_stop_5d_bool", false).fillna(False)
-            & df["return_3d_pct"].gt(0)
-            & df["return_5d_pct"].gt(0)
+            & ret3.gt(0)
+            & ret5.gt(0)
+            & mfe.ge(5.0).fillna(False)
+            & mae.gt(-5.0).fillna(False)
         ).fillna(False), valid
     if spec.name == "target_hit_no_stop_5d":
-        valid = df.get("target_hit_5d").notna() & df.get("stop_hit_5d").notna()
+        mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
+        mae = _adjusted_return_series(df, "min_low_return_5d_pct")
+        valid = df.get("target_hit_5d").notna() & df.get("stop_hit_5d").notna() & mfe.notna() & mae.notna()
         return (
             df.get("target_hit_5d_bool", false).fillna(False)
-            & ~df.get("stop_hit_5d_bool", false).fillna(False)
+            & mfe.ge(5.0).fillna(False)
+            & mae.gt(-5.0).fillna(False)
         ).fillna(False), valid
     if spec.name in {"touch5_5d", "touch10_5d", "touch5_guard_5d", "touch10_guard_5d"}:
         target = 10.0 if "10" in spec.name else 5.0
-        mfe = pd.to_numeric(df.get("max_high_return_5d_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
-        mae = pd.to_numeric(df.get("min_low_return_5d_pct", pd.Series(index=df.index, dtype=float)), errors="coerce")
+        mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
+        mae = _adjusted_return_series(df, "min_low_return_5d_pct")
         valid = mfe.notna()
         hit = mfe.ge(target).fillna(False)
         if "guard" in spec.name:
@@ -1096,14 +1144,19 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
         "label_win_pct": _pct(wins.mean()) if len(wins) else None,
         "bad_path_pct": _pct(sub.get("bad_path", pd.Series(False, index=sub.index)).fillna(False).mean()),
         "stop5_pct": _pct(sub.get("stop5_proxy", pd.Series(False, index=sub.index)).fillna(False).mean()),
+        "buy_premium_pct": float(OPERATIONAL_BUY_PREMIUM_PCT),
     }
     for horizon, col in [("1d", "return_1d_pct"), ("3d", "return_3d_pct"), ("5d", "return_5d_pct")]:
-        ret = pd.to_numeric(sub.get(col, pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
+        ret = _adjusted_return_series(sub, col).dropna()
         out[f"win_{horizon}_pct"] = _pct(ret.gt(0).mean()) if len(ret) else None
         out[f"avg_{horizon}_pct"] = _round(ret.mean()) if len(ret) else None
         out[f"median_{horizon}_pct"] = _round(ret.median()) if len(ret) else None
         out[f"min_{horizon}_pct"] = _round(ret.min()) if len(ret) else None
         out[f"max_{horizon}_pct"] = _round(ret.max()) if len(ret) else None
+        scan_ret = pd.to_numeric(sub.get(col, pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
+        out[f"scan_reference_avg_{horizon}_pct"] = _round(scan_ret.mean()) if len(scan_ret) else None
+        out[f"scan_reference_min_{horizon}_pct"] = _round(scan_ret.min()) if len(scan_ret) else None
+        out[f"scan_reference_max_{horizon}_pct"] = _round(scan_ret.max()) if len(scan_ret) else None
     for horizon in ("1d", "3d", "5d"):
         target = sub.get(f"target_before_stop_{horizon}", pd.Series(index=sub.index, dtype=object))
         stop = sub.get(f"stop_before_target_{horizon}", pd.Series(index=sub.index, dtype=object))
@@ -1111,13 +1164,19 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
         if target_valid.any():
             out[f"target_before_stop_{horizon}_pct"] = _pct(_bool_series(target.loc[target_valid]).mean())
             out[f"stop_before_target_{horizon}_pct"] = _pct(_bool_series(stop.loc[target_valid]).mean())
-    mfe = pd.to_numeric(sub.get("max_high_return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
-    mae = pd.to_numeric(sub.get("min_low_return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
+    mfe = _adjusted_return_series(sub, "max_high_return_5d_pct").dropna()
+    mae = _adjusted_return_series(sub, "min_low_return_5d_pct").dropna()
     if len(mfe):
         out["hit5_5d_pct"] = _pct(mfe.ge(5.0).mean())
         out["hit10_5d_pct"] = _pct(mfe.ge(10.0).mean())
     if len(mfe) and len(mae):
-        aligned = sub[["max_high_return_5d_pct", "min_low_return_5d_pct"]].apply(pd.to_numeric, errors="coerce").dropna()
+        aligned = pd.DataFrame(
+            {
+                "max_high_return_5d_pct": _adjusted_return_series(sub, "max_high_return_5d_pct"),
+                "min_low_return_5d_pct": _adjusted_return_series(sub, "min_low_return_5d_pct"),
+            },
+            index=sub.index,
+        ).dropna()
         if not aligned.empty:
             out["hit5_guard_5d_pct"] = _pct((aligned["max_high_return_5d_pct"].ge(5.0) & aligned["min_low_return_5d_pct"].gt(-5.0)).mean())
             out["hit10_guard_5d_pct"] = _pct((aligned["max_high_return_5d_pct"].ge(10.0) & aligned["min_low_return_5d_pct"].gt(-5.0)).mean())
@@ -1127,6 +1186,10 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
     out["avg_min_low_5d_pct"] = _round(mae.mean()) if len(mae) else None
     out["min_min_low_5d_pct"] = _round(mae.min()) if len(mae) else None
     out["max_min_low_5d_pct"] = _round(mae.max()) if len(mae) else None
+    raw_mfe = pd.to_numeric(sub.get("max_high_return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
+    raw_mae = pd.to_numeric(sub.get("min_low_return_5d_pct", pd.Series(index=sub.index, dtype=float)), errors="coerce").dropna()
+    out["scan_reference_avg_max_high_5d_pct"] = _round(raw_mfe.mean()) if len(raw_mfe) else None
+    out["scan_reference_avg_min_low_5d_pct"] = _round(raw_mae.mean()) if len(raw_mae) else None
     return out
 
 

@@ -39,10 +39,11 @@ def test_prepare_dataset_and_labels_use_scan_universe_path_fields():
                 "base_trade_date": "2026-05-20",
                 "row_role": "emitted",
                 "priority_rank": 1,
-                "return_1d_pct": 1.0,
-                "return_3d_pct": 2.0,
-                "return_5d_pct": 3.0,
-                "min_low_return_5d_pct": -2.0,
+                "return_1d_pct": 3.0,
+                "return_3d_pct": 4.0,
+                "return_5d_pct": 5.0,
+                "max_high_return_5d_pct": 8.0,
+                "min_low_return_5d_pct": -1.0,
                 "target_before_stop_5d": True,
                 "stop_before_target_5d": False,
             },
@@ -57,6 +58,7 @@ def test_prepare_dataset_and_labels_use_scan_universe_path_fields():
                 "return_1d_pct": -1.0,
                 "return_3d_pct": -2.0,
                 "return_5d_pct": -3.0,
+                "max_high_return_5d_pct": 1.0,
                 "min_low_return_5d_pct": -6.0,
                 "target_before_stop_5d": False,
                 "stop_before_target_5d": True,
@@ -69,6 +71,8 @@ def test_prepare_dataset_and_labels_use_scan_universe_path_fields():
     clean, clean_valid = label_series(df, _spec("sustain_1_3_5_lowdd"))
 
     assert sanity["removed_rows"] == 0
+    assert df["operational_buy_premium_pct"].tolist() == [2.0, 2.0]
+    assert df["buy_premium_return_5d_pct"].tolist() == [2.941176, -4.901961]
     assert valid.tolist() == [True, True]
     assert target.tolist() == [True, False]
     assert clean_valid.tolist() == [True, True]
@@ -89,11 +93,11 @@ def test_top_indices_and_metrics_report_all_horizons():
                 "row_role": "emitted",
                 "priority_rank": 1,
                 "decision_score": 10,
-                "return_1d_pct": 1.0,
-                "return_3d_pct": 3.0,
-                "return_5d_pct": 5.0,
+                "return_1d_pct": 3.0,
+                "return_3d_pct": 5.0,
+                "return_5d_pct": 7.0,
                 "min_low_return_5d_pct": -1.0,
-                "max_high_return_5d_pct": 7.0,
+                "max_high_return_5d_pct": 8.0,
                 "target_before_stop_5d": True,
                 "stop_before_target_5d": False,
             },
@@ -127,11 +131,13 @@ def test_top_indices_and_metrics_report_all_horizons():
 
     assert got["n"] == 1
     assert got["win_1d_pct"] == 100.0
-    assert got["avg_5d_pct"] == 5.0
-    assert got["min_5d_pct"] == 5.0
-    assert got["max_5d_pct"] == 5.0
+    assert got["buy_premium_pct"] == 2.0
+    assert got["avg_5d_pct"] == 4.901961
+    assert got["min_5d_pct"] == 4.901961
+    assert got["max_5d_pct"] == 4.901961
+    assert got["scan_reference_avg_5d_pct"] == 7.0
     assert got["target_before_stop_5d_pct"] == 100.0
-    assert current["avg_5d_pct"] == 5.0
+    assert current["avg_5d_pct"] == 4.901961
 
 
 def test_touch_labels_use_entry_price_high_and_guard_low_path():
@@ -144,8 +150,8 @@ def test_touch_labels_use_entry_price_high_and_guard_low_path():
                 "market": "KOSPI",
                 "scan_mode": "SWING",
                 "base_trade_date": "2026-05-20",
-                "max_high_return_5d_pct": 12.0,
-                "min_low_return_5d_pct": -4.9,
+                "max_high_return_5d_pct": 13.0,
+                "min_low_return_5d_pct": -2.0,
             },
             {
                 "id": 2,
@@ -154,8 +160,8 @@ def test_touch_labels_use_entry_price_high_and_guard_low_path():
                 "market": "KOSPI",
                 "scan_mode": "SWING",
                 "base_trade_date": "2026-05-20",
-                "max_high_return_5d_pct": 12.0,
-                "min_low_return_5d_pct": -5.1,
+                "max_high_return_5d_pct": 13.0,
+                "min_low_return_5d_pct": -4.9,
             },
             {
                 "id": 3,
@@ -164,7 +170,7 @@ def test_touch_labels_use_entry_price_high_and_guard_low_path():
                 "market": "KOSPI",
                 "scan_mode": "SWING",
                 "base_trade_date": "2026-05-20",
-                "max_high_return_5d_pct": 4.0,
+                "max_high_return_5d_pct": 6.0,
                 "min_low_return_5d_pct": -1.0,
             },
         ]
