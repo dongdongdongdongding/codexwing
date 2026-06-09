@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -46,6 +47,14 @@ LOCAL_AUTHORITATIVE_TOP_DEEP_FIELDS = {
 }
 
 
+def _top_deep_cache_ttl_seconds() -> int:
+    try:
+        return max(1, int(os.getenv("AG_UI_TOP_DEEP_CACHE_TTL_SECONDS", os.getenv("AG_UI_DATA_CACHE_TTL_SECONDS", "180")) or "180"))
+    except Exception:
+        return 180
+
+
+@st.cache_data(ttl=_top_deep_cache_ttl_seconds(), show_spinner=False)
 def load_top_deep_reports(limit: int = 500) -> Tuple[List[Dict[str, Any]], str]:
     db_rows: List[Dict[str, Any]] = []
     warning = ""

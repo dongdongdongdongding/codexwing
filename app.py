@@ -32,7 +32,6 @@ from modules.scan_policy import (
 )
 from modules.theme_data_pipeline import build_theme_distribution_summary
 from modules.top_deep_report import generate_and_store_top_deep_reports
-from modules.scan_artifact_archive import load_local_scan_archive_rows, merge_archive_rows_with_local_artifacts
 from modules.runtime_artifact_store import load_runtime_artifact_payload
 from modules.scan_universe_admission import (
     admission_model_summary,
@@ -66,10 +65,16 @@ from ui.scan_integrity_view import (
     scan_integrity_report_for_context as _scan_integrity_report_for_context,
 )
 from ui.top_deep_view import (
+    load_top_deep_reports as _load_top_deep_reports,
     render_top_deep_reports_page as _render_top_deep_reports_page,
 )
 from ui.kis_theme_network_view import (
     render_kis_theme_network_page as _render_kis_theme_network_page,
+)
+from ui.archive_data import (
+    archive_query_defaults as _archive_query_defaults,
+    load_cached_market_scan_archive_rows as _load_cached_market_scan_archive_rows,
+    ui_data_cache_ttl_seconds as _ui_data_cache_ttl_seconds,
 )
 from ui.view_chrome import (
     coerce_text_rows as _coerce_text_rows,
@@ -119,6 +124,7 @@ def _load_json_safe(path_str):
         return {}
 
 
+@st.cache_data(ttl=_ui_data_cache_ttl_seconds(), show_spinner=False)
 def _load_contaminated_run_map():
     payload = _load_json_safe("runtime_state/reports/validation/contaminated_runs_all.json")
     runs = payload.get("runs", []) if isinstance(payload.get("runs"), list) else []
@@ -134,6 +140,20 @@ def _load_contaminated_run_map():
             "quality_flags": row.get("quality_flags") or [],
         }
     return result
+
+
+@st.cache_data(ttl=_ui_data_cache_ttl_seconds(), show_spinner=False)
+def _cached_segment_accuracy_snapshot():
+    return get_segment_accuracy_snapshot()
+
+
+@st.cache_data(ttl=_ui_data_cache_ttl_seconds(), show_spinner=False)
+def _cached_runtime_artifact_payload(run_id: str, artifact_type: str, local_path: str = ""):
+    return load_runtime_artifact_payload(
+        str(run_id or ""),
+        str(artifact_type or ""),
+        local_path=local_path or None,
+    )
 
 
 def _exit_policy_watch_rows_for_market(market_key, *, limit=6):
@@ -1246,6 +1266,17 @@ def _render_scan_continuity_banner(active_tab):
     status_key = f"{snapshot['job_id']}:{snapshot['status']}"
     if snapshot["status"] == "completed" and st.session_state.get("scan_status_toast_key") != status_key:
         st.session_state["scan_status_toast_key"] = status_key
+        for _cached_loader in (
+            _load_cached_market_scan_archive_rows,
+            _load_top_deep_reports,
+            _cached_runtime_artifact_payload,
+            _cached_segment_accuracy_snapshot,
+            _load_contaminated_run_map,
+        ):
+            try:
+                _cached_loader.clear()
+            except Exception:
+                pass
         st.toast("스캔이 완료되었습니다. 스캐너 탭에서 결과를 확인하세요.", icon="✅")
 
     if _scan_is_running(snapshot) and active_tab != "🚀 스캐너":
@@ -1332,7 +1363,7 @@ _gate_info = st.session_state['market_gate']
 _gate_tone_map = {"GREEN": "good", "YELLOW": "caution", "RED": "danger"}
 _gate_tone = _gate_tone_map.get(_gate_info["gate"], "good")
 try:
-    _segment_accuracy_snapshot = get_segment_accuracy_snapshot()
+    _segment_accuracy_snapshot = _cached_segment_accuracy_snapshot()
 except Exception as _segment_snapshot_error:
     _segment_accuracy_snapshot = {
         "source": "unavailable",
@@ -2484,43 +2515,37 @@ if active_main_tab == "📚 아카이브":
     )
 
     try:
-        from modules.db_manager import DBManager as _DBM
         import yfinance as _yf
 
-        _db6 = _DBM()
-
-        _local_archive_rows = []
-        _archive_rows = []
-        if not _db6.client:
-            st.warning("⚠️ Supabase 연결 없음. 로컬 스캔 artifact 기준으로 표시합니다.")
-            _local_archive_rows = load_local_scan_archive_rows(limit_runs=300)
-            _archive_rows = _local_archive_rows
-        else:
-            with st.spinner("📡 Supabase에서 스캔 이력 로드 중..."):
-                _batch_size = 1000
-                _max_rows = 25000
-                _offset = 0
-                while _offset < _max_rows:
-                    _res6 = (
-                        _db6.client.table("market_scan_results")
-                        .select("*")
-                        .order("created_at", desc=True)
-                        .range(_offset, _offset + _batch_size - 1)
-                        .execute()
-                    )
-                    _batch = list(_res6.data or [])
-                    if not _batch:
-                        break
-                    _archive_rows.extend(_batch)
-                    if len(_batch) < _batch_size:
-                        break
-                    _offset += _batch_size
-                if os.getenv("AG_SCAN_ARCHIVE_LOCAL_FALLBACK", "1").strip().lower() not in {"0", "false", "no", "off"}:
-                    _local_archive_rows = load_local_scan_archive_rows(limit_runs=300)
-                    _before_local_merge = len(_archive_rows)
-                    _archive_rows = merge_archive_rows_with_local_artifacts(_archive_rows, _local_archive_rows)
-                    if len(_archive_rows) > _before_local_merge:
-                        st.caption(f"로컬 artifact fallback 보강: {len(_archive_rows) - _before_local_merge}건")
+        _archive_defaults = _archive_query_defaults()
+        _include_supabase_archive = (
+            os.getenv("AG_SCAN_ARCHIVE_SUPABASE_ENABLED", "0").strip().lower()
+            in {"1", "true", "yes", "on"}
+        )
+        _include_local_archive = (
+            os.getenv("AG_SCAN_ARCHIVE_LOCAL_FALLBACK", "1").strip().lower()
+            not in {"0", "false", "no", "off"}
+        )
+        with st.spinner("📡 스캔 이력 로드 중..."):
+            _archive_rows, _archive_meta = _load_cached_market_scan_archive_rows(
+                max_rows=_archive_defaults["max_rows"],
+                batch_size=_archive_defaults["batch_size"],
+                include_supabase=_include_supabase_archive,
+                include_local_fallback=_include_local_archive,
+                local_limit_runs=_archive_defaults["local_limit_runs"],
+            )
+        _archive_meta = _archive_meta if isinstance(_archive_meta, dict) else {}
+        if _include_supabase_archive and not _archive_meta.get("db_available"):
+            st.warning("⚠️ Supabase 연결 없음 또는 조회 실패. 로컬 스캔 artifact 기준으로 표시합니다.")
+        _archive_warnings = _archive_meta.get("warnings") if isinstance(_archive_meta.get("warnings"), list) else []
+        if _include_supabase_archive and _archive_warnings and _archive_meta.get("db_available"):
+            st.warning("Supabase 스캔 이력 조회 경고: " + " / ".join(str(item) for item in _archive_warnings[:2]))
+        if not _include_supabase_archive:
+            st.caption("최근 로컬 스캔 artifact 기준 빠른 조회입니다. 전체 Supabase 이력 보강은 AG_SCAN_ARCHIVE_SUPABASE_ENABLED=1에서 켭니다.")
+        _local_rows_loaded = int(_archive_meta.get("local_rows") or 0)
+        _db_rows_loaded = int(_archive_meta.get("db_rows") or 0)
+        if _local_rows_loaded and _db_rows_loaded and len(_archive_rows) > _db_rows_loaded:
+            st.caption(f"로컬 artifact fallback 보강: {len(_archive_rows) - _db_rows_loaded}건")
         _df6 = pd.DataFrame(_archive_rows)
         if True:
             _contaminated_map = _load_contaminated_run_map()
@@ -2657,26 +2682,26 @@ if active_main_tab == "📚 아카이브":
                 _archive_planner_payload = {}
                 _archive_diagnostics = {}
                 if _selected_run_id:
-                    _planner_payload = load_runtime_artifact_payload(
+                    _planner_payload = _cached_runtime_artifact_payload(
                         str(_selected_run_id),
                         "planner_handoff",
-                        local_path=Path("runtime_state/shared_working") / str(_selected_run_id) / "planner_handoff.json",
+                        str(Path("runtime_state/shared_working") / str(_selected_run_id) / "planner_handoff.json"),
                     )
                     _archive_planner_payload = _planner_payload if isinstance(_planner_payload, dict) else {}
-                    _profile_payload = load_runtime_artifact_payload(
+                    _profile_payload = _cached_runtime_artifact_payload(
                         str(_selected_run_id),
                         "profile_diagnostics",
-                        local_path=Path("runtime_state/shared_working") / str(_selected_run_id) / "profile_diagnostics.json",
+                        str(Path("runtime_state/shared_working") / str(_selected_run_id) / "profile_diagnostics.json"),
                     )
                     _archive_profile_payload = _profile_payload if isinstance(_profile_payload, dict) else {}
                     _archive_planner_payload = merge_profile_exception_leaders_into_planner(
                         _archive_planner_payload,
                         _archive_profile_payload,
                     )
-                    _raw_payload = load_runtime_artifact_payload(
+                    _raw_payload = _cached_runtime_artifact_payload(
                         str(_selected_run_id),
                         "raw_scan_results",
-                        local_path=Path("runtime_state/artifacts") / str(_selected_run_id) / "raw_scan_results.json",
+                        str(Path("runtime_state/artifacts") / str(_selected_run_id) / "raw_scan_results.json"),
                     )
                     _archive_raw_payload = _raw_payload if isinstance(_raw_payload, dict) else {}
                     if isinstance(_archive_raw_payload.get("diagnostics"), dict):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -9,6 +10,14 @@ import streamlit as st
 from modules.runtime_artifact_store import load_runtime_artifact_payload
 
 
+def _scan_context_cache_ttl_seconds() -> int:
+    try:
+        return max(1, int(os.getenv("AG_UI_SCAN_CONTEXT_CACHE_TTL_SECONDS", os.getenv("AG_UI_DATA_CACHE_TTL_SECONDS", "180")) or "180"))
+    except Exception:
+        return 180
+
+
+@st.cache_data(ttl=_scan_context_cache_ttl_seconds(), show_spinner=False)
 def load_scan_context_for_run(run_id: str) -> Dict[str, Any]:
     if not run_id:
         return {}
