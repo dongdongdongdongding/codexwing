@@ -133,6 +133,47 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["day_change"], "-4.32%")
         self.assertEqual(rows[0]["day_change_value"], -4.32)
 
+    def test_build_signal_display_rows_adds_korean_display_labels_without_dropping_codes(self):
+        rows = build_signal_display_rows([
+            {
+                "ticker": "320000.KQ",
+                "stock_name": "한울반도체",
+                "decision": "ADMISSION_PASS",
+                "_analysis_section": "Scan Universe Admission",
+                "risk_flags": ["SCAN_UNIVERSE_ADMISSION_MODEL", "model=lightgbm", "objective=5d_touch_5"],
+                "final_action": "Admission 모델 통과 - 5D +5% 목표터치 후보",
+                "stop_condition_text": "표시 손절 · unavailable",
+                "scan_universe_admission": {
+                    "model_name": "lightgbm",
+                    "selection_rule": "top1",
+                    "input_source_role": "rejected",
+                    "legacy_reject_reason": "KR_BASELINE_FILTER_FAIL",
+                },
+                "scan_result_interpretation": {
+                    "model_decision": "ADMISSION_PASS",
+                    "action": "Admission 모델 통과",
+                    "drivers": ["SCAN_UNIVERSE_ADMISSION_MODEL"],
+                    "warnings": ["KR_BASELINE_FILTER_FAIL"],
+                    "plain_text": "Admission 모델 기준",
+                },
+            }
+        ])
+
+        self.assertEqual(rows[0]["buy_signal"], "ADMISSION_PASS")
+        self.assertEqual(rows[0]["buy_signal_label"], "운영 통과")
+        self.assertEqual(rows[0]["analysis_section_label"], "운영 모델 통과")
+        self.assertEqual(rows[0]["risk_flags"][0], "SCAN_UNIVERSE_ADMISSION_MODEL")
+        self.assertEqual(rows[0]["risk_flag_labels"][0], "운영 모델 판단")
+        self.assertEqual(rows[0]["action_label_display"], "운영 모델 통과 - 5D +5% 목표터치 후보")
+        self.assertIn("미제공", rows[0]["stop_condition_display"])
+        self.assertEqual(rows[0]["admission_model_label"], "LightGBM")
+        self.assertEqual(rows[0]["admission_selection_rule_label"], "1순위 선발")
+        self.assertEqual(rows[0]["admission_input_source_role_label"], "기존 필터 탈락 종목")
+        self.assertEqual(rows[0]["admission_legacy_reject_reason_label"], "기존 운영 필터 탈락")
+        self.assertEqual(rows[0]["scan_model_decision_label"], "운영 통과")
+        self.assertEqual(rows[0]["scan_interpretation_warning_labels"], ["기존 운영 필터 탈락"])
+        self.assertEqual(rows[0]["scan_interpretation_text_label"], "운영 모델 기준")
+
     def test_build_signal_display_rows_preserves_kis_theme_news_summary(self):
         rows = build_signal_display_rows([
             {

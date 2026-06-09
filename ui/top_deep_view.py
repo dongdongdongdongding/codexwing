@@ -435,11 +435,11 @@ def render_top_deep_reports_page() -> None:
     admission_count = int(section_counts.get("Scan Universe Admission", 0) or 0)
     exception_count = int(section_counts.get("Exception Leader", 0) or 0)
     st.caption(
-        f"섹션: Challenger {operating_count} / "
-        f"Practical {section_counts.get('Practical 80 Gate', 0)} / "
-        f"Shadow {sum(int(section_counts.get(section, 0) or 0) for section in TOP_DEEP_SECTION_ORDER if 'Shadow' in section)} / "
-        f"Admission {admission_count} / Near Miss {near_miss_count} / "
-        f"Top5 {section_counts.get('Top5', 0)} / Exception {exception_count}"
+        f"섹션: 챌린저 {operating_count} / "
+        f"실전게이트 {section_counts.get('Practical 80 Gate', 0)} / "
+        f"관찰 {sum(int(section_counts.get(section, 0) or 0) for section in TOP_DEEP_SECTION_ORDER if 'Shadow' in section)} / "
+        f"운영통과 {admission_count} / 기준미달 {near_miss_count} / "
+        f"기존상위5 {section_counts.get('Top5', 0)} / 예외리더 {exception_count}"
     )
     scan_context = load_scan_context_for_run(str(selected_run))
     scan_summary = scan_context.get("summary") if isinstance(scan_context.get("summary"), dict) else {}

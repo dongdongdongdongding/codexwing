@@ -15,6 +15,16 @@ from modules.kis_theme_news_evidence import (
     build_kis_theme_news_evidence,
     format_kis_theme_news_summary,
 )
+from modules.korean_display_copy import (
+    korean_decision_label,
+    korean_display_text,
+    korean_model_name,
+    korean_section_label,
+    korean_selection_rule,
+    korean_source_role,
+    korean_strategy_label,
+    korean_trace_list,
+)
 from modules.next_day_explosive_radar import build_next_day_radar_candidate
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.segment_accuracy import lookup_segment_win_rate
@@ -1413,6 +1423,15 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         tier = str(_coalesce_present(row.get("tier"), row.get("Tier")) or "").strip()
         strategy = str(_coalesce_present(row.get("strategy"), row.get("전략"), row.get("strategy_family")) or "").strip()
         buy_signal = " · ".join(part for part in (decision, tier, strategy) if part) or "-"
+        buy_signal_label = " · ".join(
+            part
+            for part in (
+                korean_decision_label(decision),
+                tier,
+                korean_strategy_label(strategy),
+            )
+            if part
+        ) or "-"
 
         # 카드 UI '검증 목표터치 승률' 일관화 (스캐너 ↔ 아카이브 같은 RUN/티커에 동일 값).
         #
@@ -1507,14 +1526,19 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         kis_theme_news_summary = format_kis_theme_news_summary(kis_theme_news)
 
         day_change_numeric = _parse_percent_value(day_change_source)
+        action_reasons = action["reasons"]
+        scan_drivers = scan_interpretation.get("drivers") or []
+        scan_warnings = scan_interpretation.get("warnings") or []
         normalized.append(
             {
                 "rank": rank,
                 "ticker": ticker,
                 "name": name,
                 "analysis_section": str(row.get("_analysis_section") or "").strip(),
+                "analysis_section_label": korean_section_label(row.get("_analysis_section")),
                 "analysis_section_rank": row.get("_analysis_section_rank"),
                 "buy_signal": buy_signal,
+                "buy_signal_label": buy_signal_label,
                 "accuracy": _format_accuracy_label(accuracy_source),
                 "day_change": _format_percent_label(day_change_source),
                 "day_change_value": day_change_numeric,
@@ -1522,6 +1546,7 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "loss_risk": _format_risk_score_label(loss_risk_source),
                 "loss_risk_level": _risk_level_label(loss_risk_source),
                 "risk_flags": risk_flags,
+                "risk_flag_labels": korean_trace_list(risk_flags, limit=3),
                 "theme": theme or "-",
                 "trend": trend or "-",
                 "entry": entry or "-",
@@ -1533,9 +1558,13 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "dynamic_stop_sl_pct": execution_stop.get("dynamic_stop_sl_pct"),
                 "latest_return": _format_percent_label(latest_return),
                 "action_label": action["label"],
+                "action_label_display": korean_display_text(action["label"]),
                 "action_condition": action["condition"],
+                "action_condition_display": korean_display_text(action["condition"], fallback=""),
                 "stop_condition": action["stop_condition"],
-                "action_reasons": action["reasons"],
+                "stop_condition_display": korean_display_text(action["stop_condition"], fallback=""),
+                "action_reasons": action_reasons,
+                "action_reason_labels": korean_trace_list(action_reasons, limit=4),
                 "practical_gate_level": practical_gate.get("level"),
                 "practical_gate_pass": practical_gate.get("pass"),
                 "practical_gate_promote": practical_gate.get("promote"),
@@ -1561,22 +1590,32 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "next_day_radar_unavailable": next_day_radar.get("unavailable_features") if next_day_radar else [],
                 "next_day_radar_version": next_day_radar.get("version") if next_day_radar else None,
                 "admission_model_name": admission_model.get("model_name"),
+                "admission_model_label": korean_model_name(admission_model.get("model_name")),
                 "admission_probability_pct": admission_model.get("probability_pct"),
                 "admission_threshold_pct": admission_model.get("prob_threshold_pct"),
                 "admission_passed": admission_model.get("passed"),
                 "admission_selection_rule": admission_model.get("selection_rule"),
+                "admission_selection_rule_label": korean_selection_rule(admission_model.get("selection_rule")),
                 "admission_feature_coverage": admission_model.get("feature_coverage_score"),
                 "admission_input_source_role": admission_model.get("input_source_role"),
+                "admission_input_source_role_label": korean_source_role(admission_model.get("input_source_role")),
                 "admission_legacy_reject_reason": admission_model.get("legacy_reject_reason"),
+                "admission_legacy_reject_reason_label": korean_decision_label(admission_model.get("legacy_reject_reason")),
                 "admission_promotion_blocked": admission_model.get("promotion_blocked"),
                 "admission_promotion_block_reason": admission_model.get("promotion_block_reason"),
+                "admission_promotion_block_reason_label": korean_decision_label(admission_model.get("promotion_block_reason")),
                 "scan_result_interpretation": scan_interpretation,
                 "scan_model_decision": scan_interpretation.get("model_decision"),
+                "scan_model_decision_label": korean_decision_label(scan_interpretation.get("model_decision")),
                 "scan_model_action": scan_interpretation.get("action"),
+                "scan_model_action_label": korean_display_text(scan_interpretation.get("action"), fallback=""),
                 "scan_threshold_gap_pct_points": scan_interpretation.get("threshold_gap_pct_points"),
-                "scan_interpretation_drivers": scan_interpretation.get("drivers") or [],
-                "scan_interpretation_warnings": scan_interpretation.get("warnings") or [],
+                "scan_interpretation_drivers": scan_drivers,
+                "scan_interpretation_driver_labels": korean_trace_list(scan_drivers, limit=6),
+                "scan_interpretation_warnings": scan_warnings,
+                "scan_interpretation_warning_labels": korean_trace_list(scan_warnings, limit=6),
                 "scan_interpretation_text": scan_interpretation.get("plain_text"),
+                "scan_interpretation_text_label": korean_display_text(scan_interpretation.get("plain_text"), fallback=""),
                 "candidate_interpretation": interpretation,
                 "candidate_data_quality": data_quality,
                 "original_rank": interpretation.get("original_rank"),

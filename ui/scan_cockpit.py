@@ -25,6 +25,7 @@ from modules.ui_helpers import (
     enrich_signal_rows_with_planner_trace,
     merge_profile_exception_leaders_into_planner,
 )
+from modules.korean_display_copy import korean_display_text, korean_section_label
 
 
 def _load_json_safe(path_str: str | None) -> Dict[str, Any]:
@@ -96,14 +97,22 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
             exit_parts.append(f"TP {row.get('tp')}")
         if row.get("sl") and row.get("sl") != "-":
             exit_parts.append(f"SL {row.get('sl')}")
-        buy_signal = str(row.get("buy_signal") or "-")
-        action_label = str(row.get("action_label") or "-")
-        action_condition = str(row.get("action_condition") or "")
-        stop_condition = str(row.get("stop_condition") or "")
-        action_reasons = [str(reason) for reason in (row.get("action_reasons") or []) if str(reason).strip()]
+        buy_signal = str(row.get("buy_signal_label") or row.get("buy_signal") or "-")
+        action_label = str(row.get("action_label_display") or row.get("action_label") or "-")
+        action_condition = str(row.get("action_condition_display") or row.get("action_condition") or "")
+        stop_condition = str(row.get("stop_condition_display") or row.get("stop_condition") or "")
+        action_reasons = [
+            str(reason)
+            for reason in (row.get("action_reason_labels") or row.get("action_reasons") or [])
+            if str(reason).strip()
+        ]
         risk_label = str(row.get("loss_risk") or "-")
         risk_level = str(row.get("loss_risk_level") or "")
-        risk_flags = [str(flag) for flag in (row.get("risk_flags") or []) if str(flag).strip()]
+        risk_flags = [
+            str(flag)
+            for flag in (row.get("risk_flag_labels") or row.get("risk_flags") or [])
+            if str(flag).strip()
+        ]
         gate_label = str(row.get("practical_gate_label") or "")
         gate_level = str(row.get("practical_gate_level") or "")
         gate_reasons = [str(reason) for reason in (row.get("practical_gate_reasons") or []) if str(reason).strip()]
@@ -118,25 +127,35 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
         radar_score = row.get("next_day_radar_score")
         radar_plus5 = row.get("next_day_plus5_prob")
         radar_plus10 = row.get("next_day_plus10_prob")
-        admission_model_name = str(row.get("admission_model_name") or "")
+        admission_model_name = str(row.get("admission_model_label") or row.get("admission_model_name") or "")
         admission_probability = row.get("admission_probability_pct")
         admission_threshold = row.get("admission_threshold_pct")
-        admission_rule = str(row.get("admission_selection_rule") or "")
+        admission_rule = str(row.get("admission_selection_rule_label") or row.get("admission_selection_rule") or "")
         admission_coverage = row.get("admission_feature_coverage")
-        scan_model_decision = str(row.get("scan_model_decision") or "")
-        scan_model_action = str(row.get("scan_model_action") or "")
+        scan_model_decision = str(row.get("scan_model_decision_label") or row.get("scan_model_decision") or "")
+        scan_model_action = str(row.get("scan_model_action_label") or row.get("scan_model_action") or "")
         scan_threshold_gap = row.get("scan_threshold_gap_pct_points")
-        scan_drivers = [str(item) for item in (row.get("scan_interpretation_drivers") or []) if str(item).strip()]
-        scan_warnings = [str(item) for item in (row.get("scan_interpretation_warnings") or []) if str(item).strip()]
+        scan_drivers = [
+            str(item)
+            for item in (row.get("scan_interpretation_driver_labels") or row.get("scan_interpretation_drivers") or [])
+            if str(item).strip()
+        ]
+        scan_warnings = [
+            str(item)
+            for item in (row.get("scan_interpretation_warning_labels") or row.get("scan_interpretation_warnings") or [])
+            if str(item).strip()
+        ]
         admission_source_role = str(row.get("admission_input_source_role") or "")
-        admission_reject_reason = str(row.get("admission_legacy_reject_reason") or "")
-        admission_block_reason = str(row.get("admission_promotion_block_reason") or "")
+        admission_source_role_label = str(row.get("admission_input_source_role_label") or "")
+        admission_reject_reason = str(row.get("admission_legacy_reject_reason_label") or row.get("admission_legacy_reject_reason") or "")
+        admission_block_reason = str(row.get("admission_promotion_block_reason_label") or row.get("admission_promotion_block_reason") or "")
         candidate_5d_prob = row.get("realized_expectancy_5d_prob")
         base_ev_5d = row.get("base_expected_value_5d_pct")
         stress_ev_5d = row.get("stress_expected_value_5d_pct")
         radar_reasons = [str(reason) for reason in (row.get("next_day_radar_reasons") or []) if str(reason).strip()]
         radar_missing = [str(reason) for reason in (row.get("next_day_radar_unavailable") or []) if str(reason).strip()]
         stop_source = str(row.get("stop_display_source") or "")
+        stop_source_label = korean_display_text(stop_source, fallback="")
         stop_conflict = bool(row.get("stop_conflict"))
         risk_line = ""
         if risk_label != "-":
@@ -149,12 +168,13 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
             with cols[0]:
                 alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
                 display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
-                section = str(
+                raw_section = (
                     row.get("analysis_section")
                     or alignment.get("analysis_section")
                     or display_contract.get("analysis_section")
                     or ""
-                ).strip()
+                )
+                section = str(row.get("analysis_section_label") or korean_section_label(raw_section) or raw_section or "").strip()
                 section_rank = (
                     row.get("analysis_section_rank")
                     or alignment.get("analysis_section_rank")
@@ -184,7 +204,7 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                         st.caption("미확보 피처 " + " / ".join(radar_missing[:3]))
                 if admission_model_name:
                     st.caption(
-                        f"Admission 모델 {admission_model_name} · {metric_label('candidate_pass_prob_5d')} {_fmt_metric_pct_or_dash(admission_probability)} "
+                        f"운영 모델 {admission_model_name} · {metric_label('candidate_pass_prob_5d')} {_fmt_metric_pct_or_dash(admission_probability)} "
                         f"/ 기준 {_fmt_metric_pct_or_dash(admission_threshold)} · {admission_rule}"
                     )
                     if admission_coverage is not None:
@@ -202,9 +222,9 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     if kis_theme_news_warnings:
                         st.caption("KIS 경고 " + " / ".join(kis_theme_news_warnings[:2]))
                 if admission_source_role:
-                    source_label = "기존 통과 후보" if admission_source_role == "emitted" else "기존 필터 탈락 종목"
+                    source_label = admission_source_role_label or ("기존 통과 후보" if admission_source_role == "emitted" else "기존 필터 탈락 종목")
                     reject_text = f" · 기존탈락 {admission_reject_reason}" if admission_reject_reason else ""
-                    st.caption(f"Admission 입력 {source_label}{reject_text}")
+                    st.caption(f"운영 모델 입력 {source_label}{reject_text}")
                 if admission_block_reason:
                     st.caption(f"운영 승격 차단 {admission_block_reason}")
                 if scan_warnings:
@@ -235,7 +255,7 @@ def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "�
                     label = "표시 손절"
                     if stop_conflict:
                         label += " 충돌: 더 엄격한 값 적용"
-                    st.caption(f"{label} · {stop_source}")
+                    st.caption(f"{label} · {stop_source_label or stop_source}")
                 expectancy_parts = []
                 if candidate_5d_prob is not None:
                     expectancy_parts.append(f"{metric_label('candidate_pass_prob_5d')} {_fmt_metric_pct_or_dash(candidate_5d_prob)}")
@@ -292,7 +312,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
 
     if market_key not in {"KOSPI", "KOSDAQ"}:
         st.markdown("### 스캔 후보")
-        st.caption("국장 admission 모델은 KOSPI/KOSDAQ 전용입니다. 해외 시장은 원본 스캔 후보를 진단용으로 표시합니다.")
+        st.caption("국장 운영 모델은 KOSPI/KOSDAQ 전용입니다. 해외 시장은 원본 스캔 후보를 진단용으로 표시합니다.")
         render_signal_card_list(build_signal_display_rows(enriched_records[:5], limit=5), empty_text="표시할 후보 없음.")
         return
 
@@ -306,7 +326,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         )
         summary = admission.get("summary") if isinstance(admission.get("summary"), dict) else admission_model_summary(market_key)
     except Exception as exc:
-        st.error(f"신규 admission 모델 로드/추론 실패: {exc}")
+        st.error(f"신규 운영 모델 로드/추론 실패: {exc}")
         return
 
     validation = summary.get("validation") if isinstance(summary.get("validation"), dict) else {}
@@ -323,8 +343,8 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     )
     kis_shadow_rows = build_signal_display_rows(kis_shadow_records, limit=None)
 
-    st.markdown("### KIS Shadow 후보")
-    st.caption("실제 KIS sidecar/prefilter evidence가 있는 후보만 최상단에 shadow로 표시합니다. 운영 통과 후보로 승격하지 않고 관찰/검증 레인으로 분리합니다.")
+    st.markdown("### KIS 관찰 후보")
+    st.caption("실제 KIS 보조 데이터와 사전필터 근거가 있는 후보만 최상단에 관찰용으로 표시합니다. 운영 통과 후보로 승격하지 않고 검증 레인으로 분리합니다.")
     render_signal_card_list(kis_shadow_rows, empty_text="현재 스캔 payload에서 KIS shadow 후보가 없습니다.")
 
     st.markdown("### 신규 운영 모델")
@@ -362,18 +382,18 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
     )
     cols[5].metric("표본", f"n={validation.get('n') or '-'}", f"{validation.get('active_days') or '-'}일")
     st.caption(
-        f"{summary.get('market')} · {summary.get('label')} · {summary.get('feature_set')} · "
-        f"{summary.get('model_name')} · {summary.get('selection_rule')} · "
+        f"{summary.get('market')} · {korean_display_text(summary.get('label'))} · 피처셋 {summary.get('feature_set')} · "
+        f"모델 {korean_display_text(summary.get('model_name'))} · 선발규칙 {korean_display_text(summary.get('selection_rule'))} · "
         f"최고5D {_fmt_metric_pct_or_dash(validation.get('max_5d_pct'))} / "
-        f"bad-path {_fmt_metric_pct_or_dash(validation.get('bad_path_pct'))}"
+        f"나쁜 경로 {_fmt_metric_pct_or_dash(validation.get('bad_path_pct'))}"
     )
     input_summary = admission.get("input_summary") if isinstance(admission.get("input_summary"), dict) else {}
     st.caption(
-        "Admission 직접 채점 universe "
+        "운영 모델 직접 채점 후보군 "
         f"{input_summary.get('total_input_rows', len(admission_input_rows))}개 "
         f"(기존 통과 {input_summary.get('emitted_count', len(enriched_records))}개 / "
-        f"기존 필터 탈락 feature {input_summary.get('rejected_feature_rows', 0)}개). "
-        "Top5/Exception은 이제 보조 설명 레인입니다."
+        f"기존 필터 탈락 피처 {input_summary.get('rejected_feature_rows', 0)}개). "
+        "기존 상위5/예외 리더는 이제 보조 설명 레인입니다."
     )
     if pass_rows:
         st.success(run_status.get("message") or "운영 통과 후보가 있습니다.")
@@ -384,11 +404,11 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         )
 
     st.markdown("### 운영 통과 후보")
-    st.caption("검증된 selection rule 기준으로 run당 최대 1개만 승격합니다. 이 섹션만 운영 후보로 봅니다.")
+    st.caption("검증된 선발규칙 기준으로 run당 최대 1개만 승격합니다. 이 섹션만 운영 후보로 봅니다.")
     if pass_rows:
         render_signal_card_list(pass_rows, empty_text="운영 통과 후보 없음.")
     else:
-        st.warning("이번 스캔은 Admission 모델 운영 기준을 통과한 후보가 없습니다.")
+        st.warning("이번 스캔은 운영 모델 기준을 통과한 후보가 없습니다.")
 
     st.markdown("### 기준 미달 상위 후보")
     st.caption("매수 후보가 아니라 모델 확률 진단용입니다. 운영 차단 사유가 없는 후보만 이 섹션에 표시합니다.")
@@ -405,7 +425,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
             render_signal_card_list(blocked_rows, empty_text="운영 차단 후보 없음.")
 
     with st.expander("전체 스캔 결과 해석", expanded=False):
-        st.caption("이번 스캔에서 올라온 모든 후보를 Admission 모델 확률순으로 해석합니다. 통과 여부, 기준차, 피처/수급/거래량 근거를 같이 봅니다.")
+        st.caption("이번 스캔에서 올라온 모든 후보를 운영 모델 확률순으로 해석합니다. 통과 여부, 기준차, 피처/수급/거래량 근거를 같이 봅니다.")
         table_rows = []
         for row in all_rows:
             table_rows.append(
@@ -413,7 +433,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
                     "순위": row.get("analysis_section_rank") or row.get("rank"),
                     "티커": row.get("ticker"),
                     "종목": row.get("name"),
-                    "모델판정": row.get("scan_model_decision") or ("통과" if row.get("admission_passed") else "기준미달"),
+                    "모델판정": row.get("scan_model_decision_label") or row.get("scan_model_decision") or ("통과" if row.get("admission_passed") else "기준미달"),
                     "후보확률": _fmt_metric_pct_or_dash(row.get("admission_probability_pct")),
                     "기준": _fmt_metric_pct_or_dash(row.get("admission_threshold_pct")),
                     "기준차": (
@@ -428,13 +448,13 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
                     ),
                     "입력": "기존통과" if row.get("admission_input_source_role") == "emitted" else "기존탈락",
                     "전일비": row.get("day_change"),
-                    "해석": row.get("scan_interpretation_text") or row.get("action_condition") or "-",
+                    "해석": row.get("scan_interpretation_text_label") or row.get("action_condition_display") or row.get("scan_interpretation_text") or row.get("action_condition") or "-",
                 }
             )
         st.dataframe(table_rows, use_container_width=True, hide_index=True)
 
-    with st.expander("보조 확인 · 원본 점수 상위와 Admission 모델 확률", expanded=False):
-        st.caption("후보 선정은 신규 admission 모델 기준입니다. 원본 점수는 왜 후보가 달라졌는지 확인하기 위한 보조 지표입니다.")
+    with st.expander("보조 확인 · 원본 점수 상위와 운영 모델 확률", expanded=False):
+        st.caption("후보 선정은 신규 운영 모델 기준입니다. 원본 점수는 왜 후보가 달라졌는지 확인하기 위한 보조 지표입니다.")
         ranked_by_model = (admission.get("passed", []) or []) + (admission.get("near_miss", []) or [])
         model_by_ticker = {
             str(row.get("ticker") or row.get("Ticker") or row.get("티커") or "").upper(): row.get("scan_universe_admission") or {}

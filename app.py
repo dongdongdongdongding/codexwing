@@ -19,6 +19,8 @@ from modules import quant_analysis, db_manager, market_intelligence
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
 from modules.admission_metric_copy import metric_help, metric_label
 from modules.macro_scheduler import get_macro_context
+from modules.operational_readiness_ui import build_operational_readiness_view
+from modules.korean_display_copy import korean_display_text
 from modules.scanner_bridge import run_legacy_agent_bridge
 from modules.scan_persistence import persist_scan_run_artifacts
 from modules.scanner_runtime import SharedBackoffState, run_parallel_scan, scan_symbol_with_retry
@@ -1345,37 +1347,88 @@ _data_status = str(_segment_accuracy_snapshot.get("source_status") or "unknown")
 _data_rows = int(_segment_accuracy_snapshot.get("resolved_rows") or 0)
 _data_segments = int(_segment_accuracy_snapshot.get("segment_count") or 0)
 _data_tone = "good" if _data_status == "OK" and _data_rows > 0 else "caution"
+_daily_foundation_report = _load_json_safe("runtime_state/reports/learning/daily_model_foundation_gate.json")
+_ops_readiness = build_operational_readiness_view(_daily_foundation_report)
+_macro_state_ko = {"NORMAL": "정상", "CAUTION": "주의", "RISK_OFF": "위험회피", "CRASH": "급락경보"}.get(macro_state, macro_state)
+_market_gate_ko = {"GREEN": "양호", "YELLOW": "주의", "RED": "위험"}.get(str(_gate_info.get("gate") or ""), str(_gate_info.get("gate") or "-"))
 
-# === L0: 한 줄 컴팩트 상태바 (Market · Macro · Gate) ===
+# === L0: 한 줄 컴팩트 상태바 ===
 _compact_status_bar([
     {
-        "label": "MARKET",
+        "label": "시장",
         "value": _selected_gate_market,
         "meta": "스캐너 탭에서 변경",
         "tone": "focus",
     },
     {
-        "label": "MACRO",
-        "value": f"{_ico} {macro_state}",
+        "label": "매크로",
+        "value": f"{_ico} {_macro_state_ko}",
         "meta": f"Risk {macro_risk}/100 · {vix_str}",
         "tone": macro_tone,
     },
     {
-        "label": "GATE",
-        "value": f"{_gate_info['gate']}",
+        "label": "마켓필터",
+        "value": _market_gate_ko,
         "meta": str(_gate_info.get("msg", "") or "")[:80],
         "tone": _gate_tone,
     },
     {
-        "label": "DATA",
+        "label": "운영판정",
+        "value": _ops_readiness.get("badge", "확인 필요"),
+        "meta": _ops_readiness.get("recommended_action_ko", "")[:80],
+        "tone": _ops_readiness.get("tone", "caution"),
+    },
+    {
+        "label": "데이터",
         "value": f"{_data_source} · {_data_status}",
-        "meta": f"resolved {_data_rows:,} · segments {_data_segments}",
+        "meta": f"확정 {_data_rows:,} · 구간 {_data_segments}",
         "tone": _data_tone,
     },
 ])
 
+_render_status_banner(
+    _ops_readiness.get("title", "운영 판정"),
+    _ops_readiness.get("body", ""),
+    tone=_ops_readiness.get("tone", "caution"),
+    caption=_ops_readiness.get("caption"),
+)
+
+with st.expander("운영 판정 상세 · 왜 매매 가능/관찰/차단인지", expanded=_ops_readiness.get("status") != "production_ready"):
+    _ops_cards = _ops_readiness.get("cards") if isinstance(_ops_readiness.get("cards"), list) else []
+    if _ops_cards:
+        _ops_cols = st.columns(len(_ops_cards))
+        for _idx, _card in enumerate(_ops_cards):
+            if not isinstance(_card, dict):
+                continue
+            _ops_cols[_idx].metric(_card.get("label", "-"), _card.get("value", "-"), _card.get("meta", ""))
+    st.caption(_ops_readiness.get("detail_line", ""))
+    _blockers = _ops_readiness.get("blockers") if isinstance(_ops_readiness.get("blockers"), list) else []
+    if _blockers:
+        st.markdown("#### 지금 막힌 이유")
+        _blocker_rows = []
+        for _row in _blockers:
+            if not isinstance(_row, dict):
+                continue
+            _blocker_rows.append(
+                {
+                    "구분": "일일검증" if _row.get("severity") == "hard_daily" else ("운영승격" if _row.get("severity") == "hard_production" else "주의"),
+                    "항목": _row.get("label"),
+                    "쉽게 말하면": _row.get("meaning"),
+                    "다음 조치": _row.get("next_action") or "-",
+                }
+            )
+        st.dataframe(_blocker_rows, use_container_width=True, hide_index=True)
+        with st.expander("개발자용 원문 코드", expanded=False):
+            st.dataframe(
+                [{"항목": _row.get("label"), "원문코드": _row.get("code")} for _row in _blockers if isinstance(_row, dict)],
+                use_container_width=True,
+                hide_index=True,
+            )
+    else:
+        st.success("운영 승격 차단 사유가 없습니다. 그래도 후보별 경로위험과 뉴스 근거는 확인해야 합니다.")
+
 # 디테일 + 새로고침 컨트롤은 expander 안으로 (사용 빈도 낮음)
-with st.expander("Macro / Gate 상세 · 새로고침", expanded=False):
+with st.expander("매크로 / 마켓필터 상세 · 새로고침", expanded=False):
     detail_left, detail_right = st.columns([1, 1])
     refresh_macro_clicked = detail_left.button(
         "🔄 매크로 새로고침", use_container_width=True, key="refresh_macro_detail"
@@ -1394,13 +1447,13 @@ with st.expander("Macro / Gate 상세 · 새로고침", expanded=False):
         st.session_state['market_gate'] = compute_market_gate(_selected_gate_market)
         st.rerun()
     _render_status_banner(
-        f"{_ico} Macro Weather · {macro_state}",
+        f"{_ico} 매크로 상태 · {_macro_state_ko}",
         macro_body,
         tone=macro_tone,
         caption=macro_note,
     )
     _render_status_banner(
-        f"📡 Market Gate · {_gate_info['gate']}",
+        f"📡 마켓필터 · {_market_gate_ko}",
         _gate_info['msg'],
         tone=_gate_tone,
         caption=f"선택 시장: {_selected_gate_market}",
@@ -1469,10 +1522,10 @@ if active_main_tab == "🕸️ 테마 네트워크":
 # TAB 1: MARKET SCANNER
 if active_main_tab == "🚀 스캐너":
     _render_section_intro(
-        "Scanner",
+        "스캐너",
         "전종목 자동 스캔",
-        "시장과 모드만 고르고 큰 버튼 한 번이면 바로 스캔이 시작됩니다. 운영 후보는 신규 admission 모델 통과 여부로 표시합니다.",
-        ["Admission model", "Market-aware gate", "Shared trace output"],
+        "시장과 모드만 고르고 큰 버튼 한 번이면 바로 스캔이 시작됩니다. 운영 후보는 신규 운영 모델 통과 여부로 표시합니다.",
+        ["운영 모델", "시장 필터", "추적 근거"],
     )
 
     # Row 1: 시장 (좌) · 모드 (우) — 두 핵심 결정만
@@ -1491,8 +1544,8 @@ if active_main_tab == "🚀 스캐너":
     )
     scan_mode = "INTRADAY" if scan_mode_label == "장중" else "SWING"
     _filter_caption = (
-        "⏱️ Intraday Breakout / Trend" if scan_mode == "INTRADAY"
-        else "🔥 Antigravity Score (Single Standard)"
+        "⏱️ 장중 돌파/추세" if scan_mode == "INTRADAY"
+        else "🔥 통합 스윙 점수"
     )
 
     # Row 2: Advanced 옵션 (스캔 개수) — 엔진은 V32.Flawless 단일화
@@ -2756,19 +2809,19 @@ if active_main_tab == "📚 아카이브":
                         )
                         _model_cols[5].metric("표본", f"n={_archive_validation.get('n', '-')}", f"{_archive_validation.get('active_days', '-')}일")
                         st.caption(
-                            f"{_archive_summary.get('market')} · {_archive_summary.get('objective') or _archive_summary.get('label')} · "
-                            f"{_archive_summary.get('feature_set')} · {_archive_summary.get('model_name')} · "
-                            f"{_archive_summary.get('selection_rule')} · "
+                            f"{_archive_summary.get('market')} · {korean_display_text(_archive_summary.get('objective') or _archive_summary.get('label'))} · "
+                            f"피처셋 {_archive_summary.get('feature_set')} · 모델 {korean_display_text(_archive_summary.get('model_name'))} · "
+                            f"선발규칙 {korean_display_text(_archive_summary.get('selection_rule'))} · "
                             f"hit5 {_archive_validation.get('hit5_5d_pct', '-')}% / "
                             f"hit10 {_archive_validation.get('hit10_5d_pct', '-')}% / "
                             f"stop5 {_archive_validation.get('stop5_pct', '-')}%"
                         )
                         _archive_input_summary = _archive_admission.get("input_summary") if isinstance(_archive_admission.get("input_summary"), dict) else {}
                         st.caption(
-                            "Admission 직접 채점 universe "
+                            "운영 모델 직접 채점 후보군 "
                             f"{_archive_input_summary.get('total_input_rows', len(_archive_enriched_records))}개 "
                             f"(기존 통과 {_archive_input_summary.get('emitted_count', len(_archive_enriched_records))}개 / "
-                            f"기존 필터 탈락 feature {_archive_input_summary.get('rejected_feature_rows', 0)}개)."
+                            f"기존 필터 탈락 피처 {_archive_input_summary.get('rejected_feature_rows', 0)}개)."
                         )
                         if _archive_pass:
                             st.success(_archive_run_status.get("message") or "운영 통과 후보가 있습니다.")
@@ -2791,7 +2844,7 @@ if active_main_tab == "📚 아카이브":
                                 st.caption("데이터/핵심 게이트 때문에 운영 매수 후보로 승격하지 않은 종목입니다.")
                                 _render_signal_card_list(_archive_blocked, empty_text="운영 차단 후보 없음.")
                         with st.expander("전체 스캔 결과 해석", expanded=False):
-                            st.caption("해당 run에서 올라온 모든 후보를 Admission 모델 확률순으로 해석합니다.")
+                            st.caption("해당 run에서 올라온 모든 후보를 운영 모델 확률순으로 해석합니다.")
                             _all_rows = []
                             for _row in _archive_all:
                                 _gap = _row.get("scan_threshold_gap_pct_points")
@@ -2807,7 +2860,7 @@ if active_main_tab == "📚 아카이브":
                                         ),
                                         "티커": _row.get("ticker"),
                                         "종목": _row.get("name"),
-                                        "모델판정": _row.get("scan_model_decision") or ("통과" if _row.get("admission_passed") else "기준미달"),
+                                        "모델판정": _row.get("scan_model_decision_label") or _row.get("scan_model_decision") or ("통과" if _row.get("admission_passed") else "기준미달"),
                                         "후보확률": f"{float(_row.get('admission_probability_pct')):.1f}%" if _row.get("admission_probability_pct") is not None else "-",
                                         "기준": f"{float(_row.get('admission_threshold_pct')):.1f}%" if _row.get("admission_threshold_pct") is not None else "-",
                                         "기준차": f"{float(_gap):+.1f}%p" if _gap is not None else "-",
@@ -2818,14 +2871,14 @@ if active_main_tab == "📚 아카이브":
                                         ),
                                         "입력": "기존통과" if _row.get("admission_input_source_role") == "emitted" else "기존탈락",
                                         "전일비": _row.get("day_change"),
-                                        "해석": _row.get("scan_interpretation_text") or _row.get("action_condition") or "-",
+                                        "해석": _row.get("scan_interpretation_text_label") or _row.get("action_condition_display") or _row.get("scan_interpretation_text") or _row.get("action_condition") or "-",
                                     }
                                 )
                             st.dataframe(_all_rows, use_container_width=True, hide_index=True)
                     except Exception as _archive_model_exc:
-                        st.error(f"신규 admission 모델 표시 실패: {_archive_model_exc}")
+                        st.error(f"신규 운영 모델 표시 실패: {_archive_model_exc}")
                 else:
-                    st.info("신규 admission 모델은 KOSPI/KOSDAQ 아카이브에만 적용됩니다.")
+                    st.info("신규 운영 모델은 KOSPI/KOSDAQ 아카이브에만 적용됩니다.")
 
                 _perf_col = None
                 if 'max_high_return_5d_pct' in _day_df.columns:

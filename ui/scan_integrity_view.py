@@ -78,11 +78,11 @@ def render_scan_integrity_panel(report: Dict[str, Any], *, compact: bool = False
     near_miss_count = int(sections.get("Admission Near Miss", 0) or 0)
     admission_count = int(sections.get("Scan Universe Admission", 0) or 0)
     c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Factor 완성도", "-" if completeness_pct is None else f"{completeness_pct:.1f}%")
-    c2.metric("Snapshot", int(report.get("snapshot_count") or 0))
-    c3.metric("Top5", int(report.get("picked_count") or 0))
-    c4.metric("Admission/Near", admission_count + near_miss_count)
-    c5.metric("Exception", int(report.get("exception_leader_count") or 0))
+    c1.metric("피처 완성도", "-" if completeness_pct is None else f"{completeness_pct:.1f}%")
+    c2.metric("스냅샷", int(report.get("snapshot_count") or 0))
+    c3.metric("기존 상위5", int(report.get("picked_count") or 0))
+    c4.metric("운영/기준미달", admission_count + near_miss_count)
+    c5.metric("예외 리더", int(report.get("exception_leader_count") or 0))
     if not compact:
         missing = report.get("field_missing_counts") if isinstance(report.get("field_missing_counts"), dict) else {}
         missing = {k: v for k, v in missing.items() if int(v or 0) > 0}
