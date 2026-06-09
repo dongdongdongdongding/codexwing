@@ -3,6 +3,11 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List
 
+from modules.operational_candidate_scoring import (
+    DEFAULT_BUY_PREMIUM_PCT,
+    build_operational_candidate_score,
+)
+
 
 INTERPRETATION_VERSION = "candidate_interpretation_v1"
 
@@ -93,6 +98,16 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
     theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
     price = row.get("price") if isinstance(row.get("price"), dict) else {}
     data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
+    operational_score = (
+        row.get("operational_score_axes")
+        if isinstance(row.get("operational_score_axes"), dict)
+        else build_operational_candidate_score(row, buy_premium_pct=DEFAULT_BUY_PREMIUM_PCT)
+    )
+    premium_returns = (
+        operational_score.get("return_after_buy_premium_pct")
+        if isinstance(operational_score.get("return_after_buy_premium_pct"), dict)
+        else {}
+    )
 
     section = str(_first(alignment.get("analysis_section"), row.get("_analysis_section"), row.get("section"), "Top5"))
     section_rank = _to_int(_first(alignment.get("analysis_section_rank"), row.get("_analysis_section_rank"), row.get("section_rank"), row.get("rank")))
@@ -155,6 +170,19 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
         "exclusion_risk_level": _first(readiness_contract.get("exclusion_risk_level"), row.get("exclusion_risk_level")),
         "entry_readiness_action": _first(readiness_contract.get("final_action"), row.get("final_action")),
         "entry_readiness_reason_codes": _text_list(readiness_contract.get("action_reason_codes"), limit=10),
+        "operational_score_axes": operational_score,
+        "operational_action_level": operational_score.get("action_level"),
+        "operational_action_label": operational_score.get("action_label"),
+        "operational_total_score": _to_float(operational_score.get("total_score")),
+        "operational_non_chart_avg_score": _to_float(operational_score.get("non_chart_avg_score")),
+        "chart_dominance_pct": _to_float(operational_score.get("chart_dominance_pct")),
+        "chart_only_candidate": bool(operational_score.get("chart_only")),
+        "buy_premium_pct": _to_float(operational_score.get("buy_premium_pct")),
+        "buy_premium_return_1d_pct": _to_float(premium_returns.get("return_1d_pct")),
+        "buy_premium_return_3d_pct": _to_float(premium_returns.get("return_3d_pct")),
+        "buy_premium_return_5d_pct": _to_float(premium_returns.get("return_5d_pct")),
+        "buy_premium_base_expected_value_5d_pct": _to_float(premium_returns.get("base_expected_value_5d_pct")),
+        "buy_premium_stress_expected_value_5d_pct": _to_float(premium_returns.get("stress_expected_value_5d_pct")),
     }
 
 

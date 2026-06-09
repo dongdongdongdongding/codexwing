@@ -74,6 +74,10 @@ def test_candidate_interpretation_contract_extracts_surface_parity_fields():
     assert interpretation["data_warning_count"] == 1
     assert interpretation["chase_risk_level"] == "높음"
     assert interpretation["chase_risk_reasons"] == ["CHASE_5D_GT_25"]
+    assert interpretation["buy_premium_pct"] == 2.0
+    assert interpretation["buy_premium_base_expected_value_5d_pct"] == 4.215686
+    assert interpretation["operational_score_axes"]["version"] == "operational_candidate_score_axes_v1"
+    assert "chart" in interpretation["operational_score_axes"]["axes"]
 
 
 def test_signal_display_rows_embed_same_candidate_interpretation_contract():
@@ -86,6 +90,8 @@ def test_signal_display_rows_embed_same_candidate_interpretation_contract():
     assert display["realized_expectancy_5d_prob"] == 80.1
     assert display["base_expected_value_5d_pct"] == 6.3
     assert display["stress_expected_value_5d_pct"] == -2.7
+    assert display["buy_premium_base_expected_value_5d_pct"] == 4.215686
+    assert display["operational_score_axes"]["version"] == "operational_candidate_score_axes_v1"
     assert interpretation == build_candidate_interpretation({**row, "candidate_data_quality": build_candidate_data_quality(row)})
 
 

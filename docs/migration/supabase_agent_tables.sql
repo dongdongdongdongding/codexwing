@@ -489,6 +489,8 @@ create table if not exists public.paper_trade_ledger (
   base_trade_date date,
   entry_model text,
   entry_reference_price double precision,
+  operational_entry_price double precision,
+  buy_premium_pct double precision,
   target_tp_pct double precision,
   stop_sl_pct double precision,
   hold_days integer,
@@ -497,6 +499,8 @@ create table if not exists public.paper_trade_ledger (
   trade_status text,
   gross_return_pct double precision,
   net_return_pct double precision,
+  scan_reference_return_path jsonb not null default '[]'::jsonb,
+  buy_premium_adjusted_return_path jsonb not null default '[]'::jsonb,
   fee_bps double precision,
   slippage_bps double precision,
   relative_rank_score double precision,
@@ -507,6 +511,12 @@ create table if not exists public.paper_trade_ledger (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.paper_trade_ledger
+  add column if not exists operational_entry_price double precision,
+  add column if not exists buy_premium_pct double precision,
+  add column if not exists scan_reference_return_path jsonb not null default '[]'::jsonb,
+  add column if not exists buy_premium_adjusted_return_path jsonb not null default '[]'::jsonb;
 
 create index if not exists idx_paper_trade_ledger_market_status
   on public.paper_trade_ledger (market, scan_mode, trade_status);

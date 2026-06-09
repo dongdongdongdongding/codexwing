@@ -25,6 +25,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.operational_candidate_scoring import DEFAULT_BUY_PREMIUM_PCT, adjust_return_for_buy_premium
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from multi_agent.tools.experimental_kospi_ordered_candidate_search import add_search_columns
 from multi_agent.tools.report_ordered_shadow_watch import (
@@ -183,9 +184,12 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
             "calibrated_effective_win_5d_pct": None,
             "wilson_lower_effective_win_5d_pct": None,
         }
-    ret1 = _numeric(df, "return_1d_pct")
-    ret3 = _numeric(df, "return_3d_pct")
-    ret5 = _numeric(df, "return_5d_pct")
+    raw_ret1 = _numeric(df, "return_1d_pct")
+    raw_ret3 = _numeric(df, "return_3d_pct")
+    raw_ret5 = _numeric(df, "return_5d_pct")
+    ret1 = raw_ret1.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
+    ret3 = raw_ret3.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
+    ret5 = raw_ret5.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
     valid5 = ret5.notna()
     sub = df.loc[valid5].copy()
     if sub.empty:
@@ -196,11 +200,20 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
             "calibrated_effective_win_5d_pct": None,
             "wilson_lower_effective_win_5d_pct": None,
         }
+    scan_ret1 = raw_ret1.loc[sub.index]
+    scan_ret3 = raw_ret3.loc[sub.index]
+    scan_ret5 = raw_ret5.loc[sub.index]
     ret1 = ret1.loc[sub.index]
     ret3 = ret3.loc[sub.index]
     ret5 = ret5.loc[sub.index]
     stop = _bool_series(_series(sub, "stop5_proxy", False))
+    if "min_return_observed_pct" in sub.columns:
+        premium_min_path = _numeric(sub, "min_return_observed_pct").map(
+            lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT)
+        )
+        stop |= premium_min_path.le(-5.0).fillna(False)
     bad = _bool_series(_series(sub, "bad_path", False))
+    bad |= ret5.lt(0.0).fillna(False)
     early_drop = ret1.lt(-3.0).fillna(False)
     loss5 = ret5.lt(0.0).fillna(False)
     practical_win5 = ret5.gt(0.0).fillna(False) & ret1.ge(-3.0).fillna(False) & ~stop
@@ -223,6 +236,7 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
         "early_drop_1d_pct": _pct(early_drop.mean()),
         "loss_5d_pct": _pct(loss5.mean()),
         "stop5_pct": _pct(stop.mean()),
+        "buy_premium_pct": float(DEFAULT_BUY_PREMIUM_PCT),
     }
     for horizon, values in [("1d", ret1), ("3d", ret3), ("5d", ret5)]:
         valid = values.dropna()
@@ -232,6 +246,11 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
         out[f"median_{horizon}_pct"] = _round(valid.median()) if len(valid) else None
         out[f"min_{horizon}_pct"] = _round(valid.min()) if len(valid) else None
         out[f"max_{horizon}_pct"] = _round(valid.max()) if len(valid) else None
+    for horizon, values in [("1d", scan_ret1), ("3d", scan_ret3), ("5d", scan_ret5)]:
+        valid = values.dropna()
+        out[f"scan_reference_avg_{horizon}_pct"] = _round(valid.mean()) if len(valid) else None
+        out[f"scan_reference_min_{horizon}_pct"] = _round(valid.min()) if len(valid) else None
+        out[f"scan_reference_max_{horizon}_pct"] = _round(valid.max()) if len(valid) else None
     return out
 
 
@@ -528,7 +547,12 @@ def _combo_effective_metrics(raw: Mapping[str, Any], horizon: str) -> Dict[str, 
         "stop5_pct": _round(raw.get("stop5_5d_pct", raw.get("stop5_pct"))),
     }
     for key in ["win_1d_pct", "avg_1d_pct", "min_1d_pct", "max_1d_pct", "win_3d_pct", "avg_3d_pct", "min_3d_pct", "max_3d_pct", "win_5d_pct", "avg_5d_pct", "min_5d_pct", "max_5d_pct"]:
-        out[key] = _round(raw.get(key))
+        value = raw.get(key)
+        if key.startswith(("avg_", "min_", "max_")):
+            out[f"scan_reference_{key}"] = _round(value)
+            value = adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT)
+        out[key] = _round(value)
+    out["buy_premium_pct"] = float(DEFAULT_BUY_PREMIUM_PCT)
     if horizon == "3d":
         out.setdefault("win_3d_pct", _round(raw.get("win_3d_pct")))
     successes_pct = _safe_float(out.get("effective_win_5d_pct"))
@@ -669,6 +693,7 @@ def _candidate_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "total_candidate_count": len(rows),
         "promotion_review_candidate_count": len(promotion),
         "near_candidate_count": len(near),
+        "buy_premium_pct": float(DEFAULT_BUY_PREMIUM_PCT),
         "best_candidate_id": rows[0].get("candidate_id") if rows else None,
         "best_status": rows[0].get("status") if rows else None,
         "by_market": by_market,
@@ -711,6 +736,7 @@ def build_report(
         "candidates": candidates,
         "notes": [
             "This is a promotion-review testbed only. It does not alter scanner/model/runtime behavior.",
+            f"Return and average-return gates use the operational assumption that actual buy price is scan reference price +{DEFAULT_BUY_PREMIUM_PCT:.1f}%. scan_reference_* metrics preserve the unadjusted archive values.",
             "Current Top5, Exception Leader, Practical 80, KOSPI exact-path, ordered shadow rules, and mined dynamic combos are compared under one gate.",
             "If internal retrain sweep artifacts exist, model-sweep candidates are included as challengers but never auto-promoted.",
             "effective_win_5d_pct is practical close-return win for archive cohorts and ordered target-before-stop win for ordered profiles.",

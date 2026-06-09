@@ -28,10 +28,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.operational_candidate_scoring import DEFAULT_BUY_PREMIUM_PCT, adjust_return_for_buy_premium
+
 DEFAULT_ARCHIVE = PROJECT_ROOT / "runtime_state" / "reports" / "archive" / "scan_archive_learning_dataset_all.csv"
 DEFAULT_OUT_DIR = PROJECT_ROOT / "runtime_state" / "reports" / "trading"
 RETURN_HORIZONS = (1, 2, 3, 5, 7, 14, 30)
 BUY_DECISIONS = {"PRIORITY_WATCHLIST", "WATCHLIST", "WATCHLIST_ONLY", "EXCEPTION_LEADER"}
+LEDGER_MODE = "close_to_close_shadow_buy_premium_v2"
 
 
 @dataclass(frozen=True)
@@ -128,6 +131,7 @@ def simulate_close_proxy_trade(
     *,
     fee_bps: float = 0.0,
     slippage_bps: float = 0.0,
+    buy_premium_pct: float = DEFAULT_BUY_PREMIUM_PCT,
 ) -> Dict[str, Any]:
     """Simulate exit on actual stored close returns without fabricating fills."""
     policy = resolve_trade_policy(row)
@@ -141,8 +145,19 @@ def simulate_close_proxy_trade(
     )
     entry_price = _safe_float(row.get("entry_reference_price"))
     rank = _safe_int(row.get("priority_rank"))
-    path = [(day, ret) for day, ret in _return_path(row) if day <= policy.hold_days]
+    raw_path = [(day, ret) for day, ret in _return_path(row) if day <= policy.hold_days]
+    path = [
+        (day, adjusted)
+        for day, ret in raw_path
+        for adjusted in [adjust_return_for_buy_premium(ret, buy_premium_pct)]
+        if adjusted is not None
+    ]
     costs_pct = (float(fee_bps) + float(slippage_bps)) * 2.0 / 100.0
+    operational_entry_price = (
+        round(entry_price * (1.0 + float(buy_premium_pct or 0.0) / 100.0), 6)
+        if entry_price is not None and entry_price > 0
+        else None
+    )
 
     status = "UNRESOLVED"
     exit_reason = "NO_REALIZED_RETURN"
@@ -170,7 +185,7 @@ def simulate_close_proxy_trade(
     net_return = None if gross_return is None else round(float(gross_return) - costs_pct, 6)
     return {
         "trade_id": trade_id,
-        "ledger_mode": "close_to_close_shadow_v1",
+        "ledger_mode": LEDGER_MODE,
         "ticker": _text(row.get("ticker")),
         "stock_name": _text(row.get("stock_name")),
         "market": policy.market,
@@ -183,6 +198,8 @@ def simulate_close_proxy_trade(
         "base_trade_date": _text(row.get("base_trade_date")),
         "entry_model": policy.entry_model,
         "entry_reference_price": entry_price,
+        "operational_entry_price": operational_entry_price,
+        "buy_premium_pct": float(buy_premium_pct),
         "target_tp_pct": policy.target_tp_pct,
         "stop_sl_pct": policy.stop_sl_pct,
         "hold_days": policy.hold_days,
@@ -191,6 +208,8 @@ def simulate_close_proxy_trade(
         "trade_status": status,
         "gross_return_pct": None if gross_return is None else round(float(gross_return), 6),
         "net_return_pct": net_return,
+        "scan_reference_return_path": [{"day": int(day), "return_pct": round(float(ret), 6)} for day, ret in raw_path],
+        "buy_premium_adjusted_return_path": [{"day": int(day), "return_pct": round(float(ret), 6)} for day, ret in path],
         "fee_bps": float(fee_bps),
         "slippage_bps": float(slippage_bps),
         "relative_rank_score": _safe_float(row.get("relative_rank_score")),
@@ -252,8 +271,17 @@ def build_ledger(
     *,
     fee_bps: float = 0.0,
     slippage_bps: float = 0.0,
+    buy_premium_pct: float = DEFAULT_BUY_PREMIUM_PCT,
 ) -> List[Dict[str, Any]]:
-    return [simulate_close_proxy_trade(row, fee_bps=fee_bps, slippage_bps=slippage_bps) for row in rows]
+    return [
+        simulate_close_proxy_trade(
+            row,
+            fee_bps=fee_bps,
+            slippage_bps=slippage_bps,
+            buy_premium_pct=buy_premium_pct,
+        )
+        for row in rows
+    ]
 
 
 def _db_payload(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -313,7 +341,7 @@ def _metrics(values: List[float]) -> Dict[str, Any]:
 def summarize_ledger(ledger: List[Dict[str, Any]]) -> Dict[str, Any]:
     df = pd.DataFrame(ledger)
     if df.empty:
-        return {"rows": 0, "closed_rows": 0, "unresolved_rows": 0, "mode": "close_to_close_shadow_v1", "groups": []}
+        return {"rows": 0, "closed_rows": 0, "unresolved_rows": 0, "mode": LEDGER_MODE, "groups": []}
     closed = df[df["trade_status"].eq("CLOSED")].copy()
     groups: List[Dict[str, Any]] = []
     for keys in [("market",), ("market", "priority_rank"), ("market", "exit_reason")]:
@@ -328,7 +356,7 @@ def summarize_ledger(ledger: List[Dict[str, Any]]) -> Dict[str, Any]:
         "rows": int(len(df)),
         "closed_rows": int(len(closed)),
         "unresolved_rows": int(df["trade_status"].ne("CLOSED").sum()),
-        "mode": "close_to_close_shadow_v1",
+        "mode": str(df["ledger_mode"].dropna().iloc[0]) if "ledger_mode" in df.columns and not df["ledger_mode"].dropna().empty else LEDGER_MODE,
         "groups": groups,
     }
 
@@ -345,6 +373,7 @@ def _markdown(report: Dict[str, Any]) -> str:
         f"- unresolved_rows: `{summary['unresolved_rows']}`",
         f"- fee_bps: `{report['fee_bps']}`",
         f"- slippage_bps: `{report['slippage_bps']}`",
+        f"- buy_premium_pct: `{report['buy_premium_pct']}`",
         "",
         "## Market Metrics",
     ]
@@ -370,6 +399,7 @@ def _markdown(report: Dict[str, Any]) -> str:
             "",
             "## Interpretation",
             "- This is a real-data shadow ledger, not a broker fill ledger.",
+            "- Return paths are evaluated after assuming the actual buy happens above the scan reference price by buy_premium_pct.",
             "- Rows without realized return data remain unresolved instead of being filled as losses or wins.",
             "- The schema is Supabase-friendly and can be upserted when the execution table is added.",
         ]
@@ -386,6 +416,12 @@ def main() -> int:
     parser.add_argument("--topn", type=int, default=5)
     parser.add_argument("--fee-bps", type=float, default=0.0)
     parser.add_argument("--slippage-bps", type=float, default=0.0)
+    parser.add_argument(
+        "--buy-premium-pct",
+        type=float,
+        default=DEFAULT_BUY_PREMIUM_PCT,
+        help="Operational assumption: actual buy price is this percent above the scan reference price.",
+    )
     parser.add_argument("--write-db", action="store_true", help="Upsert ledger rows into Supabase paper_trade_ledger.")
     parser.add_argument("--db-batch-size", type=int, default=200)
     parser.add_argument(
@@ -402,7 +438,12 @@ def main() -> int:
         topn=args.topn,
         exclude_validation_excluded=bool(args.exclude_validation_excluded),
     )
-    ledger = build_ledger(rows.to_dict("records"), fee_bps=args.fee_bps, slippage_bps=args.slippage_bps)
+    ledger = build_ledger(
+        rows.to_dict("records"),
+        fee_bps=args.fee_bps,
+        slippage_bps=args.slippage_bps,
+        buy_premium_pct=args.buy_premium_pct,
+    )
     summary = summarize_ledger(ledger)
     db_result = None
     if args.write_db:
@@ -416,6 +457,7 @@ def main() -> int:
         "topn": int(args.topn),
         "fee_bps": float(args.fee_bps),
         "slippage_bps": float(args.slippage_bps),
+        "buy_premium_pct": float(args.buy_premium_pct),
         "db_result": db_result,
         "summary": summary,
     }

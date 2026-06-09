@@ -523,6 +523,13 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"{metric_label('candidate_model_score_5d')} {_fmt_num(interpretation.get('ranking_score_5d'), 1)}"
         ),
         (
+            f"운영검증: {interpretation.get('operational_action_label') or '-'} · "
+            f"운영점수 {_fmt_num(interpretation.get('operational_total_score'), 1)} · "
+            f"차트비중 {_fmt_pct(interpretation.get('chart_dominance_pct'))} · "
+            f"+{_fmt_num(interpretation.get('buy_premium_pct'), 1)}%매수 후 avg5D {_fmt_pct(interpretation.get('buy_premium_base_expected_value_5d_pct'))} / "
+            f"worst5D {_fmt_pct(interpretation.get('buy_premium_stress_expected_value_5d_pct'))}"
+        ),
+        (
             f"국면/테마: 확률x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
             f"수익x{_fmt_num(regime_theme_adjustment.get('return_multiplier'), 2)} · "
             f"손절x{_fmt_num(regime_theme_adjustment.get('stop_risk_multiplier'), 2)} · "

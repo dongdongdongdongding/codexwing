@@ -51,6 +51,65 @@ class UIHelperTests(unittest.TestCase):
         )
         self.assertEqual([row["Ticker"] for row in rows], ["CCC", "AAA"])
 
+    def test_build_top_candidate_rows_demotes_chart_only_candidates(self):
+        rows = build_top_candidate_rows(
+            {
+                "decisions": [
+                    {
+                        "ticker": "111111.KQ",
+                        "stock_name": "ChartOnly",
+                        "priority_rank": 1,
+                        "decision": "PRIORITY_WATCHLIST",
+                        "decision_score": 99,
+                        "trend": "UP",
+                        "position": "Rising",
+                        "tech_score": 96,
+                        "alpha_score": 94,
+                        "volume_ratio": 3.2,
+                        "market_gate": "GREEN",
+                    },
+                    {
+                        "ticker": "005930.KS",
+                        "stock_name": "Samsung",
+                        "priority_rank": 2,
+                        "decision": "PRIORITY_WATCHLIST",
+                        "decision_score": 88,
+                        "trend": "UP",
+                        "position": "Rising",
+                        "tech_score": 80,
+                        "alpha_score": 78,
+                        "volume_ratio": 1.6,
+                        "whale_score": 72,
+                        "foreigner_1d": 100,
+                        "institution_1d": 200,
+                        "market_gate": "GREEN",
+                        "theme_context": {
+                            "primary_theme": "반도체",
+                            "theme_strength_score": 76,
+                            "theme_direction": "BENEFICIARY",
+                        },
+                        "kis_theme_news_evidence": {
+                            "available": True,
+                            "kis_backed": True,
+                            "evidence_strength_score": 78,
+                            "news": {"checked": True, "news_count": 2, "positive_tags": ["contract_order"]},
+                        },
+                        "kis_sidecar": {
+                            "model_candidate_features": {
+                                "kis_per": 18,
+                                "kis_pbr": 1.8,
+                                "kis_market_cap": 500000000000000,
+                            }
+                        },
+                    },
+                ]
+            },
+            limit=2,
+        )
+
+        self.assertEqual([row["Ticker"] for row in rows], ["005930.KS"])
+        self.assertEqual(rows[0]["Operational"], "운용 후보")
+
     def test_should_auto_refresh_scan_panel_only_for_live_states(self):
         self.assertTrue(should_auto_refresh_scan_panel("queued"))
         self.assertTrue(should_auto_refresh_scan_panel("running"))

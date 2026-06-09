@@ -27,6 +27,7 @@ from modules.incident_regression import detect_failure_risk_reason_codes
 from modules.kr_stock_theme_master import get_stock_theme_record
 from modules.kis_theme_news_evidence import build_kis_theme_news_evidence
 from modules.model_governance import active_policy_metadata
+from modules.operational_candidate_scoring import build_operational_candidate_score
 from modules.portfolio_exposure import build_portfolio_exposure_summary
 from modules.realized_expectancy_admission import build_realized_expectancy_admission
 from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
@@ -1449,6 +1450,31 @@ def build_top_deep_reports(
             news=news,
             generated_at=generated_at,
         )
+        operational_score = build_operational_candidate_score(
+            {
+                **row,
+                "feature_snapshot": trace.get("feature_snapshot") if isinstance(trace.get("feature_snapshot"), dict) else row.get("feature_snapshot"),
+                "theme": {
+                    "primary_theme": primary_theme,
+                    "theme_routing_path": theme_routing_path,
+                    "kis_theme_news_evidence": kis_theme_news_evidence,
+                },
+                "theme_context": {
+                    "primary_theme": primary_theme,
+                    "theme_routing_path": theme_routing_path,
+                    "theme_strength_score": _first_present(trace, "theme_strength_score") or row.get("theme_strength_score"),
+                    "theme_direction": _first_present(trace, "theme_direction") or row.get("theme_direction"),
+                },
+                "price": price,
+                "flow": flow,
+                "kis_theme_news_evidence": kis_theme_news_evidence,
+                "market_gate": _first_present(trace, "market_gate") or row.get("market_gate"),
+                "regime_breadth_pct": _first_present(trace, "regime_breadth_pct") or row.get("regime_breadth_pct"),
+                "regime_avg_chg": _first_present(trace, "regime_avg_chg") or row.get("regime_avg_chg"),
+                "regime_volatility_20d": _first_present(trace, "regime_volatility_20d") or row.get("regime_volatility_20d"),
+                "realized_expectancy_admission": admission,
+            }
+        )
         report = {
             "report_id": f"{run_id}:{ticker}:{REPORT_VERSION}",
             "report_version": REPORT_VERSION,
@@ -1552,6 +1578,11 @@ def build_top_deep_reports(
             "price": price,
             "news": news,
             "kis_theme_news_evidence": kis_theme_news_evidence,
+            "operational_score_axes": operational_score,
+            "operational_action_level": operational_score.get("action_level"),
+            "operational_action_label": operational_score.get("action_label"),
+            "chart_dominance_pct": operational_score.get("chart_dominance_pct"),
+            "chart_only_candidate": operational_score.get("chart_only"),
             "source_timing": source_timing,
             "scan_source_snapshot": source_timing.get("scan_source_snapshot"),
             "deep_analysis_source_snapshot": source_timing.get("deep_analysis_source_snapshot"),

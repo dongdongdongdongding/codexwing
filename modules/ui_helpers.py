@@ -26,6 +26,11 @@ from modules.korean_display_copy import (
     korean_trace_list,
 )
 from modules.next_day_explosive_radar import build_next_day_radar_candidate
+from modules.operational_candidate_scoring import (
+    DEFAULT_BUY_PREMIUM_PCT,
+    attach_operational_candidate_score,
+    build_operational_candidate_score,
+)
 from modules.practical_entry_gate import evaluate_practical_entry_gate
 from modules.segment_accuracy import lookup_segment_win_rate
 from modules.scanner_performance_contract import (
@@ -1512,8 +1517,18 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
         next_day_radar = row.get("next_day_radar") if isinstance(row.get("next_day_radar"), dict) else None
         if next_day_radar is None and str(row.get("_analysis_section") or "") == "별도 급등 레이더":
             next_day_radar = build_next_day_radar_candidate(row)
+        operational_score = (
+            row.get("operational_score_axes")
+            if isinstance(row.get("operational_score_axes"), dict)
+            else build_operational_candidate_score(row, buy_premium_pct=DEFAULT_BUY_PREMIUM_PCT)
+        )
+        operational_returns = (
+            operational_score.get("return_after_buy_premium_pct")
+            if isinstance(operational_score.get("return_after_buy_premium_pct"), dict)
+            else {}
+        )
         data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else build_candidate_data_quality(row)
-        interpretation = build_candidate_interpretation({**row, "candidate_data_quality": data_quality})
+        interpretation = build_candidate_interpretation({**row, "candidate_data_quality": data_quality, "operational_score_axes": operational_score})
         scan_interpretation = row.get("scan_result_interpretation") if isinstance(row.get("scan_result_interpretation"), dict) else {}
         kis_theme_news = row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else {}
         if not kis_theme_news:
@@ -1583,6 +1598,24 @@ def build_signal_display_rows(rows: List[Dict[str, Any]], limit: int | None = No
                 "kis_theme_news_drivers": kis_theme_news.get("drivers") or [],
                 "kis_theme_news_warnings": kis_theme_news.get("warnings") or [],
                 "kis_theme_news_kis_backed": kis_theme_news.get("kis_backed"),
+                "operational_score_axes": operational_score,
+                "operational_action_level": operational_score.get("action_level"),
+                "operational_action_label": operational_score.get("action_label"),
+                "operational_total_score": operational_score.get("total_score"),
+                "operational_non_chart_avg_score": operational_score.get("non_chart_avg_score"),
+                "chart_score": (operational_score.get("axes") or {}).get("chart") if isinstance(operational_score.get("axes"), dict) else None,
+                "flow_score": (operational_score.get("axes") or {}).get("flow") if isinstance(operational_score.get("axes"), dict) else None,
+                "market_score": (operational_score.get("axes") or {}).get("market") if isinstance(operational_score.get("axes"), dict) else None,
+                "theme_valuechain_score": (operational_score.get("axes") or {}).get("theme_valuechain") if isinstance(operational_score.get("axes"), dict) else None,
+                "financial_news_score": (operational_score.get("axes") or {}).get("financial_news") if isinstance(operational_score.get("axes"), dict) else None,
+                "chart_dominance_pct": operational_score.get("chart_dominance_pct"),
+                "chart_only_candidate": operational_score.get("chart_only"),
+                "buy_premium_pct": operational_score.get("buy_premium_pct"),
+                "buy_premium_return_1d_pct": operational_returns.get("return_1d_pct"),
+                "buy_premium_return_3d_pct": operational_returns.get("return_3d_pct"),
+                "buy_premium_return_5d_pct": operational_returns.get("return_5d_pct"),
+                "buy_premium_base_expected_value_5d_pct": operational_returns.get("base_expected_value_5d_pct"),
+                "buy_premium_stress_expected_value_5d_pct": operational_returns.get("stress_expected_value_5d_pct"),
                 "next_day_radar_score": next_day_radar.get("radar_score") if next_day_radar else None,
                 "next_day_plus5_prob": next_day_radar.get("next_day_plus5_prob") if next_day_radar else None,
                 "next_day_plus10_prob": next_day_radar.get("next_day_plus10_prob") if next_day_radar else None,
@@ -1823,7 +1856,8 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
     seen_tickers = {str(r.get("ticker", "") or "") for r in el_rows}
     candidates = [r for r in candidates if str(r.get("ticker", "") or "") not in seen_tickers]
     # EL을 합쳐서 sorted_rows에 같이 노출 (compact_view에서 stream A/B로 분리됨)
-    candidates = candidates + el_rows
+    candidates = [attach_operational_candidate_score(r) for r in (candidates + el_rows)]
+    candidates = [r for r in candidates if not bool(r.get("chart_only_candidate"))]
 
     def _decision_priority(dec: str) -> int:
         """Lower number = higher. PRIORITY/WATCHLIST 위, EXCEPTION_LEADER 아래
@@ -1905,6 +1939,9 @@ def build_top_candidate_rows(planner_payload: Dict[str, Any], limit: int = 5) ->
                 "TP": tp_label,
                 "SL": sl_label,
                 "Hold": hold_label,
+                "Operational": row.get("operational_action_label") or row.get("operational_action_level"),
+                "Operational Score": (round(float((row.get("operational_score_axes") or {}).get("total_score")), 1) if isinstance(row.get("operational_score_axes"), dict) and (row.get("operational_score_axes") or {}).get("total_score") not in (None, "") else None),
+                "Chart Dominance %": (round(float(row.get("chart_dominance_pct")), 1) if row.get("chart_dominance_pct") not in (None, "") else None),
             }
         )
     return top_rows

@@ -19,13 +19,39 @@ def test_close_proxy_trade_takes_profit_on_first_realized_close_trigger():
         "return_3d_pct": 8.0,
     }
 
-    trade = simulate_close_proxy_trade(row, fee_bps=1.0, slippage_bps=2.0)
+    trade = simulate_close_proxy_trade(row, fee_bps=1.0, slippage_bps=2.0, buy_premium_pct=0.0)
 
     assert trade["trade_status"] == "CLOSED"
     assert trade["exit_day"] == 2
     assert trade["exit_reason"] == "TAKE_PROFIT_CLOSE_PROXY"
     assert trade["gross_return_pct"] == 10.0
     assert trade["net_return_pct"] == 9.94
+
+
+def test_close_proxy_trade_defaults_to_two_pct_buy_premium():
+    row = {
+        "run_id": "RUN-TEST",
+        "ticker": "123456.KQ",
+        "market": "KOSDAQ",
+        "scan_mode": "SWING",
+        "priority_rank": 1,
+        "decision": "PRIORITY_WATCHLIST",
+        "entry_reference_price": 10000,
+        "return_1d_pct": 2.0,
+        "return_2d_pct": 12.0,
+        "return_3d_pct": 8.0,
+    }
+
+    trade = simulate_close_proxy_trade(row)
+
+    assert trade["ledger_mode"] == "close_to_close_shadow_buy_premium_v2"
+    assert trade["buy_premium_pct"] == 2.0
+    assert trade["operational_entry_price"] == 10200.0
+    assert trade["trade_status"] == "CLOSED"
+    assert trade["exit_reason"] == "TIME_EXIT"
+    assert trade["gross_return_pct"] == 5.882353
+    assert trade["net_return_pct"] == 5.882353
+    assert trade["buy_premium_adjusted_return_path"][1]["return_pct"] == 9.803922
 
 
 def test_close_proxy_trade_leaves_missing_outcome_unresolved():

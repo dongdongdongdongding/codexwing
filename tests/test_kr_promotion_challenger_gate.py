@@ -32,7 +32,7 @@ def _row(day: str, ticker: str, ret5: float, *, ret1: float = 0.5, ret3: float =
 
 
 def test_close_candidate_can_pass_73_gate_with_clean_path(monkeypatch):
-    rows = [_row(f"2026-05-{idx:02d}", f"000{idx:03d}.KS", 6.0) for idx in range(1, 13)]
+    rows = [_row(f"2026-05-{idx:02d}", f"000{idx:03d}.KS", 8.0, ret3=4.0) for idx in range(1, 13)]
     df = pd.DataFrame(rows)
     spec = CloseCandidateSpec(
         "all_clean",
@@ -50,6 +50,9 @@ def test_close_candidate_can_pass_73_gate_with_clean_path(monkeypatch):
     result = evaluate_close_candidates(df, specs=[spec])[0]
 
     assert result["status"] == "promotion_review_candidate"
+    assert result["test"]["buy_premium_pct"] == 2.0
+    assert result["test"]["scan_reference_avg_5d_pct"] == 8.0
+    assert result["test"]["avg_5d_pct"] < result["test"]["scan_reference_avg_5d_pct"]
     assert result["test"]["effective_win_5d_pct"] == 100.0
     assert result["test"]["bad_path_pct"] == 0.0
 
@@ -99,11 +102,11 @@ def test_ordered_watch_candidate_uses_ordered_win_as_effective_5d(tmp_path, monk
                 "ordered_target_before_stop": True,
                 "ordered_stop_before_target": False,
                 "ordered_terminal_status": "target_before_stop",
-                "ordered_mfe_pct": 6.0,
+                "ordered_mfe_pct": 8.5,
                 "ordered_mae_pct": -1.0,
                 "return_1d_pct": 0.5,
-                "return_3d_pct": 2.0,
-                "return_5d_pct": 5.5,
+                "return_3d_pct": 4.0,
+                "return_5d_pct": 8.0,
                 "theme_day_avg_volume_ratio": 1.0,
                 "theme_day_avg_expected_return_1d_pct": 0.2,
                 "tech_score": 60,
@@ -132,6 +135,9 @@ def test_ordered_watch_candidate_uses_ordered_win_as_effective_5d(tmp_path, monk
 
     assert result["candidate_id"] == "kosdaq_dynamic_theme_tech_watch_5v5"
     assert result["status"] == "promotion_review_candidate"
+    assert result["test"]["buy_premium_pct"] == 2.0
+    assert result["test"]["scan_reference_avg_5d_pct"] == 8.0
+    assert result["test"]["avg_5d_pct"] < result["test"]["scan_reference_avg_5d_pct"]
     assert result["test"]["effective_win_5d_pct"] == 100.0
 
 
