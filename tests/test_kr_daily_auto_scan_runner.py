@@ -89,13 +89,21 @@ def test_discord_retry_after_reads_header_and_json_body():
         None,
     )
     body_exc = urllib.error.HTTPError("https://discord.test", 429, "rate limited", {}, None)
+    reset_after_exc = urllib.error.HTTPError(
+        "https://discord.test",
+        429,
+        "rate limited",
+        {"X-RateLimit-Reset-After": "1.75"},
+        None,
+    )
 
     assert _discord_retry_after(header_exc, "{}") == 1.25
+    assert _discord_retry_after(reset_after_exc, "{}") == 1.75
     assert _discord_retry_after(body_exc, '{"retry_after": 0.53}') == 0.53
 
 
 def test_discord_backoff_has_conservative_floor():
-    assert _discord_backoff_seconds(0.3, 0) >= 1.5
+    assert _discord_backoff_seconds(0.3, 0) >= 3.0
     assert _discord_backoff_seconds(2.0, 2) > 2.0
 
 

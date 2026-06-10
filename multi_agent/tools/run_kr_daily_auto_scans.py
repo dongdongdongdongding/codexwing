@@ -55,8 +55,10 @@ DISCORD_MAX_EMBED_DESCRIPTION_CHARS = 4096
 DISCORD_MAX_EMBED_FIELD_NAME_CHARS = 256
 DISCORD_MAX_EMBED_FIELD_VALUE_CHARS = 1024
 DISCORD_MAX_CONTENT_CHARS = 2000
-DISCORD_INTER_MESSAGE_PAUSE_SECONDS = 2.0
+DISCORD_INTER_MESSAGE_PAUSE_SECONDS = 3.0
 DISCORD_MIN_RETRY_AFTER_SECONDS = 2.0
+DISCORD_RATE_LIMIT_SAFETY_SECONDS = 1.0
+DISCORD_POST_ATTEMPTS = 10
 POST_SCAN_VALIDATION_COMMANDS = (
     {
         "name": "Scan Cohort Performance",
@@ -820,7 +822,7 @@ def _post_discord_message(config: DiscordIntegrationConfig, payload: Dict[str, A
         "User-Agent": "CodexSwingDailyAutoScan/1.0",
     }
     last_detail = ""
-    for attempt in range(5):
+    for attempt in range(DISCORD_POST_ATTEMPTS):
         request = urllib.request.Request(url, data=body, headers=headers, method="POST")
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
@@ -830,10 +832,10 @@ def _post_discord_message(config: DiscordIntegrationConfig, payload: Dict[str, A
             detail = exc.read().decode("utf-8", errors="replace")[:2000]
             last_detail = detail
             retry_after = _discord_retry_after(exc, detail)
-            if exc.code == 429 and attempt < 4:
+            if exc.code == 429 and attempt < DISCORD_POST_ATTEMPTS - 1:
                 time_module.sleep(_discord_backoff_seconds(retry_after, attempt))
                 continue
-            if 500 <= exc.code < 600 and attempt < 4:
+            if 500 <= exc.code < 600 and attempt < DISCORD_POST_ATTEMPTS - 1:
                 time_module.sleep(min(5.0, 0.5 * (attempt + 1)))
                 continue
             raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
@@ -842,9 +844,15 @@ def _post_discord_message(config: DiscordIntegrationConfig, payload: Dict[str, A
 
 def _discord_retry_after(exc: urllib.error.HTTPError, detail: str) -> float:
     header_value = exc.headers.get("Retry-After") if exc.headers else None
+    reset_after_value = exc.headers.get("X-RateLimit-Reset-After") if exc.headers else None
     try:
         if header_value is not None:
             return float(header_value)
+    except Exception:
+        pass
+    try:
+        if reset_after_value is not None:
+            return float(reset_after_value)
     except Exception:
         pass
     try:
@@ -855,7 +863,11 @@ def _discord_retry_after(exc: urllib.error.HTTPError, detail: str) -> float:
 
 
 def _discord_backoff_seconds(retry_after: float, attempt: int) -> float:
-    return max(DISCORD_MIN_RETRY_AFTER_SECONDS, float(retry_after or 0.0)) + 0.5 + min(2.0, 0.25 * max(0, attempt))
+    return (
+        max(DISCORD_MIN_RETRY_AFTER_SECONDS, float(retry_after or 0.0))
+        + DISCORD_RATE_LIMIT_SAFETY_SECONDS
+        + min(3.0, 0.35 * max(0, attempt))
+    )
 
 
 def _chunk_embeds_for_discord(embeds: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
