@@ -1,0 +1,678 @@
+{
+  "actual_data_warning": "No dummy data was used. The 2026-01-01 CSV-label cache actually starts at 2026-03-31, and the KIS feature cache starts at 2026-04-02.",
+  "generated_at": "2026-06-11T17:15:10.721669+00:00",
+  "global_decision": {
+    "next_required_work": [
+      "Backfill real Jan-Mar scan_universe snapshots and KIS sidecar features; no dummy rows.",
+      "Add or train a separate tail-risk / loss-first gate so +5% touch candidates do not violate the -10% low guard.",
+      "Only update operational shadow after market-specific selected reports point to candidates with shadow_display_allowed and clear labeling as risk-review."
+    ],
+    "production_replacement": false,
+    "shadow_update_allowed": true,
+    "shadow_update_requires_risk_review": true
+  },
+  "markets": {
+    "KOSDAQ": {
+      "best_csv_risk_adjusted_model": {
+        "auc_mean": 0.797955,
+        "brier_mean": 0.092562,
+        "feature_set": "failure_risk_augmented",
+        "kis_model_gate": {},
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "metrics": {
+          "active_days": 17,
+          "active_runs": 28,
+          "avg_1d_pct": 3.999829,
+          "avg_3d_pct": 8.530294,
+          "avg_5d_pct": 11.88583,
+          "avg_max_high_5d_pct": 26.965243,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 80.0,
+          "hit5_5d_pct": 93.3333,
+          "hit5_dd10_5d_pct": 73.3333,
+          "min_1d_pct": -6.045752,
+          "min_3d_pct": -7.865419,
+          "min_5d_pct": -16.879795,
+          "min_min_low_5d_pct": -17.306053,
+          "n": 30,
+          "stop5_pct": 60.0,
+          "stop_before_target_5d_pct": 60.0,
+          "target_before_stop_5d_pct": 90.0
+        },
+        "model": "xgboost",
+        "prob_threshold": 0.5,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "min_5d_tail_below_12",
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "promotable": false
+        },
+        "quality_score": 809.632324,
+        "risk_gate": {
+          "blocking_reasons": [
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "components": {
+            "bad_path_pct": 63.3333,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 73.3333,
+            "guard_raw_ratio": 0.785714,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 100.0,
+            "min_1d_pct": -6.045752,
+            "min_fold_min_low_5d_pct": -17.306053,
+            "min_fold_target_before_stop_5d_pct": 33.3333,
+            "min_min_low_5d_pct": -17.306053,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 93.3333,
+            "stop5_pct": 60.0,
+            "stop_before_target_5d_pct": 60.0,
+            "target_before_stop_5d_pct": 90.0
+          },
+          "pass": false
+        },
+        "selection_rule": "top1_p0.50",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_thresholdgrid_20260101_20260610.json",
+        "topn": 1
+      },
+      "best_csv_touch_model": {
+        "auc_mean": 0.803779,
+        "brier_mean": 0.136337,
+        "feature_set": "failure_risk_augmented",
+        "kis_model_gate": {},
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "metrics": {
+          "active_days": 20,
+          "active_runs": 34,
+          "avg_1d_pct": 4.125948,
+          "avg_3d_pct": 8.875128,
+          "avg_5d_pct": 6.947286,
+          "avg_max_high_5d_pct": 22.94326,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 80.5556,
+          "hit5_5d_pct": 97.2222,
+          "hit5_dd10_5d_pct": 80.5556,
+          "min_1d_pct": -6.045752,
+          "min_3d_pct": -12.879305,
+          "min_5d_pct": -19.957311,
+          "min_min_low_5d_pct": -20.898989,
+          "n": 36,
+          "stop5_pct": 63.8889,
+          "stop_before_target_5d_pct": 63.8889,
+          "target_before_stop_5d_pct": 97.2222
+        },
+        "model": "lightgbm",
+        "prob_threshold": 0.7,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "min_mfe_5d_lt_1p5",
+            "min_5d_tail_below_12",
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "promotable": false
+        },
+        "quality_score": 656.978951,
+        "risk_gate": {
+          "blocking_reasons": [
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "components": {
+            "bad_path_pct": 69.4444,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 80.5556,
+            "guard_raw_ratio": 0.828572,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 100.0,
+            "min_1d_pct": -6.045752,
+            "min_fold_min_low_5d_pct": -20.898989,
+            "min_fold_target_before_stop_5d_pct": 85.7143,
+            "min_min_low_5d_pct": -20.898989,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 97.2222,
+            "stop5_pct": 63.8889,
+            "stop_before_target_5d_pct": 63.8889,
+            "target_before_stop_5d_pct": 97.2222
+          },
+          "pass": false
+        },
+        "selection_rule": "top1_p0.70",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_thresholdgrid_20260101_20260610.json",
+        "topn": 1
+      },
+      "best_kis_features_grid_model": {
+        "auc_mean": 0.829176,
+        "brier_mean": 0.110258,
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "kis_model_gate": {
+          "action": "show_shadow_with_risk_review",
+          "production_blocking_reasons": [
+            "n_lt_45",
+            "active_days_lt_20",
+            "min_low_5d_lt_neg10"
+          ],
+          "production_ready": false,
+          "risk_review_reasons": [
+            "min_low_5d_lt_neg10"
+          ],
+          "risk_review_required": true,
+          "shadow_display_allowed": true,
+          "status": "shadow_risk_review"
+        },
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "metrics": {
+          "active_days": 14,
+          "active_runs": 23,
+          "avg_1d_pct": 9.469621,
+          "avg_3d_pct": 17.845211,
+          "avg_5d_pct": 11.961235,
+          "avg_max_high_5d_pct": 38.720581,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 92.0,
+          "hit5_5d_pct": 100.0,
+          "hit5_dd10_5d_pct": 84.0,
+          "min_1d_pct": -7.651715,
+          "min_3d_pct": -12.049252,
+          "min_5d_pct": -15.670754,
+          "min_min_low_5d_pct": -15.670754,
+          "n": 25,
+          "stop5_pct": 60.0,
+          "stop_before_target_5d_pct": 60.0,
+          "target_before_stop_5d_pct": 64.0
+        },
+        "model": "xgboost",
+        "prob_threshold": 0.65,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "min_5d_tail_below_12",
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10",
+            "n_lt_45",
+            "active_days_lt_20",
+            "min_low_5d_lt_neg10"
+          ],
+          "promotable": false
+        },
+        "quality_score": 1163.311846,
+        "risk_gate": {
+          "blocking_reasons": [
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "components": {
+            "bad_path_pct": 64.0,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 84.0,
+            "guard_raw_ratio": 0.84,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 100.0,
+            "min_1d_pct": -7.651715,
+            "min_fold_min_low_5d_pct": -15.670754,
+            "min_fold_target_before_stop_5d_pct": 25.0,
+            "min_min_low_5d_pct": -15.670754,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 100.0,
+            "stop5_pct": 60.0,
+            "stop_before_target_5d_pct": 60.0,
+            "target_before_stop_5d_pct": 64.0
+          },
+          "pass": false
+        },
+        "selection_rule": "top1_p0.65",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_features_grid_20260401_20260610.json",
+        "topn": 1
+      },
+      "best_kis_shadow_model_any_report": {
+        "auc_mean": 0.721329,
+        "brier_mean": 0.141269,
+        "feature_set": "kis_failure_risk_numeric",
+        "kis_model_gate": {
+          "action": "show_shadow_only",
+          "production_blocking_reasons": [
+            "n_lt_45",
+            "active_days_lt_20",
+            "active_runs_lt_20"
+          ],
+          "production_ready": false,
+          "risk_review_reasons": [],
+          "risk_review_required": false,
+          "shadow_display_allowed": true,
+          "status": "shadow_ready"
+        },
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "metrics": {
+          "active_days": 6,
+          "active_runs": 11,
+          "avg_1d_pct": 3.916449,
+          "avg_3d_pct": 6.53775,
+          "avg_5d_pct": 7.092449,
+          "avg_max_high_5d_pct": 15.150153,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 90.9091,
+          "hit5_5d_pct": 100.0,
+          "hit5_dd10_5d_pct": 100.0,
+          "min_1d_pct": -2.117647,
+          "min_3d_pct": -1.314153,
+          "min_5d_pct": -4.248863,
+          "min_min_low_5d_pct": -8.241422,
+          "n": 11,
+          "stop5_pct": 81.8182,
+          "stop_before_target_5d_pct": 81.8182,
+          "target_before_stop_5d_pct": 72.7273
+        },
+        "model": "lightgbm",
+        "prob_threshold": 0.6,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "active_runs_lt_12",
+            "kis_active_days_lt_10",
+            "sample_too_small",
+            "n_lt_45",
+            "active_days_lt_20",
+            "active_runs_lt_20"
+          ],
+          "promotable": false
+        },
+        "quality_score": 658.871761,
+        "risk_gate": {
+          "blocking_reasons": [],
+          "components": {
+            "bad_path_pct": 81.8182,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 100.0,
+            "guard_raw_ratio": 1.0,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 100.0,
+            "min_1d_pct": -2.117647,
+            "min_fold_min_low_5d_pct": -8.241422,
+            "min_fold_target_before_stop_5d_pct": 66.6667,
+            "min_min_low_5d_pct": -8.241422,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 100.0,
+            "stop5_pct": 81.8182,
+            "stop_before_target_5d_pct": 81.8182,
+            "target_before_stop_5d_pct": 72.7273
+          },
+          "pass": true
+        },
+        "selection_rule": "top1_p0.60",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_fast_20260401_20260610.json",
+        "topn": 1
+      },
+      "counts": {
+        "csv_candidates_evaluated_in_top_results": 172,
+        "kis_candidates_evaluated_in_top_results": 126,
+        "kis_production_ready_count": 0,
+        "kis_risk_gate_pass_count": 5,
+        "kis_shadow_allowed_count": 3
+      },
+      "csv_label_scope_actual_date_range": {
+        "csv_fullgrid_topn": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-03-31"
+        },
+        "csv_thresholdgrid": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-03-31"
+        }
+      },
+      "kis_feature_scope_actual_date_range": {
+        "kis_fast_smoke": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-04-02"
+        },
+        "kis_features_grid": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-04-02"
+        }
+      },
+      "reason": "no KIS candidate reached production_ready; CSV-label candidates broke the -10% low guard; KIS-feature candidates are shadow-only/risk-review or sample-limited.",
+      "recommendation": "do_not_promote_to_production"
+    },
+    "KOSPI": {
+      "best_csv_risk_adjusted_model": {
+        "auc_mean": 0.662769,
+        "brier_mean": 0.227205,
+        "feature_set": "flow_no_gate",
+        "kis_model_gate": {},
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "metrics": {
+          "active_days": 20,
+          "active_runs": 60,
+          "avg_1d_pct": 4.579689,
+          "avg_3d_pct": 20.061907,
+          "avg_5d_pct": 10.209315,
+          "avg_max_high_5d_pct": 36.39939,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 61.194,
+          "hit5_5d_pct": 65.6716,
+          "hit5_dd10_5d_pct": 62.6866,
+          "min_1d_pct": -8.23641,
+          "min_3d_pct": -19.637758,
+          "min_5d_pct": -19.69441,
+          "min_min_low_5d_pct": -23.037349,
+          "n": 67,
+          "stop5_pct": 58.209,
+          "stop_before_target_5d_pct": 58.209,
+          "target_before_stop_5d_pct": 65.6716
+        },
+        "model": "lightgbm",
+        "prob_threshold": 0.65,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "label_win_lt_65",
+            "min_mfe_5d_lt_1p5",
+            "min_5d_tail_below_12",
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "promotable": false
+        },
+        "quality_score": 841.265131,
+        "risk_gate": {
+          "blocking_reasons": [
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "components": {
+            "bad_path_pct": 62.6866,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 62.6866,
+            "guard_raw_ratio": 0.954547,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 100.0,
+            "min_1d_pct": -8.23641,
+            "min_fold_min_low_5d_pct": -23.037349,
+            "min_fold_target_before_stop_5d_pct": 0.0,
+            "min_min_low_5d_pct": -23.037349,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 65.6716,
+            "stop5_pct": 58.209,
+            "stop_before_target_5d_pct": 58.209,
+            "target_before_stop_5d_pct": 65.6716
+          },
+          "pass": false
+        },
+        "selection_rule": "top1_p0.65",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_thresholdgrid_20260101_20260610.json",
+        "topn": 1
+      },
+      "best_csv_touch_model": {
+        "auc_mean": 0.814978,
+        "brier_mean": 0.139461,
+        "feature_set": "failure_risk_augmented",
+        "kis_model_gate": {},
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "metrics": {
+          "active_days": 20,
+          "active_runs": 61,
+          "avg_1d_pct": 3.262079,
+          "avg_3d_pct": 19.754383,
+          "avg_5d_pct": 12.797801,
+          "avg_max_high_5d_pct": 36.808445,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 78.1955,
+          "hit5_5d_pct": 88.7218,
+          "hit5_dd10_5d_pct": 81.203,
+          "min_1d_pct": -6.9145,
+          "min_3d_pct": -14.117149,
+          "min_5d_pct": -23.346474,
+          "min_min_low_5d_pct": -27.855505,
+          "n": 133,
+          "stop5_pct": 53.3835,
+          "stop_before_target_5d_pct": 53.3835,
+          "target_before_stop_5d_pct": 87.218
+        },
+        "model": "lightgbm",
+        "prob_threshold": 0.7,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "min_mfe_5d_lt_1p5",
+            "min_5d_tail_below_12",
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "promotable": false
+        },
+        "quality_score": 903.337551,
+        "risk_gate": {
+          "blocking_reasons": [
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "components": {
+            "bad_path_pct": 57.1429,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 81.203,
+            "guard_raw_ratio": 0.915254,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 100.0,
+            "min_1d_pct": -6.9145,
+            "min_fold_min_low_5d_pct": -27.855505,
+            "min_fold_target_before_stop_5d_pct": 7.1429,
+            "min_min_low_5d_pct": -27.855505,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 88.7218,
+            "stop5_pct": 53.3835,
+            "stop_before_target_5d_pct": 53.3835,
+            "target_before_stop_5d_pct": 87.218
+          },
+          "pass": false
+        },
+        "selection_rule": "top2_p0.70",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_thresholdgrid_20260101_20260610.json",
+        "topn": 2
+      },
+      "best_kis_features_grid_model": {
+        "auc_mean": 0.831383,
+        "brier_mean": 0.131071,
+        "feature_set": "kis_sidecar_failure_risk_numeric",
+        "kis_model_gate": {
+          "action": "show_shadow_with_risk_review",
+          "production_blocking_reasons": [
+            "min_low_5d_lt_neg10"
+          ],
+          "production_ready": false,
+          "risk_review_reasons": [
+            "min_low_5d_lt_neg10"
+          ],
+          "risk_review_required": true,
+          "shadow_display_allowed": true,
+          "status": "shadow_risk_review"
+        },
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "metrics": {
+          "active_days": 16,
+          "active_runs": 60,
+          "avg_1d_pct": 6.514983,
+          "avg_3d_pct": 30.222428,
+          "avg_5d_pct": 23.990244,
+          "avg_max_high_5d_pct": 50.833448,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 92.0635,
+          "hit5_5d_pct": 100.0,
+          "hit5_dd10_5d_pct": 73.0159,
+          "min_1d_pct": -4.905642,
+          "min_3d_pct": -7.370754,
+          "min_5d_pct": -12.912675,
+          "min_min_low_5d_pct": -16.211437,
+          "n": 63,
+          "stop5_pct": 42.8571,
+          "stop_before_target_5d_pct": 42.8571,
+          "target_before_stop_5d_pct": 76.1905
+        },
+        "model": "lightgbm",
+        "prob_threshold": 0.5,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "min_5d_tail_below_12",
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10",
+            "min_low_5d_lt_neg10"
+          ],
+          "promotable": false
+        },
+        "quality_score": 1400.874328,
+        "risk_gate": {
+          "blocking_reasons": [
+            "min_low_5d_below_10",
+            "fold_min_low_5d_below_10"
+          ],
+          "components": {
+            "bad_path_pct": 53.9683,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 73.0159,
+            "guard_raw_ratio": 0.730159,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 100.0,
+            "min_1d_pct": -4.905642,
+            "min_fold_min_low_5d_pct": -16.211437,
+            "min_fold_target_before_stop_5d_pct": 33.3333,
+            "min_min_low_5d_pct": -16.211437,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 100.0,
+            "stop5_pct": 42.8571,
+            "stop_before_target_5d_pct": 42.8571,
+            "target_before_stop_5d_pct": 76.1905
+          },
+          "pass": false
+        },
+        "selection_rule": "top1_p0.50",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_features_grid_20260401_20260610.json",
+        "topn": 1
+      },
+      "best_kis_shadow_model_any_report": {
+        "auc_mean": 0.913044,
+        "brier_mean": 0.080355,
+        "feature_set": "kis_sidecar_failure_risk_numeric",
+        "kis_model_gate": {
+          "action": "show_shadow_only",
+          "production_blocking_reasons": [
+            "n_lt_30",
+            "active_days_lt_15",
+            "active_runs_lt_20"
+          ],
+          "production_ready": false,
+          "risk_review_reasons": [],
+          "risk_review_required": false,
+          "shadow_display_allowed": true,
+          "status": "shadow_ready"
+        },
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "metrics": {
+          "active_days": 6,
+          "active_runs": 11,
+          "avg_1d_pct": 4.016081,
+          "avg_3d_pct": 11.783405,
+          "avg_5d_pct": 16.573089,
+          "avg_max_high_5d_pct": 29.498519,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 92.3077,
+          "hit5_5d_pct": 100.0,
+          "hit5_dd10_5d_pct": 100.0,
+          "min_1d_pct": -2.277807,
+          "min_3d_pct": 1.028216,
+          "min_5d_pct": -0.296416,
+          "min_min_low_5d_pct": -5.970851,
+          "n": 13,
+          "stop5_pct": 53.8462,
+          "stop_before_target_5d_pct": 53.8462,
+          "target_before_stop_5d_pct": 69.2308
+        },
+        "model": "lightgbm",
+        "prob_threshold": 0.6,
+        "promotion_candidate": {
+          "blocking_reasons": [
+            "active_runs_lt_12",
+            "kis_active_days_lt_10",
+            "sample_too_small",
+            "n_lt_30",
+            "active_days_lt_15",
+            "active_runs_lt_20"
+          ],
+          "promotable": false
+        },
+        "quality_score": 1004.093155,
+        "risk_gate": {
+          "blocking_reasons": [],
+          "components": {
+            "bad_path_pct": 69.2308,
+            "guard_key": "hit5_dd10_5d_pct",
+            "guard_pct": 100.0,
+            "guard_raw_ratio": 1.0,
+            "max_fold_bad_path_pct": 100.0,
+            "max_fold_stop5_pct": 66.6667,
+            "min_1d_pct": -2.277807,
+            "min_fold_min_low_5d_pct": -5.970851,
+            "min_fold_target_before_stop_5d_pct": 33.3333,
+            "min_min_low_5d_pct": -5.970851,
+            "raw_key": "hit5_5d_pct",
+            "raw_pct": 100.0,
+            "stop5_pct": 53.8462,
+            "stop_before_target_5d_pct": 53.8462,
+            "target_before_stop_5d_pct": 69.2308
+          },
+          "pass": true
+        },
+        "selection_rule": "top1_p0.60",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_fast_20260401_20260610.json",
+        "topn": 1
+      },
+      "counts": {
+        "csv_candidates_evaluated_in_top_results": 172,
+        "kis_candidates_evaluated_in_top_results": 134,
+        "kis_production_ready_count": 0,
+        "kis_risk_gate_pass_count": 10,
+        "kis_shadow_allowed_count": 30
+      },
+      "csv_label_scope_actual_date_range": {
+        "csv_fullgrid_topn": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-03-31"
+        },
+        "csv_thresholdgrid": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-03-31"
+        }
+      },
+      "kis_feature_scope_actual_date_range": {
+        "kis_fast_smoke": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-04-02"
+        },
+        "kis_features_grid": {
+          "date_max": "2026-06-10",
+          "date_min": "2026-04-02"
+        }
+      },
+      "reason": "no KIS candidate reached production_ready; CSV-label candidates broke the -10% low guard; KIS-feature candidates are shadow-only/risk-review or sample-limited.",
+      "recommendation": "do_not_promote_to_production"
+    }
+  },
+  "no_dummy_data": true,
+  "requested_min_base_date": "2026-01-01",
+  "source_reports": {
+    "csv_fullgrid_topn": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_fullgrid_topn_20260101_20260610.json",
+    "csv_thresholdgrid": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_thresholdgrid_20260101_20260610.json",
+    "kis_fast_smoke": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_fast_20260401_20260610.json",
+    "kis_features_grid": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_features_grid_20260401_20260610.json"
+  },
+  "target_definition": {
+    "entry_cost_assumption": "buy at scan reference +2%",
+    "loss_guard": "5D low must stay >= -10%",
+    "win": "touch +5% within 5 trading days"
+  },
+  "version": "scan_universe_touch5_dd10_training_decision_v1"
+}
