@@ -11,6 +11,7 @@ from modules.operational_candidate_scoring import (
 
 INTERPRETATION_VERSION = "candidate_interpretation_v2"
 BUY_PREMIUM_EXECUTION_GATE_VERSION = "buy_premium_execution_gate_v1"
+STOP_FIRST_MAX_DRAWDOWN_PCT = -10.0
 
 
 def _present(value: Any) -> bool:
@@ -193,6 +194,15 @@ def _buy_premium_execution_gate(
         or (exact_max_high_5d is not None and exact_max_high_5d >= 5.0)
     )
     touch_model_found = bool(touch_observed or (touch_rate_pct is not None and touch_rate_pct >= 55.0))
+    profitable_5d_after_buy_premium = bool(exact_return_5d is not None and exact_return_5d > 0.0)
+    stop_first_drawdown_within_limit = bool(
+        exact_min_low_5d is not None and exact_min_low_5d >= STOP_FIRST_MAX_DRAWDOWN_PCT
+    )
+    bounded_stop_first_allowed = bool(
+        stop_before_target_5d is True
+        and profitable_5d_after_buy_premium
+        and stop_first_drawdown_within_limit
+    )
 
     block_reasons: List[str] = []
     scout_reasons: List[str] = []
@@ -203,17 +213,22 @@ def _buy_premium_execution_gate(
     if hit10_rate_pct is not None and hit10_rate_pct >= 20.0:
         scout_reasons.append(f"+10% 터치율도 {hit10_rate_pct:.1f}%로 관찰됩니다.")
 
-    if stop_before_target_5d is True:
-        block_reasons.append("손절이 목표보다 먼저 왔습니다.")
-    if target_before_stop_5d is False and target_hit_5d is not True and exact_available:
+    if stop_before_target_5d is True and not bounded_stop_first_allowed:
+        if exact_min_low_5d is None or exact_return_5d is None:
+            block_reasons.append("손절 선행 허용 여부를 판단할 5D 수익/최대하락 라벨이 부족합니다.")
+        elif exact_min_low_5d < STOP_FIRST_MAX_DRAWDOWN_PCT:
+            block_reasons.append("손절 선행 허용 범위(-10%)를 넘었습니다.")
+        elif exact_return_5d <= 0.0:
+            block_reasons.append("손절 선행 후 +2% 매수 기준 5D 수익이 플러스가 아닙니다.")
+    if target_before_stop_5d is False and target_hit_5d is not True and exact_available and not bounded_stop_first_allowed:
         block_reasons.append("목표가가 손절보다 먼저 온 근거가 없습니다.")
-    if stop_hit_5d is True and target_before_stop_5d is not True:
+    if stop_hit_5d is True and target_before_stop_5d is not True and not bounded_stop_first_allowed:
         block_reasons.append("5D 안에 손절 터치가 먼저 확인됩니다.")
     if exact_return_5d is not None and exact_return_5d < 0.0:
         block_reasons.append(f"+{buy_premium_pct or DEFAULT_BUY_PREMIUM_PCT:.1f}% 매수 기준 5D 종가수익률이 음수입니다.")
-    if exact_min_low_5d is not None and exact_min_low_5d <= -5.0 and target_before_stop_5d is not True:
-        block_reasons.append("5D 경로의 최대하락폭이 손절권입니다.")
-    if stop_first_risk_pct is not None and stop_first_risk_pct >= 30.0:
+    if exact_min_low_5d is not None and exact_min_low_5d < STOP_FIRST_MAX_DRAWDOWN_PCT and target_before_stop_5d is not True:
+        block_reasons.append("5D 경로의 최대하락폭이 -10%보다 깊습니다.")
+    if stop_first_risk_pct is not None and stop_first_risk_pct >= 30.0 and not bounded_stop_first_allowed:
         block_reasons.append(f"검증 stop-first 위험이 {stop_first_risk_pct:.1f}%로 높습니다.")
     if stop5_pct is not None and stop5_pct >= 35.0:
         block_reasons.append(f"검증 5D 손절 터치율이 {stop5_pct:.1f}%로 높습니다.")
@@ -229,7 +244,7 @@ def _buy_premium_execution_gate(
     if non_chart_avg is not None and non_chart_avg < 35.0:
         block_reasons.append("차트 외 근거 점수가 낮습니다.")
 
-    has_path_success = target_before_stop_5d is True or (
+    has_path_success = target_before_stop_5d is True or bounded_stop_first_allowed or (
         not exact_available
         and touch_rate_pct is not None
         and touch_rate_pct >= 70.0
@@ -268,6 +283,10 @@ def _buy_premium_execution_gate(
         "buy_ready_blocked": not buy_ready,
         "touch_model_found": touch_model_found,
         "touch_scout_candidate": touch_scout,
+        "bounded_stop_first_allowed": bounded_stop_first_allowed,
+        "profitable_5d_after_buy_premium": profitable_5d_after_buy_premium,
+        "stop_first_drawdown_within_limit": stop_first_drawdown_within_limit,
+        "stop_first_max_drawdown_pct": STOP_FIRST_MAX_DRAWDOWN_PCT,
         "exact_labels_available": exact_available,
         "validation_metrics_available": validation_metrics_available,
         "target_hit_5d": target_hit_5d,
@@ -291,8 +310,8 @@ def _buy_premium_execution_gate(
         "block_reasons": block_reasons[:8],
         "why_not_buy_ready": why_not_buy_ready[:8],
         "semantics": (
-            "터치 스카우트는 상승 포착용이고, 실매수 후보는 +2% 진입가 기준 목표가가 손절보다 먼저 오며 "
-            "종가/경로 리스크가 통과한 경우만 의미합니다."
+            "터치 스카우트는 상승 포착용입니다. 실매수 후보는 +2% 진입가 기준 목표 선행이거나, "
+            "손절 선행이 있더라도 5D 최대하락이 -10% 안쪽이고 5D 수익이 플러스인 경우만 의미합니다."
         ),
     }
 
