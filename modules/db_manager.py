@@ -2,7 +2,7 @@ import os
 import json
 import re
 from pathlib import Path
-from supabase import create_client, Client
+from supabase import create_client, Client, ClientOptions
 from dotenv import load_dotenv
 import pandas as pd
 from datetime import datetime, timedelta, timezone
@@ -156,7 +156,14 @@ class DBManager:
         
         if self.url and self.key:
             try:
-                self.client = create_client(self.url, self.key)
+                timeout = os.getenv("SUPABASE_POSTGREST_TIMEOUT")
+                options = None
+                if timeout:
+                    try:
+                        options = ClientOptions(postgrest_client_timeout=float(timeout))
+                    except Exception:
+                        options = None
+                self.client = create_client(self.url, self.key, options=options)
                 print("✅ Connected to Supabase")
             except Exception as e:
                 print(f"❌ Supabase Connection Failed: {e}")

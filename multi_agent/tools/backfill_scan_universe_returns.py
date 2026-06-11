@@ -9,6 +9,7 @@ truth.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import os
@@ -26,9 +27,9 @@ if str(PROJECT_ROOT) not in sys.path:
 from modules.operational_candidate_scoring import DEFAULT_BUY_PREMIUM_PCT
 
 TARGET_TABLE = "scan_universe_snapshots"
-BACKFILL_VERSION = "scan_universe_forward_returns_v2"
-PATH_LABEL_VERSION = "scan_universe_daily_path_target_stop_v1"
-BUY_PREMIUM_PATH_LABEL_VERSION = "scan_universe_plus2pct_entry_path_target_stop_v1"
+BACKFILL_VERSION = "scan_universe_forward_returns_touch5_dd10_v3"
+PATH_LABEL_VERSION = "scan_universe_daily_path_target5_stop10_v2"
+BUY_PREMIUM_PATH_LABEL_VERSION = "scan_universe_plus2pct_entry_target5_stop10_v2"
 FEATURE_QUALITY_VERSION = "scan_universe_feature_quality_v4"
 DEFAULT_OUT = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "scan_universe_return_backfill.json"
 DEFAULT_ARTIFACT_DIR = PROJECT_ROOT / "runtime_state" / "artifacts"
@@ -158,7 +159,18 @@ FEATURE_KEYS = (
     "primary_theme",
 )
 MIN_RETRY_PAGE_SIZE = 25
-MIN_WRITE_BATCH_SIZE = 25
+MIN_WRITE_BATCH_SIZE = 10
+
+
+def _dedupe_columns(columns: Iterable[str]) -> List[str]:
+    seen = set()
+    ordered: List[str] = []
+    for column in columns:
+        if column in seen:
+            continue
+        seen.add(column)
+        ordered.append(column)
+    return ordered
 
 
 def _load_local_env() -> None:
@@ -301,6 +313,7 @@ class PriceHistoryProvider:
         self.cache: Dict[tuple[str, str, str], List[Dict[str, Any]]] = {}
         self.fetch_counts: Counter[str] = Counter()
         self.fetch_failures: Counter[str] = Counter()
+        self.fetch_failure_examples: Dict[str, str] = {}
         self.kis_client = None
         self.normalize_kis_daily_bars = None
         if self.provider in {"kis", "kis_first", "auto"}:
@@ -310,8 +323,9 @@ class PriceHistoryProvider:
 
                 self.kis_client = KISOpenAPIClient(timeout=int(max(1, self.fetch_timeout or 8)))
                 self.normalize_kis_daily_bars = normalize_kis_daily_bars
-            except Exception:
+            except Exception as exc:
                 self.fetch_failures["kis_unavailable"] += 1
+                self.fetch_failure_examples.setdefault("kis_unavailable", f"{type(exc).__name__}: {exc}")
         try:
             import FinanceDataReader as fdr  # type: ignore
         except Exception:
@@ -366,8 +380,9 @@ class PriceHistoryProvider:
         except _FetchTimeout:
             self.fetch_failures["kis_timeout"] += 1
             return []
-        except Exception:
+        except Exception as exc:
             self.fetch_failures["kis_exception"] += 1
+            self.fetch_failure_examples.setdefault("kis_exception", f"{type(exc).__name__}: {exc}")
             return []
         if frame is None or frame.empty:
             self.fetch_failures["kis_empty"] += 1
@@ -447,12 +462,17 @@ def _history_frame_to_bars(hist: Any) -> List[Dict[str, Any]]:
 def _row_needs_backfill(row: Dict[str, Any], *, overwrite: bool) -> bool:
     if overwrite:
         return True
-    if str(row.get("normalized_feature_version") or "") != FEATURE_QUALITY_VERSION:
+    if str(row.get("backfill_version") or "") != BACKFILL_VERSION:
         return True
-    if str(row.get("buy_premium_path_label_version") or "") != BUY_PREMIUM_PATH_LABEL_VERSION:
+    if "normalized_feature_version" in row and str(row.get("normalized_feature_version") or "") != FEATURE_QUALITY_VERSION:
+        return True
+    if (
+        "buy_premium_path_label_version" in row
+        and str(row.get("buy_premium_path_label_version") or "") != BUY_PREMIUM_PATH_LABEL_VERSION
+    ):
         return True
     return any(
-        row.get(col) is None
+        col in row and row.get(col) is None
         for col in RETURN_COLUMNS
         + BUY_PREMIUM_RETURN_COLUMNS
         + PATH_LABEL_COLUMNS
@@ -714,6 +734,9 @@ def fetch_snapshot_rows(
     max_base_date: str = "",
     limit: int = 0,
     client_filter: bool = False,
+    progress_every: int = 25,
+    server_stale_only: bool = False,
+    client_stale_only: bool = False,
 ) -> List[Dict[str, Any]]:
     _load_local_env()
     from modules.db_manager import DBManager
@@ -721,40 +744,33 @@ def fetch_snapshot_rows(
     db = DBManager()
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable.")
-    cols = ",".join(
-        [
-            "id",
-            "snapshot_key",
-            "run_id",
-            "ticker",
-            "market",
-            "scan_mode",
-            "row_role",
-            "base_trade_date",
-            "scanned_at",
-            "entry_reference_price",
-            "alpha_score",
-            "tech_score",
-            "ml_prob",
-            "prob_clean",
-            "whale_score",
-            "decision_score",
-            "day_return_pct",
-            "volume_ratio",
-            "turnover",
-            "foreigner_1d",
-            "institution_1d",
-            "retail_1d",
-            "foreigner_3d",
-            "institution_3d",
-            "retail_3d",
-            "foreigner_10d",
-            "institution_10d",
-            "retail_10d",
-            "primary_theme",
+    identity_columns = (
+        "id",
+        "snapshot_key",
+        "run_id",
+        "ticker",
+        "market",
+        "scan_mode",
+        "row_role",
+        "base_trade_date",
+        "scanned_at",
+        "entry_reference_price",
+        "backfill_version",
+    )
+    stale_recompute_columns = _dedupe_columns(
+        (
+            *identity_columns,
             "outcome_available",
             "outcome_source",
-            "backfill_version",
+            *FEATURE_KEYS,
+        )
+    )
+    full_columns = _dedupe_columns(
+        (
+            *identity_columns,
+            *FEATURE_KEYS,
+            "outcome_available",
+            "outcome_source",
             "operational_buy_premium_pct",
             "buy_premium_entry_price",
             "buy_premium_label_target_pct",
@@ -767,11 +783,15 @@ def fetch_snapshot_rows(
             *PATH_LABEL_COLUMNS,
             *BUY_PREMIUM_PATH_LABEL_COLUMNS,
             *FEATURE_QUALITY_COLUMNS,
-        ]
+        )
     )
+    use_thin_columns = bool(server_stale_only or client_stale_only)
+    cols = ",".join(stale_recompute_columns if use_thin_columns else full_columns)
     rows: List[Dict[str, Any]] = []
     last_id = max(0, int(min_id or 0) - 1)
     safe_page_size = max(1, int(page_size))
+    page_count = 0
+    scanned_rows = 0
     while True:
         take = safe_page_size
         query = db.client.table(TARGET_TABLE).select(cols).order("id").gt("id", last_id).limit(take)
@@ -787,11 +807,19 @@ def fetch_snapshot_rows(
             query = query.gte("base_trade_date", min_base_date)
         if not client_filter and max_base_date:
             query = query.lte("base_trade_date", max_base_date)
+        if server_stale_only:
+            query = query.or_(f"backfill_version.is.null,backfill_version.neq.{BACKFILL_VERSION}")
         try:
             batch = query.execute().data or []
         except Exception as exc:
-            message = str(exc)
-            if safe_page_size > MIN_RETRY_PAGE_SIZE and ("statement timeout" in message or "57014" in message):
+            message = f"{type(exc).__name__}: {exc}"
+            lower_message = message.lower()
+            retryable_timeout = (
+                "timeout" in lower_message
+                or "timed out" in lower_message
+                or "57014" in message
+            )
+            if safe_page_size > MIN_RETRY_PAGE_SIZE and retryable_timeout:
                 next_page_size = max(MIN_RETRY_PAGE_SIZE, safe_page_size // 2)
                 print(
                     f"[WARN] Supabase fetch timed out at page_size={safe_page_size}; retrying with page_size={next_page_size}",
@@ -817,16 +845,61 @@ def fetch_snapshot_rows(
                     continue
                 if max_base_date and row_base > max_base_date:
                     continue
+                if client_stale_only and not _row_needs_backfill(row, overwrite=False):
+                    continue
                 eligible_batch.append(row)
+        elif client_stale_only:
+            eligible_batch = [row for row in eligible_batch if _row_needs_backfill(row, overwrite=False)]
         rows.extend(eligible_batch)
-        if limit and len(rows) >= int(limit):
-            return rows[: int(limit)]
+        page_count += 1
+        scanned_rows += len(batch)
         if batch:
             last_id = max(int(row.get("id") or last_id) for row in batch)
+        if progress_every and page_count % max(1, int(progress_every)) == 0:
+            print(
+                f"[INFO] fetched pages={page_count}, scanned_rows={scanned_rows}, "
+                f"eligible_rows={len(rows)}, last_id={last_id}",
+                flush=True,
+            )
+        if limit and len(rows) >= int(limit):
+            return rows[: int(limit)]
         if len(batch) < take:
             break
         if max_id and last_id >= int(max_id):
             break
+    return rows
+
+
+def fetch_snapshot_rows_from_csv(
+    path: Path,
+    *,
+    market: str,
+    scan_mode: str,
+    base_date: str = "",
+    min_base_date: str = "",
+    max_base_date: str = "",
+    limit: int = 0,
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            row_market = str(row.get("market") or "")
+            row_scan_mode = str(row.get("scan_mode") or "")
+            row_base = _date_text(row.get("base_trade_date") or row.get("scanned_at")) or ""
+            if market != "ALL" and row_market != market:
+                continue
+            if scan_mode != "ALL" and row_scan_mode != scan_mode:
+                continue
+            if base_date and row_base != base_date:
+                continue
+            if min_base_date and row_base < min_base_date:
+                continue
+            if max_base_date and row_base > max_base_date:
+                continue
+            rows.append(dict(row))
+            if limit and len(rows) >= int(limit):
+                break
     return rows
 
 
@@ -888,9 +961,6 @@ def build_updates(
             if not payload:
                 no_payload += 1
                 continue
-            for key in WRITE_COLUMNS:
-                if key not in payload and key in row:
-                    payload[key] = row.get(key)
             payload["id"] = row.get("id")
             payload["snapshot_key"] = row.get("snapshot_key")
             payload["run_id"] = row.get("run_id")
@@ -913,6 +983,7 @@ def build_updates(
         "repaired_base_date_candidates": repaired_base_date_candidates,
         "price_fetch_counts": dict(provider.fetch_counts),
         "price_fetch_failures": dict(provider.fetch_failures),
+        "price_fetch_failure_examples": dict(provider.fetch_failure_examples),
     }
 
 
@@ -922,8 +993,14 @@ def write_updates(
     batch_size: int,
     write_method: str = "upsert",
     write_scope: str = "full",
+    write_start_offset: int = 0,
+    conflict_key: str = "id",
 ) -> int:
     if not updates:
+        return 0
+    start_offset = max(0, int(write_start_offset or 0))
+    target_updates = updates[start_offset:]
+    if not target_updates:
         return 0
     _load_local_env()
     from modules.db_manager import DBManager
@@ -936,16 +1013,23 @@ def write_updates(
     writable = set(selected_write_columns)
     written = 0
     method = str(write_method or "upsert").lower()
+    conflict_key = str(conflict_key or "id").strip()
+    if conflict_key not in {"id", "snapshot_key"}:
+        raise ValueError(f"unsupported conflict_key={conflict_key}")
     if method == "upsert":
-        identity_keys = ("id", "snapshot_key", "run_id", "ticker", "row_role")
+        identity_keys = (
+            ("id", "snapshot_key", "run_id", "ticker", "row_role")
+            if conflict_key == "id"
+            else ("snapshot_key", "run_id", "ticker", "row_role")
+        )
         payload_keys = (*identity_keys, *selected_write_columns)
         start = 0
         adaptive_batch_size = max(1, int(batch_size))
-        while start < len(updates):
-            batch = updates[start : start + adaptive_batch_size]
+        while start < len(target_updates):
+            batch = target_updates[start : start + adaptive_batch_size]
             normalized = []
             for item in batch:
-                if item.get("id") is None:
+                if item.get(conflict_key) in (None, ""):
                     continue
                 normalized_item = {key: item.get(key) for key in payload_keys}
                 if scope != "buy-premium":
@@ -961,14 +1045,18 @@ def write_updates(
             last_exc = None
             for attempt in range(1, 4):
                 try:
-                    db.client.table(TARGET_TABLE).upsert(normalized, on_conflict="id").execute()
+                    db.client.table(TARGET_TABLE).upsert(normalized, on_conflict=conflict_key).execute()
                     last_exc = None
                     break
                 except Exception as exc:
-                    message = str(exc)
-                    if adaptive_batch_size > MIN_WRITE_BATCH_SIZE and (
-                        "statement timeout" in message or "57014" in message
-                    ):
+                    message = f"{type(exc).__name__}: {exc}"
+                    lower_message = message.lower()
+                    retryable_timeout = (
+                        "timeout" in lower_message
+                        or "timed out" in lower_message
+                        or "57014" in message
+                    )
+                    if adaptive_batch_size > MIN_WRITE_BATCH_SIZE and retryable_timeout:
                         next_batch_size = max(MIN_WRITE_BATCH_SIZE, adaptive_batch_size // 2)
                         print(
                             f"[WARN] Supabase upsert timed out at batch_size={adaptive_batch_size}; "
@@ -995,19 +1083,19 @@ def write_updates(
             if last_exc is None and len(batch) == adaptive_batch_size:
                 written += len(normalized)
                 start += adaptive_batch_size
-                print(f"[INFO] upserted learning labels {written}/{len(updates)}", flush=True)
+                print(f"[INFO] upserted learning labels {start_offset + written}/{len(updates)}", flush=True)
                 continue
             if last_exc is None and len(batch) < adaptive_batch_size:
                 written += len(normalized)
                 start += len(batch)
-                print(f"[INFO] upserted learning labels {written}/{len(updates)}", flush=True)
+                print(f"[INFO] upserted learning labels {start_offset + written}/{len(updates)}", flush=True)
                 continue
             written += len(normalized)
             start += len(batch)
-            print(f"[INFO] upserted learning labels {written}/{len(updates)}", flush=True)
+            print(f"[INFO] upserted learning labels {start_offset + written}/{len(updates)}", flush=True)
         return written
 
-    for item in updates:
+    for item in target_updates:
         row_id = item.get("id")
         if row_id is None:
             continue
@@ -1016,9 +1104,29 @@ def write_updates(
             continue
         db.client.table(TARGET_TABLE).update(payload).eq("id", row_id).execute()
         written += 1
-        if written % max(1, int(batch_size)) == 0 or written == len(updates):
-            print(f"[INFO] updated returns {written}/{len(updates)}", flush=True)
+        if written % max(1, int(batch_size)) == 0 or written == len(target_updates):
+            print(f"[INFO] updated returns {start_offset + written}/{len(updates)}", flush=True)
     return written
+
+
+def write_updates_jsonl(path: Path, updates: Sequence[Dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for update in updates:
+            handle.write(json.dumps(update, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def read_updates_jsonl(path: Path) -> List[Dict[str, Any]]:
+    updates: List[Dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            text = line.strip()
+            if not text:
+                continue
+            loaded = json.loads(text)
+            if isinstance(loaded, dict):
+                updates.append(loaded)
+    return updates
 
 
 def _write_report(path: Path, report: Dict[str, Any]) -> None:
@@ -1029,12 +1137,17 @@ def _write_report(path: Path, report: Dict[str, Any]) -> None:
         "",
         f"- generated_at: `{report.get('generated_at')}`",
         f"- source_rows: `{report.get('source_rows')}`",
+        f"- input_csv: `{report.get('input_csv')}`",
         f"- candidate_rows: `{report.get('candidate_rows')}`",
         f"- ticker_count: `{report.get('ticker_count')}`",
         f"- updates_built: `{report.get('updates_built')}`",
         f"- rows_written: `{report.get('rows_written')}`",
+        f"- updates_output_jsonl: `{report.get('updates_output_jsonl')}`",
+        f"- updates_input_jsonl: `{report.get('updates_input_jsonl')}`",
         f"- dry_run: `{report.get('dry_run')}`",
         f"- overwrite: `{report.get('overwrite')}`",
+        f"- write_conflict_key: `{report.get('write_conflict_key')}`",
+        f"- write_start_offset: `{report.get('write_start_offset')}`",
         f"- no_history_rows: `{report.get('no_history_rows')}`",
         f"- no_payload_rows: `{report.get('no_payload_rows')}`",
         f"- repaired_base_date_candidates: `{report.get('repaired_base_date_candidates')}`",
@@ -1045,6 +1158,7 @@ def _write_report(path: Path, report: Dict[str, Any]) -> None:
         f"- updates_by_role: `{report.get('updates_by_role')}`",
         f"- price_fetch_counts: `{report.get('price_fetch_counts')}`",
         f"- price_fetch_failures: `{report.get('price_fetch_failures')}`",
+        f"- price_fetch_failure_examples: `{report.get('price_fetch_failure_examples')}`",
     ]
     path.with_suffix(".md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -1054,23 +1168,48 @@ def main() -> int:
     parser.add_argument("--market", choices=["ALL", "KOSPI", "KOSDAQ"], default="ALL")
     parser.add_argument("--scan-mode", choices=["ALL", "SWING", "INTRADAY"], default="ALL")
     parser.add_argument("--provider", choices=["kis", "kis_first", "fdr", "yfinance", "auto"], default="fdr")
+    parser.add_argument(
+        "--input-csv",
+        default="",
+        help="Use a local scan_universe_snapshots CSV as source rows instead of reading Supabase.",
+    )
     parser.add_argument("--page-size", type=int, default=1000)
     parser.add_argument("--batch-size", type=int, default=500)
+    parser.add_argument(
+        "--write-start-offset",
+        type=int,
+        default=0,
+        help="Skip this many computed updates before writing. Useful for resuming interrupted idempotent writes.",
+    )
     parser.add_argument("--write-method", choices=["upsert", "update"], default="upsert")
     parser.add_argument("--write-scope", choices=["full", "buy-premium"], default="full")
+    parser.add_argument("--write-conflict-key", choices=["id", "snapshot_key"], default="id")
     parser.add_argument("--limit", type=int, default=0, help="Maximum source rows to process after filters; 0 means all.")
     parser.add_argument(
         "--client-filter",
         action="store_true",
         help="Read by indexed id pages and apply market/date filters client-side to avoid filtered-query timeouts.",
     )
+    parser.add_argument(
+        "--server-stale-only",
+        action="store_true",
+        help="Server-filter rows whose backfill_version is missing or differs from the current tool version.",
+    )
+    parser.add_argument(
+        "--client-stale-only",
+        action="store_true",
+        help="Read thin rows and filter stale backfill_version locally. Safer when Supabase OR filters are slow.",
+    )
     parser.add_argument("--min-id", type=int, default=0, help="Inclusive lower id bound for chunked Supabase reads.")
     parser.add_argument("--max-id", type=int, default=0, help="Inclusive upper id bound for chunked Supabase reads.")
+    parser.add_argument("--fetch-progress-every", type=int, default=25)
     parser.add_argument("--base-date", default="", help="Exact base_trade_date filter, YYYY-MM-DD.")
     parser.add_argument("--min-base-date", default="", help="Inclusive base_trade_date lower bound, YYYY-MM-DD.")
     parser.add_argument("--max-base-date", default="", help="Inclusive base_trade_date upper bound, YYYY-MM-DD.")
     parser.add_argument("--sleep", type=float, default=0.0)
     parser.add_argument("--fetch-timeout", type=float, default=12.0)
+    parser.add_argument("--supabase-timeout", type=float, default=20.0)
+    parser.add_argument("--live", action="store_true", help="Set KIS_ENABLE_LIVE_CALLS=1 for this run.")
     parser.add_argument("--target-pct", type=float, default=5.0)
     parser.add_argument("--stop-pct", type=float, default=5.0)
     parser.add_argument("--max-tickers", type=int, default=0)
@@ -1078,36 +1217,79 @@ def main() -> int:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--output", default=str(DEFAULT_OUT))
     parser.add_argument("--artifact-dir", default=str(DEFAULT_ARTIFACT_DIR))
+    parser.add_argument("--updates-output-jsonl", default="", help="Write all computed update payloads to JSONL.")
+    parser.add_argument("--updates-input-jsonl", default="", help="Skip source/KIS fetch and write previously computed updates JSONL.")
     args = parser.parse_args()
+    _load_local_env()
+    os.environ["SUPABASE_POSTGREST_TIMEOUT"] = str(max(1.0, float(args.supabase_timeout or 20.0)))
+    if args.live:
+        os.environ["KIS_ENABLE_LIVE_CALLS"] = "1"
 
-    rows = fetch_snapshot_rows(
-        market=args.market,
-        scan_mode=args.scan_mode,
-        page_size=max(1, int(args.page_size)),
-        min_id=int(args.min_id or 0),
-        max_id=int(args.max_id or 0),
-        base_date=_date_text(args.base_date) or "",
-        min_base_date=_date_text(args.min_base_date) or "",
-        max_base_date=_date_text(args.max_base_date) or "",
-        limit=int(args.limit or 0),
-        client_filter=bool(args.client_filter),
-    )
+    input_csv = Path(args.input_csv).expanduser() if args.input_csv else None
+    updates_input_jsonl = Path(args.updates_input_jsonl).expanduser() if args.updates_input_jsonl else None
     run_date_index = _load_run_date_index(Path(args.artifact_dir))
-    provider = PriceHistoryProvider(
-        provider=args.provider,
-        sleep_sec=float(args.sleep or 0.0),
-        fetch_timeout=float(args.fetch_timeout or 0.0),
-    )
-    result = build_updates(
-        rows,
-        provider=provider,
-        overwrite=bool(args.overwrite),
-        max_tickers=int(args.max_tickers or 0),
-        run_date_index=run_date_index,
-        target_pct=float(args.target_pct or 5.0),
-        stop_pct=float(args.stop_pct or 5.0),
-    )
-    updates = result.pop("updates")
+    if updates_input_jsonl:
+        rows: List[Dict[str, Any]] = []
+        updates = read_updates_jsonl(updates_input_jsonl)
+        if args.limit and len(updates) > int(args.limit):
+            updates = updates[: int(args.limit)]
+        result = {
+            "ticker_count": 0,
+            "candidate_rows": len(updates),
+            "no_history_rows": 0,
+            "no_payload_rows": 0,
+            "updates_by_market": {},
+            "updates_by_role": {},
+            "repaired_base_date_candidates": 0,
+            "price_fetch_counts": {},
+            "price_fetch_failures": {},
+            "price_fetch_failure_examples": {},
+        }
+    else:
+        if input_csv:
+            rows = fetch_snapshot_rows_from_csv(
+                input_csv,
+                market=args.market,
+                scan_mode=args.scan_mode,
+                base_date=_date_text(args.base_date) or "",
+                min_base_date=_date_text(args.min_base_date) or "",
+                max_base_date=_date_text(args.max_base_date) or "",
+                limit=int(args.limit or 0),
+            )
+        else:
+            rows = fetch_snapshot_rows(
+                market=args.market,
+                scan_mode=args.scan_mode,
+                page_size=max(1, int(args.page_size)),
+                min_id=int(args.min_id or 0),
+                max_id=int(args.max_id or 0),
+                base_date=_date_text(args.base_date) or "",
+                min_base_date=_date_text(args.min_base_date) or "",
+                max_base_date=_date_text(args.max_base_date) or "",
+                limit=int(args.limit or 0),
+                client_filter=bool(args.client_filter),
+                progress_every=int(args.fetch_progress_every or 0),
+                server_stale_only=bool(args.server_stale_only),
+                client_stale_only=bool(args.client_stale_only),
+            )
+        provider = PriceHistoryProvider(
+            provider=args.provider,
+            sleep_sec=float(args.sleep or 0.0),
+            fetch_timeout=float(args.fetch_timeout or 0.0),
+        )
+        result = build_updates(
+            rows,
+            provider=provider,
+            overwrite=bool(args.overwrite),
+            max_tickers=int(args.max_tickers or 0),
+            run_date_index=run_date_index,
+            target_pct=float(args.target_pct or 5.0),
+            stop_pct=float(args.stop_pct or 5.0),
+        )
+        updates = result.pop("updates")
+    updates_output_jsonl = Path(args.updates_output_jsonl).expanduser() if args.updates_output_jsonl else None
+    if updates_output_jsonl:
+        write_updates_jsonl(updates_output_jsonl, updates)
     rows_written = (
         0
         if args.dry_run
@@ -1116,6 +1298,8 @@ def main() -> int:
             batch_size=max(1, int(args.batch_size)),
             write_method=args.write_method,
             write_scope=args.write_scope,
+            write_start_offset=int(args.write_start_offset or 0),
+            conflict_key=args.write_conflict_key,
         )
     )
     report = {
@@ -1124,6 +1308,9 @@ def main() -> int:
         "source_rows": len(rows),
         "updates_built": len(updates),
         "rows_written": rows_written,
+        "input_csv": str(input_csv or ""),
+        "updates_input_jsonl": str(updates_input_jsonl or ""),
+        "updates_output_jsonl": str(updates_output_jsonl or ""),
         "dry_run": bool(args.dry_run),
         "overwrite": bool(args.overwrite),
         "market": args.market,
@@ -1135,11 +1322,16 @@ def main() -> int:
         "min_base_date": _date_text(args.min_base_date) or "",
         "max_base_date": _date_text(args.max_base_date) or "",
         "client_filter": bool(args.client_filter),
+        "server_stale_only": bool(args.server_stale_only),
+        "client_stale_only": bool(args.client_stale_only),
         "target_pct": float(args.target_pct or 5.0),
         "stop_pct": abs(float(args.stop_pct or 5.0)),
         "run_date_index_size": len(run_date_index),
         "write_method": args.write_method,
         "write_scope": args.write_scope,
+        "write_conflict_key": args.write_conflict_key,
+        "write_start_offset": int(args.write_start_offset or 0),
+        "supabase_timeout": float(args.supabase_timeout or 20.0),
         **result,
         "sample_updates": updates[:10],
     }

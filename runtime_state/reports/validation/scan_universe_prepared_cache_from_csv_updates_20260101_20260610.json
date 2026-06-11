@@ -1,0 +1,165 @@
+{
+  "cache": {
+    "enabled": true,
+    "meta_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_cache_20260101_20260610.pkl.meta.json",
+    "mode": "write",
+    "path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_cache_20260101_20260610.pkl",
+    "prepared_rows": 163530,
+    "raw_rows": 166318
+  },
+  "fetch_filters": {
+    "base_date": "",
+    "client_filter": false,
+    "limit": 0,
+    "market": "ALL",
+    "max_base_date": "2026-06-10",
+    "max_fetch_chunks": 0,
+    "max_id": 0,
+    "min_base_date": "2026-01-01",
+    "min_id": 0,
+    "page_size": 500,
+    "scan_mode": "SWING"
+  },
+  "filtered_rows": 166318,
+  "generated_at": "2026-06-11T15:14:35.235323+00:00",
+  "input_csv": "runtime_state/reports/archive/scan_universe_snapshots_kr_20260101_20260611.csv",
+  "label_coverage": {
+    "buy_premium_target_before_stop_5d_present": 131751,
+    "by_market": {
+      "KOSDAQ": {
+        "buy_premium_target_before_stop_5d_present": 67639,
+        "max_high_return_1d_pct_present": 86940,
+        "max_high_return_3d_pct_present": 72859,
+        "max_high_return_5d_pct_present": 67639,
+        "return_1d_pct_present": 86940,
+        "return_3d_pct_present": 72859,
+        "return_5d_pct_present": 67639,
+        "rows": 86947,
+        "target_before_stop_5d_present": 67639
+      },
+      "KOSPI": {
+        "buy_premium_target_before_stop_5d_present": 64112,
+        "max_high_return_1d_pct_present": 76577,
+        "max_high_return_3d_pct_present": 69318,
+        "max_high_return_5d_pct_present": 64112,
+        "return_1d_pct_present": 76577,
+        "return_3d_pct_present": 69318,
+        "return_5d_pct_present": 64112,
+        "rows": 76583,
+        "target_before_stop_5d_present": 64112
+      }
+    },
+    "max_high_return_1d_pct_present": 163517,
+    "max_high_return_3d_pct_present": 142177,
+    "max_high_return_5d_pct_present": 131751,
+    "return_1d_pct_present": 163517,
+    "return_3d_pct_present": 142177,
+    "return_5d_pct_present": 131751,
+    "rows": 163530,
+    "target_before_stop_5d_present": 131751
+  },
+  "merged_rows": 166318,
+  "prepared_rows": 163530,
+  "return_sanity": {
+    "bounds": {
+      "buy_premium_max_high_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_max_high_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_max_high_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "buy_premium_min_low_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_min_low_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_min_low_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "buy_premium_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "max_high_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "max_high_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "max_high_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "min_low_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "min_low_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "min_low_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "return_5d_pct": [
+        -90.0,
+        300.0
+      ]
+    },
+    "column_violations": {
+      "buy_premium_max_high_return_1d_pct": 2673,
+      "buy_premium_max_high_return_3d_pct": 1838,
+      "buy_premium_max_high_return_5d_pct": 1664,
+      "buy_premium_min_low_return_1d_pct": 2508,
+      "buy_premium_min_low_return_3d_pct": 1817,
+      "buy_premium_min_low_return_5d_pct": 1067,
+      "buy_premium_return_1d_pct": 2532,
+      "buy_premium_return_3d_pct": 1814,
+      "buy_premium_return_5d_pct": 1245,
+      "max_high_return_1d_pct": 2724,
+      "max_high_return_3d_pct": 1849,
+      "max_high_return_5d_pct": 1678,
+      "min_low_return_1d_pct": 2500,
+      "min_low_return_3d_pct": 1824,
+      "min_low_return_5d_pct": 1139,
+      "return_1d_pct": 2554,
+      "return_3d_pct": 1816,
+      "return_5d_pct": 1314
+    },
+    "mode": "kr_price_limit",
+    "remaining_rows": 163530,
+    "removed_rows": 2788
+  },
+  "source_rows": 171808,
+  "updates_jsonl": "runtime_state/reports/validation/scan_universe_return_backfill_20260101_20260610_touch5_dd10_updates.jsonl",
+  "updates_rows": 166314
+}

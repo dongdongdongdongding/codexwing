@@ -59,6 +59,7 @@ runtime_state/reports/kis_ticker_valuechain/
 runtime_state/reports/trading/signal_section_performance_daily.*
 runtime_state/reports/validation/*.json
 runtime_state/reports/validation/*.md
+runtime_state/reports/validation/*.jsonl
 !runtime_state/reports/validation/supabase_scan_data_quality.json
 !runtime_state/reports/validation/supabase_scan_data_quality.md
 runtime_state/reports/experimental/*.jsonl

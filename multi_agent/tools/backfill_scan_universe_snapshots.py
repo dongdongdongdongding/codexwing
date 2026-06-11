@@ -14,6 +14,7 @@ import json
 import math
 import os
 import sys
+import time
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -731,9 +732,18 @@ def _markdown_report(report: Dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def upsert_supabase(rows: List[Dict[str, Any]], *, batch_size: int) -> int:
+def upsert_supabase(
+    rows: List[Dict[str, Any]],
+    *,
+    batch_size: int,
+    start_offset: int = 0,
+    skip_existing: bool = False,
+) -> Tuple[int, int]:
     if not rows:
-        return 0
+        return 0, 0
+    write_rows = rows[max(0, int(start_offset or 0)):]
+    if not write_rows:
+        return 0, 0
     _load_local_env()
     from modules.db_manager import DBManager
 
@@ -741,10 +751,55 @@ def upsert_supabase(rows: List[Dict[str, Any]], *, batch_size: int) -> int:
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable.")
 
+    def _upsert_batch(batch: List[Dict[str, Any]]) -> None:
+        if hasattr(db, "_upsert_with_schema_drift_retry"):
+            db._upsert_with_schema_drift_retry(TARGET_TABLE, batch, on_conflict="snapshot_key")
+        else:
+            db.client.table(TARGET_TABLE).upsert(batch, on_conflict="snapshot_key").execute()
+
+    def _existing_snapshot_keys(keys: List[str]) -> set[str]:
+        if not keys:
+            return set()
+        try:
+            result = db.client.table(TARGET_TABLE).select("snapshot_key").in_("snapshot_key", keys).execute()
+        except Exception as exc:
+            print(f"[WARN] existing-key lookup failed; falling back to upsert: {exc}", flush=True)
+            return set()
+        data = getattr(result, "data", None) or []
+        return {str(row.get("snapshot_key") or "") for row in data if row.get("snapshot_key")}
+
+    def _is_retryable_timeout(exc: Exception) -> bool:
+        text = str(exc).lower()
+        return "57014" in text or "statement timeout" in text or "timeout" in text
+
+    def _upsert_adaptive(batch: List[Dict[str, Any]], *, attempt: int = 0) -> int:
+        try:
+            _upsert_batch(batch)
+            return len(batch)
+        except Exception as exc:
+            if _is_retryable_timeout(exc) and len(batch) > 1:
+                mid = max(1, len(batch) // 2)
+                print(
+                    f"[WARN] upsert timeout for {len(batch)} rows; retrying as {mid}+{len(batch) - mid}",
+                    flush=True,
+                )
+                return _upsert_adaptive(batch[:mid]) + _upsert_adaptive(batch[mid:])
+            if _is_retryable_timeout(exc) and attempt < 2:
+                sleep_sec = 2.0 * (attempt + 1)
+                print(
+                    f"[WARN] upsert timeout for {len(batch)} rows; retrying after {sleep_sec:.1f}s",
+                    flush=True,
+                )
+                time.sleep(sleep_sec)
+                return _upsert_adaptive(batch, attempt=attempt + 1)
+            raise
+
     upserted = 0
+    skipped_existing = 0
+    processed = 0
     now_ts = datetime.now(timezone.utc).isoformat()
-    for start in range(0, len(rows), max(1, int(batch_size))):
-        source_batch = rows[start:start + max(1, int(batch_size))]
+    for start in range(0, len(write_rows), max(1, int(batch_size))):
+        source_batch = write_rows[start:start + max(1, int(batch_size))]
         batch_keys = set()
         filtered_rows = []
         for row in source_batch:
@@ -754,16 +809,35 @@ def upsert_supabase(rows: List[Dict[str, Any]], *, batch_size: int) -> int:
                 payload = db._filter_payload_to_existing_columns(TARGET_TABLE, payload)
             filtered_rows.append(payload)
             batch_keys.update(payload.keys())
+        if skip_existing:
+            existing = _existing_snapshot_keys([str(row.get("snapshot_key") or "") for row in filtered_rows])
+            if existing:
+                before = len(filtered_rows)
+                filtered_rows = [row for row in filtered_rows if str(row.get("snapshot_key") or "") not in existing]
+                skipped_existing += before - len(filtered_rows)
+                batch_keys = set()
+                for row in filtered_rows:
+                    batch_keys.update(row.keys())
+        processed += len(source_batch)
+        if not filtered_rows:
+            total_done = max(0, int(start_offset or 0)) + processed
+            print(
+                f"[INFO] processed {total_done}/{len(rows)} into {TARGET_TABLE} "
+                f"(upserted_run={upserted}, skipped_existing={skipped_existing})",
+                flush=True,
+            )
+            continue
         batch = []
         for payload in filtered_rows:
             batch.append(_json_safe({key: payload.get(key) for key in sorted(batch_keys)}))
-        if hasattr(db, "_upsert_with_schema_drift_retry"):
-            db._upsert_with_schema_drift_retry(TARGET_TABLE, batch, on_conflict="snapshot_key")
-        else:
-            db.client.table(TARGET_TABLE).upsert(batch, on_conflict="snapshot_key").execute()
-        upserted += len(batch)
-        print(f"[INFO] upserted {upserted}/{len(rows)} into {TARGET_TABLE}", flush=True)
-    return upserted
+        upserted += _upsert_adaptive(batch)
+        total_done = max(0, int(start_offset or 0)) + processed
+        print(
+            f"[INFO] processed {total_done}/{len(rows)} into {TARGET_TABLE} "
+            f"(upserted_run={upserted}, skipped_existing={skipped_existing})",
+            flush=True,
+        )
+    return upserted, skipped_existing
 
 
 def main() -> int:
@@ -779,6 +853,17 @@ def main() -> int:
     parser.add_argument("--write-db", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--batch-size", type=int, default=500)
+    parser.add_argument(
+        "--write-start-offset",
+        type=int,
+        default=0,
+        help="Skip this many built rows when writing to Supabase. Useful for resuming interrupted idempotent upserts.",
+    )
+    parser.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help="Before writing each batch, skip rows whose snapshot_key already exists in Supabase.",
+    )
     args = parser.parse_args()
 
     rows, summary = build_snapshot_rows(
@@ -791,10 +876,20 @@ def main() -> int:
     )
     summary["dry_run"] = bool(args.dry_run)
     summary["write_db"] = bool(args.write_db)
+    summary["supabase_write_start_offset"] = max(0, int(args.write_start_offset or 0))
+    summary["supabase_skip_existing"] = bool(args.skip_existing)
     if args.write_db and not args.dry_run:
-        summary["supabase_rows_upserted"] = upsert_supabase(rows, batch_size=int(args.batch_size))
+        upserted, skipped_existing = upsert_supabase(
+            rows,
+            batch_size=int(args.batch_size),
+            start_offset=int(args.write_start_offset or 0),
+            skip_existing=bool(args.skip_existing),
+        )
+        summary["supabase_rows_upserted"] = upserted
+        summary["supabase_rows_skipped_existing"] = skipped_existing
     else:
         summary["supabase_rows_upserted"] = 0
+        summary["supabase_rows_skipped_existing"] = 0
     write_local_outputs(rows, Path(args.output_csv), Path(args.report_json), summary)
     print(json.dumps({k: summary.get(k) for k in (
         "runs_seen",
