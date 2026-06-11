@@ -117,7 +117,7 @@ def test_candidate_interpretation_separates_touch_scout_from_buy_ready_with_exac
         **_fixture_row(),
         "buy_premium_return_5d_pct": -3.8,
         "buy_premium_max_high_return_5d_pct": 8.6,
-        "buy_premium_min_low_return_5d_pct": -7.2,
+        "buy_premium_min_low_return_5d_pct": -10.2,
         "buy_premium_target_hit_5d": True,
         "buy_premium_target_before_stop_5d": False,
         "buy_premium_stop_hit_5d": True,
@@ -135,11 +135,10 @@ def test_candidate_interpretation_separates_touch_scout_from_buy_ready_with_exac
     assert gate["return_5d_pct"] == -3.8
     assert gate["max_high_return_5d_pct"] == 8.6
     assert gate["bounded_stop_first_allowed"] is False
-    assert any("5D 수익이 플러스가 아닙니다" in reason for reason in gate["block_reasons"])
-    assert any("종가수익률이 음수" in reason for reason in gate["block_reasons"])
+    assert any("허용 범위(-10%)" in reason for reason in gate["block_reasons"])
 
 
-def test_candidate_interpretation_allows_bounded_profitable_stop_first_path():
+def test_candidate_interpretation_blocks_bounded_stop_first_when_profit_is_under_five_pct():
     base = _fixture_row()
     row = {
         **base,
@@ -169,9 +168,47 @@ def test_candidate_interpretation_allows_bounded_profitable_stop_first_path():
     interpretation = build_candidate_interpretation(row)
     gate = interpretation["buy_premium_execution_gate"]
 
+    assert gate["profit_touch_5d_after_buy_premium"] is False
+    assert gate["bounded_stop_first_allowed"] is False
+    assert gate["buy_ready"] is False
+    assert gate["lane"] == "TOUCH_SCOUT"
+    assert any("+5% 수익권에 도달하지 못했습니다" in reason for reason in gate["block_reasons"])
+
+
+def test_candidate_interpretation_allows_bounded_plus_five_stop_first_path():
+    base = _fixture_row()
+    row = {
+        **base,
+        "realized_expectancy_admission": {
+            **base["realized_expectancy_admission"],
+            "stop_first_risk_pct": 42.0,
+        },
+        "operational_score_axes": {
+            "version": "operational_candidate_score_axes_v1",
+            "buy_premium_pct": 2.0,
+            "return_after_buy_premium_pct": {},
+            "chart_only": False,
+            "non_chart_avg_score": 72.0,
+            "total_score": 74.0,
+            "chart_dominance_pct": 24.0,
+            "action_label": "운용 후보",
+        },
+        "buy_premium_return_5d_pct": -3.8,
+        "buy_premium_max_high_return_5d_pct": 5.4,
+        "buy_premium_min_low_return_5d_pct": -9.5,
+        "buy_premium_target_hit_5d": True,
+        "buy_premium_target_before_stop_5d": False,
+        "buy_premium_stop_hit_5d": True,
+        "buy_premium_stop_before_target_5d": True,
+    }
+
+    interpretation = build_candidate_interpretation(row)
+    gate = interpretation["buy_premium_execution_gate"]
+
     assert gate["bounded_stop_first_allowed"] is True
-    assert gate["profitable_5d_after_buy_premium"] is True
+    assert gate["profit_touch_5d_after_buy_premium"] is True
     assert gate["stop_first_drawdown_within_limit"] is True
+    assert gate["return_5d_pct"] == -3.8
     assert gate["buy_ready"] is True
     assert gate["lane"] == "BUY_READY"
     assert gate["block_reasons"] == []
