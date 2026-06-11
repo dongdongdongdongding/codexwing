@@ -1,4 +1,5 @@
 import modules.scan_universe_admission as admission
+from modules.kis_shadow_exit_policy import POLICY_VERSION
 from modules.scan_universe_admission import (
     KIS_SHADOW_SECTION,
     _extract_feature_columns,
@@ -293,7 +294,7 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
     assert row["trade_plan"]["target_tp_pct"] == 7.0
     assert row["trade_plan"]["stop_sl_pct"] == -5.0
     assert row["execution_stop"]["display_stop_source"] == "kis_shadow_dynamic_exit_policy"
-    assert row["kis_shadow_candidate"]["dynamic_exit_policy"]["version"] == "kis_shadow_dynamic_exit_policy_v1"
+    assert row["kis_shadow_candidate"]["dynamic_exit_policy"]["version"] == POLICY_VERSION
 
 
 def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):

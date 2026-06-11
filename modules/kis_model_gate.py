@@ -7,8 +7,9 @@ from typing import Any, Dict, List, Mapping
 from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
 
 
-KIS_MODEL_GATE_VERSION = "kis_model_gate_v3_target_touch_win"
-WIN_METRIC_SEMANTICS = "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; close-positive defense lives in close_win_5d_pct."
+KIS_MODEL_GATE_VERSION = "kis_model_gate_v4_touch5_dd10"
+TOUCH5_DD10_LABEL = "touch5_dd10_5d"
+WIN_METRIC_SEMANTICS = "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; touch5_dd10_5d production gates use hit5_dd10_5d_pct and a -10% 5D low guard."
 
 _COMMON_SHADOW = {
     "min_n": 8,
@@ -72,6 +73,43 @@ _PROFILES: Dict[str, Dict[str, Any]] = {
     },
 }
 
+_TOUCH5_DD10_SHADOW = {
+    "min_n": 8,
+    "min_active_days": 3,
+    "min_active_runs": 5,
+    "min_touch5_dd10_5d_pct": 45.0,
+    "min_low_5d_pct": -18.0,
+}
+
+_TOUCH5_DD10_PROFILES: Dict[str, Dict[str, Any]] = {
+    "KOSPI": {
+        "production": {
+            "min_n": 30,
+            "min_active_days": 15,
+            "min_active_runs": 20,
+            "min_touch5_dd10_5d_pct": 73.0,
+            "min_low_5d_pct": -10.0,
+        },
+        "shadow": _TOUCH5_DD10_SHADOW,
+        "risk_review": {
+            "min_low_5d_pct": -10.0,
+        },
+    },
+    "KOSDAQ": {
+        "production": {
+            "min_n": 45,
+            "min_active_days": 20,
+            "min_active_runs": 20,
+            "min_touch5_dd10_5d_pct": 73.0,
+            "min_low_5d_pct": -10.0,
+        },
+        "shadow": _TOUCH5_DD10_SHADOW,
+        "risk_review": {
+            "min_low_5d_pct": -10.0,
+        },
+    },
+}
+
 _PRODUCTION_ECONOMICS: Dict[str, Dict[str, float]] = {
     "KOSPI": {
         "min_net_avg_3d_pct": 0.25,
@@ -81,6 +119,11 @@ _PRODUCTION_ECONOMICS: Dict[str, Dict[str, float]] = {
         "min_net_avg_3d_pct": 0.50,
         "min_net_avg_5d_pct": 1.00,
     },
+}
+
+_TOUCH5_DD10_ECONOMICS: Dict[str, Dict[str, float]] = {
+    "KOSPI": {"min_expected_touch_policy_net_5d_pct": 0.25},
+    "KOSDAQ": {"min_expected_touch_policy_net_5d_pct": 0.50},
 }
 
 
@@ -118,6 +161,10 @@ def _market(identity: Mapping[str, Any], fallback: str = "") -> str:
 def _is_kis_feature_set(identity: Mapping[str, Any]) -> bool:
     feature_set = str(identity.get("feature_set") or "").lower().strip()
     return feature_set.startswith("kis")
+
+
+def _is_touch5_dd10_label(identity: Mapping[str, Any]) -> bool:
+    return str(identity.get("label") or "").strip() == TOUCH5_DD10_LABEL
 
 
 def _check(
@@ -165,6 +212,7 @@ def _threshold_checks(
         "min_n": ("n", "n"),
         "min_active_days": ("active_days", "active_days"),
         "min_active_runs": ("active_runs", "active_runs"),
+        "min_touch5_dd10_5d_pct": ("hit5_dd10_5d_pct", "hit5_dd10_5d"),
         "min_win_3d_pct": ("win_3d_pct", "win_3d"),
         "min_win_5d_pct": ("win_5d_pct", "win_5d"),
         "min_avg_3d_pct": ("avg_3d_pct", "avg_3d"),
@@ -260,6 +308,51 @@ def _production_economic_checks(
     return blockers, economics
 
 
+def _target_touch_economic_checks(
+    *,
+    market_key: str,
+    metrics: Mapping[str, Any],
+    checks: List[Dict[str, Any]],
+) -> tuple[List[str], Dict[str, Any]]:
+    blockers: List[str] = []
+    thresholds = _TOUCH5_DD10_ECONOMICS.get(market_key, {})
+    cost_model = TradableCostModel()
+    target_net = compute_net_return_pct(5.0, cost_model)
+    hit_rate = _safe_float(metrics.get("hit5_dd10_5d_pct"), _safe_float(metrics.get("label_win_pct")))
+    loss_floor_pct = -10.0
+    expected_net = None
+    if target_net is not None and hit_rate is not None:
+        win_prob = max(0.0, min(1.0, hit_rate / 100.0))
+        expected_net = round(win_prob * float(target_net) + (1.0 - win_prob) * loss_floor_pct, 6)
+    economics: Dict[str, Any] = {
+        "policy": "target_touch_5d_dd10_after_buy_premium",
+        "cost_model": asdict(cost_model),
+        "target_touch_gross_pct": 5.0,
+        "target_touch_net_pct": target_net,
+        "loss_floor_pct": loss_floor_pct,
+        "hit5_dd10_5d_pct": hit_rate,
+        "expected_touch_policy_net_5d_pct": expected_net,
+        "thresholds": thresholds,
+    }
+    for threshold_key, metric_key in (("min_expected_touch_policy_net_5d_pct", "expected_touch_policy_net_5d_pct"),):
+        if threshold_key not in thresholds:
+            continue
+        actual = _safe_float(economics.get(metric_key))
+        expected = float(thresholds[threshold_key])
+        label = metric_key.replace("_pct", "")
+        _check(
+            checks,
+            gate="production_economics",
+            name=metric_key,
+            actual=actual,
+            expected=f">={expected:g}",
+            passed=actual is not None and actual >= expected,
+            reason=f"{label}_lt_{_reason_value(expected)}",
+            blockers=blockers,
+        )
+    return blockers, economics
+
+
 def evaluate_kis_model_gate(
     *,
     identity: Mapping[str, Any] | None,
@@ -278,7 +371,8 @@ def evaluate_kis_model_gate(
     identity = identity if isinstance(identity, Mapping) else {}
     metrics = metrics if isinstance(metrics, Mapping) else {}
     market_key = _market(identity, market)
-    profile = _PROFILES.get(market_key)
+    is_touch5_dd10 = _is_touch5_dd10_label(identity)
+    profile = (_TOUCH5_DD10_PROFILES if is_touch5_dd10 else _PROFILES).get(market_key)
     checks: List[Dict[str, Any]] = []
     source_blockers: List[str] = []
     if not profile:
@@ -336,11 +430,18 @@ def evaluate_kis_model_gate(
         thresholds=profile["risk_review"],
         checks=checks,
     )
-    economic_blockers, economics = _production_economic_checks(
-        market_key=market_key,
-        metrics=metrics,
-        checks=checks,
-    )
+    if is_touch5_dd10:
+        economic_blockers, economics = _target_touch_economic_checks(
+            market_key=market_key,
+            metrics=metrics,
+            checks=checks,
+        )
+    else:
+        economic_blockers, economics = _production_economic_checks(
+            market_key=market_key,
+            metrics=metrics,
+            checks=checks,
+        )
 
     production_blocking_reasons = list(dict.fromkeys([*production_blockers, *economic_blockers]))
     production_ready = not production_blocking_reasons
@@ -362,6 +463,7 @@ def evaluate_kis_model_gate(
     return {
         "version": KIS_MODEL_GATE_VERSION,
         "win_metric_semantics": WIN_METRIC_SEMANTICS,
+        "label_gate_profile": "touch5_dd10" if is_touch5_dd10 else "default",
         "market": market_key,
         "status": status,
         "production_ready": production_ready,

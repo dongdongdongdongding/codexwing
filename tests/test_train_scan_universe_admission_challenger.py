@@ -7,6 +7,7 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
     apply_grid_preset,
     attach_close_failure_risk_features,
     candidate_jobs,
+    candidate_risk_gate,
     evaluate_candidate_jobs,
     feature_sets,
     fetch_rows,
@@ -299,6 +300,16 @@ def test_touch_labels_use_entry_price_high_and_guard_low_path():
                 "max_high_return_5d_pct": 6.0,
                 "min_low_return_5d_pct": -1.0,
             },
+            {
+                "id": 4,
+                "run_id": "RUN-A",
+                "ticker": "000004.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "max_high_return_5d_pct": 8.0,
+                "min_low_return_5d_pct": -8.0,
+            },
         ]
     )
 
@@ -306,12 +317,17 @@ def test_touch_labels_use_entry_price_high_and_guard_low_path():
     touch10, valid = label_series(df, _spec("touch10_5d"))
     touch10_guard, guard_valid = label_series(df, _spec("touch10_guard_5d"))
     touch5_guard, _ = label_series(df, _spec("touch5_guard_5d"))
+    touch5_dd10, dd10_valid = label_series(df, _spec("touch5_dd10_5d"))
+    got = metrics(df, df.index, touch5_dd10)
 
-    assert valid.tolist() == [True, True, True]
-    assert guard_valid.tolist() == [True, True, True]
-    assert touch10.tolist() == [True, True, False]
-    assert touch10_guard.tolist() == [True, False, False]
-    assert touch5_guard.tolist() == [True, False, False]
+    assert valid.tolist() == [True, True, True, True]
+    assert guard_valid.tolist() == [True, True, True, True]
+    assert dd10_valid.tolist() == [True, True, True, True]
+    assert touch10.tolist() == [True, True, False, False]
+    assert touch10_guard.tolist() == [True, False, False, False]
+    assert touch5_guard.tolist() == [True, False, False, False]
+    assert touch5_dd10.tolist() == [True, True, False, True]
+    assert got["hit5_dd10_5d_pct"] == 75.0
 
 
 def test_fetch_rows_clamps_supabase_page_size_to_1000(monkeypatch):
@@ -994,7 +1010,7 @@ def test_kis_operational_fast_grid_preset_bounds_jobs_and_parallel_eval(monkeypa
     monkeypatch.setattr(trainer, "run_candidate", fake_run_candidate)
     results, meta = evaluate_candidate_jobs(data, jobs, args, progress=False)
 
-    assert args.labels == "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
+    assert args.labels == "touch5_dd10_5d,touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
     assert args.feature_sets == (
         "kis_sidecar_only,kis_sidecar_augmented,kis_sidecar_failure_risk_numeric,"
         "kis_full_augmented,kis_failure_risk_numeric"
@@ -1123,6 +1139,49 @@ def test_risk_first_ranking_prefers_lower_path_risk_before_quality():
     assert ranked[1]["promotion_candidate"]["promotable"] is False
     assert "fold_stop5_above_50" in ranked[1]["risk_gate"]["blocking_reasons"]
     assert "hit10_guard_5d_pct_raw_ratio_lt_70" in ranked[1]["risk_gate"]["blocking_reasons"]
+
+
+def test_touch5_dd10_risk_gate_allows_stop_first_inside_minus_ten():
+    candidate = {
+        "label": "touch5_dd10_5d",
+        "feature_set": "kis_sidecar_only",
+        "topn": 1,
+        "quality_score": 800.0,
+        "metrics": {
+            "n": 40,
+            "active_runs": 24,
+            "active_days": 16,
+            "label_win_pct": 78.0,
+            "hit5_5d_pct": 90.0,
+            "hit5_dd10_5d_pct": 78.0,
+            "avg_max_high_5d_pct": 12.0,
+            "min_max_high_5d_pct": 4.0,
+            "min_1d_pct": -8.0,
+            "min_5d_pct": -4.0,
+            "min_min_low_5d_pct": -9.8,
+            "stop5_pct": 62.0,
+            "bad_path_pct": 62.0,
+            "target_before_stop_5d_pct": 30.0,
+            "stop_before_target_5d_pct": 62.0,
+        },
+        "fold_metrics": [
+            {
+                "hit5_dd10_5d_pct": 75.0,
+                "min_min_low_5d_pct": -9.5,
+                "stop5_pct": 70.0,
+                "bad_path_pct": 70.0,
+                "target_before_stop_5d_pct": 25.0,
+            }
+        ],
+    }
+
+    gate = candidate_risk_gate(candidate)
+
+    assert gate["pass"] is True
+    assert gate["blocking_reasons"] == []
+    assert gate["components"]["guard_key"] == "hit5_dd10_5d_pct"
+    assert "stop5_above_35" not in gate["blocking_reasons"]
+    assert "target_before_stop_5d_lt_50" not in gate["blocking_reasons"]
 
 
 def test_kis_candidate_verdict_uses_kis_model_gate_for_kosdaq_drawdown():

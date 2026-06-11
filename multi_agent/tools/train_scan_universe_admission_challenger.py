@@ -68,7 +68,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 TARGET_TABLE = "scan_universe_snapshots"
-REPORT_VERSION = "scan_universe_admission_challenger_v3_target_touch_win"
+REPORT_VERSION = "scan_universe_admission_challenger_v4_touch5_dd10"
 PREPARED_DATASET_CACHE_VERSION = "scan_universe_admission_prepared_v4_buy_premium_sanity"
 LEGACY_PREPARED_DATASET_CACHE_VERSIONS: set[str] = set()
 REPORT_DIR = ROOT / "runtime_state" / "reports" / "learning"
@@ -363,6 +363,7 @@ LABEL_SPECS = [
     LabelSpec("touch5_5d", "5d", "5D high touches entry +5% at least once"),
     LabelSpec("touch10_5d", "5d", "5D high touches entry +10% at least once"),
     LabelSpec("touch5_guard_5d", "5d", "5D high touches +5% while 5D low stays above -5%"),
+    LabelSpec("touch5_dd10_5d", "5d", "5D high touches +5% while 5D low stays at or above -10%"),
     LabelSpec("touch10_guard_5d", "5d", "5D high touches +10% while 5D low stays above -5%"),
 ]
 
@@ -1168,13 +1169,16 @@ def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Serie
             & mfe.ge(5.0).fillna(False)
             & mae.gt(-5.0).fillna(False)
         ).fillna(False), valid
-    if spec.name in {"touch5_5d", "touch10_5d", "touch5_guard_5d", "touch10_guard_5d"}:
-        target = 10.0 if "10" in spec.name else 5.0
+    if spec.name in {"touch5_5d", "touch10_5d", "touch5_guard_5d", "touch5_dd10_5d", "touch10_guard_5d"}:
+        target = 10.0 if spec.name.startswith("touch10") else 5.0
         mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
         mae = _adjusted_return_series(df, "min_low_return_5d_pct")
         valid = mfe.notna()
         hit = mfe.ge(target).fillna(False)
-        if "guard" in spec.name:
+        if spec.name == "touch5_dd10_5d":
+            valid &= mae.notna()
+            hit &= mae.ge(MIN_PROMOTION_MIN_LOW_5D_PCT).fillna(False)
+        elif "guard" in spec.name:
             valid &= mae.notna()
             hit &= mae.gt(-5.0).fillna(False)
         return hit, valid
@@ -1439,6 +1443,12 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
         ).dropna()
         if not aligned.empty:
             out["hit5_guard_5d_pct"] = _pct((aligned["max_high_return_5d_pct"].ge(5.0) & aligned["min_low_return_5d_pct"].gt(-5.0)).mean())
+            out["hit5_dd10_5d_pct"] = _pct(
+                (
+                    aligned["max_high_return_5d_pct"].ge(5.0)
+                    & aligned["min_low_return_5d_pct"].ge(MIN_PROMOTION_MIN_LOW_5D_PCT)
+                ).mean()
+            )
             out["hit10_guard_5d_pct"] = _pct((aligned["max_high_return_5d_pct"].ge(10.0) & aligned["min_low_return_5d_pct"].gt(-5.0)).mean())
     out["avg_max_high_5d_pct"] = _round(mfe.mean()) if len(mfe) else None
     out["min_max_high_5d_pct"] = _round(mfe.min()) if len(mfe) else None
@@ -1453,7 +1463,7 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
     return out
 
 
-def quality_score(result_metrics: Dict[str, Any], *, topn: int) -> float:
+def quality_score(result_metrics: Dict[str, Any], *, topn: int, label_name: str = "") -> float:
     n = float(result_metrics.get("n") or 0)
     runs = float(result_metrics.get("active_runs") or 0)
     days = float(result_metrics.get("active_days") or 0)
@@ -1475,9 +1485,11 @@ def quality_score(result_metrics: Dict[str, Any], *, topn: int) -> float:
     hit5 = float(result_metrics.get("hit5_5d_pct") or 0.0)
     hit10 = float(result_metrics.get("hit10_5d_pct") or 0.0)
     hit5_guard = float(result_metrics.get("hit5_guard_5d_pct") or 0.0)
+    hit5_dd10 = float(result_metrics.get("hit5_dd10_5d_pct") or 0.0)
     hit10_guard = float(result_metrics.get("hit10_guard_5d_pct") or 0.0)
     avg_mfe = float(result_metrics.get("avg_max_high_5d_pct") or -20.0)
     min_mfe = float(result_metrics.get("min_max_high_5d_pct") or -20.0)
+    min_low = float(result_metrics.get("min_min_low_5d_pct") or 0.0)
     sample_penalty = 0.0
     if runs < MIN_PROMOTION_RUNS:
         sample_penalty += (MIN_PROMOTION_RUNS - runs) * 18.0
@@ -1486,6 +1498,19 @@ def quality_score(result_metrics: Dict[str, Any], *, topn: int) -> float:
     if n < max(MIN_PROMOTION_ROWS, topn * 8):
         sample_penalty += (max(MIN_PROMOTION_ROWS, topn * 8) - n) * 12.0
     tail_penalty = max(0.0, -5.0 - min1) * 2.5 + max(0.0, -8.0 - min3) * 1.5 + max(0.0, -12.0 - min5)
+    if label_name == "touch5_dd10_5d":
+        touch_tail_penalty = max(0.0, MIN_PROMOTION_MIN_LOW_5D_PCT - min_low) * 10.0
+        return (
+            hit5_dd10 * 2.2
+            + hit5 * 0.35
+            + hit10 * 0.55
+            + avg_mfe * 22.0
+            + min_mfe * 9.0
+            + close_win5 * 0.10
+            + avg5 * 1.0
+            - touch_tail_penalty
+            - sample_penalty
+        )
     return (
         win1 * 0.7
         + win3 * 1.0
@@ -1645,7 +1670,7 @@ def run_candidate(
         "brier_mean": _round(np.mean(briers)) if briers else None,
         "metrics": merged,
         "fold_metrics": fold_metrics,
-        "quality_score": _round(quality_score(merged, topn=topn), 6),
+        "quality_score": _round(quality_score(merged, topn=topn, label_name=label_spec.name), 6),
         "feature_columns": {"numeric": numeric, "categorical": categorical},
     }
 
@@ -1681,7 +1706,7 @@ def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
     if preset == "custom":
         return args
     if preset == "kis_operational_fast":
-        args.labels = "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
+        args.labels = "touch5_dd10_5d,touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
         args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_sidecar_failure_risk_numeric,kis_full_augmented,kis_failure_risk_numeric"
         args.models = "random_forest,hist_gb,lightgbm"
         args.topns = "1,3"
@@ -1690,7 +1715,7 @@ def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
         args.test_days = max(1, min(int(args.test_days), 2))
         return args
     if preset == "kis_operational_full":
-        args.labels = "touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
+        args.labels = "touch5_dd10_5d,touch5_5d,touch5_guard_5d,touch10_5d,touch10_guard_5d,target_first_5d,target_first_sustain_5d,target_hit_no_stop_5d"
         args.feature_sets = "kis_sidecar_only,kis_sidecar_augmented,kis_sidecar_failure_risk_numeric,kis_sidecar_failure_risk_augmented,kis_full_augmented,kis_failure_risk_numeric,kis_failure_risk_augmented"
         args.models = "random_forest,extra_trees,hist_gb,lightgbm"
         args.topns = "1,3,5"
@@ -1823,7 +1848,8 @@ def candidate_risk_gate(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
     folds = [item for item in candidate.get("fold_metrics") or [] if isinstance(item, dict)]
     label_name = str(candidate.get("label") or "")
     is_touch_label = label_name.startswith("touch") or label_name.startswith("target_")
-    is_touch10 = "10" in label_name
+    is_touch10 = label_name.startswith("touch10")
+    is_touch5_dd10 = label_name == "touch5_dd10_5d"
     reasons: List[str] = []
 
     stop5 = _metric_float(m, "stop5_pct", 100.0)
@@ -1843,32 +1869,44 @@ def candidate_risk_gate(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
         fold_target_values,
         default=target_before_stop_5d,
     )
+    min_fold_low_5d = min(
+        (_metric_float(item, "min_min_low_5d_pct", min_low_5d) for item in folds if "min_min_low_5d_pct" in item),
+        default=min_low_5d,
+    )
 
-    if stop5 > MAX_PROMOTION_STOP5_PCT:
-        _append_unique(reasons, "stop5_above_35")
-    if bad_path > MAX_PROMOTION_BAD_PATH_PCT:
-        _append_unique(reasons, "bad_path_above_45")
-    if stop_before_target_5d > MAX_PROMOTION_STOP_BEFORE_TARGET_5D_PCT:
-        _append_unique(reasons, "stop_before_target_5d_above_35")
-    if "target_before_stop_5d_pct" in m and target_before_stop_5d < MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT:
-        _append_unique(reasons, "target_before_stop_5d_lt_50")
-    if min_1d < -5.0:
-        _append_unique(reasons, "min_1d_below_stop")
+    if not is_touch5_dd10:
+        if stop5 > MAX_PROMOTION_STOP5_PCT:
+            _append_unique(reasons, "stop5_above_35")
+        if bad_path > MAX_PROMOTION_BAD_PATH_PCT:
+            _append_unique(reasons, "bad_path_above_45")
+        if stop_before_target_5d > MAX_PROMOTION_STOP_BEFORE_TARGET_5D_PCT:
+            _append_unique(reasons, "stop_before_target_5d_above_35")
+        if "target_before_stop_5d_pct" in m and target_before_stop_5d < MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT:
+            _append_unique(reasons, "target_before_stop_5d_lt_50")
+        if min_1d < -5.0:
+            _append_unique(reasons, "min_1d_below_stop")
     if "min_min_low_5d_pct" in m and min_low_5d < MIN_PROMOTION_MIN_LOW_5D_PCT:
         _append_unique(reasons, "min_low_5d_below_10")
-    if max_fold_stop5 > MAX_PROMOTION_FOLD_STOP5_PCT:
-        _append_unique(reasons, "fold_stop5_above_50")
-    if max_fold_bad_path > 60.0:
-        _append_unique(reasons, "fold_bad_path_above_60")
-    if fold_target_values and min_fold_target_before_stop < MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT:
-        _append_unique(reasons, "fold_target_before_stop_5d_lt_35")
+    if is_touch5_dd10:
+        if folds and min_fold_low_5d < MIN_PROMOTION_MIN_LOW_5D_PCT:
+            _append_unique(reasons, "fold_min_low_5d_below_10")
+    else:
+        if max_fold_stop5 > MAX_PROMOTION_FOLD_STOP5_PCT:
+            _append_unique(reasons, "fold_stop5_above_50")
+        if max_fold_bad_path > 60.0:
+            _append_unique(reasons, "fold_bad_path_above_60")
+        if fold_target_values and min_fold_target_before_stop < MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT:
+            _append_unique(reasons, "fold_target_before_stop_5d_lt_35")
 
     guard_shortfall = 0.0
     guard_ratio_shortfall = 0.0
     guard_components: Dict[str, Any] = {}
     if is_touch_label:
         raw_key = "hit10_5d_pct" if is_touch10 else "hit5_5d_pct"
-        guard_key = "hit10_guard_5d_pct" if is_touch10 else "hit5_guard_5d_pct"
+        if label_name == "touch5_dd10_5d":
+            guard_key = "hit5_dd10_5d_pct"
+        else:
+            guard_key = "hit10_guard_5d_pct" if is_touch10 else "hit5_guard_5d_pct"
         min_guard = MIN_PROMOTION_TOUCH10_GUARD_PCT if is_touch10 else MIN_PROMOTION_TOUCH5_GUARD_PCT
         raw_value = _metric_float(m, raw_key, 0.0)
         guard_value = _metric_float(m, guard_key, raw_value if guard_key not in m else 0.0)
@@ -1884,19 +1922,27 @@ def candidate_risk_gate(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
                     _append_unique(reasons, f"{guard_key}_raw_ratio_lt_70")
                     guard_ratio_shortfall = max(guard_ratio_shortfall, (MIN_PROMOTION_GUARD_RAW_RATIO - ratio) * 100.0)
 
-    risk_score = (
-        stop5 * 1.4
-        + bad_path * 0.8
-        + stop_before_target_5d * 1.2
-        + max_fold_stop5 * 1.7
-        + max_fold_bad_path * 0.8
-        + max(0.0, MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT - target_before_stop_5d) * 1.1
-        + max(0.0, MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT - min_fold_target_before_stop) * 1.2
-        + max(0.0, -5.0 - min_1d) * 8.0
-        + max(0.0, MIN_PROMOTION_MIN_LOW_5D_PCT - min_low_5d) * 4.0
-        + guard_shortfall * 1.1
-        + guard_ratio_shortfall * 1.4
-    )
+    if is_touch5_dd10:
+        risk_score = (
+            max(0.0, MIN_PROMOTION_MIN_LOW_5D_PCT - min_low_5d) * 8.0
+            + max(0.0, MIN_PROMOTION_MIN_LOW_5D_PCT - min_fold_low_5d) * 8.0
+            + guard_shortfall * 1.4
+            + guard_ratio_shortfall * 1.4
+        )
+    else:
+        risk_score = (
+            stop5 * 1.4
+            + bad_path * 0.8
+            + stop_before_target_5d * 1.2
+            + max_fold_stop5 * 1.7
+            + max_fold_bad_path * 0.8
+            + max(0.0, MIN_PROMOTION_TARGET_BEFORE_STOP_5D_PCT - target_before_stop_5d) * 1.1
+            + max(0.0, MIN_PROMOTION_FOLD_TARGET_BEFORE_STOP_5D_PCT - min_fold_target_before_stop) * 1.2
+            + max(0.0, -5.0 - min_1d) * 8.0
+            + max(0.0, MIN_PROMOTION_MIN_LOW_5D_PCT - min_low_5d) * 4.0
+            + guard_shortfall * 1.1
+            + guard_ratio_shortfall * 1.4
+        )
     return {
         "pass": not reasons,
         "risk_score": _round(risk_score),
@@ -1910,6 +1956,7 @@ def candidate_risk_gate(candidate: Dict[str, Any] | None) -> Dict[str, Any]:
             "min_min_low_5d_pct": _round(min_low_5d),
             "max_fold_stop5_pct": _round(max_fold_stop5),
             "max_fold_bad_path_pct": _round(max_fold_bad_path),
+            "min_fold_min_low_5d_pct": _round(min_fold_low_5d),
             "min_fold_target_before_stop_5d_pct": _round(min_fold_target_before_stop),
             **guard_components,
         },
@@ -1932,13 +1979,18 @@ def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
         reasons.append("sample_too_small")
     label_name = str(candidate.get("label") or "")
     is_touch_label = label_name.startswith("touch") or label_name.startswith("target_")
+    is_touch10 = label_name.startswith("touch10")
+    is_touch5_dd10 = label_name == "touch5_dd10_5d"
     if is_touch_label:
-        min_label_win = 45.0 if "10" in label_name else 65.0
+        min_label_win = 45.0 if is_touch10 else 65.0
         if _metric_float(m, "label_win_pct", 0.0) < min_label_win:
             reasons.append(f"label_win_lt_{int(min_label_win)}")
-        if _metric_float(m, "hit5_5d_pct", 0.0) < 65.0:
+        if is_touch5_dd10:
+            if _metric_float(m, "hit5_dd10_5d_pct", 0.0) < MIN_PROMOTION_TOUCH5_GUARD_PCT:
+                reasons.append(f"hit5_dd10_5d_lt_{int(MIN_PROMOTION_TOUCH5_GUARD_PCT)}")
+        elif _metric_float(m, "hit5_5d_pct", 0.0) < 65.0:
             reasons.append("hit5_5d_lt_65")
-        if "10" in label_name and _metric_float(m, "hit10_5d_pct", 0.0) < 35.0:
+        if is_touch10 and _metric_float(m, "hit10_5d_pct", 0.0) < 35.0:
             reasons.append("hit10_5d_lt_35")
         if _metric_float(m, "avg_max_high_5d_pct", -999.0) < 5.0:
             reasons.append("avg_mfe_5d_lt_5")
@@ -1954,7 +2006,7 @@ def candidate_blocking_reasons(candidate: Dict[str, Any] | None) -> List[str]:
         if _metric_float(m, "avg_5d_pct", -999.0) <= 0.0:
             reasons.append("avg_5d_not_positive")
         reasons.append("label_not_target_touch_objective")
-    if _metric_float(m, "min_1d_pct", -999.0) < -5.0:
+    if not is_touch5_dd10 and _metric_float(m, "min_1d_pct", -999.0) < -5.0:
         reasons.append("min_1d_below_stop")
     if m.get("min_5d_pct") is not None and _metric_float(m, "min_5d_pct", -999.0) < -12.0:
         reasons.append("min_5d_tail_below_12")

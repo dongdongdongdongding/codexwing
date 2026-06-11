@@ -147,3 +147,74 @@ def test_kis_gate_allows_production_only_when_net_expectancy_and_risk_clear():
     assert gate["status"] == "production_ready"
     assert gate["production_economics"]["net_avg_3d_pct"] >= 0.25
     assert gate["production_economics"]["net_avg_5d_pct"] >= 0.5
+
+
+def test_kis_gate_allows_touch5_dd10_production_without_close_return_economics():
+    gate = evaluate_kis_model_gate(
+        identity={
+            "market": "KOSPI",
+            "feature_set": "kis_sidecar_only",
+            "label": "touch5_dd10_5d",
+            "model": "random_forest",
+            "selection_rule": "top1",
+        },
+        metrics={
+            "n": 80,
+            "active_days": 24,
+            "active_runs": 30,
+            "label_win_pct": 78.0,
+            "hit5_5d_pct": 92.0,
+            "hit5_dd10_5d_pct": 78.0,
+            "avg_3d_pct": -2.5,
+            "avg_5d_pct": -1.2,
+            "min_1d_pct": -7.8,
+            "min_min_low_5d_pct": -9.8,
+            "bad_path_pct": 55.0,
+            "stop5_pct": 55.0,
+            "stop_before_target_5d_pct": 55.0,
+            "target_before_stop_5d_pct": 45.0,
+        },
+    )
+
+    assert gate["label_gate_profile"] == "touch5_dd10"
+    assert gate["production_ready"] is True
+    assert gate["status"] == "production_ready"
+    assert gate["production_economics"]["policy"] == "target_touch_5d_dd10_after_buy_premium"
+    assert gate["production_economics"]["expected_touch_policy_net_5d_pct"] >= 0.25
+    assert "avg_5d_lt_5" not in gate["production_blocking_reasons"]
+    assert "stop5_gt_10" not in gate["production_blocking_reasons"]
+
+
+def test_kis_gate_blocks_touch5_dd10_when_drawdown_or_target_economics_fail():
+    gate = evaluate_kis_model_gate(
+        identity={
+            "market": "KOSDAQ",
+            "feature_set": "kis_full_augmented",
+            "label": "touch5_dd10_5d",
+            "model": "hist_gb",
+            "selection_rule": "top3_p0.65",
+        },
+        metrics={
+            "n": 80,
+            "active_days": 24,
+            "active_runs": 30,
+            "label_win_pct": 58.0,
+            "hit5_5d_pct": 85.0,
+            "hit5_dd10_5d_pct": 58.0,
+            "avg_3d_pct": 10.0,
+            "avg_5d_pct": 12.0,
+            "min_1d_pct": -2.0,
+            "min_min_low_5d_pct": -10.8,
+            "bad_path_pct": 4.0,
+            "stop5_pct": 4.0,
+            "stop_before_target_5d_pct": 4.0,
+            "target_before_stop_5d_pct": 90.0,
+        },
+    )
+
+    assert gate["production_ready"] is False
+    assert gate["shadow_display_allowed"] is True
+    assert "hit5_dd10_5d_lt_73" in gate["production_blocking_reasons"]
+    assert "min_low_5d_lt_neg10" in gate["production_blocking_reasons"]
+    assert "expected_touch_policy_net_5d_lt_0p5" in gate["production_blocking_reasons"]
+    assert "min_low_5d_lt_neg10" in gate["risk_review_reasons"]
