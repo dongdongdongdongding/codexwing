@@ -117,6 +117,29 @@ def _numeric(df: pd.DataFrame, column: str) -> pd.Series:
     return pd.to_numeric(_series(df, column), errors="coerce")
 
 
+def _premium_col(column: str) -> str:
+    return f"buy_premium_{column}"
+
+
+def _operational_return_series(df: pd.DataFrame, column: str) -> pd.Series:
+    raw = _numeric(df, column)
+    fallback = raw.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
+    premium = _premium_col(column)
+    if premium in df.columns:
+        exact = pd.to_numeric(df[premium], errors="coerce")
+        return exact.where(exact.notna(), fallback)
+    return fallback
+
+
+def _operational_path_column(df: pd.DataFrame, column: str) -> pd.Series:
+    fallback = _series(df, column)
+    premium = _premium_col(column)
+    if premium in df.columns:
+        exact = df[premium]
+        return exact.where(exact.notna(), fallback)
+    return fallback
+
+
 def _wilson_lower_pct(successes: int, total: int, z: float = 1.96) -> Optional[float]:
     if total <= 0:
         return None
@@ -190,9 +213,9 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     raw_mfe1 = _numeric(df, "max_high_return_1d_pct")
     raw_mfe3 = _numeric(df, "max_high_return_3d_pct")
     raw_mfe5 = _numeric(df, "max_high_return_5d_pct")
-    ret1 = raw_ret1.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
-    ret3 = raw_ret3.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
-    ret5 = raw_ret5.map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
+    ret1 = _operational_return_series(df, "return_1d_pct")
+    ret3 = _operational_return_series(df, "return_3d_pct")
+    ret5 = _operational_return_series(df, "return_5d_pct")
     valid5 = ret5.notna()
     sub = df.loc[valid5].copy()
     if sub.empty:
@@ -209,15 +232,18 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     ret1 = ret1.loc[sub.index]
     ret3 = ret3.loc[sub.index]
     ret5 = ret5.loc[sub.index]
-    mfe1 = raw_mfe1.loc[sub.index].map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
-    mfe3 = raw_mfe3.loc[sub.index].map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
-    mfe5 = raw_mfe5.loc[sub.index].map(lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT))
+    mfe1 = _operational_return_series(df, "max_high_return_1d_pct").loc[sub.index]
+    mfe3 = _operational_return_series(df, "max_high_return_3d_pct").loc[sub.index]
+    mfe5 = _operational_return_series(df, "max_high_return_5d_pct").loc[sub.index]
     stop = _bool_series(_series(sub, "stop5_proxy", False))
+    stop |= _bool_series(_operational_path_column(sub, "stop_before_target_5d"))
     if "min_return_observed_pct" in sub.columns:
         premium_min_path = _numeric(sub, "min_return_observed_pct").map(
             lambda value: adjust_return_for_buy_premium(value, DEFAULT_BUY_PREMIUM_PCT)
         )
         stop |= premium_min_path.le(-5.0).fillna(False)
+    if "min_low_return_5d_pct" in sub.columns:
+        stop |= _operational_return_series(sub, "min_low_return_5d_pct").le(-5.0).fillna(False)
     bad = _bool_series(_series(sub, "bad_path", False))
     bad |= ret5.lt(0.0).fillna(False)
     early_drop = ret1.lt(-3.0).fillna(False)
@@ -227,8 +253,9 @@ def _close_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     close_win5 = ret5.gt(0.0).fillna(False)
     practical_win5 = target_touch5 & ret1.ge(-3.0).fillna(False) & ~stop
     target_before_stop = pd.Series(False, index=sub.index)
-    if "target_before_stop_5d" in sub.columns:
-        target_before_stop = _bool_series(sub["target_before_stop_5d"]) & target_touch5 & ~stop
+    target_col = _operational_path_column(sub, "target_before_stop_5d")
+    if target_col.notna().any():
+        target_before_stop = _bool_series(target_col) & target_touch5 & ~stop
     elif "max_high_return_5d_pct" in sub.columns:
         target_before_stop = target_touch5 & ~stop
     successes = int(practical_win5.sum())

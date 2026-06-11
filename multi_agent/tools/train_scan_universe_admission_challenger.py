@@ -69,10 +69,8 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 TARGET_TABLE = "scan_universe_snapshots"
 REPORT_VERSION = "scan_universe_admission_challenger_v3_target_touch_win"
-PREPARED_DATASET_CACHE_VERSION = "scan_universe_admission_prepared_v2_buy_premium"
-LEGACY_PREPARED_DATASET_CACHE_VERSIONS = {
-    "scan_universe_admission_challenger_v2_buy_premium",
-}
+PREPARED_DATASET_CACHE_VERSION = "scan_universe_admission_prepared_v4_buy_premium_sanity"
+LEGACY_PREPARED_DATASET_CACHE_VERSIONS: set[str] = set()
 REPORT_DIR = ROOT / "runtime_state" / "reports" / "learning"
 MODEL_DIR = ROOT / "models" / "scan_universe_challengers"
 OPERATIONAL_BUY_PREMIUM_PCT = DEFAULT_BUY_PREMIUM_PCT
@@ -241,6 +239,11 @@ LABEL_RETURN_COLUMNS = [
     "min_low_return_5d_pct",
 ]
 
+BUY_PREMIUM_RETURN_COLUMNS = [f"buy_premium_{column}" for column in LABEL_RETURN_COLUMNS]
+BUY_PREMIUM_RETURN_SANITY_BOUNDS = {
+    f"buy_premium_{column}": bounds for column, bounds in KR_RETURN_SANITY_BOUNDS.items()
+}
+
 PATH_COLUMNS = [
     "target_hit_1d",
     "target_hit_3d",
@@ -258,6 +261,8 @@ PATH_COLUMNS = [
     "first_touch_3d",
     "first_touch_5d",
 ]
+
+BUY_PREMIUM_PATH_COLUMNS = [f"buy_premium_{column}" for column in PATH_COLUMNS]
 
 SELECT_COLUMNS = [
     "id",
@@ -316,8 +321,13 @@ SELECT_COLUMNS = [
     "kr_universe_role",
     "scanner_timeframe_profile",
     "entry_reference_price",
+    "operational_buy_premium_pct",
+    "buy_premium_entry_price",
+    "buy_premium_path_label_version",
     *LABEL_RETURN_COLUMNS,
+    *BUY_PREMIUM_RETURN_COLUMNS,
     *PATH_COLUMNS,
+    *BUY_PREMIUM_PATH_COLUMNS,
 ]
 
 
@@ -417,19 +427,27 @@ def _premium_col(column: str) -> str:
 
 
 def _adjusted_return_series(df: pd.DataFrame, column: str) -> pd.Series:
-    if _premium_col(column) in df.columns:
-        return pd.to_numeric(df[_premium_col(column)], errors="coerce")
     raw = pd.to_numeric(df.get(column, pd.Series(index=df.index, dtype=float)), errors="coerce")
-    return raw.map(lambda value: adjust_return_for_buy_premium(value, OPERATIONAL_BUY_PREMIUM_PCT))
+    computed = raw.map(lambda value: adjust_return_for_buy_premium(value, OPERATIONAL_BUY_PREMIUM_PCT))
+    if _premium_col(column) in df.columns:
+        exact = pd.to_numeric(df[_premium_col(column)], errors="coerce")
+        return exact.where(exact.notna(), computed)
+    return computed
 
 
 def attach_operational_outcome_columns(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     for column in LABEL_RETURN_COLUMNS:
         if column in out.columns:
-            out[_premium_col(column)] = pd.to_numeric(out[column], errors="coerce").map(
+            computed = pd.to_numeric(out[column], errors="coerce").map(
                 lambda value: adjust_return_for_buy_premium(value, OPERATIONAL_BUY_PREMIUM_PCT)
             )
+            premium = _premium_col(column)
+            if premium in out.columns:
+                exact = pd.to_numeric(out[premium], errors="coerce")
+                out[premium] = exact.where(exact.notna(), computed)
+            else:
+                out[premium] = computed
     out["operational_buy_premium_pct"] = float(OPERATIONAL_BUY_PREMIUM_PCT)
     return out
 
@@ -439,6 +457,19 @@ def _bool_series(series: pd.Series) -> pd.Series:
         return series.fillna(False)
     clean = series.astype("object").where(series.notna(), "")
     return clean.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y"})
+
+
+def _operational_path_column(df: pd.DataFrame, column: str) -> pd.Series:
+    fallback = df.get(column, pd.Series(index=df.index, dtype=object))
+    premium = _premium_col(column)
+    if premium in df.columns:
+        exact = df[premium]
+        return exact.where(exact.notna(), fallback)
+    return fallback
+
+
+def _operational_bool_series(df: pd.DataFrame, column: str) -> pd.Series:
+    return _bool_series(_operational_path_column(df, column))
 
 
 def _onehot_encoder() -> Any:
@@ -746,7 +777,8 @@ def apply_return_sanity(df: pd.DataFrame, *, mode: str) -> Tuple[pd.DataFrame, D
         raise ValueError(f"unknown return sanity mode: {mode}")
     mask = pd.Series(True, index=df.index)
     violations: Dict[str, int] = {}
-    for col, (low, high) in KR_RETURN_SANITY_BOUNDS.items():
+    bounds = {**KR_RETURN_SANITY_BOUNDS, **BUY_PREMIUM_RETURN_SANITY_BOUNDS}
+    for col, (low, high) in bounds.items():
         if col not in df.columns:
             continue
         values = pd.to_numeric(df[col], errors="coerce")
@@ -759,7 +791,7 @@ def apply_return_sanity(df: pd.DataFrame, *, mode: str) -> Tuple[pd.DataFrame, D
         "removed_rows": int((~mask).sum()),
         "remaining_rows": int(len(clean)),
         "column_violations": {key: value for key, value in violations.items() if value},
-        "bounds": KR_RETURN_SANITY_BOUNDS,
+        "bounds": bounds,
     }
 
 
@@ -878,8 +910,7 @@ def attach_close_failure_risk_features(df: pd.DataFrame) -> pd.DataFrame:
     touch_base = mfe5.ge(PRIMARY_TARGET_RETURN_PCT).fillna(False) & return5.notna()
     failure = touch_base & return5.lt(0.0).fillna(False)
     stop5 = touch_base & mae5.le(-5.0).fillna(False)
-    if "stop_before_target_5d_bool" in out.columns:
-        stop5 = stop5 | (touch_base & out["stop_before_target_5d_bool"].fillna(False).astype(bool))
+    stop5 = stop5 | (touch_base & _operational_bool_series(out, "stop_before_target_5d").fillna(False).astype(bool))
     clean_defense = touch_base & return5.gt(0.0).fillna(False) & mae5.gt(-5.0).fillna(False) & return1.ge(-3.0).fillna(False)
     for prefix, group_col in CLOSE_FAILURE_RISK_GROUPS:
         out = _attach_close_failure_prior_for_group(
@@ -910,11 +941,13 @@ def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") 
     out = _attach_kis_features(out)
     numeric_for_coercion = list(NUMERIC_FEATURES) + list(KIS_NUMERIC_FEATURES)
     categorical_for_coercion = list(CATEGORICAL_FEATURES) + list(KIS_CATEGORICAL_FEATURES)
-    for col in sorted(set(numeric_for_coercion + LABEL_RETURN_COLUMNS + ["priority_rank", "total_scans", "filtered_count"])):
+    for col in sorted(
+        set(numeric_for_coercion + LABEL_RETURN_COLUMNS + BUY_PREMIUM_RETURN_COLUMNS + ["priority_rank", "total_scans", "filtered_count"])
+    ):
         if col in out.columns:
             out[col] = pd.to_numeric(out[col], errors="coerce")
     bool_columns: Dict[str, pd.Series] = {}
-    for col in PATH_COLUMNS + ["passed_current_model", "has_actual_flow", "flow_consensus_buying", "retail_dominant"]:
+    for col in PATH_COLUMNS + BUY_PREMIUM_PATH_COLUMNS + ["passed_current_model", "has_actual_flow", "flow_consensus_buying", "retail_dominant"]:
         if col in out.columns:
             bool_columns[f"{col}_bool"] = _bool_series(out[col])
     if bool_columns:
@@ -954,7 +987,7 @@ def prepare_dataset(df: pd.DataFrame, *, return_sanity: str = "kr_price_limit") 
     return1 = _adjusted_return_series(out, "return_1d_pct")
     return5 = _adjusted_return_series(out, "return_5d_pct")
     low5 = _adjusted_return_series(out, "min_low_return_5d_pct")
-    out["stop5_proxy"] = out.get("stop_before_target_5d_bool", pd.Series(False, index=out.index)).fillna(False)
+    out["stop5_proxy"] = _operational_bool_series(out, "stop_before_target_5d").fillna(False)
     out["stop5_proxy"] |= low5.le(-5.0).fillna(False)
     out["bad_path"] = out["stop5_proxy"] | return1.lt(-3.0).fillna(False) | return5.lt(0.0).fillna(False)
     out = attach_close_failure_risk_features(out)
@@ -1096,9 +1129,11 @@ def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Serie
     if spec.name == "target_first_5d":
         mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
         mae = _adjusted_return_series(df, "min_low_return_5d_pct")
-        valid = df.get("target_before_stop_5d").notna() & df.get("stop_before_target_5d").notna() & mfe.notna() & mae.notna()
+        target_first = _operational_path_column(df, "target_before_stop_5d")
+        stop_first = _operational_path_column(df, "stop_before_target_5d")
+        valid = target_first.notna() & stop_first.notna() & mfe.notna() & mae.notna()
         return (
-            df.get("target_before_stop_5d_bool", false).fillna(False)
+            _bool_series(target_first).fillna(False)
             & mfe.ge(5.0).fillna(False)
             & mae.gt(-5.0).fillna(False)
         ).fillna(False), valid
@@ -1108,15 +1143,15 @@ def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Serie
         mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
         mae = _adjusted_return_series(df, "min_low_return_5d_pct")
         valid = (
-            df.get("target_before_stop_5d").notna()
-            & df.get("stop_before_target_5d").notna()
+            _operational_path_column(df, "target_before_stop_5d").notna()
+            & _operational_path_column(df, "stop_before_target_5d").notna()
             & ret3.notna()
             & ret5.notna()
             & mfe.notna()
             & mae.notna()
         )
         return (
-            df.get("target_before_stop_5d_bool", false).fillna(False)
+            _operational_bool_series(df, "target_before_stop_5d").fillna(False)
             & ret3.gt(0)
             & ret5.gt(0)
             & mfe.ge(5.0).fillna(False)
@@ -1125,9 +1160,11 @@ def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Serie
     if spec.name == "target_hit_no_stop_5d":
         mfe = _adjusted_return_series(df, "max_high_return_5d_pct")
         mae = _adjusted_return_series(df, "min_low_return_5d_pct")
-        valid = df.get("target_hit_5d").notna() & df.get("stop_hit_5d").notna() & mfe.notna() & mae.notna()
+        target_hit = _operational_path_column(df, "target_hit_5d")
+        stop_hit = _operational_path_column(df, "stop_hit_5d")
+        valid = target_hit.notna() & stop_hit.notna() & mfe.notna() & mae.notna()
         return (
-            df.get("target_hit_5d_bool", false).fillna(False)
+            _bool_series(target_hit).fillna(False)
             & mfe.ge(5.0).fillna(False)
             & mae.gt(-5.0).fillna(False)
         ).fillna(False), valid
@@ -1376,8 +1413,8 @@ def metrics(frame: pd.DataFrame, idx: pd.Index, label: pd.Series) -> Dict[str, A
         out[f"scan_reference_min_{horizon}_pct"] = _round(scan_ret.min()) if len(scan_ret) else None
         out[f"scan_reference_max_{horizon}_pct"] = _round(scan_ret.max()) if len(scan_ret) else None
     for horizon in ("1d", "3d", "5d"):
-        target = sub.get(f"target_before_stop_{horizon}", pd.Series(index=sub.index, dtype=object))
-        stop = sub.get(f"stop_before_target_{horizon}", pd.Series(index=sub.index, dtype=object))
+        target = _operational_path_column(sub, f"target_before_stop_{horizon}")
+        stop = _operational_path_column(sub, f"stop_before_target_{horizon}")
         target_valid = target.notna()
         if target_valid.any():
             mfe_horizon = _adjusted_return_series(sub.loc[target_valid], f"max_high_return_{horizon}_pct")

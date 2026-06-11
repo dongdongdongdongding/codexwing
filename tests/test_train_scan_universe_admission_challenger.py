@@ -83,6 +83,49 @@ def test_prepare_dataset_and_labels_use_scan_universe_path_fields():
     assert df["bad_path"].tolist() == [False, True]
 
 
+def test_target_first_labels_prefer_exact_buy_premium_path_fields():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": 1,
+                "run_id": "RUN-A",
+                "ticker": "000001.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "row_role": "emitted",
+                "return_1d_pct": 2.0,
+                "return_3d_pct": 3.0,
+                "return_5d_pct": 4.0,
+                "max_high_return_5d_pct": 6.0,
+                "min_low_return_5d_pct": -1.0,
+                "target_before_stop_5d": True,
+                "stop_before_target_5d": False,
+                "buy_premium_return_1d_pct": 0.0,
+                "buy_premium_return_3d_pct": 0.980392,
+                "buy_premium_return_5d_pct": 1.960784,
+                "buy_premium_max_high_return_5d_pct": 3.921569,
+                "buy_premium_min_low_return_5d_pct": -2.941176,
+                "buy_premium_target_before_stop_5d": False,
+                "buy_premium_stop_before_target_5d": False,
+            }
+        ]
+    )
+
+    df, _sanity = prepare_dataset(raw)
+    target, valid = label_series(df, _spec("target_first_5d"))
+    sustain, sustain_valid = label_series(df, _spec("target_first_sustain_5d"))
+    got = metrics(df, df.index, target)
+
+    assert valid.tolist() == [True]
+    assert target.tolist() == [False]
+    assert sustain_valid.tolist() == [True]
+    assert sustain.tolist() == [False]
+    assert df["buy_premium_max_high_return_5d_pct"].tolist() == [3.921569]
+    assert got["target_before_stop_5d_pct"] == 0.0
+    assert got["hit5_5d_pct"] == 0.0
+
+
 def test_close_failure_risk_features_use_prior_dates_only_and_enter_feature_sets():
     raw = pd.DataFrame(
         [
@@ -602,7 +645,7 @@ def test_prepared_dataset_cache_roundtrip_requires_matching_signature(tmp_path):
     assert miss is None
 
 
-def test_prepared_dataset_cache_accepts_legacy_report_version_signature(tmp_path):
+def test_prepared_dataset_cache_rejects_legacy_report_version_signature(tmp_path):
     cache_path = tmp_path / "prepared.pkl"
     data = pd.DataFrame([{"ticker": "000001.KS", "market": "KOSPI", "trade_date": "2026-05-20"}])
     signature = trainer._dataset_cache_signature({"market": "KOSPI", "scan_mode": "SWING"}, return_sanity="kr_price_limit")
@@ -620,7 +663,7 @@ def test_prepared_dataset_cache_accepts_legacy_report_version_signature(tmp_path
 
     loaded = load_prepared_dataset_cache(cache_path, signature=signature)
 
-    assert loaded is not None
+    assert loaded is None
 
 
 def test_prepare_dataset_filters_impossible_kr_return_labels():
@@ -656,6 +699,47 @@ def test_prepare_dataset_filters_impossible_kr_return_labels():
     assert df["ticker"].tolist() == ["000001.KS"]
     assert sanity["removed_rows"] == 1
     assert sanity["column_violations"]["return_1d_pct"] == 1
+
+
+def test_prepare_dataset_filters_impossible_exact_buy_premium_labels():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": 1,
+                "run_id": "RUN-A",
+                "ticker": "000001.KQ",
+                "market": "KOSDAQ",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "return_1d_pct": 1.0,
+                "return_3d_pct": 2.0,
+                "return_5d_pct": 3.0,
+                "max_high_return_5d_pct": 4.0,
+                "buy_premium_return_5d_pct": 2.0,
+                "buy_premium_max_high_return_5d_pct": 390.0,
+            },
+            {
+                "id": 2,
+                "run_id": "RUN-A",
+                "ticker": "000002.KQ",
+                "market": "KOSDAQ",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "return_1d_pct": 1.0,
+                "return_3d_pct": 2.0,
+                "return_5d_pct": 3.0,
+                "max_high_return_5d_pct": 4.0,
+                "buy_premium_return_5d_pct": 2.0,
+                "buy_premium_max_high_return_5d_pct": 4.0,
+            },
+        ]
+    )
+
+    df, sanity = prepare_dataset(raw)
+
+    assert df["ticker"].tolist() == ["000002.KQ"]
+    assert sanity["removed_rows"] == 1
+    assert sanity["column_violations"]["buy_premium_max_high_return_5d_pct"] == 1
 
 
 def test_prepare_dataset_empty_result_still_returns_sanity_tuple():

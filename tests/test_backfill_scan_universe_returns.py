@@ -31,9 +31,17 @@ def test_compute_return_payload_uses_future_trading_days_and_preserves_existing_
     assert payload["return_5d_pct"] == 10.0
     assert payload["max_high_return_5d_pct"] == 12.0
     assert payload["min_low_return_5d_pct"] == -2.0
+    assert payload["buy_premium_entry_price"] == 10200.0
+    assert payload["buy_premium_return_5d_pct"] == 7.843137
+    assert payload["buy_premium_max_high_return_5d_pct"] == 9.803922
+    assert payload["buy_premium_min_low_return_5d_pct"] == -3.921569
     assert payload["target_hit_5d"] is True
     assert payload["target_before_stop_5d"] is True
     assert payload["first_touch_5d"] == "target"
+    assert payload["buy_premium_target_hit_5d"] is True
+    assert payload["buy_premium_target_before_stop_5d"] is True
+    assert payload["buy_premium_first_touch_5d"] == "target"
+    assert payload["buy_premium_path_label_version"] == "scan_universe_plus2pct_entry_path_target_stop_v1"
     assert payload["outcome_available"] is True
 
 
@@ -176,6 +184,11 @@ def test_compute_return_payload_marks_stop_before_target_conservatively():
     assert payload["target_before_stop_1d"] is False
     assert payload["stop_before_target_1d"] is True
     assert payload["first_touch_1d"] == "same_bar_stop_first"
+    assert payload["buy_premium_target_hit_1d"] is False
+    assert payload["buy_premium_stop_hit_1d"] is True
+    assert payload["buy_premium_target_before_stop_1d"] is False
+    assert payload["buy_premium_stop_before_target_1d"] is True
+    assert payload["buy_premium_first_touch_1d"] == "stop"
 
 
 def test_fetch_snapshot_rows_applies_filters_and_retries_timeout(monkeypatch):

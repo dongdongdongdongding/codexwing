@@ -23,12 +23,16 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.operational_candidate_scoring import DEFAULT_BUY_PREMIUM_PCT
+
 TARGET_TABLE = "scan_universe_snapshots"
 BACKFILL_VERSION = "scan_universe_forward_returns_v2"
 PATH_LABEL_VERSION = "scan_universe_daily_path_target_stop_v1"
+BUY_PREMIUM_PATH_LABEL_VERSION = "scan_universe_plus2pct_entry_path_target_stop_v1"
 FEATURE_QUALITY_VERSION = "scan_universe_feature_quality_v4"
 DEFAULT_OUT = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "scan_universe_return_backfill.json"
 DEFAULT_ARTIFACT_DIR = PROJECT_ROOT / "runtime_state" / "artifacts"
+OPERATIONAL_BUY_PREMIUM_PCT = float(DEFAULT_BUY_PREMIUM_PCT)
 RETURN_COLUMNS = (
     "return_1d_pct",
     "return_3d_pct",
@@ -40,6 +44,7 @@ RETURN_COLUMNS = (
     "min_low_return_3d_pct",
     "min_low_return_5d_pct",
 )
+BUY_PREMIUM_RETURN_COLUMNS = tuple(f"buy_premium_{column}" for column in RETURN_COLUMNS)
 PATH_LABEL_COLUMNS = (
     "target_hit_1d",
     "target_hit_3d",
@@ -69,6 +74,7 @@ PATH_LABEL_COLUMNS = (
     "first_touch_3d",
     "first_touch_5d",
 )
+BUY_PREMIUM_PATH_LABEL_COLUMNS = tuple(f"buy_premium_{column}" for column in PATH_LABEL_COLUMNS)
 FEATURE_QUALITY_COLUMNS = (
     "feature_coverage_score",
     "feature_missing_keys",
@@ -94,12 +100,41 @@ META_WRITE_COLUMNS = (
     "path_label_version",
     "path_label_source",
     "path_label_updated_at",
+    "operational_buy_premium_pct",
+    "buy_premium_entry_price",
+    "buy_premium_label_target_pct",
+    "buy_premium_label_stop_pct",
+    "buy_premium_path_label_version",
+    "buy_premium_path_label_source",
+    "buy_premium_path_label_updated_at",
     "outcome_available",
     "outcome_source",
     "backfill_version",
     "updated_at",
 )
-WRITE_COLUMNS = RETURN_COLUMNS + PATH_LABEL_COLUMNS + FEATURE_QUALITY_COLUMNS + META_WRITE_COLUMNS
+WRITE_COLUMNS = (
+    RETURN_COLUMNS
+    + BUY_PREMIUM_RETURN_COLUMNS
+    + PATH_LABEL_COLUMNS
+    + BUY_PREMIUM_PATH_LABEL_COLUMNS
+    + FEATURE_QUALITY_COLUMNS
+    + META_WRITE_COLUMNS
+)
+BUY_PREMIUM_META_WRITE_COLUMNS = (
+    "operational_buy_premium_pct",
+    "buy_premium_entry_price",
+    "buy_premium_label_target_pct",
+    "buy_premium_label_stop_pct",
+    "buy_premium_path_label_version",
+    "buy_premium_path_label_source",
+    "buy_premium_path_label_updated_at",
+    "updated_at",
+)
+BUY_PREMIUM_WRITE_COLUMNS = (
+    BUY_PREMIUM_RETURN_COLUMNS
+    + BUY_PREMIUM_PATH_LABEL_COLUMNS
+    + BUY_PREMIUM_META_WRITE_COLUMNS
+)
 HORIZONS = (1, 3, 5)
 FEATURE_KEYS = (
     "alpha_score",
@@ -414,7 +449,16 @@ def _row_needs_backfill(row: Dict[str, Any], *, overwrite: bool) -> bool:
         return True
     if str(row.get("normalized_feature_version") or "") != FEATURE_QUALITY_VERSION:
         return True
-    return any(row.get(col) is None for col in RETURN_COLUMNS + PATH_LABEL_COLUMNS + FEATURE_QUALITY_COLUMNS)
+    if str(row.get("buy_premium_path_label_version") or "") != BUY_PREMIUM_PATH_LABEL_VERSION:
+        return True
+    return any(
+        row.get(col) is None
+        for col in RETURN_COLUMNS
+        + BUY_PREMIUM_RETURN_COLUMNS
+        + PATH_LABEL_COLUMNS
+        + BUY_PREMIUM_PATH_LABEL_COLUMNS
+        + FEATURE_QUALITY_COLUMNS
+    )
 
 
 def _first_touch_payload(
@@ -424,6 +468,7 @@ def _first_touch_payload(
     horizon: int,
     target_pct: float,
     stop_pct: float,
+    prefix: str = "",
 ) -> Dict[str, Any]:
     target_price = entry * (1.0 + target_pct / 100.0)
     stop_price = entry * (1.0 - abs(stop_pct) / 100.0)
@@ -469,15 +514,15 @@ def _first_touch_payload(
         stop_before_target = False
 
     return {
-        f"target_hit_{horizon}d": target_hit,
-        f"stop_hit_{horizon}d": stop_hit,
-        f"target_before_stop_{horizon}d": target_before_stop,
-        f"stop_before_target_{horizon}d": stop_before_target,
-        f"target_hit_at_{horizon}d": target_at,
-        f"stop_hit_at_{horizon}d": stop_at,
-        f"days_to_target_{horizon}d": days_to_target,
-        f"days_to_stop_{horizon}d": days_to_stop,
-        f"first_touch_{horizon}d": first_touch,
+        f"{prefix}target_hit_{horizon}d": target_hit,
+        f"{prefix}stop_hit_{horizon}d": stop_hit,
+        f"{prefix}target_before_stop_{horizon}d": target_before_stop,
+        f"{prefix}stop_before_target_{horizon}d": stop_before_target,
+        f"{prefix}target_hit_at_{horizon}d": target_at,
+        f"{prefix}stop_hit_at_{horizon}d": stop_at,
+        f"{prefix}days_to_target_{horizon}d": days_to_target,
+        f"{prefix}days_to_stop_{horizon}d": days_to_stop,
+        f"{prefix}first_touch_{horizon}d": first_touch,
     }
 
 
@@ -563,26 +608,37 @@ def _compute_return_payload(
         entry = _safe_float(entry_bar.get("close"))
     if entry is None or entry <= 0:
         return {}
+    buy_premium_entry = entry * (1.0 + OPERATIONAL_BUY_PREMIUM_PCT / 100.0)
     future = eligible[1:]
     payload: Dict[str, Any] = _feature_quality_payload(row, overwrite=overwrite)
     if payload.get("has_actual_flow") is True:
         payload["flow_asof"] = base.isoformat()
+    premium_stale = str(row.get("buy_premium_path_label_version") or "") != BUY_PREMIUM_PATH_LABEL_VERSION
     for horizon in HORIZONS:
         ret_col = f"return_{horizon}d_pct"
         high_col = f"max_high_return_{horizon}d_pct"
         low_col = f"min_low_return_{horizon}d_pct"
+        premium_ret_col = f"buy_premium_return_{horizon}d_pct"
+        premium_high_col = f"buy_premium_max_high_return_{horizon}d_pct"
+        premium_low_col = f"buy_premium_min_low_return_{horizon}d_pct"
         if len(future) >= horizon:
             close = _safe_float(future[horizon - 1].get("close"))
             if close is not None and (overwrite or row.get(ret_col) is None):
                 payload[ret_col] = round((close - entry) / entry * 100.0, 6)
+            if close is not None and (overwrite or premium_stale or row.get(premium_ret_col) is None):
+                payload[premium_ret_col] = round((close - buy_premium_entry) / buy_premium_entry * 100.0, 6)
             highs = [_safe_float(bar.get("high")) for bar in future[:horizon]]
             highs = [value for value in highs if value is not None]
             if highs and (overwrite or row.get(high_col) is None):
                 payload[high_col] = round((max(highs) - entry) / entry * 100.0, 6)
+            if highs and (overwrite or premium_stale or row.get(premium_high_col) is None):
+                payload[premium_high_col] = round((max(highs) - buy_premium_entry) / buy_premium_entry * 100.0, 6)
             lows = [_safe_float(bar.get("low")) for bar in future[:horizon]]
             lows = [value for value in lows if value is not None]
             if lows and (overwrite or row.get(low_col) is None):
                 payload[low_col] = round((min(lows) - entry) / entry * 100.0, 6)
+            if lows and (overwrite or premium_stale or row.get(premium_low_col) is None):
+                payload[premium_low_col] = round((min(lows) - buy_premium_entry) / buy_premium_entry * 100.0, 6)
             touch_payload = _first_touch_payload(
                 future,
                 entry=float(entry),
@@ -593,15 +649,34 @@ def _compute_return_payload(
             for key, value in touch_payload.items():
                 if overwrite or row.get(key) is None:
                     payload[key] = value
+            premium_touch_payload = _first_touch_payload(
+                future,
+                entry=float(buy_premium_entry),
+                horizon=horizon,
+                target_pct=float(target_pct),
+                stop_pct=float(stop_pct),
+                prefix="buy_premium_",
+            )
+            for key, value in premium_touch_payload.items():
+                if overwrite or premium_stale or row.get(key) is None:
+                    payload[key] = value
     outcome_payload = any(
         key.startswith("return_")
+        or key.startswith("buy_premium_return_")
         or key.startswith("max_high_return_")
+        or key.startswith("buy_premium_max_high_return_")
         or key.startswith("min_low_return_")
+        or key.startswith("buy_premium_min_low_return_")
         or key.startswith("target_hit_")
+        or key.startswith("buy_premium_target_hit_")
         or key.startswith("stop_hit_")
+        or key.startswith("buy_premium_stop_hit_")
         or key.startswith("target_before_stop_")
+        or key.startswith("buy_premium_target_before_stop_")
         or key.startswith("stop_before_target_")
+        or key.startswith("buy_premium_stop_before_target_")
         or key.startswith("first_touch_")
+        or key.startswith("buy_premium_first_touch_")
         for key in payload
     )
     if payload:
@@ -612,6 +687,13 @@ def _compute_return_payload(
         payload["path_label_version"] = PATH_LABEL_VERSION
         payload["path_label_source"] = "daily_ohlc_stop_first"
         payload["path_label_updated_at"] = datetime.now(timezone.utc).isoformat()
+        payload["operational_buy_premium_pct"] = OPERATIONAL_BUY_PREMIUM_PCT
+        payload["buy_premium_entry_price"] = round(float(buy_premium_entry), 6)
+        payload["buy_premium_label_target_pct"] = float(target_pct)
+        payload["buy_premium_label_stop_pct"] = abs(float(stop_pct))
+        payload["buy_premium_path_label_version"] = BUY_PREMIUM_PATH_LABEL_VERSION
+        payload["buy_premium_path_label_source"] = "daily_ohlc_stop_first_plus2pct_entry"
+        payload["buy_premium_path_label_updated_at"] = datetime.now(timezone.utc).isoformat()
         if outcome_payload:
             payload["outcome_available"] = True
             payload["outcome_source"] = "scan_universe_price_history"
@@ -673,8 +755,17 @@ def fetch_snapshot_rows(
             "outcome_available",
             "outcome_source",
             "backfill_version",
+            "operational_buy_premium_pct",
+            "buy_premium_entry_price",
+            "buy_premium_label_target_pct",
+            "buy_premium_label_stop_pct",
+            "buy_premium_path_label_version",
+            "buy_premium_path_label_source",
+            "buy_premium_path_label_updated_at",
             *RETURN_COLUMNS,
+            *BUY_PREMIUM_RETURN_COLUMNS,
             *PATH_LABEL_COLUMNS,
+            *BUY_PREMIUM_PATH_LABEL_COLUMNS,
             *FEATURE_QUALITY_COLUMNS,
         ]
     )
@@ -825,7 +916,13 @@ def build_updates(
     }
 
 
-def write_updates(updates: List[Dict[str, Any]], *, batch_size: int, write_method: str = "upsert") -> int:
+def write_updates(
+    updates: List[Dict[str, Any]],
+    *,
+    batch_size: int,
+    write_method: str = "upsert",
+    write_scope: str = "full",
+) -> int:
     if not updates:
         return 0
     _load_local_env()
@@ -834,11 +931,14 @@ def write_updates(updates: List[Dict[str, Any]], *, batch_size: int, write_metho
     db = DBManager()
     if not getattr(db, "client", None):
         raise SystemExit("Supabase client unavailable.")
-    writable = set(WRITE_COLUMNS)
+    scope = str(write_scope or "full").lower()
+    selected_write_columns = BUY_PREMIUM_WRITE_COLUMNS if scope == "buy-premium" else WRITE_COLUMNS
+    writable = set(selected_write_columns)
     written = 0
     method = str(write_method or "upsert").lower()
     if method == "upsert":
-        payload_keys = ("id", "snapshot_key", "run_id", "ticker", "row_role", *WRITE_COLUMNS)
+        identity_keys = ("id", "snapshot_key", "run_id", "ticker", "row_role")
+        payload_keys = (*identity_keys, *selected_write_columns)
         start = 0
         adaptive_batch_size = max(1, int(batch_size))
         while start < len(updates):
@@ -848,11 +948,12 @@ def write_updates(updates: List[Dict[str, Any]], *, batch_size: int, write_metho
                 if item.get("id") is None:
                     continue
                 normalized_item = {key: item.get(key) for key in payload_keys}
-                normalized_item["outcome_available"] = bool(item.get("outcome_available"))
-                if normalized_item.get("feature_missing_keys") is None:
-                    normalized_item["feature_missing_keys"] = []
-                if normalized_item.get("flow_warnings") is None:
-                    normalized_item["flow_warnings"] = []
+                if scope != "buy-premium":
+                    normalized_item["outcome_available"] = bool(item.get("outcome_available"))
+                    if normalized_item.get("feature_missing_keys") is None:
+                        normalized_item["feature_missing_keys"] = []
+                    if normalized_item.get("flow_warnings") is None:
+                        normalized_item["flow_warnings"] = []
                 normalized.append(normalized_item)
             if not normalized:
                 start += adaptive_batch_size
@@ -956,6 +1057,7 @@ def main() -> int:
     parser.add_argument("--page-size", type=int, default=1000)
     parser.add_argument("--batch-size", type=int, default=500)
     parser.add_argument("--write-method", choices=["upsert", "update"], default="upsert")
+    parser.add_argument("--write-scope", choices=["full", "buy-premium"], default="full")
     parser.add_argument("--limit", type=int, default=0, help="Maximum source rows to process after filters; 0 means all.")
     parser.add_argument(
         "--client-filter",
@@ -1009,7 +1111,12 @@ def main() -> int:
     rows_written = (
         0
         if args.dry_run
-        else write_updates(updates, batch_size=max(1, int(args.batch_size)), write_method=args.write_method)
+        else write_updates(
+            updates,
+            batch_size=max(1, int(args.batch_size)),
+            write_method=args.write_method,
+            write_scope=args.write_scope,
+        )
     )
     report = {
         "version": BACKFILL_VERSION,
@@ -1032,6 +1139,7 @@ def main() -> int:
         "stop_pct": abs(float(args.stop_pct or 5.0)),
         "run_date_index_size": len(run_date_index),
         "write_method": args.write_method,
+        "write_scope": args.write_scope,
         **result,
         "sample_updates": updates[:10],
     }
