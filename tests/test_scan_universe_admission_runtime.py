@@ -5,6 +5,7 @@ from modules.scan_universe_admission import (
     build_kis_shadow_admission_records,
     build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
+    kis_shadow_gate_status,
     merge_kis_prefilter_evidence_into_rows,
 )
 
@@ -293,6 +294,42 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
     assert row["trade_plan"]["stop_sl_pct"] == -5.0
     assert row["execution_stop"]["display_stop_source"] == "kis_shadow_dynamic_exit_policy"
     assert row["kis_shadow_candidate"]["dynamic_exit_policy"]["version"] == "kis_shadow_dynamic_exit_policy_v1"
+
+
+def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
+    monkeypatch.setattr(
+        admission,
+        "_load_kis_shadow_report",
+        lambda _market: {
+            "report_path": "runtime_state/reports/learning/kis_model_market_comparison.json",
+            "identity": {
+                "label": "kis",
+                "feature_set": "kis_sidecar",
+                "model": "random_forest",
+                "selection_rule": "top1",
+            },
+            "metrics": {
+                "n": 7,
+                "active_days": 5,
+                "win_5d_pct": 71.4,
+                "close_win_5d_pct": 0.0,
+                "avg_5d_pct": -18.7,
+            },
+            "kis_model_gate": {
+                "status": "blocked",
+                "production_ready": False,
+                "shadow_display_allowed": False,
+                "production_blocking_reasons": ["avg_5d_below_zero", "active_day_sample_below_gate"],
+            },
+        },
+    )
+
+    gate = kis_shadow_gate_status("KOSDAQ")
+
+    assert gate["shadow_display_allowed"] is False
+    assert gate["production_ready"] is False
+    assert "avg_5d_below_zero" in gate["blocking_reasons"]
+    assert "5D" in gate["metrics"]
 
 
 def test_admission_records_include_full_result_interpretation():

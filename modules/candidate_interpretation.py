@@ -9,7 +9,8 @@ from modules.operational_candidate_scoring import (
 )
 
 
-INTERPRETATION_VERSION = "candidate_interpretation_v1"
+INTERPRETATION_VERSION = "candidate_interpretation_v2"
+BUY_PREMIUM_EXECUTION_GATE_VERSION = "buy_premium_execution_gate_v1"
 
 
 def _present(value: Any) -> bool:
@@ -47,6 +48,24 @@ def _to_int(value: Any) -> int | None:
     return int(numeric) if numeric is not None else None
 
 
+def _to_bool(value: Any) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        if math.isnan(float(value)) or math.isinf(float(value)):
+            return None
+        return bool(value)
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if text in {"true", "t", "1", "yes", "y", "승", "성공", "hit", "target_before_stop"}:
+            return True
+        if text in {"false", "f", "0", "no", "n", "패", "실패", "none", "nan", "null", "stop_before_target"}:
+            return False
+    return None
+
+
 def _text_list(value: Any, *, limit: int = 5) -> List[str]:
     if value is None:
         return []
@@ -80,6 +99,204 @@ def _action_label(row: Dict[str, Any], trade_plan: Dict[str, Any]) -> str:
     )
 
 
+def _buy_premium_execution_gate(
+    row: Dict[str, Any],
+    admission: Dict[str, Any],
+    operational_score: Dict[str, Any],
+    premium_returns: Dict[str, Any],
+) -> Dict[str, Any]:
+    buy_premium_pct = _to_float(operational_score.get("buy_premium_pct"))
+    exact_return_1d = _to_float(_first(row.get("buy_premium_return_1d_pct"), premium_returns.get("return_1d_pct")))
+    exact_return_3d = _to_float(_first(row.get("buy_premium_return_3d_pct"), premium_returns.get("return_3d_pct")))
+    exact_return_5d = _to_float(_first(row.get("buy_premium_return_5d_pct"), premium_returns.get("return_5d_pct")))
+    exact_max_high_5d = _to_float(
+        _first(
+            row.get("buy_premium_max_high_return_5d_pct"),
+            row.get("buy_premium_max_return_5d_pct"),
+            row.get("max_high_return_5d_pct"),
+        )
+    )
+    exact_min_low_5d = _to_float(
+        _first(
+            row.get("buy_premium_min_low_return_5d_pct"),
+            row.get("buy_premium_min_return_5d_pct"),
+            row.get("min_low_return_5d_pct"),
+        )
+    )
+    target_hit_5d = _to_bool(_first(row.get("buy_premium_target_hit_5d"), row.get("target_hit_5d")))
+    target_before_stop_5d = _to_bool(
+        _first(row.get("buy_premium_target_before_stop_5d"), row.get("target_before_stop_5d"))
+    )
+    stop_hit_5d = _to_bool(_first(row.get("buy_premium_stop_hit_5d"), row.get("stop_hit_5d")))
+    stop_before_target_5d = _to_bool(
+        _first(row.get("buy_premium_stop_before_target_5d"), row.get("stop_before_target_5d"))
+    )
+    exact_available = any(
+        value is not None
+        for value in (
+            exact_return_1d,
+            exact_return_3d,
+            exact_return_5d,
+            exact_max_high_5d,
+            exact_min_low_5d,
+            target_hit_5d,
+            target_before_stop_5d,
+            stop_hit_5d,
+            stop_before_target_5d,
+        )
+    )
+
+    touch_rate_pct = _to_float(
+        _first(
+            admission.get("target_touch_win_pct"),
+            admission.get("hit5_5d_pct"),
+            admission.get("5d_prob"),
+        )
+    )
+    hit10_rate_pct = _to_float(admission.get("hit10_5d_pct"))
+    close_defense_5d_pct = _to_float(admission.get("close_defense_5d_pct"))
+    avg_5d_pct = _to_float(
+        _first(
+            row.get("buy_premium_avg_5d_pct"),
+            admission.get("dynamic_expected_net_avg_5d_pct"),
+            premium_returns.get("base_expected_value_5d_pct"),
+            admission.get("base_expected_value_5d_pct"),
+            admission.get("expected_value_5d_pct"),
+        )
+    )
+    stress_5d_pct = _to_float(
+        _first(
+            premium_returns.get("stress_expected_value_5d_pct"),
+            admission.get("stress_expected_value_5d_pct"),
+        )
+    )
+    stop_first_risk_pct = _to_float(admission.get("stop_first_risk_pct"))
+    stop5_pct = _to_float(admission.get("stop5_pct"))
+    bad_path_pct = _to_float(admission.get("bad_path_pct"))
+    validation_metrics_available = any(
+        value is not None
+        for value in (
+            touch_rate_pct,
+            hit10_rate_pct,
+            close_defense_5d_pct,
+            avg_5d_pct,
+            stress_5d_pct,
+            stop_first_risk_pct,
+            stop5_pct,
+            bad_path_pct,
+        )
+    )
+
+    touch_observed = bool(
+        target_hit_5d is True
+        or target_before_stop_5d is True
+        or (exact_max_high_5d is not None and exact_max_high_5d >= 5.0)
+    )
+    touch_model_found = bool(touch_observed or (touch_rate_pct is not None and touch_rate_pct >= 55.0))
+
+    block_reasons: List[str] = []
+    scout_reasons: List[str] = []
+    if touch_observed:
+        scout_reasons.append("5D 안에 +5% 터치 근거가 있습니다.")
+    elif touch_rate_pct is not None and touch_rate_pct >= 55.0:
+        scout_reasons.append(f"과거 검증 터치율 {touch_rate_pct:.1f}% 구간입니다.")
+    if hit10_rate_pct is not None and hit10_rate_pct >= 20.0:
+        scout_reasons.append(f"+10% 터치율도 {hit10_rate_pct:.1f}%로 관찰됩니다.")
+
+    if stop_before_target_5d is True:
+        block_reasons.append("손절이 목표보다 먼저 왔습니다.")
+    if target_before_stop_5d is False and target_hit_5d is not True and exact_available:
+        block_reasons.append("목표가가 손절보다 먼저 온 근거가 없습니다.")
+    if stop_hit_5d is True and target_before_stop_5d is not True:
+        block_reasons.append("5D 안에 손절 터치가 먼저 확인됩니다.")
+    if exact_return_5d is not None and exact_return_5d < 0.0:
+        block_reasons.append(f"+{buy_premium_pct or DEFAULT_BUY_PREMIUM_PCT:.1f}% 매수 기준 5D 종가수익률이 음수입니다.")
+    if exact_min_low_5d is not None and exact_min_low_5d <= -5.0 and target_before_stop_5d is not True:
+        block_reasons.append("5D 경로의 최대하락폭이 손절권입니다.")
+    if stop_first_risk_pct is not None and stop_first_risk_pct >= 30.0:
+        block_reasons.append(f"검증 stop-first 위험이 {stop_first_risk_pct:.1f}%로 높습니다.")
+    if stop5_pct is not None and stop5_pct >= 35.0:
+        block_reasons.append(f"검증 5D 손절 터치율이 {stop5_pct:.1f}%로 높습니다.")
+    if bad_path_pct is not None and bad_path_pct >= 35.0:
+        block_reasons.append(f"검증 bad-path 비율이 {bad_path_pct:.1f}%로 높습니다.")
+    if avg_5d_pct is not None and avg_5d_pct < 0.0:
+        block_reasons.append("검증 평균 기대수익이 음수입니다.")
+    if close_defense_5d_pct is not None and close_defense_5d_pct < 50.0:
+        block_reasons.append(f"5D 종가 방어율이 {close_defense_5d_pct:.1f}%로 낮습니다.")
+    if operational_score.get("chart_only"):
+        block_reasons.append("차트 편중 후보라 수급/테마/뉴스 확인이 부족합니다.")
+    non_chart_avg = _to_float(operational_score.get("non_chart_avg_score"))
+    if non_chart_avg is not None and non_chart_avg < 35.0:
+        block_reasons.append("차트 외 근거 점수가 낮습니다.")
+
+    has_path_success = target_before_stop_5d is True or (
+        not exact_available
+        and touch_rate_pct is not None
+        and touch_rate_pct >= 70.0
+        and (stop_first_risk_pct is None or stop_first_risk_pct <= 20.0)
+        and (stop5_pct is None or stop5_pct <= 25.0)
+        and (avg_5d_pct is None or avg_5d_pct >= 0.0)
+    )
+    buy_ready = bool(has_path_success and not block_reasons)
+    touch_scout = bool(touch_model_found and not buy_ready)
+    if buy_ready:
+        lane = "BUY_READY"
+        label = "실매수 후보"
+    elif touch_scout:
+        lane = "TOUCH_SCOUT"
+        label = "터치 스카우트 - 매수대기"
+    elif block_reasons:
+        lane = "BLOCKED_RISK"
+        label = "매수 차단"
+    elif validation_metrics_available or exact_available:
+        lane = "NO_TOUCH_EVIDENCE"
+        label = "터치 근거 부족"
+    else:
+        lane = "INSUFFICIENT_EVIDENCE"
+        label = "근거 부족"
+
+    why_not_buy_ready = list(block_reasons[:8])
+    if not why_not_buy_ready and not buy_ready:
+        why_not_buy_ready.append("상승 터치와 실매수 승격을 분리해서 추가 검증이 필요합니다.")
+
+    return {
+        "version": BUY_PREMIUM_EXECUTION_GATE_VERSION,
+        "buy_premium_pct": buy_premium_pct or DEFAULT_BUY_PREMIUM_PCT,
+        "lane": lane,
+        "label": label,
+        "buy_ready": buy_ready,
+        "buy_ready_blocked": not buy_ready,
+        "touch_model_found": touch_model_found,
+        "touch_scout_candidate": touch_scout,
+        "exact_labels_available": exact_available,
+        "validation_metrics_available": validation_metrics_available,
+        "target_hit_5d": target_hit_5d,
+        "target_before_stop_5d": target_before_stop_5d,
+        "stop_hit_5d": stop_hit_5d,
+        "stop_before_target_5d": stop_before_target_5d,
+        "return_1d_pct": exact_return_1d,
+        "return_3d_pct": exact_return_3d,
+        "return_5d_pct": exact_return_5d,
+        "max_high_return_5d_pct": exact_max_high_5d,
+        "min_low_return_5d_pct": exact_min_low_5d,
+        "touch_rate_pct": touch_rate_pct,
+        "hit10_rate_pct": hit10_rate_pct,
+        "close_defense_5d_pct": close_defense_5d_pct,
+        "avg_5d_pct": avg_5d_pct,
+        "stress_5d_pct": stress_5d_pct,
+        "stop_first_risk_pct": stop_first_risk_pct,
+        "stop5_pct": stop5_pct,
+        "bad_path_pct": bad_path_pct,
+        "scout_reasons": scout_reasons[:6],
+        "block_reasons": block_reasons[:8],
+        "why_not_buy_ready": why_not_buy_ready[:8],
+        "semantics": (
+            "터치 스카우트는 상승 포착용이고, 실매수 후보는 +2% 진입가 기준 목표가가 손절보다 먼저 오며 "
+            "종가/경로 리스크가 통과한 경우만 의미합니다."
+        ),
+    }
+
+
 def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
     row = row if isinstance(row, dict) else {}
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
@@ -108,6 +325,7 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
         if isinstance(operational_score.get("return_after_buy_premium_pct"), dict)
         else {}
     )
+    execution_gate = _buy_premium_execution_gate(row, admission, operational_score, premium_returns)
 
     section = str(_first(alignment.get("analysis_section"), row.get("_analysis_section"), row.get("section"), "Top5"))
     section_rank = _to_int(_first(alignment.get("analysis_section_rank"), row.get("_analysis_section_rank"), row.get("section_rank"), row.get("rank")))
@@ -183,6 +401,13 @@ def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
         "buy_premium_return_5d_pct": _to_float(premium_returns.get("return_5d_pct")),
         "buy_premium_base_expected_value_5d_pct": _to_float(premium_returns.get("base_expected_value_5d_pct")),
         "buy_premium_stress_expected_value_5d_pct": _to_float(premium_returns.get("stress_expected_value_5d_pct")),
+        "buy_premium_execution_gate": execution_gate,
+        "touch_model_found": bool(execution_gate.get("touch_model_found")),
+        "touch_scout_candidate": bool(execution_gate.get("touch_scout_candidate")),
+        "buy_ready": bool(execution_gate.get("buy_ready")),
+        "buy_ready_blocked": bool(execution_gate.get("buy_ready_blocked")),
+        "buy_ready_block_reasons": execution_gate.get("block_reasons") or [],
+        "touch_vs_buy_ready_explanation": execution_gate.get("semantics"),
     }
 
 

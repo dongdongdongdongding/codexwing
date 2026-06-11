@@ -110,3 +110,29 @@ def test_candidate_interpretation_prefers_unified_execution_stop():
     assert interpretation["stop_sl_pct"] == -3.0
     assert interpretation["stop_display_source"] == "raw_scan_stricter"
     assert interpretation["stop_conflict"] is True
+
+
+def test_candidate_interpretation_separates_touch_scout_from_buy_ready_with_exact_buy_premium_labels():
+    row = {
+        **_fixture_row(),
+        "buy_premium_return_5d_pct": -3.8,
+        "buy_premium_max_high_return_5d_pct": 8.6,
+        "buy_premium_min_low_return_5d_pct": -7.2,
+        "buy_premium_target_hit_5d": True,
+        "buy_premium_target_before_stop_5d": False,
+        "buy_premium_stop_hit_5d": True,
+        "buy_premium_stop_before_target_5d": True,
+    }
+
+    interpretation = build_candidate_interpretation(row)
+    gate = interpretation["buy_premium_execution_gate"]
+
+    assert gate["exact_labels_available"] is True
+    assert gate["touch_model_found"] is True
+    assert gate["touch_scout_candidate"] is True
+    assert gate["buy_ready"] is False
+    assert gate["lane"] == "TOUCH_SCOUT"
+    assert gate["return_5d_pct"] == -3.8
+    assert gate["max_high_return_5d_pct"] == 8.6
+    assert any("손절이 목표보다 먼저" in reason for reason in gate["block_reasons"])
+    assert any("종가수익률이 음수" in reason for reason in gate["block_reasons"])

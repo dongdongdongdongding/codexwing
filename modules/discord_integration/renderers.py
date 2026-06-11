@@ -28,6 +28,7 @@ from modules.scan_universe_admission import (
     build_kis_shadow_admission_records,
     build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
+    kis_shadow_gate_status,
     merge_kis_prefilter_evidence_into_rows,
 )
 from modules.ui_helpers import enrich_signal_rows_with_planner_trace, merge_profile_exception_leaders_into_planner
@@ -89,6 +90,30 @@ def _fmt_pct(value: Any) -> str:
     if numeric is None:
         return "-"
     return f"{numeric:+.2f}%"
+
+
+def _execution_gate_line(gate: Dict[str, Any]) -> str:
+    if not isinstance(gate, dict) or not gate:
+        return "실매수 게이트: 근거 부족"
+    label = str(gate.get("label") or gate.get("lane") or "-")
+    touch = "터치포착" if gate.get("touch_model_found") else "터치근거 약함"
+    parts = [
+        f"실매수 게이트: {label}",
+        touch,
+        f"+{_fmt_num(gate.get('buy_premium_pct'), 1)}%매수 기준",
+    ]
+    if gate.get("return_5d_pct") is not None:
+        parts.append(f"5D종가 {_fmt_pct(gate.get('return_5d_pct'))}")
+    if gate.get("max_high_return_5d_pct") is not None:
+        parts.append(f"5D최고 {_fmt_pct(gate.get('max_high_return_5d_pct'))}")
+    if gate.get("touch_rate_pct") is not None:
+        parts.append(f"검증터치 {_fmt_num(gate.get('touch_rate_pct'), 1)}%")
+    if gate.get("stop_first_risk_pct") is not None:
+        parts.append(f"stop-first {_fmt_num(gate.get('stop_first_risk_pct'), 1)}%")
+    reasons = gate.get("why_not_buy_ready") or gate.get("block_reasons") or gate.get("scout_reasons") or []
+    if isinstance(reasons, list) and reasons:
+        parts.append("이유 " + " / ".join(str(reason) for reason in reasons[:2]))
+    return " · ".join(parts)[:1024]
 
 
 def _first_present(*values: Any) -> Any:
@@ -529,6 +554,7 @@ def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
             f"+{_fmt_num(interpretation.get('buy_premium_pct'), 1)}%매수 후 avg5D {_fmt_pct(interpretation.get('buy_premium_base_expected_value_5d_pct'))} / "
             f"worst5D {_fmt_pct(interpretation.get('buy_premium_stress_expected_value_5d_pct'))}"
         ),
+        _execution_gate_line(interpretation.get("buy_premium_execution_gate") if isinstance(interpretation.get("buy_premium_execution_gate"), dict) else {}),
         (
             f"국면/테마: 확률x{_fmt_num(regime_theme_adjustment.get('prob_multiplier'), 2)} · "
             f"수익x{_fmt_num(regime_theme_adjustment.get('return_multiplier'), 2)} · "
@@ -934,6 +960,23 @@ def _kis_shadow_rows_value(rows: List[Dict[str, Any]], *, limit: int = 3) -> str
     return ("\n".join(lines) or "KIS 쉐도우 후보 없음.")[:1024]
 
 
+def _kis_shadow_gate_block_value(gate: Dict[str, Any]) -> str:
+    gate = gate if isinstance(gate, dict) else {}
+    blockers = gate.get("blocking_reasons") if isinstance(gate.get("blocking_reasons"), list) else []
+    risk_reasons = gate.get("risk_review_reasons") if isinstance(gate.get("risk_review_reasons"), list) else []
+    lines = [
+        f"상태: {gate.get('status') or '-'} · shadow_display_allowed={bool(gate.get('shadow_display_allowed'))} · production_ready={bool(gate.get('production_ready'))}",
+        f"프로필: {gate.get('profile') or '-'}",
+        f"검증: {gate.get('metrics') or '-'}",
+    ]
+    if blockers:
+        lines.append("차단: " + " / ".join(str(item) for item in blockers[:5]))
+    if risk_reasons:
+        lines.append("위험검토: " + " / ".join(str(item) for item in risk_reasons[:3]))
+    lines.append("의미: KIS 모델이 상승 터치 후보를 찾더라도 운영 승격/표시는 별도 게이트 통과 전까지 차단합니다.")
+    return "\n".join(lines)[:1024]
+
+
 def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
     ticker = row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("Symbol") or row.get("티커") or "-"
     name = row.get("stock_name") or row.get("Stock Name") or row.get("Name") or row.get("name") or row.get("종목명") or ticker
@@ -974,6 +1017,9 @@ def _archive_row_value(row: Dict[str, Any]) -> str:
             f"기준차 {_fmt_num(scan_interpretation.get('threshold_gap_pct_points'), 1)}%p · "
             f"{scan_interpretation.get('action') or '-'}\n근거 {drivers}"
         )
+    gate = interpretation.get("buy_premium_execution_gate") if isinstance(interpretation.get("buy_premium_execution_gate"), dict) else {}
+    if gate:
+        text += "\n" + _execution_gate_line(gate)
     return text[:1024]
 
 
@@ -1312,6 +1358,16 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                         "inline": False,
                     }
                 )
+            else:
+                gate = kis_shadow_gate_status(market_key)
+                if gate and not gate.get("shadow_display_allowed"):
+                    fields.append(
+                        {
+                            "name": "KIS 쉐도우 차단",
+                            "value": _kis_shadow_gate_block_value(gate),
+                            "inline": False,
+                        }
+                    )
             fields.append(
                 {
                     "name": "Admission 모델 기준",
@@ -1362,7 +1418,7 @@ def build_scan_result_embeds(summary: Dict[str, Any], *, config: DiscordIntegrat
                 f"Job `{job.get('job_id') or '-'}` · 웹/아카이브와 같은 run artifact 기준으로 표시합니다."
             ),
             "color": 0xF1C40F if ok and result_count == 0 else (0x2ECC71 if ok else 0xE74C3C),
-            "fields": fields[:12],
+            "fields": fields[:14],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     ]

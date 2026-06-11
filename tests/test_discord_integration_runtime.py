@@ -640,6 +640,60 @@ def test_scan_result_renderer_includes_summary_and_top_deep(monkeypatch, tmp_pat
     assert any("SK하이닉스" in field["name"] for field in embeds[1]["fields"])
 
 
+def test_scan_result_renderer_exposes_kis_shadow_gate_when_candidates_are_blocked(monkeypatch):
+    monkeypatch.setattr(
+        renderers,
+        "_load_scan_context_for_run",
+        lambda _run_id: {
+            "summary": {"run_id": "RUN-BLOCKED", "market": "KOSDAQ"},
+            "market_gate": {},
+        },
+    )
+    monkeypatch.setattr(
+        renderers,
+        "_build_admission_result_for_run",
+        lambda *args, **kwargs: {
+            "summary": {
+                "model_name": "admission",
+                "objective": "touch5_guard",
+                "selection_rule": "top1",
+                "threshold_label": "top1",
+                "validation": {},
+            },
+            "kis_shadow": [],
+        },
+    )
+    monkeypatch.setattr(
+        renderers,
+        "kis_shadow_gate_status",
+        lambda _market: {
+            "status": "blocked",
+            "shadow_display_allowed": False,
+            "production_ready": False,
+            "profile": "kis / sidecar / top1",
+            "metrics": "n=7 · active_days=5 · 5D 71.40%/0.00%/-18.70%",
+            "blocking_reasons": ["avg_5d_below_zero", "active_day_sample_below_gate"],
+            "risk_review_reasons": [],
+        },
+    )
+    monkeypatch.setattr(renderers, "build_top_deep_embeds", lambda **kwargs: [])
+    config = DiscordIntegrationConfig(web_base_url="http://localhost:8501")
+    summary = {
+        "run_id": "RUN-BLOCKED",
+        "market": "KOSDAQ",
+        "total_scans": 1717,
+        "result_count": 0,
+        "filtered_count": 1717,
+        "discord_job": {"job_id": "DS-BLOCKED", "market": "KOSDAQ", "returncode": 0},
+    }
+
+    embeds = build_scan_result_embeds(summary, config=config)
+
+    blocked = next(field for field in embeds[0]["fields"] if field["name"] == "KIS 쉐도우 차단")
+    assert "avg_5d_below_zero" in blocked["value"]
+    assert "shadow_display_allowed=False" in blocked["value"]
+
+
 def test_scan_result_renderer_includes_low_liquidity_blocked_candidates(monkeypatch):
     low_row = {
         "ticker": "065150.KQ",

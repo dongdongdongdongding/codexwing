@@ -329,6 +329,15 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
     }
 
 
+def kis_shadow_gate_status(market: str) -> Dict[str, Any]:
+    """Return the current KIS shadow display gate without creating candidates."""
+
+    market_key = str(market or "").upper().strip()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {}
+    return _kis_shadow_gate_payload(market_key)
+
+
 def _kis_shadow_topn(market: str, fallback: int = 3) -> int:
     report = _load_kis_shadow_report(market)
     identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
@@ -1527,6 +1536,7 @@ __all__ = [
     "admission_model_summary",
     "admission_run_status",
     "build_kis_shadow_admission_records",
+    "kis_shadow_gate_status",
     "load_kis_shadow_model",
     "merge_kis_prefilter_evidence_into_rows",
     "build_scan_universe_admission_input_rows",

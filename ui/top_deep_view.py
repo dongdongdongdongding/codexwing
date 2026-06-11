@@ -11,6 +11,7 @@ import streamlit as st
 
 from modules import db_manager
 from modules.admission_metric_copy import metric_help, metric_label
+from modules.candidate_interpretation import build_candidate_interpretation
 from modules.kis_theme_news_evidence import format_kis_theme_news_summary
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from ui.scan_integrity_view import (
@@ -165,6 +166,40 @@ def fmt_flow_value(value: Any, unit: Any = None) -> str:
         return f"{numeric:+,.0f}{suffix}"
     except Exception:
         return "-"
+
+
+def render_buy_premium_execution_gate(interpretation: Dict[str, Any]) -> None:
+    interpretation = interpretation if isinstance(interpretation, dict) else {}
+    gate = interpretation.get("buy_premium_execution_gate") if isinstance(interpretation.get("buy_premium_execution_gate"), dict) else {}
+    if not gate:
+        st.info("실매수 게이트: 근거 부족")
+        return
+    label = str(gate.get("label") or "-")
+    reasons = gate.get("why_not_buy_ready") or gate.get("block_reasons") or gate.get("scout_reasons") or []
+    reason_text = " / ".join(str(item) for item in reasons[:3]) if isinstance(reasons, list) else ""
+    metric_parts = [
+        f"+{fmt_metric_num(gate.get('buy_premium_pct'), 1)}% 매수 기준",
+    ]
+    if gate.get("return_5d_pct") is not None:
+        metric_parts.append(f"5D 종가 {fmt_metric_pct(gate.get('return_5d_pct'))}")
+    if gate.get("max_high_return_5d_pct") is not None:
+        metric_parts.append(f"5D 최고 {fmt_metric_pct(gate.get('max_high_return_5d_pct'))}")
+    if gate.get("touch_rate_pct") is not None:
+        metric_parts.append(f"검증 터치 {fmt_metric_num(gate.get('touch_rate_pct'), 1)}%")
+    if gate.get("stop_first_risk_pct") is not None:
+        metric_parts.append(f"stop-first {fmt_metric_num(gate.get('stop_first_risk_pct'), 1)}%")
+    message = f"실매수 게이트: {label} · " + " · ".join(metric_parts)
+    if reason_text:
+        message += f" · 이유 {reason_text}"
+    if gate.get("buy_ready"):
+        st.success(message)
+    elif gate.get("touch_scout_candidate"):
+        st.warning(message)
+        st.caption(str(gate.get("semantics") or "터치 관찰과 실매수 승격은 별도입니다."))
+    elif gate.get("block_reasons"):
+        st.error(message)
+    else:
+        st.info(message)
 
 
 def fmt_flow_leader_caption(flow: Dict[str, Any]) -> str | None:
@@ -502,6 +537,9 @@ def render_top_deep_reports_page() -> None:
         admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
         admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
         candidate_data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
+        interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else {}
+        if not isinstance(interpretation.get("buy_premium_execution_gate"), dict):
+            interpretation = build_candidate_interpretation(row)
         section = alignment.get("analysis_section") or "Top5"
         section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
         title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"
@@ -545,6 +583,7 @@ def render_top_deep_reports_page() -> None:
                 "지표 구분: 모델 검증 5D승률/검증 평균/검증 최저는 같은 모델 선택규칙의 과거 표본값이고, "
                 "후보 통과확률/모델 순위는 이번 스캔 후보별 값입니다."
             )
+            render_buy_premium_execution_gate(interpretation)
             regime_theme_adjustment = admission.get("regime_theme_adjustment") if isinstance(admission.get("regime_theme_adjustment"), dict) else {}
             if regime_theme_adjustment:
                 warnings = regime_theme_adjustment.get("warnings") if isinstance(regime_theme_adjustment.get("warnings"), list) else []
@@ -650,6 +689,7 @@ __all__ = [
     "fmt_krw",
     "fmt_metric_num",
     "fmt_metric_pct",
+    "render_buy_premium_execution_gate",
     "infer_top_deep_market",
     "load_top_deep_reports",
     "render_data_backed_action_plan",
