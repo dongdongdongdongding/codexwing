@@ -55,9 +55,11 @@ class Config:
     pool: str
     pool_k: int
     score_mode: str
+    max_tail_prob: float | None = None
 
     def key(self) -> str:
-        return f"{self.pool}|top{self.pool_k}|{self.score_mode}"
+        tail = "tail_none" if self.max_tail_prob is None else f"tail{str(self.max_tail_prob).replace('.', 'p')}"
+        return f"{self.pool}|top{self.pool_k}|{self.score_mode}|{tail}"
 
 
 def _utc_now() -> str:
@@ -263,8 +265,30 @@ def _choose_threshold(calibration: pd.DataFrame, score: pd.Series) -> Tuple[floa
     return best_threshold, {"objective": _round(best_objective), "metrics": best_metrics}
 
 
-def _configs(pool_modes: Sequence[str], pool_k: Sequence[int], score_modes: Sequence[str]) -> List[Config]:
-    return [Config(pool=pool, pool_k=int(k), score_mode=score) for pool in pool_modes for k in pool_k for score in score_modes]
+def _configs(
+    pool_modes: Sequence[str],
+    pool_k: Sequence[int],
+    score_modes: Sequence[str],
+    max_tail_probs: Sequence[float | None],
+) -> List[Config]:
+    return [
+        Config(pool=pool, pool_k=int(k), score_mode=score, max_tail_prob=max_tail_prob)
+        for pool in pool_modes
+        for k in pool_k
+        for score in score_modes
+        for max_tail_prob in max_tail_probs
+    ]
+
+
+def _parse_optional_float_list(values: Sequence[str]) -> List[float | None]:
+    parsed: List[float | None] = []
+    for value in values:
+        normalized = str(value).strip().lower()
+        if normalized in {"", "none", "null", "off", "false"}:
+            parsed.append(None)
+        else:
+            parsed.append(float(normalized))
+    return parsed
 
 
 def _baseline_metrics(path: Path, market: str) -> Dict[str, Any] | None:
@@ -287,11 +311,15 @@ def _market_report(
     pool_modes: Sequence[str],
     pool_k: Sequence[int],
     score_modes: Sequence[str],
+    max_tail_probs: Sequence[float | None],
     min_train_days: int,
     test_days: int,
     max_folds: int,
     embargo_days: int,
     calibration_days: int,
+    min_eval_n: int,
+    min_eval_active_days: int,
+    ranked_limit: int,
 ) -> Dict[str, Any]:
     started = perf_counter()
     frame = _load_market_frame(cache_path, market)
@@ -305,7 +333,7 @@ def _market_report(
         max_folds=max_folds,
         embargo_days=embargo_days,
     )
-    configs = _configs(pool_modes, pool_k, score_modes)
+    configs = _configs(pool_modes, pool_k, score_modes, max_tail_probs)
     selected_by_config: Dict[str, List[pd.Index]] = {cfg.key(): [] for cfg in configs}
     fold_rows: List[Dict[str, Any]] = []
     tested_days: List[str] = []
@@ -343,6 +371,10 @@ def _market_report(
         for cfg in configs:
             cal_pool = _select_pool(calibration, cal_pool_scores, cfg.pool, cfg.pool_k)
             test_pool = _select_pool(test, test_pool_scores, cfg.pool, cfg.pool_k)
+            if cfg.max_tail_prob is not None:
+                max_tail_prob = float(cfg.max_tail_prob)
+                cal_pool = cal_pool[cal_pool.isin(p_tail_cal[p_tail_cal.le(max_tail_prob)].index)]
+                test_pool = test_pool[test_pool.isin(p_tail_test[p_tail_test.le(max_tail_prob)].index)]
             if len(cal_pool) == 0 or len(test_pool) == 0:
                 continue
             cal_score = _rank_score(cfg.score_mode, p_success_cal, p_tail_cal, p_hit10_cal).reindex(cal_pool)
@@ -356,6 +388,7 @@ def _market_report(
             fold_config_rows.append(
                 {
                     "config": cfg.key(),
+                    "max_tail_prob": cfg.max_tail_prob,
                     "threshold": _round(threshold),
                     "calibration": threshold_meta,
                     "test_metrics": _metric_summary(test, selected.index),
@@ -398,7 +431,14 @@ def _market_report(
     )
 
     baseline = _baseline_metrics(baseline_report, market)
-    best = ranked[0] if ranked else None
+    unconstrained_best = ranked[0] if ranked else None
+    eligible_ranked = [
+        row
+        for row in ranked
+        if int((row.get("metrics") or {}).get("n") or 0) >= int(min_eval_n)
+        and int((row.get("metrics") or {}).get("active_days") or 0) >= int(min_eval_active_days)
+    ]
+    best = eligible_ranked[0] if eligible_ranked else None
     improvement: Dict[str, Any] = {}
     if best and baseline:
         best_metrics = best.get("metrics") or {}
@@ -440,9 +480,13 @@ def _market_report(
         "folds": fold_rows,
         "baseline_best_metrics": baseline,
         "rank_metric": rank_metric,
+        "max_tail_prob_thresholds": list(max_tail_probs),
+        "evidence_gate": {"min_eval_n": int(min_eval_n), "min_eval_active_days": int(min_eval_active_days)},
         "improvement": improvement,
         "best": best,
-        "ranked": ranked[:20],
+        "unconstrained_best": unconstrained_best,
+        "ranked": ranked[: int(ranked_limit)],
+        "eligible_ranked": eligible_ranked[: int(ranked_limit)],
         "elapsed_sec": _round(perf_counter() - started, 3),
     }
 
@@ -473,11 +517,15 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
                 pool_modes=args.pool_modes,
                 pool_k=args.pool_k,
                 score_modes=args.score_modes,
+                max_tail_probs=args.max_tail_prob_thresholds,
                 min_train_days=args.min_train_days,
                 test_days=args.test_days,
                 max_folds=args.max_folds,
                 embargo_days=args.embargo_days,
                 calibration_days=args.calibration_days,
+                min_eval_n=args.min_eval_n,
+                min_eval_active_days=args.min_eval_active_days,
+                ranked_limit=args.ranked_limit,
             )
         )
     improved = [
@@ -528,25 +576,33 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     ]
     for market_report in report.get("markets", []):
         best = market_report.get("best") or {}
+        unconstrained_best = market_report.get("unconstrained_best") or {}
         metrics = best.get("metrics") or {}
         config = best.get("config") or {}
+        unconstrained_metrics = unconstrained_best.get("metrics") or {}
+        evidence_gate = market_report.get("evidence_gate") or {}
         improvement = market_report.get("improvement") or {}
         lines.extend(
             [
                 f"## {market_report.get('market')}",
                 "",
                 f"- rows/days: `{market_report.get('rows')}` / `{market_report.get('days')}`",
-                f"- best_config: pool=`{config.get('pool')}` pool_k=`{config.get('pool_k')}` score=`{config.get('score_mode')}`",
+                f"- evidence_gate: min_n=`{evidence_gate.get('min_eval_n')}` min_active_days=`{evidence_gate.get('min_eval_active_days')}` eligible_configs=`{len(market_report.get('eligible_ranked') or [])}`",
+                f"- unconstrained_best: n=`{unconstrained_metrics.get('n')}`, active_days=`{unconstrained_metrics.get('active_days')}`, hit5_dd10=`{unconstrained_metrics.get('hit5_dd10_5d_pct')}`, tail=`{unconstrained_metrics.get('tail_breach_5d_pct')}`, avg_exit=`{unconstrained_metrics.get('avg_ordered_exit_5d_pct')}`",
+                f"- best_config: pool=`{config.get('pool')}` pool_k=`{config.get('pool_k')}` score=`{config.get('score_mode')}` max_tail_prob=`{config.get('max_tail_prob')}`",
                 f"- avg_exit improvement: `{improvement.get('baseline_avg_ordered_exit_5d_pct')}` -> `{improvement.get('best_avg_ordered_exit_5d_pct')}` (delta `{improvement.get('avg_ordered_exit_delta_pct')}`)",
                 f"- dynamic_exit: `{metrics.get('avg_dynamic_exit_5d_pct')}` (fixed 대비 delta `{improvement.get('dynamic_minus_fixed_exit_delta_pct')}`)",
                 f"- hit5_dd10: `{improvement.get('baseline_hit5_dd10_5d_pct')}` -> `{improvement.get('best_hit5_dd10_5d_pct')}` (delta `{improvement.get('hit5_dd10_delta_pct')}`)",
                 f"- best metrics: n=`{metrics.get('n')}`, active_days=`{metrics.get('active_days')}`, hit5_dd10=`{metrics.get('hit5_dd10_5d_pct')}`, hit10=`{metrics.get('hit10_5d_pct')}`, safe_hit10=`{metrics.get('safe_hit10_5d_pct')}`, tail=`{metrics.get('tail_breach_5d_pct')}`, bad_path=`{metrics.get('bad_path_pct')}`, avg_exit=`{metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{metrics.get('min_min_low_5d_pct')}`",
                 "",
-                "| rank | pool | pool_k | score | n | days | coverage | hit5 | hit10 | safe10 | tail | bad | avg_exit | dynamic_exit | min_low |",
-                "|---:|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+                "| rank | pool | pool_k | score | max_tail_prob | n | days | coverage | hit5 | hit10 | safe10 | tail | bad | avg_exit | dynamic_exit | min_low |",
+                "|---:|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
             ]
         )
-        for rank, row in enumerate((market_report.get("ranked") or [])[:10], start=1):
+        eligible_rows = (market_report.get("eligible_ranked") or [])[:10]
+        if not eligible_rows:
+            lines.append("| - | no eligible config | - | - | - | - | - | - | - | - | - | - | - | - | - | - |")
+        for rank, row in enumerate(eligible_rows, start=1):
             row_config = row.get("config") or {}
             row_metrics = row.get("metrics") or {}
             lines.append(
@@ -557,6 +613,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                         str(row_config.get("pool")),
                         _fmt(row_config.get("pool_k")),
                         str(row_config.get("score_mode")),
+                        _fmt(row_config.get("max_tail_prob")),
                         _fmt(row_metrics.get("n")),
                         _fmt(row_metrics.get("active_days")),
                         _fmt(row_metrics.get("coverage_test_days_pct")),
@@ -601,6 +658,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-folds", type=int, default=6)
     parser.add_argument("--embargo-days", type=int, default=5)
     parser.add_argument("--calibration-days", type=int, default=12)
+    parser.add_argument("--min-eval-n", type=int, default=1)
+    parser.add_argument("--min-eval-active-days", type=int, default=1)
+    parser.add_argument("--ranked-limit", type=int, default=20)
     parser.add_argument("--baseline-report", default=str(DEFAULT_BASELINE_REPORT))
     parser.add_argument(
         "--rank-metric",
@@ -610,7 +670,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-json", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.json"))
     parser.add_argument("--output-md", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.md"))
     parser.add_argument("--input-path", action="append", default=[], help="MARKET=path override for prepared cache.")
+    parser.add_argument(
+        "--max-tail-prob-thresholds",
+        nargs="+",
+        default=["none"],
+        help="Tail-risk model probability gates to sweep. Use 'none' to disable the hard gate.",
+    )
     args = parser.parse_args(argv)
+    args.max_tail_prob_thresholds = _parse_optional_float_list(args.max_tail_prob_thresholds)
     args.input_paths = {}
     for raw in args.input_path:
         if "=" not in str(raw):
