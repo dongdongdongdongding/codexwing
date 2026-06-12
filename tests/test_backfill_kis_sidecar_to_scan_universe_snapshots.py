@@ -9,6 +9,7 @@ from multi_agent.tools.backfill_kis_sidecar_to_scan_universe_snapshots import (
     build_daily_quote_proxy,
     build_updates,
     fetch_snapshot_rows,
+    load_snapshot_rows_from_cache,
     summarize_candidate_rows,
     verify_existing_sidecars,
     write_updates,
@@ -382,6 +383,64 @@ def test_summarize_candidate_rows_reports_date_distribution():
     assert summary["id_min"] == 10
     assert summary["id_max"] == 12
     assert summary["sample_candidate_rows"][1]["has_kis_sidecar"] is True
+
+
+def test_load_snapshot_rows_from_cache_applies_backfill_filters(tmp_path):
+    cache = tmp_path / "rows.pkl"
+    pd.DataFrame(
+        [
+            {
+                "id": 1,
+                "snapshot_key": "A",
+                "ticker": "000001.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "row_role": "emitted",
+                "base_trade_date": "2026-05-28",
+                "return_5d_pct": 1.2,
+                "feature_snapshot": {},
+            },
+            {
+                "id": 2,
+                "snapshot_key": "B",
+                "ticker": "000002.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "row_role": "emitted",
+                "base_trade_date": "2026-05-28",
+                "outcome_available": True,
+                "return_5d_pct": 3.4,
+                "feature_snapshot": {"kis_sidecar": {"feature_origin": "existing"}},
+            },
+            {
+                "id": 3,
+                "snapshot_key": "C",
+                "ticker": "000003.KQ",
+                "market": "KOSDAQ",
+                "scan_mode": "SWING",
+                "row_role": "emitted",
+                "base_trade_date": "2026-05-28",
+                "outcome_available": True,
+                "return_5d_pct": 5.6,
+                "feature_snapshot": {},
+            },
+        ]
+    ).to_pickle(cache)
+
+    rows = load_snapshot_rows_from_cache(
+        [cache],
+        market="KOSPI",
+        scan_mode="SWING",
+        limit=0,
+        base_date="2026-05-28",
+        min_base_date="",
+        max_base_date="",
+        overwrite=False,
+        only_outcome_available=True,
+        require_outcome_label=True,
+    )
+
+    assert [row["id"] for row in rows] == [1]
 
 
 def test_fetch_snapshot_rows_retries_statement_timeout(monkeypatch):

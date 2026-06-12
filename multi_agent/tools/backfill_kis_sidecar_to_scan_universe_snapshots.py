@@ -670,6 +670,82 @@ def fetch_snapshot_rows(
     return rows
 
 
+def load_snapshot_rows_from_cache(
+    paths: Iterable[Path],
+    *,
+    market: str,
+    scan_mode: str,
+    limit: int,
+    base_date: str,
+    min_base_date: str,
+    max_base_date: str,
+    overwrite: bool,
+    only_outcome_available: bool,
+    require_outcome_label: bool,
+    row_role: str = "ALL",
+    skip_existing: bool = True,
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for path in paths:
+        if not path.exists():
+            raise FileNotFoundError(str(path))
+        suffix = path.suffix.lower()
+        if suffix in {".pkl", ".pickle"}:
+            frame = pd.read_pickle(path)
+        elif suffix == ".csv":
+            frame = pd.read_csv(path)
+        elif suffix in {".json", ".jsonl"}:
+            if suffix == ".jsonl":
+                frame = pd.read_json(path, lines=True)
+            else:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                if isinstance(payload, list):
+                    frame = pd.DataFrame(payload)
+                elif isinstance(payload, Mapping) and isinstance(payload.get("rows"), list):
+                    frame = pd.DataFrame(payload.get("rows"))
+                else:
+                    raise ValueError(f"unsupported json cache shape: {path}")
+        else:
+            raise ValueError(f"unsupported input cache suffix: {path}")
+        for raw in frame.to_dict(orient="records"):
+            row = dict(raw)
+            row_market = str(row.get("market") or "")
+            row_scan_mode = str(row.get("scan_mode") or "")
+            row_base = _date_text(row.get("base_trade_date") or row.get("trade_date") or row.get("scanned_at")) or ""
+            if row_base and not row.get("base_trade_date"):
+                row["base_trade_date"] = row_base
+            if market != "ALL" and row_market != market:
+                continue
+            if scan_mode != "ALL" and row_scan_mode != scan_mode:
+                continue
+            if row_role != "ALL" and str(row.get("row_role") or "") != row_role:
+                continue
+            if base_date and row_base != base_date:
+                continue
+            if min_base_date and row_base < min_base_date:
+                continue
+            if max_base_date and row_base > max_base_date:
+                continue
+            if only_outcome_available:
+                outcome_available = row.get("outcome_available")
+                if outcome_available is False:
+                    continue
+                if outcome_available is not True and not _has_outcome_label(row):
+                    continue
+            if skip_existing and not overwrite and _has_kis_sidecar(row):
+                continue
+            if require_outcome_label and not _has_outcome_label(row):
+                continue
+            if not str(row.get("ticker") or "").strip():
+                continue
+            if _base_trade_date(row) is None:
+                continue
+            rows.append(row)
+            if limit and len(rows) >= int(limit):
+                return rows
+    return rows
+
+
 def summarize_candidate_rows(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
     rows_list = [dict(row) for row in rows]
     by_date: Counter[str] = Counter()
@@ -1031,6 +1107,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--market", choices=["ALL", "KOSPI", "KOSDAQ"], default="ALL")
     parser.add_argument("--scan-mode", choices=["ALL", "SWING", "INTRADAY"], default="ALL")
+    parser.add_argument(
+        "--input-cache",
+        action="append",
+        default=[],
+        help="Read candidate rows from local pickle/csv/json/jsonl cache instead of querying Supabase.",
+    )
     parser.add_argument("--limit", type=int, default=0, help="Maximum eligible rows to process; 0 means all.")
     parser.add_argument(
         "--client-filter",
@@ -1088,23 +1170,40 @@ def main() -> int:
     if args.live:
         os.environ["KIS_ENABLE_LIVE_CALLS"] = "1"
 
-    rows = fetch_snapshot_rows(
-        market=args.market,
-        scan_mode=args.scan_mode,
-        page_size=args.page_size,
-        limit=args.limit,
-        min_id=args.min_id,
-        max_id=args.max_id,
-        base_date=_date_text(args.base_date) or "",
-        min_base_date=_date_text(args.min_base_date) or "",
-        max_base_date=_date_text(args.max_base_date) or "",
-        overwrite=args.overwrite,
-        only_outcome_available=args.only_outcome_available,
-        require_outcome_label=args.require_outcome_label,
-        row_role=args.row_role,
-        client_filter=bool(args.client_filter),
-        skip_existing=not args.verify_only and not args.news_only_existing_sidecar,
-    )
+    input_caches = [Path(path) for path in args.input_cache]
+    if input_caches:
+        rows = load_snapshot_rows_from_cache(
+            input_caches,
+            market=args.market,
+            scan_mode=args.scan_mode,
+            limit=args.limit,
+            base_date=_date_text(args.base_date) or "",
+            min_base_date=_date_text(args.min_base_date) or "",
+            max_base_date=_date_text(args.max_base_date) or "",
+            overwrite=args.overwrite,
+            only_outcome_available=args.only_outcome_available,
+            require_outcome_label=args.require_outcome_label,
+            row_role=args.row_role,
+            skip_existing=not args.verify_only and not args.news_only_existing_sidecar,
+        )
+    else:
+        rows = fetch_snapshot_rows(
+            market=args.market,
+            scan_mode=args.scan_mode,
+            page_size=args.page_size,
+            limit=args.limit,
+            min_id=args.min_id,
+            max_id=args.max_id,
+            base_date=_date_text(args.base_date) or "",
+            min_base_date=_date_text(args.min_base_date) or "",
+            max_base_date=_date_text(args.max_base_date) or "",
+            overwrite=args.overwrite,
+            only_outcome_available=args.only_outcome_available,
+            require_outcome_label=args.require_outcome_label,
+            row_role=args.row_role,
+            client_filter=bool(args.client_filter),
+            skip_existing=not args.verify_only and not args.news_only_existing_sidecar,
+        )
     if args.plan_only:
         planning = summarize_candidate_rows(rows)
         report = {
@@ -1115,6 +1214,7 @@ def main() -> int:
             "args": {
                 "market": args.market,
                 "scan_mode": args.scan_mode,
+                "input_cache": [str(path) for path in input_caches],
                 "limit": args.limit,
                 "min_id": args.min_id,
                 "max_id": args.max_id,
@@ -1149,6 +1249,7 @@ def main() -> int:
             "args": {
                 "market": args.market,
                 "scan_mode": args.scan_mode,
+                "input_cache": [str(path) for path in input_caches],
                 "limit": args.limit,
                 "min_id": args.min_id,
                 "max_id": args.max_id,
@@ -1200,6 +1301,7 @@ def main() -> int:
         "args": {
             "market": args.market,
             "scan_mode": args.scan_mode,
+            "input_cache": [str(path) for path in input_caches],
             "limit": args.limit,
             "min_id": args.min_id,
             "max_id": args.max_id,
