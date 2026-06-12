@@ -463,7 +463,7 @@ def build_kis_shadow_admission_records(
         primary_probability_passed = primary_threshold is None or probability >= primary_threshold
         blocked_reasons: List[str] = []
         if not tail_gate_passed:
-            blocked_reasons.append("hard_stop_probability_gate_failed")
+            blocked_reasons.append("dd10_safety_probability_below_threshold")
         if not primary_score_passed:
             blocked_reasons.append("score_threshold_not_met")
         if not primary_probability_passed:
@@ -551,6 +551,10 @@ def build_kis_shadow_admission_records(
                     "runtime_model_score_threshold": _safe_float(bundle.get("score_threshold")),
                     "tail_risk_probability_pct": round(tail_probability * 100.0, 4) if tail_probability is not None else None,
                     "tail_risk_prob_threshold_pct": round(tail_threshold * 100.0, 4) if tail_threshold is not None else None,
+                    "tail_risk_label": bundle.get("tail_risk_label"),
+                    "tail_risk_probability_semantics": (
+                        "5거래일 내 저점이 진입가 대비 -10% 아래로 밀리지 않을 확률"
+                    ),
                     "runtime_model_rank": model_rank,
                     "selection_rank": shadow_rank,
                     "source": "real_kis_sidecar_or_prefilter_evidence",

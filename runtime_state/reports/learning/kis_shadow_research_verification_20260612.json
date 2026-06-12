@@ -1,0 +1,375 @@
+{
+  "decision": {
+    "all_required_markets_production_ready": false,
+    "all_required_markets_shadow_display_allowed": true,
+    "market_gate_rows": {
+      "KOSDAQ": {
+        "gate_status": "shadow_ready",
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20"
+        ],
+        "production_economics": {
+          "cost_model": {
+            "buy_fee_bps": 1.5,
+            "buy_slippage_bps": 8.0,
+            "fill_rate": 1.0,
+            "sell_fee_bps": 1.5,
+            "sell_slippage_bps": 8.0,
+            "sell_tax_bps": 15.0,
+            "spread_bps": 4.0,
+            "version": "kr_tradable_pnl_cost_v1"
+          },
+          "expected_touch_policy_net_5d_pct": 4.601458,
+          "hit5_dd10_5d_pct": 100.0,
+          "loss_floor_pct": -10.0,
+          "policy": "target_touch_5d_dd10_after_buy_premium",
+          "target_touch_gross_pct": 5.0,
+          "target_touch_net_pct": 4.601458,
+          "thresholds": {
+            "min_expected_touch_policy_net_5d_pct": 0.5
+          }
+        },
+        "production_ready": false,
+        "risk_review_required": false,
+        "shadow_display_allowed": true
+      },
+      "KOSPI": {
+        "gate_status": "shadow_ready",
+        "production_blocking_reasons": [
+          "active_days_lt_15"
+        ],
+        "production_economics": {
+          "cost_model": {
+            "buy_fee_bps": 1.5,
+            "buy_slippage_bps": 8.0,
+            "fill_rate": 1.0,
+            "sell_fee_bps": 1.5,
+            "sell_slippage_bps": 8.0,
+            "sell_tax_bps": 15.0,
+            "spread_bps": 4.0,
+            "version": "kr_tradable_pnl_cost_v1"
+          },
+          "expected_touch_policy_net_5d_pct": 1.973196,
+          "hit5_dd10_5d_pct": 82.0,
+          "loss_floor_pct": -10.0,
+          "policy": "target_touch_5d_dd10_after_buy_premium",
+          "target_touch_gross_pct": 5.0,
+          "target_touch_net_pct": 4.601458,
+          "thresholds": {
+            "min_expected_touch_policy_net_5d_pct": 0.25
+          }
+        },
+        "production_ready": false,
+        "risk_review_required": false,
+        "shadow_display_allowed": true
+      }
+    },
+    "no_dummy_data": true,
+    "recommended_action": "keep_existing_production_and_show_kis_shadow_top_section",
+    "required_markets": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
+    "status": "shadow_only"
+  },
+  "deployment": {
+    "KOSDAQ": {
+      "dynamic_exit_policy_template": {
+        "bad_path_pct": 26.3158,
+        "early_exit_rules": [
+          "5거래일 이내 +5% 목표가를 터치하면 익절 우선",
+          "진입가 대비 -10% 이탈 시 실패 경로로 보고 청산/재검토",
+          "KIS 수급이 외인+기관 동반 매도로 전환되면 신규 추격 금지",
+          "테마/뉴스 위험 태그가 새로 붙으면 보유 축소 검토"
+        ],
+        "entry_policy": "scan_reference_plus_2pct_assumption",
+        "entry_premium_assumption_pct": 2.0,
+        "exit_bias": "5일 내 +5% 터치 우선, -10% 하방 제한",
+        "expected_avg_5d_pct": 15.458772,
+        "expected_net_avg_5d_pct": 15.1088,
+        "friction_pct": 0.35,
+        "hold_days": 5,
+        "market": "KOSDAQ",
+        "min_min_low_5d_pct": -7.006077,
+        "position_sizing": "half_size_shadow_review",
+        "prior_risk_score": null,
+        "reason_codes": [
+          "touch5_dd10_target_plus5_drawdown_minus10"
+        ],
+        "risk_level": "LOW",
+        "risk_score": 0.0,
+        "shadow_only": true,
+        "stop5_pct": 26.3158,
+        "stop_before_target_5d_pct": 26.3158,
+        "stop_sl_pct": -10.0,
+        "target_before_stop_5d_pct": 73.6842,
+        "target_tp_pct": 5.0,
+        "version": "kis_shadow_dynamic_exit_policy_v2_touch5_dd10"
+      },
+      "model_path": "/Users/dongdong/Projects/codex_swing/swing-main/models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p75_tail0p85.pkl",
+      "shadow_only": true
+    },
+    "KOSPI": {
+      "dynamic_exit_policy_template": {
+        "bad_path_pct": 62.0,
+        "early_exit_rules": [
+          "5거래일 이내 +5% 목표가를 터치하면 익절 우선",
+          "진입가 대비 -10% 이탈 시 실패 경로로 보고 청산/재검토",
+          "KIS 수급이 외인+기관 동반 매도로 전환되면 신규 추격 금지",
+          "테마/뉴스 위험 태그가 새로 붙으면 보유 축소 검토"
+        ],
+        "entry_policy": "scan_reference_plus_2pct_assumption",
+        "entry_premium_assumption_pct": 2.0,
+        "exit_bias": "5일 내 +5% 터치 우선, -10% 하방 제한",
+        "expected_avg_5d_pct": 26.115197,
+        "expected_net_avg_5d_pct": 25.7652,
+        "friction_pct": 0.35,
+        "hold_days": 5,
+        "market": "KOSPI",
+        "min_min_low_5d_pct": -8.919727,
+        "position_sizing": "half_size_shadow_review",
+        "prior_risk_score": null,
+        "reason_codes": [
+          "touch5_dd10_target_plus5_drawdown_minus10"
+        ],
+        "risk_level": "LOW",
+        "risk_score": 0.0,
+        "shadow_only": true,
+        "stop5_pct": 60.0,
+        "stop_before_target_5d_pct": 60.0,
+        "stop_sl_pct": -10.0,
+        "target_before_stop_5d_pct": 82.0,
+        "target_tp_pct": 5.0,
+        "version": "kis_shadow_dynamic_exit_policy_v2_touch5_dd10"
+      },
+      "model_path": "/Users/dongdong/Projects/codex_swing/swing-main/models/scan_universe_challengers/kospi__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p3_tail0p9.pkl",
+      "shadow_only": true
+    }
+  },
+  "exploration_result": {
+    "evaluated_results": 990,
+    "production_ready": 0,
+    "shadow_display_allowed": 521
+  },
+  "generated_at": "2026-06-12T14:33:19.722151+00:00",
+  "latest_consumer_verification": [
+    {
+      "blocked_watch_rows": 5,
+      "kis_shadow_rows": 5,
+      "market": "KOSPI",
+      "missing_trace_rows": 0,
+      "run_id": "RUN-1D19BFFD",
+      "sample_candidates": [
+        {
+          "blocking_reasons": [
+            "dd10_safety_probability_below_threshold"
+          ],
+          "dd10_safety_probability_pct": 53.911,
+          "dd10_safety_threshold_pct": 90.0,
+          "decision_bucket": "kis_shadow_blocked_watch",
+          "hold_days": 5,
+          "name": "SK하이닉스",
+          "runtime_model_probability_pct": 89.8602,
+          "sl_pct": -10.0,
+          "ticker": "000660.KS",
+          "tp_pct": 5.0
+        },
+        {
+          "blocking_reasons": [
+            "dd10_safety_probability_below_threshold"
+          ],
+          "dd10_safety_probability_pct": 52.318,
+          "dd10_safety_threshold_pct": 90.0,
+          "decision_bucket": "kis_shadow_blocked_watch",
+          "hold_days": 5,
+          "name": "삼성전기",
+          "runtime_model_probability_pct": 89.3666,
+          "sl_pct": -10.0,
+          "ticker": "009150.KS",
+          "tp_pct": 5.0
+        },
+        {
+          "blocking_reasons": [
+            "dd10_safety_probability_below_threshold"
+          ],
+          "dd10_safety_probability_pct": 47.9637,
+          "dd10_safety_threshold_pct": 90.0,
+          "decision_bucket": "kis_shadow_blocked_watch",
+          "hold_days": 5,
+          "name": "현대모비스",
+          "runtime_model_probability_pct": 86.8076,
+          "sl_pct": -10.0,
+          "ticker": "012330.KS",
+          "tp_pct": 5.0
+        }
+      ],
+      "selected_rows": 0,
+      "top_deep_rows": 14
+    },
+    {
+      "blocked_watch_rows": 5,
+      "kis_shadow_rows": 5,
+      "market": "KOSDAQ",
+      "missing_trace_rows": 0,
+      "run_id": "RUN-19AB9953",
+      "sample_candidates": [
+        {
+          "blocking_reasons": [
+            "dd10_safety_probability_below_threshold"
+          ],
+          "dd10_safety_probability_pct": 75.13,
+          "dd10_safety_threshold_pct": 85.0,
+          "decision_bucket": "kis_shadow_blocked_watch",
+          "hold_days": 5,
+          "name": "휴럼",
+          "runtime_model_probability_pct": 86.7519,
+          "sl_pct": -10.0,
+          "ticker": "353190.KQ",
+          "tp_pct": 5.0
+        },
+        {
+          "blocking_reasons": [
+            "dd10_safety_probability_below_threshold"
+          ],
+          "dd10_safety_probability_pct": 78.3801,
+          "dd10_safety_threshold_pct": 85.0,
+          "decision_bucket": "kis_shadow_blocked_watch",
+          "hold_days": 5,
+          "name": "위즈코프",
+          "runtime_model_probability_pct": 85.5838,
+          "sl_pct": -10.0,
+          "ticker": "038620.KQ",
+          "tp_pct": 5.0
+        },
+        {
+          "blocking_reasons": [
+            "dd10_safety_probability_below_threshold"
+          ],
+          "dd10_safety_probability_pct": 64.0267,
+          "dd10_safety_threshold_pct": 85.0,
+          "decision_bucket": "kis_shadow_blocked_watch",
+          "hold_days": 5,
+          "name": "서산",
+          "runtime_model_probability_pct": 84.5595,
+          "sl_pct": -10.0,
+          "ticker": "079650.KQ",
+          "tp_pct": 5.0
+        }
+      ],
+      "selected_rows": 0,
+      "top_deep_rows": 15
+    }
+  ],
+  "market_results": {
+    "KOSDAQ": {
+      "active_days": 9,
+      "active_runs": 19,
+      "avg_5d_pct": 15.458772,
+      "avg_max_high_5d_pct": 32.274772,
+      "dd10_safety_threshold": 0.85,
+      "expected_touch_policy_net_5d_pct": 4.601458,
+      "feature_set": "kis_sidecar_failure_risk_augmented",
+      "hit10_5d_pct": 100.0,
+      "hit5_dd10_5d_pct": 100.0,
+      "min_5d_pct": 5.198266,
+      "min_min_low_5d_pct": -7.006077,
+      "model": "lightgbm",
+      "n": 19,
+      "prob_threshold": 0.75,
+      "production_blocking_reasons": [
+        "n_lt_45",
+        "active_days_lt_20",
+        "active_runs_lt_20"
+      ],
+      "production_ready": false,
+      "selection_rule": "top1_p0p75_tail0p85",
+      "shadow_display_allowed": true,
+      "stop5_pct": 26.3158
+    },
+    "KOSPI": {
+      "active_days": 11,
+      "active_runs": 50,
+      "avg_5d_pct": 26.115197,
+      "avg_max_high_5d_pct": 48.675187,
+      "dd10_safety_threshold": 0.9,
+      "expected_touch_policy_net_5d_pct": 1.973196,
+      "feature_set": "kis_sidecar_failure_risk_augmented",
+      "hit10_5d_pct": 76.0,
+      "hit5_dd10_5d_pct": 82.0,
+      "min_5d_pct": -8.442152,
+      "min_min_low_5d_pct": -8.919727,
+      "model": "lightgbm",
+      "n": 50,
+      "prob_threshold": 0.3,
+      "production_blocking_reasons": [
+        "active_days_lt_15"
+      ],
+      "production_ready": false,
+      "selection_rule": "top1_p0p3_tail0p9",
+      "shadow_display_allowed": true,
+      "stop5_pct": 60.0
+    }
+  },
+  "objective": "KIS sidecar/prefilter 기반 touch5_dd10 5D 모델이 실제 서비스 shadow 후보로 쓸 수 있는지 연구, 탐색, 검증한다.",
+  "research_inputs": {
+    "data_rows": 157551,
+    "feature_set": "kis_sidecar_failure_risk_augmented",
+    "markets": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
+    "model_family": "lightgbm",
+    "no_dummy_data": true,
+    "prepared_rows": 157551,
+    "threshold_grid": {
+      "prob_thresholds": [
+        null,
+        0.3,
+        0.35,
+        0.4,
+        0.45,
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75
+      ],
+      "tail_thresholds": [
+        null,
+        0.5,
+        0.6,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95
+      ],
+      "topns": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  },
+  "service_contract_fix": {
+    "details": [
+      "top_deep report now preserves kis_shadow_candidate, kis_shadow_gate, kis_theme_news_evidence.",
+      "top_deep trade_plan now preserves KIS dynamic TP/SL/hold from shadow rows.",
+      "tail gate blocking reason now says dd10_safety_probability_below_threshold instead of a misleading hard-stop probability label."
+    ],
+    "fixed": true
+  },
+  "target_definition": {
+    "entry_assumption": "scan reference price +2%",
+    "loss_guard": "5거래일 내 최저가가 -10%보다 깊게 밀리지 않는 경로를 선호",
+    "not_win": "0.1% 상승은 방어/참고 지표일 뿐 승으로 보지 않음",
+    "win": "5거래일 내 +5% 이상 터치"
+  },
+  "version": "kis_shadow_research_verification_v1"
+}

@@ -135,6 +135,95 @@ def test_build_top_deep_reports_merges_real_scan_and_planner_trace():
     assert report["news"]["headlines"][0]["title"] == "real headline"
 
 
+def test_build_top_deep_reports_preserves_kis_shadow_trace_and_dynamic_exit():
+    shadow_row = {
+        "ticker": "000660.KS",
+        "stock_name": "SK하이닉스",
+        "_analysis_section": "KIS Shadow Candidate",
+        "_analysis_section_rank": 1,
+        "_source_order": "kis_shadow_admission_candidate",
+        "decision": "KIS_SHADOW_BLOCKED",
+        "decision_bucket": "kis_shadow_blocked_watch",
+        "final_action": "KIS 쉐도우 관찰 후보 - 모델/손절 게이트 차단, 매수 금지",
+        "day_return_pct": 2.3,
+        "trade_plan": {
+            "entry_policy": "scan_reference_plus_2pct_assumption",
+            "entry_reference_price": 100000.0,
+            "entry_premium_assumption_pct": 2.0,
+            "target_tp_pct": 5.0,
+            "stop_sl_pct": -10.0,
+            "hold_days": 5,
+            "dynamic_exit_policy": {"version": "kis_shadow_dynamic_exit_policy_v2_touch5_dd10"},
+        },
+        "execution_stop": {
+            "display_stop_sl_pct": -10.0,
+            "display_stop_source": "kis_shadow_dynamic_exit_policy",
+        },
+        "kis_shadow_candidate": {
+            "candidate_status": "blocked_watch",
+            "blocking_reasons": ["dd10_safety_probability_below_threshold"],
+            "tail_risk_probability_pct": 53.9,
+            "tail_risk_prob_threshold_pct": 90.0,
+            "tail_risk_probability_semantics": "5거래일 내 저점이 진입가 대비 -10% 아래로 밀리지 않을 확률",
+            "kis_model_gate": {"status": "shadow_ready", "shadow_display_allowed": True},
+        },
+        "_shadow_gate": {"status": "shadow_ready", "shadow_display_allowed": True},
+        "kis_theme_news_evidence": {
+            "available": True,
+            "kis_backed": True,
+            "evidence_strength_score": 64.0,
+            "summary": "KIS 뉴스/테마 evidence",
+        },
+        "realized_expectancy_admission": {
+            "available": True,
+            "policy_version": "kis_shadow_admission_runtime_v1",
+            "5d_prob": 82.0,
+            "ranking_score_5d": 89.9,
+        },
+    }
+    with (
+        patch("modules.top_deep_report._select_top_candidates", return_value=[shadow_row]),
+        patch("modules.top_deep_report._fetch_price_snapshot") as price,
+        patch("modules.top_deep_report._fetch_news_snapshot") as news,
+        patch("modules.top_deep_report._fetch_investor_flow_snapshot") as flow,
+    ):
+        price.return_value = {
+            "warnings": [],
+            "current_price": 100000.0,
+            "day_change_pct": 2.3,
+            "volume_ratio_20d": 1.2,
+            "prior_20d_high": 101000.0,
+            "trend": "UP",
+        }
+        news.return_value = {"status": "OK", "headlines": []}
+        flow.return_value = {"valid": True, "source": "test", "warnings": []}
+
+        reports = build_top_deep_reports(
+            scan_rows=[],
+            planner_payload={"decisions": []},
+            run_id="RUN-KIS",
+            market="KOSPI",
+            scan_mode="SWING",
+            top_n=5,
+        )
+
+    assert len(reports) == 1
+    report = reports[0]
+    assert report["analysis_section"] == "KIS Shadow Candidate"
+    assert report["decision_bucket"] == "kis_shadow_blocked_watch"
+    assert report["final_action"] == "KIS 쉐도우 관찰 후보 - 모델/손절 게이트 차단, 매수 금지"
+    assert report["action_reason_codes"] == ["dd10_safety_probability_below_threshold"]
+    assert report["kis_shadow_candidate"]["candidate_status"] == "blocked_watch"
+    assert report["kis_shadow_candidate"]["tail_risk_probability_semantics"].startswith("5거래일")
+    assert report["kis_shadow_gate"]["status"] == "shadow_ready"
+    assert report["kis_theme_news_evidence"]["summary"] == "KIS 뉴스/테마 evidence"
+    assert report["trade_plan"]["target_tp_pct"] == 5.0
+    assert report["trade_plan"]["stop_sl_pct"] == -10.0
+    assert report["trade_plan"]["hold_days"] == 5
+    assert report["trade_plan"]["dynamic_exit_policy"]["version"] == "kis_shadow_dynamic_exit_policy_v2_touch5_dd10"
+    assert report["trade_plan"]["price_level_source"] == "kis_shadow_dynamic_exit_policy"
+
+
 def test_build_top_deep_reports_prefers_kis_sidecar_for_deep_snapshot():
     kis_sidecar = {
         "feature_origin": "kis_openapi_sidecar",

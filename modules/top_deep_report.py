@@ -71,6 +71,9 @@ SCAN_DEEP_REPORT_COLUMNS = {
     "policy_metadata",
     "scan_universe_admission",
     "scan_result_interpretation",
+    "kis_shadow_candidate",
+    "kis_shadow_gate",
+    "kis_theme_news_evidence",
     "realized_expectancy_admission",
     "entry_action",
     "entry_readiness_contract",
@@ -218,6 +221,13 @@ def _market_from_ticker(ticker: str) -> str:
 def _first_present(row: Dict[str, Any], *keys: str) -> Any:
     for key in keys:
         value = row.get(key)
+        if _present(value):
+            return value
+    return None
+
+
+def _first_value(*values: Any) -> Any:
+    for value in values:
         if _present(value):
             return value
     return None
@@ -1112,10 +1122,41 @@ def _derive_trade_price_levels(policy: Dict[str, Any], price: Dict[str, Any], ti
 
 
 def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str, price: Dict[str, Any]) -> Dict[str, Any]:
-    tp = _safe_float(trace.get("target_tp_pct") or row.get("target_tp_pct"))
-    sl = _safe_float(trace.get("stop_sl_pct") or row.get("stop_sl_pct"))
-    hold = _safe_int(trace.get("hold_days") or row.get("hold_days"))
-    entry_policy = str(row.get("entry_policy") or trace.get("entry_policy") or "").strip()
+    row_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+    trace_plan = trace.get("trade_plan") if isinstance(trace.get("trade_plan"), dict) else {}
+    tp = _safe_float(
+        _first_value(
+            trace.get("target_tp_pct"),
+            trace_plan.get("target_tp_pct"),
+            row.get("target_tp_pct"),
+            row_plan.get("target_tp_pct"),
+        )
+    )
+    sl = _safe_float(
+        _first_value(
+            trace.get("stop_sl_pct"),
+            trace_plan.get("stop_sl_pct"),
+            row.get("stop_sl_pct"),
+            row_plan.get("stop_sl_pct"),
+        )
+    )
+    hold = _safe_int(
+        _first_value(
+            trace.get("hold_days"),
+            trace_plan.get("hold_days"),
+            row.get("hold_days"),
+            row_plan.get("hold_days"),
+        )
+    )
+    entry_policy = str(
+        _first_value(
+            row.get("entry_policy"),
+            trace.get("entry_policy"),
+            row_plan.get("entry_policy"),
+            trace_plan.get("entry_policy"),
+        )
+        or ""
+    ).strip()
     if tp is None or sl is None or hold is None or not entry_policy:
         try:
             from modules.scanner_services import DEFAULT_EXIT_HOLD_DAYS, DEFAULT_EXIT_SL_PCT, DEFAULT_EXIT_TP_PCT
@@ -1129,7 +1170,7 @@ def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str, price
             hold = 5 if hold is None else hold
         if not entry_policy:
             entry_policy = "-2% limit" if str(ticker).upper().endswith(".KQ") else "open/reference"
-    if not _present(_first_present(trace, "target_tp_pct") or row.get("target_tp_pct")):
+    if not _present(_first_value(trace.get("target_tp_pct"), trace_plan.get("target_tp_pct"), row.get("target_tp_pct"), row_plan.get("target_tp_pct"))):
         # Exit percent defaults are an explicit fallback; concrete price levels below remain per-stock.
         trace = {**trace, "trade_policy_warning": "default_target_pct_used"}
     policy = {
@@ -1166,7 +1207,24 @@ def _trade_policy(row: Dict[str, Any], trace: Dict[str, Any], ticker: str, price
     }
     if trace.get("trade_policy_warning"):
         policy["warnings"] = [trace.get("trade_policy_warning")]
-    return _derive_trade_price_levels(policy, price, ticker)
+    derived = _derive_trade_price_levels(policy, price, ticker)
+    source_plan = {**trace_plan, **row_plan}
+    if source_plan:
+        for key in (
+            "entry_policy",
+            "entry_premium_assumption_pct",
+            "target_tp_pct",
+            "stop_sl_pct",
+            "hold_days",
+            "dynamic_exit_policy",
+            "position_sizing",
+            "exit_bias",
+        ):
+            if source_plan.get(key) is not None:
+                derived[key] = source_plan.get(key)
+        if row.get("kis_shadow_candidate") or row.get("decision_bucket") in {"kis_shadow", "kis_shadow_blocked_watch"}:
+            derived["price_level_source"] = "kis_shadow_dynamic_exit_policy"
+    return derived
 
 
 def _build_selection_thesis(
@@ -1442,6 +1500,21 @@ def build_top_deep_reports(
             market=market,
             theme_master=theme_master,
         )
+        row_kis_shadow = row.get("kis_shadow_candidate") if isinstance(row.get("kis_shadow_candidate"), dict) else {}
+        is_kis_shadow_row = bool(row_kis_shadow) or analysis_section == "KIS Shadow Candidate"
+        row_shadow_gate = row.get("_shadow_gate") if isinstance(row.get("_shadow_gate"), dict) else {}
+        if not row_shadow_gate and isinstance(row_kis_shadow.get("kis_model_gate"), dict):
+            row_shadow_gate = row_kis_shadow["kis_model_gate"]
+        row_kis_theme_news = row.get("kis_theme_news_evidence") if isinstance(row.get("kis_theme_news_evidence"), dict) else {}
+        if row_kis_theme_news:
+            kis_theme_news_evidence = {
+                **kis_theme_news_evidence,
+                **row_kis_theme_news,
+            }
+        source_final_action = str(row.get("final_action") or "").strip()
+        source_action_reason_codes = row.get("action_reason_codes") if isinstance(row.get("action_reason_codes"), list) else None
+        if not source_action_reason_codes and row_kis_shadow:
+            source_action_reason_codes = list(row_kis_shadow.get("blocking_reasons") or [])
         source_timing = _source_timing_payload(
             row=row,
             trace=trace,
@@ -1521,6 +1594,9 @@ def build_top_deep_reports(
             "prediction": prediction,
             "scan_universe_admission": row.get("scan_universe_admission"),
             "scan_result_interpretation": row.get("scan_result_interpretation"),
+            "kis_shadow_candidate": row_kis_shadow or None,
+            "kis_shadow_gate": row_shadow_gate or None,
+            "kis_theme_news_evidence": kis_theme_news_evidence,
             "policy_metadata": policy_metadata,
             "realized_expectancy_admission": admission,
             "selection_thesis": selection_thesis,
@@ -1538,8 +1614,16 @@ def build_top_deep_reports(
             "chase_risk_reasons": readiness_contract.get("chase_risk_reasons"),
             "exclusion_risk_level": readiness_contract.get("exclusion_risk_level"),
             "exclusion_reasons": readiness_contract.get("exclusion_reasons"),
-            "final_action": readiness_contract.get("final_action"),
-            "action_reason_codes": readiness_contract.get("action_reason_codes"),
+            "final_action": (
+                source_final_action
+                if is_kis_shadow_row and source_final_action
+                else readiness_contract.get("final_action")
+            ),
+            "action_reason_codes": (
+                source_action_reason_codes
+                if is_kis_shadow_row and source_action_reason_codes
+                else readiness_contract.get("action_reason_codes")
+            ),
             "execution_stop": execution_stop,
             "trade_plan": trade_policy,
             "flow": flow,
