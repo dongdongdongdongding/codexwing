@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T14:23:23.413705+00:00",
+  "generated_at": "2026-06-12T19:09:11.767207+00:00",
   "horizons": [
     "1d",
     "3d",
@@ -14,28 +14,218 @@
           "market": "KOSDAQ",
           "max_stop_probability": null,
           "model": "lightgbm",
-          "prob_threshold": 0.75,
-          "promotion_candidate": null,
-          "quality_score": 1156.26204,
-          "risk_gate": null,
+          "prob_threshold": 0.5,
+          "promotion_candidate": {
+            "blocking_reasons": [
+              "n_lt_45",
+              "active_days_lt_20"
+            ],
+            "kis_model_gate": {
+              "action": "show_shadow_only",
+              "blocking_reasons": [
+                "n_lt_45",
+                "active_days_lt_20"
+              ],
+              "checks": [
+                {
+                  "actual": 40.0,
+                  "expected": ">=45",
+                  "gate": "production",
+                  "name": "n",
+                  "passed": false,
+                  "reason": "n_lt_45"
+                },
+                {
+                  "actual": 11.0,
+                  "expected": ">=20",
+                  "gate": "production",
+                  "name": "active_days",
+                  "passed": false,
+                  "reason": "active_days_lt_20"
+                },
+                {
+                  "actual": 20.0,
+                  "expected": ">=20",
+                  "gate": "production",
+                  "name": "active_runs",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": 100.0,
+                  "expected": ">=73",
+                  "gate": "production",
+                  "name": "hit5_dd10_5d_pct",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": -9.300619,
+                  "expected": ">=-10",
+                  "gate": "production",
+                  "name": "min_min_low_5d_pct",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": 40.0,
+                  "expected": ">=8",
+                  "gate": "shadow",
+                  "name": "n",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": 11.0,
+                  "expected": ">=3",
+                  "gate": "shadow",
+                  "name": "active_days",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": 20.0,
+                  "expected": ">=5",
+                  "gate": "shadow",
+                  "name": "active_runs",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": 100.0,
+                  "expected": ">=45",
+                  "gate": "shadow",
+                  "name": "hit5_dd10_5d_pct",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": -9.300619,
+                  "expected": ">=-18",
+                  "gate": "shadow",
+                  "name": "min_min_low_5d_pct",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": -9.300619,
+                  "expected": ">=-10",
+                  "gate": "risk_review",
+                  "name": "min_min_low_5d_pct",
+                  "passed": true,
+                  "reason": null
+                },
+                {
+                  "actual": 4.601458,
+                  "expected": ">=0.5",
+                  "gate": "production_economics",
+                  "name": "expected_touch_policy_net_5d_pct",
+                  "passed": true,
+                  "reason": null
+                }
+              ],
+              "deep_analysis_allowed": true,
+              "label_gate_profile": "touch5_dd10",
+              "market": "KOSDAQ",
+              "production_blocking_reasons": [
+                "n_lt_45",
+                "active_days_lt_20"
+              ],
+              "production_economics": {
+                "cost_model": {
+                  "buy_fee_bps": 1.5,
+                  "buy_slippage_bps": 8.0,
+                  "fill_rate": 1.0,
+                  "sell_fee_bps": 1.5,
+                  "sell_slippage_bps": 8.0,
+                  "sell_tax_bps": 15.0,
+                  "spread_bps": 4.0,
+                  "version": "kr_tradable_pnl_cost_v1"
+                },
+                "expected_touch_policy_net_5d_pct": 4.601458,
+                "hit5_dd10_5d_pct": 100.0,
+                "loss_floor_pct": -10.0,
+                "policy": "target_touch_5d_dd10_after_buy_premium",
+                "target_touch_gross_pct": 5.0,
+                "target_touch_net_pct": 4.601458,
+                "thresholds": {
+                  "min_expected_touch_policy_net_5d_pct": 0.5
+                }
+              },
+              "production_ready": false,
+              "risk_review_reasons": [],
+              "risk_review_required": false,
+              "shadow_blocking_reasons": [],
+              "shadow_display_allowed": true,
+              "source_ok": true,
+              "status": "shadow_ready",
+              "version": "kis_model_gate_v4_touch5_dd10",
+              "win_metric_semantics": "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; touch5_dd10_5d production gates use hit5_dd10_5d_pct and a -10% 5D low guard."
+            },
+            "promotable": false,
+            "risk_gate": {
+              "blocking_reasons": [],
+              "components": {
+                "bad_path_pct": 25.0,
+                "guard_key": "hit5_dd10_5d_pct",
+                "guard_pct": 100.0,
+                "guard_raw_ratio": 1.0,
+                "max_fold_bad_path_pct": 75.0,
+                "max_fold_stop5_pct": 75.0,
+                "min_1d_pct": -5.630701,
+                "min_fold_min_low_5d_pct": -9.300619,
+                "min_fold_target_before_stop_5d_pct": 75.0,
+                "min_min_low_5d_pct": -9.300619,
+                "raw_key": "hit5_5d_pct",
+                "raw_pct": 100.0,
+                "stop5_pct": 17.5,
+                "stop_before_target_5d_pct": 17.5,
+                "target_before_stop_5d_pct": 92.5
+              },
+              "pass": true,
+              "risk_score": 0.0
+            }
+          },
+          "quality_score": 1384.211218,
+          "risk_gate": {
+            "blocking_reasons": [],
+            "components": {
+              "bad_path_pct": 25.0,
+              "guard_key": "hit5_dd10_5d_pct",
+              "guard_pct": 100.0,
+              "guard_raw_ratio": 1.0,
+              "max_fold_bad_path_pct": 75.0,
+              "max_fold_stop5_pct": 75.0,
+              "min_1d_pct": -5.630701,
+              "min_fold_min_low_5d_pct": -9.300619,
+              "min_fold_target_before_stop_5d_pct": 75.0,
+              "min_min_low_5d_pct": -9.300619,
+              "raw_key": "hit5_5d_pct",
+              "raw_pct": 100.0,
+              "stop5_pct": 17.5,
+              "stop_before_target_5d_pct": 17.5,
+              "target_before_stop_5d_pct": 92.5
+            },
+            "pass": true,
+            "risk_score": 0.0
+          },
           "score_mode": null,
           "score_threshold": null,
-          "selection_rule": "top1_p0p75_tail0p85",
+          "selection_rule": "top2_p0.50_tail0.90",
           "stop_penalty_lambda": null,
-          "tail_risk_prob_threshold": 0.85,
-          "topn": 1
+          "tail_risk_prob_threshold": 0.9,
+          "topn": 2
         },
         "kind": "current_kis_challenger",
         "kis_model_gate": {
           "action": "show_shadow_only",
           "blocking_reasons": [
             "n_lt_45",
-            "active_days_lt_20",
-            "active_runs_lt_20"
+            "active_days_lt_20"
           ],
           "checks": [
             {
-              "actual": 19.0,
+              "actual": 40.0,
               "expected": ">=45",
               "gate": "production",
               "name": "n",
@@ -43,7 +233,7 @@
               "reason": "n_lt_45"
             },
             {
-              "actual": 9.0,
+              "actual": 11.0,
               "expected": ">=20",
               "gate": "production",
               "name": "active_days",
@@ -51,12 +241,12 @@
               "reason": "active_days_lt_20"
             },
             {
-              "actual": 19.0,
+              "actual": 20.0,
               "expected": ">=20",
               "gate": "production",
               "name": "active_runs",
-              "passed": false,
-              "reason": "active_runs_lt_20"
+              "passed": true,
+              "reason": null
             },
             {
               "actual": 100.0,
@@ -67,7 +257,7 @@
               "reason": null
             },
             {
-              "actual": -7.006077,
+              "actual": -9.300619,
               "expected": ">=-10",
               "gate": "production",
               "name": "min_min_low_5d_pct",
@@ -75,7 +265,7 @@
               "reason": null
             },
             {
-              "actual": 19.0,
+              "actual": 40.0,
               "expected": ">=8",
               "gate": "shadow",
               "name": "n",
@@ -83,7 +273,7 @@
               "reason": null
             },
             {
-              "actual": 9.0,
+              "actual": 11.0,
               "expected": ">=3",
               "gate": "shadow",
               "name": "active_days",
@@ -91,7 +281,7 @@
               "reason": null
             },
             {
-              "actual": 19.0,
+              "actual": 20.0,
               "expected": ">=5",
               "gate": "shadow",
               "name": "active_runs",
@@ -107,7 +297,7 @@
               "reason": null
             },
             {
-              "actual": -7.006077,
+              "actual": -9.300619,
               "expected": ">=-18",
               "gate": "shadow",
               "name": "min_min_low_5d_pct",
@@ -115,7 +305,7 @@
               "reason": null
             },
             {
-              "actual": -7.006077,
+              "actual": -9.300619,
               "expected": ">=-10",
               "gate": "risk_review",
               "name": "min_min_low_5d_pct",
@@ -136,8 +326,7 @@
           "market": "KOSDAQ",
           "production_blocking_reasons": [
             "n_lt_45",
-            "active_days_lt_20",
-            "active_runs_lt_20"
+            "active_days_lt_20"
           ],
           "production_economics": {
             "cost_model": {
@@ -171,36 +360,36 @@
           "win_metric_semantics": "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; touch5_dd10_5d production gates use hit5_dd10_5d_pct and a -10% 5D low guard."
         },
         "metrics": {
-          "active_days": 9,
-          "active_runs": 19,
-          "avg_1d_pct": 4.427983,
-          "avg_3d_pct": 16.604141,
-          "avg_5d_pct": 15.458772,
-          "avg_max_high_5d_pct": 32.274772,
+          "active_days": 11,
+          "active_runs": 20,
+          "avg_1d_pct": 12.709664,
+          "avg_3d_pct": 24.580909,
+          "avg_5d_pct": 20.411507,
+          "avg_max_high_5d_pct": 41.996894,
           "avg_ordered_exit_5d_pct": null,
-          "bad_path_pct": 26.3158,
+          "bad_path_pct": 25.0,
           "buy_premium_pct": 2.0,
           "hit10_5d_pct": 100.0,
-          "hit10_guard_5d_pct": 73.6842,
+          "hit10_guard_5d_pct": 82.5,
           "hit5_5d_pct": 100.0,
           "hit5_dd10_5d_pct": 100.0,
-          "hit5_guard_5d_pct": 73.6842,
-          "max_1d_pct": 14.123775,
-          "max_3d_pct": 40.603116,
-          "max_5d_pct": 32.326476,
-          "max_min_low_5d_pct": 6.75905,
-          "min_1d_pct": -4.598097,
-          "min_3d_pct": 0.509196,
-          "min_5d_pct": 5.198266,
-          "min_max_high_5d_pct": 12.306476,
-          "min_min_low_5d_pct": -7.006077,
+          "hit5_guard_5d_pct": 82.5,
+          "max_1d_pct": 32.242067,
+          "max_3d_pct": 76.725934,
+          "max_5d_pct": 81.231146,
+          "max_min_low_5d_pct": 22.968996,
+          "min_1d_pct": -5.630701,
+          "min_3d_pct": 0.410008,
+          "min_5d_pct": -6.386166,
+          "min_max_high_5d_pct": 13.374227,
+          "min_min_low_5d_pct": -9.300619,
           "min_ordered_exit_5d_pct": null,
-          "n": 19,
-          "stop5_pct": 26.3158,
-          "stop_before_target_5d_pct": 26.3158,
-          "target_before_stop_5d_pct": 73.6842,
-          "win_1d_pct": 63.1579,
-          "win_3d_pct": 100.0,
+          "n": 40,
+          "stop5_pct": 17.5,
+          "stop_before_target_5d_pct": 17.5,
+          "target_before_stop_5d_pct": 92.5,
+          "win_1d_pct": 82.5,
+          "win_3d_pct": 92.5,
           "win_5d_pct": 100.0
         }
       },
@@ -216,25 +405,2840 @@
           "후보 카드와 TopDeep 상세에 KIS 테마/뉴스 summary, evidence score, KIS-backed 여부, 뉴스 checked 여부를 표시",
           "Discord 스캔 결과와 정밀분석 lookup에 동일한 KIS gate와 테마/뉴스 summary를 표시",
           "운영 승격 전에는 기존 운영 Top 후보와 KIS 후보를 같은 run_id 기준으로 나란히 비교",
-          "production_ready=false이면 매수 후보 문구 대신 shadow_only/risk_review 문구를 유지",
-          "theme_news mature_for_training=false이면 UI에 evidence coverage 부족 배지를 표시하고 승격 판단에서 제외"
+          "production_ready=false이면 매수 후보 문구 대신 shadow_only/risk_review 문구를 유지"
         ]
       },
       "performance_comparison_vs_existing": [],
-      "source_evaluated_combinations": null,
-      "source_generated_at": "2026-06-12T14:20:20+00:00",
-      "source_kis_feature_readiness": {},
-      "source_ok_combinations": null,
-      "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
-      "source_prepared_rows": null,
-      "source_raw_rows": null,
+      "source_evaluated_combinations": 120,
+      "source_generated_at": "2026-06-12T00:40:16.402033+00:00",
+      "source_kis_feature_readiness": {
+        "by_market": {
+          "KOSDAQ": {
+            "any_kis": {
+              "date_coverage": {
+                "2026-04-02": {
+                  "outcome_label_rows": 17,
+                  "rows": 17,
+                  "rows_by_market": {
+                    "KOSDAQ": 17
+                  },
+                  "unique_runs": 2
+                },
+                "2026-04-07": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSDAQ": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-04-09": {
+                  "outcome_label_rows": 25,
+                  "rows": 25,
+                  "rows_by_market": {
+                    "KOSDAQ": 25
+                  },
+                  "unique_runs": 3
+                },
+                "2026-04-10": {
+                  "outcome_label_rows": 77,
+                  "rows": 77,
+                  "rows_by_market": {
+                    "KOSDAQ": 77
+                  },
+                  "unique_runs": 7
+                },
+                "2026-04-21": {
+                  "outcome_label_rows": 171,
+                  "rows": 171,
+                  "rows_by_market": {
+                    "KOSDAQ": 171
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-08": {
+                  "outcome_label_rows": 10,
+                  "rows": 10,
+                  "rows_by_market": {
+                    "KOSDAQ": 10
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-11": {
+                  "outcome_label_rows": 1602,
+                  "rows": 1602,
+                  "rows_by_market": {
+                    "KOSDAQ": 1602
+                  },
+                  "unique_runs": 13
+                },
+                "2026-05-13": {
+                  "outcome_label_rows": 4438,
+                  "rows": 4438,
+                  "rows_by_market": {
+                    "KOSDAQ": 4438
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-14": {
+                  "outcome_label_rows": 6183,
+                  "rows": 6183,
+                  "rows_by_market": {
+                    "KOSDAQ": 6183
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-15": {
+                  "outcome_label_rows": 3149,
+                  "rows": 3149,
+                  "rows_by_market": {
+                    "KOSDAQ": 3149
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-16": {
+                  "outcome_label_rows": 1541,
+                  "rows": 1541,
+                  "rows_by_market": {
+                    "KOSDAQ": 1541
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-17": {
+                  "outcome_label_rows": 1541,
+                  "rows": 1541,
+                  "rows_by_market": {
+                    "KOSDAQ": 1541
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-18": {
+                  "outcome_label_rows": 3129,
+                  "rows": 3129,
+                  "rows_by_market": {
+                    "KOSDAQ": 3129
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-19": {
+                  "outcome_label_rows": 1566,
+                  "rows": 1566,
+                  "rows_by_market": {
+                    "KOSDAQ": 1566
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-20": {
+                  "outcome_label_rows": 3150,
+                  "rows": 3150,
+                  "rows_by_market": {
+                    "KOSDAQ": 3150
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-21": {
+                  "outcome_label_rows": 4737,
+                  "rows": 4737,
+                  "rows_by_market": {
+                    "KOSDAQ": 4737
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-22": {
+                  "outcome_label_rows": 4723,
+                  "rows": 4723,
+                  "rows_by_market": {
+                    "KOSDAQ": 4723
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-23": {
+                  "outcome_label_rows": 1519,
+                  "rows": 1519,
+                  "rows_by_market": {
+                    "KOSDAQ": 1519
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-24": {
+                  "outcome_label_rows": 1519,
+                  "rows": 1519,
+                  "rows_by_market": {
+                    "KOSDAQ": 1519
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-25": {
+                  "outcome_label_rows": 1471,
+                  "rows": 1471,
+                  "rows_by_market": {
+                    "KOSDAQ": 1471
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-26": {
+                  "outcome_label_rows": 1812,
+                  "rows": 1812,
+                  "rows_by_market": {
+                    "KOSDAQ": 1812
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-27": {
+                  "outcome_label_rows": 3177,
+                  "rows": 3177,
+                  "rows_by_market": {
+                    "KOSDAQ": 3177
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-28": {
+                  "outcome_label_rows": 1595,
+                  "rows": 1595,
+                  "rows_by_market": {
+                    "KOSDAQ": 1595
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-06": {
+                  "outcome_label_rows": 0,
+                  "rows": 34,
+                  "rows_by_market": {
+                    "KOSDAQ": 34
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-07": {
+                  "outcome_label_rows": 0,
+                  "rows": 62,
+                  "rows_by_market": {
+                    "KOSDAQ": 62
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 69,
+                  "rows_by_market": {
+                    "KOSDAQ": 69
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 226,
+                  "rows_by_market": {
+                    "KOSDAQ": 226
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 394,
+                  "rows_by_market": {
+                    "KOSDAQ": 394
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": true,
+              "outcome_label_rows": 47157,
+              "rows": 47942,
+              "unique_days": 28,
+              "unique_runs": 71
+            },
+            "prefilter": {
+              "date_coverage": {
+                "2026-06-06": {
+                  "outcome_label_rows": 0,
+                  "rows": 34,
+                  "rows_by_market": {
+                    "KOSDAQ": 34
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-07": {
+                  "outcome_label_rows": 0,
+                  "rows": 62,
+                  "rows_by_market": {
+                    "KOSDAQ": 62
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 69,
+                  "rows_by_market": {
+                    "KOSDAQ": 69
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 226,
+                  "rows_by_market": {
+                    "KOSDAQ": 226
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 394,
+                  "rows_by_market": {
+                    "KOSDAQ": 394
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": false,
+              "outcome_label_rows": 0,
+              "rows": 785,
+              "unique_days": 5,
+              "unique_runs": 12
+            },
+            "sidecar": {
+              "date_coverage": {
+                "2026-04-02": {
+                  "outcome_label_rows": 17,
+                  "rows": 17,
+                  "rows_by_market": {
+                    "KOSDAQ": 17
+                  },
+                  "unique_runs": 2
+                },
+                "2026-04-07": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSDAQ": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-04-09": {
+                  "outcome_label_rows": 25,
+                  "rows": 25,
+                  "rows_by_market": {
+                    "KOSDAQ": 25
+                  },
+                  "unique_runs": 3
+                },
+                "2026-04-10": {
+                  "outcome_label_rows": 77,
+                  "rows": 77,
+                  "rows_by_market": {
+                    "KOSDAQ": 77
+                  },
+                  "unique_runs": 7
+                },
+                "2026-04-21": {
+                  "outcome_label_rows": 171,
+                  "rows": 171,
+                  "rows_by_market": {
+                    "KOSDAQ": 171
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-08": {
+                  "outcome_label_rows": 10,
+                  "rows": 10,
+                  "rows_by_market": {
+                    "KOSDAQ": 10
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-11": {
+                  "outcome_label_rows": 1602,
+                  "rows": 1602,
+                  "rows_by_market": {
+                    "KOSDAQ": 1602
+                  },
+                  "unique_runs": 13
+                },
+                "2026-05-13": {
+                  "outcome_label_rows": 4438,
+                  "rows": 4438,
+                  "rows_by_market": {
+                    "KOSDAQ": 4438
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-14": {
+                  "outcome_label_rows": 6183,
+                  "rows": 6183,
+                  "rows_by_market": {
+                    "KOSDAQ": 6183
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-15": {
+                  "outcome_label_rows": 3149,
+                  "rows": 3149,
+                  "rows_by_market": {
+                    "KOSDAQ": 3149
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-16": {
+                  "outcome_label_rows": 1541,
+                  "rows": 1541,
+                  "rows_by_market": {
+                    "KOSDAQ": 1541
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-17": {
+                  "outcome_label_rows": 1541,
+                  "rows": 1541,
+                  "rows_by_market": {
+                    "KOSDAQ": 1541
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-18": {
+                  "outcome_label_rows": 3129,
+                  "rows": 3129,
+                  "rows_by_market": {
+                    "KOSDAQ": 3129
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-19": {
+                  "outcome_label_rows": 1566,
+                  "rows": 1566,
+                  "rows_by_market": {
+                    "KOSDAQ": 1566
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-20": {
+                  "outcome_label_rows": 3150,
+                  "rows": 3150,
+                  "rows_by_market": {
+                    "KOSDAQ": 3150
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-21": {
+                  "outcome_label_rows": 4737,
+                  "rows": 4737,
+                  "rows_by_market": {
+                    "KOSDAQ": 4737
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-22": {
+                  "outcome_label_rows": 4723,
+                  "rows": 4723,
+                  "rows_by_market": {
+                    "KOSDAQ": 4723
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-23": {
+                  "outcome_label_rows": 1519,
+                  "rows": 1519,
+                  "rows_by_market": {
+                    "KOSDAQ": 1519
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-24": {
+                  "outcome_label_rows": 1519,
+                  "rows": 1519,
+                  "rows_by_market": {
+                    "KOSDAQ": 1519
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-25": {
+                  "outcome_label_rows": 1471,
+                  "rows": 1471,
+                  "rows_by_market": {
+                    "KOSDAQ": 1471
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-26": {
+                  "outcome_label_rows": 1812,
+                  "rows": 1812,
+                  "rows_by_market": {
+                    "KOSDAQ": 1812
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-27": {
+                  "outcome_label_rows": 3177,
+                  "rows": 3177,
+                  "rows_by_market": {
+                    "KOSDAQ": 3177
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-28": {
+                  "outcome_label_rows": 1595,
+                  "rows": 1595,
+                  "rows_by_market": {
+                    "KOSDAQ": 1595
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-07": {
+                  "outcome_label_rows": 0,
+                  "rows": 1,
+                  "rows_by_market": {
+                    "KOSDAQ": 1
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 1,
+                  "rows_by_market": {
+                    "KOSDAQ": 1
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 14,
+                  "rows_by_market": {
+                    "KOSDAQ": 14
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 15,
+                  "rows_by_market": {
+                    "KOSDAQ": 15
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": true,
+              "outcome_label_rows": 47157,
+              "rows": 47188,
+              "unique_days": 27,
+              "unique_runs": 69
+            },
+            "theme_news": {
+              "date_coverage": {
+                "2026-04-02": {
+                  "outcome_label_rows": 17,
+                  "rows": 17,
+                  "rows_by_market": {
+                    "KOSDAQ": 17
+                  },
+                  "unique_runs": 2
+                },
+                "2026-04-07": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSDAQ": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-04-09": {
+                  "outcome_label_rows": 25,
+                  "rows": 25,
+                  "rows_by_market": {
+                    "KOSDAQ": 25
+                  },
+                  "unique_runs": 3
+                },
+                "2026-04-10": {
+                  "outcome_label_rows": 77,
+                  "rows": 77,
+                  "rows_by_market": {
+                    "KOSDAQ": 77
+                  },
+                  "unique_runs": 7
+                },
+                "2026-04-21": {
+                  "outcome_label_rows": 171,
+                  "rows": 171,
+                  "rows_by_market": {
+                    "KOSDAQ": 171
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-08": {
+                  "outcome_label_rows": 10,
+                  "rows": 10,
+                  "rows_by_market": {
+                    "KOSDAQ": 10
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-11": {
+                  "outcome_label_rows": 1602,
+                  "rows": 1602,
+                  "rows_by_market": {
+                    "KOSDAQ": 1602
+                  },
+                  "unique_runs": 13
+                },
+                "2026-05-13": {
+                  "outcome_label_rows": 4438,
+                  "rows": 4438,
+                  "rows_by_market": {
+                    "KOSDAQ": 4438
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-14": {
+                  "outcome_label_rows": 6183,
+                  "rows": 6183,
+                  "rows_by_market": {
+                    "KOSDAQ": 6183
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-15": {
+                  "outcome_label_rows": 3149,
+                  "rows": 3149,
+                  "rows_by_market": {
+                    "KOSDAQ": 3149
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-16": {
+                  "outcome_label_rows": 1541,
+                  "rows": 1541,
+                  "rows_by_market": {
+                    "KOSDAQ": 1541
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-17": {
+                  "outcome_label_rows": 1541,
+                  "rows": 1541,
+                  "rows_by_market": {
+                    "KOSDAQ": 1541
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-18": {
+                  "outcome_label_rows": 3129,
+                  "rows": 3129,
+                  "rows_by_market": {
+                    "KOSDAQ": 3129
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-19": {
+                  "outcome_label_rows": 1566,
+                  "rows": 1566,
+                  "rows_by_market": {
+                    "KOSDAQ": 1566
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-20": {
+                  "outcome_label_rows": 3150,
+                  "rows": 3150,
+                  "rows_by_market": {
+                    "KOSDAQ": 3150
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-21": {
+                  "outcome_label_rows": 4737,
+                  "rows": 4737,
+                  "rows_by_market": {
+                    "KOSDAQ": 4737
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-22": {
+                  "outcome_label_rows": 4723,
+                  "rows": 4723,
+                  "rows_by_market": {
+                    "KOSDAQ": 4723
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-23": {
+                  "outcome_label_rows": 1519,
+                  "rows": 1519,
+                  "rows_by_market": {
+                    "KOSDAQ": 1519
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-24": {
+                  "outcome_label_rows": 1519,
+                  "rows": 1519,
+                  "rows_by_market": {
+                    "KOSDAQ": 1519
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-25": {
+                  "outcome_label_rows": 1471,
+                  "rows": 1471,
+                  "rows_by_market": {
+                    "KOSDAQ": 1471
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-26": {
+                  "outcome_label_rows": 1812,
+                  "rows": 1812,
+                  "rows_by_market": {
+                    "KOSDAQ": 1812
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-27": {
+                  "outcome_label_rows": 3177,
+                  "rows": 3177,
+                  "rows_by_market": {
+                    "KOSDAQ": 3177
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-28": {
+                  "outcome_label_rows": 1595,
+                  "rows": 1595,
+                  "rows_by_market": {
+                    "KOSDAQ": 1595
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-06": {
+                  "outcome_label_rows": 0,
+                  "rows": 34,
+                  "rows_by_market": {
+                    "KOSDAQ": 34
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-07": {
+                  "outcome_label_rows": 0,
+                  "rows": 62,
+                  "rows_by_market": {
+                    "KOSDAQ": 62
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 69,
+                  "rows_by_market": {
+                    "KOSDAQ": 69
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 226,
+                  "rows_by_market": {
+                    "KOSDAQ": 226
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 394,
+                  "rows_by_market": {
+                    "KOSDAQ": 394
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": true,
+              "outcome_label_rows": 47157,
+              "rows": 47942,
+              "unique_days": 28,
+              "unique_runs": 71
+            }
+          },
+          "KOSPI": {
+            "any_kis": {
+              "date_coverage": {
+                "2026-04-07": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-04-09": {
+                  "outcome_label_rows": 80,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 4
+                },
+                "2026-04-10": {
+                  "outcome_label_rows": 103,
+                  "rows": 103,
+                  "rows_by_market": {
+                    "KOSPI": 103
+                  },
+                  "unique_runs": 8
+                },
+                "2026-04-21": {
+                  "outcome_label_rows": 130,
+                  "rows": 130,
+                  "rows_by_market": {
+                    "KOSPI": 130
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-08": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-10": {
+                  "outcome_label_rows": 30,
+                  "rows": 30,
+                  "rows_by_market": {
+                    "KOSPI": 30
+                  },
+                  "unique_runs": 6
+                },
+                "2026-05-11": {
+                  "outcome_label_rows": 788,
+                  "rows": 788,
+                  "rows_by_market": {
+                    "KOSPI": 788
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-12": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-13": {
+                  "outcome_label_rows": 6812,
+                  "rows": 6812,
+                  "rows_by_market": {
+                    "KOSPI": 6812
+                  },
+                  "unique_runs": 9
+                },
+                "2026-05-14": {
+                  "outcome_label_rows": 6473,
+                  "rows": 6473,
+                  "rows_by_market": {
+                    "KOSPI": 6473
+                  },
+                  "unique_runs": 14
+                },
+                "2026-05-15": {
+                  "outcome_label_rows": 4771,
+                  "rows": 4771,
+                  "rows_by_market": {
+                    "KOSPI": 4771
+                  },
+                  "unique_runs": 7
+                },
+                "2026-05-16": {
+                  "outcome_label_rows": 785,
+                  "rows": 785,
+                  "rows_by_market": {
+                    "KOSPI": 785
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-17": {
+                  "outcome_label_rows": 1568,
+                  "rows": 1568,
+                  "rows_by_market": {
+                    "KOSPI": 1568
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-18": {
+                  "outcome_label_rows": 6336,
+                  "rows": 6336,
+                  "rows_by_market": {
+                    "KOSPI": 6336
+                  },
+                  "unique_runs": 10
+                },
+                "2026-05-19": {
+                  "outcome_label_rows": 3957,
+                  "rows": 3957,
+                  "rows_by_market": {
+                    "KOSPI": 3957
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-20": {
+                  "outcome_label_rows": 3201,
+                  "rows": 3201,
+                  "rows_by_market": {
+                    "KOSPI": 3201
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-21": {
+                  "outcome_label_rows": 1600,
+                  "rows": 1600,
+                  "rows_by_market": {
+                    "KOSPI": 1600
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-22": {
+                  "outcome_label_rows": 3187,
+                  "rows": 3187,
+                  "rows_by_market": {
+                    "KOSPI": 3187
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-23": {
+                  "outcome_label_rows": 765,
+                  "rows": 765,
+                  "rows_by_market": {
+                    "KOSPI": 765
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-24": {
+                  "outcome_label_rows": 776,
+                  "rows": 776,
+                  "rows_by_market": {
+                    "KOSPI": 776
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-25": {
+                  "outcome_label_rows": 1504,
+                  "rows": 1504,
+                  "rows_by_market": {
+                    "KOSPI": 1504
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-26": {
+                  "outcome_label_rows": 948,
+                  "rows": 948,
+                  "rows_by_market": {
+                    "KOSPI": 948
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-27": {
+                  "outcome_label_rows": 3203,
+                  "rows": 3203,
+                  "rows_by_market": {
+                    "KOSPI": 3203
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-28": {
+                  "outcome_label_rows": 1599,
+                  "rows": 1599,
+                  "rows_by_market": {
+                    "KOSPI": 1599
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-05": {
+                  "outcome_label_rows": 0,
+                  "rows": 2,
+                  "rows_by_market": {
+                    "KOSPI": 2
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-06": {
+                  "outcome_label_rows": 0,
+                  "rows": 45,
+                  "rows_by_market": {
+                    "KOSPI": 45
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-07": {
+                  "outcome_label_rows": 0,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 226,
+                  "rows_by_market": {
+                    "KOSPI": 226
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 380,
+                  "rows_by_market": {
+                    "KOSPI": 380
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": true,
+              "outcome_label_rows": 48631,
+              "rows": 49444,
+              "unique_days": 30,
+              "unique_runs": 98
+            },
+            "prefilter": {
+              "date_coverage": {
+                "2026-06-06": {
+                  "outcome_label_rows": 0,
+                  "rows": 45,
+                  "rows_by_market": {
+                    "KOSPI": 45
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-07": {
+                  "outcome_label_rows": 0,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 226,
+                  "rows_by_market": {
+                    "KOSPI": 226
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 380,
+                  "rows_by_market": {
+                    "KOSPI": 380
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": false,
+              "outcome_label_rows": 0,
+              "rows": 811,
+              "unique_days": 5,
+              "unique_runs": 11
+            },
+            "sidecar": {
+              "date_coverage": {
+                "2026-04-07": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-04-09": {
+                  "outcome_label_rows": 80,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 4
+                },
+                "2026-04-10": {
+                  "outcome_label_rows": 103,
+                  "rows": 103,
+                  "rows_by_market": {
+                    "KOSPI": 103
+                  },
+                  "unique_runs": 8
+                },
+                "2026-04-21": {
+                  "outcome_label_rows": 130,
+                  "rows": 130,
+                  "rows_by_market": {
+                    "KOSPI": 130
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-08": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-10": {
+                  "outcome_label_rows": 30,
+                  "rows": 30,
+                  "rows_by_market": {
+                    "KOSPI": 30
+                  },
+                  "unique_runs": 6
+                },
+                "2026-05-11": {
+                  "outcome_label_rows": 788,
+                  "rows": 788,
+                  "rows_by_market": {
+                    "KOSPI": 788
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-12": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-13": {
+                  "outcome_label_rows": 6812,
+                  "rows": 6812,
+                  "rows_by_market": {
+                    "KOSPI": 6812
+                  },
+                  "unique_runs": 9
+                },
+                "2026-05-14": {
+                  "outcome_label_rows": 6473,
+                  "rows": 6473,
+                  "rows_by_market": {
+                    "KOSPI": 6473
+                  },
+                  "unique_runs": 14
+                },
+                "2026-05-15": {
+                  "outcome_label_rows": 4771,
+                  "rows": 4771,
+                  "rows_by_market": {
+                    "KOSPI": 4771
+                  },
+                  "unique_runs": 7
+                },
+                "2026-05-16": {
+                  "outcome_label_rows": 785,
+                  "rows": 785,
+                  "rows_by_market": {
+                    "KOSPI": 785
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-17": {
+                  "outcome_label_rows": 1568,
+                  "rows": 1568,
+                  "rows_by_market": {
+                    "KOSPI": 1568
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-18": {
+                  "outcome_label_rows": 6336,
+                  "rows": 6336,
+                  "rows_by_market": {
+                    "KOSPI": 6336
+                  },
+                  "unique_runs": 10
+                },
+                "2026-05-19": {
+                  "outcome_label_rows": 3957,
+                  "rows": 3957,
+                  "rows_by_market": {
+                    "KOSPI": 3957
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-20": {
+                  "outcome_label_rows": 3201,
+                  "rows": 3201,
+                  "rows_by_market": {
+                    "KOSPI": 3201
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-21": {
+                  "outcome_label_rows": 1600,
+                  "rows": 1600,
+                  "rows_by_market": {
+                    "KOSPI": 1600
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-22": {
+                  "outcome_label_rows": 3187,
+                  "rows": 3187,
+                  "rows_by_market": {
+                    "KOSPI": 3187
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-23": {
+                  "outcome_label_rows": 765,
+                  "rows": 765,
+                  "rows_by_market": {
+                    "KOSPI": 765
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-24": {
+                  "outcome_label_rows": 776,
+                  "rows": 776,
+                  "rows_by_market": {
+                    "KOSPI": 776
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-25": {
+                  "outcome_label_rows": 1504,
+                  "rows": 1504,
+                  "rows_by_market": {
+                    "KOSPI": 1504
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-26": {
+                  "outcome_label_rows": 948,
+                  "rows": 948,
+                  "rows_by_market": {
+                    "KOSPI": 948
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-27": {
+                  "outcome_label_rows": 3203,
+                  "rows": 3203,
+                  "rows_by_market": {
+                    "KOSPI": 3203
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-28": {
+                  "outcome_label_rows": 1599,
+                  "rows": 1599,
+                  "rows_by_market": {
+                    "KOSPI": 1599
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-05": {
+                  "outcome_label_rows": 0,
+                  "rows": 2,
+                  "rows_by_market": {
+                    "KOSPI": 2
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 1,
+                  "rows_by_market": {
+                    "KOSPI": 1
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 17,
+                  "rows_by_market": {
+                    "KOSPI": 17
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 6,
+                  "rows_by_market": {
+                    "KOSPI": 6
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": true,
+              "outcome_label_rows": 48631,
+              "rows": 48657,
+              "unique_days": 28,
+              "unique_runs": 96
+            },
+            "theme_news": {
+              "date_coverage": {
+                "2026-04-07": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-04-09": {
+                  "outcome_label_rows": 80,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 4
+                },
+                "2026-04-10": {
+                  "outcome_label_rows": 103,
+                  "rows": 103,
+                  "rows_by_market": {
+                    "KOSPI": 103
+                  },
+                  "unique_runs": 8
+                },
+                "2026-04-21": {
+                  "outcome_label_rows": 130,
+                  "rows": 130,
+                  "rows_by_market": {
+                    "KOSPI": 130
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-08": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-10": {
+                  "outcome_label_rows": 30,
+                  "rows": 30,
+                  "rows_by_market": {
+                    "KOSPI": 30
+                  },
+                  "unique_runs": 6
+                },
+                "2026-05-11": {
+                  "outcome_label_rows": 788,
+                  "rows": 788,
+                  "rows_by_market": {
+                    "KOSPI": 788
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-12": {
+                  "outcome_label_rows": 5,
+                  "rows": 5,
+                  "rows_by_market": {
+                    "KOSPI": 5
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-13": {
+                  "outcome_label_rows": 6812,
+                  "rows": 6812,
+                  "rows_by_market": {
+                    "KOSPI": 6812
+                  },
+                  "unique_runs": 9
+                },
+                "2026-05-14": {
+                  "outcome_label_rows": 6473,
+                  "rows": 6473,
+                  "rows_by_market": {
+                    "KOSPI": 6473
+                  },
+                  "unique_runs": 14
+                },
+                "2026-05-15": {
+                  "outcome_label_rows": 4771,
+                  "rows": 4771,
+                  "rows_by_market": {
+                    "KOSPI": 4771
+                  },
+                  "unique_runs": 7
+                },
+                "2026-05-16": {
+                  "outcome_label_rows": 785,
+                  "rows": 785,
+                  "rows_by_market": {
+                    "KOSPI": 785
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-17": {
+                  "outcome_label_rows": 1568,
+                  "rows": 1568,
+                  "rows_by_market": {
+                    "KOSPI": 1568
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-18": {
+                  "outcome_label_rows": 6336,
+                  "rows": 6336,
+                  "rows_by_market": {
+                    "KOSPI": 6336
+                  },
+                  "unique_runs": 10
+                },
+                "2026-05-19": {
+                  "outcome_label_rows": 3957,
+                  "rows": 3957,
+                  "rows_by_market": {
+                    "KOSPI": 3957
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-20": {
+                  "outcome_label_rows": 3201,
+                  "rows": 3201,
+                  "rows_by_market": {
+                    "KOSPI": 3201
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-21": {
+                  "outcome_label_rows": 1600,
+                  "rows": 1600,
+                  "rows_by_market": {
+                    "KOSPI": 1600
+                  },
+                  "unique_runs": 3
+                },
+                "2026-05-22": {
+                  "outcome_label_rows": 3187,
+                  "rows": 3187,
+                  "rows_by_market": {
+                    "KOSPI": 3187
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-23": {
+                  "outcome_label_rows": 765,
+                  "rows": 765,
+                  "rows_by_market": {
+                    "KOSPI": 765
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-24": {
+                  "outcome_label_rows": 776,
+                  "rows": 776,
+                  "rows_by_market": {
+                    "KOSPI": 776
+                  },
+                  "unique_runs": 1
+                },
+                "2026-05-25": {
+                  "outcome_label_rows": 1504,
+                  "rows": 1504,
+                  "rows_by_market": {
+                    "KOSPI": 1504
+                  },
+                  "unique_runs": 2
+                },
+                "2026-05-26": {
+                  "outcome_label_rows": 948,
+                  "rows": 948,
+                  "rows_by_market": {
+                    "KOSPI": 948
+                  },
+                  "unique_runs": 5
+                },
+                "2026-05-27": {
+                  "outcome_label_rows": 3203,
+                  "rows": 3203,
+                  "rows_by_market": {
+                    "KOSPI": 3203
+                  },
+                  "unique_runs": 4
+                },
+                "2026-05-28": {
+                  "outcome_label_rows": 1599,
+                  "rows": 1599,
+                  "rows_by_market": {
+                    "KOSPI": 1599
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-05": {
+                  "outcome_label_rows": 0,
+                  "rows": 2,
+                  "rows_by_market": {
+                    "KOSPI": 2
+                  },
+                  "unique_runs": 2
+                },
+                "2026-06-06": {
+                  "outcome_label_rows": 0,
+                  "rows": 45,
+                  "rows_by_market": {
+                    "KOSPI": 45
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-07": {
+                  "outcome_label_rows": 0,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-08": {
+                  "outcome_label_rows": 0,
+                  "rows": 80,
+                  "rows_by_market": {
+                    "KOSPI": 80
+                  },
+                  "unique_runs": 1
+                },
+                "2026-06-09": {
+                  "outcome_label_rows": 0,
+                  "rows": 226,
+                  "rows_by_market": {
+                    "KOSPI": 226
+                  },
+                  "unique_runs": 3
+                },
+                "2026-06-10": {
+                  "outcome_label_rows": 0,
+                  "rows": 380,
+                  "rows_by_market": {
+                    "KOSPI": 380
+                  },
+                  "unique_runs": 5
+                }
+              },
+              "mature_for_training": true,
+              "outcome_label_rows": 48631,
+              "rows": 49444,
+              "unique_days": 30,
+              "unique_runs": 98
+            }
+          }
+        },
+        "families": {
+          "any_kis": {
+            "date_coverage": {
+              "2026-04-02": {
+                "outcome_label_rows": 17,
+                "rows": 17,
+                "rows_by_market": {
+                  "KOSDAQ": 17
+                },
+                "unique_runs": 2
+              },
+              "2026-04-07": {
+                "outcome_label_rows": 10,
+                "rows": 10,
+                "rows_by_market": {
+                  "KOSDAQ": 5,
+                  "KOSPI": 5
+                },
+                "unique_runs": 2
+              },
+              "2026-04-09": {
+                "outcome_label_rows": 105,
+                "rows": 105,
+                "rows_by_market": {
+                  "KOSDAQ": 25,
+                  "KOSPI": 80
+                },
+                "unique_runs": 7
+              },
+              "2026-04-10": {
+                "outcome_label_rows": 180,
+                "rows": 180,
+                "rows_by_market": {
+                  "KOSDAQ": 77,
+                  "KOSPI": 103
+                },
+                "unique_runs": 15
+              },
+              "2026-04-21": {
+                "outcome_label_rows": 301,
+                "rows": 301,
+                "rows_by_market": {
+                  "KOSDAQ": 171,
+                  "KOSPI": 130
+                },
+                "unique_runs": 4
+              },
+              "2026-05-08": {
+                "outcome_label_rows": 15,
+                "rows": 15,
+                "rows_by_market": {
+                  "KOSDAQ": 10,
+                  "KOSPI": 5
+                },
+                "unique_runs": 3
+              },
+              "2026-05-10": {
+                "outcome_label_rows": 30,
+                "rows": 30,
+                "rows_by_market": {
+                  "KOSPI": 30
+                },
+                "unique_runs": 6
+              },
+              "2026-05-11": {
+                "outcome_label_rows": 2390,
+                "rows": 2390,
+                "rows_by_market": {
+                  "KOSDAQ": 1602,
+                  "KOSPI": 788
+                },
+                "unique_runs": 15
+              },
+              "2026-05-12": {
+                "outcome_label_rows": 5,
+                "rows": 5,
+                "rows_by_market": {
+                  "KOSPI": 5
+                },
+                "unique_runs": 1
+              },
+              "2026-05-13": {
+                "outcome_label_rows": 11250,
+                "rows": 11250,
+                "rows_by_market": {
+                  "KOSDAQ": 4438,
+                  "KOSPI": 6812
+                },
+                "unique_runs": 12
+              },
+              "2026-05-14": {
+                "outcome_label_rows": 12656,
+                "rows": 12656,
+                "rows_by_market": {
+                  "KOSDAQ": 6183,
+                  "KOSPI": 6473
+                },
+                "unique_runs": 19
+              },
+              "2026-05-15": {
+                "outcome_label_rows": 7920,
+                "rows": 7920,
+                "rows_by_market": {
+                  "KOSDAQ": 3149,
+                  "KOSPI": 4771
+                },
+                "unique_runs": 10
+              },
+              "2026-05-16": {
+                "outcome_label_rows": 2326,
+                "rows": 2326,
+                "rows_by_market": {
+                  "KOSDAQ": 1541,
+                  "KOSPI": 785
+                },
+                "unique_runs": 2
+              },
+              "2026-05-17": {
+                "outcome_label_rows": 3109,
+                "rows": 3109,
+                "rows_by_market": {
+                  "KOSDAQ": 1541,
+                  "KOSPI": 1568
+                },
+                "unique_runs": 3
+              },
+              "2026-05-18": {
+                "outcome_label_rows": 9465,
+                "rows": 9465,
+                "rows_by_market": {
+                  "KOSDAQ": 3129,
+                  "KOSPI": 6336
+                },
+                "unique_runs": 14
+              },
+              "2026-05-19": {
+                "outcome_label_rows": 5523,
+                "rows": 5523,
+                "rows_by_market": {
+                  "KOSDAQ": 1566,
+                  "KOSPI": 3957
+                },
+                "unique_runs": 6
+              },
+              "2026-05-20": {
+                "outcome_label_rows": 6351,
+                "rows": 6351,
+                "rows_by_market": {
+                  "KOSDAQ": 3150,
+                  "KOSPI": 3201
+                },
+                "unique_runs": 7
+              },
+              "2026-05-21": {
+                "outcome_label_rows": 6337,
+                "rows": 6337,
+                "rows_by_market": {
+                  "KOSDAQ": 4737,
+                  "KOSPI": 1600
+                },
+                "unique_runs": 7
+              },
+              "2026-05-22": {
+                "outcome_label_rows": 7910,
+                "rows": 7910,
+                "rows_by_market": {
+                  "KOSDAQ": 4723,
+                  "KOSPI": 3187
+                },
+                "unique_runs": 7
+              },
+              "2026-05-23": {
+                "outcome_label_rows": 2284,
+                "rows": 2284,
+                "rows_by_market": {
+                  "KOSDAQ": 1519,
+                  "KOSPI": 765
+                },
+                "unique_runs": 2
+              },
+              "2026-05-24": {
+                "outcome_label_rows": 2295,
+                "rows": 2295,
+                "rows_by_market": {
+                  "KOSDAQ": 1519,
+                  "KOSPI": 776
+                },
+                "unique_runs": 2
+              },
+              "2026-05-25": {
+                "outcome_label_rows": 2975,
+                "rows": 2975,
+                "rows_by_market": {
+                  "KOSDAQ": 1471,
+                  "KOSPI": 1504
+                },
+                "unique_runs": 3
+              },
+              "2026-05-26": {
+                "outcome_label_rows": 2760,
+                "rows": 2760,
+                "rows_by_market": {
+                  "KOSDAQ": 1812,
+                  "KOSPI": 948
+                },
+                "unique_runs": 9
+              },
+              "2026-05-27": {
+                "outcome_label_rows": 6380,
+                "rows": 6380,
+                "rows_by_market": {
+                  "KOSDAQ": 3177,
+                  "KOSPI": 3203
+                },
+                "unique_runs": 6
+              },
+              "2026-05-28": {
+                "outcome_label_rows": 3194,
+                "rows": 3194,
+                "rows_by_market": {
+                  "KOSDAQ": 1595,
+                  "KOSPI": 1599
+                },
+                "unique_runs": 3
+              },
+              "2026-06-05": {
+                "outcome_label_rows": 0,
+                "rows": 2,
+                "rows_by_market": {
+                  "KOSPI": 2
+                },
+                "unique_runs": 2
+              },
+              "2026-06-06": {
+                "outcome_label_rows": 0,
+                "rows": 79,
+                "rows_by_market": {
+                  "KOSDAQ": 34,
+                  "KOSPI": 45
+                },
+                "unique_runs": 2
+              },
+              "2026-06-07": {
+                "outcome_label_rows": 0,
+                "rows": 142,
+                "rows_by_market": {
+                  "KOSDAQ": 62,
+                  "KOSPI": 80
+                },
+                "unique_runs": 2
+              },
+              "2026-06-08": {
+                "outcome_label_rows": 0,
+                "rows": 149,
+                "rows_by_market": {
+                  "KOSDAQ": 69,
+                  "KOSPI": 80
+                },
+                "unique_runs": 3
+              },
+              "2026-06-09": {
+                "outcome_label_rows": 0,
+                "rows": 452,
+                "rows_by_market": {
+                  "KOSDAQ": 226,
+                  "KOSPI": 226
+                },
+                "unique_runs": 6
+              },
+              "2026-06-10": {
+                "outcome_label_rows": 0,
+                "rows": 774,
+                "rows_by_market": {
+                  "KOSDAQ": 394,
+                  "KOSPI": 380
+                },
+                "unique_runs": 10
+              }
+            },
+            "mature_for_training": true,
+            "outcome_label_rows": 95788,
+            "rows": 97386,
+            "unique_days": 31,
+            "unique_runs": 169
+          },
+          "prefilter": {
+            "date_coverage": {
+              "2026-06-06": {
+                "outcome_label_rows": 0,
+                "rows": 79,
+                "rows_by_market": {
+                  "KOSDAQ": 34,
+                  "KOSPI": 45
+                },
+                "unique_runs": 2
+              },
+              "2026-06-07": {
+                "outcome_label_rows": 0,
+                "rows": 142,
+                "rows_by_market": {
+                  "KOSDAQ": 62,
+                  "KOSPI": 80
+                },
+                "unique_runs": 2
+              },
+              "2026-06-08": {
+                "outcome_label_rows": 0,
+                "rows": 149,
+                "rows_by_market": {
+                  "KOSDAQ": 69,
+                  "KOSPI": 80
+                },
+                "unique_runs": 3
+              },
+              "2026-06-09": {
+                "outcome_label_rows": 0,
+                "rows": 452,
+                "rows_by_market": {
+                  "KOSDAQ": 226,
+                  "KOSPI": 226
+                },
+                "unique_runs": 6
+              },
+              "2026-06-10": {
+                "outcome_label_rows": 0,
+                "rows": 774,
+                "rows_by_market": {
+                  "KOSDAQ": 394,
+                  "KOSPI": 380
+                },
+                "unique_runs": 10
+              }
+            },
+            "mature_for_training": false,
+            "outcome_label_rows": 0,
+            "rows": 1596,
+            "unique_days": 5,
+            "unique_runs": 23
+          },
+          "sidecar": {
+            "date_coverage": {
+              "2026-04-02": {
+                "outcome_label_rows": 17,
+                "rows": 17,
+                "rows_by_market": {
+                  "KOSDAQ": 17
+                },
+                "unique_runs": 2
+              },
+              "2026-04-07": {
+                "outcome_label_rows": 10,
+                "rows": 10,
+                "rows_by_market": {
+                  "KOSDAQ": 5,
+                  "KOSPI": 5
+                },
+                "unique_runs": 2
+              },
+              "2026-04-09": {
+                "outcome_label_rows": 105,
+                "rows": 105,
+                "rows_by_market": {
+                  "KOSDAQ": 25,
+                  "KOSPI": 80
+                },
+                "unique_runs": 7
+              },
+              "2026-04-10": {
+                "outcome_label_rows": 180,
+                "rows": 180,
+                "rows_by_market": {
+                  "KOSDAQ": 77,
+                  "KOSPI": 103
+                },
+                "unique_runs": 15
+              },
+              "2026-04-21": {
+                "outcome_label_rows": 301,
+                "rows": 301,
+                "rows_by_market": {
+                  "KOSDAQ": 171,
+                  "KOSPI": 130
+                },
+                "unique_runs": 4
+              },
+              "2026-05-08": {
+                "outcome_label_rows": 15,
+                "rows": 15,
+                "rows_by_market": {
+                  "KOSDAQ": 10,
+                  "KOSPI": 5
+                },
+                "unique_runs": 3
+              },
+              "2026-05-10": {
+                "outcome_label_rows": 30,
+                "rows": 30,
+                "rows_by_market": {
+                  "KOSPI": 30
+                },
+                "unique_runs": 6
+              },
+              "2026-05-11": {
+                "outcome_label_rows": 2390,
+                "rows": 2390,
+                "rows_by_market": {
+                  "KOSDAQ": 1602,
+                  "KOSPI": 788
+                },
+                "unique_runs": 15
+              },
+              "2026-05-12": {
+                "outcome_label_rows": 5,
+                "rows": 5,
+                "rows_by_market": {
+                  "KOSPI": 5
+                },
+                "unique_runs": 1
+              },
+              "2026-05-13": {
+                "outcome_label_rows": 11250,
+                "rows": 11250,
+                "rows_by_market": {
+                  "KOSDAQ": 4438,
+                  "KOSPI": 6812
+                },
+                "unique_runs": 12
+              },
+              "2026-05-14": {
+                "outcome_label_rows": 12656,
+                "rows": 12656,
+                "rows_by_market": {
+                  "KOSDAQ": 6183,
+                  "KOSPI": 6473
+                },
+                "unique_runs": 19
+              },
+              "2026-05-15": {
+                "outcome_label_rows": 7920,
+                "rows": 7920,
+                "rows_by_market": {
+                  "KOSDAQ": 3149,
+                  "KOSPI": 4771
+                },
+                "unique_runs": 10
+              },
+              "2026-05-16": {
+                "outcome_label_rows": 2326,
+                "rows": 2326,
+                "rows_by_market": {
+                  "KOSDAQ": 1541,
+                  "KOSPI": 785
+                },
+                "unique_runs": 2
+              },
+              "2026-05-17": {
+                "outcome_label_rows": 3109,
+                "rows": 3109,
+                "rows_by_market": {
+                  "KOSDAQ": 1541,
+                  "KOSPI": 1568
+                },
+                "unique_runs": 3
+              },
+              "2026-05-18": {
+                "outcome_label_rows": 9465,
+                "rows": 9465,
+                "rows_by_market": {
+                  "KOSDAQ": 3129,
+                  "KOSPI": 6336
+                },
+                "unique_runs": 14
+              },
+              "2026-05-19": {
+                "outcome_label_rows": 5523,
+                "rows": 5523,
+                "rows_by_market": {
+                  "KOSDAQ": 1566,
+                  "KOSPI": 3957
+                },
+                "unique_runs": 6
+              },
+              "2026-05-20": {
+                "outcome_label_rows": 6351,
+                "rows": 6351,
+                "rows_by_market": {
+                  "KOSDAQ": 3150,
+                  "KOSPI": 3201
+                },
+                "unique_runs": 7
+              },
+              "2026-05-21": {
+                "outcome_label_rows": 6337,
+                "rows": 6337,
+                "rows_by_market": {
+                  "KOSDAQ": 4737,
+                  "KOSPI": 1600
+                },
+                "unique_runs": 7
+              },
+              "2026-05-22": {
+                "outcome_label_rows": 7910,
+                "rows": 7910,
+                "rows_by_market": {
+                  "KOSDAQ": 4723,
+                  "KOSPI": 3187
+                },
+                "unique_runs": 7
+              },
+              "2026-05-23": {
+                "outcome_label_rows": 2284,
+                "rows": 2284,
+                "rows_by_market": {
+                  "KOSDAQ": 1519,
+                  "KOSPI": 765
+                },
+                "unique_runs": 2
+              },
+              "2026-05-24": {
+                "outcome_label_rows": 2295,
+                "rows": 2295,
+                "rows_by_market": {
+                  "KOSDAQ": 1519,
+                  "KOSPI": 776
+                },
+                "unique_runs": 2
+              },
+              "2026-05-25": {
+                "outcome_label_rows": 2975,
+                "rows": 2975,
+                "rows_by_market": {
+                  "KOSDAQ": 1471,
+                  "KOSPI": 1504
+                },
+                "unique_runs": 3
+              },
+              "2026-05-26": {
+                "outcome_label_rows": 2760,
+                "rows": 2760,
+                "rows_by_market": {
+                  "KOSDAQ": 1812,
+                  "KOSPI": 948
+                },
+                "unique_runs": 9
+              },
+              "2026-05-27": {
+                "outcome_label_rows": 6380,
+                "rows": 6380,
+                "rows_by_market": {
+                  "KOSDAQ": 3177,
+                  "KOSPI": 3203
+                },
+                "unique_runs": 6
+              },
+              "2026-05-28": {
+                "outcome_label_rows": 3194,
+                "rows": 3194,
+                "rows_by_market": {
+                  "KOSDAQ": 1595,
+                  "KOSPI": 1599
+                },
+                "unique_runs": 3
+              },
+              "2026-06-05": {
+                "outcome_label_rows": 0,
+                "rows": 2,
+                "rows_by_market": {
+                  "KOSPI": 2
+                },
+                "unique_runs": 2
+              },
+              "2026-06-07": {
+                "outcome_label_rows": 0,
+                "rows": 1,
+                "rows_by_market": {
+                  "KOSDAQ": 1
+                },
+                "unique_runs": 1
+              },
+              "2026-06-08": {
+                "outcome_label_rows": 0,
+                "rows": 2,
+                "rows_by_market": {
+                  "KOSDAQ": 1,
+                  "KOSPI": 1
+                },
+                "unique_runs": 2
+              },
+              "2026-06-09": {
+                "outcome_label_rows": 0,
+                "rows": 31,
+                "rows_by_market": {
+                  "KOSDAQ": 14,
+                  "KOSPI": 17
+                },
+                "unique_runs": 6
+              },
+              "2026-06-10": {
+                "outcome_label_rows": 0,
+                "rows": 21,
+                "rows_by_market": {
+                  "KOSDAQ": 15,
+                  "KOSPI": 6
+                },
+                "unique_runs": 10
+              }
+            },
+            "mature_for_training": true,
+            "outcome_label_rows": 95788,
+            "rows": 95845,
+            "unique_days": 30,
+            "unique_runs": 165
+          },
+          "theme_news": {
+            "date_coverage": {
+              "2026-04-02": {
+                "outcome_label_rows": 17,
+                "rows": 17,
+                "rows_by_market": {
+                  "KOSDAQ": 17
+                },
+                "unique_runs": 2
+              },
+              "2026-04-07": {
+                "outcome_label_rows": 10,
+                "rows": 10,
+                "rows_by_market": {
+                  "KOSDAQ": 5,
+                  "KOSPI": 5
+                },
+                "unique_runs": 2
+              },
+              "2026-04-09": {
+                "outcome_label_rows": 105,
+                "rows": 105,
+                "rows_by_market": {
+                  "KOSDAQ": 25,
+                  "KOSPI": 80
+                },
+                "unique_runs": 7
+              },
+              "2026-04-10": {
+                "outcome_label_rows": 180,
+                "rows": 180,
+                "rows_by_market": {
+                  "KOSDAQ": 77,
+                  "KOSPI": 103
+                },
+                "unique_runs": 15
+              },
+              "2026-04-21": {
+                "outcome_label_rows": 301,
+                "rows": 301,
+                "rows_by_market": {
+                  "KOSDAQ": 171,
+                  "KOSPI": 130
+                },
+                "unique_runs": 4
+              },
+              "2026-05-08": {
+                "outcome_label_rows": 15,
+                "rows": 15,
+                "rows_by_market": {
+                  "KOSDAQ": 10,
+                  "KOSPI": 5
+                },
+                "unique_runs": 3
+              },
+              "2026-05-10": {
+                "outcome_label_rows": 30,
+                "rows": 30,
+                "rows_by_market": {
+                  "KOSPI": 30
+                },
+                "unique_runs": 6
+              },
+              "2026-05-11": {
+                "outcome_label_rows": 2390,
+                "rows": 2390,
+                "rows_by_market": {
+                  "KOSDAQ": 1602,
+                  "KOSPI": 788
+                },
+                "unique_runs": 15
+              },
+              "2026-05-12": {
+                "outcome_label_rows": 5,
+                "rows": 5,
+                "rows_by_market": {
+                  "KOSPI": 5
+                },
+                "unique_runs": 1
+              },
+              "2026-05-13": {
+                "outcome_label_rows": 11250,
+                "rows": 11250,
+                "rows_by_market": {
+                  "KOSDAQ": 4438,
+                  "KOSPI": 6812
+                },
+                "unique_runs": 12
+              },
+              "2026-05-14": {
+                "outcome_label_rows": 12656,
+                "rows": 12656,
+                "rows_by_market": {
+                  "KOSDAQ": 6183,
+                  "KOSPI": 6473
+                },
+                "unique_runs": 19
+              },
+              "2026-05-15": {
+                "outcome_label_rows": 7920,
+                "rows": 7920,
+                "rows_by_market": {
+                  "KOSDAQ": 3149,
+                  "KOSPI": 4771
+                },
+                "unique_runs": 10
+              },
+              "2026-05-16": {
+                "outcome_label_rows": 2326,
+                "rows": 2326,
+                "rows_by_market": {
+                  "KOSDAQ": 1541,
+                  "KOSPI": 785
+                },
+                "unique_runs": 2
+              },
+              "2026-05-17": {
+                "outcome_label_rows": 3109,
+                "rows": 3109,
+                "rows_by_market": {
+                  "KOSDAQ": 1541,
+                  "KOSPI": 1568
+                },
+                "unique_runs": 3
+              },
+              "2026-05-18": {
+                "outcome_label_rows": 9465,
+                "rows": 9465,
+                "rows_by_market": {
+                  "KOSDAQ": 3129,
+                  "KOSPI": 6336
+                },
+                "unique_runs": 14
+              },
+              "2026-05-19": {
+                "outcome_label_rows": 5523,
+                "rows": 5523,
+                "rows_by_market": {
+                  "KOSDAQ": 1566,
+                  "KOSPI": 3957
+                },
+                "unique_runs": 6
+              },
+              "2026-05-20": {
+                "outcome_label_rows": 6351,
+                "rows": 6351,
+                "rows_by_market": {
+                  "KOSDAQ": 3150,
+                  "KOSPI": 3201
+                },
+                "unique_runs": 7
+              },
+              "2026-05-21": {
+                "outcome_label_rows": 6337,
+                "rows": 6337,
+                "rows_by_market": {
+                  "KOSDAQ": 4737,
+                  "KOSPI": 1600
+                },
+                "unique_runs": 7
+              },
+              "2026-05-22": {
+                "outcome_label_rows": 7910,
+                "rows": 7910,
+                "rows_by_market": {
+                  "KOSDAQ": 4723,
+                  "KOSPI": 3187
+                },
+                "unique_runs": 7
+              },
+              "2026-05-23": {
+                "outcome_label_rows": 2284,
+                "rows": 2284,
+                "rows_by_market": {
+                  "KOSDAQ": 1519,
+                  "KOSPI": 765
+                },
+                "unique_runs": 2
+              },
+              "2026-05-24": {
+                "outcome_label_rows": 2295,
+                "rows": 2295,
+                "rows_by_market": {
+                  "KOSDAQ": 1519,
+                  "KOSPI": 776
+                },
+                "unique_runs": 2
+              },
+              "2026-05-25": {
+                "outcome_label_rows": 2975,
+                "rows": 2975,
+                "rows_by_market": {
+                  "KOSDAQ": 1471,
+                  "KOSPI": 1504
+                },
+                "unique_runs": 3
+              },
+              "2026-05-26": {
+                "outcome_label_rows": 2760,
+                "rows": 2760,
+                "rows_by_market": {
+                  "KOSDAQ": 1812,
+                  "KOSPI": 948
+                },
+                "unique_runs": 9
+              },
+              "2026-05-27": {
+                "outcome_label_rows": 6380,
+                "rows": 6380,
+                "rows_by_market": {
+                  "KOSDAQ": 3177,
+                  "KOSPI": 3203
+                },
+                "unique_runs": 6
+              },
+              "2026-05-28": {
+                "outcome_label_rows": 3194,
+                "rows": 3194,
+                "rows_by_market": {
+                  "KOSDAQ": 1595,
+                  "KOSPI": 1599
+                },
+                "unique_runs": 3
+              },
+              "2026-06-05": {
+                "outcome_label_rows": 0,
+                "rows": 2,
+                "rows_by_market": {
+                  "KOSPI": 2
+                },
+                "unique_runs": 2
+              },
+              "2026-06-06": {
+                "outcome_label_rows": 0,
+                "rows": 79,
+                "rows_by_market": {
+                  "KOSDAQ": 34,
+                  "KOSPI": 45
+                },
+                "unique_runs": 2
+              },
+              "2026-06-07": {
+                "outcome_label_rows": 0,
+                "rows": 142,
+                "rows_by_market": {
+                  "KOSDAQ": 62,
+                  "KOSPI": 80
+                },
+                "unique_runs": 2
+              },
+              "2026-06-08": {
+                "outcome_label_rows": 0,
+                "rows": 149,
+                "rows_by_market": {
+                  "KOSDAQ": 69,
+                  "KOSPI": 80
+                },
+                "unique_runs": 3
+              },
+              "2026-06-09": {
+                "outcome_label_rows": 0,
+                "rows": 452,
+                "rows_by_market": {
+                  "KOSDAQ": 226,
+                  "KOSPI": 226
+                },
+                "unique_runs": 6
+              },
+              "2026-06-10": {
+                "outcome_label_rows": 0,
+                "rows": 774,
+                "rows_by_market": {
+                  "KOSDAQ": 394,
+                  "KOSPI": 380
+                },
+                "unique_runs": 10
+              }
+            },
+            "mature_for_training": true,
+            "outcome_label_rows": 95788,
+            "rows": 97386,
+            "unique_days": 31,
+            "unique_runs": 169
+          }
+        },
+        "feature_fill": {
+          "prefilter_top_feature_fill_pct": {
+            "kis_prefilter_feature_origin": 1.019,
+            "kis_prefilter_present": 1.019,
+            "kis_prefilter_quote_current_price": 1.019,
+            "kis_prefilter_quote_day_change_pct": 1.019,
+            "kis_prefilter_quote_market_cap": 1.019,
+            "kis_prefilter_quote_ok": 1.019,
+            "kis_prefilter_quote_pbr": 1.019,
+            "kis_prefilter_quote_per": 1.019,
+            "kis_prefilter_quote_prev_volume_ratio": 1.019,
+            "kis_prefilter_quote_source_status": 1.019,
+            "kis_prefilter_quote_value_traded": 1.019,
+            "kis_prefilter_quote_volume": 1.019,
+            "kis_prefilter_rank_fluctuation": 0.359,
+            "kis_prefilter_rank_volume": 0.281,
+            "kis_prefilter_rank_volume_power": 0.359,
+            "kis_prefilter_score_day_change_pct": 1.019,
+            "kis_prefilter_score_fluctuation_rank": 1.019,
+            "kis_prefilter_score_market_cap": 1.019,
+            "kis_prefilter_score_prev_volume_ratio": 1.017,
+            "kis_prefilter_score_value_traded": 1.019,
+            "kis_prefilter_score_vi_triggered": 0.1,
+            "kis_prefilter_score_volume_power_rank": 1.019,
+            "kis_prefilter_score_volume_rank": 1.019,
+            "kis_prefilter_selection_score": 1.019,
+            "kis_prefilter_snapshot_feature_version": 1.019,
+            "kis_prefilter_source_count": 1.019,
+            "kis_prefilter_source_signature": 1.019,
+            "kis_prefilter_vi_triggered": 0.1
+          },
+          "sidecar_top_feature_fill_pct": {
+            "kis_current_price": 61.17,
+            "kis_daily_bar_count": 61.17,
+            "kis_daily_close_location_pct": 61.078,
+            "kis_daily_high_52w": 61.169,
+            "kis_daily_ma20": 61.169,
+            "kis_daily_ma5": 61.169,
+            "kis_daily_ma60": 61.169,
+            "kis_daily_pct_from_52w_high": 61.169,
+            "kis_daily_prior_20d_high": 61.169,
+            "kis_daily_range_20d_high": 61.169,
+            "kis_daily_range_20d_low": 61.169,
+            "kis_daily_return_20d_pct": 61.17,
+            "kis_daily_return_5d_pct": 61.17,
+            "kis_daily_return_60d_pct": 61.169,
+            "kis_daily_volume_ratio_20d": 61.149,
+            "kis_day_change_pct": 61.17,
+            "kis_financial_bps": 60.96,
+            "kis_financial_debt_ratio": 60.96,
+            "kis_financial_eps": 60.96,
+            "kis_financial_net_income_margin": 60.96,
+            "kis_financial_operating_profit_margin": 60.96,
+            "kis_financial_reserve_ratio": 60.96,
+            "kis_financial_revenue_growth_rate": 60.96,
+            "kis_financial_roe": 60.96,
+            "kis_financial_statement_period": 60.96,
+            "kis_foreigner_1d": 61.153,
+            "kis_high_250d_gap_pct": 0.036,
+            "kis_institution_1d": 61.153,
+            "kis_low_250d_gap_pct": 0.036,
+            "kis_market_cap": 0.036,
+            "kis_minute_bar_count": 61.17,
+            "kis_news_promotion_blocked": 0.033,
+            "kis_news_raw_title_count": 0.033,
+            "kis_news_rows_filtered_out_count": 0.033,
+            "kis_news_source_scope": 0.033,
+            "kis_news_source_scope_ambiguous": 0.033,
+            "kis_news_source_scope_confidence": 0.033,
+            "kis_news_title_count": 61.17,
+            "kis_pbr": 0.036,
+            "kis_per": 0.036,
+            "kis_prev_volume_ratio": 61.149,
+            "kis_rank_fluctuation": 0.022,
+            "kis_rank_volume": 0.021,
+            "kis_retail_1d": 61.153,
+            "kis_sidecar_contract_version": 61.17,
+            "kis_sidecar_coverage_daily_ohlcv": 61.17,
+            "kis_sidecar_coverage_daily_ohlcv_50d": 61.17,
+            "kis_sidecar_coverage_financial_ratio": 61.155,
+            "kis_sidecar_coverage_financial_style": 60.962,
+            "kis_sidecar_coverage_investor_flow": 60.831,
+            "kis_sidecar_coverage_news_titles": 1.966,
+            "kis_sidecar_coverage_quote_snapshot": 61.17,
+            "kis_sidecar_coverage_rank_membership": 0.035,
+            "kis_sidecar_coverage_stock_info": 61.152,
+            "kis_sidecar_coverage_vi_status": 61.169,
+            "kis_sidecar_feature_origin": 61.17,
+            "kis_sidecar_model_ready": 61.17,
+            "kis_sidecar_present": 61.17,
+            "kis_sidecar_warning_count": 61.17,
+            "kis_stock_admin_item": 61.152,
+            "kis_stock_capital_amount": 61.152,
+            "kis_stock_kospi200_item": 61.152,
+            "kis_stock_listed_date": 61.152,
+            "kis_stock_listed_shares": 61.152,
+            "kis_stock_market_code": 61.152,
+            "kis_stock_market_name": 61.152,
+            "kis_stock_par_value": 61.152,
+            "kis_stock_sector_name": 60.899,
+            "kis_stock_standard_industry_code": 61.152,
+            "kis_stock_trade_stop": 61.152,
+            "kis_stock_type": 61.152,
+            "kis_value_traded": 61.17,
+            "kis_vi_triggered": 0.823,
+            "kis_whale_flow_10d": 61.153,
+            "kis_whale_flow_3d": 61.153,
+            "kis_whale_score": 61.153
+          },
+          "theme_news_top_feature_fill_pct": {
+            "kis_theme_news_available": 100.0,
+            "kis_theme_news_evidence_score": 100.0,
+            "kis_theme_news_headline_count": 100.0,
+            "kis_theme_news_kis_backed": 100.0,
+            "kis_theme_news_kis_sector_name": 60.938,
+            "kis_theme_news_level": 100.0,
+            "kis_theme_news_news_checked": 100.0,
+            "kis_theme_news_news_count": 100.0,
+            "kis_theme_news_positive_tag_count": 100.0,
+            "kis_theme_news_prefilter_source_count": 1.019,
+            "kis_theme_news_primary_theme": 2.374,
+            "kis_theme_news_promotion_blocked": 100.0,
+            "kis_theme_news_raw_news_count": 0.033,
+            "kis_theme_news_risk_tag_count": 100.0,
+            "kis_theme_news_rows_filtered_out_count": 0.033,
+            "kis_theme_news_source_scope": 100.0,
+            "kis_theme_news_source_scope_confidence": 100.0,
+            "kis_theme_news_standard_industry_code": 61.152,
+            "kis_theme_news_top_positive_tag": 1.959,
+            "kis_theme_news_top_risk_tag": 1.682,
+            "kis_theme_news_vi_triggered": 0.923
+          }
+        },
+        "promotion_rule": "KIS feature sets only train on rows with real KIS payload; no dummy or missing-only KIS rows are used.",
+        "required_days": 10,
+        "required_rows": 1200,
+        "status": "ok"
+      },
+      "source_ok_combinations": 120,
+      "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json",
+      "source_prepared_rows": 156686,
+      "source_raw_rows": 165451,
       "theme_news_readiness": {
-        "evidence_score_fill_pct": null,
-        "feature_fill_pct": {},
-        "kis_backed_fill_pct": null,
-        "market_scope": {},
-        "mature_for_training": false,
-        "news_checked_fill_pct": null
+        "evidence_score_fill_pct": 100.0,
+        "feature_fill_pct": {
+          "kis_theme_news_available": 100.0,
+          "kis_theme_news_evidence_score": 100.0,
+          "kis_theme_news_headline_count": 100.0,
+          "kis_theme_news_kis_backed": 100.0,
+          "kis_theme_news_kis_sector_name": 60.938,
+          "kis_theme_news_level": 100.0,
+          "kis_theme_news_news_checked": 100.0,
+          "kis_theme_news_news_count": 100.0,
+          "kis_theme_news_positive_tag_count": 100.0,
+          "kis_theme_news_prefilter_source_count": 1.019,
+          "kis_theme_news_primary_theme": 2.374,
+          "kis_theme_news_promotion_blocked": 100.0,
+          "kis_theme_news_raw_news_count": 0.033,
+          "kis_theme_news_risk_tag_count": 100.0,
+          "kis_theme_news_rows_filtered_out_count": 0.033,
+          "kis_theme_news_source_scope": 100.0,
+          "kis_theme_news_source_scope_confidence": 100.0,
+          "kis_theme_news_standard_industry_code": 61.152,
+          "kis_theme_news_top_positive_tag": 1.959,
+          "kis_theme_news_top_risk_tag": 1.682,
+          "kis_theme_news_vi_triggered": 0.923
+        },
+        "kis_backed_fill_pct": 100.0,
+        "market_scope": {
+          "date_coverage": {
+            "2026-04-02": {
+              "outcome_label_rows": 17,
+              "rows": 17,
+              "rows_by_market": {
+                "KOSDAQ": 17
+              },
+              "unique_runs": 2
+            },
+            "2026-04-07": {
+              "outcome_label_rows": 5,
+              "rows": 5,
+              "rows_by_market": {
+                "KOSDAQ": 5
+              },
+              "unique_runs": 1
+            },
+            "2026-04-09": {
+              "outcome_label_rows": 25,
+              "rows": 25,
+              "rows_by_market": {
+                "KOSDAQ": 25
+              },
+              "unique_runs": 3
+            },
+            "2026-04-10": {
+              "outcome_label_rows": 77,
+              "rows": 77,
+              "rows_by_market": {
+                "KOSDAQ": 77
+              },
+              "unique_runs": 7
+            },
+            "2026-04-21": {
+              "outcome_label_rows": 171,
+              "rows": 171,
+              "rows_by_market": {
+                "KOSDAQ": 171
+              },
+              "unique_runs": 2
+            },
+            "2026-05-08": {
+              "outcome_label_rows": 10,
+              "rows": 10,
+              "rows_by_market": {
+                "KOSDAQ": 10
+              },
+              "unique_runs": 2
+            },
+            "2026-05-11": {
+              "outcome_label_rows": 1602,
+              "rows": 1602,
+              "rows_by_market": {
+                "KOSDAQ": 1602
+              },
+              "unique_runs": 13
+            },
+            "2026-05-13": {
+              "outcome_label_rows": 4438,
+              "rows": 4438,
+              "rows_by_market": {
+                "KOSDAQ": 4438
+              },
+              "unique_runs": 3
+            },
+            "2026-05-14": {
+              "outcome_label_rows": 6183,
+              "rows": 6183,
+              "rows_by_market": {
+                "KOSDAQ": 6183
+              },
+              "unique_runs": 5
+            },
+            "2026-05-15": {
+              "outcome_label_rows": 3149,
+              "rows": 3149,
+              "rows_by_market": {
+                "KOSDAQ": 3149
+              },
+              "unique_runs": 3
+            },
+            "2026-05-16": {
+              "outcome_label_rows": 1541,
+              "rows": 1541,
+              "rows_by_market": {
+                "KOSDAQ": 1541
+              },
+              "unique_runs": 1
+            },
+            "2026-05-17": {
+              "outcome_label_rows": 1541,
+              "rows": 1541,
+              "rows_by_market": {
+                "KOSDAQ": 1541
+              },
+              "unique_runs": 1
+            },
+            "2026-05-18": {
+              "outcome_label_rows": 3129,
+              "rows": 3129,
+              "rows_by_market": {
+                "KOSDAQ": 3129
+              },
+              "unique_runs": 4
+            },
+            "2026-05-19": {
+              "outcome_label_rows": 1566,
+              "rows": 1566,
+              "rows_by_market": {
+                "KOSDAQ": 1566
+              },
+              "unique_runs": 1
+            },
+            "2026-05-20": {
+              "outcome_label_rows": 3150,
+              "rows": 3150,
+              "rows_by_market": {
+                "KOSDAQ": 3150
+              },
+              "unique_runs": 2
+            },
+            "2026-05-21": {
+              "outcome_label_rows": 4737,
+              "rows": 4737,
+              "rows_by_market": {
+                "KOSDAQ": 4737
+              },
+              "unique_runs": 4
+            },
+            "2026-05-22": {
+              "outcome_label_rows": 4723,
+              "rows": 4723,
+              "rows_by_market": {
+                "KOSDAQ": 4723
+              },
+              "unique_runs": 3
+            },
+            "2026-05-23": {
+              "outcome_label_rows": 1519,
+              "rows": 1519,
+              "rows_by_market": {
+                "KOSDAQ": 1519
+              },
+              "unique_runs": 1
+            },
+            "2026-05-24": {
+              "outcome_label_rows": 1519,
+              "rows": 1519,
+              "rows_by_market": {
+                "KOSDAQ": 1519
+              },
+              "unique_runs": 1
+            },
+            "2026-05-25": {
+              "outcome_label_rows": 1471,
+              "rows": 1471,
+              "rows_by_market": {
+                "KOSDAQ": 1471
+              },
+              "unique_runs": 1
+            },
+            "2026-05-26": {
+              "outcome_label_rows": 1812,
+              "rows": 1812,
+              "rows_by_market": {
+                "KOSDAQ": 1812
+              },
+              "unique_runs": 4
+            },
+            "2026-05-27": {
+              "outcome_label_rows": 3177,
+              "rows": 3177,
+              "rows_by_market": {
+                "KOSDAQ": 3177
+              },
+              "unique_runs": 2
+            },
+            "2026-05-28": {
+              "outcome_label_rows": 1595,
+              "rows": 1595,
+              "rows_by_market": {
+                "KOSDAQ": 1595
+              },
+              "unique_runs": 1
+            },
+            "2026-06-06": {
+              "outcome_label_rows": 0,
+              "rows": 34,
+              "rows_by_market": {
+                "KOSDAQ": 34
+              },
+              "unique_runs": 1
+            },
+            "2026-06-07": {
+              "outcome_label_rows": 0,
+              "rows": 62,
+              "rows_by_market": {
+                "KOSDAQ": 62
+              },
+              "unique_runs": 1
+            },
+            "2026-06-08": {
+              "outcome_label_rows": 0,
+              "rows": 69,
+              "rows_by_market": {
+                "KOSDAQ": 69
+              },
+              "unique_runs": 2
+            },
+            "2026-06-09": {
+              "outcome_label_rows": 0,
+              "rows": 226,
+              "rows_by_market": {
+                "KOSDAQ": 226
+              },
+              "unique_runs": 3
+            },
+            "2026-06-10": {
+              "outcome_label_rows": 0,
+              "rows": 394,
+              "rows_by_market": {
+                "KOSDAQ": 394
+              },
+              "unique_runs": 5
+            }
+          },
+          "mature_for_training": true,
+          "outcome_label_rows": 47157,
+          "rows": 47942,
+          "unique_days": 28,
+          "unique_runs": 71
+        },
+        "mature_for_training": true,
+        "news_checked_fill_pct": 100.0
       }
     },
     "KOSPI": {
@@ -474,8 +3478,7 @@
         "gate_status": "shadow_ready",
         "production_blocking_reasons": [
           "n_lt_45",
-          "active_days_lt_20",
-          "active_runs_lt_20"
+          "active_days_lt_20"
         ],
         "production_economics": {
           "cost_model": {

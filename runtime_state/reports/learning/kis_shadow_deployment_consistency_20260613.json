@@ -6,7 +6,7 @@
     "status": "pass"
   },
   "dummy_data_used": false,
-  "generated_at": "2026-06-12T18:59:22+00:00",
+  "generated_at": "2026-06-12T19:11:31+00:00",
   "inputs": {
     "comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
     "deployment_report": "runtime_state/reports/learning/kis_shadow_admission_model_deployment.json",
@@ -153,8 +153,7 @@
       "alias_gate": {
         "production_blocking_reasons": [
           "n_lt_45",
-          "active_days_lt_20",
-          "active_runs_lt_20"
+          "active_days_lt_20"
         ],
         "production_ready": false,
         "shadow_display_allowed": true,
@@ -166,31 +165,30 @@
         "label": "touch5_dd10_5d",
         "market": "KOSDAQ",
         "model": "lightgbm",
-        "prob_threshold": 0.75,
-        "selection_rule": "top1_p0p75_tail0p85",
-        "tail_risk_prob_threshold": 0.85,
-        "topn": 1
+        "prob_threshold": 0.5,
+        "selection_rule": "top2_p0.50_tail0.90",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 2
       },
       "alias_metric_mismatches": {},
       "alias_metrics": {
-        "active_days": 9,
-        "active_runs": 19,
-        "avg_5d_pct": 15.458772,
-        "avg_max_high_5d_pct": 32.274772,
+        "active_days": 11,
+        "active_runs": 20,
+        "avg_5d_pct": 20.411507,
+        "avg_max_high_5d_pct": 41.996894,
         "buy_premium_pct": 2.0,
         "hit10_5d_pct": 100.0,
         "hit5_dd10_5d_pct": 100.0,
-        "min_min_low_5d_pct": -7.006077,
-        "n": 19,
-        "stop_before_target_5d_pct": 26.3158,
-        "target_before_stop_5d_pct": 73.6842
+        "min_min_low_5d_pct": -9.300619,
+        "n": 40,
+        "stop_before_target_5d_pct": 17.5,
+        "target_before_stop_5d_pct": 92.5
       },
       "alias_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_shadow_best_effort_current.pkl",
       "bundle_gate": {
         "production_blocking_reasons": [
           "n_lt_45",
-          "active_days_lt_20",
-          "active_runs_lt_20"
+          "active_days_lt_20"
         ],
         "production_ready": false,
         "shadow_display_allowed": true,
@@ -201,31 +199,30 @@
         "label": "touch5_dd10_5d",
         "market": "KOSDAQ",
         "model": "lightgbm",
-        "prob_threshold": 0.75,
-        "selection_rule": "top1_p0p75_tail0p85",
-        "tail_risk_prob_threshold": 0.85,
-        "topn": 1
+        "prob_threshold": 0.5,
+        "selection_rule": "top2_p0.50_tail0.90",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 2
       },
       "bundle_metric_mismatches": {},
       "bundle_metrics": {
-        "active_days": 9,
-        "active_runs": 19,
-        "avg_5d_pct": 15.458772,
-        "avg_max_high_5d_pct": 32.274772,
+        "active_days": 11,
+        "active_runs": 20,
+        "avg_5d_pct": 20.411507,
+        "avg_max_high_5d_pct": 41.996894,
         "buy_premium_pct": 2.0,
         "hit10_5d_pct": 100.0,
         "hit5_dd10_5d_pct": 100.0,
-        "min_min_low_5d_pct": -7.006077,
-        "n": 19,
-        "stop_before_target_5d_pct": 26.3158,
-        "target_before_stop_5d_pct": 73.6842
+        "min_min_low_5d_pct": -9.300619,
+        "n": 40,
+        "stop_before_target_5d_pct": 17.5,
+        "target_before_stop_5d_pct": 92.5
       },
       "bundle_mismatches": {},
       "comparison_gate": {
         "production_blocking_reasons": [
           "n_lt_45",
-          "active_days_lt_20",
-          "active_runs_lt_20"
+          "active_days_lt_20"
         ],
         "production_ready": false,
         "shadow_display_allowed": true,
@@ -236,26 +233,26 @@
         "label": "touch5_dd10_5d",
         "market": "KOSDAQ",
         "model": "lightgbm",
-        "prob_threshold": 0.75,
-        "selection_rule": "top1_p0p75_tail0p85",
-        "tail_risk_prob_threshold": 0.85,
-        "topn": 1
+        "prob_threshold": 0.5,
+        "selection_rule": "top2_p0.50_tail0.90",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 2
       },
       "comparison_metrics": {
-        "active_days": 9,
-        "active_runs": 19,
-        "avg_5d_pct": 15.458772,
-        "avg_max_high_5d_pct": 32.274772,
+        "active_days": 11,
+        "active_runs": 20,
+        "avg_5d_pct": 20.411507,
+        "avg_max_high_5d_pct": 41.996894,
         "buy_premium_pct": 2.0,
         "hit10_5d_pct": 100.0,
         "hit5_dd10_5d_pct": 100.0,
-        "min_min_low_5d_pct": -7.006077,
-        "n": 19,
-        "stop_before_target_5d_pct": 26.3158,
-        "target_before_stop_5d_pct": 73.6842
+        "min_min_low_5d_pct": -9.300619,
+        "n": 40,
+        "stop_before_target_5d_pct": 17.5,
+        "target_before_stop_5d_pct": 92.5
       },
       "deployment_gate": {
-        "source_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
+        "source_report": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json",
         "status": "shadow_ready"
       },
       "deployment_gate_mismatches": {},
@@ -264,26 +261,26 @@
         "label": "touch5_dd10_5d",
         "market": "KOSDAQ",
         "model": "lightgbm",
-        "prob_threshold": 0.75,
-        "selection_rule": "top1_p0p75_tail0p85",
-        "tail_risk_prob_threshold": 0.85,
-        "topn": 1
+        "prob_threshold": 0.5,
+        "selection_rule": "top2_p0.50_tail0.90",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 2
       },
       "deployment_metrics": {
-        "active_days": 9,
-        "active_runs": 19,
-        "avg_5d_pct": 15.458772,
-        "avg_max_high_5d_pct": 32.274772,
+        "active_days": 11,
+        "active_runs": 20,
+        "avg_5d_pct": 20.411507,
+        "avg_max_high_5d_pct": 41.996894,
         "buy_premium_pct": 2.0,
         "hit10_5d_pct": 100.0,
         "hit5_dd10_5d_pct": 100.0,
-        "min_min_low_5d_pct": -7.006077,
-        "n": 19,
-        "stop_before_target_5d_pct": 26.3158,
-        "target_before_stop_5d_pct": 73.6842
+        "min_min_low_5d_pct": -9.300619,
+        "n": 40,
+        "stop_before_target_5d_pct": 17.5,
+        "target_before_stop_5d_pct": 92.5
       },
-      "deployment_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p75_tail0p85.pkl",
-      "expected_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p75_tail0p85.pkl",
+      "deployment_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top2_p0p50_tail0p90.pkl",
+      "expected_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top2_p0p50_tail0p90.pkl",
       "gate_mismatches": {},
       "identity_mismatches": {},
       "issues": [],

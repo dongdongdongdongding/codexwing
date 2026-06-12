@@ -14,6 +14,7 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     comparison = tmp_path / "comparison.json"
     sidecar_baseline = tmp_path / "sidecar_baseline.json"
     sidecar_score = tmp_path / "sidecar_score.json"
+    candidate_leaderboard = tmp_path / "candidate_leaderboard.json"
     _write(
         shadow,
         {
@@ -217,6 +218,17 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
             ]
         },
     )
+    _write(
+        candidate_leaderboard,
+        {
+            "decision": {
+                "status": "keep_current_shadow",
+                "production_replacement_ready": False,
+                "shadow_upgrade_found": False,
+                "recommended_action": "continue_forward_tracking_until_sample_gate_clears",
+            }
+        },
+    )
 
     report = build_report(
         shadow_report_path=shadow,
@@ -225,12 +237,14 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
         market_comparison_path=comparison,
         sidecar_baseline_sweep_path=sidecar_baseline,
         sidecar_score_sweep_path=sidecar_score,
+        candidate_leaderboard_path=candidate_leaderboard,
     )
 
     assert report["research_inputs"]["no_dummy_data"] is True
     assert report["decision"]["status"] == "verified_shadow_performance"
     assert report["decision"]["production_replacement_proven"] is False
     assert report["decision"]["shadow_performance_proven"] is True
+    assert report["research_inputs"]["candidate_leaderboard"]["status"] == "keep_current_shadow"
     assert "+5%" in report["user_goal"]["win_definition"]
     assert report["markets"]["KOSPI"]["kis_sidecar_longfold_shadow"]["gate"]["status"] == "shadow_ready"
     assert report["markets"]["KOSDAQ"]["three_stage_ev_ranker"]["decision"]["production_candidate"] is False

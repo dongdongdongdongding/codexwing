@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-12T18:59:28.507108+00:00`
+- generated_at: `2026-06-12T19:12:29.789955+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -26,6 +26,7 @@
 - shadow rows/evaluated/shadow_allowed/production_ready: `157551` / `990` / `521` / `0`
 - sidecar score sweep evaluated/shadow_allowed/production_ready: `4950` / `3243` / `0`
 - deployment_consistency: `pass` / `use_current_kis_shadow_deployment`
+- candidate_leaderboard: `keep_current_shadow` / `continue_forward_tracking_until_sample_gate_clears`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
 
 ## KOSPI
@@ -41,9 +42,9 @@
 - score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, sample_sufficient_top=`None`, pareto_top=`top1_prob_tail_margin_tail0p95`
 
 ## KOSDAQ
-- selected_shadow_model: `kis_sidecar_failure_risk_augmented` / `lightgbm` / `top1_p0p75_tail0p85`
+- selected_shadow_model: `kis_sidecar_failure_risk_augmented` / `lightgbm` / `top2_p0.50_tail0.90`
 - gate: status=`shadow_ready`, production_ready=`False`, shadow_display_allowed=`True`
-- blockers: `['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
+- blockers: `['n_lt_45', 'active_days_lt_20']`
 - shadow metrics: n=`19`, active_days=`9`, active_runs=`19`, hit5_dd10=`100.0`, hit10=`100.0`, avg5=`15.458772`, min_low=`-7.006077`, expected_touch_net=`4.601458`
 - three_stage_result: hit5_dd10=`59.4595`, dynamic_exit=`2.712248`, tail=`13.5135`, min_low=`-24.403496`
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.970752`, hit5_delta=`11.4595`

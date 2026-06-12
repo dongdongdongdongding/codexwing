@@ -46,6 +46,7 @@ DEFAULT_MATCHED_ONLY_SWEEPS = {
     / "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_full_augmented_20260331_20260610.json",
 }
 DEFAULT_DEPLOYMENT_CONSISTENCY = ROOT / "runtime_state/reports/learning/kis_shadow_deployment_consistency_20260613.json"
+DEFAULT_CANDIDATE_LEADERBOARD = ROOT / "runtime_state/reports/learning/kis_touch5_candidate_leaderboard_20260613.json"
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -486,6 +487,7 @@ def build_report(
     matched_only_three_stage_path: Path | None = None,
     matched_only_sweep_paths: Mapping[str, Path] | None = None,
     deployment_consistency_path: Path | None = None,
+    candidate_leaderboard_path: Path | None = None,
 ) -> Dict[str, Any]:
     shadow_report = _load_json(shadow_report_path)
     three_stage_dynamic = _load_json(three_stage_dynamic_path)
@@ -502,6 +504,7 @@ def build_report(
         for feature_set, path in (matched_only_sweep_paths or {}).items()
     }
     deployment_consistency = _load_optional_json(deployment_consistency_path)
+    candidate_leaderboard = _load_optional_json(candidate_leaderboard_path)
     markets: Dict[str, Any] = {}
     for market in ("KOSPI", "KOSDAQ"):
         markets[market] = {
@@ -559,6 +562,10 @@ def build_report(
             if deployment_consistency_path and deployment_consistency_path.exists()
             else None,
             "deployment_consistency": (deployment_consistency.get("decision") or {}) if deployment_consistency else {},
+            "candidate_leaderboard_report": _rel(candidate_leaderboard_path)
+            if candidate_leaderboard_path and candidate_leaderboard_path.exists()
+            else None,
+            "candidate_leaderboard": (candidate_leaderboard.get("decision") or {}) if candidate_leaderboard else {},
             "sidecar_score_evaluated_results": (sidecar_score_sweep.get("summary") or {}).get("evaluated_results")
             if sidecar_score_sweep
             else None,
@@ -662,6 +669,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- shadow rows/evaluated/shadow_allowed/production_ready: `{(report.get('research_inputs') or {}).get('shadow_data_rows')}` / `{(report.get('research_inputs') or {}).get('shadow_evaluated_results')}` / `{(report.get('research_inputs') or {}).get('shadow_display_allowed_results')}` / `{(report.get('research_inputs') or {}).get('shadow_production_ready_results')}`",
             f"- sidecar score sweep evaluated/shadow_allowed/production_ready: `{(report.get('research_inputs') or {}).get('sidecar_score_evaluated_results')}` / `{(report.get('research_inputs') or {}).get('sidecar_score_shadow_display_allowed')}` / `{(report.get('research_inputs') or {}).get('sidecar_score_production_ready')}`",
             f"- deployment_consistency: `{((report.get('research_inputs') or {}).get('deployment_consistency') or {}).get('status')}` / `{((report.get('research_inputs') or {}).get('deployment_consistency') or {}).get('recommended_action')}`",
+            f"- candidate_leaderboard: `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('status')}` / `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('recommended_action')}`",
             f"- three_stage_validation: `{(report.get('research_inputs') or {}).get('three_stage_validation')}`",
             "",
         ]
@@ -778,6 +786,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         help="FEATURE_SET=report json path",
     )
     parser.add_argument("--deployment-consistency-report", default=str(DEFAULT_DEPLOYMENT_CONSISTENCY))
+    parser.add_argument("--candidate-leaderboard-report", default=str(DEFAULT_CANDIDATE_LEADERBOARD))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     args = parser.parse_args(list(argv) if argv is not None else None)
     matched_only_sweep_paths = {}
@@ -799,6 +808,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         matched_only_three_stage_path=Path(args.matched_only_three_stage_report),
         matched_only_sweep_paths=matched_only_sweep_paths,
         deployment_consistency_path=Path(args.deployment_consistency_report),
+        candidate_leaderboard_path=Path(args.candidate_leaderboard_report),
     )
     write_report(report, Path(args.output))
     print(

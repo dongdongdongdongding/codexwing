@@ -74,6 +74,10 @@ def _read_selection_rules(raw: str) -> Dict[str, str]:
     return out
 
 
+def _alias_path(model_dir: Path, market: str) -> Path:
+    return model_dir / f"{str(market).lower()}__touch5_dd10_5d__kis_shadow_best_effort_current.pkl"
+
+
 def _best_kis_from_source(path: Path, market: str, *, selection_rule: str = "") -> Dict[str, Any]:
     report = _load_json(path)
     best = report.get("best_kis") if isinstance(report.get("best_kis"), dict) else {}
@@ -144,11 +148,14 @@ def _save_shadow_bundle(data: pd.DataFrame, best: Dict[str, Any], *, model_dir: 
         "shadow_only": True,
     }
     joblib.dump(bundle, model_path)
+    alias_path = _alias_path(model_dir, str(best.get("market") or ""))
+    joblib.dump(bundle, alias_path)
     return {
         **result,
         "shadow_only": True,
         "deployment_scope": "kis_operational_shadow",
         "source_report": best.get("_source_report"),
+        "alias_model_path": str(alias_path),
         "kis_model_gate_status": (best.get("kis_model_gate") or {}).get("status"),
         "dynamic_exit_policy_template": bundle["dynamic_exit_policy_template"],
     }
