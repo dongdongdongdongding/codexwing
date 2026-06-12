@@ -53,6 +53,12 @@ DEFAULT_FINALTOPN_PREFILTER_PROXY = (
 DEFAULT_FINALTOPN_ACTUAL_SIDECAR = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_actual_sidecar_20260331_20260610.json"
 )
+DEFAULT_STATIC_MASTER_AUGMENTATION = (
+    ROOT / "runtime_state/reports/learning/kis_static_sidecar_master_augmented_proxy_20260613.json"
+)
+DEFAULT_STATIC_MASTER_FOCUSED_SUITE = (
+    ROOT / "runtime_state/reports/learning/kis_historical_best_effort_suite_static_master_focused_20260101_20260610.json"
+)
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -96,6 +102,7 @@ def _pick_metrics(row: Mapping[str, Any] | None) -> Dict[str, Any]:
         "coverage_test_days_pct",
         "hit5_dd10_5d_pct",
         "target_hit_5d_pct",
+        "win_5d_pct",
         "hit10_5d_pct",
         "safe_hit10_5d_pct",
         "tail_breach_5d_pct",
@@ -109,12 +116,15 @@ def _pick_metrics(row: Mapping[str, Any] | None) -> Dict[str, Any]:
         "avg_ordered_exit_5d_pct",
         "avg_dynamic_exit_5d_pct",
         "avg_max_high_5d_pct",
+        "avg_mfe_5d_pct",
         "avg_min_low_5d_pct",
         "min_min_low_5d_pct",
         "expected_touch_policy_net_5d_pct",
         "stop5_pct",
         "target_before_stop_5d_pct",
         "stop_before_target_5d_pct",
+        "min_ordered_exit_5d_pct",
+        "buy_premium_pct",
     )
     return {key: metrics.get(key) for key in keys if key in metrics}
 
@@ -412,6 +422,66 @@ def _augmentation_market(report: Mapping[str, Any], market: str) -> Dict[str, An
     return {}
 
 
+def _static_master_augmentation_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    for row in report.get("markets") or []:
+        if isinstance(row, dict) and str(row.get("market") or "").upper() == market:
+            coverage_delta = row.get("coverage_delta") if isinstance(row.get("coverage_delta"), dict) else {}
+            coverage_delta_summary = {
+                family: {
+                    "features_improved": payload.get("features_improved"),
+                    "avg_positive_delta_pct": payload.get("avg_positive_delta_pct"),
+                    "top_deltas": (payload.get("top_deltas") or [])[:3],
+                }
+                for family, payload in coverage_delta.items()
+                if isinstance(payload, dict)
+            }
+            return {
+                "master_matched_rows": row.get("master_matched_rows"),
+                "master_matched_row_pct": row.get("master_matched_row_pct"),
+                "augmented_rows": row.get("augmented_rows"),
+                "augmented_row_pct": row.get("augmented_row_pct"),
+                "output_cache": row.get("output_cache"),
+                "no_dummy_data": row.get("no_dummy_data"),
+                "leakage_policy": row.get("leakage_policy"),
+                "feature_fill_counts_top": (row.get("feature_fill_counts_top") or [])[:8],
+                "coverage_delta_summary": coverage_delta_summary,
+            }
+    return {}
+
+
+def _best_effort_suite_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    item = _market_items(report).get(market, {})
+    if not item:
+        return {}
+    best = item.get("best") if isinstance(item.get("best"), dict) else {}
+    gate = best.get("gate") if isinstance(best.get("gate"), dict) else {}
+    identity = best.get("identity") if isinstance(best.get("identity"), dict) else {}
+    metrics = best.get("metrics") if isinstance(best.get("metrics"), dict) else {}
+    decision = report.get("decision") if isinstance(report.get("decision"), dict) else {}
+    return {
+        "status": item.get("status") or report.get("status") or decision.get("status"),
+        "decision": decision,
+        "rows": item.get("rows"),
+        "days": item.get("days"),
+        "candidate_count": item.get("candidate_count"),
+        "shadow_display_allowed": item.get("shadow_display_allowed"),
+        "production_ready": item.get("production_ready"),
+        "best_identity": identity,
+        "best_metrics": _pick_metrics(metrics),
+        "best_gate": {
+            "status": gate.get("status"),
+            "production_ready": bool(gate.get("production_ready")),
+            "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+            "risk_review_required": bool(gate.get("risk_review_required")),
+            "production_blocking_reasons": gate.get("production_blocking_reasons") or [],
+            "shadow_blocking_reasons": gate.get("shadow_blocking_reasons") or [],
+            "risk_review_reasons": gate.get("risk_review_reasons") or [],
+            "production_economics": gate.get("production_economics") or {},
+        },
+        "quality_score": best.get("quality_score"),
+    }
+
+
 def _best_shadow_ready_from_analysis(summary: Mapping[str, Any]) -> Dict[str, Any]:
     for key in ("sample_only_top", "pareto_top", "sample_sufficient_top"):
         rows = summary.get(key)
@@ -470,15 +540,40 @@ def _historical_proxy_augmentation_experiment(
     augmented_three_stage_report: Mapping[str, Any],
     matched_only_three_stage_report: Mapping[str, Any],
     matched_only_sweep_reports: Mapping[str, Mapping[str, Any]],
+    static_master_report: Mapping[str, Any],
+    static_master_focused_report: Mapping[str, Any],
 ) -> Dict[str, Any]:
     markets: Dict[str, Any] = {}
     for market in ("KOSPI", "KOSDAQ"):
         markets[market] = {
             "augmentation": _augmentation_market(augmentation_report, market),
+            "static_master_augmentation": _static_master_augmentation_market(static_master_report, market),
+            "static_master_focused_suite": _best_effort_suite_market(static_master_focused_report, market),
             "augmented_three_stage": _three_stage_experiment(augmented_three_stage_report, market),
             "matched_only_three_stage": _three_stage_experiment(matched_only_three_stage_report, market),
             "matched_only_threshold_sweeps": _matched_only_sweep_experiments(matched_only_sweep_reports, market),
         }
+    static_suites = {
+        market: (markets.get(market) or {}).get("static_master_focused_suite") or {}
+        for market in ("KOSPI", "KOSDAQ")
+    }
+    static_shadow_ready = all(
+        ((static_suites.get(market) or {}).get("best_gate") or {}).get("shadow_display_allowed")
+        for market in ("KOSPI", "KOSDAQ")
+    )
+    static_production_ready = all(
+        ((static_suites.get(market) or {}).get("best_gate") or {}).get("production_ready")
+        for market in ("KOSPI", "KOSDAQ")
+    )
+    if static_shadow_ready:
+        positive_shadow_result = (
+            "real KIS static stock-info master augmentation produced both-market shadow-ready focused walk-forward "
+            "results; production gates still failed on hit5_dd10, ordered-exit floor, and expected net return."
+        )
+    else:
+        positive_shadow_result = (
+            "KOSPI matched-only KIS full/sidecar sweep produced shadow-ready candidates; KOSDAQ did not reproduce in historical proxy."
+        )
     return {
         "inputs": {
             "feature_gap_report_available": bool(feature_gap_report),
@@ -486,6 +581,8 @@ def _historical_proxy_augmentation_experiment(
             "augmented_three_stage_report_available": bool(augmented_three_stage_report),
             "matched_only_three_stage_report_available": bool(matched_only_three_stage_report),
             "matched_only_sweep_feature_sets": sorted(k for k, v in matched_only_sweep_reports.items() if v),
+            "static_master_report_available": bool(static_master_report),
+            "static_master_focused_suite_report_available": bool(static_master_focused_report),
         },
         "feature_gap_decision": (feature_gap_report.get("decision") or {}) if feature_gap_report else {},
         "backfill_priorities": (feature_gap_report.get("backfill_priorities") or []) if feature_gap_report else [],
@@ -493,11 +590,11 @@ def _historical_proxy_augmentation_experiment(
         "decision": {
             "historical_proxy_promotable": False,
             "augmentation_ready_for_research": bool((augmentation_report.get("decision") or {}).get("augmented_cache_ready_for_research")),
-            "positive_shadow_result": (
-                "KOSPI matched-only KIS full/sidecar sweep produced shadow-ready candidates; KOSDAQ did not reproduce in historical proxy."
-            ),
+            "static_master_shadow_ready": bool(static_shadow_ready),
+            "static_master_production_ready": bool(static_production_ready),
+            "positive_shadow_result": positive_shadow_result,
             "production_replacement_ready": False,
-            "reason": "actual direct KIS sidecar remains the source of confirmed KR shadow performance; exact-date historical augmentation is not a production replacement.",
+            "reason": "static KIS stock-info augmentation improves historical proxy feature parity and shadow validation, but production replacement still requires all touch5/dd10 risk and net-return gates to pass.",
         },
     }
 
@@ -545,6 +642,8 @@ def build_report(
     candidate_leaderboard_path: Path | None = None,
     finaltopn_prefilter_proxy_path: Path | None = None,
     finaltopn_actual_sidecar_path: Path | None = None,
+    static_master_augmentation_path: Path | None = None,
+    static_master_focused_suite_path: Path | None = None,
 ) -> Dict[str, Any]:
     shadow_report = _load_json(shadow_report_path)
     three_stage_dynamic = _load_json(three_stage_dynamic_path)
@@ -564,6 +663,8 @@ def build_report(
     candidate_leaderboard = _load_optional_json(candidate_leaderboard_path)
     finaltopn_prefilter_proxy = _load_optional_json(finaltopn_prefilter_proxy_path)
     finaltopn_actual_sidecar = _load_optional_json(finaltopn_actual_sidecar_path)
+    static_master_augmentation = _load_optional_json(static_master_augmentation_path)
+    static_master_focused_suite = _load_optional_json(static_master_focused_suite_path)
     markets: Dict[str, Any] = {}
     for market in ("KOSPI", "KOSDAQ"):
         markets[market] = {
@@ -636,6 +737,15 @@ def build_report(
             "finaltopn_actual_sidecar_report": _rel(finaltopn_actual_sidecar_path)
             if finaltopn_actual_sidecar_path and finaltopn_actual_sidecar_path.exists()
             else None,
+            "static_master_augmentation_report": _rel(static_master_augmentation_path)
+            if static_master_augmentation_path and static_master_augmentation_path.exists()
+            else None,
+            "static_master_focused_suite_report": _rel(static_master_focused_suite_path)
+            if static_master_focused_suite_path and static_master_focused_suite_path.exists()
+            else None,
+            "static_master_focused_suite_decision": (static_master_focused_suite.get("decision") or {})
+            if static_master_focused_suite
+            else {},
             "sidecar_score_evaluated_results": (sidecar_score_sweep.get("summary") or {}).get("evaluated_results")
             if sidecar_score_sweep
             else None,
@@ -678,6 +788,10 @@ def build_report(
                 "finding": "historical proxy cache에는 실제 KIS flow/financial/static/news가 부족하므로 ticker/date가 정확히 일치하는 실제 sidecar 행만 병합하고, full cache와 matched-only cache로 분리 검증한다.",
             },
             {
+                "step": "static_sidecar_master_augmentation",
+                "finding": "실제 KIS sidecar cache에서 ticker 정적 stock-info master만 추출해 2026-01-01 이후 historical proxy의 stock/theme category 결손을 보강했고, focused walk-forward에서 양시장 shadow gate를 통과했다. 단, 수급/재무/뉴스 시계열은 as-of 유출 위험 때문에 채우지 않았다.",
+            },
+            {
                 "step": "final_topn_no_trade_expansion",
                 "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",
             },
@@ -689,8 +803,20 @@ def build_report(
             augmented_three_stage_report=augmented_three_stage,
             matched_only_three_stage_report=matched_only_three_stage,
             matched_only_sweep_reports=matched_only_sweeps,
+            static_master_report=static_master_augmentation,
+            static_master_focused_report=static_master_focused_suite,
         )
-        if any([feature_gap_report, augmentation_report, augmented_three_stage, matched_only_three_stage, matched_only_sweeps])
+        if any(
+            [
+                feature_gap_report,
+                augmentation_report,
+                augmented_three_stage,
+                matched_only_three_stage,
+                matched_only_sweeps,
+                static_master_augmentation,
+                static_master_focused_suite,
+            ]
+        )
         else {},
         "decision": decision,
         "operator_report_rule": "성과가 검증된 항목만 후보로 보고한다. production_ready=false이면 운영 대체가 아니라 shadow_only로만 표시한다.",
@@ -827,6 +953,16 @@ def _markdown(report: Mapping[str, Any]) -> str:
             if not isinstance(payload, dict):
                 continue
             augmentation = payload.get("augmentation") if isinstance(payload.get("augmentation"), dict) else {}
+            static_aug = (
+                payload.get("static_master_augmentation")
+                if isinstance(payload.get("static_master_augmentation"), dict)
+                else {}
+            )
+            static_suite = (
+                payload.get("static_master_focused_suite")
+                if isinstance(payload.get("static_master_focused_suite"), dict)
+                else {}
+            )
             full_three = payload.get("augmented_three_stage") if isinstance(payload.get("augmented_three_stage"), dict) else {}
             matched_three = payload.get("matched_only_three_stage") if isinstance(payload.get("matched_only_three_stage"), dict) else {}
             sweeps = (
@@ -840,11 +976,20 @@ def _markdown(report: Mapping[str, Any]) -> str:
             matched_metrics = (
                 matched_three.get("best_metrics") if isinstance(matched_three.get("best_metrics"), dict) else {}
             )
+            static_metrics = (
+                static_suite.get("best_metrics") if isinstance(static_suite.get("best_metrics"), dict) else {}
+            )
+            static_gate = static_suite.get("best_gate") if isinstance(static_suite.get("best_gate"), dict) else {}
+            static_identity = (
+                static_suite.get("best_identity") if isinstance(static_suite.get("best_identity"), dict) else {}
+            )
             lines.extend(
                 [
                     f"### {market} Augmentation",
                     f"- exact_match: rows=`{augmentation.get('matched_rows')}`, pct=`{augmentation.get('matched_row_pct')}`, days=`{augmentation.get('matched_days')}`, tickers=`{augmentation.get('matched_tickers')}`",
                     f"- leakage_policy: `{augmentation.get('leakage_policy')}`",
+                    f"- static_master: matched_rows=`{static_aug.get('master_matched_rows')}`, matched_pct=`{static_aug.get('master_matched_row_pct')}`, augmented_rows=`{static_aug.get('augmented_rows')}`, augmented_pct=`{static_aug.get('augmented_row_pct')}`, leakage_policy=`{static_aug.get('leakage_policy')}`",
+                    f"- static_master_focused_suite: model=`{static_identity.get('model')}`, feature_set=`{static_identity.get('feature_set')}`, gate=`{static_gate.get('status')}`, production_ready=`{static_gate.get('production_ready')}`, shadow_display_allowed=`{static_gate.get('shadow_display_allowed')}`, hit5=`{static_metrics.get('hit5_dd10_5d_pct')}`, win5=`{static_metrics.get('win_5d_pct')}`, hit10=`{static_metrics.get('hit10_5d_pct')}`, avg5=`{static_metrics.get('avg_5d_pct')}`, min_ordered_exit=`{static_metrics.get('min_ordered_exit_5d_pct')}`, expected_net=`{(static_gate.get('production_economics') or {}).get('expected_touch_policy_net_5d_pct')}`, blockers=`{static_gate.get('production_blocking_reasons')}`",
                     f"- full_augmented_3stage: status=`{full_three.get('status')}`, hit5=`{full_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{full_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{full_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{full_metrics.get('tail_breach_5d_pct')}`, min_low=`{full_metrics.get('min_min_low_5d_pct')}`",
                     f"- matched_only_3stage: status=`{matched_three.get('status')}`, hit5=`{matched_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{matched_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{matched_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{matched_metrics.get('tail_breach_5d_pct')}`, min_low=`{matched_metrics.get('min_min_low_5d_pct')}`",
                     f"- matched_only_sweep_best: feature_set=`{sweeps.get('best_feature_set')}`, rule=`{best_sweep.get('selection_rule')}`, status=`{best_sweep.get('gate_status')}`, hit5=`{best_sweep_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{best_sweep_metrics.get('avg_5d_pct')}`, min_low=`{best_sweep_metrics.get('min_min_low_5d_pct')}`, blockers=`{best_sweep.get('production_blocking_reasons')}`",
@@ -885,6 +1030,8 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--candidate-leaderboard-report", default=str(DEFAULT_CANDIDATE_LEADERBOARD))
     parser.add_argument("--finaltopn-prefilter-proxy-report", default=str(DEFAULT_FINALTOPN_PREFILTER_PROXY))
     parser.add_argument("--finaltopn-actual-sidecar-report", default=str(DEFAULT_FINALTOPN_ACTUAL_SIDECAR))
+    parser.add_argument("--static-master-augmentation-report", default=str(DEFAULT_STATIC_MASTER_AUGMENTATION))
+    parser.add_argument("--static-master-focused-suite-report", default=str(DEFAULT_STATIC_MASTER_FOCUSED_SUITE))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     args = parser.parse_args(list(argv) if argv is not None else None)
     matched_only_sweep_paths = {}
@@ -909,6 +1056,8 @@ def main(argv: Iterable[str] | None = None) -> int:
         candidate_leaderboard_path=Path(args.candidate_leaderboard_report),
         finaltopn_prefilter_proxy_path=Path(args.finaltopn_prefilter_proxy_report),
         finaltopn_actual_sidecar_path=Path(args.finaltopn_actual_sidecar_report),
+        static_master_augmentation_path=Path(args.static_master_augmentation_report),
+        static_master_focused_suite_path=Path(args.static_master_focused_suite_report),
     )
     write_report(report, Path(args.output))
     print(

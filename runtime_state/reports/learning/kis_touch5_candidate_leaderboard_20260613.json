@@ -1,5 +1,5 @@
 {
-  "candidate_rows_extracted": 3787,
+  "candidate_rows_extracted": 3829,
   "decision": {
     "production_replacement_ready": false,
     "recommended_action": "continue_forward_tracking_until_sample_gate_clears",
@@ -8,14 +8,15 @@
   },
   "dummy_data_used": false,
   "failed_reports": [],
-  "generated_at": "2026-06-12T20:03:15+00:00",
+  "generated_at": "2026-06-12T20:46:26+00:00",
   "inputs": {
     "current_comparison": "runtime_state/reports/learning/kis_model_market_comparison.json",
-    "report_count": 30,
+    "report_count": 31,
     "reports": [
       "runtime_state/reports/learning/kis_historical_best_effort_suite_broad_topn_20260101_20260610.json",
       "runtime_state/reports/learning/kis_historical_best_effort_suite_full_ml_20260101_20260610.json",
       "runtime_state/reports/learning/kis_historical_best_effort_suite_lgbm_20260101_20260610.json",
+      "runtime_state/reports/learning/kis_historical_best_effort_suite_static_master_focused_20260101_20260610.json",
       "runtime_state/reports/learning/kis_historical_best_effort_suite_stop_overlay_20260101_20260610.json",
       "runtime_state/reports/learning/kis_historical_best_effort_suite_stop_overlay_strict_20260101_20260610.json",
       "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_augmented_20260331_20260610.json",
@@ -213,7 +214,7 @@
         },
         "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json"
       },
-      "candidate_count": 1351,
+      "candidate_count": 1371,
       "current": {
         "gate": {
           "non_sample_blockers": [],
@@ -300,7 +301,7 @@
       },
       "production_ready_count": 0,
       "sample_only_shadow_count": 214,
-      "shadow_display_allowed_count": 623,
+      "shadow_display_allowed_count": 637,
       "status": "shadow_candidates_found_no_upgrade",
       "top_candidates": [
         {
@@ -1312,7 +1313,7 @@
         },
         "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json"
       },
-      "candidate_count": 1581,
+      "candidate_count": 1601,
       "current": {
         "gate": {
           "non_sample_blockers": [],
@@ -1398,7 +1399,7 @@
       },
       "production_ready_count": 0,
       "sample_only_shadow_count": 200,
-      "shadow_display_allowed_count": 837,
+      "shadow_display_allowed_count": 847,
       "status": "shadow_candidates_found_no_upgrade",
       "top_candidates": [
         {
@@ -2237,6 +2238,6 @@
     }
   },
   "tracked_sources_only": true,
-  "unique_candidates": 2932,
+  "unique_candidates": 2972,
   "version": "kis_touch5_candidate_leaderboard_v1"
 }

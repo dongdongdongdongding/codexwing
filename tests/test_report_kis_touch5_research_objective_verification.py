@@ -363,3 +363,146 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert score_summary["production_blocking_reason_counts"]["active_days_lt_15"] == 2
     assert score_summary["sample_only_top"][0]["selection_rule"] == "top1_prob_x_tail_p0p75_tail0p95"
     assert score_summary["sample_sufficient_top"][0]["selection_rule"] == "top2_prob_x_tail_p0p75_tail0p95"
+
+
+def test_build_report_includes_static_master_shadow_validation_without_production_promotion(tmp_path):
+    shadow = tmp_path / "shadow.json"
+    dynamic = tmp_path / "dynamic.json"
+    fixed = tmp_path / "fixed.json"
+    comparison = tmp_path / "comparison.json"
+    sidecar_baseline = tmp_path / "sidecar_baseline.json"
+    sidecar_score = tmp_path / "sidecar_score.json"
+    static_aug = tmp_path / "static_aug.json"
+    static_suite = tmp_path / "static_suite.json"
+
+    _write(
+        shadow,
+        {
+            "research_inputs": {"data_rows": 100, "prepared_rows": 100},
+            "exploration_result": {"evaluated_results": 2, "production_ready": 0, "shadow_display_allowed": 0},
+            "market_results": {},
+        },
+    )
+    _write(
+        dynamic,
+        {
+            "status": "research",
+            "dummy_data_used": False,
+            "validation": "walk-forward",
+            "markets": [
+                {"market": "KOSPI", "best": {"metrics": {}}},
+                {"market": "KOSDAQ", "best": {"metrics": {}}},
+            ],
+        },
+    )
+    _write(fixed, {"status": "research", "dummy_data_used": False, "markets": []})
+    _write(
+        comparison,
+        {
+            "markets": {
+                "KOSPI": {"current_kis_model": {"identity": {}, "metrics": {}, "kis_model_gate": {"status": "blocked"}}},
+                "KOSDAQ": {"current_kis_model": {"identity": {}, "metrics": {}, "kis_model_gate": {"status": "blocked"}}},
+            }
+        },
+    )
+    _write(sidecar_baseline, {"market_reports": []})
+    _write(sidecar_score, {"market_reports": [], "summary": {"evaluated_results": 0}})
+    _write(
+        static_aug,
+        {
+            "decision": {"augmented_cache_ready_for_research": True, "production_replacement_ready": False},
+            "markets": [
+                {
+                    "market": "KOSPI",
+                    "master_matched_rows": 10,
+                    "master_matched_row_pct": 80.0,
+                    "augmented_rows": 10,
+                    "augmented_row_pct": 80.0,
+                    "no_dummy_data": True,
+                    "leakage_policy": "ticker static only",
+                    "coverage_delta": {
+                        "sidecar_stock_static": {
+                            "features_improved": 2,
+                            "avg_positive_delta_pct": 80.0,
+                            "top_deltas": [{"feature": "kis_stock_type", "delta_pct": 80.0}],
+                        }
+                    },
+                },
+                {
+                    "market": "KOSDAQ",
+                    "master_matched_rows": 20,
+                    "master_matched_row_pct": 90.0,
+                    "augmented_rows": 20,
+                    "augmented_row_pct": 90.0,
+                    "no_dummy_data": True,
+                    "leakage_policy": "ticker static only",
+                    "coverage_delta": {},
+                },
+            ],
+        },
+    )
+
+    def suite_market(market, hit5, win5):
+        return {
+            "market": market,
+            "best": {
+                "identity": {"market": market, "feature_set": "kis_failure_prior_numeric", "model": "lightgbm_ranker"},
+                "metrics": {
+                    "n": 48,
+                    "active_days": 48,
+                    "active_runs": 48,
+                    "hit5_dd10_5d_pct": hit5,
+                    "win_5d_pct": win5,
+                    "hit10_5d_pct": hit5,
+                    "avg_5d_pct": 9.0,
+                    "min_ordered_exit_5d_pct": -12.0,
+                    "buy_premium_pct": 2.0,
+                },
+                "gate": {
+                    "status": "shadow_risk_review",
+                    "production_ready": False,
+                    "shadow_display_allowed": True,
+                    "risk_review_required": True,
+                    "production_blocking_reasons": ["hit5_dd10_5d_lt_73"],
+                    "production_economics": {"expected_touch_policy_net_5d_pct": -1.0},
+                },
+                "quality_score": 100.0,
+            },
+        }
+
+    _write(
+        static_suite,
+        {
+            "decision": {
+                "status": "shadow_ready",
+                "all_required_markets_shadow_display_allowed": True,
+                "all_required_markets_production_ready": False,
+            },
+            "markets": {
+                "KOSPI": suite_market("KOSPI", 52.0833, 62.5),
+                "KOSDAQ": suite_market("KOSDAQ", 60.4167, 72.9167),
+            },
+        },
+    )
+
+    report = build_report(
+        shadow_report_path=shadow,
+        three_stage_dynamic_path=dynamic,
+        three_stage_fixed_path=fixed,
+        market_comparison_path=comparison,
+        sidecar_baseline_sweep_path=sidecar_baseline,
+        sidecar_score_sweep_path=sidecar_score,
+        static_master_augmentation_path=static_aug,
+        static_master_focused_suite_path=static_suite,
+    )
+
+    experiment = report["historical_proxy_augmentation_experiment"]
+    assert experiment["decision"]["static_master_shadow_ready"] is True
+    assert experiment["decision"]["static_master_production_ready"] is False
+    assert experiment["decision"]["production_replacement_ready"] is False
+    assert "both-market shadow-ready" in experiment["decision"]["positive_shadow_result"]
+    assert experiment["markets"]["KOSPI"]["static_master_augmentation"]["augmented_row_pct"] == 80.0
+    kosdaq_suite = experiment["markets"]["KOSDAQ"]["static_master_focused_suite"]
+    assert kosdaq_suite["status"] == "shadow_ready"
+    assert kosdaq_suite["best_metrics"]["win_5d_pct"] == 72.9167
+    assert kosdaq_suite["best_gate"]["production_ready"] is False
