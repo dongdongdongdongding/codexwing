@@ -34,6 +34,19 @@ IDENTITY_KEYS = (
     "tail_risk_prob_threshold",
     "selection_rule",
 )
+METRIC_KEYS = (
+    "n",
+    "active_days",
+    "active_runs",
+    "buy_premium_pct",
+    "hit5_dd10_5d_pct",
+    "hit10_5d_pct",
+    "avg_5d_pct",
+    "min_min_low_5d_pct",
+    "avg_max_high_5d_pct",
+    "target_before_stop_5d_pct",
+    "stop_before_target_5d_pct",
+)
 
 
 def _utc_now() -> str:
@@ -100,6 +113,12 @@ def _bundle_identity(bundle: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _bundle_metrics(bundle: Mapping[str, Any]) -> Dict[str, Any]:
+    validation = bundle.get("validation") if isinstance(bundle.get("validation"), Mapping) else {}
+    metrics = validation.get("metrics") if isinstance(validation.get("metrics"), Mapping) else {}
+    return {key: metrics.get(key) for key in METRIC_KEYS if key in metrics}
+
+
 def _model_path_from_identity(model_dir: Path, identity: Mapping[str, Any]) -> Path:
     rule = str(identity.get("selection_rule") or f"top{identity.get('topn')}").replace(".", "p")
     return (
@@ -142,10 +161,12 @@ def _market_report(
     current = comparison_row.get("current_kis_model") if isinstance(comparison_row.get("current_kis_model"), Mapping) else {}
     comparison_identity = _identity_subset(current.get("identity") if isinstance(current.get("identity"), Mapping) else {})
     comparison_gate = _gate_summary(current.get("kis_model_gate") if isinstance(current.get("kis_model_gate"), Mapping) else {})
+    comparison_metrics = current.get("metrics") if isinstance(current.get("metrics"), Mapping) else {}
 
     deployments = deployment.get("deployments") if isinstance(deployment.get("deployments"), Mapping) else {}
     deployment_row = deployments.get(market) if isinstance(deployments.get(market), Mapping) else {}
     deployment_identity = _identity_subset(deployment_row.get("identity") if isinstance(deployment_row.get("identity"), Mapping) else {})
+    deployment_metrics = deployment_row.get("metrics") if isinstance(deployment_row.get("metrics"), Mapping) else {}
     deployment_model = deployment_row.get("model") if isinstance(deployment_row.get("model"), Mapping) else {}
     deployment_gate = {
         "status": deployment_model.get("kis_model_gate_status"),
@@ -156,9 +177,16 @@ def _market_report(
         issues.append("comparison_current_kis_model_missing")
     if not deployment_identity:
         issues.append("deployment_identity_missing")
+    if not comparison_metrics:
+        issues.append("comparison_metrics_missing")
+    if not deployment_metrics:
+        issues.append("deployment_metrics_missing")
     identity_mismatches = _mismatches(comparison_identity, deployment_identity, keys=IDENTITY_KEYS)
     if identity_mismatches:
         issues.append("comparison_deployment_identity_mismatch")
+    metric_mismatches = _mismatches(comparison_metrics, deployment_metrics, keys=METRIC_KEYS)
+    if metric_mismatches:
+        issues.append("comparison_deployment_metric_mismatch")
 
     expected_path = _model_path_from_identity(model_dir, comparison_identity) if comparison_identity else None
     deployed_path = Path(str(deployment_model.get("model_path") or "")) if deployment_model.get("model_path") else None
@@ -174,13 +202,18 @@ def _market_report(
 
     bundle_identity: Dict[str, Any] = {}
     bundle_gate: Dict[str, Any] = {}
+    bundle_metrics: Dict[str, Any] = {}
     if expected_path and expected_path.exists():
         bundle = joblib.load(expected_path)
         bundle_identity = _bundle_identity(bundle if isinstance(bundle, Mapping) else {})
+        bundle_metrics = _bundle_metrics(bundle if isinstance(bundle, Mapping) else {})
         bundle_gate = _gate_summary((bundle.get("kis_model_gate") if isinstance(bundle, Mapping) else {}) or {})
     bundle_mismatches = _mismatches(comparison_identity, bundle_identity, keys=IDENTITY_KEYS)
     if bundle_mismatches:
         issues.append("comparison_bundle_identity_mismatch")
+    bundle_metric_mismatches = _mismatches(comparison_metrics, bundle_metrics, keys=METRIC_KEYS)
+    if bundle_metric_mismatches:
+        issues.append("comparison_bundle_metric_mismatch")
     gate_mismatches = _mismatches(comparison_gate, bundle_gate, keys=("status", "production_ready", "shadow_display_allowed"))
     if gate_mismatches:
         issues.append("comparison_bundle_gate_mismatch")
@@ -188,16 +221,22 @@ def _market_report(
     alias_path = _alias_path(model_dir, market)
     alias_identity: Dict[str, Any] = {}
     alias_gate: Dict[str, Any] = {}
+    alias_metrics: Dict[str, Any] = {}
     alias_gate_mismatches: Dict[str, Dict[str, Any]] = {}
+    alias_metric_mismatches: Dict[str, Dict[str, Any]] = {}
     if not alias_path.exists():
         issues.append("current_alias_missing")
     else:
         alias_bundle = joblib.load(alias_path)
         alias_identity = _bundle_identity(alias_bundle if isinstance(alias_bundle, Mapping) else {})
+        alias_metrics = _bundle_metrics(alias_bundle if isinstance(alias_bundle, Mapping) else {})
         alias_gate = _gate_summary((alias_bundle.get("kis_model_gate") if isinstance(alias_bundle, Mapping) else {}) or {})
         alias_mismatches = _mismatches(comparison_identity, alias_identity, keys=IDENTITY_KEYS)
         if alias_mismatches:
             issues.append("comparison_alias_identity_mismatch")
+        alias_metric_mismatches = _mismatches(comparison_metrics, alias_metrics, keys=METRIC_KEYS)
+        if alias_metric_mismatches:
+            issues.append("comparison_alias_metric_mismatch")
         alias_gate_mismatches = _mismatches(
             comparison_gate,
             alias_gate,
@@ -213,14 +252,21 @@ def _market_report(
         "deployment_identity": deployment_identity,
         "bundle_identity": bundle_identity,
         "alias_identity": alias_identity,
+        "comparison_metrics": {key: comparison_metrics.get(key) for key in METRIC_KEYS if key in comparison_metrics},
+        "deployment_metrics": {key: deployment_metrics.get(key) for key in METRIC_KEYS if key in deployment_metrics},
+        "bundle_metrics": bundle_metrics,
+        "alias_metrics": alias_metrics,
         "comparison_gate": comparison_gate,
         "deployment_gate": deployment_gate,
         "bundle_gate": bundle_gate,
         "alias_gate": alias_gate,
         "identity_mismatches": identity_mismatches,
+        "metric_mismatches": metric_mismatches,
         "bundle_mismatches": bundle_mismatches,
+        "bundle_metric_mismatches": bundle_metric_mismatches,
         "gate_mismatches": gate_mismatches,
         "deployment_gate_mismatches": deployment_gate_mismatches,
+        "alias_metric_mismatches": alias_metric_mismatches,
         "alias_gate_mismatches": alias_gate_mismatches,
         "expected_model_path": _rel(expected_path) if expected_path else None,
         "deployment_model_path": _rel(deployed_path) if deployed_path else None,

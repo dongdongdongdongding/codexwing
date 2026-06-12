@@ -6,7 +6,7 @@
     "status": "pass"
   },
   "dummy_data_used": false,
-  "generated_at": "2026-06-12T18:55:05+00:00",
+  "generated_at": "2026-06-12T18:59:22+00:00",
   "inputs": {
     "comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
     "deployment_report": "runtime_state/reports/learning/kis_shadow_admission_model_deployment.json",
@@ -33,6 +33,20 @@
         "tail_risk_prob_threshold": 0.9,
         "topn": 1
       },
+      "alias_metric_mismatches": {},
+      "alias_metrics": {
+        "active_days": 11,
+        "active_runs": 50,
+        "avg_5d_pct": 26.115197,
+        "avg_max_high_5d_pct": 48.675187,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 76.0,
+        "hit5_dd10_5d_pct": 82.0,
+        "min_min_low_5d_pct": -8.919727,
+        "n": 50,
+        "stop_before_target_5d_pct": 60.0,
+        "target_before_stop_5d_pct": 82.0
+      },
       "alias_model_path": "models/scan_universe_challengers/kospi__touch5_dd10_5d__kis_shadow_best_effort_current.pkl",
       "bundle_gate": {
         "production_blocking_reasons": [
@@ -51,6 +65,20 @@
         "selection_rule": "top1_p0p3_tail0p9",
         "tail_risk_prob_threshold": 0.9,
         "topn": 1
+      },
+      "bundle_metric_mismatches": {},
+      "bundle_metrics": {
+        "active_days": 11,
+        "active_runs": 50,
+        "avg_5d_pct": 26.115197,
+        "avg_max_high_5d_pct": 48.675187,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 76.0,
+        "hit5_dd10_5d_pct": 82.0,
+        "min_min_low_5d_pct": -8.919727,
+        "n": 50,
+        "stop_before_target_5d_pct": 60.0,
+        "target_before_stop_5d_pct": 82.0
       },
       "bundle_mismatches": {},
       "comparison_gate": {
@@ -71,6 +99,19 @@
         "tail_risk_prob_threshold": 0.9,
         "topn": 1
       },
+      "comparison_metrics": {
+        "active_days": 11,
+        "active_runs": 50,
+        "avg_5d_pct": 26.115197,
+        "avg_max_high_5d_pct": 48.675187,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 76.0,
+        "hit5_dd10_5d_pct": 82.0,
+        "min_min_low_5d_pct": -8.919727,
+        "n": 50,
+        "stop_before_target_5d_pct": 60.0,
+        "target_before_stop_5d_pct": 82.0
+      },
       "deployment_gate": {
         "source_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
         "status": "shadow_ready"
@@ -86,12 +127,26 @@
         "tail_risk_prob_threshold": 0.9,
         "topn": 1
       },
+      "deployment_metrics": {
+        "active_days": 11,
+        "active_runs": 50,
+        "avg_5d_pct": 26.115197,
+        "avg_max_high_5d_pct": 48.675187,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 76.0,
+        "hit5_dd10_5d_pct": 82.0,
+        "min_min_low_5d_pct": -8.919727,
+        "n": 50,
+        "stop_before_target_5d_pct": 60.0,
+        "target_before_stop_5d_pct": 82.0
+      },
       "deployment_model_path": "models/scan_universe_challengers/kospi__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p3_tail0p9.pkl",
       "expected_model_path": "models/scan_universe_challengers/kospi__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p3_tail0p9.pkl",
       "gate_mismatches": {},
       "identity_mismatches": {},
       "issues": [],
       "market": "KOSPI",
+      "metric_mismatches": {},
       "status": "pass"
     },
     {
@@ -116,6 +171,20 @@
         "tail_risk_prob_threshold": 0.85,
         "topn": 1
       },
+      "alias_metric_mismatches": {},
+      "alias_metrics": {
+        "active_days": 9,
+        "active_runs": 19,
+        "avg_5d_pct": 15.458772,
+        "avg_max_high_5d_pct": 32.274772,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 100.0,
+        "hit5_dd10_5d_pct": 100.0,
+        "min_min_low_5d_pct": -7.006077,
+        "n": 19,
+        "stop_before_target_5d_pct": 26.3158,
+        "target_before_stop_5d_pct": 73.6842
+      },
       "alias_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_shadow_best_effort_current.pkl",
       "bundle_gate": {
         "production_blocking_reasons": [
@@ -136,6 +205,20 @@
         "selection_rule": "top1_p0p75_tail0p85",
         "tail_risk_prob_threshold": 0.85,
         "topn": 1
+      },
+      "bundle_metric_mismatches": {},
+      "bundle_metrics": {
+        "active_days": 9,
+        "active_runs": 19,
+        "avg_5d_pct": 15.458772,
+        "avg_max_high_5d_pct": 32.274772,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 100.0,
+        "hit5_dd10_5d_pct": 100.0,
+        "min_min_low_5d_pct": -7.006077,
+        "n": 19,
+        "stop_before_target_5d_pct": 26.3158,
+        "target_before_stop_5d_pct": 73.6842
       },
       "bundle_mismatches": {},
       "comparison_gate": {
@@ -158,6 +241,19 @@
         "tail_risk_prob_threshold": 0.85,
         "topn": 1
       },
+      "comparison_metrics": {
+        "active_days": 9,
+        "active_runs": 19,
+        "avg_5d_pct": 15.458772,
+        "avg_max_high_5d_pct": 32.274772,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 100.0,
+        "hit5_dd10_5d_pct": 100.0,
+        "min_min_low_5d_pct": -7.006077,
+        "n": 19,
+        "stop_before_target_5d_pct": 26.3158,
+        "target_before_stop_5d_pct": 73.6842
+      },
       "deployment_gate": {
         "source_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
         "status": "shadow_ready"
@@ -173,12 +269,26 @@
         "tail_risk_prob_threshold": 0.85,
         "topn": 1
       },
+      "deployment_metrics": {
+        "active_days": 9,
+        "active_runs": 19,
+        "avg_5d_pct": 15.458772,
+        "avg_max_high_5d_pct": 32.274772,
+        "buy_premium_pct": 2.0,
+        "hit10_5d_pct": 100.0,
+        "hit5_dd10_5d_pct": 100.0,
+        "min_min_low_5d_pct": -7.006077,
+        "n": 19,
+        "stop_before_target_5d_pct": 26.3158,
+        "target_before_stop_5d_pct": 73.6842
+      },
       "deployment_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p75_tail0p85.pkl",
       "expected_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p75_tail0p85.pkl",
       "gate_mismatches": {},
       "identity_mismatches": {},
       "issues": [],
       "market": "KOSDAQ",
+      "metric_mismatches": {},
       "status": "pass"
     }
   ],

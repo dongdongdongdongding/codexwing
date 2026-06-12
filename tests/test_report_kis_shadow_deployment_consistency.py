@@ -12,7 +12,24 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def _bundle(identity: dict, gate: dict) -> dict:
+def _metrics() -> dict:
+    return {
+        "n": 50,
+        "active_days": 11,
+        "active_runs": 50,
+        "buy_premium_pct": 2.0,
+        "hit5_dd10_5d_pct": 82.0,
+        "hit10_5d_pct": 76.0,
+        "avg_5d_pct": 26.115197,
+        "min_min_low_5d_pct": -8.919727,
+        "avg_max_high_5d_pct": 48.675187,
+        "target_before_stop_5d_pct": 82.0,
+        "stop_before_target_5d_pct": 60.0,
+        "win_metric_semantics": "target_touch_mfe_ge_5pct_after_buy_premium",
+    }
+
+
+def _bundle(identity: dict, gate: dict, metrics: dict | None = None) -> dict:
     return {
         "market": identity["market"],
         "label": identity["label"],
@@ -23,6 +40,7 @@ def _bundle(identity: dict, gate: dict) -> dict:
         "tail_risk_prob_threshold": identity["tail_risk_prob_threshold"],
         "selection_rule": identity["selection_rule"],
         "kis_model_gate": gate,
+        "validation": {"metrics": metrics or _metrics()},
     }
 
 
@@ -52,11 +70,19 @@ def test_deployment_consistency_passes_when_all_surfaces_match(tmp_path) -> None
     joblib.dump(_bundle(identity, gate), tool._alias_path(model_dir, "KOSPI"))
     _write_json(
         comparison_path,
-        {"markets": {"KOSPI": {"current_kis_model": {"identity": identity, "kis_model_gate": gate}}}},
+        {"markets": {"KOSPI": {"current_kis_model": {"identity": identity, "metrics": _metrics(), "kis_model_gate": gate}}}},
     )
     _write_json(
         deployment_path,
-        {"deployments": {"KOSPI": {"identity": identity, "model": {"model_path": str(model_path), "kis_model_gate_status": "shadow_ready"}}}},
+        {
+            "deployments": {
+                "KOSPI": {
+                    "identity": identity,
+                    "metrics": _metrics(),
+                    "model": {"model_path": str(model_path), "kis_model_gate_status": "shadow_ready"},
+                }
+            }
+        },
     )
 
     report = tool.build_report(
@@ -93,11 +119,19 @@ def test_deployment_consistency_fails_on_alias_drift(tmp_path) -> None:
     joblib.dump(_bundle(drifted, gate), tool._alias_path(model_dir, "KOSDAQ"))
     _write_json(
         comparison_path,
-        {"markets": {"KOSDAQ": {"current_kis_model": {"identity": identity, "kis_model_gate": gate}}}},
+        {"markets": {"KOSDAQ": {"current_kis_model": {"identity": identity, "metrics": _metrics(), "kis_model_gate": gate}}}},
     )
     _write_json(
         deployment_path,
-        {"deployments": {"KOSDAQ": {"identity": identity, "model": {"model_path": str(model_path), "kis_model_gate_status": "shadow_ready"}}}},
+        {
+            "deployments": {
+                "KOSDAQ": {
+                    "identity": identity,
+                    "metrics": _metrics(),
+                    "model": {"model_path": str(model_path), "kis_model_gate_status": "shadow_ready"},
+                }
+            }
+        },
     )
 
     report = tool.build_report(
@@ -133,11 +167,19 @@ def test_deployment_consistency_fails_on_gate_drift(tmp_path) -> None:
     joblib.dump(_bundle(identity, stale_gate), tool._alias_path(model_dir, "KOSDAQ"))
     _write_json(
         comparison_path,
-        {"markets": {"KOSDAQ": {"current_kis_model": {"identity": identity, "kis_model_gate": gate}}}},
+        {"markets": {"KOSDAQ": {"current_kis_model": {"identity": identity, "metrics": _metrics(), "kis_model_gate": gate}}}},
     )
     _write_json(
         deployment_path,
-        {"deployments": {"KOSDAQ": {"identity": identity, "model": {"model_path": str(model_path), "kis_model_gate_status": "blocked"}}}},
+        {
+            "deployments": {
+                "KOSDAQ": {
+                    "identity": identity,
+                    "metrics": _metrics(),
+                    "model": {"model_path": str(model_path), "kis_model_gate_status": "blocked"},
+                }
+            }
+        },
     )
 
     report = tool.build_report(
@@ -150,3 +192,53 @@ def test_deployment_consistency_fails_on_gate_drift(tmp_path) -> None:
     assert report["decision"]["deployment_consistent"] is False
     assert "comparison_deployment_gate_mismatch" in report["markets"][0]["issues"]
     assert "comparison_alias_gate_mismatch" in report["markets"][0]["issues"]
+
+
+def test_deployment_consistency_fails_on_metric_drift(tmp_path) -> None:
+    model_dir = tmp_path / "models"
+    model_dir.mkdir()
+    comparison_path = tmp_path / "comparison.json"
+    deployment_path = tmp_path / "deployment.json"
+    identity = {
+        "market": "KOSPI",
+        "label": "touch5_dd10_5d",
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "model": "lightgbm",
+        "topn": 1,
+        "prob_threshold": 0.3,
+        "tail_risk_prob_threshold": 0.9,
+        "selection_rule": "top1_p0p3_tail0p9",
+    }
+    gate = {"status": "shadow_ready", "production_ready": False, "shadow_display_allowed": True}
+    model_path = tool._model_path_from_identity(model_dir, identity)
+    joblib.dump(_bundle(identity, gate), model_path)
+    alias_metrics = {**_metrics(), "hit5_dd10_5d_pct": 81.0}
+    joblib.dump(_bundle(identity, gate, alias_metrics), tool._alias_path(model_dir, "KOSPI"))
+    deployment_metrics = {**_metrics(), "avg_5d_pct": 25.0}
+    _write_json(
+        comparison_path,
+        {"markets": {"KOSPI": {"current_kis_model": {"identity": identity, "metrics": _metrics(), "kis_model_gate": gate}}}},
+    )
+    _write_json(
+        deployment_path,
+        {
+            "deployments": {
+                "KOSPI": {
+                    "identity": identity,
+                    "metrics": deployment_metrics,
+                    "model": {"model_path": str(model_path), "kis_model_gate_status": "shadow_ready"},
+                }
+            }
+        },
+    )
+
+    report = tool.build_report(
+        comparison_path=comparison_path,
+        deployment_path=deployment_path,
+        model_dir=model_dir,
+        required_markets=["KOSPI"],
+    )
+
+    assert report["decision"]["deployment_consistent"] is False
+    assert "comparison_deployment_metric_mismatch" in report["markets"][0]["issues"]
+    assert "comparison_alias_metric_mismatch" in report["markets"][0]["issues"]
