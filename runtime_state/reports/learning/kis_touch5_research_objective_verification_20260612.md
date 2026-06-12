@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-12T15:11:44.970187+00:00`
+- generated_at: `2026-06-12T15:23:14.069261+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -35,6 +35,8 @@
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.056792`, hit5_delta=`15.5389`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p3_tail0p9`
 - risk_adjusted_alternative: found=`True`, candidate=`top1_prob_tail_margin_tail0p95`, hit5_dd10=`93.4783`, avg5=`5.385336`, min_low=`-5.558554`, deltas=`{'hit5_dd10_5d_pct': 11.4783, 'min_min_low_5d_pct': 3.361173, 'avg_5d_pct': -20.729861, 'n': -4, 'active_days': -1}`
+- score_sweep_gate_summary: status_counts=`{'blocked': 1525, 'shadow_ready': 197, 'shadow_risk_review': 753}`, blockers=`{'active_days_lt_15': 2475, 'min_low_5d_lt_neg10': 2278, 'hit5_dd10_5d_lt_73': 767, 'expected_touch_policy_net_5d_lt_0p25': 453}`, sample_only_count=`155`
+- score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, pareto_top=`top1_prob_tail_margin_tail0p95`
 
 ## KOSDAQ
 - selected_shadow_model: `kis_sidecar_failure_risk_augmented` / `lightgbm` / `top1_p0p75_tail0p85`
@@ -45,6 +47,8 @@
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.970752`, hit5_delta=`11.4595`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p75_tail0p85`
 - risk_adjusted_alternative: found=`False`, candidate=`None`, hit5_dd10=`None`, avg5=`None`, min_low=`None`, deltas=`None`
+- score_sweep_gate_summary: status_counts=`{'blocked': 182, 'shadow_ready': 444, 'shadow_risk_review': 1849}`, blockers=`{'active_days_lt_20': 2475, 'min_low_5d_lt_neg10': 2031, 'n_lt_45': 830, 'active_runs_lt_20': 525}`, sample_only_count=`444`
+- score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, pareto_top=`top1_p0p3_tail0p95`
 
 ## UI 요구사항
 - 웹 최상단에 KIS Shadow 섹션을 두고 production_ready, shadow_display_allowed, 차단 사유를 한국어로 표시

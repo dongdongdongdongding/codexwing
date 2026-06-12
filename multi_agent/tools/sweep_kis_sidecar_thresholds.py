@@ -375,6 +375,114 @@ def _compact_result(row: Mapping[str, Any]) -> Dict[str, Any]:
     return {key: value for key, value in row.items() if key not in {"feature_columns", "fold_meta"}}
 
 
+def _status_rank(row: Mapping[str, Any]) -> int:
+    status_rank = {"production_ready": 0, "shadow_ready": 1, "shadow_risk_review": 2, "blocked": 3}
+    gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}
+    return status_rank.get(str(gate.get("status")), 9)
+
+
+def _summary_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    metrics_row = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    return (
+        _status_rank(row),
+        -float(row.get("quality_score") or -1e9),
+        -float(metrics_row.get("hit5_dd10_5d_pct") or 0.0),
+        -float(metrics_row.get("avg_5d_pct") or -999.0),
+        -float(metrics_row.get("min_min_low_5d_pct") or -999.0),
+        -int(metrics_row.get("n") or 0),
+    )
+
+
+def _is_sample_only_blocked(row: Mapping[str, Any]) -> bool:
+    gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}
+    if not gate.get("shadow_display_allowed"):
+        return False
+    reasons = [str(item) for item in gate.get("production_blocking_reasons") or []]
+    if not reasons:
+        return False
+    return all(
+        reason.startswith("n_lt") or reason.startswith("active_days_lt") or reason.startswith("active_runs_lt")
+        for reason in reasons
+    )
+
+
+def _pareto_rows(rows: Sequence[Mapping[str, Any]], *, limit: int) -> List[Dict[str, Any]]:
+    candidates = [
+        row
+        for row in rows
+        if isinstance(row, Mapping)
+        and isinstance(row.get("kis_model_gate"), Mapping)
+        and bool((row.get("kis_model_gate") or {}).get("shadow_display_allowed"))
+    ]
+    pareto: List[Mapping[str, Any]] = []
+    for row in candidates:
+        metrics_row = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+        values = (
+            float(metrics_row.get("hit5_dd10_5d_pct") or 0.0),
+            float(metrics_row.get("avg_5d_pct") or -999.0),
+            float(metrics_row.get("min_min_low_5d_pct") or -999.0),
+            int(metrics_row.get("n") or 0),
+            int(metrics_row.get("active_days") or 0),
+        )
+        dominated = False
+        for other in candidates:
+            if other is row:
+                continue
+            other_metrics = other.get("metrics") if isinstance(other.get("metrics"), Mapping) else {}
+            other_values = (
+                float(other_metrics.get("hit5_dd10_5d_pct") or 0.0),
+                float(other_metrics.get("avg_5d_pct") or -999.0),
+                float(other_metrics.get("min_min_low_5d_pct") or -999.0),
+                int(other_metrics.get("n") or 0),
+                int(other_metrics.get("active_days") or 0),
+            )
+            if all(left >= right for left, right in zip(other_values, values)) and any(
+                left > right for left, right in zip(other_values, values)
+            ):
+                dominated = True
+                break
+        if not dominated:
+            pareto.append(row)
+    pareto.sort(
+        key=lambda row: (
+            -float(((row.get("metrics") or {}).get("hit5_dd10_5d_pct")) or 0.0),
+            -float(((row.get("metrics") or {}).get("avg_5d_pct")) or -999.0),
+            -float(((row.get("metrics") or {}).get("min_min_low_5d_pct")) or -999.0),
+            -int(((row.get("metrics") or {}).get("n")) or 0),
+        )
+    )
+    return [_compact_result(row) for row in pareto[:limit]]
+
+
+def _analysis_summary(rows: Sequence[Mapping[str, Any]], *, limit: int) -> Dict[str, Any]:
+    status_counts: Dict[str, int] = {}
+    reason_counts: Dict[str, int] = {}
+    score_mode_counts: Dict[str, int] = {}
+    sample_only: List[Mapping[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}
+        status = str(gate.get("status") or "missing")
+        status_counts[status] = status_counts.get(status, 0) + 1
+        score_mode = str(row.get("score_mode") or "prob")
+        score_mode_counts[score_mode] = score_mode_counts.get(score_mode, 0) + 1
+        for reason in gate.get("production_blocking_reasons") or []:
+            text = str(reason)
+            reason_counts[text] = reason_counts.get(text, 0) + 1
+        if _is_sample_only_blocked(row):
+            sample_only.append(row)
+    sample_only.sort(key=_summary_sort_key)
+    return {
+        "status_counts": dict(sorted(status_counts.items())),
+        "score_mode_counts": dict(sorted(score_mode_counts.items())),
+        "production_blocking_reason_counts": dict(sorted(reason_counts.items(), key=lambda item: (-item[1], item[0]))),
+        "sample_only_blocked_count": len(sample_only),
+        "sample_only_top": [_compact_result(row) for row in sample_only[:limit]],
+        "pareto_top": _pareto_rows(rows, limit=limit),
+    }
+
+
 def _compact_report(report: Mapping[str, Any], *, per_market_results: int) -> Dict[str, Any]:
     compact = dict(report)
     compact["top_results"] = [_compact_result(row) for row in report.get("top_results") or [] if isinstance(row, dict)]
@@ -389,6 +497,7 @@ def _compact_report(report: Mapping[str, Any], *, per_market_results: int) -> Di
                 "status": market_report.get("status"),
                 "fold_meta": market_report.get("fold_meta"),
                 "result_count": len(rows),
+                "analysis_summary": _analysis_summary(rows, limit=min(20, int(per_market_results))),
                 "results": rows[: int(per_market_results)],
             }
         )

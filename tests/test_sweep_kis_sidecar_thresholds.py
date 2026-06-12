@@ -42,7 +42,17 @@ def test_prob_score_keeps_success_probability_order():
 def test_compact_report_removes_repeated_heavy_payloads():
     report = {
         "top_results": [
-            {"selection_rule": "top1", "feature_columns": {"numeric": ["a"]}, "fold_meta": {"folds": []}},
+            {
+                "selection_rule": "top1",
+                "feature_columns": {"numeric": ["a"]},
+                "fold_meta": {"folds": []},
+                "metrics": {"hit5_dd10_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_min_low_5d_pct": -8.0, "n": 10, "active_days": 5},
+                "kis_model_gate": {
+                    "status": "shadow_ready",
+                    "shadow_display_allowed": True,
+                    "production_blocking_reasons": ["active_days_lt_15"],
+                },
+            },
         ],
         "market_reports": [
             {
@@ -50,8 +60,44 @@ def test_compact_report_removes_repeated_heavy_payloads():
                 "status": "ok",
                 "fold_meta": {"folds": [{"test_days": ["2026-05-13"]}]},
                 "results": [
-                    {"selection_rule": "top1", "feature_columns": {"numeric": ["a"]}, "fold_meta": {"folds": []}},
-                    {"selection_rule": "top2", "feature_columns": {"numeric": ["a"]}, "fold_meta": {"folds": []}},
+                    {
+                        "selection_rule": "top1",
+                        "score_mode": "prob",
+                        "quality_score": 50.0,
+                        "feature_columns": {"numeric": ["a"]},
+                        "fold_meta": {"folds": []},
+                        "metrics": {
+                            "hit5_dd10_5d_pct": 80.0,
+                            "avg_5d_pct": 3.0,
+                            "min_min_low_5d_pct": -8.0,
+                            "n": 10,
+                            "active_days": 5,
+                        },
+                        "kis_model_gate": {
+                            "status": "shadow_ready",
+                            "shadow_display_allowed": True,
+                            "production_blocking_reasons": ["active_days_lt_15"],
+                        },
+                    },
+                    {
+                        "selection_rule": "top2",
+                        "score_mode": "ev",
+                        "quality_score": 100.0,
+                        "feature_columns": {"numeric": ["a"]},
+                        "fold_meta": {"folds": []},
+                        "metrics": {
+                            "hit5_dd10_5d_pct": 75.0,
+                            "avg_5d_pct": 5.0,
+                            "min_min_low_5d_pct": -6.0,
+                            "n": 20,
+                            "active_days": 5,
+                        },
+                        "kis_model_gate": {
+                            "status": "shadow_ready",
+                            "shadow_display_allowed": True,
+                            "production_blocking_reasons": ["active_days_lt_15"],
+                        },
+                    },
                 ],
             }
         ],
@@ -64,3 +110,10 @@ def test_compact_report_removes_repeated_heavy_payloads():
     assert len(compact["market_reports"][0]["results"]) == 1
     assert "fold_meta" not in compact["market_reports"][0]["results"][0]
     assert compact["market_reports"][0]["fold_meta"]["folds"][0]["test_days"] == ["2026-05-13"]
+    summary = compact["market_reports"][0]["analysis_summary"]
+    assert summary["status_counts"]["shadow_ready"] == 2
+    assert summary["production_blocking_reason_counts"]["active_days_lt_15"] == 2
+    assert summary["sample_only_blocked_count"] == 2
+    assert summary["sample_only_top"][0]["selection_rule"] == "top2"
+    assert len(summary["pareto_top"]) == 1
+    assert summary["pareto_top"][0]["selection_rule"] == "top1"

@@ -171,6 +171,23 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
             "market_reports": [
                 {
                     **sweep_market,
+                    "analysis_summary": {
+                        "status_counts": {"shadow_ready": 2},
+                        "production_blocking_reason_counts": {"active_days_lt_15": 2},
+                        "sample_only_blocked_count": 2,
+                        "sample_only_top": [
+                            {
+                                "selection_rule": "top1_prob_x_tail_p0p75_tail0p95",
+                                "metrics": {"hit5_dd10_5d_pct": 90.0, "min_min_low_5d_pct": -6.0},
+                            }
+                        ],
+                        "pareto_top": [
+                            {
+                                "selection_rule": "top1_prob_x_tail_p0p75_tail0p95",
+                                "metrics": {"hit5_dd10_5d_pct": 90.0, "min_min_low_5d_pct": -6.0},
+                            }
+                        ],
+                    },
                     "results": [
                         *sweep_market["results"],
                         {
@@ -214,3 +231,6 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert score_exp["same_fold_scope_verified"] is True
     assert score_exp["risk_adjusted_alternative"]["found"] is True
     assert score_exp["risk_adjusted_alternative"]["decision"] == "risk_adjusted_shadow_candidate_not_current_replacement"
+    score_summary = score_exp["score_report_analysis_summary"]
+    assert score_summary["production_blocking_reason_counts"]["active_days_lt_15"] == 2
+    assert score_summary["sample_only_top"][0]["selection_rule"] == "top1_prob_x_tail_p0p75_tail0p95"

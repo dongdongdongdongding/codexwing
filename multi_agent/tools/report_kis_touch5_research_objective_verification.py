@@ -173,6 +173,18 @@ def _sweep_fold_signature(report: Mapping[str, Any], market: str) -> List[List[s
     return []
 
 
+def _sweep_analysis_summary(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    for market_report in report.get("market_reports") or []:
+        if not isinstance(market_report, dict):
+            continue
+        scope = market_report.get("scope") if isinstance(market_report.get("scope"), dict) else {}
+        if str(scope.get("market") or "").upper() != market:
+            continue
+        summary = market_report.get("analysis_summary")
+        return summary if isinstance(summary, dict) else {}
+    return {}
+
+
 def _sort_sweep_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     status_rank = {"production_ready": 0, "shadow_ready": 1, "shadow_risk_review": 2, "blocked": 3}
     return sorted(
@@ -260,6 +272,7 @@ def _sidecar_score_experiment(
         "baseline_best": _sweep_row_summary(baseline_best),
         "score_mode_best": _sweep_row_summary(score_best),
         "risk_adjusted_alternative": _risk_adjusted_alternative(score_rows, baseline_best),
+        "score_report_analysis_summary": _sweep_analysis_summary(score_report, market),
         "decision": (
             "keep_current_best_shadow"
             if _sweep_row_summary(score_best).get("selection_rule") == _sweep_row_summary(baseline_best).get("selection_rule")
@@ -454,6 +467,11 @@ def _markdown(report: Mapping[str, Any]) -> str:
         risk_alt = score_exp.get("risk_adjusted_alternative") or {}
         risk_candidate = risk_alt.get("candidate") or {}
         risk_metrics = risk_candidate.get("metrics") or {}
+        score_summary = score_exp.get("score_report_analysis_summary") or {}
+        sample_only_top = score_summary.get("sample_only_top") or []
+        pareto_top = score_summary.get("pareto_top") or []
+        sample_candidate = sample_only_top[0] if sample_only_top and isinstance(sample_only_top[0], dict) else {}
+        pareto_candidate = pareto_top[0] if pareto_top and isinstance(pareto_top[0], dict) else {}
         lines.extend(
             [
                 f"## {market}",
@@ -465,6 +483,8 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- three_stage_improvement_vs_broad: avg_exit_delta=`{three_imp.get('avg_ordered_exit_delta_pct')}`, hit5_delta=`{three_imp.get('hit5_dd10_delta_pct')}`",
                 f"- score_mode_experiment: same_fold_scope=`{score_exp.get('same_fold_scope_verified')}`, decision=`{score_exp.get('decision')}`, best=`{score_best.get('selection_rule')}`",
                 f"- risk_adjusted_alternative: found=`{risk_alt.get('found')}`, candidate=`{risk_candidate.get('selection_rule')}`, hit5_dd10=`{risk_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{risk_metrics.get('avg_5d_pct')}`, min_low=`{risk_metrics.get('min_min_low_5d_pct')}`, deltas=`{risk_alt.get('deltas_vs_baseline')}`",
+                f"- score_sweep_gate_summary: status_counts=`{score_summary.get('status_counts')}`, blockers=`{score_summary.get('production_blocking_reason_counts')}`, sample_only_count=`{score_summary.get('sample_only_blocked_count')}`",
+                f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
                 "",
             ]
         )
