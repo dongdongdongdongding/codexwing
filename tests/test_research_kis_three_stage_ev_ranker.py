@@ -18,6 +18,9 @@ def test_three_stage_research_accepts_market_input_path_overrides() -> None:
             "--max-tail-prob-thresholds",
             "none",
             "0.25",
+            "--final-topn",
+            "1",
+            "3",
             "--min-eval-n",
             "15",
             "--min-eval-active-days",
@@ -27,6 +30,7 @@ def test_three_stage_research_accepts_market_input_path_overrides() -> None:
 
     assert args.rank_metric == "hit5_dd10_5d_pct"
     assert args.max_tail_prob_thresholds == [None, 0.25]
+    assert args.final_topn == [1, 3]
     assert args.min_eval_n == 15
     assert args.min_eval_active_days == 10
     assert args.input_paths == {
@@ -45,8 +49,14 @@ def test_three_stage_research_default_market_cache_path_is_stable() -> None:
 
 
 def test_three_stage_research_configs_include_tail_gate_dimension() -> None:
-    configs = tool._configs(["prefilter"], [10], ["ev"], [None, 0.25])
+    configs = tool._configs(["prefilter"], [10], [1, 2], ["ev"], [None, 0.25])
 
-    assert [config.max_tail_prob for config in configs] == [None, 0.25]
-    assert configs[0].key() == "prefilter|top10|ev|tail_none"
-    assert configs[1].key() == "prefilter|top10|ev|tail0p25"
+    assert [(config.final_topn, config.max_tail_prob) for config in configs] == [
+        (1, None),
+        (1, 0.25),
+        (2, None),
+        (2, 0.25),
+    ]
+    assert configs[0].key() == "prefilter|pool10|final1|ev|tail_none"
+    assert configs[1].key() == "prefilter|pool10|final1|ev|tail0p25"
+    assert configs[2].key() == "prefilter|pool10|final2|ev|tail_none"

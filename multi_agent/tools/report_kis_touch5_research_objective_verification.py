@@ -47,6 +47,12 @@ DEFAULT_MATCHED_ONLY_SWEEPS = {
 }
 DEFAULT_DEPLOYMENT_CONSISTENCY = ROOT / "runtime_state/reports/learning/kis_shadow_deployment_consistency_20260613.json"
 DEFAULT_CANDIDATE_LEADERBOARD = ROOT / "runtime_state/reports/learning/kis_touch5_candidate_leaderboard_20260613.json"
+DEFAULT_FINALTOPN_PREFILTER_PROXY = (
+    ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json"
+)
+DEFAULT_FINALTOPN_ACTUAL_SIDECAR = (
+    ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_actual_sidecar_20260331_20260610.json"
+)
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -311,6 +317,7 @@ def _three_stage_experiment(report: Mapping[str, Any], market: str) -> Dict[str,
     item = _market_items(report).get(market, {})
     best = item.get("best") if isinstance(item.get("best"), dict) else {}
     unconstrained = item.get("unconstrained_best") if isinstance(item.get("unconstrained_best"), dict) else {}
+    gate = best.get("gate") if isinstance(best.get("gate"), dict) else {}
     return {
         "status": report.get("status"),
         "validation": report.get("validation"),
@@ -319,6 +326,13 @@ def _three_stage_experiment(report: Mapping[str, Any], market: str) -> Dict[str,
         "days": item.get("days"),
         "best_config": best.get("config") or {},
         "best_metrics": _pick_metrics(best),
+        "best_gate": {
+            "status": gate.get("status"),
+            "production_ready": bool(gate.get("production_ready")),
+            "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+            "production_blocking_reasons": gate.get("production_blocking_reasons") or [],
+            "shadow_blocking_reasons": gate.get("shadow_blocking_reasons") or [],
+        },
         "unconstrained_best_config": unconstrained.get("config") or {},
         "unconstrained_best_metrics": _pick_metrics(unconstrained),
         "improvement": item.get("improvement") or {},
@@ -488,6 +502,8 @@ def build_report(
     matched_only_sweep_paths: Mapping[str, Path] | None = None,
     deployment_consistency_path: Path | None = None,
     candidate_leaderboard_path: Path | None = None,
+    finaltopn_prefilter_proxy_path: Path | None = None,
+    finaltopn_actual_sidecar_path: Path | None = None,
 ) -> Dict[str, Any]:
     shadow_report = _load_json(shadow_report_path)
     three_stage_dynamic = _load_json(three_stage_dynamic_path)
@@ -505,10 +521,16 @@ def build_report(
     }
     deployment_consistency = _load_optional_json(deployment_consistency_path)
     candidate_leaderboard = _load_optional_json(candidate_leaderboard_path)
+    finaltopn_prefilter_proxy = _load_optional_json(finaltopn_prefilter_proxy_path)
+    finaltopn_actual_sidecar = _load_optional_json(finaltopn_actual_sidecar_path)
     markets: Dict[str, Any] = {}
     for market in ("KOSPI", "KOSDAQ"):
         markets[market] = {
             "three_stage_ev_ranker": _three_stage_market(three_stage_dynamic, three_stage_fixed, market),
+            "finaltopn_three_stage_experiments": {
+                "prefilter_proxy": _three_stage_experiment(finaltopn_prefilter_proxy, market),
+                "actual_sidecar": _three_stage_experiment(finaltopn_actual_sidecar, market),
+            },
             "kis_sidecar_longfold_shadow": _shadow_market(shadow_report, market_comparison, market),
             "sidecar_score_mode_experiment": _sidecar_score_experiment(
                 sidecar_baseline_sweep,
@@ -566,6 +588,12 @@ def build_report(
             if candidate_leaderboard_path and candidate_leaderboard_path.exists()
             else None,
             "candidate_leaderboard": (candidate_leaderboard.get("decision") or {}) if candidate_leaderboard else {},
+            "finaltopn_prefilter_proxy_report": _rel(finaltopn_prefilter_proxy_path)
+            if finaltopn_prefilter_proxy_path and finaltopn_prefilter_proxy_path.exists()
+            else None,
+            "finaltopn_actual_sidecar_report": _rel(finaltopn_actual_sidecar_path)
+            if finaltopn_actual_sidecar_path and finaltopn_actual_sidecar_path.exists()
+            else None,
             "sidecar_score_evaluated_results": (sidecar_score_sweep.get("summary") or {}).get("evaluated_results")
             if sidecar_score_sweep
             else None,
@@ -606,6 +634,10 @@ def build_report(
             {
                 "step": "exact_date_sidecar_augmentation",
                 "finding": "historical proxy cache에는 실제 KIS flow/financial/static/news가 부족하므로 ticker/date가 정확히 일치하는 실제 sidecar 행만 병합하고, full cache와 matched-only cache로 분리 검증한다.",
+            },
+            {
+                "step": "final_topn_no_trade_expansion",
+                "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",
             },
         ],
         "markets": markets,
@@ -697,6 +729,21 @@ def _markdown(report: Mapping[str, Any]) -> str:
             sample_sufficient_top[0] if sample_sufficient_top and isinstance(sample_sufficient_top[0], dict) else {}
         )
         pareto_candidate = pareto_top[0] if pareto_top and isinstance(pareto_top[0], dict) else {}
+        finaltopn = payload.get("finaltopn_three_stage_experiments") or {}
+        finaltopn_proxy = finaltopn.get("prefilter_proxy") if isinstance(finaltopn.get("prefilter_proxy"), dict) else {}
+        finaltopn_actual = finaltopn.get("actual_sidecar") if isinstance(finaltopn.get("actual_sidecar"), dict) else {}
+        finaltopn_proxy_metrics = (
+            finaltopn_proxy.get("best_metrics") if isinstance(finaltopn_proxy.get("best_metrics"), dict) else {}
+        )
+        finaltopn_actual_metrics = (
+            finaltopn_actual.get("best_metrics") if isinstance(finaltopn_actual.get("best_metrics"), dict) else {}
+        )
+        finaltopn_proxy_gate = (
+            finaltopn_proxy.get("best_gate") if isinstance(finaltopn_proxy.get("best_gate"), dict) else {}
+        )
+        finaltopn_actual_gate = (
+            finaltopn_actual.get("best_gate") if isinstance(finaltopn_actual.get("best_gate"), dict) else {}
+        )
         lines.extend(
             [
                 f"## {market}",
@@ -710,6 +757,8 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- risk_adjusted_alternative: found=`{risk_alt.get('found')}`, candidate=`{risk_candidate.get('selection_rule')}`, hit5_dd10=`{risk_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{risk_metrics.get('avg_5d_pct')}`, min_low=`{risk_metrics.get('min_min_low_5d_pct')}`, deltas=`{risk_alt.get('deltas_vs_baseline')}`",
                 f"- score_sweep_gate_summary: status_counts=`{score_summary.get('status_counts')}`, blockers=`{score_summary.get('production_blocking_reason_counts')}`, sample_only_count=`{score_summary.get('sample_only_blocked_count')}`, sample_sufficient_count=`{score_summary.get('sample_sufficient_count')}`",
                 f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, sample_sufficient_top=`{sample_sufficient_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
+                f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
+                f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",
             ]
         )
@@ -787,6 +836,8 @@ def main(argv: Iterable[str] | None = None) -> int:
     )
     parser.add_argument("--deployment-consistency-report", default=str(DEFAULT_DEPLOYMENT_CONSISTENCY))
     parser.add_argument("--candidate-leaderboard-report", default=str(DEFAULT_CANDIDATE_LEADERBOARD))
+    parser.add_argument("--finaltopn-prefilter-proxy-report", default=str(DEFAULT_FINALTOPN_PREFILTER_PROXY))
+    parser.add_argument("--finaltopn-actual-sidecar-report", default=str(DEFAULT_FINALTOPN_ACTUAL_SIDECAR))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     args = parser.parse_args(list(argv) if argv is not None else None)
     matched_only_sweep_paths = {}
@@ -809,6 +860,8 @@ def main(argv: Iterable[str] | None = None) -> int:
         matched_only_sweep_paths=matched_only_sweep_paths,
         deployment_consistency_path=Path(args.deployment_consistency_report),
         candidate_leaderboard_path=Path(args.candidate_leaderboard_report),
+        finaltopn_prefilter_proxy_path=Path(args.finaltopn_prefilter_proxy_report),
+        finaltopn_actual_sidecar_path=Path(args.finaltopn_actual_sidecar_report),
     )
     write_report(report, Path(args.output))
     print(

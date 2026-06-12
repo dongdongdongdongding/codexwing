@@ -14,7 +14,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-12T19:12:29.789955+00:00",
+  "generated_at": "2026-06-12T19:56:06.114078+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -295,6 +295,13 @@
             "pool_k": 10,
             "score_mode": "ev"
           },
+          "best_gate": {
+            "production_blocking_reasons": [],
+            "production_ready": false,
+            "shadow_blocking_reasons": [],
+            "shadow_display_allowed": false,
+            "status": null
+          },
           "best_metrics": {
             "active_days": 10,
             "avg_5d_pct": 10.356275,
@@ -358,6 +365,13 @@
             "pool": "prefilter",
             "pool_k": 50,
             "score_mode": "ev"
+          },
+          "best_gate": {
+            "production_blocking_reasons": [],
+            "production_ready": false,
+            "shadow_blocking_reasons": [],
+            "shadow_display_allowed": false,
+            "status": null
           },
           "best_metrics": {
             "active_days": 8,
@@ -806,6 +820,13 @@
             "pool_k": 10,
             "score_mode": "ev"
           },
+          "best_gate": {
+            "production_blocking_reasons": [],
+            "production_ready": false,
+            "shadow_blocking_reasons": [],
+            "shadow_display_allowed": false,
+            "status": null
+          },
           "best_metrics": {
             "active_days": 14,
             "avg_5d_pct": 6.514602,
@@ -869,6 +890,13 @@
             "pool": "prefilter",
             "pool_k": 10,
             "score_mode": "success_tail"
+          },
+          "best_gate": {
+            "production_blocking_reasons": [],
+            "production_ready": false,
+            "shadow_blocking_reasons": [],
+            "shadow_display_allowed": false,
+            "status": null
           },
           "best_metrics": {
             "active_days": 8,
@@ -1127,6 +1155,133 @@
   },
   "markets": {
     "KOSDAQ": {
+      "finaltopn_three_stage_experiments": {
+        "actual_sidecar": {
+          "best_config": {},
+          "best_gate": {
+            "production_blocking_reasons": [],
+            "production_ready": false,
+            "shadow_blocking_reasons": [],
+            "shadow_display_allowed": false,
+            "status": null
+          },
+          "best_metrics": {},
+          "days": 27,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {},
+          "rows": 32028,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "final_topn": 1,
+            "max_tail_prob": 0.15,
+            "pool": "composite",
+            "pool_k": 20,
+            "score_mode": "ev"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 1,
+            "avg_5d_pct": 5.366511,
+            "avg_dynamic_exit_5d_pct": 4.601458,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 0.0,
+            "coverage_test_days_pct": 6.6667,
+            "hit10_5d_pct": 0.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -6.06407,
+            "n": 1,
+            "safe_hit10_5d_pct": 0.0,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        },
+        "prefilter_proxy": {
+          "best_config": {
+            "final_topn": 2,
+            "max_tail_prob": null,
+            "pool": "composite",
+            "pool_k": 50,
+            "score_mode": "ev_hit10"
+          },
+          "best_gate": {
+            "production_blocking_reasons": [
+              "active_runs_lt_20",
+              "hit5_dd10_5d_lt_73",
+              "min_low_5d_lt_neg10",
+              "expected_touch_policy_net_5d_lt_0p5"
+            ],
+            "production_ready": false,
+            "shadow_blocking_reasons": [
+              "active_runs_lt_5",
+              "min_low_5d_lt_neg18"
+            ],
+            "shadow_display_allowed": false,
+            "status": "blocked"
+          },
+          "best_metrics": {
+            "active_days": 24,
+            "avg_5d_pct": 1.761306,
+            "avg_dynamic_exit_5d_pct": 1.529568,
+            "avg_ordered_exit_5d_pct": -0.85266,
+            "bad_path_pct": 50.0,
+            "coverage_test_days_pct": 50.0,
+            "hit10_5d_pct": 50.0,
+            "hit5_dd10_5d_pct": 54.3478,
+            "min_min_low_5d_pct": -32.404541,
+            "n": 46,
+            "safe_hit10_5d_pct": 47.8261,
+            "tail_breach_5d_pct": 28.2609,
+            "target_hit_5d_pct": 56.5217
+          },
+          "days": 103,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": -0.574823,
+            "baseline_avg_ordered_exit_5d_pct": -0.277837,
+            "baseline_hit5_dd10_5d_pct": 48.0,
+            "best_avg_dynamic_exit_5d_pct": 1.529568,
+            "best_avg_ordered_exit_5d_pct": -0.85266,
+            "best_hit5_dd10_5d_pct": 54.3478,
+            "dynamic_minus_fixed_exit_delta_pct": 2.382228,
+            "hit5_dd10_delta_pct": 6.3478
+          },
+          "rows": 184794,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "final_topn": 1,
+            "max_tail_prob": 0.25,
+            "pool": "prefilter",
+            "pool_k": 50,
+            "score_mode": "ev"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 7,
+            "avg_5d_pct": 5.752513,
+            "avg_dynamic_exit_5d_pct": 8.159331,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 42.8571,
+            "coverage_test_days_pct": 14.5833,
+            "hit10_5d_pct": 71.4286,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -8.29319,
+            "n": 7,
+            "safe_hit10_5d_pct": 71.4286,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        }
+      },
       "kis_sidecar_longfold_shadow": {
         "gate": {
           "checks": [
@@ -10807,6 +10962,170 @@
       }
     },
     "KOSPI": {
+      "finaltopn_three_stage_experiments": {
+        "actual_sidecar": {
+          "best_config": {
+            "final_topn": 2,
+            "max_tail_prob": null,
+            "pool": "union:day_return+prefilter+coverage",
+            "pool_k": 100,
+            "score_mode": "ev_hit10"
+          },
+          "best_gate": {
+            "production_blocking_reasons": [
+              "active_runs_lt_20",
+              "hit5_dd10_5d_lt_73",
+              "min_low_5d_lt_neg10",
+              "expected_touch_policy_net_5d_lt_0p25"
+            ],
+            "production_ready": false,
+            "shadow_blocking_reasons": [
+              "active_runs_lt_5",
+              "min_low_5d_lt_neg18"
+            ],
+            "shadow_display_allowed": false,
+            "status": "blocked"
+          },
+          "best_metrics": {
+            "active_days": 15,
+            "avg_5d_pct": 6.478111,
+            "avg_dynamic_exit_5d_pct": 0.528124,
+            "avg_ordered_exit_5d_pct": -1.796353,
+            "bad_path_pct": 53.3333,
+            "coverage_test_days_pct": 100.0,
+            "hit10_5d_pct": 53.3333,
+            "hit5_dd10_5d_pct": 53.3333,
+            "min_min_low_5d_pct": -18.184768,
+            "n": 30,
+            "safe_hit10_5d_pct": 46.6667,
+            "tail_breach_5d_pct": 36.6667,
+            "target_hit_5d_pct": 63.3333
+          },
+          "days": 27,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": -2.496822,
+            "baseline_avg_ordered_exit_5d_pct": 0.700469,
+            "baseline_hit5_dd10_5d_pct": 47.619,
+            "best_avg_dynamic_exit_5d_pct": 0.528124,
+            "best_avg_ordered_exit_5d_pct": -1.796353,
+            "best_hit5_dd10_5d_pct": 53.3333,
+            "dynamic_minus_fixed_exit_delta_pct": 2.324477,
+            "hit5_dd10_delta_pct": 5.7143
+          },
+          "rows": 38227,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "final_topn": 3,
+            "max_tail_prob": 0.25,
+            "pool": "union:day_return+composite+defensive",
+            "pool_k": 10,
+            "score_mode": "ev"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 3,
+            "avg_5d_pct": 1.520403,
+            "avg_dynamic_exit_5d_pct": 6.261799,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 50.0,
+            "coverage_test_days_pct": 20.0,
+            "hit10_5d_pct": 33.3333,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -6.518099,
+            "n": 6,
+            "safe_hit10_5d_pct": 33.3333,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        },
+        "prefilter_proxy": {
+          "best_config": {
+            "final_topn": 2,
+            "max_tail_prob": null,
+            "pool": "prefilter",
+            "pool_k": 20,
+            "score_mode": "ev"
+          },
+          "best_gate": {
+            "production_blocking_reasons": [
+              "active_runs_lt_20",
+              "hit5_dd10_5d_lt_73",
+              "min_low_5d_lt_neg10",
+              "expected_touch_policy_net_5d_lt_0p25"
+            ],
+            "production_ready": false,
+            "shadow_blocking_reasons": [
+              "active_runs_lt_5",
+              "min_low_5d_lt_neg18"
+            ],
+            "shadow_display_allowed": false,
+            "status": "blocked"
+          },
+          "best_metrics": {
+            "active_days": 21,
+            "avg_5d_pct": 0.34813,
+            "avg_dynamic_exit_5d_pct": 1.249479,
+            "avg_ordered_exit_5d_pct": -0.618404,
+            "bad_path_pct": 60.0,
+            "coverage_test_days_pct": 43.75,
+            "hit10_5d_pct": 40.0,
+            "hit5_dd10_5d_pct": 57.5,
+            "min_min_low_5d_pct": -27.443637,
+            "n": 40,
+            "safe_hit10_5d_pct": 37.5,
+            "tail_breach_5d_pct": 27.5,
+            "target_hit_5d_pct": 65.0
+          },
+          "days": 103,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": -1.318873,
+            "baseline_avg_ordered_exit_5d_pct": 0.700469,
+            "baseline_hit5_dd10_5d_pct": 47.619,
+            "best_avg_dynamic_exit_5d_pct": 1.249479,
+            "best_avg_ordered_exit_5d_pct": -0.618404,
+            "best_hit5_dd10_5d_pct": 57.5,
+            "dynamic_minus_fixed_exit_delta_pct": 1.867883,
+            "hit5_dd10_delta_pct": 9.881
+          },
+          "rows": 97421,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "final_topn": 1,
+            "max_tail_prob": 0.35,
+            "pool": "prefilter",
+            "pool_k": 20,
+            "score_mode": "ev"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 5,
+            "avg_5d_pct": 11.033832,
+            "avg_dynamic_exit_5d_pct": 8.586276,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 20.0,
+            "coverage_test_days_pct": 10.4167,
+            "hit10_5d_pct": 80.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -8.545508,
+            "n": 5,
+            "safe_hit10_5d_pct": 80.0,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        }
+      },
       "kis_sidecar_longfold_shadow": {
         "gate": {
           "checks": [
@@ -19990,6 +20309,8 @@
       "status": "pass"
     },
     "deployment_consistency_report": "runtime_state/reports/learning/kis_shadow_deployment_consistency_20260613.json",
+    "finaltopn_actual_sidecar_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_actual_sidecar_20260331_20260610.json",
+    "finaltopn_prefilter_proxy_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json",
     "market_comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
     "matched_only_sweep_reports": {
       "kis_full_augmented": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_full_augmented_20260331_20260610.json",
@@ -20039,6 +20360,10 @@
     {
       "finding": "historical proxy cache에는 실제 KIS flow/financial/static/news가 부족하므로 ticker/date가 정확히 일치하는 실제 sidecar 행만 병합하고, full cache와 matched-only cache로 분리 검증한다.",
       "step": "exact_date_sidecar_augmentation"
+    },
+    {
+      "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",
+      "step": "final_topn_no_trade_expansion"
     }
   ],
   "service_feature_scope": {

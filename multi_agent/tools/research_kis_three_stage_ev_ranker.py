@@ -21,6 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from modules.tradable_pnl import TradableCostModel, compute_net_return_pct
+from modules.kis_model_gate import evaluate_kis_model_gate
 from multi_agent.tools.train_kis_historical_best_effort_suite import (
     BUY_PREMIUM_PCT,
     DEFAULT_END,
@@ -30,7 +31,6 @@ from multi_agent.tools.train_kis_historical_best_effort_suite import (
     _feature_sets,
     _filter_valid_labels,
     _frame_for_native,
-    _load_market_frame,
     _walk_windows,
 )
 
@@ -54,12 +54,13 @@ TARGET10_NET_PCT = compute_net_return_pct(10.0, TradableCostModel()) or 9.55
 class Config:
     pool: str
     pool_k: int
+    final_topn: int
     score_mode: str
     max_tail_prob: float | None = None
 
     def key(self) -> str:
         tail = "tail_none" if self.max_tail_prob is None else f"tail{str(self.max_tail_prob).replace('.', 'p')}"
-        return f"{self.pool}|top{self.pool_k}|{self.score_mode}|{tail}"
+        return f"{self.pool}|pool{self.pool_k}|final{self.final_topn}|{self.score_mode}|{tail}"
 
 
 def _utc_now() -> str:
@@ -149,14 +150,14 @@ def _select_pool(frame: pd.DataFrame, scores: Mapping[str, pd.Series], mode: str
     return ordered.groupby("base_trade_date", sort=False).head(int(top_k)).index
 
 
-def _top_per_day(frame: pd.DataFrame, score: pd.Series) -> pd.DataFrame:
+def _top_per_day(frame: pd.DataFrame, score: pd.Series, *, topn: int = 1) -> pd.DataFrame:
     scored = frame.copy()
     scored["_rank_score"] = pd.to_numeric(score.reindex(frame.index), errors="coerce")
     scored = scored.dropna(subset=["_rank_score"])
     if scored.empty:
         return scored
     ordered = scored.sort_values(["base_trade_date", "_rank_score", "ticker"], ascending=[True, False, True])
-    return ordered.groupby("base_trade_date", sort=False).head(1)
+    return ordered.groupby("base_trade_date", sort=False).head(int(topn))
 
 
 def _metric_summary(frame: pd.DataFrame, idx: pd.Index) -> Dict[str, Any]:
@@ -239,8 +240,8 @@ def _rank_score(score_mode: str, p_success: pd.Series, p_tail: pd.Series, p_hit1
     raise ValueError(f"unknown_score_mode:{score_mode}")
 
 
-def _choose_threshold(calibration: pd.DataFrame, score: pd.Series) -> Tuple[float | None, Dict[str, Any]]:
-    top = _top_per_day(calibration, score)
+def _choose_threshold(calibration: pd.DataFrame, score: pd.Series, *, final_topn: int) -> Tuple[float | None, Dict[str, Any]]:
+    top = _top_per_day(calibration, score, topn=final_topn)
     if top.empty:
         return None, {"reason": "empty_calibration_top"}
     thresholds = sorted(set([float(top["_rank_score"].quantile(q)) for q in (0.0, 0.2, 0.4, 0.6, 0.75, 0.85, 0.9)] + [0.0]))
@@ -268,13 +269,15 @@ def _choose_threshold(calibration: pd.DataFrame, score: pd.Series) -> Tuple[floa
 def _configs(
     pool_modes: Sequence[str],
     pool_k: Sequence[int],
+    final_topn: Sequence[int],
     score_modes: Sequence[str],
     max_tail_probs: Sequence[float | None],
 ) -> List[Config]:
     return [
-        Config(pool=pool, pool_k=int(k), score_mode=score, max_tail_prob=max_tail_prob)
+        Config(pool=pool, pool_k=int(k), final_topn=int(topn), score_mode=score, max_tail_prob=max_tail_prob)
         for pool in pool_modes
         for k in pool_k
+        for topn in final_topn
         for score in score_modes
         for max_tail_prob in max_tail_probs
     ]
@@ -300,6 +303,59 @@ def _baseline_metrics(path: Path, market: str) -> Dict[str, Any] | None:
     return best.get("metrics") if isinstance(best, dict) else None
 
 
+def _normalize_market_value(value: Any) -> str:
+    text = str(value or "").upper().strip()
+    if text in {"KOSPI", "KS", "STK"}:
+        return "KOSPI"
+    if text in {"KOSDAQ", "KQ", "KSQ"}:
+        return "KOSDAQ"
+    return text
+
+
+def _load_research_frame(path: Path, market: str) -> pd.DataFrame:
+    frame = pd.read_pickle(path)
+    out = frame.copy()
+    if "base_trade_date" not in out.columns:
+        if "trade_date" not in out.columns:
+            raise ValueError(f"{path} has no base_trade_date/trade_date")
+        out["base_trade_date"] = out["trade_date"]
+    out["base_trade_date"] = pd.to_datetime(out["base_trade_date"], errors="coerce").dt.date.astype(str)
+    market_key = market.upper()
+    if "market" in out.columns:
+        normalized = out["market"].map(_normalize_market_value)
+        filtered = out.loc[normalized.eq(market_key)].copy()
+        if not filtered.empty:
+            out = filtered
+    elif "ticker" in out.columns:
+        suffix = ".KS" if market_key == "KOSPI" else ".KQ"
+        filtered = out.loc[out["ticker"].astype(str).str.upper().str.endswith(suffix)].copy()
+        if not filtered.empty:
+            out = filtered
+    out["trade_date"] = out["base_trade_date"]
+    out["market"] = market_key
+    return out
+
+
+def _apply_sidecar_coverage_filter(frame: pd.DataFrame, required: Sequence[str]) -> tuple[pd.DataFrame, Dict[str, Any]]:
+    out = frame.copy()
+    details: Dict[str, Any] = {"required": list(required), "before_rows": int(len(out)), "checks": []}
+    for raw_name in required:
+        name = str(raw_name).strip()
+        if not name:
+            continue
+        column = name if name.startswith("kis_sidecar_coverage_") else f"kis_sidecar_coverage_{name}"
+        if column not in out.columns:
+            details["checks"].append({"column": column, "before_rows": int(len(out)), "after_rows": 0, "missing": True})
+            out = out.iloc[0:0].copy()
+            continue
+        before = int(len(out))
+        mask = pd.to_numeric(out[column], errors="coerce").fillna(0.0).ne(0.0)
+        out = out.loc[mask].copy()
+        details["checks"].append({"column": column, "before_rows": before, "after_rows": int(len(out)), "missing": False})
+    details["after_rows"] = int(len(out))
+    return out, details
+
+
 def _market_report(
     *,
     market: str,
@@ -310,6 +366,7 @@ def _market_report(
     rank_metric: str,
     pool_modes: Sequence[str],
     pool_k: Sequence[int],
+    final_topn: Sequence[int],
     score_modes: Sequence[str],
     max_tail_probs: Sequence[float | None],
     min_train_days: int,
@@ -319,10 +376,14 @@ def _market_report(
     calibration_days: int,
     min_eval_n: int,
     min_eval_active_days: int,
+    required_sidecar_coverage: Sequence[str],
     ranked_limit: int,
 ) -> Dict[str, Any]:
     started = perf_counter()
-    frame = _load_market_frame(cache_path, market)
+    raw_frame = _load_research_frame(cache_path, market)
+    rows_before_label_filter = int(len(raw_frame))
+    frame, coverage_filter = _apply_sidecar_coverage_filter(raw_frame, required_sidecar_coverage)
+    rows_after_coverage_filter = int(len(frame))
     frame = _filter_valid_labels(frame, start=start, end=end)
     frame["_label_tail_breach"] = frame["_mae_5d"].lt(-abs(STOP_PCT)).fillna(False)
     numeric = _feature_sets(frame)["kis_failure_prior_numeric"][0]
@@ -333,7 +394,7 @@ def _market_report(
         max_folds=max_folds,
         embargo_days=embargo_days,
     )
-    configs = _configs(pool_modes, pool_k, score_modes, max_tail_probs)
+    configs = _configs(pool_modes, pool_k, final_topn, score_modes, max_tail_probs)
     selected_by_config: Dict[str, List[pd.Index]] = {cfg.key(): [] for cfg in configs}
     fold_rows: List[Dict[str, Any]] = []
     tested_days: List[str] = []
@@ -378,11 +439,11 @@ def _market_report(
             if len(cal_pool) == 0 or len(test_pool) == 0:
                 continue
             cal_score = _rank_score(cfg.score_mode, p_success_cal, p_tail_cal, p_hit10_cal).reindex(cal_pool)
-            threshold, threshold_meta = _choose_threshold(calibration.loc[cal_pool], cal_score)
+            threshold, threshold_meta = _choose_threshold(calibration.loc[cal_pool], cal_score, final_topn=cfg.final_topn)
             if threshold is None:
                 continue
             test_score = _rank_score(cfg.score_mode, p_success_test, p_tail_test, p_hit10_test).reindex(test_pool)
-            test_top = _top_per_day(test.loc[test_pool], test_score)
+            test_top = _top_per_day(test.loc[test_pool], test_score, topn=cfg.final_topn)
             selected = test_top[test_top["_rank_score"].ge(float(threshold))]
             selected_by_config[cfg.key()].append(selected.index)
             fold_config_rows.append(
@@ -419,7 +480,26 @@ def _market_report(
         idx = idx.drop_duplicates()
         metrics = _metric_summary(frame, idx)
         metrics["coverage_test_days_pct"] = _pct((int(metrics.get("active_days") or 0) / len(unique_test_days)) if unique_test_days else 0.0)
-        ranked.append({"config": cfg.__dict__, "metrics": metrics})
+        identity = {
+            "suite_version": REPORT_VERSION,
+            "model": "kis_three_stage_ev_ranker",
+            "score_mode": cfg.score_mode,
+            "feature_set": "kis_three_stage_ev_ranker",
+            "market": market,
+            "label": "touch5_dd10_5d",
+            "pool": cfg.pool,
+            "pool_k": int(cfg.pool_k),
+            "final_topn": int(cfg.final_topn),
+            "max_tail_prob": cfg.max_tail_prob,
+        }
+        ranked.append(
+            {
+                "config": cfg.__dict__,
+                "identity": identity,
+                "metrics": metrics,
+                "gate": evaluate_kis_model_gate(identity=identity, metrics=metrics, market=market),
+            }
+        )
     ranked.sort(
         key=lambda row: (
             float((row.get("metrics") or {}).get(rank_metric) or -99.0),
@@ -430,6 +510,8 @@ def _market_report(
         reverse=True,
     )
 
+    production_ready = [row for row in ranked if (row.get("gate") or {}).get("production_ready")]
+    shadow_display_allowed = [row for row in ranked if (row.get("gate") or {}).get("shadow_display_allowed")]
     baseline = _baseline_metrics(baseline_report, market)
     unconstrained_best = ranked[0] if ranked else None
     eligible_ranked = [
@@ -464,6 +546,9 @@ def _market_report(
     return {
         "market": market,
         "cache_path": str(cache_path),
+        "rows_before_label_filter": rows_before_label_filter,
+        "rows_after_coverage_filter": rows_after_coverage_filter,
+        "sidecar_coverage_filter": coverage_filter,
         "rows": int(len(frame)),
         "days": int(frame["base_trade_date"].nunique()),
         "windows": [
@@ -480,6 +565,8 @@ def _market_report(
         "folds": fold_rows,
         "baseline_best_metrics": baseline,
         "rank_metric": rank_metric,
+        "production_ready_count": len(production_ready),
+        "shadow_display_allowed_count": len(shadow_display_allowed),
         "max_tail_prob_thresholds": list(max_tail_probs),
         "evidence_gate": {"min_eval_n": int(min_eval_n), "min_eval_active_days": int(min_eval_active_days)},
         "improvement": improvement,
@@ -516,6 +603,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
                 rank_metric=args.rank_metric,
                 pool_modes=args.pool_modes,
                 pool_k=args.pool_k,
+                final_topn=args.final_topn,
                 score_modes=args.score_modes,
                 max_tail_probs=args.max_tail_prob_thresholds,
                 min_train_days=args.min_train_days,
@@ -525,9 +613,15 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
                 calibration_days=args.calibration_days,
                 min_eval_n=args.min_eval_n,
                 min_eval_active_days=args.min_eval_active_days,
+                required_sidecar_coverage=args.require_sidecar_coverage,
                 ranked_limit=args.ranked_limit,
             )
         )
+    production_ready = [
+        report
+        for report in reports
+        if int(report.get("production_ready_count") or 0) > 0
+    ]
     improved = [
         report
         for report in reports
@@ -537,7 +631,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         "version": REPORT_VERSION,
         "generated_at": _utc_now(),
         "dummy_data_used": False,
-        "status": "improved_shadow_research" if improved else "no_improvement",
+        "status": "production_ready" if production_ready else "improved_shadow_research" if improved else "no_improvement",
         "objective": "Validate a no-dummy three-stage KIS workflow: wide recall pool, tail-risk model, expected-value/no-trade ranker.",
         "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.",
         "assumptions": {
@@ -579,6 +673,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         unconstrained_best = market_report.get("unconstrained_best") or {}
         metrics = best.get("metrics") or {}
         config = best.get("config") or {}
+        gate = best.get("gate") or {}
         unconstrained_metrics = unconstrained_best.get("metrics") or {}
         evidence_gate = market_report.get("evidence_gate") or {}
         improvement = market_report.get("improvement") or {}
@@ -588,30 +683,34 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                 "",
                 f"- rows/days: `{market_report.get('rows')}` / `{market_report.get('days')}`",
                 f"- evidence_gate: min_n=`{evidence_gate.get('min_eval_n')}` min_active_days=`{evidence_gate.get('min_eval_active_days')}` eligible_configs=`{len(market_report.get('eligible_ranked') or [])}`",
+                f"- gate_counts: production_ready=`{market_report.get('production_ready_count')}` shadow_display_allowed=`{market_report.get('shadow_display_allowed_count')}`",
                 f"- unconstrained_best: n=`{unconstrained_metrics.get('n')}`, active_days=`{unconstrained_metrics.get('active_days')}`, hit5_dd10=`{unconstrained_metrics.get('hit5_dd10_5d_pct')}`, tail=`{unconstrained_metrics.get('tail_breach_5d_pct')}`, avg_exit=`{unconstrained_metrics.get('avg_ordered_exit_5d_pct')}`",
-                f"- best_config: pool=`{config.get('pool')}` pool_k=`{config.get('pool_k')}` score=`{config.get('score_mode')}` max_tail_prob=`{config.get('max_tail_prob')}`",
+                f"- best_config: pool=`{config.get('pool')}` pool_k=`{config.get('pool_k')}` final_topn=`{config.get('final_topn')}` score=`{config.get('score_mode')}` max_tail_prob=`{config.get('max_tail_prob')}` gate=`{gate.get('status')}` production=`{gate.get('production_ready')}`",
                 f"- avg_exit improvement: `{improvement.get('baseline_avg_ordered_exit_5d_pct')}` -> `{improvement.get('best_avg_ordered_exit_5d_pct')}` (delta `{improvement.get('avg_ordered_exit_delta_pct')}`)",
                 f"- dynamic_exit: `{metrics.get('avg_dynamic_exit_5d_pct')}` (fixed 대비 delta `{improvement.get('dynamic_minus_fixed_exit_delta_pct')}`)",
                 f"- hit5_dd10: `{improvement.get('baseline_hit5_dd10_5d_pct')}` -> `{improvement.get('best_hit5_dd10_5d_pct')}` (delta `{improvement.get('hit5_dd10_delta_pct')}`)",
                 f"- best metrics: n=`{metrics.get('n')}`, active_days=`{metrics.get('active_days')}`, hit5_dd10=`{metrics.get('hit5_dd10_5d_pct')}`, hit10=`{metrics.get('hit10_5d_pct')}`, safe_hit10=`{metrics.get('safe_hit10_5d_pct')}`, tail=`{metrics.get('tail_breach_5d_pct')}`, bad_path=`{metrics.get('bad_path_pct')}`, avg_exit=`{metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{metrics.get('min_min_low_5d_pct')}`",
                 "",
-                "| rank | pool | pool_k | score | max_tail_prob | n | days | coverage | hit5 | hit10 | safe10 | tail | bad | avg_exit | dynamic_exit | min_low |",
-                "|---:|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+                "| rank | gate | pool | pool_k | final_topn | score | max_tail_prob | n | days | coverage | hit5 | hit10 | safe10 | tail | bad | avg_exit | dynamic_exit | min_low |",
+                "|---:|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
             ]
         )
         eligible_rows = (market_report.get("eligible_ranked") or [])[:10]
         if not eligible_rows:
-            lines.append("| - | no eligible config | - | - | - | - | - | - | - | - | - | - | - | - | - | - |")
+            lines.append("| - | no eligible config | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - |")
         for rank, row in enumerate(eligible_rows, start=1):
             row_config = row.get("config") or {}
             row_metrics = row.get("metrics") or {}
+            row_gate = row.get("gate") or {}
             lines.append(
                 "| "
                 + " | ".join(
                     [
                         str(rank),
+                        str(row_gate.get("status")),
                         str(row_config.get("pool")),
                         _fmt(row_config.get("pool_k")),
+                        _fmt(row_config.get("final_topn")),
                         str(row_config.get("score_mode")),
                         _fmt(row_config.get("max_tail_prob")),
                         _fmt(row_metrics.get("n")),
@@ -652,6 +751,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         ],
     )
     parser.add_argument("--pool-k", nargs="+", type=int, default=[10, 20, 50, 100])
+    parser.add_argument("--final-topn", nargs="+", type=int, default=[1])
     parser.add_argument("--score-modes", nargs="+", default=["ev", "success_tail", "ev_hit10"])
     parser.add_argument("--min-train-days", type=int, default=45)
     parser.add_argument("--test-days", type=int, default=8)
@@ -670,6 +770,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-json", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.json"))
     parser.add_argument("--output-md", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.md"))
     parser.add_argument("--input-path", action="append", default=[], help="MARKET=path override for prepared cache.")
+    parser.add_argument(
+        "--require-sidecar-coverage",
+        nargs="*",
+        default=[],
+        help="Require KIS sidecar coverage flags before label filtering, e.g. quote_snapshot investor_flow.",
+    )
     parser.add_argument(
         "--max-tail-prob-thresholds",
         nargs="+",
