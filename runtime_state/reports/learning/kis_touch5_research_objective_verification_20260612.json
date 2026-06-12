@@ -15,7 +15,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-12T15:23:14.069261+00:00",
+  "generated_at": "2026-06-12T15:43:30.983626+00:00",
   "markets": {
     "KOSDAQ": {
       "kis_sidecar_longfold_shadow": {
@@ -9111,6 +9111,8 @@
               "topn": 1
             }
           ],
+          "sample_sufficient_count": 0,
+          "sample_sufficient_top": [],
           "score_mode_counts": {
             "ev": 495,
             "prob": 495,
@@ -18275,6 +18277,8 @@
               "topn": 2
             }
           ],
+          "sample_sufficient_count": 0,
+          "sample_sufficient_top": [],
           "score_mode_counts": {
             "ev": 495,
             "prob": 495,

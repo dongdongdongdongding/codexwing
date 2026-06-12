@@ -115,5 +115,7 @@ def test_compact_report_removes_repeated_heavy_payloads():
     assert summary["production_blocking_reason_counts"]["active_days_lt_15"] == 2
     assert summary["sample_only_blocked_count"] == 2
     assert summary["sample_only_top"][0]["selection_rule"] == "top2"
+    assert summary["sample_sufficient_count"] == 0
+    assert summary["sample_sufficient_top"] == []
     assert len(summary["pareto_top"]) == 1
     assert summary["pareto_top"][0]["selection_rule"] == "top1"

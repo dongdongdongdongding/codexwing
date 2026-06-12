@@ -181,6 +181,13 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                                 "metrics": {"hit5_dd10_5d_pct": 90.0, "min_min_low_5d_pct": -6.0},
                             }
                         ],
+                        "sample_sufficient_count": 1,
+                        "sample_sufficient_top": [
+                            {
+                                "selection_rule": "top2_prob_x_tail_p0p75_tail0p95",
+                                "metrics": {"hit5_dd10_5d_pct": 60.0, "min_min_low_5d_pct": -12.0},
+                            }
+                        ],
                         "pareto_top": [
                             {
                                 "selection_rule": "top1_prob_x_tail_p0p75_tail0p95",
@@ -234,3 +241,4 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     score_summary = score_exp["score_report_analysis_summary"]
     assert score_summary["production_blocking_reason_counts"]["active_days_lt_15"] == 2
     assert score_summary["sample_only_top"][0]["selection_rule"] == "top1_prob_x_tail_p0p75_tail0p95"
+    assert score_summary["sample_sufficient_top"][0]["selection_rule"] == "top2_prob_x_tail_p0p75_tail0p95"

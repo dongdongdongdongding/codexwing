@@ -406,6 +406,15 @@ def _is_sample_only_blocked(row: Mapping[str, Any]) -> bool:
     )
 
 
+def _has_sample_blocker(row: Mapping[str, Any]) -> bool:
+    gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}
+    reasons = [str(item) for item in gate.get("production_blocking_reasons") or []]
+    return any(
+        reason.startswith("n_lt") or reason.startswith("active_days_lt") or reason.startswith("active_runs_lt")
+        for reason in reasons
+    )
+
+
 def _pareto_rows(rows: Sequence[Mapping[str, Any]], *, limit: int) -> List[Dict[str, Any]]:
     candidates = [
         row
@@ -459,6 +468,7 @@ def _analysis_summary(rows: Sequence[Mapping[str, Any]], *, limit: int) -> Dict[
     reason_counts: Dict[str, int] = {}
     score_mode_counts: Dict[str, int] = {}
     sample_only: List[Mapping[str, Any]] = []
+    sample_sufficient: List[Mapping[str, Any]] = []
     for row in rows:
         if not isinstance(row, Mapping):
             continue
@@ -472,13 +482,18 @@ def _analysis_summary(rows: Sequence[Mapping[str, Any]], *, limit: int) -> Dict[
             reason_counts[text] = reason_counts.get(text, 0) + 1
         if _is_sample_only_blocked(row):
             sample_only.append(row)
+        if gate.get("shadow_display_allowed") and not _has_sample_blocker(row):
+            sample_sufficient.append(row)
     sample_only.sort(key=_summary_sort_key)
+    sample_sufficient.sort(key=_summary_sort_key)
     return {
         "status_counts": dict(sorted(status_counts.items())),
         "score_mode_counts": dict(sorted(score_mode_counts.items())),
         "production_blocking_reason_counts": dict(sorted(reason_counts.items(), key=lambda item: (-item[1], item[0]))),
         "sample_only_blocked_count": len(sample_only),
         "sample_only_top": [_compact_result(row) for row in sample_only[:limit]],
+        "sample_sufficient_count": len(sample_sufficient),
+        "sample_sufficient_top": [_compact_result(row) for row in sample_sufficient[:limit]],
         "pareto_top": _pareto_rows(rows, limit=limit),
     }
 

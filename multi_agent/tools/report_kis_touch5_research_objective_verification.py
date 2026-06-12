@@ -469,8 +469,12 @@ def _markdown(report: Mapping[str, Any]) -> str:
         risk_metrics = risk_candidate.get("metrics") or {}
         score_summary = score_exp.get("score_report_analysis_summary") or {}
         sample_only_top = score_summary.get("sample_only_top") or []
+        sample_sufficient_top = score_summary.get("sample_sufficient_top") or []
         pareto_top = score_summary.get("pareto_top") or []
         sample_candidate = sample_only_top[0] if sample_only_top and isinstance(sample_only_top[0], dict) else {}
+        sample_sufficient_candidate = (
+            sample_sufficient_top[0] if sample_sufficient_top and isinstance(sample_sufficient_top[0], dict) else {}
+        )
         pareto_candidate = pareto_top[0] if pareto_top and isinstance(pareto_top[0], dict) else {}
         lines.extend(
             [
@@ -483,8 +487,8 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- three_stage_improvement_vs_broad: avg_exit_delta=`{three_imp.get('avg_ordered_exit_delta_pct')}`, hit5_delta=`{three_imp.get('hit5_dd10_delta_pct')}`",
                 f"- score_mode_experiment: same_fold_scope=`{score_exp.get('same_fold_scope_verified')}`, decision=`{score_exp.get('decision')}`, best=`{score_best.get('selection_rule')}`",
                 f"- risk_adjusted_alternative: found=`{risk_alt.get('found')}`, candidate=`{risk_candidate.get('selection_rule')}`, hit5_dd10=`{risk_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{risk_metrics.get('avg_5d_pct')}`, min_low=`{risk_metrics.get('min_min_low_5d_pct')}`, deltas=`{risk_alt.get('deltas_vs_baseline')}`",
-                f"- score_sweep_gate_summary: status_counts=`{score_summary.get('status_counts')}`, blockers=`{score_summary.get('production_blocking_reason_counts')}`, sample_only_count=`{score_summary.get('sample_only_blocked_count')}`",
-                f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
+                f"- score_sweep_gate_summary: status_counts=`{score_summary.get('status_counts')}`, blockers=`{score_summary.get('production_blocking_reason_counts')}`, sample_only_count=`{score_summary.get('sample_only_blocked_count')}`, sample_sufficient_count=`{score_summary.get('sample_sufficient_count')}`",
+                f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, sample_sufficient_top=`{sample_sufficient_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
                 "",
             ]
         )
