@@ -1,0 +1,115 @@
+{
+  "version": "kis_prefilter_proxy_research_summary_v1",
+  "generated_at": "2026-06-12T16:53:18Z",
+  "dummy_data_used": false,
+  "objective": "Verify whether historical KIS daily OHLCV can restore enough operational prefilter/rank feature parity to improve the touch5_dd10 model.",
+  "inputs": {
+    "label": "buy at scan price +2%, success if +5% target is touched within 5 trading days and 5D low does not breach -10%",
+    "kospi_prepared_cache": "runtime_state/reports/learning/kis_historical_universe_prefilter_proxy_prepared_kospi_20260101_20260610.pkl",
+    "kosdaq_prepared_cache": "runtime_state/reports/learning/kis_historical_universe_prefilter_proxy_prepared_kosdaq_20260101_20260610.pkl",
+    "source_data": "real KIS daily OHLCV cache, no dummy values"
+  },
+  "feature_parity_result": {
+    "status": "improved_data_foundation",
+    "kospi": {
+      "prepared_rows": 100260,
+      "days": 106,
+      "failed_tickers": 3,
+      "kis_nonempty_features": 97,
+      "kis_existing_features": 153,
+      "prefilter_nonempty_features": 31,
+      "prefilter_existing_features": 49,
+      "prefilter_present_positive_rows": 8479,
+      "rank_volume_nonnull": 4516,
+      "rank_fluctuation_nonnull": 6167,
+      "rank_volume_power_nonnull": 6137
+    },
+    "kosdaq": {
+      "prepared_rows": 190182,
+      "days": 106,
+      "failed_tickers": 25,
+      "kis_nonempty_features": 97,
+      "kis_existing_features": 153,
+      "prefilter_nonempty_features": 31,
+      "prefilter_existing_features": 49,
+      "prefilter_present_positive_rows": 8480,
+      "rank_volume_nonnull": 4510,
+      "rank_fluctuation_nonnull": 6306,
+      "rank_volume_power_nonnull": 6289
+    }
+  },
+  "model_validation_result": {
+    "status": "not_promotable",
+    "fast_walk_forward_ranker_report": "results_embedded_in_this_summary",
+    "kospi_best": {
+      "model": "lightgbm_ranker",
+      "feature_set": "kis_failure_prior_category",
+      "topn": 1,
+      "n": 36,
+      "active_days": 36,
+      "hit5_dd10_5d_pct": 38.8889,
+      "hit10_5d_pct": 41.6667,
+      "stop5_pct": 38.8889,
+      "bad_path_pct": 58.3333,
+      "avg_5d_pct": 5.780484,
+      "avg_ordered_exit_5d_pct": -2.52715,
+      "min_min_low_5d_pct": -21.190341,
+      "gate_status": "blocked"
+    },
+    "kosdaq_best": {
+      "model": "lightgbm_ranker",
+      "feature_set": "kis_failure_prior_numeric",
+      "topn": 1,
+      "n": 36,
+      "active_days": 36,
+      "hit5_dd10_5d_pct": 47.2222,
+      "hit10_5d_pct": 47.2222,
+      "stop5_pct": 25.0,
+      "bad_path_pct": 55.5556,
+      "avg_5d_pct": 6.4469,
+      "avg_ordered_exit_5d_pct": -0.888756,
+      "min_min_low_5d_pct": -36.419012,
+      "gate_status": "shadow_risk_review"
+    },
+    "deterministic_prefilter_top1": {
+      "kospi": {
+        "n": 103,
+        "active_days": 103,
+        "hit5_dd10_5d_pct": 36.8932,
+        "tail_breach_5d_pct": 52.4272,
+        "avg_exit_5d_pct": -3.827082,
+        "min_low_5d_pct": -38.77695
+      },
+      "kosdaq": {
+        "n": 103,
+        "active_days": 103,
+        "hit5_dd10_5d_pct": 40.7767,
+        "tail_breach_5d_pct": 58.2524,
+        "avg_exit_5d_pct": -3.974184,
+        "min_low_5d_pct": -39.782267
+      }
+    },
+    "best_univariate_segment_observed": {
+      "market": "KOSPI",
+      "feature": "kis_prefilter_rank_volume",
+      "range": "1..5",
+      "n": 515,
+      "active_days": 103,
+      "hit5_dd10_5d_pct": 52.8155,
+      "tail_breach_5d_pct": 30.8738,
+      "avg_5d_pct": 3.006112,
+      "min_low_5d_pct": -45.922318,
+      "interpretation": "Improves raw opportunity quality but remains far below the 73% production hit gate and has unacceptable tail risk."
+    }
+  },
+  "decision": {
+    "production_promotion": false,
+    "shadow_promotion": false,
+    "reason": "Daily OHLCV-derived historical prefilter/rank parity improves feature coverage but does not solve the required touch5_dd10 hit and -10% tail-risk gates.",
+    "next_research": [
+      "Persist true operational KIS sidecar evidence at scan time, especially rank API, investor flow, VI, news scope, and financial fields.",
+      "Use historical prefilter proxy only as a candidate-pool feature, not as a standalone admission signal.",
+      "Prioritize tail-risk rejection and no-trade gates before further success-ranker tuning."
+    ]
+  }
+}

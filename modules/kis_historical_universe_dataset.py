@@ -14,8 +14,11 @@ from modules.operational_candidate_scoring import DEFAULT_BUY_PREMIUM_PCT
 
 KIS_HISTORICAL_UNIVERSE_VERSION = "kis_historical_universe_dataset_v1"
 KIS_HISTORICAL_SIDECAR_VERSION = "kis_historical_universe_sidecar_v1"
+KIS_HISTORICAL_PREFILTER_VERSION = "kis_historical_prefilter_proxy_v1"
 DEFAULT_TARGET_PCT = 5.0
 DEFAULT_STOP_PCT = 10.0
+DEFAULT_HISTORICAL_PREFILTER_RANK_LIMIT = 80
+DEFAULT_HISTORICAL_PREFILTER_MAX_CANDIDATES = 80
 
 
 @dataclass(frozen=True)
@@ -64,6 +67,49 @@ def _pct(numerator: Any, denominator: Any) -> float | None:
     if num is None or den is None or den == 0:
         return None
     return round(((num / den) - 1.0) * 100.0, 6)
+
+
+def _rank_points(rank: int | None, *, weight: float) -> float:
+    if rank is None or rank <= 0:
+        return 0.0
+    return max(0.0, 110.0 - float(rank)) * float(weight)
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(float(low), min(float(high), float(value)))
+
+
+def _quote_score_components(quote: Mapping[str, Any]) -> Dict[str, float]:
+    components: Dict[str, float] = {}
+    value_traded = _safe_float(quote.get("value_traded"))
+    if value_traded is not None and value_traded > 0:
+        components["value_traded"] = _clamp(math.log10(max(value_traded, 1.0) / 100_000_000.0) * 8.0, 0.0, 40.0)
+
+    prev_volume_ratio = _safe_float(quote.get("prev_volume_ratio") or quote.get("volume_ratio"))
+    if prev_volume_ratio is not None and prev_volume_ratio > 0:
+        components["prev_volume_ratio"] = _clamp(prev_volume_ratio / 10.0, 0.0, 25.0)
+
+    day_change_pct = _safe_float(quote.get("day_change_pct"))
+    if day_change_pct is not None:
+        components["day_change_pct"] = _clamp(day_change_pct * 2.0, -18.0, 28.0)
+    return components
+
+
+def _historical_prefilter_score(candidate: Mapping[str, Any]) -> Dict[str, Any]:
+    ranks = candidate.get("rank") if isinstance(candidate.get("rank"), Mapping) else {}
+    components = {
+        "volume_rank": _rank_points(_safe_int(ranks.get("volume_rank")), weight=1.0),
+        "fluctuation_rank": _rank_points(_safe_int(ranks.get("fluctuation_rank")), weight=0.75),
+        "volume_power_rank": _rank_points(_safe_int(ranks.get("volume_power_rank")), weight=0.85),
+    }
+    quote = candidate.get("quote") if isinstance(candidate.get("quote"), Mapping) else {}
+    components.update(_quote_score_components(quote))
+    return {"selection_score": round(sum(float(value) for value in components.values()), 4), "score_components": components}
+
+
+def _safe_int(value: Any) -> int | None:
+    number = _safe_float(value)
+    return int(number) if number is not None else None
 
 
 def _market_from_symbol(symbol: str, fallback: str = "") -> str:
@@ -491,6 +537,153 @@ def build_historical_rows_for_symbol(
         row["outcome_available"] = row.get("return_5d_pct") is not None and row.get("max_high_return_5d_pct") is not None
         rows.append(row)
     return rows
+
+
+def _descending_rank(values: Mapping[int, float | None]) -> Dict[int, int]:
+    valid = [
+        (idx, float(value))
+        for idx, value in values.items()
+        if value is not None and math.isfinite(float(value))
+    ]
+    ordered = sorted(valid, key=lambda item: (-item[1], item[0]))
+    return {idx: rank for rank, (idx, _value) in enumerate(ordered, start=1)}
+
+
+def _prefilter_group_key(row: Mapping[str, Any]) -> tuple[str, str]:
+    return (_date_text(row.get("base_trade_date")), _market_from_symbol(_text(row.get("ticker")), _text(row.get("market"))))
+
+
+def _volume_from_row(row: Mapping[str, Any]) -> float | None:
+    turnover = _safe_float(row.get("turnover"))
+    price = _safe_float(row.get("entry_reference_price"))
+    if turnover is None or price in (None, 0):
+        return None
+    return turnover / float(price)
+
+
+def enrich_historical_rows_with_prefilter(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    rank_limit: int = DEFAULT_HISTORICAL_PREFILTER_RANK_LIMIT,
+    max_candidates_per_market: int = DEFAULT_HISTORICAL_PREFILTER_MAX_CANDIDATES,
+) -> Dict[str, Any]:
+    """Attach operational-prefilter-shaped historical rank features.
+
+    The proxy is derived only from actual KIS daily OHLCV rows already present
+    in the historical universe. Missing intraday, flow, VI, news, and financial
+    fields are intentionally left absent rather than fabricated.
+    """
+
+    limit = max(1, int(rank_limit or 1))
+    max_candidates = max(1, int(max_candidates_per_market or 1))
+    groups: Dict[tuple[str, str], List[int]] = {}
+    for idx, row in enumerate(rows):
+        key = _prefilter_group_key(row)
+        if not key[0] or not key[1]:
+            continue
+        groups.setdefault(key, []).append(idx)
+
+    selected_total = 0
+    seed_total = 0
+    source_counts = {"volume_rank": 0, "fluctuation_rank": 0, "volume_power_rank": 0}
+    for (base_date, market), indices in sorted(groups.items()):
+        turnover_values = {idx: _safe_float(rows[idx].get("turnover")) for idx in indices}
+        day_return_values = {idx: _safe_float(rows[idx].get("day_return_pct")) for idx in indices}
+        volume_ratio_values = {idx: _safe_float(rows[idx].get("volume_ratio")) for idx in indices}
+        volume_power_values = {
+            idx: (
+                max(float(volume_ratio_values[idx] or 0.0), 0.0)
+                * max(float(day_return_values[idx] or 0.0), 0.0)
+            )
+            if volume_ratio_values.get(idx) is not None and day_return_values.get(idx) is not None
+            else None
+            for idx in indices
+        }
+        rank_maps = {
+            "volume_rank": _descending_rank(turnover_values),
+            "fluctuation_rank": _descending_rank(day_return_values),
+            "volume_power_rank": _descending_rank(volume_power_values),
+        }
+
+        candidates: List[tuple[float, str, int, Dict[str, Any]]] = []
+        for idx in indices:
+            row = rows[idx]
+            rank_payload = {
+                source: rank_map[idx]
+                for source, rank_map in rank_maps.items()
+                if idx in rank_map and int(rank_map[idx]) <= limit
+            }
+            if not rank_payload:
+                continue
+            ticker = _text(row.get("ticker")) or ""
+            close = _safe_float(row.get("entry_reference_price"))
+            turnover = _safe_float(row.get("turnover"))
+            quote = {
+                "source": "kis_openapi_daily_bars",
+                "source_status": "ok" if close is not None and turnover is not None else "partial",
+                "current_price": close,
+                "day_change_pct": _safe_float(row.get("day_return_pct")),
+                "value_traded": turnover,
+                "volume": _volume_from_row(row),
+                "prev_volume_ratio": _safe_float(row.get("volume_ratio")),
+            }
+            candidate: Dict[str, Any] = {
+                "contract_version": KIS_HISTORICAL_PREFILTER_VERSION,
+                "snapshot_feature_version": KIS_HISTORICAL_PREFILTER_VERSION,
+                "feature_origin": "kis_historical_prefilter_proxy",
+                "is_dummy_data": False,
+                "historical_reconstruction": True,
+                "source_data": "kis_openapi_daily_bars",
+                "base_trade_date": base_date,
+                "market": market,
+                "ticker": ticker,
+                "code": ticker.split(".", 1)[0],
+                "name": _text(row.get("stock_name")) or ticker,
+                "sources": sorted(rank_payload.keys()),
+                "rank": rank_payload,
+                "quote": quote,
+                "quote_ok": bool(close is not None and turnover is not None and turnover > 0),
+                "flow_ok": False,
+                "flow": {
+                    "valid": False,
+                    "source": "not_requested_for_historical_prefilter_proxy",
+                    "source_status": "historical_not_requested",
+                },
+                "warnings": [
+                    "historical_prefilter_proxy_from_kis_daily_ohlcv",
+                    "historical_intraday_flow_vi_news_not_fabricated",
+                ],
+            }
+            candidate.update(_historical_prefilter_score(candidate))
+            if not candidate["quote_ok"]:
+                continue
+            seed_total += 1
+            for source in rank_payload:
+                source_counts[source] += 1
+            candidates.append((float(candidate.get("selection_score") or 0.0), ticker, idx, candidate))
+
+        for _score, _ticker, idx, candidate in sorted(candidates, key=lambda item: (-item[0], item[1]))[:max_candidates]:
+            snapshot = rows[idx].get("feature_snapshot") if isinstance(rows[idx].get("feature_snapshot"), Mapping) else {}
+            merged = dict(snapshot)
+            merged["kis_operational_prefilter"] = candidate
+            rows[idx]["feature_snapshot"] = merged
+            rows[idx]["kis_operational_prefilter"] = candidate
+            origin = _text(rows[idx].get("feature_origin")) or KIS_HISTORICAL_UNIVERSE_VERSION
+            if "kis_historical_prefilter_proxy" not in origin:
+                rows[idx]["feature_origin"] = f"{origin}+kis_historical_prefilter_proxy"
+            selected_total += 1
+
+    return {
+        "version": KIS_HISTORICAL_PREFILTER_VERSION,
+        "rank_limit": limit,
+        "max_candidates_per_market": max_candidates,
+        "group_count": len(groups),
+        "seed_total": int(seed_total),
+        "selected_total": int(selected_total),
+        "source_counts": source_counts,
+        "no_dummy_data": True,
+        "source_data": "kis_openapi_daily_bars",
+    }
 
 
 def market_counts(rows: Iterable[Mapping[str, Any]]) -> Dict[str, int]:

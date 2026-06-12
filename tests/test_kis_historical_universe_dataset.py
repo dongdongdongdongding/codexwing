@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pandas as pd
 
-from modules.kis_historical_universe_dataset import InstrumentRecord, build_historical_rows_for_symbol
+from modules.kis_historical_universe_dataset import (
+    InstrumentRecord,
+    build_historical_rows_for_symbol,
+    enrich_historical_rows_with_prefilter,
+)
+from modules.kis_model_features import flatten_kis_model_features
 
 
 def _record() -> InstrumentRecord:
@@ -90,3 +95,67 @@ def test_historical_universe_conservatively_orders_same_day_target_and_stop() ->
     assert rows[0]["target_before_stop_1d"] is False
     assert rows[0]["stop_before_target_1d"] is True
     assert rows[0]["first_touch_1d"] == "ambiguous_stop_first"
+
+
+def test_historical_universe_prefilter_proxy_uses_real_daily_rank_features() -> None:
+    rows = [
+        {
+            "ticker": "000001.KS",
+            "stock_name": "Slow",
+            "market": "KOSPI",
+            "base_trade_date": "2026-01-02",
+            "feature_origin": "kis_historical_universe_dataset_v1",
+            "feature_snapshot": {"_feature_quality": {"is_dummy_data": False}},
+            "entry_reference_price": 100.0,
+            "day_return_pct": 1.0,
+            "volume_ratio": 1.2,
+            "turnover": 100_000_000.0,
+        },
+        {
+            "ticker": "000002.KS",
+            "stock_name": "Fast",
+            "market": "KOSPI",
+            "base_trade_date": "2026-01-02",
+            "feature_origin": "kis_historical_universe_dataset_v1",
+            "feature_snapshot": {"_feature_quality": {"is_dummy_data": False}},
+            "entry_reference_price": 200.0,
+            "day_return_pct": 8.0,
+            "volume_ratio": 5.0,
+            "turnover": 900_000_000.0,
+        },
+        {
+            "ticker": "000003.KS",
+            "stock_name": "Low",
+            "market": "KOSPI",
+            "base_trade_date": "2026-01-02",
+            "feature_origin": "kis_historical_universe_dataset_v1",
+            "feature_snapshot": {"_feature_quality": {"is_dummy_data": False}},
+            "entry_reference_price": 50.0,
+            "day_return_pct": -2.0,
+            "volume_ratio": 0.7,
+            "turnover": 20_000_000.0,
+        },
+    ]
+
+    summary = enrich_historical_rows_with_prefilter(rows, rank_limit=2, max_candidates_per_market=2)
+
+    assert summary["no_dummy_data"] is True
+    assert summary["selected_total"] == 2
+    assert "kis_operational_prefilter" not in rows[2]["feature_snapshot"]
+
+    best = rows[1]["feature_snapshot"]["kis_operational_prefilter"]
+    assert best["feature_origin"] == "kis_historical_prefilter_proxy"
+    assert best["is_dummy_data"] is False
+    assert best["historical_reconstruction"] is True
+    assert best["rank"]["volume_rank"] == 1
+    assert best["rank"]["fluctuation_rank"] == 1
+    assert best["rank"]["volume_power_rank"] == 1
+    assert best["quote"]["value_traded"] == 900_000_000.0
+    assert best["flow"]["source_status"] == "historical_not_requested"
+
+    flattened = flatten_kis_model_features(rows[1])
+    assert flattened["kis_prefilter_present"] == 1.0
+    assert flattened["kis_prefilter_rank_volume"] == 1.0
+    assert flattened["kis_prefilter_rank_volume_power"] == 1.0
+    assert flattened["kis_prefilter_quote_value_traded"] == 900_000_000.0
+    assert flattened["kis_prefilter_flow_valid"] == 0.0

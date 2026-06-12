@@ -24,6 +24,7 @@ from modules.kis_historical_universe_dataset import (
     InstrumentRecord,
     build_historical_rows_for_symbol,
     date_range,
+    enrich_historical_rows_with_prefilter,
     load_instrument_records,
     market_counts,
     normalize_history_frame,
@@ -266,6 +267,7 @@ def _write_report(path: Path, report: Mapping[str, Any]) -> None:
         f"- raw_csv: `{report.get('raw_csv')}`",
         f"- prepared_cache: `{report.get('prepared_cache')}`",
         f"- price_cache_dir: `{report.get('price_cache_dir')}`",
+        f"- historical_prefilter_summary: `{report.get('historical_prefilter_summary')}`",
         f"- label_summary: `{report.get('label_summary')}`",
         "",
         "## Failures",
@@ -311,6 +313,8 @@ def main() -> int:
     parser.add_argument("--stop-pct", type=float, default=DEFAULT_STOP_PCT)
     parser.add_argument("--buy-premium-pct", type=float, default=DEFAULT_BUY_PREMIUM_PCT)
     parser.add_argument("--min-prior-bars", type=int, default=20)
+    parser.add_argument("--historical-prefilter-rank-limit", type=int, default=80)
+    parser.add_argument("--historical-prefilter-max-candidates", type=int, default=80)
     parser.add_argument("--return-sanity", choices=["kr_price_limit", "off"], default="kr_price_limit")
     parser.add_argument("--instrument-master", default=str(DEFAULT_INSTRUMENT_MASTER))
     parser.add_argument("--price-cache-dir", default=str(DEFAULT_PRICE_CACHE_DIR))
@@ -390,6 +394,11 @@ def main() -> int:
                 if idx % 25 == 0 or idx == len(selected):
                     print(f"[INFO] {idx}/{len(selected)} tickers processed rows={len(rows)} failures={sum(1 for item in results if item.get('error'))}", flush=True)
 
+    historical_prefilter_summary = enrich_historical_rows_with_prefilter(
+        rows,
+        rank_limit=int(args.historical_prefilter_rank_limit or 0),
+        max_candidates_per_market=int(args.historical_prefilter_max_candidates or 0),
+    )
     raw_df = pd.DataFrame(rows)
     raw_pkl = Path(args.raw_pkl)
     raw_pkl.parent.mkdir(parents=True, exist_ok=True)
@@ -452,6 +461,7 @@ def main() -> int:
         "stop_pct": float(args.stop_pct),
         "buy_premium_pct": float(args.buy_premium_pct),
         "min_prior_bars": int(args.min_prior_bars or 0),
+        "historical_prefilter_summary": historical_prefilter_summary,
         "raw_pkl": str(raw_pkl),
         "raw_csv": str(raw_csv) if raw_csv else "",
         "prepared_cache": cache_info,
