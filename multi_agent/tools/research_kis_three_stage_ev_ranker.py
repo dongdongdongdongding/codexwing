@@ -447,7 +447,9 @@ def _market_report(
     }
 
 
-def _market_cache_path(market: str, start: str, end: str) -> Path:
+def _market_cache_path(market: str, start: str, end: str, override: str | None = None) -> Path:
+    if override:
+        return Path(override)
     return (
         PROJECT_ROOT
         / "runtime_state/reports/learning"
@@ -456,25 +458,28 @@ def _market_cache_path(market: str, start: str, end: str) -> Path:
 
 
 def run(args: argparse.Namespace) -> Dict[str, Any]:
-    reports = [
-        _market_report(
-            market=market.upper(),
-            start=args.start,
-            end=args.end,
-            cache_path=_market_cache_path(market.upper(), args.start, args.end),
-            baseline_report=Path(args.baseline_report),
-            rank_metric=args.rank_metric,
-            pool_modes=args.pool_modes,
-            pool_k=args.pool_k,
-            score_modes=args.score_modes,
-            min_train_days=args.min_train_days,
-            test_days=args.test_days,
-            max_folds=args.max_folds,
-            embargo_days=args.embargo_days,
-            calibration_days=args.calibration_days,
+    reports = []
+    input_paths = args.input_paths if isinstance(getattr(args, "input_paths", None), dict) else {}
+    for market in args.markets:
+        market_key = market.upper()
+        reports.append(
+            _market_report(
+                market=market_key,
+                start=args.start,
+                end=args.end,
+                cache_path=_market_cache_path(market_key, args.start, args.end, input_paths.get(market_key)),
+                baseline_report=Path(args.baseline_report),
+                rank_metric=args.rank_metric,
+                pool_modes=args.pool_modes,
+                pool_k=args.pool_k,
+                score_modes=args.score_modes,
+                min_train_days=args.min_train_days,
+                test_days=args.test_days,
+                max_folds=args.max_folds,
+                embargo_days=args.embargo_days,
+                calibration_days=args.calibration_days,
+            )
         )
-        for market in args.markets
-    ]
     improved = [
         report
         for report in reports
@@ -599,12 +604,20 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--baseline-report", default=str(DEFAULT_BASELINE_REPORT))
     parser.add_argument(
         "--rank-metric",
-        choices=["avg_ordered_exit_5d_pct", "avg_dynamic_exit_5d_pct"],
+        choices=["avg_ordered_exit_5d_pct", "avg_dynamic_exit_5d_pct", "hit5_dd10_5d_pct"],
         default="avg_ordered_exit_5d_pct",
     )
     parser.add_argument("--output-json", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.json"))
     parser.add_argument("--output-md", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.md"))
-    return parser.parse_args(argv)
+    parser.add_argument("--input-path", action="append", default=[], help="MARKET=path override for prepared cache.")
+    args = parser.parse_args(argv)
+    args.input_paths = {}
+    for raw in args.input_path:
+        if "=" not in str(raw):
+            raise ValueError("--input-path must be MARKET=path")
+        market, path = str(raw).split("=", 1)
+        args.input_paths[market.strip().upper()] = path.strip()
+    return args
 
 
 def main(argv: Sequence[str] | None = None) -> int:
