@@ -64,11 +64,30 @@ def _read_sources(raw: str) -> Dict[str, Path]:
     return out
 
 
-def _best_kis_from_source(path: Path, market: str) -> Dict[str, Any]:
+def _read_selection_rules(raw: str) -> Dict[str, str]:
+    out: Dict[str, str] = {}
+    for item in str(raw or "").split(","):
+        if not item.strip():
+            continue
+        market, rule = item.split("=", 1)
+        out[market.strip().upper()] = rule.strip()
+    return out
+
+
+def _best_kis_from_source(path: Path, market: str, *, selection_rule: str = "") -> Dict[str, Any]:
     report = _load_json(path)
     best = report.get("best_kis") if isinstance(report.get("best_kis"), dict) else {}
-    if best.get("market") != market:
-        raise ValueError(f"{market}: best_kis missing or market mismatch in {path}")
+    if selection_rule or best.get("market") != market:
+        candidates = [
+            row
+            for row in report.get("top_kis_results") or []
+            if isinstance(row, dict)
+            and row.get("market") == market
+            and (not selection_rule or row.get("selection_rule") == selection_rule)
+        ]
+        if not candidates:
+            raise ValueError(f"{market}: selected KIS rule not found in {path}: {selection_rule or '<market best>'}")
+        best = candidates[0]
     gate = evaluate_kis_model_gate(
         identity={
             "market": best.get("market"),
@@ -76,6 +95,8 @@ def _best_kis_from_source(path: Path, market: str) -> Dict[str, Any]:
             "feature_set": best.get("feature_set"),
             "model": best.get("model"),
             "topn": best.get("topn"),
+            "prob_threshold": best.get("prob_threshold"),
+            "tail_risk_prob_threshold": best.get("tail_risk_prob_threshold"),
             "selection_rule": best.get("selection_rule"),
         },
         metrics=best.get("metrics") or {},
@@ -139,9 +160,10 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     profile = build_close_failure_prior_profile(data, source_path=str(prepared_cache))
     profile_path = write_close_failure_prior_profile(profile, Path(args.profile_output))
     sources = _read_sources(args.sources)
+    selection_rules = _read_selection_rules(args.selection_rules)
     deployments: Dict[str, Any] = {}
     for market, source in sources.items():
-        best = _best_kis_from_source(source, market)
+        best = _best_kis_from_source(source, market, selection_rule=selection_rules.get(market, ""))
         deployments[market] = {
             "identity": {
                 "market": best.get("market"),
@@ -150,6 +172,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
                 "model": best.get("model"),
                 "topn": best.get("topn"),
                 "prob_threshold": best.get("prob_threshold"),
+                "tail_risk_prob_threshold": best.get("tail_risk_prob_threshold"),
                 "selection_rule": best.get("selection_rule"),
                 "quality_score": best.get("quality_score"),
             },
@@ -213,6 +236,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prepared-cache", default=str(DEFAULT_PREPARED_CACHE))
     parser.add_argument("--sources", default="")
+    parser.add_argument(
+        "--selection-rules",
+        default="",
+        help="Optional comma-separated MARKET=selection_rule overrides. Selects from top_kis_results instead of report best_kis.",
+    )
     parser.add_argument("--model-dir", default=str(DEFAULT_MODEL_DIR))
     parser.add_argument("--profile-output", default=str(DEFAULT_PROFILE_OUTPUT))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))

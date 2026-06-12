@@ -62,8 +62,10 @@ def _metric_subset(metrics: Dict[str, Any]) -> Dict[str, Any]:
     out["stop_before_target_5d_pct"] = metrics.get("stop_before_target_5d_pct")
     out["hit5_5d_pct"] = metrics.get("hit5_5d_pct")
     out["hit10_5d_pct"] = metrics.get("hit10_5d_pct")
+    out["hit5_dd10_5d_pct"] = metrics.get("hit5_dd10_5d_pct")
     out["hit5_guard_5d_pct"] = metrics.get("hit5_guard_5d_pct")
     out["hit10_guard_5d_pct"] = metrics.get("hit10_guard_5d_pct")
+    out["min_max_high_5d_pct"] = metrics.get("min_max_high_5d_pct")
     return out
 
 
@@ -75,6 +77,7 @@ def _model_identity(row: Dict[str, Any]) -> Dict[str, Any]:
         "model": row.get("model"),
         "topn": row.get("topn"),
         "prob_threshold": row.get("prob_threshold"),
+        "tail_risk_prob_threshold": row.get("tail_risk_prob_threshold"),
         "selection_rule": row.get("selection_rule"),
         "quality_score": row.get("quality_score"),
         "promotion_candidate": row.get("promotion_candidate"),
@@ -106,6 +109,30 @@ def _baseline_rows(report: Dict[str, Any], market: str) -> List[Dict[str, Any]]:
             }
         )
     return out
+
+
+def _read_selection_rules(raw: str) -> Dict[str, str]:
+    out: Dict[str, str] = {}
+    for item in str(raw or "").split(","):
+        if not item.strip():
+            continue
+        market, rule = item.split("=", 1)
+        out[market.strip().upper()] = rule.strip()
+    return out
+
+
+def _select_kis_row(report: Dict[str, Any], market: str, *, selection_rule: str = "") -> Dict[str, Any]:
+    best_kis = report.get("best_kis") if isinstance(report.get("best_kis"), dict) else {}
+    if not selection_rule and best_kis.get("market") == market:
+        return best_kis
+    candidates = [
+        row
+        for row in report.get("top_kis_results") or []
+        if isinstance(row, dict)
+        and row.get("market") == market
+        and (not selection_rule or row.get("selection_rule") == selection_rule)
+    ]
+    return candidates[0] if candidates else {}
 
 
 def _delta(a: Any, b: Any) -> float | None:
@@ -221,12 +248,13 @@ def _promotion_decision(markets: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def build_report(sources: Dict[str, Path]) -> Dict[str, Any]:
+def build_report(sources: Dict[str, Path], *, selection_rules: Dict[str, str] | None = None) -> Dict[str, Any]:
     markets: Dict[str, Any] = {}
     warnings: List[str] = []
+    selection_rules = selection_rules or {}
     for market, path in sources.items():
         report = _load_json(path)
-        best_kis = report.get("best_kis") or {}
+        best_kis = _select_kis_row(report, market, selection_rule=selection_rules.get(market, ""))
         if best_kis.get("market") != market:
             warnings.append(f"{market}: best_kis market mismatch or missing in {path}")
         identity = _model_identity(best_kis)
@@ -403,13 +431,19 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--kospi-source", default=str(DEFAULT_SOURCES["KOSPI"]))
     parser.add_argument("--kosdaq-source", default=str(DEFAULT_SOURCES["KOSDAQ"]))
+    parser.add_argument(
+        "--selection-rules",
+        default="",
+        help="Optional comma-separated MARKET=selection_rule overrides. Selects from top_kis_results instead of report best_kis.",
+    )
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     args = parser.parse_args(list(argv) if argv is not None else None)
     report = build_report(
         {
             "KOSPI": Path(args.kospi_source),
             "KOSDAQ": Path(args.kosdaq_source),
-        }
+        },
+        selection_rules=_read_selection_rules(args.selection_rules),
     )
     write_report(report, Path(args.output))
     print(json.dumps({"output": str(args.output), "markets": sorted(report["markets"])}, ensure_ascii=False))

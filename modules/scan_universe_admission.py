@@ -29,8 +29,8 @@ MODEL_PATHS = {
     "KOSDAQ": MODEL_DIR / "kosdaq__touch5_guard_5d__flow_no_gate__lightgbm__top1.pkl",
 }
 KIS_SHADOW_MODEL_PATHS = {
-    "KOSPI": MODEL_DIR / "kospi__target_first_sustain_5d__kis_failure_risk_numeric__hist_gb__top1_p0p60.pkl",
-    "KOSDAQ": MODEL_DIR / "kosdaq__touch10_guard_5d__kis_sidecar_failure_risk_numeric__hist_gb__top5_p0p60.pkl",
+    "KOSPI": MODEL_DIR / "kospi__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p50_tail0p70.pkl",
+    "KOSDAQ": MODEL_DIR / "kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top2_p0p50_tail0p90.pkl",
 }
 
 ADMISSION_SECTION = "Scan Universe Admission"
@@ -442,6 +442,9 @@ def build_kis_shadow_admission_records(
         features = row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {}
         if not _has_kis_runtime_evidence(row, features):
             continue
+        tail_gate_passed, _tail_threshold, _tail_probability = _tail_risk_gate(bundle, row)
+        if not tail_gate_passed:
+            continue
         probability = float(row.get("_admission_probability") or 0.0)
         record = _attach_display_payload(
             row,
@@ -465,6 +468,8 @@ def build_kis_shadow_admission_records(
         )
         trade_plan = record.get("trade_plan") if isinstance(record.get("trade_plan"), dict) else {}
         execution_stop = record.get("execution_stop") if isinstance(record.get("execution_stop"), dict) else {}
+        tail_probability = _safe_float(row.get("_tail_risk_probability"))
+        tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
         record.update(
             {
                 "decision": "KIS_SHADOW",
@@ -514,6 +519,8 @@ def build_kis_shadow_admission_records(
                     "market": market_key,
                     "shadow_only": True,
                     "runtime_model_probability_pct": round(probability * 100.0, 4),
+                    "tail_risk_probability_pct": round(tail_probability * 100.0, 4) if tail_probability is not None else None,
+                    "tail_risk_prob_threshold_pct": round(tail_threshold * 100.0, 4) if tail_threshold is not None else None,
                     "runtime_model_rank": model_rank,
                     "selection_rank": shadow_rank,
                     "source": "real_kis_sidecar_or_prefilter_evidence",
@@ -546,6 +553,8 @@ def build_kis_shadow_admission_records(
                     "close_defense_5d_pct": metrics.get("close_win_5d_pct"),
                     "win_metric_semantics": metrics.get("win_metric_semantics"),
                     "ranking_score_5d": round(probability * 100.0, 4),
+                    "tail_risk_probability_pct": round(tail_probability * 100.0, 4) if tail_probability is not None else None,
+                    "tail_risk_prob_threshold_pct": round(tail_threshold * 100.0, 4) if tail_threshold is not None else None,
                     "base_expected_value_5d_pct": metrics.get("avg_5d_pct"),
                     "expected_value_5d_pct": metrics.get("avg_5d_pct"),
                     "stress_expected_value_5d_pct": metrics.get("min_5d_pct"),
@@ -561,6 +570,9 @@ def build_kis_shadow_admission_records(
                 "prediction": {
                     **(record.get("prediction") if isinstance(record.get("prediction"), dict) else {}),
                     "kis_shadow_runtime_probability_pct": round(probability * 100.0, 4),
+                    "kis_shadow_tail_risk_probability_pct": (
+                        round(tail_probability * 100.0, 4) if tail_probability is not None else None
+                    ),
                     "realized_expectancy_5d_prob": metrics.get("win_5d_pct"),
                     "ranking_score_5d": round(probability * 100.0, 4),
                     "admission_policy_version": KIS_SHADOW_RUNTIME_VERSION,
@@ -755,6 +767,30 @@ def _predict_probabilities(bundle: Dict[str, Any], feature_rows: List[Dict[str, 
         raise ValueError("admission_model_pipeline_missing")
     probabilities = pipeline.predict_proba(frame[columns])[:, 1]
     return [float(value) for value in probabilities]
+
+
+def _predict_tail_risk_probabilities(bundle: Dict[str, Any], feature_rows: List[Dict[str, Any]]) -> List[float | None]:
+    pipeline = bundle.get("tail_risk_pipeline")
+    if pipeline is None:
+        return [None for _ in feature_rows]
+    numeric, categorical = _bundle_features(bundle)
+    columns = numeric + categorical
+    frame = pd.DataFrame(feature_rows)
+    for column in columns:
+        if column not in frame.columns:
+            frame[column] = None
+    probabilities = pipeline.predict_proba(frame[columns])[:, 1]
+    return [float(value) for value in probabilities]
+
+
+def _tail_risk_gate(bundle: Dict[str, Any], row: Dict[str, Any]) -> Tuple[bool, float | None, float | None]:
+    threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
+    if threshold is None:
+        return True, None, None
+    probability = _safe_float(row.get("_tail_risk_probability"))
+    if probability is None:
+        return False, threshold, None
+    return probability >= threshold, threshold, probability
 
 
 def _metrics(bundle: Dict[str, Any]) -> Dict[str, Any]:
@@ -1084,6 +1120,7 @@ def admission_model_summary(market: str) -> Dict[str, Any]:
     raw_threshold = bundle.get("prob_threshold")
     has_probability_floor = raw_threshold is not None
     threshold = float(raw_threshold) if has_probability_floor else 0.0
+    tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
     target_pct = _target_pct_from_label(bundle.get("label"))
     return {
         "version": RUNTIME_VERSION,
@@ -1097,6 +1134,10 @@ def admission_model_summary(market: str) -> Dict[str, Any]:
         "selection_rule": bundle.get("selection_rule"),
         "prob_threshold": threshold if has_probability_floor else None,
         "prob_threshold_pct": round(threshold * 100.0, 2) if has_probability_floor else None,
+        "tail_risk_prob_threshold": tail_threshold,
+        "tail_risk_prob_threshold_pct": round(tail_threshold * 100.0, 2) if tail_threshold is not None else None,
+        "has_tail_risk_gate": tail_threshold is not None,
+        "tail_risk_label": bundle.get("tail_risk_label"),
         "topn": int(bundle.get("topn") or 1),
         "model_path": bundle.get("_model_path"),
         "has_probability_floor": has_probability_floor,
@@ -1156,6 +1197,20 @@ def _attach_display_payload(
     promotion_block = _promotion_block_reason(row)
     probability_pct = round(probability * 100.0, 4)
     threshold_pct = round(threshold * 100.0, 4) if has_probability_floor else None
+    primary_probability_met = threshold_pct is None or probability >= threshold
+    primary_probability_relation = ">=" if primary_probability_met else "<"
+    tail_probability = _safe_float(row.get("_tail_risk_probability"))
+    tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
+    tail_probability_pct = round(tail_probability * 100.0, 4) if tail_probability is not None else None
+    tail_threshold_pct = round(tail_threshold * 100.0, 4) if tail_threshold is not None else None
+    tail_gate_passed = None if tail_threshold is None else bool(tail_probability is not None and tail_probability >= tail_threshold)
+    tail_gate_text = ""
+    if tail_threshold_pct is not None:
+        if tail_probability_pct is None:
+            tail_gate_text = f" · -10% 방어확률 미확보 < 기준 {tail_threshold_pct:.1f}%"
+        else:
+            relation = ">=" if tail_gate_passed else "<"
+            tail_gate_text = f" · -10% 방어확률 {tail_probability_pct:.1f}% {relation} 기준 {tail_threshold_pct:.1f}%"
     threshold_label = f"{threshold_pct:.1f}%" if threshold_pct is not None else f"Top{int(bundle.get('topn') or 1)} 선발"
     target_pct = _target_pct_from_label(bundle.get("label"))
     section = ADMISSION_SECTION if passed else NEAR_MISS_SECTION
@@ -1193,12 +1248,11 @@ def _attach_display_payload(
             ),
             "entry_condition_text": (
                 (
-                    f"5D +{target_pct:.0f}% 목표터치 확률 {probability_pct:.1f}% >= 운영기준 {threshold_pct:.1f}%"
-                    if passed
-                    else f"5D +{target_pct:.0f}% 목표터치 확률 {probability_pct:.1f}% < 운영기준 {threshold_pct:.1f}%"
+                    f"5D +{target_pct:.0f}% 목표터치 확률 {probability_pct:.1f}% "
+                    f"{primary_probability_relation} 운영기준 {threshold_pct:.1f}%{tail_gate_text}"
                 )
                 if threshold_pct is not None
-                else f"5D +{target_pct:.0f}% 목표터치 확률순 {threshold_label}"
+                else f"5D +{target_pct:.0f}% 목표터치 확률순 {threshold_label}{tail_gate_text}"
             ),
             "stop_condition_text": (
                 f"검증 최저 5D고가 {_round_pct(metrics.get('min_max_high_5d_pct'))}% · "
@@ -1211,7 +1265,16 @@ def _attach_display_payload(
                 f"objective=5d_touch_{target_pct:.0f}",
                 f"threshold={threshold_pct:.1f}%" if threshold_pct is not None else f"selection={threshold_label}",
             ]
-            + ([] if passed else ["ADMISSION_THRESHOLD_NOT_MET"]),
+            + (
+                [
+                    f"tail_safe_threshold={tail_threshold_pct:.1f}%",
+                    f"tail_safe_probability={tail_probability_pct:.1f}%" if tail_probability_pct is not None else "tail_safe_probability_missing",
+                ]
+                if tail_threshold_pct is not None
+                else []
+            )
+            + ([] if tail_gate_passed is not False else ["TAIL_RISK_THRESHOLD_NOT_MET"])
+            + ([] if primary_probability_met else ["ADMISSION_THRESHOLD_NOT_MET"]),
             "_analysis_section": section,
             "_analysis_section_order": 0 if passed else 10,
             "_analysis_section_rank": model_rank,
@@ -1231,6 +1294,11 @@ def _attach_display_payload(
                 "probability_pct": probability_pct,
                 "prob_threshold": raw_threshold,
                 "prob_threshold_pct": threshold_pct,
+                "tail_risk_probability": tail_probability,
+                "tail_risk_probability_pct": tail_probability_pct,
+                "tail_risk_prob_threshold": tail_threshold,
+                "tail_risk_prob_threshold_pct": tail_threshold_pct,
+                "tail_risk_gate_passed": tail_gate_passed,
                 "threshold_label": threshold_label,
                 "has_probability_floor": has_probability_floor,
                 "passed": passed,
@@ -1287,6 +1355,7 @@ def _attach_display_payload(
                 "ranking_score_5d": probability_pct,
                 "admission_policy_version": RUNTIME_VERSION,
                 "scan_universe_admission_probability_pct": probability_pct,
+                "scan_universe_tail_risk_probability_pct": tail_probability_pct,
             },
         }
     )
@@ -1325,11 +1394,14 @@ def _score_scan_universe_admission_rows_with_bundle(
         prepared.append((copy, _extract_feature_columns(copy, market=market_key)))
     if not prepared:
         return []
-    probabilities = _predict_probabilities(bundle, [features for _, features in prepared])
+    feature_rows = [features for _, features in prepared]
+    probabilities = _predict_probabilities(bundle, feature_rows)
+    tail_risk_probabilities = _predict_tail_risk_probabilities(bundle, feature_rows)
     scored: List[Dict[str, Any]] = []
-    for (row, features), probability in zip(prepared, probabilities):
+    for (row, features), probability, tail_risk_probability in zip(prepared, probabilities, tail_risk_probabilities):
         copy = dict(row)
         copy["_admission_probability"] = probability
+        copy["_tail_risk_probability"] = tail_risk_probability
         copy["_admission_features"] = features
         scored.append(copy)
     return sorted(
@@ -1366,7 +1438,8 @@ def build_scan_universe_admission_records(
     for rank, row in enumerate(scored, start=1):
         probability = float(row.get("_admission_probability") or 0.0)
         ticker = _ticker(row)
-        if not ticker or probability < threshold or _promotion_block_reason(row):
+        tail_gate_passed, _tail_threshold, _tail_probability = _tail_risk_gate(bundle, row)
+        if not ticker or probability < threshold or not tail_gate_passed or _promotion_block_reason(row):
             continue
         pass_candidates.append((rank, row, probability))
         selected_tickers.add(ticker)

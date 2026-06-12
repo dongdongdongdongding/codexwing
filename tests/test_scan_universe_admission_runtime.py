@@ -532,6 +532,52 @@ def test_blocked_top_rank_does_not_prevent_next_eligible_promotion(monkeypatch):
     assert result["all_records"][1]["scan_universe_admission"]["passed"] is True
 
 
+def test_tail_risk_gate_blocks_high_primary_probability_candidate(monkeypatch):
+    bundle = {
+        "market": "KOSPI",
+        "model_name": "fake",
+        "label": "touch5_dd10_5d",
+        "feature_set": "fake",
+        "selection_rule": "top1_p0.60_tail0.80",
+        "prob_threshold": 0.6,
+        "tail_risk_prob_threshold": 0.8,
+        "topn": 1,
+        "_model_path": "fake.pkl",
+        "validation": {"metrics": {"n": 10, "hit5_5d_pct": 80.0, "avg_max_high_5d_pct": 6.0, "min_min_low_5d_pct": -9.0}},
+    }
+    scored = [
+        {
+            "ticker": "000001.KS",
+            "stock_name": "고위험상위후보",
+            "_admission_probability": 0.95,
+            "_tail_risk_probability": 0.4,
+            "_admission_source_role": "emitted",
+            "row_role": "emitted",
+            "_admission_features": {"feature_coverage_score": 1.0, "feature_missing_keys": [], "volume_ratio": 2.0},
+        },
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "_admission_probability": 0.9,
+            "_tail_risk_probability": 0.86,
+            "_admission_source_role": "emitted",
+            "row_role": "emitted",
+            "_admission_features": {"feature_coverage_score": 1.0, "feature_missing_keys": [], "volume_ratio": 1.5},
+        },
+    ]
+    monkeypatch.setattr(admission, "load_admission_model", lambda _market: bundle)
+    monkeypatch.setattr(admission, "score_scan_universe_admission_rows", lambda _rows, market: scored)
+
+    result = build_scan_universe_admission_records(scored, market="KOSPI", limit=2, include_near_miss=True)
+
+    assert [row["ticker"] for row in result["passed"]] == ["005930.KS"]
+    assert [row["ticker"] for row in result["near_miss"]] == ["000001.KS"]
+    assert result["near_miss"][0]["scan_universe_admission"]["tail_risk_gate_passed"] is False
+    assert "TAIL_RISK_THRESHOLD_NOT_MET" in result["near_miss"][0]["risk_flags"]
+    assert "목표터치 확률 95.0% >= 운영기준 60.0%" in result["near_miss"][0]["entry_condition_text"]
+    assert "-10% 방어확률 40.0% < 기준 80.0%" in result["near_miss"][0]["entry_condition_text"]
+
+
 def test_ambiguous_kis_news_scope_blocks_admission_promotion(monkeypatch):
     bundle = {
         "market": "KOSPI",

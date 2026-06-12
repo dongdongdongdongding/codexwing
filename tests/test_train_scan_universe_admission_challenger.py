@@ -21,6 +21,8 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
     metrics,
     prepare_dataset,
     rank_candidate_results,
+    selection_rule_text,
+    tail_safe_series,
     top_indices_by_run,
     write_prepared_dataset_cache,
 )
@@ -82,6 +84,46 @@ def test_prepare_dataset_and_labels_use_scan_universe_path_fields():
     assert clean_valid.tolist() == [True, True]
     assert clean.tolist() == [True, False]
     assert df["bad_path"].tolist() == [False, True]
+
+
+def test_tail_safe_series_uses_operational_buy_premium_low_guard():
+    raw = pd.DataFrame(
+        [
+            {
+                "id": 1,
+                "run_id": "RUN-A",
+                "ticker": "000001.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "row_role": "emitted",
+                "max_high_return_5d_pct": 8.0,
+                "min_low_return_5d_pct": -7.0,
+            },
+            {
+                "id": 2,
+                "run_id": "RUN-A",
+                "ticker": "000002.KS",
+                "market": "KOSPI",
+                "scan_mode": "SWING",
+                "base_trade_date": "2026-05-20",
+                "row_role": "emitted",
+                "max_high_return_5d_pct": 8.0,
+                "min_low_return_5d_pct": -7.0,
+                "buy_premium_min_low_return_5d_pct": -10.2,
+            },
+        ]
+    )
+
+    df, _sanity = prepare_dataset(raw)
+    label, valid = tail_safe_series(df)
+
+    assert valid.tolist() == [True, True]
+    assert label.tolist() == [True, False]
+
+
+def test_selection_rule_text_includes_tail_risk_gate():
+    assert selection_rule_text(1, 0.6, 0.9) == "top1_p0.60_tail0.90"
 
 
 def test_target_first_labels_prefer_exact_buy_premium_path_fields():

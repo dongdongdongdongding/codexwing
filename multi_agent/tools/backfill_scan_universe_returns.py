@@ -983,7 +983,7 @@ def build_updates(
         "repaired_base_date_candidates": repaired_base_date_candidates,
         "price_fetch_counts": dict(provider.fetch_counts),
         "price_fetch_failures": dict(provider.fetch_failures),
-        "price_fetch_failure_examples": dict(provider.fetch_failure_examples),
+        "price_fetch_failure_examples": dict(getattr(provider, "fetch_failure_examples", {}) or {}),
     }
 
 

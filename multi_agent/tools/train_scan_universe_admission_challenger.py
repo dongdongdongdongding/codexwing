@@ -348,6 +348,7 @@ class CandidateJob:
     model_name: str
     topn: int
     prob_threshold: float | None
+    tail_risk_prob_threshold: float | None
 
 
 LABEL_SPECS = [
@@ -368,6 +369,13 @@ LABEL_SPECS = [
 ]
 
 TOPNS = [1, 3, 5]
+
+
+def selection_rule_text(topn: int, prob_threshold: float | None, tail_risk_prob_threshold: float | None = None) -> str:
+    rule = f"top{topn}" if prob_threshold is None else f"top{topn}_p{prob_threshold:.2f}"
+    if tail_risk_prob_threshold is not None:
+        rule += f"_tail{tail_risk_prob_threshold:.2f}"
+    return rule
 
 
 def _json_default(value: Any) -> Any:
@@ -1185,6 +1193,12 @@ def label_series(df: pd.DataFrame, spec: LabelSpec) -> Tuple[pd.Series, pd.Serie
     raise KeyError(spec.name)
 
 
+def tail_safe_series(df: pd.DataFrame) -> Tuple[pd.Series, pd.Series]:
+    low5 = _adjusted_return_series(df, "min_low_return_5d_pct")
+    valid = low5.notna()
+    return low5.ge(MIN_PROMOTION_MIN_LOW_5D_PCT).fillna(False), valid
+
+
 def feature_sets(df: pd.DataFrame) -> Dict[str, Tuple[List[str], List[str]]]:
     core = [col for col in CORE_NUMERIC if col in df.columns]
     flow = [col for col in CORE_NUMERIC + FLOW_NUMERIC if col in df.columns]
@@ -1571,8 +1585,12 @@ def run_candidate(
     max_folds: int,
     min_kis_rows: int = 0,
     min_kis_days: int = MIN_KIS_TRAIN_DAYS,
+    tail_risk_prob_threshold: float | None = None,
 ) -> Dict[str, Any]:
     label, valid = label_series(work, label_spec)
+    tail_label, tail_valid = tail_safe_series(work)
+    if tail_risk_prob_threshold is not None:
+        valid &= tail_valid
     scoped = work.loc[valid & work["market"].eq(market)].copy()
     kis_family = kis_feature_family(feature_name)
     kis_scope_summary: Dict[str, Any] = {}
@@ -1596,7 +1614,8 @@ def run_candidate(
         "model": model_name,
         "topn": topn,
         "prob_threshold": _round(prob_threshold) if prob_threshold is not None else None,
-        "selection_rule": f"top{topn}" if prob_threshold is None else f"top{topn}_p{prob_threshold:.2f}",
+        "tail_risk_prob_threshold": _round(tail_risk_prob_threshold) if tail_risk_prob_threshold is not None else None,
+        "selection_rule": selection_rule_text(topn, prob_threshold, tail_risk_prob_threshold),
         "rows": int(len(scoped)),
         "positive_rate_pct": _pct(y.mean()) if len(y) else None,
         "status": "skipped",
@@ -1611,6 +1630,9 @@ def run_candidate(
         return {**base, "skip_reason": "insufficient_rows"}
     if y.nunique() < 2:
         return {**base, "skip_reason": "single_class"}
+    y_tail = tail_label.loc[scoped.index].astype(int)
+    if tail_risk_prob_threshold is not None and y_tail.nunique() < 2:
+        return {**base, "skip_reason": "single_tail_risk_class"}
     windows = split_windows(scoped, min_train_days=min_train_days, test_days=test_days, max_folds=max_folds)
     if not windows:
         return {**base, "skip_reason": "insufficient_time_windows"}
@@ -1625,6 +1647,8 @@ def run_candidate(
     fold_metrics = []
     aucs = []
     briers = []
+    tail_aucs = []
+    tail_briers = []
     for train_days, test_day_set in windows:
         train_idx = scoped.index[scoped["trade_date"].isin(train_days)]
         test_idx = scoped.index[scoped["trade_date"].isin(test_day_set)]
@@ -1632,8 +1656,16 @@ def run_candidate(
             continue
         if y.loc[train_idx].nunique() < 2 or y.loc[test_idx].nunique() < 2:
             continue
+        if tail_risk_prob_threshold is not None and y_tail.loc[train_idx].nunique() < 2:
+            continue
         scale = model_name == "logistic"
         pipe = Pipeline([("pre", preprocessor(numeric, categorical, scale_numeric=scale)), ("model", estimator)])
+        tail_pipe = None
+        if tail_risk_prob_threshold is not None:
+            tail_estimator = model_candidate(model_name)
+            if tail_estimator is None:
+                return {**base, "skip_reason": "tail_model_unavailable"}
+            tail_pipe = Pipeline([("pre", preprocessor(numeric, categorical, scale_numeric=scale)), ("model", tail_estimator)])
         x_train = scoped.loc[train_idx, features].copy()
         x_test = scoped.loc[test_idx, features].copy()
         for col in categorical:
@@ -1645,19 +1677,35 @@ def run_candidate(
                 warnings.simplefilter("ignore")
                 pipe.fit(x_train, y.loc[train_idx])
                 prob = pd.Series(pipe.predict_proba(x_test)[:, 1], index=test_idx)
+                tail_prob = None
+                if tail_pipe is not None:
+                    tail_pipe.fit(x_train, y_tail.loc[train_idx])
+                    tail_prob = pd.Series(tail_pipe.predict_proba(x_test)[:, 1], index=test_idx)
         except Exception as exc:
             return {**base, "skip_reason": f"{type(exc).__name__}: {exc}"}
-        idx = top_indices_by_run(scoped.loc[test_idx], prob, topn, min_score=prob_threshold)
+        candidate_test_idx = test_idx
+        if tail_risk_prob_threshold is not None and tail_prob is not None:
+            candidate_test_idx = test_idx.intersection(tail_prob.index[tail_prob.ge(float(tail_risk_prob_threshold))])
+        idx = top_indices_by_run(scoped.loc[candidate_test_idx], prob, topn, min_score=prob_threshold)
         if len(idx):
             selected_indices.append(idx)
         fold_m = metrics(scoped, idx, label)
         fold_m["test_days"] = sorted(test_day_set)
+        if tail_risk_prob_threshold is not None and tail_prob is not None:
+            fold_m["tail_risk_prob_threshold"] = _round(tail_risk_prob_threshold)
+            fold_m["tail_risk_eligible_rows"] = int(len(candidate_test_idx))
         fold_metrics.append(fold_m)
         try:
             aucs.append(float(roc_auc_score(y.loc[test_idx], prob)))
             briers.append(float(brier_score_loss(y.loc[test_idx], prob)))
         except Exception:
             pass
+        if tail_risk_prob_threshold is not None and tail_prob is not None:
+            try:
+                tail_aucs.append(float(roc_auc_score(y_tail.loc[test_idx], tail_prob)))
+                tail_briers.append(float(brier_score_loss(y_tail.loc[test_idx], tail_prob)))
+            except Exception:
+                pass
     if not selected_indices:
         return {**base, "skip_reason": "no_selected_indices"}
     idx_all = selected_indices[0].append(selected_indices[1:]) if len(selected_indices) > 1 else selected_indices[0]
@@ -1668,6 +1716,8 @@ def run_candidate(
         "folds": int(len(fold_metrics)),
         "auc_mean": _round(np.mean(aucs)) if aucs else None,
         "brier_mean": _round(np.mean(briers)) if briers else None,
+        "tail_risk_auc_mean": _round(np.mean(tail_aucs)) if tail_aucs else None,
+        "tail_risk_brier_mean": _round(np.mean(tail_briers)) if tail_briers else None,
         "metrics": merged,
         "fold_metrics": fold_metrics,
         "quality_score": _round(quality_score(merged, topn=topn, label_name=label_spec.name), 6),
@@ -1699,6 +1749,10 @@ def parse_thresholds(raw: str) -> List[float | None]:
             continue
         values.append(float(item))
     return values
+
+
+def parse_optional_thresholds(raw: str) -> List[float | None]:
+    return parse_thresholds(raw)
 
 
 def apply_grid_preset(args: argparse.Namespace) -> argparse.Namespace:
@@ -1734,6 +1788,7 @@ def candidate_jobs(
     model_names: Sequence[str],
     topns: Sequence[int],
     prob_thresholds: Sequence[float | None],
+    tail_risk_prob_thresholds: Sequence[float | None] = (None,),
 ) -> List[CandidateJob]:
     feature_filters = {
         item.strip()
@@ -1754,18 +1809,20 @@ def candidate_jobs(
                 for model_name in model_names:
                     for topn in topns:
                         for prob_threshold in prob_thresholds:
-                            jobs.append(
-                                CandidateJob(
-                                    market=market,
-                                    label_spec=spec,
-                                    feature_name=feature_name,
-                                    numeric=tuple(numeric),
-                                    categorical=tuple(categorical),
-                                    model_name=model_name,
-                                    topn=int(topn),
-                                    prob_threshold=prob_threshold,
+                            for tail_risk_prob_threshold in tail_risk_prob_thresholds:
+                                jobs.append(
+                                    CandidateJob(
+                                        market=market,
+                                        label_spec=spec,
+                                        feature_name=feature_name,
+                                        numeric=tuple(numeric),
+                                        categorical=tuple(categorical),
+                                        model_name=model_name,
+                                        topn=int(topn),
+                                        prob_threshold=prob_threshold,
+                                        tail_risk_prob_threshold=tail_risk_prob_threshold,
+                                    )
                                 )
-                            )
     return jobs
 
 
@@ -1780,6 +1837,7 @@ def _run_candidate_job(work: pd.DataFrame, job: CandidateJob, args: argparse.Nam
         model_name=job.model_name,
         topn=job.topn,
         prob_threshold=job.prob_threshold,
+        tail_risk_prob_threshold=job.tail_risk_prob_threshold,
         min_train_rows=int(args.min_train_rows),
         min_test_rows=int(args.min_test_rows),
         min_train_days=int(args.min_train_days),
@@ -1824,7 +1882,10 @@ def evaluate_candidate_jobs(
                             "model": job.model_name,
                             "topn": job.topn,
                             "prob_threshold": _round(job.prob_threshold) if job.prob_threshold is not None else None,
-                            "selection_rule": f"top{job.topn}" if job.prob_threshold is None else f"top{job.topn}_p{job.prob_threshold:.2f}",
+                            "tail_risk_prob_threshold": (
+                                _round(job.tail_risk_prob_threshold) if job.tail_risk_prob_threshold is not None else None
+                            ),
+                            "selection_rule": selection_rule_text(job.topn, job.prob_threshold, job.tail_risk_prob_threshold),
                             "status": "skipped",
                             "skip_reason": f"{type(exc).__name__}: {exc}",
                         }
@@ -2244,7 +2305,14 @@ def kis_feature_readiness(
 def train_final_model(work: pd.DataFrame, best: Dict[str, Any], *, output_dir: Path) -> Dict[str, Any]:
     label_spec = next(item for item in LABEL_SPECS if item.name == best["label"])
     label, valid = label_series(work, label_spec)
+    tail_risk_prob_threshold = _safe_float(best.get("tail_risk_prob_threshold"))
+    tail_label = None
+    if tail_risk_prob_threshold is not None:
+        tail_label, tail_valid = tail_safe_series(work)
+        valid &= tail_valid
     scoped = work.loc[valid & work["market"].eq(best["market"])].copy()
+    if kis_feature_family(str(best.get("feature_set") or "")):
+        scoped = scoped.loc[kis_presence_mask(scoped, str(best.get("feature_set") or ""))].copy()
     y = label.loc[scoped.index].astype(int)
     cols = best.get("feature_columns") or {}
     numeric, categorical = usable_features(
@@ -2256,6 +2324,25 @@ def train_final_model(work: pd.DataFrame, best: Dict[str, Any], *, output_dir: P
     estimator = model_candidate(best["model"])
     if estimator is None or scoped.empty or y.nunique() < 2:
         return {"saved": False, "reason": "not_trainable"}
+    if not features:
+        return {"saved": False, "reason": "no_features"}
+    tail_pipe = None
+    y_tail = None
+    if tail_risk_prob_threshold is not None:
+        if tail_label is None:
+            return {"saved": False, "reason": "tail_label_missing"}
+        y_tail = tail_label.loc[scoped.index].astype(int)
+        if y_tail.nunique() < 2:
+            return {"saved": False, "reason": "tail_model_not_trainable"}
+        tail_estimator = model_candidate(best["model"])
+        if tail_estimator is None:
+            return {"saved": False, "reason": "tail_model_unavailable"}
+        tail_pipe = Pipeline(
+            [
+                ("pre", preprocessor(numeric, categorical, scale_numeric=best["model"] == "logistic")),
+                ("model", tail_estimator),
+            ]
+        )
     pipe = Pipeline(
         [
             ("pre", preprocessor(numeric, categorical, scale_numeric=best["model"] == "logistic")),
@@ -2268,6 +2355,8 @@ def train_final_model(work: pd.DataFrame, best: Dict[str, Any], *, output_dir: P
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         pipe.fit(x, y)
+        if tail_pipe is not None and y_tail is not None:
+            tail_pipe.fit(x, y_tail)
     output_dir.mkdir(parents=True, exist_ok=True)
     rule = str(best.get("selection_rule") or f"top{best['topn']}").replace(".", "p")
     model_path = output_dir / f"{best['market'].lower()}__{best['label']}__{best['feature_set']}__{best['model']}__{rule}.pkl"
@@ -2280,11 +2369,14 @@ def train_final_model(work: pd.DataFrame, best: Dict[str, Any], *, output_dir: P
         "market": best["market"],
         "topn": best["topn"],
         "prob_threshold": best.get("prob_threshold"),
+        "tail_risk_prob_threshold": tail_risk_prob_threshold,
+        "tail_risk_label": "5D low return >= -10% under the operational +2% entry assumption",
         "selection_rule": best.get("selection_rule"),
         "feature_set": best["feature_set"],
         "feature_columns": {"numeric": numeric, "categorical": categorical},
         "model_name": best["model"],
         "pipeline": pipe,
+        "tail_risk_pipeline": tail_pipe,
         "validation": best,
     }
     joblib.dump(bundle, model_path)
@@ -2365,6 +2457,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     selected_specs = [spec for spec in LABEL_SPECS if not labels or spec.name in labels]
     topns = [int(item.strip()) for item in str(args.topns).split(",") if item.strip()]
     prob_thresholds = parse_thresholds(args.prob_thresholds)
+    tail_risk_prob_thresholds = parse_optional_thresholds(args.tail_risk_prob_thresholds)
     jobs = candidate_jobs(
         data=data,
         args=args,
@@ -2374,6 +2467,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         model_names=model_names,
         topns=topns,
         prob_thresholds=prob_thresholds,
+        tail_risk_prob_thresholds=tail_risk_prob_thresholds,
     )
     all_results, eval_meta = evaluate_candidate_jobs(data, jobs, args, progress=progress_enabled)
     ok_results = rank_candidate_results([row for row in all_results if row.get("status") == "ok"])
@@ -2455,6 +2549,10 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             "min_touch5_guard_5d_pct": MIN_PROMOTION_TOUCH5_GUARD_PCT,
             "min_guard_raw_ratio": MIN_PROMOTION_GUARD_RAW_RATIO,
             "min_min_low_5d_pct": MIN_PROMOTION_MIN_LOW_5D_PCT,
+            "tail_risk_gate_description": (
+                "Optional second-stage classifier: primary model ranks +5% touch candidates, "
+                "tail-risk model filters rows whose predicted probability of 5D low >= -10% is below the configured floor."
+            ),
             "configured_min_kis_days": int(args.min_kis_days),
             "configured_min_kis_rows": max(int(args.min_kis_rows or 0), int(args.min_train_rows) + int(args.min_test_rows)),
         },
@@ -2606,6 +2704,11 @@ def main() -> int:
     parser.add_argument("--feature-sets", default="", help="Comma-separated feature-set names. Empty means all feature sets.")
     parser.add_argument("--topns", default="1,3,5", help="Comma-separated top-N cutoffs to evaluate.")
     parser.add_argument("--prob-thresholds", default="", help="Comma-separated probability floors. Empty means top-N without a floor.")
+    parser.add_argument(
+        "--tail-risk-prob-thresholds",
+        default="",
+        help="Comma-separated probability floors for the second-stage 5D low >= -10% classifier. Empty disables the tail-risk gate.",
+    )
     parser.add_argument("--eval-workers", type=int, default=1, help="Parallel candidate-grid evaluation workers. Keep low when tree models use internal n_jobs.")
     parser.add_argument("--progress-every", type=int, default=25, help="Progress log frequency in evaluated candidate combinations.")
     parser.add_argument("--min-train-rows", type=int, default=1000)
@@ -2648,6 +2751,9 @@ def main() -> int:
                 "feature_set": best.get("feature_set"),
                 "model": best.get("model"),
                 "topn": best.get("topn"),
+                "selection_rule": best.get("selection_rule"),
+                "prob_threshold": best.get("prob_threshold"),
+                "tail_risk_prob_threshold": best.get("tail_risk_prob_threshold"),
                 "quality_score": best.get("quality_score"),
                 "promotable": (best.get("promotion_candidate") or {}).get("promotable"),
             },
@@ -2657,6 +2763,9 @@ def main() -> int:
                 "feature_set": best_kis.get("feature_set"),
                 "model": best_kis.get("model"),
                 "topn": best_kis.get("topn"),
+                "selection_rule": best_kis.get("selection_rule"),
+                "prob_threshold": best_kis.get("prob_threshold"),
+                "tail_risk_prob_threshold": best_kis.get("tail_risk_prob_threshold"),
                 "quality_score": best_kis.get("quality_score"),
                 "promotable": (best_kis.get("promotion_candidate") or {}).get("promotable"),
             },

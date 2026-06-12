@@ -1,4 +1,5 @@
 from multi_agent.tools.backfill_scan_universe_returns import (
+    BUY_PREMIUM_PATH_LABEL_VERSION,
     PriceHistoryProvider,
     _compute_return_payload,
     build_updates,
@@ -41,7 +42,7 @@ def test_compute_return_payload_uses_future_trading_days_and_preserves_existing_
     assert payload["buy_premium_target_hit_5d"] is True
     assert payload["buy_premium_target_before_stop_5d"] is True
     assert payload["buy_premium_first_touch_5d"] == "target"
-    assert payload["buy_premium_path_label_version"] == "scan_universe_plus2pct_entry_path_target_stop_v1"
+    assert payload["buy_premium_path_label_version"] == BUY_PREMIUM_PATH_LABEL_VERSION
     assert payload["outcome_available"] is True
 
 
