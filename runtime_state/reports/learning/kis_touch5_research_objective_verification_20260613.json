@@ -15,7 +15,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-12T18:44:14.027498+00:00",
+  "generated_at": "2026-06-12T18:55:11.751036+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -19534,6 +19534,13 @@
   "operator_report_rule": "성과가 검증된 항목만 후보로 보고한다. production_ready=false이면 운영 대체가 아니라 shadow_only로만 표시한다.",
   "research_inputs": {
     "augmented_three_stage_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_sidecar_cache_augmented_20260331_20260610.json",
+    "deployment_consistency": {
+      "deployment_consistent": true,
+      "production_replacement_ready": false,
+      "recommended_action": "use_current_kis_shadow_deployment",
+      "status": "pass"
+    },
+    "deployment_consistency_report": "runtime_state/reports/learning/kis_shadow_deployment_consistency_20260613.json",
     "market_comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
     "matched_only_sweep_reports": {
       "kis_full_augmented": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_full_augmented_20260331_20260610.json",

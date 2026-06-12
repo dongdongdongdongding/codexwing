@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-12T18:44:14.027498+00:00`
+- generated_at: `2026-06-12T18:55:11.751036+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -25,6 +25,7 @@
 - no_dummy_data: `True`
 - shadow rows/evaluated/shadow_allowed/production_ready: `157551` / `990` / `521` / `0`
 - sidecar score sweep evaluated/shadow_allowed/production_ready: `4950` / `3243` / `0`
+- deployment_consistency: `pass` / `use_current_kis_shadow_deployment`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
 
 ## KOSPI

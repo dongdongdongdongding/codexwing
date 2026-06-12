@@ -1,0 +1,190 @@
+{
+  "decision": {
+    "deployment_consistent": true,
+    "production_replacement_ready": false,
+    "recommended_action": "use_current_kis_shadow_deployment",
+    "status": "pass"
+  },
+  "dummy_data_used": false,
+  "generated_at": "2026-06-12T18:55:05+00:00",
+  "inputs": {
+    "comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
+    "deployment_report": "runtime_state/reports/learning/kis_shadow_admission_model_deployment.json",
+    "model_dir": "models/scan_universe_challengers"
+  },
+  "markets": [
+    {
+      "alias_gate": {
+        "production_blocking_reasons": [
+          "active_days_lt_15"
+        ],
+        "production_ready": false,
+        "shadow_display_allowed": true,
+        "status": "shadow_ready"
+      },
+      "alias_gate_mismatches": {},
+      "alias_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "model": "lightgbm",
+        "prob_threshold": 0.3,
+        "selection_rule": "top1_p0p3_tail0p9",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 1
+      },
+      "alias_model_path": "models/scan_universe_challengers/kospi__touch5_dd10_5d__kis_shadow_best_effort_current.pkl",
+      "bundle_gate": {
+        "production_blocking_reasons": [
+          "active_days_lt_15"
+        ],
+        "production_ready": false,
+        "shadow_display_allowed": true,
+        "status": "shadow_ready"
+      },
+      "bundle_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "model": "lightgbm",
+        "prob_threshold": 0.3,
+        "selection_rule": "top1_p0p3_tail0p9",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 1
+      },
+      "bundle_mismatches": {},
+      "comparison_gate": {
+        "production_blocking_reasons": [
+          "active_days_lt_15"
+        ],
+        "production_ready": false,
+        "shadow_display_allowed": true,
+        "status": "shadow_ready"
+      },
+      "comparison_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "model": "lightgbm",
+        "prob_threshold": 0.3,
+        "selection_rule": "top1_p0p3_tail0p9",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 1
+      },
+      "deployment_gate": {
+        "source_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
+        "status": "shadow_ready"
+      },
+      "deployment_gate_mismatches": {},
+      "deployment_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSPI",
+        "model": "lightgbm",
+        "prob_threshold": 0.3,
+        "selection_rule": "top1_p0p3_tail0p9",
+        "tail_risk_prob_threshold": 0.9,
+        "topn": 1
+      },
+      "deployment_model_path": "models/scan_universe_challengers/kospi__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p3_tail0p9.pkl",
+      "expected_model_path": "models/scan_universe_challengers/kospi__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p3_tail0p9.pkl",
+      "gate_mismatches": {},
+      "identity_mismatches": {},
+      "issues": [],
+      "market": "KOSPI",
+      "status": "pass"
+    },
+    {
+      "alias_gate": {
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20"
+        ],
+        "production_ready": false,
+        "shadow_display_allowed": true,
+        "status": "shadow_ready"
+      },
+      "alias_gate_mismatches": {},
+      "alias_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "model": "lightgbm",
+        "prob_threshold": 0.75,
+        "selection_rule": "top1_p0p75_tail0p85",
+        "tail_risk_prob_threshold": 0.85,
+        "topn": 1
+      },
+      "alias_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_shadow_best_effort_current.pkl",
+      "bundle_gate": {
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20"
+        ],
+        "production_ready": false,
+        "shadow_display_allowed": true,
+        "status": "shadow_ready"
+      },
+      "bundle_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "model": "lightgbm",
+        "prob_threshold": 0.75,
+        "selection_rule": "top1_p0p75_tail0p85",
+        "tail_risk_prob_threshold": 0.85,
+        "topn": 1
+      },
+      "bundle_mismatches": {},
+      "comparison_gate": {
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20"
+        ],
+        "production_ready": false,
+        "shadow_display_allowed": true,
+        "status": "shadow_ready"
+      },
+      "comparison_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "model": "lightgbm",
+        "prob_threshold": 0.75,
+        "selection_rule": "top1_p0p75_tail0p85",
+        "tail_risk_prob_threshold": 0.85,
+        "topn": 1
+      },
+      "deployment_gate": {
+        "source_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
+        "status": "shadow_ready"
+      },
+      "deployment_gate_mismatches": {},
+      "deployment_identity": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "label": "touch5_dd10_5d",
+        "market": "KOSDAQ",
+        "model": "lightgbm",
+        "prob_threshold": 0.75,
+        "selection_rule": "top1_p0p75_tail0p85",
+        "tail_risk_prob_threshold": 0.85,
+        "topn": 1
+      },
+      "deployment_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p75_tail0p85.pkl",
+      "expected_model_path": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p75_tail0p85.pkl",
+      "gate_mismatches": {},
+      "identity_mismatches": {},
+      "issues": [],
+      "market": "KOSDAQ",
+      "status": "pass"
+    }
+  ],
+  "required_markets": [
+    "KOSPI",
+    "KOSDAQ"
+  ],
+  "version": "kis_shadow_deployment_consistency_v1"
+}
