@@ -345,6 +345,46 @@ def _three_stage_experiment(report: Mapping[str, Any], market: str) -> Dict[str,
     }
 
 
+def _leaderboard_candidate_summary(row: Mapping[str, Any] | None) -> Dict[str, Any]:
+    if not isinstance(row, Mapping):
+        return {}
+    identity = row.get("identity") if isinstance(row.get("identity"), dict) else {}
+    gate = row.get("gate") if isinstance(row.get("gate"), dict) else {}
+    return {
+        "selection_rule": identity.get("selection_rule") or row.get("selection_rule"),
+        "feature_set": identity.get("feature_set") or row.get("feature_set"),
+        "model": identity.get("model") or row.get("model"),
+        "score_mode": identity.get("score_mode") or row.get("score_mode"),
+        "source_path": row.get("source_path"),
+        "gate_status": gate.get("status"),
+        "production_ready": bool(gate.get("production_ready")),
+        "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+        "production_blocking_reasons": gate.get("production_blocking_reasons") or [],
+        "non_sample_blockers": gate.get("non_sample_blockers") or [],
+        "sample_progress": row.get("sample_progress") or {},
+        "metrics": _pick_metrics(row),
+    }
+
+
+def _candidate_leaderboard_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    if not report:
+        return {}
+    markets = report.get("markets") if isinstance(report.get("markets"), dict) else {}
+    payload = markets.get(market, {}) if isinstance(markets.get(market), dict) else {}
+    if not payload:
+        return {}
+    return {
+        "status": payload.get("status"),
+        "candidate_count": payload.get("candidate_count"),
+        "production_ready_count": payload.get("production_ready_count"),
+        "shadow_display_allowed_count": payload.get("shadow_display_allowed_count"),
+        "sample_only_shadow_count": payload.get("sample_only_shadow_count"),
+        "current": _leaderboard_candidate_summary(payload.get("current")),
+        "best_sample_only_shadow": _leaderboard_candidate_summary(payload.get("best_sample_only_shadow")),
+        "verified_upgrade_candidate": _leaderboard_candidate_summary(payload.get("verified_upgrade_candidate")),
+    }
+
+
 def _augmentation_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
     for row in report.get("markets") or []:
         if isinstance(row, dict) and str(row.get("market") or "").upper() == market:
@@ -540,6 +580,7 @@ def build_report(
             )
             if sidecar_score_sweep
             else {},
+            "candidate_leaderboard": _candidate_leaderboard_market(candidate_leaderboard, market),
         }
     decision = _best_available_decision({m: row["kis_sidecar_longfold_shadow"] for m, row in markets.items()})
     return {
@@ -722,6 +763,10 @@ def _markdown(report: Mapping[str, Any]) -> str:
         risk_candidate = risk_alt.get("candidate") or {}
         risk_metrics = risk_candidate.get("metrics") or {}
         score_summary = score_exp.get("score_report_analysis_summary") or {}
+        leaderboard = payload.get("candidate_leaderboard") or {}
+        leaderboard_best = leaderboard.get("best_sample_only_shadow") or {}
+        leaderboard_best_metrics = leaderboard_best.get("metrics") or {}
+        leaderboard_upgrade = leaderboard.get("verified_upgrade_candidate") or {}
         sample_only_top = score_summary.get("sample_only_top") or []
         sample_sufficient_top = score_summary.get("sample_sufficient_top") or []
         pareto_top = score_summary.get("pareto_top") or []
@@ -758,6 +803,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- risk_adjusted_alternative: found=`{risk_alt.get('found')}`, candidate=`{risk_candidate.get('selection_rule')}`, hit5_dd10=`{risk_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{risk_metrics.get('avg_5d_pct')}`, min_low=`{risk_metrics.get('min_min_low_5d_pct')}`, deltas=`{risk_alt.get('deltas_vs_baseline')}`",
                 f"- score_sweep_gate_summary: status_counts=`{score_summary.get('status_counts')}`, blockers=`{score_summary.get('production_blocking_reason_counts')}`, sample_only_count=`{score_summary.get('sample_only_blocked_count')}`, sample_sufficient_count=`{score_summary.get('sample_sufficient_count')}`",
                 f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, sample_sufficient_top=`{sample_sufficient_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
+                f"- candidate_leaderboard: status=`{leaderboard.get('status')}`, candidates=`{leaderboard.get('candidate_count')}`, shadow=`{leaderboard.get('shadow_display_allowed_count')}`, sample_only=`{leaderboard.get('sample_only_shadow_count')}`, production=`{leaderboard.get('production_ready_count')}`, best_sample_only=`{leaderboard_best.get('selection_rule')}`, hit5=`{leaderboard_best_metrics.get('hit5_dd10_5d_pct')}`, n=`{leaderboard_best_metrics.get('n')}`, active_days=`{leaderboard_best_metrics.get('active_days')}`, upgrade=`{leaderboard_upgrade.get('selection_rule')}`",
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",

@@ -1,11 +1,11 @@
 # KIS Touch5 Candidate Leaderboard
 
 - version: `kis_touch5_candidate_leaderboard_v1`
-- generated_at: `2026-06-12T19:13:53+00:00`
+- generated_at: `2026-06-12T20:03:15+00:00`
 - dummy_data_used: `False`
 - tracked_sources_only: `True`
-- report_count: `28`
-- unique_candidates: `2741`
+- report_count: `30`
+- unique_candidates: `2932`
 - status: `keep_current_shadow`
 - production_replacement_ready: `False`
 - shadow_upgrade_found: `False`
@@ -13,7 +13,7 @@
 
 ## KOSPI
 - status: `shadow_candidates_found_no_upgrade`
-- candidates/shadow/sample_only/production: `1474` / `837` / `200` / `0`
+- candidates/shadow/sample_only/production: `1581` / `837` / `200` / `0`
 - current: `kis_sidecar_failure_risk_augmented` `lightgbm` `top1_p0p3_tail0p9` status=`shadow_ready` n=`50` days=`11` runs=`50` sample=`91.111111%` hit5_dd10=`82.0` avg5=`26.115197` low=`-8.919727` source=`runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json`
 - best_sample_only_shadow: `kis_sidecar_failure_risk_numeric` `lightgbm` `top1_tail0.95` status=`shadow_ready` n=`55` days=`12` runs=`55` sample=`93.333333%` hit5_dd10=`85.4545` avg5=`7.937496` low=`-9.816164` source=`runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json`
 - verified_upgrade_candidate: -
@@ -33,7 +33,7 @@
 
 ## KOSDAQ
 - status: `shadow_candidates_found_no_upgrade`
-- candidates/shadow/sample_only/production: `1267` / `623` / `214` / `0`
+- candidates/shadow/sample_only/production: `1351` / `623` / `214` / `0`
 - current: `kis_sidecar_failure_risk_augmented` `lightgbm` `top2_p0.50_tail0.90` status=`shadow_ready` n=`40` days=`11` runs=`20` sample=`81.296296%` hit5_dd10=`100.0` avg5=`20.411507` low=`-9.300619` source=`runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json`
 - best_sample_only_shadow: `kis_sidecar_failure_risk_augmented` `lightgbm` `top2_tail0.90` status=`shadow_ready` n=`48` days=`12` runs=`24` sample=`86.666667%` hit5_dd10=`83.3333` avg5=`16.217164` low=`-9.300619` source=`runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json`
 - verified_upgrade_candidate: -

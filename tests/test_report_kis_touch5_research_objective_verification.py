@@ -237,7 +237,41 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                 "production_replacement_ready": False,
                 "shadow_upgrade_found": False,
                 "recommended_action": "continue_forward_tracking_until_sample_gate_clears",
-            }
+            },
+            "markets": {
+                "KOSPI": {
+                    "status": "shadow_candidates_found_no_upgrade",
+                    "candidate_count": 120,
+                    "production_ready_count": 0,
+                    "shadow_display_allowed_count": 20,
+                    "sample_only_shadow_count": 5,
+                    "best_sample_only_shadow": {
+                        "source_path": "report.json",
+                        "identity": {
+                            "feature_set": "kis_sidecar_failure_risk_numeric",
+                            "model": "lightgbm",
+                            "selection_rule": "top1_tail0.95",
+                            "score_mode": None,
+                        },
+                        "metrics": {
+                            "n": 55,
+                            "active_days": 12,
+                            "active_runs": 55,
+                            "hit5_dd10_5d_pct": 85.4545,
+                            "avg_5d_pct": 7.937496,
+                            "min_min_low_5d_pct": -9.816164,
+                        },
+                        "gate": {
+                            "status": "shadow_ready",
+                            "production_ready": False,
+                            "shadow_display_allowed": True,
+                            "production_blocking_reasons": ["active_days_lt_15"],
+                            "non_sample_blockers": [],
+                        },
+                        "sample_progress": {"completion_pct": 93.333333},
+                    },
+                }
+            },
         },
     )
     finaltopn_market = {
@@ -305,6 +339,10 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert report["decision"]["shadow_performance_proven"] is True
     assert report["research_inputs"]["candidate_leaderboard"]["status"] == "keep_current_shadow"
     assert report["research_inputs"]["finaltopn_prefilter_proxy_report"].endswith("finaltopn_proxy.json")
+    leaderboard = report["markets"]["KOSPI"]["candidate_leaderboard"]
+    assert leaderboard["best_sample_only_shadow"]["selection_rule"] == "top1_tail0.95"
+    assert leaderboard["best_sample_only_shadow"]["metrics"]["hit5_dd10_5d_pct"] == 85.4545
+    assert leaderboard["best_sample_only_shadow"]["sample_progress"]["completion_pct"] == 93.333333
     assert "+5%" in report["user_goal"]["win_definition"]
     assert report["markets"]["KOSPI"]["kis_sidecar_longfold_shadow"]["gate"]["status"] == "shadow_ready"
     assert report["markets"]["KOSDAQ"]["kis_sidecar_longfold_shadow"]["metrics"]["n"] == 40
