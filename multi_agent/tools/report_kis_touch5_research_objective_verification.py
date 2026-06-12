@@ -29,11 +29,33 @@ DEFAULT_SIDECAR_BASELINE_SWEEP = (
 DEFAULT_SIDECAR_SCORE_SWEEP = (
     ROOT / "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold_20260101_20260610.json"
 )
+DEFAULT_SIDECAR_PROXY_GAP = ROOT / "runtime_state/reports/learning/kis_sidecar_proxy_feature_gap_20260613.json"
+DEFAULT_SIDECAR_AUGMENTATION = ROOT / "runtime_state/reports/learning/kis_sidecar_cache_augmented_proxy_20260613.json"
+DEFAULT_AUGMENTED_THREE_STAGE = (
+    ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_sidecar_cache_augmented_20260331_20260610.json"
+)
+DEFAULT_MATCHED_ONLY_THREE_STAGE = (
+    ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_sidecar_cache_matched_only_20260331_20260610.json"
+)
+DEFAULT_MATCHED_ONLY_SWEEPS = {
+    "kis_sidecar_failure_risk_augmented": ROOT
+    / "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_augmented_20260331_20260610.json",
+    "kis_sidecar_only": ROOT
+    / "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_sidecar_only_20260331_20260610.json",
+    "kis_full_augmented": ROOT
+    / "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_full_augmented_20260331_20260610.json",
+}
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     return payload if isinstance(payload, dict) else {}
+
+
+def _load_optional_json(path: Path | None) -> Dict[str, Any]:
+    if path is None or not path.exists():
+        return {}
+    return _load_json(path)
 
 
 def _rel(path: Path) -> str:
@@ -281,6 +303,148 @@ def _sidecar_score_experiment(
     }
 
 
+def _three_stage_experiment(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    if not report:
+        return {}
+    item = _market_items(report).get(market, {})
+    best = item.get("best") if isinstance(item.get("best"), dict) else {}
+    unconstrained = item.get("unconstrained_best") if isinstance(item.get("unconstrained_best"), dict) else {}
+    return {
+        "status": report.get("status"),
+        "validation": report.get("validation"),
+        "dummy_data_used": report.get("dummy_data_used"),
+        "rows": item.get("rows"),
+        "days": item.get("days"),
+        "best_config": best.get("config") or {},
+        "best_metrics": _pick_metrics(best),
+        "unconstrained_best_config": unconstrained.get("config") or {},
+        "unconstrained_best_metrics": _pick_metrics(unconstrained),
+        "improvement": item.get("improvement") or {},
+        "decision": {
+            "production_candidate": False,
+            "promotable": False,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples.",
+        },
+    }
+
+
+def _augmentation_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    for row in report.get("markets") or []:
+        if isinstance(row, dict) and str(row.get("market") or "").upper() == market:
+            coverage_delta = row.get("coverage_delta") if isinstance(row.get("coverage_delta"), dict) else {}
+            coverage_delta_summary = {
+                family: {
+                    "features_improved": payload.get("features_improved"),
+                    "avg_positive_delta_pct": payload.get("avg_positive_delta_pct"),
+                    "top_deltas": (payload.get("top_deltas") or [])[:3],
+                }
+                for family, payload in coverage_delta.items()
+                if isinstance(payload, dict)
+            }
+            return {
+                "matched_rows": row.get("matched_rows"),
+                "matched_row_pct": row.get("matched_row_pct"),
+                "matched_days": row.get("matched_days"),
+                "matched_tickers": row.get("matched_tickers"),
+                "output_cache": row.get("output_cache"),
+                "matched_only_output_cache": row.get("matched_only_output_cache"),
+                "no_dummy_data": row.get("no_dummy_data"),
+                "leakage_policy": row.get("leakage_policy"),
+                "coverage_delta_summary": coverage_delta_summary,
+            }
+    return {}
+
+
+def _best_shadow_ready_from_analysis(summary: Mapping[str, Any]) -> Dict[str, Any]:
+    for key in ("sample_only_top", "pareto_top", "sample_sufficient_top"):
+        rows = summary.get(key)
+        if isinstance(rows, list) and rows and isinstance(rows[0], dict):
+            return rows[0]
+    return {}
+
+
+def _matched_only_sweep_experiments(
+    sweep_reports: Mapping[str, Mapping[str, Any]],
+    market: str,
+) -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    best_candidate: Dict[str, Any] = {}
+    best_feature_set = None
+    for feature_set, report in sweep_reports.items():
+        if not report:
+            continue
+        summary = _sweep_analysis_summary(report, market)
+        candidate = _best_shadow_ready_from_analysis(summary)
+        candidate_summary = _sweep_row_summary(candidate)
+        out[feature_set] = {
+            "summary": {
+                "status_counts": summary.get("status_counts") or {},
+                "production_blocking_reason_counts": summary.get("production_blocking_reason_counts") or {},
+                "sample_only_blocked_count": summary.get("sample_only_blocked_count"),
+                "sample_sufficient_count": summary.get("sample_sufficient_count"),
+            },
+            "best_candidate": candidate_summary,
+        }
+        current_metrics = candidate_summary.get("metrics") if isinstance(candidate_summary.get("metrics"), dict) else {}
+        best_metrics = best_candidate.get("metrics") if isinstance(best_candidate.get("metrics"), dict) else {}
+        if candidate_summary and (
+            not best_candidate
+            or float(current_metrics.get("avg_5d_pct") or -999.0) > float(best_metrics.get("avg_5d_pct") or -999.0)
+            or (
+                float(current_metrics.get("avg_5d_pct") or -999.0) == float(best_metrics.get("avg_5d_pct") or -999.0)
+                and float(current_metrics.get("hit5_dd10_5d_pct") or 0.0)
+                > float(best_metrics.get("hit5_dd10_5d_pct") or 0.0)
+            )
+        ):
+            best_candidate = candidate_summary
+            best_feature_set = feature_set
+    return {
+        "by_feature_set": out,
+        "best_feature_set": best_feature_set,
+        "best_candidate": best_candidate,
+        "decision": "matched_only_shadow_research_only" if best_candidate else "no_matched_only_candidate",
+    }
+
+
+def _historical_proxy_augmentation_experiment(
+    *,
+    feature_gap_report: Mapping[str, Any],
+    augmentation_report: Mapping[str, Any],
+    augmented_three_stage_report: Mapping[str, Any],
+    matched_only_three_stage_report: Mapping[str, Any],
+    matched_only_sweep_reports: Mapping[str, Mapping[str, Any]],
+) -> Dict[str, Any]:
+    markets: Dict[str, Any] = {}
+    for market in ("KOSPI", "KOSDAQ"):
+        markets[market] = {
+            "augmentation": _augmentation_market(augmentation_report, market),
+            "augmented_three_stage": _three_stage_experiment(augmented_three_stage_report, market),
+            "matched_only_three_stage": _three_stage_experiment(matched_only_three_stage_report, market),
+            "matched_only_threshold_sweeps": _matched_only_sweep_experiments(matched_only_sweep_reports, market),
+        }
+    return {
+        "inputs": {
+            "feature_gap_report_available": bool(feature_gap_report),
+            "augmentation_report_available": bool(augmentation_report),
+            "augmented_three_stage_report_available": bool(augmented_three_stage_report),
+            "matched_only_three_stage_report_available": bool(matched_only_three_stage_report),
+            "matched_only_sweep_feature_sets": sorted(k for k, v in matched_only_sweep_reports.items() if v),
+        },
+        "feature_gap_decision": (feature_gap_report.get("decision") or {}) if feature_gap_report else {},
+        "backfill_priorities": (feature_gap_report.get("backfill_priorities") or []) if feature_gap_report else [],
+        "markets": markets,
+        "decision": {
+            "historical_proxy_promotable": False,
+            "augmentation_ready_for_research": bool((augmentation_report.get("decision") or {}).get("augmented_cache_ready_for_research")),
+            "positive_shadow_result": (
+                "KOSPI matched-only KIS full/sidecar sweep produced shadow-ready candidates; KOSDAQ did not reproduce in historical proxy."
+            ),
+            "production_replacement_ready": False,
+            "reason": "actual direct KIS sidecar remains the source of confirmed KR shadow performance; exact-date historical augmentation is not a production replacement.",
+        },
+    }
+
+
 def _best_available_decision(shadow_by_market: Mapping[str, Any]) -> Dict[str, Any]:
     required = ("KOSPI", "KOSDAQ")
     production_ready = all(((shadow_by_market.get(market) or {}).get("gate") or {}).get("production_ready") for market in required)
@@ -315,6 +479,11 @@ def build_report(
     market_comparison_path: Path = DEFAULT_MARKET_COMPARISON_REPORT,
     sidecar_baseline_sweep_path: Path = DEFAULT_SIDECAR_BASELINE_SWEEP,
     sidecar_score_sweep_path: Path = DEFAULT_SIDECAR_SCORE_SWEEP,
+    sidecar_proxy_gap_path: Path | None = None,
+    sidecar_augmentation_path: Path | None = None,
+    augmented_three_stage_path: Path | None = None,
+    matched_only_three_stage_path: Path | None = None,
+    matched_only_sweep_paths: Mapping[str, Path] | None = None,
 ) -> Dict[str, Any]:
     shadow_report = _load_json(shadow_report_path)
     three_stage_dynamic = _load_json(three_stage_dynamic_path)
@@ -322,6 +491,14 @@ def build_report(
     market_comparison = _load_json(market_comparison_path)
     sidecar_baseline_sweep = _load_json(sidecar_baseline_sweep_path)
     sidecar_score_sweep = _load_json(sidecar_score_sweep_path) if sidecar_score_sweep_path.exists() else {}
+    feature_gap_report = _load_optional_json(sidecar_proxy_gap_path)
+    augmentation_report = _load_optional_json(sidecar_augmentation_path)
+    augmented_three_stage = _load_optional_json(augmented_three_stage_path)
+    matched_only_three_stage = _load_optional_json(matched_only_three_stage_path)
+    matched_only_sweeps = {
+        feature_set: _load_optional_json(path)
+        for feature_set, path in (matched_only_sweep_paths or {}).items()
+    }
     markets: Dict[str, Any] = {}
     for market in ("KOSPI", "KOSDAQ"):
         markets[market] = {
@@ -360,6 +537,21 @@ def build_report(
             "market_comparison_report": _rel(market_comparison_path),
             "sidecar_baseline_sweep_report": _rel(sidecar_baseline_sweep_path),
             "sidecar_score_sweep_report": _rel(sidecar_score_sweep_path) if sidecar_score_sweep_path.exists() else None,
+            "sidecar_proxy_gap_report": _rel(sidecar_proxy_gap_path) if sidecar_proxy_gap_path and sidecar_proxy_gap_path.exists() else None,
+            "sidecar_augmentation_report": _rel(sidecar_augmentation_path)
+            if sidecar_augmentation_path and sidecar_augmentation_path.exists()
+            else None,
+            "augmented_three_stage_report": _rel(augmented_three_stage_path)
+            if augmented_three_stage_path and augmented_three_stage_path.exists()
+            else None,
+            "matched_only_three_stage_report": _rel(matched_only_three_stage_path)
+            if matched_only_three_stage_path and matched_only_three_stage_path.exists()
+            else None,
+            "matched_only_sweep_reports": {
+                key: _rel(path)
+                for key, path in (matched_only_sweep_paths or {}).items()
+                if path.exists()
+            },
             "sidecar_score_evaluated_results": (sidecar_score_sweep.get("summary") or {}).get("evaluated_results")
             if sidecar_score_sweep
             else None,
@@ -397,8 +589,21 @@ def build_report(
                 "step": "sidecar_score_mode_expansion",
                 "finding": "동일 long-fold 조건에서 EV/safety 결합 score mode를 추가 검증한다. 생산 승격은 여전히 0개이며, 성과가 있는 경우 risk-adjusted shadow 후보로만 기록한다.",
             },
+            {
+                "step": "exact_date_sidecar_augmentation",
+                "finding": "historical proxy cache에는 실제 KIS flow/financial/static/news가 부족하므로 ticker/date가 정확히 일치하는 실제 sidecar 행만 병합하고, full cache와 matched-only cache로 분리 검증한다.",
+            },
         ],
         "markets": markets,
+        "historical_proxy_augmentation_experiment": _historical_proxy_augmentation_experiment(
+            feature_gap_report=feature_gap_report,
+            augmentation_report=augmentation_report,
+            augmented_three_stage_report=augmented_three_stage,
+            matched_only_three_stage_report=matched_only_three_stage,
+            matched_only_sweep_reports=matched_only_sweeps,
+        )
+        if any([feature_gap_report, augmentation_report, augmented_three_stage, matched_only_three_stage, matched_only_sweeps])
+        else {},
         "decision": decision,
         "operator_report_rule": "성과가 검증된 항목만 후보로 보고한다. production_ready=false이면 운영 대체가 아니라 shadow_only로만 표시한다.",
         "ui_requirements": [
@@ -492,6 +697,48 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 "",
             ]
         )
+    aug = report.get("historical_proxy_augmentation_experiment")
+    if isinstance(aug, dict) and aug:
+        aug_decision = aug.get("decision") if isinstance(aug.get("decision"), dict) else {}
+        lines.extend(
+            [
+                "## Historical Proxy Exact-Date Augmentation",
+                f"- historical_proxy_promotable: `{aug_decision.get('historical_proxy_promotable')}`",
+                f"- augmentation_ready_for_research: `{aug_decision.get('augmentation_ready_for_research')}`",
+                f"- production_replacement_ready: `{aug_decision.get('production_replacement_ready')}`",
+                f"- positive_shadow_result: {aug_decision.get('positive_shadow_result')}",
+                f"- reason: {aug_decision.get('reason')}",
+                "",
+            ]
+        )
+        for market, payload in (aug.get("markets") or {}).items():
+            if not isinstance(payload, dict):
+                continue
+            augmentation = payload.get("augmentation") if isinstance(payload.get("augmentation"), dict) else {}
+            full_three = payload.get("augmented_three_stage") if isinstance(payload.get("augmented_three_stage"), dict) else {}
+            matched_three = payload.get("matched_only_three_stage") if isinstance(payload.get("matched_only_three_stage"), dict) else {}
+            sweeps = (
+                payload.get("matched_only_threshold_sweeps")
+                if isinstance(payload.get("matched_only_threshold_sweeps"), dict)
+                else {}
+            )
+            best_sweep = sweeps.get("best_candidate") if isinstance(sweeps.get("best_candidate"), dict) else {}
+            best_sweep_metrics = best_sweep.get("metrics") if isinstance(best_sweep.get("metrics"), dict) else {}
+            full_metrics = full_three.get("best_metrics") if isinstance(full_three.get("best_metrics"), dict) else {}
+            matched_metrics = (
+                matched_three.get("best_metrics") if isinstance(matched_three.get("best_metrics"), dict) else {}
+            )
+            lines.extend(
+                [
+                    f"### {market} Augmentation",
+                    f"- exact_match: rows=`{augmentation.get('matched_rows')}`, pct=`{augmentation.get('matched_row_pct')}`, days=`{augmentation.get('matched_days')}`, tickers=`{augmentation.get('matched_tickers')}`",
+                    f"- leakage_policy: `{augmentation.get('leakage_policy')}`",
+                    f"- full_augmented_3stage: status=`{full_three.get('status')}`, hit5=`{full_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{full_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{full_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{full_metrics.get('tail_breach_5d_pct')}`, min_low=`{full_metrics.get('min_min_low_5d_pct')}`",
+                    f"- matched_only_3stage: status=`{matched_three.get('status')}`, hit5=`{matched_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{matched_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{matched_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{matched_metrics.get('tail_breach_5d_pct')}`, min_low=`{matched_metrics.get('min_min_low_5d_pct')}`",
+                    f"- matched_only_sweep_best: feature_set=`{sweeps.get('best_feature_set')}`, rule=`{best_sweep.get('selection_rule')}`, status=`{best_sweep.get('gate_status')}`, hit5=`{best_sweep_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{best_sweep_metrics.get('avg_5d_pct')}`, min_low=`{best_sweep_metrics.get('min_min_low_5d_pct')}`, blockers=`{best_sweep.get('production_blocking_reasons')}`",
+                    "",
+                ]
+            )
     lines.extend(["## UI 요구사항"])
     lines.extend(f"- {item}" for item in report.get("ui_requirements") or [])
     lines.extend(["", f"- operator_report_rule: {report.get('operator_report_rule')}"])
@@ -510,13 +757,38 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--three-stage-dynamic-report", default=str(DEFAULT_THREE_STAGE_DYNAMIC_REPORT))
     parser.add_argument("--three-stage-fixed-report", default=str(DEFAULT_THREE_STAGE_FIXED_REPORT))
     parser.add_argument("--market-comparison-report", default=str(DEFAULT_MARKET_COMPARISON_REPORT))
+    parser.add_argument("--sidecar-baseline-sweep-report", default=str(DEFAULT_SIDECAR_BASELINE_SWEEP))
+    parser.add_argument("--sidecar-score-sweep-report", default=str(DEFAULT_SIDECAR_SCORE_SWEEP))
+    parser.add_argument("--sidecar-proxy-gap-report", default=str(DEFAULT_SIDECAR_PROXY_GAP))
+    parser.add_argument("--sidecar-augmentation-report", default=str(DEFAULT_SIDECAR_AUGMENTATION))
+    parser.add_argument("--augmented-three-stage-report", default=str(DEFAULT_AUGMENTED_THREE_STAGE))
+    parser.add_argument("--matched-only-three-stage-report", default=str(DEFAULT_MATCHED_ONLY_THREE_STAGE))
+    parser.add_argument(
+        "--matched-only-sweep-report",
+        action="append",
+        default=[f"{key}={path}" for key, path in DEFAULT_MATCHED_ONLY_SWEEPS.items()],
+        help="FEATURE_SET=report json path",
+    )
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     args = parser.parse_args(list(argv) if argv is not None else None)
+    matched_only_sweep_paths = {}
+    for value in args.matched_only_sweep_report:
+        if "=" not in value:
+            continue
+        feature_set, raw_path = value.split("=", 1)
+        matched_only_sweep_paths[feature_set.strip()] = Path(raw_path)
     report = build_report(
         shadow_report_path=Path(args.shadow_report),
         three_stage_dynamic_path=Path(args.three_stage_dynamic_report),
         three_stage_fixed_path=Path(args.three_stage_fixed_report),
         market_comparison_path=Path(args.market_comparison_report),
+        sidecar_baseline_sweep_path=Path(args.sidecar_baseline_sweep_report),
+        sidecar_score_sweep_path=Path(args.sidecar_score_sweep_report),
+        sidecar_proxy_gap_path=Path(args.sidecar_proxy_gap_report),
+        sidecar_augmentation_path=Path(args.sidecar_augmentation_report),
+        augmented_three_stage_path=Path(args.augmented_three_stage_report),
+        matched_only_three_stage_path=Path(args.matched_only_three_stage_report),
+        matched_only_sweep_paths=matched_only_sweep_paths,
     )
     write_report(report, Path(args.output))
     print(

@@ -1,0 +1,1895 @@
+{
+  "version": "kis_sidecar_cache_exact_date_augmentation_v1",
+  "generated_at": "2026-06-12T18:32:12+00:00",
+  "objective": "실제 KIS sidecar cache가 가진 flow/financial/static/news/prefilter 피쳐를 누수 없이 historical proxy 학습 캐시에 exact ticker-date 기준으로 붙여 3단 touch5_dd10 연구 입력을 개선한다.",
+  "dummy_data_used": false,
+  "sidecar_cache": {
+    "rows": 157551,
+    "columns": 342,
+    "date_min": "2026-03-31",
+    "date_max": "2026-06-10",
+    "unique_days": 38,
+    "unique_tickers": 2496,
+    "path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_sidecar_db_20260101_20260610.pkl",
+    "markets": {
+      "KOSDAQ": 83163,
+      "KOSPI": 74388
+    }
+  },
+  "markets": [
+    {
+      "market": "KOSPI",
+      "proxy_scope_before": {
+        "rows": 100260,
+        "columns": 362,
+        "date_min": "2026-01-02",
+        "date_max": "2026-06-10",
+        "unique_days": 106,
+        "unique_tickers": 939,
+        "markets": {
+          "KOSPI": 100260
+        }
+      },
+      "proxy_scope_after": {
+        "rows": 100260,
+        "columns": 367,
+        "date_min": "2026-01-02",
+        "date_max": "2026-06-10",
+        "unique_days": 106,
+        "unique_tickers": 939,
+        "markets": {
+          "KOSPI": 100260
+        }
+      },
+      "sidecar_dedupe": {
+        "input_keyed_rows": 157551,
+        "deduped_key_rows": 64482,
+        "duplicate_key_rows_removed": 93069,
+        "max_feature_presence_count": 127
+      },
+      "matched_rows": 16218,
+      "matched_row_pct": 16.176,
+      "matched_days": 26,
+      "matched_tickers": 842,
+      "no_dummy_data": true,
+      "leakage_policy": "exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied",
+      "feature_columns_considered": 152,
+      "feature_fill_counts_top": [
+        {
+          "feature": "kis_whale_score",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_foreigner_1d",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_institution_1d",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_retail_1d",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_whale_flow_3d",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_whale_flow_10d",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_minute_bar_count",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_news_title_count",
+          "filled_missing_values": 7875
+        },
+        {
+          "feature": "kis_vi_triggered",
+          "filled_missing_values": 7874
+        },
+        {
+          "feature": "kis_stock_listed_shares",
+          "filled_missing_values": 7871
+        },
+        {
+          "feature": "kis_stock_capital_amount",
+          "filled_missing_values": 7871
+        },
+        {
+          "feature": "kis_stock_par_value",
+          "filled_missing_values": 7871
+        },
+        {
+          "feature": "kis_stock_type",
+          "filled_missing_values": 7871
+        },
+        {
+          "feature": "kis_stock_standard_industry_code",
+          "filled_missing_values": 7871
+        },
+        {
+          "feature": "kis_stock_kospi200_item",
+          "filled_missing_values": 7871
+        },
+        {
+          "feature": "kis_theme_news_standard_industry_code",
+          "filled_missing_values": 7871
+        },
+        {
+          "feature": "kis_financial_revenue_growth_rate",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_operating_profit_margin",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_net_income_margin",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_roe",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_eps",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_bps",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_debt_ratio",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_reserve_ratio",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_financial_statement_period",
+          "filled_missing_values": 7828
+        },
+        {
+          "feature": "kis_news_raw_title_count",
+          "filled_missing_values": 695
+        },
+        {
+          "feature": "kis_news_rows_filtered_out_count",
+          "filled_missing_values": 695
+        },
+        {
+          "feature": "kis_news_source_scope_confidence",
+          "filled_missing_values": 695
+        },
+        {
+          "feature": "kis_news_source_scope_ambiguous",
+          "filled_missing_values": 695
+        },
+        {
+          "feature": "kis_news_promotion_blocked",
+          "filled_missing_values": 695
+        }
+      ],
+      "feature_overwrite_counts_top": [
+        {
+          "feature": "kis_sidecar_present",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_sidecar_warning_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_prefilter_present",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_prefilter_rejected",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_prefilter_source_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_prefilter_warning_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_available",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_kis_backed",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_evidence_score",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_news_checked",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_news_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_headline_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_positive_tag_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_risk_tag_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_source_scope_confidence",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_promotion_blocked",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_vi_triggered",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_prefilter_source_count",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_level",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_theme_news_source_scope",
+          "overwritten_existing_values": 16218
+        },
+        {
+          "feature": "kis_sidecar_model_ready",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_production_ready",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_quote_snapshot",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_daily_ohlcv",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_daily_ohlcv_50d",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_minute_ohlcv",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_investor_flow",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_rank_membership",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_vi_status",
+          "overwritten_existing_values": 7875
+        },
+        {
+          "feature": "kis_sidecar_coverage_news_titles",
+          "overwritten_existing_values": 7875
+        }
+      ],
+      "coverage_delta": {
+        "sidecar_diagnostic": {
+          "features_improved": 0,
+          "avg_positive_delta_pct": 0.0,
+          "top_deltas": [
+            {
+              "feature": "kis_sidecar_present",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_model_ready",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_production_ready",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_quote_snapshot",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_daily_ohlcv",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_daily_ohlcv_50d",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_minute_ohlcv",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_investor_flow",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_rank_membership",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_vi_status",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_news_titles",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_stock_info",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_financial_ratio",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_financial_style",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_warning_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_price_daily_rank": {
+          "features_improved": 5,
+          "avg_positive_delta_pct": 1.581,
+          "top_deltas": [
+            {
+              "feature": "kis_vi_triggered",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.854,
+              "delta_pct": 7.854
+            },
+            {
+              "feature": "kis_high_250d_gap_pct",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.018,
+              "delta_pct": 0.018
+            },
+            {
+              "feature": "kis_low_250d_gap_pct",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.018,
+              "delta_pct": 0.018
+            },
+            {
+              "feature": "kis_rank_fluctuation",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.009,
+              "delta_pct": 0.009
+            },
+            {
+              "feature": "kis_rank_volume",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.008,
+              "delta_pct": 0.008
+            },
+            {
+              "feature": "kis_current_price",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_day_change_pct",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_value_traded",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_prev_volume_ratio",
+              "before_present_pct": 97.725,
+              "after_present_pct": 97.725,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_bar_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_return_5d_pct",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_return_20d_pct",
+              "before_present_pct": 99.999,
+              "after_present_pct": 99.999,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_return_60d_pct",
+              "before_present_pct": 99.89,
+              "after_present_pct": 99.89,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_volume_ratio_20d",
+              "before_present_pct": 97.725,
+              "after_present_pct": 97.725,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_ma5",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_flow": {
+          "features_improved": 6,
+          "avg_positive_delta_pct": 7.855,
+          "top_deltas": [
+            {
+              "feature": "kis_whale_score",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.855,
+              "delta_pct": 7.855
+            },
+            {
+              "feature": "kis_foreigner_1d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.855,
+              "delta_pct": 7.855
+            },
+            {
+              "feature": "kis_institution_1d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.855,
+              "delta_pct": 7.855
+            },
+            {
+              "feature": "kis_retail_1d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.855,
+              "delta_pct": 7.855
+            },
+            {
+              "feature": "kis_whale_flow_3d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.855,
+              "delta_pct": 7.855
+            },
+            {
+              "feature": "kis_whale_flow_10d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.855,
+              "delta_pct": 7.855
+            }
+          ]
+        },
+        "sidecar_stock_static": {
+          "features_improved": 8,
+          "avg_positive_delta_pct": 5.891,
+          "top_deltas": [
+            {
+              "feature": "kis_stock_listed_shares",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.851,
+              "delta_pct": 7.851
+            },
+            {
+              "feature": "kis_stock_capital_amount",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.851,
+              "delta_pct": 7.851
+            },
+            {
+              "feature": "kis_stock_par_value",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.851,
+              "delta_pct": 7.851
+            },
+            {
+              "feature": "kis_stock_type",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.851,
+              "delta_pct": 7.851
+            },
+            {
+              "feature": "kis_stock_standard_industry_code",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.851,
+              "delta_pct": 7.851
+            },
+            {
+              "feature": "kis_stock_kospi200_item",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.851,
+              "delta_pct": 7.851
+            },
+            {
+              "feature": "kis_stock_listed_date",
+              "before_present_pct": 88.37,
+              "after_present_pct": 88.38,
+              "delta_pct": 0.01
+            },
+            {
+              "feature": "kis_stock_sector_name",
+              "before_present_pct": 88.37,
+              "after_present_pct": 88.38,
+              "delta_pct": 0.01
+            },
+            {
+              "feature": "kis_stock_market_code",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_market_name",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_status_code",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_trade_stop",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_admin_item",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_financial": {
+          "features_improved": 9,
+          "avg_positive_delta_pct": 7.808,
+          "top_deltas": [
+            {
+              "feature": "kis_financial_revenue_growth_rate",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_operating_profit_margin",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_net_income_margin",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_roe",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_eps",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_bps",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_debt_ratio",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_reserve_ratio",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_statement_period",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.808,
+              "delta_pct": 7.808
+            },
+            {
+              "feature": "kis_financial_per",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_financial_pbr",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_financial_current_ratio",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_news": {
+          "features_improved": 7,
+          "avg_positive_delta_pct": 1.716,
+          "top_deltas": [
+            {
+              "feature": "kis_news_title_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.855,
+              "delta_pct": 7.855
+            },
+            {
+              "feature": "kis_news_raw_title_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            },
+            {
+              "feature": "kis_news_rows_filtered_out_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            },
+            {
+              "feature": "kis_news_source_scope_confidence",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            },
+            {
+              "feature": "kis_news_source_scope_ambiguous",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            },
+            {
+              "feature": "kis_news_promotion_blocked",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            },
+            {
+              "feature": "kis_news_source_scope",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            }
+          ]
+        },
+        "prefilter": {
+          "features_improved": 27,
+          "avg_positive_delta_pct": 0.195,
+          "top_deltas": [
+            {
+              "feature": "kis_prefilter_vi_triggered",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.334,
+              "delta_pct": 0.334
+            },
+            {
+              "feature": "kis_prefilter_quote_market_cap",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.334,
+              "delta_pct": 0.334
+            },
+            {
+              "feature": "kis_prefilter_quote_per",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.334,
+              "delta_pct": 0.334
+            },
+            {
+              "feature": "kis_prefilter_quote_pbr",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.334,
+              "delta_pct": 0.334
+            },
+            {
+              "feature": "kis_prefilter_score_market_cap",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.334,
+              "delta_pct": 0.334
+            },
+            {
+              "feature": "kis_prefilter_selection_score",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_quote_ok",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_flow_ok",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_quote_current_price",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_quote_day_change_pct",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_quote_value_traded",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_quote_volume",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_quote_prev_volume_ratio",
+              "before_present_pct": 8.456,
+              "after_present_pct": 8.644,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_score_value_traded",
+              "before_present_pct": 8.457,
+              "after_present_pct": 8.645,
+              "delta_pct": 0.188
+            },
+            {
+              "feature": "kis_prefilter_score_prev_volume_ratio",
+              "before_present_pct": 8.456,
+              "after_present_pct": 8.644,
+              "delta_pct": 0.188
+            }
+          ]
+        },
+        "theme_news": {
+          "features_improved": 7,
+          "avg_positive_delta_pct": 1.457,
+          "top_deltas": [
+            {
+              "feature": "kis_theme_news_standard_industry_code",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.851,
+              "delta_pct": 7.851
+            },
+            {
+              "feature": "kis_theme_news_raw_news_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            },
+            {
+              "feature": "kis_theme_news_rows_filtered_out_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.693,
+              "delta_pct": 0.693
+            },
+            {
+              "feature": "kis_theme_news_top_positive_tag",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.514,
+              "delta_pct": 0.514
+            },
+            {
+              "feature": "kis_theme_news_top_risk_tag",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.435,
+              "delta_pct": 0.435
+            },
+            {
+              "feature": "kis_theme_news_kis_sector_name",
+              "before_present_pct": 88.37,
+              "after_present_pct": 88.38,
+              "delta_pct": 0.01
+            },
+            {
+              "feature": "kis_theme_news_primary_theme",
+              "before_present_pct": 88.37,
+              "after_present_pct": 88.371,
+              "delta_pct": 0.001
+            },
+            {
+              "feature": "kis_theme_news_available",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_kis_backed",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_evidence_score",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_news_checked",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_news_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_headline_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_positive_tag_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_risk_tag_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        }
+      },
+      "matched_only_output_cache": "runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_matched_only_kospi_20260101_20260610.pkl",
+      "matched_only_scope": {
+        "rows": 16218,
+        "columns": 367,
+        "date_min": "2026-04-07",
+        "date_max": "2026-06-10",
+        "unique_days": 26,
+        "unique_tickers": 842,
+        "markets": {
+          "KOSPI": 16218
+        }
+      },
+      "input_proxy_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_prefilter_proxy_prepared_kospi_20260101_20260610.pkl",
+      "output_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_prepared_kospi_20260101_20260610.pkl"
+    },
+    {
+      "market": "KOSDAQ",
+      "proxy_scope_before": {
+        "rows": 190182,
+        "columns": 362,
+        "date_min": "2026-01-02",
+        "date_max": "2026-06-10",
+        "unique_days": 106,
+        "unique_tickers": 1789,
+        "markets": {
+          "KOSDAQ": 190182
+        }
+      },
+      "proxy_scope_after": {
+        "rows": 190182,
+        "columns": 367,
+        "date_min": "2026-01-02",
+        "date_max": "2026-06-10",
+        "unique_days": 106,
+        "unique_tickers": 1789,
+        "markets": {
+          "KOSDAQ": 190182
+        }
+      },
+      "sidecar_dedupe": {
+        "input_keyed_rows": 157551,
+        "deduped_key_rows": 64482,
+        "duplicate_key_rows_removed": 93069,
+        "max_feature_presence_count": 127
+      },
+      "matched_rows": 31850,
+      "matched_row_pct": 16.747,
+      "matched_days": 27,
+      "matched_tickers": 1643,
+      "no_dummy_data": true,
+      "leakage_policy": "exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied",
+      "feature_columns_considered": 152,
+      "feature_fill_counts_top": [
+        {
+          "feature": "kis_minute_bar_count",
+          "filled_missing_values": 13331
+        },
+        {
+          "feature": "kis_vi_triggered",
+          "filled_missing_values": 13331
+        },
+        {
+          "feature": "kis_news_title_count",
+          "filled_missing_values": 13331
+        },
+        {
+          "feature": "kis_stock_listed_shares",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_stock_capital_amount",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_stock_par_value",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_revenue_growth_rate",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_operating_profit_margin",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_net_income_margin",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_roe",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_eps",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_bps",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_debt_ratio",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_reserve_ratio",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_stock_type",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_stock_standard_industry_code",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_stock_kospi200_item",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_financial_statement_period",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_theme_news_standard_industry_code",
+          "filled_missing_values": 13330
+        },
+        {
+          "feature": "kis_whale_score",
+          "filled_missing_values": 13329
+        },
+        {
+          "feature": "kis_foreigner_1d",
+          "filled_missing_values": 13329
+        },
+        {
+          "feature": "kis_institution_1d",
+          "filled_missing_values": 13329
+        },
+        {
+          "feature": "kis_retail_1d",
+          "filled_missing_values": 13329
+        },
+        {
+          "feature": "kis_whale_flow_3d",
+          "filled_missing_values": 13329
+        },
+        {
+          "feature": "kis_whale_flow_10d",
+          "filled_missing_values": 13329
+        },
+        {
+          "feature": "kis_news_raw_title_count",
+          "filled_missing_values": 672
+        },
+        {
+          "feature": "kis_news_rows_filtered_out_count",
+          "filled_missing_values": 672
+        },
+        {
+          "feature": "kis_news_source_scope_confidence",
+          "filled_missing_values": 672
+        },
+        {
+          "feature": "kis_news_source_scope_ambiguous",
+          "filled_missing_values": 672
+        },
+        {
+          "feature": "kis_news_promotion_blocked",
+          "filled_missing_values": 672
+        }
+      ],
+      "feature_overwrite_counts_top": [
+        {
+          "feature": "kis_sidecar_present",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_sidecar_warning_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_prefilter_present",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_prefilter_rejected",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_prefilter_source_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_prefilter_warning_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_available",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_kis_backed",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_evidence_score",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_news_checked",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_news_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_headline_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_positive_tag_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_risk_tag_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_source_scope_confidence",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_promotion_blocked",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_vi_triggered",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_prefilter_source_count",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_level",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_theme_news_source_scope",
+          "overwritten_existing_values": 31850
+        },
+        {
+          "feature": "kis_sidecar_model_ready",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_production_ready",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_quote_snapshot",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_daily_ohlcv",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_daily_ohlcv_50d",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_minute_ohlcv",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_investor_flow",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_rank_membership",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_vi_status",
+          "overwritten_existing_values": 13331
+        },
+        {
+          "feature": "kis_sidecar_coverage_news_titles",
+          "overwritten_existing_values": 13331
+        }
+      ],
+      "coverage_delta": {
+        "sidecar_diagnostic": {
+          "features_improved": 0,
+          "avg_positive_delta_pct": 0.0,
+          "top_deltas": [
+            {
+              "feature": "kis_sidecar_present",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_model_ready",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_production_ready",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_quote_snapshot",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_daily_ohlcv",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_daily_ohlcv_50d",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_minute_ohlcv",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_investor_flow",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_rank_membership",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_vi_status",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_news_titles",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_stock_info",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_financial_ratio",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_coverage_financial_style",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_sidecar_warning_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_price_daily_rank": {
+          "features_improved": 5,
+          "avg_positive_delta_pct": 1.409,
+          "top_deltas": [
+            {
+              "feature": "kis_vi_triggered",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.01,
+              "delta_pct": 7.01
+            },
+            {
+              "feature": "kis_high_250d_gap_pct",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.011,
+              "delta_pct": 0.011
+            },
+            {
+              "feature": "kis_low_250d_gap_pct",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.011,
+              "delta_pct": 0.011
+            },
+            {
+              "feature": "kis_rank_volume",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.008,
+              "delta_pct": 0.008
+            },
+            {
+              "feature": "kis_rank_fluctuation",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.007,
+              "delta_pct": 0.007
+            },
+            {
+              "feature": "kis_current_price",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_day_change_pct",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_value_traded",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_prev_volume_ratio",
+              "before_present_pct": 96.826,
+              "after_present_pct": 96.826,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_bar_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_return_5d_pct",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_return_20d_pct",
+              "before_present_pct": 99.989,
+              "after_present_pct": 99.989,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_return_60d_pct",
+              "before_present_pct": 99.315,
+              "after_present_pct": 99.315,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_volume_ratio_20d",
+              "before_present_pct": 96.826,
+              "after_present_pct": 96.826,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_daily_ma5",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_flow": {
+          "features_improved": 6,
+          "avg_positive_delta_pct": 7.009,
+          "top_deltas": [
+            {
+              "feature": "kis_whale_score",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_foreigner_1d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_institution_1d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_retail_1d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_whale_flow_3d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_whale_flow_10d",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            }
+          ]
+        },
+        "sidecar_stock_static": {
+          "features_improved": 6,
+          "avg_positive_delta_pct": 7.009,
+          "top_deltas": [
+            {
+              "feature": "kis_stock_listed_shares",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_stock_capital_amount",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_stock_par_value",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_stock_type",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_stock_standard_industry_code",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_stock_kospi200_item",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_stock_market_code",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_market_name",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_listed_date",
+              "before_present_pct": 99.833,
+              "after_present_pct": 99.833,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_status_code",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_sector_name",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_trade_stop",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_stock_admin_item",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_financial": {
+          "features_improved": 9,
+          "avg_positive_delta_pct": 7.009,
+          "top_deltas": [
+            {
+              "feature": "kis_financial_revenue_growth_rate",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_operating_profit_margin",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_net_income_margin",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_roe",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_eps",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_bps",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_debt_ratio",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_reserve_ratio",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_statement_period",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_financial_per",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_financial_pbr",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_financial_current_ratio",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.0,
+              "delta_pct": 0.0
+            }
+          ]
+        },
+        "sidecar_news": {
+          "features_improved": 7,
+          "avg_positive_delta_pct": 1.304,
+          "top_deltas": [
+            {
+              "feature": "kis_news_title_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.01,
+              "delta_pct": 7.01
+            },
+            {
+              "feature": "kis_news_raw_title_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            },
+            {
+              "feature": "kis_news_rows_filtered_out_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            },
+            {
+              "feature": "kis_news_source_scope_confidence",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            },
+            {
+              "feature": "kis_news_source_scope_ambiguous",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            },
+            {
+              "feature": "kis_news_promotion_blocked",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            },
+            {
+              "feature": "kis_news_source_scope",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            }
+          ]
+        },
+        "prefilter": {
+          "features_improved": 27,
+          "avg_positive_delta_pct": 0.115,
+          "top_deltas": [
+            {
+              "feature": "kis_prefilter_vi_triggered",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.181,
+              "delta_pct": 0.181
+            },
+            {
+              "feature": "kis_prefilter_quote_market_cap",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.181,
+              "delta_pct": 0.181
+            },
+            {
+              "feature": "kis_prefilter_quote_per",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.181,
+              "delta_pct": 0.181
+            },
+            {
+              "feature": "kis_prefilter_quote_pbr",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.181,
+              "delta_pct": 0.181
+            },
+            {
+              "feature": "kis_prefilter_score_market_cap",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.181,
+              "delta_pct": 0.181
+            },
+            {
+              "feature": "kis_prefilter_selection_score",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_quote_ok",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_flow_ok",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_quote_current_price",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_quote_day_change_pct",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_quote_value_traded",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_quote_volume",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_quote_prev_volume_ratio",
+              "before_present_pct": 4.457,
+              "after_present_pct": 4.572,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_score_value_traded",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            },
+            {
+              "feature": "kis_prefilter_score_day_change_pct",
+              "before_present_pct": 4.459,
+              "after_present_pct": 4.574,
+              "delta_pct": 0.115
+            }
+          ]
+        },
+        "theme_news": {
+          "features_improved": 5,
+          "avg_positive_delta_pct": 1.63,
+          "top_deltas": [
+            {
+              "feature": "kis_theme_news_standard_industry_code",
+              "before_present_pct": 0.0,
+              "after_present_pct": 7.009,
+              "delta_pct": 7.009
+            },
+            {
+              "feature": "kis_theme_news_raw_news_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            },
+            {
+              "feature": "kis_theme_news_rows_filtered_out_count",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.353,
+              "delta_pct": 0.353
+            },
+            {
+              "feature": "kis_theme_news_top_positive_tag",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.233,
+              "delta_pct": 0.233
+            },
+            {
+              "feature": "kis_theme_news_top_risk_tag",
+              "before_present_pct": 0.0,
+              "after_present_pct": 0.202,
+              "delta_pct": 0.202
+            },
+            {
+              "feature": "kis_theme_news_available",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_kis_backed",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_evidence_score",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_news_checked",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_news_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_headline_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_positive_tag_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_risk_tag_count",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_source_scope_confidence",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            },
+            {
+              "feature": "kis_theme_news_promotion_blocked",
+              "before_present_pct": 100.0,
+              "after_present_pct": 100.0,
+              "delta_pct": 0.0
+            }
+          ]
+        }
+      },
+      "matched_only_output_cache": "runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_matched_only_kosdaq_20260101_20260610.pkl",
+      "matched_only_scope": {
+        "rows": 31850,
+        "columns": 367,
+        "date_min": "2026-03-31",
+        "date_max": "2026-06-10",
+        "unique_days": 27,
+        "unique_tickers": 1643,
+        "markets": {
+          "KOSDAQ": 31850
+        }
+      },
+      "input_proxy_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_prefilter_proxy_prepared_kosdaq_20260101_20260610.pkl",
+      "output_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_prepared_kosdaq_20260101_20260610.pkl"
+    }
+  ],
+  "decision": {
+    "augmented_cache_ready_for_research": true,
+    "production_replacement_ready": false,
+    "reason": "이 도구는 학습 입력 보강까지만 수행한다. 운영 승격은 별도 walk-forward 성능 검증과 표본 gate 통과가 필요하다.",
+    "leakage_policy": "exact_ticker_date_only_no_forward_fill"
+  }
+}

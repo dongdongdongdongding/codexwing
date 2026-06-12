@@ -15,7 +15,1117 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-12T18:04:48.736535+00:00",
+  "generated_at": "2026-06-12T18:44:14.027498+00:00",
+  "historical_proxy_augmentation_experiment": {
+    "backfill_priorities": [
+      {
+        "avg_sidecar_minus_proxy_pct": 44.949,
+        "backfill_path": "KIS investor flow endpoint 또는 저장된 KIS sidecar backfill",
+        "family": "sidecar_flow",
+        "missing_high_value_features": 6,
+        "priority": 1,
+        "reason": "actual sidecar에서 44% 이상 채워졌지만 proxy는 0%라 tail-safe/whale 피처가 사라진다."
+      },
+      {
+        "avg_sidecar_minus_proxy_pct": 44.8,
+        "backfill_path": "KIS financial ratio/style + static daily cache",
+        "family": "sidecar_financial",
+        "missing_high_value_features": 9,
+        "priority": 2,
+        "reason": "저빈도 정적/분기 정보라 과거 일자에 복제 가능성이 높고 proxy 결손이 크다."
+      },
+      {
+        "avg_sidecar_minus_proxy_pct": 44.947,
+        "backfill_path": "KIS stock info/listing/industry master",
+        "family": "sidecar_stock_static",
+        "missing_high_value_features": 6,
+        "priority": 3,
+        "reason": "업종/상장/주식수/자본금은 자주 변하지 않아 historical proxy 보강 효율이 높다."
+      },
+      {
+        "avg_sidecar_minus_proxy_pct": 44.947,
+        "backfill_path": "KIS stock sector + news evidence contract",
+        "family": "theme_news",
+        "missing_high_value_features": 1,
+        "priority": 7,
+        "reason": "테마 문자열은 proxy에 많지만 실제 KIS-backed news/positive/risk tag는 비어 있다."
+      },
+      {
+        "avg_sidecar_minus_proxy_pct": 44.879,
+        "backfill_path": "review",
+        "family": "sidecar_diagnostic",
+        "missing_high_value_features": 5,
+        "priority": 99,
+        "reason": "review_required"
+      }
+    ],
+    "decision": {
+      "augmentation_ready_for_research": true,
+      "historical_proxy_promotable": false,
+      "positive_shadow_result": "KOSPI matched-only KIS full/sidecar sweep produced shadow-ready candidates; KOSDAQ did not reproduce in historical proxy.",
+      "production_replacement_ready": false,
+      "reason": "actual direct KIS sidecar remains the source of confirmed KR shadow performance; exact-date historical augmentation is not a production replacement."
+    },
+    "feature_gap_decision": {
+      "next_best_action": "Backfill actual KIS sidecar-equivalent flow, financial, stock static, rank/VI, and news fields for more historical days before retraining.",
+      "production_replacement_ready": false,
+      "proxy_model_promotable": false,
+      "shadow_signal_confirmed": true
+    },
+    "inputs": {
+      "augmentation_report_available": true,
+      "augmented_three_stage_report_available": true,
+      "feature_gap_report_available": true,
+      "matched_only_sweep_feature_sets": [
+        "kis_full_augmented",
+        "kis_sidecar_failure_risk_augmented",
+        "kis_sidecar_only"
+      ],
+      "matched_only_three_stage_report_available": true
+    },
+    "markets": {
+      "KOSDAQ": {
+        "augmentation": {
+          "coverage_delta_summary": {
+            "prefilter": {
+              "avg_positive_delta_pct": 0.115,
+              "features_improved": 27,
+              "top_deltas": [
+                {
+                  "after_present_pct": 0.181,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.181,
+                  "feature": "kis_prefilter_vi_triggered"
+                },
+                {
+                  "after_present_pct": 0.181,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.181,
+                  "feature": "kis_prefilter_quote_market_cap"
+                },
+                {
+                  "after_present_pct": 0.181,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.181,
+                  "feature": "kis_prefilter_quote_per"
+                }
+              ]
+            },
+            "sidecar_diagnostic": {
+              "avg_positive_delta_pct": 0.0,
+              "features_improved": 0,
+              "top_deltas": [
+                {
+                  "after_present_pct": 100.0,
+                  "before_present_pct": 100.0,
+                  "delta_pct": 0.0,
+                  "feature": "kis_sidecar_present"
+                },
+                {
+                  "after_present_pct": 100.0,
+                  "before_present_pct": 100.0,
+                  "delta_pct": 0.0,
+                  "feature": "kis_sidecar_model_ready"
+                },
+                {
+                  "after_present_pct": 100.0,
+                  "before_present_pct": 100.0,
+                  "delta_pct": 0.0,
+                  "feature": "kis_sidecar_production_ready"
+                }
+              ]
+            },
+            "sidecar_financial": {
+              "avg_positive_delta_pct": 7.009,
+              "features_improved": 9,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_financial_revenue_growth_rate"
+                },
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_financial_operating_profit_margin"
+                },
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_financial_net_income_margin"
+                }
+              ]
+            },
+            "sidecar_flow": {
+              "avg_positive_delta_pct": 7.009,
+              "features_improved": 6,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_whale_score"
+                },
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_foreigner_1d"
+                },
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_institution_1d"
+                }
+              ]
+            },
+            "sidecar_news": {
+              "avg_positive_delta_pct": 1.304,
+              "features_improved": 7,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.01,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.01,
+                  "feature": "kis_news_title_count"
+                },
+                {
+                  "after_present_pct": 0.353,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.353,
+                  "feature": "kis_news_raw_title_count"
+                },
+                {
+                  "after_present_pct": 0.353,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.353,
+                  "feature": "kis_news_rows_filtered_out_count"
+                }
+              ]
+            },
+            "sidecar_price_daily_rank": {
+              "avg_positive_delta_pct": 1.409,
+              "features_improved": 5,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.01,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.01,
+                  "feature": "kis_vi_triggered"
+                },
+                {
+                  "after_present_pct": 0.011,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.011,
+                  "feature": "kis_high_250d_gap_pct"
+                },
+                {
+                  "after_present_pct": 0.011,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.011,
+                  "feature": "kis_low_250d_gap_pct"
+                }
+              ]
+            },
+            "sidecar_stock_static": {
+              "avg_positive_delta_pct": 7.009,
+              "features_improved": 6,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_stock_listed_shares"
+                },
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_stock_capital_amount"
+                },
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_stock_par_value"
+                }
+              ]
+            },
+            "theme_news": {
+              "avg_positive_delta_pct": 1.63,
+              "features_improved": 5,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.009,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.009,
+                  "feature": "kis_theme_news_standard_industry_code"
+                },
+                {
+                  "after_present_pct": 0.353,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.353,
+                  "feature": "kis_theme_news_raw_news_count"
+                },
+                {
+                  "after_present_pct": 0.353,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.353,
+                  "feature": "kis_theme_news_rows_filtered_out_count"
+                }
+              ]
+            }
+          },
+          "leakage_policy": "exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied",
+          "matched_days": 27,
+          "matched_only_output_cache": "runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_matched_only_kosdaq_20260101_20260610.pkl",
+          "matched_row_pct": 16.747,
+          "matched_rows": 31850,
+          "matched_tickers": 1643,
+          "no_dummy_data": true,
+          "output_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_prepared_kosdaq_20260101_20260610.pkl"
+        },
+        "augmented_three_stage": {
+          "best_config": {
+            "max_tail_prob": null,
+            "pool": "prefilter",
+            "pool_k": 10,
+            "score_mode": "ev"
+          },
+          "best_metrics": {
+            "active_days": 10,
+            "avg_5d_pct": 10.356275,
+            "avg_dynamic_exit_5d_pct": 1.749488,
+            "avg_ordered_exit_5d_pct": -1.239125,
+            "bad_path_pct": 50.0,
+            "coverage_test_days_pct": 50.0,
+            "hit10_5d_pct": 70.0,
+            "hit5_dd10_5d_pct": 60.0,
+            "min_min_low_5d_pct": -25.583164,
+            "n": 10,
+            "safe_hit10_5d_pct": 60.0,
+            "tail_breach_5d_pct": 40.0,
+            "target_hit_5d_pct": 80.0
+          },
+          "days": 45,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": -0.961288,
+            "baseline_avg_ordered_exit_5d_pct": -0.277837,
+            "baseline_hit5_dd10_5d_pct": 48.0,
+            "best_avg_dynamic_exit_5d_pct": 1.749488,
+            "best_avg_ordered_exit_5d_pct": -1.239125,
+            "best_hit5_dd10_5d_pct": 60.0,
+            "dynamic_minus_fixed_exit_delta_pct": 2.988613,
+            "hit5_dd10_delta_pct": 12.0
+          },
+          "rows": 80807,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "max_tail_prob": 0.1,
+            "pool": "composite",
+            "pool_k": 50,
+            "score_mode": "ev"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 1,
+            "avg_5d_pct": 3.832442,
+            "avg_dynamic_exit_5d_pct": 9.58248,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 0.0,
+            "coverage_test_days_pct": 5.0,
+            "hit10_5d_pct": 100.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -3.966132,
+            "n": 1,
+            "safe_hit10_5d_pct": 100.0,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        },
+        "matched_only_three_stage": {
+          "best_config": {
+            "max_tail_prob": 0.2,
+            "pool": "prefilter",
+            "pool_k": 50,
+            "score_mode": "ev"
+          },
+          "best_metrics": {
+            "active_days": 8,
+            "avg_5d_pct": -3.332969,
+            "avg_dynamic_exit_5d_pct": -3.279198,
+            "avg_ordered_exit_5d_pct": -4.524453,
+            "bad_path_pct": 75.0,
+            "coverage_test_days_pct": 66.6667,
+            "hit10_5d_pct": 37.5,
+            "hit5_dd10_5d_pct": 37.5,
+            "min_min_low_5d_pct": -26.343594,
+            "n": 8,
+            "safe_hit10_5d_pct": 25.0,
+            "tail_breach_5d_pct": 62.5,
+            "target_hit_5d_pct": 50.0
+          },
+          "days": 24,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": -4.246616,
+            "baseline_avg_ordered_exit_5d_pct": -0.277837,
+            "baseline_hit5_dd10_5d_pct": 48.0,
+            "best_avg_dynamic_exit_5d_pct": -3.279198,
+            "best_avg_ordered_exit_5d_pct": -4.524453,
+            "best_hit5_dd10_5d_pct": 37.5,
+            "dynamic_minus_fixed_exit_delta_pct": 1.245255,
+            "hit5_dd10_delta_pct": -10.5
+          },
+          "rows": 27016,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "max_tail_prob": 0.2,
+            "pool": "composite",
+            "pool_k": 5,
+            "score_mode": "ev"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 1,
+            "avg_5d_pct": -9.075867,
+            "avg_dynamic_exit_5d_pct": 4.601458,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 100.0,
+            "coverage_test_days_pct": 8.3333,
+            "hit10_5d_pct": 0.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -9.655001,
+            "n": 1,
+            "safe_hit10_5d_pct": 0.0,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        },
+        "matched_only_threshold_sweeps": {
+          "best_candidate": {
+            "gate_status": "shadow_risk_review",
+            "metrics": {
+              "active_days": 5,
+              "active_runs": 5,
+              "avg_1d_pct": 0.449531,
+              "avg_3d_pct": 0.064401,
+              "avg_5d_pct": -2.414001,
+              "avg_max_high_5d_pct": 6.811049,
+              "avg_min_low_5d_pct": -5.600421,
+              "bad_path_pct": 70.0,
+              "hit10_5d_pct": 20.0,
+              "hit5_dd10_5d_pct": 60.0,
+              "min_1d_pct": -4.575163,
+              "min_3d_pct": -6.476986,
+              "min_5d_pct": -9.313725,
+              "min_min_low_5d_pct": -10.457516,
+              "n": 10,
+              "stop5_pct": 60.0,
+              "stop_before_target_5d_pct": 60.0,
+              "target_before_stop_5d_pct": 60.0
+            },
+            "production_blocking_reasons": [
+              "n_lt_45",
+              "active_days_lt_20",
+              "active_runs_lt_20",
+              "hit5_dd10_5d_lt_73",
+              "min_low_5d_lt_neg10",
+              "expected_touch_policy_net_5d_lt_0p5"
+            ],
+            "production_ready": false,
+            "quality_score": -222.675494,
+            "score_mode": "prob",
+            "selection_rule": "top5_p0p65_tail0p95",
+            "shadow_display_allowed": true
+          },
+          "best_feature_set": "kis_sidecar_only",
+          "by_feature_set": {
+            "kis_full_augmented": {
+              "best_candidate": {
+                "gate_status": "shadow_risk_review",
+                "metrics": {
+                  "active_days": 5,
+                  "active_runs": 5,
+                  "avg_1d_pct": 0.731668,
+                  "avg_3d_pct": -1.596803,
+                  "avg_5d_pct": -4.758365,
+                  "avg_max_high_5d_pct": 6.221815,
+                  "avg_min_low_5d_pct": -7.294114,
+                  "bad_path_pct": 77.7778,
+                  "hit10_5d_pct": 11.1111,
+                  "hit5_dd10_5d_pct": 55.5556,
+                  "min_1d_pct": -6.501296,
+                  "min_3d_pct": -5.718954,
+                  "min_5d_pct": -9.428732,
+                  "min_min_low_5d_pct": -11.346529,
+                  "n": 9,
+                  "stop5_pct": 77.7778,
+                  "stop_before_target_5d_pct": 77.7778,
+                  "target_before_stop_5d_pct": 66.6667
+                },
+                "production_blocking_reasons": [
+                  "n_lt_45",
+                  "active_days_lt_20",
+                  "active_runs_lt_20",
+                  "hit5_dd10_5d_lt_73",
+                  "min_low_5d_lt_neg10",
+                  "expected_touch_policy_net_5d_lt_0p5"
+                ],
+                "production_ready": false,
+                "quality_score": -272.984146,
+                "score_mode": "prob_x_tail",
+                "selection_rule": "top5_prob_x_tail_p0p7_tail0p95",
+                "shadow_display_allowed": true
+              },
+              "summary": {
+                "production_blocking_reason_counts": {
+                  "active_days_lt_20": 2925,
+                  "active_runs_lt_20": 2925,
+                  "expected_touch_policy_net_5d_lt_0p5": 2888,
+                  "hit5_dd10_5d_lt_73": 2888,
+                  "min_low_5d_lt_neg10": 2878,
+                  "n_lt_45": 2915
+                },
+                "sample_only_blocked_count": 0,
+                "sample_sufficient_count": 0,
+                "status_counts": {
+                  "blocked": 2909,
+                  "shadow_risk_review": 16
+                }
+              }
+            },
+            "kis_sidecar_failure_risk_augmented": {
+              "best_candidate": {
+                "gate_status": null,
+                "metrics": {},
+                "production_blocking_reasons": [],
+                "production_ready": false,
+                "quality_score": null,
+                "score_mode": "prob",
+                "selection_rule": null,
+                "shadow_display_allowed": false
+              },
+              "summary": {
+                "production_blocking_reason_counts": {
+                  "active_days_lt_20": 2925,
+                  "active_runs_lt_20": 2925,
+                  "expected_touch_policy_net_5d_lt_0p5": 2925,
+                  "hit5_dd10_5d_lt_73": 2925,
+                  "min_low_5d_lt_neg10": 2800,
+                  "n_lt_45": 2920
+                },
+                "sample_only_blocked_count": 0,
+                "sample_sufficient_count": 0,
+                "status_counts": {
+                  "blocked": 2925
+                }
+              }
+            },
+            "kis_sidecar_only": {
+              "best_candidate": {
+                "gate_status": "shadow_risk_review",
+                "metrics": {
+                  "active_days": 5,
+                  "active_runs": 5,
+                  "avg_1d_pct": 0.449531,
+                  "avg_3d_pct": 0.064401,
+                  "avg_5d_pct": -2.414001,
+                  "avg_max_high_5d_pct": 6.811049,
+                  "avg_min_low_5d_pct": -5.600421,
+                  "bad_path_pct": 70.0,
+                  "hit10_5d_pct": 20.0,
+                  "hit5_dd10_5d_pct": 60.0,
+                  "min_1d_pct": -4.575163,
+                  "min_3d_pct": -6.476986,
+                  "min_5d_pct": -9.313725,
+                  "min_min_low_5d_pct": -10.457516,
+                  "n": 10,
+                  "stop5_pct": 60.0,
+                  "stop_before_target_5d_pct": 60.0,
+                  "target_before_stop_5d_pct": 60.0
+                },
+                "production_blocking_reasons": [
+                  "n_lt_45",
+                  "active_days_lt_20",
+                  "active_runs_lt_20",
+                  "hit5_dd10_5d_lt_73",
+                  "min_low_5d_lt_neg10",
+                  "expected_touch_policy_net_5d_lt_0p5"
+                ],
+                "production_ready": false,
+                "quality_score": -222.675494,
+                "score_mode": "prob",
+                "selection_rule": "top5_p0p65_tail0p95",
+                "shadow_display_allowed": true
+              },
+              "summary": {
+                "production_blocking_reason_counts": {
+                  "active_days_lt_20": 2925,
+                  "active_runs_lt_20": 2925,
+                  "expected_touch_policy_net_5d_lt_0p5": 2873,
+                  "hit5_dd10_5d_lt_73": 2875,
+                  "min_low_5d_lt_neg10": 2875,
+                  "n_lt_45": 2910
+                },
+                "sample_only_blocked_count": 0,
+                "sample_sufficient_count": 0,
+                "status_counts": {
+                  "blocked": 2880,
+                  "shadow_risk_review": 45
+                }
+              }
+            }
+          },
+          "decision": "matched_only_shadow_research_only"
+        }
+      },
+      "KOSPI": {
+        "augmentation": {
+          "coverage_delta_summary": {
+            "prefilter": {
+              "avg_positive_delta_pct": 0.195,
+              "features_improved": 27,
+              "top_deltas": [
+                {
+                  "after_present_pct": 0.334,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.334,
+                  "feature": "kis_prefilter_vi_triggered"
+                },
+                {
+                  "after_present_pct": 0.334,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.334,
+                  "feature": "kis_prefilter_quote_market_cap"
+                },
+                {
+                  "after_present_pct": 0.334,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.334,
+                  "feature": "kis_prefilter_quote_per"
+                }
+              ]
+            },
+            "sidecar_diagnostic": {
+              "avg_positive_delta_pct": 0.0,
+              "features_improved": 0,
+              "top_deltas": [
+                {
+                  "after_present_pct": 100.0,
+                  "before_present_pct": 100.0,
+                  "delta_pct": 0.0,
+                  "feature": "kis_sidecar_present"
+                },
+                {
+                  "after_present_pct": 100.0,
+                  "before_present_pct": 100.0,
+                  "delta_pct": 0.0,
+                  "feature": "kis_sidecar_model_ready"
+                },
+                {
+                  "after_present_pct": 100.0,
+                  "before_present_pct": 100.0,
+                  "delta_pct": 0.0,
+                  "feature": "kis_sidecar_production_ready"
+                }
+              ]
+            },
+            "sidecar_financial": {
+              "avg_positive_delta_pct": 7.808,
+              "features_improved": 9,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.808,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.808,
+                  "feature": "kis_financial_revenue_growth_rate"
+                },
+                {
+                  "after_present_pct": 7.808,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.808,
+                  "feature": "kis_financial_operating_profit_margin"
+                },
+                {
+                  "after_present_pct": 7.808,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.808,
+                  "feature": "kis_financial_net_income_margin"
+                }
+              ]
+            },
+            "sidecar_flow": {
+              "avg_positive_delta_pct": 7.855,
+              "features_improved": 6,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.855,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.855,
+                  "feature": "kis_whale_score"
+                },
+                {
+                  "after_present_pct": 7.855,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.855,
+                  "feature": "kis_foreigner_1d"
+                },
+                {
+                  "after_present_pct": 7.855,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.855,
+                  "feature": "kis_institution_1d"
+                }
+              ]
+            },
+            "sidecar_news": {
+              "avg_positive_delta_pct": 1.716,
+              "features_improved": 7,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.855,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.855,
+                  "feature": "kis_news_title_count"
+                },
+                {
+                  "after_present_pct": 0.693,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.693,
+                  "feature": "kis_news_raw_title_count"
+                },
+                {
+                  "after_present_pct": 0.693,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.693,
+                  "feature": "kis_news_rows_filtered_out_count"
+                }
+              ]
+            },
+            "sidecar_price_daily_rank": {
+              "avg_positive_delta_pct": 1.581,
+              "features_improved": 5,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.854,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.854,
+                  "feature": "kis_vi_triggered"
+                },
+                {
+                  "after_present_pct": 0.018,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.018,
+                  "feature": "kis_high_250d_gap_pct"
+                },
+                {
+                  "after_present_pct": 0.018,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.018,
+                  "feature": "kis_low_250d_gap_pct"
+                }
+              ]
+            },
+            "sidecar_stock_static": {
+              "avg_positive_delta_pct": 5.891,
+              "features_improved": 8,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.851,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.851,
+                  "feature": "kis_stock_listed_shares"
+                },
+                {
+                  "after_present_pct": 7.851,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.851,
+                  "feature": "kis_stock_capital_amount"
+                },
+                {
+                  "after_present_pct": 7.851,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.851,
+                  "feature": "kis_stock_par_value"
+                }
+              ]
+            },
+            "theme_news": {
+              "avg_positive_delta_pct": 1.457,
+              "features_improved": 7,
+              "top_deltas": [
+                {
+                  "after_present_pct": 7.851,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 7.851,
+                  "feature": "kis_theme_news_standard_industry_code"
+                },
+                {
+                  "after_present_pct": 0.693,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.693,
+                  "feature": "kis_theme_news_raw_news_count"
+                },
+                {
+                  "after_present_pct": 0.693,
+                  "before_present_pct": 0.0,
+                  "delta_pct": 0.693,
+                  "feature": "kis_theme_news_rows_filtered_out_count"
+                }
+              ]
+            }
+          },
+          "leakage_policy": "exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied",
+          "matched_days": 26,
+          "matched_only_output_cache": "runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_matched_only_kospi_20260101_20260610.pkl",
+          "matched_row_pct": 16.176,
+          "matched_rows": 16218,
+          "matched_tickers": 842,
+          "no_dummy_data": true,
+          "output_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_prepared_kospi_20260101_20260610.pkl"
+        },
+        "augmented_three_stage": {
+          "best_config": {
+            "max_tail_prob": null,
+            "pool": "prefilter",
+            "pool_k": 10,
+            "score_mode": "ev"
+          },
+          "best_metrics": {
+            "active_days": 14,
+            "avg_5d_pct": 6.514602,
+            "avg_dynamic_exit_5d_pct": 1.946609,
+            "avg_ordered_exit_5d_pct": -0.188114,
+            "bad_path_pct": 42.8571,
+            "coverage_test_days_pct": 70.0,
+            "hit10_5d_pct": 50.0,
+            "hit5_dd10_5d_pct": 64.2857,
+            "min_min_low_5d_pct": -28.464098,
+            "n": 14,
+            "safe_hit10_5d_pct": 42.8571,
+            "tail_breach_5d_pct": 28.5714,
+            "target_hit_5d_pct": 71.4286
+          },
+          "days": 45,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": -0.888583,
+            "baseline_avg_ordered_exit_5d_pct": 0.700469,
+            "baseline_hit5_dd10_5d_pct": 47.619,
+            "best_avg_dynamic_exit_5d_pct": 1.946609,
+            "best_avg_ordered_exit_5d_pct": -0.188114,
+            "best_hit5_dd10_5d_pct": 64.2857,
+            "dynamic_minus_fixed_exit_delta_pct": 2.134723,
+            "hit5_dd10_delta_pct": 16.6667
+          },
+          "rows": 42562,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "max_tail_prob": 0.25,
+            "pool": "prefilter",
+            "pool_k": 20,
+            "score_mode": "ev_hit10"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 1,
+            "avg_5d_pct": 0.125156,
+            "avg_dynamic_exit_5d_pct": 4.601458,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 0.0,
+            "coverage_test_days_pct": 5.0,
+            "hit10_5d_pct": 0.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -3.15275,
+            "n": 1,
+            "safe_hit10_5d_pct": 0.0,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        },
+        "matched_only_three_stage": {
+          "best_config": {
+            "max_tail_prob": null,
+            "pool": "prefilter",
+            "pool_k": 10,
+            "score_mode": "success_tail"
+          },
+          "best_metrics": {
+            "active_days": 8,
+            "avg_5d_pct": 1.031314,
+            "avg_dynamic_exit_5d_pct": 2.23905,
+            "avg_ordered_exit_5d_pct": -0.874089,
+            "bad_path_pct": 37.5,
+            "coverage_test_days_pct": 72.7273,
+            "hit10_5d_pct": 62.5,
+            "hit5_dd10_5d_pct": 62.5,
+            "min_min_low_5d_pct": -28.615196,
+            "n": 8,
+            "safe_hit10_5d_pct": 62.5,
+            "tail_breach_5d_pct": 37.5,
+            "target_hit_5d_pct": 62.5
+          },
+          "days": 23,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": -1.574558,
+            "baseline_avg_ordered_exit_5d_pct": 0.700469,
+            "baseline_hit5_dd10_5d_pct": 47.619,
+            "best_avg_dynamic_exit_5d_pct": 2.23905,
+            "best_avg_ordered_exit_5d_pct": -0.874089,
+            "best_hit5_dd10_5d_pct": 62.5,
+            "dynamic_minus_fixed_exit_delta_pct": 3.113139,
+            "hit5_dd10_delta_pct": 14.881
+          },
+          "rows": 13783,
+          "status": "no_improvement",
+          "unconstrained_best_config": {
+            "max_tail_prob": null,
+            "pool": "prefilter",
+            "pool_k": 10,
+            "score_mode": "success_tail"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 8,
+            "avg_5d_pct": 1.031314,
+            "avg_dynamic_exit_5d_pct": 2.23905,
+            "avg_ordered_exit_5d_pct": -0.874089,
+            "bad_path_pct": 37.5,
+            "coverage_test_days_pct": 72.7273,
+            "hit10_5d_pct": 62.5,
+            "hit5_dd10_5d_pct": 62.5,
+            "min_min_low_5d_pct": -28.615196,
+            "n": 8,
+            "safe_hit10_5d_pct": 62.5,
+            "tail_breach_5d_pct": 37.5,
+            "target_hit_5d_pct": 62.5
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
+        },
+        "matched_only_threshold_sweeps": {
+          "best_candidate": {
+            "gate_status": "shadow_ready",
+            "metrics": {
+              "active_days": 8,
+              "active_runs": 8,
+              "avg_1d_pct": -1.215978,
+              "avg_3d_pct": 7.206669,
+              "avg_5d_pct": 15.615783,
+              "avg_max_high_5d_pct": 21.114948,
+              "avg_min_low_5d_pct": -4.795523,
+              "bad_path_pct": 50.0,
+              "hit10_5d_pct": 62.5,
+              "hit5_dd10_5d_pct": 75.0,
+              "min_1d_pct": -5.094458,
+              "min_3d_pct": -2.632286,
+              "min_5d_pct": -4.640117,
+              "min_min_low_5d_pct": -8.188031,
+              "n": 8,
+              "stop5_pct": 50.0,
+              "stop_before_target_5d_pct": 50.0,
+              "target_before_stop_5d_pct": 75.0
+            },
+            "production_blocking_reasons": [
+              "n_lt_30",
+              "active_days_lt_15",
+              "active_runs_lt_20"
+            ],
+            "production_ready": false,
+            "quality_score": 579.912667,
+            "score_mode": "prob",
+            "selection_rule": "top1_tail0p9",
+            "shadow_display_allowed": true
+          },
+          "best_feature_set": "kis_full_augmented",
+          "by_feature_set": {
+            "kis_full_augmented": {
+              "best_candidate": {
+                "gate_status": "shadow_ready",
+                "metrics": {
+                  "active_days": 8,
+                  "active_runs": 8,
+                  "avg_1d_pct": -1.215978,
+                  "avg_3d_pct": 7.206669,
+                  "avg_5d_pct": 15.615783,
+                  "avg_max_high_5d_pct": 21.114948,
+                  "avg_min_low_5d_pct": -4.795523,
+                  "bad_path_pct": 50.0,
+                  "hit10_5d_pct": 62.5,
+                  "hit5_dd10_5d_pct": 75.0,
+                  "min_1d_pct": -5.094458,
+                  "min_3d_pct": -2.632286,
+                  "min_5d_pct": -4.640117,
+                  "min_min_low_5d_pct": -8.188031,
+                  "n": 8,
+                  "stop5_pct": 50.0,
+                  "stop_before_target_5d_pct": 50.0,
+                  "target_before_stop_5d_pct": 75.0
+                },
+                "production_blocking_reasons": [
+                  "n_lt_30",
+                  "active_days_lt_15",
+                  "active_runs_lt_20"
+                ],
+                "production_ready": false,
+                "quality_score": 579.912667,
+                "score_mode": "prob",
+                "selection_rule": "top1_tail0p9",
+                "shadow_display_allowed": true
+              },
+              "summary": {
+                "production_blocking_reason_counts": {
+                  "active_days_lt_15": 2925,
+                  "active_runs_lt_20": 2925,
+                  "expected_touch_policy_net_5d_lt_0p25": 2474,
+                  "hit5_dd10_5d_lt_73": 2540,
+                  "min_low_5d_lt_neg10": 2606,
+                  "n_lt_30": 2010
+                },
+                "sample_only_blocked_count": 35,
+                "sample_sufficient_count": 0,
+                "status_counts": {
+                  "blocked": 2481,
+                  "shadow_ready": 55,
+                  "shadow_risk_review": 389
+                }
+              }
+            },
+            "kis_sidecar_failure_risk_augmented": {
+              "best_candidate": {
+                "gate_status": "shadow_ready",
+                "metrics": {
+                  "active_days": 8,
+                  "active_runs": 8,
+                  "avg_1d_pct": 0.513237,
+                  "avg_3d_pct": 4.211831,
+                  "avg_5d_pct": 4.949707,
+                  "avg_max_high_5d_pct": 12.413758,
+                  "avg_min_low_5d_pct": -4.547281,
+                  "bad_path_pct": 62.5,
+                  "hit10_5d_pct": 62.5,
+                  "hit5_dd10_5d_pct": 75.0,
+                  "min_1d_pct": -4.355879,
+                  "min_3d_pct": -4.590189,
+                  "min_5d_pct": -7.595222,
+                  "min_min_low_5d_pct": -8.188031,
+                  "n": 8,
+                  "stop5_pct": 62.5,
+                  "stop_before_target_5d_pct": 62.5,
+                  "target_before_stop_5d_pct": 75.0
+                },
+                "production_blocking_reasons": [
+                  "n_lt_30",
+                  "active_days_lt_15",
+                  "active_runs_lt_20"
+                ],
+                "production_ready": false,
+                "quality_score": 366.706285,
+                "score_mode": "prob",
+                "selection_rule": "top1_p0p6_tail0p8",
+                "shadow_display_allowed": true
+              },
+              "summary": {
+                "production_blocking_reason_counts": {
+                  "active_days_lt_15": 2925,
+                  "active_runs_lt_20": 2925,
+                  "expected_touch_policy_net_5d_lt_0p25": 2817,
+                  "hit5_dd10_5d_lt_73": 2842,
+                  "min_low_5d_lt_neg10": 2915,
+                  "n_lt_30": 1965
+                },
+                "sample_only_blocked_count": 2,
+                "sample_sufficient_count": 0,
+                "status_counts": {
+                  "blocked": 1780,
+                  "shadow_ready": 2,
+                  "shadow_risk_review": 1143
+                }
+              }
+            },
+            "kis_sidecar_only": {
+              "best_candidate": {
+                "gate_status": "shadow_ready",
+                "metrics": {
+                  "active_days": 8,
+                  "active_runs": 8,
+                  "avg_1d_pct": -0.701203,
+                  "avg_3d_pct": 4.871743,
+                  "avg_5d_pct": 7.947665,
+                  "avg_max_high_5d_pct": 13.245849,
+                  "avg_min_low_5d_pct": -4.456136,
+                  "bad_path_pct": 50.0,
+                  "hit10_5d_pct": 62.5,
+                  "hit5_dd10_5d_pct": 75.0,
+                  "min_1d_pct": -4.355879,
+                  "min_3d_pct": -2.616565,
+                  "min_5d_pct": -4.640117,
+                  "min_min_low_5d_pct": -8.188031,
+                  "n": 8,
+                  "stop5_pct": 50.0,
+                  "stop_before_target_5d_pct": 50.0,
+                  "target_before_stop_5d_pct": 75.0
+                },
+                "production_blocking_reasons": [
+                  "n_lt_30",
+                  "active_days_lt_15",
+                  "active_runs_lt_20"
+                ],
+                "production_ready": false,
+                "quality_score": 389.819919,
+                "score_mode": "prob_x_tail",
+                "selection_rule": "top1_prob_x_tail_tail0p9",
+                "shadow_display_allowed": true
+              },
+              "summary": {
+                "production_blocking_reason_counts": {
+                  "active_days_lt_15": 2925,
+                  "active_runs_lt_20": 2925,
+                  "expected_touch_policy_net_5d_lt_0p25": 2501,
+                  "hit5_dd10_5d_lt_73": 2535,
+                  "min_low_5d_lt_neg10": 2721,
+                  "n_lt_30": 2005
+                },
+                "sample_only_blocked_count": 28,
+                "sample_sufficient_count": 0,
+                "status_counts": {
+                  "blocked": 2413,
+                  "shadow_ready": 43,
+                  "shadow_risk_review": 469
+                }
+              }
+            }
+          },
+          "decision": "matched_only_shadow_research_only"
+        }
+      }
+    }
+  },
   "markets": {
     "KOSDAQ": {
       "kis_sidecar_longfold_shadow": {
@@ -9144,53 +10254,59 @@
           "target_before_stop_5d_pct": 49.3333
         },
         "best_config": {
-          "max_tail_prob": null,
-          "pool": "prefilter",
-          "pool_k": 50,
-          "score_mode": "ev"
+          "pool": "defensive",
+          "pool_k": 100,
+          "score_mode": "ev_hit10"
         },
         "days": 103,
         "decision": {
-          "performance_improved_vs_broad_baseline": false,
+          "performance_improved_vs_broad_baseline": true,
           "production_candidate": false,
           "reason": "hit5_dd10 and tail/path metrics remain below the KIS production gate; useful as research evidence, not as a live replacement."
         },
         "dummy_data_used": false,
         "dynamic_exit_best_metrics": {
-          "active_days": 17,
-          "avg_5d_pct": -0.028933,
-          "avg_dynamic_exit_5d_pct": 1.372075,
-          "avg_ordered_exit_5d_pct": -0.971936,
-          "bad_path_pct": 58.8235,
-          "coverage_test_days_pct": 42.5,
-          "hit10_5d_pct": 52.9412,
-          "hit5_dd10_5d_pct": 58.8235,
-          "min_min_low_5d_pct": -28.390711,
-          "n": 17,
-          "safe_hit10_5d_pct": 47.0588,
-          "tail_breach_5d_pct": 35.2941,
-          "target_hit_5d_pct": 70.5882
+          "active_days": 37,
+          "avg_5d_pct": 3.795941,
+          "avg_dynamic_exit_5d_pct": 2.712248,
+          "avg_ordered_exit_5d_pct": 0.692915,
+          "bad_path_pct": 40.5405,
+          "coverage_test_days_pct": 77.0833,
+          "hit10_5d_pct": 40.5405,
+          "hit5_dd10_5d_pct": 59.4595,
+          "min_min_low_5d_pct": -24.403496,
+          "n": 37,
+          "safe_hit10_5d_pct": 40.5405,
+          "tail_breach_5d_pct": 13.5135,
+          "target_hit_5d_pct": 59.4595
         },
         "fixed_exit_best_metrics": {
-          "active_days": 17,
-          "avg_5d_pct": -0.028933,
-          "avg_dynamic_exit_5d_pct": 1.372075,
-          "avg_ordered_exit_5d_pct": -0.971936,
-          "bad_path_pct": 58.8235,
-          "coverage_test_days_pct": 42.5,
-          "hit10_5d_pct": 52.9412,
-          "hit5_dd10_5d_pct": 58.8235,
-          "min_min_low_5d_pct": -28.390711,
-          "n": 17,
-          "safe_hit10_5d_pct": 47.0588,
-          "tail_breach_5d_pct": 35.2941,
-          "target_hit_5d_pct": 70.5882
+          "active_days": 37,
+          "avg_5d_pct": 3.795941,
+          "avg_ordered_exit_5d_pct": 0.692915,
+          "bad_path_pct": 40.5405,
+          "coverage_test_days_pct": 77.0833,
+          "hit10_5d_pct": 40.5405,
+          "hit5_dd10_5d_pct": 59.4595,
+          "min_min_low_5d_pct": -24.403496,
+          "n": 37,
+          "tail_breach_5d_pct": 13.5135,
+          "target_hit_5d_pct": 59.4595
         },
         "folds": [
           {
             "calibration_days": 12,
-            "configs_evaluated": 123,
+            "configs_evaluated": 72,
             "fold": 1,
+            "test_days": 8,
+            "test_end": "2026-04-06",
+            "test_start": "2026-03-26",
+            "train_days": 50
+          },
+          {
+            "calibration_days": 12,
+            "configs_evaluated": 72,
+            "fold": 2,
             "test_days": 8,
             "test_end": "2026-04-16",
             "test_start": "2026-04-07",
@@ -9198,8 +10314,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 114,
-            "fold": 2,
+            "configs_evaluated": 72,
+            "fold": 3,
             "test_days": 8,
             "test_end": "2026-04-28",
             "test_start": "2026-04-17",
@@ -9207,8 +10323,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 105,
-            "fold": 3,
+            "configs_evaluated": 72,
+            "fold": 4,
             "test_days": 8,
             "test_end": "2026-05-12",
             "test_start": "2026-04-29",
@@ -9216,8 +10332,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 159,
-            "fold": 4,
+            "configs_evaluated": 72,
+            "fold": 5,
             "test_days": 8,
             "test_end": "2026-05-22",
             "test_start": "2026-05-13",
@@ -9225,8 +10341,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 123,
-            "fold": 5,
+            "configs_evaluated": 72,
+            "fold": 6,
             "test_days": 8,
             "test_end": "2026-06-05",
             "test_start": "2026-05-26",
@@ -9234,17 +10350,17 @@
           }
         ],
         "improvement": {
-          "avg_ordered_exit_delta_pct": -0.694099,
+          "avg_ordered_exit_delta_pct": 0.970752,
           "baseline_avg_ordered_exit_5d_pct": -0.277837,
           "baseline_hit5_dd10_5d_pct": 48.0,
-          "best_avg_dynamic_exit_5d_pct": 1.372075,
-          "best_avg_ordered_exit_5d_pct": -0.971936,
-          "best_hit5_dd10_5d_pct": 58.8235,
-          "dynamic_minus_fixed_exit_delta_pct": 2.344011,
-          "hit5_dd10_delta_pct": 10.8235
+          "best_avg_dynamic_exit_5d_pct": 2.712248,
+          "best_avg_ordered_exit_5d_pct": 0.692915,
+          "best_hit5_dd10_5d_pct": 59.4595,
+          "dynamic_minus_fixed_exit_delta_pct": 2.019333,
+          "hit5_dd10_delta_pct": 11.4595
         },
-        "rows": 184794,
-        "status": "no_improvement",
+        "rows": 186203,
+        "status": "improved_shadow_research",
         "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
       }
     },
@@ -18304,53 +19420,59 @@
           "target_before_stop_5d_pct": 47.619
         },
         "best_config": {
-          "max_tail_prob": null,
-          "pool": "prefilter",
+          "pool": "composite",
           "pool_k": 20,
-          "score_mode": "ev"
+          "score_mode": "success_tail"
         },
         "days": 103,
         "decision": {
-          "performance_improved_vs_broad_baseline": false,
+          "performance_improved_vs_broad_baseline": true,
           "production_candidate": false,
           "reason": "hit5_dd10 and tail/path metrics remain below the KIS production gate; useful as research evidence, not as a live replacement."
         },
         "dummy_data_used": false,
         "dynamic_exit_best_metrics": {
-          "active_days": 18,
-          "avg_5d_pct": 0.640185,
-          "avg_dynamic_exit_5d_pct": 1.678068,
-          "avg_ordered_exit_5d_pct": -0.53572,
-          "bad_path_pct": 66.6667,
-          "coverage_test_days_pct": 45.0,
-          "hit10_5d_pct": 44.4444,
-          "hit5_dd10_5d_pct": 55.5556,
-          "min_min_low_5d_pct": -27.443637,
-          "n": 18,
-          "safe_hit10_5d_pct": 44.4444,
-          "tail_breach_5d_pct": 27.7778,
-          "target_hit_5d_pct": 61.1111
+          "active_days": 19,
+          "avg_5d_pct": 2.69913,
+          "avg_dynamic_exit_5d_pct": 2.854533,
+          "avg_ordered_exit_5d_pct": 0.757261,
+          "bad_path_pct": 42.1053,
+          "coverage_test_days_pct": 39.5833,
+          "hit10_5d_pct": 42.1053,
+          "hit5_dd10_5d_pct": 63.1579,
+          "min_min_low_5d_pct": -18.779401,
+          "n": 19,
+          "safe_hit10_5d_pct": 42.1053,
+          "tail_breach_5d_pct": 15.7895,
+          "target_hit_5d_pct": 68.4211
         },
         "fixed_exit_best_metrics": {
-          "active_days": 18,
-          "avg_5d_pct": 0.640185,
-          "avg_dynamic_exit_5d_pct": 1.678068,
-          "avg_ordered_exit_5d_pct": -0.53572,
-          "bad_path_pct": 66.6667,
-          "coverage_test_days_pct": 45.0,
-          "hit10_5d_pct": 44.4444,
-          "hit5_dd10_5d_pct": 55.5556,
-          "min_min_low_5d_pct": -27.443637,
-          "n": 18,
-          "safe_hit10_5d_pct": 44.4444,
-          "tail_breach_5d_pct": 27.7778,
-          "target_hit_5d_pct": 61.1111
+          "active_days": 20,
+          "avg_5d_pct": 2.429657,
+          "avg_ordered_exit_5d_pct": 0.858965,
+          "bad_path_pct": 40.0,
+          "coverage_test_days_pct": 41.6667,
+          "hit10_5d_pct": 40.0,
+          "hit5_dd10_5d_pct": 60.0,
+          "min_min_low_5d_pct": -18.779401,
+          "n": 20,
+          "tail_breach_5d_pct": 10.0,
+          "target_hit_5d_pct": 65.0
         },
         "folds": [
           {
             "calibration_days": 12,
-            "configs_evaluated": 204,
+            "configs_evaluated": 72,
             "fold": 1,
+            "test_days": 8,
+            "test_end": "2026-04-06",
+            "test_start": "2026-03-26",
+            "train_days": 50
+          },
+          {
+            "calibration_days": 12,
+            "configs_evaluated": 72,
+            "fold": 2,
             "test_days": 8,
             "test_end": "2026-04-16",
             "test_start": "2026-04-07",
@@ -18358,8 +19480,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 117,
-            "fold": 2,
+            "configs_evaluated": 72,
+            "fold": 3,
             "test_days": 8,
             "test_end": "2026-04-28",
             "test_start": "2026-04-17",
@@ -18367,8 +19489,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 126,
-            "fold": 3,
+            "configs_evaluated": 72,
+            "fold": 4,
             "test_days": 8,
             "test_end": "2026-05-12",
             "test_start": "2026-04-29",
@@ -18376,8 +19498,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 165,
-            "fold": 4,
+            "configs_evaluated": 72,
+            "fold": 5,
             "test_days": 8,
             "test_end": "2026-05-22",
             "test_start": "2026-05-13",
@@ -18385,8 +19507,8 @@
           },
           {
             "calibration_days": 12,
-            "configs_evaluated": 96,
-            "fold": 5,
+            "configs_evaluated": 72,
+            "fold": 6,
             "test_days": 8,
             "test_end": "2026-06-05",
             "test_start": "2026-05-26",
@@ -18394,24 +19516,31 @@
           }
         ],
         "improvement": {
-          "avg_ordered_exit_delta_pct": -1.236189,
+          "avg_ordered_exit_delta_pct": 0.056792,
           "baseline_avg_ordered_exit_5d_pct": 0.700469,
           "baseline_hit5_dd10_5d_pct": 47.619,
-          "best_avg_dynamic_exit_5d_pct": 1.678068,
-          "best_avg_ordered_exit_5d_pct": -0.53572,
-          "best_hit5_dd10_5d_pct": 55.5556,
-          "dynamic_minus_fixed_exit_delta_pct": 2.213788,
-          "hit5_dd10_delta_pct": 7.9366
+          "best_avg_dynamic_exit_5d_pct": 2.854533,
+          "best_avg_ordered_exit_5d_pct": 0.757261,
+          "best_hit5_dd10_5d_pct": 63.1579,
+          "dynamic_minus_fixed_exit_delta_pct": 2.097272,
+          "hit5_dd10_delta_pct": 15.5389
         },
-        "rows": 97421,
-        "status": "no_improvement",
+        "rows": 97638,
+        "status": "improved_shadow_research",
         "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
       }
     }
   },
   "operator_report_rule": "성과가 검증된 항목만 후보로 보고한다. production_ready=false이면 운영 대체가 아니라 shadow_only로만 표시한다.",
   "research_inputs": {
+    "augmented_three_stage_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_sidecar_cache_augmented_20260331_20260610.json",
     "market_comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
+    "matched_only_sweep_reports": {
+      "kis_full_augmented": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_full_augmented_20260331_20260610.json",
+      "kis_sidecar_failure_risk_augmented": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_augmented_20260331_20260610.json",
+      "kis_sidecar_only": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_sidecar_only_20260331_20260610.json"
+    },
+    "matched_only_three_stage_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_sidecar_cache_matched_only_20260331_20260610.json",
     "no_dummy_data": true,
     "shadow_data_rows": 157551,
     "shadow_display_allowed_results": 521,
@@ -18419,13 +19548,15 @@
     "shadow_prepared_rows": 157551,
     "shadow_production_ready_results": 0,
     "shadow_report": "runtime_state/reports/learning/kis_shadow_research_verification_20260612.json",
+    "sidecar_augmentation_report": "runtime_state/reports/learning/kis_sidecar_cache_augmented_proxy_20260613.json",
     "sidecar_baseline_sweep_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
+    "sidecar_proxy_gap_report": "runtime_state/reports/learning/kis_sidecar_proxy_feature_gap_20260613.json",
     "sidecar_score_evaluated_results": 4950,
     "sidecar_score_production_ready": 0,
     "sidecar_score_shadow_display_allowed": 3243,
     "sidecar_score_sweep_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold_20260101_20260610.json",
-    "three_stage_dynamic_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_tailgate_prefilter_proxy_min15_20260101_20260610.json",
-    "three_stage_fixed_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_tailgate_prefilter_proxy_min15_20260101_20260610.json",
+    "three_stage_dynamic_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_dynamic_exit_20260101_20260610.json",
+    "three_stage_fixed_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_20260101_20260610.json",
     "three_stage_validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
   },
   "research_path": [
@@ -18448,6 +19579,10 @@
     {
       "finding": "동일 long-fold 조건에서 EV/safety 결합 score mode를 추가 검증한다. 생산 승격은 여전히 0개이며, 성과가 있는 경우 risk-adjusted shadow 후보로만 기록한다.",
       "step": "sidecar_score_mode_expansion"
+    },
+    {
+      "finding": "historical proxy cache에는 실제 KIS flow/financial/static/news가 부족하므로 ticker/date가 정확히 일치하는 실제 sidecar 행만 병합하고, full cache와 matched-only cache로 분리 검증한다.",
+      "step": "exact_date_sidecar_augmentation"
     }
   ],
   "service_feature_scope": {

@@ -1,0 +1,127 @@
+{
+  "version": "kis_sidecar_threshold_sweep_v1",
+  "generated_at": "2026-06-12T18:37:39+00:00",
+  "prepared_cache": "runtime_state/reports/learning/kis_historical_universe_sidecar_cache_augmented_matched_only_all_20260101_20260610.pkl",
+  "data_rows": 48068,
+  "label": "touch5_dd10_5d",
+  "feature_set": "kis_prefilter_only",
+  "model": "lightgbm",
+  "markets": [
+    "KOSPI",
+    "KOSDAQ"
+  ],
+  "threshold_grid": {
+    "topns": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "score_modes": [
+      "prob",
+      "prob_x_tail",
+      "prob_plus_tail",
+      "prob_tail_margin",
+      "ev"
+    ],
+    "prob_thresholds": [
+      null,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8
+    ],
+    "tail_thresholds": [
+      null,
+      0.5,
+      0.6,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ]
+  },
+  "market_reports": [
+    {
+      "scope": {
+        "market": "KOSPI",
+        "rows": 0,
+        "positive_rate_pct": null,
+        "tail_safe_rate_pct": null,
+        "unique_days": 0,
+        "unique_runs": 0,
+        "usable_numeric": 0,
+        "usable_categorical": 0,
+        "required_rows": 1200,
+        "required_days": 15
+      },
+      "status": "skipped_scope_not_trainable",
+      "fold_meta": null,
+      "result_count": 0,
+      "analysis_summary": {
+        "status_counts": {},
+        "score_mode_counts": {},
+        "production_blocking_reason_counts": {},
+        "sample_only_blocked_count": 0,
+        "sample_only_top": [],
+        "sample_sufficient_count": 0,
+        "sample_sufficient_top": [],
+        "pareto_top": []
+      },
+      "results": []
+    },
+    {
+      "scope": {
+        "market": "KOSDAQ",
+        "rows": 0,
+        "positive_rate_pct": null,
+        "tail_safe_rate_pct": null,
+        "unique_days": 0,
+        "unique_runs": 0,
+        "usable_numeric": 0,
+        "usable_categorical": 0,
+        "required_rows": 1200,
+        "required_days": 15
+      },
+      "status": "skipped_scope_not_trainable",
+      "fold_meta": null,
+      "result_count": 0,
+      "analysis_summary": {
+        "status_counts": {},
+        "score_mode_counts": {},
+        "production_blocking_reason_counts": {},
+        "sample_only_blocked_count": 0,
+        "sample_only_top": [],
+        "sample_sufficient_count": 0,
+        "sample_sufficient_top": [],
+        "pareto_top": []
+      },
+      "results": []
+    }
+  ],
+  "top_results": [],
+  "summary": {
+    "evaluated_results": 0,
+    "production_ready": 0,
+    "shadow_display_allowed": 0
+  },
+  "report_storage": {
+    "compact_output": true,
+    "market_results_truncated_to": 80,
+    "removed_repeated_keys": [
+      "feature_columns",
+      "fold_meta"
+    ]
+  }
+}

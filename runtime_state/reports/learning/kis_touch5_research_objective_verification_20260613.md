@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-12T18:04:48.736535+00:00`
+- generated_at: `2026-06-12T18:44:14.027498+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -19,6 +19,7 @@
 - kis_sidecar_longfold_threshold_sweep: KIS sidecar failure-risk augmented LightGBM long-fold sweep가 양시장 shadow 성과를 만들었다.
 - consumer_contract_verification: TopDeep, UI/Discord/정밀분석 경로는 KIS shadow gate와 동적 TP/SL/보유일 trace를 보존해야 한다.
 - sidecar_score_mode_expansion: 동일 long-fold 조건에서 EV/safety 결합 score mode를 추가 검증한다. 생산 승격은 여전히 0개이며, 성과가 있는 경우 risk-adjusted shadow 후보로만 기록한다.
+- exact_date_sidecar_augmentation: historical proxy cache에는 실제 KIS flow/financial/static/news가 부족하므로 ticker/date가 정확히 일치하는 실제 sidecar 행만 병합하고, full cache와 matched-only cache로 분리 검증한다.
 
 ## 입력과 검증
 - no_dummy_data: `True`
@@ -31,8 +32,8 @@
 - gate: status=`shadow_ready`, production_ready=`False`, shadow_display_allowed=`True`
 - blockers: `['active_days_lt_15']`
 - shadow metrics: n=`50`, active_days=`11`, active_runs=`50`, hit5_dd10=`82.0`, hit10=`76.0`, avg5=`26.115197`, min_low=`-8.919727`, expected_touch_net=`1.973196`
-- three_stage_result: hit5_dd10=`55.5556`, dynamic_exit=`1.678068`, tail=`27.7778`, min_low=`-27.443637`
-- three_stage_improvement_vs_broad: avg_exit_delta=`-1.236189`, hit5_delta=`7.9366`
+- three_stage_result: hit5_dd10=`63.1579`, dynamic_exit=`2.854533`, tail=`15.7895`, min_low=`-18.779401`
+- three_stage_improvement_vs_broad: avg_exit_delta=`0.056792`, hit5_delta=`15.5389`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p3_tail0p9`
 - risk_adjusted_alternative: found=`True`, candidate=`top1_prob_tail_margin_tail0p95`, hit5_dd10=`93.4783`, avg5=`5.385336`, min_low=`-5.558554`, deltas=`{'hit5_dd10_5d_pct': 11.4783, 'min_min_low_5d_pct': 3.361173, 'avg_5d_pct': -20.729861, 'n': -4, 'active_days': -1}`
 - score_sweep_gate_summary: status_counts=`{'blocked': 1525, 'shadow_ready': 197, 'shadow_risk_review': 753}`, blockers=`{'active_days_lt_15': 2475, 'min_low_5d_lt_neg10': 2278, 'hit5_dd10_5d_lt_73': 767, 'expected_touch_policy_net_5d_lt_0p25': 453}`, sample_only_count=`155`, sample_sufficient_count=`0`
@@ -43,12 +44,33 @@
 - gate: status=`shadow_ready`, production_ready=`False`, shadow_display_allowed=`True`
 - blockers: `['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
 - shadow metrics: n=`19`, active_days=`9`, active_runs=`19`, hit5_dd10=`100.0`, hit10=`100.0`, avg5=`15.458772`, min_low=`-7.006077`, expected_touch_net=`4.601458`
-- three_stage_result: hit5_dd10=`58.8235`, dynamic_exit=`1.372075`, tail=`35.2941`, min_low=`-28.390711`
-- three_stage_improvement_vs_broad: avg_exit_delta=`-0.694099`, hit5_delta=`10.8235`
+- three_stage_result: hit5_dd10=`59.4595`, dynamic_exit=`2.712248`, tail=`13.5135`, min_low=`-24.403496`
+- three_stage_improvement_vs_broad: avg_exit_delta=`0.970752`, hit5_delta=`11.4595`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p75_tail0p85`
 - risk_adjusted_alternative: found=`False`, candidate=`None`, hit5_dd10=`None`, avg5=`None`, min_low=`None`, deltas=`None`
 - score_sweep_gate_summary: status_counts=`{'blocked': 182, 'shadow_ready': 444, 'shadow_risk_review': 1849}`, blockers=`{'active_days_lt_20': 2475, 'min_low_5d_lt_neg10': 2031, 'n_lt_45': 830, 'active_runs_lt_20': 525}`, sample_only_count=`444`, sample_sufficient_count=`0`
 - score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, sample_sufficient_top=`None`, pareto_top=`top1_p0p3_tail0p95`
+
+## Historical Proxy Exact-Date Augmentation
+- historical_proxy_promotable: `False`
+- augmentation_ready_for_research: `True`
+- production_replacement_ready: `False`
+- positive_shadow_result: KOSPI matched-only KIS full/sidecar sweep produced shadow-ready candidates; KOSDAQ did not reproduce in historical proxy.
+- reason: actual direct KIS sidecar remains the source of confirmed KR shadow performance; exact-date historical augmentation is not a production replacement.
+
+### KOSPI Augmentation
+- exact_match: rows=`16218`, pct=`16.176`, days=`26`, tickers=`842`
+- leakage_policy: `exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied`
+- full_augmented_3stage: status=`no_improvement`, hit5=`64.2857`, avg_exit=`-0.188114`, dynamic_exit=`1.946609`, tail=`28.5714`, min_low=`-28.464098`
+- matched_only_3stage: status=`no_improvement`, hit5=`62.5`, avg_exit=`-0.874089`, dynamic_exit=`2.23905`, tail=`37.5`, min_low=`-28.615196`
+- matched_only_sweep_best: feature_set=`kis_full_augmented`, rule=`top1_tail0p9`, status=`shadow_ready`, hit5=`75.0`, avg5=`15.615783`, min_low=`-8.188031`, blockers=`['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20']`
+
+### KOSDAQ Augmentation
+- exact_match: rows=`31850`, pct=`16.747`, days=`27`, tickers=`1643`
+- leakage_policy: `exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied`
+- full_augmented_3stage: status=`no_improvement`, hit5=`60.0`, avg_exit=`-1.239125`, dynamic_exit=`1.749488`, tail=`40.0`, min_low=`-25.583164`
+- matched_only_3stage: status=`no_improvement`, hit5=`37.5`, avg_exit=`-4.524453`, dynamic_exit=`-3.279198`, tail=`62.5`, min_low=`-26.343594`
+- matched_only_sweep_best: feature_set=`kis_sidecar_only`, rule=`top5_p0p65_tail0p95`, status=`shadow_risk_review`, hit5=`60.0`, avg5=`-2.414001`, min_low=`-10.457516`, blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 
 ## UI 요구사항
 - 웹 최상단에 KIS Shadow 섹션을 두고 production_ready, shadow_display_allowed, 차단 사유를 한국어로 표시
