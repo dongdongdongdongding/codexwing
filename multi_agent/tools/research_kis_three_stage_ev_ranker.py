@@ -47,6 +47,7 @@ DEFAULT_BASELINE_REPORT = (
     / "runtime_state/reports/learning/kis_historical_best_effort_suite_broad_topn_20260101_20260610.json"
 )
 TARGET_NET_PCT = compute_net_return_pct(TARGET_PCT, TradableCostModel()) or 4.601458
+TARGET10_NET_PCT = compute_net_return_pct(10.0, TradableCostModel()) or 9.55
 
 
 @dataclass(frozen=True)
@@ -170,16 +171,22 @@ def _metric_summary(frame: pd.DataFrame, idx: pd.Index) -> Dict[str, Any]:
     exit_returns = close5.copy()
     exit_returns.loc[success] = float(TARGET_NET_PCT)
     exit_returns.loc[tail] = -abs(STOP_PCT)
+    dynamic_exit_returns = close5.copy()
+    dynamic_exit_returns.loc[success] = float(TARGET_NET_PCT)
+    dynamic_exit_returns.loc[success & hit10] = float(TARGET10_NET_PCT)
+    dynamic_exit_returns.loc[tail] = -abs(STOP_PCT)
     return {
         "n": int(len(sub)),
         "active_days": int(sub["base_trade_date"].nunique()),
         "hit5_dd10_5d_pct": _pct(success.mean()),
         "target_hit_5d_pct": _pct(target.mean()),
         "hit10_5d_pct": _pct(hit10.mean()),
+        "safe_hit10_5d_pct": _pct((success & hit10).mean()),
         "tail_breach_5d_pct": _pct(tail.mean()),
         "bad_path_pct": _pct((tail | close5.lt(0.0)).mean()),
         "avg_5d_pct": _round(close5.mean()),
         "avg_ordered_exit_5d_pct": _round(exit_returns.mean()),
+        "avg_dynamic_exit_5d_pct": _round(dynamic_exit_returns.mean()),
         "avg_mfe_5d_pct": _round(mfe5.mean()),
         "avg_mae_5d_pct": _round(mae5.mean()),
         "min_min_low_5d_pct": _round(mae5.min()),
@@ -187,6 +194,7 @@ def _metric_summary(frame: pd.DataFrame, idx: pd.Index) -> Dict[str, Any]:
         "expected_binary_net_5d_pct": _round(success.mean() * TARGET_NET_PCT + (1.0 - success.mean()) * -abs(STOP_PCT)),
         "buy_premium_pct": BUY_PREMIUM_PCT,
         "target_net_pct": _round(TARGET_NET_PCT),
+        "target10_net_pct": _round(TARGET10_NET_PCT),
     }
 
 
@@ -275,6 +283,7 @@ def _market_report(
     end: str,
     cache_path: Path,
     baseline_report: Path,
+    rank_metric: str,
     pool_modes: Sequence[str],
     pool_k: Sequence[int],
     score_modes: Sequence[str],
@@ -380,6 +389,7 @@ def _market_report(
         ranked.append({"config": cfg.__dict__, "metrics": metrics})
     ranked.sort(
         key=lambda row: (
+            float((row.get("metrics") or {}).get(rank_metric) or -99.0),
             float((row.get("metrics") or {}).get("avg_ordered_exit_5d_pct") or -99.0),
             float((row.get("metrics") or {}).get("hit5_dd10_5d_pct") or 0.0),
             int((row.get("metrics") or {}).get("n") or 0),
@@ -398,6 +408,11 @@ def _market_report(
             "avg_ordered_exit_delta_pct": _round(
                 float(best_metrics.get("avg_ordered_exit_5d_pct") or 0.0)
                 - float(baseline.get("avg_ordered_exit_5d_pct") or 0.0)
+            ),
+            "best_avg_dynamic_exit_5d_pct": best_metrics.get("avg_dynamic_exit_5d_pct"),
+            "dynamic_minus_fixed_exit_delta_pct": _round(
+                float(best_metrics.get("avg_dynamic_exit_5d_pct") or 0.0)
+                - float(best_metrics.get("avg_ordered_exit_5d_pct") or 0.0)
             ),
             "baseline_hit5_dd10_5d_pct": baseline.get("hit5_dd10_5d_pct"),
             "best_hit5_dd10_5d_pct": best_metrics.get("hit5_dd10_5d_pct"),
@@ -424,6 +439,7 @@ def _market_report(
         ],
         "folds": fold_rows,
         "baseline_best_metrics": baseline,
+        "rank_metric": rank_metric,
         "improvement": improvement,
         "best": best,
         "ranked": ranked[:20],
@@ -447,6 +463,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             end=args.end,
             cache_path=_market_cache_path(market.upper(), args.start, args.end),
             baseline_report=Path(args.baseline_report),
+            rank_metric=args.rank_metric,
             pool_modes=args.pool_modes,
             pool_k=args.pool_k,
             score_modes=args.score_modes,
@@ -475,6 +492,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             "target_pct": TARGET_PCT,
             "stop_pct": STOP_PCT,
             "target_net_pct_after_costs": _round(TARGET_NET_PCT),
+            "target10_net_pct_after_costs": _round(TARGET10_NET_PCT),
             "success_label": "buy_premium_target_hit_5d == true AND buy_premium_min_low_return_5d_pct >= -10",
             "tail_breach_label": "buy_premium_min_low_return_5d_pct < -10",
         },
@@ -500,6 +518,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         f"- objective: `{report.get('objective')}`",
         f"- validation: `{report.get('validation')}`",
         f"- dummy_data_used: `{report.get('dummy_data_used')}`",
+        f"- rank_metric: `{(report.get('markets') or [{}])[0].get('rank_metric') if report.get('markets') else None}`",
         "",
     ]
     for market_report in report.get("markets", []):
@@ -514,11 +533,12 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                 f"- rows/days: `{market_report.get('rows')}` / `{market_report.get('days')}`",
                 f"- best_config: pool=`{config.get('pool')}` pool_k=`{config.get('pool_k')}` score=`{config.get('score_mode')}`",
                 f"- avg_exit improvement: `{improvement.get('baseline_avg_ordered_exit_5d_pct')}` -> `{improvement.get('best_avg_ordered_exit_5d_pct')}` (delta `{improvement.get('avg_ordered_exit_delta_pct')}`)",
+                f"- dynamic_exit: `{metrics.get('avg_dynamic_exit_5d_pct')}` (fixed 대비 delta `{improvement.get('dynamic_minus_fixed_exit_delta_pct')}`)",
                 f"- hit5_dd10: `{improvement.get('baseline_hit5_dd10_5d_pct')}` -> `{improvement.get('best_hit5_dd10_5d_pct')}` (delta `{improvement.get('hit5_dd10_delta_pct')}`)",
-                f"- best metrics: n=`{metrics.get('n')}`, active_days=`{metrics.get('active_days')}`, hit5_dd10=`{metrics.get('hit5_dd10_5d_pct')}`, hit10=`{metrics.get('hit10_5d_pct')}`, tail=`{metrics.get('tail_breach_5d_pct')}`, bad_path=`{metrics.get('bad_path_pct')}`, avg_exit=`{metrics.get('avg_ordered_exit_5d_pct')}`, min_low=`{metrics.get('min_min_low_5d_pct')}`",
+                f"- best metrics: n=`{metrics.get('n')}`, active_days=`{metrics.get('active_days')}`, hit5_dd10=`{metrics.get('hit5_dd10_5d_pct')}`, hit10=`{metrics.get('hit10_5d_pct')}`, safe_hit10=`{metrics.get('safe_hit10_5d_pct')}`, tail=`{metrics.get('tail_breach_5d_pct')}`, bad_path=`{metrics.get('bad_path_pct')}`, avg_exit=`{metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{metrics.get('min_min_low_5d_pct')}`",
                 "",
-                "| rank | pool | pool_k | score | n | days | coverage | hit5 | hit10 | tail | bad | avg_exit | min_low |",
-                "|---:|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+                "| rank | pool | pool_k | score | n | days | coverage | hit5 | hit10 | safe10 | tail | bad | avg_exit | dynamic_exit | min_low |",
+                "|---:|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
             ]
         )
         for rank, row in enumerate((market_report.get("ranked") or [])[:10], start=1):
@@ -537,9 +557,11 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                         _fmt(row_metrics.get("coverage_test_days_pct")),
                         _fmt(row_metrics.get("hit5_dd10_5d_pct")),
                         _fmt(row_metrics.get("hit10_5d_pct")),
+                        _fmt(row_metrics.get("safe_hit10_5d_pct")),
                         _fmt(row_metrics.get("tail_breach_5d_pct")),
                         _fmt(row_metrics.get("bad_path_pct")),
                         _fmt(row_metrics.get("avg_ordered_exit_5d_pct")),
+                        _fmt(row_metrics.get("avg_dynamic_exit_5d_pct")),
                         _fmt(row_metrics.get("min_min_low_5d_pct")),
                     ]
                 )
@@ -575,6 +597,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--embargo-days", type=int, default=5)
     parser.add_argument("--calibration-days", type=int, default=12)
     parser.add_argument("--baseline-report", default=str(DEFAULT_BASELINE_REPORT))
+    parser.add_argument(
+        "--rank-metric",
+        choices=["avg_ordered_exit_5d_pct", "avg_dynamic_exit_5d_pct"],
+        default="avg_ordered_exit_5d_pct",
+    )
     parser.add_argument("--output-json", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.json"))
     parser.add_argument("--output-md", default=str(PROJECT_ROOT / f"runtime_state/reports/learning/{DEFAULT_STEM}.md"))
     return parser.parse_args(argv)
