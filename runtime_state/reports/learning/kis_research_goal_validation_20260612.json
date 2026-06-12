@@ -1,0 +1,123 @@
+{
+  "version": "kis_research_goal_validation_v1",
+  "generated_at": "2026-06-12T21:31:05+09:00",
+  "dummy_data_used": false,
+  "objective": {
+    "primary_goal": "KIS 기반 피처와 모델을 실제 매수 관점의 touch5_dd10 기준으로 검증하고, 운영 대체 가능 성과가 확인될 때만 승격한다.",
+    "trade_standard": {
+      "entry_assumption": "scan reference price +2%",
+      "win_definition": "5거래일 안에 +5% 목표 터치, 동시에 5거래일 최저가가 -10% 아래로 이탈하지 않음",
+      "secondary_upside": "5거래일 안에 +10% 터치 여부를 별도 고도화 지표로 추적",
+      "loss_floor_pct": -10.0
+    }
+  },
+  "service_feature_scope": {
+    "scanner_features": [
+      "alpha_score",
+      "tech_score",
+      "ml_prob/prob_clean",
+      "whale_score",
+      "foreign/institution/retail flow",
+      "theme/news context",
+      "priority_rank and decision_score",
+      "forward outcome labels"
+    ],
+    "kis_features_used_by_successful_lane": [
+      "feature_snapshot.kis_sidecar",
+      "KIS reconstructed daily quote",
+      "KIS daily bars and 20d volume ratio",
+      "KIS investor flow snapshot",
+      "KIS stock info/category fields",
+      "KIS financial ratio fields",
+      "KIS sidecar model readiness and coverage flags",
+      "close-failure prior ticker/theme risk features"
+    ],
+    "model_structure": [
+      "primary LightGBM touch5_dd10 classifier",
+      "secondary tail-risk classifier for 5D low >= -10%",
+      "per-run topN selector",
+      "KIS model gate for production/shadow/deep-analysis allowance",
+      "dynamic exit policy template attached to shadow bundle"
+    ]
+  },
+  "verified_performance": {
+    "promotable_result_found": false,
+    "shadow_result_found": true,
+    "best_shadow_lane": {
+      "market": "KOSDAQ",
+      "source_report": "runtime_state/reports/learning/kis_shadow_admission_model_deployment_tailgate_20260612.json",
+      "prepared_cache": "runtime_state/reports/learning/scan_universe_admission_challenger_buy_premium_exact_sanity_v4_20260401_20260610.pkl",
+      "date_scope": "2026-04-01..2026-06-10 KIS sidecar cache",
+      "identity": {
+        "label": "touch5_dd10_5d",
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "model": "lightgbm",
+        "selection_rule": "top2_p0.50_tail0.90",
+        "topn": 2,
+        "prob_threshold": 0.5,
+        "tail_risk_prob_threshold": 0.9
+      },
+      "metrics": {
+        "n": 40,
+        "active_days": 11,
+        "active_runs": 20,
+        "hit5_dd10_5d_pct": 100.0,
+        "hit10_5d_pct": 100.0,
+        "hit10_guard_5d_pct": 82.5,
+        "target_before_stop_5d_pct": 92.5,
+        "close_win_5d_pct": 95.0,
+        "avg_1d_pct": 12.709664,
+        "avg_3d_pct": 24.580909,
+        "avg_5d_pct": 20.411507,
+        "avg_max_high_5d_pct": 41.996894,
+        "avg_min_low_5d_pct": -1.030885,
+        "min_5d_pct": -6.386166,
+        "min_min_low_5d_pct": -9.300619,
+        "stop5_pct": 17.5,
+        "bad_path_pct": 25.0
+      },
+      "economics": {
+        "target5_net_pct_after_costs": 4.601458,
+        "expected_touch_policy_net_5d_pct": 4.601458,
+        "hit10_extension_observation": "hit10_5d_pct is 100.0 in this validation lane, but the deployed shadow exit policy still uses TP +5%; TP +10 promotion requires a separate path-order validation."
+      },
+      "gate": {
+        "status": "shadow_ready",
+        "production_ready": false,
+        "shadow_display_allowed": true,
+        "deep_analysis_allowed": true,
+        "risk_review_required": false,
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20"
+        ]
+      },
+      "model_artifact": "models/scan_universe_challengers/kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top2_p0p50_tail0p90.pkl"
+    }
+  },
+  "rejected_or_blocked_findings": {
+    "kospi_tailgate_lane": {
+      "reason": "hit5_dd10_5d_pct is 72.5806, below production threshold 73.0; shadow only.",
+      "source_report": "runtime_state/reports/learning/kis_shadow_admission_model_deployment_tailgate_20260612.json"
+    },
+    "jan_start_supabase_kis_sidecar_training": {
+      "reason": "Current Supabase scan_universe_snapshots does not contain flattened KIS columns and sampled feature_snapshot rows contain no kis_sidecar.",
+      "verify_report": "runtime_state/reports/validation/kis_sidecar_scan_universe_verify_20260101_20260610_sample.json",
+      "sample_checked_rows": 5000,
+      "sample_kis_sidecar_rows": 0
+    },
+    "jan_start_csv_cache": {
+      "reason": "Prepared CSV cache has real outcome labels but KIS sidecar readiness is blocked, so it cannot validate KIS sidecar models.",
+      "cache": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_csv_cache_20260101_20260610.pkl"
+    },
+    "kis_historical_universe_only_models": {
+      "reason": "Actual KIS historical universe models did not beat production gates on hit5_dd10 and expected net return; not reported as success."
+    }
+  },
+  "operator_decision": {
+    "production_replacement_now": false,
+    "shadow_operation_now": true,
+    "best_action": "Keep KOSDAQ KIS sidecar tailgate as the top shadow lane and continue forward validation. Do not replace production until sample size reaches n>=45 and active_days>=20 on real KIS sidecar data.",
+    "infrastructure_blocker": "Supabase scan_universe_snapshots needs feature_snapshot.kis_sidecar backfill/persistence for Jan-start and future recursive model learning."
+  }
+}
