@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-12T19:56:06.114078+00:00`
+- generated_at: `2026-06-12T19:59:23.592400+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -48,7 +48,7 @@
 - selected_shadow_model: `kis_sidecar_failure_risk_augmented` / `lightgbm` / `top2_p0.50_tail0.90`
 - gate: status=`shadow_ready`, production_ready=`False`, shadow_display_allowed=`True`
 - blockers: `['n_lt_45', 'active_days_lt_20']`
-- shadow metrics: n=`19`, active_days=`9`, active_runs=`19`, hit5_dd10=`100.0`, hit10=`100.0`, avg5=`15.458772`, min_low=`-7.006077`, expected_touch_net=`4.601458`
+- shadow metrics: n=`40`, active_days=`11`, active_runs=`20`, hit5_dd10=`100.0`, hit10=`100.0`, avg5=`20.411507`, min_low=`-9.300619`, expected_touch_net=`4.601458`
 - three_stage_result: hit5_dd10=`59.4595`, dynamic_exit=`2.712248`, tail=`13.5135`, min_low=`-24.403496`
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.970752`, hit5_delta=`11.4595`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p75_tail0p85`

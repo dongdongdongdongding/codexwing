@@ -14,7 +14,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-12T19:56:06.114078+00:00",
+  "generated_at": "2026-06-12T19:59:23.592400+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -1621,17 +1621,24 @@
           "topn": 2
         },
         "metrics": {
-          "active_days": 9,
-          "active_runs": 19,
-          "avg_5d_pct": 15.458772,
-          "avg_max_high_5d_pct": 32.274772,
-          "expected_touch_policy_net_5d_pct": 4.601458,
+          "active_days": 11,
+          "active_runs": 20,
+          "avg_1d_pct": 12.709664,
+          "avg_3d_pct": 24.580909,
+          "avg_5d_pct": 20.411507,
+          "avg_max_high_5d_pct": 41.996894,
+          "avg_ordered_exit_5d_pct": null,
+          "bad_path_pct": 25.0,
           "hit10_5d_pct": 100.0,
           "hit5_dd10_5d_pct": 100.0,
-          "min_5d_pct": 5.198266,
-          "min_min_low_5d_pct": -7.006077,
-          "n": 19,
-          "stop5_pct": 26.3158
+          "min_1d_pct": -5.630701,
+          "min_3d_pct": 0.410008,
+          "min_5d_pct": -6.386166,
+          "min_min_low_5d_pct": -9.300619,
+          "n": 40,
+          "stop5_pct": 17.5,
+          "stop_before_target_5d_pct": 17.5,
+          "target_before_stop_5d_pct": 92.5
         },
         "operational_reflection": {
           "action": "shadow_top_section_only_until_gate_passes",
@@ -11275,15 +11282,22 @@
         "metrics": {
           "active_days": 11,
           "active_runs": 50,
+          "avg_1d_pct": 0.775356,
+          "avg_3d_pct": 18.5829,
           "avg_5d_pct": 26.115197,
           "avg_max_high_5d_pct": 48.675187,
-          "expected_touch_policy_net_5d_pct": 1.973196,
+          "avg_ordered_exit_5d_pct": null,
+          "bad_path_pct": 62.0,
           "hit10_5d_pct": 76.0,
           "hit5_dd10_5d_pct": 82.0,
+          "min_1d_pct": -5.136144,
+          "min_3d_pct": -3.802857,
           "min_5d_pct": -8.442152,
           "min_min_low_5d_pct": -8.919727,
           "n": 50,
-          "stop5_pct": 60.0
+          "stop5_pct": 60.0,
+          "stop_before_target_5d_pct": 60.0,
+          "target_before_stop_5d_pct": 82.0
         },
         "operational_reflection": {
           "action": "shadow_top_section_only_until_gate_passes",

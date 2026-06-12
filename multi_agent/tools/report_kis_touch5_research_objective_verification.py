@@ -154,6 +154,7 @@ def _shadow_market(shadow_report: Mapping[str, Any], comparison_report: Mapping[
     comparison = comparison_markets.get(market, {}) if isinstance(comparison_markets.get(market), dict) else {}
     current = comparison.get("current_kis_model") if isinstance(comparison.get("current_kis_model"), dict) else {}
     gate = current.get("kis_model_gate") if isinstance(current.get("kis_model_gate"), dict) else {}
+    current_metrics = current.get("metrics") if isinstance(current.get("metrics"), dict) else result
     return {
         "identity": current.get("identity") or {
             "feature_set": result.get("feature_set"),
@@ -162,7 +163,7 @@ def _shadow_market(shadow_report: Mapping[str, Any], comparison_report: Mapping[
             "prob_threshold": result.get("prob_threshold"),
             "tail_risk_prob_threshold": result.get("dd10_safety_threshold"),
         },
-        "metrics": _pick_metrics(result),
+        "metrics": _pick_metrics(current_metrics),
         "gate": {
             "status": gate.get("status") or result.get("gate_status"),
             "production_ready": bool(gate.get("production_ready") or result.get("production_ready")),

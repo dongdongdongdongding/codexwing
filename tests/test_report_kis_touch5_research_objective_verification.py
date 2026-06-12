@@ -133,6 +133,15 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                 "KOSDAQ": {
                     "current_kis_model": {
                         "identity": {"feature_set": "kis_sidecar_failure_risk_augmented"},
+                        "metrics": {
+                            "n": 40,
+                            "active_days": 11,
+                            "active_runs": 20,
+                            "hit5_dd10_5d_pct": 100.0,
+                            "hit10_5d_pct": 100.0,
+                            "avg_5d_pct": 20.411507,
+                            "min_min_low_5d_pct": -9.300619,
+                        },
                         "kis_model_gate": {
                             "status": "shadow_ready",
                             "production_ready": False,
@@ -298,6 +307,8 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert report["research_inputs"]["finaltopn_prefilter_proxy_report"].endswith("finaltopn_proxy.json")
     assert "+5%" in report["user_goal"]["win_definition"]
     assert report["markets"]["KOSPI"]["kis_sidecar_longfold_shadow"]["gate"]["status"] == "shadow_ready"
+    assert report["markets"]["KOSDAQ"]["kis_sidecar_longfold_shadow"]["metrics"]["n"] == 40
+    assert report["markets"]["KOSDAQ"]["kis_sidecar_longfold_shadow"]["metrics"]["active_runs"] == 20
     assert report["markets"]["KOSDAQ"]["three_stage_ev_ranker"]["decision"]["production_candidate"] is False
     finaltopn_exp = report["markets"]["KOSPI"]["finaltopn_three_stage_experiments"]["prefilter_proxy"]
     assert finaltopn_exp["best_config"]["final_topn"] == 2
