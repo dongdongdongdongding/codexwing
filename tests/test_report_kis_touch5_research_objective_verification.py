@@ -12,6 +12,8 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     dynamic = tmp_path / "dynamic.json"
     fixed = tmp_path / "fixed.json"
     comparison = tmp_path / "comparison.json"
+    sidecar_baseline = tmp_path / "sidecar_baseline.json"
+    sidecar_score = tmp_path / "sidecar_score.json"
     _write(
         shadow,
         {
@@ -140,12 +142,65 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
             }
         },
     )
+    sweep_market = {
+        "scope": {"market": "KOSPI"},
+        "fold_meta": {"folds": [{"test_days": ["2026-05-13"]}]},
+        "results": [
+            {
+                "market": "KOSPI",
+                "selection_rule": "top1_p0p3_tail0p9",
+                "score_mode": "prob",
+                "quality_score": 100.0,
+                "metrics": {"n": 10, "active_days": 5, "hit5_dd10_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_min_low_5d_pct": -8.0},
+                "kis_model_gate": {"status": "shadow_ready", "shadow_display_allowed": True, "production_ready": False},
+            }
+        ],
+    }
+    _write(
+        sidecar_baseline,
+        {
+            "market_reports": [
+                sweep_market,
+                {**sweep_market, "scope": {"market": "KOSDAQ"}},
+            ]
+        },
+    )
+    _write(
+        sidecar_score,
+        {
+            "market_reports": [
+                {
+                    **sweep_market,
+                    "results": [
+                        *sweep_market["results"],
+                        {
+                            "market": "KOSPI",
+                            "selection_rule": "top1_prob_x_tail_p0p75_tail0p95",
+                            "score_mode": "prob_x_tail",
+                            "quality_score": 90.0,
+                            "metrics": {
+                                "n": 8,
+                                "active_days": 4,
+                                "hit5_dd10_5d_pct": 90.0,
+                                "avg_5d_pct": 2.0,
+                                "min_min_low_5d_pct": -6.0,
+                            },
+                            "kis_model_gate": {"status": "shadow_ready", "shadow_display_allowed": True, "production_ready": False},
+                        },
+                    ],
+                },
+                {**sweep_market, "scope": {"market": "KOSDAQ"}},
+            ]
+        },
+    )
 
     report = build_report(
         shadow_report_path=shadow,
         three_stage_dynamic_path=dynamic,
         three_stage_fixed_path=fixed,
         market_comparison_path=comparison,
+        sidecar_baseline_sweep_path=sidecar_baseline,
+        sidecar_score_sweep_path=sidecar_score,
     )
 
     assert report["research_inputs"]["no_dummy_data"] is True
@@ -155,3 +210,7 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert "+5%" in report["user_goal"]["win_definition"]
     assert report["markets"]["KOSPI"]["kis_sidecar_longfold_shadow"]["gate"]["status"] == "shadow_ready"
     assert report["markets"]["KOSDAQ"]["three_stage_ev_ranker"]["decision"]["production_candidate"] is False
+    score_exp = report["markets"]["KOSPI"]["sidecar_score_mode_experiment"]
+    assert score_exp["same_fold_scope_verified"] is True
+    assert score_exp["risk_adjusted_alternative"]["found"] is True
+    assert score_exp["risk_adjusted_alternative"]["decision"] == "risk_adjusted_shadow_candidate_not_current_replacement"

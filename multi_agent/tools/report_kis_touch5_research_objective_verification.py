@@ -23,6 +23,12 @@ DEFAULT_THREE_STAGE_FIXED_REPORT = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_20260101_20260610.json"
 )
 DEFAULT_MARKET_COMPARISON_REPORT = ROOT / "runtime_state/reports/learning/kis_model_market_comparison.json"
+DEFAULT_SIDECAR_BASELINE_SWEEP = (
+    ROOT / "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json"
+)
+DEFAULT_SIDECAR_SCORE_SWEEP = (
+    ROOT / "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold_20260101_20260610.json"
+)
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -143,6 +149,125 @@ def _shadow_market(shadow_report: Mapping[str, Any], comparison_report: Mapping[
     }
 
 
+def _sweep_rows(report: Mapping[str, Any], market: str) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for market_report in report.get("market_reports") or []:
+        if not isinstance(market_report, dict):
+            continue
+        scope = market_report.get("scope") if isinstance(market_report.get("scope"), dict) else {}
+        if str(scope.get("market") or "").upper() != market:
+            continue
+        rows.extend([row for row in market_report.get("results") or [] if isinstance(row, dict)])
+    return rows
+
+
+def _sweep_fold_signature(report: Mapping[str, Any], market: str) -> List[List[str]]:
+    for market_report in report.get("market_reports") or []:
+        if not isinstance(market_report, dict):
+            continue
+        scope = market_report.get("scope") if isinstance(market_report.get("scope"), dict) else {}
+        if str(scope.get("market") or "").upper() != market:
+            continue
+        fold_meta = market_report.get("fold_meta") if isinstance(market_report.get("fold_meta"), dict) else {}
+        return [list(row.get("test_days") or []) for row in fold_meta.get("folds") or [] if isinstance(row, dict)]
+    return []
+
+
+def _sort_sweep_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    status_rank = {"production_ready": 0, "shadow_ready": 1, "shadow_risk_review": 2, "blocked": 3}
+    return sorted(
+        rows,
+        key=lambda row: (
+            status_rank.get(str((row.get("kis_model_gate") or {}).get("status")), 9),
+            -float(row.get("quality_score") or -1e9),
+            -float(((row.get("metrics") or {}).get("hit5_dd10_5d_pct")) or 0.0),
+            -int(((row.get("metrics") or {}).get("n")) or 0),
+        ),
+    )
+
+
+def _sweep_row_summary(row: Mapping[str, Any] | None) -> Dict[str, Any]:
+    if not isinstance(row, Mapping):
+        return {}
+    gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), dict) else {}
+    return {
+        "selection_rule": row.get("selection_rule"),
+        "score_mode": row.get("score_mode") or "prob",
+        "quality_score": row.get("quality_score"),
+        "gate_status": gate.get("status"),
+        "production_ready": bool(gate.get("production_ready")),
+        "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+        "production_blocking_reasons": gate.get("production_blocking_reasons") or [],
+        "metrics": _pick_metrics(row),
+    }
+
+
+def _risk_adjusted_alternative(rows: List[Dict[str, Any]], baseline: Mapping[str, Any]) -> Dict[str, Any]:
+    baseline_metrics = baseline.get("metrics") if isinstance(baseline.get("metrics"), dict) else {}
+    baseline_hit = float(baseline_metrics.get("hit5_dd10_5d_pct") or 0.0)
+    baseline_min_low = float(baseline_metrics.get("min_min_low_5d_pct") or -999.0)
+    baseline_avg5 = float(baseline_metrics.get("avg_5d_pct") or -999.0)
+    candidates: List[Dict[str, Any]] = []
+    for row in rows:
+        if str(row.get("score_mode") or "prob") == "prob":
+            continue
+        gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), dict) else {}
+        if not gate.get("shadow_display_allowed"):
+            continue
+        metrics = row.get("metrics") if isinstance(row.get("metrics"), dict) else {}
+        hit = float(metrics.get("hit5_dd10_5d_pct") or 0.0)
+        min_low = float(metrics.get("min_min_low_5d_pct") or -999.0)
+        if hit > baseline_hit or min_low > baseline_min_low:
+            candidates.append(row)
+    if not candidates:
+        return {"found": False}
+    candidates.sort(
+        key=lambda row: (
+            float(((row.get("metrics") or {}).get("hit5_dd10_5d_pct")) or 0.0) - baseline_hit,
+            float(((row.get("metrics") or {}).get("min_min_low_5d_pct")) or -999.0) - baseline_min_low,
+            float(((row.get("metrics") or {}).get("avg_5d_pct")) or -999.0),
+        ),
+        reverse=True,
+    )
+    best = candidates[0]
+    metrics = best.get("metrics") if isinstance(best.get("metrics"), dict) else {}
+    return {
+        "found": True,
+        "candidate": _sweep_row_summary(best),
+        "deltas_vs_baseline": {
+            "hit5_dd10_5d_pct": round(float(metrics.get("hit5_dd10_5d_pct") or 0.0) - baseline_hit, 6),
+            "min_min_low_5d_pct": round(float(metrics.get("min_min_low_5d_pct") or -999.0) - baseline_min_low, 6),
+            "avg_5d_pct": round(float(metrics.get("avg_5d_pct") or 0.0) - baseline_avg5, 6),
+            "n": int(metrics.get("n") or 0) - int(baseline_metrics.get("n") or 0),
+            "active_days": int(metrics.get("active_days") or 0) - int(baseline_metrics.get("active_days") or 0),
+        },
+        "decision": "risk_adjusted_shadow_candidate_not_current_replacement",
+    }
+
+
+def _sidecar_score_experiment(
+    baseline_report: Mapping[str, Any],
+    score_report: Mapping[str, Any],
+    market: str,
+) -> Dict[str, Any]:
+    baseline_rows = _sort_sweep_rows(_sweep_rows(baseline_report, market))
+    score_rows = _sort_sweep_rows(_sweep_rows(score_report, market))
+    baseline_best = baseline_rows[0] if baseline_rows else {}
+    score_best = score_rows[0] if score_rows else {}
+    same_fold_scope = _sweep_fold_signature(baseline_report, market) == _sweep_fold_signature(score_report, market)
+    return {
+        "same_fold_scope_verified": same_fold_scope,
+        "baseline_best": _sweep_row_summary(baseline_best),
+        "score_mode_best": _sweep_row_summary(score_best),
+        "risk_adjusted_alternative": _risk_adjusted_alternative(score_rows, baseline_best),
+        "decision": (
+            "keep_current_best_shadow"
+            if _sweep_row_summary(score_best).get("selection_rule") == _sweep_row_summary(baseline_best).get("selection_rule")
+            else "review_score_mode_shadow_candidate"
+        ),
+    }
+
+
 def _best_available_decision(shadow_by_market: Mapping[str, Any]) -> Dict[str, Any]:
     required = ("KOSPI", "KOSDAQ")
     production_ready = all(((shadow_by_market.get(market) or {}).get("gate") or {}).get("production_ready") for market in required)
@@ -175,16 +300,27 @@ def build_report(
     three_stage_dynamic_path: Path = DEFAULT_THREE_STAGE_DYNAMIC_REPORT,
     three_stage_fixed_path: Path = DEFAULT_THREE_STAGE_FIXED_REPORT,
     market_comparison_path: Path = DEFAULT_MARKET_COMPARISON_REPORT,
+    sidecar_baseline_sweep_path: Path = DEFAULT_SIDECAR_BASELINE_SWEEP,
+    sidecar_score_sweep_path: Path = DEFAULT_SIDECAR_SCORE_SWEEP,
 ) -> Dict[str, Any]:
     shadow_report = _load_json(shadow_report_path)
     three_stage_dynamic = _load_json(three_stage_dynamic_path)
     three_stage_fixed = _load_json(three_stage_fixed_path)
     market_comparison = _load_json(market_comparison_path)
+    sidecar_baseline_sweep = _load_json(sidecar_baseline_sweep_path)
+    sidecar_score_sweep = _load_json(sidecar_score_sweep_path) if sidecar_score_sweep_path.exists() else {}
     markets: Dict[str, Any] = {}
     for market in ("KOSPI", "KOSDAQ"):
         markets[market] = {
             "three_stage_ev_ranker": _three_stage_market(three_stage_dynamic, three_stage_fixed, market),
             "kis_sidecar_longfold_shadow": _shadow_market(shadow_report, market_comparison, market),
+            "sidecar_score_mode_experiment": _sidecar_score_experiment(
+                sidecar_baseline_sweep,
+                sidecar_score_sweep,
+                market,
+            )
+            if sidecar_score_sweep
+            else {},
         }
     decision = _best_available_decision({m: row["kis_sidecar_longfold_shadow"] for m, row in markets.items()})
     return {
@@ -209,6 +345,17 @@ def build_report(
             "three_stage_dynamic_report": _rel(three_stage_dynamic_path),
             "three_stage_fixed_report": _rel(three_stage_fixed_path),
             "market_comparison_report": _rel(market_comparison_path),
+            "sidecar_baseline_sweep_report": _rel(sidecar_baseline_sweep_path),
+            "sidecar_score_sweep_report": _rel(sidecar_score_sweep_path) if sidecar_score_sweep_path.exists() else None,
+            "sidecar_score_evaluated_results": (sidecar_score_sweep.get("summary") or {}).get("evaluated_results")
+            if sidecar_score_sweep
+            else None,
+            "sidecar_score_shadow_display_allowed": (sidecar_score_sweep.get("summary") or {}).get("shadow_display_allowed")
+            if sidecar_score_sweep
+            else None,
+            "sidecar_score_production_ready": (sidecar_score_sweep.get("summary") or {}).get("production_ready")
+            if sidecar_score_sweep
+            else None,
             "shadow_data_rows": (shadow_report.get("research_inputs") or {}).get("data_rows"),
             "shadow_prepared_rows": (shadow_report.get("research_inputs") or {}).get("prepared_rows"),
             "shadow_evaluated_results": (shadow_report.get("exploration_result") or {}).get("evaluated_results"),
@@ -232,6 +379,10 @@ def build_report(
             {
                 "step": "consumer_contract_verification",
                 "finding": "TopDeep, UI/Discord/정밀분석 경로는 KIS shadow gate와 동적 TP/SL/보유일 trace를 보존해야 한다.",
+            },
+            {
+                "step": "sidecar_score_mode_expansion",
+                "finding": "동일 long-fold 조건에서 EV/safety 결합 score mode를 추가 검증한다. 생산 승격은 여전히 0개이며, 성과가 있는 경우 risk-adjusted shadow 후보로만 기록한다.",
             },
         ],
         "markets": markets,
@@ -284,6 +435,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             "## 입력과 검증",
             f"- no_dummy_data: `{(report.get('research_inputs') or {}).get('no_dummy_data')}`",
             f"- shadow rows/evaluated/shadow_allowed/production_ready: `{(report.get('research_inputs') or {}).get('shadow_data_rows')}` / `{(report.get('research_inputs') or {}).get('shadow_evaluated_results')}` / `{(report.get('research_inputs') or {}).get('shadow_display_allowed_results')}` / `{(report.get('research_inputs') or {}).get('shadow_production_ready_results')}`",
+            f"- sidecar score sweep evaluated/shadow_allowed/production_ready: `{(report.get('research_inputs') or {}).get('sidecar_score_evaluated_results')}` / `{(report.get('research_inputs') or {}).get('sidecar_score_shadow_display_allowed')}` / `{(report.get('research_inputs') or {}).get('sidecar_score_production_ready')}`",
             f"- three_stage_validation: `{(report.get('research_inputs') or {}).get('three_stage_validation')}`",
             "",
         ]
@@ -297,6 +449,11 @@ def _markdown(report: Mapping[str, Any]) -> str:
         metrics = shadow.get("metrics") or {}
         gate = shadow.get("gate") or {}
         econ = gate.get("production_economics") if isinstance(gate.get("production_economics"), dict) else {}
+        score_exp = payload.get("sidecar_score_mode_experiment") or {}
+        score_best = score_exp.get("score_mode_best") or {}
+        risk_alt = score_exp.get("risk_adjusted_alternative") or {}
+        risk_candidate = risk_alt.get("candidate") or {}
+        risk_metrics = risk_candidate.get("metrics") or {}
         lines.extend(
             [
                 f"## {market}",
@@ -306,6 +463,8 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- shadow metrics: n=`{metrics.get('n')}`, active_days=`{metrics.get('active_days')}`, active_runs=`{metrics.get('active_runs')}`, hit5_dd10=`{metrics.get('hit5_dd10_5d_pct')}`, hit10=`{metrics.get('hit10_5d_pct')}`, avg5=`{metrics.get('avg_5d_pct')}`, min_low=`{metrics.get('min_min_low_5d_pct')}`, expected_touch_net=`{metrics.get('expected_touch_policy_net_5d_pct') or econ.get('expected_touch_policy_net_5d_pct')}`",
                 f"- three_stage_result: hit5_dd10=`{three_metrics.get('hit5_dd10_5d_pct')}`, dynamic_exit=`{three_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{three_metrics.get('tail_breach_5d_pct')}`, min_low=`{three_metrics.get('min_min_low_5d_pct')}`",
                 f"- three_stage_improvement_vs_broad: avg_exit_delta=`{three_imp.get('avg_ordered_exit_delta_pct')}`, hit5_delta=`{three_imp.get('hit5_dd10_delta_pct')}`",
+                f"- score_mode_experiment: same_fold_scope=`{score_exp.get('same_fold_scope_verified')}`, decision=`{score_exp.get('decision')}`, best=`{score_best.get('selection_rule')}`",
+                f"- risk_adjusted_alternative: found=`{risk_alt.get('found')}`, candidate=`{risk_candidate.get('selection_rule')}`, hit5_dd10=`{risk_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{risk_metrics.get('avg_5d_pct')}`, min_low=`{risk_metrics.get('min_min_low_5d_pct')}`, deltas=`{risk_alt.get('deltas_vs_baseline')}`",
                 "",
             ]
         )

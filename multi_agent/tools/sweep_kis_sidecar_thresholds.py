@@ -43,6 +43,10 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
 )
 
 
+TARGET_TOUCH_NET_PCT = 4.601458
+LOSS_FLOOR_PCT = -10.0
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -89,8 +93,10 @@ def _round(value: Any, digits: int = 6) -> float | None:
     return round(number, digits)
 
 
-def _selection_rule(topn: int, prob_threshold: float | None, tail_threshold: float | None) -> str:
+def _selection_rule(topn: int, prob_threshold: float | None, tail_threshold: float | None, score_mode: str = "prob") -> str:
     parts = [f"top{int(topn)}"]
+    if score_mode and score_mode != "prob":
+        parts.append(str(score_mode).replace(".", "p"))
     if prob_threshold is not None:
         parts.append(f"p{prob_threshold:.3g}".replace(".", "p"))
     if tail_threshold is not None:
@@ -104,6 +110,30 @@ def _feature_frame(frame: pd.DataFrame, columns: Sequence[str], categorical: Seq
         if col in out.columns:
             out[col] = out[col].fillna("UNKNOWN").astype(str)
     return out
+
+
+def _score_predictions(predictions: pd.DataFrame, score_mode: str) -> pd.Series:
+    """Stage-3 score used after the candidate pool and dd10 safety gates."""
+
+    prob = pd.to_numeric(predictions.get("prob"), errors="coerce").astype(float)
+    tail_safe = pd.to_numeric(predictions.get("tail_prob"), errors="coerce").astype(float)
+    if tail_safe.notna().any():
+        tail_safe = tail_safe.clip(0.0, 1.0)
+    else:
+        tail_safe = pd.Series(1.0, index=predictions.index, dtype=float)
+    prob = prob.clip(0.0, 1.0)
+    mode = str(score_mode or "prob").strip().lower()
+    if mode == "prob":
+        return prob
+    if mode == "prob_x_tail":
+        return prob * tail_safe
+    if mode == "prob_plus_tail":
+        return (prob * 0.70) + (tail_safe * 0.30)
+    if mode == "prob_tail_margin":
+        return prob - ((1.0 - tail_safe) * 1.8)
+    if mode == "ev":
+        return (prob * TARGET_TOUCH_NET_PCT) + ((1.0 - tail_safe) * LOSS_FLOOR_PCT)
+    raise ValueError(f"unknown score mode: {score_mode}")
 
 
 def _fit_predict_folds(
@@ -202,6 +232,7 @@ def _sweep_market(
     feature_set: str,
     model_name: str,
     topns: Sequence[int],
+    score_modes: Sequence[str],
     prob_thresholds: Sequence[float | None],
     tail_thresholds: Sequence[float | None],
     min_train_rows: int,
@@ -253,7 +284,8 @@ def _sweep_market(
         min_train_days=min_train_days,
         test_days=test_days,
         max_folds=max_folds,
-        need_tail=any(item is not None for item in tail_thresholds),
+        need_tail=any(item is not None for item in tail_thresholds)
+        or any(str(mode).strip().lower() != "prob" for mode in score_modes),
         progress=progress,
     )
     predictions = fold_payload.pop("predictions")
@@ -261,39 +293,42 @@ def _sweep_market(
         return {"scope": scope, "results": [], "status": "skipped_no_predictions", "fold_meta": fold_payload}
     results: List[Dict[str, Any]] = []
     for topn in topns:
-        for prob_threshold in prob_thresholds:
-            for tail_threshold in tail_thresholds:
-                candidate_idx = predictions.index
-                if prob_threshold is not None:
-                    candidate_idx = candidate_idx.intersection(predictions.index[predictions["prob"].ge(float(prob_threshold))])
-                if tail_threshold is not None:
-                    candidate_idx = candidate_idx.intersection(predictions.index[predictions["tail_prob"].ge(float(tail_threshold))])
-                selected = top_indices_by_run(scoped.loc[candidate_idx], predictions.loc[candidate_idx, "prob"], int(topn))
-                if selected.empty:
-                    continue
-                result_metrics = metrics(scoped, selected, label)
-                identity = {
-                    "market": market,
-                    "label": label_name,
-                    "feature_set": feature_set,
-                    "model": model_name,
-                    "selection_rule": _selection_rule(topn, prob_threshold, tail_threshold),
-                }
-                gate = evaluate_kis_model_gate(identity=identity, metrics=result_metrics, market=market)
-                results.append(
-                    {
-                        **identity,
-                        "topn": int(topn),
-                        "prob_threshold": prob_threshold,
-                        "tail_risk_prob_threshold": tail_threshold,
-                        "status": "ok",
-                        "metrics": result_metrics,
-                        "kis_model_gate": gate,
-                        "quality_score": _round(quality_score(result_metrics, topn=int(topn), label_name=label_name), 6),
-                        "feature_columns": {"numeric": list(numeric), "categorical": list(categorical)},
-                        "fold_meta": fold_payload,
+        for score_mode in score_modes:
+            score = _score_predictions(predictions, score_mode)
+            for prob_threshold in prob_thresholds:
+                for tail_threshold in tail_thresholds:
+                    candidate_idx = predictions.index
+                    if prob_threshold is not None:
+                        candidate_idx = candidate_idx.intersection(predictions.index[predictions["prob"].ge(float(prob_threshold))])
+                    if tail_threshold is not None:
+                        candidate_idx = candidate_idx.intersection(predictions.index[predictions["tail_prob"].ge(float(tail_threshold))])
+                    selected = top_indices_by_run(scoped.loc[candidate_idx], score.loc[candidate_idx], int(topn))
+                    if selected.empty:
+                        continue
+                    result_metrics = metrics(scoped, selected, label)
+                    identity = {
+                        "market": market,
+                        "label": label_name,
+                        "feature_set": feature_set,
+                        "model": model_name,
+                        "score_mode": score_mode,
+                        "selection_rule": _selection_rule(topn, prob_threshold, tail_threshold, score_mode),
                     }
-                )
+                    gate = evaluate_kis_model_gate(identity=identity, metrics=result_metrics, market=market)
+                    results.append(
+                        {
+                            **identity,
+                            "topn": int(topn),
+                            "prob_threshold": prob_threshold,
+                            "tail_risk_prob_threshold": tail_threshold,
+                            "status": "ok",
+                            "metrics": result_metrics,
+                            "kis_model_gate": gate,
+                            "quality_score": _round(quality_score(result_metrics, topn=int(topn), label_name=label_name), 6),
+                            "feature_columns": {"numeric": list(numeric), "categorical": list(categorical)},
+                            "fold_meta": fold_payload,
+                        }
+                    )
     status_rank = {"production_ready": 0, "shadow_ready": 1, "shadow_risk_review": 2, "blocked": 3}
     results.sort(
         key=lambda row: (
@@ -336,6 +371,36 @@ def _write_report(report: Mapping[str, Any], output: Path) -> None:
     md.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _compact_result(row: Mapping[str, Any]) -> Dict[str, Any]:
+    return {key: value for key, value in row.items() if key not in {"feature_columns", "fold_meta"}}
+
+
+def _compact_report(report: Mapping[str, Any], *, per_market_results: int) -> Dict[str, Any]:
+    compact = dict(report)
+    compact["top_results"] = [_compact_result(row) for row in report.get("top_results") or [] if isinstance(row, dict)]
+    market_reports: List[Dict[str, Any]] = []
+    for market_report in report.get("market_reports") or []:
+        if not isinstance(market_report, dict):
+            continue
+        rows = [_compact_result(row) for row in market_report.get("results") or [] if isinstance(row, dict)]
+        market_reports.append(
+            {
+                "scope": market_report.get("scope"),
+                "status": market_report.get("status"),
+                "fold_meta": market_report.get("fold_meta"),
+                "result_count": len(rows),
+                "results": rows[: int(per_market_results)],
+            }
+        )
+    compact["market_reports"] = market_reports
+    compact["report_storage"] = {
+        "compact_output": True,
+        "market_results_truncated_to": int(per_market_results),
+        "removed_repeated_keys": ["feature_columns", "fold_meta"],
+    }
+    return compact
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prepared-cache", required=True)
@@ -344,6 +409,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--feature-set", default="kis_sidecar_failure_risk_augmented")
     parser.add_argument("--model", default="lightgbm")
     parser.add_argument("--topns", default="1,2,3,4,5")
+    parser.add_argument("--score-modes", default="prob")
     parser.add_argument("--prob-thresholds", default="none,0.35,0.40,0.45,0.50,0.55,0.60,0.65")
     parser.add_argument("--tail-thresholds", default="none,0.50,0.60,0.70,0.80,0.85,0.90,0.95")
     parser.add_argument("--min-train-rows", type=int, default=1000)
@@ -354,6 +420,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-kis-rows", type=int, default=1200)
     parser.add_argument("--min-kis-days", type=int, default=10)
     parser.add_argument("--top-results", type=int, default=30)
+    parser.add_argument("--compact-output", action="store_true")
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--output", default="runtime_state/reports/learning/kis_sidecar_threshold_sweep.json")
     return parser.parse_args()
@@ -365,6 +432,7 @@ def main() -> int:
     data = pd.read_pickle(cache_path)
     markets = [item.strip().upper() for item in str(args.markets).split(",") if item.strip()]
     topns = _parse_int_list(args.topns)
+    score_modes = [item.strip() for item in str(args.score_modes).split(",") if item.strip()]
     prob_thresholds = _parse_float_list(args.prob_thresholds, include_none=False)
     tail_thresholds = _parse_float_list(args.tail_thresholds, include_none=False)
     market_reports = []
@@ -379,6 +447,7 @@ def main() -> int:
             feature_set=args.feature_set,
             model_name=args.model,
             topns=topns,
+            score_modes=score_modes,
             prob_thresholds=prob_thresholds,
             tail_thresholds=tail_thresholds,
             min_train_rows=int(args.min_train_rows),
@@ -412,6 +481,7 @@ def main() -> int:
         "markets": markets,
         "threshold_grid": {
             "topns": topns,
+            "score_modes": score_modes,
             "prob_thresholds": prob_thresholds,
             "tail_thresholds": tail_thresholds,
         },
@@ -423,7 +493,8 @@ def main() -> int:
             "shadow_display_allowed": sum(1 for row in all_results if (row.get("kis_model_gate") or {}).get("shadow_display_allowed")),
         },
     }
-    _write_report(report, Path(args.output))
+    output_report = _compact_report(report, per_market_results=int(args.top_results)) if args.compact_output else report
+    _write_report(output_report, Path(args.output))
     print(json.dumps(report["summary"], ensure_ascii=False, indent=2, default=_json_default))
     print(f"[INFO] wrote report {args.output}")
     return 0

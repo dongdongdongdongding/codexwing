@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-12T14:45:31.019468+00:00`
+- generated_at: `2026-06-12T15:11:44.970187+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -18,10 +18,12 @@
 - three_stage_ev_ranker: wide recall pool, tail-risk model, EV/no-trade ranker는 broad baseline 대비 개선됐지만 hit5/dd10이 73% 운영 기준에 미달했다.
 - kis_sidecar_longfold_threshold_sweep: KIS sidecar failure-risk augmented LightGBM long-fold sweep가 양시장 shadow 성과를 만들었다.
 - consumer_contract_verification: TopDeep, UI/Discord/정밀분석 경로는 KIS shadow gate와 동적 TP/SL/보유일 trace를 보존해야 한다.
+- sidecar_score_mode_expansion: 동일 long-fold 조건에서 EV/safety 결합 score mode를 추가 검증한다. 생산 승격은 여전히 0개이며, 성과가 있는 경우 risk-adjusted shadow 후보로만 기록한다.
 
 ## 입력과 검증
 - no_dummy_data: `True`
 - shadow rows/evaluated/shadow_allowed/production_ready: `157551` / `990` / `521` / `0`
+- sidecar score sweep evaluated/shadow_allowed/production_ready: `4950` / `3243` / `0`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
 
 ## KOSPI
@@ -31,6 +33,8 @@
 - shadow metrics: n=`50`, active_days=`11`, active_runs=`50`, hit5_dd10=`82.0`, hit10=`76.0`, avg5=`26.115197`, min_low=`-8.919727`, expected_touch_net=`1.973196`
 - three_stage_result: hit5_dd10=`63.1579`, dynamic_exit=`2.854533`, tail=`15.7895`, min_low=`-18.779401`
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.056792`, hit5_delta=`15.5389`
+- score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p3_tail0p9`
+- risk_adjusted_alternative: found=`True`, candidate=`top1_prob_tail_margin_tail0p95`, hit5_dd10=`93.4783`, avg5=`5.385336`, min_low=`-5.558554`, deltas=`{'hit5_dd10_5d_pct': 11.4783, 'min_min_low_5d_pct': 3.361173, 'avg_5d_pct': -20.729861, 'n': -4, 'active_days': -1}`
 
 ## KOSDAQ
 - selected_shadow_model: `kis_sidecar_failure_risk_augmented` / `lightgbm` / `top1_p0p75_tail0p85`
@@ -39,6 +43,8 @@
 - shadow metrics: n=`19`, active_days=`9`, active_runs=`19`, hit5_dd10=`100.0`, hit10=`100.0`, avg5=`15.458772`, min_low=`-7.006077`, expected_touch_net=`4.601458`
 - three_stage_result: hit5_dd10=`59.4595`, dynamic_exit=`2.712248`, tail=`13.5135`, min_low=`-24.403496`
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.970752`, hit5_delta=`11.4595`
+- score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p75_tail0p85`
+- risk_adjusted_alternative: found=`False`, candidate=`None`, hit5_dd10=`None`, avg5=`None`, min_low=`None`, deltas=`None`
 
 ## UI 요구사항
 - 웹 최상단에 KIS Shadow 섹션을 두고 production_ready, shadow_display_allowed, 차단 사유를 한국어로 표시
