@@ -206,6 +206,7 @@ def _threshold_checks(
     metrics: Mapping[str, Any],
     thresholds: Mapping[str, Any],
     checks: List[Dict[str, Any]],
+    stop_aware: bool = False,
 ) -> List[str]:
     blockers: List[str] = []
     numeric_map = {
@@ -224,6 +225,9 @@ def _threshold_checks(
     for threshold_key, (metric_key, label) in numeric_map.items():
         if threshold_key not in thresholds:
             continue
+        if stop_aware and threshold_key == "min_low_5d_pct" and metrics.get("min_ordered_exit_5d_pct") is not None:
+            metric_key = "min_ordered_exit_5d_pct"
+            label = "ordered_exit_floor_5d"
         actual = _safe_float(metrics.get(metric_key))
         expected = float(thresholds[threshold_key])
         passed = actual is not None and actual >= expected
@@ -416,12 +420,14 @@ def evaluate_kis_model_gate(
         metrics=metrics,
         thresholds=profile["production"],
         checks=checks,
+        stop_aware=is_touch5_dd10,
     )
     shadow_blockers = _threshold_checks(
         gate_name="shadow",
         metrics=metrics,
         thresholds=profile["shadow"],
         checks=checks,
+        stop_aware=is_touch5_dd10,
     )
 
     risk_review_reasons = _threshold_checks(
@@ -429,6 +435,7 @@ def evaluate_kis_model_gate(
         metrics=metrics,
         thresholds=profile["risk_review"],
         checks=checks,
+        stop_aware=is_touch5_dd10,
     )
     if is_touch5_dd10:
         economic_blockers, economics = _target_touch_economic_checks(

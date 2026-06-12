@@ -59,7 +59,7 @@ STOP_PCT = 10.0
 BUY_PREMIUM_PCT = 2.0
 
 LABEL_COLUMNS = {
-    "success": "buy_premium_target_before_stop_5d",
+    "target_before_stop": "buy_premium_target_before_stop_5d",
     "target_hit": "buy_premium_target_hit_5d",
     "stop_hit": "buy_premium_stop_hit_5d",
     "stop_before_target": "buy_premium_stop_before_target_5d",
@@ -201,7 +201,7 @@ def _load_market_frame(path: Path, market: str) -> pd.DataFrame:
 
 
 def _filter_valid_labels(frame: pd.DataFrame, *, start: str, end: str) -> pd.DataFrame:
-    required = [LABEL_COLUMNS[key] for key in ("success", "target_hit", "stop_hit", "close_5d", "mfe_5d", "mae_5d")]
+    required = [LABEL_COLUMNS[key] for key in ("target_hit", "stop_hit", "close_5d", "mfe_5d", "mae_5d")]
     missing = [col for col in required if col not in frame.columns]
     if missing:
         raise ValueError(f"required label columns missing: {missing}")
@@ -210,18 +210,26 @@ def _filter_valid_labels(frame: pd.DataFrame, *, start: str, end: str) -> pd.Dat
     for col in required:
         label_mask &= frame[col].notna()
     out = frame.loc[date_mask & label_mask].copy()
-    out["_label_success"] = _as_bool(out[LABEL_COLUMNS["success"]])
     out["_label_target_hit"] = _as_bool(out[LABEL_COLUMNS["target_hit"]])
     out["_label_stop_hit"] = _as_bool(out[LABEL_COLUMNS["stop_hit"]])
+    if LABEL_COLUMNS["target_before_stop"] in out.columns:
+        out["_label_target_before_stop"] = _as_bool(out[LABEL_COLUMNS["target_before_stop"]])
+    else:
+        out["_label_target_before_stop"] = out["_label_target_hit"] & ~out["_label_stop_hit"]
     if LABEL_COLUMNS["stop_before_target"] in out.columns:
         out["_label_stop_before_target"] = _as_bool(out[LABEL_COLUMNS["stop_before_target"]])
     else:
-        out["_label_stop_before_target"] = out["_label_stop_hit"] & ~out["_label_success"]
+        out["_label_stop_before_target"] = out["_label_stop_hit"] & ~out["_label_target_before_stop"]
     out["_label_hit10"] = pd.to_numeric(out[LABEL_COLUMNS["mfe_5d"]], errors="coerce").ge(10.0).fillna(False)
     out["_close_5d"] = pd.to_numeric(out[LABEL_COLUMNS["close_5d"]], errors="coerce")
     out["_mfe_5d"] = pd.to_numeric(out[LABEL_COLUMNS["mfe_5d"]], errors="coerce")
     out["_mae_5d"] = pd.to_numeric(out[LABEL_COLUMNS["mae_5d"]], errors="coerce")
-    return out.dropna(subset=["_close_5d", "_mfe_5d", "_mae_5d"]).copy()
+    out = out.dropna(subset=["_close_5d", "_mfe_5d", "_mae_5d"]).copy()
+    # User-facing success criterion: +5% touch within 5D after the +2% buy
+    # premium, while the 5D low does not violate the -10% hard risk budget.
+    # The target does not need to happen before the intraperiod drawdown.
+    out["_label_success"] = out["_label_target_hit"].astype(bool) & out["_mae_5d"].ge(-abs(STOP_PCT)).fillna(False)
+    return out
 
 
 def _feature_sets(frame: pd.DataFrame) -> Dict[str, Tuple[List[str], List[str]]]:
@@ -461,7 +469,7 @@ def _fit_predict_lgbm_ranker(
     relevance = (
         ordered["_label_success"].astype(int) * 3
         + ordered["_label_hit10"].astype(int)
-        - ordered["_label_stop_before_target"].astype(int)
+        - ordered["_label_stop_hit"].astype(int)
     ).clip(lower=0)
     if relevance.nunique() < 2:
         return pd.Series(np.nan, index=test.index), {"skipped": True, "reason": "single_relevance_train"}
@@ -532,7 +540,7 @@ def _metric_summary(frame: pd.DataFrame, idx: pd.Index) -> Dict[str, Any]:
         "active_days": int(sub["base_trade_date"].nunique()),
         "active_runs": int(sub["run_id"].nunique()) if "run_id" in sub.columns else int(sub["base_trade_date"].nunique()),
         "hit5_dd10_5d_pct": _pct(success.mean()),
-        "target_before_stop_5d_pct": _pct(success.mean()),
+        "target_before_stop_5d_pct": _pct(sub["_label_target_before_stop"].astype(bool).mean()),
         "win_5d_pct": _pct(target_hit.mean()),
         "hit10_5d_pct": _pct(hit10.mean()),
         "stop5_pct": _pct(stop_hit.mean()),
@@ -663,6 +671,9 @@ def _evaluate_model(
     windows: Sequence[Window],
     topn_values: Sequence[int],
     two_stage_lambdas: Sequence[float],
+    prob_thresholds: Sequence[float],
+    risk_score_thresholds: Sequence[float],
+    max_stop_prob_thresholds: Sequence[float],
 ) -> List[Dict[str, Any]]:
     effective_categorical = [] if model_name == "hist_gb" else list(categorical)
     predictions = pd.Series(np.nan, index=frame.index, dtype=float)
@@ -689,7 +700,7 @@ def _evaluate_model(
             test=test,
             numeric=numeric,
             categorical=effective_categorical,
-            target=frame["_label_stop_before_target"],
+            target=frame["_label_stop_hit"],
         )
         if not bool(stop_meta.get("skipped")):
             stop_predictions.loc[stop_pred.index] = stop_pred
@@ -717,15 +728,30 @@ def _evaluate_model(
             "feature_count_categorical": len(effective_categorical),
             "fold_count": len(fold_rows),
         }
-        rows.extend(
-            _evaluate_score(
-                market=market,
-                frame=test_frame,
-                score=predictions.loc[test_frame.index],
-                identity=identity,
-                topn_values=topn_values,
-            )
-        )
+        for stop_threshold in [None, *max_stop_prob_thresholds]:
+            eligible_frame = test_frame
+            if stop_threshold is not None and not stop_predictions.dropna().empty:
+                eligible_frame = test_frame.loc[
+                    test_frame.index.intersection(stop_predictions[stop_predictions.le(float(stop_threshold))].index)
+                ]
+            if eligible_frame.empty:
+                continue
+            for threshold in [None, *prob_thresholds]:
+                threshold_identity = dict(identity)
+                if threshold is not None:
+                    threshold_identity["score_threshold"] = float(threshold)
+                if stop_threshold is not None:
+                    threshold_identity["max_stop_probability"] = float(stop_threshold)
+                rows.extend(
+                    _evaluate_score(
+                        market=market,
+                        frame=eligible_frame,
+                        score=predictions.loc[eligible_frame.index],
+                        identity=threshold_identity,
+                        topn_values=topn_values,
+                        min_score=threshold,
+                    )
+                )
     risk_frame = frame.loc[predictions.dropna().index.intersection(stop_predictions.dropna().index)].copy()
     if not risk_frame.empty:
         for penalty in two_stage_lambdas:
@@ -740,15 +766,30 @@ def _evaluate_model(
                 "feature_count_categorical": len(effective_categorical),
                 "fold_count": len(fold_rows),
             }
-            rows.extend(
-                _evaluate_score(
-                    market=market,
-                    frame=risk_frame,
-                    score=score,
-                    identity=identity,
-                    topn_values=topn_values,
-                )
-            )
+            for stop_threshold in [None, *max_stop_prob_thresholds]:
+                eligible_frame = risk_frame
+                if stop_threshold is not None:
+                    eligible_frame = risk_frame.loc[
+                        risk_frame.index.intersection(stop_predictions[stop_predictions.le(float(stop_threshold))].index)
+                    ]
+                if eligible_frame.empty:
+                    continue
+                for threshold in [None, *risk_score_thresholds]:
+                    threshold_identity = dict(identity)
+                    if threshold is not None:
+                        threshold_identity["score_threshold"] = float(threshold)
+                    if stop_threshold is not None:
+                        threshold_identity["max_stop_probability"] = float(stop_threshold)
+                    rows.extend(
+                        _evaluate_score(
+                            market=market,
+                            frame=eligible_frame,
+                            score=score.loc[eligible_frame.index],
+                            identity=threshold_identity,
+                            topn_values=topn_values,
+                            min_score=threshold,
+                        )
+                    )
     for row in rows:
         row["folds"] = fold_rows
     return rows
@@ -763,8 +804,10 @@ def _evaluate_ranker(
     categorical: Sequence[str],
     windows: Sequence[Window],
     topn_values: Sequence[int],
+    max_stop_prob_thresholds: Sequence[float],
 ) -> List[Dict[str, Any]]:
     predictions = pd.Series(np.nan, index=frame.index, dtype=float)
+    stop_predictions = pd.Series(np.nan, index=frame.index, dtype=float)
     fold_rows: List[Dict[str, Any]] = []
     for window in windows:
         train = frame[frame["base_trade_date"].isin(window.train_days)].copy()
@@ -772,6 +815,16 @@ def _evaluate_ranker(
         pred, meta = _fit_predict_lgbm_ranker(train=train, test=test, numeric=numeric, categorical=categorical)
         if not bool(meta.get("skipped")):
             predictions.loc[pred.index] = pred
+        stop_pred, stop_meta = _fit_predict_classifier(
+            name="lightgbm",
+            train=train,
+            test=test,
+            numeric=numeric,
+            categorical=categorical,
+            target=frame["_label_stop_hit"],
+        )
+        if not bool(stop_meta.get("skipped")):
+            stop_predictions.loc[stop_pred.index] = stop_pred
         fold_rows.append(
             {
                 "fold": int(window.fold),
@@ -781,6 +834,7 @@ def _evaluate_ranker(
                 "test_start": window.test_days[0] if window.test_days else None,
                 "test_end": window.test_days[-1] if window.test_days else None,
                 "ranker": meta,
+                "stop_model": stop_meta,
             }
         )
     test_frame = frame.loc[predictions.dropna().index].copy()
@@ -795,13 +849,26 @@ def _evaluate_ranker(
         "feature_count_categorical": len(categorical),
         "fold_count": len(fold_rows),
     }
-    rows = _evaluate_score(
-        market=market,
-        frame=test_frame,
-        score=predictions.loc[test_frame.index],
-        identity=identity,
-        topn_values=topn_values,
-    )
+    rows: List[Dict[str, Any]] = []
+    for stop_threshold in [None, *max_stop_prob_thresholds]:
+        eligible_frame = test_frame
+        threshold_identity = dict(identity)
+        if stop_threshold is not None and not stop_predictions.dropna().empty:
+            eligible_frame = test_frame.loc[
+                test_frame.index.intersection(stop_predictions[stop_predictions.le(float(stop_threshold))].index)
+            ]
+            threshold_identity["max_stop_probability"] = float(stop_threshold)
+        if eligible_frame.empty:
+            continue
+        rows.extend(
+            _evaluate_score(
+                market=market,
+                frame=eligible_frame,
+                score=predictions.loc[eligible_frame.index],
+                identity=threshold_identity,
+                topn_values=topn_values,
+            )
+        )
     for row in rows:
         row["folds"] = fold_rows
     return rows
@@ -819,6 +886,9 @@ def _market_report(
     max_folds: int,
     embargo_days: int,
     two_stage_lambdas: Sequence[float],
+    prob_thresholds: Sequence[float],
+    risk_score_thresholds: Sequence[float],
+    max_stop_prob_thresholds: Sequence[float],
 ) -> Dict[str, Any]:
     days = sorted(frame["base_trade_date"].dropna().astype(str).unique().tolist())
     windows = _walk_windows(days, min_train_days=min_train_days, test_days=test_days, max_folds=max_folds, embargo_days=embargo_days)
@@ -856,6 +926,7 @@ def _market_report(
                         categorical=categorical,
                         windows=windows,
                         topn_values=topn_values,
+                        max_stop_prob_thresholds=max_stop_prob_thresholds,
                     )
                 )
             else:
@@ -870,6 +941,9 @@ def _market_report(
                         windows=windows,
                         topn_values=topn_values,
                         two_stage_lambdas=two_stage_lambdas,
+                        prob_thresholds=prob_thresholds,
+                        risk_score_thresholds=risk_score_thresholds,
+                        max_stop_prob_thresholds=max_stop_prob_thresholds,
                     )
                 )
     ranked = sorted(candidates, key=lambda item: float(item.get("quality_score") or -999999.0), reverse=True)
@@ -978,6 +1052,9 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             max_folds=args.max_folds,
             embargo_days=args.embargo_days,
             two_stage_lambdas=args.stop_penalty_lambdas,
+            prob_thresholds=args.prob_thresholds,
+            risk_score_thresholds=args.risk_score_thresholds,
+            max_stop_prob_thresholds=args.max_stop_prob_thresholds,
         )
     all_shadow = bool(markets) and all(bool(item.get("shadow_display_allowed")) for item in markets.values())
     all_prod = bool(markets) and all(bool(item.get("production_ready")) for item in markets.values())
@@ -1012,6 +1089,9 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         "feature_sets": list(args.feature_sets),
         "topn": list(args.topn),
         "stop_penalty_lambdas": list(args.stop_penalty_lambdas),
+        "prob_thresholds": list(args.prob_thresholds),
+        "risk_score_thresholds": list(args.risk_score_thresholds),
+        "max_stop_prob_thresholds": list(args.max_stop_prob_thresholds),
         "elapsed_sec": _round(perf_counter() - started, 3),
         "markets": markets,
         "decision": {
@@ -1047,6 +1127,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-folds", type=int, default=5)
     parser.add_argument("--embargo-days", type=int, default=5)
     parser.add_argument("--stop-penalty-lambdas", nargs="+", type=float, default=[0.5, 1.0, 1.5, 2.0])
+    parser.add_argument("--prob-thresholds", nargs="+", type=float, default=[0.45, 0.5, 0.55, 0.6, 0.65])
+    parser.add_argument("--risk-score-thresholds", nargs="+", type=float, default=[-0.1, 0.0, 0.1, 0.2, 0.3])
+    parser.add_argument("--max-stop-prob-thresholds", nargs="+", type=float, default=[0.25, 0.35, 0.45, 0.55])
     parser.add_argument("--output-json", default="runtime_state/reports/learning/kis_historical_best_effort_suite_20260101_20260610.json")
     parser.add_argument("--output-md", default="runtime_state/reports/learning/kis_historical_best_effort_suite_20260101_20260610.md")
     parser.add_argument("--input-path", action="append", default=[], help="MARKET=path override")

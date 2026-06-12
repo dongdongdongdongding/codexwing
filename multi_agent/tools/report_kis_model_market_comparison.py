@@ -66,22 +66,30 @@ def _metric_subset(metrics: Dict[str, Any]) -> Dict[str, Any]:
     out["hit5_guard_5d_pct"] = metrics.get("hit5_guard_5d_pct")
     out["hit10_guard_5d_pct"] = metrics.get("hit10_guard_5d_pct")
     out["min_max_high_5d_pct"] = metrics.get("min_max_high_5d_pct")
+    out["avg_ordered_exit_5d_pct"] = metrics.get("avg_ordered_exit_5d_pct")
+    out["min_ordered_exit_5d_pct"] = metrics.get("min_ordered_exit_5d_pct")
+    out["buy_premium_pct"] = metrics.get("buy_premium_pct")
     return out
 
 
 def _model_identity(row: Dict[str, Any]) -> Dict[str, Any]:
+    nested = row.get("identity") if isinstance(row.get("identity"), dict) else {}
     return {
-        "market": row.get("market"),
-        "label": row.get("label"),
-        "feature_set": row.get("feature_set"),
-        "model": row.get("model"),
-        "topn": row.get("topn"),
-        "prob_threshold": row.get("prob_threshold"),
-        "tail_risk_prob_threshold": row.get("tail_risk_prob_threshold"),
-        "selection_rule": row.get("selection_rule"),
+        "market": row.get("market") or nested.get("market"),
+        "label": row.get("label") or nested.get("label"),
+        "feature_set": row.get("feature_set") or nested.get("feature_set"),
+        "model": row.get("model") or nested.get("model"),
+        "topn": row.get("topn") or nested.get("topn"),
+        "prob_threshold": row.get("prob_threshold") or nested.get("prob_threshold") or nested.get("score_threshold"),
+        "tail_risk_prob_threshold": row.get("tail_risk_prob_threshold") or nested.get("tail_risk_prob_threshold") or nested.get("max_stop_probability"),
+        "selection_rule": row.get("selection_rule") or nested.get("score_mode"),
         "quality_score": row.get("quality_score"),
         "promotion_candidate": row.get("promotion_candidate"),
         "risk_gate": row.get("risk_gate"),
+        "score_mode": nested.get("score_mode"),
+        "score_threshold": nested.get("score_threshold"),
+        "max_stop_probability": nested.get("max_stop_probability"),
+        "stop_penalty_lambda": nested.get("stop_penalty_lambda"),
     }
 
 
@@ -122,6 +130,26 @@ def _read_selection_rules(raw: str) -> Dict[str, str]:
 
 
 def _select_kis_row(report: Dict[str, Any], market: str, *, selection_rule: str = "") -> Dict[str, Any]:
+    markets = report.get("markets") if isinstance(report.get("markets"), dict) else {}
+    market_payload = markets.get(market) if isinstance(markets.get(market), dict) else {}
+    suite_best = market_payload.get("best") if isinstance(market_payload.get("best"), dict) else {}
+    if suite_best:
+        identity = suite_best.get("identity") if isinstance(suite_best.get("identity"), dict) else {}
+        if not selection_rule or selection_rule in {
+            str(identity.get("score_mode") or ""),
+            str(identity.get("model") or ""),
+            str(identity.get("feature_set") or ""),
+        }:
+            return {
+                **suite_best,
+                "market": market,
+                "label": identity.get("label"),
+                "feature_set": identity.get("feature_set"),
+                "model": identity.get("model"),
+                "topn": identity.get("topn"),
+                "selection_rule": identity.get("score_mode"),
+                "quality_score": suite_best.get("quality_score"),
+            }
     best_kis = report.get("best_kis") if isinstance(report.get("best_kis"), dict) else {}
     if not selection_rule and best_kis.get("market") == market:
         return best_kis

@@ -889,6 +889,7 @@ def _build_admission_result_for_run(
         universe_rows,
         market=market_key,
         limit=max(3, _safe_int(limit, 5)),
+        include_blocked_watch=True,
     )
     shadow_tickers = {
         str(row.get("ticker") or row.get("Ticker") or row.get("symbol") or row.get("티커") or "").upper()

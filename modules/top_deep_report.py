@@ -334,6 +334,7 @@ def _select_top_candidates(
             admission_rows,
             market=market,
             limit=max(int(limit or 0), 3),
+            include_blocked_watch=True,
         )
         shadow_tickers = {_ticker(row) for row in shadow_rows if _ticker(row)}
         primary_rows = [

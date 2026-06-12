@@ -46,26 +46,27 @@ def test_walk_windows_use_embargo_days_between_train_and_test():
     assert first.test_days == ["2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16"]
 
 
-def test_metric_summary_uses_target_touch_and_stop_first_economics():
+def test_metric_summary_uses_target_touch_with_dd10_not_target_first_only():
     raw = pd.DataFrame(
         {
-            "base_trade_date": ["2026-01-10", "2026-01-11", "2026-01-12"],
-            "run_id": ["R1", "R2", "R3"],
-            "buy_premium_target_before_stop_5d": [True, False, False],
-            "buy_premium_target_hit_5d": [True, True, False],
-            "buy_premium_stop_hit_5d": [False, True, False],
-            "buy_premium_stop_before_target_5d": [False, True, False],
-            "buy_premium_return_5d_pct": [1.0, -12.0, -1.0],
-            "buy_premium_max_high_return_5d_pct": [6.0, 8.0, 1.5],
-            "buy_premium_min_low_return_5d_pct": [-2.0, -13.0, -3.0],
+            "base_trade_date": ["2026-01-10", "2026-01-11", "2026-01-12", "2026-01-13"],
+            "run_id": ["R1", "R2", "R3", "R4"],
+            "buy_premium_target_before_stop_5d": [True, False, False, False],
+            "buy_premium_target_hit_5d": [True, True, False, True],
+            "buy_premium_stop_hit_5d": [False, True, False, True],
+            "buy_premium_stop_before_target_5d": [False, True, False, True],
+            "buy_premium_return_5d_pct": [1.0, -12.0, -1.0, 4.0],
+            "buy_premium_max_high_return_5d_pct": [6.0, 8.0, 1.5, 5.5],
+            "buy_premium_min_low_return_5d_pct": [-2.0, -13.0, -3.0, -10.0],
         }
     )
     frame = _filter_valid_labels(raw.assign(market="KOSPI"), start="2026-01-01", end="2026-01-31")
 
     metrics = _metric_summary(frame, frame.index)
 
-    assert metrics["hit5_dd10_5d_pct"] == 33.3333
-    assert metrics["win_5d_pct"] == 66.6667
-    assert metrics["stop_before_target_5d_pct"] == 33.3333
+    assert metrics["hit5_dd10_5d_pct"] == 50.0
+    assert metrics["target_before_stop_5d_pct"] == 25.0
+    assert metrics["win_5d_pct"] == 75.0
+    assert metrics["stop_before_target_5d_pct"] == 50.0
     assert metrics["min_min_low_5d_pct"] == -13.0
     assert metrics["avg_ordered_exit_5d_pct"] < 0.0

@@ -29,8 +29,8 @@ MODEL_PATHS = {
     "KOSDAQ": MODEL_DIR / "kosdaq__touch5_guard_5d__flow_no_gate__lightgbm__top1.pkl",
 }
 KIS_SHADOW_MODEL_PATHS = {
-    "KOSPI": MODEL_DIR / "kospi__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top1_p0p50_tail0p70.pkl",
-    "KOSDAQ": MODEL_DIR / "kosdaq__touch5_dd10_5d__kis_sidecar_failure_risk_augmented__lightgbm__top2_p0p50_tail0p90.pkl",
+    "KOSPI": MODEL_DIR / "kospi__touch5_dd10_5d__kis_shadow_best_effort_current.pkl",
+    "KOSDAQ": MODEL_DIR / "kosdaq__touch5_dd10_5d__kis_shadow_best_effort_current.pkl",
 }
 
 ADMISSION_SECTION = "Scan Universe Admission"
@@ -302,14 +302,24 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
         )
         if value
     )
-    metrics_line = (
-        f"n={metrics.get('n', '-')} · active_days={metrics.get('active_days', '-')} · "
-        f"1D 목표/방어/평균 {_fmt_pct_short(metrics.get('win_1d_pct'))}/{_fmt_pct_short(metrics.get('close_win_1d_pct'))}/{_fmt_pct_short(metrics.get('avg_1d_pct'))} · "
-        f"3D {_fmt_pct_short(metrics.get('win_3d_pct'))}/{_fmt_pct_short(metrics.get('close_win_3d_pct'))}/{_fmt_pct_short(metrics.get('avg_3d_pct'))} · "
-        f"5D {_fmt_pct_short(metrics.get('win_5d_pct'))}/{_fmt_pct_short(metrics.get('close_win_5d_pct'))}/{_fmt_pct_short(metrics.get('avg_5d_pct'))}"
-        if metrics
-        else "KIS 비교 리포트 미확보"
-    )
+    if metrics and metrics.get("hit5_dd10_5d_pct") is not None:
+        metrics_line = (
+            f"n={metrics.get('n', '-')} · active_days={metrics.get('active_days', '-')} · "
+            f"5D +5%/-10% 성공 {_fmt_pct_short(metrics.get('hit5_dd10_5d_pct'))} · "
+            f"+10% 터치 {_fmt_pct_short(metrics.get('hit10_5d_pct'))} · "
+            f"손절 {_fmt_pct_short(metrics.get('stop5_pct'))} · "
+            f"평균종가 {_fmt_pct_short(metrics.get('avg_5d_pct'))} · "
+            f"stop반영평균 {_fmt_pct_short(metrics.get('avg_ordered_exit_5d_pct'))}"
+        )
+    else:
+        metrics_line = (
+            f"n={metrics.get('n', '-')} · active_days={metrics.get('active_days', '-')} · "
+            f"1D 목표/방어/평균 {_fmt_pct_short(metrics.get('win_1d_pct'))}/{_fmt_pct_short(metrics.get('close_win_1d_pct'))}/{_fmt_pct_short(metrics.get('avg_1d_pct'))} · "
+            f"3D {_fmt_pct_short(metrics.get('win_3d_pct'))}/{_fmt_pct_short(metrics.get('close_win_3d_pct'))}/{_fmt_pct_short(metrics.get('avg_3d_pct'))} · "
+            f"5D {_fmt_pct_short(metrics.get('win_5d_pct'))}/{_fmt_pct_short(metrics.get('close_win_5d_pct'))}/{_fmt_pct_short(metrics.get('avg_5d_pct'))}"
+            if metrics
+            else "KIS 비교 리포트 미확보"
+        )
     return {
         "label": "KIS 쉐도우",
         "profile": profile or "kis_runtime_evidence",
@@ -415,6 +425,7 @@ def build_kis_shadow_admission_records(
     *,
     market: str,
     limit: int | None = None,
+    include_blocked_watch: bool = False,
 ) -> List[Dict[str, Any]]:
     """Return display-only KIS shadow candidates for the current run.
 
@@ -437,15 +448,29 @@ def build_kis_shadow_admission_records(
     metrics = report.get("metrics") if isinstance(report.get("metrics"), dict) else {}
     identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
     kis_model_gate = report.get("kis_model_gate") if isinstance(report.get("kis_model_gate"), dict) else gate.get("kis_model_gate") or {}
+    primary_threshold = _safe_float(bundle.get("prob_threshold"))
+    primary_score_threshold = _safe_float(bundle.get("score_threshold"))
     selected: List[Dict[str, Any]] = []
+    blocked_watch: List[Dict[str, Any]] = []
     for model_rank, row in enumerate(scored, start=1):
         features = row.get("_admission_features") if isinstance(row.get("_admission_features"), dict) else {}
         if not _has_kis_runtime_evidence(row, features):
             continue
         tail_gate_passed, _tail_threshold, _tail_probability = _tail_risk_gate(bundle, row)
-        if not tail_gate_passed:
-            continue
         probability = float(row.get("_admission_probability") or 0.0)
+        score = _safe_float(row.get("_admission_score"))
+        primary_score_passed = primary_score_threshold is None or (score is not None and score >= primary_score_threshold)
+        primary_probability_passed = primary_threshold is None or probability >= primary_threshold
+        blocked_reasons: List[str] = []
+        if not tail_gate_passed:
+            blocked_reasons.append("hard_stop_probability_gate_failed")
+        if not primary_score_passed:
+            blocked_reasons.append("score_threshold_not_met")
+        if not primary_probability_passed:
+            blocked_reasons.append("probability_threshold_not_met")
+        strict_candidate = not blocked_reasons
+        if not strict_candidate and not include_blocked_watch:
+            continue
         record = _attach_display_payload(
             row,
             bundle=bundle,
@@ -459,7 +484,8 @@ def build_kis_shadow_admission_records(
             market=market_key,
         )
         theme_news_summary = format_kis_theme_news_summary(theme_news_evidence)
-        shadow_rank = len(selected) + 1
+        target_rows = selected if strict_candidate else blocked_watch
+        shadow_rank = len(target_rows) + 1
         dynamic_exit_policy = build_kis_shadow_exit_policy(
             features=features,
             metrics=metrics,
@@ -469,7 +495,9 @@ def build_kis_shadow_admission_records(
         trade_plan = record.get("trade_plan") if isinstance(record.get("trade_plan"), dict) else {}
         execution_stop = record.get("execution_stop") if isinstance(record.get("execution_stop"), dict) else {}
         tail_probability = _safe_float(row.get("_tail_risk_probability"))
-        tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
+        tail_threshold = _safe_float(bundle.get("max_stop_probability"))
+        if tail_threshold is None:
+            tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
         record.update(
             {
                 "decision": "KIS_SHADOW",
@@ -519,11 +547,18 @@ def build_kis_shadow_admission_records(
                     "market": market_key,
                     "shadow_only": True,
                     "runtime_model_probability_pct": round(probability * 100.0, 4),
+                    "runtime_model_score": _safe_float(row.get("_admission_score")),
+                    "runtime_model_score_threshold": _safe_float(bundle.get("score_threshold")),
                     "tail_risk_probability_pct": round(tail_probability * 100.0, 4) if tail_probability is not None else None,
                     "tail_risk_prob_threshold_pct": round(tail_threshold * 100.0, 4) if tail_threshold is not None else None,
                     "runtime_model_rank": model_rank,
                     "selection_rank": shadow_rank,
                     "source": "real_kis_sidecar_or_prefilter_evidence",
+                    "candidate_status": "eligible_shadow",
+                    "blocking_reasons": [],
+                    "tail_risk_gate_passed": tail_gate_passed,
+                    "primary_score_gate_passed": primary_score_passed,
+                    "primary_probability_gate_passed": primary_probability_passed,
                     "identity": identity,
                     "metrics": metrics,
                     "kis_model_gate": kis_model_gate,
@@ -603,10 +638,47 @@ def build_kis_shadow_admission_records(
                 f"dynamic_exit={dynamic_exit_policy.get('target_tp_pct')}%/{dynamic_exit_policy.get('stop_sl_pct')}%."
             ).strip(),
         }
+        if not strict_candidate:
+            record.update(
+                {
+                    "decision": "KIS_SHADOW_BLOCKED",
+                    "decision_bucket": "kis_shadow_blocked_watch",
+                    "final_action": "KIS 쉐도우 관찰 후보 - 모델/손절 게이트 차단, 매수 금지",
+                    "entry_condition_text": (
+                        f"KIS evidence 기반 blocked watch #{shadow_rank}: "
+                        f"runtime admission score {probability * 100.0:.1f}% · "
+                        f"차단 사유 {', '.join(blocked_reasons)}"
+                    ),
+                    "_analysis_section_order": -240,
+                }
+            )
+            risk_flags = record.get("risk_flags") if isinstance(record.get("risk_flags"), list) else []
+            record["risk_flags"] = list(dict.fromkeys([*risk_flags, "KIS_SHADOW_BLOCKED_WATCH", *blocked_reasons]))
+            if isinstance(record.get("kis_shadow_candidate"), dict):
+                record["kis_shadow_candidate"].update(
+                    {
+                        "candidate_status": "blocked_watch",
+                        "blocking_reasons": blocked_reasons,
+                        "tail_risk_gate_passed": tail_gate_passed,
+                        "primary_score_gate_passed": primary_score_passed,
+                        "primary_probability_gate_passed": primary_probability_passed,
+                    }
+                )
+            interpretation = record.get("scan_result_interpretation") if isinstance(record.get("scan_result_interpretation"), dict) else {}
+            record["scan_result_interpretation"] = {
+                **interpretation,
+                "model_decision": "KIS 쉐도우 blocked watch",
+                "action": "최상단 관찰 전용 · 매수 금지 · 차단 사유 확인",
+                "warnings": list(interpretation.get("warnings") or []) + ["KIS_SHADOW_BLOCKED_WATCH", *blocked_reasons],
+            }
+            blocked_watch.append(record)
+            continue
         selected.append(record)
         if len(selected) >= limit_n:
             break
-    return selected
+    if selected:
+        return selected
+    return blocked_watch[:limit_n] if include_blocked_watch else []
 
 
 def _extract_feature_columns(row: Dict[str, Any], *, market: str) -> Dict[str, Any]:
@@ -755,35 +827,65 @@ def _bundle_features(bundle: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     return numeric, categorical
 
 
-def _predict_probabilities(bundle: Dict[str, Any], feature_rows: List[Dict[str, Any]]) -> List[float]:
+def _bundle_feature_frame(bundle: Dict[str, Any], feature_rows: List[Dict[str, Any]]) -> pd.DataFrame:
     numeric, categorical = _bundle_features(bundle)
     columns = numeric + categorical
     frame = pd.DataFrame(feature_rows)
     for column in columns:
         if column not in frame.columns:
             frame[column] = None
+    for column in numeric:
+        frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    for column in categorical:
+        values = frame[column].fillna("UNKNOWN").astype(str).replace("", "UNKNOWN")
+        frame[column] = values.astype("category") if bundle.get("native_lightgbm_categorical") else values
+    return frame[columns]
+
+
+def _sigmoid(value: float) -> float:
+    if value >= 0:
+        z = math.exp(-value)
+        return 1.0 / (1.0 + z)
+    z = math.exp(value)
+    return z / (1.0 + z)
+
+
+def _predict_model_outputs(bundle: Dict[str, Any], feature_rows: List[Dict[str, Any]]) -> List[Dict[str, float]]:
+    frame = _bundle_feature_frame(bundle, feature_rows)
     pipeline = bundle.get("pipeline")
     if pipeline is None:
         raise ValueError("admission_model_pipeline_missing")
-    probabilities = pipeline.predict_proba(frame[columns])[:, 1]
-    return [float(value) for value in probabilities]
+    if hasattr(pipeline, "predict_proba") and bundle.get("score_output_type") != "raw_score":
+        probabilities = pipeline.predict_proba(frame)[:, 1]
+        return [{"score": float(value), "probability": float(value)} for value in probabilities]
+    raw_scores = pipeline.predict(frame)
+    outputs: List[Dict[str, float]] = []
+    for value in raw_scores:
+        score = float(value)
+        outputs.append({"score": score, "probability": float(_sigmoid(score))})
+    return outputs
+
+
+def _predict_probabilities(bundle: Dict[str, Any], feature_rows: List[Dict[str, Any]]) -> List[float]:
+    return [item["probability"] for item in _predict_model_outputs(bundle, feature_rows)]
 
 
 def _predict_tail_risk_probabilities(bundle: Dict[str, Any], feature_rows: List[Dict[str, Any]]) -> List[float | None]:
     pipeline = bundle.get("tail_risk_pipeline")
     if pipeline is None:
         return [None for _ in feature_rows]
-    numeric, categorical = _bundle_features(bundle)
-    columns = numeric + categorical
-    frame = pd.DataFrame(feature_rows)
-    for column in columns:
-        if column not in frame.columns:
-            frame[column] = None
-    probabilities = pipeline.predict_proba(frame[columns])[:, 1]
+    frame = _bundle_feature_frame(bundle, feature_rows)
+    probabilities = pipeline.predict_proba(frame)[:, 1]
     return [float(value) for value in probabilities]
 
 
 def _tail_risk_gate(bundle: Dict[str, Any], row: Dict[str, Any]) -> Tuple[bool, float | None, float | None]:
+    max_stop_probability = _safe_float(bundle.get("max_stop_probability"))
+    if max_stop_probability is not None:
+        probability = _safe_float(row.get("_tail_risk_probability"))
+        if probability is None:
+            return False, max_stop_probability, None
+        return probability <= max_stop_probability, max_stop_probability, probability
     threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
     if threshold is None:
         return True, None, None
@@ -801,6 +903,10 @@ def _metrics(bundle: Dict[str, Any]) -> Dict[str, Any]:
 
 def _target_pct_from_label(label: Any) -> float:
     text = str(label or "").lower()
+    if "touch5_dd10" in text or "hit5_dd10" in text:
+        return 5.0
+    if "touch5" in text or "hit5" in text:
+        return 5.0
     return 10.0 if "10" in text else 5.0
 
 
@@ -1120,7 +1226,9 @@ def admission_model_summary(market: str) -> Dict[str, Any]:
     raw_threshold = bundle.get("prob_threshold")
     has_probability_floor = raw_threshold is not None
     threshold = float(raw_threshold) if has_probability_floor else 0.0
-    tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
+    tail_threshold = _safe_float(bundle.get("max_stop_probability"))
+    if tail_threshold is None:
+        tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
     target_pct = _target_pct_from_label(bundle.get("label"))
     return {
         "version": RUNTIME_VERSION,
@@ -1200,17 +1308,25 @@ def _attach_display_payload(
     primary_probability_met = threshold_pct is None or probability >= threshold
     primary_probability_relation = ">=" if primary_probability_met else "<"
     tail_probability = _safe_float(row.get("_tail_risk_probability"))
-    tail_threshold = _safe_float(bundle.get("tail_risk_prob_threshold"))
+    max_stop_threshold = _safe_float(bundle.get("max_stop_probability"))
+    tail_threshold = max_stop_threshold if max_stop_threshold is not None else _safe_float(bundle.get("tail_risk_prob_threshold"))
     tail_probability_pct = round(tail_probability * 100.0, 4) if tail_probability is not None else None
     tail_threshold_pct = round(tail_threshold * 100.0, 4) if tail_threshold is not None else None
-    tail_gate_passed = None if tail_threshold is None else bool(tail_probability is not None and tail_probability >= tail_threshold)
+    if tail_threshold is None:
+        tail_gate_passed = None
+    elif max_stop_threshold is not None:
+        tail_gate_passed = bool(tail_probability is not None and tail_probability <= tail_threshold)
+    else:
+        tail_gate_passed = bool(tail_probability is not None and tail_probability >= tail_threshold)
     tail_gate_text = ""
     if tail_threshold_pct is not None:
         if tail_probability_pct is None:
-            tail_gate_text = f" · -10% 방어확률 미확보 < 기준 {tail_threshold_pct:.1f}%"
+            label = "-10% stop확률" if max_stop_threshold is not None else "-10% 방어확률"
+            tail_gate_text = f" · {label} 미확보"
         else:
-            relation = ">=" if tail_gate_passed else "<"
-            tail_gate_text = f" · -10% 방어확률 {tail_probability_pct:.1f}% {relation} 기준 {tail_threshold_pct:.1f}%"
+            relation = "<=" if max_stop_threshold is not None and tail_gate_passed else ">" if max_stop_threshold is not None else ">=" if tail_gate_passed else "<"
+            label = "-10% stop확률" if max_stop_threshold is not None else "-10% 방어확률"
+            tail_gate_text = f" · {label} {tail_probability_pct:.1f}% {relation} 기준 {tail_threshold_pct:.1f}%"
     threshold_label = f"{threshold_pct:.1f}%" if threshold_pct is not None else f"Top{int(bundle.get('topn') or 1)} 선발"
     target_pct = _target_pct_from_label(bundle.get("label"))
     section = ADMISSION_SECTION if passed else NEAR_MISS_SECTION
@@ -1232,10 +1348,12 @@ def _attach_display_payload(
     )
     expected_mfe = _touch_expected_value(metrics)
     stress_mfe = _touch_stress_value(metrics)
+    ticker = _ticker(row)
     enriched = dict(row)
     enriched.update(
         {
             "stock_name": stock_name,
+            "ticker": ticker,
             "market": bundle.get("market"),
             "decision": "ADMISSION_PASS" if passed else "ADMISSION_NEAR_MISS",
             "decision_bucket": "admission_pass" if passed else "admission_near_miss",
@@ -1291,6 +1409,8 @@ def _attach_display_payload(
                 "selection_rule": bundle.get("selection_rule"),
                 "topn": int(bundle.get("topn") or 1),
                 "probability": probability,
+                "score": _safe_float(row.get("_admission_score")),
+                "score_threshold": _safe_float(bundle.get("score_threshold")),
                 "probability_pct": probability_pct,
                 "prob_threshold": raw_threshold,
                 "prob_threshold_pct": threshold_pct,
@@ -1395,12 +1515,13 @@ def _score_scan_universe_admission_rows_with_bundle(
     if not prepared:
         return []
     feature_rows = [features for _, features in prepared]
-    probabilities = _predict_probabilities(bundle, feature_rows)
+    model_outputs = _predict_model_outputs(bundle, feature_rows)
     tail_risk_probabilities = _predict_tail_risk_probabilities(bundle, feature_rows)
     scored: List[Dict[str, Any]] = []
-    for (row, features), probability, tail_risk_probability in zip(prepared, probabilities, tail_risk_probabilities):
+    for (row, features), output, tail_risk_probability in zip(prepared, model_outputs, tail_risk_probabilities):
         copy = dict(row)
-        copy["_admission_probability"] = probability
+        copy["_admission_probability"] = output["probability"]
+        copy["_admission_score"] = output["score"]
         copy["_tail_risk_probability"] = tail_risk_probability
         copy["_admission_features"] = features
         scored.append(copy)

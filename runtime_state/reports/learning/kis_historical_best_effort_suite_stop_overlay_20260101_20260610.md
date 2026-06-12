@@ -1,7 +1,7 @@
 # KIS historical best-effort suite
 
 - version: `kis_historical_best_effort_suite_v1`
-- generated_at: `2026-06-12T03:23:46+00:00`
+- generated_at: `2026-06-12T04:35:33+00:00`
 - source: `actual_kis_historical_universe_prepared_cache`
 - label: `+5% target touch within 5D after +2% buy premium, with -10% stop path risk`
 - validation: walk-forward with `5` trading-day embargo
@@ -9,31 +9,31 @@
 ## KOSPI
 
 - rows/days: `97638` / `103` (`2026-01-02`..`2026-06-05`)
-- candidates: `96`
+- candidates: `2202`
 - best: `lightgbm` / `success_minus_stop_risk` / `kis_failure_prior_numeric` / topN `1`
 - gate: `blocked` production=`False` shadow=`False`
-- hit5_dd10: `44.4444`
-- hit10: `38.8889`
-- stop5: `25.0`
-- bad_path: `52.7778`
-- avg close 5D: `2.043727`
-- avg exit-policy 5D: `-1.091815`
+- hit5_dd10: `45.8333`
+- hit10: `29.1667`
+- stop5: `18.75`
+- bad_path: `52.0833`
+- avg close 5D: `1.575215`
+- avg exit-policy 5D: `-0.248146`
 - min low 5D: `-23.222301`
 - blockers: `['hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 
 ## KOSDAQ
 
 - rows/days: `186203` / `103` (`2026-01-02`..`2026-06-05`)
-- candidates: `96`
-- best: `baseline_failure_prior_inverse` / `deterministic_baseline` / `kis_manual_score` / topN `1`
+- candidates: `2202`
+- best: `lightgbm_ranker` / `daily_lambdarank` / `kis_failure_prior_numeric` / topN `1`
 - gate: `blocked` production=`False` shadow=`False`
-- hit5_dd10: `44.6602`
-- hit10: `50.4854`
-- stop5: `45.6311`
-- bad_path: `66.0194`
-- avg close 5D: `2.285164`
-- avg exit-policy 5D: `-2.848321`
-- min low 5D: `-31.054716`
+- hit5_dd10: `43.75`
+- hit10: `43.75`
+- stop5: `10.4167`
+- bad_path: `50.0`
+- avg close 5D: `6.795746`
+- avg exit-policy 5D: `0.430712`
+- min low 5D: `-20.932579`
 - blockers: `['hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 
 ## Decision

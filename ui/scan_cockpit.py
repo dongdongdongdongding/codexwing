@@ -340,6 +340,7 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         admission_input_rows,
         market=market_key,
         limit=3,
+        include_blocked_watch=True,
     )
     kis_shadow_rows = build_signal_display_rows(kis_shadow_records, limit=None)
 

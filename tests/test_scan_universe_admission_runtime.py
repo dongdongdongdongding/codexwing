@@ -3,6 +3,8 @@ from modules.kis_shadow_exit_policy import POLICY_VERSION
 from modules.scan_universe_admission import (
     KIS_SHADOW_SECTION,
     _extract_feature_columns,
+    _predict_probabilities,
+    _target_pct_from_label,
     build_kis_shadow_admission_records,
     build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
@@ -46,6 +48,10 @@ def test_runtime_feature_extractor_reads_display_and_nested_scan_fields():
     assert features["kr_universe_role"] == "EXPLOSIVE_LEADER"
     assert features["scanner_timeframe_profile"] == "DAILY_PRIMARY_WITH_1H_REFRESH"
     assert features["flow_consensus_buying"] is True
+
+
+def test_touch5_dd10_label_uses_5pct_target_not_10pct_stop_suffix():
+    assert _target_pct_from_label("touch5_dd10_5d") == 5.0
 
 
 def test_runtime_feature_extractor_reads_kis_sidecar_and_prefilter_features():
@@ -188,7 +194,7 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
         "label": "fake",
         "feature_set": "fake",
         "selection_rule": "fake_rule",
-        "prob_threshold": 0.99,
+        "prob_threshold": 0.8,
         "topn": 1,
         "_model_path": "fake.pkl",
         "validation": {"metrics": {"n": 10, "win_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_5d_pct": -2.0}},
@@ -295,6 +301,127 @@ def test_kis_shadow_records_require_real_kis_runtime_evidence(monkeypatch):
     assert row["trade_plan"]["stop_sl_pct"] == -5.0
     assert row["execution_stop"]["display_stop_source"] == "kis_shadow_dynamic_exit_policy"
     assert row["kis_shadow_candidate"]["dynamic_exit_policy"]["version"] == POLICY_VERSION
+
+
+def test_kis_shadow_records_apply_primary_probability_threshold(monkeypatch):
+    bundle = {
+        "market": "KOSPI",
+        "model_name": "fake",
+        "label": "touch5_dd10_5d",
+        "feature_set": "fake",
+        "selection_rule": "top1_p0.80",
+        "prob_threshold": 0.8,
+        "topn": 1,
+        "_model_path": "fake.pkl",
+        "validation": {"metrics": {"n": 10, "active_days": 10, "active_runs": 10, "hit5_dd10_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_ordered_exit_5d_pct": -10.0}},
+    }
+    scored = [
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "_admission_probability": 0.79,
+            "_admission_source_role": "emitted",
+            "feature_snapshot": {"kis_sidecar": {"feature_origin": "kis_openapi_sidecar"}},
+            "_admission_features": {
+                "feature_coverage_score": 1.0,
+                "feature_missing_keys": [],
+                "kis_sidecar_present": 1.0,
+                "kis_sidecar_model_ready": 1.0,
+            },
+        }
+    ]
+    monkeypatch.setattr(admission, "load_kis_shadow_model", lambda _market: {**bundle, "_shadow_model_loaded": True})
+    monkeypatch.setattr(admission, "_score_scan_universe_admission_rows_with_bundle", lambda _rows, market, bundle: scored)
+    monkeypatch.setattr(
+        admission,
+        "_load_kis_shadow_report",
+        lambda _market: {
+            "identity": {"label": "touch5_dd10_5d", "feature_set": "kis", "model": "lightgbm", "topn": 1},
+            "metrics": {"n": 10, "active_days": 10, "active_runs": 10, "hit5_dd10_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_ordered_exit_5d_pct": -10.0},
+        },
+    )
+
+    assert build_kis_shadow_admission_records(scored, market="KOSPI", limit=3) == []
+    blocked = build_kis_shadow_admission_records(scored, market="KOSPI", limit=3, include_blocked_watch=True)
+
+    assert [row["ticker"] for row in blocked] == ["005930.KS"]
+    assert blocked[0]["decision"] == "KIS_SHADOW_BLOCKED"
+    assert blocked[0]["kis_shadow_candidate"]["candidate_status"] == "blocked_watch"
+    assert "probability_threshold_not_met" in blocked[0]["kis_shadow_candidate"]["blocking_reasons"]
+
+
+def test_predict_probabilities_supports_native_ranker_with_categorical_inputs():
+    class PredictOnlyRecorder:
+        def __init__(self):
+            self.dtypes = {}
+
+        def predict(self, frame):
+            self.dtypes = {column: str(frame[column].dtype) for column in frame.columns}
+            return [0.0 for _ in range(len(frame))]
+
+    model = PredictOnlyRecorder()
+    bundle = {
+        "feature_columns": {"numeric": ["numeric_feature"], "categorical": ["category_feature"]},
+        "native_lightgbm_categorical": True,
+        "pipeline": model,
+    }
+
+    probabilities = _predict_probabilities(
+        bundle,
+        [{"numeric_feature": "1.25", "category_feature": "테마A"}],
+    )
+
+    assert probabilities == [0.5]
+    assert model.dtypes["numeric_feature"] == "float64"
+    assert model.dtypes["category_feature"] == "category"
+
+
+def test_kis_shadow_records_apply_raw_score_threshold(monkeypatch):
+    bundle = {
+        "market": "KOSPI",
+        "model_name": "fake",
+        "label": "touch5_dd10_5d",
+        "feature_set": "fake",
+        "selection_rule": "top1_score0.30",
+        "score_threshold": 0.3,
+        "score_output_type": "raw_score",
+        "topn": 1,
+        "_model_path": "fake.pkl",
+        "validation": {"metrics": {"n": 10, "active_days": 10, "active_runs": 10, "hit5_dd10_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_ordered_exit_5d_pct": -10.0}},
+    }
+    scored = [
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "_admission_probability": 0.95,
+            "_admission_score": 0.2,
+            "_admission_source_role": "emitted",
+            "feature_snapshot": {"kis_sidecar": {"feature_origin": "kis_openapi_sidecar"}},
+            "_admission_features": {
+                "feature_coverage_score": 1.0,
+                "feature_missing_keys": [],
+                "kis_sidecar_present": 1.0,
+                "kis_sidecar_model_ready": 1.0,
+            },
+        }
+    ]
+    monkeypatch.setattr(admission, "load_kis_shadow_model", lambda _market: {**bundle, "_shadow_model_loaded": True})
+    monkeypatch.setattr(admission, "_score_scan_universe_admission_rows_with_bundle", lambda _rows, market, bundle: scored)
+    monkeypatch.setattr(
+        admission,
+        "_load_kis_shadow_report",
+        lambda _market: {
+            "identity": {"label": "touch5_dd10_5d", "feature_set": "kis", "model": "lightgbm", "topn": 1},
+            "metrics": {"n": 10, "active_days": 10, "active_runs": 10, "hit5_dd10_5d_pct": 80.0, "avg_5d_pct": 3.0, "min_ordered_exit_5d_pct": -10.0},
+        },
+    )
+
+    assert build_kis_shadow_admission_records(scored, market="KOSPI", limit=3) == []
+    blocked = build_kis_shadow_admission_records(scored, market="KOSPI", limit=3, include_blocked_watch=True)
+
+    assert [row["ticker"] for row in blocked] == ["005930.KS"]
+    assert blocked[0]["decision"] == "KIS_SHADOW_BLOCKED"
+    assert "score_threshold_not_met" in blocked[0]["kis_shadow_candidate"]["blocking_reasons"]
 
 
 def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
@@ -573,9 +700,52 @@ def test_tail_risk_gate_blocks_high_primary_probability_candidate(monkeypatch):
     assert [row["ticker"] for row in result["passed"]] == ["005930.KS"]
     assert [row["ticker"] for row in result["near_miss"]] == ["000001.KS"]
     assert result["near_miss"][0]["scan_universe_admission"]["tail_risk_gate_passed"] is False
+
+
+def test_max_stop_probability_gate_blocks_high_stop_risk_candidate(monkeypatch):
+    bundle = {
+        "market": "KOSPI",
+        "model_name": "fake",
+        "label": "touch5_dd10_5d",
+        "feature_set": "fake",
+        "selection_rule": "top1_p0.60_stop0.10",
+        "prob_threshold": 0.6,
+        "max_stop_probability": 0.1,
+        "topn": 1,
+        "_model_path": "fake.pkl",
+        "validation": {"metrics": {"n": 10, "hit5_dd10_5d_pct": 80.0, "avg_5d_pct": 6.0, "min_ordered_exit_5d_pct": -10.0}},
+    }
+    scored = [
+        {
+            "ticker": "000001.KS",
+            "stock_name": "고위험상위후보",
+            "_admission_probability": 0.95,
+            "_tail_risk_probability": 0.4,
+            "_admission_source_role": "emitted",
+            "row_role": "emitted",
+            "_admission_features": {"feature_coverage_score": 1.0, "feature_missing_keys": [], "volume_ratio": 2.0},
+        },
+        {
+            "ticker": "005930.KS",
+            "stock_name": "삼성전자",
+            "_admission_probability": 0.9,
+            "_tail_risk_probability": 0.05,
+            "_admission_source_role": "emitted",
+            "row_role": "emitted",
+            "_admission_features": {"feature_coverage_score": 1.0, "feature_missing_keys": [], "volume_ratio": 1.5},
+        },
+    ]
+    monkeypatch.setattr(admission, "load_admission_model", lambda _market: bundle)
+    monkeypatch.setattr(admission, "score_scan_universe_admission_rows", lambda _rows, market: scored)
+
+    result = build_scan_universe_admission_records(scored, market="KOSPI", limit=2, include_near_miss=True)
+
+    assert [row["ticker"] for row in result["passed"]] == ["005930.KS"]
+    assert [row["ticker"] for row in result["near_miss"]] == ["000001.KS"]
+    assert result["near_miss"][0]["scan_universe_admission"]["tail_risk_gate_passed"] is False
     assert "TAIL_RISK_THRESHOLD_NOT_MET" in result["near_miss"][0]["risk_flags"]
     assert "목표터치 확률 95.0% >= 운영기준 60.0%" in result["near_miss"][0]["entry_condition_text"]
-    assert "-10% 방어확률 40.0% < 기준 80.0%" in result["near_miss"][0]["entry_condition_text"]
+    assert "-10% stop확률 40.0% > 기준 10.0%" in result["near_miss"][0]["entry_condition_text"]
 
 
 def test_ambiguous_kis_news_scope_blocks_admission_promotion(monkeypatch):
