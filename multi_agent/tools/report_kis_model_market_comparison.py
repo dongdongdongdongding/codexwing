@@ -153,9 +153,10 @@ def _select_kis_row(report: Dict[str, Any], market: str, *, selection_rule: str 
     best_kis = report.get("best_kis") if isinstance(report.get("best_kis"), dict) else {}
     if not selection_rule and best_kis.get("market") == market:
         return best_kis
+    candidate_rows = report.get("top_kis_results") or report.get("top_results") or []
     candidates = [
         row
-        for row in report.get("top_kis_results") or []
+        for row in candidate_rows
         if isinstance(row, dict)
         and row.get("market") == market
         and (not selection_rule or row.get("selection_rule") == selection_rule)

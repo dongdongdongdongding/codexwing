@@ -78,9 +78,10 @@ def _best_kis_from_source(path: Path, market: str, *, selection_rule: str = "") 
     report = _load_json(path)
     best = report.get("best_kis") if isinstance(report.get("best_kis"), dict) else {}
     if selection_rule or best.get("market") != market:
+        candidate_rows = report.get("top_kis_results") or report.get("top_results") or []
         candidates = [
             row
-            for row in report.get("top_kis_results") or []
+            for row in candidate_rows
             if isinstance(row, dict)
             and row.get("market") == market
             and (not selection_rule or row.get("selection_rule") == selection_rule)

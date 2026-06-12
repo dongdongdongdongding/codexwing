@@ -1,0 +1,101 @@
+{
+  "args": {
+    "base_date": "",
+    "client_filter": true,
+    "limit": 0,
+    "market": "ALL",
+    "max_base_date": "2026-06-10",
+    "max_id": 0,
+    "max_workers": 1,
+    "min_base_date": "2026-01-01",
+    "min_id": 0,
+    "only_outcome_available": true,
+    "require_outcome_label": true,
+    "row_role": "ALL",
+    "scan_mode": "SWING"
+  },
+  "contract_version": "kis_scan_universe_sidecar_backfill_v1",
+  "dry_run": true,
+  "generated_at": "2026-06-12T13:54:36.979614+00:00",
+  "summary": {
+    "checked_rows": 106673,
+    "fetched_rows": 106673,
+    "kis_sidecar_by_market": {
+      "KOSDAQ": 34861,
+      "KOSPI": 40463
+    },
+    "kis_sidecar_by_role": {
+      "emitted": 3610,
+      "rejected": 71714
+    },
+    "kis_sidecar_origins": {
+      "kis_openapi_backfill": 75305,
+      "unknown": 19
+    },
+    "kis_sidecar_outcome_label_rows": 75324,
+    "kis_sidecar_rows": 75324,
+    "kis_theme_news_evidence_rows": 4198,
+    "kis_theme_news_kis_backed_rows": 4198,
+    "kis_theme_news_levels": {
+      "medium": 1784,
+      "strong": 289,
+      "weak": 2125
+    },
+    "kis_theme_news_news_checked_rows": 2073,
+    "no_dummy_data": true,
+    "rows_written": 0,
+    "sample_sidecar_rows": [
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_theme_news_evidence": true,
+        "has_outcome_label": true,
+        "id": 1,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-AE31DAB9:006400.KS",
+        "ticker": "006400.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_theme_news_evidence": true,
+        "has_outcome_label": true,
+        "id": 2,
+        "market": "KOSPI",
+        "row_role": "emitted",
+        "snapshot_key": "RUN-AE31DAB9:007810.KS",
+        "ticker": "007810.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_theme_news_evidence": true,
+        "has_outcome_label": true,
+        "id": 3,
+        "market": "KOSPI",
+        "row_role": "rejected",
+        "snapshot_key": "RUN-AE31DAB9:000020.KS",
+        "ticker": "000020.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_theme_news_evidence": true,
+        "has_outcome_label": true,
+        "id": 4,
+        "market": "KOSPI",
+        "row_role": "rejected",
+        "snapshot_key": "RUN-AE31DAB9:000040.KS",
+        "ticker": "000040.KS"
+      },
+      {
+        "base_trade_date": "2026-05-28",
+        "has_kis_theme_news_evidence": true,
+        "has_outcome_label": true,
+        "id": 5,
+        "market": "KOSPI",
+        "row_role": "rejected",
+        "snapshot_key": "RUN-AE31DAB9:000050.KS",
+        "ticker": "000050.KS"
+      }
+    ]
+  },
+  "verify_only": true
+}

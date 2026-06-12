@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T05:16:42.850060+00:00",
+  "generated_at": "2026-06-12T14:14:09.286150+00:00",
   "horizons": [
     "1d",
     "3d",
@@ -244,20 +244,20 @@
     "KOSPI": {
       "current_kis_model": {
         "identity": {
-          "feature_set": "kis_failure_prior_numeric",
+          "feature_set": "kis_sidecar_failure_risk_augmented",
           "label": "touch5_dd10_5d",
           "market": "KOSPI",
-          "max_stop_probability": 0.02,
+          "max_stop_probability": null,
           "model": "lightgbm",
-          "prob_threshold": 0.3,
+          "prob_threshold": null,
           "promotion_candidate": null,
-          "quality_score": 263.961086,
+          "quality_score": 285.399529,
           "risk_gate": null,
-          "score_mode": "success_minus_stop_risk",
-          "score_threshold": 0.3,
-          "selection_rule": "success_minus_stop_risk",
-          "stop_penalty_lambda": 2.0,
-          "tail_risk_prob_threshold": 0.02,
+          "score_mode": null,
+          "score_threshold": null,
+          "selection_rule": "top1_tail0p9",
+          "stop_penalty_lambda": null,
+          "tail_risk_prob_threshold": 0.9,
           "topn": 1
         },
         "kind": "current_kis_challenger",
@@ -266,13 +266,11 @@
           "blocking_reasons": [
             "n_lt_30",
             "active_days_lt_15",
-            "active_runs_lt_20",
-            "hit5_dd10_5d_lt_73",
-            "expected_touch_policy_net_5d_lt_0p25"
+            "active_runs_lt_20"
           ],
           "checks": [
             {
-              "actual": 10.0,
+              "actual": 9.0,
               "expected": ">=30",
               "gate": "production",
               "name": "n",
@@ -280,7 +278,7 @@
               "reason": "n_lt_30"
             },
             {
-              "actual": 10.0,
+              "actual": 3.0,
               "expected": ">=15",
               "gate": "production",
               "name": "active_days",
@@ -288,7 +286,7 @@
               "reason": "active_days_lt_15"
             },
             {
-              "actual": 10.0,
+              "actual": 9.0,
               "expected": ">=20",
               "gate": "production",
               "name": "active_runs",
@@ -296,23 +294,23 @@
               "reason": "active_runs_lt_20"
             },
             {
-              "actual": 50.0,
+              "actual": 88.8889,
               "expected": ">=73",
               "gate": "production",
               "name": "hit5_dd10_5d_pct",
-              "passed": false,
-              "reason": "hit5_dd10_5d_lt_73"
-            },
-            {
-              "actual": -10.0,
-              "expected": ">=-10",
-              "gate": "production",
-              "name": "min_ordered_exit_5d_pct",
               "passed": true,
               "reason": null
             },
             {
-              "actual": 10.0,
+              "actual": -6.578573,
+              "expected": ">=-10",
+              "gate": "production",
+              "name": "min_min_low_5d_pct",
+              "passed": true,
+              "reason": null
+            },
+            {
+              "actual": 9.0,
               "expected": ">=8",
               "gate": "shadow",
               "name": "n",
@@ -320,7 +318,7 @@
               "reason": null
             },
             {
-              "actual": 10.0,
+              "actual": 3.0,
               "expected": ">=3",
               "gate": "shadow",
               "name": "active_days",
@@ -328,7 +326,7 @@
               "reason": null
             },
             {
-              "actual": 10.0,
+              "actual": 9.0,
               "expected": ">=5",
               "gate": "shadow",
               "name": "active_runs",
@@ -336,7 +334,7 @@
               "reason": null
             },
             {
-              "actual": 50.0,
+              "actual": 88.8889,
               "expected": ">=45",
               "gate": "shadow",
               "name": "hit5_dd10_5d_pct",
@@ -344,28 +342,28 @@
               "reason": null
             },
             {
-              "actual": -10.0,
+              "actual": -6.578573,
               "expected": ">=-18",
               "gate": "shadow",
-              "name": "min_ordered_exit_5d_pct",
+              "name": "min_min_low_5d_pct",
               "passed": true,
               "reason": null
             },
             {
-              "actual": -10.0,
+              "actual": -6.578573,
               "expected": ">=-10",
               "gate": "risk_review",
-              "name": "min_ordered_exit_5d_pct",
+              "name": "min_min_low_5d_pct",
               "passed": true,
               "reason": null
             },
             {
-              "actual": -2.699271,
+              "actual": 2.979075,
               "expected": ">=0.25",
               "gate": "production_economics",
               "name": "expected_touch_policy_net_5d_pct",
-              "passed": false,
-              "reason": "expected_touch_policy_net_5d_lt_0p25"
+              "passed": true,
+              "reason": null
             }
           ],
           "deep_analysis_allowed": true,
@@ -374,9 +372,7 @@
           "production_blocking_reasons": [
             "n_lt_30",
             "active_days_lt_15",
-            "active_runs_lt_20",
-            "hit5_dd10_5d_lt_73",
-            "expected_touch_policy_net_5d_lt_0p25"
+            "active_runs_lt_20"
           ],
           "production_economics": {
             "cost_model": {
@@ -389,8 +385,8 @@
               "spread_bps": 4.0,
               "version": "kr_tradable_pnl_cost_v1"
             },
-            "expected_touch_policy_net_5d_pct": -2.699271,
-            "hit5_dd10_5d_pct": 50.0,
+            "expected_touch_policy_net_5d_pct": 2.979075,
+            "hit5_dd10_5d_pct": 88.8889,
             "loss_floor_pct": -10.0,
             "policy": "target_touch_5d_dd10_after_buy_premium",
             "target_touch_gross_pct": 5.0,
@@ -410,37 +406,37 @@
           "win_metric_semantics": "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; touch5_dd10_5d production gates use hit5_dd10_5d_pct and a -10% 5D low guard."
         },
         "metrics": {
-          "active_days": 10,
-          "active_runs": 10,
-          "avg_1d_pct": null,
-          "avg_3d_pct": null,
-          "avg_5d_pct": 1.658313,
-          "avg_max_high_5d_pct": null,
-          "avg_ordered_exit_5d_pct": 0.385872,
-          "bad_path_pct": 50.0,
+          "active_days": 3,
+          "active_runs": 9,
+          "avg_1d_pct": -1.462883,
+          "avg_3d_pct": 1.541015,
+          "avg_5d_pct": 7.837175,
+          "avg_max_high_5d_pct": 10.878205,
+          "avg_ordered_exit_5d_pct": null,
+          "bad_path_pct": 88.8889,
           "buy_premium_pct": 2.0,
-          "hit10_5d_pct": 30.0,
-          "hit10_guard_5d_pct": null,
-          "hit5_5d_pct": null,
-          "hit5_dd10_5d_pct": 50.0,
-          "hit5_guard_5d_pct": null,
-          "max_1d_pct": null,
-          "max_3d_pct": null,
-          "max_5d_pct": 9.44838,
-          "max_min_low_5d_pct": null,
-          "min_1d_pct": null,
-          "min_3d_pct": null,
-          "min_5d_pct": -6.573003,
-          "min_max_high_5d_pct": null,
-          "min_min_low_5d_pct": -12.819311,
-          "min_ordered_exit_5d_pct": -10.0,
-          "n": 10,
-          "stop5_pct": 10.0,
-          "stop_before_target_5d_pct": 10.0,
-          "target_before_stop_5d_pct": 50.0,
-          "win_1d_pct": null,
-          "win_3d_pct": null,
-          "win_5d_pct": 50.0
+          "hit10_5d_pct": 33.3333,
+          "hit10_guard_5d_pct": 11.1111,
+          "hit5_5d_pct": 88.8889,
+          "hit5_dd10_5d_pct": 88.8889,
+          "hit5_guard_5d_pct": 11.1111,
+          "max_1d_pct": 8.067777,
+          "max_3d_pct": 4.539053,
+          "max_5d_pct": 22.052504,
+          "max_min_low_5d_pct": -4.367639,
+          "min_1d_pct": -3.656431,
+          "min_3d_pct": -3.972388,
+          "min_5d_pct": -3.866514,
+          "min_max_high_5d_pct": -1.960784,
+          "min_min_low_5d_pct": -6.578573,
+          "min_ordered_exit_5d_pct": null,
+          "n": 9,
+          "stop5_pct": 88.8889,
+          "stop_before_target_5d_pct": 88.8889,
+          "target_before_stop_5d_pct": 66.6667,
+          "win_1d_pct": 11.1111,
+          "win_3d_pct": 66.6667,
+          "win_5d_pct": 88.8889
         }
       },
       "existing_production_baselines": [],
@@ -461,10 +457,10 @@
       },
       "performance_comparison_vs_existing": [],
       "source_evaluated_combinations": null,
-      "source_generated_at": "2026-06-12T05:13:01+00:00",
+      "source_generated_at": "2026-06-12T14:12:11+00:00",
       "source_kis_feature_readiness": {},
       "source_ok_combinations": null,
-      "source_path": "runtime_state/reports/learning/kis_historical_best_effort_suite_stop_overlay_strict_20260101_20260610.json",
+      "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_20260101_20260610.json",
       "source_prepared_rows": null,
       "source_raw_rows": null,
       "theme_news_readiness": {
@@ -521,9 +517,7 @@
         "production_blocking_reasons": [
           "n_lt_30",
           "active_days_lt_15",
-          "active_runs_lt_20",
-          "hit5_dd10_5d_lt_73",
-          "expected_touch_policy_net_5d_lt_0p25"
+          "active_runs_lt_20"
         ],
         "production_economics": {
           "cost_model": {
@@ -536,8 +530,8 @@
             "spread_bps": 4.0,
             "version": "kr_tradable_pnl_cost_v1"
           },
-          "expected_touch_policy_net_5d_pct": -2.699271,
-          "hit5_dd10_5d_pct": 50.0,
+          "expected_touch_policy_net_5d_pct": 2.979075,
+          "hit5_dd10_5d_pct": 88.8889,
           "loss_floor_pct": -10.0,
           "policy": "target_touch_5d_dd10_after_buy_premium",
           "target_touch_gross_pct": 5.0,

@@ -1,0 +1,59 @@
+{
+  "args": {
+    "base_date": "",
+    "client_filter": true,
+    "include_current_rank": false,
+    "include_financial": true,
+    "include_flow": true,
+    "include_minute": false,
+    "include_news": false,
+    "include_stock_info": true,
+    "include_vi": true,
+    "limit": 0,
+    "market": "ALL",
+    "max_base_date": "2026-06-10",
+    "max_id": 0,
+    "max_workers": 3,
+    "min_base_date": "2026-01-01",
+    "min_id": 0,
+    "news_only_existing_sidecar": false,
+    "only_outcome_available": true,
+    "overwrite": false,
+    "require_outcome_label": true,
+    "scan_mode": "SWING"
+  },
+  "contract_version": "kis_scan_universe_sidecar_backfill_v1",
+  "dry_run": false,
+  "generated_at": "2026-06-12T13:16:07.339417+00:00",
+  "summary": {
+    "candidate_rows": 1515,
+    "fetched_rows": 1515,
+    "generated_at": "2026-06-12T13:09:56.688402+00:00",
+    "key_failures": {},
+    "kis_call_counts": {
+      "daily_bars": 823,
+      "financial_ratio": 591,
+      "investor_flow_snapshot": 823,
+      "stock_info": 505,
+      "vi_status": 22
+    },
+    "kis_failures": {},
+    "max_workers": 3,
+    "no_dummy_data": true,
+    "rows_by_market": {
+      "KOSDAQ": 677,
+      "KOSPI": 838
+    },
+    "rows_by_role": {
+      "emitted": 1515
+    },
+    "rows_written": 1515,
+    "sidecar_keys_built": 823,
+    "skipped_existing_rows": 0,
+    "skipped_missing_date_rows": 0,
+    "skipped_missing_outcome_label_rows": 0,
+    "skipped_missing_ticker_rows": 0,
+    "unique_keys": 823,
+    "updates_built": 1515
+  }
+}

@@ -1,6 +1,6 @@
 # KIS Model Market Comparison
 
-- generated_at: `2026-06-12T05:16:42.850060+00:00`
+- generated_at: `2026-06-12T14:14:09.286150+00:00`
 - metric_contract: `2d is intentionally excluded; report uses completed 1d/3d/5d scan_universe outcome labels only.`
 
 ## Promotion Decision
@@ -10,15 +10,15 @@
 - all_required_markets_shadow_display_allowed: `True`
 
 ## KOSPI
-- source: `runtime_state/reports/learning/kis_historical_best_effort_suite_stop_overlay_strict_20260101_20260610.json`
-- source_generated_at: `2026-06-12T05:13:01+00:00`
-- current_kis: `touch5_dd10_5d` / `kis_failure_prior_numeric` / `lightgbm` / `success_minus_stop_risk`
-- current_kis sample: n=`10`, active_days=`10`, active_runs=`10`
-- current_kis returns: 1d 승률/평균/최저/최고 -%/-%/-%/-%; 3d 승률/평균/최저/최고 -%/-%/-%/-%; 5d 승률/평균/최저/최고 50%/1.6583%/-6.573%/9.4484%
+- source: `runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_20260101_20260610.json`
+- source_generated_at: `2026-06-12T14:12:11+00:00`
+- current_kis: `touch5_dd10_5d` / `kis_sidecar_failure_risk_augmented` / `lightgbm` / `top1_tail0p9`
+- current_kis sample: n=`9`, active_days=`3`, active_runs=`9`
+- current_kis returns: 1d 승률/평균/최저/최고 11.1111%/-1.4629%/-3.6564%/8.0678%; 3d 승률/평균/최저/최고 66.6667%/1.541%/-3.9724%/4.5391%; 5d 승률/평균/최저/최고 88.8889%/7.8372%/-3.8665%/22.0525%
 - current_kis net expectancy: 3d=`-%`, 5d=`-%`, cost_model=`kr_tradable_pnl_cost_v1`
-- current_kis 5d path: avg_max_high=`-%`, min_low=`-12.8193%`, max_low=`-%`
+- current_kis 5d path: avg_max_high=`10.8782%`, min_low=`-6.5786%`, max_low=`-4.3676%`
 - kis_model_gate: status=`shadow_ready`, production_ready=`False`, shadow_display_allowed=`True`, risk_review_required=`False`
-- kis_model_gate blockers: `['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'expected_touch_policy_net_5d_lt_0p25']`
+- kis_model_gate blockers: `['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20']`
 - operational_action: `shadow_top_section_only_until_gate_passes`
 - theme_news_readiness: `{'market_scope': {}, 'feature_fill_pct': {}, 'mature_for_training': False, 'news_checked_fill_pct': None, 'evidence_score_fill_pct': None, 'kis_backed_fill_pct': None}`
 
