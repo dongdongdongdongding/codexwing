@@ -1,0 +1,2339 @@
+{
+  "buy_premium_pct": 2.0,
+  "cache_required_end": "2026-06-10",
+  "cache_signature_training_args": {
+    "market": "ALL",
+    "max_base_date": "2026-06-10",
+    "max_fetch_chunks": 0,
+    "min_base_date": "2026-01-01",
+    "page_size": 1000,
+    "return_sanity": "kr_price_limit",
+    "scan_mode": "SWING"
+  },
+  "elapsed_sec": 601.461,
+  "empty_or_unusable_tickers": 0,
+  "failed_tickers": 0,
+  "failure_examples": [],
+  "fetch_end": "2026-06-20",
+  "fetch_start": "2025-08-04",
+  "generated_at": "2026-06-12T02:40:57.992833+00:00",
+  "instrument_master": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/long_term/instrument_master/KR.json",
+  "label_summary": {
+    "buy_premium_pct": 2.0,
+    "by_market": {
+      "KOSDAQ": {
+        "avg_close_5d_pct": -2.103457,
+        "avg_mfe_5d_pct": 5.980224,
+        "hit10_5d_pct": 19.6039,
+        "hit5_5d_pct": 34.0779,
+        "hit5_dd10_5d_pct": 30.7106,
+        "max_high_5d_pct": 263.171355,
+        "min_low_5d_pct": -89.165006,
+        "rows": 186203,
+        "stop5_pct": 30.6617
+      },
+      "KOSPI": {
+        "avg_close_5d_pct": -1.756089,
+        "avg_mfe_5d_pct": 4.514802,
+        "hit10_5d_pct": 14.5159,
+        "hit5_5d_pct": 28.2421,
+        "hit5_dd10_5d_pct": 26.5767,
+        "max_high_5d_pct": 229.656863,
+        "min_low_5d_pct": -78.074297,
+        "rows": 97638,
+        "stop5_pct": 21.7528
+      }
+    },
+    "by_market_month": {
+      "KOSDAQ": {
+        "2026-01": {
+          "avg_close_5d_pct": 0.046478,
+          "avg_mfe_5d_pct": 6.456313,
+          "hit10_5d_pct": 20.8355,
+          "hit5_5d_pct": 34.4794,
+          "hit5_dd10_5d_pct": 32.6397,
+          "max_high_5d_pct": 263.171355,
+          "min_low_5d_pct": -49.273242,
+          "rows": 37724,
+          "stop5_pct": 16.0826
+        },
+        "2026-02": {
+          "avg_close_5d_pct": -3.329106,
+          "avg_mfe_5d_pct": 5.485085,
+          "hit10_5d_pct": 18.064,
+          "hit5_5d_pct": 32.0451,
+          "hit5_dd10_5d_pct": 29.1766,
+          "max_high_5d_pct": 263.030649,
+          "min_low_5d_pct": -61.647204,
+          "rows": 30713,
+          "stop5_pct": 37.2188
+        },
+        "2026-03": {
+          "avg_close_5d_pct": -0.96675,
+          "avg_mfe_5d_pct": 6.305653,
+          "hit10_5d_pct": 20.3643,
+          "hit5_5d_pct": 36.1114,
+          "hit5_dd10_5d_pct": 32.3629,
+          "max_high_5d_pct": 262.836723,
+          "min_low_5d_pct": -55.858557,
+          "rows": 37988,
+          "stop5_pct": 25.2501
+        },
+        "2026-04": {
+          "avg_close_5d_pct": 0.697453,
+          "avg_mfe_5d_pct": 7.157583,
+          "hit10_5d_pct": 23.1954,
+          "hit5_5d_pct": 40.0833,
+          "hit5_dd10_5d_pct": 37.9682,
+          "max_high_5d_pct": 248.656019,
+          "min_low_5d_pct": -89.165006,
+          "rows": 39857,
+          "stop5_pct": 14.8732
+        },
+        "2026-05": {
+          "avg_close_5d_pct": -7.410751,
+          "avg_mfe_5d_pct": 4.612066,
+          "hit10_5d_pct": 15.9372,
+          "hit5_5d_pct": 27.972,
+          "hit5_dd10_5d_pct": 22.6249,
+          "max_high_5d_pct": 219.984453,
+          "min_low_5d_pct": -83.660131,
+          "rows": 32672,
+          "stop5_pct": 58.1599
+        },
+        "2026-06": {
+          "avg_close_5d_pct": -5.535366,
+          "avg_mfe_5d_pct": 3.588058,
+          "hit10_5d_pct": 12.5121,
+          "hit5_5d_pct": 24.4448,
+          "hit5_dd10_5d_pct": 15.0504,
+          "max_high_5d_pct": 181.862745,
+          "min_low_5d_pct": -52.606635,
+          "rows": 7249,
+          "stop5_pct": 69.9821
+        }
+      },
+      "KOSPI": {
+        "2026-01": {
+          "avg_close_5d_pct": -0.288576,
+          "avg_mfe_5d_pct": 4.07924,
+          "hit10_5d_pct": 12.8449,
+          "hit5_5d_pct": 26.5491,
+          "hit5_dd10_5d_pct": 25.8204,
+          "max_high_5d_pct": 204.977833,
+          "min_low_5d_pct": -41.795969,
+          "rows": 19899,
+          "stop5_pct": 7.4376
+        },
+        "2026-02": {
+          "avg_close_5d_pct": -1.680723,
+          "avg_mfe_5d_pct": 5.65985,
+          "hit10_5d_pct": 18.7578,
+          "hit5_5d_pct": 33.9476,
+          "hit5_dd10_5d_pct": 32.626,
+          "max_high_5d_pct": 189.557684,
+          "min_low_5d_pct": -52.180597,
+          "rows": 16116,
+          "stop5_pct": 28.6796
+        },
+        "2026-03": {
+          "avg_close_5d_pct": -1.660481,
+          "avg_mfe_5d_pct": 4.187824,
+          "hit10_5d_pct": 13.1555,
+          "hit5_5d_pct": 27.9837,
+          "hit5_dd10_5d_pct": 26.0147,
+          "max_high_5d_pct": 197.844758,
+          "min_low_5d_pct": -49.64592,
+          "rows": 19908,
+          "stop5_pct": 19.1632
+        },
+        "2026-04": {
+          "avg_close_5d_pct": 0.530498,
+          "avg_mfe_5d_pct": 5.219841,
+          "hit10_5d_pct": 16.6108,
+          "hit5_5d_pct": 31.765,
+          "hit5_dd10_5d_pct": 31.0655,
+          "max_high_5d_pct": 200.977534,
+          "min_low_5d_pct": -70.383987,
+          "rows": 20872,
+          "stop5_pct": 7.8047
+        },
+        "2026-05": {
+          "avg_close_5d_pct": -5.89607,
+          "avg_mfe_5d_pct": 3.865001,
+          "hit10_5d_pct": 12.6282,
+          "hit5_5d_pct": 22.7121,
+          "hit5_dd10_5d_pct": 19.728,
+          "max_high_5d_pct": 229.656863,
+          "min_low_5d_pct": -78.074297,
+          "rows": 17057,
+          "stop5_pct": 45.4945
+        },
+        "2026-06": {
+          "avg_close_5d_pct": -4.246847,
+          "avg_mfe_5d_pct": 2.689987,
+          "hit10_5d_pct": 9.3502,
+          "hit5_5d_pct": 19.7042,
+          "hit5_dd10_5d_pct": 13.8669,
+          "max_high_5d_pct": 69.018596,
+          "min_low_5d_pct": -64.845517,
+          "rows": 3786,
+          "stop5_pct": 51.0565
+        }
+      }
+    },
+    "overall": {
+      "avg_close_5d_pct": -1.983966,
+      "avg_mfe_5d_pct": 5.476136,
+      "hit10_5d_pct": 17.8537,
+      "hit5_5d_pct": 32.0704,
+      "hit5_dd10_5d_pct": 29.2886,
+      "max_high_5d_pct": 263.171355,
+      "min_low_5d_pct": -89.165006,
+      "rows": 283841,
+      "stop5_pct": 27.5971
+    },
+    "rows": 292167,
+    "stop_pct": 10.0,
+    "target_pct": 5.0,
+    "valid_buy_premium_5d_rows": 283841
+  },
+  "market": "ALL",
+  "max_base_date": "2026-06-10",
+  "min_base_date": "2026-01-01",
+  "min_prior_bars": 20,
+  "no_dummy_data": true,
+  "prepared_cache": {
+    "enabled": true,
+    "meta_path": "runtime_state/reports/learning/kis_historical_universe_prepared_20260101_20260610.pkl.meta.json",
+    "mode": "write",
+    "path": "runtime_state/reports/learning/kis_historical_universe_prepared_20260101_20260610.pkl",
+    "prepare_elapsed_sec": 117.907,
+    "prepared_rows": 292167,
+    "raw_rows": 292213
+  },
+  "prepared_market_counts": {
+    "KOSDAQ": 191677,
+    "KOSPI": 100490
+  },
+  "prepared_rows": 292167,
+  "price_cache_dir": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/long_term/kis_historical_prices",
+  "raw_csv": "",
+  "raw_date_range": {
+    "date_max": "2026-06-10",
+    "date_min": "2026-01-02"
+  },
+  "raw_market_counts": {
+    "KOSDAQ": 191712,
+    "KOSPI": 100501
+  },
+  "raw_pkl": "runtime_state/reports/learning/kis_historical_universe_raw_20260101_20260610.pkl",
+  "raw_rows": 292213,
+  "return_sanity": {
+    "bounds": {
+      "buy_premium_max_high_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_max_high_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_max_high_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "buy_premium_min_low_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_min_low_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_min_low_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "buy_premium_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "max_high_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "max_high_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "max_high_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "min_low_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "min_low_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "min_low_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "return_5d_pct": [
+        -90.0,
+        300.0
+      ]
+    },
+    "column_violations": {
+      "buy_premium_max_high_return_1d_pct": 11,
+      "buy_premium_max_high_return_3d_pct": 15,
+      "buy_premium_max_high_return_5d_pct": 17,
+      "buy_premium_min_low_return_1d_pct": 17,
+      "buy_premium_min_low_return_3d_pct": 18,
+      "buy_premium_min_low_return_5d_pct": 14,
+      "buy_premium_return_1d_pct": 16,
+      "buy_premium_return_3d_pct": 24,
+      "buy_premium_return_5d_pct": 26,
+      "max_high_return_1d_pct": 12,
+      "max_high_return_3d_pct": 15,
+      "max_high_return_5d_pct": 17,
+      "min_low_return_1d_pct": 18,
+      "min_low_return_3d_pct": 18,
+      "min_low_return_5d_pct": 14,
+      "return_1d_pct": 16,
+      "return_3d_pct": 24,
+      "return_5d_pct": 26
+    },
+    "mode": "kr_price_limit",
+    "remaining_rows": 292167,
+    "removed_rows": 46
+  },
+  "selected_tickers": 2770,
+  "source": "kis_openapi_daily_bars",
+  "stop_pct": 10.0,
+  "successful_tickers": 2770,
+  "target_pct": 5.0,
+  "ticker_summaries": [
+    {
+      "built_rows": 67,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-01-30",
+      "history_rows": 88,
+      "market": "KOSDAQ",
+      "symbol": "0001A0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "000250.KQ"
+    },
+    {
+      "built_rows": 79,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-01-14",
+      "history_rows": 100,
+      "market": "KOSDAQ",
+      "symbol": "0004V0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "000440.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "0004Y0.KQ"
+    },
+    {
+      "built_rows": 27,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-04-02",
+      "history_rows": 48,
+      "market": "KOSDAQ",
+      "symbol": "0007J0.KQ"
+    },
+    {
+      "built_rows": 97,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-16",
+      "history_rows": 118,
+      "market": "KOSDAQ",
+      "symbol": "0007C0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "001000.KQ"
+    },
+    {
+      "built_rows": 105,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-04",
+      "history_rows": 126,
+      "market": "KOSDAQ",
+      "symbol": "0009K0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-19",
+      "history_rows": 198,
+      "market": "KOSDAQ",
+      "symbol": "0008Z0.KQ"
+    },
+    {
+      "built_rows": 26,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-04-03",
+      "history_rows": 47,
+      "market": "KOSDAQ",
+      "symbol": "0010F0.KQ"
+    },
+    {
+      "built_rows": 45,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-03-09",
+      "history_rows": 66,
+      "market": "KOSDAQ",
+      "symbol": "0011A0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "001540.KQ"
+    },
+    {
+      "built_rows": 93,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-22",
+      "history_rows": 114,
+      "market": "KOSDAQ",
+      "symbol": "0013V0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-21",
+      "history_rows": 196,
+      "market": "KOSDAQ",
+      "symbol": "0010V0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-11-17",
+      "history_rows": 139,
+      "market": "KOSDAQ",
+      "symbol": "0015G0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "001810.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-11-27",
+      "history_rows": 131,
+      "market": "KOSDAQ",
+      "symbol": "0015N0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "001840.KQ"
+    },
+    {
+      "built_rows": 101,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-10",
+      "history_rows": 122,
+      "market": "KOSDAQ",
+      "symbol": "0015S0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "002230.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "002290.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "002680.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "002800.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "003100.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "003310.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "003380.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "0037T0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "003800.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "0041J0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-14",
+      "history_rows": 200,
+      "market": "KOSDAQ",
+      "symbol": "0041B0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-06",
+      "history_rows": 206,
+      "market": "KOSDAQ",
+      "symbol": "0041L0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "004590.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-21",
+      "history_rows": 196,
+      "market": "KOSDAQ",
+      "symbol": "0044K0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "004650.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "004780.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "005160.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "005290.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "005670.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "005710.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "005860.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "005990.KQ"
+    },
+    {
+      "built_rows": 104,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-05",
+      "history_rows": 125,
+      "market": "KOSDAQ",
+      "symbol": "0054V0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "006050.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "006140.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "006620.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "006730.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "006910.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "006920.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-11-21",
+      "history_rows": 135,
+      "market": "KOSDAQ",
+      "symbol": "0068Y0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007330.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-09-30",
+      "history_rows": 168,
+      "market": "KOSDAQ",
+      "symbol": "0071M0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-09-30",
+      "history_rows": 168,
+      "market": "KOSDAQ",
+      "symbol": "0072Z0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007390.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007370.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007530.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007680.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007720.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007770.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "007820.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "008290.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "008370.KQ"
+    },
+    {
+      "built_rows": 40,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-03-16",
+      "history_rows": 61,
+      "market": "KOSDAQ",
+      "symbol": "0082N0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "008470.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "008830.KQ"
+    },
+    {
+      "built_rows": 32,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-03-26",
+      "history_rows": 53,
+      "market": "KOSDAQ",
+      "symbol": "0088M0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "009300.KQ"
+    },
+    {
+      "built_rows": 98,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-15",
+      "history_rows": 119,
+      "market": "KOSDAQ",
+      "symbol": "0088D0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "009520.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-11-24",
+      "history_rows": 134,
+      "market": "KOSDAQ",
+      "symbol": "0091W0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "009620.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-11-27",
+      "history_rows": 131,
+      "market": "KOSDAQ",
+      "symbol": "0093G0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "009730.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "009780.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-11-28",
+      "history_rows": 130,
+      "market": "KOSDAQ",
+      "symbol": "0096B0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-01",
+      "history_rows": 129,
+      "market": "KOSDAQ",
+      "symbol": "0096D0.KQ"
+    },
+    {
+      "built_rows": 92,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-23",
+      "history_rows": 113,
+      "market": "KOSDAQ",
+      "symbol": "0097F0.KQ"
+    },
+    {
+      "built_rows": 93,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-22",
+      "history_rows": 114,
+      "market": "KOSDAQ",
+      "symbol": "0099W0.KQ"
+    },
+    {
+      "built_rows": 99,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-12",
+      "history_rows": 120,
+      "market": "KOSDAQ",
+      "symbol": "0098T0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "010170.KQ"
+    },
+    {
+      "built_rows": 94,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-19",
+      "history_rows": 115,
+      "market": "KOSDAQ",
+      "symbol": "0099X0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "010240.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "010280.KQ"
+    },
+    {
+      "built_rows": 93,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-22",
+      "history_rows": 114,
+      "market": "KOSDAQ",
+      "symbol": "0101C0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "010470.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "011040.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "011080.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "011320.KQ"
+    },
+    {
+      "built_rows": 100,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-12-11",
+      "history_rows": 121,
+      "market": "KOSDAQ",
+      "symbol": "0105P0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "011370.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "011560.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "012210.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "012340.KQ"
+    },
+    {
+      "built_rows": 74,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-01-21",
+      "history_rows": 95,
+      "market": "KOSDAQ",
+      "symbol": "0115H0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "012620.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "012700.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "012790.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "012860.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "013030.KQ"
+    },
+    {
+      "built_rows": 28,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-04-01",
+      "history_rows": 49,
+      "market": "KOSDAQ",
+      "symbol": "0130D0.KQ"
+    },
+    {
+      "built_rows": 31,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-03-27",
+      "history_rows": 52,
+      "market": "KOSDAQ",
+      "symbol": "0130H0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "013120.KQ"
+    },
+    {
+      "built_rows": 27,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2026-04-02",
+      "history_rows": 48,
+      "market": "KOSDAQ",
+      "symbol": "0132G0.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "013720.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "013310.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "013810.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "013990.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "014100.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "014190.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "014470.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "014570.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "014620.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "014940.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "014970.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "015710.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "015750.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": false,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-10-27",
+      "history_rows": 154,
+      "market": "KOSDAQ",
+      "symbol": "014950.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "016100.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "016600.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "016250.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "016670.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "016790.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "016920.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "017000.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "017250.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "017480.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "017510.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "017650.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "018000.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "017890.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "018120.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "018290.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "018310.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "018620.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "018680.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019010.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "018700.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019210.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019540.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019550.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019570.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019770.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019660.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "019990.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "020180.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "020400.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "020710.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "021040.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "021045.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "021080.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "021320.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "021650.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "022220.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "021880.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023160.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023410.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023440.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023600.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023760.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023770.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023790.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023900.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "023910.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024060.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024120.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024740.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024800.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024830.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024840.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024850.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024910.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024880.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024940.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "024950.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025320.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025440.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025550.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025770.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025870.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025880.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025900.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025950.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "025980.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "026040.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "026150.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "026910.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "027040.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "027050.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "027360.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "027580.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "027830.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "027710.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "028080.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "028300.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "029480.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "030350.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "030520.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "030530.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "030960.KQ"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSDAQ",
+      "symbol": "031310.KQ"
+    }
+  ],
+  "version": "kis_historical_universe_dataset_v1"
+}
