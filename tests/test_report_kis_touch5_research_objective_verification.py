@@ -290,7 +290,24 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                             "production_blocking_reasons": ["active_days_lt_15"],
                             "non_sample_blockers": [],
                         },
-                        "sample_progress": {"completion_pct": 93.333333},
+                        "sample_progress": {
+                            "completion_pct": 93.333333,
+                            "checks": {
+                                "n": {"actual": 55.0, "expected": 30.0, "missing": 0.0, "completion_pct": 100.0},
+                                "active_days": {
+                                    "actual": 12.0,
+                                    "expected": 15.0,
+                                    "missing": 3.0,
+                                    "completion_pct": 80.0,
+                                },
+                                "active_runs": {
+                                    "actual": 55.0,
+                                    "expected": 20.0,
+                                    "missing": 0.0,
+                                    "completion_pct": 100.0,
+                                },
+                            },
+                        },
                     },
                     "best_high_precision_shadow": {
                         "source_path": "score_report.json",
@@ -561,6 +578,12 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert leaderboard["best_sample_only_shadow"]["selection_rule"] == "top1_tail0.95"
     assert leaderboard["best_sample_only_shadow"]["metrics"]["hit5_dd10_5d_pct"] == 85.4545
     assert leaderboard["best_sample_only_shadow"]["sample_progress"]["completion_pct"] == 93.333333
+    assert leaderboard["frontier_readiness"]["status"] == "sample_only_frontier"
+    assert leaderboard["frontier_readiness"]["ready_after_sample_gate"] is True
+    assert leaderboard["frontier_readiness"]["sample_gaps"]["active_days"]["missing"] == 3.0
+    assert leaderboard["frontier_readiness"]["next_required_evidence"] == ["active_days+3.0"]
+    assert report["decision"]["sample_only_frontier_markets"] == ["KOSPI"]
+    assert report["decision"]["frontier_next_required_evidence_by_market"]["KOSPI"] == ["active_days+3.0"]
     assert leaderboard["best_high_precision_shadow"]["selection_rule"] == "top1_prob_tail_margin_tail0p95"
     assert leaderboard["best_high_precision_shadow"]["metrics"]["hit5_dd10_5d_pct"] == 93.4783
     assert leaderboard["best_high_precision_shadow"]["sample_progress"]["completion_pct"] == 88.888889

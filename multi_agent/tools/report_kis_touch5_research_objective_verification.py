@@ -443,6 +443,64 @@ def _leaderboard_candidate_summary(row: Mapping[str, Any] | None) -> Dict[str, A
     }
 
 
+def _sample_gap_summary(candidate: Mapping[str, Any]) -> Dict[str, Any]:
+    progress = candidate.get("sample_progress") if isinstance(candidate.get("sample_progress"), dict) else {}
+    checks = progress.get("checks") if isinstance(progress.get("checks"), dict) else {}
+    gaps = {}
+    for key in ("n", "active_days", "active_runs"):
+        row = checks.get(key) if isinstance(checks.get(key), dict) else {}
+        missing = row.get("missing")
+        try:
+            missing_value = float(missing)
+        except Exception:
+            missing_value = None
+        if missing_value is not None and missing_value > 0:
+            gaps[key] = {
+                "actual": row.get("actual"),
+                "expected": row.get("expected"),
+                "missing": row.get("missing"),
+                "completion_pct": row.get("completion_pct"),
+            }
+    return gaps
+
+
+def _frontier_readiness(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    frontier_raw = payload.get("best_sample_only_shadow") or payload.get("current")
+    frontier = _leaderboard_candidate_summary(frontier_raw)
+    if not frontier:
+        return {
+            "status": "no_shadow_frontier",
+            "ready_after_sample_gate": False,
+            "frontier_candidate": {},
+            "sample_gaps": {},
+            "non_sample_blockers": [],
+            "next_required_evidence": ["find_shadow_allowed_candidate"],
+        }
+    non_sample = [str(item) for item in frontier.get("non_sample_blockers") or []]
+    sample_gaps = _sample_gap_summary(frontier)
+    next_required = []
+    for key, gap in sample_gaps.items():
+        missing = gap.get("missing")
+        unit = "rows" if key == "n" else "active_days" if key == "active_days" else "active_runs"
+        next_required.append(f"{unit}+{missing}")
+    next_required.extend(non_sample)
+    ready_after_sample = bool(frontier.get("shadow_display_allowed")) and not non_sample
+    if ready_after_sample and sample_gaps:
+        status = "sample_only_frontier"
+    elif ready_after_sample:
+        status = "sample_gate_clear_pending_recheck"
+    else:
+        status = "non_sample_blocked_frontier"
+    return {
+        "status": status,
+        "ready_after_sample_gate": ready_after_sample,
+        "frontier_candidate": frontier,
+        "sample_gaps": sample_gaps,
+        "non_sample_blockers": non_sample,
+        "next_required_evidence": next_required,
+    }
+
+
 def _candidate_leaderboard_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
     if not report:
         return {}
@@ -460,6 +518,7 @@ def _candidate_leaderboard_market(report: Mapping[str, Any], market: str) -> Dic
         "best_sample_only_shadow": _leaderboard_candidate_summary(payload.get("best_sample_only_shadow")),
         "best_high_precision_shadow": _leaderboard_candidate_summary(payload.get("best_high_precision_shadow")),
         "verified_upgrade_candidate": _leaderboard_candidate_summary(payload.get("verified_upgrade_candidate")),
+        "frontier_readiness": _frontier_readiness(payload),
     }
 
 
@@ -1045,6 +1104,21 @@ def build_report(
             "kosdaq_bottleneck_matrix": _kosdaq_bottleneck_matrix_market(kosdaq_bottleneck_matrix, market),
         }
     decision = _best_available_decision({m: row["kis_sidecar_longfold_shadow"] for m, row in markets.items()})
+    frontier_by_market = {
+        market: ((payload.get("candidate_leaderboard") or {}).get("frontier_readiness") or {})
+        for market, payload in markets.items()
+    }
+    sample_only_frontier_markets = [
+        market
+        for market, frontier in frontier_by_market.items()
+        if frontier.get("status") == "sample_only_frontier"
+    ]
+    decision["sample_only_frontier_markets"] = sample_only_frontier_markets
+    decision["frontier_next_required_evidence_by_market"] = {
+        market: frontier.get("next_required_evidence") or []
+        for market, frontier in frontier_by_market.items()
+        if frontier
+    }
     drawdown_kospi = markets.get("KOSPI", {}).get("drawdown_filter_research") or {}
     decision["drawdown_filter_research_candidate_found"] = bool(
         (drawdown_kospi.get("decision") or {}).get("production_gate_pass_observed")
@@ -1439,6 +1513,9 @@ def _markdown(report: Mapping[str, Any]) -> str:
         leaderboard_high_precision = leaderboard.get("best_high_precision_shadow") or {}
         leaderboard_high_metrics = leaderboard_high_precision.get("metrics") or {}
         leaderboard_upgrade = leaderboard.get("verified_upgrade_candidate") or {}
+        leaderboard_frontier = leaderboard.get("frontier_readiness") or {}
+        frontier_candidate = leaderboard_frontier.get("frontier_candidate") or {}
+        frontier_metrics = frontier_candidate.get("metrics") if isinstance(frontier_candidate.get("metrics"), dict) else {}
         drawdown = payload.get("drawdown_filter_research") or {}
         drawdown_best = drawdown.get("best_gate_pass_research_candidate") or {}
         drawdown_best_metrics = drawdown_best.get("metrics") if isinstance(drawdown_best.get("metrics"), dict) else {}
@@ -1633,6 +1710,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, sample_sufficient_top=`{sample_sufficient_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
                 f"- score_sweep_constraint_frontier: production_ready=`{constraint_frontiers.get('production_ready_count')}`, days_low_safe_touch=`{constraint_frontiers.get('days_low_safe_touch_count')}`, one_day_short_low_safe_touch=`{constraint_frontiers.get('one_day_short_low_safe_touch_count')}` best=`{one_day_short.get('selection_rule')}` hit5=`{one_day_short_metrics.get('hit5_dd10_5d_pct')}` active_days=`{one_day_short_metrics.get('active_days')}`, sample_sufficient_touch_but_low_fail=`{constraint_frontiers.get('sample_sufficient_touch_but_low_fail_count')}` best=`{low_fail.get('selection_rule')}` min_low=`{low_fail_metrics.get('min_min_low_5d_pct')}` low_deficit=`{low_fail_deficits.get('min_low_5d_pct')}`",
                 f"- candidate_leaderboard: status=`{leaderboard.get('status')}`, candidates=`{leaderboard.get('candidate_count')}`, shadow=`{leaderboard.get('shadow_display_allowed_count')}`, sample_only=`{leaderboard.get('sample_only_shadow_count')}`, production=`{leaderboard.get('production_ready_count')}`, best_sample_only=`{leaderboard_best.get('selection_rule')}`, hit5=`{leaderboard_best_metrics.get('hit5_dd10_5d_pct')}`, n=`{leaderboard_best_metrics.get('n')}`, active_days=`{leaderboard_best_metrics.get('active_days')}`, best_high_precision=`{leaderboard_high_precision.get('selection_rule')}`, high_precision_hit5=`{leaderboard_high_metrics.get('hit5_dd10_5d_pct')}`, high_precision_sample=`{((leaderboard_high_precision.get('sample_progress') or {}) if isinstance(leaderboard_high_precision.get('sample_progress'), dict) else {}).get('completion_pct')}`, upgrade=`{leaderboard_upgrade.get('selection_rule')}`",
+                f"- frontier_readiness: status=`{leaderboard_frontier.get('status')}`, ready_after_sample=`{leaderboard_frontier.get('ready_after_sample_gate')}`, rule=`{frontier_candidate.get('selection_rule')}`, n=`{frontier_metrics.get('n')}`, active_days=`{frontier_metrics.get('active_days')}`, hit5=`{frontier_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{frontier_metrics.get('avg_5d_pct')}`, min_low=`{frontier_metrics.get('min_min_low_5d_pct')}`, sample_gaps=`{leaderboard_frontier.get('sample_gaps')}`, non_sample_blockers=`{leaderboard_frontier.get('non_sample_blockers')}`",
                 drawdown_line,
                 drawdown_holdout_line,
                 drawdown_rolling_line,

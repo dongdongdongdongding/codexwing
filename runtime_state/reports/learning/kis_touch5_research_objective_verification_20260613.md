@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T14:06:19.312243+00:00`
+- generated_at: `2026-06-13T14:44:24.510708+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -72,6 +72,7 @@
 - score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, sample_sufficient_top=`top1_tail0p85`, pareto_top=`top1_prob_tail_margin_p0p3_tail0p95`
 - score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`519` best=`top1_tail0p85` min_low=`-10.87344` low_deficit=`0.87344`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`2385`, shadow=`393`, sample_only=`252`, production=`0`, best_sample_only=`top2_prob_plus_tail_p0p8_tail0p85`, hit5=`87.0968`, n=`93`, active_days=`14`, best_high_precision=`top1_prob_tail_margin_p0p2_tail0p95`, high_precision_hit5=`93.4783`, high_precision_sample=`88.888889`, upgrade=`None`
+- frontier_readiness: status=`sample_only_frontier`, ready_after_sample=`True`, rule=`top2_prob_plus_tail_p0p8_tail0p85`, n=`93`, active_days=`14`, hit5=`87.0968`, avg5=`15.093948`, min_low=`-8.919727`, sample_gaps=`{'active_days': {'actual': 14.0, 'expected': 15.0, 'missing': 1.0, 'completion_pct': 93.333333}}`, non_sample_blockers=`[]`
 - drawdown_filter_research: status=`production_gate_pass_research_candidate_found`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`6`, best=`top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667`, hit5=`98.1481`, avg5=`24.676158`, min_low=`-9.230497`, expected_net=`4.331054`, promotable_now=`False`
 - drawdown_filter_holdout: status=`no_holdout_gate_pass`, validation=`selection_fixed_rule_holdout_walk_forward_predictions`, selection_candidates=`811`, holdout_evaluated=`811`, gate_pass_count=`0`, gate_pass_observed=`False`, selection_best_status=`shadow_ready`, selection_best_n=`23`, selection_best_days=`7`, selection_best_hit5=`100.0`, selection_best_min_low=`-5.551964`
 - drawdown_filter_rolling_prior: status=`rolling_prior_blocked`, validation=`rolling_prior_oos_next_fold_walk_forward_predictions`, evaluated_steps=`15`, selected=`2`, gate_pass_observed=`False`, aggregate_status=`blocked`, n=`2`, active_days=`1`, hit5=`100.0`, avg5=`47.674132`, min_low=`-3.191402`
@@ -99,6 +100,7 @@
 - score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, sample_sufficient_top=`None`, pareto_top=`top1_p0p3_tail0p95`
 - score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`0` best=`None` min_low=`None` low_deficit=`None`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1699`, shadow=`250`, sample_only=`82`, production=`0`, best_sample_only=`top3_ev_tail0p9`, hit5=`94.8276`, n=`58`, active_days=`10`, best_high_precision=`top3_ev_p0p2_tail0p9`, high_precision_hit5=`96.4912`, high_precision_sample=`80.0`, upgrade=`None`
+- frontier_readiness: status=`sample_only_frontier`, ready_after_sample=`True`, rule=`top3_ev_tail0p9`, n=`58`, active_days=`10`, hit5=`94.8276`, avg5=`8.515405`, min_low=`-7.8413`, sample_gaps=`{'active_days': {'actual': 10.0, 'expected': 20.0, 'missing': 10.0, 'completion_pct': 50.0}}`, non_sample_blockers=`[]`
 - drawdown_filter_research: status=`no_production_gate_pass_candidate`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`0`, best=`None`, hit5=`None`, avg5=`None`, min_low=`None`, expected_net=`None`, promotable_now=`False`
 - drawdown_filter_holdout: status=`no_holdout_gate_pass`, validation=`selection_fixed_rule_holdout_walk_forward_predictions`, selection_candidates=`947`, holdout_evaluated=`80`, gate_pass_count=`0`, gate_pass_observed=`False`, selection_best_status=`blocked`, selection_best_n=`53`, selection_best_days=`8`, selection_best_hit5=`62.2642`, selection_best_min_low=`-31.118999`
 - drawdown_filter_rolling_prior: status=`skipped_by_operator`, validation=`None`, evaluated_steps=`None`, selected=`None`, gate_pass_observed=`False`, aggregate_status=`None`, n=`None`, active_days=`None`, hit5=`None`, avg5=`None`, min_low=`None`

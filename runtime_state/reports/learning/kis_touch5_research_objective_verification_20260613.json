@@ -11,6 +11,14 @@
     "drawdown_filter_holdout_gate_pass": false,
     "drawdown_filter_research_candidate_found": true,
     "feature_family_ablation_required": true,
+    "frontier_next_required_evidence_by_market": {
+      "KOSDAQ": [
+        "active_days+10.0"
+      ],
+      "KOSPI": [
+        "active_days+1.0"
+      ]
+    },
     "kosdaq_bottleneck_primary_blockers": [
       "no_period_stable_kosdaq_candidate",
       "min_low_5d_tail_below_minus10",
@@ -40,6 +48,10 @@
     "production_replacement_proven": false,
     "recommended_action": "keep_existing_production_and_show_kis_shadow_top_section",
     "rolling_prior_required": true,
+    "sample_only_frontier_markets": [
+      "KOSPI",
+      "KOSDAQ"
+    ],
     "shadow_performance_proven": true,
     "slice_ablation_all_trainable_periods_outcome_pass": false,
     "slice_ablation_available_full_ablation_has_multiple_passing_families": false,
@@ -62,7 +74,7 @@
     "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T14:06:19.312243+00:00",
+  "generated_at": "2026-06-13T14:44:24.510708+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -2373,6 +2385,72 @@
           "selection_rule": "top2_p0.50_tail0.90",
           "shadow_display_allowed": true,
           "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json"
+        },
+        "frontier_readiness": {
+          "frontier_candidate": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "gate_status": "shadow_ready",
+            "metrics": {
+              "active_days": 10,
+              "active_runs": 20,
+              "avg_5d_pct": 8.515405,
+              "avg_max_high_5d_pct": 19.056014,
+              "buy_premium_pct": 2.0,
+              "hit10_5d_pct": 72.4138,
+              "hit5_dd10_5d_pct": 94.8276,
+              "min_min_low_5d_pct": -7.8413,
+              "n": 58,
+              "stop_before_target_5d_pct": 25.8621,
+              "target_before_stop_5d_pct": 86.2069
+            },
+            "model": "lightgbm",
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_20"
+            ],
+            "production_ready": false,
+            "sample_progress": {
+              "checks": {
+                "active_days": {
+                  "actual": 10.0,
+                  "completion_pct": 50.0,
+                  "expected": 20.0,
+                  "missing": 10.0
+                },
+                "active_runs": {
+                  "actual": 20.0,
+                  "completion_pct": 100.0,
+                  "expected": 20.0,
+                  "missing": 0.0
+                },
+                "n": {
+                  "actual": 58.0,
+                  "completion_pct": 100.0,
+                  "expected": 45.0,
+                  "missing": 0.0
+                }
+              },
+              "completion_pct": 83.333333
+            },
+            "score_mode": "ev",
+            "selection_rule": "top3_ev_tail0p9",
+            "shadow_display_allowed": true,
+            "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json"
+          },
+          "next_required_evidence": [
+            "active_days+10.0"
+          ],
+          "non_sample_blockers": [],
+          "ready_after_sample_gate": true,
+          "sample_gaps": {
+            "active_days": {
+              "actual": 10.0,
+              "completion_pct": 50.0,
+              "expected": 20.0,
+              "missing": 10.0
+            }
+          },
+          "status": "sample_only_frontier"
         },
         "production_ready_count": 0,
         "sample_only_shadow_count": 82,
@@ -17746,6 +17824,72 @@
           "selection_rule": "top1_p0p3_tail0p9",
           "shadow_display_allowed": true,
           "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json"
+        },
+        "frontier_readiness": {
+          "frontier_candidate": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "gate_status": "shadow_ready",
+            "metrics": {
+              "active_days": 14,
+              "active_runs": 54,
+              "avg_5d_pct": 15.093948,
+              "avg_max_high_5d_pct": 37.74119,
+              "buy_premium_pct": 2.0,
+              "hit10_5d_pct": 83.871,
+              "hit5_dd10_5d_pct": 87.0968,
+              "min_min_low_5d_pct": -8.919727,
+              "n": 93,
+              "stop_before_target_5d_pct": 32.2581,
+              "target_before_stop_5d_pct": 87.0968
+            },
+            "model": "lightgbm",
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_ready": false,
+            "sample_progress": {
+              "checks": {
+                "active_days": {
+                  "actual": 14.0,
+                  "completion_pct": 93.333333,
+                  "expected": 15.0,
+                  "missing": 1.0
+                },
+                "active_runs": {
+                  "actual": 54.0,
+                  "completion_pct": 100.0,
+                  "expected": 20.0,
+                  "missing": 0.0
+                },
+                "n": {
+                  "actual": 93.0,
+                  "completion_pct": 100.0,
+                  "expected": 30.0,
+                  "missing": 0.0
+                }
+              },
+              "completion_pct": 97.777778
+            },
+            "score_mode": "prob_plus_tail",
+            "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+            "shadow_display_allowed": true,
+            "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json"
+          },
+          "next_required_evidence": [
+            "active_days+1.0"
+          ],
+          "non_sample_blockers": [],
+          "ready_after_sample_gate": true,
+          "sample_gaps": {
+            "active_days": {
+              "actual": 14.0,
+              "completion_pct": 93.333333,
+              "expected": 15.0,
+              "missing": 1.0
+            }
+          },
+          "status": "sample_only_frontier"
         },
         "production_ready_count": 0,
         "sample_only_shadow_count": 252,
