@@ -139,6 +139,26 @@ def test_coverage_audit_uses_actual_cache_dates_and_feature_families(tmp_path):
                     "gate": {"status": "shadow_risk_review", "production_blocking_reasons": ["active_days_lt_15"]},
                 },
             },
+            "rolling_prior_validation": {
+                "status": "rolling_prior_shadow_ready",
+                "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+                "min_prior_folds": 3,
+                "max_filter_features": 30,
+                "evaluated_steps": 17,
+                "selected_count": 22,
+                "aggregate_candidate": {
+                    "identity": {"selection_rule": "rolling_prior_oos", "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions"},
+                    "metrics": {
+                        "n": 22,
+                        "active_days": 7,
+                        "active_runs": 22,
+                        "hit5_dd10_5d_pct": 86.3636,
+                        "avg_5d_pct": 33.261526,
+                        "min_min_low_5d_pct": -9.469258,
+                    },
+                    "gate": {"status": "shadow_ready", "production_blocking_reasons": ["n_lt_30", "active_days_lt_15"]},
+                },
+            },
         },
     )
     actual_report = tmp_path / "actual.json"
@@ -177,6 +197,12 @@ def test_coverage_audit_uses_actual_cache_dates_and_feature_families(tmp_path):
     assert report["current_best_performance"]["markets"]["KOSPI"]["hit5_dd10_5d_pct"] == 87.0968
     assert report["current_best_performance"]["research_only_best"]["holdout_gate_pass_count"] == 0
     assert report["current_best_performance"]["research_variants"][1]["research_best"]["selection_rule"] == "variant_best"
+    assert (
+        report["current_best_performance"]["research_variants"][1]["rolling_prior"]["aggregate_candidate"][
+            "hit5_dd10_5d_pct"
+        ]
+        == 86.3636
+    )
     assert (
         report["current_best_performance"]["best_near_miss_by_active_days"]["selection_rule"]
         == "one_day_short_rule"

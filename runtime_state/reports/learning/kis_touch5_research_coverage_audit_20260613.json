@@ -1,6 +1,6 @@
 {
   "version": "kis_touch5_research_coverage_audit_v1",
-  "generated_at": "2026-06-13T13:34:28+00:00",
+  "generated_at": "2026-06-13T13:46:39+00:00",
   "dummy_data_used": false,
   "decision": {
     "production_replacement_ready": false,
@@ -1063,6 +1063,32 @@
             ]
           },
           "best_holdout_gate_pass_candidate": {}
+        },
+        "rolling_prior": {
+          "status": "rolling_prior_blocked",
+          "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+          "min_prior_folds": 5,
+          "max_filter_features": null,
+          "evaluated_steps": 15,
+          "selected_count": 2,
+          "aggregate_candidate": {
+            "selection_rule": "top1_prob_tail0p85_rolling_prior_oos",
+            "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+            "deployment_ready": false,
+            "gate_status": "blocked",
+            "n": 2,
+            "active_days": 1,
+            "active_runs": 2,
+            "hit5_dd10_5d_pct": 100.0,
+            "hit10_5d_pct": 100.0,
+            "avg_5d_pct": 47.674132,
+            "min_min_low_5d_pct": -3.191402,
+            "blockers": [
+              "n_lt_30",
+              "active_days_lt_15",
+              "active_runs_lt_20"
+            ]
+          }
         }
       },
       {
@@ -1136,6 +1162,31 @@
             ]
           },
           "best_holdout_gate_pass_candidate": {}
+        },
+        "rolling_prior": {
+          "status": "rolling_prior_shadow_ready",
+          "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+          "min_prior_folds": 5,
+          "max_filter_features": null,
+          "evaluated_steps": 15,
+          "selected_count": 34,
+          "aggregate_candidate": {
+            "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85_rolling_prior_oos",
+            "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+            "deployment_ready": false,
+            "gate_status": "shadow_risk_review",
+            "n": 34,
+            "active_days": 5,
+            "active_runs": 21,
+            "hit5_dd10_5d_pct": 94.1176,
+            "hit10_5d_pct": 100.0,
+            "avg_5d_pct": 21.329321,
+            "min_min_low_5d_pct": -17.463325,
+            "blockers": [
+              "active_days_lt_15",
+              "min_low_5d_lt_neg10"
+            ]
+          }
         }
       },
       {
@@ -1222,6 +1273,126 @@
             ]
           },
           "best_holdout_gate_pass_candidate": {}
+        },
+        "rolling_prior": {
+          "status": "skipped_by_operator",
+          "validation_mode": null,
+          "min_prior_folds": null,
+          "max_filter_features": null,
+          "evaluated_steps": null,
+          "selected_count": null,
+          "aggregate_candidate": {}
+        }
+      },
+      {
+        "source_path": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_fast30_selfold3_20260613.json",
+        "status": "production_gate_pass_research_candidate_found",
+        "score_mode": "prob",
+        "topn": 1,
+        "prob_threshold": null,
+        "tail_threshold": 0.85,
+        "production_gate_pass_count": 6,
+        "deployment_ready": false,
+        "research_best": {
+          "selection_rule": "top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667",
+          "validation_mode": "research_sweep_only_walk_forward_predictions",
+          "deployment_ready": false,
+          "gate_status": "production_ready",
+          "n": 54,
+          "active_days": 15,
+          "active_runs": 54,
+          "hit5_dd10_5d_pct": 98.1481,
+          "hit10_5d_pct": 75.9259,
+          "avg_5d_pct": 24.676158,
+          "min_min_low_5d_pct": -9.230497,
+          "blockers": []
+        },
+        "best_near_miss_by_active_days": {
+          "selection_rule": "top1_prob_tail0p85_close_failure_prior_theme_avg_close_5d_pct_le_2p06939",
+          "validation_mode": "research_sweep_only_walk_forward_predictions",
+          "deployment_ready": false,
+          "gate_status": "shadow_ready",
+          "n": 47,
+          "active_days": 14,
+          "active_runs": 47,
+          "hit5_dd10_5d_pct": 97.8723,
+          "hit10_5d_pct": 65.9574,
+          "avg_5d_pct": 36.276297,
+          "min_min_low_5d_pct": -8.567368,
+          "blockers": [
+            "active_days_lt_15"
+          ]
+        },
+        "holdout": {
+          "status": "no_holdout_gate_pass",
+          "selection_folds": [
+            1,
+            2,
+            3
+          ],
+          "holdout_folds": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "holdout_gate_pass_count": 0,
+          "selection_best_holdout_evaluation": {
+            "selection_rule": "top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_50",
+            "validation_mode": "selection_best_fixed_rule_holdout_walk_forward_predictions",
+            "deployment_ready": false,
+            "gate_status": "shadow_risk_review",
+            "n": 41,
+            "active_days": 12,
+            "active_runs": 41,
+            "hit5_dd10_5d_pct": 92.6829,
+            "hit10_5d_pct": 80.4878,
+            "avg_5d_pct": 32.906426,
+            "min_min_low_5d_pct": -10.87344,
+            "blockers": [
+              "active_days_lt_15",
+              "min_low_5d_lt_neg10"
+            ]
+          },
+          "best_holdout_gate_pass_candidate": {}
+        },
+        "rolling_prior": {
+          "status": "rolling_prior_shadow_ready",
+          "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+          "min_prior_folds": 3,
+          "max_filter_features": 30,
+          "evaluated_steps": 17,
+          "selected_count": 22,
+          "aggregate_candidate": {
+            "selection_rule": "top1_prob_tail0p85_rolling_prior_oos",
+            "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+            "deployment_ready": false,
+            "gate_status": "shadow_ready",
+            "n": 22,
+            "active_days": 7,
+            "active_runs": 22,
+            "hit5_dd10_5d_pct": 86.3636,
+            "hit10_5d_pct": 59.0909,
+            "avg_5d_pct": 33.261526,
+            "min_min_low_5d_pct": -9.469258,
+            "blockers": [
+              "n_lt_30",
+              "active_days_lt_15"
+            ]
+          }
         }
       }
     ],

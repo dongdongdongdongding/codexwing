@@ -8,6 +8,7 @@ from multi_agent.tools.research_kis_touch5_drawdown_filter import (
     _filter_rule_name,
     _fold_slices,
     _frontier_summary,
+    _limited_filter_features,
     _selection_rule,
 )
 
@@ -43,6 +44,27 @@ def test_drawdown_filter_rule_names_are_stable():
         tail_threshold=0.0,
         filter_name=filter_name,
     ) == "top3_prob_tail_margin_p0p5_tail0_close_failure_prior_theme_avg_close_5d_pct_le_neg2p53492"
+
+
+def test_filter_feature_limit_preserves_priority_order():
+    numeric = [
+        "kis_daily_return_5d_pct",
+        "close_failure_prior_kis_sector_failure_rate_pct",
+        "alpha_score",
+        "kis_prev_volume_ratio",
+        "unrelated_feature",
+    ]
+
+    assert _limited_filter_features(numeric, max_filter_features=0) == [
+        "close_failure_prior_kis_sector_failure_rate_pct",
+        "kis_prev_volume_ratio",
+        "alpha_score",
+        "kis_daily_return_5d_pct",
+    ]
+    assert _limited_filter_features(numeric, max_filter_features=2) == [
+        "close_failure_prior_kis_sector_failure_rate_pct",
+        "kis_prev_volume_ratio",
+    ]
 
 
 def test_holdout_split_and_filter_application_are_deterministic():

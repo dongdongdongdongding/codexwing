@@ -1,7 +1,7 @@
 # KIS Touch5 Research Coverage Audit
 
 - version: `kis_touch5_research_coverage_audit_v1`
-- generated_at: `2026-06-13T13:34:28+00:00`
+- generated_at: `2026-06-13T13:46:39+00:00`
 - dummy_data_used: `False`
 - decision: `coverage_gap_blocks_production_replacement`
 - production_replacement_ready: `False`
@@ -13,9 +13,10 @@
 - KOSDAQ: rule=`top3_ev_tail0p9` validation=`dayfold_realistic_coverage` n=`58` days=`10` runs=`20` hit5=`94.8276` avg5=`8.515405` min_low=`-7.8413` blockers=`['active_days_lt_20']`
 - research_only_best: rule=`top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667` n=`54` days=`15` hit5=`98.1481` avg5=`24.676158` min_low=`-9.230497` holdout_gate_pass=`0`
 - best_near_miss_by_active_days: rule=`top1_prob_tail0p85_close_failure_prior_ticker_avg_close_5d_pct_ge_0p401005` n=`57` days=`14` hit5=`98.2456` min_low=`-8.188031` blockers=`['active_days_lt_15']`
-- research_variant: source=`runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json` score=`prob` topn=`1` p=`None` tail=`0.85` research_best_hit5=`98.1481` research_best_days=`15` holdout_gate_pass=`0` holdout_fixed_hit5=`100.0` holdout_fixed_days=`7`
-- research_variant: source=`runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top2_probplustail_p08_tail085_20260613.json` score=`prob_plus_tail` topn=`2` p=`0.8` tail=`0.85` research_best_hit5=`None` research_best_days=`None` holdout_gate_pass=`0` holdout_fixed_hit5=`88.8889` holdout_fixed_days=`6`
-- research_variant: source=`runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_selfold3_holdout_only_20260613.json` score=`prob` topn=`1` p=`None` tail=`0.85` research_best_hit5=`98.1481` research_best_days=`15` holdout_gate_pass=`0` holdout_fixed_hit5=`87.5` holdout_fixed_days=`12`
+- research_variant: source=`runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json` score=`prob` topn=`1` p=`None` tail=`0.85` research_best_hit5=`98.1481` research_best_days=`15` holdout_gate_pass=`0` holdout_fixed_hit5=`100.0` holdout_fixed_days=`7` rolling_status=`rolling_prior_blocked` rolling_hit5=`100.0` rolling_days=`1`
+- research_variant: source=`runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top2_probplustail_p08_tail085_20260613.json` score=`prob_plus_tail` topn=`2` p=`0.8` tail=`0.85` research_best_hit5=`None` research_best_days=`None` holdout_gate_pass=`0` holdout_fixed_hit5=`88.8889` holdout_fixed_days=`6` rolling_status=`rolling_prior_shadow_ready` rolling_hit5=`94.1176` rolling_days=`5`
+- research_variant: source=`runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_selfold3_holdout_only_20260613.json` score=`prob` topn=`1` p=`None` tail=`0.85` research_best_hit5=`98.1481` research_best_days=`15` holdout_gate_pass=`0` holdout_fixed_hit5=`87.5` holdout_fixed_days=`12` rolling_status=`skipped_by_operator` rolling_hit5=`None` rolling_days=`None`
+- research_variant: source=`runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_fast30_selfold3_20260613.json` score=`prob` topn=`1` p=`None` tail=`0.85` research_best_hit5=`98.1481` research_best_days=`15` holdout_gate_pass=`0` holdout_fixed_hit5=`92.6829` holdout_fixed_days=`12` rolling_status=`rolling_prior_shadow_ready` rolling_hit5=`86.3636` rolling_days=`7`
 
 ## Month Matrix
 | month | KOSPI rows | KOSDAQ rows | status |

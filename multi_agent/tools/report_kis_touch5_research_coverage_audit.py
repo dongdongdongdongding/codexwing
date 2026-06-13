@@ -30,6 +30,7 @@ DEFAULT_DRAWDOWN = REPORT_DIR / "kis_touch5_dd10_drawdown_filter_research_kospi_
 DEFAULT_ADDITIONAL_DRAWDOWN_REPORTS = (
     REPORT_DIR / "kis_touch5_dd10_drawdown_filter_research_kospi_top2_probplustail_p08_tail085_20260613.json",
     REPORT_DIR / "kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_selfold3_holdout_only_20260613.json",
+    REPORT_DIR / "kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_fast30_selfold3_20260613.json",
 )
 DEFAULT_ACTUAL_REPORTS = (
     REPORT_DIR / "kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
@@ -354,6 +355,16 @@ def _drawdown_variant_summary(drawdown: Mapping[str, Any], *, source_path: Path 
         if isinstance(holdout.get("best_holdout_gate_pass_candidate"), Mapping)
         else {}
     )
+    rolling = (
+        drawdown.get("rolling_prior_validation")
+        if isinstance(drawdown.get("rolling_prior_validation"), Mapping)
+        else {}
+    )
+    rolling_aggregate = (
+        rolling.get("aggregate_candidate")
+        if isinstance(rolling.get("aggregate_candidate"), Mapping)
+        else {}
+    )
     return {
         "source_path": _rel(source_path) if source_path else None,
         "status": drawdown.get("status"),
@@ -374,6 +385,17 @@ def _drawdown_variant_summary(drawdown: Mapping[str, Any], *, source_path: Path 
             "best_holdout_gate_pass_candidate": _candidate_row_summary(best_holdout),
         }
         if holdout
+        else {},
+        "rolling_prior": {
+            "status": rolling.get("status"),
+            "validation_mode": rolling.get("validation_mode"),
+            "min_prior_folds": rolling.get("min_prior_folds"),
+            "max_filter_features": rolling.get("max_filter_features"),
+            "evaluated_steps": rolling.get("evaluated_steps"),
+            "selected_count": rolling.get("selected_count"),
+            "aggregate_candidate": _candidate_row_summary(rolling_aggregate),
+        }
+        if rolling
         else {},
     }
 
@@ -625,9 +647,15 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             continue
         best = row.get("research_best") if isinstance(row.get("research_best"), Mapping) else {}
         holdout = row.get("holdout") if isinstance(row.get("holdout"), Mapping) else {}
+        rolling = row.get("rolling_prior") if isinstance(row.get("rolling_prior"), Mapping) else {}
         fixed = (
             holdout.get("selection_best_holdout_evaluation")
             if isinstance(holdout.get("selection_best_holdout_evaluation"), Mapping)
+            else {}
+        )
+        rolling_aggregate = (
+            rolling.get("aggregate_candidate")
+            if isinstance(rolling.get("aggregate_candidate"), Mapping)
             else {}
         )
         lines.append(
@@ -635,7 +663,9 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"topn=`{row.get('topn')}` p=`{row.get('prob_threshold')}` tail=`{row.get('tail_threshold')}` "
             f"research_best_hit5=`{best.get('hit5_dd10_5d_pct')}` research_best_days=`{best.get('active_days')}` "
             f"holdout_gate_pass=`{holdout.get('holdout_gate_pass_count')}` "
-            f"holdout_fixed_hit5=`{fixed.get('hit5_dd10_5d_pct')}` holdout_fixed_days=`{fixed.get('active_days')}`"
+            f"holdout_fixed_hit5=`{fixed.get('hit5_dd10_5d_pct')}` holdout_fixed_days=`{fixed.get('active_days')}` "
+            f"rolling_status=`{rolling.get('status')}` rolling_hit5=`{rolling_aggregate.get('hit5_dd10_5d_pct')}` "
+            f"rolling_days=`{rolling_aggregate.get('active_days')}`"
         )
     lines.extend(
         [

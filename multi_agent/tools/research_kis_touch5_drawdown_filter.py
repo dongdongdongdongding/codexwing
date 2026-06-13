@@ -372,6 +372,14 @@ def _candidate_filter_features(numeric: Sequence[str]) -> List[str]:
     return out
 
 
+def _limited_filter_features(numeric: Sequence[str], *, max_filter_features: int = 0) -> List[str]:
+    features = _candidate_filter_features(numeric)
+    limit = int(max_filter_features or 0)
+    if limit > 0:
+        return features[:limit]
+    return features
+
+
 def _prediction_pool(predictions: pd.DataFrame, *, prob_threshold: float | None, tail_threshold: float) -> pd.Index:
     pool = predictions.index[predictions["tail_prob"].ge(float(tail_threshold))]
     if prob_threshold is not None:
@@ -406,9 +414,10 @@ def _single_feature_results(
     prob_threshold: float | None,
     numeric: Sequence[str],
     min_pool_rows: int,
+    max_filter_features: int,
 ) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
-    for feature in _candidate_filter_features(numeric):
+    for feature in _limited_filter_features(numeric, max_filter_features=max_filter_features):
         if feature not in scoped.columns:
             continue
         values = pd.to_numeric(scoped.loc[base_pool, feature], errors="coerce")
@@ -596,6 +605,7 @@ def _filter_results(
     compound_filter_depth: int,
     compound_single_limit: int,
     compound_candidate_limit: int,
+    max_filter_features: int,
 ) -> List[Dict[str, Any]]:
     single_results = _single_feature_results(
         scoped=scoped,
@@ -611,6 +621,7 @@ def _filter_results(
         prob_threshold=prob_threshold,
         numeric=numeric,
         min_pool_rows=min_pool_rows,
+        max_filter_features=max_filter_features,
     )
     if int(compound_filter_depth) < 2:
         return single_results
@@ -723,6 +734,7 @@ def _holdout_validation(
     compound_filter_depth: int,
     compound_single_limit: int,
     compound_candidate_limit: int,
+    max_filter_features: int,
     top_results: int,
 ) -> Dict[str, Any]:
     split = _fold_slices(predictions, selection_folds)
@@ -753,6 +765,7 @@ def _holdout_validation(
         compound_filter_depth=compound_filter_depth,
         compound_single_limit=compound_single_limit,
         compound_candidate_limit=compound_candidate_limit,
+        max_filter_features=max_filter_features,
     )
     selection_ranked = sorted(selection_candidates, key=_sort_key, reverse=True)
     if not selection_ranked:
@@ -843,6 +856,7 @@ def _holdout_validation(
         "holdout_test_days": sorted(scoped.loc[split["holdout_index"], "trade_date"].astype(str).unique().tolist()),
         "selection_base_pool_rows": int(len(selection_base_pool)),
         "holdout_base_pool_rows": int(len(holdout_base_pool)),
+        "max_filter_features": int(max_filter_features or 0),
         "selection_candidates_tested": int(len(selection_candidates)),
         "holdout_candidates_evaluated": int(len(candidates_for_holdout)),
         "selection_best_candidate": _copy_with_validation(
@@ -885,6 +899,7 @@ def _rolling_prior_validation(
     compound_filter_depth: int,
     compound_single_limit: int,
     compound_candidate_limit: int,
+    max_filter_features: int,
     top_results: int,
 ) -> Dict[str, Any]:
     folds = sorted({int(value) for value in pd.to_numeric(predictions.get("fold"), errors="coerce").dropna().tolist()})
@@ -923,6 +938,7 @@ def _rolling_prior_validation(
             compound_filter_depth=compound_filter_depth,
             compound_single_limit=compound_single_limit,
             compound_candidate_limit=compound_candidate_limit,
+            max_filter_features=max_filter_features,
         )
         prior_ranked = sorted(prior_candidates, key=_sort_key, reverse=True)
         if not prior_ranked:
@@ -1046,6 +1062,7 @@ def _rolling_prior_validation(
         "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
         "deployment_ready": False,
         "min_prior_folds": int(min_prior_folds),
+        "max_filter_features": int(max_filter_features or 0),
         "folds": folds,
         "evaluated_steps": int(len([step for step in steps if step.get("status") == "evaluated"])),
         "skipped_steps": int(len([step for step in steps if step.get("status") != "evaluated"])),
@@ -1131,6 +1148,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         compound_filter_depth=int(args.compound_filter_depth),
         compound_single_limit=int(args.compound_single_limit),
         compound_candidate_limit=int(args.compound_candidate_limit),
+        max_filter_features=int(args.max_filter_features),
     )
     ranked = sorted(candidates, key=_sort_key, reverse=True)
     production = [row for row in ranked if (row.get("gate") or {}).get("production_ready")]
@@ -1153,6 +1171,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         compound_filter_depth=int(args.compound_filter_depth),
         compound_single_limit=int(args.compound_single_limit),
         compound_candidate_limit=int(args.compound_candidate_limit),
+        max_filter_features=int(args.max_filter_features),
         top_results=int(args.top_results),
     )
     holdout_gate_pass = bool((holdout.get("decision") or {}).get("holdout_gate_pass_observed"))
@@ -1177,6 +1196,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             compound_filter_depth=int(args.compound_filter_depth),
             compound_single_limit=int(args.compound_single_limit),
             compound_candidate_limit=int(args.compound_candidate_limit),
+            max_filter_features=int(args.max_filter_features),
             top_results=int(args.top_results),
         )
     )
@@ -1211,6 +1231,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "compound_filter_depth": int(args.compound_filter_depth),
         "compound_single_limit": int(args.compound_single_limit),
         "compound_candidate_limit": int(args.compound_candidate_limit),
+        "max_filter_features": int(args.max_filter_features),
         "scope": {
             "rows": int(len(scoped)),
             "unique_days": int(scoped["trade_date"].nunique()) if "trade_date" in scoped.columns else 0,
@@ -1400,6 +1421,12 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--compound-filter-depth", type=int, choices=[1, 2], default=1)
     parser.add_argument("--compound-single-limit", type=int, default=60)
     parser.add_argument("--compound-candidate-limit", type=int, default=0, help="0 evaluates all viable compound candidates.")
+    parser.add_argument(
+        "--max-filter-features",
+        type=int,
+        default=0,
+        help="0 evaluates all filter features; positive values keep the prioritized first N features for faster research.",
+    )
     parser.add_argument("--top-results", type=int, default=30)
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
