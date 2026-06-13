@@ -24,6 +24,7 @@ from modules.kis_model_gate import evaluate_kis_model_gate
 
 MODEL_DIR = Path("models/scan_universe_challengers")
 KIS_MODEL_COMPARISON_PATH = Path("runtime_state/reports/learning/kis_model_market_comparison.json")
+KIS_RESEARCH_OBJECTIVE_PATH = Path("runtime_state/reports/learning/kis_touch5_research_objective_verification_20260613.json")
 MODEL_PATHS = {
     "KOSPI": MODEL_DIR / "kospi__touch10_guard_5d__wide_theme__xgboost__top1_p0p45.pkl",
     "KOSDAQ": MODEL_DIR / "kosdaq__touch5_guard_5d__flow_no_gate__lightgbm__top1.pkl",
@@ -260,6 +261,7 @@ def _load_kis_shadow_report(market: str) -> Dict[str, Any]:
         kis_model_gate = evaluate_kis_model_gate(identity=identity, metrics=metrics, market=market_key)
     if not identity and not metrics:
         return {}
+    near_production_candidate = _load_kis_near_production_candidate(market_key)
     return {
         "report_path": str(KIS_MODEL_COMPARISON_PATH),
         "report_generated_at": payload.get("generated_at"),
@@ -268,7 +270,40 @@ def _load_kis_shadow_report(market: str) -> Dict[str, Any]:
         "identity": identity,
         "metrics": metrics,
         "kis_model_gate": kis_model_gate,
+        "near_production_candidate": near_production_candidate,
     }
+
+
+@lru_cache(maxsize=4)
+def _load_kis_near_production_candidate(market: str) -> Dict[str, Any]:
+    market_key = str(market or "").upper().strip()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {}
+    try:
+        import json
+
+        payload = json.loads(KIS_RESEARCH_OBJECTIVE_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    markets = payload.get("markets") if isinstance(payload.get("markets"), dict) else {}
+    market_payload = markets.get(market_key) if isinstance(markets.get(market_key), dict) else {}
+    score_experiment = (
+        market_payload.get("sidecar_score_mode_experiment")
+        if isinstance(market_payload.get("sidecar_score_mode_experiment"), dict)
+        else {}
+    )
+    near = (
+        score_experiment.get("near_production_candidate")
+        if isinstance(score_experiment.get("near_production_candidate"), dict)
+        else {}
+    )
+    if not near.get("found") or not isinstance(near.get("candidate"), dict):
+        return {}
+    candidate = dict(near["candidate"])
+    candidate.setdefault("source_report", str(KIS_RESEARCH_OBJECTIVE_PATH))
+    candidate.setdefault("decision", near.get("decision"))
+    candidate.setdefault("candidate_count", near.get("candidate_count"))
+    return candidate
 
 
 def _fmt_pct_short(value: Any) -> str:
@@ -283,6 +318,9 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
     identity = report.get("identity") if isinstance(report.get("identity"), dict) else {}
     metrics = report.get("metrics") if isinstance(report.get("metrics"), dict) else {}
     kis_model_gate = report.get("kis_model_gate") if isinstance(report.get("kis_model_gate"), dict) else {}
+    near_production_candidate = (
+        report.get("near_production_candidate") if isinstance(report.get("near_production_candidate"), dict) else {}
+    )
     if not kis_model_gate:
         kis_model_gate = evaluate_kis_model_gate(identity=identity, metrics=metrics, market=market)
     blockers = []
@@ -336,6 +374,7 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
         "shadow_display_allowed": bool(kis_model_gate.get("shadow_display_allowed")),
         "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
         "risk_review_reasons": list(kis_model_gate.get("risk_review_reasons") or []),
+        "near_production_candidate": near_production_candidate,
     }
 
 
@@ -579,6 +618,7 @@ def build_kis_shadow_admission_records(
                     },
                     "promotion_blocking_reasons": gate.get("blocking_reasons") or [],
                     "risk_review_reasons": gate.get("risk_review_reasons") or [],
+                    "near_production_candidate": gate.get("near_production_candidate") or {},
                 },
                 "realized_expectancy_admission": {
                     **(record.get("realized_expectancy_admission") if isinstance(record.get("realized_expectancy_admission"), dict) else {}),

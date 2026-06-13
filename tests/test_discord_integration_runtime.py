@@ -674,6 +674,19 @@ def test_scan_result_renderer_exposes_kis_shadow_gate_when_candidates_are_blocke
             "metrics": "n=7 · active_days=5 · 5D 71.40%/0.00%/-18.70%",
             "blocking_reasons": ["avg_5d_below_zero", "active_day_sample_below_gate"],
             "risk_review_reasons": [],
+            "near_production_candidate": {
+                "selection_rule": "top3_ev_p0p3_tail0p9",
+                "score_mode": "ev",
+                "sample_blockers": ["active_days_lt_15"],
+                "metrics": {
+                    "n": 142,
+                    "active_days": 11,
+                    "active_runs": 50,
+                    "hit5_dd10_5d_pct": 83.8028,
+                    "avg_5d_pct": 9.912085,
+                    "min_min_low_5d_pct": -9.864936,
+                },
+            },
         },
     )
     monkeypatch.setattr(renderers, "build_top_deep_embeds", lambda **kwargs: [])
@@ -692,6 +705,8 @@ def test_scan_result_renderer_exposes_kis_shadow_gate_when_candidates_are_blocke
     blocked = next(field for field in embeds[0]["fields"] if field["name"] == "KIS 쉐도우 차단")
     assert "avg_5d_below_zero" in blocked["value"]
     assert "shadow_display_allowed=False" in blocked["value"]
+    assert "승격근접" in blocked["value"]
+    assert "top3_ev_p0p3_tail0p9" in blocked["value"]
 
 
 def test_scan_result_renderer_includes_low_liquidity_blocked_candidates(monkeypatch):

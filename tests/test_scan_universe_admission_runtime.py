@@ -449,6 +449,19 @@ def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
                 "shadow_display_allowed": False,
                 "production_blocking_reasons": ["avg_5d_below_zero", "active_day_sample_below_gate"],
             },
+            "near_production_candidate": {
+                "selection_rule": "top3_ev_p0p3_tail0p9",
+                "score_mode": "ev",
+                "sample_blockers": ["active_days_lt_15"],
+                "metrics": {
+                    "n": 142,
+                    "active_days": 11,
+                    "active_runs": 50,
+                    "hit5_dd10_5d_pct": 83.8028,
+                    "avg_5d_pct": 9.912085,
+                    "min_min_low_5d_pct": -9.864936,
+                },
+            },
         },
     )
 
@@ -458,6 +471,8 @@ def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
     assert gate["production_ready"] is False
     assert "avg_5d_below_zero" in gate["blocking_reasons"]
     assert "5D" in gate["metrics"]
+    assert gate["near_production_candidate"]["selection_rule"] == "top3_ev_p0p3_tail0p9"
+    assert gate["near_production_candidate"]["metrics"]["hit5_dd10_5d_pct"] == 83.8028
 
 
 def test_admission_records_include_full_result_interpretation():

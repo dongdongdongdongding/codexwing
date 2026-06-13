@@ -965,11 +965,24 @@ def _kis_shadow_gate_block_value(gate: Dict[str, Any]) -> str:
     gate = gate if isinstance(gate, dict) else {}
     blockers = gate.get("blocking_reasons") if isinstance(gate.get("blocking_reasons"), list) else []
     risk_reasons = gate.get("risk_review_reasons") if isinstance(gate.get("risk_review_reasons"), list) else []
+    near = gate.get("near_production_candidate") if isinstance(gate.get("near_production_candidate"), dict) else {}
+    near_metrics = near.get("metrics") if isinstance(near.get("metrics"), dict) else {}
     lines = [
         f"상태: {gate.get('status') or '-'} · shadow_display_allowed={bool(gate.get('shadow_display_allowed'))} · production_ready={bool(gate.get('production_ready'))}",
         f"프로필: {gate.get('profile') or '-'}",
         f"검증: {gate.get('metrics') or '-'}",
     ]
+    if near:
+        lines.append(
+            "승격근접: "
+            f"{near.get('selection_rule') or '-'}"
+            f" · n={near_metrics.get('n', '-')}"
+            f" · active_days={near_metrics.get('active_days', '-')}"
+            f" · hit5 {_fmt_pct(near_metrics.get('hit5_dd10_5d_pct'))}"
+            f" · avg5 {_fmt_pct(near_metrics.get('avg_5d_pct'))}"
+            f" · min_low {_fmt_pct(near_metrics.get('min_min_low_5d_pct'))}"
+            f" · 남은차단 {' / '.join(str(item) for item in (near.get('sample_blockers') or [])[:3]) or '-'}"
+        )
     if blockers:
         lines.append("차단: " + " / ".join(str(item) for item in blockers[:5]))
     if risk_reasons:
