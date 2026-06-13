@@ -47,6 +47,9 @@ DEFAULT_MATCHED_ONLY_SWEEPS = {
 }
 DEFAULT_DEPLOYMENT_CONSISTENCY = ROOT / "runtime_state/reports/learning/kis_shadow_deployment_consistency_20260613.json"
 DEFAULT_CANDIDATE_LEADERBOARD = ROOT / "runtime_state/reports/learning/kis_touch5_candidate_leaderboard_20260613.json"
+DEFAULT_DRAWDOWN_FILTER_REPORT = (
+    ROOT / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json"
+)
 DEFAULT_FINALTOPN_PREFILTER_PROXY = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json"
 )
@@ -446,6 +449,53 @@ def _candidate_leaderboard_market(report: Mapping[str, Any], market: str) -> Dic
     }
 
 
+def _drawdown_research_candidate_summary(row: Mapping[str, Any] | None) -> Dict[str, Any]:
+    if not isinstance(row, Mapping):
+        return {}
+    identity = row.get("identity") if isinstance(row.get("identity"), dict) else {}
+    gate = row.get("gate") if isinstance(row.get("gate"), dict) else {}
+    return {
+        "selection_rule": identity.get("selection_rule"),
+        "feature_set": identity.get("feature_set"),
+        "model": identity.get("model"),
+        "score_mode": identity.get("score_mode"),
+        "drawdown_filter": identity.get("drawdown_filter") or {},
+        "validation_mode": identity.get("validation_mode"),
+        "deployment_ready": bool(identity.get("deployment_ready")),
+        "gate_status": gate.get("status"),
+        "production_gate_pass_observed": bool(gate.get("production_ready")),
+        "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+        "production_blocking_reasons": gate.get("production_blocking_reasons") or [],
+        "production_economics": gate.get("production_economics") or {},
+        "metrics": _pick_metrics(row),
+    }
+
+
+def _drawdown_filter_research_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    if not report or str(report.get("market") or "").upper() != market:
+        return {}
+    best = report.get("best_production_candidate") if isinstance(report.get("best_production_candidate"), dict) else {}
+    base = report.get("base_candidate") if isinstance(report.get("base_candidate"), dict) else {}
+    production_count = int(report.get("production_ready_count") or 0)
+    return {
+        "status": report.get("status"),
+        "validation_mode": report.get("validation_mode"),
+        "deployment_ready": bool(report.get("deployment_ready")),
+        "recommended_action": report.get("recommended_action"),
+        "filters_tested": report.get("filters_tested"),
+        "production_gate_pass_count": production_count,
+        "scope": report.get("scope") or {},
+        "base_candidate": _drawdown_research_candidate_summary(base),
+        "best_gate_pass_research_candidate": _drawdown_research_candidate_summary(best),
+        "decision": {
+            "production_gate_pass_observed": production_count > 0,
+            "deployment_ready": bool(report.get("deployment_ready")),
+            "promotable_now": False,
+            "reason": "threshold was selected by a research sweep over walk-forward predictions; require controlled shadow/forward validation before production promotion.",
+        },
+    }
+
+
 def _augmentation_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
     for row in report.get("markets") or []:
         if isinstance(row, dict) and str(row.get("market") or "").upper() == market:
@@ -711,6 +761,7 @@ def build_report(
     matched_only_sweep_paths: Mapping[str, Path] | None = None,
     deployment_consistency_path: Path | None = None,
     candidate_leaderboard_path: Path | None = None,
+    drawdown_filter_report_path: Path | None = None,
     finaltopn_prefilter_proxy_path: Path | None = None,
     finaltopn_actual_sidecar_path: Path | None = None,
     static_master_augmentation_path: Path | None = None,
@@ -733,6 +784,7 @@ def build_report(
     }
     deployment_consistency = _load_optional_json(deployment_consistency_path)
     candidate_leaderboard = _load_optional_json(candidate_leaderboard_path)
+    drawdown_filter_report = _load_optional_json(drawdown_filter_report_path)
     finaltopn_prefilter_proxy = _load_optional_json(finaltopn_prefilter_proxy_path)
     finaltopn_actual_sidecar = _load_optional_json(finaltopn_actual_sidecar_path)
     static_master_augmentation = _load_optional_json(static_master_augmentation_path)
@@ -758,8 +810,19 @@ def build_report(
             if sidecar_score_sweep
             else {},
             "candidate_leaderboard": _candidate_leaderboard_market(candidate_leaderboard, market),
+            "drawdown_filter_research": _drawdown_filter_research_market(drawdown_filter_report, market),
         }
     decision = _best_available_decision({m: row["kis_sidecar_longfold_shadow"] for m, row in markets.items()})
+    drawdown_kospi = markets.get("KOSPI", {}).get("drawdown_filter_research") or {}
+    decision["drawdown_filter_research_candidate_found"] = bool(
+        (drawdown_kospi.get("decision") or {}).get("production_gate_pass_observed")
+    )
+    decision["drawdown_filter_deployment_ready"] = bool((drawdown_kospi.get("decision") or {}).get("deployment_ready"))
+    decision["drawdown_filter_action"] = (
+        "controlled_shadow_forward_validation_required"
+        if decision["drawdown_filter_research_candidate_found"] and not decision["drawdown_filter_deployment_ready"]
+        else None
+    )
     return {
         "version": REPORT_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -807,6 +870,19 @@ def build_report(
             if candidate_leaderboard_path and candidate_leaderboard_path.exists()
             else None,
             "candidate_leaderboard": (candidate_leaderboard.get("decision") or {}) if candidate_leaderboard else {},
+            "drawdown_filter_report": _rel(drawdown_filter_report_path)
+            if drawdown_filter_report_path and drawdown_filter_report_path.exists()
+            else None,
+            "drawdown_filter_status": drawdown_filter_report.get("status") if drawdown_filter_report else None,
+            "drawdown_filter_validation_mode": drawdown_filter_report.get("validation_mode")
+            if drawdown_filter_report
+            else None,
+            "drawdown_filter_deployment_ready": bool(drawdown_filter_report.get("deployment_ready"))
+            if drawdown_filter_report
+            else False,
+            "drawdown_filter_production_gate_pass_count": drawdown_filter_report.get("production_ready_count")
+            if drawdown_filter_report
+            else None,
             "finaltopn_prefilter_proxy_report": _rel(finaltopn_prefilter_proxy_path)
             if finaltopn_prefilter_proxy_path and finaltopn_prefilter_proxy_path.exists()
             else None,
@@ -880,6 +956,10 @@ def build_report(
                 "step": "final_topn_no_trade_expansion",
                 "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",
             },
+            {
+                "step": "drawdown_filter_research",
+                "finding": "KOSPI에서 KIS sidecar tail gate 이후 close-failure prior 계열 scan-time 필터를 탐색해 production gate pass 후보를 찾았다. 단 threshold sweep 사후선택이므로 운영 승격이 아니라 controlled shadow 검증 후보로만 기록한다.",
+            },
         ],
         "markets": markets,
         "historical_proxy_augmentation_experiment": _historical_proxy_augmentation_experiment(
@@ -937,6 +1017,9 @@ def _markdown(report: Mapping[str, Any]) -> str:
         f"- recommended_action: `{decision.get('recommended_action')}`",
         f"- production_replacement_proven: `{decision.get('production_replacement_proven')}`",
         f"- shadow_performance_proven: `{decision.get('shadow_performance_proven')}`",
+        f"- drawdown_filter_research_candidate_found: `{decision.get('drawdown_filter_research_candidate_found')}`",
+        f"- drawdown_filter_deployment_ready: `{decision.get('drawdown_filter_deployment_ready')}`",
+        f"- drawdown_filter_action: `{decision.get('drawdown_filter_action')}`",
         "",
         "## 목표",
         f"- primary_goal: {goal.get('primary_goal')}",
@@ -957,6 +1040,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- sidecar score sweep evaluated/shadow_allowed/production_ready: `{(report.get('research_inputs') or {}).get('sidecar_score_evaluated_results')}` / `{(report.get('research_inputs') or {}).get('sidecar_score_shadow_display_allowed')}` / `{(report.get('research_inputs') or {}).get('sidecar_score_production_ready')}`",
             f"- deployment_consistency: `{((report.get('research_inputs') or {}).get('deployment_consistency') or {}).get('status')}` / `{((report.get('research_inputs') or {}).get('deployment_consistency') or {}).get('recommended_action')}`",
             f"- candidate_leaderboard: `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('status')}` / `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('recommended_action')}`",
+            f"- drawdown_filter_research: status=`{(report.get('research_inputs') or {}).get('drawdown_filter_status')}`, validation=`{(report.get('research_inputs') or {}).get('drawdown_filter_validation_mode')}`, deployment_ready=`{(report.get('research_inputs') or {}).get('drawdown_filter_deployment_ready')}`, production_gate_pass_count=`{(report.get('research_inputs') or {}).get('drawdown_filter_production_gate_pass_count')}`",
             f"- three_stage_validation: `{(report.get('research_inputs') or {}).get('three_stage_validation')}`",
             "",
         ]
@@ -985,6 +1069,24 @@ def _markdown(report: Mapping[str, Any]) -> str:
         leaderboard_high_precision = leaderboard.get("best_high_precision_shadow") or {}
         leaderboard_high_metrics = leaderboard_high_precision.get("metrics") or {}
         leaderboard_upgrade = leaderboard.get("verified_upgrade_candidate") or {}
+        drawdown = payload.get("drawdown_filter_research") or {}
+        drawdown_best = drawdown.get("best_gate_pass_research_candidate") or {}
+        drawdown_best_metrics = drawdown_best.get("metrics") if isinstance(drawdown_best.get("metrics"), dict) else {}
+        drawdown_best_econ = (
+            drawdown_best.get("production_economics")
+            if isinstance(drawdown_best.get("production_economics"), dict)
+            else {}
+        )
+        drawdown_decision = drawdown.get("decision") if isinstance(drawdown.get("decision"), dict) else {}
+        drawdown_status = drawdown.get("status") if drawdown else "not_run_for_market"
+        drawdown_validation = drawdown.get("validation_mode") if drawdown else "-"
+        drawdown_deployment_ready = drawdown.get("deployment_ready") if drawdown else "-"
+        drawdown_pass_count = drawdown.get("production_gate_pass_count") if drawdown else "-"
+        drawdown_line = (
+            f"- drawdown_filter_research: status=`{drawdown_status}`, validation=`{drawdown_validation}`, deployment_ready=`{drawdown_deployment_ready}`, production_gate_pass_count=`{drawdown_pass_count}`, best=`{drawdown_best.get('selection_rule')}`, hit5=`{drawdown_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{drawdown_best_metrics.get('avg_5d_pct')}`, min_low=`{drawdown_best_metrics.get('min_min_low_5d_pct')}`, expected_net=`{drawdown_best_econ.get('expected_touch_policy_net_5d_pct')}`, promotable_now=`{drawdown_decision.get('promotable_now')}`"
+            if drawdown
+            else "- drawdown_filter_research: status=`not_run_for_market`"
+        )
         sample_only_top = score_summary.get("sample_only_top") or []
         sample_sufficient_top = score_summary.get("sample_sufficient_top") or []
         pareto_top = score_summary.get("pareto_top") or []
@@ -1043,6 +1145,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, sample_sufficient_top=`{sample_sufficient_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
                 f"- score_sweep_constraint_frontier: production_ready=`{constraint_frontiers.get('production_ready_count')}`, days_low_safe_touch=`{constraint_frontiers.get('days_low_safe_touch_count')}`, one_day_short_low_safe_touch=`{constraint_frontiers.get('one_day_short_low_safe_touch_count')}` best=`{one_day_short.get('selection_rule')}` hit5=`{one_day_short_metrics.get('hit5_dd10_5d_pct')}` active_days=`{one_day_short_metrics.get('active_days')}`, sample_sufficient_touch_but_low_fail=`{constraint_frontiers.get('sample_sufficient_touch_but_low_fail_count')}` best=`{low_fail.get('selection_rule')}` min_low=`{low_fail_metrics.get('min_min_low_5d_pct')}` low_deficit=`{low_fail_deficits.get('min_low_5d_pct')}`",
                 f"- candidate_leaderboard: status=`{leaderboard.get('status')}`, candidates=`{leaderboard.get('candidate_count')}`, shadow=`{leaderboard.get('shadow_display_allowed_count')}`, sample_only=`{leaderboard.get('sample_only_shadow_count')}`, production=`{leaderboard.get('production_ready_count')}`, best_sample_only=`{leaderboard_best.get('selection_rule')}`, hit5=`{leaderboard_best_metrics.get('hit5_dd10_5d_pct')}`, n=`{leaderboard_best_metrics.get('n')}`, active_days=`{leaderboard_best_metrics.get('active_days')}`, best_high_precision=`{leaderboard_high_precision.get('selection_rule')}`, high_precision_hit5=`{leaderboard_high_metrics.get('hit5_dd10_5d_pct')}`, high_precision_sample=`{((leaderboard_high_precision.get('sample_progress') or {}) if isinstance(leaderboard_high_precision.get('sample_progress'), dict) else {}).get('completion_pct')}`, upgrade=`{leaderboard_upgrade.get('selection_rule')}`",
+                drawdown_line,
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",
@@ -1156,6 +1259,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     )
     parser.add_argument("--deployment-consistency-report", default=str(DEFAULT_DEPLOYMENT_CONSISTENCY))
     parser.add_argument("--candidate-leaderboard-report", default=str(DEFAULT_CANDIDATE_LEADERBOARD))
+    parser.add_argument("--drawdown-filter-report", default=str(DEFAULT_DRAWDOWN_FILTER_REPORT))
     parser.add_argument("--finaltopn-prefilter-proxy-report", default=str(DEFAULT_FINALTOPN_PREFILTER_PROXY))
     parser.add_argument("--finaltopn-actual-sidecar-report", default=str(DEFAULT_FINALTOPN_ACTUAL_SIDECAR))
     parser.add_argument("--static-master-augmentation-report", default=str(DEFAULT_STATIC_MASTER_AUGMENTATION))
@@ -1194,6 +1298,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         matched_only_sweep_paths=matched_only_sweep_paths,
         deployment_consistency_path=Path(args.deployment_consistency_report),
         candidate_leaderboard_path=Path(args.candidate_leaderboard_report),
+        drawdown_filter_report_path=Path(args.drawdown_filter_report),
         finaltopn_prefilter_proxy_path=Path(args.finaltopn_prefilter_proxy_report),
         finaltopn_actual_sidecar_path=Path(args.finaltopn_actual_sidecar_report),
         static_master_augmentation_path=Path(args.static_master_augmentation_report),

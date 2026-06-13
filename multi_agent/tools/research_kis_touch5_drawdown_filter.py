@@ -1,0 +1,531 @@
+#!/usr/bin/env python3
+"""Search drawdown filters for KIS touch5/dd10 sidecar candidates.
+
+This is a research/audit tool, not a deployment switch. It uses real
+walk-forward predictions from the KIS sidecar prepared cache, then sweeps
+simple pre-selection filters that can be evaluated at scan time. The output
+keeps production-gate pass candidates separate from deployment readiness so
+operator reports can inspect the evidence without silently promoting an
+overfit threshold sweep.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Mapping, Sequence
+
+import numpy as np
+import pandas as pd
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from modules.kis_model_gate import evaluate_kis_model_gate
+from multi_agent.tools.sweep_kis_sidecar_thresholds import _fit_predict_folds, _score_predictions
+from multi_agent.tools.train_scan_universe_admission_challenger import (
+    LABEL_SPECS,
+    feature_sets,
+    kis_presence_mask,
+    label_series,
+    metrics,
+    tail_safe_series,
+    top_indices_by_run,
+    usable_features,
+)
+
+
+REPORT_VERSION = "kis_touch5_drawdown_filter_research_v1"
+DEFAULT_OUTPUT = (
+    PROJECT_ROOT
+    / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json"
+)
+DEFAULT_PREPARED_CACHE = (
+    PROJECT_ROOT
+    / "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_sidecar_db_20260101_20260610.pkl"
+)
+DEFAULT_FEATURE_SET = "kis_sidecar_failure_risk_augmented"
+DEFAULT_LABEL = "touch5_dd10_5d"
+DEFAULT_MODEL = "lightgbm"
+DEFAULT_MARKET = "KOSPI"
+DEFAULT_SCORE_MODE = "prob"
+DEFAULT_TAIL_THRESHOLD = 0.85
+DEFAULT_TOPN = 1
+
+MANUAL_FILTER_FEATURES = (
+    "close_failure_prior_kis_sector_failure_rate_pct",
+    "close_failure_prior_theme_avg_close_5d_pct",
+    "close_failure_prior_kis_theme_avg_close_5d_pct",
+    "close_failure_prior_kis_sector_touch5_n",
+    "close_failure_prior_ticker_failure_rate_pct",
+    "close_failure_prior_ticker_risk_score",
+    "close_failure_prior_theme_stop5_rate_pct",
+    "close_failure_prior_kis_theme_stop5_rate_pct",
+    "close_failure_prior_theme_clean_defense_rate_pct",
+    "close_failure_prior_kis_theme_clean_defense_rate_pct",
+    "kis_prev_volume_ratio",
+    "kis_daily_volume_ratio_20d",
+    "volume_ratio",
+    "tech_score",
+    "alpha_score",
+    "kis_daily_return_20d_pct",
+    "kis_daily_return_5d_pct",
+    "kis_daily_close_location_pct",
+    "kis_theme_news_evidence_score",
+    "feature_coverage_score",
+)
+AUTO_FEATURE_NAME_PARTS = (
+    "failure",
+    "risk",
+    "stop5",
+    "defense",
+    "volume_ratio",
+    "return_20d",
+    "return_5d",
+    "close_location",
+    "theme",
+    "score",
+    "coverage",
+)
+QUANTILES = (0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95)
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _json_default(value: Any) -> Any:
+    if isinstance(value, (np.integer,)):
+        return int(value)
+    if isinstance(value, (np.floating,)):
+        number = float(value)
+        if math.isnan(number) or math.isinf(number):
+            return None
+        return round(number, 6)
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, pd.Timestamp):
+        return value.isoformat()
+    if isinstance(value, Path):
+        return str(value)
+    return str(value)
+
+
+def _round(value: Any, digits: int = 6) -> float | None:
+    try:
+        number = float(value)
+    except Exception:
+        return None
+    if math.isnan(number) or math.isinf(number):
+        return None
+    return round(number, digits)
+
+
+def _metric_subset(row: Mapping[str, Any]) -> Dict[str, Any]:
+    keys = (
+        "n",
+        "active_runs",
+        "active_days",
+        "hit5_dd10_5d_pct",
+        "target_before_stop_5d_pct",
+        "stop_before_target_5d_pct",
+        "hit10_5d_pct",
+        "avg_5d_pct",
+        "median_5d_pct",
+        "min_5d_pct",
+        "avg_max_high_5d_pct",
+        "avg_min_low_5d_pct",
+        "min_min_low_5d_pct",
+        "buy_premium_pct",
+    )
+    return {key: row.get(key) for key in keys if key in row}
+
+
+def _filter_rule_name(feature: str, op: str, threshold: float) -> str:
+    value = f"{threshold:g}".replace("-", "neg").replace(".", "p")
+    return f"{feature}_{op}_{value}"
+
+
+def _selection_rule(*, topn: int, score_mode: str, tail_threshold: float, filter_name: str | None = None) -> str:
+    base = f"top{int(topn)}_{score_mode}_tail{tail_threshold:g}".replace(".", "p")
+    return f"{base}_{filter_name}" if filter_name else base
+
+
+def _candidate_identity(
+    *,
+    market: str,
+    feature_set: str,
+    model: str,
+    selection_rule: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    filter_payload: Mapping[str, Any] | None = None,
+) -> Dict[str, Any]:
+    return {
+        "market": market,
+        "label": DEFAULT_LABEL,
+        "feature_set": feature_set,
+        "model": model,
+        "selection_rule": selection_rule,
+        "score_mode": score_mode,
+        "topn": int(topn),
+        "tail_risk_prob_threshold": float(tail_threshold),
+        "drawdown_filter": dict(filter_payload or {}),
+        "validation_mode": "research_sweep_only_walk_forward_predictions",
+        "deployment_ready": False,
+    }
+
+
+def _gate_row(
+    *,
+    market: str,
+    feature_set: str,
+    model: str,
+    selection_rule: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    selected: pd.Index,
+    scoped: pd.DataFrame,
+    label: pd.Series,
+    filter_payload: Mapping[str, Any] | None = None,
+) -> Dict[str, Any] | None:
+    if selected.empty:
+        return None
+    row_metrics = metrics(scoped, selected, label)
+    identity = _candidate_identity(
+        market=market,
+        feature_set=feature_set,
+        model=model,
+        selection_rule=selection_rule,
+        score_mode=score_mode,
+        topn=topn,
+        tail_threshold=tail_threshold,
+        filter_payload=filter_payload,
+    )
+    gate = evaluate_kis_model_gate(identity=identity, metrics=row_metrics, market=market)
+    return {
+        "identity": identity,
+        "metrics": row_metrics,
+        "gate": gate,
+        "kis_model_gate": gate,
+        "quality_score": _quality_score(row_metrics, gate),
+        "selected_count": int(len(selected)),
+    }
+
+
+def _quality_score(row_metrics: Mapping[str, Any], gate: Mapping[str, Any]) -> float:
+    hit = float(row_metrics.get("hit5_dd10_5d_pct") or 0.0)
+    avg5 = float(row_metrics.get("avg_5d_pct") or -999.0)
+    min_low = float(row_metrics.get("min_min_low_5d_pct") or -999.0)
+    active_days = int(row_metrics.get("active_days") or 0)
+    n = int(row_metrics.get("n") or 0)
+    production_bonus = 1000.0 if gate.get("production_ready") else 0.0
+    shadow_bonus = 120.0 if gate.get("shadow_display_allowed") else 0.0
+    low_penalty = max(0.0, -10.0 - min_low) * 40.0
+    return round(production_bonus + shadow_bonus + hit * 8.0 + avg5 * 1.6 + min_low * 2.0 + active_days + n * 0.05 - low_penalty, 6)
+
+
+def _sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    row_metrics = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    gate = row.get("gate") if isinstance(row.get("gate"), Mapping) else {}
+    return (
+        bool(gate.get("production_ready")),
+        bool(gate.get("shadow_display_allowed")),
+        float(row.get("quality_score") or -999999.0),
+        float(row_metrics.get("hit5_dd10_5d_pct") or 0.0),
+        float(row_metrics.get("avg_5d_pct") or -999.0),
+        float(row_metrics.get("min_min_low_5d_pct") or -999.0),
+        int(row_metrics.get("active_days") or 0),
+        int(row_metrics.get("n") or 0),
+    )
+
+
+def _candidate_filter_features(numeric: Sequence[str]) -> List[str]:
+    out: List[str] = []
+    for feature in MANUAL_FILTER_FEATURES:
+        if feature in numeric and feature not in out:
+            out.append(feature)
+    for feature in numeric:
+        if feature in out:
+            continue
+        if any(part in feature for part in AUTO_FEATURE_NAME_PARTS):
+            out.append(feature)
+    return out
+
+
+def _thresholds(values: pd.Series) -> List[float]:
+    clean = pd.to_numeric(values, errors="coerce").dropna()
+    if len(clean) < 100:
+        return []
+    out = []
+    for quantile in QUANTILES:
+        value = float(clean.quantile(quantile))
+        if not math.isnan(value) and not math.isinf(value):
+            out.append(round(value, 6))
+    return sorted(set(out))
+
+
+def _single_feature_results(
+    *,
+    scoped: pd.DataFrame,
+    base_pool: pd.Index,
+    score: pd.Series,
+    label: pd.Series,
+    market: str,
+    feature_set: str,
+    model: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    numeric: Sequence[str],
+    min_pool_rows: int,
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for feature in _candidate_filter_features(numeric):
+        if feature not in scoped.columns:
+            continue
+        values = pd.to_numeric(scoped.loc[base_pool, feature], errors="coerce")
+        for threshold in _thresholds(values):
+            for op in ("le", "ge"):
+                mask = values.le(threshold) if op == "le" else values.ge(threshold)
+                pool = base_pool[mask.fillna(False)]
+                if len(pool) < int(min_pool_rows):
+                    continue
+                filter_name = _filter_rule_name(feature, op, threshold)
+                selected = top_indices_by_run(scoped.loc[pool], score.loc[pool], int(topn))
+                row = _gate_row(
+                    market=market,
+                    feature_set=feature_set,
+                    model=model,
+                    selection_rule=_selection_rule(
+                        topn=topn,
+                        score_mode=score_mode,
+                        tail_threshold=tail_threshold,
+                        filter_name=filter_name,
+                    ),
+                    score_mode=score_mode,
+                    topn=topn,
+                    tail_threshold=tail_threshold,
+                    selected=selected,
+                    scoped=scoped,
+                    label=label,
+                    filter_payload={
+                        "type": "single_feature_threshold",
+                        "feature": feature,
+                        "op": op,
+                        "threshold": _round(threshold),
+                        "pool_rows": int(len(pool)),
+                    },
+                )
+                if row:
+                    rows.append(row)
+    return rows
+
+
+def build_report(args: argparse.Namespace) -> Dict[str, Any]:
+    cache_path = Path(args.prepared_cache)
+    data = pd.read_pickle(cache_path)
+    label_spec = next(spec for spec in LABEL_SPECS if spec.name == args.label)
+    label, valid = label_series(data, label_spec)
+    tail_label, tail_valid = tail_safe_series(data)
+    valid &= tail_valid
+    market = str(args.market).upper()
+    scoped = data.loc[valid & data["market"].eq(market)].copy()
+    scoped = scoped.loc[kis_presence_mask(scoped, args.feature_set)].copy()
+    y = label.loc[scoped.index].astype(int)
+    y_tail = tail_label.loc[scoped.index].astype(int)
+    numeric, categorical = feature_sets(data)[args.feature_set]
+    numeric, categorical = usable_features(scoped, numeric, categorical)
+    fold_payload = _fit_predict_folds(
+        scoped,
+        y=y,
+        y_tail=y_tail,
+        numeric=numeric,
+        categorical=categorical,
+        model_name=args.model,
+        min_train_rows=int(args.min_train_rows),
+        min_test_rows=int(args.min_test_rows),
+        min_train_days=int(args.min_train_days),
+        test_days=int(args.test_days),
+        max_folds=int(args.max_folds),
+        need_tail=True,
+        progress=not bool(args.quiet),
+    )
+    predictions = fold_payload.pop("predictions")
+    score = _score_predictions(predictions, args.score_mode)
+    base_pool = predictions.index[predictions["tail_prob"].ge(float(args.tail_threshold))]
+    base_selected = top_indices_by_run(scoped.loc[base_pool], score.loc[base_pool], int(args.topn))
+    base = _gate_row(
+        market=market,
+        feature_set=args.feature_set,
+        model=args.model,
+        selection_rule=_selection_rule(topn=args.topn, score_mode=args.score_mode, tail_threshold=args.tail_threshold),
+        score_mode=args.score_mode,
+        topn=args.topn,
+        tail_threshold=args.tail_threshold,
+        selected=base_selected,
+        scoped=scoped,
+        label=label,
+    )
+    candidates = _single_feature_results(
+        scoped=scoped,
+        base_pool=base_pool,
+        score=score,
+        label=label,
+        market=market,
+        feature_set=args.feature_set,
+        model=f"{args.model}_drawdown_filter",
+        score_mode=args.score_mode,
+        topn=int(args.topn),
+        tail_threshold=float(args.tail_threshold),
+        numeric=numeric,
+        min_pool_rows=int(args.min_pool_rows),
+    )
+    ranked = sorted(candidates, key=_sort_key, reverse=True)
+    production = [row for row in ranked if (row.get("gate") or {}).get("production_ready")]
+    return {
+        "version": REPORT_VERSION,
+        "generated_at": _utc_now(),
+        "dummy_data_used": False,
+        "status": "production_gate_pass_research_candidate_found" if production else "no_production_gate_pass_candidate",
+        "validation_mode": "research_sweep_only_walk_forward_predictions",
+        "deployment_ready": False,
+        "recommended_action": (
+            "run controlled shadow and forward validation before promotion"
+            if production
+            else "continue drawdown-filter research"
+        ),
+        "objective": "Find scan-time drawdown filters that can satisfy touch5_dd10 KIS production gates on real walk-forward predictions.",
+        "prepared_cache": str(cache_path),
+        "market": market,
+        "feature_set": args.feature_set,
+        "model": args.model,
+        "score_mode": args.score_mode,
+        "topn": int(args.topn),
+        "tail_threshold": float(args.tail_threshold),
+        "scope": {
+            "rows": int(len(scoped)),
+            "unique_days": int(scoped["trade_date"].nunique()) if "trade_date" in scoped.columns else 0,
+            "unique_runs": int(scoped["run_id"].nunique()) if "run_id" in scoped.columns else 0,
+            "base_pool_rows": int(len(base_pool)),
+            "usable_numeric": int(len(numeric)),
+            "usable_categorical": int(len(categorical)),
+        },
+        "fold_meta": fold_payload,
+        "base_candidate": base,
+        "filters_tested": int(len(candidates)),
+        "production_ready_count": int(len(production)),
+        "best_production_candidate": production[0] if production else None,
+        "production_candidates": production[: int(args.top_results)],
+        "top_results": ranked[: int(args.top_results)],
+    }
+
+
+def render_markdown(report: Mapping[str, Any]) -> str:
+    base = report.get("base_candidate") if isinstance(report.get("base_candidate"), Mapping) else {}
+    base_metrics = base.get("metrics") if isinstance(base.get("metrics"), Mapping) else {}
+    base_gate = base.get("gate") if isinstance(base.get("gate"), Mapping) else {}
+    best = report.get("best_production_candidate") if isinstance(report.get("best_production_candidate"), Mapping) else {}
+    best_metrics = best.get("metrics") if isinstance(best.get("metrics"), Mapping) else {}
+    best_gate = best.get("gate") if isinstance(best.get("gate"), Mapping) else {}
+    best_identity = best.get("identity") if isinstance(best.get("identity"), Mapping) else {}
+    best_filter = best_identity.get("drawdown_filter") if isinstance(best_identity.get("drawdown_filter"), Mapping) else {}
+    lines = [
+        "# KIS Touch5 Drawdown Filter Research",
+        "",
+        f"- version: `{report.get('version')}`",
+        f"- status: `{report.get('status')}`",
+        f"- validation_mode: `{report.get('validation_mode')}`",
+        f"- deployment_ready: `{report.get('deployment_ready')}`",
+        f"- generated_at: `{report.get('generated_at')}`",
+        f"- prepared_cache: `{report.get('prepared_cache')}`",
+        f"- market: `{report.get('market')}`",
+        f"- base: status=`{base_gate.get('status')}` blockers=`{base_gate.get('production_blocking_reasons')}` n=`{base_metrics.get('n')}` days=`{base_metrics.get('active_days')}` hit5=`{base_metrics.get('hit5_dd10_5d_pct')}` avg5=`{base_metrics.get('avg_5d_pct')}` min_low=`{base_metrics.get('min_min_low_5d_pct')}`",
+        f"- filters_tested: `{report.get('filters_tested')}`",
+        f"- production_ready_count: `{report.get('production_ready_count')}`",
+        f"- best_filter: `{best_filter}`",
+        f"- best: status=`{best_gate.get('status')}` n=`{best_metrics.get('n')}` days=`{best_metrics.get('active_days')}` hit5=`{best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{best_metrics.get('avg_5d_pct')}` min_low=`{best_metrics.get('min_min_low_5d_pct')}` expected_net=`{((best_gate.get('production_economics') or {}) if isinstance(best_gate.get('production_economics'), Mapping) else {}).get('expected_touch_policy_net_5d_pct')}`",
+        "",
+        "| rank | status | rule | n | days | runs | hit5 | avg5 | min_low | expected_net |",
+        "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for idx, row in enumerate(report.get("top_results") or [], start=1):
+        row_metrics = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+        row_gate = row.get("gate") if isinstance(row.get("gate"), Mapping) else {}
+        identity = row.get("identity") if isinstance(row.get("identity"), Mapping) else {}
+        econ = row_gate.get("production_economics") if isinstance(row_gate.get("production_economics"), Mapping) else {}
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    str(idx),
+                    str(row_gate.get("status")),
+                    str(identity.get("selection_rule")),
+                    str(row_metrics.get("n")),
+                    str(row_metrics.get("active_days")),
+                    str(row_metrics.get("active_runs")),
+                    str(row_metrics.get("hit5_dd10_5d_pct")),
+                    str(row_metrics.get("avg_5d_pct")),
+                    str(row_metrics.get("min_min_low_5d_pct")),
+                    str(econ.get("expected_touch_policy_net_5d_pct")),
+                ]
+            )
+            + " |"
+        )
+    return "\n".join(lines)
+
+
+def write_report(report: Mapping[str, Any], output: Path) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=_json_default) + "\n", encoding="utf-8")
+    output.with_suffix(".md").write_text(render_markdown(report).rstrip() + "\n", encoding="utf-8")
+
+
+def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--prepared-cache", default=str(DEFAULT_PREPARED_CACHE))
+    parser.add_argument("--market", default=DEFAULT_MARKET)
+    parser.add_argument("--label", default=DEFAULT_LABEL)
+    parser.add_argument("--feature-set", default=DEFAULT_FEATURE_SET)
+    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--score-mode", default=DEFAULT_SCORE_MODE)
+    parser.add_argument("--topn", type=int, default=DEFAULT_TOPN)
+    parser.add_argument("--tail-threshold", type=float, default=DEFAULT_TAIL_THRESHOLD)
+    parser.add_argument("--min-train-rows", type=int, default=1000)
+    parser.add_argument("--min-test-rows", type=int, default=1)
+    parser.add_argument("--min-train-days", type=int, default=7)
+    parser.add_argument("--test-days", type=int, default=1)
+    parser.add_argument("--max-folds", type=int, default=20)
+    parser.add_argument("--min-pool-rows", type=int, default=30)
+    parser.add_argument("--top-results", type=int, default=30)
+    parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
+    return parser.parse_args(list(argv) if argv is not None else None)
+
+
+def main(argv: Iterable[str] | None = None) -> int:
+    args = parse_args(argv)
+    report = build_report(args)
+    write_report(report, Path(args.output))
+    print(
+        json.dumps(
+            {
+                "status": report.get("status"),
+                "production_ready_count": report.get("production_ready_count"),
+                "output": str(args.output),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

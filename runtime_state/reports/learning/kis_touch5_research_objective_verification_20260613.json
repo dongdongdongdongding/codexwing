@@ -1,5 +1,8 @@
 {
   "decision": {
+    "drawdown_filter_action": "controlled_shadow_forward_validation_required",
+    "drawdown_filter_deployment_ready": false,
+    "drawdown_filter_research_candidate_found": true,
     "production_blockers_by_market": {
       "KOSDAQ": [
         "n_lt_45",
@@ -14,7 +17,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T06:20:15.792317+00:00",
+  "generated_at": "2026-06-13T06:45:32.135570+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -2161,6 +2164,7 @@
         "status": "shadow_candidates_found_no_upgrade",
         "verified_upgrade_candidate": {}
       },
+      "drawdown_filter_research": {},
       "finaltopn_three_stage_experiments": {
         "actual_sidecar": {
           "best_config": {},
@@ -16760,6 +16764,148 @@
         "shadow_display_allowed_count": 393,
         "status": "shadow_candidates_found_no_upgrade",
         "verified_upgrade_candidate": {}
+      },
+      "drawdown_filter_research": {
+        "base_candidate": {
+          "deployment_ready": false,
+          "drawdown_filter": {},
+          "feature_set": "kis_sidecar_failure_risk_augmented",
+          "gate_status": "shadow_risk_review",
+          "metrics": {
+            "active_days": 15,
+            "active_runs": 58,
+            "avg_1d_pct": 3.308956,
+            "avg_3d_pct": 33.621392,
+            "avg_5d_pct": 34.754917,
+            "avg_max_high_5d_pct": 62.261087,
+            "avg_min_low_5d_pct": -4.976712,
+            "bad_path_pct": 44.8276,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 70.6897,
+            "hit5_dd10_5d_pct": 79.3103,
+            "min_1d_pct": -5.136144,
+            "min_3d_pct": -7.690349,
+            "min_5d_pct": -8.551085,
+            "min_min_low_5d_pct": -10.87344,
+            "n": 58,
+            "stop5_pct": 43.1034,
+            "stop_before_target_5d_pct": 43.1034,
+            "target_before_stop_5d_pct": 75.8621,
+            "win_5d_pct": 79.3103
+          },
+          "model": "lightgbm",
+          "production_blocking_reasons": [
+            "min_low_5d_lt_neg10"
+          ],
+          "production_economics": {
+            "cost_model": {
+              "buy_fee_bps": 1.5,
+              "buy_slippage_bps": 8.0,
+              "fill_rate": 1.0,
+              "sell_fee_bps": 1.5,
+              "sell_slippage_bps": 8.0,
+              "sell_tax_bps": 15.0,
+              "spread_bps": 4.0,
+              "version": "kr_tradable_pnl_cost_v1"
+            },
+            "expected_touch_policy_net_5d_pct": 1.58046,
+            "hit5_dd10_5d_pct": 79.3103,
+            "loss_floor_pct": -10.0,
+            "policy": "target_touch_5d_dd10_after_buy_premium",
+            "target_touch_gross_pct": 5.0,
+            "target_touch_net_pct": 4.601458,
+            "thresholds": {
+              "min_expected_touch_policy_net_5d_pct": 0.25
+            }
+          },
+          "production_gate_pass_observed": false,
+          "score_mode": "prob",
+          "selection_rule": "top1_prob_tail0p85",
+          "shadow_display_allowed": true,
+          "validation_mode": "research_sweep_only_walk_forward_predictions"
+        },
+        "best_gate_pass_research_candidate": {
+          "deployment_ready": false,
+          "drawdown_filter": {
+            "feature": "close_failure_prior_kis_sector_failure_rate_pct",
+            "op": "le",
+            "pool_rows": 3811,
+            "threshold": 46.666667,
+            "type": "single_feature_threshold"
+          },
+          "feature_set": "kis_sidecar_failure_risk_augmented",
+          "gate_status": "production_ready",
+          "metrics": {
+            "active_days": 15,
+            "active_runs": 54,
+            "avg_1d_pct": 9.609235,
+            "avg_3d_pct": 33.564786,
+            "avg_5d_pct": 24.676158,
+            "avg_max_high_5d_pct": 56.629127,
+            "avg_min_low_5d_pct": -4.223235,
+            "bad_path_pct": 35.1852,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 75.9259,
+            "hit5_dd10_5d_pct": 98.1481,
+            "min_1d_pct": -4.355879,
+            "min_3d_pct": -3.591374,
+            "min_5d_pct": -8.551085,
+            "min_min_low_5d_pct": -9.230497,
+            "n": 54,
+            "stop5_pct": 33.3333,
+            "stop_before_target_5d_pct": 33.3333,
+            "target_before_stop_5d_pct": 92.5926,
+            "win_5d_pct": 98.1481
+          },
+          "model": "lightgbm_drawdown_filter",
+          "production_blocking_reasons": [],
+          "production_economics": {
+            "cost_model": {
+              "buy_fee_bps": 1.5,
+              "buy_slippage_bps": 8.0,
+              "fill_rate": 1.0,
+              "sell_fee_bps": 1.5,
+              "sell_slippage_bps": 8.0,
+              "sell_tax_bps": 15.0,
+              "spread_bps": 4.0,
+              "version": "kr_tradable_pnl_cost_v1"
+            },
+            "expected_touch_policy_net_5d_pct": 4.331054,
+            "hit5_dd10_5d_pct": 98.1481,
+            "loss_floor_pct": -10.0,
+            "policy": "target_touch_5d_dd10_after_buy_premium",
+            "target_touch_gross_pct": 5.0,
+            "target_touch_net_pct": 4.601458,
+            "thresholds": {
+              "min_expected_touch_policy_net_5d_pct": 0.25
+            }
+          },
+          "production_gate_pass_observed": true,
+          "score_mode": "prob",
+          "selection_rule": "top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667",
+          "shadow_display_allowed": true,
+          "validation_mode": "research_sweep_only_walk_forward_predictions"
+        },
+        "decision": {
+          "deployment_ready": false,
+          "production_gate_pass_observed": true,
+          "promotable_now": false,
+          "reason": "threshold was selected by a research sweep over walk-forward predictions; require controlled shadow/forward validation before production promotion."
+        },
+        "deployment_ready": false,
+        "filters_tested": 1107,
+        "production_gate_pass_count": 6,
+        "recommended_action": "run controlled shadow and forward validation before promotion",
+        "scope": {
+          "base_pool_rows": 9919,
+          "rows": 38361,
+          "unique_days": 27,
+          "unique_runs": 102,
+          "usable_categorical": 30,
+          "usable_numeric": 135
+        },
+        "status": "production_gate_pass_research_candidate_found",
+        "validation_mode": "research_sweep_only_walk_forward_predictions"
       },
       "finaltopn_three_stage_experiments": {
         "actual_sidecar": {
@@ -40005,6 +40151,11 @@
       "status": "pass"
     },
     "deployment_consistency_report": "runtime_state/reports/learning/kis_shadow_deployment_consistency_20260613.json",
+    "drawdown_filter_deployment_ready": false,
+    "drawdown_filter_production_gate_pass_count": 6,
+    "drawdown_filter_report": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json",
+    "drawdown_filter_status": "production_gate_pass_research_candidate_found",
+    "drawdown_filter_validation_mode": "research_sweep_only_walk_forward_predictions",
     "finaltopn_actual_sidecar_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_actual_sidecar_20260331_20260610.json",
     "finaltopn_prefilter_proxy_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json",
     "market_comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
@@ -40081,6 +40232,10 @@
     {
       "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",
       "step": "final_topn_no_trade_expansion"
+    },
+    {
+      "finding": "KOSPI에서 KIS sidecar tail gate 이후 close-failure prior 계열 scan-time 필터를 탐색해 production gate pass 후보를 찾았다. 단 threshold sweep 사후선택이므로 운영 승격이 아니라 controlled shadow 검증 후보로만 기록한다.",
+      "step": "drawdown_filter_research"
     }
   ],
   "service_feature_scope": {

@@ -1,11 +1,14 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T06:20:15.792317+00:00`
+- generated_at: `2026-06-13T06:45:32.135570+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
 - shadow_performance_proven: `True`
+- drawdown_filter_research_candidate_found: `True`
+- drawdown_filter_deployment_ready: `False`
+- drawdown_filter_action: `controlled_shadow_forward_validation_required`
 
 ## 목표
 - primary_goal: 실제 매수 관점에서 KIS 기반 후보가 5거래일 안에 +5% 이상 터치하고 -10%보다 깊은 하락을 피하는지 검증한다.
@@ -23,6 +26,7 @@
 - static_sidecar_master_augmentation: 실제 KIS sidecar cache에서 ticker 정적 stock-info master만 추출해 2026-01-01 이후 historical proxy의 stock/theme category 결손을 보강했고, focused walk-forward에서 양시장 shadow gate를 통과했다. 단, 수급/재무/뉴스 시계열은 as-of 유출 위험 때문에 채우지 않았다.
 - static_master_three_stage_validation: static stock-info master 증강 캐시에 fold-separated 3단 EV/no-trade 랭커를 재적용해 양시장 dynamic exit 성과 개선을 확인했다. 다만 touch5_dd10 73%와 -10% tail 방어 기준을 동시에 넘지 못해 연구 성과로만 기록한다.
 - final_topn_no_trade_expansion: 최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.
+- drawdown_filter_research: KOSPI에서 KIS sidecar tail gate 이후 close-failure prior 계열 scan-time 필터를 탐색해 production gate pass 후보를 찾았다. 단 threshold sweep 사후선택이므로 운영 승격이 아니라 controlled shadow 검증 후보로만 기록한다.
 
 ## 입력과 검증
 - no_dummy_data: `True`
@@ -30,6 +34,7 @@
 - sidecar score sweep evaluated/shadow_allowed/production_ready: `4950` / `2777` / `0`
 - deployment_consistency: `pass` / `use_current_kis_shadow_deployment`
 - candidate_leaderboard: `keep_current_shadow` / `continue_forward_tracking_until_sample_gate_clears`
+- drawdown_filter_research: status=`production_gate_pass_research_candidate_found`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`6`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
 
 ## KOSPI
@@ -46,6 +51,7 @@
 - score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, sample_sufficient_top=`top1_tail0p85`, pareto_top=`top1_prob_tail_margin_p0p3_tail0p95`
 - score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`519` best=`top1_tail0p85` min_low=`-10.87344` low_deficit=`0.87344`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`2385`, shadow=`393`, sample_only=`252`, production=`0`, best_sample_only=`top2_prob_plus_tail_p0p8_tail0p85`, hit5=`87.0968`, n=`93`, active_days=`14`, best_high_precision=`top1_prob_tail_margin_p0p2_tail0p95`, high_precision_hit5=`93.4783`, high_precision_sample=`88.888889`, upgrade=`None`
+- drawdown_filter_research: status=`production_gate_pass_research_candidate_found`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`6`, best=`top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667`, hit5=`98.1481`, avg5=`24.676158`, min_low=`-9.230497`, expected_net=`4.331054`, promotable_now=`False`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`40`, active_days=`21`, hit5=`57.5`, avg_exit=`-0.618404`, dynamic_exit=`1.249479`, min_low=`-27.443637`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`30`, active_days=`15`, hit5=`53.3333`, avg_exit=`-1.796353`, dynamic_exit=`0.528124`, min_low=`-18.184768`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 
@@ -63,6 +69,7 @@
 - score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, sample_sufficient_top=`None`, pareto_top=`top1_p0p3_tail0p95`
 - score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`0` best=`None` min_low=`None` low_deficit=`None`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1699`, shadow=`250`, sample_only=`82`, production=`0`, best_sample_only=`top3_ev_tail0p9`, hit5=`94.8276`, n=`58`, active_days=`10`, best_high_precision=`top3_ev_p0p2_tail0p9`, high_precision_hit5=`96.4912`, high_precision_sample=`80.0`, upgrade=`None`
+- drawdown_filter_research: status=`not_run_for_market`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`46`, active_days=`24`, hit5=`54.3478`, avg_exit=`-0.85266`, dynamic_exit=`1.529568`, min_low=`-32.404541`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`None`, production_ready=`False`, shadow_display_allowed=`False`, n=`None`, active_days=`None`, hit5=`None`, avg_exit=`None`, dynamic_exit=`None`, min_low=`None`, blockers=`[]`
 
