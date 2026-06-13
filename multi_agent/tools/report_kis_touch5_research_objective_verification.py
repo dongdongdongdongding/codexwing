@@ -52,7 +52,7 @@ DEFAULT_DRAWDOWN_FILTER_REPORT = (
 )
 DEFAULT_COVERAGE_AUDIT = ROOT / "runtime_state/reports/learning/kis_touch5_research_coverage_audit_20260613.json"
 DEFAULT_SLICE_ABLATION = ROOT / "runtime_state/reports/learning/kis_touch5_slice_ablation_20260613.json"
-DEFAULT_STABILITY_SEARCH = ROOT / "runtime_state/reports/learning/kis_touch5_stability_search_20260613.json"
+DEFAULT_STABILITY_SEARCH = ROOT / "runtime_state/reports/learning/kis_touch5_stability_search_longfold20_20260613.json"
 DEFAULT_FINALTOPN_PREFILTER_PROXY = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json"
 )
