@@ -22,6 +22,7 @@ from modules.ui_helpers import (
     should_auto_refresh_scan_panel,
     sort_signal_rows_by_planner_rank,
 )
+from ui.scan_cockpit import build_kis_shadow_gate_summary_lines
 
 
 class UIHelperTests(unittest.TestCase):
@@ -161,6 +162,32 @@ class UIHelperTests(unittest.TestCase):
         self.assertEqual(rows[0]["risk_flags"], ["LOSS_RISK_SOFT_CAP", "ENTRY_TIMING_RISK_HIGH"])
         self.assertEqual(rows[0]["action_label"], "눌림/확인 대기")
         self.assertEqual(rows[0]["action_condition"], "지지·재돌파 확인 후 검토")
+
+    def test_kis_shadow_gate_summary_lines_surface_near_production_candidate(self):
+        lines = build_kis_shadow_gate_summary_lines(
+            {
+                "status": "shadow_ready",
+                "shadow_display_allowed": True,
+                "production_ready": False,
+                "near_production_candidate": {
+                    "selection_rule": "top3_ev_p0p3_tail0p9",
+                    "sample_blockers": ["active_days_lt_15"],
+                    "metrics": {
+                        "n": 142,
+                        "active_days": 11,
+                        "hit5_dd10_5d_pct": 83.8028,
+                        "avg_5d_pct": 9.912085,
+                        "min_min_low_5d_pct": -9.864936,
+                    },
+                },
+            }
+        )
+
+        self.assertIn("관찰표시=가능", lines[0])
+        self.assertTrue(any("승격근접" in line for line in lines))
+        self.assertTrue(any("top3_ev_p0p3_tail0p9" in line for line in lines))
+        self.assertTrue(any("hit5=83.8%" in line for line in lines))
+        self.assertTrue(any("active_days_lt_15" in line for line in lines))
 
     def test_build_signal_display_rows_does_not_fabricate_day_change(self):
         # 2026-05-09: phase25_prob은 raw score(0-100)로 calibrated probability가

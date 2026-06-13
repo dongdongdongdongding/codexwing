@@ -19,6 +19,7 @@ from modules.scan_universe_admission import (
     build_kis_shadow_admission_records,
     build_scan_universe_admission_input_rows,
     build_scan_universe_admission_records,
+    kis_shadow_gate_status,
 )
 from modules.ui_helpers import (
     build_signal_display_rows,
@@ -70,6 +71,44 @@ def _name_of(row: Dict[str, Any]) -> str:
 
 def _score_of(row: Dict[str, Any]) -> Any:
     return row.get("Decision Score") or row.get("decision_score") or row.get("score")
+
+
+def build_kis_shadow_gate_summary_lines(gate: Dict[str, Any]) -> List[str]:
+    if not isinstance(gate, dict) or not gate:
+        return []
+    lines = [
+        (
+            f"게이트 {gate.get('status') or '-'} · "
+            f"관찰표시={'가능' if gate.get('shadow_display_allowed') else '불가'} · "
+            f"운영승격={'가능' if gate.get('production_ready') else '아직 불가'}"
+        )
+    ]
+    near = gate.get("near_production_candidate") if isinstance(gate.get("near_production_candidate"), dict) else {}
+    metrics = near.get("metrics") if isinstance(near.get("metrics"), dict) else {}
+    if near:
+        lines.append(
+            "승격근접 "
+            f"{near.get('selection_rule') or '-'} · "
+            f"n={metrics.get('n', '-')} · "
+            f"일수={metrics.get('active_days', '-')} · "
+            f"hit5={_fmt_metric_pct_or_dash(metrics.get('hit5_dd10_5d_pct'))} · "
+            f"avg5={_fmt_metric_pct_or_dash(metrics.get('avg_5d_pct'))} · "
+            f"저점={_fmt_metric_pct_or_dash(metrics.get('min_min_low_5d_pct'))} · "
+            f"남은 차단 {', '.join(str(item) for item in (near.get('sample_blockers') or [])[:3]) or '-'}"
+        )
+    blockers = gate.get("blocking_reasons") if isinstance(gate.get("blocking_reasons"), list) else []
+    if blockers:
+        lines.append("차단 " + " / ".join(str(item) for item in blockers[:5]))
+    return lines
+
+
+def render_kis_shadow_gate_summary(gate: Dict[str, Any]) -> None:
+    lines = build_kis_shadow_gate_summary_lines(gate)
+    if not lines:
+        return
+    st.caption(lines[0])
+    for line in lines[1:]:
+        st.caption(line)
 
 
 def render_signal_card_list(rows: List[Dict[str, Any]], *, empty_text: str = "표시할 후보가 없습니다.") -> None:
@@ -343,9 +382,11 @@ def render_scan_top_candidates(results_df: Any, bridge_info: Dict[str, Any] | No
         include_blocked_watch=True,
     )
     kis_shadow_rows = build_signal_display_rows(kis_shadow_records, limit=None)
+    kis_shadow_gate = kis_shadow_gate_status(market_key)
 
     st.markdown("### KIS 관찰 후보")
     st.caption("실제 KIS 보조 데이터와 사전필터 근거가 있는 후보만 최상단에 관찰용으로 표시합니다. 운영 통과 후보로 승격하지 않고 검증 레인으로 분리합니다.")
+    render_kis_shadow_gate_summary(kis_shadow_gate)
     render_signal_card_list(kis_shadow_rows, empty_text="현재 스캔 payload에서 KIS shadow 후보가 없습니다.")
 
     st.markdown("### 신규 운영 모델")
