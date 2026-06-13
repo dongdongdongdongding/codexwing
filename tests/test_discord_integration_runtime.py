@@ -687,6 +687,19 @@ def test_scan_result_renderer_exposes_kis_shadow_gate_when_candidates_are_blocke
                     "min_min_low_5d_pct": -9.864936,
                 },
             },
+            "sample_progress_shadow_candidate": {
+                "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+                "score_mode": "prob_plus_tail",
+                "sample_progress": {"completion_pct": 97.777778},
+                "metrics": {
+                    "n": 93,
+                    "active_days": 14,
+                    "active_runs": 54,
+                    "hit5_dd10_5d_pct": 87.0968,
+                    "avg_5d_pct": 15.093948,
+                    "min_min_low_5d_pct": -8.919727,
+                },
+            },
             "high_precision_shadow_candidate": {
                 "selection_rule": "top1_prob_tail_margin_tail0p95",
                 "score_mode": "prob_tail_margin",
@@ -720,6 +733,8 @@ def test_scan_result_renderer_exposes_kis_shadow_gate_when_candidates_are_blocke
     assert "shadow_display_allowed=False" in blocked["value"]
     assert "승격근접" in blocked["value"]
     assert "top3_ev_p0p3_tail0p9" in blocked["value"]
+    assert "표본진행관찰" in blocked["value"]
+    assert "top2_prob_plus_tail_p0p8_tail0p85" in blocked["value"]
     assert "고정밀관찰" in blocked["value"]
     assert "top1_prob_tail_margin_tail0p95" in blocked["value"]
 

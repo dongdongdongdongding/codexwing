@@ -990,6 +990,24 @@ def _kis_shadow_gate_block_value(gate: Dict[str, Any]) -> str:
             f" · min_low {_fmt_pct(near_metrics.get('min_min_low_5d_pct'))}"
             f" · 남은차단 {' / '.join(str(item) for item in (near.get('sample_blockers') or [])[:3]) or '-'}"
         )
+    sample = (
+        gate.get("sample_progress_shadow_candidate")
+        if isinstance(gate.get("sample_progress_shadow_candidate"), dict)
+        else {}
+    )
+    sample_metrics = sample.get("metrics") if isinstance(sample.get("metrics"), dict) else {}
+    sample_progress = sample.get("sample_progress") if isinstance(sample.get("sample_progress"), dict) else {}
+    if sample:
+        lines.append(
+            "표본진행관찰: "
+            f"{sample.get('selection_rule') or '-'}"
+            f" · n={sample_metrics.get('n', '-')}"
+            f" · active_days={sample_metrics.get('active_days', '-')}"
+            f" · hit5 {_fmt_pct(sample_metrics.get('hit5_dd10_5d_pct'))}"
+            f" · avg5 {_fmt_pct(sample_metrics.get('avg_5d_pct'))}"
+            f" · min_low {_fmt_pct(sample_metrics.get('min_min_low_5d_pct'))}"
+            f" · 표본진행 {_fmt_pct(sample_progress.get('completion_pct'))}"
+        )
     if high:
         lines.append(
             "고정밀관찰: "

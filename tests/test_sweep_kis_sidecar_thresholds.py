@@ -30,6 +30,20 @@ def test_ev_score_penalizes_unsafe_candidate_even_with_high_success_prob():
     assert scores.loc["safe"] > scores.loc["unsafe"]
 
 
+def test_tail_first_scores_prioritize_drawdown_safety():
+    predictions = pd.DataFrame(
+        {
+            "prob": [0.95, 0.55],
+            "tail_prob": [0.35, 0.90],
+        },
+        index=["high_prob_unsafe", "lower_prob_safe"],
+    )
+
+    for mode in ("tail", "tail_plus_prob", "tail_prob_margin", "ev_strict"):
+        scores = _score_predictions(predictions, mode)
+        assert scores.loc["lower_prob_safe"] > scores.loc["high_prob_unsafe"]
+
+
 def test_prob_score_keeps_success_probability_order():
     predictions = pd.DataFrame(
         {

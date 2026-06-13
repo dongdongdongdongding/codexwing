@@ -96,6 +96,24 @@ def build_kis_shadow_gate_summary_lines(gate: Dict[str, Any]) -> List[str]:
             f"저점={_fmt_metric_pct_or_dash(metrics.get('min_min_low_5d_pct'))} · "
             f"남은 차단 {', '.join(str(item) for item in (near.get('sample_blockers') or [])[:3]) or '-'}"
         )
+    sample = (
+        gate.get("sample_progress_shadow_candidate")
+        if isinstance(gate.get("sample_progress_shadow_candidate"), dict)
+        else {}
+    )
+    sample_metrics = sample.get("metrics") if isinstance(sample.get("metrics"), dict) else {}
+    sample_progress = sample.get("sample_progress") if isinstance(sample.get("sample_progress"), dict) else {}
+    if sample:
+        lines.append(
+            "표본진행 관찰 "
+            f"{sample.get('selection_rule') or '-'} · "
+            f"n={sample_metrics.get('n', '-')} · "
+            f"일수={sample_metrics.get('active_days', '-')} · "
+            f"hit5={_fmt_metric_pct_or_dash(sample_metrics.get('hit5_dd10_5d_pct'))} · "
+            f"avg5={_fmt_metric_pct_or_dash(sample_metrics.get('avg_5d_pct'))} · "
+            f"저점={_fmt_metric_pct_or_dash(sample_metrics.get('min_min_low_5d_pct'))} · "
+            f"표본진행={_fmt_metric_pct_or_dash(sample_progress.get('completion_pct'))}"
+        )
     high = (
         gate.get("high_precision_shadow_candidate")
         if isinstance(gate.get("high_precision_shadow_candidate"), dict)

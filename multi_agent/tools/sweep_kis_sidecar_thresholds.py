@@ -129,8 +129,16 @@ def _score_predictions(predictions: pd.DataFrame, score_mode: str) -> pd.Series:
         return prob * tail_safe
     if mode == "prob_plus_tail":
         return (prob * 0.70) + (tail_safe * 0.30)
+    if mode == "tail":
+        return tail_safe
+    if mode == "tail_plus_prob":
+        return (tail_safe * 0.80) + (prob * 0.20)
+    if mode == "tail_prob_margin":
+        return tail_safe - ((1.0 - prob) * 0.50)
     if mode == "prob_tail_margin":
         return prob - ((1.0 - tail_safe) * 1.8)
+    if mode == "ev_strict":
+        return (prob * TARGET_TOUCH_NET_PCT) + ((1.0 - tail_safe) * (LOSS_FLOOR_PCT * 2.0))
     if mode == "ev":
         return (prob * TARGET_TOUCH_NET_PCT) + ((1.0 - tail_safe) * LOSS_FLOOR_PCT)
     raise ValueError(f"unknown score mode: {score_mode}")

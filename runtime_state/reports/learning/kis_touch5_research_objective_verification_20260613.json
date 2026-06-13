@@ -14,7 +14,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T05:23:21.000806+00:00",
+  "generated_at": "2026-06-13T05:41:04.664046+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -12089,23 +12089,23 @@
           "score_mode": "prob_tail_margin",
           "selection_rule": "top1_prob_tail_margin_p0p2_tail0p95",
           "shadow_display_allowed": true,
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json"
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json"
         },
         "best_sample_only_shadow": {
           "feature_set": "kis_sidecar_failure_risk_augmented",
           "gate_status": "shadow_ready",
           "metrics": {
-            "active_days": 11,
-            "active_runs": 47,
-            "avg_5d_pct": 5.088816,
-            "avg_max_high_5d_pct": 18.41118,
+            "active_days": 14,
+            "active_runs": 54,
+            "avg_5d_pct": 15.093948,
+            "avg_max_high_5d_pct": 37.74119,
             "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 74.4681,
-            "hit5_dd10_5d_pct": 91.4894,
-            "min_min_low_5d_pct": -9.230497,
-            "n": 47,
-            "stop_before_target_5d_pct": 12.766,
-            "target_before_stop_5d_pct": 91.4894
+            "hit10_5d_pct": 83.871,
+            "hit5_dd10_5d_pct": 87.0968,
+            "min_min_low_5d_pct": -8.919727,
+            "n": 93,
+            "stop_before_target_5d_pct": 32.2581,
+            "target_before_stop_5d_pct": 87.0968
           },
           "model": "lightgbm",
           "non_sample_blockers": [],
@@ -12116,32 +12116,32 @@
           "sample_progress": {
             "checks": {
               "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
+                "actual": 14.0,
+                "completion_pct": 93.333333,
                 "expected": 15.0,
-                "missing": 4.0
+                "missing": 1.0
               },
               "active_runs": {
-                "actual": 47.0,
+                "actual": 54.0,
                 "completion_pct": 100.0,
                 "expected": 20.0,
                 "missing": 0.0
               },
               "n": {
-                "actual": 47.0,
+                "actual": 93.0,
                 "completion_pct": 100.0,
                 "expected": 30.0,
                 "missing": 0.0
               }
             },
-            "completion_pct": 91.111111
+            "completion_pct": 97.777778
           },
-          "score_mode": "prob_tail_margin",
-          "selection_rule": "top1_prob_tail_margin_tail0p95",
+          "score_mode": "prob_plus_tail",
+          "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
           "shadow_display_allowed": true,
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json"
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json"
         },
-        "candidate_count": 1928,
+        "candidate_count": 2329,
         "current": {
           "feature_set": "kis_sidecar_failure_risk_augmented",
           "gate_status": "shadow_ready",
@@ -12193,8 +12193,8 @@
           "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json"
         },
         "production_ready_count": 0,
-        "sample_only_shadow_count": 64,
-        "shadow_display_allowed_count": 253,
+        "sample_only_shadow_count": 252,
+        "shadow_display_allowed_count": 381,
         "status": "shadow_candidates_found_no_upgrade",
         "verified_upgrade_candidate": {}
       },

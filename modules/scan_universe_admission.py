@@ -262,6 +262,7 @@ def _load_kis_shadow_report(market: str) -> Dict[str, Any]:
     if not identity and not metrics:
         return {}
     near_production_candidate = _load_kis_near_production_candidate(market_key)
+    sample_progress_shadow_candidate = _load_kis_sample_progress_shadow_candidate(market_key)
     high_precision_shadow_candidate = _load_kis_high_precision_shadow_candidate(market_key)
     return {
         "report_path": str(KIS_MODEL_COMPARISON_PATH),
@@ -272,6 +273,7 @@ def _load_kis_shadow_report(market: str) -> Dict[str, Any]:
         "metrics": metrics,
         "kis_model_gate": kis_model_gate,
         "near_production_candidate": near_production_candidate,
+        "sample_progress_shadow_candidate": sample_progress_shadow_candidate,
         "high_precision_shadow_candidate": high_precision_shadow_candidate,
     }
 
@@ -305,6 +307,37 @@ def _load_kis_near_production_candidate(market: str) -> Dict[str, Any]:
     candidate.setdefault("source_report", str(KIS_RESEARCH_OBJECTIVE_PATH))
     candidate.setdefault("decision", near.get("decision"))
     candidate.setdefault("candidate_count", near.get("candidate_count"))
+    return candidate
+
+
+@lru_cache(maxsize=4)
+def _load_kis_sample_progress_shadow_candidate(market: str) -> Dict[str, Any]:
+    market_key = str(market or "").upper().strip()
+    if market_key not in {"KOSPI", "KOSDAQ"}:
+        return {}
+    try:
+        import json
+
+        payload = json.loads(KIS_RESEARCH_OBJECTIVE_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    markets = payload.get("markets") if isinstance(payload.get("markets"), dict) else {}
+    market_payload = markets.get(market_key) if isinstance(markets.get(market_key), dict) else {}
+    leaderboard = (
+        market_payload.get("candidate_leaderboard")
+        if isinstance(market_payload.get("candidate_leaderboard"), dict)
+        else {}
+    )
+    candidate = (
+        leaderboard.get("best_sample_only_shadow")
+        if isinstance(leaderboard.get("best_sample_only_shadow"), dict)
+        else {}
+    )
+    if not candidate:
+        return {}
+    candidate = dict(candidate)
+    candidate.setdefault("source_report", str(KIS_RESEARCH_OBJECTIVE_PATH))
+    candidate.setdefault("decision", "sample_progress_shadow")
     return candidate
 
 
@@ -353,6 +386,11 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
     kis_model_gate = report.get("kis_model_gate") if isinstance(report.get("kis_model_gate"), dict) else {}
     near_production_candidate = (
         report.get("near_production_candidate") if isinstance(report.get("near_production_candidate"), dict) else {}
+    )
+    sample_progress_shadow_candidate = (
+        report.get("sample_progress_shadow_candidate")
+        if isinstance(report.get("sample_progress_shadow_candidate"), dict)
+        else {}
     )
     high_precision_shadow_candidate = (
         report.get("high_precision_shadow_candidate")
@@ -413,6 +451,7 @@ def _kis_shadow_gate_payload(market: str) -> Dict[str, Any]:
         "risk_review_required": bool(kis_model_gate.get("risk_review_required")),
         "risk_review_reasons": list(kis_model_gate.get("risk_review_reasons") or []),
         "near_production_candidate": near_production_candidate,
+        "sample_progress_shadow_candidate": sample_progress_shadow_candidate,
         "high_precision_shadow_candidate": high_precision_shadow_candidate,
     }
 

@@ -233,6 +233,54 @@ def test_leaderboard_prefers_realistic_coverage_over_legacy_high_precision(tmp_p
     assert market["verified_upgrade_candidate"] is None
 
 
+def test_leaderboard_prefers_tailfirst_realistic_coverage_over_dayfold(tmp_path) -> None:
+    dayfold_source = tmp_path / "kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage.json"
+    tailfirst_source = tmp_path / "kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage.json"
+    current = tmp_path / "kis_model_market_comparison.json"
+    _current_comparison(current)
+    _write_json(
+        dayfold_source,
+        {
+            "top_results": [
+                _candidate(
+                    market="KOSPI",
+                    rule="dayfold_candidate",
+                    n=46,
+                    active_days=10,
+                    active_runs=46,
+                    hit5=93.0,
+                    avg5=5.0,
+                    low5=-6.0,
+                )
+            ]
+        },
+    )
+    _write_json(
+        tailfirst_source,
+        {
+            "top_results": [
+                _candidate(
+                    market="KOSPI",
+                    rule="tailfirst_candidate",
+                    n=93,
+                    active_days=14,
+                    active_runs=54,
+                    hit5=87.0,
+                    avg5=15.0,
+                    low5=-8.9,
+                )
+            ]
+        },
+    )
+
+    report = tool.build_report(report_paths=[dayfold_source, tailfirst_source], current_comparison_path=current)
+    market = report["markets"]["KOSPI"]
+
+    assert market["preferred_validation_mode"] == "tailfirst_realistic_coverage"
+    assert market["evaluated_candidate_count"] == 1
+    assert market["best_sample_only_shadow"]["identity"]["selection_rule"] == "tailfirst_candidate"
+
+
 def test_leaderboard_rejects_sample_progress_when_avg5_regresses(tmp_path) -> None:
     source = tmp_path / "scan_universe_admission_challenger_touch5_dd10_kis_tailgate.json"
     current = tmp_path / "kis_model_market_comparison.json"

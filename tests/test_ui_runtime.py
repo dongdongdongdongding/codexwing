@@ -180,6 +180,17 @@ class UIHelperTests(unittest.TestCase):
                         "min_min_low_5d_pct": -9.864936,
                     },
                 },
+                "sample_progress_shadow_candidate": {
+                    "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+                    "sample_progress": {"completion_pct": 97.777778},
+                    "metrics": {
+                        "n": 93,
+                        "active_days": 14,
+                        "hit5_dd10_5d_pct": 87.0968,
+                        "avg_5d_pct": 15.093948,
+                        "min_min_low_5d_pct": -8.919727,
+                    },
+                },
                 "high_precision_shadow_candidate": {
                     "selection_rule": "top1_prob_tail_margin_tail0p95",
                     "sample_progress": {"completion_pct": 88.888889},
@@ -199,6 +210,9 @@ class UIHelperTests(unittest.TestCase):
         self.assertTrue(any("top3_ev_p0p3_tail0p9" in line for line in lines))
         self.assertTrue(any("hit5=83.8%" in line for line in lines))
         self.assertTrue(any("active_days_lt_15" in line for line in lines))
+        self.assertTrue(any("표본진행 관찰" in line for line in lines))
+        self.assertTrue(any("top2_prob_plus_tail_p0p8_tail0p85" in line for line in lines))
+        self.assertTrue(any("표본진행=97.8%" in line for line in lines))
         self.assertTrue(any("고정밀 관찰" in line for line in lines))
         self.assertTrue(any("top1_prob_tail_margin_tail0p95" in line for line in lines))
         self.assertTrue(any("표본진행=88.9%" in line for line in lines))

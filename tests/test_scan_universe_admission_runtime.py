@@ -462,6 +462,19 @@ def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
                     "min_min_low_5d_pct": -9.864936,
                 },
             },
+            "sample_progress_shadow_candidate": {
+                "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+                "score_mode": "prob_plus_tail",
+                "sample_progress": {"completion_pct": 97.777778},
+                "metrics": {
+                    "n": 93,
+                    "active_days": 14,
+                    "active_runs": 54,
+                    "hit5_dd10_5d_pct": 87.0968,
+                    "avg_5d_pct": 15.093948,
+                    "min_min_low_5d_pct": -8.919727,
+                },
+            },
             "high_precision_shadow_candidate": {
                 "selection_rule": "top1_prob_tail_margin_tail0p95",
                 "score_mode": "prob_tail_margin",
@@ -486,6 +499,8 @@ def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
     assert "5D" in gate["metrics"]
     assert gate["near_production_candidate"]["selection_rule"] == "top3_ev_p0p3_tail0p9"
     assert gate["near_production_candidate"]["metrics"]["hit5_dd10_5d_pct"] == 83.8028
+    assert gate["sample_progress_shadow_candidate"]["selection_rule"] == "top2_prob_plus_tail_p0p8_tail0p85"
+    assert gate["sample_progress_shadow_candidate"]["sample_progress"]["completion_pct"] == 97.777778
     assert gate["high_precision_shadow_candidate"]["selection_rule"] == "top1_prob_tail_margin_tail0p95"
     assert gate["high_precision_shadow_candidate"]["sample_progress"]["completion_pct"] == 88.888889
 

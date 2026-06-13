@@ -1,5 +1,5 @@
 {
-  "candidate_rows_extracted": 4835,
+  "candidate_rows_extracted": 5615,
   "decision": {
     "production_replacement_ready": false,
     "recommended_action": "continue_forward_tracking_until_sample_gate_clears",
@@ -8,10 +8,10 @@
   },
   "dummy_data_used": false,
   "failed_reports": [],
-  "generated_at": "2026-06-13T05:22:11+00:00",
+  "generated_at": "2026-06-13T05:40:54+00:00",
   "inputs": {
     "current_comparison": "runtime_state/reports/learning/kis_model_market_comparison.json",
-    "report_count": 34,
+    "report_count": 35,
     "reports": [
       "runtime_state/reports/learning/kis_historical_best_effort_suite_broad_topn_20260101_20260610.json",
       "runtime_state/reports/learning/kis_historical_best_effort_suite_full_ml_20260101_20260610.json",
@@ -26,6 +26,7 @@
       "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_20260101_20260610.json",
       "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
       "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold_20260101_20260610.json",
+      "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
       "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
       "runtime_state/reports/learning/kis_tail_safe_policy_research_fast_20260101_20260610.json",
       "runtime_state/reports/learning/kis_tail_safe_policy_search_20260101_20260610.json",
@@ -1268,8 +1269,8 @@
               "spread_bps": 4.0,
               "version": "kr_tradable_pnl_cost_v1"
             },
-            "expected_touch_policy_net_5d_pct": 3.358786,
-            "hit5_dd10_5d_pct": 91.4894,
+            "expected_touch_policy_net_5d_pct": 2.717403,
+            "hit5_dd10_5d_pct": 87.0968,
             "loss_floor_pct": -10.0,
             "policy": "target_touch_5d_dd10_after_buy_premium",
             "target_touch_gross_pct": 5.0,
@@ -1289,51 +1290,51 @@
           "label": "touch5_dd10_5d",
           "market": "KOSPI",
           "model": "lightgbm",
-          "prob_threshold": null,
-          "score_mode": "prob_tail_margin",
-          "selection_rule": "top1_prob_tail_margin_tail0p95",
-          "tail_risk_prob_threshold": 0.95,
-          "topn": 1
+          "prob_threshold": 0.8,
+          "score_mode": "prob_plus_tail",
+          "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+          "tail_risk_prob_threshold": 0.85,
+          "topn": 2
         },
         "metrics": {
-          "active_days": 11,
-          "active_runs": 47,
-          "avg_5d_pct": 5.088816,
-          "avg_max_high_5d_pct": 18.41118,
+          "active_days": 14,
+          "active_runs": 54,
+          "avg_5d_pct": 15.093948,
+          "avg_max_high_5d_pct": 37.74119,
           "buy_premium_pct": 2.0,
-          "hit10_5d_pct": 74.4681,
-          "hit5_dd10_5d_pct": 91.4894,
-          "min_min_low_5d_pct": -9.230497,
-          "n": 47,
-          "stop_before_target_5d_pct": 12.766,
-          "target_before_stop_5d_pct": 91.4894
+          "hit10_5d_pct": 83.871,
+          "hit5_dd10_5d_pct": 87.0968,
+          "min_min_low_5d_pct": -8.919727,
+          "n": 93,
+          "stop_before_target_5d_pct": 32.2581,
+          "target_before_stop_5d_pct": 87.0968
         },
-        "quality_score": 690.726503,
+        "quality_score": 1127.614927,
         "sample_progress": {
           "checks": {
             "active_days": {
-              "actual": 11.0,
-              "completion_pct": 73.333333,
+              "actual": 14.0,
+              "completion_pct": 93.333333,
               "expected": 15.0,
-              "missing": 4.0
+              "missing": 1.0
             },
             "active_runs": {
-              "actual": 47.0,
+              "actual": 54.0,
               "completion_pct": 100.0,
               "expected": 20.0,
               "missing": 0.0
             },
             "n": {
-              "actual": 47.0,
+              "actual": 93.0,
               "completion_pct": 100.0,
               "expected": 30.0,
               "missing": 0.0
             }
           },
-          "completion_pct": 91.111111
+          "completion_pct": 97.777778
         },
-        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-        "validation_mode": "dayfold_realistic_coverage"
+        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+        "validation_mode": "tailfirst_realistic_coverage"
       },
       "best_high_precision_shadow": {
         "gate": {
@@ -1416,8 +1417,8 @@
           },
           "completion_pct": 88.888889
         },
-        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-        "validation_mode": "dayfold_realistic_coverage"
+        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+        "validation_mode": "tailfirst_realistic_coverage"
       },
       "best_sample_only_shadow": {
         "gate": {
@@ -1436,8 +1437,8 @@
               "spread_bps": 4.0,
               "version": "kr_tradable_pnl_cost_v1"
             },
-            "expected_touch_policy_net_5d_pct": 3.358786,
-            "hit5_dd10_5d_pct": 91.4894,
+            "expected_touch_policy_net_5d_pct": 2.717403,
+            "hit5_dd10_5d_pct": 87.0968,
             "loss_floor_pct": -10.0,
             "policy": "target_touch_5d_dd10_after_buy_premium",
             "target_touch_gross_pct": 5.0,
@@ -1457,53 +1458,53 @@
           "label": "touch5_dd10_5d",
           "market": "KOSPI",
           "model": "lightgbm",
-          "prob_threshold": null,
-          "score_mode": "prob_tail_margin",
-          "selection_rule": "top1_prob_tail_margin_tail0p95",
-          "tail_risk_prob_threshold": 0.95,
-          "topn": 1
+          "prob_threshold": 0.8,
+          "score_mode": "prob_plus_tail",
+          "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+          "tail_risk_prob_threshold": 0.85,
+          "topn": 2
         },
         "metrics": {
-          "active_days": 11,
-          "active_runs": 47,
-          "avg_5d_pct": 5.088816,
-          "avg_max_high_5d_pct": 18.41118,
+          "active_days": 14,
+          "active_runs": 54,
+          "avg_5d_pct": 15.093948,
+          "avg_max_high_5d_pct": 37.74119,
           "buy_premium_pct": 2.0,
-          "hit10_5d_pct": 74.4681,
-          "hit5_dd10_5d_pct": 91.4894,
-          "min_min_low_5d_pct": -9.230497,
-          "n": 47,
-          "stop_before_target_5d_pct": 12.766,
-          "target_before_stop_5d_pct": 91.4894
+          "hit10_5d_pct": 83.871,
+          "hit5_dd10_5d_pct": 87.0968,
+          "min_min_low_5d_pct": -8.919727,
+          "n": 93,
+          "stop_before_target_5d_pct": 32.2581,
+          "target_before_stop_5d_pct": 87.0968
         },
-        "quality_score": 690.726503,
+        "quality_score": 1127.614927,
         "sample_progress": {
           "checks": {
             "active_days": {
-              "actual": 11.0,
-              "completion_pct": 73.333333,
+              "actual": 14.0,
+              "completion_pct": 93.333333,
               "expected": 15.0,
-              "missing": 4.0
+              "missing": 1.0
             },
             "active_runs": {
-              "actual": 47.0,
+              "actual": 54.0,
               "completion_pct": 100.0,
               "expected": 20.0,
               "missing": 0.0
             },
             "n": {
-              "actual": 47.0,
+              "actual": 93.0,
               "completion_pct": 100.0,
               "expected": 30.0,
               "missing": 0.0
             }
           },
-          "completion_pct": 91.111111
+          "completion_pct": 97.777778
         },
-        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-        "validation_mode": "dayfold_realistic_coverage"
+        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+        "validation_mode": "tailfirst_realistic_coverage"
       },
-      "candidate_count": 1928,
+      "candidate_count": 2329,
       "current": {
         "gate": {
           "non_sample_blockers": [],
@@ -1588,11 +1589,11 @@
         "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
         "validation_mode": "longfold"
       },
-      "evaluated_candidate_count": 273,
-      "preferred_validation_mode": "dayfold_realistic_coverage",
+      "evaluated_candidate_count": 401,
+      "preferred_validation_mode": "tailfirst_realistic_coverage",
       "production_ready_count": 0,
-      "sample_only_shadow_count": 64,
-      "shadow_display_allowed_count": 253,
+      "sample_only_shadow_count": 252,
+      "shadow_display_allowed_count": 381,
       "status": "shadow_candidates_found_no_upgrade",
       "top_candidates": [
         {
@@ -1612,8 +1613,8 @@
                 "spread_bps": 4.0,
                 "version": "kr_tradable_pnl_cost_v1"
               },
-              "expected_touch_policy_net_5d_pct": 3.358786,
-              "hit5_dd10_5d_pct": 91.4894,
+              "expected_touch_policy_net_5d_pct": 2.717403,
+              "hit5_dd10_5d_pct": 87.0968,
               "loss_floor_pct": -10.0,
               "policy": "target_touch_5d_dd10_after_buy_premium",
               "target_touch_gross_pct": 5.0,
@@ -1633,807 +1634,807 @@
             "label": "touch5_dd10_5d",
             "market": "KOSPI",
             "model": "lightgbm",
-            "prob_threshold": null,
-            "score_mode": "prob_tail_margin",
-            "selection_rule": "top1_prob_tail_margin_tail0p95",
-            "tail_risk_prob_threshold": 0.95,
-            "topn": 1
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 47,
-            "avg_5d_pct": 5.088816,
-            "avg_max_high_5d_pct": 18.41118,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 74.4681,
-            "hit5_dd10_5d_pct": 91.4894,
-            "min_min_low_5d_pct": -9.230497,
-            "n": 47,
-            "stop_before_target_5d_pct": 12.766,
-            "target_before_stop_5d_pct": 91.4894
-          },
-          "quality_score": 690.726503,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 47.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 47.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.737436,
-              "hit5_dd10_5d_pct": 87.234,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": null,
-            "score_mode": "ev",
-            "selection_rule": "top1_ev_tail0p95",
-            "tail_risk_prob_threshold": 0.95,
-            "topn": 1
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 47,
-            "avg_5d_pct": 4.596006,
-            "avg_max_high_5d_pct": 17.163831,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 68.0851,
-            "hit5_dd10_5d_pct": 87.234,
-            "min_min_low_5d_pct": -9.230497,
-            "n": 47,
-            "stop_before_target_5d_pct": 14.8936,
-            "target_before_stop_5d_pct": 87.234
-          },
-          "quality_score": 647.791795,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 47.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 47.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.246389,
-              "hit5_dd10_5d_pct": 83.871,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": null,
-            "score_mode": "ev",
-            "selection_rule": "top2_ev_tail0p95",
-            "tail_risk_prob_threshold": 0.95,
+            "prob_threshold": 0.8,
+            "score_mode": "prob_plus_tail",
+            "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+            "tail_risk_prob_threshold": 0.85,
             "topn": 2
           },
           "metrics": {
-            "active_days": 11,
-            "active_runs": 47,
-            "avg_5d_pct": 5.009075,
-            "avg_max_high_5d_pct": 14.586725,
+            "active_days": 14,
+            "active_runs": 54,
+            "avg_5d_pct": 15.093948,
+            "avg_max_high_5d_pct": 37.74119,
             "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 52.6882,
-            "hit5_dd10_5d_pct": 83.871,
-            "min_min_low_5d_pct": -9.230497,
-            "n": 93,
-            "stop_before_target_5d_pct": 15.0538,
-            "target_before_stop_5d_pct": 83.871
-          },
-          "quality_score": 552.992155,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 47.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 93.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.246389,
-              "hit5_dd10_5d_pct": 83.871,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": null,
-            "score_mode": "prob_tail_margin",
-            "selection_rule": "top2_prob_tail_margin_tail0p95",
-            "tail_risk_prob_threshold": 0.95,
-            "topn": 2
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 47,
-            "avg_5d_pct": 4.750013,
-            "avg_max_high_5d_pct": 15.126376,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 60.2151,
-            "hit5_dd10_5d_pct": 83.871,
-            "min_min_low_5d_pct": -9.230497,
-            "n": 93,
-            "stop_before_target_5d_pct": 22.5806,
-            "target_before_stop_5d_pct": 83.871
-          },
-          "quality_score": 568.3151,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 47.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 93.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.236431,
-              "hit5_dd10_5d_pct": 83.8028,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": 0.2,
-            "score_mode": "ev",
-            "selection_rule": "top3_ev_p0p2_tail0p9",
-            "tail_risk_prob_threshold": 0.9,
-            "topn": 3
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 50,
-            "avg_5d_pct": 9.912085,
-            "avg_max_high_5d_pct": 20.704284,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 56.338,
-            "hit5_dd10_5d_pct": 83.8028,
-            "min_min_low_5d_pct": -9.864936,
-            "n": 142,
-            "stop_before_target_5d_pct": 28.8732,
-            "target_before_stop_5d_pct": 83.8028
-          },
-          "quality_score": 678.901966,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 50.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 142.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.236431,
-              "hit5_dd10_5d_pct": 83.8028,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": 0.3,
-            "score_mode": "ev",
-            "selection_rule": "top3_ev_p0p3_tail0p9",
-            "tail_risk_prob_threshold": 0.9,
-            "topn": 3
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 50,
-            "avg_5d_pct": 9.912085,
-            "avg_max_high_5d_pct": 20.704284,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 56.338,
-            "hit5_dd10_5d_pct": 83.8028,
-            "min_min_low_5d_pct": -9.864936,
-            "n": 142,
-            "stop_before_target_5d_pct": 28.8732,
-            "target_before_stop_5d_pct": 83.8028
-          },
-          "quality_score": 678.901966,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 50.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 142.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.236431,
-              "hit5_dd10_5d_pct": 83.8028,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": 0.4,
-            "score_mode": "ev",
-            "selection_rule": "top3_ev_p0p4_tail0p9",
-            "tail_risk_prob_threshold": 0.9,
-            "topn": 3
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 50,
-            "avg_5d_pct": 9.912085,
-            "avg_max_high_5d_pct": 20.704284,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 56.338,
-            "hit5_dd10_5d_pct": 83.8028,
-            "min_min_low_5d_pct": -9.864936,
-            "n": 142,
-            "stop_before_target_5d_pct": 28.8732,
-            "target_before_stop_5d_pct": 83.8028
-          },
-          "quality_score": 678.901966,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 50.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 142.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.236431,
-              "hit5_dd10_5d_pct": 83.8028,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": 0.5,
-            "score_mode": "ev",
-            "selection_rule": "top3_ev_p0p5_tail0p9",
-            "tail_risk_prob_threshold": 0.9,
-            "topn": 3
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 50,
-            "avg_5d_pct": 9.912085,
-            "avg_max_high_5d_pct": 20.704284,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 56.338,
-            "hit5_dd10_5d_pct": 83.8028,
-            "min_min_low_5d_pct": -9.864936,
-            "n": 142,
-            "stop_before_target_5d_pct": 28.8732,
-            "target_before_stop_5d_pct": 83.8028
-          },
-          "quality_score": 678.901966,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 50.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 142.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 2.236431,
-              "hit5_dd10_5d_pct": 83.8028,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": 0.6,
-            "score_mode": "ev",
-            "selection_rule": "top3_ev_p0p6_tail0p9",
-            "tail_risk_prob_threshold": 0.9,
-            "topn": 3
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 50,
-            "avg_5d_pct": 9.912085,
-            "avg_max_high_5d_pct": 20.704284,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 56.338,
-            "hit5_dd10_5d_pct": 83.8028,
-            "min_min_low_5d_pct": -9.864936,
-            "n": 142,
-            "stop_before_target_5d_pct": 28.8732,
-            "target_before_stop_5d_pct": 83.8028
-          },
-          "quality_score": 678.901966,
-          "sample_progress": {
-            "checks": {
-              "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
-                "expected": 15.0,
-                "missing": 4.0
-              },
-              "active_runs": {
-                "actual": 50.0,
-                "completion_pct": 100.0,
-                "expected": 20.0,
-                "missing": 0.0
-              },
-              "n": {
-                "actual": 142.0,
-                "completion_pct": 100.0,
-                "expected": 30.0,
-                "missing": 0.0
-              }
-            },
-            "completion_pct": 91.111111
-          },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
-        },
-        {
-          "gate": {
-            "non_sample_blockers": [],
-            "production_blocking_reasons": [
-              "active_days_lt_15"
-            ],
-            "production_economics": {
-              "cost_model": {
-                "buy_fee_bps": 1.5,
-                "buy_slippage_bps": 8.0,
-                "fill_rate": 1.0,
-                "sell_fee_bps": 1.5,
-                "sell_slippage_bps": 8.0,
-                "sell_tax_bps": 15.0,
-                "spread_bps": 4.0,
-                "version": "kr_tradable_pnl_cost_v1"
-              },
-              "expected_touch_policy_net_5d_pct": 1.973196,
-              "hit5_dd10_5d_pct": 82.0,
-              "loss_floor_pct": -10.0,
-              "policy": "target_touch_5d_dd10_after_buy_premium",
-              "target_touch_gross_pct": 5.0,
-              "target_touch_net_pct": 4.601458,
-              "thresholds": {
-                "min_expected_touch_policy_net_5d_pct": 0.25
-              }
-            },
-            "production_ready": false,
-            "risk_review_required": false,
-            "sample_only_blocked": true,
-            "shadow_display_allowed": true,
-            "status": "shadow_ready"
-          },
-          "identity": {
-            "feature_set": "kis_sidecar_failure_risk_augmented",
-            "label": "touch5_dd10_5d",
-            "market": "KOSPI",
-            "model": "lightgbm",
-            "prob_threshold": 0.2,
-            "score_mode": "prob",
-            "selection_rule": "top1_p0p2_tail0p9",
-            "tail_risk_prob_threshold": 0.9,
-            "topn": 1
-          },
-          "metrics": {
-            "active_days": 11,
-            "active_runs": 50,
-            "avg_5d_pct": 26.115197,
-            "avg_max_high_5d_pct": 48.675187,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 76.0,
-            "hit5_dd10_5d_pct": 82.0,
+            "hit10_5d_pct": 83.871,
+            "hit5_dd10_5d_pct": 87.0968,
             "min_min_low_5d_pct": -8.919727,
-            "n": 50,
-            "stop_before_target_5d_pct": 60.0,
-            "target_before_stop_5d_pct": 82.0
+            "n": 93,
+            "stop_before_target_5d_pct": 32.2581,
+            "target_before_stop_5d_pct": 87.0968
           },
-          "quality_score": 1364.225294,
+          "quality_score": 1127.614927,
           "sample_progress": {
             "checks": {
               "active_days": {
-                "actual": 11.0,
-                "completion_pct": 73.333333,
+                "actual": 14.0,
+                "completion_pct": 93.333333,
                 "expected": 15.0,
-                "missing": 4.0
+                "missing": 1.0
               },
               "active_runs": {
-                "actual": 50.0,
+                "actual": 54.0,
                 "completion_pct": 100.0,
                 "expected": 20.0,
                 "missing": 0.0
               },
               "n": {
-                "actual": 50.0,
+                "actual": 93.0,
                 "completion_pct": 100.0,
                 "expected": 30.0,
                 "missing": 0.0
               }
             },
-            "completion_pct": 91.111111
+            "completion_pct": 97.777778
           },
-          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
-          "validation_mode": "dayfold_realistic_coverage"
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 2.130439,
+              "hit5_dd10_5d_pct": 83.0769,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.8,
+            "score_mode": "tail_prob_margin",
+            "selection_rule": "top3_tail_prob_margin_p0p8_tail0p85",
+            "tail_risk_prob_threshold": 0.85,
+            "topn": 3
+          },
+          "metrics": {
+            "active_days": 14,
+            "active_runs": 54,
+            "avg_5d_pct": 11.089194,
+            "avg_max_high_5d_pct": 22.796748,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 62.3077,
+            "hit5_dd10_5d_pct": 83.0769,
+            "min_min_low_5d_pct": -9.864936,
+            "n": 130,
+            "stop_before_target_5d_pct": 36.9231,
+            "target_before_stop_5d_pct": 83.0769
+          },
+          "quality_score": 727.638743,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 14.0,
+                "completion_pct": 93.333333,
+                "expected": 15.0,
+                "missing": 1.0
+              },
+              "active_runs": {
+                "actual": 54.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 130.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 97.777778
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 1.897487,
+              "hit5_dd10_5d_pct": 81.4815,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.8,
+            "score_mode": "prob_plus_tail",
+            "selection_rule": "top1_prob_plus_tail_p0p8_tail0p85",
+            "tail_risk_prob_threshold": 0.85,
+            "topn": 1
+          },
+          "metrics": {
+            "active_days": 14,
+            "active_runs": 54,
+            "avg_5d_pct": 12.178189,
+            "avg_max_high_5d_pct": 37.597205,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 75.9259,
+            "hit5_dd10_5d_pct": 81.4815,
+            "min_min_low_5d_pct": -8.919727,
+            "n": 54,
+            "stop_before_target_5d_pct": 37.037,
+            "target_before_stop_5d_pct": 81.4815
+          },
+          "quality_score": 1105.387532,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 14.0,
+                "completion_pct": 93.333333,
+                "expected": 15.0,
+                "missing": 1.0
+              },
+              "active_runs": {
+                "actual": 54.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 54.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 97.777778
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 1.461356,
+              "hit5_dd10_5d_pct": 78.4946,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.8,
+            "score_mode": "prob_x_tail",
+            "selection_rule": "top2_prob_x_tail_p0p8_tail0p85",
+            "tail_risk_prob_threshold": 0.85,
+            "topn": 2
+          },
+          "metrics": {
+            "active_days": 14,
+            "active_runs": 54,
+            "avg_5d_pct": 7.075914,
+            "avg_max_high_5d_pct": 20.364201,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 72.043,
+            "hit5_dd10_5d_pct": 78.4946,
+            "min_min_low_5d_pct": -9.864936,
+            "n": 93,
+            "stop_before_target_5d_pct": 40.8602,
+            "target_before_stop_5d_pct": 78.4946
+          },
+          "quality_score": 663.321579,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 14.0,
+                "completion_pct": 93.333333,
+                "expected": 15.0,
+                "missing": 1.0
+              },
+              "active_runs": {
+                "actual": 54.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 93.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 97.777778
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 1.304361,
+              "hit5_dd10_5d_pct": 77.4194,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.8,
+            "score_mode": "prob_tail_margin",
+            "selection_rule": "top2_prob_tail_margin_p0p8_tail0p85",
+            "tail_risk_prob_threshold": 0.85,
+            "topn": 2
+          },
+          "metrics": {
+            "active_days": 14,
+            "active_runs": 54,
+            "avg_5d_pct": 5.145959,
+            "avg_max_high_5d_pct": 16.231273,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 63.4409,
+            "hit5_dd10_5d_pct": 77.4194,
+            "min_min_low_5d_pct": -9.864936,
+            "n": 93,
+            "stop_before_target_5d_pct": 41.9355,
+            "target_before_stop_5d_pct": 77.4194
+          },
+          "quality_score": 562.779233,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 14.0,
+                "completion_pct": 93.333333,
+                "expected": 15.0,
+                "missing": 1.0
+              },
+              "active_runs": {
+                "actual": 54.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 93.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 97.777778
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 1.304361,
+              "hit5_dd10_5d_pct": 77.4194,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.8,
+            "score_mode": "tail_prob_margin",
+            "selection_rule": "top2_tail_prob_margin_p0p8_tail0p85",
+            "tail_risk_prob_threshold": 0.85,
+            "topn": 2
+          },
+          "metrics": {
+            "active_days": 14,
+            "active_runs": 54,
+            "avg_5d_pct": 4.775884,
+            "avg_max_high_5d_pct": 15.262936,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 53.7634,
+            "hit5_dd10_5d_pct": 77.4194,
+            "min_min_low_5d_pct": -9.864936,
+            "n": 93,
+            "stop_before_target_5d_pct": 37.6344,
+            "target_before_stop_5d_pct": 77.4194
+          },
+          "quality_score": 535.890649,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 14.0,
+                "completion_pct": 93.333333,
+                "expected": 15.0,
+                "missing": 1.0
+              },
+              "active_runs": {
+                "actual": 54.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 93.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 97.777778
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 2.024724,
+              "hit5_dd10_5d_pct": 82.3529,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.1,
+            "score_mode": "ev_strict",
+            "selection_rule": "top1_ev_strict_p0p1_tail0p9",
+            "tail_risk_prob_threshold": 0.9,
+            "topn": 1
+          },
+          "metrics": {
+            "active_days": 12,
+            "active_runs": 51,
+            "avg_5d_pct": 3.782798,
+            "avg_max_high_5d_pct": 15.434917,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 49.0196,
+            "hit5_dd10_5d_pct": 82.3529,
+            "min_min_low_5d_pct": -9.230497,
+            "n": 51,
+            "stop_before_target_5d_pct": 17.6471,
+            "target_before_stop_5d_pct": 82.3529
+          },
+          "quality_score": 579.746957,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 12.0,
+                "completion_pct": 80.0,
+                "expected": 15.0,
+                "missing": 3.0
+              },
+              "active_runs": {
+                "actual": 51.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 51.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 93.333333
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 1.741383,
+              "hit5_dd10_5d_pct": 80.4124,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.1,
+            "score_mode": "prob_plus_tail",
+            "selection_rule": "top2_prob_plus_tail_p0p1_tail0p9",
+            "tail_risk_prob_threshold": 0.9,
+            "topn": 2
+          },
+          "metrics": {
+            "active_days": 12,
+            "active_runs": 51,
+            "avg_5d_pct": 9.923863,
+            "avg_max_high_5d_pct": 27.631505,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 76.2887,
+            "hit5_dd10_5d_pct": 80.4124,
+            "min_min_low_5d_pct": -9.230497,
+            "n": 97,
+            "stop_before_target_5d_pct": 43.299,
+            "target_before_stop_5d_pct": 80.4124
+          },
+          "quality_score": 870.60434,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 12.0,
+                "completion_pct": 80.0,
+                "expected": 15.0,
+                "missing": 3.0
+              },
+              "active_runs": {
+                "actual": 51.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 97.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 93.333333
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 1.741383,
+              "hit5_dd10_5d_pct": 80.4124,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.1,
+            "score_mode": "prob_tail_margin",
+            "selection_rule": "top2_prob_tail_margin_p0p1_tail0p9",
+            "tail_risk_prob_threshold": 0.9,
+            "topn": 2
+          },
+          "metrics": {
+            "active_days": 12,
+            "active_runs": 51,
+            "avg_5d_pct": 5.096217,
+            "avg_max_high_5d_pct": 15.825782,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 67.0103,
+            "hit5_dd10_5d_pct": 80.4124,
+            "min_min_low_5d_pct": -9.864936,
+            "n": 97,
+            "stop_before_target_5d_pct": 37.1134,
+            "target_before_stop_5d_pct": 80.4124
+          },
+          "quality_score": 563.626829,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 12.0,
+                "completion_pct": 80.0,
+                "expected": 15.0,
+                "missing": 3.0
+              },
+              "active_runs": {
+                "actual": 51.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 97.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 93.333333
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
+        },
+        {
+          "gate": {
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 1.741383,
+              "hit5_dd10_5d_pct": 80.4124,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_required": false,
+            "sample_only_blocked": true,
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "identity": {
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "model": "lightgbm",
+            "prob_threshold": 0.1,
+            "score_mode": "tail_prob_margin",
+            "selection_rule": "top2_tail_prob_margin_p0p1_tail0p9",
+            "tail_risk_prob_threshold": 0.9,
+            "topn": 2
+          },
+          "metrics": {
+            "active_days": 12,
+            "active_runs": 51,
+            "avg_5d_pct": 4.741403,
+            "avg_max_high_5d_pct": 14.897376,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 57.732,
+            "hit5_dd10_5d_pct": 80.4124,
+            "min_min_low_5d_pct": -9.864936,
+            "n": 97,
+            "stop_before_target_5d_pct": 32.9897,
+            "target_before_stop_5d_pct": 80.4124
+          },
+          "quality_score": 537.847108,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 12.0,
+                "completion_pct": 80.0,
+                "expected": 15.0,
+                "missing": 3.0
+              },
+              "active_runs": {
+                "actual": 51.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 97.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 93.333333
+          },
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "validation_mode": "tailfirst_realistic_coverage"
         }
       ],
       "upgrade_candidates": [],
@@ -2441,6 +2442,6 @@
     }
   },
   "tracked_sources_only": true,
-  "unique_candidates": 3607,
-  "version": "kis_touch5_candidate_leaderboard_v2"
+  "unique_candidates": 4008,
+  "version": "kis_touch5_candidate_leaderboard_v3"
 }
