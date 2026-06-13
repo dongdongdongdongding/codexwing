@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T14:44:24.510708+00:00`
+- generated_at: `2026-06-13T15:14:59.900662+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -20,6 +20,26 @@
 - stability_search_production_ready: `False`
 - stability_search_period_stable_both_market_candidate: `False`
 - kosdaq_bottleneck_status: `kosdaq_tail_risk_blocks_production_replacement`
+- research_breadth_status: `broad_shadow_performance_found_but_replacement_blocked`
+- research_scope: `market x period x feature x model x operating-cost`
+
+## 현재 최고 성과
+| market | status | rule | n | days | runs | hit5_dd10 | hit10 | avg5 | min_low | next_required |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| KOSPI | sample_only_frontier | top2_prob_plus_tail_p0p8_tail0p85 | 93 | 14 | 54 | 87.0968 | 83.871 | 15.0939 | -8.9197 | ['active_days+1.0'] |
+| KOSDAQ | sample_only_frontier | top3_ev_tail0p9 | 58 | 10 | 20 | 94.8276 | 72.4138 | 8.5154 | -7.8413 | ['active_days+10.0'] |
+
+## 넓은 연구 범위 점검
+- operator_conclusion: 성과는 확인됐지만 운영 대체는 아직 아니다. KIS Shadow 최상단 노출은 유지하고, 샘플 게이트와 Jan-Apr 실제 KIS 커버리지, KOSDAQ tail 안정성을 추가 검증해야 한다.
+- actual_kis_oos_months: `['2026-05', '2026-06']`
+- missing_or_sparse_actual_kis_months: `['2026-01', '2026-02', '2026-03', '2026-04']`
+- validated_model_families: `['KIS sidecar LightGBM threshold sweep', '3-stage EV/no-trade ranker', 'tail/drawdown filter research', 'period stability rule replay', 'period slice and feature ablation', 'static stock-info master augmentation', 'final topN/no-trade expansion']`
+
+### 다음 검증 액션
+- market=`KOSPI` action=`collect_forward_shadow_evidence` required=`['active_days+1.0']`
+- market=`KOSDAQ` action=`collect_forward_shadow_evidence` required=`['active_days+10.0']`
+- market=`KOSPI/KOSDAQ` action=`restore_actual_kis_sidecar_feature_coverage` required=`['2026-01', '2026-02', '2026-03', '2026-04']`
+- market=`KOSDAQ` action=`reduce_tail_risk_and_validate_period_stability` required=`['no_period_stable_kosdaq_candidate', 'min_low_5d_tail_below_minus10', 'drawdown_filter_holdout_gate_pass_count_zero', 'compound_veto_holdout_gate_pass_count_zero', 'compound_veto_sample_gate_shortfall', 'compound_veto_no_sample_sufficient_candidate_across_recall', 'compound_veto_no_sample_hit_low_safe_candidate_across_recall']`
 
 ## 목표
 - primary_goal: 실제 매수 관점에서 KIS 기반 후보가 5거래일 안에 +5% 이상 터치하고 -10%보다 깊은 하락을 피하는지 검증한다.

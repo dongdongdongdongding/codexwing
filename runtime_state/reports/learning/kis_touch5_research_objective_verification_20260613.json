@@ -1,4 +1,62 @@
 {
+  "current_best_performance_by_market": {
+    "KOSDAQ": {
+      "active_days": 10,
+      "active_runs": 20,
+      "avg_5d_pct": 8.515405,
+      "feature_set": "kis_sidecar_failure_risk_augmented",
+      "hit10_5d_pct": 72.4138,
+      "hit5_dd10_5d_pct": 94.8276,
+      "min_min_low_5d_pct": -7.8413,
+      "model": "lightgbm",
+      "n": 58,
+      "next_required_evidence": [
+        "active_days+10.0"
+      ],
+      "non_sample_blockers": [],
+      "ready_after_sample_gate": true,
+      "sample_gaps": {
+        "active_days": {
+          "actual": 10.0,
+          "completion_pct": 50.0,
+          "expected": 20.0,
+          "missing": 10.0
+        }
+      },
+      "score_mode": "ev",
+      "selection_rule": "top3_ev_tail0p9",
+      "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
+      "status": "sample_only_frontier"
+    },
+    "KOSPI": {
+      "active_days": 14,
+      "active_runs": 54,
+      "avg_5d_pct": 15.093948,
+      "feature_set": "kis_sidecar_failure_risk_augmented",
+      "hit10_5d_pct": 83.871,
+      "hit5_dd10_5d_pct": 87.0968,
+      "min_min_low_5d_pct": -8.919727,
+      "model": "lightgbm",
+      "n": 93,
+      "next_required_evidence": [
+        "active_days+1.0"
+      ],
+      "non_sample_blockers": [],
+      "ready_after_sample_gate": true,
+      "sample_gaps": {
+        "active_days": {
+          "actual": 14.0,
+          "completion_pct": 93.333333,
+          "expected": 15.0,
+          "missing": 1.0
+        }
+      },
+      "score_mode": "prob_plus_tail",
+      "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+      "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+      "status": "sample_only_frontier"
+    }
+  },
   "decision": {
     "actual_kis_full_jan_jun_period_proven": false,
     "actual_kis_oos_months": [
@@ -74,7 +132,141 @@
     "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T14:44:24.510708+00:00",
+  "frontier_readiness_by_market": {
+    "KOSDAQ": {
+      "frontier_candidate": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "gate_status": "shadow_ready",
+        "metrics": {
+          "active_days": 10,
+          "active_runs": 20,
+          "avg_5d_pct": 8.515405,
+          "avg_max_high_5d_pct": 19.056014,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 72.4138,
+          "hit5_dd10_5d_pct": 94.8276,
+          "min_min_low_5d_pct": -7.8413,
+          "n": 58,
+          "stop_before_target_5d_pct": 25.8621,
+          "target_before_stop_5d_pct": 86.2069
+        },
+        "model": "lightgbm",
+        "non_sample_blockers": [],
+        "production_blocking_reasons": [
+          "active_days_lt_20"
+        ],
+        "production_ready": false,
+        "sample_progress": {
+          "checks": {
+            "active_days": {
+              "actual": 10.0,
+              "completion_pct": 50.0,
+              "expected": 20.0,
+              "missing": 10.0
+            },
+            "active_runs": {
+              "actual": 20.0,
+              "completion_pct": 100.0,
+              "expected": 20.0,
+              "missing": 0.0
+            },
+            "n": {
+              "actual": 58.0,
+              "completion_pct": 100.0,
+              "expected": 45.0,
+              "missing": 0.0
+            }
+          },
+          "completion_pct": 83.333333
+        },
+        "score_mode": "ev",
+        "selection_rule": "top3_ev_tail0p9",
+        "shadow_display_allowed": true,
+        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json"
+      },
+      "next_required_evidence": [
+        "active_days+10.0"
+      ],
+      "non_sample_blockers": [],
+      "ready_after_sample_gate": true,
+      "sample_gaps": {
+        "active_days": {
+          "actual": 10.0,
+          "completion_pct": 50.0,
+          "expected": 20.0,
+          "missing": 10.0
+        }
+      },
+      "status": "sample_only_frontier"
+    },
+    "KOSPI": {
+      "frontier_candidate": {
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "gate_status": "shadow_ready",
+        "metrics": {
+          "active_days": 14,
+          "active_runs": 54,
+          "avg_5d_pct": 15.093948,
+          "avg_max_high_5d_pct": 37.74119,
+          "buy_premium_pct": 2.0,
+          "hit10_5d_pct": 83.871,
+          "hit5_dd10_5d_pct": 87.0968,
+          "min_min_low_5d_pct": -8.919727,
+          "n": 93,
+          "stop_before_target_5d_pct": 32.2581,
+          "target_before_stop_5d_pct": 87.0968
+        },
+        "model": "lightgbm",
+        "non_sample_blockers": [],
+        "production_blocking_reasons": [
+          "active_days_lt_15"
+        ],
+        "production_ready": false,
+        "sample_progress": {
+          "checks": {
+            "active_days": {
+              "actual": 14.0,
+              "completion_pct": 93.333333,
+              "expected": 15.0,
+              "missing": 1.0
+            },
+            "active_runs": {
+              "actual": 54.0,
+              "completion_pct": 100.0,
+              "expected": 20.0,
+              "missing": 0.0
+            },
+            "n": {
+              "actual": 93.0,
+              "completion_pct": 100.0,
+              "expected": 30.0,
+              "missing": 0.0
+            }
+          },
+          "completion_pct": 97.777778
+        },
+        "score_mode": "prob_plus_tail",
+        "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+        "shadow_display_allowed": true,
+        "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json"
+      },
+      "next_required_evidence": [
+        "active_days+1.0"
+      ],
+      "non_sample_blockers": [],
+      "ready_after_sample_gate": true,
+      "sample_gaps": {
+        "active_days": {
+          "actual": 14.0,
+          "completion_pct": 93.333333,
+          "expected": 15.0,
+          "missing": 1.0
+        }
+      },
+      "status": "sample_only_frontier"
+    }
+  },
+  "generated_at": "2026-06-13T15:14:59.900662+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -41973,6 +42165,431 @@
     }
   },
   "operator_report_rule": "성과가 검증된 항목만 후보로 보고한다. production_ready=false이면 운영 대체가 아니라 shadow_only로만 표시한다.",
+  "research_breadth": {
+    "market_axis": {
+      "KOSDAQ": {
+        "bottleneck": {
+          "primary_blockers": [
+            "no_period_stable_kosdaq_candidate",
+            "min_low_5d_tail_below_minus10",
+            "drawdown_filter_holdout_gate_pass_count_zero",
+            "compound_veto_holdout_gate_pass_count_zero",
+            "compound_veto_sample_gate_shortfall",
+            "compound_veto_no_sample_sufficient_candidate_across_recall",
+            "compound_veto_no_sample_hit_low_safe_candidate_across_recall"
+          ],
+          "status": "kosdaq_tail_risk_blocks_production_replacement"
+        },
+        "frontier": {
+          "active_days": 10,
+          "active_runs": 20,
+          "avg_5d_pct": 8.515405,
+          "feature_set": "kis_sidecar_failure_risk_augmented",
+          "hit10_5d_pct": 72.4138,
+          "hit5_dd10_5d_pct": 94.8276,
+          "min_min_low_5d_pct": -7.8413,
+          "model": "lightgbm",
+          "n": 58,
+          "next_required_evidence": [
+            "active_days+10.0"
+          ],
+          "non_sample_blockers": [],
+          "ready_after_sample_gate": true,
+          "sample_gaps": {
+            "active_days": {
+              "actual": 10.0,
+              "completion_pct": 50.0,
+              "expected": 20.0,
+              "missing": 10.0
+            }
+          },
+          "score_mode": "ev",
+          "selection_rule": "top3_ev_tail0p9",
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
+          "status": "sample_only_frontier"
+        },
+        "frontier_ready_after_sample_gate": true,
+        "period_feature_matrix": {
+          "available_full_feature_pass_count": 0,
+          "available_full_feature_result_count": 7,
+          "complete_cross_product": false,
+          "feature_dependency": {
+            "all_minus_pass_configs": [],
+            "available_full_all_features_pass": false,
+            "dominant_single_family_risk": false,
+            "single_family_pass_configs": []
+          },
+          "matrix_mode": "focused_partial",
+          "period_failures": [
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-02",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 31,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-03",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 1,
+              "unique_runs": 9,
+              "usable_categorical": 7,
+              "usable_numeric": 76
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 295,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-04",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 5,
+              "unique_runs": 15,
+              "usable_categorical": 19,
+              "usable_numeric": 113
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 65,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-06",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 4,
+              "unique_runs": 8,
+              "usable_categorical": 16,
+              "usable_numeric": 135
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01..2026-02",
+              "slice_type": "rolling_2m",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            }
+          ],
+          "period_pass_count": 1,
+          "period_result_count": 4,
+          "tested_feature_configs": [
+            "all_features",
+            "all_minus_close_failure_prior",
+            "all_minus_theme_news",
+            "all_minus_kis_flow",
+            "close_failure_prior_only",
+            "kis_price_rank_quote_only",
+            "scanner_technical_only"
+          ]
+        },
+        "stability": {
+          "evaluated_candidates": 1344,
+          "period_stable_count": 0,
+          "production_ready_count": 0,
+          "shadow_period_stable_count": 0
+        }
+      },
+      "KOSPI": {
+        "bottleneck": {},
+        "frontier": {
+          "active_days": 14,
+          "active_runs": 54,
+          "avg_5d_pct": 15.093948,
+          "feature_set": "kis_sidecar_failure_risk_augmented",
+          "hit10_5d_pct": 83.871,
+          "hit5_dd10_5d_pct": 87.0968,
+          "min_min_low_5d_pct": -8.919727,
+          "model": "lightgbm",
+          "n": 93,
+          "next_required_evidence": [
+            "active_days+1.0"
+          ],
+          "non_sample_blockers": [],
+          "ready_after_sample_gate": true,
+          "sample_gaps": {
+            "active_days": {
+              "actual": 14.0,
+              "completion_pct": 93.333333,
+              "expected": 15.0,
+              "missing": 1.0
+            }
+          },
+          "score_mode": "prob_plus_tail",
+          "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
+          "status": "sample_only_frontier"
+        },
+        "frontier_ready_after_sample_gate": true,
+        "period_feature_matrix": {
+          "available_full_feature_pass_count": 0,
+          "available_full_feature_result_count": 7,
+          "complete_cross_product": false,
+          "feature_dependency": {
+            "all_minus_pass_configs": [],
+            "available_full_all_features_pass": false,
+            "dominant_single_family_risk": false,
+            "single_family_pass_configs": []
+          },
+          "matrix_mode": "focused_partial",
+          "period_failures": [
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-02",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-03",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 318,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-04",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 4,
+              "unique_runs": 15,
+              "usable_categorical": 20,
+              "usable_numeric": 113
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 298,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-06",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 4,
+              "unique_runs": 14,
+              "usable_categorical": 19,
+              "usable_numeric": 135
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01..2026-02",
+              "slice_type": "rolling_2m",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            }
+          ],
+          "period_pass_count": 3,
+          "period_result_count": 4,
+          "tested_feature_configs": [
+            "all_features",
+            "all_minus_close_failure_prior",
+            "all_minus_theme_news",
+            "all_minus_kis_flow",
+            "close_failure_prior_only",
+            "kis_price_rank_quote_only",
+            "scanner_technical_only"
+          ]
+        },
+        "stability": {
+          "evaluated_candidates": 1344,
+          "period_stable_count": 25,
+          "production_ready_count": 0,
+          "shadow_period_stable_count": 25
+        }
+      }
+    },
+    "model_axis": {
+      "cost_assumption": "스캔가보다 2% 높게 매수하고 +5% 터치, -10% 저가 방어를 동시에 본다.",
+      "validated_families": [
+        "KIS sidecar LightGBM threshold sweep",
+        "3-stage EV/no-trade ranker",
+        "tail/drawdown filter research",
+        "period stability rule replay",
+        "period slice and feature ablation",
+        "static stock-info master augmentation",
+        "final topN/no-trade expansion"
+      ],
+      "win_label": "touch5_dd10_5d"
+    },
+    "next_actions": [
+      {
+        "action": "collect_forward_shadow_evidence",
+        "market": "KOSPI",
+        "required_evidence": [
+          "active_days+1.0"
+        ]
+      },
+      {
+        "action": "collect_forward_shadow_evidence",
+        "market": "KOSDAQ",
+        "required_evidence": [
+          "active_days+10.0"
+        ]
+      },
+      {
+        "action": "restore_actual_kis_sidecar_feature_coverage",
+        "market": "KOSPI/KOSDAQ",
+        "required_evidence": [
+          "2026-01",
+          "2026-02",
+          "2026-03",
+          "2026-04"
+        ]
+      },
+      {
+        "action": "reduce_tail_risk_and_validate_period_stability",
+        "market": "KOSDAQ",
+        "required_evidence": [
+          "no_period_stable_kosdaq_candidate",
+          "min_low_5d_tail_below_minus10",
+          "drawdown_filter_holdout_gate_pass_count_zero",
+          "compound_veto_holdout_gate_pass_count_zero",
+          "compound_veto_sample_gate_shortfall",
+          "compound_veto_no_sample_sufficient_candidate_across_recall",
+          "compound_veto_no_sample_hit_low_safe_candidate_across_recall"
+        ]
+      }
+    ],
+    "operator_conclusion": "성과는 확인됐지만 운영 대체는 아직 아니다. KIS Shadow 최상단 노출은 유지하고, 샘플 게이트와 Jan-Apr 실제 KIS 커버리지, KOSDAQ tail 안정성을 추가 검증해야 한다.",
+    "period_axis": {
+      "actual_kis_full_jan_jun_period_proven": false,
+      "actual_kis_oos_months": [
+        "2026-05",
+        "2026-06"
+      ],
+      "full_range_claim": "2026-01-01..2026-06-10",
+      "missing_or_sparse_actual_kis_months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "slice_ablation_status": "slice_ablation_blocks_production_replacement",
+      "stability_search_status": "no_period_stable_both_market_candidate"
+    },
+    "scope": "market x period x feature x model x operating-cost",
+    "status": "broad_shadow_performance_found_but_replacement_blocked"
+  },
   "research_inputs": {
     "augmented_three_stage_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_sidecar_cache_augmented_20260331_20260610.json",
     "candidate_leaderboard": {

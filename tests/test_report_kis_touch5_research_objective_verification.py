@@ -582,6 +582,27 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert leaderboard["frontier_readiness"]["ready_after_sample_gate"] is True
     assert leaderboard["frontier_readiness"]["sample_gaps"]["active_days"]["missing"] == 3.0
     assert leaderboard["frontier_readiness"]["next_required_evidence"] == ["active_days+3.0"]
+    assert report["frontier_readiness_by_market"]["KOSPI"]["status"] == "sample_only_frontier"
+    assert report["current_best_performance_by_market"]["KOSPI"]["selection_rule"] == "top1_tail0.95"
+    assert report["current_best_performance_by_market"]["KOSPI"]["hit5_dd10_5d_pct"] == 85.4545
+    assert report["current_best_performance_by_market"]["KOSPI"]["next_required_evidence"] == [
+        "active_days+3.0"
+    ]
+    assert report["research_breadth"]["status"] == "broad_shadow_performance_found_but_replacement_blocked"
+    assert report["research_breadth"]["scope"] == "market x period x feature x model x operating-cost"
+    assert report["research_breadth"]["period_axis"]["missing_or_sparse_actual_kis_months"] == [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+    ]
+    assert report["research_breadth"]["market_axis"]["KOSPI"]["frontier_ready_after_sample_gate"] is True
+    assert any(
+        action["action"] == "collect_forward_shadow_evidence"
+        and action["market"] == "KOSPI"
+        and action["required_evidence"] == ["active_days+3.0"]
+        for action in report["research_breadth"]["next_actions"]
+    )
     assert report["decision"]["sample_only_frontier_markets"] == ["KOSPI"]
     assert report["decision"]["frontier_next_required_evidence_by_market"]["KOSPI"] == ["active_days+3.0"]
     assert leaderboard["best_high_precision_shadow"]["selection_rule"] == "top1_prob_tail_margin_tail0p95"

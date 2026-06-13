@@ -1017,6 +1017,198 @@ def _kosdaq_bottleneck_matrix_market(report: Mapping[str, Any], market: str) -> 
     }
 
 
+def _frontier_readiness_by_market(markets: Mapping[str, Any]) -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    for market, payload in markets.items():
+        if not isinstance(payload, Mapping):
+            continue
+        leaderboard = payload.get("candidate_leaderboard") if isinstance(payload.get("candidate_leaderboard"), Mapping) else {}
+        frontier = (
+            leaderboard.get("frontier_readiness")
+            if isinstance(leaderboard.get("frontier_readiness"), Mapping)
+            else {}
+        )
+        out[str(market)] = dict(frontier)
+    return out
+
+
+def _current_best_performance_by_market(frontiers: Mapping[str, Any]) -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    for market, frontier in frontiers.items():
+        if not isinstance(frontier, Mapping):
+            continue
+        candidate = (
+            frontier.get("frontier_candidate")
+            if isinstance(frontier.get("frontier_candidate"), Mapping)
+            else {}
+        )
+        metrics_row = candidate.get("metrics") if isinstance(candidate.get("metrics"), Mapping) else {}
+        if not candidate:
+            out[str(market)] = {"status": "no_frontier_candidate"}
+            continue
+        out[str(market)] = {
+            "status": frontier.get("status"),
+            "ready_after_sample_gate": bool(frontier.get("ready_after_sample_gate")),
+            "selection_rule": candidate.get("selection_rule"),
+            "feature_set": candidate.get("feature_set"),
+            "model": candidate.get("model"),
+            "score_mode": candidate.get("score_mode"),
+            "n": metrics_row.get("n"),
+            "active_days": metrics_row.get("active_days"),
+            "active_runs": metrics_row.get("active_runs"),
+            "hit5_dd10_5d_pct": metrics_row.get("hit5_dd10_5d_pct"),
+            "hit10_5d_pct": metrics_row.get("hit10_5d_pct"),
+            "avg_5d_pct": metrics_row.get("avg_5d_pct"),
+            "min_min_low_5d_pct": metrics_row.get("min_min_low_5d_pct"),
+            "sample_gaps": frontier.get("sample_gaps") or {},
+            "next_required_evidence": frontier.get("next_required_evidence") or [],
+            "non_sample_blockers": frontier.get("non_sample_blockers") or [],
+            "source_path": candidate.get("source_path"),
+        }
+    return out
+
+
+def _slice_breadth_market(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    slice_ablation = payload.get("slice_ablation") if isinstance(payload.get("slice_ablation"), Mapping) else {}
+    matrix = (
+        slice_ablation.get("slice_feature_matrix")
+        if isinstance(slice_ablation.get("slice_feature_matrix"), Mapping)
+        else {}
+    )
+    feature_results = (
+        matrix.get("best_by_feature_config")
+        if isinstance(matrix.get("best_by_feature_config"), list)
+        else []
+    )
+    period_failures = matrix.get("period_failures") if isinstance(matrix.get("period_failures"), list) else []
+    return {
+        "matrix_mode": matrix.get("matrix_mode"),
+        "complete_cross_product": matrix.get("complete_cross_product"),
+        "period_pass_count": matrix.get("period_outcome_pass_count"),
+        "period_result_count": matrix.get("period_result_count"),
+        "available_full_feature_pass_count": matrix.get("available_full_feature_outcome_pass_count"),
+        "available_full_feature_result_count": matrix.get("available_full_feature_result_count"),
+        "feature_dependency": matrix.get("feature_dependency") or {},
+        "tested_feature_configs": [
+            row.get("feature_config")
+            for row in feature_results
+            if isinstance(row, Mapping) and row.get("feature_config")
+        ],
+        "period_failures": period_failures[:6],
+    }
+
+
+def _research_breadth_summary(
+    *,
+    markets: Mapping[str, Any],
+    decision: Mapping[str, Any],
+    frontiers: Mapping[str, Any],
+    current_best: Mapping[str, Any],
+) -> Dict[str, Any]:
+    period_axis = {
+        "full_range_claim": "2026-01-01..2026-06-10",
+        "actual_kis_full_jan_jun_period_proven": bool(decision.get("actual_kis_full_jan_jun_period_proven")),
+        "actual_kis_oos_months": decision.get("actual_kis_oos_months") or [],
+        "missing_or_sparse_actual_kis_months": decision.get("missing_or_sparse_actual_kis_months") or [],
+        "slice_ablation_status": decision.get("slice_ablation_status"),
+        "stability_search_status": decision.get("stability_search_status"),
+    }
+    market_axis: Dict[str, Any] = {}
+    for market, payload in markets.items():
+        if not isinstance(payload, Mapping):
+            continue
+        stability = payload.get("stability_search") if isinstance(payload.get("stability_search"), Mapping) else {}
+        bottleneck = (
+            payload.get("kosdaq_bottleneck_matrix")
+            if isinstance(payload.get("kosdaq_bottleneck_matrix"), Mapping)
+            else {}
+        )
+        market_axis[str(market)] = {
+            "frontier": current_best.get(str(market)) or {},
+            "period_feature_matrix": _slice_breadth_market(payload),
+            "stability": {
+                "evaluated_candidates": stability.get("evaluated_candidates"),
+                "period_stable_count": stability.get("period_stable_count"),
+                "shadow_period_stable_count": stability.get("shadow_period_stable_count"),
+                "production_ready_count": stability.get("production_ready_count"),
+            },
+            "bottleneck": {
+                "status": bottleneck.get("status"),
+                "primary_blockers": bottleneck.get("primary_blockers") or [],
+            }
+            if bottleneck
+            else {},
+            "frontier_ready_after_sample_gate": bool(
+                (frontiers.get(str(market)) or {}).get("ready_after_sample_gate")
+            ),
+        }
+    model_axis = {
+        "validated_families": [
+            "KIS sidecar LightGBM threshold sweep",
+            "3-stage EV/no-trade ranker",
+            "tail/drawdown filter research",
+            "period stability rule replay",
+            "period slice and feature ablation",
+            "static stock-info master augmentation",
+            "final topN/no-trade expansion",
+        ],
+        "win_label": "touch5_dd10_5d",
+        "cost_assumption": "스캔가보다 2% 높게 매수하고 +5% 터치, -10% 저가 방어를 동시에 본다.",
+    }
+    next_actions = []
+    for market, frontier in frontiers.items():
+        if not isinstance(frontier, Mapping):
+            continue
+        required = frontier.get("next_required_evidence") or []
+        if required:
+            next_actions.append(
+                {
+                    "market": market,
+                    "action": "collect_forward_shadow_evidence",
+                    "required_evidence": required,
+                }
+            )
+    if decision.get("missing_or_sparse_actual_kis_months"):
+        next_actions.append(
+            {
+                "market": "KOSPI/KOSDAQ",
+                "action": "restore_actual_kis_sidecar_feature_coverage",
+                "required_evidence": decision.get("missing_or_sparse_actual_kis_months") or [],
+            }
+        )
+    if decision.get("kosdaq_bottleneck_primary_blockers"):
+        next_actions.append(
+            {
+                "market": "KOSDAQ",
+                "action": "reduce_tail_risk_and_validate_period_stability",
+                "required_evidence": decision.get("kosdaq_bottleneck_primary_blockers") or [],
+            }
+        )
+    production_ready = bool(decision.get("production_replacement_proven"))
+    shadow_ready = bool(decision.get("shadow_performance_proven"))
+    status = (
+        "production_replacement_ready"
+        if production_ready
+        else "broad_shadow_performance_found_but_replacement_blocked"
+        if shadow_ready
+        else "no_promotable_performance_found"
+    )
+    return {
+        "status": status,
+        "scope": "market x period x feature x model x operating-cost",
+        "market_axis": market_axis,
+        "period_axis": period_axis,
+        "model_axis": model_axis,
+        "next_actions": next_actions,
+        "operator_conclusion": (
+            "성과는 확인됐지만 운영 대체는 아직 아니다. KIS Shadow 최상단 노출은 유지하고, "
+            "샘플 게이트와 Jan-Apr 실제 KIS 커버리지, KOSDAQ tail 안정성을 추가 검증해야 한다."
+            if shadow_ready and not production_ready
+            else "운영 대체 가능성은 별도 승격 게이트 결과를 따른다."
+        ),
+    }
+
+
 def build_report(
     *,
     shadow_report_path: Path = DEFAULT_SHADOW_REPORT,
@@ -1193,6 +1385,14 @@ def build_report(
         if not decision["kosdaq_bottleneck_production_ready"]:
             decision["production_replacement_proven"] = False
             decision["recommended_action"] = "keep_existing_production_and_show_kis_shadow_top_section"
+    frontier_readiness = _frontier_readiness_by_market(markets)
+    current_best_performance = _current_best_performance_by_market(frontier_readiness)
+    research_breadth = _research_breadth_summary(
+        markets=markets,
+        decision=decision,
+        frontiers=frontier_readiness,
+        current_best=current_best_performance,
+    )
     return {
         "version": REPORT_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -1386,6 +1586,9 @@ def build_report(
                 "finding": "동일 fold 예측 위에서 stage-3 topN/score/threshold 조합을 넓게 replay해 기간 안정 후보가 실제로 존재하는지 확인한다.",
             },
         ],
+        "current_best_performance_by_market": current_best_performance,
+        "frontier_readiness_by_market": frontier_readiness,
+        "research_breadth": research_breadth,
         "markets": markets,
         "historical_proxy_augmentation_experiment": _historical_proxy_augmentation_experiment(
             feature_gap_report=feature_gap_report,
@@ -1435,6 +1638,14 @@ def _fmt(value: Any) -> str:
 def _markdown(report: Mapping[str, Any]) -> str:
     decision = report.get("decision") if isinstance(report.get("decision"), dict) else {}
     goal = report.get("user_goal") if isinstance(report.get("user_goal"), dict) else {}
+    current_best = (
+        report.get("current_best_performance_by_market")
+        if isinstance(report.get("current_best_performance_by_market"), dict)
+        else {}
+    )
+    research_breadth = (
+        report.get("research_breadth") if isinstance(report.get("research_breadth"), dict) else {}
+    )
     lines = [
         "# KIS Touch5/DD10 Research Objective Verification",
         "",
@@ -1458,15 +1669,65 @@ def _markdown(report: Mapping[str, Any]) -> str:
         f"- stability_search_production_ready: `{decision.get('stability_search_production_ready')}`",
         f"- stability_search_period_stable_both_market_candidate: `{decision.get('stability_search_period_stable_both_market_candidate')}`",
         f"- kosdaq_bottleneck_status: `{decision.get('kosdaq_bottleneck_status')}`",
+        f"- research_breadth_status: `{research_breadth.get('status')}`",
+        f"- research_scope: `{research_breadth.get('scope')}`",
         "",
-        "## 목표",
-        f"- primary_goal: {goal.get('primary_goal')}",
-        f"- win_definition: {goal.get('win_definition')}",
-        f"- defense_definition: {goal.get('defense_definition')}",
-        f"- loss_guard: {goal.get('loss_guard')}",
-        "",
-        "## 연구 경로",
+        "## 현재 최고 성과",
+        "| market | status | rule | n | days | runs | hit5_dd10 | hit10 | avg5 | min_low | next_required |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
+    for market, row in current_best.items():
+        if not isinstance(row, Mapping):
+            continue
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    str(market),
+                    str(row.get("status")),
+                    str(row.get("selection_rule")),
+                    _fmt(row.get("n")),
+                    _fmt(row.get("active_days")),
+                    _fmt(row.get("active_runs")),
+                    _fmt(row.get("hit5_dd10_5d_pct")),
+                    _fmt(row.get("hit10_5d_pct")),
+                    _fmt(row.get("avg_5d_pct")),
+                    _fmt(row.get("min_min_low_5d_pct")),
+                    str(row.get("next_required_evidence") or []),
+                ]
+            )
+            + " |"
+        )
+    lines.extend(
+        [
+            "",
+            "## 넓은 연구 범위 점검",
+            f"- operator_conclusion: {research_breadth.get('operator_conclusion')}",
+            f"- actual_kis_oos_months: `{((research_breadth.get('period_axis') or {}) if isinstance(research_breadth.get('period_axis'), dict) else {}).get('actual_kis_oos_months')}`",
+            f"- missing_or_sparse_actual_kis_months: `{((research_breadth.get('period_axis') or {}) if isinstance(research_breadth.get('period_axis'), dict) else {}).get('missing_or_sparse_actual_kis_months')}`",
+            f"- validated_model_families: `{((research_breadth.get('model_axis') or {}) if isinstance(research_breadth.get('model_axis'), dict) else {}).get('validated_families')}`",
+            "",
+            "### 다음 검증 액션",
+        ]
+    )
+    for action in research_breadth.get("next_actions") or []:
+        if not isinstance(action, Mapping):
+            continue
+        lines.append(
+            f"- market=`{action.get('market')}` action=`{action.get('action')}` required=`{action.get('required_evidence')}`"
+        )
+    lines.extend(
+        [
+            "",
+            "## 목표",
+            f"- primary_goal: {goal.get('primary_goal')}",
+            f"- win_definition: {goal.get('win_definition')}",
+            f"- defense_definition: {goal.get('defense_definition')}",
+            f"- loss_guard: {goal.get('loss_guard')}",
+            "",
+            "## 연구 경로",
+        ]
+    )
     for row in report.get("research_path") or []:
         lines.append(f"- {row.get('step')}: {row.get('finding')}")
     lines.extend(
