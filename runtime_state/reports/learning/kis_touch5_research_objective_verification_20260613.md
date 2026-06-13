@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T11:47:33.226646+00:00`
+- generated_at: `2026-06-13T12:09:59.909103+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -53,7 +53,7 @@
 - coverage_audit: status=`coverage_gap_blocks_production_replacement`, actual_kis_oos_months=`['2026-05', '2026-06']`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - slice_ablation: status=`slice_ablation_blocks_production_replacement`, production_ready=`False`, period_pass=`False`, ablation_pass=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - stability_search: status=`no_period_stable_both_market_candidate`, production_ready=`False`, period_stable_both_market=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
-- kosdaq_bottleneck_matrix: status=`kosdaq_tail_risk_blocks_production_replacement`, production_ready=`False`, blockers=`['no_period_stable_kosdaq_candidate', 'min_low_5d_tail_below_minus10', 'drawdown_filter_holdout_gate_pass_count_zero']`
+- kosdaq_bottleneck_matrix: status=`kosdaq_tail_risk_blocks_production_replacement`, production_ready=`False`, blockers=`['no_period_stable_kosdaq_candidate', 'min_low_5d_tail_below_minus10', 'drawdown_filter_holdout_gate_pass_count_zero', 'compound_veto_holdout_gate_pass_count_zero', 'compound_veto_sample_gate_shortfall']`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
 
 ## KOSPI
@@ -104,7 +104,7 @@
 - stability_search: evaluated=`1344`, production_ready_count=`0`, period_stable_count=`0`, shadow_period_stable_count=`0`
 - stability_search_best: rule=`top5_prob_plus_tail_p0p3`, status=`unstable_candidate`, pass=`0/3`, gate=`blocked`, selected_months=`['2026-05', '2026-06']`, coverage_blockers=`[]`, n=`144`, active_days=`16`, hit5=`68.0556`, avg5=`5.931853`, min_low=`-33.704825`, blockers=`['active_days_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - stability_search_period_stable_best: rule=`None`, pass=`None/None`, gate=`None`, selected_months=`None`, coverage_blockers=`[]`, n=`None`, active_days=`None`, hit5=`None`, avg5=`None`, min_low=`None`, blockers=`[]`
-- kosdaq_bottleneck_matrix: status=`kosdaq_tail_risk_blocks_production_replacement`, production_ready=`False`, stable_count=`0`, holdout_gate_pass=`0`, best=`top3_prob_tail_margin_p0p5`, hit5=`75.9036`, avg5=`6.54185`, min_low=`-21.915669`, model_change_helped=`False`, blockers=`['no_period_stable_kosdaq_candidate', 'min_low_5d_tail_below_minus10', 'drawdown_filter_holdout_gate_pass_count_zero']`
+- kosdaq_bottleneck_matrix: status=`kosdaq_tail_risk_blocks_production_replacement`, production_ready=`False`, stable_count=`0`, holdout_gate_pass=`0`, best=`top3_prob_tail_margin_p0p5`, hit5=`75.9036`, avg5=`6.54185`, min_low=`-21.915669`, model_change_helped=`False`, blockers=`['no_period_stable_kosdaq_candidate', 'min_low_5d_tail_below_minus10', 'drawdown_filter_holdout_gate_pass_count_zero', 'compound_veto_holdout_gate_pass_count_zero', 'compound_veto_sample_gate_shortfall']`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`46`, active_days=`24`, hit5=`54.3478`, avg_exit=`-0.85266`, dynamic_exit=`1.529568`, min_low=`-32.404541`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`None`, production_ready=`False`, shadow_display_allowed=`False`, n=`None`, active_days=`None`, hit5=`None`, avg_exit=`None`, dynamic_exit=`None`, min_low=`None`, blockers=`[]`
 

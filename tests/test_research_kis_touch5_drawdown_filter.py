@@ -3,6 +3,8 @@ import pandas as pd
 from multi_agent.tools.research_kis_touch5_drawdown_filter import (
     _apply_filter,
     _candidate_identity,
+    _compound_filter_name,
+    _filter_payload_name,
     _filter_rule_name,
     _fold_slices,
     _selection_rule,
@@ -56,3 +58,24 @@ def test_holdout_split_and_filter_application_are_deterministic():
 
     assert list(_apply_filter(scoped, pool, {"feature": "risk", "op": "le", "threshold": 3.0})) == [100, 102]
     assert list(_apply_filter(scoped, pool, {"feature": "risk", "op": "ge", "threshold": 3.0})) == [101, 102]
+
+
+def test_compound_filter_applies_all_conditions_and_keeps_stable_name():
+    scoped = pd.DataFrame(
+        {
+            "risk": [1.0, 5.0, 3.0, 2.0],
+            "volume": [1.1, 3.0, 0.8, 2.5],
+        },
+        index=[100, 101, 102, 103],
+    )
+    pool = pd.Index([100, 101, 102, 103])
+    conditions = [
+        {"type": "single_feature_threshold", "feature": "risk", "op": "le", "threshold": 3.0},
+        {"type": "single_feature_threshold", "feature": "volume", "op": "ge", "threshold": 1.0},
+    ]
+
+    filtered = _apply_filter(scoped, pool, {"type": "compound_and", "conditions": conditions})
+
+    assert list(filtered) == [100, 103]
+    assert _compound_filter_name(conditions).startswith("compound2_")
+    assert _filter_payload_name({"type": "compound_and", "conditions": conditions}).startswith("compound2_")

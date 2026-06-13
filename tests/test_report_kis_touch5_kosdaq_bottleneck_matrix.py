@@ -53,6 +53,7 @@ def test_kosdaq_bottleneck_matrix_keeps_high_hit_candidate_blocked_by_tail_and_h
     lightgbm = tmp_path / "lightgbm.json"
     logistic = tmp_path / "logistic.json"
     drawdown = tmp_path / "drawdown.json"
+    compound = tmp_path / "compound.json"
     _write(lightgbm, _stability_payload("kis_failure_risk_augmented", "lightgbm", 75.9036, 6.54185, -21.915669))
     _write(logistic, _stability_payload("kis_failure_risk_augmented", "logistic", 66.6667, 18.984628, -46.675277))
     _write(
@@ -103,8 +104,63 @@ def test_kosdaq_bottleneck_matrix_keeps_high_hit_candidate_blocked_by_tail_and_h
             },
         },
     )
+    _write(
+        compound,
+        {
+            "status": "no_production_gate_pass_candidate",
+            "validation_mode": "research_sweep_only_walk_forward_predictions",
+            "compound_filter_depth": 2,
+            "filters_tested": 4098,
+            "production_ready_count": 0,
+            "deployment_ready": False,
+            "top_results": [
+                {
+                    "identity": {"selection_rule": "top3_prob_tail_margin_p0p5_tail0_compound2_abc"},
+                    "metrics": {
+                        "n": 16,
+                        "active_days": 3,
+                        "active_runs": 6,
+                        "hit5_dd10_5d_pct": 100.0,
+                        "avg_5d_pct": 24.050376,
+                        "min_min_low_5d_pct": -9.786204,
+                    },
+                    "gate": {
+                        "status": "shadow_ready",
+                        "production_ready": False,
+                        "production_blocking_reasons": ["n_lt_45", "active_days_lt_20", "active_runs_lt_20"],
+                    },
+                }
+            ],
+            "holdout_validation": {
+                "status": "no_holdout_gate_pass",
+                "selection_candidates_tested": 3958,
+                "holdout_candidates_evaluated": 3958,
+                "holdout_gate_pass_count": 0,
+                "selection_best_holdout_evaluation": {
+                    "identity": {"selection_rule": "top3_prob_tail_margin_p0p5_tail0_compound2_holdout"},
+                    "metrics": {
+                        "n": 18,
+                        "active_days": 3,
+                        "active_runs": 6,
+                        "hit5_dd10_5d_pct": 100.0,
+                        "min_min_low_5d_pct": -6.060289,
+                    },
+                    "gate": {
+                        "status": "shadow_ready",
+                        "production_ready": False,
+                        "production_blocking_reasons": ["n_lt_45", "active_days_lt_20", "active_runs_lt_20"],
+                    },
+                },
+                "decision": {"holdout_gate_pass_observed": False},
+            },
+        },
+    )
 
-    report = build_report(stability_report_paths=[logistic, lightgbm], drawdown_report_path=drawdown)
+    report = build_report(
+        stability_report_paths=[logistic, lightgbm],
+        drawdown_report_path=drawdown,
+        compound_drawdown_report_path=compound,
+    )
 
     decision = report["decision"]
     assert decision["status"] == "kosdaq_tail_risk_blocks_production_replacement"
@@ -113,7 +169,11 @@ def test_kosdaq_bottleneck_matrix_keeps_high_hit_candidate_blocked_by_tail_and_h
     assert decision["best_research_candidate"]["metrics"]["hit5_dd10_5d_pct"] == 75.9036
     assert decision["best_research_candidate"]["metrics"]["min_min_low_5d_pct"] == -21.915669
     assert decision["holdout_gate_pass_count"] == 0
+    assert decision["compound_holdout_gate_pass_count"] == 0
+    assert decision["best_compound_veto_candidate"]["metrics"]["hit5_dd10_5d_pct"] == 100.0
+    assert decision["best_compound_veto_sample_gate_pass"] is False
     assert decision["model_change_helped"] is False
     assert report["best_safe_tail"] == {}
     assert "drawdown_filter_holdout_gate_pass_count_zero" in decision["primary_blockers"]
+    assert "compound_veto_sample_gate_shortfall" in decision["primary_blockers"]
     assert "KIS Touch5 KOSDAQ Bottleneck Matrix" in render_markdown(report)

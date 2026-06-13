@@ -56,7 +56,123 @@
     "source_path": "runtime_state/reports/learning/kis_touch5_kosdaq_stability_kis_failure_risk_augmented_lightgbm_20260613.json"
   },
   "best_safe_tail": {},
+  "compound_drawdown_filter": {
+    "base_candidate": {
+      "blockers": [
+        "active_days_lt_20",
+        "min_low_5d_lt_neg10"
+      ],
+      "gate_status": "blocked",
+      "metrics": {
+        "active_days": 13,
+        "active_runs": 28,
+        "avg_5d_pct": 5.138529,
+        "hit10_5d_pct": 71.9512,
+        "hit5_dd10_5d_pct": 73.1707,
+        "min_min_low_5d_pct": -21.915669,
+        "n": 82
+      },
+      "period_pass_count": null,
+      "period_result_count": null,
+      "selected_month_coverage": {},
+      "selection_rule": "top3_prob_tail_margin_p0p5_tail0",
+      "stability_status": null
+    },
+    "best_top_result": {
+      "blockers": [
+        "n_lt_45",
+        "active_days_lt_20",
+        "active_runs_lt_20"
+      ],
+      "gate_status": "shadow_ready",
+      "metrics": {
+        "active_days": 3,
+        "active_runs": 6,
+        "avg_5d_pct": 24.050376,
+        "hit10_5d_pct": 87.5,
+        "hit5_dd10_5d_pct": 100.0,
+        "min_min_low_5d_pct": -9.786204,
+        "n": 16
+      },
+      "period_pass_count": null,
+      "period_result_count": null,
+      "selected_month_coverage": {},
+      "selection_rule": "top3_prob_tail_margin_p0p5_tail0_compound2_537872383d",
+      "stability_status": null
+    },
+    "compound_candidate_limit": 3000,
+    "compound_filter_depth": 2,
+    "compound_single_limit": 80,
+    "deployment_ready": false,
+    "filters_tested": 4098,
+    "holdout": {
+      "decision": {
+        "deployment_ready": false,
+        "holdout_gate_pass_observed": false,
+        "reason": "fixed-rule holdout reduces post-hoc threshold risk but still requires live forward shadow before production replacement.",
+        "selection_best_holdout_gate_pass": false
+      },
+      "holdout_candidates_evaluated": 3958,
+      "holdout_gate_pass_count": 0,
+      "selection_best_holdout_evaluation": {
+        "blockers": [
+          "active_days_lt_20",
+          "active_runs_lt_20",
+          "hit5_dd10_5d_lt_73",
+          "min_low_5d_lt_neg10",
+          "expected_touch_policy_net_5d_lt_0p5"
+        ],
+        "gate_status": "blocked",
+        "metrics": {
+          "active_days": 7,
+          "active_runs": 18,
+          "avg_5d_pct": 4.200313,
+          "hit10_5d_pct": 75.0,
+          "hit5_dd10_5d_pct": 63.4615,
+          "min_min_low_5d_pct": -31.118999,
+          "n": 52
+        },
+        "period_pass_count": null,
+        "period_result_count": null,
+        "selected_month_coverage": {},
+        "selection_rule": "top3_prob_tail_margin_p0p5_tail0_compound2_76d1ae8199",
+        "stability_status": null
+      },
+      "selection_candidates_tested": 3958,
+      "status": "no_holdout_gate_pass"
+    },
+    "production_ready_count": 0,
+    "rolling_prior": {
+      "deployment_ready": false,
+      "status": "skipped_by_operator"
+    },
+    "status": "no_production_gate_pass_candidate",
+    "validation_mode": "research_sweep_only_walk_forward_predictions"
+  },
   "decision": {
+    "best_compound_veto_candidate": {
+      "blockers": [
+        "n_lt_45",
+        "active_days_lt_20",
+        "active_runs_lt_20"
+      ],
+      "gate_status": "shadow_ready",
+      "metrics": {
+        "active_days": 3,
+        "active_runs": 6,
+        "avg_5d_pct": 24.050376,
+        "hit10_5d_pct": 87.5,
+        "hit5_dd10_5d_pct": 100.0,
+        "min_min_low_5d_pct": -9.786204,
+        "n": 16
+      },
+      "period_pass_count": null,
+      "period_result_count": null,
+      "selected_month_coverage": {},
+      "selection_rule": "top3_prob_tail_margin_p0p5_tail0_compound2_537872383d",
+      "stability_status": null
+    },
+    "best_compound_veto_sample_gate_pass": false,
     "best_research_candidate": {
       "blockers": [
         "active_days_lt_20",
@@ -98,13 +214,16 @@
       "stability_status": "unstable_candidate"
     },
     "best_safe_tail_candidate": {},
+    "compound_holdout_gate_pass_count": 0,
     "holdout_gate_pass_count": 0,
     "model_change_helped": false,
     "period_stable_candidate_count": 0,
     "primary_blockers": [
       "no_period_stable_kosdaq_candidate",
       "min_low_5d_tail_below_minus10",
-      "drawdown_filter_holdout_gate_pass_count_zero"
+      "drawdown_filter_holdout_gate_pass_count_zero",
+      "compound_veto_holdout_gate_pass_count_zero",
+      "compound_veto_sample_gate_shortfall"
     ],
     "production_ready_count": 0,
     "production_replacement_ready": false,
@@ -133,6 +252,31 @@
       "selection_rule": "top3_prob_tail_margin_p0p5_tail0",
       "stability_status": null
     },
+    "best_top_result": {
+      "blockers": [
+        "n_lt_45",
+        "active_days_lt_20",
+        "active_runs_lt_20"
+      ],
+      "gate_status": "shadow_ready",
+      "metrics": {
+        "active_days": 6,
+        "active_runs": 13,
+        "avg_5d_pct": 10.122487,
+        "hit10_5d_pct": 71.7949,
+        "hit5_dd10_5d_pct": 100.0,
+        "min_min_low_5d_pct": -7.8413,
+        "n": 39
+      },
+      "period_pass_count": null,
+      "period_result_count": null,
+      "selected_month_coverage": {},
+      "selection_rule": "top3_prob_tail_margin_p0p5_tail0_close_failure_prior_market_touch5_n_le_4767",
+      "stability_status": null
+    },
+    "compound_candidate_limit": null,
+    "compound_filter_depth": null,
+    "compound_single_limit": null,
     "deployment_ready": false,
     "filters_tested": 1120,
     "holdout": {
@@ -181,12 +325,15 @@
   },
   "gate_requirements": {
     "active_days_gte": 20,
+    "active_runs_gte": 20,
     "hit5_dd10_5d_pct_gte": 73.0,
     "holdout_gate_pass_required": true,
-    "min_min_low_5d_pct_gte": -10.0
+    "min_min_low_5d_pct_gte": -10.0,
+    "n_gte": 45
   },
-  "generated_at": "2026-06-13T11:44:53+00:00",
+  "generated_at": "2026-06-13T12:09:54+00:00",
   "input_reports": {
+    "compound_drawdown_report": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_p05_20260613.json",
     "drawdown_report": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_probtail_p05_20260613.json",
     "missing_stability_reports": [],
     "stability_reports": [

@@ -11,10 +11,12 @@ overfit threshold sweep.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
 from datetime import datetime, timezone
+from itertools import combinations
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
@@ -149,6 +151,33 @@ def _metric_subset(row: Mapping[str, Any]) -> Dict[str, Any]:
 def _filter_rule_name(feature: str, op: str, threshold: float) -> str:
     value = f"{threshold:g}".replace("-", "neg").replace(".", "p")
     return f"{feature}_{op}_{value}"
+
+
+def _filter_signature(filter_payload: Mapping[str, Any]) -> str:
+    feature = str(filter_payload.get("feature") or "")
+    op = str(filter_payload.get("op") or "")
+    threshold = _round(filter_payload.get("threshold"))
+    return f"{feature}|{op}|{threshold}"
+
+
+def _compound_filter_name(conditions: Sequence[Mapping[str, Any]]) -> str:
+    signature = "&&".join(_filter_signature(condition) for condition in conditions)
+    digest = hashlib.sha1(signature.encode("utf-8")).hexdigest()[:10]
+    return f"compound{len(conditions)}_{digest}"
+
+
+def _filter_payload_name(filter_payload: Mapping[str, Any]) -> str:
+    if str(filter_payload.get("type") or "") == "compound_and":
+        conditions = filter_payload.get("conditions")
+        if isinstance(conditions, Sequence) and not isinstance(conditions, (str, bytes)):
+            valid_conditions = [condition for condition in conditions if isinstance(condition, Mapping)]
+            if valid_conditions:
+                return _compound_filter_name(valid_conditions)
+    return _filter_rule_name(
+        str(filter_payload.get("feature") or "unknown"),
+        str(filter_payload.get("op") or "le"),
+        float(filter_payload.get("threshold") or 0.0),
+    )
 
 
 def _selection_rule(
@@ -356,6 +385,18 @@ def _single_feature_results(
 def _apply_filter(scoped: pd.DataFrame, base_pool: pd.Index, filter_payload: Mapping[str, Any] | None) -> pd.Index:
     if not filter_payload:
         return base_pool
+    if str(filter_payload.get("type") or "") == "compound_and":
+        pool = base_pool
+        conditions = filter_payload.get("conditions")
+        if not isinstance(conditions, Sequence) or isinstance(conditions, (str, bytes)):
+            return pd.Index([])
+        for condition in conditions:
+            if not isinstance(condition, Mapping):
+                return pd.Index([])
+            pool = _apply_filter(scoped, pool, condition)
+            if pool.empty:
+                break
+        return pool
     feature = str(filter_payload.get("feature") or "")
     op = str(filter_payload.get("op") or "")
     threshold = filter_payload.get("threshold")
@@ -365,6 +406,163 @@ def _apply_filter(scoped: pd.DataFrame, base_pool: pd.Index, filter_payload: Map
     number = float(threshold)
     mask = values.le(number) if op == "le" else values.ge(number)
     return base_pool[mask.fillna(False)]
+
+
+def _candidate_filter_payload(row: Mapping[str, Any]) -> Dict[str, Any]:
+    identity = row.get("identity") if isinstance(row.get("identity"), Mapping) else {}
+    payload = identity.get("drawdown_filter") if isinstance(identity.get("drawdown_filter"), Mapping) else {}
+    if str(payload.get("type") or "") != "single_feature_threshold":
+        return {}
+    return {
+        "type": "single_feature_threshold",
+        "feature": payload.get("feature"),
+        "op": payload.get("op"),
+        "threshold": _round(payload.get("threshold")),
+    }
+
+
+def _unique_single_filter_payloads(
+    single_candidates: Sequence[Mapping[str, Any]],
+    *,
+    max_filters: int,
+) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in sorted(single_candidates, key=_sort_key, reverse=True):
+        payload = _candidate_filter_payload(row)
+        if not payload:
+            continue
+        signature = _filter_signature(payload)
+        if signature in seen:
+            continue
+        seen.add(signature)
+        out.append(payload)
+        if int(max_filters) > 0 and len(out) >= int(max_filters):
+            break
+    return out
+
+
+def _compound_feature_results(
+    *,
+    scoped: pd.DataFrame,
+    base_pool: pd.Index,
+    score: pd.Series,
+    label: pd.Series,
+    market: str,
+    feature_set: str,
+    model: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    prob_threshold: float | None,
+    single_candidates: Sequence[Mapping[str, Any]],
+    min_pool_rows: int,
+    max_single_filters: int,
+    max_compound_candidates: int,
+) -> List[Dict[str, Any]]:
+    filters = _unique_single_filter_payloads(single_candidates, max_filters=max_single_filters)
+    rows: List[Dict[str, Any]] = []
+    evaluated = 0
+    for left, right in combinations(filters, 2):
+        conditions = [left, right]
+        pool = _apply_filter(
+            scoped,
+            base_pool,
+            {
+                "type": "compound_and",
+                "conditions": conditions,
+            },
+        )
+        if len(pool) < int(min_pool_rows):
+            continue
+        evaluated += 1
+        if int(max_compound_candidates) > 0 and evaluated > int(max_compound_candidates):
+            break
+        filter_name = _compound_filter_name(conditions)
+        selected = top_indices_by_run(scoped.loc[pool], score.loc[pool], int(topn))
+        row = _gate_row(
+            market=market,
+            feature_set=feature_set,
+            model=model,
+            selection_rule=_selection_rule(
+                topn=topn,
+                score_mode=score_mode,
+                tail_threshold=tail_threshold,
+                prob_threshold=prob_threshold,
+                filter_name=filter_name,
+            ),
+            score_mode=score_mode,
+            topn=topn,
+            tail_threshold=tail_threshold,
+            prob_threshold=prob_threshold,
+            selected=selected,
+            scoped=scoped,
+            label=label,
+            filter_payload={
+                "type": "compound_and",
+                "conditions": conditions,
+                "pool_rows": int(len(pool)),
+            },
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
+def _filter_results(
+    *,
+    scoped: pd.DataFrame,
+    base_pool: pd.Index,
+    score: pd.Series,
+    label: pd.Series,
+    market: str,
+    feature_set: str,
+    model: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    prob_threshold: float | None,
+    numeric: Sequence[str],
+    min_pool_rows: int,
+    compound_filter_depth: int,
+    compound_single_limit: int,
+    compound_candidate_limit: int,
+) -> List[Dict[str, Any]]:
+    single_results = _single_feature_results(
+        scoped=scoped,
+        base_pool=base_pool,
+        score=score,
+        label=label,
+        market=market,
+        feature_set=feature_set,
+        model=model,
+        score_mode=score_mode,
+        topn=topn,
+        tail_threshold=tail_threshold,
+        prob_threshold=prob_threshold,
+        numeric=numeric,
+        min_pool_rows=min_pool_rows,
+    )
+    if int(compound_filter_depth) < 2:
+        return single_results
+    compound_results = _compound_feature_results(
+        scoped=scoped,
+        base_pool=base_pool,
+        score=score,
+        label=label,
+        market=market,
+        feature_set=feature_set,
+        model=f"{model}_compound",
+        score_mode=score_mode,
+        topn=topn,
+        tail_threshold=tail_threshold,
+        prob_threshold=prob_threshold,
+        single_candidates=single_results,
+        min_pool_rows=min_pool_rows,
+        max_single_filters=compound_single_limit,
+        max_compound_candidates=compound_candidate_limit,
+    )
+    return single_results + compound_results
 
 
 def _copy_with_validation(row: Dict[str, Any] | None, validation_mode: str) -> Dict[str, Any] | None:
@@ -412,11 +610,7 @@ def _evaluate_fixed_filter(
     filtered_pool = _apply_filter(scoped, base_pool, filter_payload)
     filtered_pool = filtered_pool.intersection(prediction_slice.index)
     selected = top_indices_by_run(scoped.loc[filtered_pool], score.loc[filtered_pool], int(topn))
-    filter_name = _filter_rule_name(
-        str(filter_payload.get("feature") or "unknown"),
-        str(filter_payload.get("op") or "le"),
-        float(filter_payload.get("threshold") or 0.0),
-    )
+    filter_name = _filter_payload_name(filter_payload)
     row = _gate_row(
         market=market,
         feature_set=feature_set,
@@ -457,6 +651,9 @@ def _holdout_validation(
     selection_folds: int,
     min_pool_rows: int,
     holdout_candidate_limit: int,
+    compound_filter_depth: int,
+    compound_single_limit: int,
+    compound_candidate_limit: int,
     top_results: int,
 ) -> Dict[str, Any]:
     split = _fold_slices(predictions, selection_folds)
@@ -470,7 +667,7 @@ def _holdout_validation(
     holdout_base_pool = _prediction_pool(
         holdout_predictions, prob_threshold=prob_threshold, tail_threshold=tail_threshold
     )
-    selection_candidates = _single_feature_results(
+    selection_candidates = _filter_results(
         scoped=scoped,
         base_pool=selection_base_pool,
         score=score,
@@ -484,6 +681,9 @@ def _holdout_validation(
         prob_threshold=prob_threshold,
         numeric=numeric,
         min_pool_rows=min_pool_rows,
+        compound_filter_depth=compound_filter_depth,
+        compound_single_limit=compound_single_limit,
+        compound_candidate_limit=compound_candidate_limit,
     )
     selection_ranked = sorted(selection_candidates, key=_sort_key, reverse=True)
     if not selection_ranked:
@@ -611,6 +811,9 @@ def _rolling_prior_validation(
     numeric: Sequence[str],
     min_prior_folds: int,
     min_pool_rows: int,
+    compound_filter_depth: int,
+    compound_single_limit: int,
+    compound_candidate_limit: int,
     top_results: int,
 ) -> Dict[str, Any]:
     folds = sorted({int(value) for value in pd.to_numeric(predictions.get("fold"), errors="coerce").dropna().tolist()})
@@ -632,7 +835,7 @@ def _rolling_prior_validation(
         current_base_pool = _prediction_pool(
             current_predictions, prob_threshold=prob_threshold, tail_threshold=tail_threshold
         )
-        prior_candidates = _single_feature_results(
+        prior_candidates = _filter_results(
             scoped=scoped,
             base_pool=prior_base_pool,
             score=score,
@@ -646,6 +849,9 @@ def _rolling_prior_validation(
             prob_threshold=prob_threshold,
             numeric=numeric,
             min_pool_rows=min_pool_rows,
+            compound_filter_depth=compound_filter_depth,
+            compound_single_limit=compound_single_limit,
+            compound_candidate_limit=compound_candidate_limit,
         )
         prior_ranked = sorted(prior_candidates, key=_sort_key, reverse=True)
         if not prior_ranked:
@@ -837,7 +1043,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         scoped=scoped,
         label=label,
     )
-    candidates = _single_feature_results(
+    candidates = _filter_results(
         scoped=scoped,
         base_pool=base_pool,
         score=score,
@@ -851,6 +1057,9 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         prob_threshold=prob_threshold,
         numeric=numeric,
         min_pool_rows=int(args.min_pool_rows),
+        compound_filter_depth=int(args.compound_filter_depth),
+        compound_single_limit=int(args.compound_single_limit),
+        compound_candidate_limit=int(args.compound_candidate_limit),
     )
     ranked = sorted(candidates, key=_sort_key, reverse=True)
     production = [row for row in ranked if (row.get("gate") or {}).get("production_ready")]
@@ -870,6 +1079,9 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         selection_folds=int(args.selection_folds),
         min_pool_rows=int(args.min_pool_rows),
         holdout_candidate_limit=int(args.holdout_candidate_limit),
+        compound_filter_depth=int(args.compound_filter_depth),
+        compound_single_limit=int(args.compound_single_limit),
+        compound_candidate_limit=int(args.compound_candidate_limit),
         top_results=int(args.top_results),
     )
     holdout_gate_pass = bool((holdout.get("decision") or {}).get("holdout_gate_pass_observed"))
@@ -891,6 +1103,9 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             numeric=numeric,
             min_prior_folds=int(args.rolling_prior_min_folds),
             min_pool_rows=int(args.min_pool_rows),
+            compound_filter_depth=int(args.compound_filter_depth),
+            compound_single_limit=int(args.compound_single_limit),
+            compound_candidate_limit=int(args.compound_candidate_limit),
             top_results=int(args.top_results),
         )
     )
@@ -922,6 +1137,9 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "topn": int(args.topn),
         "prob_threshold": _round(prob_threshold) if prob_threshold is not None else None,
         "tail_threshold": float(args.tail_threshold),
+        "compound_filter_depth": int(args.compound_filter_depth),
+        "compound_single_limit": int(args.compound_single_limit),
+        "compound_candidate_limit": int(args.compound_candidate_limit),
         "scope": {
             "rows": int(len(scoped)),
             "unique_days": int(scoped["trade_date"].nunique()) if "trade_date" in scoped.columns else 0,
@@ -997,6 +1215,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         f"- prepared_cache: `{report.get('prepared_cache')}`",
         f"- market: `{report.get('market')}`",
         f"- selection: score_mode=`{report.get('score_mode')}` topn=`{report.get('topn')}` prob_threshold=`{report.get('prob_threshold')}` tail_threshold=`{report.get('tail_threshold')}`",
+        f"- compound_filter: depth=`{report.get('compound_filter_depth')}` single_limit=`{report.get('compound_single_limit')}` candidate_limit=`{report.get('compound_candidate_limit')}`",
         f"- base: status=`{base_gate.get('status')}` blockers=`{base_gate.get('production_blocking_reasons')}` n=`{base_metrics.get('n')}` days=`{base_metrics.get('active_days')}` hit5=`{base_metrics.get('hit5_dd10_5d_pct')}` avg5=`{base_metrics.get('avg_5d_pct')}` min_low=`{base_metrics.get('min_min_low_5d_pct')}`",
         f"- filters_tested: `{report.get('filters_tested')}`",
         f"- production_ready_count: `{report.get('production_ready_count')}`",
@@ -1064,6 +1283,9 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--skip-rolling-prior", action="store_true")
     parser.add_argument("--min-pool-rows", type=int, default=30)
     parser.add_argument("--holdout-candidate-limit", type=int, default=0, help="0 evaluates all selection candidates.")
+    parser.add_argument("--compound-filter-depth", type=int, choices=[1, 2], default=1)
+    parser.add_argument("--compound-single-limit", type=int, default=60)
+    parser.add_argument("--compound-candidate-limit", type=int, default=0, help="0 evaluates all viable compound candidates.")
     parser.add_argument("--top-results", type=int, default=30)
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))

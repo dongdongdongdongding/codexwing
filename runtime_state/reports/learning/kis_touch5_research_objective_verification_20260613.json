@@ -14,7 +14,9 @@
     "kosdaq_bottleneck_primary_blockers": [
       "no_period_stable_kosdaq_candidate",
       "min_low_5d_tail_below_minus10",
-      "drawdown_filter_holdout_gate_pass_count_zero"
+      "drawdown_filter_holdout_gate_pass_count_zero",
+      "compound_veto_holdout_gate_pass_count_zero",
+      "compound_veto_sample_gate_shortfall"
     ],
     "kosdaq_bottleneck_production_ready": false,
     "kosdaq_bottleneck_status": "kosdaq_tail_risk_blocks_production_replacement",
@@ -58,7 +60,7 @@
     "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T11:47:33.226646+00:00",
+  "generated_at": "2026-06-13T12:09:59.909103+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -3235,7 +3237,9 @@
         "primary_blockers": [
           "no_period_stable_kosdaq_candidate",
           "min_low_5d_tail_below_minus10",
-          "drawdown_filter_holdout_gate_pass_count_zero"
+          "drawdown_filter_holdout_gate_pass_count_zero",
+          "compound_veto_holdout_gate_pass_count_zero",
+          "compound_veto_sample_gate_shortfall"
         ],
         "production_ready_count": 0,
         "production_replacement_ready": false,
@@ -40957,6 +40961,29 @@
     "finaltopn_actual_sidecar_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_actual_sidecar_20260331_20260610.json",
     "finaltopn_prefilter_proxy_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json",
     "kosdaq_bottleneck_matrix": {
+      "best_compound_veto_candidate": {
+        "blockers": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20"
+        ],
+        "gate_status": "shadow_ready",
+        "metrics": {
+          "active_days": 3,
+          "active_runs": 6,
+          "avg_5d_pct": 24.050376,
+          "hit10_5d_pct": 87.5,
+          "hit5_dd10_5d_pct": 100.0,
+          "min_min_low_5d_pct": -9.786204,
+          "n": 16
+        },
+        "period_pass_count": null,
+        "period_result_count": null,
+        "selected_month_coverage": {},
+        "selection_rule": "top3_prob_tail_margin_p0p5_tail0_compound2_537872383d",
+        "stability_status": null
+      },
+      "best_compound_veto_sample_gate_pass": false,
       "best_research_candidate": {
         "blockers": [
           "active_days_lt_20",
@@ -40998,13 +41025,16 @@
         "stability_status": "unstable_candidate"
       },
       "best_safe_tail_candidate": {},
+      "compound_holdout_gate_pass_count": 0,
       "holdout_gate_pass_count": 0,
       "model_change_helped": false,
       "period_stable_candidate_count": 0,
       "primary_blockers": [
         "no_period_stable_kosdaq_candidate",
         "min_low_5d_tail_below_minus10",
-        "drawdown_filter_holdout_gate_pass_count_zero"
+        "drawdown_filter_holdout_gate_pass_count_zero",
+        "compound_veto_holdout_gate_pass_count_zero",
+        "compound_veto_sample_gate_shortfall"
       ],
       "production_ready_count": 0,
       "production_replacement_ready": false,

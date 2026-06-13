@@ -1,12 +1,13 @@
 # KIS Touch5 KOSDAQ Bottleneck Matrix
 
-- generated_at: `2026-06-13T11:44:53+00:00`
+- generated_at: `2026-06-13T12:09:54+00:00`
 - market: `KOSDAQ`
 - status: `kosdaq_tail_risk_blocks_production_replacement`
 - production_replacement_ready: `False`
 - period_stable_candidate_count: `0`
 - production_ready_count: `0`
 - holdout_gate_pass_count: `0`
+- compound_holdout_gate_pass_count: `0`
 - recommended_action: keep KOSDAQ KIS touch5/dd10 in shadow; prioritize KOSDAQ-specific tail-risk veto features and cached prediction matrix before any promotion review
 
 ## Stability Matrix
@@ -23,3 +24,11 @@
 - base: rule=`top3_prob_tail_margin_p0p5_tail0`, n=`83`, days=`14`, hit5=`75.9036`, avg5=`6.54185`, min_low=`-21.915669`
 - holdout: status=`no_holdout_gate_pass`, candidates=`947`, evaluated=`80`, gate_pass=`0`
 - selection_best_holdout: rule=`top3_prob_tail_margin_p0p5_tail0_close_failure_prior_ticker_avg_close_5d_pct_ge_10p4905`, n=`53`, days=`8`, hit5=`62.2642`, min_low=`-31.118999`
+
+## Compound Veto Drawdown
+- status: `no_production_gate_pass_candidate`
+- filters_tested: `4098`
+- compound_filter_depth: `2`
+- best_compound: rule=`top3_prob_tail_margin_p0p5_tail0_compound2_537872383d`, n=`16`, days=`3`, runs=`6`, hit5=`100.0`, avg5=`24.050376`, min_low=`-9.786204`
+- holdout: status=`no_holdout_gate_pass`, candidates=`3958`, evaluated=`3958`, gate_pass=`0`
+- selection_best_holdout: rule=`top3_prob_tail_margin_p0p5_tail0_compound2_76d1ae8199`, n=`52`, days=`7`, hit5=`63.4615`, min_low=`-31.118999`
