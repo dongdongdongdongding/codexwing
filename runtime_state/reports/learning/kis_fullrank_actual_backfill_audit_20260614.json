@@ -1,0 +1,403 @@
+{
+  "version": "kis_fullrank_actual_backfill_audit_v1",
+  "generated_at": "2026-06-13T16:14:43+00:00",
+  "dummy_data_used": false,
+  "period": {
+    "min_base_date": "2026-01-01",
+    "max_base_date": "2026-06-10",
+    "prepared_date_min": "2026-01-02",
+    "prepared_date_max": "2026-06-10"
+  },
+  "completed_actual_backfill": {
+    "daily_ohlcv_universe": {
+      "markets": {
+        "KOSPI": {
+          "selected_tickers": 949,
+          "successful_tickers": 949,
+          "failed_tickers": 0,
+          "raw_rows": 100501,
+          "prepared_rows": 100490,
+          "prefilter": {
+            "group_count": 106,
+            "max_candidates_per_market": 5000,
+            "no_dummy_data": true,
+            "rank_limit": 5000,
+            "seed_total": 97282,
+            "selected_total": 97282,
+            "source_counts": {
+              "fluctuation_rank": 97282,
+              "volume_power_rank": 97272,
+              "volume_rank": 97282
+            },
+            "source_data": "kis_openapi_daily_bars",
+            "version": "kis_historical_prefilter_proxy_v1"
+          }
+        },
+        "KOSDAQ": {
+          "selected_tickers": 1821,
+          "successful_tickers": 1821,
+          "failed_tickers": 0,
+          "raw_rows": 191712,
+          "prepared_rows": 191677,
+          "prefilter": {
+            "group_count": 106,
+            "max_candidates_per_market": 5000,
+            "no_dummy_data": true,
+            "rank_limit": 5000,
+            "seed_total": 182562,
+            "selected_total": 182562,
+            "source_counts": {
+              "fluctuation_rank": 182562,
+              "volume_power_rank": 182539,
+              "volume_rank": 182562
+            },
+            "source_data": "kis_openapi_daily_bars",
+            "version": "kis_historical_prefilter_proxy_v1"
+          }
+        }
+      },
+      "total_prepared_rows": 292167,
+      "source": "KIS OpenAPI daily bars/cache; no synthetic rows"
+    },
+    "exact_date_sidecar_merge": {
+      "source": "real scan-time sidecar cache only; exact ticker-date join; no forward fill",
+      "markets": [
+        {
+          "market": "KOSPI",
+          "proxy_rows": 100490,
+          "matched_rows": 16225,
+          "matched_row_pct": 16.146,
+          "matched_days": 26,
+          "matched_tickers": 843
+        },
+        {
+          "market": "KOSDAQ",
+          "proxy_rows": 191677,
+          "matched_rows": 31851,
+          "matched_row_pct": 16.617,
+          "matched_days": 27,
+          "matched_tickers": 1644
+        }
+      ]
+    },
+    "static_stock_info_master": {
+      "source": "real KIS sidecar stock_info master; ticker static fill only",
+      "leakage_policy": "ticker_static_stock_info_only; no flow/news/vi/rank/financial values; fill missing only",
+      "markets": [
+        {
+          "market": "KOSPI",
+          "master_matched_rows": 85436,
+          "master_matched_row_pct": 85.019,
+          "augmented_rows": 77565,
+          "augmented_row_pct": 77.187,
+          "output_cache": "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kospi_20260101_20260610.pkl"
+        },
+        {
+          "market": "KOSDAQ",
+          "master_matched_rows": 168646,
+          "master_matched_row_pct": 87.984,
+          "augmented_rows": 155316,
+          "augmented_row_pct": 81.03,
+          "output_cache": "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kosdaq_20260101_20260610.pkl"
+        }
+      ]
+    }
+  },
+  "current_feature_gap_after_backfill": {
+    "backfill_priorities": [],
+    "top_feature_gaps": {
+      "sidecar_diagnostic": [
+        {
+          "feature": "kis_sidecar_coverage_quote_snapshot",
+          "sidecar_present_pct": 44.964,
+          "proxy_present_pct": 7.258,
+          "sidecar_minus_proxy_pct": 37.706
+        },
+        {
+          "feature": "kis_sidecar_coverage_vi_status",
+          "sidecar_present_pct": 44.963,
+          "proxy_present_pct": 7.258,
+          "sidecar_minus_proxy_pct": 37.705
+        },
+        {
+          "feature": "kis_sidecar_coverage_financial_ratio",
+          "sidecar_present_pct": 44.95,
+          "proxy_present_pct": 7.257,
+          "sidecar_minus_proxy_pct": 37.693
+        },
+        {
+          "feature": "kis_sidecar_coverage_financial_style",
+          "sidecar_present_pct": 44.802,
+          "proxy_present_pct": 7.242,
+          "sidecar_minus_proxy_pct": 37.56
+        },
+        {
+          "feature": "kis_sidecar_coverage_investor_flow",
+          "sidecar_present_pct": 44.715,
+          "proxy_present_pct": 7.211,
+          "sidecar_minus_proxy_pct": 37.504
+        }
+      ],
+      "sidecar_price_daily_rank": [
+        {
+          "feature": "kis_vi_triggered",
+          "sidecar_present_pct": 0.64,
+          "proxy_present_pct": 0.109,
+          "sidecar_minus_proxy_pct": 0.531
+        },
+        {
+          "feature": "kis_high_250d_gap_pct",
+          "sidecar_present_pct": 0.036,
+          "proxy_present_pct": 0.013,
+          "sidecar_minus_proxy_pct": 0.023
+        },
+        {
+          "feature": "kis_low_250d_gap_pct",
+          "sidecar_present_pct": 0.036,
+          "proxy_present_pct": 0.013,
+          "sidecar_minus_proxy_pct": 0.023
+        },
+        {
+          "feature": "kis_rank_fluctuation",
+          "sidecar_present_pct": 0.022,
+          "proxy_present_pct": 0.008,
+          "sidecar_minus_proxy_pct": 0.014
+        },
+        {
+          "feature": "kis_rank_volume",
+          "sidecar_present_pct": 0.021,
+          "proxy_present_pct": 0.008,
+          "sidecar_minus_proxy_pct": 0.013
+        }
+      ],
+      "sidecar_flow": [
+        {
+          "feature": "kis_whale_score",
+          "sidecar_present_pct": 44.949,
+          "proxy_present_pct": 7.257,
+          "sidecar_minus_proxy_pct": 37.692
+        },
+        {
+          "feature": "kis_foreigner_1d",
+          "sidecar_present_pct": 44.949,
+          "proxy_present_pct": 7.257,
+          "sidecar_minus_proxy_pct": 37.692
+        },
+        {
+          "feature": "kis_institution_1d",
+          "sidecar_present_pct": 44.949,
+          "proxy_present_pct": 7.257,
+          "sidecar_minus_proxy_pct": 37.692
+        },
+        {
+          "feature": "kis_retail_1d",
+          "sidecar_present_pct": 44.949,
+          "proxy_present_pct": 7.257,
+          "sidecar_minus_proxy_pct": 37.692
+        },
+        {
+          "feature": "kis_whale_flow_3d",
+          "sidecar_present_pct": 44.949,
+          "proxy_present_pct": 7.257,
+          "sidecar_minus_proxy_pct": 37.692
+        }
+      ],
+      "sidecar_stock_static": [
+        {
+          "feature": "kis_stock_status_code",
+          "sidecar_present_pct": 0.0,
+          "proxy_present_pct": 0.0,
+          "sidecar_minus_proxy_pct": 0.0
+        },
+        {
+          "feature": "kis_stock_listed_shares",
+          "sidecar_present_pct": 44.947,
+          "proxy_present_pct": 86.307,
+          "sidecar_minus_proxy_pct": -41.36
+        },
+        {
+          "feature": "kis_stock_capital_amount",
+          "sidecar_present_pct": 44.947,
+          "proxy_present_pct": 86.502,
+          "sidecar_minus_proxy_pct": -41.555
+        },
+        {
+          "feature": "kis_stock_kospi200_item",
+          "sidecar_present_pct": 44.947,
+          "proxy_present_pct": 86.802,
+          "sidecar_minus_proxy_pct": -41.855
+        },
+        {
+          "feature": "kis_stock_par_value",
+          "sidecar_present_pct": 44.947,
+          "proxy_present_pct": 86.965,
+          "sidecar_minus_proxy_pct": -42.018
+        }
+      ],
+      "sidecar_financial": [
+        {
+          "feature": "kis_financial_revenue_growth_rate",
+          "sidecar_present_pct": 44.8,
+          "proxy_present_pct": 7.242,
+          "sidecar_minus_proxy_pct": 37.558
+        },
+        {
+          "feature": "kis_financial_operating_profit_margin",
+          "sidecar_present_pct": 44.8,
+          "proxy_present_pct": 7.242,
+          "sidecar_minus_proxy_pct": 37.558
+        },
+        {
+          "feature": "kis_financial_net_income_margin",
+          "sidecar_present_pct": 44.8,
+          "proxy_present_pct": 7.242,
+          "sidecar_minus_proxy_pct": 37.558
+        },
+        {
+          "feature": "kis_financial_roe",
+          "sidecar_present_pct": 44.8,
+          "proxy_present_pct": 7.242,
+          "sidecar_minus_proxy_pct": 37.558
+        },
+        {
+          "feature": "kis_financial_eps",
+          "sidecar_present_pct": 44.8,
+          "proxy_present_pct": 7.242,
+          "sidecar_minus_proxy_pct": 37.558
+        }
+      ],
+      "sidecar_news": [
+        {
+          "feature": "kis_news_title_count",
+          "sidecar_present_pct": 1.349,
+          "proxy_present_pct": 0.33,
+          "sidecar_minus_proxy_pct": 1.019
+        },
+        {
+          "feature": "kis_news_source_scope_confidence",
+          "sidecar_present_pct": 1.355,
+          "proxy_present_pct": 0.468,
+          "sidecar_minus_proxy_pct": 0.887
+        },
+        {
+          "feature": "kis_news_source_scope_ambiguous",
+          "sidecar_present_pct": 1.355,
+          "proxy_present_pct": 0.468,
+          "sidecar_minus_proxy_pct": 0.887
+        },
+        {
+          "feature": "kis_news_source_scope",
+          "sidecar_present_pct": 1.355,
+          "proxy_present_pct": 0.468,
+          "sidecar_minus_proxy_pct": 0.887
+        },
+        {
+          "feature": "kis_news_raw_title_count",
+          "sidecar_present_pct": 0.033,
+          "proxy_present_pct": 0.012,
+          "sidecar_minus_proxy_pct": 0.021
+        }
+      ],
+      "prefilter": [
+        {
+          "feature": "kis_prefilter_quote_market_cap",
+          "sidecar_present_pct": 1.013,
+          "proxy_present_pct": 0.233,
+          "sidecar_minus_proxy_pct": 0.78
+        },
+        {
+          "feature": "kis_prefilter_quote_per",
+          "sidecar_present_pct": 1.013,
+          "proxy_present_pct": 0.233,
+          "sidecar_minus_proxy_pct": 0.78
+        },
+        {
+          "feature": "kis_prefilter_quote_pbr",
+          "sidecar_present_pct": 1.013,
+          "proxy_present_pct": 0.233,
+          "sidecar_minus_proxy_pct": 0.78
+        },
+        {
+          "feature": "kis_prefilter_score_market_cap",
+          "sidecar_present_pct": 1.013,
+          "proxy_present_pct": 0.233,
+          "sidecar_minus_proxy_pct": 0.78
+        },
+        {
+          "feature": "kis_prefilter_vi_triggered",
+          "sidecar_present_pct": 0.1,
+          "proxy_present_pct": 0.045,
+          "sidecar_minus_proxy_pct": 0.055
+        }
+      ],
+      "theme_news": [
+        {
+          "feature": "kis_theme_news_news_count",
+          "sidecar_present_pct": 1.349,
+          "proxy_present_pct": 0.33,
+          "sidecar_minus_proxy_pct": 1.019
+        },
+        {
+          "feature": "kis_theme_news_headline_count",
+          "sidecar_present_pct": 1.349,
+          "proxy_present_pct": 0.33,
+          "sidecar_minus_proxy_pct": 1.019
+        },
+        {
+          "feature": "kis_theme_news_positive_tag_count",
+          "sidecar_present_pct": 1.344,
+          "proxy_present_pct": 0.328,
+          "sidecar_minus_proxy_pct": 1.016
+        },
+        {
+          "feature": "kis_theme_news_top_positive_tag",
+          "sidecar_present_pct": 1.344,
+          "proxy_present_pct": 0.328,
+          "sidecar_minus_proxy_pct": 1.016
+        },
+        {
+          "feature": "kis_theme_news_promotion_blocked",
+          "sidecar_present_pct": 1.315,
+          "proxy_present_pct": 0.318,
+          "sidecar_minus_proxy_pct": 0.997
+        }
+      ]
+    }
+  },
+  "full_live_sidecar_rebuild_plan": {
+    "candidate_rows": 292167,
+    "unique_base_dates": 106,
+    "candidate_rows_by_market": {
+      "KOSDAQ": 191677,
+      "KOSPI": 100490
+    },
+    "row_role": {
+      "historical_universe": 292167
+    },
+    "note": "Existing generic historical kis_sidecar containers are present for all rows, but verify reports origin as unknown; overwrite would require live reconstruction for 292,167 ticker-date keys unless a ticker-period flow cache joiner is implemented."
+  },
+  "existing_sidecar_container_verify": {
+    "kis_sidecar_rows": 292167,
+    "kis_sidecar_origins": {
+      "unknown": 292167
+    },
+    "theme_news_rows": 0
+  },
+  "not_fabricated": {
+    "flow_financial_news": "Only exact-date real sidecar observations are carried forward into final cache. Missing historical flow/financial/news values were not invented.",
+    "financial_current_ratio": "Current/latest KIS financial ratio was not sprayed across Jan-Jun because that can introduce as-of leakage without statement-period gating.",
+    "rank_vi": "Historical rank proxy was derived from actual daily OHLCV; live/current rank was not used for old dates."
+  },
+  "remaining_real_data_work": [
+    "Implement ticker-period investor-flow cache backfill and join it by exact flow_asof/base_trade_date instead of row-by-row live sidecar rebuild.",
+    "Backfill financial ratios only with statement_period <= base_trade_date policy before filling historical dates.",
+    "Backfill KIS news by exact ticker/date only where endpoint returns historical titles; keep missing as null.",
+    "If DB persistence is required, unblock Supabase PostgREST timeout issue before upserting scan_universe_snapshots."
+  ],
+  "artifacts": {
+    "final_kospi_cache": "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kospi_20260101_20260610.pkl",
+    "final_kosdaq_cache": "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kosdaq_20260101_20260610.pkl",
+    "gap_report": "runtime_state/reports/learning/kis_fullrank_actual_sidecar_proxy_feature_gap_20260614.json",
+    "plan_report": "runtime_state/reports/learning/kis_fullrank_actual_sidecar_backfill_overwrite_plan_20260614.json"
+  }
+}

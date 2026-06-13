@@ -1,0 +1,38 @@
+{
+  "args": {
+    "base_date": "",
+    "client_filter": false,
+    "input_cache": [
+      "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kospi_20260101_20260610.pkl",
+      "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kosdaq_20260101_20260610.pkl"
+    ],
+    "limit": 0,
+    "market": "ALL",
+    "max_base_date": "2026-06-10",
+    "max_id": 0,
+    "max_workers": 1,
+    "min_base_date": "2026-01-01",
+    "min_id": 0,
+    "only_outcome_available": false,
+    "require_outcome_label": false,
+    "row_role": "ALL",
+    "scan_mode": "ALL"
+  },
+  "contract_version": "kis_scan_universe_sidecar_backfill_v1",
+  "dry_run": true,
+  "generated_at": "2026-06-13T16:09:47.072840+00:00",
+  "plan_only": true,
+  "summary": {
+    "candidate_rows": 0,
+    "candidate_rows_by_base_date": {},
+    "candidate_rows_by_market": {},
+    "candidate_rows_by_role": {},
+    "fetched_rows": 0,
+    "id_max": null,
+    "id_min": null,
+    "no_dummy_data": true,
+    "rows_written": 0,
+    "sample_candidate_rows": [],
+    "unique_base_dates": 0
+  }
+}

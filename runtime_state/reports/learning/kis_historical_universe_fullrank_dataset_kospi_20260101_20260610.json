@@ -1,0 +1,2273 @@
+{
+  "buy_premium_pct": 2.0,
+  "cache_required_end": "2026-06-10",
+  "cache_signature_training_args": {
+    "market": "KOSPI",
+    "max_base_date": "2026-06-10",
+    "max_fetch_chunks": 0,
+    "min_base_date": "2026-01-01",
+    "page_size": 1000,
+    "return_sanity": "kr_price_limit",
+    "scan_mode": "SWING"
+  },
+  "elapsed_sec": 158.161,
+  "empty_or_unusable_tickers": 0,
+  "failed_tickers": 0,
+  "failure_examples": [],
+  "fetch_end": "2026-06-20",
+  "fetch_start": "2025-08-04",
+  "generated_at": "2026-06-13T15:57:23.384294+00:00",
+  "historical_prefilter_summary": {
+    "group_count": 106,
+    "max_candidates_per_market": 5000,
+    "no_dummy_data": true,
+    "rank_limit": 5000,
+    "seed_total": 97282,
+    "selected_total": 97282,
+    "source_counts": {
+      "fluctuation_rank": 97282,
+      "volume_power_rank": 97272,
+      "volume_rank": 97282
+    },
+    "source_data": "kis_openapi_daily_bars",
+    "version": "kis_historical_prefilter_proxy_v1"
+  },
+  "instrument_master": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/long_term/instrument_master/KR.json",
+  "label_summary": {
+    "buy_premium_pct": 2.0,
+    "by_market": {
+      "KOSPI": {
+        "avg_close_5d_pct": -1.756157,
+        "avg_mfe_5d_pct": 4.514806,
+        "hit10_5d_pct": 14.5159,
+        "hit5_5d_pct": 28.2421,
+        "hit5_dd10_5d_pct": 26.5767,
+        "max_high_5d_pct": 229.656863,
+        "min_low_5d_pct": -78.074297,
+        "rows": 97638,
+        "stop5_pct": 21.7528
+      }
+    },
+    "by_market_month": {
+      "KOSPI": {
+        "2026-01": {
+          "avg_close_5d_pct": -0.288576,
+          "avg_mfe_5d_pct": 4.07924,
+          "hit10_5d_pct": 12.8449,
+          "hit5_5d_pct": 26.5491,
+          "hit5_dd10_5d_pct": 25.8204,
+          "max_high_5d_pct": 204.977833,
+          "min_low_5d_pct": -41.795969,
+          "rows": 19899,
+          "stop5_pct": 7.4376
+        },
+        "2026-02": {
+          "avg_close_5d_pct": -1.680723,
+          "avg_mfe_5d_pct": 5.65985,
+          "hit10_5d_pct": 18.7578,
+          "hit5_5d_pct": 33.9476,
+          "hit5_dd10_5d_pct": 32.626,
+          "max_high_5d_pct": 189.557684,
+          "min_low_5d_pct": -52.180597,
+          "rows": 16116,
+          "stop5_pct": 28.6796
+        },
+        "2026-03": {
+          "avg_close_5d_pct": -1.660481,
+          "avg_mfe_5d_pct": 4.187824,
+          "hit10_5d_pct": 13.1555,
+          "hit5_5d_pct": 27.9837,
+          "hit5_dd10_5d_pct": 26.0147,
+          "max_high_5d_pct": 197.844758,
+          "min_low_5d_pct": -49.64592,
+          "rows": 19908,
+          "stop5_pct": 19.1632
+        },
+        "2026-04": {
+          "avg_close_5d_pct": 0.530498,
+          "avg_mfe_5d_pct": 5.219841,
+          "hit10_5d_pct": 16.6108,
+          "hit5_5d_pct": 31.765,
+          "hit5_dd10_5d_pct": 31.0655,
+          "max_high_5d_pct": 200.977534,
+          "min_low_5d_pct": -70.383987,
+          "rows": 20872,
+          "stop5_pct": 7.8047
+        },
+        "2026-05": {
+          "avg_close_5d_pct": -5.89607,
+          "avg_mfe_5d_pct": 3.865001,
+          "hit10_5d_pct": 12.6282,
+          "hit5_5d_pct": 22.7121,
+          "hit5_dd10_5d_pct": 19.728,
+          "max_high_5d_pct": 229.656863,
+          "min_low_5d_pct": -78.074297,
+          "rows": 17057,
+          "stop5_pct": 45.4945
+        },
+        "2026-06": {
+          "avg_close_5d_pct": -4.248587,
+          "avg_mfe_5d_pct": 2.690074,
+          "hit10_5d_pct": 9.3502,
+          "hit5_5d_pct": 19.7042,
+          "hit5_dd10_5d_pct": 13.8669,
+          "max_high_5d_pct": 69.018596,
+          "min_low_5d_pct": -64.845517,
+          "rows": 3786,
+          "stop5_pct": 51.0565
+        }
+      }
+    },
+    "overall": {
+      "avg_close_5d_pct": -1.756157,
+      "avg_mfe_5d_pct": 4.514806,
+      "hit10_5d_pct": 14.5159,
+      "hit5_5d_pct": 28.2421,
+      "hit5_dd10_5d_pct": 26.5767,
+      "max_high_5d_pct": 229.656863,
+      "min_low_5d_pct": -78.074297,
+      "rows": 97638,
+      "stop5_pct": 21.7528
+    },
+    "rows": 100490,
+    "stop_pct": 10.0,
+    "target_pct": 5.0,
+    "valid_buy_premium_5d_rows": 97638
+  },
+  "market": "KOSPI",
+  "max_base_date": "2026-06-10",
+  "min_base_date": "2026-01-01",
+  "min_prior_bars": 20,
+  "no_dummy_data": true,
+  "prepared_cache": {
+    "enabled": true,
+    "meta_path": "runtime_state/reports/learning/kis_historical_universe_fullrank_prepared_kospi_20260101_20260610.pkl.meta.json",
+    "mode": "write",
+    "path": "runtime_state/reports/learning/kis_historical_universe_fullrank_prepared_kospi_20260101_20260610.pkl",
+    "prepare_elapsed_sec": 18.318,
+    "prepared_rows": 100490,
+    "raw_rows": 100501
+  },
+  "prepared_market_counts": {
+    "KOSPI": 100490
+  },
+  "prepared_rows": 100490,
+  "price_cache_dir": "runtime_state/long_term/kis_historical_prices",
+  "raw_csv": "",
+  "raw_date_range": {
+    "date_max": "2026-06-10",
+    "date_min": "2026-01-02"
+  },
+  "raw_market_counts": {
+    "KOSPI": 100501
+  },
+  "raw_pkl": "runtime_state/reports/learning/kis_historical_universe_fullrank_raw_kospi_20260101_20260610.pkl",
+  "raw_rows": 100501,
+  "return_sanity": {
+    "bounds": {
+      "buy_premium_max_high_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_max_high_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_max_high_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "buy_premium_min_low_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_min_low_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_min_low_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "buy_premium_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "buy_premium_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "buy_premium_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "max_high_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "max_high_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "max_high_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "min_low_return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "min_low_return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "min_low_return_5d_pct": [
+        -90.0,
+        300.0
+      ],
+      "return_1d_pct": [
+        -35.0,
+        35.0
+      ],
+      "return_3d_pct": [
+        -75.0,
+        130.0
+      ],
+      "return_5d_pct": [
+        -90.0,
+        300.0
+      ]
+    },
+    "column_violations": {
+      "buy_premium_max_high_return_1d_pct": 5,
+      "buy_premium_max_high_return_3d_pct": 3,
+      "buy_premium_max_high_return_5d_pct": 5,
+      "buy_premium_min_low_return_1d_pct": 4,
+      "buy_premium_min_low_return_3d_pct": 4,
+      "buy_premium_min_low_return_5d_pct": 1,
+      "buy_premium_return_1d_pct": 4,
+      "buy_premium_return_3d_pct": 4,
+      "buy_premium_return_5d_pct": 5,
+      "max_high_return_1d_pct": 5,
+      "max_high_return_3d_pct": 3,
+      "max_high_return_5d_pct": 5,
+      "min_low_return_1d_pct": 4,
+      "min_low_return_3d_pct": 4,
+      "min_low_return_5d_pct": 1,
+      "return_1d_pct": 4,
+      "return_3d_pct": 4,
+      "return_5d_pct": 5
+    },
+    "mode": "kr_price_limit",
+    "remaining_rows": 100490,
+    "removed_rows": 11
+  },
+  "selected_tickers": 949,
+  "source": "kis_openapi_daily_bars",
+  "stop_pct": 10.0,
+  "successful_tickers": 949,
+  "target_pct": 5.0,
+  "ticker_summaries": [
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000050.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000070.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000040.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000020.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000080.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000087.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000100.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000105.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000120.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000140.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000145.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000150.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000155.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000157.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000180.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000210.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000215.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000220.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000227.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000225.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000230.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000240.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000270.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000300.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000320.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000325.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000370.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000390.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000430.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000400.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000480.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000490.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000500.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000520.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000540.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000545.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000590.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000640.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000650.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000660.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000670.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000680.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000700.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000720.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000725.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000760.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000810.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000815.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000850.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000860.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000880.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "00088K.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000890.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000910.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000950.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000970.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001020.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "000990.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001045.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001060.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001040.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "00104K.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001065.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001067.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001080.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001070.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001120.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001130.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001210.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001200.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001230.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001270.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001250.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001260.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001340.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001275.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001290.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001360.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001420.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001390.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001380.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001430.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001440.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001450.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001460.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001465.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001510.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001470.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001500.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001515.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001520.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001525.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001527.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001530.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001570.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001560.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001550.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001620.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001630.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001685.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001720.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001680.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001740.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001770.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001755.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001750.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001780.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001790.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001795.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001800.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001820.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002020.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002025.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "001940.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002030.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002070.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002100.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002140.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002210.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002150.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002200.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002170.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002220.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002240.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002310.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002320.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002355.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002350.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002360.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002380.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002390.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002450.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002420.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002410.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002460.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002620.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002630.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002600.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002710.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002690.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002700.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002720.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002760.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002780.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002785.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002787.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002790.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002795.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "00279K.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002810.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002820.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002840.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002870.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002880.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002900.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002920.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002960.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002990.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "002995.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003000.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003010.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003030.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003070.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003060.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003075.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003080.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003090.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003120.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "0030R0.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003160.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003230.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003200.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003220.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003240.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003280.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003300.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003350.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003460.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003465.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003470.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003475.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003480.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003490.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003495.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003520.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003530.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003535.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003540.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003545.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003547.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003550.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003555.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003570.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003610.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003620.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003580.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003650.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003690.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003680.KS"
+    },
+    {
+      "built_rows": 106,
+      "cache_hit": true,
+      "error": "",
+      "history_max": "2026-06-12",
+      "history_min": "2025-08-04",
+      "history_rows": 208,
+      "market": "KOSPI",
+      "symbol": "003670.KS"
+    }
+  ],
+  "version": "kis_historical_universe_dataset_v1"
+}
