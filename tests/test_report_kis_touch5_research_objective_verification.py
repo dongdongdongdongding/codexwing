@@ -16,6 +16,7 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     sidecar_score = tmp_path / "sidecar_score.json"
     candidate_leaderboard = tmp_path / "candidate_leaderboard.json"
     drawdown_filter = tmp_path / "drawdown_filter.json"
+    coverage_audit = tmp_path / "coverage_audit.json"
     finaltopn_proxy = tmp_path / "finaltopn_proxy.json"
     finaltopn_actual = tmp_path / "finaltopn_actual.json"
     _write(
@@ -422,6 +423,55 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                     "deployment_ready": False,
                 },
             },
+            "rolling_prior_validation": {
+                "status": "rolling_prior_shadow_ready",
+                "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+                "deployment_ready": False,
+                "min_prior_folds": 5,
+                "evaluated_steps": 15,
+                "selected_count": 27,
+                "aggregate_candidate": {
+                    "identity": {
+                        "feature_set": "kis_sidecar_failure_risk_augmented",
+                        "model": "lightgbm_drawdown_filter_rolling_prior",
+                        "selection_rule": "top1_prob_tail0p85_rolling_prior_oos",
+                        "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+                        "deployment_ready": False,
+                    },
+                    "metrics": {
+                        "n": 27,
+                        "active_days": 8,
+                        "active_runs": 27,
+                        "hit5_dd10_5d_pct": 96.2963,
+                        "avg_5d_pct": 12.0,
+                        "min_min_low_5d_pct": -6.578573,
+                    },
+                    "gate": {
+                        "status": "shadow_ready",
+                        "production_ready": False,
+                        "shadow_display_allowed": True,
+                        "production_blocking_reasons": ["n_lt_30", "active_days_lt_15"],
+                    },
+                },
+                "decision": {
+                    "production_gate_pass_observed": False,
+                    "shadow_display_allowed": True,
+                    "deployment_ready": False,
+                },
+            },
+        },
+    )
+    _write(
+        coverage_audit,
+        {
+            "decision": {
+                "status": "coverage_gap_blocks_production_replacement",
+                "actual_kis_full_jan_jun_period_proven": False,
+                "actual_kis_oos_months": ["2026-05", "2026-06"],
+                "missing_or_sparse_actual_kis_months": ["2026-01", "2026-02", "2026-03", "2026-04"],
+                "feature_family_ablation_required": True,
+                "rolling_prior_required": True,
+            }
         },
     )
     finaltopn_market = {
@@ -480,6 +530,7 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
         sidecar_score_sweep_path=sidecar_score,
         candidate_leaderboard_path=candidate_leaderboard,
         drawdown_filter_report_path=drawdown_filter,
+        coverage_audit_path=coverage_audit,
         finaltopn_prefilter_proxy_path=finaltopn_proxy,
         finaltopn_actual_sidecar_path=finaltopn_actual,
     )
@@ -492,7 +543,18 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert report["decision"]["drawdown_filter_holdout_gate_pass"] is False
     assert report["decision"]["drawdown_filter_deployment_ready"] is False
     assert report["decision"]["drawdown_filter_action"] == "keep_research_only_until_holdout_or_forward_gate_pass"
+    assert report["decision"]["coverage_audit_status"] == "coverage_gap_blocks_production_replacement"
+    assert report["decision"]["actual_kis_full_jan_jun_period_proven"] is False
+    assert report["decision"]["missing_or_sparse_actual_kis_months"] == [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+    ]
+    assert report["decision"]["feature_family_ablation_required"] is True
+    assert report["decision"]["rolling_prior_required"] is True
     assert report["research_inputs"]["candidate_leaderboard"]["status"] == "keep_current_shadow"
+    assert report["research_inputs"]["coverage_audit"]["status"] == "coverage_gap_blocks_production_replacement"
     assert report["research_inputs"]["drawdown_filter_production_gate_pass_count"] == 6
     assert report["research_inputs"]["finaltopn_prefilter_proxy_report"].endswith("finaltopn_proxy.json")
     leaderboard = report["markets"]["KOSPI"]["candidate_leaderboard"]
@@ -513,6 +575,11 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert drawdown["holdout_validation"]["holdout_candidates_evaluated"] == 811
     assert drawdown["holdout_validation"]["selection_best_holdout_evaluation"]["gate_status"] == "shadow_ready"
     assert drawdown["holdout_validation"]["selection_best_holdout_evaluation"]["metrics"]["hit5_dd10_5d_pct"] == 100.0
+    rolling = drawdown["rolling_prior_validation"]
+    assert rolling["status"] == "rolling_prior_shadow_ready"
+    assert rolling["decision"]["production_gate_pass_observed"] is False
+    assert rolling["aggregate_candidate"]["gate_status"] == "shadow_ready"
+    assert rolling["aggregate_candidate"]["metrics"]["hit5_dd10_5d_pct"] == 96.2963
     assert report["markets"]["KOSDAQ"]["drawdown_filter_research"] == {}
     assert "+5%" in report["user_goal"]["win_definition"]
     assert report["markets"]["KOSPI"]["kis_sidecar_longfold_shadow"]["gate"]["status"] == "shadow_ready"

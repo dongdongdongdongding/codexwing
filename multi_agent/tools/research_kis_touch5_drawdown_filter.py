@@ -561,6 +561,187 @@ def _holdout_validation(
     }
 
 
+def _rolling_prior_validation(
+    *,
+    scoped: pd.DataFrame,
+    predictions: pd.DataFrame,
+    score: pd.Series,
+    label: pd.Series,
+    market: str,
+    feature_set: str,
+    model: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    numeric: Sequence[str],
+    min_prior_folds: int,
+    min_pool_rows: int,
+    top_results: int,
+) -> Dict[str, Any]:
+    folds = sorted({int(value) for value in pd.to_numeric(predictions.get("fold"), errors="coerce").dropna().tolist()})
+    if len(folds) <= int(min_prior_folds):
+        return {"status": "skipped_insufficient_folds", "deployment_ready": False}
+    selected_indices: List[pd.Index] = []
+    steps: List[Dict[str, Any]] = []
+    for fold in folds:
+        prior_folds = [item for item in folds if item < fold]
+        if len(prior_folds) < int(min_prior_folds):
+            continue
+        prior_predictions = predictions.loc[predictions["fold"].isin(prior_folds)]
+        current_predictions = predictions.loc[predictions["fold"].eq(fold)]
+        if prior_predictions.empty or current_predictions.empty:
+            continue
+        prior_base_pool = prior_predictions.index[prior_predictions["tail_prob"].ge(float(tail_threshold))]
+        current_base_pool = current_predictions.index[current_predictions["tail_prob"].ge(float(tail_threshold))]
+        prior_candidates = _single_feature_results(
+            scoped=scoped,
+            base_pool=prior_base_pool,
+            score=score,
+            label=label,
+            market=market,
+            feature_set=feature_set,
+            model=f"{model}_drawdown_filter_rolling_prior_selection",
+            score_mode=score_mode,
+            topn=topn,
+            tail_threshold=tail_threshold,
+            numeric=numeric,
+            min_pool_rows=min_pool_rows,
+        )
+        prior_ranked = sorted(prior_candidates, key=_sort_key, reverse=True)
+        if not prior_ranked:
+            steps.append(
+                {
+                    "fold": int(fold),
+                    "status": "skipped_no_prior_candidate",
+                    "prior_folds": prior_folds,
+                    "current_test_days": sorted(scoped.loc[current_predictions.index, "trade_date"].astype(str).unique().tolist()),
+                    "prior_base_pool_rows": int(len(prior_base_pool)),
+                    "current_base_pool_rows": int(len(current_base_pool)),
+                }
+            )
+            continue
+        chosen = prior_ranked[0]
+        chosen_identity = chosen.get("identity") if isinstance(chosen.get("identity"), Mapping) else {}
+        filter_payload = (
+            chosen_identity.get("drawdown_filter")
+            if isinstance(chosen_identity.get("drawdown_filter"), Mapping)
+            else {}
+        )
+        fixed = (
+            _evaluate_fixed_filter(
+                scoped=scoped,
+                prediction_slice=current_predictions,
+                base_pool=current_base_pool,
+                score=score,
+                label=label,
+                market=market,
+                feature_set=feature_set,
+                model=f"{model}_drawdown_filter_rolling_prior_step",
+                score_mode=score_mode,
+                topn=topn,
+                tail_threshold=tail_threshold,
+                filter_payload=filter_payload,
+                validation_mode="rolling_prior_oos_next_fold_step",
+            )
+            if filter_payload
+            else None
+        )
+        chosen_metrics = chosen.get("metrics") if isinstance(chosen.get("metrics"), Mapping) else {}
+        chosen_gate = chosen.get("gate") if isinstance(chosen.get("gate"), Mapping) else {}
+        fixed_metrics = fixed.get("metrics") if fixed and isinstance(fixed.get("metrics"), Mapping) else {}
+        fixed_gate = fixed.get("gate") if fixed and isinstance(fixed.get("gate"), Mapping) else {}
+        selected = pd.Index([])
+        if fixed:
+            fixed_identity = fixed.get("identity") if isinstance(fixed.get("identity"), Mapping) else {}
+            fixed_filter = (
+                fixed_identity.get("drawdown_filter")
+                if isinstance(fixed_identity.get("drawdown_filter"), Mapping)
+                else {}
+            )
+            filtered_pool = _apply_filter(scoped, current_base_pool, fixed_filter)
+            selected = top_indices_by_run(scoped.loc[filtered_pool], score.loc[filtered_pool], int(topn))
+            if len(selected) > 0:
+                selected_indices.append(selected)
+        steps.append(
+            {
+                "fold": int(fold),
+                "status": "evaluated",
+                "prior_folds": prior_folds,
+                "current_test_days": sorted(scoped.loc[current_predictions.index, "trade_date"].astype(str).unique().tolist()),
+                "prior_base_pool_rows": int(len(prior_base_pool)),
+                "current_base_pool_rows": int(len(current_base_pool)),
+                "prior_candidates_tested": int(len(prior_candidates)),
+                "chosen_rule": chosen_identity.get("selection_rule"),
+                "chosen_filter": chosen_identity.get("drawdown_filter") or {},
+                "chosen_prior_gate": chosen_gate.get("status"),
+                "chosen_prior_metrics": _metric_subset(chosen_metrics),
+                "current_gate": fixed_gate.get("status"),
+                "current_metrics": _metric_subset(fixed_metrics),
+                "selected_count": int(len(selected)),
+            }
+        )
+    combined = pd.Index([])
+    if selected_indices:
+        combined = selected_indices[0]
+        for idx in selected_indices[1:]:
+            combined = combined.append(idx)
+        combined = pd.Index(sorted(set(combined)))
+    aggregate = _gate_row(
+        market=market,
+        feature_set=feature_set,
+        model=f"{model}_drawdown_filter_rolling_prior",
+        selection_rule=_selection_rule(
+            topn=topn,
+            score_mode=score_mode,
+            tail_threshold=tail_threshold,
+            filter_name="rolling_prior_oos",
+        ),
+        score_mode=score_mode,
+        topn=topn,
+        tail_threshold=tail_threshold,
+        selected=combined,
+        scoped=scoped,
+        label=label,
+        filter_payload={
+            "type": "rolling_prior_oos",
+            "min_prior_folds": int(min_prior_folds),
+            "steps": len(steps),
+        },
+    )
+    aggregate = _copy_with_validation(
+        aggregate,
+        "rolling_prior_oos_next_fold_walk_forward_predictions",
+    )
+    gate = aggregate.get("gate") if aggregate and isinstance(aggregate.get("gate"), Mapping) else {}
+    metrics_payload = aggregate.get("metrics") if aggregate and isinstance(aggregate.get("metrics"), Mapping) else {}
+    status = (
+        "rolling_prior_gate_pass"
+        if gate.get("production_ready")
+        else "rolling_prior_shadow_ready"
+        if gate.get("shadow_display_allowed")
+        else "rolling_prior_blocked"
+    )
+    return {
+        "status": status,
+        "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions",
+        "deployment_ready": False,
+        "min_prior_folds": int(min_prior_folds),
+        "folds": folds,
+        "evaluated_steps": int(len([step for step in steps if step.get("status") == "evaluated"])),
+        "skipped_steps": int(len([step for step in steps if step.get("status") != "evaluated"])),
+        "selected_count": int(len(combined)),
+        "aggregate_candidate": aggregate,
+        "top_steps": steps[-int(top_results) :],
+        "decision": {
+            "production_gate_pass_observed": bool(gate.get("production_ready")),
+            "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+            "deployment_ready": False,
+            "metrics": _metric_subset(metrics_payload),
+            "reason": "rolling prior uses only previous OOS folds for rule choice; production promotion still requires passing gate and live forward tracking.",
+        },
+    }
+
+
 def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     cache_path = Path(args.prepared_cache)
     data = pd.read_pickle(cache_path)
@@ -640,6 +821,23 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         top_results=int(args.top_results),
     )
     holdout_gate_pass = bool((holdout.get("decision") or {}).get("holdout_gate_pass_observed"))
+    rolling_prior = _rolling_prior_validation(
+        scoped=scoped,
+        predictions=predictions,
+        score=score,
+        label=label,
+        market=market,
+        feature_set=args.feature_set,
+        model=args.model,
+        score_mode=args.score_mode,
+        topn=int(args.topn),
+        tail_threshold=float(args.tail_threshold),
+        numeric=numeric,
+        min_prior_folds=int(args.rolling_prior_min_folds),
+        min_pool_rows=int(args.min_pool_rows),
+        top_results=int(args.top_results),
+    )
+    rolling_gate_pass = bool((rolling_prior.get("decision") or {}).get("production_gate_pass_observed"))
     return {
         "version": REPORT_VERSION,
         "generated_at": _utc_now(),
@@ -648,6 +846,9 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "validation_mode": "research_sweep_only_walk_forward_predictions",
         "deployment_ready": False,
         "recommended_action": (
+            "run live forward shadow validation for rolling prior drawdown filter"
+            if rolling_gate_pass
+            else
             "run live forward shadow validation for fixed drawdown filter"
             if holdout_gate_pass
             else
@@ -679,6 +880,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "production_candidates": production[: int(args.top_results)],
         "top_results": ranked[: int(args.top_results)],
         "holdout_validation": holdout,
+        "rolling_prior_validation": rolling_prior,
     }
 
 
@@ -715,6 +917,17 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     selection_best_gate = (
         selection_best_holdout.get("gate") if isinstance(selection_best_holdout.get("gate"), Mapping) else {}
     )
+    rolling = report.get("rolling_prior_validation") if isinstance(report.get("rolling_prior_validation"), Mapping) else {}
+    rolling_candidate = (
+        rolling.get("aggregate_candidate") if isinstance(rolling.get("aggregate_candidate"), Mapping) else {}
+    )
+    rolling_metrics = rolling_candidate.get("metrics") if isinstance(rolling_candidate.get("metrics"), Mapping) else {}
+    rolling_gate = rolling_candidate.get("gate") if isinstance(rolling_candidate.get("gate"), Mapping) else {}
+    rolling_econ = (
+        rolling_gate.get("production_economics")
+        if isinstance(rolling_gate.get("production_economics"), Mapping)
+        else {}
+    )
     lines = [
         "# KIS Touch5 Drawdown Filter Research",
         "",
@@ -733,6 +946,8 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         f"- holdout: status=`{holdout.get('status')}` validation=`{holdout.get('validation_mode')}` selection_folds=`{holdout.get('selection_folds')}` holdout_folds=`{holdout.get('holdout_folds')}` selection_candidates=`{holdout.get('selection_candidates_tested')}` holdout_evaluated=`{holdout.get('holdout_candidates_evaluated')}` gate_pass_count=`{holdout.get('holdout_gate_pass_count')}` deployment_ready=`{holdout.get('deployment_ready')}`",
         f"- selection_best_holdout: status=`{selection_best_gate.get('status')}` n=`{selection_best_metrics.get('n')}` days=`{selection_best_metrics.get('active_days')}` hit5=`{selection_best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{selection_best_metrics.get('avg_5d_pct')}` min_low=`{selection_best_metrics.get('min_min_low_5d_pct')}`",
         f"- best_holdout_gate_pass: status=`{holdout_best_gate.get('status')}` n=`{holdout_best_metrics.get('n')}` days=`{holdout_best_metrics.get('active_days')}` hit5=`{holdout_best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{holdout_best_metrics.get('avg_5d_pct')}` min_low=`{holdout_best_metrics.get('min_min_low_5d_pct')}` expected_net=`{holdout_best_econ.get('expected_touch_policy_net_5d_pct')}`",
+        f"- rolling_prior: status=`{rolling.get('status')}` validation=`{rolling.get('validation_mode')}` min_prior_folds=`{rolling.get('min_prior_folds')}` evaluated_steps=`{rolling.get('evaluated_steps')}` selected=`{rolling.get('selected_count')}` deployment_ready=`{rolling.get('deployment_ready')}`",
+        f"- rolling_prior_aggregate: status=`{rolling_gate.get('status')}` n=`{rolling_metrics.get('n')}` days=`{rolling_metrics.get('active_days')}` runs=`{rolling_metrics.get('active_runs')}` hit5=`{rolling_metrics.get('hit5_dd10_5d_pct')}` avg5=`{rolling_metrics.get('avg_5d_pct')}` min_low=`{rolling_metrics.get('min_min_low_5d_pct')}` expected_net=`{rolling_econ.get('expected_touch_policy_net_5d_pct')}` blockers=`{rolling_gate.get('production_blocking_reasons')}`",
         "",
         "| rank | status | rule | n | days | runs | hit5 | avg5 | min_low | expected_net |",
         "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|",
@@ -785,6 +1000,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--test-days", type=int, default=1)
     parser.add_argument("--max-folds", type=int, default=20)
     parser.add_argument("--selection-folds", type=int, default=5)
+    parser.add_argument("--rolling-prior-min-folds", type=int, default=5)
     parser.add_argument("--min-pool-rows", type=int, default=30)
     parser.add_argument("--holdout-candidate-limit", type=int, default=0, help="0 evaluates all selection candidates.")
     parser.add_argument("--top-results", type=int, default=30)

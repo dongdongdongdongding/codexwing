@@ -4,7 +4,7 @@
 - status: `production_gate_pass_research_candidate_found`
 - validation_mode: `research_sweep_only_walk_forward_predictions`
 - deployment_ready: `False`
-- generated_at: `2026-06-13T08:37:53+00:00`
+- generated_at: `2026-06-13T09:11:00+00:00`
 - prepared_cache: `/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_sidecar_db_20260101_20260610.pkl`
 - market: `KOSPI`
 - base: status=`shadow_risk_review` blockers=`['min_low_5d_lt_neg10']` n=`58` days=`15` hit5=`79.3103` avg5=`34.754917` min_low=`-10.87344`
@@ -15,6 +15,8 @@
 - holdout: status=`no_holdout_gate_pass` validation=`selection_fixed_rule_holdout_walk_forward_predictions` selection_folds=`[1, 2, 3, 4, 5]` holdout_folds=`[6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]` selection_candidates=`811` holdout_evaluated=`811` gate_pass_count=`0` deployment_ready=`False`
 - selection_best_holdout: status=`shadow_ready` n=`23` days=`7` hit5=`100.0` avg5=`39.699864` min_low=`-5.551964`
 - best_holdout_gate_pass: status=`None` n=`None` days=`None` hit5=`None` avg5=`None` min_low=`None` expected_net=`None`
+- rolling_prior: status=`rolling_prior_blocked` validation=`rolling_prior_oos_next_fold_walk_forward_predictions` min_prior_folds=`5` evaluated_steps=`15` selected=`2` deployment_ready=`False`
+- rolling_prior_aggregate: status=`blocked` n=`2` days=`1` runs=`2` hit5=`100.0` avg5=`47.674132` min_low=`-3.191402` expected_net=`4.601458` blockers=`['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20']`
 
 | rank | status | rule | n | days | runs | hit5 | avg5 | min_low | expected_net |
 |---:|---|---|---:|---:|---:|---:|---:|---:|---:|

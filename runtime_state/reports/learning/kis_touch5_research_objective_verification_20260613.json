@@ -1,9 +1,22 @@
 {
   "decision": {
+    "actual_kis_full_jan_jun_period_proven": false,
+    "actual_kis_oos_months": [
+      "2026-05",
+      "2026-06"
+    ],
+    "coverage_audit_status": "coverage_gap_blocks_production_replacement",
     "drawdown_filter_action": "keep_research_only_until_holdout_or_forward_gate_pass",
     "drawdown_filter_deployment_ready": false,
     "drawdown_filter_holdout_gate_pass": false,
     "drawdown_filter_research_candidate_found": true,
+    "feature_family_ablation_required": true,
+    "missing_or_sparse_actual_kis_months": [
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04"
+    ],
     "production_blockers_by_market": {
       "KOSDAQ": [
         "n_lt_45",
@@ -15,10 +28,11 @@
     },
     "production_replacement_proven": false,
     "recommended_action": "keep_existing_production_and_show_kis_shadow_top_section",
+    "rolling_prior_required": true,
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T08:41:08.192544+00:00",
+  "generated_at": "2026-06-13T09:14:31.597773+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -16892,7 +16906,8 @@
           "holdout_gate_pass_observed": false,
           "production_gate_pass_observed": true,
           "promotable_now": false,
-          "reason": "threshold was selected by a research sweep over walk-forward predictions; require controlled shadow/forward validation before production promotion."
+          "reason": "threshold was selected by a research sweep over walk-forward predictions; require controlled shadow/forward validation before production promotion.",
+          "rolling_prior_gate_pass_observed": false
         },
         "deployment_ready": false,
         "filters_tested": 1107,
@@ -17002,6 +17017,84 @@
         },
         "production_gate_pass_count": 6,
         "recommended_action": "run controlled shadow and forward validation before promotion",
+        "rolling_prior_validation": {
+          "aggregate_candidate": {
+            "deployment_ready": false,
+            "drawdown_filter": {
+              "min_prior_folds": 5,
+              "steps": 15,
+              "type": "rolling_prior_oos"
+            },
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "gate_status": "blocked",
+            "metrics": {
+              "active_days": 1,
+              "active_runs": 2,
+              "avg_1d_pct": 26.343424,
+              "avg_3d_pct": 93.20699,
+              "avg_5d_pct": 47.674132,
+              "avg_max_high_5d_pct": 113.30708,
+              "avg_min_low_5d_pct": -3.191402,
+              "bad_path_pct": 0.0,
+              "buy_premium_pct": 2.0,
+              "hit10_5d_pct": 100.0,
+              "hit5_dd10_5d_pct": 100.0,
+              "min_1d_pct": 26.343424,
+              "min_3d_pct": 93.20699,
+              "min_5d_pct": 47.674132,
+              "min_min_low_5d_pct": -3.191402,
+              "n": 2,
+              "stop5_pct": 0.0,
+              "stop_before_target_5d_pct": 0.0,
+              "target_before_stop_5d_pct": 100.0,
+              "win_5d_pct": 100.0
+            },
+            "model": "lightgbm_drawdown_filter_rolling_prior",
+            "production_blocking_reasons": [
+              "n_lt_30",
+              "active_days_lt_15",
+              "active_runs_lt_20"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 4.601458,
+              "hit5_dd10_5d_pct": 100.0,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_gate_pass_observed": false,
+            "score_mode": "prob",
+            "selection_rule": "top1_prob_tail0p85_rolling_prior_oos",
+            "shadow_display_allowed": false,
+            "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions"
+          },
+          "decision": {
+            "deployment_ready": false,
+            "production_gate_pass_observed": false,
+            "reason": "rolling prior uses only previous OOS folds for rule choice; production promotion still requires passing gate and live forward tracking.",
+            "shadow_display_allowed": false
+          },
+          "deployment_ready": false,
+          "evaluated_steps": 15,
+          "min_prior_folds": 5,
+          "selected_count": 2,
+          "status": "rolling_prior_blocked",
+          "validation_mode": "rolling_prior_oos_next_fold_walk_forward_predictions"
+        },
         "scope": {
           "base_pool_rows": 9919,
           "rows": 38361,
@@ -40250,6 +40343,28 @@
       "status": "keep_current_shadow"
     },
     "candidate_leaderboard_report": "runtime_state/reports/learning/kis_touch5_candidate_leaderboard_20260613.json",
+    "coverage_audit": {
+      "actual_kis_full_jan_jun_period_proven": false,
+      "actual_kis_oos_months": [
+        "2026-05",
+        "2026-06"
+      ],
+      "current_best_is_shadow_only": true,
+      "feature_family_ablation_required": true,
+      "missing_or_sparse_actual_kis_months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "monthly_slice_matrix_required": true,
+      "production_replacement_ready": false,
+      "recommended_action": "do not promote; run actual KIS monthly/2-month slices, feature-family ablations, and rolling-prior validation",
+      "rolling_prior_required": true,
+      "status": "coverage_gap_blocks_production_replacement",
+      "two_month_slice_matrix_required": true
+    },
+    "coverage_audit_report": "runtime_state/reports/learning/kis_touch5_research_coverage_audit_20260613.json",
     "deployment_consistency": {
       "deployment_consistent": true,
       "production_replacement_ready": false,
@@ -40342,6 +40457,10 @@
     {
       "finding": "KOSPI에서 KIS sidecar tail gate 이후 close-failure prior 계열 scan-time 필터를 탐색해 production gate pass 후보를 찾았다. 단 threshold sweep 사후선택이므로 운영 승격이 아니라 controlled shadow 검증 후보로만 기록한다.",
       "step": "drawdown_filter_research"
+    },
+    {
+      "finding": "실제 KIS sidecar prepared cache의 월별 범위, OOS fold 월, 피쳐군을 별도 감사해 Jan-Jun 전체 검증과 피쳐군 ablation이 빠지면 production replacement를 차단한다.",
+      "step": "research_coverage_audit"
     }
   ],
   "service_feature_scope": {
