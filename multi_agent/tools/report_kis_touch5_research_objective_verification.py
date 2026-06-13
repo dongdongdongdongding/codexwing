@@ -72,6 +72,10 @@ DEFAULT_STATIC_MASTER_AUGMENTATION = (
 DEFAULT_STATIC_MASTER_FOCUSED_SUITE = (
     ROOT / "runtime_state/reports/learning/kis_historical_best_effort_suite_static_master_focused_20260101_20260610.json"
 )
+DEFAULT_STATIC_MASTER_STOP_OVERLAY_STRICT_SUITE = (
+    ROOT
+    / "runtime_state/reports/learning/kis_historical_best_effort_suite_static_master_stop_overlay_strict_20260101_20260610.json"
+)
 DEFAULT_STATIC_MASTER_THREE_STAGE = {
     "KOSPI": ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_static_master_kospi_20260613.json",
     "KOSDAQ": ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_static_master_kosdaq_20260613.json",
@@ -719,6 +723,7 @@ def _historical_proxy_augmentation_experiment(
     matched_only_sweep_reports: Mapping[str, Mapping[str, Any]],
     static_master_report: Mapping[str, Any],
     static_master_focused_report: Mapping[str, Any],
+    static_master_stop_overlay_strict_report: Mapping[str, Any],
     static_master_three_stage_reports: Mapping[str, Mapping[str, Any]],
 ) -> Dict[str, Any]:
     markets: Dict[str, Any] = {}
@@ -727,6 +732,10 @@ def _historical_proxy_augmentation_experiment(
             "augmentation": _augmentation_market(augmentation_report, market),
             "static_master_augmentation": _static_master_augmentation_market(static_master_report, market),
             "static_master_focused_suite": _best_effort_suite_market(static_master_focused_report, market),
+            "static_master_stop_overlay_strict_suite": _best_effort_suite_market(
+                static_master_stop_overlay_strict_report,
+                market,
+            ),
             "static_master_three_stage": _three_stage_experiment(
                 static_master_three_stage_reports.get(market, {}),
                 market,
@@ -778,6 +787,9 @@ def _historical_proxy_augmentation_experiment(
             "matched_only_sweep_feature_sets": sorted(k for k, v in matched_only_sweep_reports.items() if v),
             "static_master_report_available": bool(static_master_report),
             "static_master_focused_suite_report_available": bool(static_master_focused_report),
+            "static_master_stop_overlay_strict_suite_report_available": bool(
+                static_master_stop_overlay_strict_report
+            ),
         },
         "feature_gap_decision": (feature_gap_report.get("decision") or {}) if feature_gap_report else {},
         "backfill_priorities": (feature_gap_report.get("backfill_priorities") or []) if feature_gap_report else [],
@@ -959,6 +971,7 @@ def build_report(
     finaltopn_actual_sidecar_path: Path | None = None,
     static_master_augmentation_path: Path | None = None,
     static_master_focused_suite_path: Path | None = None,
+    static_master_stop_overlay_strict_suite_path: Path | None = None,
     static_master_three_stage_paths: Mapping[str, Path] | None = None,
 ) -> Dict[str, Any]:
     shadow_report = _load_json(shadow_report_path)
@@ -987,6 +1000,7 @@ def build_report(
     finaltopn_actual_sidecar = _load_optional_json(finaltopn_actual_sidecar_path)
     static_master_augmentation = _load_optional_json(static_master_augmentation_path)
     static_master_focused_suite = _load_optional_json(static_master_focused_suite_path)
+    static_master_stop_overlay_strict_suite = _load_optional_json(static_master_stop_overlay_strict_suite_path)
     static_master_three_stage_reports = {
         str(market).upper(): _load_optional_json(path)
         for market, path in (static_master_three_stage_paths or {}).items()
@@ -1196,6 +1210,9 @@ def build_report(
             "static_master_focused_suite_report": _rel(static_master_focused_suite_path)
             if static_master_focused_suite_path and static_master_focused_suite_path.exists()
             else None,
+            "static_master_stop_overlay_strict_suite_report": _rel(static_master_stop_overlay_strict_suite_path)
+            if static_master_stop_overlay_strict_suite_path and static_master_stop_overlay_strict_suite_path.exists()
+            else None,
             "static_master_three_stage_reports": {
                 market: _rel(path)
                 for market, path in (static_master_three_stage_paths or {}).items()
@@ -1203,6 +1220,11 @@ def build_report(
             },
             "static_master_focused_suite_decision": (static_master_focused_suite.get("decision") or {})
             if static_master_focused_suite
+            else {},
+            "static_master_stop_overlay_strict_suite_decision": (
+                static_master_stop_overlay_strict_suite.get("decision") or {}
+            )
+            if static_master_stop_overlay_strict_suite
             else {},
             "sidecar_score_evaluated_results": (sidecar_score_sweep.get("summary") or {}).get("evaluated_results")
             if sidecar_score_sweep
@@ -1254,6 +1276,10 @@ def build_report(
                 "finding": "static stock-info master 증강 캐시에 fold-separated 3단 EV/no-trade 랭커를 재적용해 양시장 dynamic exit 성과 개선을 확인했다. 다만 touch5_dd10 73%와 -10% tail 방어 기준을 동시에 넘지 못해 연구 성과로만 기록한다.",
             },
             {
+                "step": "static_master_stop_overlay_strict_validation",
+                "finding": "static stock-info master 증강 캐시에 strict stop-probability overlay를 결합했다. 양시장 shadow gate는 통과했지만 hit5/dd10과 표본 기준을 동시에 넘지 못해 기존 최상위 shadow 후보를 대체하지 않는다.",
+            },
+            {
                 "step": "final_topn_no_trade_expansion",
                 "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",
             },
@@ -1283,6 +1309,7 @@ def build_report(
             matched_only_sweep_reports=matched_only_sweeps,
             static_master_report=static_master_augmentation,
             static_master_focused_report=static_master_focused_suite,
+            static_master_stop_overlay_strict_report=static_master_stop_overlay_strict_suite,
             static_master_three_stage_reports=static_master_three_stage_reports,
         )
         if any(
@@ -1294,6 +1321,7 @@ def build_report(
                 matched_only_sweeps,
                 static_master_augmentation,
                 static_master_focused_suite,
+                static_master_stop_overlay_strict_suite,
                 static_master_three_stage_reports,
             ]
         )
@@ -1370,6 +1398,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- slice_ablation: status=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('production_replacement_ready')}`, period_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('all_trainable_periods_outcome_pass')}`, ablation_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('available_full_ablation_has_multiple_passing_families')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('missing_or_sparse_actual_months')}`",
             f"- stability_search: status=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('production_replacement_ready')}`, period_stable_both_market=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('period_stable_both_market_candidate')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('missing_or_sparse_actual_months')}`",
             f"- kosdaq_bottleneck_matrix: status=`{((report.get('research_inputs') or {}).get('kosdaq_bottleneck_matrix') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('kosdaq_bottleneck_matrix') or {}).get('production_replacement_ready')}`, blockers=`{((report.get('research_inputs') or {}).get('kosdaq_bottleneck_matrix') or {}).get('primary_blockers')}`",
+            f"- static_master_stop_overlay_strict_suite: status=`{((report.get('research_inputs') or {}).get('static_master_stop_overlay_strict_suite_decision') or {}).get('status')}`, action=`{((report.get('research_inputs') or {}).get('static_master_stop_overlay_strict_suite_decision') or {}).get('recommended_action')}`",
             f"- three_stage_validation: `{(report.get('research_inputs') or {}).get('three_stage_validation')}`",
             "",
         ]
@@ -1619,6 +1648,11 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 if isinstance(payload.get("static_master_focused_suite"), dict)
                 else {}
             )
+            static_strict_suite = (
+                payload.get("static_master_stop_overlay_strict_suite")
+                if isinstance(payload.get("static_master_stop_overlay_strict_suite"), dict)
+                else {}
+            )
             static_three = (
                 payload.get("static_master_three_stage")
                 if isinstance(payload.get("static_master_three_stage"), dict)
@@ -1644,6 +1678,21 @@ def _markdown(report: Mapping[str, Any]) -> str:
             static_identity = (
                 static_suite.get("best_identity") if isinstance(static_suite.get("best_identity"), dict) else {}
             )
+            static_strict_metrics = (
+                static_strict_suite.get("best_metrics")
+                if isinstance(static_strict_suite.get("best_metrics"), dict)
+                else {}
+            )
+            static_strict_gate = (
+                static_strict_suite.get("best_gate")
+                if isinstance(static_strict_suite.get("best_gate"), dict)
+                else {}
+            )
+            static_strict_identity = (
+                static_strict_suite.get("best_identity")
+                if isinstance(static_strict_suite.get("best_identity"), dict)
+                else {}
+            )
             static_three_metrics = (
                 static_three.get("best_metrics") if isinstance(static_three.get("best_metrics"), dict) else {}
             )
@@ -1660,6 +1709,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                     f"- leakage_policy: `{augmentation.get('leakage_policy')}`",
                     f"- static_master: matched_rows=`{static_aug.get('master_matched_rows')}`, matched_pct=`{static_aug.get('master_matched_row_pct')}`, augmented_rows=`{static_aug.get('augmented_rows')}`, augmented_pct=`{static_aug.get('augmented_row_pct')}`, leakage_policy=`{static_aug.get('leakage_policy')}`",
                     f"- static_master_focused_suite: model=`{static_identity.get('model')}`, feature_set=`{static_identity.get('feature_set')}`, gate=`{static_gate.get('status')}`, production_ready=`{static_gate.get('production_ready')}`, shadow_display_allowed=`{static_gate.get('shadow_display_allowed')}`, hit5=`{static_metrics.get('hit5_dd10_5d_pct')}`, win5=`{static_metrics.get('win_5d_pct')}`, hit10=`{static_metrics.get('hit10_5d_pct')}`, avg5=`{static_metrics.get('avg_5d_pct')}`, min_ordered_exit=`{static_metrics.get('min_ordered_exit_5d_pct')}`, expected_net=`{(static_gate.get('production_economics') or {}).get('expected_touch_policy_net_5d_pct')}`, blockers=`{static_gate.get('production_blocking_reasons')}`",
+                    f"- static_master_stop_overlay_strict_suite: model=`{static_strict_identity.get('model')}`, feature_set=`{static_strict_identity.get('feature_set')}`, gate=`{static_strict_gate.get('status')}`, production_ready=`{static_strict_gate.get('production_ready')}`, shadow_display_allowed=`{static_strict_gate.get('shadow_display_allowed')}`, n=`{static_strict_metrics.get('n')}`, active_days=`{static_strict_metrics.get('active_days')}`, hit5=`{static_strict_metrics.get('hit5_dd10_5d_pct')}`, stop5=`{static_strict_metrics.get('stop5_pct')}`, bad_path=`{static_strict_metrics.get('bad_path_pct')}`, avg_exit=`{static_strict_metrics.get('avg_ordered_exit_5d_pct')}`, min_low=`{static_strict_metrics.get('min_min_low_5d_pct')}`, blockers=`{static_strict_gate.get('production_blocking_reasons')}`",
                     f"- static_master_3stage: status=`{static_three.get('status')}`, gate=`{static_three_gate.get('status')}`, production_ready=`{static_three_gate.get('production_ready')}`, shadow_display_allowed=`{static_three_gate.get('shadow_display_allowed')}`, hit5=`{static_three_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{static_three_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{static_three_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{static_three_metrics.get('tail_breach_5d_pct')}`, min_low=`{static_three_metrics.get('min_min_low_5d_pct')}`, avg_exit_delta=`{static_three_imp.get('avg_ordered_exit_delta_pct')}`, hit5_delta=`{static_three_imp.get('hit5_dd10_delta_pct')}`, blockers=`{static_three_gate.get('production_blocking_reasons')}`",
                     f"- full_augmented_3stage: status=`{full_three.get('status')}`, hit5=`{full_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{full_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{full_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{full_metrics.get('tail_breach_5d_pct')}`, min_low=`{full_metrics.get('min_min_low_5d_pct')}`",
                     f"- matched_only_3stage: status=`{matched_three.get('status')}`, hit5=`{matched_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{matched_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{matched_metrics.get('avg_dynamic_exit_5d_pct')}`, tail=`{matched_metrics.get('tail_breach_5d_pct')}`, min_low=`{matched_metrics.get('min_min_low_5d_pct')}`",
@@ -1710,6 +1760,10 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--static-master-augmentation-report", default=str(DEFAULT_STATIC_MASTER_AUGMENTATION))
     parser.add_argument("--static-master-focused-suite-report", default=str(DEFAULT_STATIC_MASTER_FOCUSED_SUITE))
     parser.add_argument(
+        "--static-master-stop-overlay-strict-suite-report",
+        default=str(DEFAULT_STATIC_MASTER_STOP_OVERLAY_STRICT_SUITE),
+    )
+    parser.add_argument(
         "--static-master-three-stage-report",
         action="append",
         default=[f"{key}={path}" for key, path in DEFAULT_STATIC_MASTER_THREE_STAGE.items()],
@@ -1753,6 +1807,9 @@ def main(argv: Iterable[str] | None = None) -> int:
         finaltopn_actual_sidecar_path=Path(args.finaltopn_actual_sidecar_report),
         static_master_augmentation_path=Path(args.static_master_augmentation_report),
         static_master_focused_suite_path=Path(args.static_master_focused_suite_report),
+        static_master_stop_overlay_strict_suite_path=Path(
+            args.static_master_stop_overlay_strict_suite_report
+        ),
         static_master_three_stage_paths=static_master_three_stage_paths,
     )
     write_report(report, Path(args.output))

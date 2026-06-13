@@ -62,7 +62,7 @@
     "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T12:41:38.857691+00:00",
+  "generated_at": "2026-06-13T13:06:36.846495+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -134,7 +134,8 @@
       ],
       "matched_only_three_stage_report_available": true,
       "static_master_focused_suite_report_available": true,
-      "static_master_report_available": true
+      "static_master_report_available": true,
+      "static_master_stop_overlay_strict_suite_report_available": true
     },
     "markets": {
       "KOSDAQ": {
@@ -988,6 +989,91 @@
           },
           "production_ready": false,
           "quality_score": 223.731603,
+          "rows": 184794,
+          "shadow_display_allowed": true,
+          "status": "shadow_ready"
+        },
+        "static_master_stop_overlay_strict_suite": {
+          "best_gate": {
+            "production_blocking_reasons": [
+              "n_lt_45",
+              "active_days_lt_20",
+              "active_runs_lt_20",
+              "hit5_dd10_5d_lt_73",
+              "expected_touch_policy_net_5d_lt_0p5"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": -2.13767,
+              "hit5_dd10_5d_pct": 53.8462,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.5
+              }
+            },
+            "production_ready": false,
+            "risk_review_reasons": [],
+            "risk_review_required": false,
+            "shadow_blocking_reasons": [],
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "best_identity": {
+            "feature_count_categorical": 0,
+            "feature_count_numeric": 115,
+            "feature_set": "kis_failure_prior_numeric",
+            "fold_count": 4,
+            "label": "touch5_dd10_5d",
+            "market": "KOSDAQ",
+            "max_stop_probability": 0.05,
+            "model": "lightgbm",
+            "score_mode": "success_probability",
+            "score_threshold": 0.6,
+            "suite_version": "kis_historical_best_effort_suite_v1",
+            "topn": 1
+          },
+          "best_metrics": {
+            "active_days": 13,
+            "active_runs": 13,
+            "avg_5d_pct": 2.473384,
+            "avg_mfe_5d_pct": 9.210609,
+            "avg_ordered_exit_5d_pct": 1.219388,
+            "bad_path_pct": 38.4615,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 23.0769,
+            "hit5_dd10_5d_pct": 53.8462,
+            "min_5d_pct": -10.797336,
+            "min_min_low_5d_pct": -10.797336,
+            "min_ordered_exit_5d_pct": -10.0,
+            "n": 13,
+            "stop5_pct": 7.6923,
+            "stop_before_target_5d_pct": 7.6923,
+            "target_before_stop_5d_pct": 53.8462,
+            "win_5d_pct": 53.8462
+          },
+          "candidate_count": 1306,
+          "days": 103,
+          "decision": {
+            "all_required_markets_production_ready": false,
+            "all_required_markets_shadow_display_allowed": true,
+            "reason": "all required markets cleared shadow gates but at least one production gate remains blocked",
+            "recommended_action": "show_shadow_only_with_risk_review",
+            "status": "shadow_ready"
+          },
+          "production_ready": false,
+          "quality_score": 303.225439,
           "rows": 184794,
           "shadow_display_allowed": true,
           "status": "shadow_ready"
@@ -1954,6 +2040,91 @@
           },
           "production_ready": false,
           "quality_score": 215.821935,
+          "rows": 97421,
+          "shadow_display_allowed": true,
+          "status": "shadow_ready"
+        },
+        "static_master_stop_overlay_strict_suite": {
+          "best_gate": {
+            "production_blocking_reasons": [
+              "n_lt_30",
+              "active_days_lt_15",
+              "active_runs_lt_20",
+              "hit5_dd10_5d_lt_73",
+              "expected_touch_policy_net_5d_lt_0p25"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": -1.78668,
+              "hit5_dd10_5d_pct": 56.25,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_ready": false,
+            "risk_review_reasons": [],
+            "risk_review_required": false,
+            "shadow_blocking_reasons": [],
+            "shadow_display_allowed": true,
+            "status": "shadow_ready"
+          },
+          "best_identity": {
+            "feature_count_categorical": 0,
+            "feature_count_numeric": 115,
+            "feature_set": "kis_failure_prior_numeric",
+            "fold_count": 4,
+            "label": "touch5_dd10_5d",
+            "market": "KOSPI",
+            "max_stop_probability": 0.02,
+            "model": "lightgbm",
+            "score_mode": "success_probability",
+            "score_threshold": 0.6,
+            "suite_version": "kis_historical_best_effort_suite_v1",
+            "topn": 2
+          },
+          "best_metrics": {
+            "active_days": 9,
+            "active_runs": 9,
+            "avg_5d_pct": 2.071228,
+            "avg_mfe_5d_pct": 5.14966,
+            "avg_ordered_exit_5d_pct": 1.889486,
+            "bad_path_pct": 25.0,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 12.5,
+            "hit5_dd10_5d_pct": 56.25,
+            "min_5d_pct": -9.676834,
+            "min_min_low_5d_pct": -10.735899,
+            "min_ordered_exit_5d_pct": -10.0,
+            "n": 16,
+            "stop5_pct": 6.25,
+            "stop_before_target_5d_pct": 6.25,
+            "target_before_stop_5d_pct": 56.25,
+            "win_5d_pct": 56.25
+          },
+          "candidate_count": 1306,
+          "days": 103,
+          "decision": {
+            "all_required_markets_production_ready": false,
+            "all_required_markets_shadow_display_allowed": true,
+            "reason": "all required markets cleared shadow gates but at least one production gate remains blocked",
+            "recommended_action": "show_shadow_only_with_risk_review",
+            "status": "shadow_ready"
+          },
+          "production_ready": false,
+          "quality_score": 317.915968,
           "rows": 97421,
           "shadow_display_allowed": true,
           "status": "shadow_ready"
@@ -41138,6 +41309,14 @@
       "status": "shadow_ready"
     },
     "static_master_focused_suite_report": "runtime_state/reports/learning/kis_historical_best_effort_suite_static_master_focused_20260101_20260610.json",
+    "static_master_stop_overlay_strict_suite_decision": {
+      "all_required_markets_production_ready": false,
+      "all_required_markets_shadow_display_allowed": true,
+      "reason": "all required markets cleared shadow gates but at least one production gate remains blocked",
+      "recommended_action": "show_shadow_only_with_risk_review",
+      "status": "shadow_ready"
+    },
+    "static_master_stop_overlay_strict_suite_report": "runtime_state/reports/learning/kis_historical_best_effort_suite_static_master_stop_overlay_strict_20260101_20260610.json",
     "static_master_three_stage_reports": {
       "KOSDAQ": "runtime_state/reports/learning/kis_three_stage_ev_ranker_static_master_kosdaq_20260613.json",
       "KOSPI": "runtime_state/reports/learning/kis_three_stage_ev_ranker_static_master_kospi_20260613.json"
@@ -41178,6 +41357,10 @@
     {
       "finding": "static stock-info master 증강 캐시에 fold-separated 3단 EV/no-trade 랭커를 재적용해 양시장 dynamic exit 성과 개선을 확인했다. 다만 touch5_dd10 73%와 -10% tail 방어 기준을 동시에 넘지 못해 연구 성과로만 기록한다.",
       "step": "static_master_three_stage_validation"
+    },
+    {
+      "finding": "static stock-info master 증강 캐시에 strict stop-probability overlay를 결합했다. 양시장 shadow gate는 통과했지만 hit5/dd10과 표본 기준을 동시에 넘지 못해 기존 최상위 shadow 후보를 대체하지 않는다.",
+      "step": "static_master_stop_overlay_strict_validation"
     },
     {
       "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",

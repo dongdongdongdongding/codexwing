@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T12:41:38.857691+00:00`
+- generated_at: `2026-06-13T13:06:36.846495+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -36,6 +36,7 @@
 - exact_date_sidecar_augmentation: historical proxy cache에는 실제 KIS flow/financial/static/news가 부족하므로 ticker/date가 정확히 일치하는 실제 sidecar 행만 병합하고, full cache와 matched-only cache로 분리 검증한다.
 - static_sidecar_master_augmentation: 실제 KIS sidecar cache에서 ticker 정적 stock-info master만 추출해 2026-01-01 이후 historical proxy의 stock/theme category 결손을 보강했고, focused walk-forward에서 양시장 shadow gate를 통과했다. 단, 수급/재무/뉴스 시계열은 as-of 유출 위험 때문에 채우지 않았다.
 - static_master_three_stage_validation: static stock-info master 증강 캐시에 fold-separated 3단 EV/no-trade 랭커를 재적용해 양시장 dynamic exit 성과 개선을 확인했다. 다만 touch5_dd10 73%와 -10% tail 방어 기준을 동시에 넘지 못해 연구 성과로만 기록한다.
+- static_master_stop_overlay_strict_validation: static stock-info master 증강 캐시에 strict stop-probability overlay를 결합했다. 양시장 shadow gate는 통과했지만 hit5/dd10과 표본 기준을 동시에 넘지 못해 기존 최상위 shadow 후보를 대체하지 않는다.
 - final_topn_no_trade_expansion: 최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.
 - drawdown_filter_research: KOSPI에서 KIS sidecar tail gate 이후 close-failure prior 계열 scan-time 필터를 탐색해 production gate pass 후보를 찾았다. 단 threshold sweep 사후선택이므로 운영 승격이 아니라 controlled shadow 검증 후보로만 기록한다.
 - research_coverage_audit: 실제 KIS sidecar prepared cache의 월별 범위, OOS fold 월, 피쳐군을 별도 감사해 Jan-Jun 전체 검증과 피쳐군 ablation이 빠지면 production replacement를 차단한다.
@@ -54,6 +55,7 @@
 - slice_ablation: status=`slice_ablation_blocks_production_replacement`, production_ready=`False`, period_pass=`False`, ablation_pass=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - stability_search: status=`no_period_stable_both_market_candidate`, production_ready=`False`, period_stable_both_market=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - kosdaq_bottleneck_matrix: status=`kosdaq_tail_risk_blocks_production_replacement`, production_ready=`False`, blockers=`['no_period_stable_kosdaq_candidate', 'min_low_5d_tail_below_minus10', 'drawdown_filter_holdout_gate_pass_count_zero', 'compound_veto_holdout_gate_pass_count_zero', 'compound_veto_sample_gate_shortfall', 'compound_veto_no_sample_sufficient_candidate_across_recall', 'compound_veto_no_sample_hit_low_safe_candidate_across_recall']`
+- static_master_stop_overlay_strict_suite: status=`shadow_ready`, action=`show_shadow_only_with_risk_review`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
 
 ## KOSPI
@@ -120,6 +122,7 @@
 - leakage_policy: `exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied`
 - static_master: matched_rows=`85436`, matched_pct=`85.214`, augmented_rows=`85436`, augmented_pct=`85.214`, leakage_policy=`ticker static stock_info only; fills missing cells only; no flow/news/VI/rank/financial copied`
 - static_master_focused_suite: model=`lightgbm_ranker`, feature_set=`kis_failure_prior_numeric`, gate=`shadow_risk_review`, production_ready=`False`, shadow_display_allowed=`True`, hit5=`52.0833`, win5=`62.5`, hit10=`52.0833`, avg5=`12.434044`, min_ordered_exit=`-12.981586`, expected_net=`-2.395079`, blockers=`['hit5_dd10_5d_lt_73', 'ordered_exit_floor_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
+- static_master_stop_overlay_strict_suite: model=`lightgbm`, feature_set=`kis_failure_prior_numeric`, gate=`shadow_ready`, production_ready=`False`, shadow_display_allowed=`True`, n=`16`, active_days=`9`, hit5=`56.25`, stop5=`6.25`, bad_path=`25.0`, avg_exit=`1.889486`, min_low=`-10.735899`, blockers=`['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'expected_touch_policy_net_5d_lt_0p25']`
 - static_master_3stage: status=`improved_shadow_research`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, hit5=`68.1818`, avg_exit=`0.104695`, dynamic_exit=`1.915976`, tail=`27.2727`, min_low=`-22.553301`, avg_exit_delta=`0.82714`, hit5_delta=`26.5151`, blockers=`['n_lt_30', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 - full_augmented_3stage: status=`no_improvement`, hit5=`64.2857`, avg_exit=`-0.188114`, dynamic_exit=`1.946609`, tail=`28.5714`, min_low=`-28.464098`
 - matched_only_3stage: status=`no_improvement`, hit5=`62.5`, avg_exit=`-0.874089`, dynamic_exit=`2.23905`, tail=`37.5`, min_low=`-28.615196`
@@ -130,6 +133,7 @@
 - leakage_policy: `exact ticker/date/market join only; no forward-fill; no backward-fill; no label columns copied`
 - static_master: matched_rows=`168646`, matched_pct=`88.676`, augmented_rows=`168646`, augmented_pct=`88.676`, leakage_policy=`ticker static stock_info only; fills missing cells only; no flow/news/VI/rank/financial copied`
 - static_master_focused_suite: model=`lightgbm_ranker`, feature_set=`kis_failure_prior_category`, gate=`shadow_risk_review`, production_ready=`False`, shadow_display_allowed=`True`, hit5=`60.4167`, win5=`72.9167`, hit10=`66.6667`, avg5=`9.304534`, min_ordered_exit=`-16.053922`, expected_net=`-1.178281`, blockers=`['hit5_dd10_5d_lt_73', 'ordered_exit_floor_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
+- static_master_stop_overlay_strict_suite: model=`lightgbm`, feature_set=`kis_failure_prior_numeric`, gate=`shadow_ready`, production_ready=`False`, shadow_display_allowed=`True`, n=`13`, active_days=`13`, hit5=`53.8462`, stop5=`7.6923`, bad_path=`38.4615`, avg_exit=`1.219388`, min_low=`-10.797336`, blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'expected_touch_policy_net_5d_lt_0p5']`
 - static_master_3stage: status=`improved_shadow_research`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, hit5=`65.2174`, avg_exit=`0.034024`, dynamic_exit=`2.416252`, tail=`30.4348`, min_low=`-28.390711`, avg_exit_delta=`1.015098`, hit5_delta=`4.8007`, blockers=`['n_lt_45', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - full_augmented_3stage: status=`no_improvement`, hit5=`60.0`, avg_exit=`-1.239125`, dynamic_exit=`1.749488`, tail=`40.0`, min_low=`-25.583164`
 - matched_only_3stage: status=`no_improvement`, hit5=`37.5`, avg_exit=`-4.524453`, dynamic_exit=`-3.279198`, tail=`62.5`, min_low=`-26.343594`

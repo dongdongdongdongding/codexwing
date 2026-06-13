@@ -43,6 +43,8 @@ DEFAULT_COMPOUND_DRAWDOWN_REPORTS = (
     / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top5_p03_20260613.json",
     PROJECT_ROOT
     / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top10_all_20260613.json",
+    PROJECT_ROOT
+    / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_kis_failure_numeric_top2_p065_compound_20260613.json",
 )
 REQUIRED_HIT5 = 73.0
 REQUIRED_MIN_LOW = -10.0

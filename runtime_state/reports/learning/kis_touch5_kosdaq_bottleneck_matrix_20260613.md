@@ -1,6 +1,6 @@
 # KIS Touch5 KOSDAQ Bottleneck Matrix
 
-- generated_at: `2026-06-13T12:41:25+00:00`
+- generated_at: `2026-06-13T12:51:51+00:00`
 - market: `KOSDAQ`
 - status: `kosdaq_tail_risk_blocks_production_replacement`
 - production_replacement_ready: `False`
@@ -36,5 +36,6 @@
 | source | score | topN | prob | base_n | base_days | base_hit5 | base_min_low | candidates | sample | low_safe | hit_low_safe | sample_hit_low_safe | holdout_gate |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top5_p03_20260613.json | prob_plus_tail | 5 | 0.3 | 144 | 16 | 68.0556 | -33.704825 | 3949 | 0 | 535 | 524 | 0 | 0 |
+| runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_kis_failure_numeric_top2_p065_compound_20260613.json | prob | 2 | 0.65 | 58 | 16 | 84.4828 | -22.529631 | 4179 | 0 | 838 | 838 | 0 | 0 |
 | runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_p05_20260613.json | prob_tail_margin | 3 | 0.5 | 82 | 13 | 73.1707 | -21.915669 | 4098 | 0 | 847 | 809 | 0 | 0 |
 | runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top10_all_20260613.json | prob_plus_tail | 10 | None | 364 | 19 | 52.4725 | -38.310759 | 4014 | 0 | 230 | 210 | 0 | 0 |
