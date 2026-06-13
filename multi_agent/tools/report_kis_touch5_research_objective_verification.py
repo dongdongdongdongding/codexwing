@@ -52,6 +52,7 @@ DEFAULT_DRAWDOWN_FILTER_REPORT = (
 )
 DEFAULT_COVERAGE_AUDIT = ROOT / "runtime_state/reports/learning/kis_touch5_research_coverage_audit_20260613.json"
 DEFAULT_SLICE_ABLATION = ROOT / "runtime_state/reports/learning/kis_touch5_slice_ablation_20260613.json"
+DEFAULT_STABILITY_SEARCH = ROOT / "runtime_state/reports/learning/kis_touch5_stability_search_20260613.json"
 DEFAULT_FINALTOPN_PREFILTER_PROXY = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json"
 )
@@ -846,6 +847,41 @@ def _slice_ablation_market(report: Mapping[str, Any], market: str) -> Dict[str, 
     }
 
 
+def _stability_search_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    markets = report.get("markets") if isinstance(report.get("markets"), Mapping) else {}
+    row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
+    top_candidates = row.get("top_candidates") if isinstance(row.get("top_candidates"), list) else []
+    stable_candidates = row.get("period_stable_top") if isinstance(row.get("period_stable_top"), list) else []
+    best = top_candidates[0] if top_candidates and isinstance(top_candidates[0], Mapping) else {}
+    stable = stable_candidates[0] if stable_candidates and isinstance(stable_candidates[0], Mapping) else {}
+    best_metrics = best.get("metrics") if isinstance(best.get("metrics"), Mapping) else {}
+    stable_metrics = stable.get("metrics") if isinstance(stable.get("metrics"), Mapping) else {}
+    return {
+        "status": row.get("status"),
+        "evaluated_candidates": row.get("evaluated_candidates"),
+        "production_ready_count": row.get("production_ready_count"),
+        "period_stable_count": row.get("period_stable_count"),
+        "shadow_period_stable_count": row.get("shadow_period_stable_count"),
+        "best_candidate": {
+            "selection_rule": best.get("selection_rule"),
+            "stability_status": best.get("stability_status"),
+            "period_pass_count": best.get("period_pass_count"),
+            "period_result_count": best.get("period_result_count"),
+            "gate_status": best.get("gate_status"),
+            "blockers": best.get("production_blocking_reasons") or [],
+            "metrics": _pick_metrics(best_metrics),
+        },
+        "best_period_stable_candidate": {
+            "selection_rule": stable.get("selection_rule"),
+            "period_pass_count": stable.get("period_pass_count"),
+            "period_result_count": stable.get("period_result_count"),
+            "gate_status": stable.get("gate_status"),
+            "blockers": stable.get("production_blocking_reasons") or [],
+            "metrics": _pick_metrics(stable_metrics),
+        },
+    }
+
+
 def build_report(
     *,
     shadow_report_path: Path = DEFAULT_SHADOW_REPORT,
@@ -864,6 +900,7 @@ def build_report(
     drawdown_filter_report_path: Path | None = None,
     coverage_audit_path: Path | None = None,
     slice_ablation_path: Path | None = None,
+    stability_search_path: Path | None = None,
     finaltopn_prefilter_proxy_path: Path | None = None,
     finaltopn_actual_sidecar_path: Path | None = None,
     static_master_augmentation_path: Path | None = None,
@@ -889,6 +926,7 @@ def build_report(
     drawdown_filter_report = _load_optional_json(drawdown_filter_report_path)
     coverage_audit = _load_optional_json(coverage_audit_path)
     slice_ablation = _load_optional_json(slice_ablation_path)
+    stability_search = _load_optional_json(stability_search_path)
     finaltopn_prefilter_proxy = _load_optional_json(finaltopn_prefilter_proxy_path)
     finaltopn_actual_sidecar = _load_optional_json(finaltopn_actual_sidecar_path)
     static_master_augmentation = _load_optional_json(static_master_augmentation_path)
@@ -916,6 +954,7 @@ def build_report(
             "candidate_leaderboard": _candidate_leaderboard_market(candidate_leaderboard, market),
             "drawdown_filter_research": _drawdown_filter_research_market(drawdown_filter_report, market),
             "slice_ablation": _slice_ablation_market(slice_ablation, market),
+            "stability_search": _stability_search_market(stability_search, market),
         }
     decision = _best_available_decision({m: row["kis_sidecar_longfold_shadow"] for m, row in markets.items()})
     drawdown_kospi = markets.get("KOSPI", {}).get("drawdown_filter_research") or {}
@@ -960,6 +999,20 @@ def build_report(
             slice_decision.get("missing_or_sparse_actual_months") or []
         )
         if not slice_ready:
+            decision["production_replacement_proven"] = False
+            decision["recommended_action"] = "keep_existing_production_and_show_kis_shadow_top_section"
+    stability_decision = stability_search.get("decision") if isinstance(stability_search.get("decision"), dict) else {}
+    if stability_decision:
+        stability_ready = bool(stability_decision.get("production_replacement_ready"))
+        decision["stability_search_status"] = stability_decision.get("status")
+        decision["stability_search_production_ready"] = stability_ready
+        decision["stability_search_period_stable_both_market_candidate"] = bool(
+            stability_decision.get("period_stable_both_market_candidate")
+        )
+        decision["stability_search_missing_or_sparse_actual_months"] = (
+            stability_decision.get("missing_or_sparse_actual_months") or []
+        )
+        if not stability_ready:
             decision["production_replacement_proven"] = False
             decision["recommended_action"] = "keep_existing_production_and_show_kis_shadow_top_section"
     return {
@@ -1020,6 +1073,10 @@ def build_report(
             if slice_ablation_path and slice_ablation_path.exists()
             else None,
             "slice_ablation": slice_decision,
+            "stability_search_report": _rel(stability_search_path)
+            if stability_search_path and stability_search_path.exists()
+            else None,
+            "stability_search": stability_decision,
             "drawdown_filter_status": drawdown_filter_report.get("status") if drawdown_filter_report else None,
             "drawdown_filter_validation_mode": drawdown_filter_report.get("validation_mode")
             if drawdown_filter_report
@@ -1115,6 +1172,10 @@ def build_report(
                 "step": "period_slice_and_feature_ablation",
                 "finding": "현재 최고 KIS 규칙을 실제 sidecar 월별/2개월 구간과 피쳐군 제거·단독 조건에서 재생해 성과 안정성과 특정 피쳐 의존성을 검증한다.",
             },
+            {
+                "step": "period_stability_rule_search",
+                "finding": "동일 fold 예측 위에서 stage-3 topN/score/threshold 조합을 넓게 replay해 기간 안정 후보가 실제로 존재하는지 확인한다.",
+            },
         ],
         "markets": markets,
         "historical_proxy_augmentation_experiment": _historical_proxy_augmentation_experiment(
@@ -1182,6 +1243,9 @@ def _markdown(report: Mapping[str, Any]) -> str:
         f"- slice_ablation_status: `{decision.get('slice_ablation_status')}`",
         f"- slice_ablation_production_ready: `{decision.get('slice_ablation_production_ready')}`",
         f"- slice_ablation_missing_or_sparse_actual_months: `{decision.get('slice_ablation_missing_or_sparse_actual_months')}`",
+        f"- stability_search_status: `{decision.get('stability_search_status')}`",
+        f"- stability_search_production_ready: `{decision.get('stability_search_production_ready')}`",
+        f"- stability_search_period_stable_both_market_candidate: `{decision.get('stability_search_period_stable_both_market_candidate')}`",
         "",
         "## 목표",
         f"- primary_goal: {goal.get('primary_goal')}",
@@ -1205,6 +1269,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- drawdown_filter_research: status=`{(report.get('research_inputs') or {}).get('drawdown_filter_status')}`, validation=`{(report.get('research_inputs') or {}).get('drawdown_filter_validation_mode')}`, deployment_ready=`{(report.get('research_inputs') or {}).get('drawdown_filter_deployment_ready')}`, production_gate_pass_count=`{(report.get('research_inputs') or {}).get('drawdown_filter_production_gate_pass_count')}`",
             f"- coverage_audit: status=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('status')}`, actual_kis_oos_months=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('actual_kis_oos_months')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('missing_or_sparse_actual_kis_months')}`",
             f"- slice_ablation: status=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('production_replacement_ready')}`, period_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('all_trainable_periods_outcome_pass')}`, ablation_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('available_full_ablation_has_multiple_passing_families')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('missing_or_sparse_actual_months')}`",
+            f"- stability_search: status=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('production_replacement_ready')}`, period_stable_both_market=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('period_stable_both_market_candidate')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('missing_or_sparse_actual_months')}`",
             f"- three_stage_validation: `{(report.get('research_inputs') or {}).get('three_stage_validation')}`",
             "",
         ]
@@ -1339,6 +1404,23 @@ def _markdown(report: Mapping[str, Any]) -> str:
         slice_best_metrics = (
             slice_best.get("metrics") if isinstance(slice_best.get("metrics"), dict) else {}
         )
+        stability = payload.get("stability_search") if isinstance(payload.get("stability_search"), dict) else {}
+        stability_best = (
+            stability.get("best_candidate")
+            if isinstance(stability.get("best_candidate"), dict)
+            else {}
+        )
+        stability_best_metrics = (
+            stability_best.get("metrics") if isinstance(stability_best.get("metrics"), dict) else {}
+        )
+        stability_stable = (
+            stability.get("best_period_stable_candidate")
+            if isinstance(stability.get("best_period_stable_candidate"), dict)
+            else {}
+        )
+        stability_stable_metrics = (
+            stability_stable.get("metrics") if isinstance(stability_stable.get("metrics"), dict) else {}
+        )
         lines.extend(
             [
                 f"## {market}",
@@ -1360,6 +1442,9 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 drawdown_rolling_line,
                 f"- slice_ablation: ok=`{slice_ablation.get('ok_results')}`, production_ready_count=`{slice_ablation.get('production_ready_count')}`, shadow_count=`{slice_ablation.get('shadow_display_allowed_count')}`, period_pass=`{slice_ablation.get('all_feature_period_outcome_pass_count')}/{slice_ablation.get('all_feature_period_result_count')}`, ablation_pass=`{slice_ablation.get('available_full_ablation_outcome_pass_count')}/{slice_ablation.get('available_full_ablation_result_count')}`, dominant_prior=`{slice_ablation.get('dominant_close_failure_prior_dependency')}`",
                 f"- slice_ablation_best: slice=`{slice_best.get('slice')}`, feature_config=`{slice_best.get('feature_config')}`, rule=`{slice_best.get('selection_rule')}`, gate=`{slice_best.get('gate_status')}`, n=`{slice_best_metrics.get('n')}`, active_days=`{slice_best_metrics.get('active_days')}`, hit5=`{slice_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{slice_best_metrics.get('avg_5d_pct')}`, min_low=`{slice_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{slice_best.get('blockers')}`",
+                f"- stability_search: evaluated=`{stability.get('evaluated_candidates')}`, production_ready_count=`{stability.get('production_ready_count')}`, period_stable_count=`{stability.get('period_stable_count')}`, shadow_period_stable_count=`{stability.get('shadow_period_stable_count')}`",
+                f"- stability_search_best: rule=`{stability_best.get('selection_rule')}`, status=`{stability_best.get('stability_status')}`, pass=`{stability_best.get('period_pass_count')}/{stability_best.get('period_result_count')}`, gate=`{stability_best.get('gate_status')}`, n=`{stability_best_metrics.get('n')}`, active_days=`{stability_best_metrics.get('active_days')}`, hit5=`{stability_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_best_metrics.get('avg_5d_pct')}`, min_low=`{stability_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_best.get('blockers')}`",
+                f"- stability_search_period_stable_best: rule=`{stability_stable.get('selection_rule')}`, pass=`{stability_stable.get('period_pass_count')}/{stability_stable.get('period_result_count')}`, gate=`{stability_stable.get('gate_status')}`, n=`{stability_stable_metrics.get('n')}`, active_days=`{stability_stable_metrics.get('active_days')}`, hit5=`{stability_stable_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_stable_metrics.get('avg_5d_pct')}`, min_low=`{stability_stable_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_stable.get('blockers')}`",
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",
@@ -1476,6 +1561,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--drawdown-filter-report", default=str(DEFAULT_DRAWDOWN_FILTER_REPORT))
     parser.add_argument("--coverage-audit-report", default=str(DEFAULT_COVERAGE_AUDIT))
     parser.add_argument("--slice-ablation-report", default=str(DEFAULT_SLICE_ABLATION))
+    parser.add_argument("--stability-search-report", default=str(DEFAULT_STABILITY_SEARCH))
     parser.add_argument("--finaltopn-prefilter-proxy-report", default=str(DEFAULT_FINALTOPN_PREFILTER_PROXY))
     parser.add_argument("--finaltopn-actual-sidecar-report", default=str(DEFAULT_FINALTOPN_ACTUAL_SIDECAR))
     parser.add_argument("--static-master-augmentation-report", default=str(DEFAULT_STATIC_MASTER_AUGMENTATION))
@@ -1517,6 +1603,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         drawdown_filter_report_path=Path(args.drawdown_filter_report),
         coverage_audit_path=Path(args.coverage_audit_report),
         slice_ablation_path=Path(args.slice_ablation_report),
+        stability_search_path=Path(args.stability_search_report),
         finaltopn_prefilter_proxy_path=Path(args.finaltopn_prefilter_proxy_report),
         finaltopn_actual_sidecar_path=Path(args.finaltopn_actual_sidecar_report),
         static_master_augmentation_path=Path(args.static_master_augmentation_report),

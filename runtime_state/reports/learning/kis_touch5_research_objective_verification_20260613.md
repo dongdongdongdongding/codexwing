@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T10:09:42.182339+00:00`
+- generated_at: `2026-06-13T10:21:20.500085+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -16,6 +16,9 @@
 - slice_ablation_status: `slice_ablation_blocks_production_replacement`
 - slice_ablation_production_ready: `False`
 - slice_ablation_missing_or_sparse_actual_months: `['2026-01', '2026-02', '2026-03', '2026-04']`
+- stability_search_status: `no_period_stable_both_market_candidate`
+- stability_search_production_ready: `False`
+- stability_search_period_stable_both_market_candidate: `False`
 
 ## 목표
 - primary_goal: 실제 매수 관점에서 KIS 기반 후보가 5거래일 안에 +5% 이상 터치하고 -10%보다 깊은 하락을 피하는지 검증한다.
@@ -36,6 +39,7 @@
 - drawdown_filter_research: KOSPI에서 KIS sidecar tail gate 이후 close-failure prior 계열 scan-time 필터를 탐색해 production gate pass 후보를 찾았다. 단 threshold sweep 사후선택이므로 운영 승격이 아니라 controlled shadow 검증 후보로만 기록한다.
 - research_coverage_audit: 실제 KIS sidecar prepared cache의 월별 범위, OOS fold 월, 피쳐군을 별도 감사해 Jan-Jun 전체 검증과 피쳐군 ablation이 빠지면 production replacement를 차단한다.
 - period_slice_and_feature_ablation: 현재 최고 KIS 규칙을 실제 sidecar 월별/2개월 구간과 피쳐군 제거·단독 조건에서 재생해 성과 안정성과 특정 피쳐 의존성을 검증한다.
+- period_stability_rule_search: 동일 fold 예측 위에서 stage-3 topN/score/threshold 조합을 넓게 replay해 기간 안정 후보가 실제로 존재하는지 확인한다.
 
 ## 입력과 검증
 - no_dummy_data: `True`
@@ -46,6 +50,7 @@
 - drawdown_filter_research: status=`production_gate_pass_research_candidate_found`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`6`
 - coverage_audit: status=`coverage_gap_blocks_production_replacement`, actual_kis_oos_months=`['2026-05', '2026-06']`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - slice_ablation: status=`slice_ablation_blocks_production_replacement`, production_ready=`False`, period_pass=`False`, ablation_pass=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
+- stability_search: status=`no_period_stable_both_market_candidate`, production_ready=`False`, period_stable_both_market=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
 
 ## KOSPI
@@ -67,6 +72,9 @@
 - drawdown_filter_rolling_prior: status=`rolling_prior_blocked`, validation=`rolling_prior_oos_next_fold_walk_forward_predictions`, evaluated_steps=`15`, selected=`2`, gate_pass_observed=`False`, aggregate_status=`blocked`, n=`2`, active_days=`1`, hit5=`100.0`, avg5=`47.674132`, min_low=`-3.191402`
 - slice_ablation: ok=`10`, production_ready_count=`0`, shadow_count=`3`, period_pass=`3/4`, ablation_pass=`0/6`, dominant_prior=`False`
 - slice_ablation_best: slice=`2026-05..2026-06`, feature_config=`all_features`, rule=`top2_prob_plus_tail_p0p8_tail0p85`, gate=`shadow_ready`, n=`8`, active_days=`3`, hit5=`100.0`, avg5=`8.426101`, min_low=`-8.188031`, blockers=`['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20']`
+- stability_search: evaluated=`1092`, production_ready_count=`0`, period_stable_count=`70`, shadow_period_stable_count=`0`
+- stability_search_best: rule=`top1_tail0p85`, status=`period_stable_candidate`, pass=`3/3`, gate=`blocked`, n=`4`, active_days=`3`, hit5=`100.0`, avg5=`10.534841`, min_low=`-8.188031`, blockers=`['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20']`
+- stability_search_period_stable_best: rule=`top1_tail0p85`, pass=`3/3`, gate=`blocked`, n=`4`, active_days=`3`, hit5=`100.0`, avg5=`10.534841`, min_low=`-8.188031`, blockers=`['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20']`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`40`, active_days=`21`, hit5=`57.5`, avg_exit=`-0.618404`, dynamic_exit=`1.249479`, min_low=`-27.443637`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`30`, active_days=`15`, hit5=`53.3333`, avg_exit=`-1.796353`, dynamic_exit=`0.528124`, min_low=`-18.184768`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 
@@ -89,6 +97,9 @@
 - drawdown_filter_rolling_prior: status=`not_run_for_market`
 - slice_ablation: ok=`10`, production_ready_count=`0`, shadow_count=`2`, period_pass=`1/4`, ablation_pass=`0/6`, dominant_prior=`False`
 - slice_ablation_best: slice=`2026-05`, feature_config=`all_features`, rule=`top3_ev_tail0p9`, gate=`shadow_ready`, n=`17`, active_days=`3`, hit5=`88.2353`, avg5=`9.402924`, min_low=`-9.837985`, blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
+- stability_search: evaluated=`868`, production_ready_count=`0`, period_stable_count=`0`, shadow_period_stable_count=`0`
+- stability_search_best: rule=`top5_prob_plus_tail_tail0p6`, status=`unstable_candidate`, pass=`0/3`, gate=`blocked`, n=`5`, active_days=`1`, hit5=`40.0`, avg5=`14.086518`, min_low=`-14.578702`, blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
+- stability_search_period_stable_best: rule=`None`, pass=`None/None`, gate=`None`, n=`None`, active_days=`None`, hit5=`None`, avg5=`None`, min_low=`None`, blockers=`[]`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`46`, active_days=`24`, hit5=`54.3478`, avg_exit=`-0.85266`, dynamic_exit=`1.529568`, min_low=`-32.404541`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`None`, production_ready=`False`, shadow_display_allowed=`False`, n=`None`, active_days=`None`, hit5=`None`, avg_exit=`None`, dynamic_exit=`None`, min_low=`None`, blockers=`[]`
 
