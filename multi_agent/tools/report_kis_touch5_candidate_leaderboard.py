@@ -24,7 +24,7 @@ if str(ROOT) not in sys.path:
 from modules.kis_model_gate import TOUCH5_DD10_LABEL, evaluate_kis_model_gate
 
 
-REPORT_VERSION = "kis_touch5_candidate_leaderboard_v1"
+REPORT_VERSION = "kis_touch5_candidate_leaderboard_v2"
 DEFAULT_REPORT_DIR = ROOT / "runtime_state/reports/learning"
 DEFAULT_CURRENT_COMPARISON = DEFAULT_REPORT_DIR / "kis_model_market_comparison.json"
 DEFAULT_OUTPUT = DEFAULT_REPORT_DIR / "kis_touch5_candidate_leaderboard_20260613.json"
@@ -50,6 +50,7 @@ INCLUDED_NAME_PARTS = (
     "sidecar_threshold_sweep",
     "historical_best_effort",
 )
+PREFERRED_VALIDATION_MODE = "dayfold_realistic_coverage"
 
 
 def _utc_now() -> str:
@@ -256,8 +257,10 @@ def _compact_candidate(row: Mapping[str, Any]) -> Dict[str, Any]:
         reason for reason in production_reasons if not reason.startswith(SAMPLE_BLOCKER_PREFIXES)
     ]
     sample_progress = _sample_progress(gate)
+    source_path = str(row.get("source_path") or "")
     return {
         "source_path": row.get("source_path"),
+        "validation_mode": _validation_mode(source_path),
         "identity": {
             key: identity.get(key)
             for key in (
@@ -298,6 +301,22 @@ def _compact_candidate(row: Mapping[str, Any]) -> Dict[str, Any]:
         },
         "sample_progress": sample_progress,
     }
+
+
+def _validation_mode(source_path: str) -> str:
+    name = Path(str(source_path or "")).name.lower()
+    if PREFERRED_VALIDATION_MODE in name:
+        return PREFERRED_VALIDATION_MODE
+    if "dayfold" in name:
+        return "dayfold"
+    if "longfold" in name:
+        return "longfold"
+    return "legacy"
+
+
+def _preferred_validation_rows(rows: Sequence[Mapping[str, Any]]) -> tuple[List[Mapping[str, Any]], bool]:
+    preferred = [row for row in rows if row.get("validation_mode") == PREFERRED_VALIDATION_MODE]
+    return (preferred, True) if preferred else (list(rows), False)
 
 
 def _status_rank(row: Mapping[str, Any]) -> int:
@@ -390,7 +409,8 @@ def _is_high_precision_sample_only(row: Mapping[str, Any]) -> bool:
 
 def _market_report(market: str, rows: Sequence[Mapping[str, Any]], current: Mapping[str, Any] | None) -> Dict[str, Any]:
     market_rows = [row for row in rows if ((row.get("identity") or {}).get("market") == market)]
-    ranked = sorted(market_rows, key=_sort_key)
+    evaluation_rows, using_preferred_validation = _preferred_validation_rows(market_rows)
+    ranked = sorted(evaluation_rows, key=_sort_key)
     production = [row for row in ranked if (row.get("gate") or {}).get("production_ready")]
     sample_only = [row for row in ranked if (row.get("gate") or {}).get("sample_only_blocked")]
     shadow = [row for row in ranked if (row.get("gate") or {}).get("shadow_display_allowed")]
@@ -411,6 +431,8 @@ def _market_report(market: str, rows: Sequence[Mapping[str, Any]], current: Mapp
     return {
         "status": status,
         "candidate_count": len(market_rows),
+        "evaluated_candidate_count": len(evaluation_rows),
+        "preferred_validation_mode": PREFERRED_VALIDATION_MODE if using_preferred_validation else None,
         "production_ready_count": len(production),
         "shadow_display_allowed_count": len(shadow),
         "sample_only_shadow_count": len(sample_only),

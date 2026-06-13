@@ -165,7 +165,7 @@ def _fit_predict_folds(
         test_idx = scoped.index[scoped["trade_date"].isin(test_day_set)]
         if len(train_idx) < min_train_rows or len(test_idx) < min_test_rows:
             continue
-        if y.loc[train_idx].nunique() < 2 or y.loc[test_idx].nunique() < 2:
+        if y.loc[train_idx].nunique() < 2:
             continue
         if need_tail and y_tail.loc[train_idx].nunique() < 2:
             continue
@@ -189,13 +189,17 @@ def _fit_predict_folds(
                 tail_pipe.fit(x_train, y_tail.loc[train_idx])
                 tail_prob = pd.Series(tail_pipe.predict_proba(x_test)[:, 1], index=test_idx)
         try:
-            aucs.append(float(roc_auc_score(y.loc[test_idx], prob)))
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                aucs.append(float(roc_auc_score(y.loc[test_idx], prob)))
             briers.append(float(brier_score_loss(y.loc[test_idx], prob)))
         except Exception:
             pass
         if need_tail:
             try:
-                tail_aucs.append(float(roc_auc_score(y_tail.loc[test_idx], tail_prob)))
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    tail_aucs.append(float(roc_auc_score(y_tail.loc[test_idx], tail_prob)))
                 tail_briers.append(float(brier_score_loss(y_tail.loc[test_idx], tail_prob)))
             except Exception:
                 pass
@@ -486,6 +490,26 @@ def _analysis_summary(rows: Sequence[Mapping[str, Any]], *, limit: int) -> Dict[
             sample_sufficient.append(row)
     sample_only.sort(key=_summary_sort_key)
     sample_sufficient.sort(key=_summary_sort_key)
+    active_day_frontier = sorted(
+        [
+            row
+            for row in rows
+            if isinstance(row, Mapping)
+            and isinstance(row.get("kis_model_gate"), Mapping)
+            and isinstance(row.get("metrics"), Mapping)
+        ],
+        key=lambda row: (
+            -int(((row.get("metrics") or {}).get("active_days")) or 0),
+            -float(((row.get("metrics") or {}).get("hit5_dd10_5d_pct")) or 0.0),
+            -float(((row.get("metrics") or {}).get("min_min_low_5d_pct")) or -999.0),
+            -float(((row.get("metrics") or {}).get("avg_5d_pct")) or -999.0),
+            -int(((row.get("metrics") or {}).get("n")) or 0),
+        ),
+    )
+    max_active_days = max(
+        [int(((row.get("metrics") or {}).get("active_days")) or 0) for row in active_day_frontier],
+        default=0,
+    )
     return {
         "status_counts": dict(sorted(status_counts.items())),
         "score_mode_counts": dict(sorted(score_mode_counts.items())),
@@ -495,6 +519,10 @@ def _analysis_summary(rows: Sequence[Mapping[str, Any]], *, limit: int) -> Dict[
         "sample_sufficient_count": len(sample_sufficient),
         "sample_sufficient_top": [_compact_result(row) for row in sample_sufficient[:limit]],
         "pareto_top": _pareto_rows(rows, limit=limit),
+        "active_day_frontier": {
+            "max_active_days": int(max_active_days),
+            "top": [_compact_result(row) for row in active_day_frontier[:limit]],
+        },
     }
 
 

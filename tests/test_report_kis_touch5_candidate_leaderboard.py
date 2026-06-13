@@ -183,6 +183,56 @@ def test_leaderboard_surfaces_high_precision_sample_only_candidate(tmp_path) -> 
     assert market["best_high_precision_shadow"]["identity"]["selection_rule"] == "high_precision_candidate"
 
 
+def test_leaderboard_prefers_realistic_coverage_over_legacy_high_precision(tmp_path) -> None:
+    legacy_source = tmp_path / "kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold.json"
+    realistic_source = tmp_path / "kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage.json"
+    current = tmp_path / "kis_model_market_comparison.json"
+    _current_comparison(current)
+    _write_json(
+        legacy_source,
+        {
+            "top_results": [
+                _candidate(
+                    market="KOSDAQ",
+                    rule="legacy_high_precision",
+                    n=50,
+                    active_days=12,
+                    active_runs=50,
+                    hit5=100.0,
+                    avg5=20.0,
+                    low5=-7.0,
+                )
+            ]
+        },
+    )
+    _write_json(
+        realistic_source,
+        {
+            "top_results": [
+                _candidate(
+                    market="KOSDAQ",
+                    rule="realistic_lower_sample",
+                    n=19,
+                    active_days=9,
+                    active_runs=19,
+                    hit5=100.0,
+                    avg5=16.0,
+                    low5=-7.0,
+                )
+            ]
+        },
+    )
+
+    report = tool.build_report(report_paths=[legacy_source, realistic_source], current_comparison_path=current)
+    market = report["markets"]["KOSDAQ"]
+
+    assert market["preferred_validation_mode"] == "dayfold_realistic_coverage"
+    assert market["evaluated_candidate_count"] == 1
+    assert market["best_sample_only_shadow"]["identity"]["selection_rule"] == "realistic_lower_sample"
+    assert market["best_high_precision_shadow"] is None
+    assert market["verified_upgrade_candidate"] is None
+
+
 def test_leaderboard_rejects_sample_progress_when_avg5_regresses(tmp_path) -> None:
     source = tmp_path / "scan_universe_admission_challenger_touch5_dd10_kis_tailgate.json"
     current = tmp_path / "kis_model_market_comparison.json"

@@ -1,6 +1,11 @@
 import pandas as pd
 
-from multi_agent.tools.sweep_kis_sidecar_thresholds import _compact_report, _score_predictions, _selection_rule
+from multi_agent.tools.sweep_kis_sidecar_thresholds import (
+    _compact_report,
+    _fit_predict_folds,
+    _score_predictions,
+    _selection_rule,
+)
 
 
 def test_selection_rule_preserves_existing_prob_default():
@@ -37,6 +42,46 @@ def test_prob_score_keeps_success_probability_order():
     scores = _score_predictions(predictions, "prob")
 
     assert scores.loc["unsafe"] > scores.loc["safe"]
+
+
+def test_fit_predict_folds_keeps_single_class_test_day_for_realistic_validation():
+    scoped = pd.DataFrame(
+        {
+            "trade_date": [
+                "2026-05-01",
+                "2026-05-01",
+                "2026-05-02",
+                "2026-05-02",
+                "2026-05-03",
+                "2026-05-03",
+                "2026-05-04",
+                "2026-05-04",
+            ],
+            "feature": [0.0, 1.0, 0.1, 1.1, 0.2, 0.3, 0.4, 1.2],
+        }
+    )
+    y = pd.Series([0, 1, 0, 1, 0, 0, 0, 1], index=scoped.index)
+    y_tail = pd.Series([1, 1, 1, 1, 1, 1, 1, 1], index=scoped.index)
+
+    payload = _fit_predict_folds(
+        scoped,
+        y=y,
+        y_tail=y_tail,
+        numeric=["feature"],
+        categorical=[],
+        model_name="logistic",
+        min_train_rows=4,
+        min_test_rows=2,
+        min_train_days=2,
+        test_days=1,
+        max_folds=2,
+        need_tail=False,
+        progress=False,
+    )
+
+    predicted_days = set(payload["predictions"]["test_days"])
+    assert "2026-05-03" in predicted_days
+    assert len(payload["folds"]) == 2
 
 
 def test_compact_report_removes_repeated_heavy_payloads():
@@ -117,5 +162,7 @@ def test_compact_report_removes_repeated_heavy_payloads():
     assert summary["sample_only_top"][0]["selection_rule"] == "top2"
     assert summary["sample_sufficient_count"] == 0
     assert summary["sample_sufficient_top"] == []
+    assert summary["active_day_frontier"]["max_active_days"] == 5
+    assert summary["active_day_frontier"]["top"][0]["selection_rule"] == "top1"
     assert len(summary["pareto_top"]) == 1
     assert summary["pareto_top"][0]["selection_rule"] == "top1"

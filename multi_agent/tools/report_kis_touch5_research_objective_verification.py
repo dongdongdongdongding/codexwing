@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 REPORT_VERSION = "kis_touch5_research_objective_verification_v1"
-DEFAULT_OUTPUT = ROOT / "runtime_state/reports/learning/kis_touch5_research_objective_verification_20260612.json"
+DEFAULT_OUTPUT = ROOT / "runtime_state/reports/learning/kis_touch5_research_objective_verification_20260613.json"
 DEFAULT_SHADOW_REPORT = ROOT / "runtime_state/reports/learning/kis_shadow_research_verification_20260612.json"
 DEFAULT_THREE_STAGE_DYNAMIC_REPORT = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_dynamic_exit_20260101_20260610.json"
