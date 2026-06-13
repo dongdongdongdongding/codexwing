@@ -1,14 +1,15 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T06:45:32.135570+00:00`
+- generated_at: `2026-06-13T08:41:08.192544+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
 - shadow_performance_proven: `True`
 - drawdown_filter_research_candidate_found: `True`
+- drawdown_filter_holdout_gate_pass: `False`
 - drawdown_filter_deployment_ready: `False`
-- drawdown_filter_action: `controlled_shadow_forward_validation_required`
+- drawdown_filter_action: `keep_research_only_until_holdout_or_forward_gate_pass`
 
 ## 목표
 - primary_goal: 실제 매수 관점에서 KIS 기반 후보가 5거래일 안에 +5% 이상 터치하고 -10%보다 깊은 하락을 피하는지 검증한다.
@@ -52,6 +53,7 @@
 - score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`519` best=`top1_tail0p85` min_low=`-10.87344` low_deficit=`0.87344`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`2385`, shadow=`393`, sample_only=`252`, production=`0`, best_sample_only=`top2_prob_plus_tail_p0p8_tail0p85`, hit5=`87.0968`, n=`93`, active_days=`14`, best_high_precision=`top1_prob_tail_margin_p0p2_tail0p95`, high_precision_hit5=`93.4783`, high_precision_sample=`88.888889`, upgrade=`None`
 - drawdown_filter_research: status=`production_gate_pass_research_candidate_found`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`6`, best=`top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667`, hit5=`98.1481`, avg5=`24.676158`, min_low=`-9.230497`, expected_net=`4.331054`, promotable_now=`False`
+- drawdown_filter_holdout: status=`no_holdout_gate_pass`, validation=`selection_fixed_rule_holdout_walk_forward_predictions`, selection_candidates=`811`, holdout_evaluated=`811`, gate_pass_count=`0`, gate_pass_observed=`False`, selection_best_status=`shadow_ready`, selection_best_n=`23`, selection_best_days=`7`, selection_best_hit5=`100.0`, selection_best_min_low=`-5.551964`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`40`, active_days=`21`, hit5=`57.5`, avg_exit=`-0.618404`, dynamic_exit=`1.249479`, min_low=`-27.443637`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`30`, active_days=`15`, hit5=`53.3333`, avg_exit=`-1.796353`, dynamic_exit=`0.528124`, min_low=`-18.184768`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 
@@ -70,6 +72,7 @@
 - score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`0` best=`None` min_low=`None` low_deficit=`None`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1699`, shadow=`250`, sample_only=`82`, production=`0`, best_sample_only=`top3_ev_tail0p9`, hit5=`94.8276`, n=`58`, active_days=`10`, best_high_precision=`top3_ev_p0p2_tail0p9`, high_precision_hit5=`96.4912`, high_precision_sample=`80.0`, upgrade=`None`
 - drawdown_filter_research: status=`not_run_for_market`
+- drawdown_filter_holdout: status=`not_run_for_market`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`46`, active_days=`24`, hit5=`54.3478`, avg_exit=`-0.85266`, dynamic_exit=`1.529568`, min_low=`-32.404541`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`None`, production_ready=`False`, shadow_display_allowed=`False`, n=`None`, active_days=`None`, hit5=`None`, avg_exit=`None`, dynamic_exit=`None`, min_low=`None`, blockers=`[]`
 

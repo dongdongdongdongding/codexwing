@@ -450,7 +450,7 @@ def _candidate_leaderboard_market(report: Mapping[str, Any], market: str) -> Dic
 
 
 def _drawdown_research_candidate_summary(row: Mapping[str, Any] | None) -> Dict[str, Any]:
-    if not isinstance(row, Mapping):
+    if not isinstance(row, Mapping) or not row:
         return {}
     identity = row.get("identity") if isinstance(row.get("identity"), dict) else {}
     gate = row.get("gate") if isinstance(row.get("gate"), dict) else {}
@@ -476,6 +476,18 @@ def _drawdown_filter_research_market(report: Mapping[str, Any], market: str) -> 
         return {}
     best = report.get("best_production_candidate") if isinstance(report.get("best_production_candidate"), dict) else {}
     base = report.get("base_candidate") if isinstance(report.get("base_candidate"), dict) else {}
+    holdout = report.get("holdout_validation") if isinstance(report.get("holdout_validation"), dict) else {}
+    selection_best_holdout = (
+        holdout.get("selection_best_holdout_evaluation")
+        if isinstance(holdout.get("selection_best_holdout_evaluation"), dict)
+        else {}
+    )
+    best_holdout_gate_pass = (
+        holdout.get("best_holdout_gate_pass_candidate")
+        if isinstance(holdout.get("best_holdout_gate_pass_candidate"), dict)
+        else {}
+    )
+    holdout_decision = holdout.get("decision") if isinstance(holdout.get("decision"), dict) else {}
     production_count = int(report.get("production_ready_count") or 0)
     return {
         "status": report.get("status"),
@@ -487,8 +499,29 @@ def _drawdown_filter_research_market(report: Mapping[str, Any], market: str) -> 
         "scope": report.get("scope") or {},
         "base_candidate": _drawdown_research_candidate_summary(base),
         "best_gate_pass_research_candidate": _drawdown_research_candidate_summary(best),
+        "holdout_validation": {
+            "status": holdout.get("status"),
+            "validation_mode": holdout.get("validation_mode"),
+            "deployment_ready": bool(holdout.get("deployment_ready")),
+            "selection_folds": holdout.get("selection_folds") or [],
+            "holdout_folds": holdout.get("holdout_folds") or [],
+            "selection_candidates_tested": holdout.get("selection_candidates_tested"),
+            "holdout_candidates_evaluated": holdout.get("holdout_candidates_evaluated"),
+            "holdout_gate_pass_count": holdout.get("holdout_gate_pass_count"),
+            "selection_best_holdout_evaluation": _drawdown_research_candidate_summary(selection_best_holdout),
+            "best_holdout_gate_pass_candidate": _drawdown_research_candidate_summary(best_holdout_gate_pass),
+            "decision": {
+                "holdout_gate_pass_observed": bool(holdout_decision.get("holdout_gate_pass_observed")),
+                "selection_best_holdout_gate_pass": bool(holdout_decision.get("selection_best_holdout_gate_pass")),
+                "deployment_ready": bool(holdout_decision.get("deployment_ready")),
+                "reason": holdout_decision.get("reason"),
+            },
+        }
+        if holdout
+        else {},
         "decision": {
             "production_gate_pass_observed": production_count > 0,
+            "holdout_gate_pass_observed": bool(holdout_decision.get("holdout_gate_pass_observed")),
             "deployment_ready": bool(report.get("deployment_ready")),
             "promotable_now": False,
             "reason": "threshold was selected by a research sweep over walk-forward predictions; require controlled shadow/forward validation before production promotion.",
@@ -817,10 +850,15 @@ def build_report(
     decision["drawdown_filter_research_candidate_found"] = bool(
         (drawdown_kospi.get("decision") or {}).get("production_gate_pass_observed")
     )
+    decision["drawdown_filter_holdout_gate_pass"] = bool(
+        ((drawdown_kospi.get("holdout_validation") or {}).get("decision") or {}).get("holdout_gate_pass_observed")
+    )
     decision["drawdown_filter_deployment_ready"] = bool((drawdown_kospi.get("decision") or {}).get("deployment_ready"))
     decision["drawdown_filter_action"] = (
-        "controlled_shadow_forward_validation_required"
-        if decision["drawdown_filter_research_candidate_found"] and not decision["drawdown_filter_deployment_ready"]
+        "live_forward_shadow_required_for_fixed_rule"
+        if decision["drawdown_filter_holdout_gate_pass"] and not decision["drawdown_filter_deployment_ready"]
+        else "keep_research_only_until_holdout_or_forward_gate_pass"
+        if decision["drawdown_filter_research_candidate_found"] and not decision["drawdown_filter_holdout_gate_pass"]
         else None
     )
     return {
@@ -1018,6 +1056,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
         f"- production_replacement_proven: `{decision.get('production_replacement_proven')}`",
         f"- shadow_performance_proven: `{decision.get('shadow_performance_proven')}`",
         f"- drawdown_filter_research_candidate_found: `{decision.get('drawdown_filter_research_candidate_found')}`",
+        f"- drawdown_filter_holdout_gate_pass: `{decision.get('drawdown_filter_holdout_gate_pass')}`",
         f"- drawdown_filter_deployment_ready: `{decision.get('drawdown_filter_deployment_ready')}`",
         f"- drawdown_filter_action: `{decision.get('drawdown_filter_action')}`",
         "",
@@ -1082,10 +1121,29 @@ def _markdown(report: Mapping[str, Any]) -> str:
         drawdown_validation = drawdown.get("validation_mode") if drawdown else "-"
         drawdown_deployment_ready = drawdown.get("deployment_ready") if drawdown else "-"
         drawdown_pass_count = drawdown.get("production_gate_pass_count") if drawdown else "-"
+        drawdown_holdout = drawdown.get("holdout_validation") if isinstance(drawdown.get("holdout_validation"), dict) else {}
+        drawdown_holdout_decision = (
+            drawdown_holdout.get("decision") if isinstance(drawdown_holdout.get("decision"), dict) else {}
+        )
+        drawdown_selection_best = (
+            drawdown_holdout.get("selection_best_holdout_evaluation")
+            if isinstance(drawdown_holdout.get("selection_best_holdout_evaluation"), dict)
+            else {}
+        )
+        drawdown_selection_metrics = (
+            drawdown_selection_best.get("metrics")
+            if isinstance(drawdown_selection_best.get("metrics"), dict)
+            else {}
+        )
         drawdown_line = (
             f"- drawdown_filter_research: status=`{drawdown_status}`, validation=`{drawdown_validation}`, deployment_ready=`{drawdown_deployment_ready}`, production_gate_pass_count=`{drawdown_pass_count}`, best=`{drawdown_best.get('selection_rule')}`, hit5=`{drawdown_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{drawdown_best_metrics.get('avg_5d_pct')}`, min_low=`{drawdown_best_metrics.get('min_min_low_5d_pct')}`, expected_net=`{drawdown_best_econ.get('expected_touch_policy_net_5d_pct')}`, promotable_now=`{drawdown_decision.get('promotable_now')}`"
             if drawdown
             else "- drawdown_filter_research: status=`not_run_for_market`"
+        )
+        drawdown_holdout_line = (
+            f"- drawdown_filter_holdout: status=`{drawdown_holdout.get('status')}`, validation=`{drawdown_holdout.get('validation_mode')}`, selection_candidates=`{drawdown_holdout.get('selection_candidates_tested')}`, holdout_evaluated=`{drawdown_holdout.get('holdout_candidates_evaluated')}`, gate_pass_count=`{drawdown_holdout.get('holdout_gate_pass_count')}`, gate_pass_observed=`{drawdown_holdout_decision.get('holdout_gate_pass_observed')}`, selection_best_status=`{drawdown_selection_best.get('gate_status')}`, selection_best_n=`{drawdown_selection_metrics.get('n')}`, selection_best_days=`{drawdown_selection_metrics.get('active_days')}`, selection_best_hit5=`{drawdown_selection_metrics.get('hit5_dd10_5d_pct')}`, selection_best_min_low=`{drawdown_selection_metrics.get('min_min_low_5d_pct')}`"
+            if drawdown_holdout
+            else "- drawdown_filter_holdout: status=`not_run_for_market`"
         )
         sample_only_top = score_summary.get("sample_only_top") or []
         sample_sufficient_top = score_summary.get("sample_sufficient_top") or []
@@ -1146,6 +1204,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- score_sweep_constraint_frontier: production_ready=`{constraint_frontiers.get('production_ready_count')}`, days_low_safe_touch=`{constraint_frontiers.get('days_low_safe_touch_count')}`, one_day_short_low_safe_touch=`{constraint_frontiers.get('one_day_short_low_safe_touch_count')}` best=`{one_day_short.get('selection_rule')}` hit5=`{one_day_short_metrics.get('hit5_dd10_5d_pct')}` active_days=`{one_day_short_metrics.get('active_days')}`, sample_sufficient_touch_but_low_fail=`{constraint_frontiers.get('sample_sufficient_touch_but_low_fail_count')}` best=`{low_fail.get('selection_rule')}` min_low=`{low_fail_metrics.get('min_min_low_5d_pct')}` low_deficit=`{low_fail_deficits.get('min_low_5d_pct')}`",
                 f"- candidate_leaderboard: status=`{leaderboard.get('status')}`, candidates=`{leaderboard.get('candidate_count')}`, shadow=`{leaderboard.get('shadow_display_allowed_count')}`, sample_only=`{leaderboard.get('sample_only_shadow_count')}`, production=`{leaderboard.get('production_ready_count')}`, best_sample_only=`{leaderboard_best.get('selection_rule')}`, hit5=`{leaderboard_best_metrics.get('hit5_dd10_5d_pct')}`, n=`{leaderboard_best_metrics.get('n')}`, active_days=`{leaderboard_best_metrics.get('active_days')}`, best_high_precision=`{leaderboard_high_precision.get('selection_rule')}`, high_precision_hit5=`{leaderboard_high_metrics.get('hit5_dd10_5d_pct')}`, high_precision_sample=`{((leaderboard_high_precision.get('sample_progress') or {}) if isinstance(leaderboard_high_precision.get('sample_progress'), dict) else {}).get('completion_pct')}`, upgrade=`{leaderboard_upgrade.get('selection_rule')}`",
                 drawdown_line,
+                drawdown_holdout_line,
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",

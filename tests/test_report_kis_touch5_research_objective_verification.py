@@ -383,6 +383,45 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                     "production_economics": {"expected_touch_policy_net_5d_pct": 4.331054},
                 },
             },
+            "holdout_validation": {
+                "status": "no_holdout_gate_pass",
+                "validation_mode": "selection_fixed_rule_holdout_walk_forward_predictions",
+                "deployment_ready": False,
+                "selection_folds": [1, 2, 3, 4, 5],
+                "holdout_folds": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+                "selection_candidates_tested": 811,
+                "holdout_candidates_evaluated": 811,
+                "holdout_gate_pass_count": 0,
+                "selection_best_holdout_evaluation": {
+                    "identity": {
+                        "feature_set": "kis_sidecar_failure_risk_augmented",
+                        "model": "lightgbm_drawdown_filter_selection_best_holdout",
+                        "selection_rule": "top1_prob_tail0p85_close_failure_prior_theme_touch5_n_ge_3824",
+                        "validation_mode": "selection_best_fixed_rule_holdout_walk_forward_predictions",
+                        "deployment_ready": False,
+                    },
+                    "metrics": {
+                        "n": 23,
+                        "active_days": 7,
+                        "active_runs": 23,
+                        "hit5_dd10_5d_pct": 100.0,
+                        "avg_5d_pct": 39.699864,
+                        "min_min_low_5d_pct": -5.551964,
+                    },
+                    "gate": {
+                        "status": "shadow_ready",
+                        "production_ready": False,
+                        "shadow_display_allowed": True,
+                        "production_blocking_reasons": ["n_lt_30", "active_days_lt_15"],
+                    },
+                },
+                "best_holdout_gate_pass_candidate": None,
+                "decision": {
+                    "holdout_gate_pass_observed": False,
+                    "selection_best_holdout_gate_pass": False,
+                    "deployment_ready": False,
+                },
+            },
         },
     )
     finaltopn_market = {
@@ -450,8 +489,9 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert report["decision"]["production_replacement_proven"] is False
     assert report["decision"]["shadow_performance_proven"] is True
     assert report["decision"]["drawdown_filter_research_candidate_found"] is True
+    assert report["decision"]["drawdown_filter_holdout_gate_pass"] is False
     assert report["decision"]["drawdown_filter_deployment_ready"] is False
-    assert report["decision"]["drawdown_filter_action"] == "controlled_shadow_forward_validation_required"
+    assert report["decision"]["drawdown_filter_action"] == "keep_research_only_until_holdout_or_forward_gate_pass"
     assert report["research_inputs"]["candidate_leaderboard"]["status"] == "keep_current_shadow"
     assert report["research_inputs"]["drawdown_filter_production_gate_pass_count"] == 6
     assert report["research_inputs"]["finaltopn_prefilter_proxy_report"].endswith("finaltopn_proxy.json")
@@ -464,10 +504,15 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert leaderboard["best_high_precision_shadow"]["sample_progress"]["completion_pct"] == 88.888889
     drawdown = report["markets"]["KOSPI"]["drawdown_filter_research"]
     assert drawdown["decision"]["production_gate_pass_observed"] is True
+    assert drawdown["decision"]["holdout_gate_pass_observed"] is False
     assert drawdown["decision"]["promotable_now"] is False
     assert drawdown["best_gate_pass_research_candidate"]["production_gate_pass_observed"] is True
     assert drawdown["best_gate_pass_research_candidate"]["deployment_ready"] is False
     assert drawdown["best_gate_pass_research_candidate"]["metrics"]["hit5_dd10_5d_pct"] == 98.1481
+    assert drawdown["holdout_validation"]["status"] == "no_holdout_gate_pass"
+    assert drawdown["holdout_validation"]["holdout_candidates_evaluated"] == 811
+    assert drawdown["holdout_validation"]["selection_best_holdout_evaluation"]["gate_status"] == "shadow_ready"
+    assert drawdown["holdout_validation"]["selection_best_holdout_evaluation"]["metrics"]["hit5_dd10_5d_pct"] == 100.0
     assert report["markets"]["KOSDAQ"]["drawdown_filter_research"] == {}
     assert "+5%" in report["user_goal"]["win_definition"]
     assert report["markets"]["KOSPI"]["kis_sidecar_longfold_shadow"]["gate"]["status"] == "shadow_ready"

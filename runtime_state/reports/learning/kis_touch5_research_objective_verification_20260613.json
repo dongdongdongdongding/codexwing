@@ -1,7 +1,8 @@
 {
   "decision": {
-    "drawdown_filter_action": "controlled_shadow_forward_validation_required",
+    "drawdown_filter_action": "keep_research_only_until_holdout_or_forward_gate_pass",
     "drawdown_filter_deployment_ready": false,
+    "drawdown_filter_holdout_gate_pass": false,
     "drawdown_filter_research_candidate_found": true,
     "production_blockers_by_market": {
       "KOSDAQ": [
@@ -17,7 +18,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T06:45:32.135570+00:00",
+  "generated_at": "2026-06-13T08:41:08.192544+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -16888,12 +16889,117 @@
         },
         "decision": {
           "deployment_ready": false,
+          "holdout_gate_pass_observed": false,
           "production_gate_pass_observed": true,
           "promotable_now": false,
           "reason": "threshold was selected by a research sweep over walk-forward predictions; require controlled shadow/forward validation before production promotion."
         },
         "deployment_ready": false,
         "filters_tested": 1107,
+        "holdout_validation": {
+          "best_holdout_gate_pass_candidate": {},
+          "decision": {
+            "deployment_ready": false,
+            "holdout_gate_pass_observed": false,
+            "reason": "fixed-rule holdout reduces post-hoc threshold risk but still requires live forward shadow before production replacement.",
+            "selection_best_holdout_gate_pass": false
+          },
+          "deployment_ready": false,
+          "holdout_candidates_evaluated": 811,
+          "holdout_folds": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "holdout_gate_pass_count": 0,
+          "selection_best_holdout_evaluation": {
+            "deployment_ready": false,
+            "drawdown_filter": {
+              "feature": "close_failure_prior_theme_touch5_n",
+              "op": "ge",
+              "pool_rows": 5791,
+              "threshold": 3824.0,
+              "type": "single_feature_threshold"
+            },
+            "feature_set": "kis_sidecar_failure_risk_augmented",
+            "gate_status": "shadow_ready",
+            "metrics": {
+              "active_days": 7,
+              "active_runs": 23,
+              "avg_1d_pct": 11.007236,
+              "avg_3d_pct": 55.202605,
+              "avg_5d_pct": 39.699864,
+              "avg_max_high_5d_pct": 78.975984,
+              "avg_min_low_5d_pct": -2.990853,
+              "bad_path_pct": 17.3913,
+              "buy_premium_pct": 2.0,
+              "hit10_5d_pct": 100.0,
+              "hit5_dd10_5d_pct": 100.0,
+              "min_1d_pct": -4.295051,
+              "min_3d_pct": -0.785657,
+              "min_5d_pct": 4.50334,
+              "min_min_low_5d_pct": -5.551964,
+              "n": 23,
+              "stop5_pct": 13.0435,
+              "stop_before_target_5d_pct": 13.0435,
+              "target_before_stop_5d_pct": 100.0,
+              "win_5d_pct": 100.0
+            },
+            "model": "lightgbm_drawdown_filter_selection_best_holdout",
+            "production_blocking_reasons": [
+              "n_lt_30",
+              "active_days_lt_15"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": 4.601458,
+              "hit5_dd10_5d_pct": 100.0,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.25
+              }
+            },
+            "production_gate_pass_observed": false,
+            "score_mode": "prob",
+            "selection_rule": "top1_prob_tail0p85_close_failure_prior_theme_touch5_n_ge_3824",
+            "shadow_display_allowed": true,
+            "validation_mode": "selection_best_fixed_rule_holdout_walk_forward_predictions"
+          },
+          "selection_candidates_tested": 811,
+          "selection_folds": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "status": "no_holdout_gate_pass",
+          "validation_mode": "selection_fixed_rule_holdout_walk_forward_predictions"
+        },
         "production_gate_pass_count": 6,
         "recommended_action": "run controlled shadow and forward validation before promotion",
         "scope": {

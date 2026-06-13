@@ -328,6 +328,239 @@ def _single_feature_results(
     return rows
 
 
+def _apply_filter(scoped: pd.DataFrame, base_pool: pd.Index, filter_payload: Mapping[str, Any] | None) -> pd.Index:
+    if not filter_payload:
+        return base_pool
+    feature = str(filter_payload.get("feature") or "")
+    op = str(filter_payload.get("op") or "")
+    threshold = filter_payload.get("threshold")
+    if feature not in scoped.columns or op not in {"le", "ge"} or threshold is None:
+        return pd.Index([])
+    values = pd.to_numeric(scoped.loc[base_pool, feature], errors="coerce")
+    number = float(threshold)
+    mask = values.le(number) if op == "le" else values.ge(number)
+    return base_pool[mask.fillna(False)]
+
+
+def _copy_with_validation(row: Dict[str, Any] | None, validation_mode: str) -> Dict[str, Any] | None:
+    if not row:
+        return row
+    identity = row.get("identity")
+    if isinstance(identity, dict):
+        identity["validation_mode"] = validation_mode
+        identity["deployment_ready"] = False
+    return row
+
+
+def _fold_slices(predictions: pd.DataFrame, selection_folds: int) -> Dict[str, Any]:
+    folds = sorted({int(value) for value in pd.to_numeric(predictions.get("fold"), errors="coerce").dropna().tolist()})
+    selection = folds[: max(0, min(int(selection_folds), len(folds)))]
+    holdout = folds[len(selection) :]
+    selection_idx = predictions.index[predictions["fold"].isin(selection)]
+    holdout_idx = predictions.index[predictions["fold"].isin(holdout)]
+    return {
+        "folds": folds,
+        "selection_folds": selection,
+        "holdout_folds": holdout,
+        "selection_index": selection_idx,
+        "holdout_index": holdout_idx,
+    }
+
+
+def _evaluate_fixed_filter(
+    *,
+    scoped: pd.DataFrame,
+    prediction_slice: pd.DataFrame,
+    base_pool: pd.Index,
+    score: pd.Series,
+    label: pd.Series,
+    market: str,
+    feature_set: str,
+    model: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    filter_payload: Mapping[str, Any],
+    validation_mode: str,
+) -> Dict[str, Any] | None:
+    filtered_pool = _apply_filter(scoped, base_pool, filter_payload)
+    filtered_pool = filtered_pool.intersection(prediction_slice.index)
+    selected = top_indices_by_run(scoped.loc[filtered_pool], score.loc[filtered_pool], int(topn))
+    filter_name = _filter_rule_name(
+        str(filter_payload.get("feature") or "unknown"),
+        str(filter_payload.get("op") or "le"),
+        float(filter_payload.get("threshold") or 0.0),
+    )
+    row = _gate_row(
+        market=market,
+        feature_set=feature_set,
+        model=model,
+        selection_rule=_selection_rule(
+            topn=topn,
+            score_mode=score_mode,
+            tail_threshold=tail_threshold,
+            filter_name=filter_name,
+        ),
+        score_mode=score_mode,
+        topn=topn,
+        tail_threshold=tail_threshold,
+        selected=selected,
+        scoped=scoped,
+        label=label,
+        filter_payload={**dict(filter_payload), "pool_rows": int(len(filtered_pool))},
+    )
+    return _copy_with_validation(row, validation_mode)
+
+
+def _holdout_validation(
+    *,
+    scoped: pd.DataFrame,
+    predictions: pd.DataFrame,
+    score: pd.Series,
+    label: pd.Series,
+    market: str,
+    feature_set: str,
+    model: str,
+    score_mode: str,
+    topn: int,
+    tail_threshold: float,
+    numeric: Sequence[str],
+    selection_folds: int,
+    min_pool_rows: int,
+    holdout_candidate_limit: int,
+    top_results: int,
+) -> Dict[str, Any]:
+    split = _fold_slices(predictions, selection_folds)
+    if not split["selection_folds"] or not split["holdout_folds"]:
+        return {"status": "skipped_insufficient_folds", "deployment_ready": False}
+    selection_predictions = predictions.loc[split["selection_index"]]
+    holdout_predictions = predictions.loc[split["holdout_index"]]
+    selection_base_pool = selection_predictions.index[
+        selection_predictions["tail_prob"].ge(float(tail_threshold))
+    ]
+    holdout_base_pool = holdout_predictions.index[holdout_predictions["tail_prob"].ge(float(tail_threshold))]
+    selection_candidates = _single_feature_results(
+        scoped=scoped,
+        base_pool=selection_base_pool,
+        score=score,
+        label=label,
+        market=market,
+        feature_set=feature_set,
+        model=f"{model}_drawdown_filter_selection",
+        score_mode=score_mode,
+        topn=topn,
+        tail_threshold=tail_threshold,
+        numeric=numeric,
+        min_pool_rows=min_pool_rows,
+    )
+    selection_ranked = sorted(selection_candidates, key=_sort_key, reverse=True)
+    if not selection_ranked:
+        return {
+            "status": "skipped_no_selection_candidate",
+            "deployment_ready": False,
+            "selection_folds": split["selection_folds"],
+            "holdout_folds": split["holdout_folds"],
+            "selection_base_pool_rows": int(len(selection_base_pool)),
+            "holdout_base_pool_rows": int(len(holdout_base_pool)),
+        }
+    fixed_results: List[Dict[str, Any]] = []
+    candidates_for_holdout = (
+        selection_ranked[: int(holdout_candidate_limit)]
+        if int(holdout_candidate_limit) > 0
+        else selection_ranked
+    )
+    for candidate in candidates_for_holdout:
+        identity = candidate.get("identity") if isinstance(candidate.get("identity"), Mapping) else {}
+        filter_payload = identity.get("drawdown_filter") if isinstance(identity.get("drawdown_filter"), Mapping) else {}
+        if not filter_payload:
+            continue
+        fixed = _evaluate_fixed_filter(
+            scoped=scoped,
+            prediction_slice=holdout_predictions,
+            base_pool=holdout_base_pool,
+            score=score,
+            label=label,
+            market=market,
+            feature_set=feature_set,
+            model=f"{model}_drawdown_filter_fixed_holdout",
+            score_mode=score_mode,
+            topn=topn,
+            tail_threshold=tail_threshold,
+            filter_payload=filter_payload,
+            validation_mode="selection_fixed_rule_holdout_walk_forward_predictions",
+        )
+        if not fixed:
+            continue
+        fixed["selection_candidate"] = candidate
+        fixed_results.append(fixed)
+    fixed_ranked = sorted(fixed_results, key=_sort_key, reverse=True)
+    survivors = [row for row in fixed_ranked if (row.get("gate") or {}).get("production_ready")]
+    selection_best = selection_ranked[0]
+    selection_best_identity = (
+        selection_best.get("identity") if isinstance(selection_best.get("identity"), Mapping) else {}
+    )
+    selection_best_filter = (
+        selection_best_identity.get("drawdown_filter")
+        if isinstance(selection_best_identity.get("drawdown_filter"), Mapping)
+        else {}
+    )
+    fixed_selection_best = (
+        _evaluate_fixed_filter(
+            scoped=scoped,
+            prediction_slice=holdout_predictions,
+            base_pool=holdout_base_pool,
+            score=score,
+            label=label,
+            market=market,
+            feature_set=feature_set,
+            model=f"{model}_drawdown_filter_selection_best_holdout",
+            score_mode=score_mode,
+            topn=topn,
+            tail_threshold=tail_threshold,
+            filter_payload=selection_best_filter,
+            validation_mode="selection_best_fixed_rule_holdout_walk_forward_predictions",
+        )
+        if selection_best_filter
+        else None
+    )
+    status = (
+        "selection_best_holdout_gate_pass"
+        if fixed_selection_best and (fixed_selection_best.get("gate") or {}).get("production_ready")
+        else "holdout_gate_pass_survivor_found"
+        if survivors
+        else "no_holdout_gate_pass"
+    )
+    return {
+        "status": status,
+        "deployment_ready": False,
+        "validation_mode": "selection_fixed_rule_holdout_walk_forward_predictions",
+        "selection_folds": split["selection_folds"],
+        "holdout_folds": split["holdout_folds"],
+        "selection_test_days": sorted(scoped.loc[split["selection_index"], "trade_date"].astype(str).unique().tolist()),
+        "holdout_test_days": sorted(scoped.loc[split["holdout_index"], "trade_date"].astype(str).unique().tolist()),
+        "selection_base_pool_rows": int(len(selection_base_pool)),
+        "holdout_base_pool_rows": int(len(holdout_base_pool)),
+        "selection_candidates_tested": int(len(selection_candidates)),
+        "holdout_candidates_evaluated": int(len(candidates_for_holdout)),
+        "selection_best_candidate": _copy_with_validation(
+            selection_best,
+            "selection_sweep_only_walk_forward_predictions",
+        ),
+        "selection_best_holdout_evaluation": fixed_selection_best,
+        "holdout_gate_pass_count": int(len(survivors)),
+        "best_holdout_gate_pass_candidate": survivors[0] if survivors else None,
+        "top_holdout_evaluations": fixed_ranked[: int(top_results)],
+        "decision": {
+            "holdout_gate_pass_observed": bool(survivors),
+            "selection_best_holdout_gate_pass": bool(
+                fixed_selection_best and (fixed_selection_best.get("gate") or {}).get("production_ready")
+            ),
+            "deployment_ready": False,
+            "reason": "fixed-rule holdout reduces post-hoc threshold risk but still requires live forward shadow before production replacement.",
+        },
+    }
+
+
 def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     cache_path = Path(args.prepared_cache)
     data = pd.read_pickle(cache_path)
@@ -389,6 +622,24 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     )
     ranked = sorted(candidates, key=_sort_key, reverse=True)
     production = [row for row in ranked if (row.get("gate") or {}).get("production_ready")]
+    holdout = _holdout_validation(
+        scoped=scoped,
+        predictions=predictions,
+        score=score,
+        label=label,
+        market=market,
+        feature_set=args.feature_set,
+        model=args.model,
+        score_mode=args.score_mode,
+        topn=int(args.topn),
+        tail_threshold=float(args.tail_threshold),
+        numeric=numeric,
+        selection_folds=int(args.selection_folds),
+        min_pool_rows=int(args.min_pool_rows),
+        holdout_candidate_limit=int(args.holdout_candidate_limit),
+        top_results=int(args.top_results),
+    )
+    holdout_gate_pass = bool((holdout.get("decision") or {}).get("holdout_gate_pass_observed"))
     return {
         "version": REPORT_VERSION,
         "generated_at": _utc_now(),
@@ -397,6 +648,9 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "validation_mode": "research_sweep_only_walk_forward_predictions",
         "deployment_ready": False,
         "recommended_action": (
+            "run live forward shadow validation for fixed drawdown filter"
+            if holdout_gate_pass
+            else
             "run controlled shadow and forward validation before promotion"
             if production
             else "continue drawdown-filter research"
@@ -424,6 +678,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "best_production_candidate": production[0] if production else None,
         "production_candidates": production[: int(args.top_results)],
         "top_results": ranked[: int(args.top_results)],
+        "holdout_validation": holdout,
     }
 
 
@@ -436,6 +691,30 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     best_gate = best.get("gate") if isinstance(best.get("gate"), Mapping) else {}
     best_identity = best.get("identity") if isinstance(best.get("identity"), Mapping) else {}
     best_filter = best_identity.get("drawdown_filter") if isinstance(best_identity.get("drawdown_filter"), Mapping) else {}
+    holdout = report.get("holdout_validation") if isinstance(report.get("holdout_validation"), Mapping) else {}
+    holdout_best = (
+        holdout.get("best_holdout_gate_pass_candidate")
+        if isinstance(holdout.get("best_holdout_gate_pass_candidate"), Mapping)
+        else {}
+    )
+    holdout_best_metrics = holdout_best.get("metrics") if isinstance(holdout_best.get("metrics"), Mapping) else {}
+    holdout_best_gate = holdout_best.get("gate") if isinstance(holdout_best.get("gate"), Mapping) else {}
+    holdout_best_econ = (
+        holdout_best_gate.get("production_economics")
+        if isinstance(holdout_best_gate.get("production_economics"), Mapping)
+        else {}
+    )
+    selection_best_holdout = (
+        holdout.get("selection_best_holdout_evaluation")
+        if isinstance(holdout.get("selection_best_holdout_evaluation"), Mapping)
+        else {}
+    )
+    selection_best_metrics = (
+        selection_best_holdout.get("metrics") if isinstance(selection_best_holdout.get("metrics"), Mapping) else {}
+    )
+    selection_best_gate = (
+        selection_best_holdout.get("gate") if isinstance(selection_best_holdout.get("gate"), Mapping) else {}
+    )
     lines = [
         "# KIS Touch5 Drawdown Filter Research",
         "",
@@ -451,6 +730,9 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         f"- production_ready_count: `{report.get('production_ready_count')}`",
         f"- best_filter: `{best_filter}`",
         f"- best: status=`{best_gate.get('status')}` n=`{best_metrics.get('n')}` days=`{best_metrics.get('active_days')}` hit5=`{best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{best_metrics.get('avg_5d_pct')}` min_low=`{best_metrics.get('min_min_low_5d_pct')}` expected_net=`{((best_gate.get('production_economics') or {}) if isinstance(best_gate.get('production_economics'), Mapping) else {}).get('expected_touch_policy_net_5d_pct')}`",
+        f"- holdout: status=`{holdout.get('status')}` validation=`{holdout.get('validation_mode')}` selection_folds=`{holdout.get('selection_folds')}` holdout_folds=`{holdout.get('holdout_folds')}` selection_candidates=`{holdout.get('selection_candidates_tested')}` holdout_evaluated=`{holdout.get('holdout_candidates_evaluated')}` gate_pass_count=`{holdout.get('holdout_gate_pass_count')}` deployment_ready=`{holdout.get('deployment_ready')}`",
+        f"- selection_best_holdout: status=`{selection_best_gate.get('status')}` n=`{selection_best_metrics.get('n')}` days=`{selection_best_metrics.get('active_days')}` hit5=`{selection_best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{selection_best_metrics.get('avg_5d_pct')}` min_low=`{selection_best_metrics.get('min_min_low_5d_pct')}`",
+        f"- best_holdout_gate_pass: status=`{holdout_best_gate.get('status')}` n=`{holdout_best_metrics.get('n')}` days=`{holdout_best_metrics.get('active_days')}` hit5=`{holdout_best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{holdout_best_metrics.get('avg_5d_pct')}` min_low=`{holdout_best_metrics.get('min_min_low_5d_pct')}` expected_net=`{holdout_best_econ.get('expected_touch_policy_net_5d_pct')}`",
         "",
         "| rank | status | rule | n | days | runs | hit5 | avg5 | min_low | expected_net |",
         "|---:|---|---|---:|---:|---:|---:|---:|---:|---:|",
@@ -502,7 +784,9 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-train-days", type=int, default=7)
     parser.add_argument("--test-days", type=int, default=1)
     parser.add_argument("--max-folds", type=int, default=20)
+    parser.add_argument("--selection-folds", type=int, default=5)
     parser.add_argument("--min-pool-rows", type=int, default=30)
+    parser.add_argument("--holdout-candidate-limit", type=int, default=0, help="0 evaluates all selection candidates.")
     parser.add_argument("--top-results", type=int, default=30)
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
