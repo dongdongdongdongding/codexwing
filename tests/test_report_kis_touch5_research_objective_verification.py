@@ -223,6 +223,26 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                             },
                             "kis_model_gate": {"status": "shadow_ready", "shadow_display_allowed": True, "production_ready": False},
                         },
+                        {
+                            "market": "KOSPI",
+                            "selection_rule": "top3_ev_p0p3_tail0p9",
+                            "score_mode": "ev",
+                            "quality_score": 110.0,
+                            "metrics": {
+                                "n": 142,
+                                "active_days": 11,
+                                "active_runs": 50,
+                                "hit5_dd10_5d_pct": 83.8028,
+                                "avg_5d_pct": 9.912085,
+                                "min_min_low_5d_pct": -9.864936,
+                            },
+                            "kis_model_gate": {
+                                "status": "shadow_ready",
+                                "shadow_display_allowed": True,
+                                "production_ready": False,
+                                "production_blocking_reasons": ["active_days_lt_15"],
+                            },
+                        },
                     ],
                 },
                 {**sweep_market, "scope": {"market": "KOSDAQ"}},
@@ -359,6 +379,9 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert score_exp["same_fold_scope_verified"] is True
     assert score_exp["risk_adjusted_alternative"]["found"] is True
     assert score_exp["risk_adjusted_alternative"]["decision"] == "risk_adjusted_shadow_candidate_not_current_replacement"
+    assert score_exp["near_production_candidate"]["found"] is True
+    assert score_exp["near_production_candidate"]["candidate"]["selection_rule"] == "top3_ev_p0p3_tail0p9"
+    assert score_exp["near_production_candidate"]["candidate"]["sample_blockers"] == ["active_days_lt_15"]
     score_summary = score_exp["score_report_analysis_summary"]
     assert score_summary["production_blocking_reason_counts"]["active_days_lt_15"] == 2
     assert score_summary["sample_only_top"][0]["selection_rule"] == "top1_prob_x_tail_p0p75_tail0p95"

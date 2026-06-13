@@ -302,6 +302,51 @@ def _risk_adjusted_alternative(rows: List[Dict[str, Any]], baseline: Mapping[str
     }
 
 
+def _sample_only_blockers(blockers: Iterable[Any]) -> tuple[bool, List[str], List[str]]:
+    blocker_list = [str(item) for item in blockers if str(item)]
+    sample_blockers = [
+        item
+        for item in blocker_list
+        if item.startswith("n_lt_") or item.startswith("active_days_lt_") or item.startswith("active_runs_lt_")
+    ]
+    non_sample = [item for item in blocker_list if item not in sample_blockers]
+    return bool(blocker_list and not non_sample), sample_blockers, non_sample
+
+
+def _near_production_candidate(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    candidates: List[Dict[str, Any]] = []
+    for row in rows:
+        gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), dict) else {}
+        blockers = gate.get("production_blocking_reasons") or []
+        sample_only, sample_blockers, non_sample = _sample_only_blockers(blockers)
+        if gate.get("production_ready") or not sample_only:
+            continue
+        summary = _sweep_row_summary(row)
+        summary["sample_blockers"] = sample_blockers
+        summary["non_sample_blockers"] = non_sample
+        candidates.append(summary)
+    if not candidates:
+        return {"found": False}
+
+    def sort_key(row: Mapping[str, Any]) -> tuple[float, float, float, float, float]:
+        metrics = row.get("metrics") if isinstance(row.get("metrics"), dict) else {}
+        return (
+            float(metrics.get("active_days") or 0.0),
+            float(metrics.get("n") or 0.0),
+            float(metrics.get("hit5_dd10_5d_pct") or 0.0),
+            float(metrics.get("min_min_low_5d_pct") or -999.0),
+            float(metrics.get("avg_5d_pct") or -999.0),
+        )
+
+    candidates.sort(key=sort_key, reverse=True)
+    return {
+        "found": True,
+        "candidate": candidates[0],
+        "candidate_count": len(candidates),
+        "decision": "forward_track_until_sample_gate_clears",
+    }
+
+
 def _sidecar_score_experiment(
     baseline_report: Mapping[str, Any],
     score_report: Mapping[str, Any],
@@ -317,6 +362,7 @@ def _sidecar_score_experiment(
         "baseline_best": _sweep_row_summary(baseline_best),
         "score_mode_best": _sweep_row_summary(score_best),
         "risk_adjusted_alternative": _risk_adjusted_alternative(score_rows, baseline_best),
+        "near_production_candidate": _near_production_candidate(score_rows),
         "score_report_analysis_summary": _sweep_analysis_summary(score_report, market),
         "decision": (
             "keep_current_best_shadow"
@@ -928,6 +974,9 @@ def _markdown(report: Mapping[str, Any]) -> str:
         risk_alt = score_exp.get("risk_adjusted_alternative") or {}
         risk_candidate = risk_alt.get("candidate") or {}
         risk_metrics = risk_candidate.get("metrics") or {}
+        near_prod = score_exp.get("near_production_candidate") or {}
+        near_candidate = near_prod.get("candidate") or {}
+        near_metrics = near_candidate.get("metrics") or {}
         score_summary = score_exp.get("score_report_analysis_summary") or {}
         leaderboard = payload.get("candidate_leaderboard") or {}
         leaderboard_best = leaderboard.get("best_sample_only_shadow") or {}
@@ -967,6 +1016,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- three_stage_improvement_vs_broad: avg_exit_delta=`{three_imp.get('avg_ordered_exit_delta_pct')}`, hit5_delta=`{three_imp.get('hit5_dd10_delta_pct')}`",
                 f"- score_mode_experiment: same_fold_scope=`{score_exp.get('same_fold_scope_verified')}`, decision=`{score_exp.get('decision')}`, best=`{score_best.get('selection_rule')}`",
                 f"- risk_adjusted_alternative: found=`{risk_alt.get('found')}`, candidate=`{risk_candidate.get('selection_rule')}`, hit5_dd10=`{risk_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{risk_metrics.get('avg_5d_pct')}`, min_low=`{risk_metrics.get('min_min_low_5d_pct')}`, deltas=`{risk_alt.get('deltas_vs_baseline')}`",
+                f"- near_production_candidate: found=`{near_prod.get('found')}`, candidate=`{near_candidate.get('selection_rule')}`, score=`{near_candidate.get('score_mode')}`, n=`{near_metrics.get('n')}`, active_days=`{near_metrics.get('active_days')}`, active_runs=`{near_metrics.get('active_runs')}`, hit5=`{near_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{near_metrics.get('avg_5d_pct')}`, min_low=`{near_metrics.get('min_min_low_5d_pct')}`, blockers=`{near_candidate.get('sample_blockers')}`",
                 f"- score_sweep_gate_summary: status_counts=`{score_summary.get('status_counts')}`, blockers=`{score_summary.get('production_blocking_reason_counts')}`, sample_only_count=`{score_summary.get('sample_only_blocked_count')}`, sample_sufficient_count=`{score_summary.get('sample_sufficient_count')}`",
                 f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, sample_sufficient_top=`{sample_sufficient_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
                 f"- candidate_leaderboard: status=`{leaderboard.get('status')}`, candidates=`{leaderboard.get('candidate_count')}`, shadow=`{leaderboard.get('shadow_display_allowed_count')}`, sample_only=`{leaderboard.get('sample_only_shadow_count')}`, production=`{leaderboard.get('production_ready_count')}`, best_sample_only=`{leaderboard_best.get('selection_rule')}`, hit5=`{leaderboard_best_metrics.get('hit5_dd10_5d_pct')}`, n=`{leaderboard_best_metrics.get('n')}`, active_days=`{leaderboard_best_metrics.get('active_days')}`, upgrade=`{leaderboard_upgrade.get('selection_rule')}`",

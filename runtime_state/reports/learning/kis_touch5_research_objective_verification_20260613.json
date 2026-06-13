@@ -14,7 +14,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T03:41:35.794751+00:00",
+  "generated_at": "2026-06-13T03:52:52.390215+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -2918,6 +2918,50 @@
           "shadow_display_allowed": true
         },
         "decision": "keep_current_best_shadow",
+        "near_production_candidate": {
+          "candidate": {
+            "gate_status": "shadow_ready",
+            "metrics": {
+              "active_days": 11,
+              "active_runs": 23,
+              "avg_1d_pct": 2.525956,
+              "avg_3d_pct": 16.018471,
+              "avg_5d_pct": 11.146604,
+              "avg_max_high_5d_pct": 28.379001,
+              "avg_min_low_5d_pct": -3.839055,
+              "bad_path_pct": 47.8261,
+              "buy_premium_pct": 2.0,
+              "hit10_5d_pct": 82.6087,
+              "hit5_dd10_5d_pct": 82.6087,
+              "min_1d_pct": -4.598097,
+              "min_3d_pct": -4.816295,
+              "min_5d_pct": -4.850587,
+              "min_min_low_5d_pct": -7.862174,
+              "n": 23,
+              "stop5_pct": 47.8261,
+              "stop_before_target_5d_pct": 47.8261,
+              "target_before_stop_5d_pct": 52.1739,
+              "win_5d_pct": 82.6087
+            },
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "n_lt_45",
+              "active_days_lt_20"
+            ],
+            "production_ready": false,
+            "quality_score": 882.172487,
+            "sample_blockers": [
+              "n_lt_45",
+              "active_days_lt_20"
+            ],
+            "score_mode": "prob",
+            "selection_rule": "top1_tail0p6",
+            "shadow_display_allowed": true
+          },
+          "candidate_count": 120,
+          "decision": "forward_track_until_sample_gate_clears",
+          "found": true
+        },
         "risk_adjusted_alternative": {
           "found": false
         },
@@ -12453,6 +12497,48 @@
           "shadow_display_allowed": true
         },
         "decision": "keep_current_best_shadow",
+        "near_production_candidate": {
+          "candidate": {
+            "gate_status": "shadow_ready",
+            "metrics": {
+              "active_days": 11,
+              "active_runs": 50,
+              "avg_1d_pct": 3.172162,
+              "avg_3d_pct": 7.21819,
+              "avg_5d_pct": 9.912085,
+              "avg_max_high_5d_pct": 20.704284,
+              "avg_min_low_5d_pct": -3.453991,
+              "bad_path_pct": 35.2113,
+              "buy_premium_pct": 2.0,
+              "hit10_5d_pct": 56.338,
+              "hit5_dd10_5d_pct": 83.8028,
+              "min_1d_pct": -6.259534,
+              "min_3d_pct": -8.478243,
+              "min_5d_pct": -8.442152,
+              "min_min_low_5d_pct": -9.864936,
+              "n": 142,
+              "stop5_pct": 28.8732,
+              "stop_before_target_5d_pct": 28.8732,
+              "target_before_stop_5d_pct": 83.8028,
+              "win_5d_pct": 83.8028
+            },
+            "non_sample_blockers": [],
+            "production_blocking_reasons": [
+              "active_days_lt_15"
+            ],
+            "production_ready": false,
+            "quality_score": 678.901966,
+            "sample_blockers": [
+              "active_days_lt_15"
+            ],
+            "score_mode": "ev",
+            "selection_rule": "top3_ev_p0p3_tail0p9",
+            "shadow_display_allowed": true
+          },
+          "candidate_count": 100,
+          "decision": "forward_track_until_sample_gate_clears",
+          "found": true
+        },
         "risk_adjusted_alternative": {
           "candidate": {
             "gate_status": "shadow_ready",

@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T03:41:35.794751+00:00`
+- generated_at: `2026-06-13T03:52:52.390215+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -41,6 +41,7 @@
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.056792`, hit5_delta=`15.5389`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p3_tail0p9`
 - risk_adjusted_alternative: found=`True`, candidate=`top1_prob_tail_margin_tail0p95`, hit5_dd10=`93.4783`, avg5=`5.385336`, min_low=`-5.558554`, deltas=`{'hit5_dd10_5d_pct': 11.4783, 'min_min_low_5d_pct': 3.361173, 'avg_5d_pct': -20.729861, 'n': -4, 'active_days': -1}`
+- near_production_candidate: found=`True`, candidate=`top3_ev_p0p3_tail0p9`, score=`ev`, n=`142`, active_days=`11`, active_runs=`50`, hit5=`83.8028`, avg5=`9.912085`, min_low=`-9.864936`, blockers=`['active_days_lt_15']`
 - score_sweep_gate_summary: status_counts=`{'blocked': 1525, 'shadow_ready': 197, 'shadow_risk_review': 753}`, blockers=`{'active_days_lt_15': 2475, 'min_low_5d_lt_neg10': 2278, 'hit5_dd10_5d_lt_73': 767, 'expected_touch_policy_net_5d_lt_0p25': 453}`, sample_only_count=`155`, sample_sufficient_count=`0`
 - score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, sample_sufficient_top=`None`, pareto_top=`top1_prob_tail_margin_tail0p95`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1601`, shadow=`847`, sample_only=`200`, production=`0`, best_sample_only=`top1_tail0.95`, hit5=`85.4545`, n=`55`, active_days=`12`, upgrade=`None`
@@ -56,6 +57,7 @@
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.970752`, hit5_delta=`11.4595`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p75_tail0p85`
 - risk_adjusted_alternative: found=`False`, candidate=`None`, hit5_dd10=`None`, avg5=`None`, min_low=`None`, deltas=`None`
+- near_production_candidate: found=`True`, candidate=`top1_tail0p6`, score=`prob`, n=`23`, active_days=`11`, active_runs=`23`, hit5=`82.6087`, avg5=`11.146604`, min_low=`-7.862174`, blockers=`['n_lt_45', 'active_days_lt_20']`
 - score_sweep_gate_summary: status_counts=`{'blocked': 182, 'shadow_ready': 444, 'shadow_risk_review': 1849}`, blockers=`{'active_days_lt_20': 2475, 'min_low_5d_lt_neg10': 2031, 'n_lt_45': 830, 'active_runs_lt_20': 525}`, sample_only_count=`444`, sample_sufficient_count=`0`
 - score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, sample_sufficient_top=`None`, pareto_top=`top1_p0p3_tail0p95`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1371`, shadow=`637`, sample_only=`214`, production=`0`, best_sample_only=`top2_tail0.90`, hit5=`83.3333`, n=`48`, active_days=`12`, upgrade=`None`
