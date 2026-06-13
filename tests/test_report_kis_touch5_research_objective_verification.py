@@ -374,6 +374,8 @@ def test_build_report_includes_static_master_shadow_validation_without_productio
     sidecar_score = tmp_path / "sidecar_score.json"
     static_aug = tmp_path / "static_aug.json"
     static_suite = tmp_path / "static_suite.json"
+    static_three_kospi = tmp_path / "static_three_kospi.json"
+    static_three_kosdaq = tmp_path / "static_three_kosdaq.json"
 
     _write(
         shadow,
@@ -485,6 +487,43 @@ def test_build_report_includes_static_master_shadow_validation_without_productio
         },
     )
 
+    def three_stage_report(market, hit5, avg_exit, dynamic_exit):
+        return {
+            "status": "improved_shadow_research",
+            "dummy_data_used": False,
+            "validation": "walk-forward; fold fit/calibration/test split",
+            "markets": [
+                {
+                    "market": market,
+                    "best": {
+                        "config": {"pool": "prefilter", "pool_k": 5, "score_mode": "success_tail"},
+                        "metrics": {
+                            "n": 22,
+                            "active_days": 22,
+                            "hit5_dd10_5d_pct": hit5,
+                            "avg_ordered_exit_5d_pct": avg_exit,
+                            "avg_dynamic_exit_5d_pct": dynamic_exit,
+                            "tail_breach_5d_pct": 27.0,
+                            "min_min_low_5d_pct": -22.0,
+                        },
+                        "gate": {
+                            "status": "blocked",
+                            "production_ready": False,
+                            "shadow_display_allowed": False,
+                            "production_blocking_reasons": ["hit5_dd10_5d_lt_73", "min_low_5d_lt_neg10"],
+                        },
+                    },
+                    "improvement": {
+                        "avg_ordered_exit_delta_pct": 0.8,
+                        "hit5_dd10_delta_pct": 10.0,
+                    },
+                }
+            ],
+        }
+
+    _write(static_three_kospi, three_stage_report("KOSPI", 68.1818, 0.104695, 1.915976))
+    _write(static_three_kosdaq, three_stage_report("KOSDAQ", 65.2174, 0.034024, 2.416252))
+
     report = build_report(
         shadow_report_path=shadow,
         three_stage_dynamic_path=dynamic,
@@ -494,14 +533,23 @@ def test_build_report_includes_static_master_shadow_validation_without_productio
         sidecar_score_sweep_path=sidecar_score,
         static_master_augmentation_path=static_aug,
         static_master_focused_suite_path=static_suite,
+        static_master_three_stage_paths={
+            "KOSPI": static_three_kospi,
+            "KOSDAQ": static_three_kosdaq,
+        },
     )
 
     experiment = report["historical_proxy_augmentation_experiment"]
     assert experiment["decision"]["static_master_shadow_ready"] is True
     assert experiment["decision"]["static_master_production_ready"] is False
+    assert experiment["decision"]["static_master_three_stage_improved"] is True
+    assert experiment["decision"]["static_master_three_stage_production_ready"] is False
     assert experiment["decision"]["production_replacement_ready"] is False
     assert "both-market shadow-ready" in experiment["decision"]["positive_shadow_result"]
     assert experiment["markets"]["KOSPI"]["static_master_augmentation"]["augmented_row_pct"] == 80.0
+    kospi_three = experiment["markets"]["KOSPI"]["static_master_three_stage"]
+    assert kospi_three["best_metrics"]["avg_dynamic_exit_5d_pct"] == 1.915976
+    assert kospi_three["best_gate"]["production_ready"] is False
     kosdaq_suite = experiment["markets"]["KOSDAQ"]["static_master_focused_suite"]
     assert kosdaq_suite["status"] == "shadow_ready"
     assert kosdaq_suite["best_metrics"]["win_5d_pct"] == 72.9167

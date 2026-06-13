@@ -14,7 +14,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-12T20:47:29.501211+00:00",
+  "generated_at": "2026-06-13T03:41:35.794751+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -63,9 +63,11 @@
       "historical_proxy_promotable": false,
       "positive_shadow_result": "real KIS static stock-info master augmentation produced both-market shadow-ready focused walk-forward results; production gates still failed on hit5_dd10, ordered-exit floor, and expected net return.",
       "production_replacement_ready": false,
-      "reason": "static KIS stock-info augmentation improves historical proxy feature parity and shadow validation, but production replacement still requires all touch5/dd10 risk and net-return gates to pass.",
+      "reason": "static KIS stock-info augmentation improves historical proxy feature parity and fold-separated research performance, but production replacement still requires all touch5/dd10 risk and net-return gates to pass.",
       "static_master_production_ready": false,
-      "static_master_shadow_ready": true
+      "static_master_shadow_ready": true,
+      "static_master_three_stage_improved": true,
+      "static_master_three_stage_production_ready": false
     },
     "feature_gap_decision": {
       "next_best_action": "Backfill actual KIS sidecar-equivalent flow, financial, stock static, rank/VI, and news fields for more historical days before retraining.",
@@ -941,6 +943,92 @@
           "rows": 184794,
           "shadow_display_allowed": true,
           "status": "shadow_ready"
+        },
+        "static_master_three_stage": {
+          "best_config": {
+            "final_topn": 1,
+            "max_tail_prob": null,
+            "pool": "prefilter",
+            "pool_k": 50,
+            "score_mode": "success_tail"
+          },
+          "best_gate": {
+            "production_blocking_reasons": [
+              "n_lt_45",
+              "hit5_dd10_5d_lt_73",
+              "min_low_5d_lt_neg10",
+              "expected_touch_policy_net_5d_lt_0p5"
+            ],
+            "production_ready": false,
+            "shadow_blocking_reasons": [
+              "min_low_5d_lt_neg18"
+            ],
+            "shadow_display_allowed": false,
+            "status": "blocked"
+          },
+          "best_metrics": {
+            "active_days": 23,
+            "active_runs": 23,
+            "avg_5d_pct": 0.629455,
+            "avg_dynamic_exit_5d_pct": 2.416252,
+            "avg_mfe_5d_pct": 15.26273,
+            "avg_ordered_exit_5d_pct": 0.034024,
+            "bad_path_pct": 39.1304,
+            "buy_premium_pct": 2.0,
+            "coverage_test_days_pct": 47.9167,
+            "hit10_5d_pct": 52.1739,
+            "hit5_dd10_5d_pct": 65.2174,
+            "min_min_low_5d_pct": -28.390711,
+            "n": 23,
+            "safe_hit10_5d_pct": 47.8261,
+            "tail_breach_5d_pct": 30.4348,
+            "target_hit_5d_pct": 78.2609
+          },
+          "days": 103,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": 1.015098,
+            "baseline_avg_ordered_exit_5d_pct": -0.981074,
+            "baseline_hit5_dd10_5d_pct": 60.4167,
+            "best_avg_dynamic_exit_5d_pct": 2.416252,
+            "best_avg_ordered_exit_5d_pct": 0.034024,
+            "best_hit5_dd10_5d_pct": 65.2174,
+            "dynamic_minus_fixed_exit_delta_pct": 2.382228,
+            "hit5_dd10_delta_pct": 4.8007
+          },
+          "rows": 184794,
+          "status": "improved_shadow_research",
+          "unconstrained_best_config": {
+            "final_topn": 2,
+            "max_tail_prob": 0.5,
+            "pool": "prefilter",
+            "pool_k": 10,
+            "score_mode": "ev"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 2,
+            "active_runs": 2,
+            "avg_5d_pct": 12.006891,
+            "avg_dynamic_exit_5d_pct": 3.441605,
+            "avg_mfe_5d_pct": 18.307425,
+            "avg_ordered_exit_5d_pct": 0.951094,
+            "bad_path_pct": 25.0,
+            "buy_premium_pct": 2.0,
+            "coverage_test_days_pct": 4.1667,
+            "hit10_5d_pct": 50.0,
+            "hit5_dd10_5d_pct": 75.0,
+            "min_min_low_5d_pct": -16.67703,
+            "n": 4,
+            "safe_hit10_5d_pct": 50.0,
+            "tail_breach_5d_pct": 25.0,
+            "target_hit_5d_pct": 75.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
         }
       },
       "KOSPI": {
@@ -1821,6 +1909,92 @@
           "rows": 97421,
           "shadow_display_allowed": true,
           "status": "shadow_ready"
+        },
+        "static_master_three_stage": {
+          "best_config": {
+            "final_topn": 1,
+            "max_tail_prob": null,
+            "pool": "prefilter",
+            "pool_k": 5,
+            "score_mode": "success_tail"
+          },
+          "best_gate": {
+            "production_blocking_reasons": [
+              "n_lt_30",
+              "hit5_dd10_5d_lt_73",
+              "min_low_5d_lt_neg10",
+              "expected_touch_policy_net_5d_lt_0p25"
+            ],
+            "production_ready": false,
+            "shadow_blocking_reasons": [
+              "min_low_5d_lt_neg18"
+            ],
+            "shadow_display_allowed": false,
+            "status": "blocked"
+          },
+          "best_metrics": {
+            "active_days": 22,
+            "active_runs": 22,
+            "avg_5d_pct": 3.217828,
+            "avg_dynamic_exit_5d_pct": 1.915976,
+            "avg_mfe_5d_pct": 12.640681,
+            "avg_ordered_exit_5d_pct": 0.104695,
+            "bad_path_pct": 45.4545,
+            "buy_premium_pct": 2.0,
+            "coverage_test_days_pct": 45.8333,
+            "hit10_5d_pct": 45.4545,
+            "hit5_dd10_5d_pct": 68.1818,
+            "min_min_low_5d_pct": -22.553301,
+            "n": 22,
+            "safe_hit10_5d_pct": 36.3636,
+            "tail_breach_5d_pct": 27.2727,
+            "target_hit_5d_pct": 77.2727
+          },
+          "days": 103,
+          "decision": {
+            "production_candidate": false,
+            "promotable": false,
+            "reason": "augmentation experiment only; production promotion requires positive expectancy, hit/risk gates, and sufficient samples."
+          },
+          "dummy_data_used": false,
+          "improvement": {
+            "avg_ordered_exit_delta_pct": 0.82714,
+            "baseline_avg_ordered_exit_5d_pct": -0.722445,
+            "baseline_hit5_dd10_5d_pct": 41.6667,
+            "best_avg_dynamic_exit_5d_pct": 1.915976,
+            "best_avg_ordered_exit_5d_pct": 0.104695,
+            "best_hit5_dd10_5d_pct": 68.1818,
+            "dynamic_minus_fixed_exit_delta_pct": 1.811281,
+            "hit5_dd10_delta_pct": 26.5151
+          },
+          "rows": 97421,
+          "status": "improved_shadow_research",
+          "unconstrained_best_config": {
+            "final_topn": 1,
+            "max_tail_prob": 0.35,
+            "pool": "prefilter",
+            "pool_k": 10,
+            "score_mode": "ev_hit10"
+          },
+          "unconstrained_best_metrics": {
+            "active_days": 4,
+            "active_runs": 4,
+            "avg_5d_pct": 4.741688,
+            "avg_dynamic_exit_5d_pct": 8.337225,
+            "avg_mfe_5d_pct": 12.902897,
+            "avg_ordered_exit_5d_pct": 4.601458,
+            "bad_path_pct": 50.0,
+            "buy_premium_pct": 2.0,
+            "coverage_test_days_pct": 8.3333,
+            "hit10_5d_pct": 75.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -8.545508,
+            "n": 4,
+            "safe_hit10_5d_pct": 75.0,
+            "tail_breach_5d_pct": 0.0,
+            "target_hit_5d_pct": 100.0
+          },
+          "validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
         }
       }
     }
@@ -21290,6 +21464,10 @@
       "status": "shadow_ready"
     },
     "static_master_focused_suite_report": "runtime_state/reports/learning/kis_historical_best_effort_suite_static_master_focused_20260101_20260610.json",
+    "static_master_three_stage_reports": {
+      "KOSDAQ": "runtime_state/reports/learning/kis_three_stage_ev_ranker_static_master_kosdaq_20260613.json",
+      "KOSPI": "runtime_state/reports/learning/kis_three_stage_ev_ranker_static_master_kospi_20260613.json"
+    },
     "three_stage_dynamic_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_dynamic_exit_20260101_20260610.json",
     "three_stage_fixed_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_20260101_20260610.json",
     "three_stage_validation": "walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window."
@@ -21322,6 +21500,10 @@
     {
       "finding": "실제 KIS sidecar cache에서 ticker 정적 stock-info master만 추출해 2026-01-01 이후 historical proxy의 stock/theme category 결손을 보강했고, focused walk-forward에서 양시장 shadow gate를 통과했다. 단, 수급/재무/뉴스 시계열은 as-of 유출 위험 때문에 채우지 않았다.",
       "step": "static_sidecar_master_augmentation"
+    },
+    {
+      "finding": "static stock-info master 증강 캐시에 fold-separated 3단 EV/no-trade 랭커를 재적용해 양시장 dynamic exit 성과 개선을 확인했다. 다만 touch5_dd10 73%와 -10% tail 방어 기준을 동시에 넘지 못해 연구 성과로만 기록한다.",
+      "step": "static_master_three_stage_validation"
     },
     {
       "finding": "최종 후보를 하루 1개로 제한하지 않고 final topN/no-trade threshold를 추가 검증한다. 성과가 기준 미달이면 shadow 승격 근거로 사용하지 않는다.",

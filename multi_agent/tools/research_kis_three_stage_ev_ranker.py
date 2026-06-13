@@ -181,6 +181,7 @@ def _metric_summary(frame: pd.DataFrame, idx: pd.Index) -> Dict[str, Any]:
     return {
         "n": int(len(sub)),
         "active_days": int(sub["base_trade_date"].nunique()),
+        "active_runs": int(sub["run_id"].nunique()) if "run_id" in sub.columns else int(sub["base_trade_date"].nunique()),
         "hit5_dd10_5d_pct": _pct(success.mean()),
         "target_hit_5d_pct": _pct(target.mean()),
         "hit10_5d_pct": _pct(hit10.mean()),

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pandas as pd
+
 from multi_agent.tools import research_kis_three_stage_ev_ranker as tool
 
 
@@ -60,3 +62,24 @@ def test_three_stage_research_configs_include_tail_gate_dimension() -> None:
     assert configs[0].key() == "prefilter|pool10|final1|ev|tail_none"
     assert configs[1].key() == "prefilter|pool10|final1|ev|tail0p25"
     assert configs[2].key() == "prefilter|pool10|final2|ev|tail_none"
+
+
+def test_metric_summary_reports_active_runs_for_gate_checks() -> None:
+    frame = pd.DataFrame(
+        {
+            "base_trade_date": ["2026-05-01", "2026-05-01", "2026-05-02"],
+            "run_id": ["RUN-A", "RUN-A", "RUN-B"],
+            "_label_success": [True, False, True],
+            "_label_target_hit": [True, False, True],
+            "_label_hit10": [True, False, False],
+            "_label_tail_breach": [False, True, False],
+            "_close_5d": [6.0, -12.0, 4.0],
+            "_mfe_5d": [11.0, 3.0, 7.0],
+            "_mae_5d": [-4.0, -12.0, -3.0],
+        }
+    )
+
+    metrics = tool._metric_summary(frame, frame.index)
+
+    assert metrics["active_days"] == 2
+    assert metrics["active_runs"] == 2
