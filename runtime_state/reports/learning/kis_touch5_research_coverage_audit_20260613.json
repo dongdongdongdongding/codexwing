@@ -1,6 +1,6 @@
 {
   "version": "kis_touch5_research_coverage_audit_v1",
-  "generated_at": "2026-06-13T08:57:04+00:00",
+  "generated_at": "2026-06-13T13:34:28+00:00",
   "dummy_data_used": false,
   "decision": {
     "production_replacement_ready": false,
@@ -977,6 +977,269 @@
       "min_min_low_5d_pct": -9.230497,
       "holdout_gate_pass_count": 0,
       "note": "research_sweep_only; fixed holdout gate pass is required before promotion review"
+    },
+    "research_variants": [
+      {
+        "source_path": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json",
+        "status": "production_gate_pass_research_candidate_found",
+        "score_mode": "prob",
+        "topn": 1,
+        "prob_threshold": null,
+        "tail_threshold": 0.85,
+        "production_gate_pass_count": 6,
+        "deployment_ready": false,
+        "research_best": {
+          "selection_rule": "top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667",
+          "validation_mode": "research_sweep_only_walk_forward_predictions",
+          "deployment_ready": false,
+          "gate_status": "production_ready",
+          "n": 54,
+          "active_days": 15,
+          "active_runs": 54,
+          "hit5_dd10_5d_pct": 98.1481,
+          "hit10_5d_pct": 75.9259,
+          "avg_5d_pct": 24.676158,
+          "min_min_low_5d_pct": -9.230497,
+          "blockers": []
+        },
+        "best_near_miss_by_active_days": {
+          "selection_rule": "top1_prob_tail0p85_close_failure_prior_kis_sector_avg_close_5d_pct_ge_4p84699",
+          "validation_mode": "research_sweep_only_walk_forward_predictions",
+          "deployment_ready": false,
+          "gate_status": "shadow_ready",
+          "n": 46,
+          "active_days": 10,
+          "active_runs": 46,
+          "hit5_dd10_5d_pct": 100.0,
+          "hit10_5d_pct": 100.0,
+          "avg_5d_pct": 42.971678,
+          "min_min_low_5d_pct": -7.120743,
+          "blockers": [
+            "active_days_lt_15"
+          ]
+        },
+        "holdout": {
+          "status": "no_holdout_gate_pass",
+          "selection_folds": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "holdout_folds": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "holdout_gate_pass_count": 0,
+          "selection_best_holdout_evaluation": {
+            "selection_rule": "top1_prob_tail0p85_close_failure_prior_theme_touch5_n_ge_3824",
+            "validation_mode": "selection_best_fixed_rule_holdout_walk_forward_predictions",
+            "deployment_ready": false,
+            "gate_status": "shadow_ready",
+            "n": 23,
+            "active_days": 7,
+            "active_runs": 23,
+            "hit5_dd10_5d_pct": 100.0,
+            "hit10_5d_pct": 100.0,
+            "avg_5d_pct": 39.699864,
+            "min_min_low_5d_pct": -5.551964,
+            "blockers": [
+              "n_lt_30",
+              "active_days_lt_15"
+            ]
+          },
+          "best_holdout_gate_pass_candidate": {}
+        }
+      },
+      {
+        "source_path": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top2_probplustail_p08_tail085_20260613.json",
+        "status": "no_production_gate_pass_candidate",
+        "score_mode": "prob_plus_tail",
+        "topn": 2,
+        "prob_threshold": 0.8,
+        "tail_threshold": 0.85,
+        "production_gate_pass_count": 0,
+        "deployment_ready": false,
+        "research_best": {},
+        "best_near_miss_by_active_days": {
+          "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85_close_failure_prior_kis_sector_avg_close_5d_pct_ge_1p52857",
+          "validation_mode": "research_sweep_only_walk_forward_predictions",
+          "deployment_ready": false,
+          "gate_status": "shadow_ready",
+          "n": 82,
+          "active_days": 13,
+          "active_runs": 45,
+          "hit5_dd10_5d_pct": 98.7805,
+          "hit10_5d_pct": 95.122,
+          "avg_5d_pct": 24.439405,
+          "min_min_low_5d_pct": -8.252071,
+          "blockers": [
+            "active_days_lt_15"
+          ]
+        },
+        "holdout": {
+          "status": "no_holdout_gate_pass",
+          "selection_folds": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "holdout_folds": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "holdout_gate_pass_count": 0,
+          "selection_best_holdout_evaluation": {
+            "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85_close_failure_prior_ticker_avg_close_5d_pct_ge_17p2178",
+            "validation_mode": "selection_best_fixed_rule_holdout_walk_forward_predictions",
+            "deployment_ready": false,
+            "gate_status": "shadow_risk_review",
+            "n": 36,
+            "active_days": 6,
+            "active_runs": 23,
+            "hit5_dd10_5d_pct": 88.8889,
+            "hit10_5d_pct": 94.4444,
+            "avg_5d_pct": 32.236433,
+            "min_min_low_5d_pct": -10.089127,
+            "blockers": [
+              "active_days_lt_15",
+              "min_low_5d_lt_neg10"
+            ]
+          },
+          "best_holdout_gate_pass_candidate": {}
+        }
+      },
+      {
+        "source_path": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_selfold3_holdout_only_20260613.json",
+        "status": "production_gate_pass_research_candidate_found",
+        "score_mode": "prob",
+        "topn": 1,
+        "prob_threshold": null,
+        "tail_threshold": 0.85,
+        "production_gate_pass_count": 6,
+        "deployment_ready": false,
+        "research_best": {
+          "selection_rule": "top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667",
+          "validation_mode": "research_sweep_only_walk_forward_predictions",
+          "deployment_ready": false,
+          "gate_status": "production_ready",
+          "n": 54,
+          "active_days": 15,
+          "active_runs": 54,
+          "hit5_dd10_5d_pct": 98.1481,
+          "hit10_5d_pct": 75.9259,
+          "avg_5d_pct": 24.676158,
+          "min_min_low_5d_pct": -9.230497,
+          "blockers": []
+        },
+        "best_near_miss_by_active_days": {
+          "selection_rule": "top1_prob_tail0p85_close_failure_prior_ticker_avg_close_5d_pct_ge_0p401005",
+          "validation_mode": "research_sweep_only_walk_forward_predictions",
+          "deployment_ready": false,
+          "gate_status": "shadow_ready",
+          "n": 57,
+          "active_days": 14,
+          "active_runs": 57,
+          "hit5_dd10_5d_pct": 98.2456,
+          "hit10_5d_pct": 87.7193,
+          "avg_5d_pct": 38.060278,
+          "min_min_low_5d_pct": -8.188031,
+          "blockers": [
+            "active_days_lt_15"
+          ]
+        },
+        "holdout": {
+          "status": "no_holdout_gate_pass",
+          "selection_folds": [
+            1,
+            2,
+            3
+          ],
+          "holdout_folds": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "holdout_gate_pass_count": 0,
+          "selection_best_holdout_evaluation": {
+            "selection_rule": "top1_prob_tail0p85_close_failure_prior_theme_avg_mae_5d_pct_le_neg8p52709",
+            "validation_mode": "selection_best_fixed_rule_holdout_walk_forward_predictions",
+            "deployment_ready": false,
+            "gate_status": "shadow_risk_review",
+            "n": 40,
+            "active_days": 12,
+            "active_runs": 40,
+            "hit5_dd10_5d_pct": 87.5,
+            "hit10_5d_pct": 77.5,
+            "avg_5d_pct": 32.224954,
+            "min_min_low_5d_pct": -10.87344,
+            "blockers": [
+              "active_days_lt_15",
+              "min_low_5d_lt_neg10"
+            ]
+          },
+          "best_holdout_gate_pass_candidate": {}
+        }
+      }
+    ],
+    "best_near_miss_by_active_days": {
+      "selection_rule": "top1_prob_tail0p85_close_failure_prior_ticker_avg_close_5d_pct_ge_0p401005",
+      "validation_mode": "research_sweep_only_walk_forward_predictions",
+      "deployment_ready": false,
+      "gate_status": "shadow_ready",
+      "n": 57,
+      "active_days": 14,
+      "active_runs": 57,
+      "hit5_dd10_5d_pct": 98.2456,
+      "hit10_5d_pct": 87.7193,
+      "avg_5d_pct": 38.060278,
+      "min_min_low_5d_pct": -8.188031,
+      "blockers": [
+        "active_days_lt_15"
+      ]
     }
   },
   "research_directions": [

@@ -27,6 +27,10 @@ DEFAULT_PREPARED_CACHE = (
 DEFAULT_LEADERBOARD = REPORT_DIR / "kis_touch5_candidate_leaderboard_20260613.json"
 DEFAULT_OBJECTIVE = REPORT_DIR / "kis_touch5_research_objective_verification_20260613.json"
 DEFAULT_DRAWDOWN = REPORT_DIR / "kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json"
+DEFAULT_ADDITIONAL_DRAWDOWN_REPORTS = (
+    REPORT_DIR / "kis_touch5_dd10_drawdown_filter_research_kospi_top2_probplustail_p08_tail085_20260613.json",
+    REPORT_DIR / "kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_selfold3_holdout_only_20260613.json",
+)
 DEFAULT_ACTUAL_REPORTS = (
     REPORT_DIR / "kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
     REPORT_DIR / "kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold_20260101_20260610.json",
@@ -284,12 +288,109 @@ def _two_month_windows(month_matrix: Sequence[Mapping[str, Any]]) -> List[Dict[s
     return windows
 
 
-def _best_candidate_summary(leaderboard: Mapping[str, Any], drawdown: Mapping[str, Any]) -> Dict[str, Any]:
+def _candidate_row_summary(row: Mapping[str, Any] | None) -> Dict[str, Any]:
+    if not isinstance(row, Mapping) or not row:
+        return {}
+    identity = row.get("identity") if isinstance(row.get("identity"), Mapping) else {}
+    metrics = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    gate = row.get("gate") if isinstance(row.get("gate"), Mapping) else {}
+    return {
+        "selection_rule": identity.get("selection_rule"),
+        "validation_mode": identity.get("validation_mode") or row.get("validation_mode"),
+        "deployment_ready": bool(identity.get("deployment_ready")),
+        "gate_status": gate.get("status"),
+        "n": metrics.get("n"),
+        "active_days": metrics.get("active_days"),
+        "active_runs": metrics.get("active_runs"),
+        "hit5_dd10_5d_pct": metrics.get("hit5_dd10_5d_pct"),
+        "hit10_5d_pct": metrics.get("hit10_5d_pct"),
+        "avg_5d_pct": metrics.get("avg_5d_pct"),
+        "min_min_low_5d_pct": metrics.get("min_min_low_5d_pct"),
+        "blockers": gate.get("production_blocking_reasons") or [],
+    }
+
+
+def _best_near_miss_by_active_days(rows: Sequence[Any]) -> Dict[str, Any]:
+    candidates = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        metrics = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+        hit5 = _safe_float(metrics.get("hit5_dd10_5d_pct"))
+        min_low = _safe_float(metrics.get("min_min_low_5d_pct"))
+        active_days = _safe_float(metrics.get("active_days"))
+        n = _safe_float(metrics.get("n"))
+        if hit5 is None or min_low is None or active_days is None:
+            continue
+        if hit5 < 73.0 or min_low < -10.0 or active_days >= 15.0:
+            continue
+        candidates.append(row)
+    if not candidates:
+        return {}
+    best = sorted(
+        candidates,
+        key=lambda row: (
+            _safe_float((row.get("metrics") or {}).get("active_days")) or 0.0,
+            _safe_float((row.get("metrics") or {}).get("n")) or 0.0,
+            _safe_float((row.get("metrics") or {}).get("hit5_dd10_5d_pct")) or 0.0,
+            _safe_float((row.get("metrics") or {}).get("avg_5d_pct")) or 0.0,
+        ),
+        reverse=True,
+    )[0]
+    return _candidate_row_summary(best)
+
+
+def _drawdown_variant_summary(drawdown: Mapping[str, Any], *, source_path: Path | None = None) -> Dict[str, Any]:
+    if not isinstance(drawdown, Mapping) or not drawdown:
+        return {}
+    holdout = drawdown.get("holdout_validation") if isinstance(drawdown.get("holdout_validation"), Mapping) else {}
+    fixed_selection = (
+        holdout.get("selection_best_holdout_evaluation")
+        if isinstance(holdout.get("selection_best_holdout_evaluation"), Mapping)
+        else {}
+    )
+    best_holdout = (
+        holdout.get("best_holdout_gate_pass_candidate")
+        if isinstance(holdout.get("best_holdout_gate_pass_candidate"), Mapping)
+        else {}
+    )
+    return {
+        "source_path": _rel(source_path) if source_path else None,
+        "status": drawdown.get("status"),
+        "score_mode": drawdown.get("score_mode"),
+        "topn": drawdown.get("topn"),
+        "prob_threshold": drawdown.get("prob_threshold"),
+        "tail_threshold": drawdown.get("tail_threshold"),
+        "production_gate_pass_count": drawdown.get("production_ready_count"),
+        "deployment_ready": bool(drawdown.get("deployment_ready")),
+        "research_best": _candidate_row_summary(drawdown.get("best_production_candidate")),
+        "best_near_miss_by_active_days": _best_near_miss_by_active_days(drawdown.get("top_results") or []),
+        "holdout": {
+            "status": holdout.get("status"),
+            "selection_folds": holdout.get("selection_folds") or [],
+            "holdout_folds": holdout.get("holdout_folds") or [],
+            "holdout_gate_pass_count": holdout.get("holdout_gate_pass_count"),
+            "selection_best_holdout_evaluation": _candidate_row_summary(fixed_selection),
+            "best_holdout_gate_pass_candidate": _candidate_row_summary(best_holdout),
+        }
+        if holdout
+        else {},
+    }
+
+
+def _best_candidate_summary(
+    leaderboard: Mapping[str, Any],
+    drawdown: Mapping[str, Any],
+    drawdown_path: Path | None = None,
+    drawdown_variants: Sequence[tuple[Path | None, Mapping[str, Any]]] | None = None,
+) -> Dict[str, Any]:
     markets = leaderboard.get("markets") if isinstance(leaderboard.get("markets"), Mapping) else {}
     out: Dict[str, Any] = {
         "production_replacement_ready": bool((leaderboard.get("decision") or {}).get("production_replacement_ready")),
         "markets": {},
         "research_only_best": {},
+        "research_variants": [],
+        "best_near_miss_by_active_days": {},
     }
     for market in REQUIRED_MARKETS:
         row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
@@ -326,6 +427,37 @@ def _best_candidate_summary(leaderboard: Mapping[str, Any], drawdown: Mapping[st
             "holdout_gate_pass_count": ((drawdown.get("holdout_validation") or {}).get("holdout_gate_pass_count")),
             "note": "research_sweep_only; fixed holdout gate pass is required before promotion review",
         }
+    variants: List[Dict[str, Any]] = []
+    all_variants = [(drawdown_path, drawdown)] + list(drawdown_variants or [])
+    for path, payload in all_variants:
+        summary = _drawdown_variant_summary(payload, source_path=path)
+        if summary:
+            variants.append(summary)
+    out["research_variants"] = variants
+    near_misses = [
+        row.get("best_near_miss_by_active_days")
+        for row in variants
+        if isinstance(row.get("best_near_miss_by_active_days"), Mapping)
+        and row.get("best_near_miss_by_active_days")
+    ]
+    out["best_near_miss_by_active_days"] = _best_near_miss_by_active_days(
+        [
+            {
+                "identity": {"selection_rule": row.get("selection_rule"), "validation_mode": row.get("validation_mode")},
+                "metrics": {
+                    "n": row.get("n"),
+                    "active_days": row.get("active_days"),
+                    "active_runs": row.get("active_runs"),
+                    "hit5_dd10_5d_pct": row.get("hit5_dd10_5d_pct"),
+                    "hit10_5d_pct": row.get("hit10_5d_pct"),
+                    "avg_5d_pct": row.get("avg_5d_pct"),
+                    "min_min_low_5d_pct": row.get("min_min_low_5d_pct"),
+                },
+                "gate": {"status": row.get("gate_status"), "production_blocking_reasons": row.get("blockers") or []},
+            }
+            for row in near_misses
+        ]
+    )
     return out
 
 
@@ -355,7 +487,13 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     cache = _cache_profile(Path(args.prepared_cache))
     leaderboard = _load_json(Path(args.candidate_leaderboard))
     objective = _load_json(Path(args.objective_report))
-    drawdown = _load_json(Path(args.drawdown_report))
+    drawdown_path = Path(args.drawdown_report)
+    drawdown = _load_json(drawdown_path)
+    additional_drawdowns = [
+        (Path(path), _load_json(Path(path)))
+        for path in getattr(args, "additional_drawdown_reports", [])
+        if Path(path).exists()
+    ]
     actual_reports = [_report_profile(Path(path), basis="actual_kis_sidecar") for path in args.actual_reports]
     proxy_reports = [_report_profile(Path(path), basis="historical_proxy_or_static_master") for path in args.proxy_reports]
     month_matrix = _month_matrix(cache)
@@ -404,7 +542,12 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             "families": cache.get("feature_families") or {},
             "ablation_status": feature_axis,
         },
-        "current_best_performance": _best_candidate_summary(leaderboard, drawdown),
+        "current_best_performance": _best_candidate_summary(
+            leaderboard,
+            drawdown,
+            drawdown_path,
+            additional_drawdowns,
+        ),
         "research_directions": [
             {
                 "axis": "period",
@@ -436,6 +579,12 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     current = report.get("current_best_performance") if isinstance(report.get("current_best_performance"), Mapping) else {}
     markets = current.get("markets") if isinstance(current.get("markets"), Mapping) else {}
     research_best = current.get("research_only_best") if isinstance(current.get("research_only_best"), Mapping) else {}
+    variants = current.get("research_variants") if isinstance(current.get("research_variants"), list) else []
+    near_miss = (
+        current.get("best_near_miss_by_active_days")
+        if isinstance(current.get("best_near_miss_by_active_days"), Mapping)
+        else {}
+    )
     lines = [
         "# KIS Touch5 Research Coverage Audit",
         "",
@@ -463,6 +612,30 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"days=`{research_best.get('active_days')}` hit5=`{research_best.get('hit5_dd10_5d_pct')}` "
             f"avg5=`{research_best.get('avg_5d_pct')}` min_low=`{research_best.get('min_min_low_5d_pct')}` "
             f"holdout_gate_pass=`{research_best.get('holdout_gate_pass_count')}`"
+        )
+    if near_miss:
+        lines.append(
+            f"- best_near_miss_by_active_days: rule=`{near_miss.get('selection_rule')}` "
+            f"n=`{near_miss.get('n')}` days=`{near_miss.get('active_days')}` "
+            f"hit5=`{near_miss.get('hit5_dd10_5d_pct')}` min_low=`{near_miss.get('min_min_low_5d_pct')}` "
+            f"blockers=`{near_miss.get('blockers')}`"
+        )
+    for row in variants:
+        if not isinstance(row, Mapping):
+            continue
+        best = row.get("research_best") if isinstance(row.get("research_best"), Mapping) else {}
+        holdout = row.get("holdout") if isinstance(row.get("holdout"), Mapping) else {}
+        fixed = (
+            holdout.get("selection_best_holdout_evaluation")
+            if isinstance(holdout.get("selection_best_holdout_evaluation"), Mapping)
+            else {}
+        )
+        lines.append(
+            f"- research_variant: source=`{row.get('source_path')}` score=`{row.get('score_mode')}` "
+            f"topn=`{row.get('topn')}` p=`{row.get('prob_threshold')}` tail=`{row.get('tail_threshold')}` "
+            f"research_best_hit5=`{best.get('hit5_dd10_5d_pct')}` research_best_days=`{best.get('active_days')}` "
+            f"holdout_gate_pass=`{holdout.get('holdout_gate_pass_count')}` "
+            f"holdout_fixed_hit5=`{fixed.get('hit5_dd10_5d_pct')}` holdout_fixed_days=`{fixed.get('active_days')}`"
         )
     lines.extend(
         [
@@ -506,6 +679,11 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidate-leaderboard", default=str(DEFAULT_LEADERBOARD))
     parser.add_argument("--objective-report", default=str(DEFAULT_OBJECTIVE))
     parser.add_argument("--drawdown-report", default=str(DEFAULT_DRAWDOWN))
+    parser.add_argument(
+        "--additional-drawdown-reports",
+        nargs="*",
+        default=[str(path) for path in DEFAULT_ADDITIONAL_DRAWDOWN_REPORTS],
+    )
     parser.add_argument("--actual-reports", nargs="*", default=[str(path) for path in DEFAULT_ACTUAL_REPORTS])
     parser.add_argument("--proxy-reports", nargs="*", default=[str(path) for path in DEFAULT_PROXY_REPORTS])
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
