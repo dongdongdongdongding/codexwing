@@ -57,6 +57,9 @@ DEFAULT_KOSDAQ_DRAWDOWN_FILTER_REPORT = (
 DEFAULT_COVERAGE_AUDIT = ROOT / "runtime_state/reports/learning/kis_touch5_research_coverage_audit_20260613.json"
 DEFAULT_SLICE_ABLATION = ROOT / "runtime_state/reports/learning/kis_touch5_slice_ablation_20260613.json"
 DEFAULT_STABILITY_SEARCH = ROOT / "runtime_state/reports/learning/kis_touch5_stability_search_longfold20_20260613.json"
+DEFAULT_KOSDAQ_BOTTLENECK_MATRIX = (
+    ROOT / "runtime_state/reports/learning/kis_touch5_kosdaq_bottleneck_matrix_20260613.json"
+)
 DEFAULT_FINALTOPN_PREFILTER_PROXY = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json"
 )
@@ -890,6 +893,34 @@ def _stability_search_market(report: Mapping[str, Any], market: str) -> Dict[str
     }
 
 
+def _kosdaq_bottleneck_matrix_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    if not report or str(report.get("market") or "").upper() != market:
+        return {}
+    decision = report.get("decision") if isinstance(report.get("decision"), Mapping) else {}
+    best = decision.get("best_research_candidate") if isinstance(decision.get("best_research_candidate"), Mapping) else {}
+    safe = decision.get("best_safe_tail_candidate") if isinstance(decision.get("best_safe_tail_candidate"), Mapping) else {}
+    drawdown = report.get("drawdown_filter") if isinstance(report.get("drawdown_filter"), Mapping) else {}
+    holdout = drawdown.get("holdout") if isinstance(drawdown.get("holdout"), Mapping) else {}
+    return {
+        "status": decision.get("status"),
+        "production_replacement_ready": bool(decision.get("production_replacement_ready")),
+        "period_stable_candidate_count": decision.get("period_stable_candidate_count"),
+        "production_ready_count": decision.get("production_ready_count"),
+        "holdout_gate_pass_count": decision.get("holdout_gate_pass_count"),
+        "model_change_helped": bool(decision.get("model_change_helped")),
+        "primary_blockers": decision.get("primary_blockers") or [],
+        "best_research_candidate": best,
+        "best_safe_tail_candidate": safe,
+        "drawdown_holdout": {
+            "status": holdout.get("status"),
+            "selection_candidates_tested": holdout.get("selection_candidates_tested"),
+            "holdout_candidates_evaluated": holdout.get("holdout_candidates_evaluated"),
+            "holdout_gate_pass_count": holdout.get("holdout_gate_pass_count"),
+        },
+        "recommended_action": decision.get("recommended_action"),
+    }
+
+
 def build_report(
     *,
     shadow_report_path: Path = DEFAULT_SHADOW_REPORT,
@@ -910,6 +941,7 @@ def build_report(
     coverage_audit_path: Path | None = None,
     slice_ablation_path: Path | None = None,
     stability_search_path: Path | None = None,
+    kosdaq_bottleneck_matrix_path: Path | None = None,
     finaltopn_prefilter_proxy_path: Path | None = None,
     finaltopn_actual_sidecar_path: Path | None = None,
     static_master_augmentation_path: Path | None = None,
@@ -937,6 +969,7 @@ def build_report(
     coverage_audit = _load_optional_json(coverage_audit_path)
     slice_ablation = _load_optional_json(slice_ablation_path)
     stability_search = _load_optional_json(stability_search_path)
+    kosdaq_bottleneck_matrix = _load_optional_json(kosdaq_bottleneck_matrix_path)
     finaltopn_prefilter_proxy = _load_optional_json(finaltopn_prefilter_proxy_path)
     finaltopn_actual_sidecar = _load_optional_json(finaltopn_actual_sidecar_path)
     static_master_augmentation = _load_optional_json(static_master_augmentation_path)
@@ -970,6 +1003,7 @@ def build_report(
             "drawdown_filter_research": _drawdown_filter_research_market(drawdown_source, market),
             "slice_ablation": _slice_ablation_market(slice_ablation, market),
             "stability_search": _stability_search_market(stability_search, market),
+            "kosdaq_bottleneck_matrix": _kosdaq_bottleneck_matrix_market(kosdaq_bottleneck_matrix, market),
         }
     decision = _best_available_decision({m: row["kis_sidecar_longfold_shadow"] for m, row in markets.items()})
     drawdown_kospi = markets.get("KOSPI", {}).get("drawdown_filter_research") or {}
@@ -1028,6 +1062,22 @@ def build_report(
             stability_decision.get("missing_or_sparse_actual_months") or []
         )
         if not stability_ready:
+            decision["production_replacement_proven"] = False
+            decision["recommended_action"] = "keep_existing_production_and_show_kis_shadow_top_section"
+    kosdaq_bottleneck_decision = (
+        kosdaq_bottleneck_matrix.get("decision")
+        if isinstance(kosdaq_bottleneck_matrix.get("decision"), dict)
+        else {}
+    )
+    if kosdaq_bottleneck_decision:
+        decision["kosdaq_bottleneck_status"] = kosdaq_bottleneck_decision.get("status")
+        decision["kosdaq_bottleneck_production_ready"] = bool(
+            kosdaq_bottleneck_decision.get("production_replacement_ready")
+        )
+        decision["kosdaq_bottleneck_primary_blockers"] = (
+            kosdaq_bottleneck_decision.get("primary_blockers") or []
+        )
+        if not decision["kosdaq_bottleneck_production_ready"]:
             decision["production_replacement_proven"] = False
             decision["recommended_action"] = "keep_existing_production_and_show_kis_shadow_top_section"
     return {
@@ -1095,6 +1145,10 @@ def build_report(
             if stability_search_path and stability_search_path.exists()
             else None,
             "stability_search": stability_decision,
+            "kosdaq_bottleneck_matrix_report": _rel(kosdaq_bottleneck_matrix_path)
+            if kosdaq_bottleneck_matrix_path and kosdaq_bottleneck_matrix_path.exists()
+            else None,
+            "kosdaq_bottleneck_matrix": kosdaq_bottleneck_decision,
             "drawdown_filter_status": drawdown_filter_report.get("status") if drawdown_filter_report else None,
             "drawdown_filter_validation_mode": drawdown_filter_report.get("validation_mode")
             if drawdown_filter_report
@@ -1276,6 +1330,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
         f"- stability_search_status: `{decision.get('stability_search_status')}`",
         f"- stability_search_production_ready: `{decision.get('stability_search_production_ready')}`",
         f"- stability_search_period_stable_both_market_candidate: `{decision.get('stability_search_period_stable_both_market_candidate')}`",
+        f"- kosdaq_bottleneck_status: `{decision.get('kosdaq_bottleneck_status')}`",
         "",
         "## 목표",
         f"- primary_goal: {goal.get('primary_goal')}",
@@ -1301,6 +1356,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- coverage_audit: status=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('status')}`, actual_kis_oos_months=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('actual_kis_oos_months')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('missing_or_sparse_actual_kis_months')}`",
             f"- slice_ablation: status=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('production_replacement_ready')}`, period_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('all_trainable_periods_outcome_pass')}`, ablation_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('available_full_ablation_has_multiple_passing_families')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('missing_or_sparse_actual_months')}`",
             f"- stability_search: status=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('production_replacement_ready')}`, period_stable_both_market=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('period_stable_both_market_candidate')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('missing_or_sparse_actual_months')}`",
+            f"- kosdaq_bottleneck_matrix: status=`{((report.get('research_inputs') or {}).get('kosdaq_bottleneck_matrix') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('kosdaq_bottleneck_matrix') or {}).get('production_replacement_ready')}`, blockers=`{((report.get('research_inputs') or {}).get('kosdaq_bottleneck_matrix') or {}).get('primary_blockers')}`",
             f"- three_stage_validation: `{(report.get('research_inputs') or {}).get('three_stage_validation')}`",
             "",
         ]
@@ -1462,6 +1518,26 @@ def _markdown(report: Mapping[str, Any]) -> str:
             if isinstance(stability_stable.get("selected_month_coverage"), dict)
             else {}
         )
+        kosdaq_bottleneck = (
+            payload.get("kosdaq_bottleneck_matrix")
+            if isinstance(payload.get("kosdaq_bottleneck_matrix"), dict)
+            else {}
+        )
+        kosdaq_bottleneck_best = (
+            kosdaq_bottleneck.get("best_research_candidate")
+            if isinstance(kosdaq_bottleneck.get("best_research_candidate"), dict)
+            else {}
+        )
+        kosdaq_bottleneck_metrics = (
+            kosdaq_bottleneck_best.get("metrics")
+            if isinstance(kosdaq_bottleneck_best.get("metrics"), dict)
+            else {}
+        )
+        kosdaq_bottleneck_line = (
+            f"- kosdaq_bottleneck_matrix: status=`{kosdaq_bottleneck.get('status')}`, production_ready=`{kosdaq_bottleneck.get('production_replacement_ready')}`, stable_count=`{kosdaq_bottleneck.get('period_stable_candidate_count')}`, holdout_gate_pass=`{kosdaq_bottleneck.get('holdout_gate_pass_count')}`, best=`{kosdaq_bottleneck_best.get('selection_rule')}`, hit5=`{kosdaq_bottleneck_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{kosdaq_bottleneck_metrics.get('avg_5d_pct')}`, min_low=`{kosdaq_bottleneck_metrics.get('min_min_low_5d_pct')}`, model_change_helped=`{kosdaq_bottleneck.get('model_change_helped')}`, blockers=`{kosdaq_bottleneck.get('primary_blockers')}`"
+            if kosdaq_bottleneck
+            else "- kosdaq_bottleneck_matrix: status=`not_run_for_market`"
+        )
         lines.extend(
             [
                 f"## {market}",
@@ -1486,6 +1562,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- stability_search: evaluated=`{stability.get('evaluated_candidates')}`, production_ready_count=`{stability.get('production_ready_count')}`, period_stable_count=`{stability.get('period_stable_count')}`, shadow_period_stable_count=`{stability.get('shadow_period_stable_count')}`",
                 f"- stability_search_best: rule=`{stability_best.get('selection_rule')}`, status=`{stability_best.get('stability_status')}`, pass=`{stability_best.get('period_pass_count')}/{stability_best.get('period_result_count')}`, gate=`{stability_best.get('gate_status')}`, selected_months=`{stability_best_coverage.get('selected_months')}`, coverage_blockers=`{stability_best.get('coverage_blockers')}`, n=`{stability_best_metrics.get('n')}`, active_days=`{stability_best_metrics.get('active_days')}`, hit5=`{stability_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_best_metrics.get('avg_5d_pct')}`, min_low=`{stability_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_best.get('blockers')}`",
                 f"- stability_search_period_stable_best: rule=`{stability_stable.get('selection_rule')}`, pass=`{stability_stable.get('period_pass_count')}/{stability_stable.get('period_result_count')}`, gate=`{stability_stable.get('gate_status')}`, selected_months=`{stability_stable_coverage.get('selected_months')}`, coverage_blockers=`{stability_stable.get('coverage_blockers')}`, n=`{stability_stable_metrics.get('n')}`, active_days=`{stability_stable_metrics.get('active_days')}`, hit5=`{stability_stable_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_stable_metrics.get('avg_5d_pct')}`, min_low=`{stability_stable_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_stable.get('blockers')}`",
+                kosdaq_bottleneck_line,
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",
@@ -1604,6 +1681,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--coverage-audit-report", default=str(DEFAULT_COVERAGE_AUDIT))
     parser.add_argument("--slice-ablation-report", default=str(DEFAULT_SLICE_ABLATION))
     parser.add_argument("--stability-search-report", default=str(DEFAULT_STABILITY_SEARCH))
+    parser.add_argument("--kosdaq-bottleneck-matrix-report", default=str(DEFAULT_KOSDAQ_BOTTLENECK_MATRIX))
     parser.add_argument("--finaltopn-prefilter-proxy-report", default=str(DEFAULT_FINALTOPN_PREFILTER_PROXY))
     parser.add_argument("--finaltopn-actual-sidecar-report", default=str(DEFAULT_FINALTOPN_ACTUAL_SIDECAR))
     parser.add_argument("--static-master-augmentation-report", default=str(DEFAULT_STATIC_MASTER_AUGMENTATION))
@@ -1647,6 +1725,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         coverage_audit_path=Path(args.coverage_audit_report),
         slice_ablation_path=Path(args.slice_ablation_report),
         stability_search_path=Path(args.stability_search_report),
+        kosdaq_bottleneck_matrix_path=Path(args.kosdaq_bottleneck_matrix_report),
         finaltopn_prefilter_proxy_path=Path(args.finaltopn_prefilter_proxy_report),
         finaltopn_actual_sidecar_path=Path(args.finaltopn_actual_sidecar_report),
         static_master_augmentation_path=Path(args.static_master_augmentation_report),

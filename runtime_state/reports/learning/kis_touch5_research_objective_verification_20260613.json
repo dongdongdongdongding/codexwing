@@ -11,6 +11,13 @@
     "drawdown_filter_holdout_gate_pass": false,
     "drawdown_filter_research_candidate_found": true,
     "feature_family_ablation_required": true,
+    "kosdaq_bottleneck_primary_blockers": [
+      "no_period_stable_kosdaq_candidate",
+      "min_low_5d_tail_below_minus10",
+      "drawdown_filter_holdout_gate_pass_count_zero"
+    ],
+    "kosdaq_bottleneck_production_ready": false,
+    "kosdaq_bottleneck_status": "kosdaq_tail_risk_blocks_production_replacement",
     "missing_or_sparse_actual_kis_months": [
       "2026-01",
       "2026-02",
@@ -51,7 +58,7 @@
     "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T11:31:05.412871+00:00",
+  "generated_at": "2026-06-13T11:47:33.226646+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -3173,6 +3180,67 @@
           "mature_for_training": true,
           "news_checked_fill_pct": 100.0
         }
+      },
+      "kosdaq_bottleneck_matrix": {
+        "best_research_candidate": {
+          "blockers": [
+            "active_days_lt_20",
+            "min_low_5d_lt_neg10"
+          ],
+          "gate_status": "blocked",
+          "metrics": {
+            "active_days": 14,
+            "active_runs": 29,
+            "avg_5d_pct": 6.54185,
+            "hit10_5d_pct": 69.8795,
+            "hit5_dd10_5d_pct": 75.9036,
+            "min_min_low_5d_pct": -21.915669,
+            "n": 83
+          },
+          "period_pass_count": 0,
+          "period_result_count": 3,
+          "selected_month_coverage": {
+            "max_month_share_pct": 98.795181,
+            "month_rows": {
+              "2026-05": {
+                "active_days": 13,
+                "active_runs": 28,
+                "n": 82
+              },
+              "2026-06": {
+                "active_days": 1,
+                "active_runs": 1,
+                "n": 1
+              }
+            },
+            "selected_month_count": 2,
+            "selected_months": [
+              "2026-05",
+              "2026-06"
+            ]
+          },
+          "selection_rule": "top3_prob_tail_margin_p0p5",
+          "stability_status": "unstable_candidate"
+        },
+        "best_safe_tail_candidate": {},
+        "drawdown_holdout": {
+          "holdout_candidates_evaluated": 80,
+          "holdout_gate_pass_count": 0,
+          "selection_candidates_tested": 947,
+          "status": "no_holdout_gate_pass"
+        },
+        "holdout_gate_pass_count": 0,
+        "model_change_helped": false,
+        "period_stable_candidate_count": 0,
+        "primary_blockers": [
+          "no_period_stable_kosdaq_candidate",
+          "min_low_5d_tail_below_minus10",
+          "drawdown_filter_holdout_gate_pass_count_zero"
+        ],
+        "production_ready_count": 0,
+        "production_replacement_ready": false,
+        "recommended_action": "keep KOSDAQ KIS touch5/dd10 in shadow; prioritize KOSDAQ-specific tail-risk veto features and cached prediction matrix before any promotion review",
+        "status": "kosdaq_tail_risk_blocks_production_replacement"
       },
       "sidecar_score_mode_experiment": {
         "baseline_best": {
@@ -17817,6 +17885,7 @@
           "news_checked_fill_pct": null
         }
       },
+      "kosdaq_bottleneck_matrix": {},
       "sidecar_score_mode_experiment": {
         "baseline_best": {
           "gate_status": "shadow_ready",
@@ -40887,6 +40956,62 @@
     "drawdown_filter_validation_mode": "research_sweep_only_walk_forward_predictions",
     "finaltopn_actual_sidecar_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_actual_sidecar_20260331_20260610.json",
     "finaltopn_prefilter_proxy_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json",
+    "kosdaq_bottleneck_matrix": {
+      "best_research_candidate": {
+        "blockers": [
+          "active_days_lt_20",
+          "min_low_5d_lt_neg10"
+        ],
+        "gate_status": "blocked",
+        "metrics": {
+          "active_days": 14,
+          "active_runs": 29,
+          "avg_5d_pct": 6.54185,
+          "hit10_5d_pct": 69.8795,
+          "hit5_dd10_5d_pct": 75.9036,
+          "min_min_low_5d_pct": -21.915669,
+          "n": 83
+        },
+        "period_pass_count": 0,
+        "period_result_count": 3,
+        "selected_month_coverage": {
+          "max_month_share_pct": 98.795181,
+          "month_rows": {
+            "2026-05": {
+              "active_days": 13,
+              "active_runs": 28,
+              "n": 82
+            },
+            "2026-06": {
+              "active_days": 1,
+              "active_runs": 1,
+              "n": 1
+            }
+          },
+          "selected_month_count": 2,
+          "selected_months": [
+            "2026-05",
+            "2026-06"
+          ]
+        },
+        "selection_rule": "top3_prob_tail_margin_p0p5",
+        "stability_status": "unstable_candidate"
+      },
+      "best_safe_tail_candidate": {},
+      "holdout_gate_pass_count": 0,
+      "model_change_helped": false,
+      "period_stable_candidate_count": 0,
+      "primary_blockers": [
+        "no_period_stable_kosdaq_candidate",
+        "min_low_5d_tail_below_minus10",
+        "drawdown_filter_holdout_gate_pass_count_zero"
+      ],
+      "production_ready_count": 0,
+      "production_replacement_ready": false,
+      "recommended_action": "keep KOSDAQ KIS touch5/dd10 in shadow; prioritize KOSDAQ-specific tail-risk veto features and cached prediction matrix before any promotion review",
+      "status": "kosdaq_tail_risk_blocks_production_replacement"
+    },
+    "kosdaq_bottleneck_matrix_report": "runtime_state/reports/learning/kis_touch5_kosdaq_bottleneck_matrix_20260613.json",
     "kosdaq_drawdown_filter_deployment_ready": false,
     "kosdaq_drawdown_filter_production_gate_pass_count": 0,
     "kosdaq_drawdown_filter_report": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_probtail_p05_20260613.json",
