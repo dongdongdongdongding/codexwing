@@ -11,6 +11,10 @@ ROOT_FILE="${APP_SUPPORT_DIR}/project_root"
 LAUNCHER_PATH="${BIN_DIR}/codex_swing_launch.sh"
 NIGHTLY_PLIST="${LAUNCH_AGENTS_DIR}/com.codex.swing.learning.nightly.plist"
 WEEKLY_PLIST="${LAUNCH_AGENTS_DIR}/com.codex.swing.learning.weekly.plist"
+KIS_TOUCH5_FULL_MATRIX_ARG=""
+if [[ "${AG_LEARNING_KIS_TOUCH5_FULL_MATRIX:-1}" == "1" ]]; then
+  KIS_TOUCH5_FULL_MATRIX_ARG=" --run-kis-touch5-full-matrix"
+fi
 
 mkdir -p "${LAUNCH_AGENTS_DIR}" "${LOG_DIR}" "${BIN_DIR}"
 
@@ -79,7 +83,7 @@ cat > "${NIGHTLY_PLIST}" <<EOF
     <string>${LAUNCHER_PATH}</string>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>python3 multi_agent/tools/run_learning_cycle.py --mode nightly --nightly-min-new-resolved ${AG_LEARNING_NIGHTLY_MIN_NEW_RESOLVED:-20}</string>
+    <string>python3 multi_agent/tools/run_learning_cycle.py --mode nightly --nightly-min-new-resolved ${AG_LEARNING_NIGHTLY_MIN_NEW_RESOLVED:-20}${KIS_TOUCH5_FULL_MATRIX_ARG}</string>
   </array>
   <key>WorkingDirectory</key>
   <string>${APP_SUPPORT_DIR}</string>

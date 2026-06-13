@@ -41,7 +41,7 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
 )
 
 
-REPORT_VERSION = "kis_touch5_slice_ablation_v1"
+REPORT_VERSION = "kis_touch5_slice_ablation_v2"
 REPORT_DIR = ROOT / "runtime_state/reports/learning"
 DEFAULT_PREPARED_CACHE = (
     REPORT_DIR / "scan_universe_admission_challenger_touch5_dd10_kis_sidecar_db_20260101_20260610.pkl"
@@ -52,6 +52,16 @@ REQUIRED_MONTHS = ("2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-
 REQUIRED_MARKETS = ("KOSPI", "KOSDAQ")
 BASE_FEATURE_SET = "kis_sidecar_failure_risk_augmented"
 LABEL_NAME = "touch5_dd10_5d"
+MATRIX_METRIC_KEYS = (
+    "n",
+    "active_days",
+    "active_runs",
+    "hit5_dd10_5d_pct",
+    "hit10_5d_pct",
+    "avg_5d_pct",
+    "min_min_low_5d_pct",
+    "expected_touch_policy_net_5d_pct",
+)
 
 DEFAULT_RULES: Dict[str, Dict[str, Any]] = {
     "KOSPI": {
@@ -417,7 +427,165 @@ def _outcome_pass(row: Mapping[str, Any]) -> bool:
     return hit >= 73.0 and low >= -10.0
 
 
-def _market_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
+def _ordered_unique(values: Iterable[Any]) -> List[str]:
+    out: List[str] = []
+    seen = set()
+    for value in values:
+        key = str(value or "")
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(key)
+    return out
+
+
+def _metric_subset(metrics_row: Mapping[str, Any]) -> Dict[str, Any]:
+    return {key: metrics_row.get(key) for key in MATRIX_METRIC_KEYS if key in metrics_row}
+
+
+def _matrix_result(row: Mapping[str, Any]) -> Dict[str, Any]:
+    scope = row.get("scope") if isinstance(row.get("scope"), Mapping) else {}
+    gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}
+    identity = row.get("identity") if isinstance(row.get("identity"), Mapping) else {}
+    metrics_row = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    status = str(row.get("status") or "unknown")
+    out = {
+        "status": status,
+        "slice": scope.get("slice"),
+        "slice_type": scope.get("slice_type"),
+        "feature_config": scope.get("feature_config"),
+        "rows": scope.get("rows"),
+        "unique_days": scope.get("unique_days"),
+        "unique_runs": scope.get("unique_runs"),
+        "usable_numeric": scope.get("usable_numeric"),
+        "usable_categorical": scope.get("usable_categorical"),
+        "outcome_pass": bool(status == "ok" and _outcome_pass(row)),
+    }
+    if status == "ok":
+        out.update(
+            {
+                "selection_rule": identity.get("selection_rule"),
+                "gate_status": gate.get("status"),
+                "production_ready": bool(gate.get("production_ready")),
+                "shadow_display_allowed": bool(gate.get("shadow_display_allowed")),
+                "blockers": gate.get("production_blocking_reasons") or [],
+                "metrics": _metric_subset(metrics_row),
+                "quality_score": _round(row.get("quality_score")),
+            }
+        )
+    else:
+        out["skip_reasons"] = row.get("skip_reasons") or []
+    return out
+
+
+def _metric_priority_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    metrics_row = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    return (
+        -float(metrics_row.get("hit5_dd10_5d_pct") or 0.0),
+        -float(metrics_row.get("avg_5d_pct") or -999.0),
+        -float(metrics_row.get("min_min_low_5d_pct") or -999.0),
+        -int(metrics_row.get("active_days") or 0),
+        -int(metrics_row.get("n") or 0),
+    )
+
+
+def _best_by_scope(rows: Sequence[Mapping[str, Any]], scope_key: str) -> List[Dict[str, Any]]:
+    grouped: Dict[str, List[Mapping[str, Any]]] = {}
+    for row in rows:
+        scope = row.get("scope") if isinstance(row.get("scope"), Mapping) else {}
+        key = str(scope.get(scope_key) or "")
+        if key:
+            grouped.setdefault(key, []).append(row)
+    out: List[Dict[str, Any]] = []
+    for key in _ordered_unique((row.get("scope") or {}).get(scope_key) for row in rows if isinstance(row.get("scope"), Mapping)):
+        candidates = [row for row in grouped.get(key, []) if row.get("status") == "ok"]
+        if not candidates:
+            skipped = grouped.get(key, [])
+            if skipped:
+                out.append(_matrix_result(skipped[0]))
+            continue
+        out.append(_matrix_result(sorted(candidates, key=_result_sort_key)[0]))
+    return out
+
+
+def _slice_feature_matrix(rows: Sequence[Mapping[str, Any]], *, focused_matrix: bool) -> Dict[str, Any]:
+    ok_rows = [row for row in rows if row.get("status") == "ok"]
+    scope_rows = [row.get("scope") for row in rows if isinstance(row.get("scope"), Mapping)]
+    slice_names = _ordered_unique(scope.get("slice") for scope in scope_rows)
+    feature_configs = _ordered_unique(scope.get("feature_config") for scope in scope_rows)
+    all_feature_period_rows = [
+        row
+        for row in rows
+        if isinstance(row.get("scope"), Mapping)
+        and (row.get("scope") or {}).get("feature_config") == "all_features"
+        and (row.get("scope") or {}).get("slice_type") in {"monthly", "rolling_2m", "available_full"}
+    ]
+    all_feature_period_ok = [row for row in all_feature_period_rows if row.get("status") == "ok"]
+    period_failures = [
+        _matrix_result(row)
+        for row in all_feature_period_rows
+        if row.get("status") != "ok" or not _outcome_pass(row)
+    ]
+    available_full_rows = [
+        row
+        for row in rows
+        if isinstance(row.get("scope"), Mapping)
+        and (row.get("scope") or {}).get("slice_type") == "available_full"
+    ]
+    available_full_ok = [row for row in available_full_rows if row.get("status") == "ok"]
+    feature_failures = [
+        _matrix_result(row)
+        for row in available_full_rows
+        if row.get("status") != "ok" or not _outcome_pass(row)
+    ]
+    all_full = next(
+        (
+            row
+            for row in available_full_ok
+            if (row.get("scope") or {}).get("feature_config") == "all_features"
+        ),
+        {},
+    )
+    removal_pass = [
+        str((row.get("scope") or {}).get("feature_config"))
+        for row in available_full_ok
+        if str((row.get("scope") or {}).get("feature_config") or "").startswith("all_minus_")
+        and _outcome_pass(row)
+    ]
+    single_family_pass = [
+        str((row.get("scope") or {}).get("feature_config"))
+        for row in available_full_ok
+        if str((row.get("scope") or {}).get("feature_config") or "").endswith("_only")
+        and _outcome_pass(row)
+    ]
+    return {
+        "matrix_mode": "focused_partial" if focused_matrix else "full_period_feature_cross_product",
+        "complete_cross_product": bool(not focused_matrix),
+        "slice_count": int(len(slice_names)),
+        "feature_config_count": int(len(feature_configs)),
+        "ok_result_count": int(len(ok_rows)),
+        "evaluated_slices": slice_names,
+        "evaluated_feature_configs": feature_configs,
+        "period_result_count": int(len(all_feature_period_ok)),
+        "period_outcome_pass_count": int(sum(1 for row in all_feature_period_ok if _outcome_pass(row))),
+        "period_failures": period_failures,
+        "available_full_feature_result_count": int(len(available_full_ok)),
+        "available_full_feature_outcome_pass_count": int(sum(1 for row in available_full_ok if _outcome_pass(row))),
+        "available_full_feature_failures": feature_failures,
+        "best_by_feature_config": _best_by_scope(ok_rows, "feature_config"),
+        "best_by_slice": _best_by_scope(ok_rows, "slice"),
+        "best_by_raw_outcome": [_matrix_result(row) for row in sorted(ok_rows, key=_metric_priority_key)[:8]],
+        "available_full_feature_results": [_matrix_result(row) for row in sorted(available_full_rows, key=_result_sort_key)],
+        "feature_dependency": {
+            "available_full_all_features_pass": bool(all_full and _outcome_pass(all_full)),
+            "all_minus_pass_configs": removal_pass,
+            "single_family_pass_configs": single_family_pass,
+            "dominant_single_family_risk": bool(all_full and _outcome_pass(all_full) and not removal_pass),
+        },
+    }
+
+
+def _market_summary(rows: Sequence[Mapping[str, Any]], *, focused_matrix: bool) -> Dict[str, Any]:
     ok_rows = [row for row in rows if row.get("status") == "ok"]
     by_status: Dict[str, int] = {}
     for row in rows:
@@ -472,6 +640,7 @@ def _market_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "best_results": [_compact_result(row) for row in sorted(ok_rows, key=_result_sort_key)[:8]],
         "all_feature_periods": [_compact_result(row) for row in sorted(all_feature_periods, key=_result_sort_key)],
         "available_full_ablations": [_compact_result(row) for row in sorted(ablations, key=_result_sort_key)],
+        "slice_feature_matrix": _slice_feature_matrix(rows, focused_matrix=focused_matrix),
     }
 
 
@@ -534,7 +703,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
                     progress=bool(args.progress),
                 )
                 market_rows[market].append(row)
-    summaries = {market: _market_summary(rows) for market, rows in market_rows.items()}
+    summaries = {market: _market_summary(rows, focused_matrix=bool(args.focused_matrix)) for market, rows in market_rows.items()}
     missing_actual_months = [month for month in months if month not in data_months]
     sparse_months: List[str] = []
     for month in months:
@@ -580,6 +749,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             "period_axis": "monthly + rolling two-month + actual_available_full",
             "feature_axis": feature_config_names,
             "focused_matrix": bool(args.focused_matrix),
+            "full_matrix_required_for_promotion": True,
             "model_rules": rules,
         },
         "decision": {
@@ -631,6 +801,43 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"{row.get('available_full_ablation_outcome_pass_count')}/{row.get('available_full_ablation_result_count')} | "
             f"{row.get('dominant_close_failure_prior_dependency')} |"
         )
+    lines.extend(
+        [
+            "",
+            "## Slice Feature Matrix",
+            "| market | mode | complete | periods_pass | full_feature_pass | best_feature | hit5 | min_low |",
+            "|---|---|---:|---:|---:|---|---:|---:|",
+        ]
+    )
+    for market in REQUIRED_MARKETS:
+        row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
+        matrix = row.get("slice_feature_matrix") if isinstance(row.get("slice_feature_matrix"), Mapping) else {}
+        best_features = matrix.get("best_by_feature_config") if isinstance(matrix.get("best_by_feature_config"), list) else []
+        best = best_features[0] if best_features and isinstance(best_features[0], Mapping) else {}
+        best_metrics = best.get("metrics") if isinstance(best.get("metrics"), Mapping) else {}
+        lines.append(
+            f"| {market} | {matrix.get('matrix_mode')} | {matrix.get('complete_cross_product')} | "
+            f"{matrix.get('period_outcome_pass_count')}/{matrix.get('period_result_count')} | "
+            f"{matrix.get('available_full_feature_outcome_pass_count')}/{matrix.get('available_full_feature_result_count')} | "
+            f"{best.get('feature_config')} | {best_metrics.get('hit5_dd10_5d_pct')} | "
+            f"{best_metrics.get('min_min_low_5d_pct')} |"
+        )
+    lines.extend(["", "### Feature Winners"])
+    for market in REQUIRED_MARKETS:
+        row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
+        matrix = row.get("slice_feature_matrix") if isinstance(row.get("slice_feature_matrix"), Mapping) else {}
+        lines.append(f"#### {market}")
+        for result in (matrix.get("best_by_feature_config") or [])[:8]:
+            if not isinstance(result, Mapping):
+                continue
+            metrics_row = result.get("metrics") if isinstance(result.get("metrics"), Mapping) else {}
+            lines.append(
+                f"- config=`{result.get('feature_config')}` slice=`{result.get('slice')}` "
+                f"gate=`{result.get('gate_status')}` n=`{metrics_row.get('n')}` "
+                f"days=`{metrics_row.get('active_days')}` hit5=`{metrics_row.get('hit5_dd10_5d_pct')}` "
+                f"avg5=`{metrics_row.get('avg_5d_pct')}` min_low=`{metrics_row.get('min_min_low_5d_pct')}` "
+                f"outcome_pass=`{result.get('outcome_pass')}` blockers=`{result.get('blockers')}`"
+            )
     lines.extend(["", "## Best Results"])
     for market in REQUIRED_MARKETS:
         row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}

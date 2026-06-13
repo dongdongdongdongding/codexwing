@@ -107,9 +107,17 @@ def test_slice_ablation_builds_period_and_feature_report(tmp_path):
         assert summary["ok_results"] >= 1
         assert summary["all_feature_period_result_count"] >= 1
         assert summary["available_full_ablation_result_count"] >= 1
+        matrix = summary["slice_feature_matrix"]
+        assert matrix["matrix_mode"] == "focused_partial"
+        assert matrix["complete_cross_product"] is False
+        assert matrix["period_result_count"] >= 1
+        assert matrix["available_full_feature_result_count"] >= 1
+        assert matrix["best_by_feature_config"]
+        assert matrix["best_by_slice"]
     markdown = render_markdown(report)
     assert "KIS Touch5 Slice Ablation" in markdown
     assert "Market Summary" in markdown
+    assert "Slice Feature Matrix" in markdown
 
 
 def test_slice_ablation_surfaces_missing_actual_months(tmp_path):
@@ -148,3 +156,47 @@ def test_slice_ablation_surfaces_missing_actual_months(tmp_path):
 
     assert "2026-01" in report["data_profile"]["missing_actual_months"]
     assert report["decision"]["production_replacement_ready"] is False
+
+
+def test_slice_ablation_full_matrix_marks_complete_cross_product(tmp_path):
+    cache = tmp_path / "prepared.pkl"
+    pd.DataFrame(_sample_rows()).to_pickle(cache)
+    leaderboard = tmp_path / "leaderboard.json"
+    _leaderboard(leaderboard)
+
+    args = parse_args(
+        [
+            "--prepared-cache",
+            str(cache),
+            "--candidate-leaderboard",
+            str(leaderboard),
+            "--months",
+            "2026-05",
+            "--feature-configs",
+            "all_features,all_minus_close_failure_prior,close_failure_prior_only",
+            "--min-train-rows",
+            "8",
+            "--min-test-rows",
+            "1",
+            "--min-train-days",
+            "2",
+            "--test-days",
+            "1",
+            "--max-folds",
+            "1",
+            "--min-slice-rows",
+            "8",
+            "--min-slice-days",
+            "3",
+            "--full-matrix",
+        ]
+    )
+    report = build_report(args)
+
+    assert report["evaluation_contract"]["focused_matrix"] is False
+    assert report["evaluation_contract"]["full_matrix_required_for_promotion"] is True
+    for market in ("KOSPI", "KOSDAQ"):
+        matrix = report["markets"][market]["slice_feature_matrix"]
+        assert matrix["matrix_mode"] == "full_period_feature_cross_product"
+        assert matrix["complete_cross_product"] is True
+        assert matrix["feature_config_count"] == 3

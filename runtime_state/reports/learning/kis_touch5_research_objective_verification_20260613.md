@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T13:06:36.846495+00:00`
+- generated_at: `2026-06-13T14:06:19.312243+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -76,6 +76,7 @@
 - drawdown_filter_holdout: status=`no_holdout_gate_pass`, validation=`selection_fixed_rule_holdout_walk_forward_predictions`, selection_candidates=`811`, holdout_evaluated=`811`, gate_pass_count=`0`, gate_pass_observed=`False`, selection_best_status=`shadow_ready`, selection_best_n=`23`, selection_best_days=`7`, selection_best_hit5=`100.0`, selection_best_min_low=`-5.551964`
 - drawdown_filter_rolling_prior: status=`rolling_prior_blocked`, validation=`rolling_prior_oos_next_fold_walk_forward_predictions`, evaluated_steps=`15`, selected=`2`, gate_pass_observed=`False`, aggregate_status=`blocked`, n=`2`, active_days=`1`, hit5=`100.0`, avg5=`47.674132`, min_low=`-3.191402`
 - slice_ablation: ok=`10`, production_ready_count=`0`, shadow_count=`3`, period_pass=`3/4`, ablation_pass=`0/6`, dominant_prior=`False`
+- slice_feature_matrix: mode=`focused_partial`, complete=`False`, period_pass=`3/4`, full_feature_pass=`0/7`, dependency=`{'available_full_all_features_pass': False, 'all_minus_pass_configs': [], 'single_family_pass_configs': [], 'dominant_single_family_risk': False}`, best_features=`all_features:100.0%, all_minus_close_failure_prior:60.0%, all_minus_theme_news:60.0%, all_minus_kis_flow:33.3333%`
 - slice_ablation_best: slice=`2026-05..2026-06`, feature_config=`all_features`, rule=`top2_prob_plus_tail_p0p8_tail0p85`, gate=`shadow_ready`, n=`8`, active_days=`3`, hit5=`100.0`, avg5=`8.426101`, min_low=`-8.188031`, blockers=`['n_lt_30', 'active_days_lt_15', 'active_runs_lt_20']`
 - stability_search: evaluated=`1344`, production_ready_count=`0`, period_stable_count=`25`, shadow_period_stable_count=`25`
 - stability_search_best: rule=`top2_p0p9`, status=`period_stable_candidate`, pass=`3/3`, gate=`shadow_ready`, selected_months=`['2026-05', '2026-06']`, coverage_blockers=`[]`, n=`89`, active_days=`13`, hit5=`92.1348`, avg5=`29.343019`, min_low=`-9.757906`, blockers=`['active_days_lt_15']`
@@ -102,6 +103,7 @@
 - drawdown_filter_holdout: status=`no_holdout_gate_pass`, validation=`selection_fixed_rule_holdout_walk_forward_predictions`, selection_candidates=`947`, holdout_evaluated=`80`, gate_pass_count=`0`, gate_pass_observed=`False`, selection_best_status=`blocked`, selection_best_n=`53`, selection_best_days=`8`, selection_best_hit5=`62.2642`, selection_best_min_low=`-31.118999`
 - drawdown_filter_rolling_prior: status=`skipped_by_operator`, validation=`None`, evaluated_steps=`None`, selected=`None`, gate_pass_observed=`False`, aggregate_status=`None`, n=`None`, active_days=`None`, hit5=`None`, avg5=`None`, min_low=`None`
 - slice_ablation: ok=`10`, production_ready_count=`0`, shadow_count=`2`, period_pass=`1/4`, ablation_pass=`0/6`, dominant_prior=`False`
+- slice_feature_matrix: mode=`focused_partial`, complete=`False`, period_pass=`1/4`, full_feature_pass=`0/7`, dependency=`{'available_full_all_features_pass': False, 'all_minus_pass_configs': [], 'single_family_pass_configs': [], 'dominant_single_family_risk': False}`, best_features=`all_features:88.2353%, all_minus_close_failure_prior:0.0%, all_minus_theme_news:0.0%, all_minus_kis_flow:0.0%`
 - slice_ablation_best: slice=`2026-05`, feature_config=`all_features`, rule=`top3_ev_tail0p9`, gate=`shadow_ready`, n=`17`, active_days=`3`, hit5=`88.2353`, avg5=`9.402924`, min_low=`-9.837985`, blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
 - stability_search: evaluated=`1344`, production_ready_count=`0`, period_stable_count=`0`, shadow_period_stable_count=`0`
 - stability_search_best: rule=`top5_prob_plus_tail_p0p3`, status=`unstable_candidate`, pass=`0/3`, gate=`blocked`, selected_months=`['2026-05', '2026-06']`, coverage_blockers=`[]`, n=`144`, active_days=`16`, hit5=`68.0556`, avg5=`5.931853`, min_low=`-33.704825`, blockers=`['active_days_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`

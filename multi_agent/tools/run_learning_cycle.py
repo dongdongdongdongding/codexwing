@@ -184,6 +184,7 @@ def run_learning_cycle(
     nightly_min_new_resolved: int,
     weekly_min_total_resolved: int,
     weekly_min_new_resolved: int,
+    run_kis_touch5_full_matrix: bool = False,
 ) -> Dict[str, Any]:
     rows, collect_stats = _collect_outcomes(shared_dir)
     resolved = _resolved_summary(rows)
@@ -211,6 +212,13 @@ def run_learning_cycle(
                         PROJECT_ROOT,
                     )
                 )
+            if run_kis_touch5_full_matrix:
+                commands.append(
+                    _run_command(
+                        ["python3", "multi_agent/tools/report_kis_touch5_slice_ablation.py", "--full-matrix"],
+                        PROJECT_ROOT,
+                    )
+                )
             action = "dataset_refresh"
             reason = "nightly_learning_dataset_refreshed"
         report = {
@@ -224,6 +232,7 @@ def run_learning_cycle(
             "resolved_by_market": resolved["resolved_by_market"],
             "resolved_by_bucket": resolved["resolved_by_bucket"],
             "collection_stats": collect_stats,
+            "kis_touch5_full_matrix_requested": bool(run_kis_touch5_full_matrix),
             "commands": commands,
         }
         state["last_nightly_run_at"] = report["generated_at"]
@@ -298,6 +307,11 @@ def main() -> None:
     parser.add_argument("--nightly-min-new-resolved", type=int, default=20)
     parser.add_argument("--weekly-min-total-resolved", type=int, default=50)
     parser.add_argument("--weekly-min-new-resolved", type=int, default=10)
+    parser.add_argument(
+        "--run-kis-touch5-full-matrix",
+        action="store_true",
+        help="Run the full KIS touch5 period x feature ablation matrix during nightly refresh.",
+    )
     args = parser.parse_args()
 
     report = run_learning_cycle(
@@ -308,6 +322,7 @@ def main() -> None:
         nightly_min_new_resolved=int(args.nightly_min_new_resolved),
         weekly_min_total_resolved=int(args.weekly_min_total_resolved),
         weekly_min_new_resolved=int(args.weekly_min_new_resolved),
+        run_kis_touch5_full_matrix=bool(args.run_kis_touch5_full_matrix),
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 

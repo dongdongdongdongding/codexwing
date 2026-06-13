@@ -62,7 +62,7 @@
     "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T13:06:36.846495+00:00",
+  "generated_at": "2026-06-13T14:06:19.312243+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -17025,6 +17025,361 @@
         "ok_results": 10,
         "production_ready_count": 0,
         "shadow_display_allowed_count": 2,
+        "slice_feature_matrix": {
+          "available_full_feature_outcome_pass_count": 0,
+          "available_full_feature_result_count": 7,
+          "best_by_feature_config": [
+            {
+              "blockers": [
+                "n_lt_45",
+                "active_days_lt_20",
+                "active_runs_lt_20"
+              ],
+              "feature_config": "all_features",
+              "gate_status": "shadow_ready",
+              "metrics": {
+                "active_days": 3,
+                "active_runs": 6,
+                "avg_5d_pct": 9.402924,
+                "hit10_5d_pct": 82.3529,
+                "hit5_dd10_5d_pct": 88.2353,
+                "min_min_low_5d_pct": -9.837985,
+                "n": 17
+              },
+              "outcome_pass": true,
+              "production_ready": false,
+              "quality_score": 542.998864,
+              "rows": 31891,
+              "selection_rule": "top3_ev_tail0p9",
+              "shadow_display_allowed": true,
+              "slice": "2026-05",
+              "slice_type": "monthly",
+              "status": "ok",
+              "unique_days": 17,
+              "unique_runs": 47,
+              "usable_categorical": 30,
+              "usable_numeric": 135
+            },
+            {
+              "blockers": [
+                "n_lt_45",
+                "active_days_lt_20",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "expected_touch_policy_net_5d_lt_0p5"
+              ],
+              "feature_config": "all_minus_close_failure_prior",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 1,
+                "active_runs": 1,
+                "avg_5d_pct": -2.995802,
+                "hit10_5d_pct": 0.0,
+                "hit5_dd10_5d_pct": 0.0,
+                "min_min_low_5d_pct": -3.570812,
+                "n": 1
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -650.649982,
+              "rows": 32282,
+              "selection_rule": "top3_ev_tail0p9",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 79,
+              "usable_categorical": 25,
+              "usable_numeric": 95
+            },
+            {
+              "blockers": [
+                "n_lt_45",
+                "active_days_lt_20",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "expected_touch_policy_net_5d_lt_0p5"
+              ],
+              "feature_config": "all_minus_theme_news",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 1,
+                "active_runs": 1,
+                "avg_5d_pct": -2.552118,
+                "hit10_5d_pct": 0.0,
+                "hit5_dd10_5d_pct": 0.0,
+                "min_min_low_5d_pct": -7.128514,
+                "n": 2
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -614.750052,
+              "rows": 32282,
+              "selection_rule": "top3_ev_tail0p9",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 79,
+              "usable_categorical": 22,
+              "usable_numeric": 115
+            },
+            {
+              "blockers": [
+                "n_lt_45",
+                "active_days_lt_20",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "min_low_5d_lt_neg10",
+                "expected_touch_policy_net_5d_lt_0p5"
+              ],
+              "feature_config": "all_minus_kis_flow",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 1,
+                "active_runs": 1,
+                "avg_5d_pct": -4.770998,
+                "hit10_5d_pct": 0.0,
+                "hit5_dd10_5d_pct": 0.0,
+                "min_min_low_5d_pct": -14.334666,
+                "n": 3
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -654.866495,
+              "rows": 32282,
+              "selection_rule": "top3_ev_tail0p9",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 79,
+              "usable_categorical": 30,
+              "usable_numeric": 130
+            },
+            {
+              "blockers": [
+                "n_lt_45",
+                "active_days_lt_20",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "min_low_5d_lt_neg10",
+                "expected_touch_policy_net_5d_lt_0p5"
+              ],
+              "feature_config": "close_failure_prior_only",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 1,
+                "active_runs": 1,
+                "avg_5d_pct": -5.931222,
+                "hit10_5d_pct": 0.0,
+                "hit5_dd10_5d_pct": 66.6667,
+                "min_min_low_5d_pct": -14.578702,
+                "n": 3
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -385.814698,
+              "rows": 32282,
+              "selection_rule": "top3_ev_tail0p9",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 79,
+              "usable_categorical": 5,
+              "usable_numeric": 40
+            },
+            {
+              "blockers": [
+                "n_lt_45",
+                "active_days_lt_20",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "expected_touch_policy_net_5d_lt_0p5"
+              ],
+              "feature_config": "kis_price_rank_quote_only",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 1,
+                "active_runs": 1,
+                "avg_5d_pct": -3.076093,
+                "hit10_5d_pct": 0.0,
+                "hit5_dd10_5d_pct": 0.0,
+                "min_min_low_5d_pct": -4.351985,
+                "n": 2
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -639.914353,
+              "rows": 32282,
+              "selection_rule": "top3_ev_tail0p9",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 79,
+              "usable_categorical": 0,
+              "usable_numeric": 36
+            },
+            {
+              "blockers": [
+                "n_lt_45",
+                "active_days_lt_20",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "min_low_5d_lt_neg10",
+                "expected_touch_policy_net_5d_lt_0p5"
+              ],
+              "feature_config": "scanner_technical_only",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 2,
+                "active_runs": 2,
+                "avg_5d_pct": -6.814654,
+                "hit10_5d_pct": 50.0,
+                "hit5_dd10_5d_pct": 50.0,
+                "min_min_low_5d_pct": -11.803161,
+                "n": 2
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -55.275956,
+              "rows": 32282,
+              "selection_rule": "top3_ev_tail0p9",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 79,
+              "usable_categorical": 2,
+              "usable_numeric": 16
+            }
+          ],
+          "complete_cross_product": false,
+          "feature_dependency": {
+            "all_minus_pass_configs": [],
+            "available_full_all_features_pass": false,
+            "dominant_single_family_risk": false,
+            "single_family_pass_configs": []
+          },
+          "matrix_mode": "focused_partial",
+          "period_failures": [
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-02",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 31,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-03",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 1,
+              "unique_runs": 9,
+              "usable_categorical": 7,
+              "usable_numeric": 76
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 295,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-04",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 5,
+              "unique_runs": 15,
+              "usable_categorical": 19,
+              "usable_numeric": 113
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 65,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-06",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 4,
+              "unique_runs": 8,
+              "usable_categorical": 16,
+              "usable_numeric": 135
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01..2026-02",
+              "slice_type": "rolling_2m",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            }
+          ],
+          "period_outcome_pass_count": 1,
+          "period_result_count": 4
+        },
         "status_counts": {
           "ok": 10,
           "skipped_no_selected_rows": 3,
@@ -40860,6 +41215,365 @@
         "ok_results": 10,
         "production_ready_count": 0,
         "shadow_display_allowed_count": 3,
+        "slice_feature_matrix": {
+          "available_full_feature_outcome_pass_count": 0,
+          "available_full_feature_result_count": 7,
+          "best_by_feature_config": [
+            {
+              "blockers": [
+                "n_lt_30",
+                "active_days_lt_15",
+                "active_runs_lt_20"
+              ],
+              "feature_config": "all_features",
+              "gate_status": "shadow_ready",
+              "metrics": {
+                "active_days": 3,
+                "active_runs": 8,
+                "avg_5d_pct": 8.426101,
+                "hit10_5d_pct": 100.0,
+                "hit5_dd10_5d_pct": 100.0,
+                "min_min_low_5d_pct": -8.188031,
+                "n": 8
+              },
+              "outcome_pass": true,
+              "production_ready": false,
+              "quality_score": 735.825593,
+              "rows": 38043,
+              "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+              "shadow_display_allowed": true,
+              "slice": "2026-05..2026-06",
+              "slice_type": "rolling_2m",
+              "status": "ok",
+              "unique_days": 23,
+              "unique_runs": 87,
+              "usable_categorical": 30,
+              "usable_numeric": 135
+            },
+            {
+              "blockers": [
+                "n_lt_30",
+                "active_days_lt_15",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "min_low_5d_lt_neg10",
+                "expected_touch_policy_net_5d_lt_0p25"
+              ],
+              "feature_config": "all_minus_close_failure_prior",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 3,
+                "active_runs": 5,
+                "avg_5d_pct": 3.040068,
+                "hit10_5d_pct": 100.0,
+                "hit5_dd10_5d_pct": 60.0,
+                "min_min_low_5d_pct": -13.305564,
+                "n": 5
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": 423.553779,
+              "rows": 38361,
+              "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 102,
+              "usable_categorical": 25,
+              "usable_numeric": 95
+            },
+            {
+              "blockers": [
+                "n_lt_30",
+                "active_days_lt_15",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "expected_touch_policy_net_5d_lt_0p25"
+              ],
+              "feature_config": "all_minus_theme_news",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 2,
+                "active_runs": 3,
+                "avg_5d_pct": 4.962856,
+                "hit10_5d_pct": 60.0,
+                "hit5_dd10_5d_pct": 60.0,
+                "min_min_low_5d_pct": -8.737024,
+                "n": 5
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": 70.959499,
+              "rows": 38361,
+              "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 102,
+              "usable_categorical": 22,
+              "usable_numeric": 115
+            },
+            {
+              "blockers": [
+                "n_lt_30",
+                "active_days_lt_15",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "expected_touch_policy_net_5d_lt_0p25"
+              ],
+              "feature_config": "all_minus_kis_flow",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 1,
+                "active_runs": 2,
+                "avg_5d_pct": 1.622779,
+                "hit10_5d_pct": 33.3333,
+                "hit5_dd10_5d_pct": 33.3333,
+                "min_min_low_5d_pct": -8.737024,
+                "n": 3
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -199.538452,
+              "rows": 38361,
+              "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 102,
+              "usable_categorical": 30,
+              "usable_numeric": 130
+            },
+            {
+              "blockers": [
+                "n_lt_30",
+                "active_days_lt_15",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "min_low_5d_lt_neg10",
+                "expected_touch_policy_net_5d_lt_0p25"
+              ],
+              "feature_config": "close_failure_prior_only",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 1,
+                "active_runs": 1,
+                "avg_5d_pct": -11.849118,
+                "hit10_5d_pct": 0.0,
+                "hit5_dd10_5d_pct": 0.0,
+                "min_min_low_5d_pct": -14.863855,
+                "n": 1
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -518.338607,
+              "rows": 38361,
+              "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 102,
+              "usable_categorical": 5,
+              "usable_numeric": 40
+            },
+            {
+              "blockers": [
+                "n_lt_30",
+                "active_days_lt_15",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "min_low_5d_lt_neg10",
+                "expected_touch_policy_net_5d_lt_0p25"
+              ],
+              "feature_config": "kis_price_rank_quote_only",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 2,
+                "active_runs": 2,
+                "avg_5d_pct": -5.087658,
+                "hit10_5d_pct": 50.0,
+                "hit5_dd10_5d_pct": 50.0,
+                "min_min_low_5d_pct": -23.585434,
+                "n": 2
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -213.944684,
+              "rows": 38361,
+              "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 102,
+              "usable_categorical": 0,
+              "usable_numeric": 36
+            },
+            {
+              "blockers": [
+                "n_lt_30",
+                "active_days_lt_15",
+                "active_runs_lt_20",
+                "hit5_dd10_5d_lt_73",
+                "min_low_5d_lt_neg10",
+                "expected_touch_policy_net_5d_lt_0p25"
+              ],
+              "feature_config": "scanner_technical_only",
+              "gate_status": "blocked",
+              "metrics": {
+                "active_days": 6,
+                "active_runs": 9,
+                "avg_5d_pct": -12.571841,
+                "hit10_5d_pct": 18.1818,
+                "hit5_dd10_5d_pct": 9.0909,
+                "min_min_low_5d_pct": -24.61343,
+                "n": 11
+              },
+              "outcome_pass": false,
+              "production_ready": false,
+              "quality_score": -134.677399,
+              "rows": 38361,
+              "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+              "shadow_display_allowed": false,
+              "slice": "actual_available_full",
+              "slice_type": "available_full",
+              "status": "ok",
+              "unique_days": 27,
+              "unique_runs": 102,
+              "usable_categorical": 2,
+              "usable_numeric": 16
+            }
+          ],
+          "complete_cross_product": false,
+          "feature_dependency": {
+            "all_minus_pass_configs": [],
+            "available_full_all_features_pass": false,
+            "dominant_single_family_risk": false,
+            "single_family_pass_configs": []
+          },
+          "matrix_mode": "focused_partial",
+          "period_failures": [
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-02",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-03",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 318,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-04",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 4,
+              "unique_runs": 15,
+              "usable_categorical": 20,
+              "usable_numeric": 113
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 298,
+              "skip_reasons": [
+                "rows_lt_required",
+                "days_lt_required"
+              ],
+              "slice": "2026-06",
+              "slice_type": "monthly",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 4,
+              "unique_runs": 14,
+              "usable_categorical": 19,
+              "usable_numeric": 135
+            },
+            {
+              "feature_config": "all_features",
+              "outcome_pass": false,
+              "rows": 0,
+              "skip_reasons": [
+                "no_usable_features",
+                "rows_lt_required",
+                "days_lt_required",
+                "label_single_class",
+                "tail_label_single_class"
+              ],
+              "slice": "2026-01..2026-02",
+              "slice_type": "rolling_2m",
+              "status": "skipped_scope_not_trainable",
+              "unique_days": 0,
+              "unique_runs": 0,
+              "usable_categorical": 0,
+              "usable_numeric": 0
+            }
+          ],
+          "period_outcome_pass_count": 3,
+          "period_result_count": 4
+        },
         "status_counts": {
           "ok": 10,
           "skipped_no_selected_rows": 3,

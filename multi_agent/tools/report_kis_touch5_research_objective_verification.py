@@ -843,6 +843,7 @@ def _slice_ablation_market(report: Mapping[str, Any], market: str) -> Dict[str, 
     best_metrics = best.get("metrics") if isinstance(best.get("metrics"), Mapping) else {}
     best_gate = best.get("kis_model_gate") if isinstance(best.get("kis_model_gate"), Mapping) else {}
     best_identity = best.get("identity") if isinstance(best.get("identity"), Mapping) else {}
+    matrix = row.get("slice_feature_matrix") if isinstance(row.get("slice_feature_matrix"), Mapping) else {}
     return {
         "status_counts": row.get("status_counts") or {},
         "ok_results": row.get("ok_results"),
@@ -862,6 +863,17 @@ def _slice_ablation_market(report: Mapping[str, Any], market: str) -> Dict[str, 
             "shadow_display_allowed": best_gate.get("shadow_display_allowed"),
             "blockers": best_gate.get("production_blocking_reasons") or [],
             "metrics": _pick_metrics(best_metrics),
+        },
+        "slice_feature_matrix": {
+            "matrix_mode": matrix.get("matrix_mode"),
+            "complete_cross_product": matrix.get("complete_cross_product"),
+            "period_result_count": matrix.get("period_result_count"),
+            "period_outcome_pass_count": matrix.get("period_outcome_pass_count"),
+            "available_full_feature_result_count": matrix.get("available_full_feature_result_count"),
+            "available_full_feature_outcome_pass_count": matrix.get("available_full_feature_outcome_pass_count"),
+            "feature_dependency": matrix.get("feature_dependency") or {},
+            "period_failures": (matrix.get("period_failures") or [])[:6],
+            "best_by_feature_config": (matrix.get("best_by_feature_config") or [])[:8],
         },
     }
 
@@ -1533,6 +1545,21 @@ def _markdown(report: Mapping[str, Any]) -> str:
         slice_best_metrics = (
             slice_best.get("metrics") if isinstance(slice_best.get("metrics"), dict) else {}
         )
+        slice_matrix = (
+            slice_ablation.get("slice_feature_matrix")
+            if isinstance(slice_ablation.get("slice_feature_matrix"), dict)
+            else {}
+        )
+        slice_feature_winners = (
+            slice_matrix.get("best_by_feature_config")
+            if isinstance(slice_matrix.get("best_by_feature_config"), list)
+            else []
+        )
+        slice_feature_winner_text = ", ".join(
+            f"{item.get('feature_config')}:{((item.get('metrics') or {}) if isinstance(item.get('metrics'), dict) else {}).get('hit5_dd10_5d_pct')}%"
+            for item in slice_feature_winners[:4]
+            if isinstance(item, dict)
+        )
         stability = payload.get("stability_search") if isinstance(payload.get("stability_search"), dict) else {}
         stability_best = (
             stability.get("best_candidate")
@@ -1610,6 +1637,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 drawdown_holdout_line,
                 drawdown_rolling_line,
                 f"- slice_ablation: ok=`{slice_ablation.get('ok_results')}`, production_ready_count=`{slice_ablation.get('production_ready_count')}`, shadow_count=`{slice_ablation.get('shadow_display_allowed_count')}`, period_pass=`{slice_ablation.get('all_feature_period_outcome_pass_count')}/{slice_ablation.get('all_feature_period_result_count')}`, ablation_pass=`{slice_ablation.get('available_full_ablation_outcome_pass_count')}/{slice_ablation.get('available_full_ablation_result_count')}`, dominant_prior=`{slice_ablation.get('dominant_close_failure_prior_dependency')}`",
+                f"- slice_feature_matrix: mode=`{slice_matrix.get('matrix_mode')}`, complete=`{slice_matrix.get('complete_cross_product')}`, period_pass=`{slice_matrix.get('period_outcome_pass_count')}/{slice_matrix.get('period_result_count')}`, full_feature_pass=`{slice_matrix.get('available_full_feature_outcome_pass_count')}/{slice_matrix.get('available_full_feature_result_count')}`, dependency=`{slice_matrix.get('feature_dependency')}`, best_features=`{slice_feature_winner_text}`",
                 f"- slice_ablation_best: slice=`{slice_best.get('slice')}`, feature_config=`{slice_best.get('feature_config')}`, rule=`{slice_best.get('selection_rule')}`, gate=`{slice_best.get('gate_status')}`, n=`{slice_best_metrics.get('n')}`, active_days=`{slice_best_metrics.get('active_days')}`, hit5=`{slice_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{slice_best_metrics.get('avg_5d_pct')}`, min_low=`{slice_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{slice_best.get('blockers')}`",
                 f"- stability_search: evaluated=`{stability.get('evaluated_candidates')}`, production_ready_count=`{stability.get('production_ready_count')}`, period_stable_count=`{stability.get('period_stable_count')}`, shadow_period_stable_count=`{stability.get('shadow_period_stable_count')}`",
                 f"- stability_search_best: rule=`{stability_best.get('selection_rule')}`, status=`{stability_best.get('stability_status')}`, pass=`{stability_best.get('period_pass_count')}/{stability_best.get('period_result_count')}`, gate=`{stability_best.get('gate_status')}`, selected_months=`{stability_best_coverage.get('selected_months')}`, coverage_blockers=`{stability_best.get('coverage_blockers')}`, n=`{stability_best_metrics.get('n')}`, active_days=`{stability_best_metrics.get('active_days')}`, hit5=`{stability_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_best_metrics.get('avg_5d_pct')}`, min_low=`{stability_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_best.get('blockers')}`",

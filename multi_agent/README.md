@@ -155,9 +155,10 @@ Scanner Agent input without touching `app.py` execution semantics.
   - due-check runner: `python3 multi_agent/tools/run_primary_market_session_ops.py --run-due --continue-on-error`
   - windows: KR regular close 15:40 KST, NXT close 20:05 KST, NASDAQ 04:15/09:35/16:05/16:15 ET
 - Learning automation:
-  - nightly refresh: `python3 multi_agent/tools/run_learning_cycle.py --mode nightly`
+  - nightly refresh: `python3 multi_agent/tools/run_learning_cycle.py --mode nightly --run-kis-touch5-full-matrix`
   - weekly retrain: `python3 multi_agent/tools/run_learning_cycle.py --mode weekly`
   - install launchd schedules: `bash multi_agent/tools/install_learning_launchd.sh`
+  - launchd enables the KIS touch5 full period x feature matrix by default; set `AG_LEARNING_KIS_TOUCH5_FULL_MATRIX=0` to disable it.
 
 ## Daily Summary Auto-Emit
 - non-UI scan pipeline now attempts daily summary generation after each run.
