@@ -75,6 +75,8 @@ def test_stability_search_finds_period_stable_candidates(tmp_path):
             "1",
             "--min-period-active-days",
             "1",
+            "--min-selected-months",
+            "1",
         ]
     )
     report = build_report(args)
@@ -87,6 +89,56 @@ def test_stability_search_finds_period_stable_candidates(tmp_path):
     markdown = render_markdown(report)
     assert "KIS Touch5 Stability Search" in markdown
     assert "Period Stable Top" in markdown
+
+
+def test_stability_search_blocks_single_month_coverage_by_default(tmp_path):
+    cache = tmp_path / "prepared.pkl"
+    pd.DataFrame(_rows()).to_pickle(cache)
+    args = parse_args(
+        [
+            "--prepared-cache",
+            str(cache),
+            "--months",
+            "2026-05",
+            "--model",
+            "logistic",
+            "--topns",
+            "1",
+            "--score-modes",
+            "prob",
+            "--prob-thresholds",
+            "none",
+            "--tail-thresholds",
+            "none",
+            "--min-train-rows",
+            "8",
+            "--min-test-rows",
+            "1",
+            "--min-train-days",
+            "2",
+            "--test-days",
+            "1",
+            "--max-folds",
+            "2",
+            "--min-scope-rows",
+            "8",
+            "--min-scope-days",
+            "3",
+            "--min-period-selected",
+            "1",
+            "--min-period-active-days",
+            "1",
+        ]
+    )
+    report = build_report(args)
+
+    assert report["decision"]["period_stable_both_market_candidate"] is False
+    for market in ("KOSPI", "KOSDAQ"):
+        top = report["markets"][market]["top_candidates"][0]
+        assert top["stability_status"] == "period_pass_single_month_candidate"
+        assert top["coverage_blockers"] == ["selected_months_lt_2"]
+        assert top["selected_month_coverage"]["selected_months"] == ["2026-05"]
+        assert report["markets"][market]["period_stable_count"] == 0
 
 
 def test_stability_search_marks_missing_months(tmp_path):

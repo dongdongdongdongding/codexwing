@@ -869,6 +869,8 @@ def _stability_search_market(report: Mapping[str, Any], market: str) -> Dict[str
             "period_result_count": best.get("period_result_count"),
             "gate_status": best.get("gate_status"),
             "blockers": best.get("production_blocking_reasons") or [],
+            "coverage_blockers": best.get("coverage_blockers") or [],
+            "selected_month_coverage": best.get("selected_month_coverage") or {},
             "metrics": _pick_metrics(best_metrics),
         },
         "best_period_stable_candidate": {
@@ -877,6 +879,8 @@ def _stability_search_market(report: Mapping[str, Any], market: str) -> Dict[str
             "period_result_count": stable.get("period_result_count"),
             "gate_status": stable.get("gate_status"),
             "blockers": stable.get("production_blocking_reasons") or [],
+            "coverage_blockers": stable.get("coverage_blockers") or [],
+            "selected_month_coverage": stable.get("selected_month_coverage") or {},
             "metrics": _pick_metrics(stable_metrics),
         },
     }
@@ -1413,6 +1417,11 @@ def _markdown(report: Mapping[str, Any]) -> str:
         stability_best_metrics = (
             stability_best.get("metrics") if isinstance(stability_best.get("metrics"), dict) else {}
         )
+        stability_best_coverage = (
+            stability_best.get("selected_month_coverage")
+            if isinstance(stability_best.get("selected_month_coverage"), dict)
+            else {}
+        )
         stability_stable = (
             stability.get("best_period_stable_candidate")
             if isinstance(stability.get("best_period_stable_candidate"), dict)
@@ -1420,6 +1429,11 @@ def _markdown(report: Mapping[str, Any]) -> str:
         )
         stability_stable_metrics = (
             stability_stable.get("metrics") if isinstance(stability_stable.get("metrics"), dict) else {}
+        )
+        stability_stable_coverage = (
+            stability_stable.get("selected_month_coverage")
+            if isinstance(stability_stable.get("selected_month_coverage"), dict)
+            else {}
         )
         lines.extend(
             [
@@ -1443,8 +1457,8 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- slice_ablation: ok=`{slice_ablation.get('ok_results')}`, production_ready_count=`{slice_ablation.get('production_ready_count')}`, shadow_count=`{slice_ablation.get('shadow_display_allowed_count')}`, period_pass=`{slice_ablation.get('all_feature_period_outcome_pass_count')}/{slice_ablation.get('all_feature_period_result_count')}`, ablation_pass=`{slice_ablation.get('available_full_ablation_outcome_pass_count')}/{slice_ablation.get('available_full_ablation_result_count')}`, dominant_prior=`{slice_ablation.get('dominant_close_failure_prior_dependency')}`",
                 f"- slice_ablation_best: slice=`{slice_best.get('slice')}`, feature_config=`{slice_best.get('feature_config')}`, rule=`{slice_best.get('selection_rule')}`, gate=`{slice_best.get('gate_status')}`, n=`{slice_best_metrics.get('n')}`, active_days=`{slice_best_metrics.get('active_days')}`, hit5=`{slice_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{slice_best_metrics.get('avg_5d_pct')}`, min_low=`{slice_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{slice_best.get('blockers')}`",
                 f"- stability_search: evaluated=`{stability.get('evaluated_candidates')}`, production_ready_count=`{stability.get('production_ready_count')}`, period_stable_count=`{stability.get('period_stable_count')}`, shadow_period_stable_count=`{stability.get('shadow_period_stable_count')}`",
-                f"- stability_search_best: rule=`{stability_best.get('selection_rule')}`, status=`{stability_best.get('stability_status')}`, pass=`{stability_best.get('period_pass_count')}/{stability_best.get('period_result_count')}`, gate=`{stability_best.get('gate_status')}`, n=`{stability_best_metrics.get('n')}`, active_days=`{stability_best_metrics.get('active_days')}`, hit5=`{stability_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_best_metrics.get('avg_5d_pct')}`, min_low=`{stability_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_best.get('blockers')}`",
-                f"- stability_search_period_stable_best: rule=`{stability_stable.get('selection_rule')}`, pass=`{stability_stable.get('period_pass_count')}/{stability_stable.get('period_result_count')}`, gate=`{stability_stable.get('gate_status')}`, n=`{stability_stable_metrics.get('n')}`, active_days=`{stability_stable_metrics.get('active_days')}`, hit5=`{stability_stable_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_stable_metrics.get('avg_5d_pct')}`, min_low=`{stability_stable_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_stable.get('blockers')}`",
+                f"- stability_search_best: rule=`{stability_best.get('selection_rule')}`, status=`{stability_best.get('stability_status')}`, pass=`{stability_best.get('period_pass_count')}/{stability_best.get('period_result_count')}`, gate=`{stability_best.get('gate_status')}`, selected_months=`{stability_best_coverage.get('selected_months')}`, coverage_blockers=`{stability_best.get('coverage_blockers')}`, n=`{stability_best_metrics.get('n')}`, active_days=`{stability_best_metrics.get('active_days')}`, hit5=`{stability_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_best_metrics.get('avg_5d_pct')}`, min_low=`{stability_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_best.get('blockers')}`",
+                f"- stability_search_period_stable_best: rule=`{stability_stable.get('selection_rule')}`, pass=`{stability_stable.get('period_pass_count')}/{stability_stable.get('period_result_count')}`, gate=`{stability_stable.get('gate_status')}`, selected_months=`{stability_stable_coverage.get('selected_months')}`, coverage_blockers=`{stability_stable.get('coverage_blockers')}`, n=`{stability_stable_metrics.get('n')}`, active_days=`{stability_stable_metrics.get('active_days')}`, hit5=`{stability_stable_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{stability_stable_metrics.get('avg_5d_pct')}`, min_low=`{stability_stable_metrics.get('min_min_low_5d_pct')}`, blockers=`{stability_stable.get('blockers')}`",
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",

@@ -226,6 +226,8 @@ def _compact_candidate(row: Mapping[str, Any]) -> Dict[str, Any]:
         "metrics",
         "worst_period",
         "best_period",
+        "selected_month_coverage",
+        "coverage_blockers",
     )
     return {key: row.get(key) for key in keys if key in row}
 
@@ -233,6 +235,8 @@ def _compact_candidate(row: Mapping[str, Any]) -> Dict[str, Any]:
 def _candidate_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
     metrics_row = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
     return (
+        0 if row.get("stability_status") == "period_stable_candidate" else 1,
+        -int(((row.get("selected_month_coverage") or {}).get("selected_month_count")) or 0),
         -int(row.get("period_pass_count") or 0),
         -float(row.get("stability_score") or -1e9),
         -float(metrics_row.get("hit5_dd10_5d_pct") or 0.0),
@@ -241,6 +245,34 @@ def _candidate_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
         -int(metrics_row.get("active_days") or 0),
         -int(metrics_row.get("n") or 0),
     )
+
+
+def _selected_month_coverage(scoped: pd.DataFrame, selected: pd.Index) -> Dict[str, Any]:
+    if selected.empty:
+        return {
+            "selected_months": [],
+            "selected_month_count": 0,
+            "month_rows": {},
+            "max_month_share_pct": None,
+        }
+    sub = scoped.loc[selected].copy()
+    grouped = sub.groupby("_stability_month", dropna=False)
+    month_rows = {
+        str(month): {
+            "n": int(len(group)),
+            "active_days": int(group["trade_date"].nunique()) if "trade_date" in group.columns else 0,
+            "active_runs": int(group["run_id"].nunique()) if "run_id" in group.columns else 0,
+        }
+        for month, group in grouped
+    }
+    total = max(1, int(len(sub)))
+    max_month_n = max((row["n"] for row in month_rows.values()), default=0)
+    return {
+        "selected_months": sorted(month_rows.keys()),
+        "selected_month_count": int(len(month_rows)),
+        "month_rows": dict(sorted(month_rows.items())),
+        "max_month_share_pct": _round(max_month_n / total * 100.0),
+    }
 
 
 def _scope_market(data: pd.DataFrame, *, market: str) -> Dict[str, Any]:
@@ -283,6 +315,7 @@ def _evaluate_market(
     min_scope_days: int,
     min_period_selected: int,
     min_period_active_days: int,
+    min_selected_months: int,
     min_hit5: float,
     min_low: float,
     top_limit: int,
@@ -356,6 +389,10 @@ def _evaluate_market(
                     if selected.empty:
                         continue
                     result_metrics = metrics(scoped, selected, label)
+                    coverage = _selected_month_coverage(scoped, selected)
+                    coverage_blockers = []
+                    if int(coverage.get("selected_month_count") or 0) < int(min_selected_months):
+                        coverage_blockers.append(f"selected_months_lt_{int(min_selected_months)}")
                     identity = {
                         "market": market,
                         "label": LABEL_NAME,
@@ -411,7 +448,11 @@ def _evaluate_market(
                         + min(100.0, float(result_metrics.get("n") or 0))
                     )
                     if len(period_results) and len(passed) == len(period_results):
-                        stability_status = "period_stable_candidate"
+                        stability_status = (
+                            "period_stable_candidate"
+                            if not coverage_blockers
+                            else "period_pass_single_month_candidate"
+                        )
                     elif passed:
                         stability_status = "partial_period_candidate"
                     else:
@@ -436,6 +477,8 @@ def _evaluate_market(
                             "monthly_result_count": int(len(monthly)),
                             "rolling_2m_pass_count": int(sum(1 for row in rolling if row.get("pass"))),
                             "rolling_2m_result_count": int(len(rolling)),
+                            "selected_month_coverage": coverage,
+                            "coverage_blockers": coverage_blockers,
                             "stability_status": stability_status,
                             "stability_score": _round(stability_score),
                             "worst_period": worst,
@@ -496,6 +539,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             min_scope_days=int(args.min_scope_days),
             min_period_selected=int(args.min_period_selected),
             min_period_active_days=int(args.min_period_active_days),
+            min_selected_months=int(args.min_selected_months),
             min_hit5=float(args.min_hit5),
             min_low=float(args.min_low),
             top_limit=int(args.top_limit),
@@ -555,6 +599,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             "tail_thresholds": tail_thresholds,
             "min_period_selected": int(args.min_period_selected),
             "min_period_active_days": int(args.min_period_active_days),
+            "min_selected_months": int(args.min_selected_months),
             "min_hit5": float(args.min_hit5),
             "min_low": float(args.min_low),
         },
@@ -615,13 +660,15 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             metrics_row = candidate.get("metrics") if isinstance(candidate.get("metrics"), Mapping) else {}
             worst = candidate.get("worst_period") if isinstance(candidate.get("worst_period"), Mapping) else {}
             worst_metrics = worst.get("metrics") if isinstance(worst.get("metrics"), Mapping) else {}
+            coverage = candidate.get("selected_month_coverage") if isinstance(candidate.get("selected_month_coverage"), Mapping) else {}
             lines.append(
                 f"{idx}. `{candidate.get('selection_rule')}` status=`{candidate.get('stability_status')}` "
                 f"gate=`{candidate.get('gate_status')}` pass=`{candidate.get('period_pass_count')}/{candidate.get('period_result_count')}` "
                 f"n=`{metrics_row.get('n')}` days=`{metrics_row.get('active_days')}` "
                 f"hit5=`{metrics_row.get('hit5_dd10_5d_pct')}` avg5=`{metrics_row.get('avg_5d_pct')}` "
                 f"min_low=`{metrics_row.get('min_min_low_5d_pct')}` worst=`{worst.get('slice')}` "
-                f"worst_hit5=`{worst_metrics.get('hit5_dd10_5d_pct')}`"
+                f"worst_hit5=`{worst_metrics.get('hit5_dd10_5d_pct')}` "
+                f"selected_months=`{coverage.get('selected_months')}`"
             )
     lines.extend(["", "## Best Overall"])
     for market in REQUIRED_MARKETS:
@@ -633,13 +680,17 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             metrics_row = candidate.get("metrics") if isinstance(candidate.get("metrics"), Mapping) else {}
             worst = candidate.get("worst_period") if isinstance(candidate.get("worst_period"), Mapping) else {}
             worst_metrics = worst.get("metrics") if isinstance(worst.get("metrics"), Mapping) else {}
+            coverage = candidate.get("selected_month_coverage") if isinstance(candidate.get("selected_month_coverage"), Mapping) else {}
             lines.append(
                 f"{idx}. `{candidate.get('selection_rule')}` status=`{candidate.get('stability_status')}` "
                 f"pass=`{candidate.get('period_pass_count')}/{candidate.get('period_result_count')}` "
                 f"n=`{metrics_row.get('n')}` days=`{metrics_row.get('active_days')}` "
                 f"hit5=`{metrics_row.get('hit5_dd10_5d_pct')}` avg5=`{metrics_row.get('avg_5d_pct')}` "
                 f"min_low=`{metrics_row.get('min_min_low_5d_pct')}` worst=`{worst.get('slice')}` "
-                f"worst_hit5=`{worst_metrics.get('hit5_dd10_5d_pct')}` blockers=`{candidate.get('production_blocking_reasons')}`"
+                f"worst_hit5=`{worst_metrics.get('hit5_dd10_5d_pct')}` "
+                f"selected_months=`{coverage.get('selected_months')}` "
+                f"coverage_blockers=`{candidate.get('coverage_blockers')}` "
+                f"blockers=`{candidate.get('production_blocking_reasons')}`"
             )
     return "\n".join(lines).rstrip() + "\n"
 
@@ -670,6 +721,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-scope-days", type=int, default=8)
     parser.add_argument("--min-period-selected", type=int, default=2)
     parser.add_argument("--min-period-active-days", type=int, default=1)
+    parser.add_argument("--min-selected-months", type=int, default=2)
     parser.add_argument("--min-hit5", type=float, default=73.0)
     parser.add_argument("--min-low", type=float, default=-10.0)
     parser.add_argument("--top-limit", type=int, default=12)

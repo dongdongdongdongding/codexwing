@@ -46,12 +46,12 @@
       "2026-03",
       "2026-04"
     ],
-    "stability_search_period_stable_both_market_candidate": true,
+    "stability_search_period_stable_both_market_candidate": false,
     "stability_search_production_ready": false,
-    "stability_search_status": "period_stable_shadow_candidates_found",
+    "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T10:29:55.100870+00:00",
+  "generated_at": "2026-06-13T10:54:50.547229+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -16559,72 +16559,73 @@
         "best_candidate": {
           "blockers": [
             "active_days_lt_20",
-            "active_runs_lt_20"
+            "hit5_dd10_5d_lt_73",
+            "min_low_5d_lt_neg10",
+            "expected_touch_policy_net_5d_lt_0p5"
           ],
-          "gate_status": "shadow_ready",
+          "coverage_blockers": [],
+          "gate_status": "blocked",
           "metrics": {
-            "active_days": 9,
-            "active_runs": 19,
-            "avg_1d_pct": 4.873326,
-            "avg_3d_pct": 13.516763,
-            "avg_5d_pct": 11.94343,
-            "avg_max_high_5d_pct": 24.900436,
-            "avg_min_low_5d_pct": -2.801281,
-            "bad_path_pct": 36.8421,
+            "active_days": 16,
+            "active_runs": 32,
+            "avg_1d_pct": 3.532054,
+            "avg_3d_pct": 8.113448,
+            "avg_5d_pct": 5.931853,
+            "avg_max_high_5d_pct": 22.459542,
+            "avg_min_low_5d_pct": -7.355119,
+            "bad_path_pct": 56.9444,
             "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 91.2281,
-            "hit5_dd10_5d_pct": 100.0,
-            "min_1d_pct": -4.598097,
-            "min_3d_pct": -2.446127,
-            "min_5d_pct": -1.582672,
-            "min_min_low_5d_pct": -7.8413,
-            "n": 57,
-            "stop5_pct": 24.5614,
-            "stop_before_target_5d_pct": 24.5614,
-            "target_before_stop_5d_pct": 87.7193,
-            "win_5d_pct": 100.0
+            "hit10_5d_pct": 77.0833,
+            "hit5_dd10_5d_pct": 68.0556,
+            "min_1d_pct": -18.043503,
+            "min_3d_pct": -22.025195,
+            "min_5d_pct": -26.611449,
+            "min_min_low_5d_pct": -33.704825,
+            "n": 144,
+            "stop5_pct": 50.6944,
+            "stop_before_target_5d_pct": 50.6944,
+            "target_before_stop_5d_pct": 65.2778,
+            "win_5d_pct": 84.0278
           },
-          "period_pass_count": 3,
+          "period_pass_count": 0,
           "period_result_count": 3,
-          "selection_rule": "top3_prob_plus_tail_p0p2_tail0p9",
-          "stability_status": "period_stable_candidate"
+          "selected_month_coverage": {
+            "max_month_share_pct": 95.833333,
+            "month_rows": {
+              "2026-05": {
+                "active_days": 13,
+                "active_runs": 29,
+                "n": 138
+              },
+              "2026-06": {
+                "active_days": 3,
+                "active_runs": 3,
+                "n": 6
+              }
+            },
+            "selected_month_count": 2,
+            "selected_months": [
+              "2026-05",
+              "2026-06"
+            ]
+          },
+          "selection_rule": "top5_prob_plus_tail_p0p3",
+          "stability_status": "unstable_candidate"
         },
         "best_period_stable_candidate": {
-          "blockers": [
-            "active_days_lt_20",
-            "active_runs_lt_20"
-          ],
-          "gate_status": "shadow_ready",
-          "metrics": {
-            "active_days": 9,
-            "active_runs": 19,
-            "avg_1d_pct": 4.873326,
-            "avg_3d_pct": 13.516763,
-            "avg_5d_pct": 11.94343,
-            "avg_max_high_5d_pct": 24.900436,
-            "avg_min_low_5d_pct": -2.801281,
-            "bad_path_pct": 36.8421,
-            "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 91.2281,
-            "hit5_dd10_5d_pct": 100.0,
-            "min_1d_pct": -4.598097,
-            "min_3d_pct": -2.446127,
-            "min_5d_pct": -1.582672,
-            "min_min_low_5d_pct": -7.8413,
-            "n": 57,
-            "stop5_pct": 24.5614,
-            "stop_before_target_5d_pct": 24.5614,
-            "target_before_stop_5d_pct": 87.7193,
-            "win_5d_pct": 100.0
-          },
-          "period_pass_count": 3,
-          "period_result_count": 3,
-          "selection_rule": "top3_prob_plus_tail_p0p2_tail0p9"
+          "blockers": [],
+          "coverage_blockers": [],
+          "gate_status": null,
+          "metrics": {},
+          "period_pass_count": null,
+          "period_result_count": null,
+          "selected_month_coverage": {},
+          "selection_rule": null
         },
         "evaluated_candidates": 1344,
-        "period_stable_count": 411,
+        "period_stable_count": 0,
         "production_ready_count": 0,
-        "shadow_period_stable_count": 411,
+        "shadow_period_stable_count": 0,
         "status": "ok"
       },
       "three_stage_ev_ranker": {
@@ -40393,69 +40394,111 @@
           "blockers": [
             "active_days_lt_15"
           ],
+          "coverage_blockers": [],
           "gate_status": "shadow_ready",
           "metrics": {
-            "active_days": 12,
-            "active_runs": 44,
-            "avg_1d_pct": 8.868599,
-            "avg_3d_pct": 29.689821,
-            "avg_5d_pct": 30.020109,
-            "avg_max_high_5d_pct": 58.709071,
-            "avg_min_low_5d_pct": -3.254343,
-            "bad_path_pct": 29.8851,
+            "active_days": 13,
+            "active_runs": 46,
+            "avg_1d_pct": 8.675875,
+            "avg_3d_pct": 29.024679,
+            "avg_5d_pct": 29.343019,
+            "avg_max_high_5d_pct": 57.486849,
+            "avg_min_low_5d_pct": -3.287782,
+            "bad_path_pct": 30.3371,
             "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 91.954,
-            "hit5_dd10_5d_pct": 94.2529,
+            "hit10_5d_pct": 89.8876,
+            "hit5_dd10_5d_pct": 92.1348,
             "min_1d_pct": -5.497553,
             "min_3d_pct": -5.276817,
             "min_5d_pct": -8.334851,
             "min_min_low_5d_pct": -9.757906,
-            "n": 87,
-            "stop5_pct": 22.9885,
-            "stop_before_target_5d_pct": 22.9885,
-            "target_before_stop_5d_pct": 93.1034,
-            "win_5d_pct": 94.2529
+            "n": 89,
+            "stop5_pct": 22.4719,
+            "stop_before_target_5d_pct": 22.4719,
+            "target_before_stop_5d_pct": 91.0112,
+            "win_5d_pct": 92.1348
           },
           "period_pass_count": 3,
           "period_result_count": 3,
-          "selection_rule": "top2_p0p9_tail0p6",
+          "selected_month_coverage": {
+            "max_month_share_pct": 97.752809,
+            "month_rows": {
+              "2026-05": {
+                "active_days": 12,
+                "active_runs": 44,
+                "n": 87
+              },
+              "2026-06": {
+                "active_days": 1,
+                "active_runs": 2,
+                "n": 2
+              }
+            },
+            "selected_month_count": 2,
+            "selected_months": [
+              "2026-05",
+              "2026-06"
+            ]
+          },
+          "selection_rule": "top2_p0p9",
           "stability_status": "period_stable_candidate"
         },
         "best_period_stable_candidate": {
           "blockers": [
             "active_days_lt_15"
           ],
+          "coverage_blockers": [],
           "gate_status": "shadow_ready",
           "metrics": {
-            "active_days": 12,
-            "active_runs": 44,
-            "avg_1d_pct": 8.868599,
-            "avg_3d_pct": 29.689821,
-            "avg_5d_pct": 30.020109,
-            "avg_max_high_5d_pct": 58.709071,
-            "avg_min_low_5d_pct": -3.254343,
-            "bad_path_pct": 29.8851,
+            "active_days": 13,
+            "active_runs": 46,
+            "avg_1d_pct": 8.675875,
+            "avg_3d_pct": 29.024679,
+            "avg_5d_pct": 29.343019,
+            "avg_max_high_5d_pct": 57.486849,
+            "avg_min_low_5d_pct": -3.287782,
+            "bad_path_pct": 30.3371,
             "buy_premium_pct": 2.0,
-            "hit10_5d_pct": 91.954,
-            "hit5_dd10_5d_pct": 94.2529,
+            "hit10_5d_pct": 89.8876,
+            "hit5_dd10_5d_pct": 92.1348,
             "min_1d_pct": -5.497553,
             "min_3d_pct": -5.276817,
             "min_5d_pct": -8.334851,
             "min_min_low_5d_pct": -9.757906,
-            "n": 87,
-            "stop5_pct": 22.9885,
-            "stop_before_target_5d_pct": 22.9885,
-            "target_before_stop_5d_pct": 93.1034,
-            "win_5d_pct": 94.2529
+            "n": 89,
+            "stop5_pct": 22.4719,
+            "stop_before_target_5d_pct": 22.4719,
+            "target_before_stop_5d_pct": 91.0112,
+            "win_5d_pct": 92.1348
           },
           "period_pass_count": 3,
           "period_result_count": 3,
-          "selection_rule": "top2_p0p9_tail0p6"
+          "selected_month_coverage": {
+            "max_month_share_pct": 97.752809,
+            "month_rows": {
+              "2026-05": {
+                "active_days": 12,
+                "active_runs": 44,
+                "n": 87
+              },
+              "2026-06": {
+                "active_days": 1,
+                "active_runs": 2,
+                "n": 2
+              }
+            },
+            "selected_month_count": 2,
+            "selected_months": [
+              "2026-05",
+              "2026-06"
+            ]
+          },
+          "selection_rule": "top2_p0p9"
         },
         "evaluated_candidates": 1344,
-        "period_stable_count": 224,
+        "period_stable_count": 25,
         "production_ready_count": 0,
-        "shadow_period_stable_count": 224,
+        "shadow_period_stable_count": 25,
         "status": "ok"
       },
       "three_stage_ev_ranker": {
@@ -40683,10 +40726,10 @@
         "2026-03",
         "2026-04"
       ],
-      "period_stable_both_market_candidate": true,
+      "period_stable_both_market_candidate": false,
       "production_replacement_ready": false,
       "recommended_action": "keep KIS candidates in shadow; continue backfill and forward validation",
-      "status": "period_stable_shadow_candidates_found"
+      "status": "no_period_stable_both_market_candidate"
     },
     "stability_search_report": "runtime_state/reports/learning/kis_touch5_stability_search_longfold20_20260613.json",
     "static_master_augmentation_report": "runtime_state/reports/learning/kis_static_sidecar_master_augmented_proxy_20260613.json",
