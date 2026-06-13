@@ -805,6 +805,7 @@ def test_build_report_routes_optional_kosdaq_drawdown_filter_without_overwriting
     sidecar_baseline = tmp_path / "sidecar_baseline.json"
     sidecar_score = tmp_path / "sidecar_score.json"
     kosdaq_drawdown = tmp_path / "kosdaq_drawdown.json"
+    kosdaq_bottleneck = tmp_path / "kosdaq_bottleneck.json"
 
     _write(
         shadow,
@@ -913,6 +914,46 @@ def test_build_report_routes_optional_kosdaq_drawdown_filter_without_overwriting
             },
         },
     )
+    _write(
+        kosdaq_bottleneck,
+        {
+            "market": "KOSDAQ",
+            "decision": {
+                "status": "kosdaq_tail_risk_blocks_production_replacement",
+                "production_replacement_ready": False,
+                "period_stable_candidate_count": 0,
+                "production_ready_count": 0,
+                "holdout_gate_pass_count": 0,
+                "model_change_helped": False,
+                "primary_blockers": [
+                    "compound_veto_no_sample_sufficient_candidate_across_recall",
+                    "compound_veto_no_sample_hit_low_safe_candidate_across_recall",
+                ],
+                "best_research_candidate": {
+                    "selection_rule": "top3_prob_tail_margin_p0p5",
+                    "metrics": {
+                        "hit5_dd10_5d_pct": 75.9036,
+                        "avg_5d_pct": 6.54185,
+                        "min_min_low_5d_pct": -21.915669,
+                    },
+                },
+                "best_compound_veto_candidate": {
+                    "selection_rule": "top10_prob_plus_tail_tail0_compound2_dff9ab0e35",
+                    "metrics": {
+                        "n": 30,
+                        "active_days": 1,
+                        "active_runs": 3,
+                        "hit5_dd10_5d_pct": 100.0,
+                        "avg_5d_pct": 17.469032,
+                        "min_min_low_5d_pct": -5.525847,
+                    },
+                },
+                "best_compound_veto_sample_gate_pass": False,
+                "compound_veto_sample_sufficient_candidate_count": 0,
+                "compound_veto_sample_hit_low_safe_candidate_count": 0,
+            },
+        },
+    )
 
     report = build_report(
         shadow_report_path=shadow,
@@ -922,6 +963,7 @@ def test_build_report_routes_optional_kosdaq_drawdown_filter_without_overwriting
         sidecar_baseline_sweep_path=sidecar_baseline,
         sidecar_score_sweep_path=sidecar_score,
         kosdaq_drawdown_filter_report_path=kosdaq_drawdown,
+        kosdaq_bottleneck_matrix_path=kosdaq_bottleneck,
     )
 
     assert report["markets"]["KOSPI"]["drawdown_filter_research"] == {}
@@ -933,4 +975,11 @@ def test_build_report_routes_optional_kosdaq_drawdown_filter_without_overwriting
     assert drawdown["holdout_validation"]["status"] == "no_holdout_gate_pass"
     assert drawdown["holdout_validation"]["selection_best_holdout_evaluation"]["metrics"]["hit5_dd10_5d_pct"] == 62.2642
     assert report["research_inputs"]["kosdaq_drawdown_filter_status"] == "no_production_gate_pass_candidate"
-    assert "kosdaq_drawdown_filter_research" in _markdown(report)
+    bottleneck = report["markets"]["KOSDAQ"]["kosdaq_bottleneck_matrix"]
+    assert bottleneck["compound_veto_sample_sufficient_candidate_count"] == 0
+    assert bottleneck["compound_veto_sample_hit_low_safe_candidate_count"] == 0
+    assert bottleneck["best_compound_veto_candidate"]["selection_rule"] == "top10_prob_plus_tail_tail0_compound2_dff9ab0e35"
+    markdown = _markdown(report)
+    assert "kosdaq_drawdown_filter_research" in markdown
+    assert "compound_sample=`0`" in markdown
+    assert "compound_sample_hit_low_safe=`0`" in markdown

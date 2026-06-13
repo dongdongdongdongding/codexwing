@@ -899,6 +899,11 @@ def _kosdaq_bottleneck_matrix_market(report: Mapping[str, Any], market: str) -> 
     decision = report.get("decision") if isinstance(report.get("decision"), Mapping) else {}
     best = decision.get("best_research_candidate") if isinstance(decision.get("best_research_candidate"), Mapping) else {}
     safe = decision.get("best_safe_tail_candidate") if isinstance(decision.get("best_safe_tail_candidate"), Mapping) else {}
+    compound = (
+        decision.get("best_compound_veto_candidate")
+        if isinstance(decision.get("best_compound_veto_candidate"), Mapping)
+        else {}
+    )
     drawdown = report.get("drawdown_filter") if isinstance(report.get("drawdown_filter"), Mapping) else {}
     holdout = drawdown.get("holdout") if isinstance(drawdown.get("holdout"), Mapping) else {}
     return {
@@ -911,6 +916,14 @@ def _kosdaq_bottleneck_matrix_market(report: Mapping[str, Any], market: str) -> 
         "primary_blockers": decision.get("primary_blockers") or [],
         "best_research_candidate": best,
         "best_safe_tail_candidate": safe,
+        "best_compound_veto_candidate": compound,
+        "best_compound_veto_sample_gate_pass": bool(decision.get("best_compound_veto_sample_gate_pass")),
+        "compound_veto_sample_sufficient_candidate_count": int(
+            decision.get("compound_veto_sample_sufficient_candidate_count") or 0
+        ),
+        "compound_veto_sample_hit_low_safe_candidate_count": int(
+            decision.get("compound_veto_sample_hit_low_safe_candidate_count") or 0
+        ),
         "drawdown_holdout": {
             "status": holdout.get("status"),
             "selection_candidates_tested": holdout.get("selection_candidates_tested"),
@@ -1533,8 +1546,18 @@ def _markdown(report: Mapping[str, Any]) -> str:
             if isinstance(kosdaq_bottleneck_best.get("metrics"), dict)
             else {}
         )
+        kosdaq_compound_best = (
+            kosdaq_bottleneck.get("best_compound_veto_candidate")
+            if isinstance(kosdaq_bottleneck.get("best_compound_veto_candidate"), dict)
+            else {}
+        )
+        kosdaq_compound_metrics = (
+            kosdaq_compound_best.get("metrics")
+            if isinstance(kosdaq_compound_best.get("metrics"), dict)
+            else {}
+        )
         kosdaq_bottleneck_line = (
-            f"- kosdaq_bottleneck_matrix: status=`{kosdaq_bottleneck.get('status')}`, production_ready=`{kosdaq_bottleneck.get('production_replacement_ready')}`, stable_count=`{kosdaq_bottleneck.get('period_stable_candidate_count')}`, holdout_gate_pass=`{kosdaq_bottleneck.get('holdout_gate_pass_count')}`, best=`{kosdaq_bottleneck_best.get('selection_rule')}`, hit5=`{kosdaq_bottleneck_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{kosdaq_bottleneck_metrics.get('avg_5d_pct')}`, min_low=`{kosdaq_bottleneck_metrics.get('min_min_low_5d_pct')}`, model_change_helped=`{kosdaq_bottleneck.get('model_change_helped')}`, blockers=`{kosdaq_bottleneck.get('primary_blockers')}`"
+            f"- kosdaq_bottleneck_matrix: status=`{kosdaq_bottleneck.get('status')}`, production_ready=`{kosdaq_bottleneck.get('production_replacement_ready')}`, stable_count=`{kosdaq_bottleneck.get('period_stable_candidate_count')}`, holdout_gate_pass=`{kosdaq_bottleneck.get('holdout_gate_pass_count')}`, best=`{kosdaq_bottleneck_best.get('selection_rule')}`, hit5=`{kosdaq_bottleneck_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{kosdaq_bottleneck_metrics.get('avg_5d_pct')}`, min_low=`{kosdaq_bottleneck_metrics.get('min_min_low_5d_pct')}`, compound_best=`{kosdaq_compound_best.get('selection_rule')}`, compound_n=`{kosdaq_compound_metrics.get('n')}`, compound_days=`{kosdaq_compound_metrics.get('active_days')}`, compound_hit5=`{kosdaq_compound_metrics.get('hit5_dd10_5d_pct')}`, compound_min_low=`{kosdaq_compound_metrics.get('min_min_low_5d_pct')}`, compound_sample=`{kosdaq_bottleneck.get('compound_veto_sample_sufficient_candidate_count')}`, compound_sample_hit_low_safe=`{kosdaq_bottleneck.get('compound_veto_sample_hit_low_safe_candidate_count')}`, model_change_helped=`{kosdaq_bottleneck.get('model_change_helped')}`, blockers=`{kosdaq_bottleneck.get('primary_blockers')}`"
             if kosdaq_bottleneck
             else "- kosdaq_bottleneck_matrix: status=`not_run_for_market`"
         )

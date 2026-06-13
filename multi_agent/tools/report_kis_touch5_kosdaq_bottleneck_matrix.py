@@ -37,6 +37,13 @@ DEFAULT_COMPOUND_DRAWDOWN_REPORT = (
     PROJECT_ROOT
     / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_p05_20260613.json"
 )
+DEFAULT_COMPOUND_DRAWDOWN_REPORTS = (
+    DEFAULT_COMPOUND_DRAWDOWN_REPORT,
+    PROJECT_ROOT
+    / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top5_p03_20260613.json",
+    PROJECT_ROOT
+    / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top10_all_20260613.json",
+)
 REQUIRED_HIT5 = 73.0
 REQUIRED_MIN_LOW = -10.0
 REQUIRED_N = 45
@@ -151,6 +158,10 @@ def _drawdown_summary(report: Mapping[str, Any]) -> Dict[str, Any]:
     return {
         "status": report.get("status"),
         "validation_mode": report.get("validation_mode"),
+        "score_mode": report.get("score_mode"),
+        "topn": report.get("topn"),
+        "prob_threshold": report.get("prob_threshold"),
+        "tail_threshold": report.get("tail_threshold"),
         "compound_filter_depth": report.get("compound_filter_depth"),
         "compound_single_limit": report.get("compound_single_limit"),
         "compound_candidate_limit": report.get("compound_candidate_limit"),
@@ -159,12 +170,14 @@ def _drawdown_summary(report: Mapping[str, Any]) -> Dict[str, Any]:
         "deployment_ready": bool(report.get("deployment_ready")),
         "base_candidate": _candidate_summary(base),
         "best_top_result": _candidate_summary(best_top_result),
+        "candidate_frontier": report.get("candidate_frontier") or {},
         "holdout": {
             "status": holdout.get("status"),
             "selection_candidates_tested": holdout.get("selection_candidates_tested"),
             "holdout_candidates_evaluated": holdout.get("holdout_candidates_evaluated"),
             "holdout_gate_pass_count": holdout.get("holdout_gate_pass_count"),
             "selection_best_holdout_evaluation": _candidate_summary(selection_best),
+            "holdout_frontier": holdout.get("holdout_frontier") or {},
             "decision": holdout.get("decision") or {},
         },
         "rolling_prior": report.get("rolling_prior_validation") or {},
@@ -200,11 +213,37 @@ def _sample_gate_pass(metrics: Mapping[str, Any]) -> bool:
     )
 
 
+def _compound_sort_key(row: Mapping[str, Any]) -> tuple[float, float, float, int, int, int]:
+    candidate = row.get("best_top_result") if isinstance(row.get("best_top_result"), Mapping) else {}
+    metrics = candidate.get("metrics") if isinstance(candidate.get("metrics"), Mapping) else {}
+    return (
+        _float(metrics.get("hit5_dd10_5d_pct"), -999.0),
+        _float(metrics.get("min_min_low_5d_pct"), -999.0),
+        _float(metrics.get("avg_5d_pct"), -999.0),
+        int(metrics.get("active_days") or 0),
+        int(metrics.get("active_runs") or 0),
+        int(metrics.get("n") or 0),
+    )
+
+
+def _compound_report_summaries(paths: Sequence[Path]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for path in paths:
+        if not path.exists():
+            continue
+        row = _drawdown_summary(_load_json(path))
+        row["source_path"] = _rel(path)
+        rows.append(row)
+    rows.sort(key=_compound_sort_key, reverse=True)
+    return rows
+
+
 def build_report(
     *,
     stability_report_paths: Sequence[Path] = DEFAULT_STABILITY_REPORTS,
     drawdown_report_path: Path | None = DEFAULT_DRAWDOWN_REPORT,
-    compound_drawdown_report_path: Path | None = DEFAULT_COMPOUND_DRAWDOWN_REPORT,
+    compound_drawdown_report_path: Path | None = None,
+    compound_drawdown_report_paths: Sequence[Path] | None = None,
     market: str = "KOSDAQ",
 ) -> Dict[str, Any]:
     matrix: List[Dict[str, Any]] = []
@@ -218,7 +257,14 @@ def build_report(
     best = dict(matrix[0]) if matrix else {}
     best_safe_tail = _best_safe_tail(matrix)
     drawdown = _drawdown_summary(_load_optional(drawdown_report_path))
-    compound_drawdown = _drawdown_summary(_load_optional(compound_drawdown_report_path))
+    if compound_drawdown_report_paths is not None:
+        compound_paths = list(compound_drawdown_report_paths)
+    elif compound_drawdown_report_path is not None:
+        compound_paths = [compound_drawdown_report_path]
+    else:
+        compound_paths = list(DEFAULT_COMPOUND_DRAWDOWN_REPORTS)
+    compound_drawdowns = _compound_report_summaries(compound_paths)
+    compound_drawdown = compound_drawdowns[0] if compound_drawdowns else {}
     drawdown_holdout = drawdown.get("holdout") if isinstance(drawdown.get("holdout"), Mapping) else {}
     compound_holdout = (
         compound_drawdown.get("holdout") if isinstance(compound_drawdown.get("holdout"), Mapping) else {}
@@ -234,6 +280,14 @@ def build_report(
     )
     compound_best_metrics = compound_best.get("metrics") if isinstance(compound_best.get("metrics"), Mapping) else {}
     compound_sample_gate = _sample_gate_pass(compound_best_metrics)
+    compound_sample_sufficient_total = sum(
+        int((row.get("candidate_frontier") or {}).get("sample_sufficient_count") or 0)
+        for row in compound_drawdowns
+    )
+    compound_sample_hit_low_safe_total = sum(
+        int((row.get("candidate_frontier") or {}).get("sample_hit_low_safe_count") or 0)
+        for row in compound_drawdowns
+    )
     primary_blockers = [
         "no_period_stable_kosdaq_candidate",
         "min_low_5d_tail_below_minus10",
@@ -244,6 +298,10 @@ def build_report(
             primary_blockers.append("compound_veto_holdout_gate_pass_count_zero")
         if not compound_sample_gate:
             primary_blockers.append("compound_veto_sample_gate_shortfall")
+        if compound_sample_sufficient_total <= 0:
+            primary_blockers.append("compound_veto_no_sample_sufficient_candidate_across_recall")
+        if compound_sample_hit_low_safe_total <= 0:
+            primary_blockers.append("compound_veto_no_sample_hit_low_safe_candidate_across_recall")
     decision_status = (
         "production_candidate_found"
         if production_ready_total > 0 and holdout_gate_count > 0 and compound_holdout_gate_count > 0
@@ -263,6 +321,7 @@ def build_report(
             "compound_drawdown_report": _rel(compound_drawdown_report_path)
             if compound_drawdown_report_path and compound_drawdown_report_path.exists()
             else None,
+            "compound_drawdown_reports": [_rel(path) for path in compound_paths if path.exists()],
         },
         "gate_requirements": {
             "hit5_dd10_5d_pct_gte": REQUIRED_HIT5,
@@ -277,6 +336,7 @@ def build_report(
         "best_safe_tail": best_safe_tail,
         "drawdown_filter": drawdown,
         "compound_drawdown_filter": compound_drawdown,
+        "compound_drawdown_filters": compound_drawdowns,
         "decision": {
             "status": decision_status,
             "production_replacement_ready": False,
@@ -288,6 +348,8 @@ def build_report(
             "best_safe_tail_candidate": (best_safe_tail.get("best_overall") or {}),
             "best_compound_veto_candidate": compound_best,
             "best_compound_veto_sample_gate_pass": compound_sample_gate,
+            "compound_veto_sample_sufficient_candidate_count": compound_sample_sufficient_total,
+            "compound_veto_sample_hit_low_safe_candidate_count": compound_sample_hit_low_safe_total,
             "model_change_helped": bool(
                 best.get("model") and str(best.get("model")).lower() != "lightgbm"
             ),
@@ -343,6 +405,11 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         if isinstance(report.get("compound_drawdown_filter"), Mapping)
         else {}
     )
+    compounds = (
+        report.get("compound_drawdown_filters")
+        if isinstance(report.get("compound_drawdown_filters"), list)
+        else []
+    )
     compound_best = (
         compound.get("best_top_result") if isinstance(compound.get("best_top_result"), Mapping) else {}
     )
@@ -372,8 +439,26 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"- best_compound: rule=`{compound_best.get('selection_rule')}`, n=`{compound_metrics.get('n')}`, days=`{compound_metrics.get('active_days')}`, runs=`{compound_metrics.get('active_runs')}`, hit5=`{compound_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{compound_metrics.get('avg_5d_pct')}`, min_low=`{compound_metrics.get('min_min_low_5d_pct')}`",
             f"- holdout: status=`{compound_holdout.get('status')}`, candidates=`{compound_holdout.get('selection_candidates_tested')}`, evaluated=`{compound_holdout.get('holdout_candidates_evaluated')}`, gate_pass=`{compound_holdout.get('holdout_gate_pass_count')}`",
             f"- selection_best_holdout: rule=`{compound_selection_best.get('selection_rule')}`, n=`{compound_selection_metrics.get('n')}`, days=`{compound_selection_metrics.get('active_days')}`, hit5=`{compound_selection_metrics.get('hit5_dd10_5d_pct')}`, min_low=`{compound_selection_metrics.get('min_min_low_5d_pct')}`",
+            "",
+            "| source | score | topN | prob | base_n | base_days | base_hit5 | base_min_low | candidates | sample | low_safe | hit_low_safe | sample_hit_low_safe | holdout_gate |",
+            "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
     )
+    for row in compounds:
+        if not isinstance(row, Mapping):
+            continue
+        base_candidate = row.get("base_candidate") if isinstance(row.get("base_candidate"), Mapping) else {}
+        base_metrics = base_candidate.get("metrics") if isinstance(base_candidate.get("metrics"), Mapping) else {}
+        frontier = row.get("candidate_frontier") if isinstance(row.get("candidate_frontier"), Mapping) else {}
+        row_holdout = row.get("holdout") if isinstance(row.get("holdout"), Mapping) else {}
+        lines.append(
+            f"| {row.get('source_path')} | {row.get('score_mode')} | {row.get('topn')} | {row.get('prob_threshold')} | "
+            f"{base_metrics.get('n')} | {base_metrics.get('active_days')} | {base_metrics.get('hit5_dd10_5d_pct')} | "
+            f"{base_metrics.get('min_min_low_5d_pct')} | {frontier.get('total_candidates')} | "
+            f"{frontier.get('sample_sufficient_count')} | {frontier.get('low_safe_count')} | "
+            f"{frontier.get('hit_low_safe_count')} | {frontier.get('sample_hit_low_safe_count')} | "
+            f"{row_holdout.get('holdout_gate_pass_count')} |"
+        )
     return "\n".join(lines) + "\n"
 
 
@@ -388,7 +473,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--market", default="KOSDAQ")
     parser.add_argument("--stability-report", action="append", default=None)
     parser.add_argument("--drawdown-report", default=str(DEFAULT_DRAWDOWN_REPORT))
-    parser.add_argument("--compound-drawdown-report", default=str(DEFAULT_COMPOUND_DRAWDOWN_REPORT))
+    parser.add_argument("--compound-drawdown-report", action="append", default=None)
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     return parser.parse_args(list(argv) if argv is not None else None)
 
@@ -403,7 +488,9 @@ def main(argv: Iterable[str] | None = None) -> int:
     report = build_report(
         stability_report_paths=stability_paths,
         drawdown_report_path=Path(args.drawdown_report) if args.drawdown_report else None,
-        compound_drawdown_report_path=Path(args.compound_drawdown_report) if args.compound_drawdown_report else None,
+        compound_drawdown_report_paths=[Path(item) for item in args.compound_drawdown_report]
+        if args.compound_drawdown_report
+        else None,
         market=str(args.market).upper(),
     )
     output = Path(args.output)

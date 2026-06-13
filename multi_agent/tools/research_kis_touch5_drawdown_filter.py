@@ -290,6 +290,75 @@ def _sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
     )
 
 
+def _frontier_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    row_metrics = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    gate = row.get("gate") if isinstance(row.get("gate"), Mapping) else {}
+    return (
+        bool(gate.get("production_ready")),
+        float(row_metrics.get("hit5_dd10_5d_pct") or 0.0),
+        float(row_metrics.get("min_min_low_5d_pct") or -999.0),
+        float(row_metrics.get("avg_5d_pct") or -999.0),
+        int(row_metrics.get("active_days") or 0),
+        int(row_metrics.get("active_runs") or 0),
+        int(row_metrics.get("n") or 0),
+        float(row.get("quality_score") or -999999.0),
+    )
+
+
+def _sample_sufficient(metrics: Mapping[str, Any], market: str) -> bool:
+    market_key = str(market).upper()
+    min_n = 45 if market_key == "KOSDAQ" else 30
+    min_active_days = 20 if market_key == "KOSDAQ" else 15
+    min_active_runs = 20
+    return (
+        int(metrics.get("n") or 0) >= min_n
+        and int(metrics.get("active_days") or 0) >= min_active_days
+        and int(metrics.get("active_runs") or 0) >= min_active_runs
+    )
+
+
+def _frontier_summary(rows: Sequence[Mapping[str, Any]], *, market: str) -> Dict[str, Any]:
+    sample: List[Mapping[str, Any]] = []
+    low_safe: List[Mapping[str, Any]] = []
+    hit_low_safe: List[Mapping[str, Any]] = []
+    sample_low_safe: List[Mapping[str, Any]] = []
+    sample_hit_low_safe: List[Mapping[str, Any]] = []
+    for row in rows:
+        metrics_payload = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+        is_sample = _sample_sufficient(metrics_payload, market)
+        is_low_safe = float(metrics_payload.get("min_min_low_5d_pct") or -999.0) >= -10.0
+        is_hit = float(metrics_payload.get("hit5_dd10_5d_pct") or 0.0) >= 73.0
+        if is_sample:
+            sample.append(row)
+        if is_low_safe:
+            low_safe.append(row)
+        if is_hit and is_low_safe:
+            hit_low_safe.append(row)
+        if is_sample and is_low_safe:
+            sample_low_safe.append(row)
+        if is_sample and is_hit and is_low_safe:
+            sample_hit_low_safe.append(row)
+
+    def best(candidates: Sequence[Mapping[str, Any]]) -> Mapping[str, Any] | None:
+        if not candidates:
+            return None
+        return sorted(candidates, key=_frontier_sort_key, reverse=True)[0]
+
+    return {
+        "total_candidates": int(len(rows)),
+        "sample_sufficient_count": int(len(sample)),
+        "low_safe_count": int(len(low_safe)),
+        "hit_low_safe_count": int(len(hit_low_safe)),
+        "sample_low_safe_count": int(len(sample_low_safe)),
+        "sample_hit_low_safe_count": int(len(sample_hit_low_safe)),
+        "best_sample_sufficient": best(sample),
+        "best_low_safe": best(low_safe),
+        "best_hit_low_safe": best(hit_low_safe),
+        "best_sample_low_safe": best(sample_low_safe),
+        "best_sample_hit_low_safe": best(sample_hit_low_safe),
+    }
+
+
 def _candidate_filter_features(numeric: Sequence[str]) -> List[str]:
     out: List[str] = []
     for feature in MANUAL_FILTER_FEATURES:
@@ -783,6 +852,8 @@ def _holdout_validation(
         "selection_best_holdout_evaluation": fixed_selection_best,
         "holdout_gate_pass_count": int(len(survivors)),
         "best_holdout_gate_pass_candidate": survivors[0] if survivors else None,
+        "selection_frontier": _frontier_summary(selection_ranked, market=market),
+        "holdout_frontier": _frontier_summary(fixed_ranked, market=market),
         "top_holdout_evaluations": fixed_ranked[: int(top_results)],
         "decision": {
             "holdout_gate_pass_observed": bool(survivors),
@@ -1154,6 +1225,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "production_ready_count": int(len(production)),
         "best_production_candidate": production[0] if production else None,
         "production_candidates": production[: int(args.top_results)],
+        "candidate_frontier": _frontier_summary(ranked, market=market),
         "top_results": ranked[: int(args.top_results)],
         "holdout_validation": holdout,
         "rolling_prior_validation": rolling_prior,
@@ -1204,6 +1276,44 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         if isinstance(rolling_gate.get("production_economics"), Mapping)
         else {}
     )
+    frontier = report.get("candidate_frontier") if isinstance(report.get("candidate_frontier"), Mapping) else {}
+    frontier_best_sample = (
+        frontier.get("best_sample_hit_low_safe")
+        or frontier.get("best_sample_low_safe")
+        or frontier.get("best_sample_sufficient")
+        or {}
+    )
+    frontier_best_sample_metrics = (
+        frontier_best_sample.get("metrics") if isinstance(frontier_best_sample.get("metrics"), Mapping) else {}
+    )
+    frontier_best_sample_gate = (
+        frontier_best_sample.get("gate") if isinstance(frontier_best_sample.get("gate"), Mapping) else {}
+    )
+    frontier_best_sample_identity = (
+        frontier_best_sample.get("identity") if isinstance(frontier_best_sample.get("identity"), Mapping) else {}
+    )
+    holdout_frontier = holdout.get("holdout_frontier") if isinstance(holdout.get("holdout_frontier"), Mapping) else {}
+    holdout_frontier_best_sample = (
+        holdout_frontier.get("best_sample_hit_low_safe")
+        or holdout_frontier.get("best_sample_low_safe")
+        or holdout_frontier.get("best_sample_sufficient")
+        or {}
+    )
+    holdout_frontier_best_metrics = (
+        holdout_frontier_best_sample.get("metrics")
+        if isinstance(holdout_frontier_best_sample.get("metrics"), Mapping)
+        else {}
+    )
+    holdout_frontier_best_gate = (
+        holdout_frontier_best_sample.get("gate")
+        if isinstance(holdout_frontier_best_sample.get("gate"), Mapping)
+        else {}
+    )
+    holdout_frontier_best_identity = (
+        holdout_frontier_best_sample.get("identity")
+        if isinstance(holdout_frontier_best_sample.get("identity"), Mapping)
+        else {}
+    )
     lines = [
         "# KIS Touch5 Drawdown Filter Research",
         "",
@@ -1221,9 +1331,13 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         f"- production_ready_count: `{report.get('production_ready_count')}`",
         f"- best_filter: `{best_filter}`",
         f"- best: status=`{best_gate.get('status')}` n=`{best_metrics.get('n')}` days=`{best_metrics.get('active_days')}` hit5=`{best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{best_metrics.get('avg_5d_pct')}` min_low=`{best_metrics.get('min_min_low_5d_pct')}` expected_net=`{((best_gate.get('production_economics') or {}) if isinstance(best_gate.get('production_economics'), Mapping) else {}).get('expected_touch_policy_net_5d_pct')}`",
+        f"- candidate_frontier: total=`{frontier.get('total_candidates')}` sample=`{frontier.get('sample_sufficient_count')}` low_safe=`{frontier.get('low_safe_count')}` hit_low_safe=`{frontier.get('hit_low_safe_count')}` sample_low_safe=`{frontier.get('sample_low_safe_count')}` sample_hit_low_safe=`{frontier.get('sample_hit_low_safe_count')}`",
+        f"- candidate_frontier_best_sample: status=`{frontier_best_sample_gate.get('status')}` rule=`{frontier_best_sample_identity.get('selection_rule')}` n=`{frontier_best_sample_metrics.get('n')}` days=`{frontier_best_sample_metrics.get('active_days')}` runs=`{frontier_best_sample_metrics.get('active_runs')}` hit5=`{frontier_best_sample_metrics.get('hit5_dd10_5d_pct')}` avg5=`{frontier_best_sample_metrics.get('avg_5d_pct')}` min_low=`{frontier_best_sample_metrics.get('min_min_low_5d_pct')}` blockers=`{frontier_best_sample_gate.get('production_blocking_reasons')}`",
         f"- holdout: status=`{holdout.get('status')}` validation=`{holdout.get('validation_mode')}` selection_folds=`{holdout.get('selection_folds')}` holdout_folds=`{holdout.get('holdout_folds')}` selection_candidates=`{holdout.get('selection_candidates_tested')}` holdout_evaluated=`{holdout.get('holdout_candidates_evaluated')}` gate_pass_count=`{holdout.get('holdout_gate_pass_count')}` deployment_ready=`{holdout.get('deployment_ready')}`",
         f"- selection_best_holdout: status=`{selection_best_gate.get('status')}` n=`{selection_best_metrics.get('n')}` days=`{selection_best_metrics.get('active_days')}` hit5=`{selection_best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{selection_best_metrics.get('avg_5d_pct')}` min_low=`{selection_best_metrics.get('min_min_low_5d_pct')}`",
         f"- best_holdout_gate_pass: status=`{holdout_best_gate.get('status')}` n=`{holdout_best_metrics.get('n')}` days=`{holdout_best_metrics.get('active_days')}` hit5=`{holdout_best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{holdout_best_metrics.get('avg_5d_pct')}` min_low=`{holdout_best_metrics.get('min_min_low_5d_pct')}` expected_net=`{holdout_best_econ.get('expected_touch_policy_net_5d_pct')}`",
+        f"- holdout_frontier: total=`{holdout_frontier.get('total_candidates')}` sample=`{holdout_frontier.get('sample_sufficient_count')}` low_safe=`{holdout_frontier.get('low_safe_count')}` hit_low_safe=`{holdout_frontier.get('hit_low_safe_count')}` sample_low_safe=`{holdout_frontier.get('sample_low_safe_count')}` sample_hit_low_safe=`{holdout_frontier.get('sample_hit_low_safe_count')}`",
+        f"- holdout_frontier_best_sample: status=`{holdout_frontier_best_gate.get('status')}` rule=`{holdout_frontier_best_identity.get('selection_rule')}` n=`{holdout_frontier_best_metrics.get('n')}` days=`{holdout_frontier_best_metrics.get('active_days')}` runs=`{holdout_frontier_best_metrics.get('active_runs')}` hit5=`{holdout_frontier_best_metrics.get('hit5_dd10_5d_pct')}` avg5=`{holdout_frontier_best_metrics.get('avg_5d_pct')}` min_low=`{holdout_frontier_best_metrics.get('min_min_low_5d_pct')}` blockers=`{holdout_frontier_best_gate.get('production_blocking_reasons')}`",
         f"- rolling_prior: status=`{rolling.get('status')}` validation=`{rolling.get('validation_mode')}` min_prior_folds=`{rolling.get('min_prior_folds')}` evaluated_steps=`{rolling.get('evaluated_steps')}` selected=`{rolling.get('selected_count')}` deployment_ready=`{rolling.get('deployment_ready')}`",
         f"- rolling_prior_aggregate: status=`{rolling_gate.get('status')}` n=`{rolling_metrics.get('n')}` days=`{rolling_metrics.get('active_days')}` runs=`{rolling_metrics.get('active_runs')}` hit5=`{rolling_metrics.get('hit5_dd10_5d_pct')}` avg5=`{rolling_metrics.get('avg_5d_pct')}` min_low=`{rolling_metrics.get('min_min_low_5d_pct')}` expected_net=`{rolling_econ.get('expected_touch_policy_net_5d_pct')}` blockers=`{rolling_gate.get('production_blocking_reasons')}`",
         "",

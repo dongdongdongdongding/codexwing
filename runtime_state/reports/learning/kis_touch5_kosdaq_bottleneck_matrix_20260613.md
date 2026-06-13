@@ -1,6 +1,6 @@
 # KIS Touch5 KOSDAQ Bottleneck Matrix
 
-- generated_at: `2026-06-13T12:09:54+00:00`
+- generated_at: `2026-06-13T12:41:25+00:00`
 - market: `KOSDAQ`
 - status: `kosdaq_tail_risk_blocks_production_replacement`
 - production_replacement_ready: `False`
@@ -27,8 +27,14 @@
 
 ## Compound Veto Drawdown
 - status: `no_production_gate_pass_candidate`
-- filters_tested: `4098`
+- filters_tested: `3949`
 - compound_filter_depth: `2`
-- best_compound: rule=`top3_prob_tail_margin_p0p5_tail0_compound2_537872383d`, n=`16`, days=`3`, runs=`6`, hit5=`100.0`, avg5=`24.050376`, min_low=`-9.786204`
-- holdout: status=`no_holdout_gate_pass`, candidates=`3958`, evaluated=`3958`, gate_pass=`0`
-- selection_best_holdout: rule=`top3_prob_tail_margin_p0p5_tail0_compound2_76d1ae8199`, n=`52`, days=`7`, hit5=`63.4615`, min_low=`-31.118999`
+- best_compound: rule=`top5_prob_plus_tail_p0p3_tail0_compound2_742ed361a2`, n=`30`, days=`4`, runs=`6`, hit5=`100.0`, avg5=`13.094836`, min_low=`-7.544717`
+- holdout: status=`no_holdout_gate_pass`, candidates=`3976`, evaluated=`3976`, gate_pass=`0`
+- selection_best_holdout: rule=`top5_prob_plus_tail_p0p3_tail0_compound2_587077c848`, n=`61`, days=`8`, hit5=`62.2951`, min_low=`-23.62384`
+
+| source | score | topN | prob | base_n | base_days | base_hit5 | base_min_low | candidates | sample | low_safe | hit_low_safe | sample_hit_low_safe | holdout_gate |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top5_p03_20260613.json | prob_plus_tail | 5 | 0.3 | 144 | 16 | 68.0556 | -33.704825 | 3949 | 0 | 535 | 524 | 0 | 0 |
+| runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_p05_20260613.json | prob_tail_margin | 3 | 0.5 | 82 | 13 | 73.1707 | -21.915669 | 4098 | 0 | 847 | 809 | 0 | 0 |
+| runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top10_all_20260613.json | prob_plus_tail | 10 | None | 364 | 19 | 52.4725 | -38.310759 | 4014 | 0 | 230 | 210 | 0 | 0 |

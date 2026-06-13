@@ -7,6 +7,7 @@ from multi_agent.tools.research_kis_touch5_drawdown_filter import (
     _filter_payload_name,
     _filter_rule_name,
     _fold_slices,
+    _frontier_summary,
     _selection_rule,
 )
 
@@ -79,3 +80,49 @@ def test_compound_filter_applies_all_conditions_and_keeps_stable_name():
     assert list(filtered) == [100, 103]
     assert _compound_filter_name(conditions).startswith("compound2_")
     assert _filter_payload_name({"type": "compound_and", "conditions": conditions}).startswith("compound2_")
+
+
+def test_frontier_summary_separates_sample_sufficient_and_low_safe_candidates():
+    rows = [
+        {
+            "metrics": {
+                "n": 16,
+                "active_days": 3,
+                "active_runs": 6,
+                "hit5_dd10_5d_pct": 100.0,
+                "avg_5d_pct": 24.0,
+                "min_min_low_5d_pct": -9.0,
+            },
+            "gate": {"production_ready": False},
+        },
+        {
+            "metrics": {
+                "n": 50,
+                "active_days": 21,
+                "active_runs": 22,
+                "hit5_dd10_5d_pct": 74.0,
+                "avg_5d_pct": 6.0,
+                "min_min_low_5d_pct": -9.5,
+            },
+            "gate": {"production_ready": True},
+        },
+        {
+            "metrics": {
+                "n": 60,
+                "active_days": 22,
+                "active_runs": 25,
+                "hit5_dd10_5d_pct": 70.0,
+                "avg_5d_pct": 7.0,
+                "min_min_low_5d_pct": -8.0,
+            },
+            "gate": {"production_ready": False},
+        },
+    ]
+
+    summary = _frontier_summary(rows, market="KOSDAQ")
+
+    assert summary["sample_sufficient_count"] == 2
+    assert summary["low_safe_count"] == 3
+    assert summary["sample_low_safe_count"] == 2
+    assert summary["sample_hit_low_safe_count"] == 1
+    assert summary["best_sample_hit_low_safe"]["metrics"]["hit5_dd10_5d_pct"] == 74.0

@@ -4,7 +4,7 @@
 - status: `no_production_gate_pass_candidate`
 - validation_mode: `research_sweep_only_walk_forward_predictions`
 - deployment_ready: `False`
-- generated_at: `2026-06-13T12:06:38+00:00`
+- generated_at: `2026-06-13T12:20:18+00:00`
 - prepared_cache: `/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_sidecar_db_20260101_20260610.pkl`
 - market: `KOSDAQ`
 - selection: score_mode=`prob_tail_margin` topn=`3` prob_threshold=`0.5` tail_threshold=`0.0`
@@ -14,9 +14,13 @@
 - production_ready_count: `0`
 - best_filter: `{}`
 - best: status=`None` n=`None` days=`None` hit5=`None` avg5=`None` min_low=`None` expected_net=`None`
+- candidate_frontier: total=`4098` sample=`0` low_safe=`847` hit_low_safe=`809` sample_low_safe=`0` sample_hit_low_safe=`0`
+- candidate_frontier_best_sample: status=`None` rule=`None` n=`None` days=`None` runs=`None` hit5=`None` avg5=`None` min_low=`None` blockers=`None`
 - holdout: status=`no_holdout_gate_pass` validation=`selection_fixed_rule_holdout_walk_forward_predictions` selection_folds=`[2, 3, 4, 5, 6]` holdout_folds=`[7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]` selection_candidates=`3958` holdout_evaluated=`3958` gate_pass_count=`0` deployment_ready=`False`
 - selection_best_holdout: status=`blocked` n=`52` days=`7` hit5=`63.4615` avg5=`4.200313` min_low=`-31.118999`
 - best_holdout_gate_pass: status=`None` n=`None` days=`None` hit5=`None` avg5=`None` min_low=`None` expected_net=`None`
+- holdout_frontier: total=`3942` sample=`0` low_safe=`4` hit_low_safe=`4` sample_low_safe=`0` sample_hit_low_safe=`0`
+- holdout_frontier_best_sample: status=`None` rule=`None` n=`None` days=`None` runs=`None` hit5=`None` avg5=`None` min_low=`None` blockers=`None`
 - rolling_prior: status=`skipped_by_operator` validation=`None` min_prior_folds=`None` evaluated_steps=`None` selected=`None` deployment_ready=`False`
 - rolling_prior_aggregate: status=`None` n=`None` days=`None` runs=`None` hit5=`None` avg5=`None` min_low=`None` expected_net=`None` blockers=`None`
 
