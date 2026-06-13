@@ -1277,6 +1277,8 @@ def kis_feature_family(feature_name: str) -> str:
         return "prefilter"
     if name.startswith("kis_full"):
         return "any_kis"
+    if name.startswith("kis_failure_risk"):
+        return "any_kis"
     return ""
 
 

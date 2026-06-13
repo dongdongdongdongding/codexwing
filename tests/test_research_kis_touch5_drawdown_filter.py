@@ -33,6 +33,13 @@ def test_drawdown_filter_rule_names_are_stable():
     assert _selection_rule(topn=1, score_mode="prob", tail_threshold=0.85, filter_name=filter_name) == (
         "top1_prob_tail0p85_close_failure_prior_theme_avg_close_5d_pct_le_neg2p53492"
     )
+    assert _selection_rule(
+        topn=3,
+        score_mode="prob_tail_margin",
+        prob_threshold=0.5,
+        tail_threshold=0.0,
+        filter_name=filter_name,
+    ) == "top3_prob_tail_margin_p0p5_tail0_close_failure_prior_theme_avg_close_5d_pct_le_neg2p53492"
 
 
 def test_holdout_split_and_filter_application_are_deterministic():

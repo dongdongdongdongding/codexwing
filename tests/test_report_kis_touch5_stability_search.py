@@ -180,3 +180,57 @@ def test_stability_search_marks_missing_months(tmp_path):
 
     assert "2026-01" in report["data_profile"]["missing_actual_months"]
     assert report["decision"]["production_replacement_ready"] is False
+
+
+def test_stability_search_supports_single_market_feature_set(tmp_path):
+    cache = tmp_path / "prepared.pkl"
+    pd.DataFrame(_rows()).to_pickle(cache)
+    args = parse_args(
+        [
+            "--prepared-cache",
+            str(cache),
+            "--markets",
+            "KOSDAQ",
+            "--months",
+            "2026-05",
+            "--feature-set",
+            "kis_sidecar_only",
+            "--model",
+            "logistic",
+            "--topns",
+            "1",
+            "--score-modes",
+            "prob",
+            "--prob-thresholds",
+            "none",
+            "--tail-thresholds",
+            "none",
+            "--min-train-rows",
+            "8",
+            "--min-test-rows",
+            "1",
+            "--min-train-days",
+            "2",
+            "--test-days",
+            "1",
+            "--max-folds",
+            "2",
+            "--min-scope-rows",
+            "8",
+            "--min-scope-days",
+            "3",
+            "--min-period-selected",
+            "1",
+            "--min-period-active-days",
+            "1",
+            "--min-selected-months",
+            "1",
+        ]
+    )
+    report = build_report(args)
+
+    assert list(report["markets"].keys()) == ["KOSDAQ"]
+    assert report["evaluation_contract"]["feature_set"] == "kis_sidecar_only"
+    markdown = render_markdown(report)
+    assert "### KOSDAQ" in markdown
+    assert "### KOSPI" not in markdown

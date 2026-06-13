@@ -15,6 +15,8 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
     LABEL_SPECS,
     candidate_verdict,
     current_top_indices,
+    kis_feature_family,
+    kis_presence_mask,
     kis_feature_readiness,
     label_series,
     load_prepared_dataset_cache,
@@ -245,6 +247,11 @@ def test_close_failure_risk_features_use_prior_dates_only_and_enter_feature_sets
     fmap = feature_sets(enriched)
     assert "close_failure_prior_ticker_failure_rate_pct" in fmap["failure_risk_augmented"][0]
     assert "close_failure_prior_theme_risk_bucket" in fmap["kis_failure_risk_augmented"][1]
+    assert kis_feature_family("kis_failure_risk_augmented") == "any_kis"
+    assert kis_presence_mask(
+        pd.DataFrame({"kis_sidecar_present": [0, 1], "kis_prefilter_present": [1, 0]}),
+        "kis_failure_risk_augmented",
+    ).tolist() == [True, True]
 
 
 def test_top_indices_and_metrics_report_all_horizons():

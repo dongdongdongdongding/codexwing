@@ -50,6 +50,10 @@ DEFAULT_CANDIDATE_LEADERBOARD = ROOT / "runtime_state/reports/learning/kis_touch
 DEFAULT_DRAWDOWN_FILTER_REPORT = (
     ROOT / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json"
 )
+DEFAULT_KOSDAQ_DRAWDOWN_FILTER_REPORT = (
+    ROOT
+    / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_probtail_p05_20260613.json"
+)
 DEFAULT_COVERAGE_AUDIT = ROOT / "runtime_state/reports/learning/kis_touch5_research_coverage_audit_20260613.json"
 DEFAULT_SLICE_ABLATION = ROOT / "runtime_state/reports/learning/kis_touch5_slice_ablation_20260613.json"
 DEFAULT_STABILITY_SEARCH = ROOT / "runtime_state/reports/learning/kis_touch5_stability_search_longfold20_20260613.json"
@@ -902,6 +906,7 @@ def build_report(
     deployment_consistency_path: Path | None = None,
     candidate_leaderboard_path: Path | None = None,
     drawdown_filter_report_path: Path | None = None,
+    kosdaq_drawdown_filter_report_path: Path | None = None,
     coverage_audit_path: Path | None = None,
     slice_ablation_path: Path | None = None,
     stability_search_path: Path | None = None,
@@ -928,6 +933,7 @@ def build_report(
     deployment_consistency = _load_optional_json(deployment_consistency_path)
     candidate_leaderboard = _load_optional_json(candidate_leaderboard_path)
     drawdown_filter_report = _load_optional_json(drawdown_filter_report_path)
+    kosdaq_drawdown_filter_report = _load_optional_json(kosdaq_drawdown_filter_report_path)
     coverage_audit = _load_optional_json(coverage_audit_path)
     slice_ablation = _load_optional_json(slice_ablation_path)
     stability_search = _load_optional_json(stability_search_path)
@@ -941,6 +947,11 @@ def build_report(
     }
     markets: Dict[str, Any] = {}
     for market in ("KOSPI", "KOSDAQ"):
+        drawdown_source = (
+            kosdaq_drawdown_filter_report
+            if market == "KOSDAQ" and kosdaq_drawdown_filter_report
+            else drawdown_filter_report
+        )
         markets[market] = {
             "three_stage_ev_ranker": _three_stage_market(three_stage_dynamic, three_stage_fixed, market),
             "finaltopn_three_stage_experiments": {
@@ -956,7 +967,7 @@ def build_report(
             if sidecar_score_sweep
             else {},
             "candidate_leaderboard": _candidate_leaderboard_market(candidate_leaderboard, market),
-            "drawdown_filter_research": _drawdown_filter_research_market(drawdown_filter_report, market),
+            "drawdown_filter_research": _drawdown_filter_research_market(drawdown_source, market),
             "slice_ablation": _slice_ablation_market(slice_ablation, market),
             "stability_search": _stability_search_market(stability_search, market),
         }
@@ -1069,6 +1080,9 @@ def build_report(
             "drawdown_filter_report": _rel(drawdown_filter_report_path)
             if drawdown_filter_report_path and drawdown_filter_report_path.exists()
             else None,
+            "kosdaq_drawdown_filter_report": _rel(kosdaq_drawdown_filter_report_path)
+            if kosdaq_drawdown_filter_report_path and kosdaq_drawdown_filter_report_path.exists()
+            else None,
             "coverage_audit_report": _rel(coverage_audit_path)
             if coverage_audit_path and coverage_audit_path.exists()
             else None,
@@ -1090,6 +1104,18 @@ def build_report(
             else False,
             "drawdown_filter_production_gate_pass_count": drawdown_filter_report.get("production_ready_count")
             if drawdown_filter_report
+            else None,
+            "kosdaq_drawdown_filter_status": kosdaq_drawdown_filter_report.get("status")
+            if kosdaq_drawdown_filter_report
+            else None,
+            "kosdaq_drawdown_filter_validation_mode": kosdaq_drawdown_filter_report.get("validation_mode")
+            if kosdaq_drawdown_filter_report
+            else None,
+            "kosdaq_drawdown_filter_deployment_ready": bool(kosdaq_drawdown_filter_report.get("deployment_ready"))
+            if kosdaq_drawdown_filter_report
+            else False,
+            "kosdaq_drawdown_filter_production_gate_pass_count": kosdaq_drawdown_filter_report.get("production_ready_count")
+            if kosdaq_drawdown_filter_report
             else None,
             "finaltopn_prefilter_proxy_report": _rel(finaltopn_prefilter_proxy_path)
             if finaltopn_prefilter_proxy_path and finaltopn_prefilter_proxy_path.exists()
@@ -1271,6 +1297,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- deployment_consistency: `{((report.get('research_inputs') or {}).get('deployment_consistency') or {}).get('status')}` / `{((report.get('research_inputs') or {}).get('deployment_consistency') or {}).get('recommended_action')}`",
             f"- candidate_leaderboard: `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('status')}` / `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('recommended_action')}`",
             f"- drawdown_filter_research: status=`{(report.get('research_inputs') or {}).get('drawdown_filter_status')}`, validation=`{(report.get('research_inputs') or {}).get('drawdown_filter_validation_mode')}`, deployment_ready=`{(report.get('research_inputs') or {}).get('drawdown_filter_deployment_ready')}`, production_gate_pass_count=`{(report.get('research_inputs') or {}).get('drawdown_filter_production_gate_pass_count')}`",
+            f"- kosdaq_drawdown_filter_research: status=`{(report.get('research_inputs') or {}).get('kosdaq_drawdown_filter_status')}`, validation=`{(report.get('research_inputs') or {}).get('kosdaq_drawdown_filter_validation_mode')}`, deployment_ready=`{(report.get('research_inputs') or {}).get('kosdaq_drawdown_filter_deployment_ready')}`, production_gate_pass_count=`{(report.get('research_inputs') or {}).get('kosdaq_drawdown_filter_production_gate_pass_count')}`",
             f"- coverage_audit: status=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('status')}`, actual_kis_oos_months=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('actual_kis_oos_months')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('missing_or_sparse_actual_kis_months')}`",
             f"- slice_ablation: status=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('production_replacement_ready')}`, period_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('all_trainable_periods_outcome_pass')}`, ablation_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('available_full_ablation_has_multiple_passing_families')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('missing_or_sparse_actual_months')}`",
             f"- stability_search: status=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('production_replacement_ready')}`, period_stable_both_market=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('period_stable_both_market_candidate')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('stability_search') or {}).get('missing_or_sparse_actual_months')}`",
@@ -1573,6 +1600,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--deployment-consistency-report", default=str(DEFAULT_DEPLOYMENT_CONSISTENCY))
     parser.add_argument("--candidate-leaderboard-report", default=str(DEFAULT_CANDIDATE_LEADERBOARD))
     parser.add_argument("--drawdown-filter-report", default=str(DEFAULT_DRAWDOWN_FILTER_REPORT))
+    parser.add_argument("--kosdaq-drawdown-filter-report", default=str(DEFAULT_KOSDAQ_DRAWDOWN_FILTER_REPORT))
     parser.add_argument("--coverage-audit-report", default=str(DEFAULT_COVERAGE_AUDIT))
     parser.add_argument("--slice-ablation-report", default=str(DEFAULT_SLICE_ABLATION))
     parser.add_argument("--stability-search-report", default=str(DEFAULT_STABILITY_SEARCH))
@@ -1615,6 +1643,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         deployment_consistency_path=Path(args.deployment_consistency_report),
         candidate_leaderboard_path=Path(args.candidate_leaderboard_report),
         drawdown_filter_report_path=Path(args.drawdown_filter_report),
+        kosdaq_drawdown_filter_report_path=Path(args.kosdaq_drawdown_filter_report),
         coverage_audit_path=Path(args.coverage_audit_report),
         slice_ablation_path=Path(args.slice_ablation_report),
         stability_search_path=Path(args.stability_search_report),

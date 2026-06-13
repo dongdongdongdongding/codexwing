@@ -1,6 +1,6 @@
 import json
 
-from multi_agent.tools.report_kis_touch5_research_objective_verification import build_report
+from multi_agent.tools.report_kis_touch5_research_objective_verification import _markdown, build_report
 
 
 def _write(path, payload):
@@ -795,3 +795,142 @@ def test_build_report_includes_static_master_shadow_validation_without_productio
     assert kosdaq_suite["status"] == "shadow_ready"
     assert kosdaq_suite["best_metrics"]["win_5d_pct"] == 72.9167
     assert kosdaq_suite["best_gate"]["production_ready"] is False
+
+
+def test_build_report_routes_optional_kosdaq_drawdown_filter_without_overwriting_kospi(tmp_path):
+    shadow = tmp_path / "shadow.json"
+    dynamic = tmp_path / "dynamic.json"
+    fixed = tmp_path / "fixed.json"
+    comparison = tmp_path / "comparison.json"
+    sidecar_baseline = tmp_path / "sidecar_baseline.json"
+    sidecar_score = tmp_path / "sidecar_score.json"
+    kosdaq_drawdown = tmp_path / "kosdaq_drawdown.json"
+
+    _write(
+        shadow,
+        {
+            "research_inputs": {"data_rows": 100, "prepared_rows": 100},
+            "exploration_result": {"evaluated_results": 0, "production_ready": 0, "shadow_display_allowed": 0},
+            "market_results": {},
+        },
+    )
+    _write(
+        dynamic,
+        {
+            "status": "research",
+            "dummy_data_used": False,
+            "validation": "walk-forward",
+            "markets": [
+                {"market": "KOSPI", "best": {"metrics": {}}},
+                {"market": "KOSDAQ", "best": {"metrics": {}}},
+            ],
+        },
+    )
+    _write(fixed, {"status": "research", "dummy_data_used": False, "markets": []})
+    _write(
+        comparison,
+        {
+            "markets": {
+                "KOSPI": {"current_kis_model": {"identity": {}, "metrics": {}, "kis_model_gate": {"status": "blocked"}}},
+                "KOSDAQ": {"current_kis_model": {"identity": {}, "metrics": {}, "kis_model_gate": {"status": "blocked"}}},
+            }
+        },
+    )
+    _write(sidecar_baseline, {"market_reports": []})
+    _write(sidecar_score, {})
+    _write(
+        kosdaq_drawdown,
+        {
+            "status": "no_production_gate_pass_candidate",
+            "validation_mode": "research_sweep_only_walk_forward_predictions",
+            "deployment_ready": False,
+            "market": "KOSDAQ",
+            "filters_tested": 1120,
+            "production_ready_count": 0,
+            "base_candidate": {
+                "identity": {
+                    "feature_set": "kis_failure_risk_augmented",
+                    "model": "lightgbm",
+                    "selection_rule": "top3_prob_tail_margin_p0p5",
+                },
+                "metrics": {
+                    "n": 83,
+                    "active_days": 14,
+                    "active_runs": 28,
+                    "hit5_dd10_5d_pct": 75.9036,
+                    "avg_5d_pct": 6.54185,
+                    "min_min_low_5d_pct": -21.915669,
+                },
+                "gate": {
+                    "status": "blocked",
+                    "production_ready": False,
+                    "shadow_display_allowed": False,
+                    "production_blocking_reasons": ["active_days_lt_20", "min_low_5d_lt_neg10"],
+                },
+            },
+            "holdout_validation": {
+                "status": "no_holdout_gate_pass",
+                "validation_mode": "selection_fixed_rule_holdout_walk_forward_predictions",
+                "deployment_ready": False,
+                "selection_candidates_tested": 947,
+                "holdout_candidates_evaluated": 80,
+                "holdout_gate_pass_count": 0,
+                "selection_best_holdout_evaluation": {
+                    "identity": {
+                        "feature_set": "kis_failure_risk_augmented",
+                        "model": "lightgbm_drawdown_filter_selection_best_holdout",
+                        "selection_rule": "top3_prob_tail_margin_p0p5_close_failure_prior_market_touch5_n_le_8765",
+                    },
+                    "metrics": {
+                        "n": 53,
+                        "active_days": 8,
+                        "active_runs": 17,
+                        "hit5_dd10_5d_pct": 62.2642,
+                        "avg_5d_pct": 3.885862,
+                        "min_min_low_5d_pct": -31.118999,
+                    },
+                    "gate": {
+                        "status": "blocked",
+                        "production_ready": False,
+                        "shadow_display_allowed": False,
+                        "production_blocking_reasons": [
+                            "active_days_lt_20",
+                            "hit5_dd10_5d_lt_73",
+                            "min_low_5d_lt_neg10",
+                        ],
+                    },
+                },
+                "decision": {
+                    "holdout_gate_pass_observed": False,
+                    "selection_best_holdout_gate_pass": False,
+                    "deployment_ready": False,
+                },
+            },
+            "rolling_prior_validation": {
+                "status": "skipped_by_operator",
+                "deployment_ready": False,
+                "decision": {"production_gate_pass_observed": False, "deployment_ready": False},
+            },
+        },
+    )
+
+    report = build_report(
+        shadow_report_path=shadow,
+        three_stage_dynamic_path=dynamic,
+        three_stage_fixed_path=fixed,
+        market_comparison_path=comparison,
+        sidecar_baseline_sweep_path=sidecar_baseline,
+        sidecar_score_sweep_path=sidecar_score,
+        kosdaq_drawdown_filter_report_path=kosdaq_drawdown,
+    )
+
+    assert report["markets"]["KOSPI"]["drawdown_filter_research"] == {}
+    drawdown = report["markets"]["KOSDAQ"]["drawdown_filter_research"]
+    assert drawdown["status"] == "no_production_gate_pass_candidate"
+    assert drawdown["production_gate_pass_count"] == 0
+    assert drawdown["base_candidate"]["selection_rule"] == "top3_prob_tail_margin_p0p5"
+    assert drawdown["base_candidate"]["metrics"]["min_min_low_5d_pct"] == -21.915669
+    assert drawdown["holdout_validation"]["status"] == "no_holdout_gate_pass"
+    assert drawdown["holdout_validation"]["selection_best_holdout_evaluation"]["metrics"]["hit5_dd10_5d_pct"] == 62.2642
+    assert report["research_inputs"]["kosdaq_drawdown_filter_status"] == "no_production_gate_pass_candidate"
+    assert "kosdaq_drawdown_filter_research" in _markdown(report)

@@ -275,16 +275,21 @@ def _selected_month_coverage(scoped: pd.DataFrame, selected: pd.Index) -> Dict[s
     }
 
 
-def _scope_market(data: pd.DataFrame, *, market: str) -> Dict[str, Any]:
-    label_spec = next(spec for spec in LABEL_SPECS if spec.name == LABEL_NAME)
+def _report_markets(report: Mapping[str, Any]) -> List[str]:
+    markets = report.get("markets") if isinstance(report.get("markets"), Mapping) else {}
+    return list(markets.keys()) or list(REQUIRED_MARKETS)
+
+
+def _scope_market(data: pd.DataFrame, *, market: str, label_name: str, feature_set: str) -> Dict[str, Any]:
+    label_spec = next(spec for spec in LABEL_SPECS if spec.name == label_name)
     label, valid = label_series(data, label_spec)
     tail_label, tail_valid = tail_safe_series(data)
     scoped = data.loc[
-        valid & tail_valid & data["market"].eq(market) & kis_presence_mask(data, FEATURE_SET)
+        valid & tail_valid & data["market"].eq(market) & kis_presence_mask(data, feature_set)
     ].copy()
     y = label.loc[scoped.index].astype(int)
     y_tail = tail_label.loc[scoped.index].astype(int)
-    numeric, categorical = feature_sets(data)[FEATURE_SET]
+    numeric, categorical = feature_sets(data)[feature_set]
     numeric, categorical = usable_features(scoped, numeric, categorical)
     return {
         "scoped": scoped,
@@ -300,6 +305,8 @@ def _evaluate_market(
     data: pd.DataFrame,
     *,
     market: str,
+    label_name: str,
+    feature_set: str,
     months: Sequence[str],
     model_name: str,
     topns: Sequence[int],
@@ -321,7 +328,7 @@ def _evaluate_market(
     top_limit: int,
     progress: bool,
 ) -> Dict[str, Any]:
-    scoped_payload = _scope_market(data, market=market)
+    scoped_payload = _scope_market(data, market=market, label_name=label_name, feature_set=feature_set)
     scoped: pd.DataFrame = scoped_payload["scoped"]
     y: pd.Series = scoped_payload["y"]
     y_tail: pd.Series = scoped_payload["y_tail"]
@@ -395,8 +402,8 @@ def _evaluate_market(
                         coverage_blockers.append(f"selected_months_lt_{int(min_selected_months)}")
                     identity = {
                         "market": market,
-                        "label": LABEL_NAME,
-                        "feature_set": FEATURE_SET,
+                        "label": label_name,
+                        "feature_set": feature_set,
                         "model": model_name,
                         "score_mode": score_mode,
                         "selection_rule": _selection_rule(int(topn), prob_threshold, tail_threshold, str(score_mode)),
@@ -516,6 +523,11 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     data = _normalize_dates(data)
     months = _parse_csv(args.months) or list(REQUIRED_MONTHS)
     markets = _parse_csv(args.markets) or list(REQUIRED_MARKETS)
+    feature_map = feature_sets(data)
+    if args.feature_set not in feature_map:
+        raise KeyError(f"unknown feature set: {args.feature_set}")
+    if not any(spec.name == args.label for spec in LABEL_SPECS):
+        raise KeyError(f"unknown label: {args.label}")
     topns = _parse_int_list(args.topns)
     score_modes = _parse_csv(args.score_modes)
     prob_thresholds = _parse_float_list(args.prob_thresholds, include_none=True)
@@ -524,6 +536,8 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         market: _evaluate_market(
             data,
             market=market,
+            label_name=args.label,
+            feature_set=args.feature_set,
             months=months,
             model_name=args.model,
             topns=topns,
@@ -556,7 +570,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             continue
         month_frame = data[data["_stability_month"].eq(month)]
         if len(month_frame) < int(args.min_scope_rows) or any(
-            len(month_frame[month_frame["market"].eq(market)]) == 0 for market in REQUIRED_MARKETS
+            len(month_frame[month_frame["market"].eq(market)]) == 0 for market in markets
         ):
             sparse_months.append(month)
     production_ready = all(
@@ -587,8 +601,8 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
             "sparse_actual_months": sparse_months,
         },
         "evaluation_contract": {
-            "label": LABEL_NAME,
-            "feature_set": FEATURE_SET,
+            "label": args.label,
+            "feature_set": args.feature_set,
             "model": args.model,
             "buy_premium_pct": 2.0,
             "win_definition": "5거래일 내 +5% 터치 and 5거래일 저점 -10% 이상 방어",
@@ -638,7 +652,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         "|---|---:|---:|---:|---:|---|---:|---:|---:|",
     ]
     markets = report.get("markets") if isinstance(report.get("markets"), Mapping) else {}
-    for market in REQUIRED_MARKETS:
+    for market in _report_markets(report):
         row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
         top = (row.get("top_candidates") or [{}])[0] if isinstance(row.get("top_candidates"), list) and row.get("top_candidates") else {}
         metrics_row = top.get("metrics") if isinstance(top.get("metrics"), Mapping) else {}
@@ -649,7 +663,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"{metrics_row.get('avg_5d_pct')} | {metrics_row.get('min_min_low_5d_pct')} |"
         )
     lines.extend(["", "## Period Stable Top"])
-    for market in REQUIRED_MARKETS:
+    for market in _report_markets(report):
         row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
         lines.append(f"### {market}")
         stable = row.get("period_stable_top") if isinstance(row.get("period_stable_top"), list) else []
@@ -671,7 +685,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                 f"selected_months=`{coverage.get('selected_months')}`"
             )
     lines.extend(["", "## Best Overall"])
-    for market in REQUIRED_MARKETS:
+    for market in _report_markets(report):
         row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
         lines.append(f"### {market}")
         for idx, candidate in enumerate((row.get("top_candidates") or [])[:5], start=1):
@@ -707,6 +721,8 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     parser.add_argument("--markets", default=",".join(REQUIRED_MARKETS))
     parser.add_argument("--months", default=",".join(REQUIRED_MONTHS))
+    parser.add_argument("--label", default=LABEL_NAME)
+    parser.add_argument("--feature-set", default=FEATURE_SET)
     parser.add_argument("--model", default="lightgbm")
     parser.add_argument("--topns", default="1,2,3,5")
     parser.add_argument("--score-modes", default="prob,prob_plus_tail,prob_tail_margin,tail,tail_plus_prob,ev,ev_strict")

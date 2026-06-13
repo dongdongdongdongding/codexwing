@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T10:54:50.547229+00:00`
+- generated_at: `2026-06-13T11:31:05.412871+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -48,6 +48,7 @@
 - deployment_consistency: `pass` / `use_current_kis_shadow_deployment`
 - candidate_leaderboard: `keep_current_shadow` / `continue_forward_tracking_until_sample_gate_clears`
 - drawdown_filter_research: status=`production_gate_pass_research_candidate_found`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`6`
+- kosdaq_drawdown_filter_research: status=`no_production_gate_pass_candidate`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`0`
 - coverage_audit: status=`coverage_gap_blocks_production_replacement`, actual_kis_oos_months=`['2026-05', '2026-06']`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - slice_ablation: status=`slice_ablation_blocks_production_replacement`, production_ready=`False`, period_pass=`False`, ablation_pass=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
 - stability_search: status=`no_period_stable_both_market_candidate`, production_ready=`False`, period_stable_both_market=`False`, missing_or_sparse=`['2026-01', '2026-02', '2026-03', '2026-04']`
@@ -92,9 +93,9 @@
 - score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, sample_sufficient_top=`None`, pareto_top=`top1_p0p3_tail0p95`
 - score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`0` best=`None` min_low=`None` low_deficit=`None`
 - candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1699`, shadow=`250`, sample_only=`82`, production=`0`, best_sample_only=`top3_ev_tail0p9`, hit5=`94.8276`, n=`58`, active_days=`10`, best_high_precision=`top3_ev_p0p2_tail0p9`, high_precision_hit5=`96.4912`, high_precision_sample=`80.0`, upgrade=`None`
-- drawdown_filter_research: status=`not_run_for_market`
-- drawdown_filter_holdout: status=`not_run_for_market`
-- drawdown_filter_rolling_prior: status=`not_run_for_market`
+- drawdown_filter_research: status=`no_production_gate_pass_candidate`, validation=`research_sweep_only_walk_forward_predictions`, deployment_ready=`False`, production_gate_pass_count=`0`, best=`None`, hit5=`None`, avg5=`None`, min_low=`None`, expected_net=`None`, promotable_now=`False`
+- drawdown_filter_holdout: status=`no_holdout_gate_pass`, validation=`selection_fixed_rule_holdout_walk_forward_predictions`, selection_candidates=`947`, holdout_evaluated=`80`, gate_pass_count=`0`, gate_pass_observed=`False`, selection_best_status=`blocked`, selection_best_n=`53`, selection_best_days=`8`, selection_best_hit5=`62.2642`, selection_best_min_low=`-31.118999`
+- drawdown_filter_rolling_prior: status=`skipped_by_operator`, validation=`None`, evaluated_steps=`None`, selected=`None`, gate_pass_observed=`False`, aggregate_status=`None`, n=`None`, active_days=`None`, hit5=`None`, avg5=`None`, min_low=`None`
 - slice_ablation: ok=`10`, production_ready_count=`0`, shadow_count=`2`, period_pass=`1/4`, ablation_pass=`0/6`, dominant_prior=`False`
 - slice_ablation_best: slice=`2026-05`, feature_config=`all_features`, rule=`top3_ev_tail0p9`, gate=`shadow_ready`, n=`17`, active_days=`3`, hit5=`88.2353`, avg5=`9.402924`, min_low=`-9.837985`, blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
 - stability_search: evaluated=`1344`, production_ready_count=`0`, period_stable_count=`0`, shadow_period_stable_count=`0`

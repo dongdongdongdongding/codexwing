@@ -51,7 +51,7 @@
     "stability_search_status": "no_period_stable_both_market_candidate",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T10:54:50.547229+00:00",
+  "generated_at": "2026-06-13T11:31:05.412871+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -2198,7 +2198,211 @@
         "status": "shadow_candidates_found_no_upgrade",
         "verified_upgrade_candidate": {}
       },
-      "drawdown_filter_research": {},
+      "drawdown_filter_research": {
+        "base_candidate": {
+          "deployment_ready": false,
+          "drawdown_filter": {},
+          "feature_set": "kis_failure_risk_augmented",
+          "gate_status": "blocked",
+          "metrics": {
+            "active_days": 14,
+            "active_runs": 29,
+            "avg_1d_pct": 3.127793,
+            "avg_3d_pct": 8.452838,
+            "avg_5d_pct": 6.54185,
+            "avg_max_high_5d_pct": 21.172475,
+            "avg_min_low_5d_pct": -5.610796,
+            "bad_path_pct": 48.1928,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 69.8795,
+            "hit5_dd10_5d_pct": 75.9036,
+            "min_1d_pct": -8.60956,
+            "min_3d_pct": -13.619209,
+            "min_5d_pct": -20.234687,
+            "min_min_low_5d_pct": -21.915669,
+            "n": 83,
+            "stop5_pct": 39.759,
+            "stop_before_target_5d_pct": 39.759,
+            "target_before_stop_5d_pct": 75.9036,
+            "win_5d_pct": 84.3373
+          },
+          "model": "lightgbm",
+          "production_blocking_reasons": [
+            "active_days_lt_20",
+            "min_low_5d_lt_neg10"
+          ],
+          "production_economics": {
+            "cost_model": {
+              "buy_fee_bps": 1.5,
+              "buy_slippage_bps": 8.0,
+              "fill_rate": 1.0,
+              "sell_fee_bps": 1.5,
+              "sell_slippage_bps": 8.0,
+              "sell_tax_bps": 15.0,
+              "spread_bps": 4.0,
+              "version": "kr_tradable_pnl_cost_v1"
+            },
+            "expected_touch_policy_net_5d_pct": 1.083032,
+            "hit5_dd10_5d_pct": 75.9036,
+            "loss_floor_pct": -10.0,
+            "policy": "target_touch_5d_dd10_after_buy_premium",
+            "target_touch_gross_pct": 5.0,
+            "target_touch_net_pct": 4.601458,
+            "thresholds": {
+              "min_expected_touch_policy_net_5d_pct": 0.5
+            }
+          },
+          "production_gate_pass_observed": false,
+          "score_mode": "prob_tail_margin",
+          "selection_rule": "top3_prob_tail_margin_p0p5_tail0",
+          "shadow_display_allowed": false,
+          "validation_mode": "research_sweep_only_walk_forward_predictions"
+        },
+        "best_gate_pass_research_candidate": {},
+        "decision": {
+          "deployment_ready": false,
+          "holdout_gate_pass_observed": false,
+          "production_gate_pass_observed": false,
+          "promotable_now": false,
+          "reason": "threshold was selected by a research sweep over walk-forward predictions; require controlled shadow/forward validation before production promotion.",
+          "rolling_prior_gate_pass_observed": false
+        },
+        "deployment_ready": false,
+        "filters_tested": 1120,
+        "holdout_validation": {
+          "best_holdout_gate_pass_candidate": {},
+          "decision": {
+            "deployment_ready": false,
+            "holdout_gate_pass_observed": false,
+            "reason": "fixed-rule holdout reduces post-hoc threshold risk but still requires live forward shadow before production replacement.",
+            "selection_best_holdout_gate_pass": false
+          },
+          "deployment_ready": false,
+          "holdout_candidates_evaluated": 80,
+          "holdout_folds": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "holdout_gate_pass_count": 0,
+          "selection_best_holdout_evaluation": {
+            "deployment_ready": false,
+            "drawdown_filter": {
+              "feature": "close_failure_prior_ticker_avg_close_5d_pct",
+              "op": "ge",
+              "pool_rows": 874,
+              "threshold": 10.49046,
+              "type": "single_feature_threshold"
+            },
+            "feature_set": "kis_failure_risk_augmented",
+            "gate_status": "blocked",
+            "metrics": {
+              "active_days": 8,
+              "active_runs": 19,
+              "avg_1d_pct": 3.367793,
+              "avg_3d_pct": 7.169428,
+              "avg_5d_pct": 3.885862,
+              "avg_max_high_5d_pct": 24.148805,
+              "avg_min_low_5d_pct": -9.592675,
+              "bad_path_pct": 50.9434,
+              "buy_premium_pct": 2.0,
+              "hit10_5d_pct": 69.8113,
+              "hit5_dd10_5d_pct": 62.2642,
+              "min_1d_pct": -15.345571,
+              "min_3d_pct": -18.300654,
+              "min_5d_pct": -26.611449,
+              "min_min_low_5d_pct": -31.118999,
+              "n": 53,
+              "stop5_pct": 49.0566,
+              "stop_before_target_5d_pct": 49.0566,
+              "target_before_stop_5d_pct": 58.4906,
+              "win_5d_pct": 88.6792
+            },
+            "model": "lightgbm_drawdown_filter_selection_best_holdout",
+            "production_blocking_reasons": [
+              "active_days_lt_20",
+              "active_runs_lt_20",
+              "hit5_dd10_5d_lt_73",
+              "min_low_5d_lt_neg10",
+              "expected_touch_policy_net_5d_lt_0p5"
+            ],
+            "production_economics": {
+              "cost_model": {
+                "buy_fee_bps": 1.5,
+                "buy_slippage_bps": 8.0,
+                "fill_rate": 1.0,
+                "sell_fee_bps": 1.5,
+                "sell_slippage_bps": 8.0,
+                "sell_tax_bps": 15.0,
+                "spread_bps": 4.0,
+                "version": "kr_tradable_pnl_cost_v1"
+              },
+              "expected_touch_policy_net_5d_pct": -0.908519,
+              "hit5_dd10_5d_pct": 62.2642,
+              "loss_floor_pct": -10.0,
+              "policy": "target_touch_5d_dd10_after_buy_premium",
+              "target_touch_gross_pct": 5.0,
+              "target_touch_net_pct": 4.601458,
+              "thresholds": {
+                "min_expected_touch_policy_net_5d_pct": 0.5
+              }
+            },
+            "production_gate_pass_observed": false,
+            "score_mode": "prob_tail_margin",
+            "selection_rule": "top3_prob_tail_margin_p0p5_tail0_close_failure_prior_ticker_avg_close_5d_pct_ge_10p4905",
+            "shadow_display_allowed": false,
+            "validation_mode": "selection_best_fixed_rule_holdout_walk_forward_predictions"
+          },
+          "selection_candidates_tested": 947,
+          "selection_folds": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "status": "no_holdout_gate_pass",
+          "validation_mode": "selection_fixed_rule_holdout_walk_forward_predictions"
+        },
+        "production_gate_pass_count": 0,
+        "recommended_action": "continue drawdown-filter research",
+        "rolling_prior_validation": {
+          "aggregate_candidate": {},
+          "decision": {
+            "deployment_ready": false,
+            "production_gate_pass_observed": false,
+            "reason": null,
+            "shadow_display_allowed": false
+          },
+          "deployment_ready": false,
+          "evaluated_steps": null,
+          "min_prior_folds": null,
+          "selected_count": null,
+          "status": "skipped_by_operator",
+          "validation_mode": null
+        },
+        "scope": {
+          "base_pool_rows": 11113,
+          "rows": 32282,
+          "unique_days": 27,
+          "unique_runs": 79,
+          "usable_categorical": 36,
+          "usable_numeric": 142
+        },
+        "status": "no_production_gate_pass_candidate",
+        "validation_mode": "research_sweep_only_walk_forward_predictions"
+      },
       "finaltopn_three_stage_experiments": {
         "actual_sidecar": {
           "best_config": {},
@@ -40683,6 +40887,11 @@
     "drawdown_filter_validation_mode": "research_sweep_only_walk_forward_predictions",
     "finaltopn_actual_sidecar_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_actual_sidecar_20260331_20260610.json",
     "finaltopn_prefilter_proxy_report": "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json",
+    "kosdaq_drawdown_filter_deployment_ready": false,
+    "kosdaq_drawdown_filter_production_gate_pass_count": 0,
+    "kosdaq_drawdown_filter_report": "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kosdaq_probtail_p05_20260613.json",
+    "kosdaq_drawdown_filter_status": "no_production_gate_pass_candidate",
+    "kosdaq_drawdown_filter_validation_mode": "research_sweep_only_walk_forward_predictions",
     "market_comparison_report": "runtime_state/reports/learning/kis_model_market_comparison.json",
     "matched_only_sweep_reports": {
       "kis_full_augmented": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_matched_only_full_augmented_20260331_20260610.json",

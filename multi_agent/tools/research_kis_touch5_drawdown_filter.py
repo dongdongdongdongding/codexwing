@@ -53,6 +53,7 @@ DEFAULT_LABEL = "touch5_dd10_5d"
 DEFAULT_MODEL = "lightgbm"
 DEFAULT_MARKET = "KOSPI"
 DEFAULT_SCORE_MODE = "prob"
+DEFAULT_PROB_THRESHOLD = None
 DEFAULT_TAIL_THRESHOLD = 0.85
 DEFAULT_TOPN = 1
 
@@ -150,8 +151,18 @@ def _filter_rule_name(feature: str, op: str, threshold: float) -> str:
     return f"{feature}_{op}_{value}"
 
 
-def _selection_rule(*, topn: int, score_mode: str, tail_threshold: float, filter_name: str | None = None) -> str:
-    base = f"top{int(topn)}_{score_mode}_tail{tail_threshold:g}".replace(".", "p")
+def _selection_rule(
+    *,
+    topn: int,
+    score_mode: str,
+    tail_threshold: float,
+    prob_threshold: float | None = None,
+    filter_name: str | None = None,
+) -> str:
+    base = f"top{int(topn)}_{score_mode}".replace(".", "p")
+    if prob_threshold is not None:
+        base = f"{base}_p{prob_threshold:g}".replace(".", "p")
+    base = f"{base}_tail{tail_threshold:g}".replace(".", "p")
     return f"{base}_{filter_name}" if filter_name else base
 
 
@@ -164,6 +175,7 @@ def _candidate_identity(
     score_mode: str,
     topn: int,
     tail_threshold: float,
+    prob_threshold: float | None = None,
     filter_payload: Mapping[str, Any] | None = None,
 ) -> Dict[str, Any]:
     return {
@@ -174,6 +186,7 @@ def _candidate_identity(
         "selection_rule": selection_rule,
         "score_mode": score_mode,
         "topn": int(topn),
+        "prob_threshold": _round(prob_threshold) if prob_threshold is not None else None,
         "tail_risk_prob_threshold": float(tail_threshold),
         "drawdown_filter": dict(filter_payload or {}),
         "validation_mode": "research_sweep_only_walk_forward_predictions",
@@ -190,6 +203,7 @@ def _gate_row(
     score_mode: str,
     topn: int,
     tail_threshold: float,
+    prob_threshold: float | None = None,
     selected: pd.Index,
     scoped: pd.DataFrame,
     label: pd.Series,
@@ -206,6 +220,7 @@ def _gate_row(
         score_mode=score_mode,
         topn=topn,
         tail_threshold=tail_threshold,
+        prob_threshold=prob_threshold,
         filter_payload=filter_payload,
     )
     gate = evaluate_kis_model_gate(identity=identity, metrics=row_metrics, market=market)
@@ -259,6 +274,13 @@ def _candidate_filter_features(numeric: Sequence[str]) -> List[str]:
     return out
 
 
+def _prediction_pool(predictions: pd.DataFrame, *, prob_threshold: float | None, tail_threshold: float) -> pd.Index:
+    pool = predictions.index[predictions["tail_prob"].ge(float(tail_threshold))]
+    if prob_threshold is not None:
+        pool = pool.intersection(predictions.index[predictions["prob"].ge(float(prob_threshold))])
+    return pool
+
+
 def _thresholds(values: pd.Series) -> List[float]:
     clean = pd.to_numeric(values, errors="coerce").dropna()
     if len(clean) < 100:
@@ -283,6 +305,7 @@ def _single_feature_results(
     score_mode: str,
     topn: int,
     tail_threshold: float,
+    prob_threshold: float | None,
     numeric: Sequence[str],
     min_pool_rows: int,
 ) -> List[Dict[str, Any]]:
@@ -307,11 +330,13 @@ def _single_feature_results(
                         topn=topn,
                         score_mode=score_mode,
                         tail_threshold=tail_threshold,
+                        prob_threshold=prob_threshold,
                         filter_name=filter_name,
                     ),
                     score_mode=score_mode,
                     topn=topn,
                     tail_threshold=tail_threshold,
+                    prob_threshold=prob_threshold,
                     selected=selected,
                     scoped=scoped,
                     label=label,
@@ -380,6 +405,7 @@ def _evaluate_fixed_filter(
     score_mode: str,
     topn: int,
     tail_threshold: float,
+    prob_threshold: float | None,
     filter_payload: Mapping[str, Any],
     validation_mode: str,
 ) -> Dict[str, Any] | None:
@@ -399,11 +425,13 @@ def _evaluate_fixed_filter(
             topn=topn,
             score_mode=score_mode,
             tail_threshold=tail_threshold,
+            prob_threshold=prob_threshold,
             filter_name=filter_name,
         ),
         score_mode=score_mode,
         topn=topn,
         tail_threshold=tail_threshold,
+        prob_threshold=prob_threshold,
         selected=selected,
         scoped=scoped,
         label=label,
@@ -424,6 +452,7 @@ def _holdout_validation(
     score_mode: str,
     topn: int,
     tail_threshold: float,
+    prob_threshold: float | None,
     numeric: Sequence[str],
     selection_folds: int,
     min_pool_rows: int,
@@ -435,10 +464,12 @@ def _holdout_validation(
         return {"status": "skipped_insufficient_folds", "deployment_ready": False}
     selection_predictions = predictions.loc[split["selection_index"]]
     holdout_predictions = predictions.loc[split["holdout_index"]]
-    selection_base_pool = selection_predictions.index[
-        selection_predictions["tail_prob"].ge(float(tail_threshold))
-    ]
-    holdout_base_pool = holdout_predictions.index[holdout_predictions["tail_prob"].ge(float(tail_threshold))]
+    selection_base_pool = _prediction_pool(
+        selection_predictions, prob_threshold=prob_threshold, tail_threshold=tail_threshold
+    )
+    holdout_base_pool = _prediction_pool(
+        holdout_predictions, prob_threshold=prob_threshold, tail_threshold=tail_threshold
+    )
     selection_candidates = _single_feature_results(
         scoped=scoped,
         base_pool=selection_base_pool,
@@ -450,6 +481,7 @@ def _holdout_validation(
         score_mode=score_mode,
         topn=topn,
         tail_threshold=tail_threshold,
+        prob_threshold=prob_threshold,
         numeric=numeric,
         min_pool_rows=min_pool_rows,
     )
@@ -486,6 +518,7 @@ def _holdout_validation(
             score_mode=score_mode,
             topn=topn,
             tail_threshold=tail_threshold,
+            prob_threshold=prob_threshold,
             filter_payload=filter_payload,
             validation_mode="selection_fixed_rule_holdout_walk_forward_predictions",
         )
@@ -517,6 +550,7 @@ def _holdout_validation(
             score_mode=score_mode,
             topn=topn,
             tail_threshold=tail_threshold,
+            prob_threshold=prob_threshold,
             filter_payload=selection_best_filter,
             validation_mode="selection_best_fixed_rule_holdout_walk_forward_predictions",
         )
@@ -573,6 +607,7 @@ def _rolling_prior_validation(
     score_mode: str,
     topn: int,
     tail_threshold: float,
+    prob_threshold: float | None,
     numeric: Sequence[str],
     min_prior_folds: int,
     min_pool_rows: int,
@@ -591,8 +626,12 @@ def _rolling_prior_validation(
         current_predictions = predictions.loc[predictions["fold"].eq(fold)]
         if prior_predictions.empty or current_predictions.empty:
             continue
-        prior_base_pool = prior_predictions.index[prior_predictions["tail_prob"].ge(float(tail_threshold))]
-        current_base_pool = current_predictions.index[current_predictions["tail_prob"].ge(float(tail_threshold))]
+        prior_base_pool = _prediction_pool(
+            prior_predictions, prob_threshold=prob_threshold, tail_threshold=tail_threshold
+        )
+        current_base_pool = _prediction_pool(
+            current_predictions, prob_threshold=prob_threshold, tail_threshold=tail_threshold
+        )
         prior_candidates = _single_feature_results(
             scoped=scoped,
             base_pool=prior_base_pool,
@@ -604,6 +643,7 @@ def _rolling_prior_validation(
             score_mode=score_mode,
             topn=topn,
             tail_threshold=tail_threshold,
+            prob_threshold=prob_threshold,
             numeric=numeric,
             min_pool_rows=min_pool_rows,
         )
@@ -640,6 +680,7 @@ def _rolling_prior_validation(
                 score_mode=score_mode,
                 topn=topn,
                 tail_threshold=tail_threshold,
+                prob_threshold=prob_threshold,
                 filter_payload=filter_payload,
                 validation_mode="rolling_prior_oos_next_fold_step",
             )
@@ -694,11 +735,13 @@ def _rolling_prior_validation(
             topn=topn,
             score_mode=score_mode,
             tail_threshold=tail_threshold,
+            prob_threshold=prob_threshold,
             filter_name="rolling_prior_oos",
         ),
         score_mode=score_mode,
         topn=topn,
         tail_threshold=tail_threshold,
+        prob_threshold=prob_threshold,
         selected=combined,
         scoped=scoped,
         label=label,
@@ -773,16 +816,23 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
     )
     predictions = fold_payload.pop("predictions")
     score = _score_predictions(predictions, args.score_mode)
-    base_pool = predictions.index[predictions["tail_prob"].ge(float(args.tail_threshold))]
+    prob_threshold = args.prob_threshold
+    base_pool = _prediction_pool(predictions, prob_threshold=prob_threshold, tail_threshold=float(args.tail_threshold))
     base_selected = top_indices_by_run(scoped.loc[base_pool], score.loc[base_pool], int(args.topn))
     base = _gate_row(
         market=market,
         feature_set=args.feature_set,
         model=args.model,
-        selection_rule=_selection_rule(topn=args.topn, score_mode=args.score_mode, tail_threshold=args.tail_threshold),
+        selection_rule=_selection_rule(
+            topn=args.topn,
+            score_mode=args.score_mode,
+            tail_threshold=args.tail_threshold,
+            prob_threshold=prob_threshold,
+        ),
         score_mode=args.score_mode,
         topn=args.topn,
         tail_threshold=args.tail_threshold,
+        prob_threshold=prob_threshold,
         selected=base_selected,
         scoped=scoped,
         label=label,
@@ -798,6 +848,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         score_mode=args.score_mode,
         topn=int(args.topn),
         tail_threshold=float(args.tail_threshold),
+        prob_threshold=prob_threshold,
         numeric=numeric,
         min_pool_rows=int(args.min_pool_rows),
     )
@@ -814,6 +865,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         score_mode=args.score_mode,
         topn=int(args.topn),
         tail_threshold=float(args.tail_threshold),
+        prob_threshold=prob_threshold,
         numeric=numeric,
         selection_folds=int(args.selection_folds),
         min_pool_rows=int(args.min_pool_rows),
@@ -821,21 +873,26 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         top_results=int(args.top_results),
     )
     holdout_gate_pass = bool((holdout.get("decision") or {}).get("holdout_gate_pass_observed"))
-    rolling_prior = _rolling_prior_validation(
-        scoped=scoped,
-        predictions=predictions,
-        score=score,
-        label=label,
-        market=market,
-        feature_set=args.feature_set,
-        model=args.model,
-        score_mode=args.score_mode,
-        topn=int(args.topn),
-        tail_threshold=float(args.tail_threshold),
-        numeric=numeric,
-        min_prior_folds=int(args.rolling_prior_min_folds),
-        min_pool_rows=int(args.min_pool_rows),
-        top_results=int(args.top_results),
+    rolling_prior = (
+        {"status": "skipped_by_operator", "deployment_ready": False}
+        if bool(args.skip_rolling_prior)
+        else _rolling_prior_validation(
+            scoped=scoped,
+            predictions=predictions,
+            score=score,
+            label=label,
+            market=market,
+            feature_set=args.feature_set,
+            model=args.model,
+            score_mode=args.score_mode,
+            topn=int(args.topn),
+            tail_threshold=float(args.tail_threshold),
+            prob_threshold=prob_threshold,
+            numeric=numeric,
+            min_prior_folds=int(args.rolling_prior_min_folds),
+            min_pool_rows=int(args.min_pool_rows),
+            top_results=int(args.top_results),
+        )
     )
     rolling_gate_pass = bool((rolling_prior.get("decision") or {}).get("production_gate_pass_observed"))
     return {
@@ -863,6 +920,7 @@ def build_report(args: argparse.Namespace) -> Dict[str, Any]:
         "model": args.model,
         "score_mode": args.score_mode,
         "topn": int(args.topn),
+        "prob_threshold": _round(prob_threshold) if prob_threshold is not None else None,
         "tail_threshold": float(args.tail_threshold),
         "scope": {
             "rows": int(len(scoped)),
@@ -938,6 +996,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         f"- generated_at: `{report.get('generated_at')}`",
         f"- prepared_cache: `{report.get('prepared_cache')}`",
         f"- market: `{report.get('market')}`",
+        f"- selection: score_mode=`{report.get('score_mode')}` topn=`{report.get('topn')}` prob_threshold=`{report.get('prob_threshold')}` tail_threshold=`{report.get('tail_threshold')}`",
         f"- base: status=`{base_gate.get('status')}` blockers=`{base_gate.get('production_blocking_reasons')}` n=`{base_metrics.get('n')}` days=`{base_metrics.get('active_days')}` hit5=`{base_metrics.get('hit5_dd10_5d_pct')}` avg5=`{base_metrics.get('avg_5d_pct')}` min_low=`{base_metrics.get('min_min_low_5d_pct')}`",
         f"- filters_tested: `{report.get('filters_tested')}`",
         f"- production_ready_count: `{report.get('production_ready_count')}`",
@@ -993,6 +1052,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--score-mode", default=DEFAULT_SCORE_MODE)
     parser.add_argument("--topn", type=int, default=DEFAULT_TOPN)
+    parser.add_argument("--prob-threshold", type=float, default=DEFAULT_PROB_THRESHOLD)
     parser.add_argument("--tail-threshold", type=float, default=DEFAULT_TAIL_THRESHOLD)
     parser.add_argument("--min-train-rows", type=int, default=1000)
     parser.add_argument("--min-test-rows", type=int, default=1)
@@ -1001,6 +1061,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-folds", type=int, default=20)
     parser.add_argument("--selection-folds", type=int, default=5)
     parser.add_argument("--rolling-prior-min-folds", type=int, default=5)
+    parser.add_argument("--skip-rolling-prior", action="store_true")
     parser.add_argument("--min-pool-rows", type=int, default=30)
     parser.add_argument("--holdout-candidate-limit", type=int, default=0, help="0 evaluates all selection candidates.")
     parser.add_argument("--top-results", type=int, default=30)
