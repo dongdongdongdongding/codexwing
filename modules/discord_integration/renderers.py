@@ -967,6 +967,13 @@ def _kis_shadow_gate_block_value(gate: Dict[str, Any]) -> str:
     risk_reasons = gate.get("risk_review_reasons") if isinstance(gate.get("risk_review_reasons"), list) else []
     near = gate.get("near_production_candidate") if isinstance(gate.get("near_production_candidate"), dict) else {}
     near_metrics = near.get("metrics") if isinstance(near.get("metrics"), dict) else {}
+    high = (
+        gate.get("high_precision_shadow_candidate")
+        if isinstance(gate.get("high_precision_shadow_candidate"), dict)
+        else {}
+    )
+    high_metrics = high.get("metrics") if isinstance(high.get("metrics"), dict) else {}
+    high_progress = high.get("sample_progress") if isinstance(high.get("sample_progress"), dict) else {}
     lines = [
         f"상태: {gate.get('status') or '-'} · shadow_display_allowed={bool(gate.get('shadow_display_allowed'))} · production_ready={bool(gate.get('production_ready'))}",
         f"프로필: {gate.get('profile') or '-'}",
@@ -982,6 +989,17 @@ def _kis_shadow_gate_block_value(gate: Dict[str, Any]) -> str:
             f" · avg5 {_fmt_pct(near_metrics.get('avg_5d_pct'))}"
             f" · min_low {_fmt_pct(near_metrics.get('min_min_low_5d_pct'))}"
             f" · 남은차단 {' / '.join(str(item) for item in (near.get('sample_blockers') or [])[:3]) or '-'}"
+        )
+    if high:
+        lines.append(
+            "고정밀관찰: "
+            f"{high.get('selection_rule') or '-'}"
+            f" · n={high_metrics.get('n', '-')}"
+            f" · active_days={high_metrics.get('active_days', '-')}"
+            f" · hit5 {_fmt_pct(high_metrics.get('hit5_dd10_5d_pct'))}"
+            f" · avg5 {_fmt_pct(high_metrics.get('avg_5d_pct'))}"
+            f" · min_low {_fmt_pct(high_metrics.get('min_min_low_5d_pct'))}"
+            f" · 표본진행 {_fmt_pct(high_progress.get('completion_pct'))}"
         )
     if blockers:
         lines.append("차단: " + " / ".join(str(item) for item in blockers[:5]))

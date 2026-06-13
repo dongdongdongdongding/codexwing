@@ -14,7 +14,7 @@
     "shadow_performance_proven": true,
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T03:52:52.390215+00:00",
+  "generated_at": "2026-06-13T04:12:06.866601+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -2002,6 +2002,57 @@
   "markets": {
     "KOSDAQ": {
       "candidate_leaderboard": {
+        "best_high_precision_shadow": {
+          "feature_set": "kis_sidecar_failure_risk_augmented",
+          "gate_status": "shadow_ready",
+          "metrics": {
+            "active_days": 11,
+            "active_runs": 20,
+            "avg_5d_pct": 20.411507,
+            "avg_max_high_5d_pct": 41.996894,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 100.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_min_low_5d_pct": -9.300619,
+            "n": 40,
+            "stop_before_target_5d_pct": 17.5,
+            "target_before_stop_5d_pct": 92.5
+          },
+          "model": "lightgbm",
+          "non_sample_blockers": [],
+          "production_blocking_reasons": [
+            "n_lt_45",
+            "active_days_lt_20"
+          ],
+          "production_ready": false,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 11.0,
+                "completion_pct": 55.0,
+                "expected": 20.0,
+                "missing": 9.0
+              },
+              "active_runs": {
+                "actual": 20.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 40.0,
+                "completion_pct": 88.888889,
+                "expected": 45.0,
+                "missing": 5.0
+              }
+            },
+            "completion_pct": 81.296296
+          },
+          "score_mode": null,
+          "selection_rule": "top2_p0.50_tail0.90",
+          "shadow_display_allowed": true,
+          "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json"
+        },
         "best_sample_only_shadow": {
           "feature_set": "kis_sidecar_failure_risk_augmented",
           "gate_status": "shadow_ready",
@@ -2052,7 +2103,7 @@
           "shadow_display_allowed": true,
           "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json"
         },
-        "candidate_count": 1371,
+        "candidate_count": 1409,
         "current": {
           "feature_set": "kis_sidecar_failure_risk_augmented",
           "gate_status": "shadow_ready",
@@ -2106,7 +2157,7 @@
         },
         "production_ready_count": 0,
         "sample_only_shadow_count": 214,
-        "shadow_display_allowed_count": 637,
+        "shadow_display_allowed_count": 640,
         "status": "shadow_candidates_found_no_upgrade",
         "verified_upgrade_candidate": {}
       },
@@ -11990,6 +12041,56 @@
     },
     "KOSPI": {
       "candidate_leaderboard": {
+        "best_high_precision_shadow": {
+          "feature_set": "kis_sidecar_failure_risk_augmented",
+          "gate_status": "shadow_ready",
+          "metrics": {
+            "active_days": 10,
+            "active_runs": 46,
+            "avg_5d_pct": 5.385336,
+            "avg_max_high_5d_pct": 18.815648,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 76.087,
+            "hit5_dd10_5d_pct": 93.4783,
+            "min_min_low_5d_pct": -5.558554,
+            "n": 46,
+            "stop_before_target_5d_pct": 10.8696,
+            "target_before_stop_5d_pct": 93.4783
+          },
+          "model": "lightgbm",
+          "non_sample_blockers": [],
+          "production_blocking_reasons": [
+            "active_days_lt_15"
+          ],
+          "production_ready": false,
+          "sample_progress": {
+            "checks": {
+              "active_days": {
+                "actual": 10.0,
+                "completion_pct": 66.666667,
+                "expected": 15.0,
+                "missing": 5.0
+              },
+              "active_runs": {
+                "actual": 46.0,
+                "completion_pct": 100.0,
+                "expected": 20.0,
+                "missing": 0.0
+              },
+              "n": {
+                "actual": 46.0,
+                "completion_pct": 100.0,
+                "expected": 30.0,
+                "missing": 0.0
+              }
+            },
+            "completion_pct": 88.888889
+          },
+          "score_mode": "prob_tail_margin",
+          "selection_rule": "top1_prob_tail_margin_tail0p95",
+          "shadow_display_allowed": true,
+          "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold_20260101_20260610.json"
+        },
         "best_sample_only_shadow": {
           "feature_set": "kis_sidecar_failure_risk_numeric",
           "gate_status": "shadow_ready",
@@ -12040,7 +12141,7 @@
           "shadow_display_allowed": true,
           "source_path": "runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json"
         },
-        "candidate_count": 1601,
+        "candidate_count": 1655,
         "current": {
           "feature_set": "kis_sidecar_failure_risk_augmented",
           "gate_status": "shadow_ready",
@@ -12093,7 +12194,7 @@
         },
         "production_ready_count": 0,
         "sample_only_shadow_count": 200,
-        "shadow_display_allowed_count": 847,
+        "shadow_display_allowed_count": 848,
         "status": "shadow_candidates_found_no_upgrade",
         "verified_upgrade_candidate": {}
       },

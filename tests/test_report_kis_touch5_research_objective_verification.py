@@ -290,6 +290,31 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
                         },
                         "sample_progress": {"completion_pct": 93.333333},
                     },
+                    "best_high_precision_shadow": {
+                        "source_path": "score_report.json",
+                        "identity": {
+                            "feature_set": "kis_sidecar_failure_risk_augmented",
+                            "model": "lightgbm",
+                            "selection_rule": "top1_prob_tail_margin_tail0p95",
+                            "score_mode": "prob_tail_margin",
+                        },
+                        "metrics": {
+                            "n": 46,
+                            "active_days": 10,
+                            "active_runs": 46,
+                            "hit5_dd10_5d_pct": 93.4783,
+                            "avg_5d_pct": 5.385336,
+                            "min_min_low_5d_pct": -5.558554,
+                        },
+                        "gate": {
+                            "status": "shadow_ready",
+                            "production_ready": False,
+                            "shadow_display_allowed": True,
+                            "production_blocking_reasons": ["active_days_lt_15"],
+                            "non_sample_blockers": [],
+                        },
+                        "sample_progress": {"completion_pct": 88.888889},
+                    },
                 }
             },
         },
@@ -363,6 +388,9 @@ def test_build_report_keeps_shadow_performance_separate_from_production(tmp_path
     assert leaderboard["best_sample_only_shadow"]["selection_rule"] == "top1_tail0.95"
     assert leaderboard["best_sample_only_shadow"]["metrics"]["hit5_dd10_5d_pct"] == 85.4545
     assert leaderboard["best_sample_only_shadow"]["sample_progress"]["completion_pct"] == 93.333333
+    assert leaderboard["best_high_precision_shadow"]["selection_rule"] == "top1_prob_tail_margin_tail0p95"
+    assert leaderboard["best_high_precision_shadow"]["metrics"]["hit5_dd10_5d_pct"] == 93.4783
+    assert leaderboard["best_high_precision_shadow"]["sample_progress"]["completion_pct"] == 88.888889
     assert "+5%" in report["user_goal"]["win_definition"]
     assert report["markets"]["KOSPI"]["kis_sidecar_longfold_shadow"]["gate"]["status"] == "shadow_ready"
     assert report["markets"]["KOSDAQ"]["kis_sidecar_longfold_shadow"]["metrics"]["n"] == 40

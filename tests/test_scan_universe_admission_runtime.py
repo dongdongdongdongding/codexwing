@@ -462,6 +462,19 @@ def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
                     "min_min_low_5d_pct": -9.864936,
                 },
             },
+            "high_precision_shadow_candidate": {
+                "selection_rule": "top1_prob_tail_margin_tail0p95",
+                "score_mode": "prob_tail_margin",
+                "sample_progress": {"completion_pct": 88.888889},
+                "metrics": {
+                    "n": 46,
+                    "active_days": 10,
+                    "active_runs": 46,
+                    "hit5_dd10_5d_pct": 93.4783,
+                    "avg_5d_pct": 5.385336,
+                    "min_min_low_5d_pct": -5.558554,
+                },
+            },
         },
     )
 
@@ -473,6 +486,8 @@ def test_kis_shadow_gate_status_exposes_blocked_display_reason(monkeypatch):
     assert "5D" in gate["metrics"]
     assert gate["near_production_candidate"]["selection_rule"] == "top3_ev_p0p3_tail0p9"
     assert gate["near_production_candidate"]["metrics"]["hit5_dd10_5d_pct"] == 83.8028
+    assert gate["high_precision_shadow_candidate"]["selection_rule"] == "top1_prob_tail_margin_tail0p95"
+    assert gate["high_precision_shadow_candidate"]["sample_progress"]["completion_pct"] == 88.888889
 
 
 def test_admission_records_include_full_result_interpretation():

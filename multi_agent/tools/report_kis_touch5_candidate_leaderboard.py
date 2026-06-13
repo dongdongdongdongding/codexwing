@@ -369,14 +369,35 @@ def _is_upgrade(candidate: Mapping[str, Any], current: Mapping[str, Any] | None)
     return progress_gain >= 5.0 and sample_gain > 0 and avg_gain >= 0.0
 
 
+def _high_precision_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    metrics = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    progress = row.get("sample_progress") if isinstance(row.get("sample_progress"), Mapping) else {}
+    return (
+        -float(metrics.get("hit5_dd10_5d_pct") or 0.0),
+        -float(metrics.get("avg_5d_pct") or -999.0),
+        -float(metrics.get("min_min_low_5d_pct") or -999.0),
+        -float(progress.get("completion_pct") or 0.0),
+        -int(metrics.get("active_runs") or 0),
+        -int(metrics.get("n") or 0),
+    )
+
+
+def _is_high_precision_sample_only(row: Mapping[str, Any]) -> bool:
+    gate = row.get("gate") if isinstance(row.get("gate"), Mapping) else {}
+    progress = row.get("sample_progress") if isinstance(row.get("sample_progress"), Mapping) else {}
+    return bool(gate.get("sample_only_blocked")) and float(progress.get("completion_pct") or 0.0) >= 80.0
+
+
 def _market_report(market: str, rows: Sequence[Mapping[str, Any]], current: Mapping[str, Any] | None) -> Dict[str, Any]:
     market_rows = [row for row in rows if ((row.get("identity") or {}).get("market") == market)]
     ranked = sorted(market_rows, key=_sort_key)
     production = [row for row in ranked if (row.get("gate") or {}).get("production_ready")]
     sample_only = [row for row in ranked if (row.get("gate") or {}).get("sample_only_blocked")]
     shadow = [row for row in ranked if (row.get("gate") or {}).get("shadow_display_allowed")]
+    high_precision = sorted([row for row in sample_only if _is_high_precision_sample_only(row)], key=_high_precision_sort_key)
     best = ranked[0] if ranked else None
     best_sample_only = sample_only[0] if sample_only else None
+    best_high_precision = high_precision[0] if high_precision else None
     upgrade_candidates = [row for row in sample_only if _is_upgrade(row, current)]
     upgrade = upgrade_candidates[0] if upgrade_candidates else None
     if production:
@@ -396,6 +417,7 @@ def _market_report(market: str, rows: Sequence[Mapping[str, Any]], current: Mapp
         "current": current,
         "best_candidate": best,
         "best_sample_only_shadow": best_sample_only,
+        "best_high_precision_shadow": best_high_precision,
         "verified_upgrade_candidate": upgrade,
         "upgrade_candidates": upgrade_candidates[:10],
         "top_candidates": ranked[:10],
@@ -406,6 +428,7 @@ def build_report(
     *,
     report_paths: Sequence[Path],
     current_comparison_path: Path = DEFAULT_CURRENT_COMPARISON,
+    tracked_sources_only: bool = True,
 ) -> Dict[str, Any]:
     extracted: List[Dict[str, Any]] = []
     failed_reports: List[Dict[str, str]] = []
@@ -433,10 +456,11 @@ def build_report(
         "version": REPORT_VERSION,
         "generated_at": _utc_now(),
         "dummy_data_used": False,
-        "tracked_sources_only": True,
+        "tracked_sources_only": bool(tracked_sources_only),
         "inputs": {
             "current_comparison": _rel(current_comparison_path),
             "report_count": len(report_paths),
+            "source_mode": "tracked_only" if tracked_sources_only else "all_files",
             "reports": [_rel(path) for path in report_paths],
         },
         "failed_reports": failed_reports,
@@ -501,6 +525,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                 f"- candidates/shadow/sample_only/production: `{payload.get('candidate_count')}` / `{payload.get('shadow_display_allowed_count')}` / `{payload.get('sample_only_shadow_count')}` / `{payload.get('production_ready_count')}`",
                 f"- current: {_candidate_line(payload.get('current'))}",
                 f"- best_sample_only_shadow: {_candidate_line(payload.get('best_sample_only_shadow'))}",
+                f"- best_high_precision_shadow: {_candidate_line(payload.get('best_high_precision_shadow'))}",
                 f"- verified_upgrade_candidate: {_candidate_line(payload.get('verified_upgrade_candidate'))}",
                 "",
                 "| rank | status | feature_set | model | rule | n | days | runs | sample% | hit5_dd10 | avg5 | low | source |",
@@ -554,8 +579,13 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv)
-    paths = discover_report_paths(Path(args.report_dir), tracked_only=not args.all_files)
-    report = build_report(report_paths=paths, current_comparison_path=Path(args.current_comparison))
+    tracked_only = not bool(args.all_files)
+    paths = discover_report_paths(Path(args.report_dir), tracked_only=tracked_only)
+    report = build_report(
+        report_paths=paths,
+        current_comparison_path=Path(args.current_comparison),
+        tracked_sources_only=tracked_only,
+    )
     write_report(report, Path(args.output))
     print(json.dumps({"output": args.output, "decision": report.get("decision")}, ensure_ascii=False, indent=2))
     return 0

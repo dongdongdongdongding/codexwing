@@ -687,6 +687,19 @@ def test_scan_result_renderer_exposes_kis_shadow_gate_when_candidates_are_blocke
                     "min_min_low_5d_pct": -9.864936,
                 },
             },
+            "high_precision_shadow_candidate": {
+                "selection_rule": "top1_prob_tail_margin_tail0p95",
+                "score_mode": "prob_tail_margin",
+                "sample_progress": {"completion_pct": 88.888889},
+                "metrics": {
+                    "n": 46,
+                    "active_days": 10,
+                    "active_runs": 46,
+                    "hit5_dd10_5d_pct": 93.4783,
+                    "avg_5d_pct": 5.385336,
+                    "min_min_low_5d_pct": -5.558554,
+                },
+            },
         },
     )
     monkeypatch.setattr(renderers, "build_top_deep_embeds", lambda **kwargs: [])
@@ -707,6 +720,8 @@ def test_scan_result_renderer_exposes_kis_shadow_gate_when_candidates_are_blocke
     assert "shadow_display_allowed=False" in blocked["value"]
     assert "승격근접" in blocked["value"]
     assert "top3_ev_p0p3_tail0p9" in blocked["value"]
+    assert "고정밀관찰" in blocked["value"]
+    assert "top1_prob_tail_margin_tail0p95" in blocked["value"]
 
 
 def test_scan_result_renderer_includes_low_liquidity_blocked_candidates(monkeypatch):

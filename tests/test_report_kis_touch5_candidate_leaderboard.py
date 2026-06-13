@@ -142,6 +142,47 @@ def test_leaderboard_marks_production_candidate_separately(tmp_path) -> None:
     assert report["markets"]["KOSDAQ"]["production_ready_count"] == 1
 
 
+def test_leaderboard_surfaces_high_precision_sample_only_candidate(tmp_path) -> None:
+    source = tmp_path / "kis_sidecar_threshold_sweep_touch5_dd10.json"
+    current = tmp_path / "kis_model_market_comparison.json"
+    _current_comparison(current)
+    _write_json(
+        source,
+        {
+            "top_results": [
+                _candidate(
+                    market="KOSDAQ",
+                    rule="sample_progress_candidate",
+                    n=50,
+                    active_days=12,
+                    active_runs=50,
+                    hit5=80.0,
+                    avg5=6.0,
+                    low5=-8.0,
+                ),
+                _candidate(
+                    market="KOSDAQ",
+                    rule="high_precision_candidate",
+                    n=50,
+                    active_days=10,
+                    active_runs=50,
+                    hit5=95.0,
+                    avg5=7.0,
+                    low5=-7.0,
+                ),
+            ]
+        },
+    )
+
+    report = tool.build_report(report_paths=[source], current_comparison_path=current, tracked_sources_only=False)
+    market = report["markets"]["KOSDAQ"]
+
+    assert report["tracked_sources_only"] is False
+    assert report["inputs"]["source_mode"] == "all_files"
+    assert market["best_sample_only_shadow"]["identity"]["selection_rule"] == "sample_progress_candidate"
+    assert market["best_high_precision_shadow"]["identity"]["selection_rule"] == "high_precision_candidate"
+
+
 def test_leaderboard_rejects_sample_progress_when_avg5_regresses(tmp_path) -> None:
     source = tmp_path / "scan_universe_admission_challenger_touch5_dd10_kis_tailgate.json"
     current = tmp_path / "kis_model_market_comparison.json"

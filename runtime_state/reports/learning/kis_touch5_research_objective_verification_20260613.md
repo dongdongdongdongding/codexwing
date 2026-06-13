@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T03:52:52.390215+00:00`
+- generated_at: `2026-06-13T04:12:06.866601+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -44,7 +44,7 @@
 - near_production_candidate: found=`True`, candidate=`top3_ev_p0p3_tail0p9`, score=`ev`, n=`142`, active_days=`11`, active_runs=`50`, hit5=`83.8028`, avg5=`9.912085`, min_low=`-9.864936`, blockers=`['active_days_lt_15']`
 - score_sweep_gate_summary: status_counts=`{'blocked': 1525, 'shadow_ready': 197, 'shadow_risk_review': 753}`, blockers=`{'active_days_lt_15': 2475, 'min_low_5d_lt_neg10': 2278, 'hit5_dd10_5d_lt_73': 767, 'expected_touch_policy_net_5d_lt_0p25': 453}`, sample_only_count=`155`, sample_sufficient_count=`0`
 - score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, sample_sufficient_top=`None`, pareto_top=`top1_prob_tail_margin_tail0p95`
-- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1601`, shadow=`847`, sample_only=`200`, production=`0`, best_sample_only=`top1_tail0.95`, hit5=`85.4545`, n=`55`, active_days=`12`, upgrade=`None`
+- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1655`, shadow=`848`, sample_only=`200`, production=`0`, best_sample_only=`top1_tail0.95`, hit5=`85.4545`, n=`55`, active_days=`12`, best_high_precision=`top1_prob_tail_margin_tail0p95`, high_precision_hit5=`93.4783`, high_precision_sample=`88.888889`, upgrade=`None`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`40`, active_days=`21`, hit5=`57.5`, avg_exit=`-0.618404`, dynamic_exit=`1.249479`, min_low=`-27.443637`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`30`, active_days=`15`, hit5=`53.3333`, avg_exit=`-1.796353`, dynamic_exit=`0.528124`, min_low=`-18.184768`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 
@@ -60,7 +60,7 @@
 - near_production_candidate: found=`True`, candidate=`top1_tail0p6`, score=`prob`, n=`23`, active_days=`11`, active_runs=`23`, hit5=`82.6087`, avg5=`11.146604`, min_low=`-7.862174`, blockers=`['n_lt_45', 'active_days_lt_20']`
 - score_sweep_gate_summary: status_counts=`{'blocked': 182, 'shadow_ready': 444, 'shadow_risk_review': 1849}`, blockers=`{'active_days_lt_20': 2475, 'min_low_5d_lt_neg10': 2031, 'n_lt_45': 830, 'active_runs_lt_20': 525}`, sample_only_count=`444`, sample_sufficient_count=`0`
 - score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, sample_sufficient_top=`None`, pareto_top=`top1_p0p3_tail0p95`
-- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1371`, shadow=`637`, sample_only=`214`, production=`0`, best_sample_only=`top2_tail0.90`, hit5=`83.3333`, n=`48`, active_days=`12`, upgrade=`None`
+- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1409`, shadow=`640`, sample_only=`214`, production=`0`, best_sample_only=`top2_tail0.90`, hit5=`83.3333`, n=`48`, active_days=`12`, best_high_precision=`top2_p0.50_tail0.90`, high_precision_hit5=`100.0`, high_precision_sample=`81.296296`, upgrade=`None`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`46`, active_days=`24`, hit5=`54.3478`, avg_exit=`-0.85266`, dynamic_exit=`1.529568`, min_low=`-32.404541`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`None`, production_ready=`False`, shadow_display_allowed=`False`, n=`None`, active_days=`None`, hit5=`None`, avg_exit=`None`, dynamic_exit=`None`, min_low=`None`, blockers=`[]`
 

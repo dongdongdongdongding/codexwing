@@ -180,6 +180,17 @@ class UIHelperTests(unittest.TestCase):
                         "min_min_low_5d_pct": -9.864936,
                     },
                 },
+                "high_precision_shadow_candidate": {
+                    "selection_rule": "top1_prob_tail_margin_tail0p95",
+                    "sample_progress": {"completion_pct": 88.888889},
+                    "metrics": {
+                        "n": 46,
+                        "active_days": 10,
+                        "hit5_dd10_5d_pct": 93.4783,
+                        "avg_5d_pct": 5.385336,
+                        "min_min_low_5d_pct": -5.558554,
+                    },
+                },
             }
         )
 
@@ -188,6 +199,9 @@ class UIHelperTests(unittest.TestCase):
         self.assertTrue(any("top3_ev_p0p3_tail0p9" in line for line in lines))
         self.assertTrue(any("hit5=83.8%" in line for line in lines))
         self.assertTrue(any("active_days_lt_15" in line for line in lines))
+        self.assertTrue(any("고정밀 관찰" in line for line in lines))
+        self.assertTrue(any("top1_prob_tail_margin_tail0p95" in line for line in lines))
+        self.assertTrue(any("표본진행=88.9%" in line for line in lines))
 
     def test_build_signal_display_rows_does_not_fabricate_day_change(self):
         # 2026-05-09: phase25_prob은 raw score(0-100)로 calibrated probability가
