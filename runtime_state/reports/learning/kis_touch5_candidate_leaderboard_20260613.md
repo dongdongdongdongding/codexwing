@@ -1,11 +1,11 @@
 # KIS Touch5 Candidate Leaderboard
 
 - version: `kis_touch5_candidate_leaderboard_v3`
-- generated_at: `2026-06-13T05:40:54+00:00`
+- generated_at: `2026-06-13T06:20:07+00:00`
 - dummy_data_used: `False`
 - tracked_sources_only: `True`
 - report_count: `35`
-- unique_candidates: `4008`
+- unique_candidates: `4084`
 - status: `keep_current_shadow`
 - production_replacement_ready: `False`
 - shadow_upgrade_found: `False`
@@ -13,7 +13,7 @@
 
 ## KOSPI
 - status: `shadow_candidates_found_no_upgrade`
-- candidates/shadow/sample_only/production: `2329` / `381` / `252` / `0`
+- candidates/shadow/sample_only/production: `2385` / `393` / `252` / `0`
 - current: `kis_sidecar_failure_risk_augmented` `lightgbm` `top1_p0p3_tail0p9` status=`shadow_ready` n=`50` days=`11` runs=`50` sample=`91.111111%` hit5_dd10=`82.0` avg5=`26.115197` low=`-8.919727` source=`runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json`
 - best_sample_only_shadow: `kis_sidecar_failure_risk_augmented` `lightgbm` `top2_prob_plus_tail_p0p8_tail0p85` status=`shadow_ready` n=`93` days=`14` runs=`54` sample=`97.777778%` hit5_dd10=`87.0968` avg5=`15.093948` low=`-8.919727` source=`runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json`
 - best_high_precision_shadow: `kis_sidecar_failure_risk_augmented` `lightgbm` `top1_prob_tail_margin_p0p2_tail0p95` status=`shadow_ready` n=`46` days=`10` runs=`46` sample=`88.888889%` hit5_dd10=`93.4783` avg5=`5.385336` low=`-5.558554` source=`runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json`
@@ -34,7 +34,7 @@
 
 ## KOSDAQ
 - status: `shadow_candidates_found_no_upgrade`
-- candidates/shadow/sample_only/production: `1679` / `250` / `82` / `0`
+- candidates/shadow/sample_only/production: `1699` / `250` / `82` / `0`
 - current: `kis_sidecar_failure_risk_augmented` `lightgbm` `top2_p0.50_tail0.90` status=`shadow_ready` n=`40` days=`11` runs=`20` sample=`81.296296%` hit5_dd10=`100.0` avg5=`20.411507` low=`-9.300619` source=`runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_tailgate_lightgbm_20260401_20260610.json`
 - best_sample_only_shadow: `kis_sidecar_failure_risk_augmented` `lightgbm` `top3_ev_tail0p9` status=`shadow_ready` n=`58` days=`10` runs=`20` sample=`83.333333%` hit5_dd10=`94.8276` avg5=`8.515405` low=`-7.8413` source=`runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json`
 - best_high_precision_shadow: `kis_sidecar_failure_risk_augmented` `lightgbm` `top3_ev_p0p2_tail0p9` status=`shadow_ready` n=`57` days=`9` runs=`19` sample=`80%` hit5_dd10=`96.4912` avg5=`8.717356` low=`-7.8413` source=`runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json`

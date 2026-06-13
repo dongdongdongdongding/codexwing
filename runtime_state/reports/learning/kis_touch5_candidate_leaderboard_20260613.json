@@ -1,5 +1,5 @@
 {
-  "candidate_rows_extracted": 5615,
+  "candidate_rows_extracted": 5721,
   "decision": {
     "production_replacement_ready": false,
     "recommended_action": "continue_forward_tracking_until_sample_gate_clears",
@@ -8,7 +8,7 @@
   },
   "dummy_data_used": false,
   "failed_reports": [],
-  "generated_at": "2026-06-13T05:40:54+00:00",
+  "generated_at": "2026-06-13T06:20:07+00:00",
   "inputs": {
     "current_comparison": "runtime_state/reports/learning/kis_model_market_comparison.json",
     "report_count": 35,
@@ -306,7 +306,7 @@
         "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_dayfold_realistic_coverage_20260101_20260610.json",
         "validation_mode": "dayfold_realistic_coverage"
       },
-      "candidate_count": 1679,
+      "candidate_count": 1699,
       "current": {
         "gate": {
           "non_sample_blockers": [],
@@ -1504,7 +1504,7 @@
         "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_kospi_tailfirst_realistic_coverage_20260101_20260610.json",
         "validation_mode": "tailfirst_realistic_coverage"
       },
-      "candidate_count": 2329,
+      "candidate_count": 2385,
       "current": {
         "gate": {
           "non_sample_blockers": [],
@@ -1589,11 +1589,11 @@
         "source_path": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_longfold_20260101_20260610.json",
         "validation_mode": "longfold"
       },
-      "evaluated_candidate_count": 401,
+      "evaluated_candidate_count": 413,
       "preferred_validation_mode": "tailfirst_realistic_coverage",
       "production_ready_count": 0,
       "sample_only_shadow_count": 252,
-      "shadow_display_allowed_count": 381,
+      "shadow_display_allowed_count": 393,
       "status": "shadow_candidates_found_no_upgrade",
       "top_candidates": [
         {
@@ -2442,6 +2442,6 @@
     }
   },
   "tracked_sources_only": true,
-  "unique_candidates": 4008,
+  "unique_candidates": 4084,
   "version": "kis_touch5_candidate_leaderboard_v3"
 }

@@ -1,7 +1,7 @@
 # KIS Touch5/DD10 Research Objective Verification
 
 - version: `kis_touch5_research_objective_verification_v1`
-- generated_at: `2026-06-13T05:41:04.664046+00:00`
+- generated_at: `2026-06-13T06:20:15.792317+00:00`
 - decision: `verified_shadow_performance`
 - recommended_action: `keep_existing_production_and_show_kis_shadow_top_section`
 - production_replacement_proven: `False`
@@ -27,7 +27,7 @@
 ## 입력과 검증
 - no_dummy_data: `True`
 - shadow rows/evaluated/shadow_allowed/production_ready: `157551` / `990` / `521` / `0`
-- sidecar score sweep evaluated/shadow_allowed/production_ready: `4950` / `3243` / `0`
+- sidecar score sweep evaluated/shadow_allowed/production_ready: `4950` / `2777` / `0`
 - deployment_consistency: `pass` / `use_current_kis_shadow_deployment`
 - candidate_leaderboard: `keep_current_shadow` / `continue_forward_tracking_until_sample_gate_clears`
 - three_stage_validation: `walk-forward; each fold trains on fit window, chooses no-trade threshold on calibration days, then evaluates only the next test window.`
@@ -40,11 +40,12 @@
 - three_stage_result: hit5_dd10=`63.1579`, dynamic_exit=`2.854533`, tail=`15.7895`, min_low=`-18.779401`
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.056792`, hit5_delta=`15.5389`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p3_tail0p9`
-- risk_adjusted_alternative: found=`True`, candidate=`top1_prob_tail_margin_tail0p95`, hit5_dd10=`93.4783`, avg5=`5.385336`, min_low=`-5.558554`, deltas=`{'hit5_dd10_5d_pct': 11.4783, 'min_min_low_5d_pct': 3.361173, 'avg_5d_pct': -20.729861, 'n': -4, 'active_days': -1}`
+- risk_adjusted_alternative: found=`True`, candidate=`top1_prob_tail_margin_p0p3_tail0p95`, hit5_dd10=`93.4783`, avg5=`5.385336`, min_low=`-5.558554`, deltas=`{'hit5_dd10_5d_pct': 11.4783, 'min_min_low_5d_pct': 3.361173, 'avg_5d_pct': -20.729861, 'n': -4, 'active_days': -1}`
 - near_production_candidate: found=`True`, candidate=`top3_ev_p0p3_tail0p9`, score=`ev`, n=`142`, active_days=`11`, active_runs=`50`, hit5=`83.8028`, avg5=`9.912085`, min_low=`-9.864936`, blockers=`['active_days_lt_15']`
-- score_sweep_gate_summary: status_counts=`{'blocked': 1525, 'shadow_ready': 197, 'shadow_risk_review': 753}`, blockers=`{'active_days_lt_15': 2475, 'min_low_5d_lt_neg10': 2278, 'hit5_dd10_5d_lt_73': 767, 'expected_touch_policy_net_5d_lt_0p25': 453}`, sample_only_count=`155`, sample_sufficient_count=`0`
-- score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, sample_sufficient_top=`None`, pareto_top=`top1_prob_tail_margin_tail0p95`
-- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`2329`, shadow=`381`, sample_only=`252`, production=`0`, best_sample_only=`top2_prob_plus_tail_p0p8_tail0p85`, hit5=`87.0968`, n=`93`, active_days=`14`, best_high_precision=`top1_prob_tail_margin_p0p2_tail0p95`, high_precision_hit5=`93.4783`, high_precision_sample=`88.888889`, upgrade=`None`
+- score_sweep_gate_summary: status_counts=`{'blocked': 1525, 'shadow_ready': 197, 'shadow_risk_review': 753}`, blockers=`{'min_low_5d_lt_neg10': 2278, 'hit5_dd10_5d_lt_73': 1055, 'active_days_lt_15': 1050, 'expected_touch_policy_net_5d_lt_0p25': 762}`, sample_only_count=`155`, sample_sufficient_count=`35`
+- score_sweep_near_candidates: sample_only_top=`top1_p0p3_tail0p9`, sample_sufficient_top=`top1_tail0p85`, pareto_top=`top1_prob_tail_margin_p0p3_tail0p95`
+- score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`519` best=`top1_tail0p85` min_low=`-10.87344` low_deficit=`0.87344`
+- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`2385`, shadow=`393`, sample_only=`252`, production=`0`, best_sample_only=`top2_prob_plus_tail_p0p8_tail0p85`, hit5=`87.0968`, n=`93`, active_days=`14`, best_high_precision=`top1_prob_tail_margin_p0p2_tail0p95`, high_precision_hit5=`93.4783`, high_precision_sample=`88.888889`, upgrade=`None`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`40`, active_days=`21`, hit5=`57.5`, avg_exit=`-0.618404`, dynamic_exit=`1.249479`, min_low=`-27.443637`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`30`, active_days=`15`, hit5=`53.3333`, avg_exit=`-1.796353`, dynamic_exit=`0.528124`, min_low=`-18.184768`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p25']`
 
@@ -57,10 +58,11 @@
 - three_stage_improvement_vs_broad: avg_exit_delta=`0.970752`, hit5_delta=`11.4595`
 - score_mode_experiment: same_fold_scope=`True`, decision=`keep_current_best_shadow`, best=`top1_p0p75_tail0p85`
 - risk_adjusted_alternative: found=`False`, candidate=`None`, hit5_dd10=`None`, avg5=`None`, min_low=`None`, deltas=`None`
-- near_production_candidate: found=`True`, candidate=`top1_tail0p6`, score=`prob`, n=`23`, active_days=`11`, active_runs=`23`, hit5=`82.6087`, avg5=`11.146604`, min_low=`-7.862174`, blockers=`['n_lt_45', 'active_days_lt_20']`
-- score_sweep_gate_summary: status_counts=`{'blocked': 182, 'shadow_ready': 444, 'shadow_risk_review': 1849}`, blockers=`{'active_days_lt_20': 2475, 'min_low_5d_lt_neg10': 2031, 'n_lt_45': 830, 'active_runs_lt_20': 525}`, sample_only_count=`444`, sample_sufficient_count=`0`
+- near_production_candidate: found=`True`, candidate=`top1_p0p65_tail0p6`, score=`prob`, n=`23`, active_days=`11`, active_runs=`23`, hit5=`82.6087`, avg5=`11.146604`, min_low=`-7.862174`, blockers=`['n_lt_45', 'active_days_lt_20']`
+- score_sweep_gate_summary: status_counts=`{'blocked': 648, 'shadow_ready': 412, 'shadow_risk_review': 1415}`, blockers=`{'active_days_lt_20': 2475, 'min_low_5d_lt_neg10': 2063, 'n_lt_45': 830, 'active_runs_lt_20': 525, 'hit5_dd10_5d_lt_73': 343, 'expected_touch_policy_net_5d_lt_0p5': 259}`, sample_only_count=`412`, sample_sufficient_count=`0`
 - score_sweep_near_candidates: sample_only_top=`top1_p0p75_tail0p85`, sample_sufficient_top=`None`, pareto_top=`top1_p0p3_tail0p95`
-- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1679`, shadow=`250`, sample_only=`82`, production=`0`, best_sample_only=`top3_ev_tail0p9`, hit5=`94.8276`, n=`58`, active_days=`10`, best_high_precision=`top3_ev_p0p2_tail0p9`, high_precision_hit5=`96.4912`, high_precision_sample=`80.0`, upgrade=`None`
+- score_sweep_constraint_frontier: production_ready=`0`, days_low_safe_touch=`0`, one_day_short_low_safe_touch=`0` best=`None` hit5=`None` active_days=`None`, sample_sufficient_touch_but_low_fail=`0` best=`None` min_low=`None` low_deficit=`None`
+- candidate_leaderboard: status=`shadow_candidates_found_no_upgrade`, candidates=`1699`, shadow=`250`, sample_only=`82`, production=`0`, best_sample_only=`top3_ev_tail0p9`, hit5=`94.8276`, n=`58`, active_days=`10`, best_high_precision=`top3_ev_p0p2_tail0p9`, high_precision_hit5=`96.4912`, high_precision_sample=`80.0`, upgrade=`None`
 - finaltopn_prefilter_proxy: status=`no_improvement`, gate=`blocked`, production_ready=`False`, shadow_display_allowed=`False`, n=`46`, active_days=`24`, hit5=`54.3478`, avg_exit=`-0.85266`, dynamic_exit=`1.529568`, min_low=`-32.404541`, blockers=`['active_runs_lt_20', 'hit5_dd10_5d_lt_73', 'min_low_5d_lt_neg10', 'expected_touch_policy_net_5d_lt_0p5']`
 - finaltopn_actual_sidecar: status=`no_improvement`, gate=`None`, production_ready=`False`, shadow_display_allowed=`False`, n=`None`, active_days=`None`, hit5=`None`, avg_exit=`None`, dynamic_exit=`None`, min_low=`None`, blockers=`[]`
 

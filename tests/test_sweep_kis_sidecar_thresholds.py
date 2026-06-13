@@ -180,3 +180,107 @@ def test_compact_report_removes_repeated_heavy_payloads():
     assert summary["active_day_frontier"]["top"][0]["selection_rule"] == "top1"
     assert len(summary["pareto_top"]) == 1
     assert summary["pareto_top"][0]["selection_rule"] == "top1"
+
+
+def _touch5_gate(*, status, production_ready=False, shadow_display_allowed=True, reasons=None):
+    return {
+        "status": status,
+        "production_ready": production_ready,
+        "shadow_display_allowed": shadow_display_allowed,
+        "production_blocking_reasons": list(reasons or []),
+        "checks": [
+            {"gate": "production", "name": "n", "expected": ">=30"},
+            {"gate": "production", "name": "active_days", "expected": ">=15"},
+            {"gate": "production", "name": "active_runs", "expected": ">=20"},
+            {"gate": "production", "name": "hit5_dd10_5d_pct", "expected": ">=73"},
+            {"gate": "production", "name": "min_min_low_5d_pct", "expected": ">=-10"},
+        ],
+    }
+
+
+def _touch5_row(selection_rule, *, n, active_days, active_runs, hit5, avg5, min_low, gate):
+    return {
+        "market": "KOSPI",
+        "label": "touch5_dd10_5d",
+        "feature_set": "kis_sidecar_failure_risk_augmented",
+        "model": "lightgbm",
+        "score_mode": "tail_plus_prob",
+        "selection_rule": selection_rule,
+        "quality_score": hit5 + avg5,
+        "metrics": {
+            "n": n,
+            "active_days": active_days,
+            "active_runs": active_runs,
+            "hit5_dd10_5d_pct": hit5,
+            "avg_5d_pct": avg5,
+            "min_min_low_5d_pct": min_low,
+        },
+        "kis_model_gate": gate,
+    }
+
+
+def test_constraint_frontier_separates_one_day_short_from_drawdown_failures():
+    report = {
+        "top_results": [],
+        "market_reports": [
+            {
+                "scope": {"market": "KOSPI"},
+                "status": "ok",
+                "fold_meta": {},
+                "results": [
+                    _touch5_row(
+                        "one_day_short_low_safe",
+                        n=93,
+                        active_days=14,
+                        active_runs=54,
+                        hit5=87.0968,
+                        avg5=15.093948,
+                        min_low=-8.919727,
+                        gate=_touch5_gate(status="shadow_ready", reasons=["active_days_lt_15"]),
+                    ),
+                    _touch5_row(
+                        "full_days_touch_low_fail",
+                        n=58,
+                        active_days=15,
+                        active_runs=58,
+                        hit5=79.3103,
+                        avg5=11.322432,
+                        min_low=-10.87344,
+                        gate=_touch5_gate(status="shadow_risk_review", reasons=["min_low_5d_lt_neg10"]),
+                    ),
+                    _touch5_row(
+                        "full_days_low_safe_touch_fail",
+                        n=50,
+                        active_days=15,
+                        active_runs=50,
+                        hit5=70.0,
+                        avg5=5.0,
+                        min_low=-8.0,
+                        gate=_touch5_gate(status="shadow_ready", reasons=["hit5_dd10_5d_lt_73"]),
+                    ),
+                ],
+            }
+        ],
+    }
+
+    compact = _compact_report(report, per_market_results=5)
+    frontiers = compact["market_reports"][0]["analysis_summary"]["constraint_frontiers"]
+
+    assert frontiers["production_ready_count"] == 0
+    assert frontiers["days_low_safe_touch_count"] == 0
+    assert frontiers["one_day_short_low_safe_touch_count"] == 1
+    one_day_short = frontiers["one_day_short_low_safe_touch_top"][0]
+    assert one_day_short["selection_rule"] == "one_day_short_low_safe"
+    assert one_day_short["production_frontier"]["deficits"]["active_days"] == 1.0
+    assert one_day_short["production_frontier"]["deficits"]["min_low_5d_pct"] == 0.0
+
+    assert frontiers["sample_sufficient_touch_but_low_fail_count"] == 1
+    low_fail = frontiers["sample_sufficient_touch_but_low_fail_top"][0]
+    assert low_fail["selection_rule"] == "full_days_touch_low_fail"
+    assert low_fail["production_frontier"]["deficits"]["min_low_5d_pct"] == 0.87344
+
+    assert frontiers["sample_sufficient_low_safe_but_touch_fail_count"] == 1
+    assert (
+        frontiers["sample_sufficient_low_safe_but_touch_fail_top"][0]["selection_rule"]
+        == "full_days_low_safe_touch_fail"
+    )

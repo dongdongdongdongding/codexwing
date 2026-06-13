@@ -993,6 +993,25 @@ def _markdown(report: Mapping[str, Any]) -> str:
             sample_sufficient_top[0] if sample_sufficient_top and isinstance(sample_sufficient_top[0], dict) else {}
         )
         pareto_candidate = pareto_top[0] if pareto_top and isinstance(pareto_top[0], dict) else {}
+        constraint_frontiers = (
+            score_summary.get("constraint_frontiers")
+            if isinstance(score_summary.get("constraint_frontiers"), dict)
+            else {}
+        )
+        one_day_short_top = constraint_frontiers.get("one_day_short_low_safe_touch_top") or []
+        low_fail_top = constraint_frontiers.get("sample_sufficient_touch_but_low_fail_top") or []
+        one_day_short = (
+            one_day_short_top[0] if one_day_short_top and isinstance(one_day_short_top[0], dict) else {}
+        )
+        low_fail = low_fail_top[0] if low_fail_top and isinstance(low_fail_top[0], dict) else {}
+        one_day_short_metrics = one_day_short.get("metrics") if isinstance(one_day_short.get("metrics"), dict) else {}
+        low_fail_metrics = low_fail.get("metrics") if isinstance(low_fail.get("metrics"), dict) else {}
+        low_fail_frontier = (
+            low_fail.get("production_frontier") if isinstance(low_fail.get("production_frontier"), dict) else {}
+        )
+        low_fail_deficits = (
+            low_fail_frontier.get("deficits") if isinstance(low_fail_frontier.get("deficits"), dict) else {}
+        )
         finaltopn = payload.get("finaltopn_three_stage_experiments") or {}
         finaltopn_proxy = finaltopn.get("prefilter_proxy") if isinstance(finaltopn.get("prefilter_proxy"), dict) else {}
         finaltopn_actual = finaltopn.get("actual_sidecar") if isinstance(finaltopn.get("actual_sidecar"), dict) else {}
@@ -1022,6 +1041,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 f"- near_production_candidate: found=`{near_prod.get('found')}`, candidate=`{near_candidate.get('selection_rule')}`, score=`{near_candidate.get('score_mode')}`, n=`{near_metrics.get('n')}`, active_days=`{near_metrics.get('active_days')}`, active_runs=`{near_metrics.get('active_runs')}`, hit5=`{near_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{near_metrics.get('avg_5d_pct')}`, min_low=`{near_metrics.get('min_min_low_5d_pct')}`, blockers=`{near_candidate.get('sample_blockers')}`",
                 f"- score_sweep_gate_summary: status_counts=`{score_summary.get('status_counts')}`, blockers=`{score_summary.get('production_blocking_reason_counts')}`, sample_only_count=`{score_summary.get('sample_only_blocked_count')}`, sample_sufficient_count=`{score_summary.get('sample_sufficient_count')}`",
                 f"- score_sweep_near_candidates: sample_only_top=`{sample_candidate.get('selection_rule')}`, sample_sufficient_top=`{sample_sufficient_candidate.get('selection_rule')}`, pareto_top=`{pareto_candidate.get('selection_rule')}`",
+                f"- score_sweep_constraint_frontier: production_ready=`{constraint_frontiers.get('production_ready_count')}`, days_low_safe_touch=`{constraint_frontiers.get('days_low_safe_touch_count')}`, one_day_short_low_safe_touch=`{constraint_frontiers.get('one_day_short_low_safe_touch_count')}` best=`{one_day_short.get('selection_rule')}` hit5=`{one_day_short_metrics.get('hit5_dd10_5d_pct')}` active_days=`{one_day_short_metrics.get('active_days')}`, sample_sufficient_touch_but_low_fail=`{constraint_frontiers.get('sample_sufficient_touch_but_low_fail_count')}` best=`{low_fail.get('selection_rule')}` min_low=`{low_fail_metrics.get('min_min_low_5d_pct')}` low_deficit=`{low_fail_deficits.get('min_low_5d_pct')}`",
                 f"- candidate_leaderboard: status=`{leaderboard.get('status')}`, candidates=`{leaderboard.get('candidate_count')}`, shadow=`{leaderboard.get('shadow_display_allowed_count')}`, sample_only=`{leaderboard.get('sample_only_shadow_count')}`, production=`{leaderboard.get('production_ready_count')}`, best_sample_only=`{leaderboard_best.get('selection_rule')}`, hit5=`{leaderboard_best_metrics.get('hit5_dd10_5d_pct')}`, n=`{leaderboard_best_metrics.get('n')}`, active_days=`{leaderboard_best_metrics.get('active_days')}`, best_high_precision=`{leaderboard_high_precision.get('selection_rule')}`, high_precision_hit5=`{leaderboard_high_metrics.get('hit5_dd10_5d_pct')}`, high_precision_sample=`{((leaderboard_high_precision.get('sample_progress') or {}) if isinstance(leaderboard_high_precision.get('sample_progress'), dict) else {}).get('completion_pct')}`, upgrade=`{leaderboard_upgrade.get('selection_rule')}`",
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",

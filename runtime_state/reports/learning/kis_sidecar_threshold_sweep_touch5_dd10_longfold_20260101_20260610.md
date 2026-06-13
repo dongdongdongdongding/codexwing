@@ -1,6 +1,6 @@
 # KIS Sidecar Threshold Sweep
 
-- generated_at: `2026-06-12T14:20:20+00:00`
+- generated_at: `2026-06-13T06:19:54+00:00`
 - prepared_cache: `runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_sidecar_db_20260101_20260610.pkl`
 - data_rows: `157551`
 - feature_set: `kis_sidecar_failure_risk_augmented`

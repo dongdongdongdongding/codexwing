@@ -1,6 +1,6 @@
 # KIS Sidecar Threshold Sweep
 
-- generated_at: `2026-06-12T15:43:17+00:00`
+- generated_at: `2026-06-13T06:15:17+00:00`
 - prepared_cache: `runtime_state/reports/learning/scan_universe_admission_challenger_touch5_dd10_kis_sidecar_db_20260101_20260610.pkl`
 - data_rows: `157551`
 - feature_set: `kis_sidecar_failure_risk_augmented`
@@ -124,7 +124,7 @@
 114. `KOSDAQ` `top2_prob_plus_tail_p0p65_tail0p9` status=`shadow_ready` n=`38` days=`9` runs=`19` hit5_dd10=`100.0` avg5=`10.521392` min_low=`-7.8413` blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
 115. `KOSDAQ` `top2_prob_plus_tail_p0p7_tail0p9` status=`shadow_ready` n=`38` days=`9` runs=`19` hit5_dd10=`100.0` avg5=`10.521392` min_low=`-7.8413` blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
 116. `KOSDAQ` `top2_prob_plus_tail_p0p75_tail0p9` status=`shadow_ready` n=`38` days=`9` runs=`19` hit5_dd10=`100.0` avg5=`10.521392` min_low=`-7.8413` blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`
-117. `KOSDAQ` `top1_tail0p6` status=`shadow_ready` n=`23` days=`11` runs=`23` hit5_dd10=`82.6087` avg5=`11.146604` min_low=`-7.862174` blockers=`['n_lt_45', 'active_days_lt_20']`
-118. `KOSDAQ` `top1_p0p3_tail0p6` status=`shadow_ready` n=`23` days=`11` runs=`23` hit5_dd10=`82.6087` avg5=`11.146604` min_low=`-7.862174` blockers=`['n_lt_45', 'active_days_lt_20']`
-119. `KOSDAQ` `top1_p0p35_tail0p6` status=`shadow_ready` n=`23` days=`11` runs=`23` hit5_dd10=`82.6087` avg5=`11.146604` min_low=`-7.862174` blockers=`['n_lt_45', 'active_days_lt_20']`
-120. `KOSDAQ` `top1_p0p4_tail0p6` status=`shadow_ready` n=`23` days=`11` runs=`23` hit5_dd10=`82.6087` avg5=`11.146604` min_low=`-7.862174` blockers=`['n_lt_45', 'active_days_lt_20']`
+117. `KOSDAQ` `top1_p0p65_tail0p6` status=`shadow_ready` n=`23` days=`11` runs=`23` hit5_dd10=`82.6087` avg5=`11.146604` min_low=`-7.862174` blockers=`['n_lt_45', 'active_days_lt_20']`
+118. `KOSDAQ` `top1_p0p7_tail0p6` status=`shadow_ready` n=`23` days=`11` runs=`23` hit5_dd10=`82.6087` avg5=`11.146604` min_low=`-7.862174` blockers=`['n_lt_45', 'active_days_lt_20']`
+119. `KOSDAQ` `top1_p0p75_tail0p6` status=`shadow_ready` n=`23` days=`11` runs=`23` hit5_dd10=`82.6087` avg5=`11.146604` min_low=`-7.862174` blockers=`['n_lt_45', 'active_days_lt_20']`
+120. `KOSDAQ` `top2_prob_tail_margin_p0p65_tail0p95` status=`shadow_ready` n=`35` days=`9` runs=`19` hit5_dd10=`94.2857` avg5=`13.384418` min_low=`-7.8413` blockers=`['n_lt_45', 'active_days_lt_20', 'active_runs_lt_20']`

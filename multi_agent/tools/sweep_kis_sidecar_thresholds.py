@@ -46,6 +46,23 @@ from multi_agent.tools.train_scan_universe_admission_challenger import (
 TARGET_TOUCH_NET_PCT = 4.601458
 LOSS_FLOOR_PCT = -10.0
 
+_FRONTIER_DEFAULT_PRODUCTION_THRESHOLDS: Dict[str, Dict[str, float]] = {
+    "KOSPI": {
+        "min_n": 30.0,
+        "min_active_days": 15.0,
+        "min_active_runs": 20.0,
+        "min_touch5_dd10_5d_pct": 73.0,
+        "min_low_5d_pct": -10.0,
+    },
+    "KOSDAQ": {
+        "min_n": 45.0,
+        "min_active_days": 20.0,
+        "min_active_runs": 20.0,
+        "min_touch5_dd10_5d_pct": 73.0,
+        "min_low_5d_pct": -10.0,
+    },
+}
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -405,6 +422,205 @@ def _summary_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
     )
 
 
+def _float_value(value: Any, default: float | None = None) -> float | None:
+    try:
+        if value is None:
+            return default
+        number = float(value)
+    except Exception:
+        return default
+    if math.isnan(number) or math.isinf(number):
+        return default
+    return number
+
+
+def _int_metric(row: Mapping[str, Any], key: str) -> int:
+    metrics_row = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    number = _float_value(metrics_row.get(key), 0.0)
+    return int(number or 0)
+
+
+def _float_metric(row: Mapping[str, Any], key: str, default: float | None = None) -> float | None:
+    metrics_row = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
+    return _float_value(metrics_row.get(key), default)
+
+
+def _parse_expected_number(value: Any) -> float | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    for prefix in (">=", "<=", ">", "<", "="):
+        if text.startswith(prefix):
+            text = text[len(prefix) :].strip()
+            break
+    return _float_value(text)
+
+
+def _production_thresholds(row: Mapping[str, Any]) -> Dict[str, float]:
+    market = str(
+        row.get("market")
+        or ((row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}) or {}).get("market")
+        or ""
+    ).upper()
+    thresholds = dict(
+        _FRONTIER_DEFAULT_PRODUCTION_THRESHOLDS.get(market, _FRONTIER_DEFAULT_PRODUCTION_THRESHOLDS["KOSPI"])
+    )
+    gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}
+    check_map = {
+        "n": "min_n",
+        "active_days": "min_active_days",
+        "active_runs": "min_active_runs",
+        "hit5_dd10_5d_pct": "min_touch5_dd10_5d_pct",
+        "min_min_low_5d_pct": "min_low_5d_pct",
+        "min_ordered_exit_5d_pct": "min_low_5d_pct",
+    }
+    for check in gate.get("checks") or []:
+        if not isinstance(check, Mapping) or check.get("gate") != "production":
+            continue
+        threshold_key = check_map.get(str(check.get("name") or ""))
+        if not threshold_key:
+            continue
+        parsed = _parse_expected_number(check.get("expected"))
+        if parsed is not None:
+            thresholds[threshold_key] = parsed
+    return thresholds
+
+
+def _frontier_actuals(row: Mapping[str, Any]) -> Dict[str, float | int | None]:
+    return {
+        "n": _int_metric(row, "n"),
+        "active_days": _int_metric(row, "active_days"),
+        "active_runs": _int_metric(row, "active_runs"),
+        "hit5_dd10_5d_pct": _float_metric(row, "hit5_dd10_5d_pct"),
+        "avg_5d_pct": _float_metric(row, "avg_5d_pct"),
+        "min_low_5d_pct": _float_metric(row, "min_min_low_5d_pct"),
+    }
+
+
+def _frontier_deficits(row: Mapping[str, Any], thresholds: Mapping[str, float]) -> Dict[str, float]:
+    actuals = _frontier_actuals(row)
+    hit = _float_value(actuals.get("hit5_dd10_5d_pct"), -999.0)
+    low = _float_value(actuals.get("min_low_5d_pct"), -999.0)
+    return {
+        "n": round(max(0.0, float(thresholds["min_n"]) - float(actuals["n"] or 0)), 6),
+        "active_days": round(max(0.0, float(thresholds["min_active_days"]) - float(actuals["active_days"] or 0)), 6),
+        "active_runs": round(max(0.0, float(thresholds["min_active_runs"]) - float(actuals["active_runs"] or 0)), 6),
+        "hit5_dd10_5d_pct": round(max(0.0, float(thresholds["min_touch5_dd10_5d_pct"]) - float(hit or -999.0)), 6),
+        "min_low_5d_pct": round(max(0.0, float(thresholds["min_low_5d_pct"]) - float(low or -999.0)), 6),
+    }
+
+
+def _frontier_meets(row: Mapping[str, Any], thresholds: Mapping[str, float]) -> Dict[str, bool]:
+    actuals = _frontier_actuals(row)
+    n = int(actuals["n"] or 0)
+    active_days = int(actuals["active_days"] or 0)
+    active_runs = int(actuals["active_runs"] or 0)
+    hit = _float_value(actuals.get("hit5_dd10_5d_pct"))
+    low = _float_value(actuals.get("min_low_5d_pct"))
+    return {
+        "sample_n": n >= int(thresholds["min_n"]),
+        "sample_active_days": active_days >= int(thresholds["min_active_days"]),
+        "sample_active_runs": active_runs >= int(thresholds["min_active_runs"]),
+        "target_touch": hit is not None and hit >= float(thresholds["min_touch5_dd10_5d_pct"]),
+        "drawdown_floor": low is not None and low >= float(thresholds["min_low_5d_pct"]),
+    }
+
+
+def _frontier_compact(row: Mapping[str, Any]) -> Dict[str, Any]:
+    thresholds = _production_thresholds(row)
+    compact = _compact_result(row)
+    compact["production_frontier"] = {
+        "thresholds": {key: _round(value) for key, value in thresholds.items()},
+        "actuals": _frontier_actuals(row),
+        "deficits": _frontier_deficits(row, thresholds),
+        "meets": _frontier_meets(row, thresholds),
+    }
+    return compact
+
+
+def _frontier_outcome_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    return (
+        -_int_metric(row, "active_days"),
+        -float(_float_metric(row, "hit5_dd10_5d_pct", 0.0) or 0.0),
+        -float(_float_metric(row, "avg_5d_pct", -999.0) or -999.0),
+        -float(_float_metric(row, "min_min_low_5d_pct", -999.0) or -999.0),
+        -_int_metric(row, "n"),
+    )
+
+
+def _frontier_low_fail_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    return (
+        -float(_float_metric(row, "min_min_low_5d_pct", -999.0) or -999.0),
+        -float(_float_metric(row, "hit5_dd10_5d_pct", 0.0) or 0.0),
+        -float(_float_metric(row, "avg_5d_pct", -999.0) or -999.0),
+        -_int_metric(row, "active_days"),
+        -_int_metric(row, "n"),
+    )
+
+
+def _top_frontier(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    limit: int,
+    sort_key: Any = _frontier_outcome_sort_key,
+) -> List[Dict[str, Any]]:
+    return [_frontier_compact(row) for row in sorted(rows, key=sort_key)[:limit]]
+
+
+def _constraint_frontiers(rows: Sequence[Mapping[str, Any]], *, limit: int) -> Dict[str, Any]:
+    eligible = [
+        row
+        for row in rows
+        if isinstance(row, Mapping)
+        and isinstance(row.get("metrics"), Mapping)
+        and isinstance(row.get("kis_model_gate"), Mapping)
+    ]
+    production_ready = [
+        row for row in eligible if bool((row.get("kis_model_gate") or {}).get("production_ready"))
+    ]
+    days_low_safe_touch: List[Mapping[str, Any]] = []
+    one_day_short_low_safe_touch: List[Mapping[str, Any]] = []
+    sample_sufficient_touch_but_low_fail: List[Mapping[str, Any]] = []
+    sample_sufficient_low_safe_but_touch_fail: List[Mapping[str, Any]] = []
+    for row in eligible:
+        thresholds = _production_thresholds(row)
+        actuals = _frontier_actuals(row)
+        meets = _frontier_meets(row, thresholds)
+        sample_sufficient = bool(meets["sample_n"] and meets["sample_active_days"] and meets["sample_active_runs"])
+        one_day_short_sample = bool(
+            meets["sample_n"]
+            and int(actuals["active_days"] or 0) == int(thresholds["min_active_days"]) - 1
+            and meets["sample_active_runs"]
+        )
+        if sample_sufficient and meets["target_touch"] and meets["drawdown_floor"]:
+            days_low_safe_touch.append(row)
+        if one_day_short_sample and meets["target_touch"] and meets["drawdown_floor"]:
+            one_day_short_low_safe_touch.append(row)
+        if sample_sufficient and meets["target_touch"] and not meets["drawdown_floor"]:
+            sample_sufficient_touch_but_low_fail.append(row)
+        if sample_sufficient and meets["drawdown_floor"] and not meets["target_touch"]:
+            sample_sufficient_low_safe_but_touch_fail.append(row)
+    return {
+        "production_ready_count": len(production_ready),
+        "production_ready_top": _top_frontier(production_ready, limit=limit),
+        "days_low_safe_touch_count": len(days_low_safe_touch),
+        "days_low_safe_touch_top": _top_frontier(days_low_safe_touch, limit=limit),
+        "one_day_short_low_safe_touch_count": len(one_day_short_low_safe_touch),
+        "one_day_short_low_safe_touch_top": _top_frontier(one_day_short_low_safe_touch, limit=limit),
+        "sample_sufficient_touch_but_low_fail_count": len(sample_sufficient_touch_but_low_fail),
+        "sample_sufficient_touch_but_low_fail_top": _top_frontier(
+            sample_sufficient_touch_but_low_fail,
+            limit=limit,
+            sort_key=_frontier_low_fail_sort_key,
+        ),
+        "sample_sufficient_low_safe_but_touch_fail_count": len(sample_sufficient_low_safe_but_touch_fail),
+        "sample_sufficient_low_safe_but_touch_fail_top": _top_frontier(
+            sample_sufficient_low_safe_but_touch_fail,
+            limit=limit,
+        ),
+    }
+
+
 def _is_sample_only_blocked(row: Mapping[str, Any]) -> bool:
     gate = row.get("kis_model_gate") if isinstance(row.get("kis_model_gate"), Mapping) else {}
     if not gate.get("shadow_display_allowed"):
@@ -527,6 +743,7 @@ def _analysis_summary(rows: Sequence[Mapping[str, Any]], *, limit: int) -> Dict[
         "sample_sufficient_count": len(sample_sufficient),
         "sample_sufficient_top": [_compact_result(row) for row in sample_sufficient[:limit]],
         "pareto_top": _pareto_rows(rows, limit=limit),
+        "constraint_frontiers": _constraint_frontiers(rows, limit=limit),
         "active_day_frontier": {
             "max_active_days": int(max_active_days),
             "top": [_compact_result(row) for row in active_day_frontier[:limit]],
@@ -631,7 +848,7 @@ def main() -> int:
         )
     )
     report = {
-        "version": "kis_sidecar_threshold_sweep_v1",
+        "version": "kis_sidecar_threshold_sweep_v2",
         "generated_at": _utc_now(),
         "prepared_cache": str(cache_path),
         "data_rows": int(len(data)),
