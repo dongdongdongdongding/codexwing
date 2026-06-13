@@ -51,6 +51,7 @@ DEFAULT_DRAWDOWN_FILTER_REPORT = (
     ROOT / "runtime_state/reports/learning/kis_touch5_dd10_drawdown_filter_research_kospi_20260101_20260610.json"
 )
 DEFAULT_COVERAGE_AUDIT = ROOT / "runtime_state/reports/learning/kis_touch5_research_coverage_audit_20260613.json"
+DEFAULT_SLICE_ABLATION = ROOT / "runtime_state/reports/learning/kis_touch5_slice_ablation_20260613.json"
 DEFAULT_FINALTOPN_PREFILTER_PROXY = (
     ROOT / "runtime_state/reports/learning/kis_three_stage_ev_ranker_finaltopn_prefilter_proxy_20260101_20260610.json"
 )
@@ -813,6 +814,38 @@ def _best_available_decision(shadow_by_market: Mapping[str, Any]) -> Dict[str, A
     }
 
 
+def _slice_ablation_market(report: Mapping[str, Any], market: str) -> Dict[str, Any]:
+    markets = report.get("markets") if isinstance(report.get("markets"), Mapping) else {}
+    row = markets.get(market) if isinstance(markets.get(market), Mapping) else {}
+    best_results = row.get("best_results") if isinstance(row.get("best_results"), list) else []
+    best = best_results[0] if best_results and isinstance(best_results[0], Mapping) else {}
+    best_scope = best.get("scope") if isinstance(best.get("scope"), Mapping) else {}
+    best_metrics = best.get("metrics") if isinstance(best.get("metrics"), Mapping) else {}
+    best_gate = best.get("kis_model_gate") if isinstance(best.get("kis_model_gate"), Mapping) else {}
+    best_identity = best.get("identity") if isinstance(best.get("identity"), Mapping) else {}
+    return {
+        "status_counts": row.get("status_counts") or {},
+        "ok_results": row.get("ok_results"),
+        "production_ready_count": row.get("production_ready_count"),
+        "shadow_display_allowed_count": row.get("shadow_display_allowed_count"),
+        "all_feature_period_result_count": row.get("all_feature_period_result_count"),
+        "all_feature_period_outcome_pass_count": row.get("all_feature_period_outcome_pass_count"),
+        "available_full_ablation_result_count": row.get("available_full_ablation_result_count"),
+        "available_full_ablation_outcome_pass_count": row.get("available_full_ablation_outcome_pass_count"),
+        "dominant_close_failure_prior_dependency": row.get("dominant_close_failure_prior_dependency"),
+        "best_result": {
+            "slice": best_scope.get("slice"),
+            "feature_config": best_scope.get("feature_config"),
+            "selection_rule": best_identity.get("selection_rule"),
+            "gate_status": best_gate.get("status"),
+            "production_ready": best_gate.get("production_ready"),
+            "shadow_display_allowed": best_gate.get("shadow_display_allowed"),
+            "blockers": best_gate.get("production_blocking_reasons") or [],
+            "metrics": _pick_metrics(best_metrics),
+        },
+    }
+
+
 def build_report(
     *,
     shadow_report_path: Path = DEFAULT_SHADOW_REPORT,
@@ -830,6 +863,7 @@ def build_report(
     candidate_leaderboard_path: Path | None = None,
     drawdown_filter_report_path: Path | None = None,
     coverage_audit_path: Path | None = None,
+    slice_ablation_path: Path | None = None,
     finaltopn_prefilter_proxy_path: Path | None = None,
     finaltopn_actual_sidecar_path: Path | None = None,
     static_master_augmentation_path: Path | None = None,
@@ -854,6 +888,7 @@ def build_report(
     candidate_leaderboard = _load_optional_json(candidate_leaderboard_path)
     drawdown_filter_report = _load_optional_json(drawdown_filter_report_path)
     coverage_audit = _load_optional_json(coverage_audit_path)
+    slice_ablation = _load_optional_json(slice_ablation_path)
     finaltopn_prefilter_proxy = _load_optional_json(finaltopn_prefilter_proxy_path)
     finaltopn_actual_sidecar = _load_optional_json(finaltopn_actual_sidecar_path)
     static_master_augmentation = _load_optional_json(static_master_augmentation_path)
@@ -880,6 +915,7 @@ def build_report(
             else {},
             "candidate_leaderboard": _candidate_leaderboard_market(candidate_leaderboard, market),
             "drawdown_filter_research": _drawdown_filter_research_market(drawdown_filter_report, market),
+            "slice_ablation": _slice_ablation_market(slice_ablation, market),
         }
     decision = _best_available_decision({m: row["kis_sidecar_longfold_shadow"] for m, row in markets.items()})
     drawdown_kospi = markets.get("KOSPI", {}).get("drawdown_filter_research") or {}
@@ -907,6 +943,23 @@ def build_report(
         decision["feature_family_ablation_required"] = bool(coverage_decision.get("feature_family_ablation_required"))
         decision["rolling_prior_required"] = bool(coverage_decision.get("rolling_prior_required"))
         if not actual_full_period:
+            decision["production_replacement_proven"] = False
+            decision["recommended_action"] = "keep_existing_production_and_show_kis_shadow_top_section"
+    slice_decision = slice_ablation.get("decision") if isinstance(slice_ablation.get("decision"), dict) else {}
+    if slice_decision:
+        slice_ready = bool(slice_decision.get("production_replacement_ready"))
+        decision["slice_ablation_status"] = slice_decision.get("status")
+        decision["slice_ablation_production_ready"] = slice_ready
+        decision["slice_ablation_all_trainable_periods_outcome_pass"] = bool(
+            slice_decision.get("all_trainable_periods_outcome_pass")
+        )
+        decision["slice_ablation_available_full_ablation_has_multiple_passing_families"] = bool(
+            slice_decision.get("available_full_ablation_has_multiple_passing_families")
+        )
+        decision["slice_ablation_missing_or_sparse_actual_months"] = (
+            slice_decision.get("missing_or_sparse_actual_months") or []
+        )
+        if not slice_ready:
             decision["production_replacement_proven"] = False
             decision["recommended_action"] = "keep_existing_production_and_show_kis_shadow_top_section"
     return {
@@ -963,6 +1016,10 @@ def build_report(
             if coverage_audit_path and coverage_audit_path.exists()
             else None,
             "coverage_audit": coverage_decision,
+            "slice_ablation_report": _rel(slice_ablation_path)
+            if slice_ablation_path and slice_ablation_path.exists()
+            else None,
+            "slice_ablation": slice_decision,
             "drawdown_filter_status": drawdown_filter_report.get("status") if drawdown_filter_report else None,
             "drawdown_filter_validation_mode": drawdown_filter_report.get("validation_mode")
             if drawdown_filter_report
@@ -1054,6 +1111,10 @@ def build_report(
                 "step": "research_coverage_audit",
                 "finding": "실제 KIS sidecar prepared cache의 월별 범위, OOS fold 월, 피쳐군을 별도 감사해 Jan-Jun 전체 검증과 피쳐군 ablation이 빠지면 production replacement를 차단한다.",
             },
+            {
+                "step": "period_slice_and_feature_ablation",
+                "finding": "현재 최고 KIS 규칙을 실제 sidecar 월별/2개월 구간과 피쳐군 제거·단독 조건에서 재생해 성과 안정성과 특정 피쳐 의존성을 검증한다.",
+            },
         ],
         "markets": markets,
         "historical_proxy_augmentation_experiment": _historical_proxy_augmentation_experiment(
@@ -1118,6 +1179,9 @@ def _markdown(report: Mapping[str, Any]) -> str:
         f"- coverage_audit_status: `{decision.get('coverage_audit_status')}`",
         f"- actual_kis_full_jan_jun_period_proven: `{decision.get('actual_kis_full_jan_jun_period_proven')}`",
         f"- missing_or_sparse_actual_kis_months: `{decision.get('missing_or_sparse_actual_kis_months')}`",
+        f"- slice_ablation_status: `{decision.get('slice_ablation_status')}`",
+        f"- slice_ablation_production_ready: `{decision.get('slice_ablation_production_ready')}`",
+        f"- slice_ablation_missing_or_sparse_actual_months: `{decision.get('slice_ablation_missing_or_sparse_actual_months')}`",
         "",
         "## 목표",
         f"- primary_goal: {goal.get('primary_goal')}",
@@ -1140,6 +1204,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- candidate_leaderboard: `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('status')}` / `{((report.get('research_inputs') or {}).get('candidate_leaderboard') or {}).get('recommended_action')}`",
             f"- drawdown_filter_research: status=`{(report.get('research_inputs') or {}).get('drawdown_filter_status')}`, validation=`{(report.get('research_inputs') or {}).get('drawdown_filter_validation_mode')}`, deployment_ready=`{(report.get('research_inputs') or {}).get('drawdown_filter_deployment_ready')}`, production_gate_pass_count=`{(report.get('research_inputs') or {}).get('drawdown_filter_production_gate_pass_count')}`",
             f"- coverage_audit: status=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('status')}`, actual_kis_oos_months=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('actual_kis_oos_months')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('coverage_audit') or {}).get('missing_or_sparse_actual_kis_months')}`",
+            f"- slice_ablation: status=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('status')}`, production_ready=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('production_replacement_ready')}`, period_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('all_trainable_periods_outcome_pass')}`, ablation_pass=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('available_full_ablation_has_multiple_passing_families')}`, missing_or_sparse=`{((report.get('research_inputs') or {}).get('slice_ablation') or {}).get('missing_or_sparse_actual_months')}`",
             f"- three_stage_validation: `{(report.get('research_inputs') or {}).get('three_stage_validation')}`",
             "",
         ]
@@ -1265,6 +1330,15 @@ def _markdown(report: Mapping[str, Any]) -> str:
         finaltopn_actual_gate = (
             finaltopn_actual.get("best_gate") if isinstance(finaltopn_actual.get("best_gate"), dict) else {}
         )
+        slice_ablation = payload.get("slice_ablation") if isinstance(payload.get("slice_ablation"), dict) else {}
+        slice_best = (
+            slice_ablation.get("best_result")
+            if isinstance(slice_ablation.get("best_result"), dict)
+            else {}
+        )
+        slice_best_metrics = (
+            slice_best.get("metrics") if isinstance(slice_best.get("metrics"), dict) else {}
+        )
         lines.extend(
             [
                 f"## {market}",
@@ -1284,6 +1358,8 @@ def _markdown(report: Mapping[str, Any]) -> str:
                 drawdown_line,
                 drawdown_holdout_line,
                 drawdown_rolling_line,
+                f"- slice_ablation: ok=`{slice_ablation.get('ok_results')}`, production_ready_count=`{slice_ablation.get('production_ready_count')}`, shadow_count=`{slice_ablation.get('shadow_display_allowed_count')}`, period_pass=`{slice_ablation.get('all_feature_period_outcome_pass_count')}/{slice_ablation.get('all_feature_period_result_count')}`, ablation_pass=`{slice_ablation.get('available_full_ablation_outcome_pass_count')}/{slice_ablation.get('available_full_ablation_result_count')}`, dominant_prior=`{slice_ablation.get('dominant_close_failure_prior_dependency')}`",
+                f"- slice_ablation_best: slice=`{slice_best.get('slice')}`, feature_config=`{slice_best.get('feature_config')}`, rule=`{slice_best.get('selection_rule')}`, gate=`{slice_best.get('gate_status')}`, n=`{slice_best_metrics.get('n')}`, active_days=`{slice_best_metrics.get('active_days')}`, hit5=`{slice_best_metrics.get('hit5_dd10_5d_pct')}`, avg5=`{slice_best_metrics.get('avg_5d_pct')}`, min_low=`{slice_best_metrics.get('min_min_low_5d_pct')}`, blockers=`{slice_best.get('blockers')}`",
                 f"- finaltopn_prefilter_proxy: status=`{finaltopn_proxy.get('status')}`, gate=`{finaltopn_proxy_gate.get('status')}`, production_ready=`{finaltopn_proxy_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_proxy_gate.get('shadow_display_allowed')}`, n=`{finaltopn_proxy_metrics.get('n')}`, active_days=`{finaltopn_proxy_metrics.get('active_days')}`, hit5=`{finaltopn_proxy_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_proxy_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_proxy_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_proxy_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_proxy_gate.get('production_blocking_reasons')}`",
                 f"- finaltopn_actual_sidecar: status=`{finaltopn_actual.get('status')}`, gate=`{finaltopn_actual_gate.get('status')}`, production_ready=`{finaltopn_actual_gate.get('production_ready')}`, shadow_display_allowed=`{finaltopn_actual_gate.get('shadow_display_allowed')}`, n=`{finaltopn_actual_metrics.get('n')}`, active_days=`{finaltopn_actual_metrics.get('active_days')}`, hit5=`{finaltopn_actual_metrics.get('hit5_dd10_5d_pct')}`, avg_exit=`{finaltopn_actual_metrics.get('avg_ordered_exit_5d_pct')}`, dynamic_exit=`{finaltopn_actual_metrics.get('avg_dynamic_exit_5d_pct')}`, min_low=`{finaltopn_actual_metrics.get('min_min_low_5d_pct')}`, blockers=`{finaltopn_actual_gate.get('production_blocking_reasons')}`",
                 "",
@@ -1399,6 +1475,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--candidate-leaderboard-report", default=str(DEFAULT_CANDIDATE_LEADERBOARD))
     parser.add_argument("--drawdown-filter-report", default=str(DEFAULT_DRAWDOWN_FILTER_REPORT))
     parser.add_argument("--coverage-audit-report", default=str(DEFAULT_COVERAGE_AUDIT))
+    parser.add_argument("--slice-ablation-report", default=str(DEFAULT_SLICE_ABLATION))
     parser.add_argument("--finaltopn-prefilter-proxy-report", default=str(DEFAULT_FINALTOPN_PREFILTER_PROXY))
     parser.add_argument("--finaltopn-actual-sidecar-report", default=str(DEFAULT_FINALTOPN_ACTUAL_SIDECAR))
     parser.add_argument("--static-master-augmentation-report", default=str(DEFAULT_STATIC_MASTER_AUGMENTATION))
@@ -1439,6 +1516,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         candidate_leaderboard_path=Path(args.candidate_leaderboard_report),
         drawdown_filter_report_path=Path(args.drawdown_filter_report),
         coverage_audit_path=Path(args.coverage_audit_report),
+        slice_ablation_path=Path(args.slice_ablation_report),
         finaltopn_prefilter_proxy_path=Path(args.finaltopn_prefilter_proxy_report),
         finaltopn_actual_sidecar_path=Path(args.finaltopn_actual_sidecar_report),
         static_master_augmentation_path=Path(args.static_master_augmentation_report),

@@ -30,9 +30,19 @@
     "recommended_action": "keep_existing_production_and_show_kis_shadow_top_section",
     "rolling_prior_required": true,
     "shadow_performance_proven": true,
+    "slice_ablation_all_trainable_periods_outcome_pass": false,
+    "slice_ablation_available_full_ablation_has_multiple_passing_families": false,
+    "slice_ablation_missing_or_sparse_actual_months": [
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04"
+    ],
+    "slice_ablation_production_ready": false,
+    "slice_ablation_status": "slice_ablation_blocks_production_replacement",
     "status": "verified_shadow_performance"
   },
-  "generated_at": "2026-06-13T09:14:31.597773+00:00",
+  "generated_at": "2026-06-13T10:09:42.182339+00:00",
   "historical_proxy_augmentation_experiment": {
     "backfill_priorities": [
       {
@@ -16484,6 +16494,56 @@
             "shadow_ready": 412,
             "shadow_risk_review": 1415
           }
+        }
+      },
+      "slice_ablation": {
+        "all_feature_period_outcome_pass_count": 1,
+        "all_feature_period_result_count": 4,
+        "available_full_ablation_outcome_pass_count": 0,
+        "available_full_ablation_result_count": 6,
+        "best_result": {
+          "blockers": [
+            "n_lt_45",
+            "active_days_lt_20",
+            "active_runs_lt_20"
+          ],
+          "feature_config": "all_features",
+          "gate_status": "shadow_ready",
+          "metrics": {
+            "active_days": 3,
+            "active_runs": 6,
+            "avg_1d_pct": 8.346421,
+            "avg_3d_pct": 11.586163,
+            "avg_5d_pct": 9.402924,
+            "avg_max_high_5d_pct": 24.30198,
+            "avg_min_low_5d_pct": -3.026145,
+            "bad_path_pct": 23.5294,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 82.3529,
+            "hit5_dd10_5d_pct": 88.2353,
+            "min_1d_pct": -2.363291,
+            "min_3d_pct": -2.846681,
+            "min_5d_pct": -2.995802,
+            "min_min_low_5d_pct": -9.837985,
+            "n": 17,
+            "stop5_pct": 11.7647,
+            "stop_before_target_5d_pct": 11.7647,
+            "target_before_stop_5d_pct": 88.2353,
+            "win_5d_pct": 88.2353
+          },
+          "production_ready": false,
+          "selection_rule": "top3_ev_tail0p9",
+          "shadow_display_allowed": true,
+          "slice": "2026-05"
+        },
+        "dominant_close_failure_prior_dependency": false,
+        "ok_results": 10,
+        "production_ready_count": 0,
+        "shadow_display_allowed_count": 2,
+        "status_counts": {
+          "ok": 10,
+          "skipped_no_selected_rows": 3,
+          "skipped_scope_not_trainable": 8
         }
       },
       "three_stage_ev_ranker": {
@@ -40197,6 +40257,56 @@
           }
         }
       },
+      "slice_ablation": {
+        "all_feature_period_outcome_pass_count": 3,
+        "all_feature_period_result_count": 4,
+        "available_full_ablation_outcome_pass_count": 0,
+        "available_full_ablation_result_count": 6,
+        "best_result": {
+          "blockers": [
+            "n_lt_30",
+            "active_days_lt_15",
+            "active_runs_lt_20"
+          ],
+          "feature_config": "all_features",
+          "gate_status": "shadow_ready",
+          "metrics": {
+            "active_days": 3,
+            "active_runs": 8,
+            "avg_1d_pct": 2.353631,
+            "avg_3d_pct": 13.601016,
+            "avg_5d_pct": 8.426101,
+            "avg_max_high_5d_pct": 21.998972,
+            "avg_min_low_5d_pct": -2.854136,
+            "bad_path_pct": 25.0,
+            "buy_premium_pct": 2.0,
+            "hit10_5d_pct": 100.0,
+            "hit5_dd10_5d_pct": 100.0,
+            "min_1d_pct": -4.355879,
+            "min_3d_pct": 11.451747,
+            "min_5d_pct": 6.317361,
+            "min_min_low_5d_pct": -8.188031,
+            "n": 8,
+            "stop5_pct": 25.0,
+            "stop_before_target_5d_pct": 25.0,
+            "target_before_stop_5d_pct": 100.0,
+            "win_5d_pct": 100.0
+          },
+          "production_ready": false,
+          "selection_rule": "top2_prob_plus_tail_p0p8_tail0p85",
+          "shadow_display_allowed": true,
+          "slice": "2026-05..2026-06"
+        },
+        "dominant_close_failure_prior_dependency": false,
+        "ok_results": 10,
+        "production_ready_count": 0,
+        "shadow_display_allowed_count": 3,
+        "status_counts": {
+          "ok": 10,
+          "skipped_no_selected_rows": 3,
+          "skipped_scope_not_trainable": 8
+        }
+      },
       "three_stage_ev_ranker": {
         "baseline_best_metrics": {
           "active_days": 21,
@@ -40400,6 +40510,21 @@
     "sidecar_score_production_ready": 0,
     "sidecar_score_shadow_display_allowed": 2777,
     "sidecar_score_sweep_report": "runtime_state/reports/learning/kis_sidecar_threshold_sweep_touch5_dd10_3stage_evscore_longfold_20260101_20260610.json",
+    "slice_ablation": {
+      "all_trainable_periods_outcome_pass": false,
+      "available_full_ablation_has_multiple_passing_families": false,
+      "missing_or_sparse_actual_months": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04"
+      ],
+      "production_ready_by_gate": false,
+      "production_replacement_ready": false,
+      "recommended_action": "keep KIS model in shadow and continue actual sidecar backfill/forward tracking",
+      "status": "slice_ablation_blocks_production_replacement"
+    },
+    "slice_ablation_report": "runtime_state/reports/learning/kis_touch5_slice_ablation_20260613.json",
     "static_master_augmentation_report": "runtime_state/reports/learning/kis_static_sidecar_master_augmented_proxy_20260613.json",
     "static_master_focused_suite_decision": {
       "all_required_markets_production_ready": false,
@@ -40461,6 +40586,10 @@
     {
       "finding": "실제 KIS sidecar prepared cache의 월별 범위, OOS fold 월, 피쳐군을 별도 감사해 Jan-Jun 전체 검증과 피쳐군 ablation이 빠지면 production replacement를 차단한다.",
       "step": "research_coverage_audit"
+    },
+    {
+      "finding": "현재 최고 KIS 규칙을 실제 sidecar 월별/2개월 구간과 피쳐군 제거·단독 조건에서 재생해 성과 안정성과 특정 피쳐 의존성을 검증한다.",
+      "step": "period_slice_and_feature_ablation"
     }
   ],
   "service_feature_scope": {
