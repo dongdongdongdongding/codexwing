@@ -7,6 +7,7 @@
   <string>com.codex.swing.discord-bot</string>
   <key>ProgramArguments</key>
   <array>
+    <string>/bin/bash</string>
     <string>/Volumes/ORICO/quant_pj1/scripts/run_discord_bot.sh</string>
   </array>
   <key>RunAtLoad</key>
