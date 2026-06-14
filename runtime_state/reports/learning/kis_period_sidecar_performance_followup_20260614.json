@@ -1,0 +1,1326 @@
+{
+  "version": "kis_period_sidecar_performance_followup_v1",
+  "generated_at": "2026-06-14T05:58:12+00:00",
+  "dummy_data_used": false,
+  "backfill": {
+    "cache_dir": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/long_term/kis_ticker_period_sidecar",
+    "lookup_rows": {
+      "flow": 383848,
+      "financial": 275690,
+      "news": 292167
+    },
+    "call_counts": {
+      "stock_investor_daily": 13838,
+      "financial_ratio": 2770,
+      "news_titles_by_date": 106
+    },
+    "failure_counts": {
+      "stock_investor_daily:KISOpenAPIError": 5,
+      "financial_ratio:KISOpenAPIError": 8
+    },
+    "markets": [
+      {
+        "market": "KOSPI",
+        "input_scope": {
+          "rows": 100490,
+          "columns": 373,
+          "date_min": "2026-01-02",
+          "date_max": "2026-06-10",
+          "unique_days": 106,
+          "unique_tickers": 942,
+          "markets": {
+            "KOSPI": 100490
+          }
+        },
+        "output_scope": {
+          "rows": 100490,
+          "columns": 381,
+          "date_min": "2026-01-02",
+          "date_max": "2026-06-10",
+          "unique_days": 106,
+          "unique_tickers": 942,
+          "markets": {
+            "KOSPI": 100490
+          }
+        },
+        "augmented_rows": 100485,
+        "augmented_row_pct": 99.995,
+        "flow_augmented_rows": 93536,
+        "financial_augmented_rows": 79869,
+        "news_augmented_rows": 99795,
+        "future_financial_rows_cleared": 0,
+        "no_dummy_data": true,
+        "leakage_policy": "no forward-fill; financial period end must be <= base date; news exact date only",
+        "feature_fill_counts_top": [
+          {
+            "feature": "kis_news_raw_title_count",
+            "filled_missing_values": 99795
+          },
+          {
+            "feature": "kis_news_rows_filtered_out_count",
+            "filled_missing_values": 99795
+          },
+          {
+            "feature": "kis_news_source_scope_confidence",
+            "filled_missing_values": 99795
+          },
+          {
+            "feature": "kis_news_source_scope_ambiguous",
+            "filled_missing_values": 99795
+          },
+          {
+            "feature": "kis_news_promotion_blocked",
+            "filled_missing_values": 99795
+          },
+          {
+            "feature": "kis_news_source_scope",
+            "filled_missing_values": 99795
+          },
+          {
+            "feature": "flow_source",
+            "filled_missing_values": 93536
+          },
+          {
+            "feature": "flow_unit",
+            "filled_missing_values": 93536
+          },
+          {
+            "feature": "flow_asof",
+            "filled_missing_values": 93536
+          },
+          {
+            "feature": "kis_news_title_count",
+            "filled_missing_values": 92615
+          },
+          {
+            "feature": "kis_whale_score",
+            "filled_missing_values": 85699
+          },
+          {
+            "feature": "kis_foreigner_1d",
+            "filled_missing_values": 85699
+          },
+          {
+            "feature": "kis_institution_1d",
+            "filled_missing_values": 85699
+          },
+          {
+            "feature": "kis_retail_1d",
+            "filled_missing_values": 85699
+          },
+          {
+            "feature": "kis_whale_flow_3d",
+            "filled_missing_values": 85699
+          },
+          {
+            "feature": "kis_whale_flow_10d",
+            "filled_missing_values": 85699
+          },
+          {
+            "feature": "kis_financial_statement_period",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_revenue_growth_rate",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_operating_profit_margin",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_net_income_margin",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_roe",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_eps",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_bps",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_debt_ratio",
+            "filled_missing_values": 79869
+          },
+          {
+            "feature": "kis_financial_reserve_ratio",
+            "filled_missing_values": 79869
+          }
+        ],
+        "coverage_delta": {
+          "flow": {
+            "features_improved": 7,
+            "top_deltas": [
+              {
+                "feature": "flow_asof",
+                "before_present_pct": 0.0,
+                "after_present_pct": 93.08,
+                "delta_pct": 93.08
+              },
+              {
+                "feature": "kis_whale_score",
+                "before_present_pct": 7.837,
+                "after_present_pct": 93.118,
+                "delta_pct": 85.281
+              },
+              {
+                "feature": "kis_foreigner_1d",
+                "before_present_pct": 7.837,
+                "after_present_pct": 93.118,
+                "delta_pct": 85.281
+              },
+              {
+                "feature": "kis_institution_1d",
+                "before_present_pct": 7.837,
+                "after_present_pct": 93.118,
+                "delta_pct": 85.281
+              },
+              {
+                "feature": "kis_retail_1d",
+                "before_present_pct": 7.837,
+                "after_present_pct": 93.118,
+                "delta_pct": 85.281
+              },
+              {
+                "feature": "kis_whale_flow_3d",
+                "before_present_pct": 7.837,
+                "after_present_pct": 93.118,
+                "delta_pct": 85.281
+              },
+              {
+                "feature": "kis_whale_flow_10d",
+                "before_present_pct": 7.837,
+                "after_present_pct": 93.118,
+                "delta_pct": 85.281
+              },
+              {
+                "feature": "flow_source",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "flow_unit",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_sidecar_coverage_investor_flow",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              }
+            ]
+          },
+          "financial": {
+            "features_improved": 9,
+            "top_deltas": [
+              {
+                "feature": "kis_financial_statement_period",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_revenue_growth_rate",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_operating_profit_margin",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_net_income_margin",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_roe",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_eps",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_bps",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_debt_ratio",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_reserve_ratio",
+                "before_present_pct": 7.79,
+                "after_present_pct": 87.269,
+                "delta_pct": 79.479
+              },
+              {
+                "feature": "kis_financial_per",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_financial_pbr",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_financial_current_ratio",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_sidecar_coverage_financial_ratio",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_sidecar_coverage_financial_style",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              }
+            ]
+          },
+          "news": {
+            "features_improved": 7,
+            "top_deltas": [
+              {
+                "feature": "kis_news_raw_title_count",
+                "before_present_pct": 0.692,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.308
+              },
+              {
+                "feature": "kis_news_rows_filtered_out_count",
+                "before_present_pct": 0.692,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.308
+              },
+              {
+                "feature": "kis_news_source_scope_confidence",
+                "before_present_pct": 0.692,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.308
+              },
+              {
+                "feature": "kis_news_source_scope_ambiguous",
+                "before_present_pct": 0.692,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.308
+              },
+              {
+                "feature": "kis_news_promotion_blocked",
+                "before_present_pct": 0.692,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.308
+              },
+              {
+                "feature": "kis_news_source_scope",
+                "before_present_pct": 0.692,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.308
+              },
+              {
+                "feature": "kis_news_title_count",
+                "before_present_pct": 7.837,
+                "after_present_pct": 100.0,
+                "delta_pct": 92.163
+              },
+              {
+                "feature": "kis_sidecar_coverage_news_titles",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              }
+            ]
+          }
+        },
+        "input_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kospi_20260101_20260610.pkl",
+        "output_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_fullrank_period_sidecar_augmented_prepared_kospi_20260101_20260610.pkl"
+      },
+      {
+        "market": "KOSDAQ",
+        "input_scope": {
+          "rows": 191677,
+          "columns": 373,
+          "date_min": "2026-01-02",
+          "date_max": "2026-06-10",
+          "unique_days": 106,
+          "unique_tickers": 1809,
+          "markets": {
+            "KOSDAQ": 191677
+          }
+        },
+        "output_scope": {
+          "rows": 191677,
+          "columns": 381,
+          "date_min": "2026-01-02",
+          "date_max": "2026-06-10",
+          "unique_days": 106,
+          "unique_tickers": 1809,
+          "markets": {
+            "KOSDAQ": 191677
+          }
+        },
+        "augmented_rows": 191676,
+        "augmented_row_pct": 99.999,
+        "flow_augmented_rows": 177959,
+        "financial_augmented_rows": 174764,
+        "news_augmented_rows": 191005,
+        "future_financial_rows_cleared": 0,
+        "no_dummy_data": true,
+        "leakage_policy": "no forward-fill; financial period end must be <= base date; news exact date only",
+        "feature_fill_counts_top": [
+          {
+            "feature": "kis_news_raw_title_count",
+            "filled_missing_values": 191005
+          },
+          {
+            "feature": "kis_news_rows_filtered_out_count",
+            "filled_missing_values": 191005
+          },
+          {
+            "feature": "kis_news_source_scope_confidence",
+            "filled_missing_values": 191005
+          },
+          {
+            "feature": "kis_news_source_scope_ambiguous",
+            "filled_missing_values": 191005
+          },
+          {
+            "feature": "kis_news_promotion_blocked",
+            "filled_missing_values": 191005
+          },
+          {
+            "feature": "kis_news_source_scope",
+            "filled_missing_values": 191005
+          },
+          {
+            "feature": "kis_news_title_count",
+            "filled_missing_values": 178346
+          },
+          {
+            "feature": "flow_source",
+            "filled_missing_values": 177959
+          },
+          {
+            "feature": "flow_unit",
+            "filled_missing_values": 177959
+          },
+          {
+            "feature": "flow_asof",
+            "filled_missing_values": 177959
+          },
+          {
+            "feature": "kis_financial_statement_period",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_revenue_growth_rate",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_operating_profit_margin",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_net_income_margin",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_roe",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_eps",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_bps",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_debt_ratio",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_financial_reserve_ratio",
+            "filled_missing_values": 174764
+          },
+          {
+            "feature": "kis_whale_score",
+            "filled_missing_values": 164722
+          },
+          {
+            "feature": "kis_foreigner_1d",
+            "filled_missing_values": 164722
+          },
+          {
+            "feature": "kis_institution_1d",
+            "filled_missing_values": 164722
+          },
+          {
+            "feature": "kis_retail_1d",
+            "filled_missing_values": 164722
+          },
+          {
+            "feature": "kis_whale_flow_3d",
+            "filled_missing_values": 164722
+          },
+          {
+            "feature": "kis_whale_flow_10d",
+            "filled_missing_values": 164722
+          }
+        ],
+        "coverage_delta": {
+          "flow": {
+            "features_improved": 7,
+            "top_deltas": [
+              {
+                "feature": "flow_asof",
+                "before_present_pct": 0.0,
+                "after_present_pct": 92.843,
+                "delta_pct": 92.843
+              },
+              {
+                "feature": "kis_whale_score",
+                "before_present_pct": 6.954,
+                "after_present_pct": 92.891,
+                "delta_pct": 85.937
+              },
+              {
+                "feature": "kis_foreigner_1d",
+                "before_present_pct": 6.954,
+                "after_present_pct": 92.891,
+                "delta_pct": 85.937
+              },
+              {
+                "feature": "kis_institution_1d",
+                "before_present_pct": 6.954,
+                "after_present_pct": 92.891,
+                "delta_pct": 85.937
+              },
+              {
+                "feature": "kis_retail_1d",
+                "before_present_pct": 6.954,
+                "after_present_pct": 92.891,
+                "delta_pct": 85.937
+              },
+              {
+                "feature": "kis_whale_flow_3d",
+                "before_present_pct": 6.954,
+                "after_present_pct": 92.891,
+                "delta_pct": 85.937
+              },
+              {
+                "feature": "kis_whale_flow_10d",
+                "before_present_pct": 6.954,
+                "after_present_pct": 92.891,
+                "delta_pct": 85.937
+              },
+              {
+                "feature": "flow_source",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "flow_unit",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_sidecar_coverage_investor_flow",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              }
+            ]
+          },
+          "financial": {
+            "features_improved": 9,
+            "top_deltas": [
+              {
+                "feature": "kis_financial_statement_period",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_revenue_growth_rate",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_operating_profit_margin",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_net_income_margin",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_roe",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_eps",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_bps",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_debt_ratio",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_reserve_ratio",
+                "before_present_pct": 6.954,
+                "after_present_pct": 98.131,
+                "delta_pct": 91.177
+              },
+              {
+                "feature": "kis_financial_per",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_financial_pbr",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_financial_current_ratio",
+                "before_present_pct": 0.0,
+                "after_present_pct": 0.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_sidecar_coverage_financial_ratio",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              },
+              {
+                "feature": "kis_sidecar_coverage_financial_style",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              }
+            ]
+          },
+          "news": {
+            "features_improved": 7,
+            "top_deltas": [
+              {
+                "feature": "kis_news_raw_title_count",
+                "before_present_pct": 0.351,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.649
+              },
+              {
+                "feature": "kis_news_rows_filtered_out_count",
+                "before_present_pct": 0.351,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.649
+              },
+              {
+                "feature": "kis_news_source_scope_confidence",
+                "before_present_pct": 0.351,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.649
+              },
+              {
+                "feature": "kis_news_source_scope_ambiguous",
+                "before_present_pct": 0.351,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.649
+              },
+              {
+                "feature": "kis_news_promotion_blocked",
+                "before_present_pct": 0.351,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.649
+              },
+              {
+                "feature": "kis_news_source_scope",
+                "before_present_pct": 0.351,
+                "after_present_pct": 100.0,
+                "delta_pct": 99.649
+              },
+              {
+                "feature": "kis_news_title_count",
+                "before_present_pct": 6.955,
+                "after_present_pct": 100.0,
+                "delta_pct": 93.045
+              },
+              {
+                "feature": "kis_sidecar_coverage_news_titles",
+                "before_present_pct": 100.0,
+                "after_present_pct": 100.0,
+                "delta_pct": 0.0
+              }
+            ]
+          }
+        },
+        "input_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kosdaq_20260101_20260610.pkl",
+        "output_cache": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/learning/kis_historical_universe_fullrank_period_sidecar_augmented_prepared_kosdaq_20260101_20260610.pkl"
+      }
+    ]
+  },
+  "coverage_after_backfill": {
+    "KOSPI": {
+      "rows": 100490,
+      "days": 106,
+      "flow_present_pct": 93.1177,
+      "financial_present_pct": 87.2694,
+      "news_checked_pct": 100.0,
+      "period_augmented_rows": 100485
+    },
+    "KOSDAQ": {
+      "rows": 191677,
+      "days": 106,
+      "flow_present_pct": 92.8912,
+      "financial_present_pct": 98.1307,
+      "news_checked_pct": 100.0,
+      "period_augmented_rows": 191676
+    }
+  },
+  "feature_gap_backfill_priorities": [],
+  "performance": {
+    "expanded_status": "improved_shadow_research",
+    "KOSPI": {
+      "config": {
+        "pool": "prefilter",
+        "pool_k": 10,
+        "final_topn": 1,
+        "score_mode": "ev_hit10",
+        "max_tail_prob": 0.8
+      },
+      "gate": {
+        "version": "kis_model_gate_v4_touch5_dd10",
+        "win_metric_semantics": "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; touch5_dd10_5d production gates use hit5_dd10_5d_pct and a -10% 5D low guard.",
+        "label_gate_profile": "touch5_dd10",
+        "market": "KOSPI",
+        "status": "blocked",
+        "production_ready": false,
+        "shadow_display_allowed": false,
+        "deep_analysis_allowed": false,
+        "risk_review_required": false,
+        "source_ok": true,
+        "production_economics": {
+          "policy": "target_touch_5d_dd10_after_buy_premium",
+          "cost_model": {
+            "version": "kr_tradable_pnl_cost_v1",
+            "buy_fee_bps": 1.5,
+            "sell_fee_bps": 1.5,
+            "buy_slippage_bps": 8.0,
+            "sell_slippage_bps": 8.0,
+            "spread_bps": 4.0,
+            "sell_tax_bps": 15.0,
+            "fill_rate": 1.0
+          },
+          "target_touch_gross_pct": 5.0,
+          "target_touch_net_pct": 4.601458,
+          "loss_floor_pct": -10.0,
+          "hit5_dd10_5d_pct": 70.0,
+          "expected_touch_policy_net_5d_pct": 0.221021,
+          "thresholds": {
+            "min_expected_touch_policy_net_5d_pct": 0.25
+          }
+        },
+        "production_blocking_reasons": [
+          "n_lt_30",
+          "hit5_dd10_5d_lt_73",
+          "min_low_5d_lt_neg10",
+          "expected_touch_policy_net_5d_lt_0p25"
+        ],
+        "shadow_blocking_reasons": [
+          "min_low_5d_lt_neg18"
+        ],
+        "risk_review_reasons": [
+          "min_low_5d_lt_neg10"
+        ],
+        "blocking_reasons": [
+          "n_lt_30",
+          "hit5_dd10_5d_lt_73",
+          "min_low_5d_lt_neg10",
+          "expected_touch_policy_net_5d_lt_0p25"
+        ],
+        "checks": [
+          {
+            "gate": "production",
+            "name": "n",
+            "actual": 20.0,
+            "expected": ">=30",
+            "passed": false,
+            "reason": "n_lt_30"
+          },
+          {
+            "gate": "production",
+            "name": "active_days",
+            "actual": 20.0,
+            "expected": ">=15",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "production",
+            "name": "active_runs",
+            "actual": 20.0,
+            "expected": ">=20",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "production",
+            "name": "hit5_dd10_5d_pct",
+            "actual": 70.0,
+            "expected": ">=73",
+            "passed": false,
+            "reason": "hit5_dd10_5d_lt_73"
+          },
+          {
+            "gate": "production",
+            "name": "min_min_low_5d_pct",
+            "actual": -19.214396,
+            "expected": ">=-10",
+            "passed": false,
+            "reason": "min_low_5d_lt_neg10"
+          },
+          {
+            "gate": "shadow",
+            "name": "n",
+            "actual": 20.0,
+            "expected": ">=8",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "active_days",
+            "actual": 20.0,
+            "expected": ">=3",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "active_runs",
+            "actual": 20.0,
+            "expected": ">=5",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "hit5_dd10_5d_pct",
+            "actual": 70.0,
+            "expected": ">=45",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "min_min_low_5d_pct",
+            "actual": -19.214396,
+            "expected": ">=-18",
+            "passed": false,
+            "reason": "min_low_5d_lt_neg18"
+          },
+          {
+            "gate": "risk_review",
+            "name": "min_min_low_5d_pct",
+            "actual": -19.214396,
+            "expected": ">=-10",
+            "passed": false,
+            "reason": "min_low_5d_lt_neg10"
+          },
+          {
+            "gate": "production_economics",
+            "name": "expected_touch_policy_net_5d_pct",
+            "actual": 0.221021,
+            "expected": ">=0.25",
+            "passed": false,
+            "reason": "expected_touch_policy_net_5d_lt_0p25"
+          }
+        ],
+        "action": "block"
+      },
+      "metrics": {
+        "n": 20,
+        "active_days": 20,
+        "active_runs": 20,
+        "hit5_dd10_5d_pct": 70.0,
+        "target_hit_5d_pct": 80.0,
+        "hit10_5d_pct": 55.0,
+        "safe_hit10_5d_pct": 50.0,
+        "tail_breach_5d_pct": 15.0,
+        "bad_path_pct": 50.0,
+        "avg_5d_pct": 6.600756,
+        "avg_ordered_exit_5d_pct": 1.146858,
+        "avg_dynamic_exit_5d_pct": 3.637369,
+        "avg_mfe_5d_pct": 14.452693,
+        "avg_mae_5d_pct": -6.231053,
+        "min_min_low_5d_pct": -19.214396,
+        "max_mfe_5d_pct": 39.107336,
+        "expected_binary_net_5d_pct": 0.221021,
+        "buy_premium_pct": 2.0,
+        "target_net_pct": 4.601458,
+        "target10_net_pct": 9.58248,
+        "coverage_test_days_pct": 41.6667
+      },
+      "production_ready_count": 0,
+      "shadow_display_allowed_count": 44,
+      "improvement": {
+        "baseline_avg_ordered_exit_5d_pct": 0.700469,
+        "best_avg_ordered_exit_5d_pct": 1.146858,
+        "avg_ordered_exit_delta_pct": 0.446389,
+        "best_avg_dynamic_exit_5d_pct": 3.637369,
+        "dynamic_minus_fixed_exit_delta_pct": 2.490511,
+        "baseline_hit5_dd10_5d_pct": 47.619,
+        "best_hit5_dd10_5d_pct": 70.0,
+        "hit5_dd10_delta_pct": 22.381
+      }
+    },
+    "KOSDAQ": {
+      "config": {
+        "pool": "day_return",
+        "pool_k": 5,
+        "final_topn": 1,
+        "score_mode": "success_tail",
+        "max_tail_prob": 0.85
+      },
+      "gate": {
+        "version": "kis_model_gate_v4_touch5_dd10",
+        "win_metric_semantics": "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; touch5_dd10_5d production gates use hit5_dd10_5d_pct and a -10% 5D low guard.",
+        "label_gate_profile": "touch5_dd10",
+        "market": "KOSDAQ",
+        "status": "blocked",
+        "production_ready": false,
+        "shadow_display_allowed": false,
+        "deep_analysis_allowed": false,
+        "risk_review_required": false,
+        "source_ok": true,
+        "production_economics": {
+          "policy": "target_touch_5d_dd10_after_buy_premium",
+          "cost_model": {
+            "version": "kr_tradable_pnl_cost_v1",
+            "buy_fee_bps": 1.5,
+            "sell_fee_bps": 1.5,
+            "buy_slippage_bps": 8.0,
+            "sell_slippage_bps": 8.0,
+            "spread_bps": 4.0,
+            "sell_tax_bps": 15.0,
+            "fill_rate": 1.0
+          },
+          "target_touch_gross_pct": 5.0,
+          "target_touch_net_pct": 4.601458,
+          "loss_floor_pct": -10.0,
+          "hit5_dd10_5d_pct": 63.6364,
+          "expected_touch_policy_net_5d_pct": -0.708158,
+          "thresholds": {
+            "min_expected_touch_policy_net_5d_pct": 0.5
+          }
+        },
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "hit5_dd10_5d_lt_73",
+          "min_low_5d_lt_neg10",
+          "expected_touch_policy_net_5d_lt_0p5"
+        ],
+        "shadow_blocking_reasons": [
+          "min_low_5d_lt_neg18"
+        ],
+        "risk_review_reasons": [
+          "min_low_5d_lt_neg10"
+        ],
+        "blocking_reasons": [
+          "n_lt_45",
+          "hit5_dd10_5d_lt_73",
+          "min_low_5d_lt_neg10",
+          "expected_touch_policy_net_5d_lt_0p5"
+        ],
+        "checks": [
+          {
+            "gate": "production",
+            "name": "n",
+            "actual": 22.0,
+            "expected": ">=45",
+            "passed": false,
+            "reason": "n_lt_45"
+          },
+          {
+            "gate": "production",
+            "name": "active_days",
+            "actual": 22.0,
+            "expected": ">=20",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "production",
+            "name": "active_runs",
+            "actual": 22.0,
+            "expected": ">=20",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "production",
+            "name": "hit5_dd10_5d_pct",
+            "actual": 63.6364,
+            "expected": ">=73",
+            "passed": false,
+            "reason": "hit5_dd10_5d_lt_73"
+          },
+          {
+            "gate": "production",
+            "name": "min_min_low_5d_pct",
+            "actual": -37.326529,
+            "expected": ">=-10",
+            "passed": false,
+            "reason": "min_low_5d_lt_neg10"
+          },
+          {
+            "gate": "shadow",
+            "name": "n",
+            "actual": 22.0,
+            "expected": ">=8",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "active_days",
+            "actual": 22.0,
+            "expected": ">=3",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "active_runs",
+            "actual": 22.0,
+            "expected": ">=5",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "hit5_dd10_5d_pct",
+            "actual": 63.6364,
+            "expected": ">=45",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "min_min_low_5d_pct",
+            "actual": -37.326529,
+            "expected": ">=-18",
+            "passed": false,
+            "reason": "min_low_5d_lt_neg18"
+          },
+          {
+            "gate": "risk_review",
+            "name": "min_min_low_5d_pct",
+            "actual": -37.326529,
+            "expected": ">=-10",
+            "passed": false,
+            "reason": "min_low_5d_lt_neg10"
+          },
+          {
+            "gate": "production_economics",
+            "name": "expected_touch_policy_net_5d_pct",
+            "actual": -0.708158,
+            "expected": ">=0.5",
+            "passed": false,
+            "reason": "expected_touch_policy_net_5d_lt_0p5"
+          }
+        ],
+        "action": "block"
+      },
+      "metrics": {
+        "n": 22,
+        "active_days": 22,
+        "active_runs": 22,
+        "hit5_dd10_5d_pct": 63.6364,
+        "target_hit_5d_pct": 77.2727,
+        "hit10_5d_pct": 77.2727,
+        "safe_hit10_5d_pct": 63.6364,
+        "tail_breach_5d_pct": 27.2727,
+        "bad_path_pct": 40.9091,
+        "avg_5d_pct": 13.12803,
+        "avg_ordered_exit_5d_pct": 0.022675,
+        "avg_dynamic_exit_5d_pct": 3.192416,
+        "avg_mfe_5d_pct": 43.359775,
+        "avg_mae_5d_pct": -6.83516,
+        "min_min_low_5d_pct": -37.326529,
+        "max_mfe_5d_pct": 126.676211,
+        "expected_binary_net_5d_pct": -0.708163,
+        "buy_premium_pct": 2.0,
+        "target_net_pct": 4.601458,
+        "target10_net_pct": 9.58248,
+        "coverage_test_days_pct": 45.8333
+      },
+      "production_ready_count": 0,
+      "shadow_display_allowed_count": 16,
+      "improvement": {
+        "baseline_avg_ordered_exit_5d_pct": -0.277837,
+        "best_avg_ordered_exit_5d_pct": 0.022675,
+        "avg_ordered_exit_delta_pct": 0.300512,
+        "best_avg_dynamic_exit_5d_pct": 3.192416,
+        "dynamic_minus_fixed_exit_delta_pct": 3.169741,
+        "baseline_hit5_dd10_5d_pct": 48.0,
+        "best_hit5_dd10_5d_pct": 63.6364,
+        "hit5_dd10_delta_pct": 15.6364
+      }
+    },
+    "KOSDAQ_lowtail": {
+      "config": {
+        "pool": "day_return",
+        "pool_k": 5,
+        "final_topn": 1,
+        "score_mode": "ev",
+        "max_tail_prob": 0.4
+      },
+      "gate": {
+        "version": "kis_model_gate_v4_touch5_dd10",
+        "win_metric_semantics": "win_5d_pct means +5% target-touch rate after the operational buy-premium assumption; touch5_dd10_5d production gates use hit5_dd10_5d_pct and a -10% 5D low guard.",
+        "label_gate_profile": "touch5_dd10",
+        "market": "KOSDAQ",
+        "status": "blocked",
+        "production_ready": false,
+        "shadow_display_allowed": false,
+        "deep_analysis_allowed": false,
+        "risk_review_required": false,
+        "source_ok": true,
+        "production_economics": {
+          "policy": "target_touch_5d_dd10_after_buy_premium",
+          "cost_model": {
+            "version": "kr_tradable_pnl_cost_v1",
+            "buy_fee_bps": 1.5,
+            "sell_fee_bps": 1.5,
+            "buy_slippage_bps": 8.0,
+            "sell_slippage_bps": 8.0,
+            "spread_bps": 4.0,
+            "sell_tax_bps": 15.0,
+            "fill_rate": 1.0
+          },
+          "target_touch_gross_pct": 5.0,
+          "target_touch_net_pct": 4.601458,
+          "loss_floor_pct": -10.0,
+          "hit5_dd10_5d_pct": 100.0,
+          "expected_touch_policy_net_5d_pct": 4.601458,
+          "thresholds": {
+            "min_expected_touch_policy_net_5d_pct": 0.5
+          }
+        },
+        "production_blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20"
+        ],
+        "shadow_blocking_reasons": [
+          "n_lt_8",
+          "active_days_lt_3",
+          "active_runs_lt_5"
+        ],
+        "risk_review_reasons": [],
+        "blocking_reasons": [
+          "n_lt_45",
+          "active_days_lt_20",
+          "active_runs_lt_20"
+        ],
+        "checks": [
+          {
+            "gate": "production",
+            "name": "n",
+            "actual": 2.0,
+            "expected": ">=45",
+            "passed": false,
+            "reason": "n_lt_45"
+          },
+          {
+            "gate": "production",
+            "name": "active_days",
+            "actual": 2.0,
+            "expected": ">=20",
+            "passed": false,
+            "reason": "active_days_lt_20"
+          },
+          {
+            "gate": "production",
+            "name": "active_runs",
+            "actual": 2.0,
+            "expected": ">=20",
+            "passed": false,
+            "reason": "active_runs_lt_20"
+          },
+          {
+            "gate": "production",
+            "name": "hit5_dd10_5d_pct",
+            "actual": 100.0,
+            "expected": ">=73",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "production",
+            "name": "min_min_low_5d_pct",
+            "actual": 17.538126,
+            "expected": ">=-10",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "n",
+            "actual": 2.0,
+            "expected": ">=8",
+            "passed": false,
+            "reason": "n_lt_8"
+          },
+          {
+            "gate": "shadow",
+            "name": "active_days",
+            "actual": 2.0,
+            "expected": ">=3",
+            "passed": false,
+            "reason": "active_days_lt_3"
+          },
+          {
+            "gate": "shadow",
+            "name": "active_runs",
+            "actual": 2.0,
+            "expected": ">=5",
+            "passed": false,
+            "reason": "active_runs_lt_5"
+          },
+          {
+            "gate": "shadow",
+            "name": "hit5_dd10_5d_pct",
+            "actual": 100.0,
+            "expected": ">=45",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "shadow",
+            "name": "min_min_low_5d_pct",
+            "actual": 17.538126,
+            "expected": ">=-18",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "risk_review",
+            "name": "min_min_low_5d_pct",
+            "actual": 17.538126,
+            "expected": ">=-10",
+            "passed": true,
+            "reason": null
+          },
+          {
+            "gate": "production_economics",
+            "name": "expected_touch_policy_net_5d_pct",
+            "actual": 4.601458,
+            "expected": ">=0.5",
+            "passed": true,
+            "reason": null
+          }
+        ],
+        "action": "block"
+      },
+      "metrics": {
+        "n": 2,
+        "active_days": 2,
+        "active_runs": 2,
+        "hit5_dd10_5d_pct": 100.0,
+        "target_hit_5d_pct": 100.0,
+        "hit10_5d_pct": 100.0,
+        "safe_hit10_5d_pct": 100.0,
+        "tail_breach_5d_pct": 0.0,
+        "bad_path_pct": 0.0,
+        "avg_5d_pct": 34.217113,
+        "avg_ordered_exit_5d_pct": 4.601458,
+        "avg_dynamic_exit_5d_pct": 9.58248,
+        "avg_mfe_5d_pct": 93.839195,
+        "avg_mae_5d_pct": 22.491045,
+        "min_min_low_5d_pct": 17.538126,
+        "max_mfe_5d_pct": 126.676211,
+        "expected_binary_net_5d_pct": 4.601458,
+        "buy_premium_pct": 2.0,
+        "target_net_pct": 4.601458,
+        "target10_net_pct": 9.58248,
+        "coverage_test_days_pct": 4.1667
+      },
+      "production_ready_count": 0,
+      "shadow_display_allowed_count": 6,
+      "improvement": {
+        "baseline_avg_ordered_exit_5d_pct": -0.277837,
+        "best_avg_ordered_exit_5d_pct": 4.601458,
+        "avg_ordered_exit_delta_pct": 4.879295,
+        "best_avg_dynamic_exit_5d_pct": 9.58248,
+        "dynamic_minus_fixed_exit_delta_pct": 4.981022,
+        "baseline_hit5_dd10_5d_pct": 48.0,
+        "best_hit5_dd10_5d_pct": 100.0,
+        "hit5_dd10_delta_pct": 52.0
+      }
+    }
+  },
+  "decision": {
+    "production_ready": false,
+    "best_current_use": "shadow_research_only",
+    "kospi_candidate": "expanded KOSPI prefilter pool_k=10 final_topn=1 ev_hit10 max_tail_prob=0.8 improved dynamic exit but blocked by n/hit5/min_low/economics",
+    "kospi_shadow_safe_observation": "expanded KOSPI prefilter pool_k=5 final_topn=1/2 tail=0.75 has tail 0 and min_low above -10 but n<=10, observation only",
+    "kosdaq_candidate": "expanded KOSDAQ day_return pool_k=5 final_topn=1 success_tail max_tail_prob=0.85 improved dynamic exit but blocked by n/hit5/min_low/economics",
+    "kosdaq_lowtail_result": "low-tail sweep found n=2 perfect sample, rejected as too small; n>=10 candidates still have severe min_low around -37"
+  }
+}

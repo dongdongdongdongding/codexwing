@@ -41,6 +41,7 @@ runtime_state/long_term/orchestrator/
 runtime_state/long_term/outcomes/
 runtime_state/long_term/runs/
 runtime_state/long_term/theme_membership/
+runtime_state/long_term/kis_ticker_period_sidecar/
 runtime_state/long_term/kis_theme_valuechain/*.json
 runtime_state/long_term/kis_ticker_valuechain/*.json
 !runtime_state/long_term/kis_ticker_valuechain/verified_edges.json

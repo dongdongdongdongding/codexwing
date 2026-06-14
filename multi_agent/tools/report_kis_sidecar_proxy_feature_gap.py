@@ -501,7 +501,7 @@ def write_report(report: Mapping[str, Any], output: Path) -> None:
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sidecar-cache", default=str(DEFAULT_SIDECAR_CACHE))
-    parser.add_argument("--proxy-cache", action="append", default=[str(path) for path in DEFAULT_PROXY_CACHES])
+    parser.add_argument("--proxy-cache", action="append", default=[])
     parser.add_argument("--sidecar-sweep-report", default=str(DEFAULT_SIDECAR_SWEEP))
     parser.add_argument("--proxy-research-report", default=str(DEFAULT_PROXY_RESEARCH))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
@@ -510,9 +510,10 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv)
+    proxy_caches = args.proxy_cache or [str(path) for path in DEFAULT_PROXY_CACHES]
     report = build_report(
         sidecar_cache=Path(args.sidecar_cache),
-        proxy_caches=[Path(path) for path in args.proxy_cache],
+        proxy_caches=[Path(path) for path in proxy_caches],
         sidecar_sweep_report=Path(args.sidecar_sweep_report),
         proxy_research_report=Path(args.proxy_research_report),
     )
