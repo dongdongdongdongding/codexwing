@@ -1,0 +1,234 @@
+{
+  "version": "kis_performance_research_actual_followup_v1",
+  "generated_at": "2026-06-14T04:25:09Z",
+  "dummy_data_used": false,
+  "objective": "Resume performance research from the strongest prior KIS touch5_dd10 candidates, verify them against actual fullrank backfilled data, and identify the best defensible path forward.",
+  "actual_data_inputs": {
+    "fullrank_actual_kospi": {
+      "path": "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kospi_20260101_20260610.pkl",
+      "rows_after_label_filter": 97638,
+      "days": 103
+    },
+    "fullrank_actual_kosdaq": {
+      "path": "runtime_state/reports/learning/kis_historical_universe_fullrank_actual_augmented_prepared_kosdaq_20260101_20260610.pkl",
+      "rows_after_label_filter": 186203,
+      "days": 103
+    },
+    "fullrank_sidecar_kospi": {
+      "path": "runtime_state/reports/learning/kis_historical_universe_fullrank_sidecar_cache_augmented_prepared_kospi_20260101_20260610.pkl"
+    },
+    "fullrank_sidecar_matched_kosdaq": {
+      "path": "runtime_state/reports/learning/kis_historical_universe_fullrank_sidecar_cache_augmented_matched_only_kosdaq_20260101_20260610.pkl"
+    }
+  },
+  "findings": [
+    {
+      "market": "KOSPI",
+      "source": "kis_three_stage_ev_ranker_fullrank_actual_wide_20260614.json",
+      "candidate": "fullrank_actual_three_stage_ev_ranker",
+      "best_config": {
+        "pool": "composite",
+        "pool_k": 50,
+        "final_topn": 1,
+        "score_mode": "ev_hit10",
+        "max_tail_prob": null
+      },
+      "metrics": {
+        "n": 23,
+        "active_days": 23,
+        "hit5_dd10_5d_pct": 69.5652,
+        "hit10_5d_pct": 30.4348,
+        "tail_breach_5d_pct": 13.0435,
+        "avg_ordered_exit_5d_pct": 1.373243,
+        "avg_dynamic_exit_5d_pct": 2.889206,
+        "min_min_low_5d_pct": -15.847695
+      },
+      "gate_status": "shadow_risk_review",
+      "production_blocking_reasons": [
+        "n_lt_30",
+        "hit5_dd10_5d_lt_73",
+        "min_low_5d_lt_neg10",
+        "expected_touch_policy_net_5d_lt_0p25"
+      ],
+      "interpretation": "Fullrank actual ranking improves over the fullrank baseline, but misses the production hit-rate and drawdown gates."
+    },
+    {
+      "market": "KOSDAQ",
+      "source": "kis_three_stage_ev_ranker_fullrank_actual_wide_20260614.json",
+      "candidate": "fullrank_actual_three_stage_ev_ranker",
+      "best_config": {
+        "pool": "composite",
+        "pool_k": 100,
+        "final_topn": 1,
+        "score_mode": "ev_hit10",
+        "max_tail_prob": null
+      },
+      "metrics": {
+        "n": 20,
+        "active_days": 20,
+        "hit5_dd10_5d_pct": 60.0,
+        "hit10_5d_pct": 50.0,
+        "tail_breach_5d_pct": 15.0,
+        "avg_ordered_exit_5d_pct": 1.201685,
+        "avg_dynamic_exit_5d_pct": 3.692196,
+        "min_min_low_5d_pct": -14.301385
+      },
+      "gate_status": "shadow_risk_review",
+      "production_blocking_reasons": [
+        "n_lt_45",
+        "hit5_dd10_5d_lt_73",
+        "min_low_5d_lt_neg10",
+        "expected_touch_policy_net_5d_lt_0p5"
+      ],
+      "interpretation": "Fullrank actual ranking captures +10% upside better than KOSPI, but the hit5 and -10% low gates still fail."
+    },
+    {
+      "market": "KOSPI",
+      "source": "kis_touch5_dd10_drawdown_filter_research_kospi_top1_prob_tail085_fast30_selfold3_20260613.json",
+      "candidate": "prior_best_sidecar_failure_prior_filter",
+      "selection_rule": "top1_prob_tail0p85_close_failure_prior_kis_sector_failure_rate_pct_le_46p6667",
+      "metrics": {
+        "n": 54,
+        "active_days": 15,
+        "active_runs": 54,
+        "hit5_dd10_5d_pct": 98.1481,
+        "avg_5d_pct": 24.676158,
+        "min_min_low_5d_pct": -9.230497
+      },
+      "gate_status": "production_ready",
+      "holdout_status": {
+        "status": "no_holdout_gate_pass",
+        "selection_best_n": 41,
+        "selection_best_active_days": 12,
+        "selection_best_hit5_dd10_5d_pct": 92.6829,
+        "selection_best_avg_5d_pct": 32.906426,
+        "selection_best_min_min_low_5d_pct": -10.87344,
+        "selection_best_gate_status": "shadow_risk_review"
+      },
+      "interpretation": "The strongest prior KOSPI result is real within the original sidecar universe, and its key useful factor is low KIS-sector failure rate. It does not survive strict holdout because the low breaches just past -10% and sample days stay short."
+    },
+    {
+      "market": "KOSPI",
+      "source": "kis_touch5_dd10_drawdown_filter_research_kospi_fullrank_sidecar_top1_tail085_holdout_20260614.json",
+      "candidate": "fullrank_sidecar_recheck_of_prior_best_shape",
+      "base_selection_rule": "top1_prob_tail0p85",
+      "metrics": {
+        "n": 17,
+        "active_days": 17,
+        "active_runs": 17,
+        "hit5_dd10_5d_pct": 17.6471,
+        "avg_5d_pct": -0.877676,
+        "min_min_low_5d_pct": -6.232202
+      },
+      "gate_status": "blocked",
+      "frontier": {
+        "total_candidates": 1295,
+        "sample_sufficient_count": 0,
+        "low_safe_count": 898,
+        "hit_low_safe_count": 10,
+        "sample_hit_low_safe_count": 0
+      },
+      "holdout_status": {
+        "status": "no_holdout_gate_pass",
+        "gate_pass_count": 0
+      },
+      "interpretation": "The prior KOSPI sidecar shape does not transfer to the fullrank sidecar-augmented actual cache. The fullrank version is drawdown-safe but loses hit-rate signal."
+    },
+    {
+      "market": "KOSDAQ",
+      "source": "kis_touch5_dd10_drawdown_filter_research_kosdaq_compound_top5_p03_20260613.json",
+      "candidate": "prior_best_compound_sidecar_filter",
+      "base_selection_rule": "top5_prob_plus_tail_p0p3_tail0",
+      "base_metrics": {
+        "n": 144,
+        "active_days": 16,
+        "active_runs": 32,
+        "hit5_dd10_5d_pct": 68.0556,
+        "avg_5d_pct": 5.931853,
+        "min_min_low_5d_pct": -33.704825
+      },
+      "frontier": {
+        "total_candidates": 3949,
+        "low_safe_count": 535,
+        "hit_low_safe_count": 524,
+        "sample_hit_low_safe_count": 0
+      },
+      "holdout_status": {
+        "status": "no_holdout_gate_pass",
+        "selection_best_n": 61,
+        "selection_best_active_days": 8,
+        "selection_best_hit5_dd10_5d_pct": 62.2951,
+        "selection_best_avg_5d_pct": 3.397096,
+        "selection_best_min_min_low_5d_pct": -23.62384,
+        "selection_best_gate_status": "blocked"
+      },
+      "interpretation": "KOSDAQ compound filters can produce impressive in-sample hit/low combinations, but sample sufficiency and holdout both fail."
+    },
+    {
+      "market": "KOSDAQ",
+      "source": "kis_touch5_dd10_drawdown_filter_research_kosdaq_fullrank_matched_compound_top5_p03_holdout_20260614.json",
+      "candidate": "fullrank_matched_sidecar_compound_recheck",
+      "base_selection_rule": "top5_prob_plus_tail_p0p3_tail0",
+      "metrics": {
+        "n": 52,
+        "active_days": 11,
+        "active_runs": 11,
+        "hit5_dd10_5d_pct": 53.8462,
+        "avg_5d_pct": -0.481049,
+        "min_min_low_5d_pct": -30.923396
+      },
+      "frontier": {
+        "total_candidates": 4329,
+        "sample_sufficient_count": 0,
+        "low_safe_count": 39,
+        "hit_low_safe_count": 0,
+        "sample_hit_low_safe_count": 0
+      },
+      "holdout_status": {
+        "status": "no_holdout_gate_pass",
+        "gate_pass_count": 0,
+        "selection_best_n": 26,
+        "selection_best_active_days": 6,
+        "selection_best_hit5_dd10_5d_pct": 30.7692,
+        "selection_best_avg_5d_pct": -8.086069,
+        "selection_best_min_min_low_5d_pct": -28.540083,
+        "selection_best_gate_status": "blocked"
+      },
+      "interpretation": "The KOSDAQ compound idea deteriorates materially when rechecked on the fullrank matched actual sidecar cache."
+    }
+  ],
+  "important_factors": [
+    {
+      "factor": "close_failure_prior_kis_sector_failure_rate_pct",
+      "evidence": "KOSPI prior-best production candidate used <=46.666667 and lifted hit5 to 98.1481% with min low -9.230497 in the original sidecar universe.",
+      "status": "useful_but_not_fullrank_stable"
+    },
+    {
+      "factor": "tail-risk probability / -10% 5D low guard",
+      "evidence": "Every fullrank actual best candidate failed production because min_min_low_5d_pct was below -10 or hit-rate collapsed after enforcing safer filters.",
+      "status": "primary_blocker"
+    },
+    {
+      "factor": "sample and active-day sufficiency",
+      "evidence": "KOSDAQ compound had low-safe and hit-low-safe filters but zero sample-sufficient hit-low-safe candidates; KOSPI fullrank sidecar had zero sample-sufficient candidates.",
+      "status": "primary_blocker"
+    },
+    {
+      "factor": "sidecar exact-date coverage",
+      "evidence": "The fullrank actual backfill matched sidecar rows on about 16% of rows, so models relying on KIS flow/news/financial sidecar signals have sparse training coverage.",
+      "status": "data_gap"
+    }
+  ],
+  "needed_data": [
+    "Ticker-period KIS flow history: foreigner/institution/retail flows, whale flow windows, whale score.",
+    "Ticker-period KIS financial/valuation history: market cap, PER/PBR, growth, margins, ROE, EPS/BPS, debt/reserve ratios.",
+    "Ticker-period theme/news evidence: title counts, filtered counts, source-scope confidence, promotion-block flags, raw/news counts.",
+    "Exact daily sidecar joins across fullrank universe instead of only scan-emitted exact-date rows."
+  ],
+  "decision": {
+    "status": "no_new_production_candidate",
+    "recommended_action": "keep the original KOSPI sidecar candidate as shadow/research only, reject KOSDAQ compound for production, and prioritize ticker-period sidecar feature backfill before another broad production search.",
+    "best_current_shadow_path": "KOSPI original sidecar failure-prior filter remains the strongest observed candidate, but fullrank actual validation blocks promotion.",
+    "followup_issue": "swing-main-s280"
+  }
+}
