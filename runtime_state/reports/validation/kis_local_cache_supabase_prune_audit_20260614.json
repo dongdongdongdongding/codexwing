@@ -1,0 +1,92 @@
+{
+  "report_version": "kis_local_cache_supabase_prune_audit_v1",
+  "generated_at": "2026-06-14T19:12:00+09:00",
+  "status": "prune_local_caches_after_supabase_check",
+  "preserved_patterns": [
+    "runtime_state/reports/learning/*.md",
+    "runtime_state/reports/learning/*.json"
+  ],
+  "supabase": {
+    "table": "scan_universe_snapshots",
+    "query_method": "id_pagination_no_exact_count",
+    "exact_count_status": "timed_out_57014",
+    "total_rows_scanned": 187844,
+    "table_date_min": "2026-03-31",
+    "table_date_max": "2026-06-14",
+    "target_range": {
+      "start": "2026-01-01",
+      "end": "2026-06-10"
+    },
+    "kospi": {
+      "rows_in_window": 85579,
+      "unique_dates": 36,
+      "outcome_label_rows": 66253,
+      "sidecar_rows": 40448,
+      "sidecar_outcome_label_rows": 40448,
+      "sidecar_origins": {
+        "kis_openapi_backfill": 40448
+      },
+      "roles": {
+        "emitted": 4885,
+        "rejected": 80694
+      }
+    },
+    "kosdaq": {
+      "rows_in_window": 94931,
+      "unique_dates": 37,
+      "outcome_label_rows": 62442,
+      "sidecar_rows": 34857,
+      "sidecar_outcome_label_rows": 34857,
+      "sidecar_origins": {
+        "kis_openapi_backfill": 34857
+      },
+      "roles": {
+        "emitted": 2726,
+        "rejected": 92205
+      }
+    }
+  },
+  "local_prune_target": {
+    "pkl_cache_count": 34,
+    "pkl_cache_total_human": "14G",
+    "price_cache_file_count": 2770,
+    "price_cache_total_human": "32M",
+    "delete_patterns": [
+      "runtime_state/reports/learning/*.pkl",
+      "runtime_state/long_term/kis_historical_prices",
+      "runtime_state/long_term/kis_ticker_period_sidecar",
+      "runtime_state/reports/archive/scan_archive_learning_dataset_all.csv",
+      "runtime_state/reports/archive/scan_archive_learning_dataset_all.json",
+      "runtime_state/reports/archive/scan_universe_snapshots_kr_20260101_20260611.csv",
+      "runtime_state/reports/validation/scan_universe_return_backfill_20260101_20260610_touch5_dd10_updates.jsonl",
+      "runtime_state/pycache",
+      "runtime_state/tmp/pycache",
+      "runtime_state/streamlit_8501.err",
+      "runtime_state/streamlit_8501.log"
+    ],
+    "period_sidecar_raw_cache": {
+      "path": "runtime_state/long_term/kis_ticker_period_sidecar",
+      "size_human": "2.9G",
+      "file_count": 19484,
+      "report_scope_rows": 292167,
+      "supabase_raw_table_persistence_found": false,
+      "supabase_extracted_sidecar_features_found": true,
+      "reason_for_prune": "local raw lookup cache should not be treated as durable source of truth; future work should read persisted features from Supabase or refetch from KIS services"
+    }
+  },
+  "interpretation": [
+    "Supabase contains real KIS sidecar rows and outcome labels for the research window.",
+    "The large local pkl files are derived prepared/raw training caches and should not be treated as the durable source of truth.",
+    "Future research should regenerate bulky prepared caches from Supabase/KIS sources when needed instead of keeping them locally."
+  ],
+  "final_local_state": {
+    "learning_pkl_count": 0,
+    "learning_pkl_meta_count": 0,
+    "kis_historical_prices_dir": "absent",
+    "kis_ticker_period_sidecar_dir": "absent",
+    "runtime_files_larger_than_50mb": 0,
+    "runtime_state_total_human": "2.5G",
+    "learning_dir_total_human": "204M",
+    "long_term_dir_total_human": "31M"
+  }
+}
