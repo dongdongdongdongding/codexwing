@@ -1,0 +1,159 @@
+{
+  "report_version": "kis_period_sidecar_compound_guard_decision_v1",
+  "generated_at": "2026-06-14T18:59:03+09:00",
+  "status": "production_not_achieved_current_window",
+  "answer": {
+    "is_impossible": false,
+    "current_window_production_possible": false,
+    "summary": "The goal is not mathematically impossible, but the current real-data 2026-01-01..2026-06-10 evidence does not justify production promotion. The strongest candidates improve holdout results, but either miss the production gate narrowly or collapse when all guarded observations are included."
+  },
+  "data_basis": {
+    "real_data_only": true,
+    "date_range": {
+      "start": "2026-01-01",
+      "end": "2026-06-10"
+    },
+    "kospi_rows": 97638,
+    "kospi_days": 103,
+    "kosdaq_rows": 186203,
+    "kosdaq_days": 103,
+    "backfill_state": "period-sidecar prepared caches were already backfilled for the research path; no dummy-filled promotion evidence was used"
+  },
+  "agent_trace": {
+    "scanner_reasons": [
+      "KOSPI candidates came from prefilter-ranked three-stage selections.",
+      "KOSDAQ candidates came from day_return-ranked three-stage selections.",
+      "Candidate rows used KIS period-sidecar features and realized touch5_dd10 labels only for evaluation."
+    ],
+    "aggregation_notes": [
+      "Selected cases were grouped by market, pool, pool_k, final_topn, score_mode, and max_tail_prob.",
+      "Guards were learned on chronological selected-train rows and evaluated on selected-holdout rows.",
+      "Compound guard search used AND keep rules from train-side improving single-feature guard seeds."
+    ],
+    "backtest_diagnostics": [
+      "The production gate requires enough n, active days, active runs, hit5_dd10_5d_pct, min_low_5d_pct, and expected touch-policy economics.",
+      "Small holdout winners were not promoted when all guarded observations showed unstable min-low or weak hit rate."
+    ],
+    "market_news_context": [
+      "No separate news-regime override was applied in this decision; sidecar news/date coverage was used as input features only."
+    ],
+    "planner_decision": "Do not promote to production from this data window. Keep KOSPI as the only meaningful forward-shadow lane; keep KOSDAQ observation-only.",
+    "realized_outcome": {
+      "status": "placeholder",
+      "linked_forward_issue": "swing-main-u9sq"
+    }
+  },
+  "kospi": {
+    "decision": "primary_forward_shadow_near_miss",
+    "best_report": "runtime_state/reports/learning/kis_three_stage_guarded_selection_kospi_compound_longfold_20260614.json",
+    "best_config": {
+      "pool": "prefilter",
+      "pool_k": 10,
+      "final_topn": 2,
+      "score_mode": "ev",
+      "max_tail_prob": 0.85
+    },
+    "guard": "close_failure_prior_ticker_clean_defense_rate_pct >= 57.575758",
+    "base_metrics": {
+      "n": 61,
+      "active_days": 36,
+      "hit5_dd10_5d_pct": 52.459,
+      "avg_ordered_exit_5d_pct": -1.108252,
+      "avg_dynamic_exit_5d_pct": 0.688182,
+      "min_min_low_5d_pct": -23.793047
+    },
+    "holdout_metrics": {
+      "n": 11,
+      "active_days": 7,
+      "hit5_dd10_5d_pct": 72.7273,
+      "hit10_5d_pct": 72.7273,
+      "tail_breach_5d_pct": 9.0909,
+      "avg_ordered_exit_5d_pct": 2.261713,
+      "avg_dynamic_exit_5d_pct": 5.431454,
+      "min_min_low_5d_pct": -10.056783
+    },
+    "all_guarded_metrics": {
+      "n": 31,
+      "active_days": 20,
+      "hit5_dd10_5d_pct": 54.8387,
+      "hit10_5d_pct": 48.3871,
+      "tail_breach_5d_pct": 12.9032,
+      "avg_ordered_exit_5d_pct": 0.288528,
+      "avg_dynamic_exit_5d_pct": 2.377343,
+      "min_min_low_5d_pct": -15.32357
+    },
+    "production_blockers": [
+      "holdout_n_lt_30",
+      "holdout_active_days_lt_15",
+      "holdout_active_runs_lt_20",
+      "holdout_hit5_dd10_5d_pct_72p7273_lt_73",
+      "holdout_min_low_neg10p056783_lt_neg10",
+      "all_guarded_hit5_dd10_5d_pct_54p8387_lt_73",
+      "all_guarded_min_low_neg15p32357_lt_neg10"
+    ],
+    "interpretation": "This is the closest path found. It creates positive holdout economics, but it is not stable enough across all guarded observations."
+  },
+  "kosdaq": {
+    "decision": "observe_only",
+    "best_report": "runtime_state/reports/learning/kis_three_stage_guarded_selection_kosdaq_compound_longfold_20260614.json",
+    "best_config": {
+      "pool": "day_return",
+      "pool_k": 5,
+      "final_topn": 1,
+      "score_mode": "ev_hit10",
+      "max_tail_prob": 0.75
+    },
+    "guard": "close_failure_prior_ticker_avg_close_5d_pct >= 11.259848",
+    "base_metrics": {
+      "n": 24,
+      "active_days": 24,
+      "hit5_dd10_5d_pct": 54.1667,
+      "avg_ordered_exit_5d_pct": -1.420942,
+      "avg_dynamic_exit_5d_pct": 1.277111,
+      "min_min_low_5d_pct": -58.95783
+    },
+    "holdout_metrics": {
+      "n": 4,
+      "active_days": 4,
+      "hit5_dd10_5d_pct": 100.0,
+      "hit10_5d_pct": 100.0,
+      "tail_breach_5d_pct": 0.0,
+      "avg_ordered_exit_5d_pct": 4.601458,
+      "avg_dynamic_exit_5d_pct": 9.58248,
+      "min_min_low_5d_pct": -7.789335
+    },
+    "all_guarded_metrics": {
+      "n": 11,
+      "active_days": 11,
+      "hit5_dd10_5d_pct": 72.7273,
+      "hit10_5d_pct": 90.9091,
+      "tail_breach_5d_pct": 18.1818,
+      "avg_ordered_exit_5d_pct": 1.35008,
+      "avg_dynamic_exit_5d_pct": 4.972641,
+      "min_min_low_5d_pct": -15.535445
+    },
+    "production_blockers": [
+      "holdout_n_lt_45",
+      "holdout_active_days_lt_20",
+      "holdout_active_runs_lt_20",
+      "all_guarded_n_lt_45",
+      "all_guarded_active_days_lt_20",
+      "all_guarded_active_runs_lt_20",
+      "all_guarded_hit5_dd10_5d_pct_72p7273_lt_73",
+      "all_guarded_min_low_neg15p535445_lt_neg10"
+    ],
+    "interpretation": "The holdout winner is too small to trust. When all guarded observations are included, the tail risk remains above production limits."
+  },
+  "decision": [
+    "Do not promote any candidate to production from the current real-data window.",
+    "Keep KOSPI compound-guarded three-stage selection as the primary forward-shadow lane.",
+    "Do not chase more parameter-only searches on this same window unless they add genuinely new data or a stricter out-of-sample design.",
+    "Next useful research should accumulate additional forward-shadow observations and test exit/risk overlays on the KOSPI near-miss path."
+  ],
+  "source_reports": [
+    "runtime_state/reports/learning/kis_three_stage_guarded_selection_kospi_compound_20260614.json",
+    "runtime_state/reports/learning/kis_three_stage_guarded_selection_kospi_compound_longfold_20260614.json",
+    "runtime_state/reports/learning/kis_three_stage_guarded_selection_kosdaq_compound_longfold_20260614.json",
+    "runtime_state/reports/learning/kis_period_sidecar_guarded_research_decision_20260614.json"
+  ]
+}

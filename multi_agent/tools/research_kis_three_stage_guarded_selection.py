@@ -5,6 +5,7 @@ import argparse
 import json
 import math
 import sys
+from itertools import combinations
 from pathlib import Path
 from time import perf_counter
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
@@ -258,6 +259,43 @@ def _guard_name(feature: str, op: str, threshold: float) -> str:
     return f"keep_{feature}_{op}_{value}"
 
 
+def _apply_guard_conditions(frame: pd.DataFrame, conditions: Sequence[Mapping[str, Any]]) -> pd.Series:
+    if not conditions:
+        return pd.Series(False, index=frame.index, dtype=bool)
+    mask = pd.Series(True, index=frame.index, dtype=bool)
+    for condition in conditions:
+        feature = str(condition.get("feature") or "")
+        op = str(condition.get("op") or "")
+        threshold = condition.get("threshold")
+        if feature not in frame.columns or threshold is None:
+            return pd.Series(False, index=frame.index, dtype=bool)
+        mask &= _apply_keep_rule(frame, feature, op, float(threshold))
+    return mask.fillna(False)
+
+
+def _guard_payload(conditions: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
+    clean = [
+        {"feature": str(item.get("feature")), "op": str(item.get("op")), "threshold": _round(item.get("threshold"))}
+        for item in conditions
+    ]
+    if len(clean) == 1:
+        only = clean[0]
+        return {
+            "type": "single_feature_keep",
+            "name": _guard_name(str(only["feature"]), str(only["op"]), float(only["threshold"] or 0.0)),
+            **only,
+        }
+    parts = [
+        _guard_name(str(item["feature"]), str(item["op"]), float(item["threshold"] or 0.0)).replace("keep_", "")
+        for item in clean
+    ]
+    return {
+        "type": "compound_and_keep",
+        "name": "keep_" + "__and__".join(parts),
+        "conditions": clean,
+    }
+
+
 def _search_single_guard(
     *,
     market: str,
@@ -269,6 +307,9 @@ def _search_single_guard(
     min_train_n: int,
     min_holdout_n: int,
     min_retention: float,
+    compound_depth: int,
+    compound_single_limit: int,
+    compound_candidate_limit: int,
 ) -> Dict[str, Any]:
     train, holdout, split = _split_selected_rows(selected, train_ratio)
     if train.empty or holdout.empty:
@@ -285,6 +326,77 @@ def _search_single_guard(
         }
 
     candidates: List[Dict[str, Any]] = []
+    single_specs: List[Dict[str, Any]] = []
+
+    def evaluate_conditions(conditions: Sequence[Mapping[str, Any]]) -> Dict[str, Any] | None:
+        train_keep = _apply_guard_conditions(train, conditions)
+        holdout_keep = _apply_guard_conditions(holdout, conditions)
+        if int(train_keep.sum()) < min_train_n or int(holdout_keep.sum()) < min_holdout_n:
+            return None
+        train_retention = float(train_keep.mean()) if len(train_keep) else 0.0
+        holdout_retention = float(holdout_keep.mean()) if len(holdout_keep) else 0.0
+        if train_retention < min_retention or holdout_retention < min_retention:
+            return None
+        train_metrics = _safe_metric(frame, train.loc[train_keep].index)
+        holdout_metrics = _safe_metric(frame, holdout.loc[holdout_keep].index)
+        train_delta_exit = float(train_metrics.get("avg_ordered_exit_5d_pct") or -20.0) - float(
+            base_train.get("avg_ordered_exit_5d_pct") or -20.0
+        )
+        holdout_delta_exit = float(holdout_metrics.get("avg_ordered_exit_5d_pct") or -20.0) - float(
+            base_holdout.get("avg_ordered_exit_5d_pct") or -20.0
+        )
+        train_delta_hit = float(train_metrics.get("hit5_dd10_5d_pct") or 0.0) - float(
+            base_train.get("hit5_dd10_5d_pct") or 0.0
+        )
+        holdout_delta_hit = float(holdout_metrics.get("hit5_dd10_5d_pct") or 0.0) - float(
+            base_holdout.get("hit5_dd10_5d_pct") or 0.0
+        )
+        train_delta_low = float(train_metrics.get("min_min_low_5d_pct") or -100.0) - float(
+            base_train.get("min_min_low_5d_pct") or -100.0
+        )
+        holdout_delta_low = float(holdout_metrics.get("min_min_low_5d_pct") or -100.0) - float(
+            base_holdout.get("min_min_low_5d_pct") or -100.0
+        )
+        if train_delta_exit < -0.05 and train_delta_hit < 0.0 and train_delta_low < 0.0:
+            return None
+        total_idx = train.loc[train_keep].index.append(holdout.loc[holdout_keep].index).drop_duplicates()
+        total_metrics = _safe_metric(frame, total_idx)
+        holdout_gate = _gate(market, config, holdout_metrics, model="kis_three_stage_guarded_selection_holdout")
+        total_gate = _gate(market, config, total_metrics, model="kis_three_stage_guarded_selection_observed_all")
+        objective = (
+            _objective(holdout_metrics)
+            + max(0.0, holdout_delta_exit) * 15.0
+            + max(0.0, holdout_delta_hit) * 0.8
+            + max(0.0, holdout_delta_low) * 0.8
+            - max(0.0, -holdout_delta_exit) * 8.0
+        )
+        train_objective = (
+            _objective(train_metrics)
+            + max(0.0, train_delta_exit) * 10.0
+            + max(0.0, train_delta_hit) * 0.5
+            + max(0.0, train_delta_low) * 0.5
+        )
+        return {
+            "guard": _guard_payload(conditions),
+            "train_retention": _round(train_retention, 4),
+            "holdout_retention": _round(holdout_retention, 4),
+            "train_metrics": _metric_subset(train_metrics),
+            "holdout_metrics": _metric_subset(holdout_metrics),
+            "all_metrics": _metric_subset(total_metrics),
+            "deltas": {
+                "train_avg_exit_delta": _round(train_delta_exit),
+                "holdout_avg_exit_delta": _round(holdout_delta_exit),
+                "train_hit5_delta": _round(train_delta_hit),
+                "holdout_hit5_delta": _round(holdout_delta_hit),
+                "train_min_low_delta": _round(train_delta_low),
+                "holdout_min_low_delta": _round(holdout_delta_low),
+            },
+            "holdout_gate": holdout_gate,
+            "all_gate": total_gate,
+            "train_objective": _round(train_objective, 6),
+            "objective": _round(objective, 6),
+        }
+
     for feature in _usable_guard_features(selected, guard_features):
         train_values = pd.to_numeric(train[feature], errors="coerce").dropna()
         if train_values.empty:
@@ -292,75 +404,51 @@ def _search_single_guard(
         thresholds = sorted({float(train_values.quantile(q)) for q in QUANTILES if math.isfinite(float(train_values.quantile(q)))})
         for threshold in thresholds:
             for op in ("le", "ge"):
-                train_keep = _apply_keep_rule(train, feature, op, threshold)
-                holdout_keep = _apply_keep_rule(holdout, feature, op, threshold)
-                if int(train_keep.sum()) < min_train_n or int(holdout_keep.sum()) < min_holdout_n:
+                conditions = [{"feature": feature, "op": op, "threshold": float(threshold)}]
+                candidate = evaluate_conditions(conditions)
+                if candidate is None:
                     continue
-                train_retention = float(train_keep.mean()) if len(train_keep) else 0.0
-                holdout_retention = float(holdout_keep.mean()) if len(holdout_keep) else 0.0
-                if train_retention < min_retention or holdout_retention < min_retention:
-                    continue
-                train_metrics = _safe_metric(frame, train.loc[train_keep].index)
-                holdout_metrics = _safe_metric(frame, holdout.loc[holdout_keep].index)
-                train_delta_exit = float(train_metrics.get("avg_ordered_exit_5d_pct") or -20.0) - float(
-                    base_train.get("avg_ordered_exit_5d_pct") or -20.0
-                )
-                holdout_delta_exit = float(holdout_metrics.get("avg_ordered_exit_5d_pct") or -20.0) - float(
-                    base_holdout.get("avg_ordered_exit_5d_pct") or -20.0
-                )
-                train_delta_hit = float(train_metrics.get("hit5_dd10_5d_pct") or 0.0) - float(
-                    base_train.get("hit5_dd10_5d_pct") or 0.0
-                )
-                holdout_delta_hit = float(holdout_metrics.get("hit5_dd10_5d_pct") or 0.0) - float(
-                    base_holdout.get("hit5_dd10_5d_pct") or 0.0
-                )
-                train_delta_low = float(train_metrics.get("min_min_low_5d_pct") or -100.0) - float(
-                    base_train.get("min_min_low_5d_pct") or -100.0
-                )
-                holdout_delta_low = float(holdout_metrics.get("min_min_low_5d_pct") or -100.0) - float(
-                    base_holdout.get("min_min_low_5d_pct") or -100.0
-                )
-                # Require the rule to be learned on a real train-side improvement.
-                if train_delta_exit < -0.05 and train_delta_hit < 0.0 and train_delta_low < 0.0:
-                    continue
-                total_idx = train.loc[train_keep].index.append(holdout.loc[holdout_keep].index).drop_duplicates()
-                total_metrics = _safe_metric(frame, total_idx)
-                holdout_gate = _gate(market, config, holdout_metrics, model="kis_three_stage_guarded_selection_holdout")
-                total_gate = _gate(market, config, total_metrics, model="kis_three_stage_guarded_selection_observed_all")
-                objective = (
-                    _objective(holdout_metrics)
-                    + max(0.0, holdout_delta_exit) * 15.0
-                    + max(0.0, holdout_delta_hit) * 0.8
-                    + max(0.0, holdout_delta_low) * 0.8
-                    - max(0.0, -holdout_delta_exit) * 8.0
-                )
-                candidates.append(
+                candidates.append(candidate)
+                single_specs.append(
                     {
-                        "guard": {
-                            "type": "single_feature_keep",
-                            "name": _guard_name(feature, op, threshold),
-                            "feature": feature,
-                            "op": op,
-                            "threshold": _round(threshold),
-                        },
-                        "train_retention": _round(train_retention, 4),
-                        "holdout_retention": _round(holdout_retention, 4),
-                        "train_metrics": _metric_subset(train_metrics),
-                        "holdout_metrics": _metric_subset(holdout_metrics),
-                        "all_metrics": _metric_subset(total_metrics),
-                        "deltas": {
-                            "train_avg_exit_delta": _round(train_delta_exit),
-                            "holdout_avg_exit_delta": _round(holdout_delta_exit),
-                            "train_hit5_delta": _round(train_delta_hit),
-                            "holdout_hit5_delta": _round(holdout_delta_hit),
-                            "train_min_low_delta": _round(train_delta_low),
-                            "holdout_min_low_delta": _round(holdout_delta_low),
-                        },
-                        "holdout_gate": holdout_gate,
-                        "all_gate": total_gate,
-                        "objective": _round(objective, 6),
+                        "conditions": conditions,
+                        "train_objective": float(candidate.get("train_objective") or -999999.0),
+                        "feature": feature,
                     }
                 )
+
+    if int(compound_depth or 1) >= 2 and single_specs:
+        single_specs.sort(key=lambda item: float(item.get("train_objective") or -999999.0), reverse=True)
+        limit = int(compound_single_limit or 0)
+        seeds = single_specs[:limit] if limit > 0 else single_specs
+        tested = 0
+        seen: set[tuple[str, str, float]] = set()
+        for left, right in combinations(seeds, 2):
+            left_cond = left["conditions"][0]
+            right_cond = right["conditions"][0]
+            if left_cond["feature"] == right_cond["feature"]:
+                continue
+            conditions = [left_cond, right_cond]
+            signature = tuple(
+                sorted(
+                    (
+                        str(item.get("feature")),
+                        str(item.get("op")),
+                        float(item.get("threshold")),
+                    )
+                    for item in conditions
+                )
+            )
+            if signature in seen:
+                continue
+            seen.add(signature)
+            candidate = evaluate_conditions(conditions)
+            if candidate is None:
+                continue
+            candidates.append(candidate)
+            tested += 1
+            if int(compound_candidate_limit or 0) > 0 and tested >= int(compound_candidate_limit):
+                break
 
     candidates.sort(
         key=lambda row: (
@@ -585,6 +673,9 @@ def _summarize_market(
             min_train_n=int(args.min_guard_train_n),
             min_holdout_n=int(args.min_guard_holdout_n),
             min_retention=float(args.min_guard_retention),
+            compound_depth=int(args.compound_guard_depth),
+            compound_single_limit=int(args.compound_guard_single_limit),
+            compound_candidate_limit=int(args.compound_guard_candidate_limit),
         )
         best_guard = guard.get("best_guard") if isinstance(guard.get("best_guard"), Mapping) else None
         holdout_metrics = (best_guard or {}).get("holdout_metrics") or {}
@@ -671,6 +762,7 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         "assumptions": {
             "real_data_only": True,
             "validation": "Reproduce three-stage walk-forward selections, split selected cases chronologically, learn single-feature keep guards on selected-train rows, evaluate on selected-holdout rows.",
+            "compound_guard_depth": int(args.compound_guard_depth),
             "leakage_control": "Guard feature allow-list excludes realized outcome labels; model probabilities are allowed because they exist at scan time.",
             "buy_premium_pct": BUY_PREMIUM_PCT,
             "target_pct": TARGET_PCT,
@@ -787,6 +879,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-guard-train-n", type=int, default=6)
     parser.add_argument("--min-guard-holdout-n", type=int, default=4)
     parser.add_argument("--min-guard-retention", type=float, default=0.3)
+    parser.add_argument("--compound-guard-depth", type=int, choices=[1, 2], default=1)
+    parser.add_argument("--compound-guard-single-limit", type=int, default=30)
+    parser.add_argument("--compound-guard-candidate-limit", type=int, default=0)
     parser.add_argument("--extra-guard-features", nargs="*", default=[])
     parser.add_argument("--require-sidecar-coverage", nargs="*", default=[])
     parser.add_argument("--ranked-limit", type=int, default=20)
