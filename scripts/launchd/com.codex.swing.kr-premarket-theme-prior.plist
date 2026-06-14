@@ -23,8 +23,8 @@
     <integer>20</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/kr_premarket_theme_prior.out.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/kr_premarket_theme_prior.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/kr_premarket_theme_prior.err.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/kr_premarket_theme_prior.err.log</string>
 </dict>
 </plist>

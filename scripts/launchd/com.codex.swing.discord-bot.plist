@@ -15,8 +15,8 @@
   <key>KeepAlive</key>
   <true/>
   <key>StandardOutPath</key>
-  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/discord_bot.out.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/discord_bot.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/discord_bot.err.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/discord_bot.err.log</string>
 </dict>
 </plist>

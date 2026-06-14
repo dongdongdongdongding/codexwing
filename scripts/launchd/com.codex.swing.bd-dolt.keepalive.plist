@@ -15,8 +15,8 @@
   <key>StartInterval</key>
   <integer>60</integer>
   <key>StandardOutPath</key>
-  <string>/Volumes/ORICO/quant_pj1/.beads/bd-dolt-launchd.out.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/bd-dolt-launchd.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Volumes/ORICO/quant_pj1/.beads/bd-dolt-launchd.err.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/bd-dolt-launchd.err.log</string>
 </dict>
 </plist>

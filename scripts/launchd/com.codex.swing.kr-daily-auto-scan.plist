@@ -23,8 +23,8 @@
     <integer>35</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/kr_daily_auto_scan.out.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/kr_daily_auto_scan.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/kr_daily_auto_scan.err.log</string>
+  <string>/Users/dongdong/Library/Logs/codex_swing/kr_daily_auto_scan.err.log</string>
 </dict>
 </plist>
