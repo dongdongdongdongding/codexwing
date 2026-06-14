@@ -1,0 +1,164 @@
+{
+  "report_version": "kis_period_sidecar_guarded_research_decision_v1",
+  "generated_at": "2026-06-14T18:45:00+09:00",
+  "status": "research_shadow_candidates_only",
+  "data_basis": {
+    "real_data_only": true,
+    "kospi": {
+      "investor_flow_coverage_pct": 93.1177,
+      "financial_ratio_coverage_pct": 87.2694,
+      "news_date_checked_pct": 100.0
+    },
+    "kosdaq": {
+      "investor_flow_coverage_pct": 92.8912,
+      "financial_ratio_coverage_pct": 98.1307,
+      "news_date_checked_pct": 100.0
+    }
+  },
+  "static_policy_result": {
+    "decision": "reject",
+    "reason": "Static rules expanded sample size but destroyed hit rate.",
+    "kospi_best": {
+      "policy": "volume_leadership_defense_topn1",
+      "n": 51,
+      "active_days": 51,
+      "hit5_dd10_5d_pct": 17.6471,
+      "avg_ordered_exit_5d_pct": -2.89715,
+      "min_min_low_5d_pct": -15.738485
+    },
+    "kosdaq_best": {
+      "policy": "volume_leadership_defense_topn2",
+      "n": 84,
+      "active_days": 46,
+      "hit5_dd10_5d_pct": 22.619,
+      "avg_ordered_exit_5d_pct": -2.114004,
+      "min_min_low_5d_pct": -16.102893
+    }
+  },
+  "guarded_three_stage_result": {
+    "kospi": {
+      "decision": "primary_forward_shadow",
+      "production_ready": false,
+      "base_config": {
+        "pool": "prefilter",
+        "pool_k": 10,
+        "final_topn": 1,
+        "score_mode": "ev",
+        "max_tail_prob": 0.8
+      },
+      "base_metrics": {
+        "n": 21,
+        "active_days": 21,
+        "hit5_dd10_5d_pct": 57.1429,
+        "hit10_5d_pct": 47.619,
+        "tail_breach_5d_pct": 23.8095,
+        "avg_ordered_exit_5d_pct": -0.262821,
+        "avg_dynamic_exit_5d_pct": 1.634711,
+        "min_min_low_5d_pct": -21.860866
+      },
+      "best_holdout_guard": {
+        "rule": "kis_financial_roe <= 20.58",
+        "holdout_metrics": {
+          "n": 6,
+          "active_days": 6,
+          "hit5_dd10_5d_pct": 83.3333,
+          "hit10_5d_pct": 100.0,
+          "tail_breach_5d_pct": 16.6667,
+          "avg_ordered_exit_5d_pct": 2.167882,
+          "avg_dynamic_exit_5d_pct": 6.318733,
+          "min_min_low_5d_pct": -10.056783
+        },
+        "all_guarded_metrics": {
+          "n": 15,
+          "active_days": 15,
+          "hit5_dd10_5d_pct": 53.3333,
+          "hit10_5d_pct": 60.0,
+          "tail_breach_5d_pct": 20.0,
+          "avg_ordered_exit_5d_pct": -0.261671,
+          "avg_dynamic_exit_5d_pct": 2.062806,
+          "min_min_low_5d_pct": -21.860866
+        }
+      },
+      "loss_traits": [
+        {"feature": "theme_stop5_rate_pct", "bad_median": 40.112994, "good_median": 32.06725},
+        {"feature": "kis_financial_revenue_growth_rate", "bad_median": 3.45, "good_median": 22.485},
+        {"feature": "kis_daily_return_20d_pct", "bad_median": 2.298851, "good_median": 10.401432},
+        {"feature": "kis_prefilter_rank_fluctuation", "bad_median": 27.0, "good_median": 21.0}
+      ]
+    },
+    "kosdaq": {
+      "decision": "shadow_observe_only",
+      "production_ready": false,
+      "base_config": {
+        "pool": "day_return",
+        "pool_k": 5,
+        "final_topn": 1,
+        "score_mode": "success_tail",
+        "max_tail_prob": 0.6
+      },
+      "base_metrics": {
+        "n": 13,
+        "active_days": 13,
+        "hit5_dd10_5d_pct": 69.2308,
+        "hit10_5d_pct": 84.6154,
+        "tail_breach_5d_pct": 30.7692,
+        "avg_ordered_exit_5d_pct": 0.108702,
+        "avg_dynamic_exit_5d_pct": 3.557102,
+        "min_min_low_5d_pct": -37.326529
+      },
+      "best_holdout_guard": {
+        "rule": "kis_whale_flow_3d <= 19.8",
+        "holdout_metrics": {
+          "n": 3,
+          "active_days": 3,
+          "hit5_dd10_5d_pct": 100.0,
+          "hit10_5d_pct": 100.0,
+          "tail_breach_5d_pct": 0.0,
+          "avg_ordered_exit_5d_pct": 4.601458,
+          "avg_dynamic_exit_5d_pct": 9.58248,
+          "min_min_low_5d_pct": -8.486291
+        },
+        "all_guarded_metrics": {
+          "n": 9,
+          "active_days": 9,
+          "hit5_dd10_5d_pct": 88.8889,
+          "hit10_5d_pct": 100.0,
+          "tail_breach_5d_pct": 11.1111,
+          "avg_ordered_exit_5d_pct": 2.979074,
+          "avg_dynamic_exit_5d_pct": 7.406649,
+          "min_min_low_5d_pct": -19.899875
+        }
+      },
+      "larger_guarded_observation": {
+        "config": "day_return/k10/final1/ev_hit10/tail0.8",
+        "rule": "kis_prefilter_rank_fluctuation <= 3",
+        "all_guarded_metrics": {
+          "n": 11,
+          "active_days": 11,
+          "hit5_dd10_5d_pct": 90.9091,
+          "avg_ordered_exit_5d_pct": 3.274053,
+          "avg_dynamic_exit_5d_pct": 7.802255,
+          "min_min_low_5d_pct": -15.535445
+        }
+      },
+      "loss_traits": [
+        {"feature": "kis_whale_score", "bad_median": 55.0, "good_median": 11.0},
+        {"feature": "kis_daily_close_location_pct", "bad_median": 74.876847, "good_median": 100.0},
+        {"feature": "kis_daily_return_20d_pct", "bad_median": -16.902405, "good_median": 10.8527},
+        {"feature": "kis_financial_roe", "bad_median": -26.14, "good_median": 0.0}
+      ]
+    }
+  },
+  "decision": [
+    "Do not promote any KIS model to production from this run.",
+    "Keep KOSPI as the primary forward-shadow lane using three-stage prefilter paths and guard candidates.",
+    "Keep KOSDAQ out of production; observe guarded day_return top1 paths only.",
+    "Stop static tail-safe policy research for this window.",
+    "Next research should implement a shadow watch for KOSPI guarded candidates and test compound loss guards for KOSDAQ."
+  ],
+  "source_reports": [
+    "runtime_state/reports/learning/kis_tail_safe_policy_period_sidecar_20260614.json",
+    "runtime_state/reports/learning/kis_three_stage_guarded_selection_kospi_prefilter_20260614.json",
+    "runtime_state/reports/learning/kis_three_stage_guarded_selection_kosdaq_dayret_20260614.json"
+  ]
+}
