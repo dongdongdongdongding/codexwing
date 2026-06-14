@@ -81,5 +81,8 @@ Do not delete result reports:
 - `runtime_state/long_term/kis_ticker_period_sidecar`: absent
 - runtime files larger than 50MB after prune: `0`
 - `runtime_state` total size after prune: `2.5G`
+- `runtime_state` total size after transient ignored cleanup: `704M`
 - `runtime_state/reports/learning` size after prune: `204M`
 - `runtime_state/long_term` size after prune: `31M`
+- ignored file count after transient ignored cleanup: `5299`
+- actual Git pending count after transient ignored cleanup: `91`

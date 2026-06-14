@@ -86,7 +86,10 @@
     "kis_ticker_period_sidecar_dir": "absent",
     "runtime_files_larger_than_50mb": 0,
     "runtime_state_total_human": "2.5G",
+    "runtime_state_total_after_transient_ignored_cleanup_human": "704M",
     "learning_dir_total_human": "204M",
-    "long_term_dir_total_human": "31M"
+    "long_term_dir_total_human": "31M",
+    "ignored_file_count_after_transient_ignored_cleanup": 5299,
+    "actual_git_pending_count_after_transient_ignored_cleanup": 91
   }
 }
