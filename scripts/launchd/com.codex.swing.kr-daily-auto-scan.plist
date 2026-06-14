@@ -7,8 +7,7 @@
   <string>com.codex.swing.kr-daily-auto-scan</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>/Volumes/ORICO/quant_pj1/scripts/run_kr_daily_auto_scans.sh</string>
+    <string>/Users/dongdong/Library/Application Support/codex_swing/launchd/kr_daily_auto_scans_from_orico.sh</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>

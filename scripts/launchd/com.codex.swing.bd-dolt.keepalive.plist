@@ -7,8 +7,7 @@
   <string>com.codex.swing.bd-dolt.keepalive</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>/Volumes/ORICO/quant_pj1/scripts/keep_bd_dolt_alive.sh</string>
+    <string>/Users/dongdong/Library/Application Support/codex_swing/launchd/bd_dolt_keepalive_from_orico.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
