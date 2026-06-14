@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -u
 
-REPO_DIR="/Users/dongdong/Projects/codex_swing/swing-main"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LOG_DIR="${REPO_DIR}/.beads"
 LOG_FILE="${LOG_DIR}/bd-dolt-keepalive.log"
 export PATH="/Users/dongdong/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"

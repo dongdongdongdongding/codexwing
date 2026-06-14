@@ -7,7 +7,7 @@
   <string>com.codex.swing.kr-premarket-theme-prior</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/Users/dongdong/Projects/codex_swing/swing-main/scripts/run_kr_daily_auto_scans.sh</string>
+    <string>/Volumes/ORICO/quant_pj1/scripts/run_kr_daily_auto_scans.sh</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
@@ -22,8 +22,8 @@
     <integer>20</integer>
   </dict>
   <key>StandardOutPath</key>
-  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_premarket_theme_prior.out.log</string>
+  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/kr_premarket_theme_prior.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_premarket_theme_prior.err.log</string>
+  <string>/Volumes/ORICO/quant_pj1/runtime_state/discord_jobs/kr_premarket_theme_prior.err.log</string>
 </dict>
 </plist>
