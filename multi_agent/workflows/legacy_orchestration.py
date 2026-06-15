@@ -38,6 +38,7 @@ from modules.regime_ticker_profiles import compute_profile_adjustment, get_ticke
 from modules.kr_stock_theme_master import get_stock_theme_record
 from modules.quant_analysis import QuantStrategy
 from modules.cohort_gate_status import cohort_gate_passes
+from modules.overextension import compute_overextension
 
 _REFERENCE_PRICE_CACHE: Dict[str, float | None] = {}
 
@@ -296,7 +297,7 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
         # decision_bucket==exception_leader, so relabeling would deplete the cohort it
         # measures and self-defeat the gate (feedback loop). Self-limiting: promotion only
         # while the daily gate passes the EXCEPTION_LEADER cohort. Reversible via env flag.
-        exception_cohort_promoted = (
+        gate_promote_base = (
             watchlist_reason == "exception_leader_watchlist"
             and not is_loss_hard_cap
             and str(context.market).upper() == "KOSPI"
@@ -305,9 +306,27 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
             not in ("0", "", "false", "False")
             and cohort_gate_passes(context.market, "EXCEPTION_LEADER")
         )
+        # Step 1 peak-chase guard: Exception Leaders that are at-high AND overheated degrade
+        # forward to win 56% / avg +2.65% (vs 81% / +8.74%). Reconstruct RSI14 + dist-from-high
+        # from price (position is missing for this stream) and withhold gate-promotion for the
+        # peak-chase combination. decision_bucket stays exception_leader (gate measurement intact,
+        # no feedback loop). Fails OPEN (promote) on missing price. Toggle: AG_KR_PEAKCHASE_GUARD.
+        peak_chase = False
+        overext = {}
+        if gate_promote_base and os.getenv("AG_KR_PEAKCHASE_GUARD", "1").strip() not in (
+            "0", "", "false", "False"
+        ):
+            overext = compute_overextension(ticker)
+            peak_chase = bool(overext.get("peak_chase"))
+        exception_cohort_promoted = gate_promote_base and not peak_chase
         ex_rationale = list(meta.get("rationale") or [])
         if exception_cohort_promoted:
             ex_rationale.append("exception_leader_cohort_gate_promoted=KOSPI_SWING@95pct_ev_tail")
+        elif gate_promote_base and peak_chase:
+            ex_rationale.append(
+                "exception_leader_peakchase_guard="
+                f"rsi{_safe_float(overext.get('rsi14')):.0f}/dist{_safe_float(overext.get('dist_from_high_20d')):.0f}"
+            )
         rows.append(
             {
                 "run_id": context.run_id,

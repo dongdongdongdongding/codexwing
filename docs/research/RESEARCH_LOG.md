@@ -10,7 +10,7 @@ Status legend: 🔬 testing · 🛠 building · 🚦 shadow · ✅ live · ⏸ p
 ---
 
 ## Step 1 — Overextension (peak-chase) guard for the Exception Leader stream
-Status: 🔬 test done → 🛠 design ready (not yet built)
+Status: ✅ built + verified (flag-gated, shadow until live confirm)
 Phase: 0 (foundation). Updated: 2026-06-15.
 
 ### 데이터 (Data needed / current fill / how to fill)
@@ -62,8 +62,15 @@ an **upside collapse, not a tail blowup**. A guard is warranted — but only on 
 - Today's 5 picks: all outside the danger zone (RSI<65, dist≤−10%) → none would be demoted.
 
 ### 기록·갱신 (Updates)
-- 2026-06-15: test complete; guard justified on the *combination* only. Next: build as designed +
-  the broader 140-column / per-cohort guard-coverage audit (Step 2).
+- 2026-06-15: test complete; guard justified on the *combination* only.
+- 2026-06-15: **built** — `modules/overextension.py` (rolling RSI14 matching the validation +
+  dist-from-20D-high, fail-open) + `legacy_orchestration` withholds gate-promotion for the
+  peak-chase combination (decision_bucket preserved). Flags: `AG_KR_PEAKCHASE_GUARD`,
+  `AG_PEAKCHASE_RSI_MIN`/`AG_PEAKCHASE_DIST_MAX`. Tests: `tests/test_overextension.py` (network-
+  free) + suite green. Live check on today's 5 picks: rsi 39–60 / dist −10…−30% → peak_chase=False
+  for all (none suppressed), ok=True. Matches the offline RSI/dist read.
+- Next: Step 2 — full 140-column × per-cohort fill-rate + guard-coverage matrix (find any other
+  guard silently blind like the peak guard was).
 
 ---
 
