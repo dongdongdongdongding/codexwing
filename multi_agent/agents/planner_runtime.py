@@ -16,6 +16,8 @@ from modules.loss_risk_features import (
 )
 from modules.phase25_governance import phase25_oos_validates, phase25_weak_oos_reasons
 from modules.strategy_family_policy import apply_strategy_family_policy
+from modules.practical_entry_gate import evaluate_practical_entry_gate
+from modules.cohort_gate_status import cohort_gate_passes
 from multi_agent.agents.kr_quant_reranker import (
     compute_kr_basket_priority,
     compute_kr_quant_rerank,
@@ -847,6 +849,44 @@ def _apply_kospi_swing_edge_promotion(
     return "PRIORITY_WATCHLIST"
 
 
+def _apply_kospi_swing_cohort_promotion(
+    *,
+    decision: str,
+    run_market: str,
+    scan_mode: str,
+    feature_snapshot: Dict[str, Any],
+    rationale: List[str],
+) -> str:
+    """Promote KOSPI SWING Practical-80 cohort candidates, driven by the cohort release gate.
+
+    Only promotes when the daily KR cohort release gate currently passes the PRACTICAL_80
+    cohort for KOSPI (EV+tail @95%, see report_kr_cohort_release_gate). This is self-limiting:
+    if forward performance degrades and the gate flips to FAIL, promotion stops on the next
+    daily refresh. KOSPI SWING only; only upgrades from OBSERVE+ to PRIORITY_WATCHLIST and
+    never downgrades, so later loss/inference gates still demote unsafe rows (8:2 safety intact).
+
+    Practical-80 membership is feature-derived (dynamic theme profile), not label-derived, so
+    relabeling to PRIORITY_WATCHLIST does NOT change what the gate measures -- no feedback loop.
+    """
+    market = str(run_market or "").upper()
+    mode = str(scan_mode or "").upper()
+    if market != "KOSPI" or mode != "SWING":
+        return decision
+    if os.getenv("AG_KR_COHORT_GATE_PROMOTION", "1").strip() in ("0", "", "false", "False"):
+        return decision
+    if _decision_rank(decision) >= _decision_rank("PRIORITY_WATCHLIST"):
+        return decision
+    if _decision_rank(decision) < _decision_rank("OBSERVE"):
+        return decision
+    if not cohort_gate_passes(market, "PRACTICAL_80"):
+        return decision
+    gate = evaluate_practical_entry_gate(feature_snapshot) if isinstance(feature_snapshot, dict) else {}
+    if not bool(gate.get("promote")):
+        return decision
+    rationale.append(f"kospi_swing_practical80_cohort_promotion=level:{gate.get('level')}")
+    return "PRIORITY_WATCHLIST"
+
+
 def _to_warning_items(raw_warnings: Any) -> List[WarningItem]:
     if not isinstance(raw_warnings, list):
         return []
@@ -1614,6 +1654,13 @@ def build_planner_handoff(
             scan_mode=scan_mode,
             expected_edge_score=float(expected_edge_score) if expected_edge_score not in (None, "") else None,
             decision_score=float(decision_score) if decision_score not in (None, "") else None,
+            rationale=rationale,
+        )
+        decision = _apply_kospi_swing_cohort_promotion(
+            decision=decision,
+            run_market=run_market,
+            scan_mode=scan_mode,
+            feature_snapshot=feature_snapshot,
             rationale=rationale,
         )
         # 2026-05-08: Intraday Trend (breakout=False) 라벨 PRIORITY 격하.

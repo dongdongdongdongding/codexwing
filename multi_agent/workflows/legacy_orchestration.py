@@ -37,6 +37,7 @@ from modules.regime_market_policy import get_market_policy
 from modules.regime_ticker_profiles import compute_profile_adjustment, get_ticker_profile, resolve_profile_market, resolve_profile_regime
 from modules.kr_stock_theme_master import get_stock_theme_record
 from modules.quant_analysis import QuantStrategy
+from modules.cohort_gate_status import cohort_gate_passes
 
 _REFERENCE_PRICE_CACHE: Dict[str, float | None] = {}
 
@@ -289,6 +290,24 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
             archive_priority_rank = None
         else:
             archive_priority_rank = int(rank)
+        # Gate-driven Exception Leader promotion (KOSPI SWING only). We mark the row as
+        # production-promoted via selection_lane + rationale but DELIBERATELY keep
+        # decision/decision_bucket == EXCEPTION_LEADER: the cohort release gate measures
+        # decision_bucket==exception_leader, so relabeling would deplete the cohort it
+        # measures and self-defeat the gate (feedback loop). Self-limiting: promotion only
+        # while the daily gate passes the EXCEPTION_LEADER cohort. Reversible via env flag.
+        exception_cohort_promoted = (
+            watchlist_reason == "exception_leader_watchlist"
+            and not is_loss_hard_cap
+            and str(context.market).upper() == "KOSPI"
+            and str(scan_mode).upper() == "SWING"
+            and os.getenv("AG_KR_COHORT_GATE_PROMOTION", "1").strip()
+            not in ("0", "", "false", "False")
+            and cohort_gate_passes(context.market, "EXCEPTION_LEADER")
+        )
+        ex_rationale = list(meta.get("rationale") or [])
+        if exception_cohort_promoted:
+            ex_rationale.append("exception_leader_cohort_gate_promoted=KOSPI_SWING@95pct_ev_tail")
         rows.append(
             {
                 "run_id": context.run_id,
@@ -298,6 +317,7 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "priority_rank": archive_priority_rank,
                 "decision": decision_label,
                 "decision_bucket": classify_decision_bucket(decision_label),
+                "selection_lane": "EXCEPTION_LEADER_GATE_PROMOTED" if exception_cohort_promoted else None,
                 "status": "PENDING",
                 "horizon": f"T+{horizon_days}D",
                 "target_horizon_days": horizon_days,
@@ -333,7 +353,7 @@ def _build_realized_outcomes_placeholder(context: RunContext, planner_handoff: A
                 "relative_rank_pct": meta.get("relative_rank_pct"),
                 "regime_adjusted_grade": meta.get("regime_adjusted_grade"),
                 "relative_rank_model": meta.get("relative_rank_model"),
-                "rationale": meta.get("rationale"),
+                "rationale": ex_rationale or None,
                 "theme_risk": meta.get("theme_risk"),
                 "final_action": meta.get("final_action"),
                 "entry_condition_text": meta.get("entry_condition_text"),

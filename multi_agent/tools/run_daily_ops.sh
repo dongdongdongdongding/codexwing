@@ -110,6 +110,11 @@ for MARKET in "${MARKETS[@]}"; do
     echo "[STEP] report_kr_walkforward_release_gate market=${MARKET}"
     run_optional "report_kr_walkforward_release_gate:${MARKET}" \
       python3 multi_agent/tools/report_kr_walkforward_release_gate.py --market "${MARKET}"
+
+    echo "[STEP] report_kr_cohort_release_gate market=${MARKET}"
+    run_optional "report_kr_cohort_release_gate:${MARKET}" \
+      python3 multi_agent/tools/report_kr_cohort_release_gate.py --market "${MARKET}" \
+        --confidence "${AG_KR_COHORT_GATE_CONFIDENCE:-0.95}"
   fi
 
   if [[ "${AG_STALE_FALLBACK_ALERT_ENABLE:-1}" == "1" ]]; then
