@@ -74,6 +74,51 @@ an **upside collapse, not a tail blowup**. A guard is warranted — but only on 
 
 ---
 
+## Loop iteration 1 — does ANY populated feature separate winners OOS? (the coin-flip mission)
+Status: ✅ done — refuted; reframes the model question. Updated: 2026-06-15.
+
+- **문제 (Problem):** production/base win is a coin-flip (Top5 48%, base 46.6%); mission is to raise
+  P(win) robustly, anti-overfit.
+- **가설 (Hypothesis):** some populated entry feature separates 5D-winners from losers OOS.
+- **검증 (Verify):** KOSPI SWING archive, date split 70/30 (cut 2026-05-14), top vs bottom tercile
+  win, TRAIN vs TEST. Also the theme-gate levels.
+- **결과 (Result):** REFUTED. Every score feature collapses or *reverses* OOS:
+  decision_score 51/47→32/44, prob_clean 71/35→38/37, expected_edge 62/41→32/39,
+  phase25_prob 24/57→41/34, alpha/conviction/tech/whale/volume all flip/weak. Base win itself
+  shifts 50%→37% (regime). The ONLY OOS survivor is the **theme gate**: in the hard 37%-base test
+  period, pass/near/small_sample have ~0 candidates, but **watch holds (n=13, 69.2% win, +24.2%
+  avg)**. So the headline "Practical-80 94%" was train-concentrated; the durable piece is `watch`.
+- **회고 (Retrospect):** the edge is **structural/thematic, not score-based**. This is exactly why
+  AUC sits at 0.56 and why Codex's score-reranking variants overfit — there is no OOS signal in the
+  raw scores to learn from. Training another model on these features is futile. The regime shift
+  (50→37) is the dominant breaker. **Model comes AFTER robust features exist**; priority is
+  orthogonal signal (flow) + understanding/encoding the theme mechanism, all OOS-gated.
+- **다음 (iteration 2):** test the orthogonal flow signal (foreigner/institution) as an OOS
+  separator — the one untested input and the KIS migration's original justification.
+- **적용:** `watch` added to Practical-80 (cohort gate mask + planner promotion), flag
+  `AG_PRACTICAL80_INCLUDE_WATCH` (default on, reversible). Gate still PASS. Thin (n=13 OOS) →
+  forward-tracked.
+
+## Loop iteration 2 — does the orthogonal flow signal separate winners OOS?
+Status: ✅ done — refuted (1d); multi-day untestable (coverage). Updated: 2026-06-15.
+
+- **문제:** scores have no OOS edge (iter 1); flow is the one untested orthogonal input.
+- **가설:** foreigner/institution/retail flow separates 5D-winners OOS.
+- **검증:** same date-split tercile test on archive flow columns (33% coverage for 1d, 17% for 3d/10d).
+- **결과:** REFUTED at 1d — foreigner_1d 19/29→41/38 (flip), institution_1d flat, retail_1d
+  24/18→30/43 (reverse), whale_flow_1d sign-inconsistent, flow_consensus_buying 22/22→18/61
+  (strong reverse). The theory-favored **multi-day flow (3d/10d accumulation) is UNTESTABLE** —
+  only 17% coverage, test n insufficient.
+- **회고:** no robust univariate OOS edge in either scores (iter 1) or 1d flow (iter 2). The only
+  OOS edge is structural (theme `watch`). **Conclusion: results require NEW robust signal, not more
+  model training on existing features (that is the overfitting Codex already hit).** The single
+  most-promising untested lever is multi-day institutional/foreigner accumulation flow, blocked by
+  17% coverage (and flow_fetch_count=0 in live ops).
+- **다음 (iteration 3):** close the multi-day flow coverage gap (fetch/backfill foreigner_3d/10d,
+  institution_10d), THEN re-test as an OOS separator. Data work, not modeling.
+
+---
+
 ## Step 4 — ROOT CAUSE: the production yield collapse is upstream (KIS operational prefilter)
 Status: ✅ diagnosed — this reframes the whole problem. Wrong track corrected.
 Phase: 0→ becomes the top priority. Updated: 2026-06-15.

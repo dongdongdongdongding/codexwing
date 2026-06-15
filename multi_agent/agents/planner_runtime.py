@@ -881,9 +881,12 @@ def _apply_kospi_swing_cohort_promotion(
     if not cohort_gate_passes(market, "PRACTICAL_80"):
         return decision
     gate = evaluate_practical_entry_gate(feature_snapshot) if isinstance(feature_snapshot, dict) else {}
-    if not bool(gate.get("promote")):
+    level = str(gate.get("level") or "")
+    include_watch = os.getenv("AG_PRACTICAL80_INCLUDE_WATCH", "1").strip() not in ("0", "", "false", "False")
+    promote = bool(gate.get("promote")) or (include_watch and level == "watch")
+    if not promote:
         return decision
-    rationale.append(f"kospi_swing_practical80_cohort_promotion=level:{gate.get('level')}")
+    rationale.append(f"kospi_swing_practical80_cohort_promotion=level:{level}")
     return "PRIORITY_WATCHLIST"
 
 

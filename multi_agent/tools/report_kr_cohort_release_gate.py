@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -105,13 +106,23 @@ def _restrict_to_market(df: pd.DataFrame, market: str) -> pd.DataFrame:
     return df.loc[mask].copy()
 
 
+def _practical_80_levels() -> list:
+    """Levels counted as Practical-80. `watch` is the only theme level that survived OOS in the
+    2026-05 regime-shift test (n=13, 69% win, +24% avg) while pass/near/small_sample vanished, so
+    it is included by default (toggle AG_PRACTICAL80_INCLUDE_WATCH=0 to revert)."""
+    base = ["pass", "near", "small_sample"]
+    if os.getenv("AG_PRACTICAL80_INCLUDE_WATCH", "1").strip() not in ("0", "", "false", "False"):
+        base.append("watch")
+    return base
+
+
 def _practical_80_mask(df: pd.DataFrame) -> pd.Series:
     levels = [
         str((evaluate_practical_entry_gate(row) or {}).get("level") or "")
         for row in df.to_dict("records")
     ]
     series = pd.Series(levels, index=df.index)
-    return series.isin(["pass", "near", "small_sample"])
+    return series.isin(_practical_80_levels())
 
 
 # 5D horizon: the cohort alpha (and the 75%/15% target) lives on the 5-day path.
