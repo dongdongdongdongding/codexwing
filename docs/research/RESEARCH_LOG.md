@@ -74,6 +74,64 @@ an **upside collapse, not a tail blowup**. A guard is warranted — but only on 
 
 ---
 
+## Step 4 — ROOT CAUSE: the production yield collapse is upstream (KIS operational prefilter)
+Status: ✅ diagnosed — this reframes the whole problem. Wrong track corrected.
+Phase: 0→ becomes the top priority. Updated: 2026-06-15.
+
+### The finding (evidence)
+Same KOSPI SWING, today, by execution path:
+| Run | scanned | **picked (production)** | liq-rejects | path |
+|---|---:|---:|---:|---|
+| 01:33 | **833** | **27** | 0 | full-universe scan (nightly) |
+| 09:45 | 80 | **0** | 43 | KIS operational prefilter |
+| 15:47 | 80 | **0** | 41 | KIS operational prefilter |
+
+The operational path produces **zero production picks**; the full-universe path produces 27.
+The difference is entirely the candidate generator.
+
+### Root cause (code-confirmed)
+- `kis_operational_prefilter.build_*` selects the top-80 by `selection_score` = momentum ranks
+  (volume_rank w1.0 + **fluctuation_rank w0.75** + volume_power w0.85 + **VI +8**) with only a
+  weak log-scaled `value_traded` bonus and **no hard liquidity floor**. `_has_quote_activity`
+  only checks volume/value > 0 (traded at all), not "liquid enough".
+- Result: high-등락률 / VI-triggered **illiquid small-caps** fill the 80 slots; the scanner's real
+  liquidity gate (AG_KOSPI_UNIVERSE_MIN_AMOUNT = 12B KRW) then rejects ~54% of them
+  (sampled rejects traded 9M–131M KRW, <1% of the floor). Effective pool ≈ 37 → ML cuts 19 →
+  ~0 production → forced onto the exception-leader fallback.
+- The full-universe scan applies the 12B liquidity floor at universe construction, so it has 0
+  liquidity waste and yields real picks.
+
+### Implication for ALL prior work (re-read of existing test results)
+- **Codex's KIS model research kept returning "no_improvement / 0 promotable"** — plausibly because
+  it trains/ranks on prefilter candidates that are ~half illiquid junk. The model isn't necessarily
+  bad; the candidate generator feeding it is polluted. (Re-validate models on a liquidity-clean pool.)
+- The validated cohort edge (Exception Leader 77.7%, Practical-80 94%, archive-based) sits
+  *downstream* of this broken generator → operationally it is starved.
+- `flow_fetch_count = 0`: the orthogonal flow signal (the KIS migration's main justification) is
+  not even fetched in the operational prefilter.
+
+### 회고 (my wrong track)
+- I spent steps adding SAFETY (peak guard) and proposed restoring the drift monitor — the opposite
+  of what was needed. The disease is candidate YIELD/QUALITY at the prefilter, not insufficient
+  safety. (User flagged this directly; corrected here.)
+
+### Research hypotheses (ranked) + influencing factors → Step 5
+- **H1 (primary):** add a hard liquidity floor to the prefilter seed (drop value_traded below a KR
+  market floor BEFORE the 80-cap) → the 80 slots fill with liquid momentum names → production picks
+  recover toward the full-scan level. Highest leverage, smallest change.
+- **H2:** re-weight selection_score toward liquidity/quality vs raw fluctuation/VI.
+- **H3:** widen the prefilter pool or use the full-universe scan for operational SWING (yield vs
+  speed trade-off; the full scan already yields 27).
+- **H4:** fix flow fetching (flow_fetch_count=0) so the orthogonal signal is live.
+- Influencing factors: pool cap (80), selection metric (momentum vs liquidity), VI weighting,
+  absence of a liquidity floor, value_traded weight, scan-speed budget, flow availability,
+  prefilter→scanner liquidity contract mismatch.
+- **Validate-first:** estimate H1 impact (how many liquid momentum names are displaced by junk),
+  then A/B the prefilter (liquidity-floored vs current) on production-pick yield AND on whether the
+  recovered picks perform forward (don't just add volume — add *good* volume).
+
+---
+
 ## Step 3 — Architecture review: WHY Exception Leaders are feature-blind (intentional vs omission)
 Status: ✅ judged — mostly intentional/correct; one omission already fixed in Step 1. No rip-out.
 Phase: 0. Updated: 2026-06-15.
