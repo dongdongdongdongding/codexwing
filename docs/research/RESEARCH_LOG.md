@@ -74,6 +74,32 @@ an **upside collapse, not a tail blowup**. A guard is warranted — but only on 
 
 ---
 
+## Loop iteration 5 — multi-regime price-primitive model (FDR backfill breaks the data limit)
+Status: ✅ verified OOS → direction CONFIRMED, proceed to build. Updated: 2026-06-15.
+
+- **문제:** the rich sidecar is only ~1 month (May 2026) = one regime; no model could be validated.
+  Operator point: backfill from FDR/yfinance instead of waiting for KIS.
+- **가설:** reconstruct price-primitive features + 5D labels over a long multi-regime history from
+  FDR; a regime-conditional factor model has stable OOS edge (momentum in up-trends, reversal in
+  down/chop) — the sign-flip that broke the single-regime models.
+- **검증:** built a 2.5yr panel (2024-03..2026-06, 300 liquid KR names, 153K rows). (1) sign-
+  stability now shows `ma60_dist` stable (mean-reversion). (2) GBM multi-regime OOS AUC 0.513
+  (POSITIVE — the 1-month inversion was a single-regime artifact). (3) walk-forward (train→test)
+  regime-conditional rule: top-decile OOS win 54.7% / net +2.54% vs base 52.5%/+1.27%;
+  **DOWN/chop reversal picks 62.6% win / net +3.05%**; MFE avg +12.9%.
+- **결과:** thin but real, OOS-verified positive edge; structure = regime-conditional factor sign
+  (UP=momentum/above-MA, DOWN-chop=oversold reversal). DOWN/chop reversal is the strongest piece.
+- **회고:** my "no edge" (iters 1-2/4) was a single-regime (1-month sidecar) artifact, and my first
+  "breakthrough" read had survivorship + in-sample-regime flaws — caught on self-review and
+  re-verified walk-forward. Edge clears costs but is thin (+2.2pp) with severe single-name tails
+  (−48%) → mandatory risk sizing. Survivorship inflates absolute returns; the relative/regime edge
+  is robust (base stable across test halves).
+- **다음:** build the regime-conditional price scorer as a clean module, shadow-track it forward,
+  then combine with the validated structural edges (theme/watch) + tail-aware sizing. Keep
+  collecting sidecar so rich features eventually add to the price base.
+
+---
+
 ## Loop iteration 1 — does ANY populated feature separate winners OOS? (the coin-flip mission)
 Status: ✅ done — refuted; reframes the model question. Updated: 2026-06-15.
 
