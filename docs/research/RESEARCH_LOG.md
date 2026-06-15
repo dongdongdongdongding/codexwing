@@ -74,7 +74,44 @@ an **upside collapse, not a tail blowup**. A guard is warranted — but only on 
 
 ---
 
-## Step 2 — Full feature & guard-coverage audit (planned)
-Status: ⏸ planned. Map all scan features × per-cohort fill-rate, and which guard fires on which
-stream (so no other guard is silently blind like the peak guard was). Loop fields to be filled
-when started.
+## Step 2 — Full feature & guard-coverage audit
+Status: ✅ audit done (map recorded; no new guard built — audits map, they don't change behavior)
+Phase: 0. Updated: 2026-06-15.
+
+### 데이터 (per-cohort fill-rate, KOSPI SWING: Exception Leader n=205 vs rest n=5908)
+| Feature (guard it powers) | EL fill | rest fill | blind? |
+|---|---:|---:|---|
+| expected_edge_score / expected_return_1d,3d | 2.9% | 96% | ⛔ edge gate + edge promotion |
+| phase25_prob / threshold | 3.4% | 74% | ⛔ ML/phase25 gates |
+| position / tier | 2.0% | 53% | ⛔ peak guard (fixed in Step 1) |
+| model_prob_mean / low_prob_high_score | 2.0% | 51% | ⛔ inverted-signal gate |
+| relative_rank_pct / regime_adjusted_grade | 0% | 42% | ⛔ ranking/regime gate |
+| **loss_risk_score** | **36.6%** | 43% | ⚠️ ~63% lack it; and it's degraded (below) |
+| populated for EL | decision_score 97%, prob_clean 97%, alpha_score 97% | | |
+
+### 용도 / 가드-coverage map
+- **Exception Leaders bypass the planner gate stack entirely** — they are collected in a separate
+  path (`_collect_exception_leaders_from_scanner_payload`), not the planner main loop, so
+  `_apply_kr_market_mode_quality_gate` / `_apply_expected_edge_gate` / peak / inverted demotes
+  never run on them.
+- ML-feature gates are structurally inapplicable (features 2–4% populated).
+- `compute_loss_risk_features` depends on `position/tech/whale/ml_prob` → for EL these are missing,
+  so loss_risk is computed with **degraded inputs (is_peak/is_rising dead)** and only ~37% persisted.
+- Net: EL per-candidate safety rests on **exception-admission thresholds (alpha/conviction/prob)
+  + degraded loss_risk + (now) the reconstructed peak guard + the forward COHORT gate**. The
+  cohort gate is the primary validator; most per-candidate ML guards don't apply by design.
+- **Practical-80** is NOT a bypass stream — those candidates flow through the normal planner loop
+  with full features, so they get the full gate stack + the practical gate. No blind spot there.
+
+### 회고 (wrong assumptions corrected)
+- Assumed the loss-risk hard cap protects Exception Leaders — it only partially does (37% + degraded).
+- Assumed planner gates apply broadly — they do NOT touch the Exception Leader stream.
+
+### 운영 / next (no build in this step — audit only)
+- Per-candidate EL safety must come from **price-reconstructable** signals (ML features are absent
+  by design). Peak done. Candidate future guards: volume-confirmation of the move, gap-up chase,
+  liquidity — **each must be forward-validated before adding** (no eyeball filters).
+- The cohort forward gate carries the safety load → **regime robustness is the dominant risk**
+  (roadmap Phase 3 thread). Single-regime validation is the main caveat on everything here.
+- Optional: reconstruct `position`/volume for EL so the existing loss_risk regains its peak
+  component — candidate step, validate first.
