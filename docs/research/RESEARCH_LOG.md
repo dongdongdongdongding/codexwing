@@ -74,6 +74,42 @@ an **upside collapse, not a tail blowup**. A guard is warranted — but only on 
 
 ---
 
+## Step 3 — Architecture review: WHY Exception Leaders are feature-blind (intentional vs omission)
+Status: ✅ judged — mostly intentional/correct; one omission already fixed in Step 1. No rip-out.
+Phase: 0. Updated: 2026-06-15.
+
+### Evidence (why designed this way)
+- Exception Leaders are re-admitted from candidates the strict path REJECTED, specifically
+  `KR_HARD_FILTER_FAIL` (failed the mechanical backtest filter) or
+  `PRECISION_GATE_T3_LOW_ML_SUPPORT` (rejected for LOW ML support), gated by alpha≥45 / conviction≥58.
+- The reject-detail snapshot (`reject_details_by_symbol`) is **stage-dependent**: early rejects
+  carry almost nothing; late rejects carry scoring features (alpha/tech/whale/prob) but never
+  `position`. So the detail captures *scoring* features, not price-derived *safety* context.
+
+### Judgment (intentional vs error)
+- **Bypass = intentional and validated.** It is the 주도주 하이패스 (PROJECT_HISTORY Phase 13):
+  catch momentum leaders the mechanical/ML path wrongly rejects. The cohort gate (77.7%/+7.95%)
+  proves it works. Do NOT redesign it away — that re-breaks a validated stream.
+- **ML-feature gaps (expected_edge / phase25 / model_prob) = correct-by-design, NOT errors.**
+  These candidates were admitted *because* they have low/no ML support; their ML scores are
+  legitimately absent. Recomputing them is circular (the model already said no).
+- **The one genuine legacy omission = price-derived SAFETY context (`position`)** dropped from the
+  reject-detail snapshot. `position` is computable from price, so its absence disabled the peak
+  guard for this stream. → **already fixed in Step 1** (reconstruct RSI/dist; guard the validated
+  peak-chase combination).
+
+### Redesign decision (best way for the goal, given the above)
+- Do NOT rip out the bypass or try to re-inject ML scores. Preserve working, validated core.
+- Formalize Step 1's reconstruction as **the designed Exception-Leader safety layer** (price-derived
+  safety features reconstructed at collection, since ML features are absent by design).
+- Optional, **validate-first** extensions (not bolted on): (a) restore `position`→loss_risk so its
+  peak component fires for EL [marginal — Step 1's direct guard already covers the sharp risk];
+  (b) volume-confirmation of the EL move (thin-volume fakeout filter). Each forward-validated before
+  building. Alternative "fix at source" (add `position` to reject_details in scanner_services) is
+  viable but higher blast-radius than reconstruction; reconstruction preferred.
+
+---
+
 ## Step 2 — Full feature & guard-coverage audit
 Status: ✅ audit done (map recorded; no new guard built — audits map, they don't change behavior)
 Phase: 0. Updated: 2026-06-15.
