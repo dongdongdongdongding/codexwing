@@ -94,9 +94,15 @@ Status: ✅ verified OOS → direction CONFIRMED, proceed to build. Updated: 202
   re-verified walk-forward. Edge clears costs but is thin (+2.2pp) with severe single-name tails
   (−48%) → mandatory risk sizing. Survivorship inflates absolute returns; the relative/regime edge
   is robust (base stable across test halves).
-- **다음:** build the regime-conditional price scorer as a clean module, shadow-track it forward,
-  then combine with the validated structural edges (theme/watch) + tail-aware sizing. Keep
-  collecting sidecar so rich features eventually add to the price base.
+- **빌드 완료:** `modules/regime_conditional_scorer.py` (validated spec, tested) +
+  `multi_agent/tools/report_regime_signal_shadow.py` (scores a liquid universe daily, ranks within
+  regime, applies tail-aware sizing, records picks to a JSONL ledger, and auto-resolves the realized
+  5D outcome of elapsed picks so the live edge is measured before any production role). Registered
+  in run_daily_ops.sh (AG_REGIME_SIGNAL_SHADOW_ENABLE). Observation-only; never touches the live
+  scanner/planner. Tests: test_regime_conditional_scorer + test_regime_signal_shadow (network-free).
+- **다음:** accumulate the shadow ledger forward; once the live forward record confirms the OOS
+  edge, combine with the structural edges (theme/watch) and graduate from shadow. Keep collecting
+  sidecar so rich features eventually add to the price base.
 
 ---
 

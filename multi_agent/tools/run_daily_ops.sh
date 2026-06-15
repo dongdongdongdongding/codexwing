@@ -169,6 +169,13 @@ if [[ "${AG_EXIT_POLICY_WATCH_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_exit_policy_watch.py
 fi
 
+if [[ "${AG_REGIME_SIGNAL_SHADOW_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] report_regime_signal_shadow"
+  run_optional "report_regime_signal_shadow" \
+    python3 multi_agent/tools/report_regime_signal_shadow.py \
+      --top-universe "${AG_REGIME_SIGNAL_TOP_UNIVERSE:-120}" --top-picks "${AG_REGIME_SIGNAL_TOP_PICKS:-10}"
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
