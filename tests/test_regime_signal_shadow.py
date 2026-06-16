@@ -1,5 +1,7 @@
 """Unit tests for the regime-signal shadow pure helpers (network-free)."""
-from multi_agent.tools.report_regime_signal_shadow import tail_tier, rank_and_pick, down_buy_scan_rows
+from multi_agent.tools.report_regime_signal_shadow import (
+    tail_tier, rank_and_pick, down_buy_scan_rows, down_buy_deep_rows,
+)
 
 
 def test_tail_tier_equal_risk_budget():
@@ -56,3 +58,19 @@ def test_down_buy_rows_only_down_regime_and_labeled():
 def test_down_buy_rows_empty_when_no_down_picks():
     picks = [{"ticker": "C.KS", "market": "KOSPI", "regime": "up", "score": 40.0, "dist_hi20": -2.0}]
     assert down_buy_scan_rows(picks, "r", "t") == []
+
+
+def test_down_buy_deep_rows_surface_parity_with_scan_rows():
+    picks = [
+        {"ticker": "A.KQ", "market": "KOSDAQ", "regime": "down_chop", "score": 30.0, "dist_hi20": -25.0},
+        {"ticker": "B.KQ", "market": "KOSDAQ", "regime": "down_chop", "score": 50.0, "dist_hi20": -18.0},
+        {"ticker": "C.KS", "market": "KOSPI", "regime": "up", "score": 40.0, "dist_hi20": -2.0},
+    ]
+    scan = down_buy_scan_rows(picks, "REGIME-DOWN-20260616", "2026-06-16T00:00:00+00:00")
+    deep = down_buy_deep_rows(picks, "REGIME-DOWN-20260616", "2026-06-16T00:00:00+00:00")
+    # same tickers + same order across archive (scan) and surface (deep) -> parity holds
+    assert [r["ticker"] for r in deep] == [r["ticker"] for r in scan] == ["B.KQ", "A.KQ"]
+    # deep rows land in the production Top5 section with a buy label and a built interpretation
+    assert all(r["analysis_section"] == "Top5" for r in deep)
+    assert all(r["decision"] == "REGIME_DOWN_BUY" for r in deep)
+    assert all(isinstance(r.get("candidate_interpretation"), dict) for r in deep)

@@ -13,10 +13,15 @@
   outcome-tracked AND learned, so surface=archive=learning hold for this stream. Flag-gated
   `AG_REGIME_DOWN_PRODUCTION` (default OFF) — stays off until the shadow ledger confirms the live
   edge; deployment is then one flag flip. Tested (network-free conversion).
-- **Remaining follow-on:** surface the DOWN production rows on the web/Discord deep reports as a
-  distinct production section (so the user *sees* them, not just tracking) — the deep-report
-  generation change. Then re-run the same parity check to confirm web=Discord=archive=learning show
-  identical DOWN tickers/order.
+- **Surface adapter (done):** `down_buy_deep_rows` mirrors `down_buy_scan_rows` to write the same
+  DOWN buys into `scan_deep_reports` (the web/Discord source) in the production `Top5` section, under
+  the same REGIME-DOWN run_id. A test asserts identical tickers+order across the archive (scan) and
+  surface (deep) rows -> when `AG_REGIME_DOWN_PRODUCTION=1`, surface = archive = learning all show
+  the same DOWN tickers. Both writes are flag-gated and fail-safe.
+- **Remaining (display config, not data):** web/Discord run-selection decides which run to *display*;
+  the REGIME-DOWN run is now queryable in both tables, but surfacing it prominently may need the UI
+  to include the regime run_id. Data-level parity is complete; verify the live display once the flag
+  is enabled and the shadow ledger confirms the edge.
 
 
 

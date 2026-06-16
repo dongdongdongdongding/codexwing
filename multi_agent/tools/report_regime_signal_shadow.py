@@ -97,6 +97,31 @@ def down_buy_scan_rows(picks, run_id: str, recommended_at: str):
     return rows
 
 
+def down_buy_deep_rows(picks, run_id: str, recommended_at: str):
+    """Convert DOWN/chop-regime picks into scan_deep_reports rows (the web/Discord surface).
+
+    Writing these (under a distinct REGIME-DOWN run_id) puts the DOWN production buys into the SAME
+    table the web and Discord render from, in the production `Top5` section -- so surface = archive
+    = learning all show the same DOWN tickers/order. Mirrors down_buy_scan_rows (same selection).
+    """
+    from modules.candidate_interpretation import build_candidate_interpretation
+    down = sorted([p for p in picks if str(p.get("regime")) == "down_chop"],
+                  key=lambda p: -float(p.get("score") or 0.0))
+    rows = []
+    for i, p in enumerate(down, start=1):
+        row = {
+            "ticker": p["ticker"], "stock_name": p.get("stock_name") or p["ticker"],
+            "market": p["market"], "run_id": run_id, "rank": i,
+            "decision": "REGIME_DOWN_BUY", "decision_bucket": "regime_down",
+            "signal_label": "REGIME_DOWN_BUY", "analysis_section": "Top5", "analysis_section_rank": i,
+            "buy_score": p.get("score"), "generated_at": recommended_at,
+            "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": i},
+        }
+        row["candidate_interpretation"] = build_candidate_interpretation(row)
+        rows.append(row)
+    return rows
+
+
 # ---------------------------------------------------------------------------
 # IO
 # ---------------------------------------------------------------------------
@@ -190,15 +215,22 @@ def main() -> None:
     # market_scan_results so surface = archive = learning. Stays OFF until the shadow ledger
     # confirms the live forward edge; deployment is then a single flag flip.
     persisted = 0
+    deep_persisted = 0
     if os.getenv("AG_REGIME_DOWN_PRODUCTION", "0").strip() not in ("0", "", "false", "False"):
         run_id = "REGIME-DOWN-" + today.replace("-", "")
-        rows = down_buy_scan_rows(picks, run_id, datetime.now(timezone.utc).isoformat())
+        recommended_at = datetime.now(timezone.utc).isoformat()
+        rows = down_buy_scan_rows(picks, run_id, recommended_at)
+        deep_rows = down_buy_deep_rows(picks, run_id, recommended_at)
         try:
             from modules.db_manager import DBManager
             db = DBManager()
-            for payload in rows:
+            for payload in rows:                       # archive + learning
                 db.upsert_scan_result(payload)
                 persisted += 1
+            if deep_rows:                              # web + Discord surface
+                from modules.top_deep_report import upsert_reports_to_supabase
+                res = upsert_reports_to_supabase(deep_rows)
+                deep_persisted = int(res.get("rows_upserted", 0)) if isinstance(res, dict) else 0
         except Exception as exc:  # fail-safe: never break the shadow run on a write error
             persisted = -1
             print(json.dumps({"regime_down_persist_error": repr(exc)[:200]}, ensure_ascii=False))
@@ -211,6 +243,7 @@ def main() -> None:
         "picks_today": picks,
         "forward_summary": summary,
         "down_buys_persisted": persisted,
+        "down_buys_deep_persisted": deep_persisted,
         "production_enabled": bool(os.getenv("AG_REGIME_DOWN_PRODUCTION", "0").strip() not in ("0", "", "false", "False")),
         "note": "observation-only until AG_REGIME_DOWN_PRODUCTION=1; thin OOS edge; trade only with the tail-aware position_factor.",
     }
