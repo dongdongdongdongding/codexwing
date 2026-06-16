@@ -1,5 +1,25 @@
 # Research Log — performance roadmap execution
 
+## Consumer-parity verification + unification adapter (2026-06-16)
+- **Verified** (today's KOSPI run, web/Discord/Top-deep/archive): web ↔ Discord are consistent
+  (both render `scan_deep_reports`, section-labeled). But the **learning archive exports only
+  `market_scan_results`** (export L337), while the user-facing deep reports are built from
+  scan_universe_admission + KIS shadow + exception. 14/23 deep tickers are NOT in
+  market_scan_results -> the models/cohort-gate learn from a DIFFERENT set than the user sees, and
+  the production buy stream is empty (picked=0) so the Top is dominated by KIS_SHADOW_BLOCKED.
+- **Fix (unification adapter):** `report_regime_signal_shadow.down_buy_scan_rows` converts the
+  DOWN/chop-regime picks (the OOS-validated 75%+ reversal leg) into `market_scan_results` rows
+  (decision=`REGIME_DOWN_BUY`, lane=`REGIME_DOWN`). Routing through market_scan_results makes them
+  outcome-tracked AND learned, so surface=archive=learning hold for this stream. Flag-gated
+  `AG_REGIME_DOWN_PRODUCTION` (default OFF) — stays off until the shadow ledger confirms the live
+  edge; deployment is then one flag flip. Tested (network-free conversion).
+- **Remaining follow-on:** surface the DOWN production rows on the web/Discord deep reports as a
+  distinct production section (so the user *sees* them, not just tracking) — the deep-report
+  generation change. Then re-run the same parity check to confirm web=Discord=archive=learning show
+  identical DOWN tickers/order.
+
+
+
 Living, sequential log. One step at a time, fit the existing framework (see
 [PERFORMANCE_ROADMAP.md](PERFORMANCE_ROADMAP.md) + bd). Every step is recorded through the loop:
 **데이터(Data) → 용도(Use) → 회고(Retrospective) → 테스트(Test) → 운영(Operation)**, then

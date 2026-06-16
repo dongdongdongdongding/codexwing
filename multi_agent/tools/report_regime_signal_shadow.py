@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -68,6 +69,32 @@ def rank_and_pick(scored: List[Dict[str, Any]], top_picks: int) -> List[Dict[str
                 **tier,
             })
     return picks
+
+
+def down_buy_scan_rows(picks, run_id: str, recommended_at: str):
+    """Convert DOWN/chop-regime picks into market_scan_results payloads (the unification adapter).
+
+    Only the DOWN/chop reversal leg -- the OOS-validated 75%+ slice -- becomes a production buy.
+    Routing these through market_scan_results makes them outcome-tracked (update_realized_outcomes)
+    AND learned (the archive export reads market_scan_results), so "what the user sees = what is
+    tracked = what is learned" holds for this stream. Distinct decision/lane keep them separable
+    from the legacy planner stream. UP/NORMAL picks are NOT written here (UP has no close-accuracy
+    edge; NORMAL is observation until validated).
+    """
+    from modules.db_schema import build_scan_result_payload
+    down = sorted([p for p in picks if str(p.get("regime")) == "down_chop"],
+                  key=lambda p: -float(p.get("score") or 0.0))
+    rows = []
+    for i, p in enumerate(down, start=1):
+        src = {
+            "ticker": p["ticker"], "market_type": p["market"], "scan_mode": "SWING",
+            "decision_score": p.get("score"), "run_id": run_id, "priority_rank": i,
+            "decision": "REGIME_DOWN_BUY", "decision_bucket": "regime_down",
+            "recommended_at": recommended_at, "selection_lane": "REGIME_DOWN",
+        }
+        rows.append(build_scan_result_payload(
+            src, overrides={"market": p["market"], "recommended_at": recommended_at}))
+    return rows
 
 
 # ---------------------------------------------------------------------------
@@ -159,6 +186,23 @@ def main() -> None:
             fh.write(json.dumps({"date": today, "realized_5d_pct": None, **p}, ensure_ascii=False) + "\n")
     summary = _resolve_pending(today)
 
+    # Unification adapter (flag-gated, default OFF): route DOWN/chop buys through
+    # market_scan_results so surface = archive = learning. Stays OFF until the shadow ledger
+    # confirms the live forward edge; deployment is then a single flag flip.
+    persisted = 0
+    if os.getenv("AG_REGIME_DOWN_PRODUCTION", "0").strip() not in ("0", "", "false", "False"):
+        run_id = "REGIME-DOWN-" + today.replace("-", "")
+        rows = down_buy_scan_rows(picks, run_id, datetime.now(timezone.utc).isoformat())
+        try:
+            from modules.db_manager import DBManager
+            db = DBManager()
+            for payload in rows:
+                db.upsert_scan_result(payload)
+                persisted += 1
+        except Exception as exc:  # fail-safe: never break the shadow run on a write error
+            persisted = -1
+            print(json.dumps({"regime_down_persist_error": repr(exc)[:200]}, ensure_ascii=False))
+
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "version": "regime_signal_shadow_v1",
@@ -166,7 +210,9 @@ def main() -> None:
         "scored": len(scored),
         "picks_today": picks,
         "forward_summary": summary,
-        "note": "observation-only; thin OOS edge; trade only with the tail-aware position_factor.",
+        "down_buys_persisted": persisted,
+        "production_enabled": bool(os.getenv("AG_REGIME_DOWN_PRODUCTION", "0").strip() not in ("0", "", "false", "False")),
+        "note": "observation-only until AG_REGIME_DOWN_PRODUCTION=1; thin OOS edge; trade only with the tail-aware position_factor.",
     }
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = [f"# Regime Signal Shadow ({today})", "",

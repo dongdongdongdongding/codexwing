@@ -1,5 +1,5 @@
 """Unit tests for the regime-signal shadow pure helpers (network-free)."""
-from multi_agent.tools.report_regime_signal_shadow import tail_tier, rank_and_pick
+from multi_agent.tools.report_regime_signal_shadow import tail_tier, rank_and_pick, down_buy_scan_rows
 
 
 def test_tail_tier_equal_risk_budget():
@@ -33,3 +33,26 @@ def test_rank_and_pick_top_n_per_market_and_sizes():
 def test_rank_and_pick_empty():
     assert rank_and_pick([], 5) == []
     assert rank_and_pick([{"ok": False}], 5) == []
+
+
+def test_down_buy_rows_only_down_regime_and_labeled():
+    picks = [
+        {"ticker": "A.KQ", "market": "KOSDAQ", "regime": "down_chop", "score": 30.0, "dist_hi20": -25.0},
+        {"ticker": "B.KQ", "market": "KOSDAQ", "regime": "down_chop", "score": 50.0, "dist_hi20": -18.0},
+        {"ticker": "C.KS", "market": "KOSPI", "regime": "up", "score": 40.0, "dist_hi20": -2.0},  # UP -> excluded
+    ]
+    rows = down_buy_scan_rows(picks, "REGIME-DOWN-20260616", "2026-06-16T00:00:00+00:00")
+    # UP pick excluded; only the two down_chop picks become production buys
+    tickers = [r.get("ticker") for r in rows]
+    assert "C.KS" not in tickers and set(tickers) == {"A.KQ", "B.KQ"}
+    # ranked by score desc -> B (50) is rank 1
+    by_ticker = {r["ticker"]: r for r in rows}
+    assert by_ticker["B.KQ"]["priority_rank"] == 1 and by_ticker["A.KQ"]["priority_rank"] == 2
+    # distinct production label + lane keep them separable from the legacy stream
+    assert all(r.get("decision") == "REGIME_DOWN_BUY" for r in rows)
+    assert all(r.get("selection_lane") == "REGIME_DOWN" for r in rows)
+
+
+def test_down_buy_rows_empty_when_no_down_picks():
+    picks = [{"ticker": "C.KS", "market": "KOSPI", "regime": "up", "score": 40.0, "dist_hi20": -2.0}]
+    assert down_buy_scan_rows(picks, "r", "t") == []
