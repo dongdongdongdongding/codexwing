@@ -176,6 +176,33 @@ if [[ "${AG_REGIME_SIGNAL_SHADOW_ENABLE:-1}" == "1" ]]; then
       --top-universe "${AG_REGIME_SIGNAL_TOP_UNIVERSE:-120}" --top-picks "${AG_REGIME_SIGNAL_TOP_PICKS:-10}"
 fi
 
+if [[ "${AG_FIRSTTOUCH_DOWN_SHADOW_ENABLE:-0}" == "1" ]]; then
+  # DISABLED by default (2026-06-19): the DOWN-market "edge" was shown to be rebound beta, not
+  # flow selection (same-day control + market-neutral + liquidity tests all failed). See memory
+  # daily_selection_closed_final. Kept behind a flag for reference; do NOT promote to production.
+  # Calibrated first-touch DOWN-market emission (models/firsttouch_down_v1.pkl). Observation-only:
+  # writes ledger + report; routes picks to live web/Discord only when AG_FIRSTTOUCH_DOWN_PRODUCTION=1.
+  echo "[STEP] report_firsttouch_down_shadow"
+  run_optional "report_firsttouch_down_shadow" \
+    python3 multi_agent/tools/report_firsttouch_down_shadow.py \
+      --top-universe "${AG_FIRSTTOUCH_TOP_UNIVERSE:-300}" --top-picks "${AG_FIRSTTOUCH_TOP_PICKS:-5}"
+fi
+
+if [[ "${AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE:-0}" == "1" ]]; then
+  # DISABLED by default (2026-06-19): the ONLY daily-selection signal that survived the full
+  # gauntlet -- KOSPI NORMAL regime + price+flow+coarse-PEAD ensemble + >=100억 + top-5 -- but it
+  # is THIN and single-config (event-type expansion AND PEAD fundamental-surprise refinement both
+  # failed to robustify it, Case ③). Forward-tracked ONLY to see if the live market-excess holds;
+  # do NOT promote to production until the resolved out-of-sample edge confirms. Observation-only:
+  # writes ledger + report; routes to live web/Discord only when AG_KOSPI_NORMAL_PEAD_PRODUCTION=1.
+  # See memory/daily_selection_closed_final. Needs KIS live calls for the flow tail.
+  echo "[STEP] report_kospi_normal_pead_shadow"
+  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kospi_normal_pead_shadow" \
+    python3 multi_agent/tools/report_kospi_normal_pead_shadow.py \
+      --universe "${AG_KOSPI_NORMAL_PEAD_UNIVERSE:-300}" --min-liq "${AG_KOSPI_NORMAL_PEAD_MIN_LIQ:-100}" \
+      --top-picks "${AG_KOSPI_NORMAL_PEAD_TOP_PICKS:-5}"
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
