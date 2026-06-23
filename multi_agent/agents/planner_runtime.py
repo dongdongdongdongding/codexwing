@@ -789,18 +789,21 @@ def _apply_kospi_swing_edge_promotion(
 ) -> str:
     """Optionally promote KOSPI SWING candidates that clear score gates.
 
-    ⚠️ 2026-06-24 RETRACTION (Claude+Codex re-validation): the "exception_leader win_5d
-    77.95% / avg_5d +8.80%" justification this docstring used to cite is NOT a selection
-    edge -- it is up-market BETA. Re-scoring the same exception_leader picks against an
-    internally-consistent per-market panel cap-weighted benchmark gives ~0 market-excess
-    with a CI that includes 0 (KOSPI +0.73% CI[-0.88,+2.41]); the high win-rate/absolute
-    return came from the rising market, not selection (see ~/research_cache/exc_leader.log,
-    memory/daily_selection_closed_final). So do NOT trust win_5d/avg_5d as validation.
-    2026-06-24 score/rerank re-validation then failed the expected_edge_score promotion
-    standard too: edge_score>=5 improved the weak KOSPI SWING base from panel-capw -2.85%
-    to +0.63%, but CI[-1.89,+1.52] still includes 0 and edge-score quintiles are not a
-    clean monotone market-excess ranker (Q5 remains negative). Treat expected_edge_score as
-    a worst-avoidance / market-neutralization diagnostic, not a validated buy promotion.
+    ⚠️ 2026-06-24 RETRACTION (Claude+Codex two-way independent re-validation). The
+    "exception_leader win_5d 77.95% / avg_5d +8.80%" justification this docstring cited is
+    NOT a validated tradeable edge. Two corrections vs the earlier cap-weighted read:
+    (1) cap-weighted excess has a SIZE bias (2026-H1 was mega-cap-led, so any non-mega-cap
+    pick reads negative). Under the fair same-day size-matched control, exception_leader is
+    actually +1.95% CI[+0.75,+3.00] -- but on only ~4 months, ~72% concentrated in 2026-04,
+    so durability is UNVERIFIED: it is a forward-observe candidate, not a validated edge.
+    expected_edge_score under the same control is +1.42% CI[-0.15,+2.34] (borderline, not
+    durably validated). (2) The decisive test: the only signal that is durable over 8y
+    walk-forward (daily price-only ML, top5 ft_5_5; size-matched +0.5% CI>0, 7-8/8 yrs) is a
+    LOW-LIQUIDITY premium -- its picks have ~9-11억/day median ADV and the excess collapses to
+    ~0 (CI incl 0) at >=30억 and negative at >=100억. So there is NO tradeable daily selection
+    edge. Promotion stays OFF until a candidate clears size-matched CI>0 AT a tradeable
+    liquidity floor. See memory/daily_selection_closed_final, ~/research_cache/{exc_leader,
+    corrected_benchmark,daily_price_ml}.log.
     Default AG_KOSPI_SWING_EDGE_PROMOTION is therefore 0; opt in only for controlled
     research. KOSPI-only; only upgrades OBSERVE+ -> PRIORITY_WATCHLIST (never downgrades),
     so later loss/inference gates still demote unsafe rows.
@@ -877,13 +880,15 @@ def _apply_kospi_swing_cohort_promotion(
     relabeling to PRIORITY_WATCHLIST does NOT change what the gate measures -- no feedback loop.
 
     ⚠️ 2026-06-24 DISABLED BY DEFAULT (Claude+Codex re-validation). The Practical-80 cohort's
-    "92.5% win / +11% avg5d (KOSPI)" is up-market BETA, not a selection edge: a faithful
-    reconstruction (~/research_cache/practical80_revalidate.py) shows it is entirely regime-
-    conditional -- 2026-04 (up) 84% win/+9.78%, 2026-05/06 (chop/down) 32-35% win/-2~-3.5% --
-    and its per-market panel cap-weighted market-excess is -4.47% CI[-7.78,-0.51] (significantly
-    NEGATIVE). The cohort release gate reads absolute win/avg (which favourable windows inflate),
-    so it can PASS on stale beta. Default AG_KR_COHORT_GATE_PROMOTION flipped 1->0 until the gate
-    is re-based on panel-capw market-excess. See memory/daily_selection_closed_final.
+    "92.5% win / +11% avg5d (KOSPI)" is up-market beta, not a validated selection edge: a
+    faithful reconstruction (~/research_cache/practical80_revalidate.py) shows it is regime-
+    conditional -- 2026-04 (up) 84% win/+9.78%, 2026-05/06 (chop/down) 32-35% win/-2~-3.5%.
+    Under the fair same-day size-matched control it is +1.64% CI[-0.36,+3.33] -- NOT the
+    earlier cap-weighted -4.47% (that was a SIZE-bias artifact), but its CI still INCLUDES 0,
+    so it is non-significant / not a validated edge. The cohort release gate reads absolute
+    win/avg (which favourable windows inflate), so it can PASS on stale beta. Default
+    AG_KR_COHORT_GATE_PROMOTION flipped 1->0 until the gate is re-based on size-matched
+    market-excess at a tradeable liquidity floor. See memory/daily_selection_closed_final.
     """
     market = str(run_market or "").upper()
     mode = str(scan_mode or "").upper()

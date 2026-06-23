@@ -305,14 +305,16 @@ def live_policy_summary(market: Any, *, strict_quality_gate: bool = True) -> Dic
     path = LIVE_POLICY_STRICT_PATH if strict_quality_gate else LIVE_POLICY_OBSERVED_PATH
     payload = _load_json(path)
     market_key = _norm_market(market)
-    # NOTE 2026-06-24 (Claude+Codex): these labels are compatibility fallbacks, not
-    # validated production edges. "exception_leader" is up-market beta, Practical-80 is
-    # regime beta, and expected_edge_score is a worst-avoidance diagnostic whose
-    # panel-capw excess CI still includes 0. Promotion defaults are OFF until a
-    # market-excess validation clears CI lower-bound > 0.
+    # NOTE 2026-06-24 (Claude+Codex two-way re-validation): these labels are compatibility
+    # fallbacks, not validated edges. Under the fair same-day size-matched control,
+    # exception_leader (+1.95%) and Practical-80 (+1.64%) are in-window positive but on ~4
+    # months (2026-04-concentrated) so durability is unverified; expected_edge_score is
+    # borderline (+1.42% CI incl 0). The only 8y-durable signal (daily price ML) is a
+    # low-liquidity premium that dies at >=30억/>=100억. => NO tradeable daily promotion.
+    # Defaults OFF until a candidate clears size-matched CI>0 at a tradeable liquidity floor.
     fallback_policy = {
-        "KOSPI": "no validated daily promotion (edge_score=avoidance, disabled)",
-        "KOSDAQ": "no validated daily promotion (exception_leader=beta, retracted)",
+        "KOSPI": "no validated daily promotion (no tradeable daily edge)",
+        "KOSDAQ": "no validated daily promotion (no tradeable daily edge)",
     }.get(market_key, "segment policy")
     if not isinstance(payload, dict):
         return {

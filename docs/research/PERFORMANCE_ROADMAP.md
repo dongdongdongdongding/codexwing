@@ -23,15 +23,18 @@ Mapping our validated facts onto the four engines:
 
 | Engine | Drives | Current (validated 2026-H1) | Gap | Primary lever |
 |---|---|---|---|---|
-| **Accuracy** | P(win) | ⚠️ RETRACTED 2026-06-24: Exception Leader 77.7% / Practical-80 94% were **up-market BETA**, not edge; expected_edge_score≥5 only reduces base underperformance (+0.63% panel-capw, CI includes 0). No validated daily selection edge. | open | re-base cohort gates on panel-capw market-excess (not absolute win/avg) |
+| **Accuracy** | P(win) | ⚠️ RETRACTED → RE-VALIDATED 2026-06-24 (Claude+Codex, same-day size-matched control): no **tradeable** daily selection edge. Exception Leader +1.95% / Practical-80 +1.64% are in-window positive but ~4mo/Apr-concentrated (durability unverified); the only 8y-durable signal (daily price ML top5 ft_5_5, +0.5% CI>0) lives in ~9-11억 ADV names and dies at ≥30억/≥100억. (Earlier "−4.47/beta" were cap-weighted SIZE-bias artifacts.) | open | move to intraday entry/exit on a ≥30억/≥100억 universe |
 | **Win-size** | E[gain\|win] | ~+5% realized vs **+12–15% MFE** available | **largest gap** | let-winners-run exit (capture the right tail) |
 | **Loss-control** | E[loss\|loss] | tail −7% (leaders) … −17.6% (rebounds) | medium | loss-exclusion guards + tail-aware sizing |
 | **Coverage** | trades/period | ~5 KOSPI signals/day | medium | flow signal + practical-80 profile breadth |
 
-Key implication: **daily-entry accuracy is not solved.** The old cohort and score gates can
-reduce some underperformance, but none clears the market-excess standard. The +5% exit cap,
-tail leakage, and throughput still matter, but entry promotion must stay disabled until a
-candidate clears per-market panel-capw CI lower-bound > 0.
+Key implication: **a tradeable daily-selection edge does not exist** (exhaustively validated
+8y, multi-regime, same-day size-matched). The statistically-real daily price-ML edge is a
+low-liquidity premium (untradeable at ≥30억). So daily-candidate hunting is closed; entry
+promotion stays disabled. The forward frontier is **intraday entry/execution/path on a
+≥30억/≥100억 liquidity universe** (selection on liquid names is flat → the edge, if any, is in
+timing/fills, not which-stock). Promotion re-enables only on size-matched CI>0 AT a tradeable
+liquidity floor. (Exception Leader stays forward-observe only.)
 
 ---
 
