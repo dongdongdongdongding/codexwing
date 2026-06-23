@@ -354,7 +354,7 @@ def resolve_pending(today: str) -> Dict[str, Any]:
     rows = [json.loads(l) for l in LEDGER.read_text(encoding="utf-8").splitlines() if l.strip()]
     changed = False
     for row in rows:
-        if row.get("panel_capw_excess") is not None or row.get("ks11_excess") is not None:
+        if row.get("panel_capw_excess") is not None and row.get("ks11_excess") is not None:
             continue
         d = pd.to_datetime(row.get("date"), errors="coerce")
         if pd.isna(d) or (pd.Timestamp(today) - d).days < 9:
@@ -367,9 +367,9 @@ def resolve_pending(today: str) -> Dict[str, Any]:
                 continue
             sret = (h.iloc[5] / h.iloc[0] - 1) * 100
             capw = _capw_market_return(str(d.date()))                       # primary: panel cap-weighted
-            if capw is not None:
+            if row.get("panel_capw_excess") is None and capw is not None:
                 row["panel_capw_excess"] = round(float(sret - capw - COST), 3)
-            if len(idx) >= 6:                                              # reference: KS11
+            if row.get("ks11_excess") is None and len(idx) >= 6:           # reference: KS11
                 row["ks11_excess"] = round(float(sret - (idx.iloc[5] / idx.iloc[0] - 1) * 100 - COST), 3)
             changed = changed or (row.get("panel_capw_excess") is not None or row.get("ks11_excess") is not None)
         except Exception:
