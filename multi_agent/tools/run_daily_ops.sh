@@ -188,14 +188,15 @@ if [[ "${AG_FIRSTTOUCH_DOWN_SHADOW_ENABLE:-0}" == "1" ]]; then
       --top-universe "${AG_FIRSTTOUCH_TOP_UNIVERSE:-300}" --top-picks "${AG_FIRSTTOUCH_TOP_PICKS:-5}"
 fi
 
-if [[ "${AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE:-0}" == "1" ]]; then
-  # DISABLED by default (2026-06-19): the ONLY daily-selection signal that survived the full
-  # gauntlet -- KOSPI NORMAL regime + price+flow+coarse-PEAD ensemble + >=100억 + top-5 -- but it
-  # is THIN and single-config (event-type expansion AND PEAD fundamental-surprise refinement both
-  # failed to robustify it, Case ③). Forward-tracked ONLY to see if the live market-excess holds;
-  # do NOT promote to production until the resolved out-of-sample edge confirms. Observation-only:
-  # writes ledger + report; routes to live web/Discord only when AG_KOSPI_NORMAL_PEAD_PRODUCTION=1.
-  # See memory/daily_selection_closed_final. Needs KIS live calls for the flow tail.
+if [[ "${AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE:-1}" == "1" ]]; then
+  # NON-EDGE falsification ledger (2026-06-23/24, Claude+Codex). This is NOT a recommendation and
+  # NOT a surviving edge: on clean re-verification the KOSPI-NORMAL price+flow+coarse-PEAD candidate
+  # scores ~0 market-excess (CI includes 0) against an internally-consistent panel cap-weighted
+  # benchmark; the earlier "+1.5%" was an external-KS11 benchmark artifact. Daily production edge = 0.
+  # Kept ON only to forward-observe / falsify -- logs the picks the model would make and resolves
+  # their 5D return vs BOTH benchmarks (panel_capw_excess = primary, ks11_excess = reference). Never
+  # promote: production stays OFF (AG_KOSPI_NORMAL_PEAD_PRODUCTION=0). See memory/
+  # daily_selection_closed_final. Needs KIS live calls for the flow tail.
   echo "[STEP] report_kospi_normal_pead_shadow"
   KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kospi_normal_pead_shadow" \
     python3 multi_agent/tools/report_kospi_normal_pead_shadow.py \

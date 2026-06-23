@@ -1,28 +1,31 @@
 #!/usr/bin/env python3
-"""Shadow forward-tracker for the KOSPI-NORMAL price+flow+PEAD ensemble candidate.
+"""Non-edge falsification ledger for the KOSPI-NORMAL price+flow+PEAD ensemble candidate.
 
-The ONLY daily-selection signal that survived the full validation gauntlet
-(~/research_cache; see memory/daily_selection_closed_final.md): in a KOSPI NORMAL
-index regime (20D index momentum in [-2, +2]), a 3-model ensemble (LGBM/XGB/ExtraTrees,
-rank-averaged) over price(RAW z-normalised) + normalised foreign/institution flow +
-coarse PEAD (days-since-earnings / post-earnings / leak-blocked 2D reaction) features,
-restricted to >=100억 daily trading value, top-5/day, produced market-excess net
-(stock 5D return - KS11 5D return - 0.6% cost) of ~+1.5% with a bootstrap CI lower
-bound > 0 and survived 25-04 exclusion. It is THIN and single-config (fragile): event-
-type expansion and PEAD fundamental-surprise refinement both failed to robustify it
-(Case ③). So it is forward-tracked ONLY, never production, until the live out-of-sample
-market-excess holds up.
+NOT an edge candidate. This was the last surviving daily-selection candidate, but a clean
+re-verification (2026-06-23, Claude+Codex; ~/research_cache/verify_benchmark.py) RETRACTED
+the edge: scoring the SAME >=100억 KOSPI-NORMAL top-5 picks against an internally-consistent
+benchmark (the panel's own liquidity/cap-weighted market return) gives ~0 market-excess with
+a bootstrap CI that INCLUDES 0 (panel-capw -0.01% CI[-0.56,+0.56]; equal-weighted +0.09%;
+2-model variant +0.12% CI[-0.61,+0.76]). The earlier "+1.5% CI>0" was a benchmark artifact:
+it used the external FDR KS11 series, whose snapshot diverged from the true cap-weighted
+market. So there is NO validated daily-selection edge. See memory/daily_selection_closed_final.
 
-Methodology mirrors the research exactly (so live features match the training
-distribution): warm-start the panel from ~/research_cache parquets, extend the tail with
-fresh FDR OHLC + KIS investor flow, compute the identical features, rolling-retrain the
-ensemble on the trailing ~400 sessions of KOSPI rows (all regimes; label=first-touch
-ft_5_5), then score ONLY when today's KOSPI regime is NORMAL.
+This tracker is kept ONLY to forward-observe / falsify: it logs the picks the model would
+have made and resolves their realised 5D return against BOTH benchmarks (panel cap-weighted
+= primary gate; KS11 = reference diagnostic only). Production stays OFF.
 
-Observation-only: writes a JSONL ledger + report and resolves the realised 5D market-
-excess of elapsed picks. Routes to the live web/Discord surface only when
-AG_KOSPI_NORMAL_PEAD_PRODUCTION=1 (default OFF). Registered disabled-by-default in
-run_daily_ops.sh as AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE.
+Methodology mirrors the research (so live features match the training distribution): warm-
+start the panel from ~/research_cache parquets, extend the tail with fresh FDR OHLC + KIS
+investor flow, compute identical features, rolling-retrain the ensemble on the trailing ~400
+sessions of KOSPI rows (all regimes; label=first-touch ft_5_5), score ONLY when KOSPI regime
+is NORMAL. Regime uses the lagged 20D index momentum (.shift(1)) matching build_px_long --
+NOTE this lags sharp reversals (a -10% crash can still read UP), so it is a trend gate, not a
+reversal guard.
+
+Observation-only: writes a JSONL ledger + report. Routes to the live web/Discord surface only
+when AG_KOSPI_NORMAL_PEAD_PRODUCTION=1 (keep =0). Registered in run_daily_ops.sh as
+AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE (=1 for ledger accumulation; this is observation, not a
+recommendation).
 
   python3 multi_agent/tools/report_kospi_normal_pead_shadow.py [--universe 300] [--min-liq 100]
 """
@@ -35,7 +38,7 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -214,7 +217,8 @@ def build_panel(universe_n: int) -> pd.DataFrame:
     # index regime (recompute idx_mom20 on the extended tail from KS11)
     import FinanceDataReader as fdr
     ks = fdr.DataReader("KS11", (px["date"].min() - pd.Timedelta(days=40)).strftime("%Y-%m-%d"))["Close"]
-    ks = pd.to_numeric(ks, errors="coerce").dropna(); ksm = (ks / ks.shift(20) - 1) * 100
+    ks = pd.to_numeric(ks, errors="coerce").dropna()
+    ksm = ((ks / ks.shift(20) - 1) * 100).shift(1)  # .shift(1) matches build_px_long:92 (lagged trend gate, no look-ahead)
     px["idx_mom20"] = px["date"].map(ksm).astype(float)
     px = px.sort_values(["code", "date"]).reset_index(drop=True)
 
@@ -312,39 +316,73 @@ def score_today(df: pd.DataFrame, min_liq: float, top_picks: int) -> Dict[str, A
             "eligible": int(len(elig)), "note": f"NORMAL; {len(elig)} names >= {min_liq}억"}
 
 
+_CAPW_CACHE: Dict[str, Optional[float]] = {}
+
+
+def _capw_market_return(start: str, weight_cap: int = 120) -> Optional[float]:
+    """Internally-consistent benchmark: liquidity(cap)-weighted 5D return of the liquid KOSPI
+    universe from `start` (the panel's own market, NOT external KS11). Cached per start date."""
+    if start in _CAPW_CACHE:
+        return _CAPW_CACHE[start]
+    import FinanceDataReader as fdr
+    try:
+        px = pd.read_parquet(CACHE / "px_long.parquet", columns=["code", "date", "liq", "market"])
+        px = px[px["market"] == "KOSPI"]; px["date"] = pd.to_datetime(px["date"])
+        recent = px[px["date"] >= px["date"].max() - pd.Timedelta(days=90)]
+        wts = recent.groupby("code")["liq"].median().sort_values(ascending=False).head(weight_cap)
+    except Exception:
+        _CAPW_CACHE[start] = None; return None
+    rets, ws = [], []
+    for code, w in wts.items():
+        try:
+            h = pd.to_numeric(fdr.DataReader(str(code), start)["Close"], errors="coerce").dropna()
+            if len(h) >= 6:
+                rets.append((h.iloc[5] / h.iloc[0] - 1) * 100); ws.append(float(w))
+        except Exception:
+            pass
+    r = float(np.average(rets, weights=ws)) if rets else None
+    _CAPW_CACHE[start] = r
+    return r
+
+
 def resolve_pending(today: str) -> Dict[str, Any]:
+    """Resolve elapsed picks against BOTH benchmarks: panel cap-weighted (primary gate) and
+    KS11 (reference diagnostic only). market-excess net = stock_5D - benchmark_5D - cost."""
     import FinanceDataReader as fdr
     if not LEDGER.exists():
-        return {"resolved": 0, "mkt_excess_net_avg": None}
+        return {"resolved": 0, "panel_capw_excess_avg": None, "ks11_excess_avg": None}
     rows = [json.loads(l) for l in LEDGER.read_text(encoding="utf-8").splitlines() if l.strip()]
-    ks = None
     changed = False
     for row in rows:
-        if row.get("mkt_excess_net") is not None:
+        if row.get("panel_capw_excess") is not None or row.get("ks11_excess") is not None:
             continue
         d = pd.to_datetime(row.get("date"), errors="coerce")
         if pd.isna(d) or (pd.Timestamp(today) - d).days < 9:
             continue
         try:
-            if ks is None:
-                ks = pd.to_numeric(fdr.DataReader("KS11", str(d.date()))["Close"], errors="coerce")
             bare = str(row["ticker"]).replace(".KS", "").replace(".KQ", "")
             h = pd.to_numeric(fdr.DataReader(bare, str(d.date()))["Close"], errors="coerce").dropna()
             idx = pd.to_numeric(fdr.DataReader("KS11", str(d.date()))["Close"], errors="coerce").dropna()
-            if len(h) >= 6 and len(idx) >= 6:
-                sret = (h.iloc[5] / h.iloc[0] - 1) * 100
-                iret = (idx.iloc[5] / idx.iloc[0] - 1) * 100
-                row["mkt_excess_net"] = round(float(sret - iret - COST), 3)
-                changed = True
+            if len(h) < 6:
+                continue
+            sret = (h.iloc[5] / h.iloc[0] - 1) * 100
+            capw = _capw_market_return(str(d.date()))                       # primary: panel cap-weighted
+            if capw is not None:
+                row["panel_capw_excess"] = round(float(sret - capw - COST), 3)
+            if len(idx) >= 6:                                              # reference: KS11
+                row["ks11_excess"] = round(float(sret - (idx.iloc[5] / idx.iloc[0] - 1) * 100 - COST), 3)
+            changed = changed or (row.get("panel_capw_excess") is not None or row.get("ks11_excess") is not None)
         except Exception:
             pass
     if changed:
         LEDGER.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n", encoding="utf-8")
-    res = [r["mkt_excess_net"] for r in rows if r.get("mkt_excess_net") is not None]
-    if not res:
-        return {"resolved": 0, "mkt_excess_net_avg": None}
-    return {"resolved": len(res), "mkt_excess_net_avg": round(float(np.mean(res)), 3),
-            "win_rate_pct": round(float(np.mean([1 for x in res if x > 0]) / len(res) * 100), 1) if res else None}
+    capw_res = [r["panel_capw_excess"] for r in rows if r.get("panel_capw_excess") is not None]
+    ks_res = [r["ks11_excess"] for r in rows if r.get("ks11_excess") is not None]
+    out: Dict[str, Any] = {"resolved": len(capw_res or ks_res)}
+    out["panel_capw_excess_avg"] = round(float(np.mean(capw_res)), 3) if capw_res else None
+    out["ks11_excess_avg"] = round(float(np.mean(ks_res)), 3) if ks_res else None
+    out["win_rate_pct"] = round(float(np.mean([1 for x in capw_res if x > 0]) / len(capw_res) * 100), 1) if capw_res else None
+    return out
 
 
 def main() -> None:
@@ -367,19 +405,22 @@ def main() -> None:
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     with LEDGER.open("a", encoding="utf-8") as fh:
         for p in picks:
-            fh.write(json.dumps({"date": result["asof"], "mkt_excess_net": None, **p}, ensure_ascii=False) + "\n")
+            fh.write(json.dumps({"date": result["asof"], "panel_capw_excess": None, "ks11_excess": None, **p},
+                                ensure_ascii=False) + "\n")
     summary = resolve_pending(today)
 
     production = os.getenv("AG_KOSPI_NORMAL_PEAD_PRODUCTION", "0").strip() not in ("0", "", "false", "False")
     report = {"generated_at": datetime.now(timezone.utc).isoformat(), "today": today, **result,
               "forward_summary": summary, "production_enabled": production,
-              "note": "KOSPI NORMAL only; price+flow+coarse-PEAD ENS; >=100억; top-5. Observation-only "
-                      "(thin single-config candidate, Case③). market-excess net = stock5d-KS11_5d-0.6%."}
+              "note": "NON-EDGE falsification ledger (edge retracted 2026-06-23: ~0 vs internally-consistent "
+                      "benchmark, CI includes 0). KOSPI NORMAL; price+flow+coarse-PEAD ENS; >=100억; top-5. "
+                      "Primary metric = panel_capw_excess (stock5d - panel cap-weighted 5d - 0.6%); ks11_excess "
+                      "is reference-only. Observation; production stays OFF."}
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    lines = [f"# KOSPI-NORMAL PEAD-ENS Shadow ({result['asof']})", "",
+    lines = [f"# KOSPI-NORMAL PEAD-ENS shadow — NON-EDGE falsification ledger ({result['asof']})", "",
              f"- regime: {result.get('regime')} | {result.get('note')}",
-             f"- forward (resolved): n={summary['resolved']} mkt-excess net avg={summary['mkt_excess_net_avg']}% "
-             f"win={summary.get('win_rate_pct')}%", "",
+             f"- forward (resolved): n={summary['resolved']} | panel-capw excess avg={summary.get('panel_capw_excess_avg')}% "
+             f"(primary) | ks11 excess avg={summary.get('ks11_excess_avg')}% (ref) | win={summary.get('win_rate_pct')}%", "",
              "| Ticker | p | liq(억) | days_since | frgn_acc5 |", "|---|---:|---:|---:|---:|"]
     for p in picks:
         lines.append(f"| {p['ticker']} | {p['p']:.3f} | {p['liq억']} | {p['days_since']} | {p.get('frgn_acc5_r')} |")
