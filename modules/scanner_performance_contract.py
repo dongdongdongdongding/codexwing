@@ -305,9 +305,13 @@ def live_policy_summary(market: Any, *, strict_quality_gate: bool = True) -> Dic
     path = LIVE_POLICY_STRICT_PATH if strict_quality_gate else LIVE_POLICY_OBSERVED_PATH
     payload = _load_json(path)
     market_key = _norm_market(market)
+    # NOTE 2026-06-24 (Claude+Codex): "exception_leader" is up-market beta, not a validated
+    # market-excess edge (panel-capw ~0, CI includes 0; see memory/daily_selection_closed_final).
+    # Labels kept for continuity but must NOT be read as a validated edge; expected_edge_score
+    # is a different metric pending its own panel-capw re-validation.
     fallback_policy = {
-        "KOSPI": "exception_leader OR expected_edge_score>=5",
-        "KOSDAQ": "exception_leader AND trend=UP",
+        "KOSPI": "expected_edge_score>=5 (exception_leader=beta, retracted)",
+        "KOSDAQ": "trend=UP (exception_leader=beta, retracted)",
     }.get(market_key, "segment policy")
     if not isinstance(payload, dict):
         return {

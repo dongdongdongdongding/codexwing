@@ -23,7 +23,7 @@ Mapping our validated facts onto the four engines:
 
 | Engine | Drives | Current (validated 2026-H1) | Gap | Primary lever |
 |---|---|---|---|---|
-| **Accuracy** | P(win) | Exception Leader 77.7% / Practical-80 94% (KOSPI) | mostly there | cohort selection (DONE: 95% EV+tail gate, promoted) |
+| **Accuracy** | P(win) | ⚠️ RETRACTED 2026-06-24: Exception Leader 77.7% / Practical-80 94% were **up-market BETA**, not edge — per-market panel-capw market-excess ~0/negative (CI incl 0); Practical-80 regime-conditional (Apr 84% → May/Jun 32-35%). No validated daily selection edge. | open | re-base cohort gates on panel-capw market-excess (not absolute win/avg) |
 | **Win-size** | E[gain\|win] | ~+5% realized vs **+12–15% MFE** available | **largest gap** | let-winners-run exit (capture the right tail) |
 | **Loss-control** | E[loss\|loss] | tail −7% (leaders) … −17.6% (rebounds) | medium | loss-exclusion guards + tail-aware sizing |
 | **Coverage** | trades/period | ~5 KOSPI signals/day | medium | flow signal + practical-80 profile breadth |

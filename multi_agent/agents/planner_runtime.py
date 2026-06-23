@@ -787,15 +787,19 @@ def _apply_kospi_swing_edge_promotion(
     decision_score: float | None = None,
     rationale: List[str],
 ) -> str:
-    """Promote KOSPI SWING candidates that clear the high-win 5d target slice.
+    """Promote KOSPI SWING candidates that clear the expected_edge_score gate.
 
-    2026-05-12 Supabase validation for KOSPI SWING resolved 5d rows showed
-    expected_edge_score >= 5.0 OR exception_leader at win_5d 77.95% /
-    avg_5d +8.80% (n=254). The broader score-only path also cleared the
-    revised target, but with lower win rate, so default live promotion stays
-    on edge-supported planner candidates plus separately admitted exception
-    leaders. Keep this KOSPI-only and let later loss/inference gates demote
-    unsafe rows.
+    ⚠️ 2026-06-24 RETRACTION (Claude+Codex re-validation): the "exception_leader win_5d
+    77.95% / avg_5d +8.80%" justification this docstring used to cite is NOT a selection
+    edge -- it is up-market BETA. Re-scoring the same exception_leader picks against an
+    internally-consistent per-market panel cap-weighted benchmark gives ~0 market-excess
+    with a CI that includes 0 (KOSPI +0.73% CI[-0.88,+2.41]); the high win-rate/absolute
+    return came from the rising market, not selection (see ~/research_cache/exc_leader.log,
+    memory/daily_selection_closed_final). So do NOT trust win_5d/avg_5d as validation.
+    This gate still fires on expected_edge_score >= AG_KOSPI_SWING_EDGE_PROMOTION_MIN, which
+    is a DIFFERENT metric pending its own panel-capw re-validation (score/rerank track).
+    KOSPI-only; only upgrades OBSERVE+ -> PRIORITY_WATCHLIST (never downgrades), so later
+    loss/inference gates still demote unsafe rows.
     """
     market = str(run_market or "").upper()
     mode = str(scan_mode or "").upper()
@@ -867,12 +871,21 @@ def _apply_kospi_swing_cohort_promotion(
 
     Practical-80 membership is feature-derived (dynamic theme profile), not label-derived, so
     relabeling to PRIORITY_WATCHLIST does NOT change what the gate measures -- no feedback loop.
+
+    ⚠️ 2026-06-24 DISABLED BY DEFAULT (Claude+Codex re-validation). The Practical-80 cohort's
+    "92.5% win / +11% avg5d (KOSPI)" is up-market BETA, not a selection edge: a faithful
+    reconstruction (~/research_cache/practical80_revalidate.py) shows it is entirely regime-
+    conditional -- 2026-04 (up) 84% win/+9.78%, 2026-05/06 (chop/down) 32-35% win/-2~-3.5% --
+    and its per-market panel cap-weighted market-excess is -4.47% CI[-7.78,-0.51] (significantly
+    NEGATIVE). The cohort release gate reads absolute win/avg (which favourable windows inflate),
+    so it can PASS on stale beta. Default AG_KR_COHORT_GATE_PROMOTION flipped 1->0 until the gate
+    is re-based on panel-capw market-excess. See memory/daily_selection_closed_final.
     """
     market = str(run_market or "").upper()
     mode = str(scan_mode or "").upper()
     if market != "KOSPI" or mode != "SWING":
         return decision
-    if os.getenv("AG_KR_COHORT_GATE_PROMOTION", "1").strip() in ("0", "", "false", "False"):
+    if os.getenv("AG_KR_COHORT_GATE_PROMOTION", "0").strip() in ("0", "", "false", "False"):
         return decision
     if _decision_rank(decision) >= _decision_rank("PRIORITY_WATCHLIST"):
         return decision
