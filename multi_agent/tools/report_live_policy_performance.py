@@ -123,7 +123,11 @@ def _metric_block(df: pd.DataFrame, market: str, *, strict_quality: bool) -> Dic
         and target_hit >= 70.0
         and avg_return >= 5.0
     )
-    policy_label = "exception_leader OR expected_edge_score>=5" if market == "KOSPI" else "exception_leader AND trend=UP"
+    policy_label = (
+        "RETRACTED legacy audit: exception_leader OR expected_edge_score>=5"
+        if market == "KOSPI"
+        else "RETRACTED legacy audit: exception_leader AND trend=UP"
+    )
     return {
         "market": market,
         "policy": policy_label,
@@ -154,7 +158,7 @@ def build_live_policy_report(df: pd.DataFrame) -> Dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source_rows": int(len(df)),
         "quality_scope": "observed_archive",
-        "quality_note": "Observed policy performance ignores legacy validation_excluded flags so old resolved rows can be audited. Use --strict-quality for gold-style feature-complete validation.",
+        "quality_note": "Observed policy performance audits retracted legacy gates; it is not a production edge claim. It ignores legacy validation_excluded flags so old resolved rows can be audited. Use --strict-quality for gold-style feature-complete validation.",
         "goal": {
             "win_5d_pct_min": 70.0,
             "hit_5pct_within_5d_high_pct_min": 70.0,

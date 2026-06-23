@@ -207,8 +207,9 @@ The difference is entirely the candidate generator.
 - **Codex's KIS model research kept returning "no_improvement / 0 promotable"** — plausibly because
   it trains/ranks on prefilter candidates that are ~half illiquid junk. The model isn't necessarily
   bad; the candidate generator feeding it is polluted. (Re-validate models on a liquidity-clean pool.)
-- The validated cohort edge (Exception Leader 77.7%, Practical-80 94%, archive-based) sits
-  *downstream* of this broken generator → operationally it is starved.
+- The later-retracted cohort claims (Exception Leader 77.7%, Practical-80 94%, archive-based)
+  sat *downstream* of this broken generator; they were beta/window artifacts, not validated
+  market-excess edges.
 - `flow_fetch_count = 0`: the orthogonal flow signal (the KIS migration's main justification) is
   not even fetched in the operational prefilter.
 

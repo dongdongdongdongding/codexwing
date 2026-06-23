@@ -479,7 +479,7 @@ class ScorePipelineTests(unittest.TestCase):
         self.assertEqual(planner.decisions[0].ticker, "222222.KS")
         self.assertEqual(planner.decisions[0].relative_rank_model, "kospi_floor_win_relative_v2")
 
-    def test_kospi_swing_edge_promotion_uses_revised_5d_target_slice(self):
+    def test_kospi_swing_edge_promotion_is_off_by_default_after_panel_capw_revalidation(self):
         planner = build_planner_handoff(
             context=RunContext(run_id="RUN-KS-EDGE", market="KOSPI"),
             weak_ratio=0.0,
@@ -512,6 +512,43 @@ class ScorePipelineTests(unittest.TestCase):
         )
 
         decision = planner.decisions[0]
+        self.assertEqual(decision.decision, "OBSERVE")
+        self.assertNotIn("kospi_swing_edge_promotion=", " ".join(decision.rationale))
+
+    def test_kospi_swing_edge_promotion_can_be_enabled_for_research(self):
+        with patch.dict("os.environ", {"AG_KOSPI_SWING_EDGE_PROMOTION": "1"}):
+            planner = build_planner_handoff(
+                context=RunContext(run_id="RUN-KS-EDGE-ON", market="KOSPI"),
+                weak_ratio=0.0,
+                candidates=[
+                    {
+                        "ticker": "333333.KS",
+                        "stock_name": "Research Edge KOSPI",
+                        "score": 58.0,
+                        "feature_snapshot": {
+                            "market": "KOSPI",
+                            "scan_mode": "SWING",
+                            "strategy_family": "KR_CORE",
+                            "alpha_score": 82.0,
+                            "tech_score": 75.0,
+                            "conviction_score": 70.0,
+                            "decision_score": 86.0,
+                            "prob_5": 52.0,
+                            "prob_clean": 50.0,
+                            "expected_edge_score": 6.2,
+                            "expected_return_1d_pct": -1.0,
+                            "expected_return_3d_pct": -1.0,
+                            "volume_ratio": 1.2,
+                            "volume_confirmed": True,
+                            "position": "Rising",
+                            "tier": "T1",
+                            "real_trend": "UP",
+                        },
+                    }
+                ],
+            )
+
+        decision = planner.decisions[0]
         self.assertEqual(decision.decision, "PRIORITY_WATCHLIST")
         self.assertIn("kospi_swing_edge_promotion=", " ".join(decision.rationale))
 
@@ -533,7 +570,10 @@ class ScorePipelineTests(unittest.TestCase):
     def test_kospi_swing_score_promotion_can_be_enabled_for_research(self):
         rationale = []
 
-        with patch.dict("os.environ", {"AG_KOSPI_SWING_SCORE_PROMOTION": "1"}):
+        with patch.dict(
+            "os.environ",
+            {"AG_KOSPI_SWING_EDGE_PROMOTION": "1", "AG_KOSPI_SWING_SCORE_PROMOTION": "1"},
+        ):
             decision = _apply_kospi_swing_edge_promotion(
                 decision="OBSERVE",
                 run_market="KOSPI",

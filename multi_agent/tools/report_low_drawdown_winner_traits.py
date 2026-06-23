@@ -398,9 +398,9 @@ def render_markdown(report: Dict[str, Any]) -> str:
             "",
             "## Operational Read",
             "",
-            "- KOSPI has usable low-drawdown rising patterns. `expected_edge_score>=5` is the strongest repeatable base filter, and `whale_score>=60` improves the practical flow proxy quality.",
+            "- KOSPI has usable low-drawdown rising patterns. `expected_edge_score>=5` is an underperformance-avoidance diagnostic, not a validated market-excess entry edge; `whale_score>=60` improves the practical flow proxy quality.",
             "- KOSPI Exception Leader and Top1 should be treated as 3D/5D swing candidates, not immediate open-chase entries, because 1D behavior is still noisy.",
-            "- KOSDAQ remains structurally weaker. Use KOSDAQ candidates as conditional/watchlist unless they also pass theme/edge filters and show controlled early loss.",
+            "- KOSDAQ remains structurally weaker. Use KOSDAQ candidates as conditional/watchlist unless they also pass theme/flow filters and show controlled early loss.",
             "- Do not use `hit_5pct_within_5d`, `max_high_return_5d_pct`, or `min_return_observed_pct` as entry features. They are outcome labels for validation and stop-risk measurement.",
         ]
     )

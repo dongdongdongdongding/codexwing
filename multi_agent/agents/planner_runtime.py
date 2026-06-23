@@ -787,7 +787,7 @@ def _apply_kospi_swing_edge_promotion(
     decision_score: float | None = None,
     rationale: List[str],
 ) -> str:
-    """Promote KOSPI SWING candidates that clear the expected_edge_score gate.
+    """Optionally promote KOSPI SWING candidates that clear score gates.
 
     ⚠️ 2026-06-24 RETRACTION (Claude+Codex re-validation): the "exception_leader win_5d
     77.95% / avg_5d +8.80%" justification this docstring used to cite is NOT a selection
@@ -796,16 +796,20 @@ def _apply_kospi_swing_edge_promotion(
     with a CI that includes 0 (KOSPI +0.73% CI[-0.88,+2.41]); the high win-rate/absolute
     return came from the rising market, not selection (see ~/research_cache/exc_leader.log,
     memory/daily_selection_closed_final). So do NOT trust win_5d/avg_5d as validation.
-    This gate still fires on expected_edge_score >= AG_KOSPI_SWING_EDGE_PROMOTION_MIN, which
-    is a DIFFERENT metric pending its own panel-capw re-validation (score/rerank track).
-    KOSPI-only; only upgrades OBSERVE+ -> PRIORITY_WATCHLIST (never downgrades), so later
-    loss/inference gates still demote unsafe rows.
+    2026-06-24 score/rerank re-validation then failed the expected_edge_score promotion
+    standard too: edge_score>=5 improved the weak KOSPI SWING base from panel-capw -2.85%
+    to +0.63%, but CI[-1.89,+1.52] still includes 0 and edge-score quintiles are not a
+    clean monotone market-excess ranker (Q5 remains negative). Treat expected_edge_score as
+    a worst-avoidance / market-neutralization diagnostic, not a validated buy promotion.
+    Default AG_KOSPI_SWING_EDGE_PROMOTION is therefore 0; opt in only for controlled
+    research. KOSPI-only; only upgrades OBSERVE+ -> PRIORITY_WATCHLIST (never downgrades),
+    so later loss/inference gates still demote unsafe rows.
     """
     market = str(run_market or "").upper()
     mode = str(scan_mode or "").upper()
     if market != "KOSPI" or mode != "SWING":
         return decision
-    if os.getenv("AG_KOSPI_SWING_EDGE_PROMOTION", "1").strip() in ("0", "", "false", "False"):
+    if os.getenv("AG_KOSPI_SWING_EDGE_PROMOTION", "0").strip() in ("0", "", "false", "False"):
         return decision
     if _decision_rank(decision) >= _decision_rank("PRIORITY_WATCHLIST"):
         return decision

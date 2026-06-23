@@ -23,15 +23,15 @@ Mapping our validated facts onto the four engines:
 
 | Engine | Drives | Current (validated 2026-H1) | Gap | Primary lever |
 |---|---|---|---|---|
-| **Accuracy** | P(win) | ⚠️ RETRACTED 2026-06-24: Exception Leader 77.7% / Practical-80 94% were **up-market BETA**, not edge — per-market panel-capw market-excess ~0/negative (CI incl 0); Practical-80 regime-conditional (Apr 84% → May/Jun 32-35%). No validated daily selection edge. | open | re-base cohort gates on panel-capw market-excess (not absolute win/avg) |
+| **Accuracy** | P(win) | ⚠️ RETRACTED 2026-06-24: Exception Leader 77.7% / Practical-80 94% were **up-market BETA**, not edge; expected_edge_score≥5 only reduces base underperformance (+0.63% panel-capw, CI includes 0). No validated daily selection edge. | open | re-base cohort gates on panel-capw market-excess (not absolute win/avg) |
 | **Win-size** | E[gain\|win] | ~+5% realized vs **+12–15% MFE** available | **largest gap** | let-winners-run exit (capture the right tail) |
 | **Loss-control** | E[loss\|loss] | tail −7% (leaders) … −17.6% (rebounds) | medium | loss-exclusion guards + tail-aware sizing |
 | **Coverage** | trades/period | ~5 KOSPI signals/day | medium | flow signal + practical-80 profile breadth |
 
-Key implication: **accuracy is largely solved for the cohorts; 15% return is blocked by the
-+5% exit cap (win-size) and by tail leakage (loss-control), and is throughput-limited by
-coverage.** The ML entry model (AUC ~0.56) is plateaued — more variant search is overfitting.
-Progress comes from the OTHER three engines, not from re-tuning the entry classifier.
+Key implication: **daily-entry accuracy is not solved.** The old cohort and score gates can
+reduce some underperformance, but none clears the market-excess standard. The +5% exit cap,
+tail leakage, and throughput still matter, but entry promotion must stay disabled until a
+candidate clears per-market panel-capw CI lower-bound > 0.
 
 ---
 

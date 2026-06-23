@@ -21,7 +21,7 @@ def _row(ticker, bucket, ret5, max_ret, **extra):
     return row
 
 
-def test_live_policy_report_uses_kospi_exception_or_edge_policy():
+def test_live_policy_report_labels_kospi_exception_or_edge_policy_as_retracted_audit():
     df = pd.DataFrame(
         [_row("005930.KS", "watchlist", 6.0, 6.0, expected_edge_score=5.2)]
         + [_row(f"000{i:03d}.KS", "exception_leader", 6.0, 7.0) for i in range(30)]
@@ -32,12 +32,13 @@ def test_live_policy_report_uses_kospi_exception_or_edge_policy():
     kospi = next(row for row in report["policies"] if row["market"] == "KOSPI")
 
     assert kospi["rows"] == 31
+    assert kospi["policy"] == "RETRACTED legacy audit: exception_leader OR expected_edge_score>=5"
     assert kospi["win_5d_pct"] == 100.0
     assert kospi["hit_5pct_within_observed_5d_pct"] == 100.0
     assert kospi["passes_goal"] is True
 
 
-def test_live_policy_report_uses_kosdaq_exception_uptrend_policy():
+def test_live_policy_report_labels_kosdaq_exception_uptrend_policy_as_retracted_audit():
     df = pd.DataFrame(
         [_row(f"100{i:03d}.KQ", "exception_leader", 6.0, 8.0, trend="UP") for i in range(30)]
         + [_row("200000.KQ", "exception_leader", -4.0, -1.0, trend="DOWN")]
@@ -48,6 +49,7 @@ def test_live_policy_report_uses_kosdaq_exception_uptrend_policy():
     kosdaq = next(row for row in report["policies"] if row["market"] == "KOSDAQ")
 
     assert kosdaq["rows"] == 30
+    assert kosdaq["policy"] == "RETRACTED legacy audit: exception_leader AND trend=UP"
     assert kosdaq["win_5d_pct"] == 100.0
     assert kosdaq["hit_5pct_within_observed_5d_pct"] == 100.0
     assert kosdaq["passes_goal"] is True
