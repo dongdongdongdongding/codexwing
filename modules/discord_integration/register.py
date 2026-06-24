@@ -132,6 +132,27 @@ def _command_options(name: str) -> List[Dict[str, Any]]:
                 "max_value": 15,
             },
         ]
+    if name == "signals":
+        return [
+            {
+                "type": 3,
+                "name": "market",
+                "description": "시장 필터",
+                "required": False,
+                "choices": [
+                    {"name": "KOSPI", "value": "KOSPI"},
+                    {"name": "KOSDAQ", "value": "KOSDAQ"},
+                ],
+            },
+            {
+                "type": 4,
+                "name": "limit",
+                "description": "표시 개수",
+                "required": False,
+                "min_value": 1,
+                "max_value": 15,
+            },
+        ]
     return []
 
 

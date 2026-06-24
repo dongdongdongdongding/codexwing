@@ -154,6 +154,13 @@ COMMAND_SPECS: Dict[str, DiscordCommandSpec] = {
         response_style="embed_with_select_menu",
         web_equivalent_sections=["top_deep"],
     ),
+    "signals": DiscordCommandSpec(
+        name="signals",
+        description="라이브 모델 레인(스윙 앙상블·코스피 인트라데이)의 최신 매수 시그널만 간결히 조회합니다.",
+        kind="model_signals_lookup",
+        response_style="embed",
+        web_equivalent_sections=["top_deep"],
+    ),
     "archive": DiscordCommandSpec(
         name="archive",
         description="최근 스캔 아카이브를 Admission 모델 순위와 realized outcome 기준으로 조회합니다.",

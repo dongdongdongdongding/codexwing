@@ -23,6 +23,7 @@ from modules.discord_integration.permissions import is_authorized_user
 from modules.discord_integration.renderers import (
     build_archive_embed,
     build_macro_refresh_embed,
+    build_model_signals_embed,
     build_runs_embed,
     build_scan_ack_embed,
     build_scan_busy_embed,
@@ -208,6 +209,21 @@ def main() -> int:
             offset=offset,
             limit=limit,
         )
+        await _send_followup_chunks(discord, interaction, payloads)
+
+    @tree.command(name="signals", description=COMMAND_SPECS["signals"].description)
+    @app_commands.describe(market="시장 필터", limit="표시 개수")
+    @app_commands.choices(
+        market=[
+            app_commands.Choice(name="KOSPI", value="KOSPI"),
+            app_commands.Choice(name="KOSDAQ", value="KOSDAQ"),
+        ]
+    )
+    async def signals(interaction, market: str = "", limit: int = 10):
+        if not await _guard(interaction):
+            return
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        payloads = await asyncio.to_thread(build_model_signals_embed, market=market, limit=limit)
         await _send_followup_chunks(discord, interaction, payloads)
 
     @tree.command(name="archive", description=COMMAND_SPECS["archive"].description)

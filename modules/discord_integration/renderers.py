@@ -10,6 +10,7 @@ from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
 from modules.admission_metric_copy import metric_label
 from modules.candidate_interpretation import build_candidate_interpretation
+from modules.operational_candidate_scoring import MODEL_VALIDATED_LANES
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
@@ -798,6 +799,48 @@ def build_top_deep_embeds(
             f"NearMiss {section_counts.get(NEAR_MISS_SECTION, 0)}"
         ),
         color=0xF1C40F if zero_primary or gate_name == "RED" else 0x3498DB,
+        fields=fields,
+        timestamp=datetime.now(timezone.utc).isoformat(),
+    )
+
+
+def build_model_signals_embed(*, market: str = "", limit: int = 10) -> List[Dict[str, Any]]:
+    """Concise read of the live model-validated lanes (swing ensemble / KOSPI intraday).
+
+    These run in daily ops and write to scan_deep_reports. /signals surfaces ONLY their picks
+    (planner /top_deep mixes in admission rows), latest run per lane, with the model-lane card."""
+    rows = _load_top_deep_reports(limit=500, market=market)
+    rows = [r for r in rows if isinstance(r, dict) and str(r.get("decision_bucket") or "") in MODEL_VALIDATED_LANES]
+    if market:
+        rows = [r for r in rows if str(r.get("market") or "").upper() == str(market).upper()]
+    if not rows:
+        return [{"title": "🎯 모델 시그널", "description": "표시할 모델 레인 픽이 없습니다.", "color": 0xF1C40F}]
+    # keep only the latest run_id per lane (today's signals, not stale)
+    latest: Dict[str, tuple] = {}
+    for r in rows:
+        bucket = str(r.get("decision_bucket") or "")
+        stamp = str(r.get("generated_at") or "")
+        if bucket and (bucket not in latest or stamp > latest[bucket][1]):
+            latest[bucket] = (str(r.get("run_id") or ""), stamp)
+    keep_runs = {run for run, _ in latest.values()}
+    rows = [r for r in rows if str(r.get("run_id") or "") in keep_runs]
+    bucket_order = {"kospi_intraday": 0, "swing_ensemble": 1}
+    rows.sort(key=lambda r: (bucket_order.get(str(r.get("decision_bucket")), 9), int(r.get("rank") or 0)))
+    rows = rows[: max(1, int(limit or 10))]
+    fields = []
+    for r in rows:
+        name = str(r.get("stock_name") or r.get("ticker") or "-")
+        ticker_value = str(r.get("ticker") or "-")
+        header = ticker_value if name == ticker_value else f"{name} ({ticker_value})"
+        interp = r.get("candidate_interpretation") if isinstance(r.get("candidate_interpretation"), dict) else build_candidate_interpretation(r)
+        fields.append({"name": header, "value": _field_value_model_lane(interp), "inline": False})
+    return _split_embed_fields(
+        title="🎯 모델 시그널 (라이브 레인)",
+        description=(
+            "가격앙상블(스윙 5일 ft_5_5) + 코스피 인트라데이(3일 +5% 터치) · "
+            "모델 상위픽 · 진입=종가 · 목표 +5% · 분산(타이트 손절 X)"
+        ),
+        color=0x2ECC71,
         fields=fields,
         timestamp=datetime.now(timezone.utc).isoformat(),
     )
