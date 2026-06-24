@@ -1,8 +1,8 @@
-# Frontend, Discord, And Design Structure - 2026-06-24
+# 프론트엔드, Discord, 디자인 구조 - 2026-06-24
 
-This document maps the operator-facing surfaces: Streamlit UI, Discord commands, design system, data-loading paths, and known consumer gaps.
+이 문서는 운영자가 실제로 보는 화면과 명령, 즉 Streamlit UI, Discord command, 디자인 시스템, 데이터 로딩 경로, 현재 consumer gap을 정리한다.
 
-## Evidence Files Read
+## 확인한 근거 파일
 
 - `app.py`
 - `ui/theme.py`
@@ -25,257 +25,263 @@ This document maps the operator-facing surfaces: Streamlit UI, Discord commands,
 - `multi_agent/tools/discord_bot.py`
 - `multi_agent/tools/discord_register_commands.py`
 
-## Streamlit Role
+## Streamlit의 역할
 
-`app.py` is still the main page composition entrypoint. The current architecture has moved many reusable surfaces into `ui/*`, but `app.py` remains large and includes scanner launch logic, global status panels, deep-dive logic, and archive composition.
+`app.py`가 아직 메인 페이지 composition entrypoint다. 여러 화면이 `ui/*`로 분리됐지만, `app.py`에는 여전히 scanner launch, global status, archive/deep-dive 구성 로직이 많이 남아 있다.
 
-The UI is not the source of model truth. It reads:
+UI는 모델의 진실 공급원이 아니다. UI는 아래 저장소를 읽어 보여주는 운영 표면이다.
 
 - local runtime artifacts
 - Supabase `market_scan_results`
 - Supabase `scan_deep_reports`
 - Supabase/local runtime artifacts
-- current report JSON under `runtime_state/reports`
+- `runtime_state/reports`의 최신 report JSON
 
-The UI should present stored evidence and contracts, not invent missing values.
+UI는 저장된 근거와 계약을 표시해야 하며, 누락 값을 임의로 만들어서는 안 된다.
 
-## Default Tabs
+## 기본 탭 구조
 
-When `AG_UI_ADVANCED` is unset or false, the UI shows:
+`AG_UI_ADVANCED`가 꺼져 있거나 unset이면 기본 탭은 아래 3개다.
 
 - `스캐너`
 - `Top 분석`
 - `아카이브`
 
-When `AG_UI_ADVANCED=1`, it shows:
+`AG_UI_ADVANCED=1`이면 아래 고급 탭이 추가된다.
 
-- `스캐너`
-- `Top 분석`
 - `인텔리전스`
 - `테마 네트워크`
 - `성과`
-- `아카이브`
 - `정밀분석`
 
-This split is deliberate. The default operator surface is kept focused on actual operating decisions.
+기본 운영 화면은 의도적으로 좁게 유지된다. 운영자가 실제 판단해야 하는 것은 스캔, Top 분석, Archive다.
 
-## Global Status Layer
+## 글로벌 상태 레이어
 
-At app startup, the UI builds a compact status bar from:
+앱 시작 시 UI는 다음 정보를 모아 상단 상태를 만든다.
 
-- selected market
-- macro context from `modules.macro_scheduler.get_macro_context`
-- market gate from `compute_market_gate`
-- daily model foundation gate from `runtime_state/reports/learning/daily_model_foundation_gate.json`
-- segment accuracy snapshot from `modules.segment_accuracy`
+- 선택 시장
+- `modules.macro_scheduler.get_macro_context`
+- `compute_market_gate`
+- `runtime_state/reports/learning/daily_model_foundation_gate.json`
+- `modules.segment_accuracy` snapshot
 
-The "운영 판정 상세" expander uses `modules/operational_readiness_ui.py` to show blockers and next actions. This keeps Korean-first operational copy outside Streamlit-only code.
+`운영 판정 상세` expander는 `modules/operational_readiness_ui.py`를 사용한다. 운영자용 한국어 copy와 blocker/next action을 UI 내부에 흩뿌리지 않고 별도 모듈로 둔 구조다.
 
-## Scanner Tab
+## 스캐너 탭
 
-The scanner tab lets the operator choose:
+운영자가 선택하는 항목:
 
-- market: KOSPI, KOSDAQ, NASDAQ, S&P500, AMEX
-- scan mode: `스윙` or `장중`
+- 시장: KOSPI, KOSDAQ, NASDAQ, S&P500, AMEX
+- scan mode: `스윙` 또는 `장중`
 - max scan count
 
-The scan button starts a background job through app-side state helpers. That job calls scanner runtime and persists run artifacts through the same artifact contract used by non-UI scans.
+스캔 버튼은 background job을 시작하고, scanner runtime 및 artifact contract를 통해 결과를 남긴다.
 
-Important behavior:
+중요 동작:
 
-- The scan continues while the user moves tabs.
-- The scan continuity banner remains visible.
-- Top Deep reports are generated after scan completion.
-- Local and DB artifacts are written for Archive recovery.
+- 탭을 이동해도 스캔은 이어진다.
+- scan continuity banner가 유지된다.
+- 스캔 완료 후 Top Deep report가 생성된다.
+- local 및 DB artifact가 archive 복구용으로 저장된다.
 
-Advanced-only file upload scanner remains in the advanced UI path.
+고급 파일 업로드 스캐너는 advanced path에 남아 있다.
 
-## Top Analysis Tab
+## Top 분석 탭
 
-The Top Analysis tab is implemented by `ui/top_deep_view.py`.
+구현 파일: `ui/top_deep_view.py`
 
-Data sources:
+데이터 소스:
 
 - Supabase `scan_deep_reports`
-- local JSON files under `runtime_state/reports/top_deep`
+- local `runtime_state/reports/top_deep` JSON
 
-Merge behavior:
+merge 원칙:
 
-- DB rows are loaded first.
-- Local rows are merged.
-- Certain local fields are authoritative when present, including analysis section/rank, decision, bucket, selection alignment, display contract, and candidate interpretation.
+- DB row를 먼저 읽는다.
+- local row를 병합한다.
+- local의 analysis section/rank, decision, bucket, selection alignment, display contract, interpretation field는 존재 시 더 신뢰한다.
 
-Top Deep displays:
+표시 내용:
 
-- candidate interpretation
-- trade plan
-- buy-premium execution gate for legacy planner candidates
-- flow captions
+- 후보 해석
+- 매매 계획
+- legacy planner 후보의 buy-premium execution gate
+- 수급 caption
 - policy metadata
 - realized expectancy admission
-- portfolio exposure context
-- scan integrity panel where available
+- portfolio exposure
+- scan integrity panel
 
-## Archive Tab
+## Archive 탭
 
-The Archive tab is implemented in `app.py` with data access helpers from `ui/archive_data.py`.
+구현: `app.py` + `ui/archive_data.py`
 
-Default behavior:
+기본값:
 
-- Supabase archive is disabled unless `AG_SCAN_ARCHIVE_SUPABASE_ENABLED=1`.
-- Local fallback is enabled by default.
-- Local artifacts are merged with DB rows when both exist.
+- Supabase archive read는 `AG_SCAN_ARCHIVE_SUPABASE_ENABLED=1`일 때만 활성화된다.
+- local fallback은 기본 ON이다.
+- DB와 local artifact가 모두 있으면 병합한다.
 
-Archive can filter by:
+필터:
 
-- date
+- 날짜
 - KR/US
 - decision bucket
-- scan mode: `SWING` or `INTRADAY`
+- scan mode: `SWING`/`INTRADAY`
 - validation status
 - run id
 
-For a selected run, Archive loads:
+선택 run에서 읽는 항목:
 
-- planner handoff from `runtime_artifacts` or local shared working directory
+- planner handoff
 - profile diagnostics
 - raw scan results
 - scan integrity context
+- scan-universe admission display
 
-It then enriches rows with planner trace and rebuilds scan-universe admission display for KR markets.
+중요 원칙:
 
-Important Archive rule:
+- Archive Top은 선택한 `run_id`의 scan-time/planner order를 반영해야 한다.
+- 같은 날 여러 run을 섞거나 decision score로 조용히 재정렬하면 안 된다.
 
-- Archive Top must mirror scan-time/planner order for the selected `run_id`.
-- It must not mix multiple same-day runs or silently re-rank by decision score.
+## 고급 화면
 
-## Performance, Intelligence, Theme Network, Deep Dive
+`AG_UI_ADVANCED=1`일 때:
 
-Advanced-only pages:
+- `ui/performance_view.py`: daily ops/performance overview
+- `ui/intelligence_view.py`: market intelligence/theme momentum
+- `ui/kis_theme_network_view.py`: KIS theme network
+- 정밀분석: `QuantStrategy`, macro, news, prediction, technical level, flow, chart/image 경로
 
-- Performance: `ui/performance_view.py`, daily ops overview.
-- Intelligence: `ui/intelligence_view.py`, market intelligence and theme momentum.
-- Theme Network: `ui/kis_theme_network_view.py`.
-- Deep Dive: large app-side single-ticker analysis path using `QuantStrategy`, macro, news, Prophet-like prediction, technical levels, flow, and chart/image support.
+고급 화면은 진단용이다. 기본 execution surface로 보지 않는다.
 
-The advanced pages contain useful diagnostics but should not be treated as the default execution surface.
+## 디자인 시스템
 
-## Design System
+파일: `ui/theme.py`
 
-`ui/theme.py` injects the design tokens and CSS:
+역할:
 
-- background and surface tokens
-- Toss-like card surfaces
-- status banners
-- compact cards
-- segmented tabs
-- dataframes and metrics
+- background/surface token
+- Toss 스타일 카드
+- status banner
+- compact card
+- segmented tab
+- dataframe/metric 스타일
 - Pretendard font import
 
-Current UI style:
+현재 UI 스타일:
 
-- Korean-first labels.
-- Wide layout.
-- Card containers for repeated candidate rows.
-- Compact L0 status bar, L1 summary cards, L2 detailed grids.
-- Main tabs use `st.segmented_control`.
+- 한국어 우선
+- wide layout
+- 반복 후보 row는 card
+- L0 status bar, L1 summary card, L2 detail grid
+- main tab은 `st.segmented_control`
 
-Design debt:
+디자인 부채:
 
-- `app.py` still has large non-modular sections, especially deep-dive and archive composition.
-- Existing issue `swing-main-usd` tracks further Streamlit view extraction.
+- `app.py`가 여전히 크다.
+- archive/deep-dive composition이 완전히 모듈화되지 않았다.
+- 추가 추출 작업은 별도 Beads 이슈로 다루는 것이 맞다.
 
-## Candidate Interpretation
+## 후보 해석 구조
 
-`modules/candidate_interpretation.py` is the main bridge between stored rows and operator-facing meaning.
+파일: `modules/candidate_interpretation.py`
 
-Two interpretation modes exist:
+두 가지 해석 경로가 있다.
 
-1. Model-validated lane interpretation.
-2. Legacy operational candidate interpretation.
+1. 모델 검증 레인 해석
+2. legacy operational candidate 해석
 
-Current model-validated whitelist:
+현재 whitelist:
 
 ```python
 MODEL_VALIDATED_LANES = {"swing_ensemble", "kospi_intraday"}
 ```
 
-For these buckets, `build_model_lane_interpretation` returns:
+whitelist bucket은 `build_model_lane_interpretation`이 아래를 만든다.
 
 - `MODEL_BUY`
 - entry reference price
 - +5% target
-- no tight stop
+- tight stop 없음
 - fixed hold days
 - probability label
 - selection thesis
 
-All other buckets use the legacy operational scoring axes and buy-premium execution gate.
+그 외 bucket은 legacy operational scoring과 buy-premium execution gate를 탄다.
 
-## Current KOSDAQ Intraday Consumer Gap
+## KOSDAQ 인트라데이 consumer gap
 
-The KOSDAQ intraday VWAP guard producer writes:
+KOSDAQ VWAP guard producer가 쓰는 주요 필드:
 
 - `decision_bucket="kosdaq_intraday_3d_t5_vwap_guard"`
 - `decision="KOSDAQ_INTRADAY_3D_T5_BUY"`
 - `scan_mode="INTRADAY"`
 - `strategy_family="KR_INTRADAY_3D_T5"`
 
-Because that bucket is not in `MODEL_VALIDATED_LANES`, some surfaces may render it through generic interpretation instead of the concise model-lane card.
+그러나 이 bucket은 아직 `MODEL_VALIDATED_LANES`에 없다.
 
-Affected path confirmed in code:
+영향:
 
-- `/signals` uses `build_model_signals_embed`.
-- `build_model_signals_embed` filters rows where `decision_bucket in MODEL_VALIDATED_LANES`.
-- Therefore `/signals` currently surfaces SWING ensemble and KOSPI intraday, not necessarily KOSDAQ intraday, unless the whitelist is extended.
+- `/signals`는 `build_model_signals_embed`에서 whitelist bucket만 필터링한다.
+- 그래서 `/signals`에는 SWING ensemble과 KOSPI intraday는 잘 잡히지만, KOSDAQ intraday는 누락될 수 있다.
+- Top Deep/Archive는 direct `scan_deep_reports` row를 읽기 때문에 보일 수 있다.
 
-Generic Top Deep, Archive, and direct `scan_deep_reports` reads can still show the KOSDAQ lane because the producer writes those rows directly.
+해결 방향:
 
-## Discord Commands
+- `kosdaq_intraday_3d_t5_vwap_guard`를 모델 레인 profile에 추가하거나, KOSDAQ 전용 profile을 만든다.
+- 카드에는 15:00 진입, +5% 목표, 3D hold, no tight stop, liquidity lane, probability를 표시해야 한다.
 
-Defined in `modules/discord_integration/commands.py`:
+## Discord 명령
 
-- `/kospi_scan`: starts KOSPI scan.
-- `/kosdaq_scan`: starts KOSDAQ scan.
-- `/macro_refresh`: refreshes macro context.
-- `/top_deep`: Top Deep lookup.
-- `/signals`: model signals lookup.
-- `/archive`: archive lookup.
-- `/runs`: run lookup.
-- `/status`: bot/server/status lookup.
+정의 파일: `modules/discord_integration/commands.py`
 
-Scan execution uses `modules/discord_integration/scan_executor.py`:
+명령:
 
-- Creates a `DiscordScanJob`.
-- Builds command `python -m multi_agent.tools.run_kis_operational_kr_scan`.
-- Uses a lock to prevent conflicting scan jobs.
-- Reads recent artifact summary after job completion.
+- `/kospi_scan`: KOSPI scan 시작
+- `/kosdaq_scan`: KOSDAQ scan 시작
+- `/macro_refresh`: macro context refresh
+- `/top_deep`: Top Deep 조회
+- `/signals`: 모델 신호 조회
+- `/archive`: archive 조회
+- `/runs`: run 조회
+- `/status`: bot/server/status 조회
 
-Rendering uses `modules/discord_integration/renderers.py`:
+실행 파일:
 
-- Loads Top Deep rows from Supabase or local fallback.
-- Splits embeds under Discord field/character limits.
-- Builds status, run, archive, top-deep, and scan result embeds.
-- Has a concise model-lane card for whitelisted model lanes.
+- `modules/discord_integration/scan_executor.py`
+- `multi_agent/tools/discord_bot.py`
 
-## Web And Discord Alignment Rules
+렌더링:
 
-Current product contract requires web and Discord to preserve:
+- `modules/discord_integration/renderers.py`
 
-- section identity
-- final action and reason codes
-- entry condition and stop/exclusion condition
-- quality/upside/timing grades
-- chase/exclusion risk
-- flow windows and missing-data warnings
-- run ID and outcome status
+렌더러는 Supabase 또는 local fallback에서 row를 읽고, Discord field/문자 수 제한에 맞춰 embed를 쪼갠다.
 
-When a model-lane producer bypasses normal planner generation and writes direct Top Deep rows, it must still populate enough fields for both web and Discord. KOSPI intraday reuses `_route_live`; KOSDAQ intraday has its own router.
+## Web/Discord 정합성 규칙
 
-## UI/Design Follow-Ups
+모델 producer가 일반 planner 경로를 우회해 direct Top Deep row를 쓰더라도 web/Discord가 이해할 필드를 채워야 한다.
 
-1. Add KOSDAQ intraday bucket/profile to model-lane consumer interpretation if `/signals` and concise cards are required for that lane.
-2. Keep `scan_mode=INTRADAY` visible on KOSDAQ intraday rows; do not render it as SWING.
-3. Continue extracting `app.py` into focused modules per `swing-main-usd`.
-4. Keep advanced research tools behind `AG_UI_ADVANCED=1`.
-5. Do not display raw probability as guaranteed win rate; always show sample, horizon, and contract when available.
+필수 의미:
+
+- market
+- ticker/name
+- scan_mode
+- decision_bucket
+- strategy_family
+- entry policy
+- target
+- hold period
+- stop policy
+- probability/confidence
+- liquidity lane
+- forward outcome placeholder
+
+## UI 후속 작업
+
+1. KOSDAQ intraday bucket을 model-lane consumer에 추가한다.
+2. `/signals`에서 KOSDAQ intraday를 보이게 한다.
+3. `app.py`의 archive/deep-dive 로직을 더 작은 모듈로 분리한다.
+4. SWING/INTRADAY 표시가 섞이지 않게 UI badge와 filter를 고정한다.
+5. 오래된 phase25/legacy 문구가 현재 모델 레인과 혼동되지 않게 표시 copy를 정리한다.

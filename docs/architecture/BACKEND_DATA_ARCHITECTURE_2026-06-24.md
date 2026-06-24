@@ -1,402 +1,352 @@
-# Backend And Data Architecture - 2026-06-24
+# 백엔드 및 데이터 구조 - 2026-06-24
 
-This document maps what the backend does, what data it uses, how data is collected and normalized, where it is stored, and how it is used by models, scans, UI, Discord, and validation.
+이 문서는 백엔드가 수행하는 일, 데이터 소스, 수집/정규화/저장/활용 경로, 운영 스캔과 모델 producer의 차이를 정리한다.
 
-## Evidence Files Read
+## 확인한 근거 파일
 
-- Execution: `multi_agent/tools/run_daily_ops.sh`, `multi_agent/tools/run_kr_daily_auto_scans.py`, `multi_agent/tools/run_kis_operational_kr_scan.py`.
-- Pipeline: `multi_agent/workflows/non_ui_scan_pipeline.py`, `multi_agent/workflows/legacy_export.py`, `multi_agent/workflows/legacy_orchestration.py`.
-- Scanner: `modules/scanner_runtime.py`, `modules/scanner_services.py`, `modules/scan_policy.py`, `modules/strategy_family_policy.py`.
-- KIS and market data: `modules/kis_openapi.py`, `modules/kis_operational_adapter.py`, `modules/kis_operational_prefilter.py`, `modules/market_data.py`, `docs/operations/KR_INTRADAY_DATA_ADAPTERS.md`.
-- Model producers: `multi_agent/tools/report_swing_ensemble.py`, `multi_agent/tools/report_kospi_intraday_swing.py`, `multi_agent/tools/report_kosdaq_intraday_vwap_guard.py`.
-- Intraday model code: `modules/kosdaq_intraday_vwap_guard.py`, `modules/intraday_candidate_registry.py`.
-- Persistence: `modules/db_schema.py`, `modules/db_manager.py`, `modules/scan_persistence.py`, `modules/runtime_artifact_store.py`, `modules/post_scan_outcome_ledger.py`, `modules/top_deep_report.py`.
-- Memory/artifacts: `multi_agent/storage/memory_layers.py` by usage in scan pipeline, `docs/migration/RUNTIME_ARTIFACT_POLICY.md`.
-- Current research artifacts under `runtime_state/reports/learning`.
+- 실행: `multi_agent/tools/run_daily_ops.sh`, `multi_agent/tools/run_kr_daily_auto_scans.py`, `multi_agent/tools/run_kis_operational_kr_scan.py`
+- 파이프라인: `multi_agent/workflows/non_ui_scan_pipeline.py`, `legacy_export.py`, `legacy_orchestration.py`
+- 스캐너: `modules/scanner_runtime.py`, `modules/scanner_services.py`, `modules/scan_policy.py`, `modules/strategy_family_policy.py`
+- 데이터: `modules/kis_openapi.py`, `modules/kis_operational_adapter.py`, `modules/kis_operational_prefilter.py`, `modules/market_data.py`
+- 모델 producer: `report_swing_ensemble.py`, `report_kospi_intraday_swing.py`, `report_kosdaq_intraday_vwap_guard.py`
+- 인트라데이 모델: `modules/kosdaq_intraday_vwap_guard.py`, `modules/intraday_candidate_registry.py`
+- 저장: `modules/db_schema.py`, `modules/db_manager.py`, `modules/scan_persistence.py`, `modules/runtime_artifact_store.py`, `modules/post_scan_outcome_ledger.py`, `modules/top_deep_report.py`
+- 메모리 계층: `multi_agent/storage/memory_layers.py`
+- 런타임 정책: `docs/migration/RUNTIME_ARTIFACT_POLICY.md`
 
-## High-Level Backend Shape
+## 전체 백엔드 모양
 
-The backend has five overlapping responsibilities:
+현재 백엔드는 두 갈래가 공존한다.
 
-1. Market data acquisition and normalization.
-2. Scanner candidate generation.
-3. Multi-agent trace generation and planner decisioning.
-4. Model-lane production and forward ledgers.
-5. Persistence, archive, and validation refresh.
+1. 범용 스캐너/멀티에이전트 파이프라인
+   - 시장/모드/프로필을 받아 ticker universe를 스캔한다.
+   - scanner handoff, aggregation, backtest diagnostics, market/news context, planner, postmortem을 만든다.
+   - Top Deep, archive, Supabase, runtime artifact를 남긴다.
 
-The system has two main execution styles:
+2. 모델 레인 producer
+   - 특정 검증 모델을 고정 계약으로 실행한다.
+   - 자체 ledger를 쓴다.
+   - production flag가 켜져 있으면 직접 `market_scan_results`와 `scan_deep_reports`에 row를 넣는다.
+   - 현재 핵심은 `swing_ensemble`, `kospi_intraday`, `kosdaq_intraday_3d_t5_vwap_guard`다.
 
-- Full scanner pipeline: KIS or legacy market scan, then scanner/aggregation/backtest/market/planner handoffs, Top Deep reports, archive persistence, runtime artifacts.
-- Model-lane producer: a focused report script scores a validated model lane, writes its own ledger/report, and can directly route picks to `market_scan_results` plus `scan_deep_reports`.
+운영에서 중요한 점은 두 경로의 의미가 다르다는 것이다. scanner/planner 후보와 model-lane producer 후보를 같은 gate로 해석하면 안 된다.
 
-These two styles coexist. The docs and UI must not pretend every live pick came through the same planner pipeline.
-
-## Data Sources
+## 데이터 소스
 
 ### KIS Open API
 
-KIS is the preferred KR live source. `modules/kis_openapi.py` defines endpoints for:
+파일: `modules/kis_openapi.py`
 
-- OAuth token and websocket approval.
-- Domestic quote.
-- Daily bars.
-- Same-day minute bars.
-- Historical daily minute bars.
-- Asking price and conclusion tape.
-- Current and daily investor flow.
-- Foreign/institution ranking and market investor time series.
-- Volume, fluctuation, volume-power, expected up/down rankings.
-- VI status.
-- News title.
-- Industry current and daily bars.
+역할:
 
-KIS live calls are guarded by `KIS_ENABLE_LIVE_CALLS=1`. The adapters can be imported without making real network calls.
+- KR daily OHLCV
+- KR minute OHLCV
+- rank API
+- VI status
+- quote snapshot
+- stock info
+- financial ratio
+- investor flow
+- symbol-scoped news
 
-### FinanceDataReader
+live call은 보통 `KIS_ENABLE_LIVE_CALLS=1`이 필요하다. import 자체는 안전해야 하지만 실제 네트워크 수집은 flag와 credential에 의존한다.
 
-FDR is used for:
+### FinanceDataReader/FDR
 
-- Daily stock history in `report_swing_ensemble.py`.
-- KOSPI/KOSDAQ index context in producer scripts.
-- KOSPI intraday producer daily context and pending-resolution reads.
-- Research cache generation outside the repo.
+역할:
 
-FDR is useful but not treated as the only benchmark source after the benchmark-artifact corrections.
+- 일봉 가격 fallback
+- SWING ensemble 학습/스코어링의 daily price source
+- KOSPI intraday producer의 daily context 보조
 
-### Research Cache
+FDR은 실시간 체결 품질보다는 daily history와 fallback 성격이 강하다.
 
-The current research cache lives outside the repo at:
+### 외부 research cache
+
+위치:
 
 ```text
 ~/research_cache
 ```
 
-Important files and directories:
+현재 주요 파일:
 
-- `px_long.parquet`: daily long panel with code, date, market, price features, labels, and liquidity.
-- `flow`, `dart_ann`, `dart_events`, `fund`, `pead_surprise`, `shares`: research-side factor stores mentioned in the Claude/Codex handoff.
-- `intraday/{code}.parquet`: raw 1-minute OHLCV store.
-- `intraday_3d_panel.parquet`: 3D intraday panel used by KOSPI intraday training path.
+- `px_long.parquet`: 일봉 장기 panel
+- `intraday/{code}.parquet`: 종목별 1분 OHLCV raw store
+- `intraday_3d_panel.parquet`: 3일 +5% 인트라데이 모델 학습용 panel
+- flow, DART, events, fund, PEAD, shares 등 보조 cache
 
-Current verified intraday raw store from the collaboration brief:
-
-- 2,594 tickers.
-- 150,038,731 one-minute bars.
-- Date window: 2025-07-01 to 2026-06-19.
-- Median 237 trading days per ticker.
-- Out-of-hours leakage 0.
-- Size about 2.40GB.
-- KIS minute-bar retention is about one year, so deeper history must accumulate from now.
-
-This raw store is separate from scan-DB intraday readiness rows. Do not mix the two when interpreting coverage metrics.
+분봉 raw store는 프로젝트 production scan DB와 별도다. `runtime_state/reports/learning/kr_intraday_model_viability.*` 숫자와 섞으면 안 된다.
 
 ### Supabase
 
-Supabase is the primary shared DB surface when credentials are configured. Core tables used in code:
+주요 테이블:
 
-- `market_scan_results`: archive-level scan and model-lane rows.
-- `scan_deep_reports`: detailed Top Deep rows consumed by web/Discord.
-- `post_scan_outcome_ledger`: run/ticker outcome ledger.
-- `runtime_artifacts`: JSON/text artifacts by `run_id` and `artifact_key`.
-- `scan_universe_snapshots`: emitted and rejected universe rows for future learning.
-- `agent_realized_outcomes`: realized outcome store referenced in DB manager.
+- `market_scan_results`: 후보 row의 주 저장소
+- `scan_deep_reports`: Top Deep 상세 row
+- `post_scan_outcome_ledger`: 사후 outcome
+- `runtime_artifacts`: JSON/MD/TXT/CSV artifact 저장
+- `scan_universe_snapshots`: emitted/rejected universe snapshot
+- `agent_realized_outcomes`: realized outcome 계층
 
-The DB layer is schema-drift tolerant. `modules/db_manager.py` filters payloads to existing columns and has local extension column lists for newer fields.
+`modules/db_manager.py`는 schema drift에 대비해 존재하는 column만 필터링해서 write한다. 새 필드는 `modules/db_schema.py::SCAN_RESULT_COLUMNS`에 반영하는 것이 기준이다.
 
-## Data Normalization
+## 데이터 정규화
 
-### Market Data Normalization
+### 시장 데이터 정규화
 
-`modules/market_data.py` maps symbols and normalizes OHLCV frames:
+파일: `modules/market_data.py`
 
-- KR suffix `.KS` and `.KQ` are converted to bare FDR/KIS codes where needed.
-- Index aliases map to KIS/FDR index codes, including KS11 and KQ11.
-- OHLCV columns are normalized to `Open`, `High`, `Low`, `Close`, `Volume`.
-- Timezone-aware indexes are made naive for downstream pandas compatibility.
+역할:
 
-### KIS Normalization
+- symbol suffix 변환
+- OHLCV column 정규화
+- KIS/FDR 데이터의 내부 DataFrame 계약 맞춤
+- KR/US ticker 형식 처리
 
-`modules/kis_operational_adapter.py` converts KIS payloads into internal contracts:
+### KIS 정규화
+
+파일: `modules/kis_operational_adapter.py`
+
+역할:
 
 - `normalize_kis_daily_bars`
 - `normalize_kis_minute_bars`
-- rank membership normalization
-- VI status normalization
-- news title normalization with symbol-scope filtering
-- stock info normalization
-- quote fields and investor-flow fields for scanner sidecars
+- rank membership 정규화
+- VI status 정규화
+- stock info/financial ratio/quote/investor flow 정규화
+- symbol-specific news scope filtering
 
-`kis_intraday_input_hour()` chooses a KIS minute input hour based on KST time, or `AG_KIS_INTRADAY_INPUT_HOUR` when overridden.
+`kis_intraday_input_hour()`는 현재 KST 시간 또는 `AG_KIS_INTRADAY_INPUT_HOUR`에 따라 KIS minute input hour를 정한다.
 
-### KIS Operational Prefilter
+### KIS 운영 prefilter
 
-`modules/kis_operational_prefilter.py` builds a live KR candidate universe from KIS rankings and quote signals:
+파일: `modules/kis_operational_prefilter.py`
 
-- volume rank
-- fluctuation rank
-- volume power rank
+역할:
+
+- 거래량 rank
+- 등락률 rank
+- 체결강도/거래대금 rank
 - VI status
 - quote activity
-- optional investor flow
+- investor flow
 
-It scores candidates using rank points, quote score components, and flow score components. It can exclude management/risk/warning/halt/overheated names depending on config.
+이 값으로 KR 운영 후보 universe를 만든다. 관리/주의/정지/과열 종목 제외 옵션도 포함한다.
 
-## Scanner Pipeline
+## 스캐너 파이프라인
 
-The non-UI pipeline entrypoint is:
+진입점:
 
 ```python
 multi_agent.workflows.non_ui_scan_pipeline.run_non_ui_scan_pipeline()
 ```
 
-Major steps:
+주요 단계:
 
-1. Resolve market, scan mode, profile defaults, and ticker universe.
-2. Build run context with a `RUN-*` id.
-3. Load macro context and market gate.
-4. Resolve market intelligence and news adjustment.
-5. Run parallel scanner workers through `scan_symbol_with_retry`.
-6. Sort passed rows by `Decision Score` and `Antigrav`.
-7. Write `legacy_scan_results.json` into local short-term memory.
-8. Run `OrchestratorAgent`.
-9. Run legacy orchestration to generate scanner, aggregation, backtest, market context, planner, diagnostics, and postmortem artifacts.
-10. Generate Top Deep reports.
-11. Write post-scan outcome ledger.
-12. Write raw scan results and CSV into artifact store.
-13. Write scan integrity artifacts.
-14. Write daily summary and stale fallback alert.
-15. Persist `scan_universe_snapshots`.
-16. Persist standard runtime artifacts to Supabase.
+1. market, scan_mode, profile, ticker universe를 확정한다.
+2. `RUN-*` id를 가진 run context를 만든다.
+3. macro context와 market gate를 로드한다.
+4. market intelligence/news adjustment를 계산한다.
+5. `scan_symbol_with_retry`로 병렬 스캔한다.
+6. 통과 후보를 `Decision Score`, `Antigrav` 기준으로 정렬한다.
+7. local short-term memory에 `legacy_scan_results.json`을 쓴다.
+8. OrchestratorAgent를 실행한다.
+9. legacy orchestration으로 scanner/aggregation/backtest/market/planner/postmortem artifact를 만든다.
+10. Top Deep report를 생성한다.
+11. post-scan outcome ledger를 쓴다.
+12. raw scan results와 CSV를 artifact store에 쓴다.
+13. scan integrity artifact를 만든다.
+14. daily summary와 stale fallback alert를 만든다.
+15. `scan_universe_snapshots`를 저장한다.
+16. 표준 runtime artifacts를 Supabase에 저장한다.
 
-The scan mode is explicit and must remain explicit:
+`scan_mode`는 반드시 유지해야 한다.
 
-- `SWING`: daily swing scanner and SWING model lanes.
-- `INTRADAY`: intraday scanner candidates and intraday model lanes.
+- `SWING`: 일봉 스윙 스캐너와 SWING 모델 레인
+- `INTRADAY`: 장중 스캐너 후보와 인트라데이 모델 레인
 
-## Scanner Candidate Logic
+## 후보 평가 로직
 
 ### `evaluate_app_kr_candidate`
 
-This is the KR SWING scanner candidate evaluator. It requires:
+KR SWING scanner evaluator다.
 
-- Signal column exists and recent signal hits pass.
-- ML inference is real and not a fallback dummy.
-- Baseline WR/PF filter.
-- KR market policy and hard filters.
-- Precision gate.
-- Sector gate.
-- ML probability and surge tag computation.
-- Profile, rank, theme, context, segment, continuation, and quant overlays.
-- KIS sidecar fields where available.
+주요 조건:
 
-It emits both UI rows and DB payloads with scanner timeframe profile, KR universe role, flow fields, theme context, leader metrics, expected edge fields, target/stop/hold, and model trace fields.
+- signal column 존재
+- 최근 signal hit
+- fallback dummy가 아닌 실제 ML inference
+- baseline WR/PF filter
+- KR market policy/hard filter
+- precision gate
+- sector gate
+- ML probability/surge tag
+- profile/rank/theme/context/segment/continuation/quant overlay
+- KIS sidecar field
+
+출력:
+
+- UI row
+- DB payload
+- scanner timeframe profile
+- KR universe role
+- flow/theme/leader/context field
+- expected edge field
+- target/stop/hold
+- model trace
 
 ### `evaluate_intraday_candidate`
 
-This is the generic scanner `INTRADAY` evaluator. It uses recent OHLCV bars from `QuantStrategy` and computes:
+범용 scanner `INTRADAY` evaluator다. 현재 KOSDAQ `KR_INTRADAY_3D_T5` producer와는 별도다.
 
-- liquidity and price filters
+사용 요소:
+
+- 유동성/가격 filter
 - EMA trend
 - 3-bar breakout
-- session open, previous close, intraday return, day return
-- ATR-based target/stop
+- session open, previous close, intraday return
+- ATR 기반 target/stop
 - news adjustment
-- ML probability when available
+- ML probability
 - market gate penalty
 - theme overlay
 - expected edge profile
 - KR universe role
-- KIS sidecar fields for KR
+- KIS sidecar
 
-For KR intraday scanner candidates, current default filters include:
+현재 KR intraday scanner 기본 필터 예:
 
-- minimum KR price `1000`
-- `AG_INTRADAY_KR_MIN_VOLUME` default `20000`
-- KOSPI min turnover default `700,000,000`
-- KOSDAQ/KR min turnover default `300,000,000`
+- 최소 가격 `1000`
+- `AG_INTRADAY_KR_MIN_VOLUME` 기본 `20000`
+- KOSPI turnover 기본 `700,000,000`
+- KOSDAQ/KR turnover 기본 `300,000,000`
 
-This generic scanner is not the same as the new KOSDAQ `KR_INTRADAY_3D_T5` live model producer.
-
-## Model-Lane Producers
+## 모델 레인 producer
 
 ### SWING Ensemble
 
-File: `multi_agent/tools/report_swing_ensemble.py`
+파일: `multi_agent/tools/report_swing_ensemble.py`
 
-Backend behavior:
+역할:
 
-- Trains LGBM, XGB, and ExtraTrees on trailing `px_long.parquet`.
-- Uses price-only features.
-- Labels `ft_5_5`.
-- Scores both KOSPI and KOSDAQ.
-- Requires recent 20D value traded `>= min_liq * 1e8`.
-- Emits top probability percentile per market.
-- Writes `runtime_state/reports/experimental/swing_ensemble_ledger.jsonl`.
-- Writes latest JSON/MD report.
-- If production is enabled, writes market scan rows and direct Top Deep rows via `_route_live`.
+- `px_long.parquet`에서 trailing daily price feature로 학습
+- LGBM/XGB/ExtraTrees ensemble
+- label: `ft_5_5`
+- KOSPI/KOSDAQ 모두 score
+- 최근 20D 거래대금 `>= min_liq * 1e8`
+- market별 top probability percentile 추출
+- `swing_ensemble_ledger.jsonl` 기록
+- production ON이면 `_route_live`로 Supabase live surface write
 
 ### KOSPI Intraday
 
-File: `multi_agent/tools/report_kospi_intraday_swing.py`
+파일: `multi_agent/tools/report_kospi_intraday_swing.py`
 
-Backend behavior:
+역할:
 
-- Trains a 3-model ensemble on `~/research_cache/intraday_3d_panel.parquet` and daily context from `px_long.parquet`.
-- Fetches current/full-session KIS minute bars.
-- Builds intraday features such as day return, open-range return, morning/afternoon return, late 30-minute return, day range, close location, close VWAP distance, up-minute fraction, intraday volatility, acceleration, gap, and volume z-score.
-- Uses daily features such as returns, moving-average distances/slopes, RSI, distance to highs/lows, Bollinger percent, ATR, volume ratio, turn z-score, OBV slope, CMF, index momentum and volatility.
-- Filters `liq>=100억`, `close_vwap>=0`, and `idx_vol20>=8`.
-- Emits top2.
-- Writes `kospi_intraday_swing_ledger.jsonl`.
-- Routes live through the SWING `_route_live` helper with bucket `kospi_intraday`.
+- `~/research_cache/intraday_3d_panel.parquet`와 `px_long.parquet` daily context로 3모델 ensemble 학습
+- 현재/full-session KIS minute bar fetch
+- intraday path feature 생성
+- daily context feature 생성
+- `liq>=100억`, `close_vwap>=0`, `idx_vol20>=8`
+- top2 emit
+- `kospi_intraday_swing_ledger.jsonl` 기록
+- `decision_bucket=kospi_intraday`로 live route
+
+주의:
+
+- live producer 안에서 학습한다. KOSDAQ처럼 고정 joblib bundle을 읽는 구조보다 artifact 안정성이 약하다.
 
 ### KOSDAQ Intraday VWAP Guard
 
-Files:
+파일:
 
 - `modules/kosdaq_intraday_vwap_guard.py`
 - `multi_agent/tools/report_kosdaq_intraday_vwap_guard.py`
 
-Backend behavior:
+모델 bundle:
 
-- Loads stored model bundle `models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl`.
-- Uses `MODEL_FEATURES = INTRADAY_FEATURES + DAILY_PREV_FEATURES`.
-- Intraday features stop at 15:00: open gap, pre-entry return/high/low/range, close location, VWAP distance, pre-entry traded value versus previous liquidity.
-- Daily previous features include returns, moving-average distances, RSI, acceleration, consecutive up days, distance to highs, Bollinger fields, ATR, volatility, volume ratio/trend, turn z, OBV slope, CMF, index momentum, and index volatility.
-- Universe comes from `px_long.parquet` KOSDAQ recent median liquidity.
-- Daily context can come from research cache or KIS.
-- Minute bars come from KIS same-day or historical daily minute endpoints.
-- Selection policy from model bundle defaults to `p_cal>=0.80`, `pre_vwap_dist_pct>=0`, top2.
-- Minimum liquidity floor default is `30억`; tradeability lane is `100억`.
-- Writes `kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl`.
-- Resolves pending rows with KIS daily bars after enough days pass.
-- Routes live by direct writes to `market_scan_results` and `scan_deep_reports`.
+```text
+models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl
+```
 
-## Persistence Architecture
+역할:
+
+- KOSDAQ universe 구성
+- 15:00 이전/시점 분봉만 사용
+- open gap, pre-entry return/high/low/range, close location, VWAP distance, pre-entry traded value 등 feature 생성
+- daily previous context 병합
+- LightGBM + 이전월 isotonic calibration
+- `p_cal>=0.80`
+- `pre_vwap_dist_pct>=0`
+- daily top2
+- `>=30억` main lane, `>=100억` tradeability lane
+- `target_touch3d_t5`, `ret3d`, `mfe3`, `mae3` ledger 기록
+- production ON이면 `scan_mode=INTRADAY`로 live surface write
+
+현재 이 레인이 운영 목표와 가장 가깝다.
+
+## 저장 구조
 
 ### `market_scan_results`
 
-Single source mapping is `modules/db_schema.py::SCAN_RESULT_COLUMNS`. New scanner fields should be added there once. This prevents silent column drops.
-
-Important persisted fields:
-
-- identity: ticker, stock name, market, market type, scan mode
-- scanner scores: alpha, tech, ML, prob clean, whale, decision, conviction
-- flow windows and investor flow fields
-- strategy: strategy family, run ID, priority rank, decision, bucket, selection lane, source ref
-- return/outcome fields across 10m, 30m, 1h, close, 1D, 3D, 5D, 7D, 14D, 30D
-- path labels: target before stop, stop before target, ordered entry, MFE/MAE fields
-- model trace: phase25 variants/probs/AUC/OOS metrics, inference errors
-- expected edge fields
-- regime fields
-- theme context and leader metrics
-- feature snapshot and routing path
-
-DB upsert behavior:
-
-- If `run_id+ticker` exists, merge into the authoritative same-run row.
-- Delete shadow duplicates.
-- If no same-run row exists, delete same-day duplicate for same ticker when run_id absent.
-- Incomplete feature rows can be quarantined unless explicitly allowed.
+후보 row의 중심 테이블이다. scanner 후보와 producer direct route row가 모두 들어갈 수 있다. `scan_mode`, `decision_bucket`, `strategy_family`를 반드시 봐야 한다.
 
 ### `scan_deep_reports`
 
-Generated by `modules/top_deep_report.py` or model-lane direct routers. It is the detailed candidate surface for web and Discord.
-
-Fields include:
-
-- report identity and version
-- ticker, stock name, market, run id
-- scan mode and strategy family
-- rank, decision, decision bucket, signal label
-- analysis section and rank
-- entry/target/stop/hold trade plan
-- selection thesis and selection alignment
-- candidate interpretation
-- realized expectancy admission
-- policy metadata and readiness contracts
+Top Deep 상세 surface다. web/Discord가 후보 상세를 읽는 주요 테이블이다.
 
 ### `runtime_artifacts`
 
-`modules/runtime_artifact_store.py` persists local JSON/MD/TXT/CSV artifacts by:
-
-- `run_id`
-- `artifact_key`
-- `artifact_type`
-- market
-- scan mode
-- source
-- source path
-- payload or content text
-- checksum
-- metadata
-
-Standard artifact keys include:
-
-- `scan_pipeline_summary`
-- `raw_scan_results`
-- `observed_factor_snapshots`
-- `scan_integrity_report`
-- `scanner_handoff`
-- `aggregation_handoff`
-- `backtest_handoff`
-- `market_context_handoff`
-- `planner_handoff`
-- `profile_diagnostics`
-- `realized_outcomes`
-- `post_scan_outcome_ledger`
-- `top_deep_reports`
+`modules/runtime_artifact_store.py`가 JSON/MD/TXT/CSV artifact를 저장한다. 로컬 artifact와 DB artifact가 함께 존재할 수 있다.
 
 ### `scan_universe_snapshots`
 
-`modules/scan_persistence.py::_persist_scan_universe_snapshot` builds emitted and rejected run rows for KR scans. Forward returns are intentionally NULL at scan time. They are filled later by outcome backfills.
+`modules/scan_persistence.py::_persist_scan_universe_snapshot`가 emitted/rejected universe row를 저장한다. scan 시점에는 forward return이 NULL이고, 이후 outcome backfill이 채운다.
 
-### Local `runtime_state`
+### 로컬 `runtime_state`
 
-`runtime_state/` is operational state, not source code. Per `docs/migration/RUNTIME_ARTIFACT_POLICY.md`, generated run directories, caches, daily reports, archive datasets, and large generated artifacts should not be treated as normal source files. Curated small summaries may be tracked when they are release evidence.
+운영 상태와 리포트 저장 위치다.
 
-## Multi-Agent Memory Layers
+- `runtime_state/artifacts/RUN-*`: run별 raw artifact
+- `runtime_state/shared_working/RUN-*`: handoff/planner output
+- `runtime_state/reports/*`: validation, learning, experimental, trading report
+- `runtime_state/long_term/*`: profile/theme/ticket/learning memory
 
-The conceptual layers required by project instructions are implemented through filesystem memory use:
+이 디렉터리는 일반 소스코드가 아니다. generated artifact가 많이 생기므로 무조건 커밋 대상이 아니다.
 
-- Local short-term memory: per-agent/run temporary input such as `legacy_scan_results.json`.
-- Shared working memory: `runtime_state/shared_working/RUN-*`, containing handoffs and planner outputs.
-- Long-term memory: `runtime_state/long_term`, used for persistent caches and value-chain/theme/profile state.
-- Artifact store: `runtime_state/artifacts/RUN-*`, containing raw scan results, summaries, CSVs, and integrity reports.
+## 멀티에이전트 메모리 계층
 
-The non-UI pipeline and web scan persistence both write the same minimum artifact contract so Archive can recover even if Supabase is unavailable.
+개념 계층:
 
-## Outcome And Validation Pipeline
+- local short-term memory: run 중간 산출물
+- shared working memory: 에이전트 간 handoff
+- long-term memory: 지속 상태, profile/theme/cache
+- artifact store: run/report 증거 파일
 
-Daily ops refreshes:
+이 계층은 UI 텍스트나 agent chatter가 아니라 구조화된 상태여야 한다.
 
-- realized outcomes
-- outcome return metrics
-- scanner full returns
-- archive learning datasets
-- outcome conversion reports
-- contaminated run tags
-- post-scan validation reports
-- paper-trade ledgers
-- release gates
-- drift alerts
-- model foundation gate
+## outcome/validation pipeline
 
-Model-lane producers also keep their own ledgers:
+주요 작업:
 
-- `swing_ensemble_ledger.jsonl`
-- `kospi_intraday_swing_ledger.jsonl`
-- `kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl`
-- `kospi_normal_pead_shadow_ledger` via report script
-- `firsttouch_down_shadow` ledger when enabled
+- `update_realized_outcomes.py`
+- `update_outcome_return_metrics.py`
+- `backfill_scanner_full_returns.py`
+- `build_paper_trade_ledger.py`
+- `report_prediction_validation.py`
+- `report_kr_walkforward_release_gate.py`
+- `report_kr_cohort_release_gate.py`
+- producer별 ledger resolve
 
-These ledgers are not interchangeable. Each has its own label, entry price, horizon, and cost semantics.
+운영 판단은 scan 당시 점수보다 outcome ledger와 forward validation을 우선해야 한다.
 
-## Known Backend Risks
+## 현재 백엔드 리스크
 
-1. Supabase PostgREST timeout is tracked in `swing-main-yk25`; DB backfills can hang or fail.
-2. KOSDAQ intraday is live-routed but not included in the current `MODEL_VALIDATED_LANES` whitelist. That affects `/signals` and dedicated model-lane interpretation.
-3. KOSPI intraday producer trains in-script on each run. That is reproducible but operationally heavier and less artifact-stable than the KOSDAQ stored bundle.
-4. Several older model artifacts remain in `models/`, including retired/inverted phase25 intraday variants. Do not infer live status from file existence.
-5. Research cache lives outside repo. It is necessary for current producers. Operational docs must always state that dependency.
-6. Intraday raw store covers about one year and one dominant recent regime. Strong intraday evidence still needs forward accumulation.
+1. KOSDAQ intraday bucket이 아직 `MODEL_VALIDATED_LANES`에 없다.
+2. KOSPI intraday는 live producer 안에서 학습한다.
+3. `runtime_state`에 많은 generated file이 남아 있어 commit hygiene가 중요하다.
+4. Supabase timeout 이슈가 backfill/조회 경로를 막을 수 있다.
+5. research cache는 repo 밖에 있어 재현 시 경로/파일 존재가 필수다.
+6. `models/`에는 오래된/retired artifact도 남아 있어 파일 존재만으로 운영 상태를 판단하면 안 된다.

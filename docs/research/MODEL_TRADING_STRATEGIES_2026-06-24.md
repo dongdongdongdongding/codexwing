@@ -1,8 +1,8 @@
-# Model Trading Strategies - 2026-06-24
+# 모델별 매매전략 - 2026-06-24
 
-This document records the current model-by-model trading strategy contracts. It is not a guarantee of future returns. It is a practical map of what each model is trying to trade, how it enters, how it exits, and whether it is live, shadow, or research-only.
+이 문서는 현재 코드와 연구 문서 기준으로 모델별 매매 계약, 사용 여부, 진입/청산, 검증 상태를 정리한다. 파일이 존재한다는 이유만으로 운영 중이라고 판단하지 않는다.
 
-## Evidence Files Read
+## 확인한 근거 파일
 
 - `multi_agent/tools/report_swing_ensemble.py`
 - `multi_agent/tools/report_kospi_intraday_swing.py`
@@ -12,75 +12,77 @@ This document records the current model-by-model trading strategy contracts. It 
 - `multi_agent/tools/report_kospi_normal_pead_shadow.py`
 - `multi_agent/tools/report_firsttouch_down_shadow.py`
 - `modules/scanner_services.py`
+- `modules/quant_analysis.py`
 - `multi_agent/agents/planner_runtime.py`
 - `docs/research/RESEARCH_JOURNEY_2026-06.md`
 - `runtime_state/reports/learning/intraday_claude_codex_synthesis_latest.md`
+- `runtime_state/reports/learning/intraday_3d_t5_model_training_latest.md`
 - `runtime_state/reports/learning/intraday_3d_t5_monthly_failure_diagnosis_latest.md`
-- Beads open/closed issues from `bd list --json`.
+- `runtime_state/reports/learning/intraday_3d_t5_return_optimized_latest.md`
 
-## Strategy Summary
+## 전략 요약표
 
-| Strategy | Market | Mode | Live routing | Primary target | Current use |
-|---|---|---:|---:|---|---|
-| SWING price-ML ensemble | KOSPI/KOSDAQ | SWING | Yes | `ft_5_5` | Modest daily forward lane |
-| KOSPI intraday 3D +5% | KOSPI | INTRADAY concept | Yes | 3D +5% MFE touch | Live-forward lane |
-| KOSDAQ intraday 15:00 VWAP guard | KOSDAQ | INTRADAY | Yes | 3D +5% touch | Current best intraday deployment |
-| KOSPI intraday 09:05 5D | KOSPI | INTRADAY | No | 5D `t10_s5` path | Shadow registry, needs ledger |
-| KOSDAQ tail guard | KOSDAQ | INTRADAY | No | 5D path | Research only |
-| KOSPI NORMAL PEAD | KOSPI | SWING | No | 5D first-touch | Falsification shadow only |
-| First-touch down | KR | SWING | No | Down-regime first-touch | Disabled shadow |
-| Exception Leader | KR | SWING | Planner/legacy observation | Momentum exception | Short-window positive, not durable production |
-| Practical-80 | KOSPI | SWING | Promotion disabled/stale | Practical cohort | Not validated as current production edge |
-| Phase25 KOSDAQ intraday | KOSDAQ | INTRADAY | Retired | Old phase25 intraday | Avoid/retired |
-| KIS touch5/dd10 | KOSPI/KOSDAQ | SWING | Shadow/research | 5D touch and drawdown | Open Beads research stream |
+| 전략 | 시장 | 모드 | 운영 사용 | 목표 | 현재 판단 |
+|---|---|---|---|---|---|
+| SWING price-ML ensemble | KOSPI/KOSDAQ | `SWING` | 사용 | 5일 내 +5% first-touch | modest daily signal, 목표 75% 아님 |
+| KOSPI intraday 3D +5% | KOSPI | `INTRADAY` 성격 | 사용 | 3일 내 +5% touch | live-forward, artifact 안정화 필요 |
+| KOSDAQ intraday 15:00 VWAP guard | KOSDAQ | `INTRADAY` | 사용 | 3일 내 +5% touch | 현재 핵심 후보 |
+| KOSPI intraday 09:05 5D | KOSPI | `INTRADAY` | 미사용/registry | 5D path | ledger 연결 필요 |
+| KOSDAQ tail guard | KOSDAQ | `INTRADAY` | 연구용 | 5D tail-safe | 승률 낮아 promotion 아님 |
+| KOSPI NORMAL PEAD | KOSPI | `SWING` | shadow만 | 5D | falsification ledger, production 아님 |
+| first-touch down | KR | `SWING` | 기본 OFF | down/rebound | beta/fragile 판정 |
+| Exception Leader | KR | `SWING` | legacy/관찰 | 고승률 주장 | durable 검증 부족 |
+| Practical-80 | KR | `SWING` | 비활성/주의 | 고승률 주장 | 교정 벤치에서 production edge 아님 |
+| phase25 legacy | KR/US | 혼재 | 레거시 지원 | 다양 | 운영 핵심 아님, 일부 inverted/retired |
+| KIS touch5/dd10 challengers | KOSPI/KOSDAQ | `SWING` 연구 | 연구/백필 | touch5/dd10 | 아직 production 아님 |
 
 ## 1. SWING Price-ML Ensemble
 
-Files:
+파일:
 
 - `multi_agent/tools/report_swing_ensemble.py`
 
-Model:
+모델:
 
 - LGBM
 - XGBoost
 - ExtraTrees
-- trained on trailing daily `px_long.parquet`
+- trailing daily `px_long.parquet`
 - price-only feature set
 
-Target:
+목표:
 
-- `ft_5_5`: price touches +5% before -5% within 5 sessions.
+- `ft_5_5`: 5거래일 안에 +5%를 -5%보다 먼저 터치하는지.
 
-Universe:
+유니버스:
 
-- KOSPI and KOSDAQ.
-- Current default liquidity floor `>=100억` daily trading value.
+- KOSPI, KOSDAQ
+- 현재 기본 유동성 floor: `>=100억`
 
-Selection:
+선정:
 
-- Top ~1% by ensemble probability per market.
-- Current command default: `--top-pct 1.0 --min-liq 100`.
+- 시장별 ensemble probability 상위 약 1%
+- 기본 command: `--top-pct 1.0 --min-liq 100`
 
-Entry:
+진입:
 
-- Stored producer route uses entry reference from latest close.
-- Ledger resolution uses next-day open as the first-touch entry in `resolve_pending`.
+- producer route는 latest close reference를 사용한다.
+- ledger resolve는 first-touch 판정에서 다음날 open을 entry로 사용한다.
 
-Exit:
+청산/보유:
 
-- 5 trading days.
-- +5% first-touch target.
-- -5% first-touch failure label for `ft_5_5`.
-- No tight live stop in the model-lane trade plan.
+- 5거래일
+- +5% first-touch 진단
+- -5% first-touch 실패 label
+- tight live stop은 주계약에 없음
 
-Current interpretation:
+현재 해석:
 
-- Live forward validation lane.
-- Research note says it is durable/modest, around 66-67% `ft_5_5` hit in corrected validation, not a 75% target solver.
-- Useful as a secondary daily model, not the main intraday objective.
+- live-forward 검증 레인.
+- 보조 daily signal.
+- 75% 목표 모델로 쓰면 안 된다.
 
-Operational outputs:
+운영 산출물:
 
 - `runtime_state/reports/experimental/swing_ensemble_latest.json`
 - `runtime_state/reports/experimental/swing_ensemble_latest.md`
@@ -90,395 +92,319 @@ Operational outputs:
 
 ## 2. KOSPI Intraday 3D +5% Context VWAP Guard
 
-Files:
+파일:
 
 - `multi_agent/tools/report_kospi_intraday_swing.py`
 
-Model:
+모델:
 
 - LGBM
 - XGBoost
 - ExtraTrees
-- trained in-script from `~/research_cache/intraday_3d_panel.parquet` and daily context.
+- producer 내부에서 `~/research_cache/intraday_3d_panel.parquet`와 daily context를 사용해 학습
 
-Target:
+목표:
 
-- 3-day +5% MFE touch (`y3` in the script comment).
+- 3거래일 내 +5% MFE touch
 
-Universe:
+유니버스:
 
-- KOSPI.
-- Default liquidity floor `>=100억`.
+- KOSPI
+- 기본 유동성 floor: `>=100억`
 
-Selection:
+선정:
 
-- top2 by ensemble probability.
-- `close_vwap>=0`.
-- `idx_vol20>=8`.
-- liquidity must pass at emission.
+- ensemble probability top2
+- `close_vwap>=0`
+- `idx_vol20>=8`
+- 유동성 통과
 
-Entry:
+진입:
 
-- Close-buy entry after full-session minute bars.
-- This is not a mid-session on-demand scan.
+- full-session minute bar 이후 close-buy 성격
+- 15:00 중간 진입 모델이 아니다.
 
-Exit:
+청산/보유:
 
-- 3-day close hold.
-- +5% target is the touch diagnostic.
-- No tight stop in the primary return contract.
+- 3D close hold
+- +5% touch는 diagnostic target
+- tight stop 없음
 
-Research basis recorded in script:
+현재 해석:
 
-- Top2 + `close_vwap>=0` + `idx_vol20>=8`.
-- Backtest hit about 85%, monthly floor about 71%, 3D close return about +6.2%.
-- The volatility guard was introduced because one low-volatility weak month made +5% structurally rare.
+- live-forward 레인.
+- backtest headline은 높지만 volatility guard가 약한 월을 보수한 것이므로 forward 검증 필요.
+- KOSDAQ보다 production artifact discipline이 약하다. 모델 bundle 고정화가 필요하다.
 
-Current interpretation:
-
-- Live-forward lane.
-- Good candidate, but weaker operational artifact discipline than KOSDAQ because model is trained inside producer.
-- Needs forward validation to prove the repaired volatility guard is not overfit.
-
-Operational outputs:
+운영 산출물:
 
 - `runtime_state/reports/experimental/kospi_intraday_swing_latest.json`
 - `runtime_state/reports/experimental/kospi_intraday_swing_latest.md`
 - `runtime_state/reports/experimental/kospi_intraday_swing_ledger.jsonl`
-- Supabase route via `_route_live` with bucket `kospi_intraday`.
+- Supabase route: `decision_bucket=kospi_intraday`
 
 ## 3. KOSDAQ Intraday 15:00 VWAP Guard
 
-Files:
+파일:
 
 - `modules/kosdaq_intraday_vwap_guard.py`
 - `multi_agent/tools/report_kosdaq_intraday_vwap_guard.py`
 
-Candidate ID:
+candidate id:
 
 ```text
 kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1
 ```
 
-Strategy family:
+strategy family:
 
 ```text
 KR_INTRADAY_3D_T5
 ```
 
-Model artifact:
+모델 artifact:
 
 ```text
 models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl
 ```
 
-Model:
+모델:
 
-- LightGBM classifier.
-- Previous-month isotonic calibration.
-- Stored joblib bundle with feature list and selection policy.
+- LightGBM classifier
+- 이전월 isotonic calibration
+- 저장된 joblib bundle
+- bundle 안에 feature list와 selection policy 포함
 
-Target:
+목표:
 
-- `target_touch3d_t5`: high touches +5% within 3 trading days from 15:00 entry price.
+- `target_touch3d_t5`: 15:00 entry price 기준 3거래일 안에 고가가 +5% 터치하는지.
 
-Universe:
+유니버스:
 
-- KOSDAQ only.
-- Universe selected from `~/research_cache/px_long.parquet`.
-- Recent 90-day median liquidity.
+- KOSDAQ 전용
+- `~/research_cache/px_long.parquet` 기반 universe
+- 최근 90일 median liquidity
 
-Liquidity lanes:
+유동성 lane:
 
-- `>=30억`: main edge lane.
-- `>=100억`: tradeability lane.
+- `>=30억`: main edge lane
+- `>=100억`: tradeability lane
 
-Entry:
+진입:
 
-- 15:00 minute-confirmed entry.
-- KIS minute bars are fetched at 15:00 and fallback earlier snapshots if needed.
-- Feature computation uses bars from 09:00 through 15:00 only, avoiding post-entry leakage.
+- 15:00 minute-confirmed entry
+- KIS minute bar를 15:00 이후 가져온다.
+- feature는 09:00~15:00 bar만 사용한다.
+- post-entry leakage 방지 구조다.
 
-Selection:
+선정:
 
-- `p_cal>=0.80`.
-- `pre_vwap_dist_pct>=0`.
-- daily top2.
-- `liq_prev_eok>=min_liq`.
+- `p_cal>=0.80`
+- `pre_vwap_dist_pct>=0`
+- daily top2
+- `liq_prev_eok>=min_liq`
 
-Exit:
+청산/보유:
 
-- 3D close hold is the primary return policy.
-- +5% touch is the diagnostic target.
-- Stop is not part of the current primary return contract.
+- primary return policy: 3D close hold
+- diagnostic target: +5% touch
+- 현재 primary contract에 tight stop 없음
 
-Cost:
+비용:
 
-- `ROUNDTRIP_COST_PCT = 0.33`.
+- `ROUNDTRIP_COST_PCT = 0.33`
 
-Current validation from registry/report:
+현재 검증 수치:
 
-- `>=30억`: n=81, hit 90.12%, CI low 81.70%, close3 net@0.33 +10.27%, month hit min 80%.
-- `>=100억`: n=40, hit 85.00%, CI low 70.93%, close3 net@0.33 +5.11%, month hit min 75%.
+- `>=30억`: n=81, hit 90.12%, CI low 81.70%, close3 net@0.33 +10.27%, month hit min 80%
+- `>=100억`: n=40, hit 85.00%, CI low 70.93%, close3 net@0.33 +5.11%, month hit min 75%
 
-Current interpretation:
+현재 해석:
 
-- Current best KOSDAQ intraday deployment.
-- Live-forward validation is active.
-- Full promotion still requires forward micro-production gate.
+- 현재 가장 중요한 KOSDAQ intraday deployment.
+- live-forward 검증 중.
+- 완전 승급은 forward micro-production gate 통과 후.
 
-Forward gate from registry:
+forward gate:
 
-- minimum forward picks 60
-- minimum forward days 30
-- minimum forward months 2
-- target touch3d_t5 >=75%
-- day hit >=80%
-- net 3D close return >0
-- liquidity-decile excess >0
-- no month with n>=5 below 65%
+- forward picks 60개 이상
+- forward days 30일 이상
+- forward months 2개월 이상
+- touch3d_t5 75% 이상
+- day hit 80% 이상
+- net 3D close return > 0
+- liquidity-decile excess > 0
+- n>=5 월에서 65% 미만 없음
 - realized slippage <=0.50%
 
-Operational outputs:
+운영 산출물:
 
 - `runtime_state/reports/experimental/kosdaq_intraday_1500_3d_t5_vwap_guard_latest.json`
 - `runtime_state/reports/experimental/kosdaq_intraday_1500_3d_t5_vwap_guard_latest.md`
 - `runtime_state/reports/experimental/kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl`
-- Supabase `market_scan_results`
-- Supabase `scan_deep_reports`
 
-Known consumer caveat:
+주의:
 
-- The bucket is not currently in `MODEL_VALIDATED_LANES`, so `/signals` may omit it.
+- bucket이 아직 `MODEL_VALIDATED_LANES`에 없어서 `/signals`에서 누락될 수 있다.
 
 ## 4. KOSPI Intraday 09:05 5D Shadow
 
-File:
+파일:
 
 - `modules/intraday_candidate_registry.py`
 
-Candidate ID:
+상태:
 
-```text
-kospi_intraday_0905_5d_t10s5_shadow_v1
-```
+- registry 후보
+- live forward ledger 연결 필요
+- 현재 운영 메인 아님
 
-Strategy family:
+의미:
 
-```text
-KR_INTRADAY_5D
-```
-
-Entry:
-
-- 09:05 minute-confirmed entry.
-
-Target and exit:
-
-- target +10%
-- stop -5%
-- hold 5D
-- primary return column `exit5d_ret_t10_s5`
-
-Validation recorded in registry:
-
-- KOSPI `>=100억`
-- n=421
-- days=101
-- months=10
-- net avg +2.299%
-- excess avg +1.272%
-- win 62.71%
-- day win 78.22%
-- target-first 21.6%
-- stop-first 15.2%
-
-Current interpretation:
-
-- Shadow candidate only.
-- Per-pick win is below 75% and stop-first is near guard.
-- Beads `swing-main-ho2w` tracks wiring this candidate to live forward ledger.
+- KOSPI 09:05 인트라데이 후보로 기록된 shadow concept.
+- KOSDAQ 15:00 VWAP guard와 혼동하면 안 된다.
 
 ## 5. KOSDAQ Intraday Tail Guard Research
 
-File:
+파일/리포트:
 
 - `modules/intraday_candidate_registry.py`
+- 관련 experimental/learning report
 
-Candidate ID:
+상태:
 
-```text
-kosdaq_intraday_tail_guard_research_v1
-```
+- 연구 전용
+- live promotion 아님
 
-Strategy family:
+이유:
 
-```text
-KR_INTRADAY_5D
-```
-
-Entry:
-
-- 11:30 minute-confirmed entry with no-stop/MAE guard.
-
-Target and exit:
-
-- target +10%
-- stop -5%
-- hold 5D
-
-Validation recorded:
-
-- KOSDAQ `>=30억`
-- n=174
-- net avg +1.08%
-- excess avg +1.19%
-- win 49.4%
-- day win 50.5%
-- target-first 17.2%
-- stop-first 17.8%
-
-Current interpretation:
-
-- Research only.
-- Tail guard lowers some risk, but hit rate and day-win stay near 50%.
-- Not an operating promotion candidate.
+- net/excess가 양호한 구간이 있어도 win/day-win이 낮다.
+- 운영 목표가 70~75% touch 확률이면 맞지 않는다.
 
 ## 6. KOSPI NORMAL PEAD Shadow
 
-File:
+파일:
 
 - `multi_agent/tools/report_kospi_normal_pead_shadow.py`
 
-Current role:
+상태:
 
-- Falsification ledger.
-- Production OFF.
+- shadow ON
+- production OFF
 
-Reason:
+현재 해석:
 
-- Previous "survived edge" narrative was corrected.
-- Panel/internal benchmark and equal/size controls did not support a robust production edge.
+- 엣지 후보가 아니라 falsification ledger.
+- 이전 +1.5% 시장초과 narrative는 외부 KS11/벤치마크 artifact로 철회됨.
+- panel/internal correction 후 production edge 아님.
 
-Entry/exit:
+운영 원칙:
 
-- Former candidate used KOSPI NORMAL, price/flow/coarse PEAD, ensemble, `>=100억`, top5, label `ft_5_5`.
-- Current shadow should not be read as buy recommendation.
-
-Operational use:
-
-- Keep ledger to collect contradictory evidence.
-- Do not route to production unless a new validation explicitly reopens it.
+- 관찰은 가능.
+- 추천/매수 모델로 쓰지 않는다.
+- `AG_KOSPI_NORMAL_PEAD_PRODUCTION=1` 금지 unless 새 검증 완료.
 
 ## 7. First-Touch Down Shadow
 
-File:
+파일:
 
 - `multi_agent/tools/report_firsttouch_down_shadow.py`
+- `models/firsttouch_down_v1.pkl`
 
-Current role:
+상태:
 
-- Disabled by default.
-- Observation-only if enabled.
+- 기본 OFF
+- production 아님
 
-Reason:
+이유:
 
-- Down-edge was judged beta/artifact in later validation.
-
-Operational use:
-
-- Not part of current production direction.
+- 하락장 반등 베타/fragile로 판단됨.
+- same-day control 및 시장중립 검증에서 production edge로 남지 못함.
 
 ## 8. Exception Leader
 
-Files:
+관련:
 
-- legacy planner/orchestration paths
-- `multi_agent/workflows/legacy_orchestration.py`
 - `multi_agent/agents/planner_runtime.py`
+- legacy planner bucket/decision path
 
-Current interpretation:
+현재 해석:
 
-- Momentum exception stream.
-- Short-window positive signal was found under size-matched validation, but sample was about 4 months and concentrated in one month.
-- Not durable production edge.
-- Can remain visible for observation and forward evidence.
-
-Strategy if observed:
-
-- Treat as high-volatility watch stream.
-- Do not size or promote based on old `77%` headline alone.
-- Require forward ledger with corrected controls.
+- 짧은 window에서 양성 신호가 관찰됐으나 durable 검증 부족.
+- 과거 높은 win-rate narrative는 상승장/표본/벤치마크 교정 전 수치와 섞여 있었다.
+- forward 관찰 가치는 있지만 production core로 쓰지 않는다.
 
 ## 9. Practical-80
 
-Files:
+관련:
 
 - `modules/practical_entry_gate.py`
-- `multi_agent/agents/planner_runtime.py`
+- planner promotion/gate path
 
-Current interpretation:
+현재 해석:
 
-- Older 90%+ win narrative was corrected.
-- Cap-weighted negative result was also corrected as size-biased, but clean size-matched result was not production-significant.
-- Disable/promotion-off state is conservative and acceptable unless a new forward gate proves otherwise.
-
-Strategy if encountered:
-
-- Use as diagnostic/profile evidence, not automatic buy.
-- Do not restore promotion on stale 2026-April-only evidence.
+- 4월 편중 window에서 headline win-rate가 높았다.
+- size/liquidity matched, 월별 분해, 비용 교정 후 production edge로 확정되지 않음.
+- gate disable 또는 conservative observe 유지가 맞다.
 
 ## 10. Phase25 Legacy Models
 
-Files:
+관련 파일:
 
-- `retrain_ml.py`
 - `modules/quant_analysis.py`
-- `multi_agent/agents/planner_runtime.py`
-- model files under `models/phase25_*`
+- `modules/phase25_governance.py`
+- `models/phase25_*`
 
-Important current facts:
+상태:
 
-- `phase25_kosdaq_intraday` is explicitly retired/avoided in tests and planner reliability gates.
-- File existence does not mean production use.
-- Planner has reliability gates for uncertain, below-random, weak OOS, and retired variants.
+- 레거시 호환/보조 모델군
+- 현재 핵심 배포 모델 아님
 
-Strategy:
+주의:
 
-- Do not trade retired/inverted Phase25 intraday variants.
-- Use current model-lane producers instead.
+- `phase25_kosdaq_intraday`는 과거 inverted/retired 이력이 있다.
+- `models/`에 파일이 있다는 이유로 운영 모델이라고 판단하지 않는다.
+- 일부 phase25 값은 UI/trace 호환 필드로 남아 있다.
 
-## 11. KIS touch5/dd10 Shadow Stream
+## 11. KIS touch5/dd10 Challenger Stream
 
-Relevant Beads:
+관련:
 
-- `swing-main-n6u3`
-- `swing-main-xuy1`
-- `swing-main-u9sq`
-- `swing-main-yf9n`
+- `models/scan_universe_challengers/*`
+- `train_scan_universe_admission_challenger.py`
+- `research_kis_three_stage_ev_ranker.py`
+- `sweep_kis_sidecar_thresholds.py`
+- 관련 Beads 이슈 `n6u3`, `xuy1`, `u9sq`, `yf9n`
 
-Current role:
+상태:
 
-- Research and shadow-forward stream.
-- Aims to use KIS sidecar/prefilter/flow/history to build touch5/dd10 or expected-value rankers.
+- 연구/백필/검증 스트림
+- production 아님
 
-Current blocker:
+목표:
 
-- feature parity and historical sidecar coverage
-- sample gates
-- Supabase/PostgREST timeout risk
+- KIS sidecar, flow, failure risk, touch5/dd10 조건을 이용해 SWING 후보 개선 가능성 확인.
 
-Strategy:
+주의:
 
-- Do not confuse this stream with the live KOSDAQ intraday model.
-- Keep it as a separate daily/SWING research lane until promotion gates clear.
+- 현재 메인 목표인 KOSDAQ intraday 3D +5%와 별도 축이다.
 
-## Practical Trading Interpretation
+## 실전 해석
 
-For current operating decisions:
+현재 매매전략 우선순위:
 
-1. KOSDAQ intraday VWAP guard is the primary candidate for the operator's 3D +5% target.
-2. KOSPI intraday is a live-forward sibling, but its guard and training artifact need more production hardening.
-3. SWING ensemble is a modest daily model and useful for forward data, not the 75% target.
-4. Old daily cohort/PEAD/regime stories are not production edges today.
-5. Any model-lane pick must show entry, target, hold, liquidity lane, probability, and ledger status before being treated as actionable.
+1. KOSDAQ intraday 15:00 VWAP guard
+   - 현재 목표와 가장 가깝다.
+   - forward ledger를 쌓으며 consumer parity를 먼저 고친다.
+
+2. KOSPI intraday 3D +5%
+   - 보조 live-forward.
+   - artifact 고정화와 guard 검증이 필요하다.
+
+3. SWING ensemble
+   - modest daily 보조 레인.
+   - 75% 목표로 해석하지 않는다.
+
+4. old daily narrative/legacy models
+   - 기록/관찰/호환용.
+   - 새 검증 없이 production edge로 쓰지 않는다.

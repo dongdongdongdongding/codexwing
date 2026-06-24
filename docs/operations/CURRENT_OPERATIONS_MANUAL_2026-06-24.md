@@ -1,227 +1,228 @@
-# Current Operations Manual - 2026-06-24
+# 현재 운영 매뉴얼 - 2026-06-24
 
-This document is the operator-facing map of the current system. It records what the code actually runs today, which model lanes are live, which lanes are observation-only, how to use the scanner, and where the evidence is stored.
+이 문서는 현재 코드가 실제로 무엇을 실행하는지, 어떤 모델 레인이 live/관찰/비활성인지, 운영자가 어떤 명령과 화면을 써야 하는지 정리한 운영 기준 문서다.
 
-## Evidence Files Read
+## 확인한 근거 파일
 
-- `AGENTS.md` instructions supplied in the session.
-- Beads: `bd list --json`, `bd comments swing-main-0to`, `scripts/issue log`, `bd show swing-main-hbt8 --json`.
-- Daily execution: `multi_agent/tools/run_daily_ops.sh`, `multi_agent/tools/run_kr_daily_auto_scans.py`, `multi_agent/tools/run_kis_operational_kr_scan.py`.
-- Scan pipeline: `multi_agent/workflows/non_ui_scan_pipeline.py`, `modules/scanner_runtime.py`, `modules/scanner_services.py`.
-- Live model producers: `multi_agent/tools/report_swing_ensemble.py`, `multi_agent/tools/report_kospi_intraday_swing.py`, `multi_agent/tools/report_kosdaq_intraday_vwap_guard.py`, `multi_agent/tools/report_kospi_normal_pead_shadow.py`, `multi_agent/tools/report_firsttouch_down_shadow.py`.
-- Intraday registry and KOSDAQ model: `modules/intraday_candidate_registry.py`, `modules/kosdaq_intraday_vwap_guard.py`.
-- Consumer surfaces: `app.py`, `ui/*`, `modules/discord_integration/*`, `modules/candidate_interpretation.py`, `modules/operational_candidate_scoring.py`.
-- Storage and ledgers: `modules/db_schema.py`, `modules/db_manager.py`, `modules/scan_persistence.py`, `modules/runtime_artifact_store.py`, `modules/post_scan_outcome_ledger.py`.
-- Current research evidence: `runtime_state/reports/learning/intraday_claude_codex_synthesis_latest.md`, `runtime_state/reports/learning/intraday_3d_t5_model_training_latest.md`, `runtime_state/reports/learning/intraday_3d_t5_monthly_failure_diagnosis_latest.md`, `runtime_state/reports/learning/intraday_3d_t5_return_optimized_latest.md`, `docs/research/RESEARCH_JOURNEY_2026-06.md`.
+- 프로젝트 규칙: `AGENTS.md`
+- Beads 상태: `bd list --json`, `bd comments swing-main-0to`, `scripts/issue log`
+- 일일 실행: `multi_agent/tools/run_daily_ops.sh`
+- 자동 스캔: `multi_agent/tools/run_kr_daily_auto_scans.py`
+- KIS 운영 스캔: `multi_agent/tools/run_kis_operational_kr_scan.py`
+- 비UI 파이프라인: `multi_agent/workflows/non_ui_scan_pipeline.py`
+- 스캐너 엔진: `modules/scanner_runtime.py`, `modules/scanner_services.py`
+- live producer: `report_swing_ensemble.py`, `report_kospi_intraday_swing.py`, `report_kosdaq_intraday_vwap_guard.py`
+- shadow producer: `report_kospi_normal_pead_shadow.py`, `report_firsttouch_down_shadow.py`
+- 인트라데이 모델: `modules/kosdaq_intraday_vwap_guard.py`, `modules/intraday_candidate_registry.py`
+- UI/Discord: `app.py`, `ui/*`, `modules/discord_integration/*`
+- 저장/ledger: `modules/db_schema.py`, `modules/db_manager.py`, `modules/scan_persistence.py`, `modules/runtime_artifact_store.py`, `modules/post_scan_outcome_ledger.py`
+- 최신 리서치 증거: `runtime_state/reports/learning/intraday_claude_codex_synthesis_latest.md`, `intraday_3d_t5_*` 리포트, `docs/research/RESEARCH_JOURNEY_2026-06.md`
 
-## Operating Purpose
+## 운영 목적
 
-The system is a Korean and US quant research plus execution-support system. The current KR production focus is not generic "high score means buy". The current production direction is:
+이 시스템은 자동 매매 엔진이 아니다. 현재 목적은 아래다.
 
-- Keep the legacy scanner/planner visible for audit and learning.
-- Use validated model lanes only when their own forward-touch contract is explicit.
-- Separate `SWING` and `INTRADAY` scan modes in storage, UI, Discord, and research ledgers.
-- Treat intraday minute-bar models as the main frontier for the operator target: high probability of +5% within a short horizon, with enough liquidity and forward validation.
-- Keep every recommendation traceable through scanner reasons, aggregation notes, backtest diagnostics, market/news context, planner decision, and realized outcome placeholders.
+- 한국/미국 시장 후보를 스캔한다.
+- 후보의 근거, 플래너 판단, 리스크, 사후 성과를 구조화한다.
+- 검증된 모델 레인은 별도 producer로 live-forward ledger를 쌓는다.
+- 운영자가 UI/Discord/Archive에서 후보와 실패 원인을 확인한다.
+- 연구 결론이 뒤집히면 narrative와 flag를 함께 교정한다.
 
-The system is not an autonomous brokerage execution engine. It produces candidate signals, trade contracts, validation ledgers, and operator surfaces.
+현재 KR 방향은 일봉 종목선별만으로 70~75% 목표를 달성하려는 것이 아니다. 일봉 모델은 보조/검증 레인으로 유지하고, 분봉 기반 `3일 내 +5% 터치` 후보를 메인 프론티어로 본다.
 
-## Current Live Model Lanes
+## 현재 live 주요 레인
 
-| Lane | Market | Mode | Producer | Default | Main contract | Status |
+| 레인 | 시장 | 모드 | producer | 기본값 | 매매 계약 | 현재 판단 |
 |---|---|---|---|---|---|---|
-| `swing_ensemble` | KOSPI, KOSDAQ | `SWING` | `report_swing_ensemble.py` | ON, production ON | Price-only LGBM/XGB/ExtraTrees ensemble predicts `ft_5_5`; top ~1%; `>=100억`; 5 trading day hold; +5% first-touch target; no tight stop. | Live forward validation. Does not meet 75% goal; validated around 66-67% hit in research note. |
-| `kospi_intraday` | KOSPI | `INTRADAY` producer lane, routed with SWING-style helper | `report_kospi_intraday_swing.py` | ON, production ON | Intraday path plus daily-context ensemble predicts 3-day +5% touch; `>=100억`; `close_vwap>=0`; `idx_vol20>=8`; top2; 3D close hold. | Live to validate. KOSPI monthly floor required a volatility guard. |
-| `kosdaq_intraday_3d_t5_vwap_guard` | KOSDAQ | `INTRADAY` | `report_kosdaq_intraday_vwap_guard.py` | ON, production ON | Stored LGBM + previous-month isotonic model; 15:00 minute-confirmed entry; `p_cal>=0.80`; `pre_vwap_dist_pct>=0`; top2; `>=30억` main lane and `>=100억` tradeability lane; 3D close hold; target +5% touch. | Current KOSDAQ intraday deployment. Forward ledger is mandatory. |
+| `swing_ensemble` | KOSPI/KOSDAQ | `SWING` | `report_swing_ensemble.py` | ON, production ON | 가격전용 LGBM/XGB/ExtraTrees ensemble. `ft_5_5`, top 약 1%, `>=100억`, 5거래일 보유, +5% first-touch 진단. | 보조 일봉 레인. 목표 75% 모델이 아니라 modest forward 검증 레인. |
+| `kospi_intraday` | KOSPI | `INTRADAY` 성격 | `report_kospi_intraday_swing.py` | ON, production ON | 분봉 경로+일봉 컨텍스트 ensemble. 3일 내 +5% MFE touch. `>=100억`, `close_vwap>=0`, `idx_vol20>=8`, top2, 3일 종가 보유. | live-forward 검증. 월별 약한 구간 보완용 변동성 guard가 있다. |
+| `kosdaq_intraday_3d_t5_vwap_guard` | KOSDAQ | `INTRADAY` | `report_kosdaq_intraday_vwap_guard.py` | ON, production ON | 저장된 LGBM+전월 isotonic bundle. 15:00 진입, `p_cal>=0.80`, `pre_vwap_dist_pct>=0`, top2, `>=30억` main/`>=100억` tradeability, 3일 종가 보유, +5% touch 목표. | 현재 핵심 KOSDAQ 인트라데이 배포 후보. forward ledger 필수. |
 
-## Observation And Disabled Lanes
+## 관찰/비활성 레인
 
-| Lane | Market | Mode | Default | Reason |
+| 레인 | 시장 | 모드 | 상태 | 이유 |
 |---|---|---|---|---|
-| KOSPI NORMAL PEAD shadow | KOSPI | `SWING` | Shadow ON, production OFF | Reclassified as falsification ledger, not an edge claim. The previous KS11/external benchmark narrative was corrected. |
-| First-touch down shadow | KR | `SWING` | OFF | Down-regime edge was judged beta/fragile and is not active unless explicitly enabled. |
-| KOSPI intraday 09:05 5D candidate | KOSPI | `INTRADAY` | Registry only | Beads `swing-main-ho2w` remains open to wire live forward ledger. |
-| KOSDAQ tail guard 5D research | KOSDAQ | `INTRADAY` | Research only | Net/excess positive but win/day-win near 50%, so not an operating promotion candidate. |
-| KOSPI cohort Practical/Exception promotion | KOSPI | `SWING` | Beads state stale/in-progress | Older Beads notes mention wired promotion, but later Claude/Codex validation corrected the edge narrative. Do not treat as current production edge without rechecking flags and code. |
+| KOSPI NORMAL PEAD shadow | KOSPI | `SWING` | shadow ON, production OFF | 엣지 주장이 아니라 반증 ledger로 재정의됨. 이전 KS11/외부 벤치마크 narrative는 철회됨. |
+| First-touch down shadow | KR | `SWING` | 기본 OFF | 하락장 반등/베타로 판정. 명시 flag 없이는 운영 노출 금지. |
+| KOSPI intraday 09:05 5D candidate | KOSPI | `INTRADAY` | registry only | live forward ledger 연결 이슈가 남아 있음. |
+| KOSDAQ tail guard 5D research | KOSDAQ | `INTRADAY` | 연구 전용 | 수익/초과는 일부 양호하나 win/day-win이 낮아 운영 승급 후보 아님. |
+| Practical/Exception/old cohort promotion | KOSPI 중심 | `SWING` | stale/주의 | 과거 높은 win-rate narrative가 벤치마크/표본/비용 교정으로 약화됨. 새 검증 없이 production edge로 보지 않는다. |
 
-## Daily Operations Flow
+## 일일 운영 배치
 
-The operational script is:
+실행 파일:
 
 ```bash
 multi_agent/tools/run_daily_ops.sh
 ```
 
-Current important steps in order:
+주요 순서:
 
-1. Update realized outcomes.
-2. Update outcome return metrics.
-3. Backfill scanner full returns.
-4. Export scan archive learning dataset.
-5. Report outcome conversion and contaminated runs.
-6. For each KR market and scan mode, generate daily summaries, outcome health, fallback health, prediction validation, paper-trade ledger, walk-forward release gate, cohort release gate, and stale fallback alert.
-7. Generate dynamic theme entry profiles and scan cohort performance.
-8. Run operational admission optimizers and exit-policy watch reports.
-9. Run regime signal shadow and observation reports.
-10. Run KOSPI NORMAL PEAD falsification shadow when enabled.
-11. Run live SWING ensemble producer.
-12. Run live KOSPI intraday producer.
-13. Run live KOSDAQ intraday VWAP-guard producer.
-14. Run drift alert and daily model foundation gate.
+1. `update_realized_outcomes.py`로 사후 성과를 갱신한다.
+2. `update_outcome_return_metrics.py`로 수익률 메트릭을 보강한다.
+3. `backfill_scanner_full_returns.py`로 scanner full return을 보강한다.
+4. `export_scan_archive_learning_dataset.py`로 학습용 archive dataset을 만든다.
+5. outcome conversion, contaminated run 보고서를 만든다.
+6. 시장별 daily summary, outcome health, fallback health, prediction validation, paper ledger, walk-forward gate, cohort gate를 생성한다.
+7. dynamic theme profile, scan cohort performance, operational admission optimizer, exit policy watch를 생성한다.
+8. regime signal shadow와 PEAD falsification shadow를 실행한다.
+9. SWING ensemble producer를 실행한다.
+10. KOSPI intraday producer를 실행한다.
+11. KOSDAQ intraday VWAP guard producer를 실행한다.
+12. drift alert와 daily model foundation gate를 생성한다.
 
-The current default daily producers are model-lane appenders. They write ledgers and also route live picks to Supabase surfaces when their `*_PRODUCTION` env var is enabled.
+이 배치는 research report만 만드는 것이 아니라 일부 producer가 production flag에 따라 Supabase live surface까지 라우팅한다.
 
-## Automatic KR Scan Flow
+## KR 자동 스캔
 
-The automatic scan entrypoint is:
+실행 파일:
 
 ```bash
 python3 multi_agent/tools/run_kr_daily_auto_scans.py
 ```
 
-Default targets:
+기본 대상:
 
 - `KOSPI/SWING`
 - `KOSDAQ/SWING`
 - `KOSPI/INTRADAY`
 - `KOSDAQ/INTRADAY`
 
-Operational timing:
+운영 시간대:
 
-- `premarket` phase: 08:20 KST. Builds pre-market theme prior only.
-- `confirmed` scan phase: after 09:30 KST, normally 09:35. Runs KOSPI/KOSDAQ SWING and INTRADAY scans.
+- `premarket`: 08:20 KST. 미국 lead/macro/theme prior를 만든다. 매수 리스트가 아니다.
+- `confirmed`: 09:30 이후, 보통 09:35. 실제 KOSPI/KOSDAQ SWING/INTRADAY 스캔을 실행한다.
 
-The default scan engine is KIS operational primary with legacy fallback:
+기본 엔진은 KIS 운영 primary + legacy fallback 구조다.
 
-- KIS primary env overrides: `AG_KIS_OPERATIONAL_PREFILTER=1`, `AG_KR_MARKET_DATA_PROVIDER=kis_only`, `AG_ENABLE_KIS_MARKET_DATA=1`, `AG_ENABLE_KIS_SIDECAR=1`, `KIS_ENABLE_LIVE_CALLS=1`.
-- Legacy fallback can run if KIS primary fails and `AG_KR_DAILY_LEGACY_FALLBACK=1`.
-- Legacy shadow can run if `AG_KR_DAILY_LEGACY_SHADOW=1`.
+## 수동 실행 명령
 
-## Manual Commands
-
-Run KIS operational scan for a market:
+KIS 운영 스캔:
 
 ```bash
 python3 -m multi_agent.tools.run_kis_operational_kr_scan --market KOSDAQ --scan-mode INTRADAY
 ```
 
-Run the KOSDAQ intraday live producer directly:
+KOSDAQ 인트라데이 모델:
 
 ```bash
 KIS_ENABLE_LIVE_CALLS=1 python3 multi_agent/tools/report_kosdaq_intraday_vwap_guard.py --min-liq 30 --tradeability-liq 100 --daily-context-source cache
 ```
 
-Run SWING ensemble producer:
+SWING ensemble:
 
 ```bash
 python3 multi_agent/tools/report_swing_ensemble.py --top-pct 1.0 --min-liq 100
 ```
 
-Run KOSPI intraday producer:
+KOSPI 인트라데이:
 
 ```bash
 KIS_ENABLE_LIVE_CALLS=1 python3 multi_agent/tools/report_kospi_intraday_swing.py --min-liq 100
 ```
 
-Launch Streamlit UI:
+Streamlit:
 
 ```bash
 streamlit run app.py
 ```
 
-Discord bot entrypoint:
+Discord bot:
 
 ```bash
 python3 multi_agent/tools/discord_bot.py
 ```
 
-Register Discord slash commands:
+Discord slash command 등록:
 
 ```bash
 python3 multi_agent/tools/discord_register_commands.py
 ```
 
-## Important Environment Flags
+## 중요한 환경 변수
 
-| Variable | Current operational meaning |
+| 변수 | 의미 |
 |---|---|
-| `AG_SWING_ENSEMBLE_ENABLE` | Enables daily SWING ensemble report step. Default in daily ops is ON. |
-| `AG_SWING_ENSEMBLE_PRODUCTION` | Routes SWING ensemble picks to live surfaces. Current producer default is ON. |
-| `AG_KOSPI_INTRADAY_ENABLE` | Enables KOSPI intraday producer step. Daily ops default is ON. |
-| `AG_KOSPI_INTRADAY_PRODUCTION` | Routes KOSPI intraday picks live. Producer default is ON. |
-| `AG_KOSDAQ_INTRADAY_ENABLE` | Enables KOSDAQ intraday VWAP guard step. Daily ops default is ON. |
-| `AG_KOSDAQ_INTRADAY_PRODUCTION` | Routes KOSDAQ intraday picks live. Producer default is ON. |
-| `AG_KOSDAQ_INTRADAY_MIN_LIQ` | Main KOSDAQ intraday liquidity floor in eok. Daily ops default is `30`. |
-| `AG_KOSDAQ_INTRADAY_TRADEABILITY_LIQ` | Tradeability lane floor in eok. Daily ops default is `100`. |
-| `AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE` | `cache` or `kis`; producer default follows env and daily ops uses cache unless overridden. |
-| `AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE` | Enables PEAD falsification ledger. Default in daily ops is ON. |
-| `AG_KOSPI_NORMAL_PEAD_PRODUCTION` | Must remain OFF unless a new validation explicitly changes it. |
-| `AG_FIRSTTOUCH_DOWN_SHADOW_ENABLE` | First-touch down observation lane. Default is OFF. |
-| `AG_UI_ADVANCED` | Shows advanced Streamlit tabs and tools. Default OFF means only Scanner, Top Analysis, Archive. |
-| `AG_SCAN_ARCHIVE_SUPABASE_ENABLED` | Enables archive UI Supabase reads. Default in `app.py` is OFF, with local artifact fallback ON. |
-| `AG_RUNTIME_ARTIFACT_WRITE_DB` | Persists run artifacts to Supabase `runtime_artifacts`. Default ON. |
-| `KIS_ENABLE_LIVE_CALLS` | Required for real KIS network calls. KIS adapters are safe to import without it. |
+| `AG_SWING_ENSEMBLE_ENABLE` | SWING ensemble report step 활성화. daily ops 기본 ON. |
+| `AG_SWING_ENSEMBLE_PRODUCTION` | SWING ensemble pick을 live surface로 라우팅. producer 기본 ON. |
+| `AG_KOSPI_INTRADAY_ENABLE` | KOSPI intraday producer 활성화. daily ops 기본 ON. |
+| `AG_KOSPI_INTRADAY_PRODUCTION` | KOSPI intraday live route 활성화. producer 기본 ON. |
+| `AG_KOSDAQ_INTRADAY_ENABLE` | KOSDAQ intraday VWAP guard 활성화. daily ops 기본 ON. |
+| `AG_KOSDAQ_INTRADAY_PRODUCTION` | KOSDAQ intraday live route 활성화. producer 기본 ON. |
+| `AG_KOSDAQ_INTRADAY_MIN_LIQ` | KOSDAQ main lane 유동성 floor. 기본 `30`. |
+| `AG_KOSDAQ_INTRADAY_TRADEABILITY_LIQ` | tradeability lane 유동성 floor. 기본 `100`. |
+| `AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE` | `cache` 또는 `kis`. daily ops 기본 cache. |
+| `AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE` | PEAD falsification ledger 활성화. 기본 ON. |
+| `AG_KOSPI_NORMAL_PEAD_PRODUCTION` | PEAD production route. 현재 OFF 유지가 기준. |
+| `AG_FIRSTTOUCH_DOWN_SHADOW_ENABLE` | first-touch down observation lane. 기본 OFF. |
+| `AG_UI_ADVANCED` | 고급 Streamlit 탭 표시. 기본 OFF. |
+| `AG_SCAN_ARCHIVE_SUPABASE_ENABLED` | Archive UI의 Supabase read 활성화. 기본 OFF, local fallback ON. |
+| `AG_RUNTIME_ARTIFACT_WRITE_DB` | runtime artifacts를 Supabase에 저장. 기본 ON. |
+| `KIS_ENABLE_LIVE_CALLS` | 실제 KIS 네트워크 호출 허용. live producer에 필요. |
 
-## Operator Workflow
+## 운영자 사용 흐름
 
-1. Let daily ops run and verify the generated reports under `runtime_state/reports/experimental` and `runtime_state/reports/learning`.
-2. Use Streamlit Scanner for ad hoc scans. Choose market and `스윙` or `장중`.
-3. Use Streamlit Top Analysis for the current Top Deep candidates.
-4. Use Archive to replay a run, inspect measured returns, and compare scan-time order with realized outcomes.
-5. Use Discord `/signals` for model-lane quick lookup, with the caveat below.
-6. Use Discord `/top_deep`, `/archive`, and `/runs` for broader run inspection.
-7. Review ledgers before trusting a lane as production-quality. Live routing is not the same as full validated production maturity.
+1. daily ops가 돌았는지 확인한다.
+2. `runtime_state/reports/experimental`과 `runtime_state/reports/learning`에 최신 리포트가 생성됐는지 본다.
+3. Streamlit `스캐너`에서 ad hoc 스캔을 실행한다.
+4. `Top 분석`에서 현재 Top Deep 후보를 본다.
+5. `아카이브`에서 run_id별 후보 순서와 실현 성과를 본다.
+6. Discord `/signals`, `/top_deep`, `/archive`, `/runs`로 운영 표면을 확인한다.
+7. live route 여부와 production maturity를 혼동하지 않는다. live route는 관찰 시작일 수 있고, 충분한 forward ledger가 쌓여야 진짜 승급이다.
 
-## Current Consumer-Surface Caveat
+## 현재 consumer caveat
 
-`modules/operational_candidate_scoring.py` currently defines:
+`modules/operational_candidate_scoring.py`의 현재 whitelist:
 
 ```python
 MODEL_VALIDATED_LANES = {"swing_ensemble", "kospi_intraday"}
 ```
 
-`modules/discord_integration/renderers.py::build_model_signals_embed` filters `/signals` by that whitelist. The KOSDAQ intraday VWAP guard producer routes live with `decision_bucket="kosdaq_intraday_3d_t5_vwap_guard"`, so generic Top Deep/Archive surfaces can receive it, but `/signals` and dedicated model-lane interpretation may not include it until the consumer whitelist/profile is extended.
+`modules/discord_integration/renderers.py::build_model_signals_embed`는 `/signals`에서 이 whitelist에 있는 bucket만 모델 신호로 필터링한다.
 
-This is a current documentation and consumer integration gap, not a research conclusion. It should be handled as follow-up if `/signals` is expected to show the KOSDAQ intraday lane.
+KOSDAQ intraday producer는 아래 bucket으로 live route를 쓴다.
 
-## Beads State Relevant To Operations
+```text
+kosdaq_intraday_3d_t5_vwap_guard
+```
 
-Open or in-progress items that matter operationally:
+따라서 Top Deep/Archive에는 row가 보일 수 있지만 `/signals` 모델 카드에는 누락될 수 있다. 이건 모델 실패가 아니라 consumer 통합 미완성이다.
 
-- `swing-main-hbt8`: this documentation task.
-- `swing-main-ho2w`: wire KR_INTRADAY_5D shadow candidate to live forward ledger.
-- `swing-main-bxcd`: KOSPI cohort-level release gate, but notes are stale relative to later validation corrections.
-- `swing-main-n6u3`, `swing-main-xuy1`, `swing-main-u9sq`, `swing-main-yf9n`: KIS touch5/dd10 and sidecar backfill/research stream.
-- `swing-main-yk25`: Supabase authenticated PostgREST timeout can block DB backfill paths.
-- `swing-main-30s`: old INTRADAY learning pipeline recovery. It predates the new 3D T5 intraday lane and should not be confused with the current KOSDAQ VWAP guard producer.
+## 현재 Beads 운영 관련 상태
 
-Closed recent items that changed current state:
+중요한 open/in-progress 성격:
 
-- `swing-main-ardq`: KOSDAQ `KR_INTRADAY_3D_T5` VWAP-guard live scoring ledger.
-- `swing-main-g6g8`: KOSDAQ intraday liquidity floor comparison.
-- `swing-main-gs7v`: low-month failure diagnosis.
-- `swing-main-jhpq`: model-lane consumer surface consistency, but current KOSDAQ lane still needs the caveat above.
+- `swing-main-ho2w`: KR_INTRADAY_5D shadow candidate live forward ledger 연결.
+- `swing-main-gkl2`: KIS ticker-period raw sidecar Supabase 저장.
+- `swing-main-n6u3`, `swing-main-xuy1`, `swing-main-u9sq`, `swing-main-yf9n`: KIS touch5/dd10 및 sidecar 연구/백필.
+- `swing-main-yk25`: Supabase authenticated PostgREST timeout 이슈.
+- `swing-main-30s`: 구 INTRADAY learning pipeline 복구. 현재 KOSDAQ VWAP guard와 혼동 금지.
 
-## What Counts As Promotion
+최근 완료된 관련 작업:
 
-The current project standard is not "a backtest headline passed". A lane should be considered promotable only when it has:
+- KOSDAQ `KR_INTRADAY_3D_T5` VWAP-guard live scoring ledger.
+- KOSDAQ intraday liquidity floor 비교.
+- weak month failure diagnosis.
+- model-lane consumer surface consistency 일부 개선.
 
-- Explicit candidate ID and strategy family.
-- A fixed entry policy.
-- A fixed target/holding/exit contract.
-- Liquidity floor and cost assumptions.
-- Same-day or liquidity-matched control where applicable.
-- Walk-forward or OOS validation.
-- Forward ledger with enough picks, enough days, and enough months.
-- Consumer-surface parity: web, archive, Discord, DB, and local artifact all show the same decision semantics.
-- No unresolved data-routing gap for the lane.
+## 승급 기준
 
-## Immediate Operating Direction
+아래가 없으면 production mature로 보지 않는다.
 
-The current operating direction is:
+- 명확한 candidate id와 strategy family
+- 고정 진입 시각/가격
+- 고정 목표/보유/청산 계약
+- 유동성 floor와 비용 가정
+- same-day 또는 liquidity/size-matched control
+- walk-forward/OOS 검증
+- 충분한 forward ledger
+- web, archive, Discord, DB, local artifact의 의미 일치
+- stale narrative 제거
 
-- Keep KOSDAQ intraday 15:00 VWAP guard live-forward and measure it hard.
-- Keep KOSPI intraday live-forward but recognize its volatility guard is based on a repaired weak-month diagnosis.
-- Keep SWING ensemble live-forward for modest daily price-ML evidence, not for the 75% target.
-- Do not resurrect old daily PEAD/regime/Practical/Exception narratives as production edges without the corrected benchmark and cost assumptions.
-- Treat new intraday work as `scan_mode=INTRADAY` from source to storage to UI. Do not mix it into SWING gates.
+## 즉시 운영 방향
+
+- KOSDAQ 15:00 VWAP guard를 계속 live-forward로 측정한다.
+- KOSPI intraday는 보조 live-forward로 유지하되 volatility guard 과최적화 여부를 본다.
+- SWING ensemble은 modest daily signal로 유지한다.
+- PEAD/regime/Practical/Exception old narrative는 production edge로 되살리지 않는다.
+- 모든 인트라데이 후보는 source부터 storage/UI까지 `INTRADAY`로 유지한다.
