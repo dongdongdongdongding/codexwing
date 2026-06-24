@@ -1,0 +1,80 @@
+{
+  "report_version": "intraday_claude_codex_synthesis_v1",
+  "scope": "KR_INTRADAY_3D_T5",
+  "status": "research_synthesis_not_production",
+  "source_root": "/Users/dongdong/research_cache",
+  "method_difference": {
+    "claude_lane": "full intraday-day features, scan-day close entry",
+    "codex_lane": "live 15:00 entry with pre-entry features only",
+    "compatibility": "same target family, different operating lanes"
+  },
+  "claude_recheck": [
+    {
+      "market": "KOSDAQ",
+      "policy": "enhanced top2 + close_vwap>=0",
+      "n": 320,
+      "hit_pct": 85.0,
+      "hit_ci_low_pct": 80.673648,
+      "ret3_net03_pct": 7.763826,
+      "month_hit_min_pct": 75.0,
+      "months_hit_ge70": 8,
+      "months": 8
+    },
+    {
+      "market": "KOSDAQ",
+      "policy": "enhanced top5 + close_vwap>=2",
+      "n": 399,
+      "hit_pct": 84.210526,
+      "hit_ci_low_pct": 80.308504,
+      "ret3_net03_pct": 6.134728,
+      "month_hit_min_pct": 78.461538,
+      "months_hit_ge70": 8,
+      "months": 8
+    },
+    {
+      "market": "KOSPI",
+      "policy": "enhanced top2 + close_vwap>=0",
+      "n": 332,
+      "hit_pct": 84.036145,
+      "hit_ci_low_pct": 79.710179,
+      "ret3_net03_pct": 5.795039,
+      "month_hit_min_pct": 61.111111,
+      "months_hit_ge70": 6,
+      "months": 7
+    }
+  ],
+  "codex_best": {
+    "market": "KOSDAQ",
+    "candidate_id": "kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1",
+    "policy": "15:00 p>=0.80 + pre_vwap_dist_pct>=0 top2",
+    "n": 81,
+    "hit_pct": 90.123457,
+    "hit_ci_low_pct": 81.70331,
+    "ret3_net033_pct": 10.26736,
+    "month_hit_min_pct": 80.0,
+    "months_hit_ge70": 7,
+    "months": 7
+  },
+  "best_common_family": "KR_INTRADAY_3D_T5_CONTEXT_VWAP_GUARD",
+  "candidate_ranking": [
+    "KOSDAQ live 15:00 VWAP-guard candidate",
+    "KOSDAQ close-buy enhanced top2 + close_vwap>=0",
+    "KOSDAQ close-buy enhanced top5 + close_vwap>=2",
+    "KOSPI enhanced top2 + close_vwap>=0 remains research-only due monthly instability"
+  ],
+  "production_direction": {
+    "first_forward_ledger": "KOSDAQ live 15:00 VWAP-guard",
+    "second_forward_ledger": "KOSDAQ close-buy enhanced VWAP-guard",
+    "kospi_status": "research_only_until_monthly_regime_guard",
+    "micro_production_gate": {
+      "minimum_forward_picks": 60,
+      "minimum_forward_days": 30,
+      "minimum_forward_months": 2,
+      "target_touch3d_t5_pct_min": 75,
+      "day_hit_pct_min": 80,
+      "net_3d_close_return_pct_min": 0,
+      "liquidity_decile_excess_pct_min": 0,
+      "no_month_with_n_ge_5_hit_below_pct": 65
+    }
+  }
+}
