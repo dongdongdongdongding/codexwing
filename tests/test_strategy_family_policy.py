@@ -52,6 +52,21 @@ def test_kr_intraday_five_day_family_reroutes_horizon_without_promotion():
     assert trace["risk_flags"] == []
 
 
+def test_kr_intraday_three_day_touch_family_reroutes_horizon_without_promotion():
+    decision, horizon, trace = apply_strategy_family_policy(
+        decision="WATCHLIST",
+        strategy_family="KR_INTRADAY_3D_T5",
+        market="KOSDAQ",
+        scan_mode="INTRADAY",
+        target_horizon_days=1,
+    )
+
+    assert decision == "WATCHLIST"
+    assert horizon == 3
+    assert trace["rationale"] == ["strategy_family_horizon_reroute=KR_INTRADAY_3D_T5:3d"]
+    assert trace["risk_flags"] == []
+
+
 def test_kr_core_swing_is_not_penalized_for_short_horizon_matrix_noise():
     decision, horizon, trace = apply_strategy_family_policy(
         decision="PRIORITY_WATCHLIST",

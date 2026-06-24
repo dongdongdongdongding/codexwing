@@ -25,7 +25,7 @@ def build_intraday_candidate_registry(
     is 5D.
     """
 
-    candidates = [_kospi_0905_5d_shadow(), _kosdaq_tail_guard_research()]
+    candidates = [_kospi_0905_5d_shadow(), _kosdaq_1400_3d_t5_shadow(), _kosdaq_tail_guard_research()]
     return {
         "report_version": REPORT_VERSION,
         "as_of_date": as_of_date or str(date.today()),
@@ -86,9 +86,7 @@ def build_intraday_candidate_registry_markdown(report: Dict[str, Any]) -> str:
                 (
                     "- Validation: "
                     f"n={validation.get('n')}, days={validation.get('days')}, months={validation.get('months')}, "
-                    f"net={_fmt(validation.get('net_avg_pct'))}%, excess={_fmt(validation.get('excess_avg_pct'))}%, "
-                    f"win={_fmt(validation.get('win_pct'))}%, day_win={_fmt(validation.get('day_win_pct'))}%, "
-                    f"stop_first={_fmt(validation.get('stop_first_pct'))}%"
+                    f"{_validation_metric_text(validation)}"
                 ),
                 f"- Promotion guard: `{guard.get('status')}` - {guard.get('reason')}",
             ]
@@ -135,6 +133,56 @@ def _kospi_0905_5d_shadow() -> Dict[str, Any]:
         "promotion_guard": {
             "status": "shadow_only",
             "reason": "Daily-basket win clears 75%, but per-pick win is below 75% and stop-first is near the 15% guard. Needs forward ledger before production.",
+            "production_enabled": False,
+        },
+    }
+
+
+def _kosdaq_1400_3d_t5_shadow() -> Dict[str, Any]:
+    return {
+        "candidate_id": "kosdaq_intraday_1400_3d_t5_lgbm_shadow_v1",
+        "status": "shadow_candidate",
+        "market": "KOSDAQ",
+        "scan_mode": "INTRADAY",
+        "strategy_family": "KR_INTRADAY_3D_T5",
+        "candidate_family": "intraday_confirmed_3d_touch5",
+        "entry_policy": "14:00 minute-confirmed entry, daily top5 if calibrated probability >=75%",
+        "entry_time_kst": "14:00",
+        "target_horizon_days": 3,
+        "liquidity_floor_eok": 30,
+        "model_family": "LGBM classifier + previous-month isotonic calibration",
+        "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1400_lgbm_isotonic.pkl",
+        "selection_policy": {
+            "min_calibrated_probability": 0.75,
+            "max_picks_per_day": 5,
+            "probability_target": "touch +5% within 3 trading days from the 14:00 entry price",
+        },
+        "exit_contract": {
+            "primary_return_col": "target_touch3d_t5",
+            "target_tp_pct": 5.0,
+            "stop_sl_pct": None,
+            "hold_days": 3,
+            "cost_pct": 0.33,
+        },
+        "validation": {
+            "source": "/private/tmp/intraday_3d_t5_calibrated_lgbm_scan.json",
+            "sample": "KOSDAQ >=30eok, 14:00, calibrated p>=75%, top5 per day",
+            "n": 218,
+            "days": 91,
+            "months": 8,
+            "hit_pct": 81.7,
+            "hit_ci_pct": [76.6, 86.2],
+            "day_hit_pct": 93.4,
+            "avg_pred_pct": 88.2,
+            "mfe3_avg_pct": 19.3,
+            "mae3_avg_pct": -9.2,
+            "close3_avg_pct": 3.6,
+            "stop2_touch_pct": 78.4,
+            "months_hit_ge_70": 7,
+        },
+        "promotion_guard": {
+            "status": "shadow_only",
+            "reason": "Meets the 3D +5% target-touch probability goal, but stop/drawdown incidence is high. Forward ledger must track target-touch and drawdown separately before production.",
             "production_enabled": False,
         },
     }
@@ -189,6 +237,25 @@ def _fmt(value: Any) -> str:
         return f"{float(value):.2f}"
     except Exception:
         return "-"
+
+
+def _validation_metric_text(validation: Dict[str, Any]) -> str:
+    if "hit_pct" in validation:
+        return (
+            f"hit={_fmt(validation.get('hit_pct'))}%, "
+            f"hit_ci=[{_fmt((validation.get('hit_ci_pct') or [None, None])[0])},"
+            f"{_fmt((validation.get('hit_ci_pct') or [None, None])[1])}]%, "
+            f"day_hit={_fmt(validation.get('day_hit_pct'))}%, "
+            f"avg_pred={_fmt(validation.get('avg_pred_pct'))}%, "
+            f"stop2_touch={_fmt(validation.get('stop2_touch_pct'))}%"
+        )
+    return (
+        f"net={_fmt(validation.get('net_avg_pct'))}%, "
+        f"excess={_fmt(validation.get('excess_avg_pct'))}%, "
+        f"win={_fmt(validation.get('win_pct'))}%, "
+        f"day_win={_fmt(validation.get('day_win_pct'))}%, "
+        f"stop_first={_fmt(validation.get('stop_first_pct'))}%"
+    )
 
 
 __all__ = [

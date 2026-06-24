@@ -13,7 +13,7 @@ def test_intraday_candidate_registry_is_intraday_only():
     assert report["scope"]["production_enabled"] is False
     assert report["scope"]["swing_contamination_allowed"] is False
     assert {row["scan_mode"] for row in report["candidates"]} == {"INTRADAY"}
-    assert {row["strategy_family"] for row in report["candidates"]} == {"KR_INTRADAY_5D"}
+    assert {row["strategy_family"] for row in report["candidates"]} == {"KR_INTRADAY_5D", "KR_INTRADAY_3D_T5"}
 
 
 def test_intraday_candidate_registry_separates_shadow_from_research_only():
@@ -26,6 +26,16 @@ def test_intraday_candidate_registry_separates_shadow_from_research_only():
     assert kospi["target_horizon_days"] == 5
     assert kospi["validation"]["day_win_pct"] >= 75
     assert kospi["promotion_guard"]["production_enabled"] is False
+
+    touch5 = by_id["kosdaq_intraday_1400_3d_t5_lgbm_shadow_v1"]
+    assert touch5["market"] == "KOSDAQ"
+    assert touch5["status"] == "shadow_candidate"
+    assert touch5["strategy_family"] == "KR_INTRADAY_3D_T5"
+    assert touch5["target_horizon_days"] == 3
+    assert touch5["validation"]["hit_pct"] >= 70
+    assert touch5["validation"]["hit_ci_pct"][0] >= 70
+    assert touch5["selection_policy"]["min_calibrated_probability"] == 0.75
+    assert touch5["promotion_guard"]["production_enabled"] is False
 
     kosdaq = by_id["kosdaq_intraday_tail_guard_research_v1"]
     assert kosdaq["market"] == "KOSDAQ"

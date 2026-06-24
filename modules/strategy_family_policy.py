@@ -38,6 +38,11 @@ def apply_strategy_family_policy(
             horizon = 5
         rationale.append("strategy_family_horizon_reroute=KR_INTRADAY_5D:5d")
 
+    if family == "KR_INTRADAY_3D_T5" and market_key in {"KR", "KOSPI", "KOSDAQ"} and mode == "INTRADAY":
+        if horizon != 3:
+            horizon = 3
+        rationale.append("strategy_family_horizon_reroute=KR_INTRADAY_3D_T5:3d")
+
     # UNKNOWN/KR/INTRADAY is mostly legacy missing-family data, so a blanket
     # drop would contaminate live decisions. The matrix is still bad enough
     # (1D win=13.72%, avg=-4.72%; 3D win=21.99%, avg=-3.49%) to block PRIORITY
