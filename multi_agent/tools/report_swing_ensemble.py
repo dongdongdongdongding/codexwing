@@ -178,12 +178,17 @@ def resolve_pending(today: str) -> Dict[str, Any]:
 
 
 def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str) -> int:
+    """Mirror the proven DOWN-buy consumer-parity pattern (report_regime_signal_shadow:down_buy_deep_rows):
+    write the SAME picks to market_scan_results (archive+learning) AND directly to scan_deep_reports
+    (the web/Discord surface) as a production Top5 section -- bypassing generate_and_store_top_deep_reports,
+    which re-runs the admission model and would reclassify these to admission_near_miss / drop KOSDAQ."""
     from modules.db_schema import build_scan_result_payload
     from modules.db_manager import DBManager
-    from modules.top_deep_report import generate_and_store_top_deep_reports
+    from modules.candidate_interpretation import build_candidate_interpretation
+    from modules.top_deep_report import upsert_reports_to_supabase
     db = DBManager(); n = 0
-    by_market: Dict[str, List[Dict[str, Any]]] = {}
-    for i, p in enumerate(sorted(picks, key=lambda x: -x["p"]), start=1):
+    ordered = sorted(picks, key=lambda x: -x["p"])
+    for i, p in enumerate(ordered, start=1):
         src = {"ticker": p["ticker"], "market_type": p["market"], "scan_mode": "SWING", "decision_score": p["p"],
                "ml_prob": round(p["p"] * 100, 2), "run_id": run_id, "priority_rank": i, "decision": "SWING_ENSEMBLE_BUY",
                "decision_bucket": "swing_ensemble", "recommended_at": recommended_at, "selection_lane": "SWING_ENSEMBLE",
@@ -191,13 +196,22 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str) -
         payload = build_scan_result_payload(src, overrides={"market": p["market"], "recommended_at": recommended_at})
         payload["allow_incomplete_scan_result"] = True
         db.upsert_scan_result(payload); n += 1
-        by_market.setdefault(p["market"], []).append({**src, "allow_incomplete_scan_result": True})
-    for mkt, mrows in by_market.items():
-        try:
-            generate_and_store_top_deep_reports(scan_rows=mrows, planner_payload={}, run_id=run_id, market=mkt,
-                                                scan_mode="SWING", top_n=len(mrows), write_db=True)
-        except Exception as exc:
-            print(json.dumps({"deep_report_error": repr(exc)[:160]}, ensure_ascii=False))
+    # direct deep rows (preserve bucket + both markets, production Top5 section)
+    deep_rows = []
+    for i, p in enumerate(ordered, start=1):
+        row = {"report_id": f"{run_id}-{p['ticker']}", "report_version": 1,
+               "ticker": p["ticker"], "stock_name": p["ticker"], "market": p["market"], "run_id": run_id,
+               "scan_mode": "SWING", "rank": i, "decision": "SWING_ENSEMBLE_BUY", "decision_bucket": "swing_ensemble",
+               "signal_label": "SWING_ENSEMBLE_BUY", "analysis_section": "Top5", "analysis_section_rank": i,
+               "buy_score": p["p"], "generated_at": recommended_at,
+               "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": i}}
+        row["candidate_interpretation"] = build_candidate_interpretation(row)
+        deep_rows.append(row)
+    try:
+        if deep_rows:
+            upsert_reports_to_supabase(deep_rows)
+    except Exception as exc:
+        print(json.dumps({"deep_report_error": repr(exc)[:160]}, ensure_ascii=False))
     return n
 
 
