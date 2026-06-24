@@ -177,11 +177,14 @@ def resolve_pending(today: str) -> Dict[str, Any]:
             "first_touch_ret_avg": round(float(np.mean([r["first_touch_ret"] for r in res])), 2)}
 
 
-def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str) -> int:
+def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
+                bucket: str = "swing_ensemble", decision: str = "SWING_ENSEMBLE_BUY",
+                lane: str = "SWING_ENSEMBLE") -> int:
     """Mirror the proven DOWN-buy consumer-parity pattern (report_regime_signal_shadow:down_buy_deep_rows):
     write the SAME picks to market_scan_results (archive+learning) AND directly to scan_deep_reports
     (the web/Discord surface) as a production Top5 section -- bypassing generate_and_store_top_deep_reports,
-    which re-runs the admission model and would reclassify these to admission_near_miss / drop KOSDAQ."""
+    which re-runs the admission model and would reclassify these to admission_near_miss / drop KOSDAQ.
+    bucket/decision/lane are parameterised so other lanes (e.g. KOSPI intraday) keep their own label."""
     from modules.db_schema import build_scan_result_payload
     from modules.db_manager import DBManager
     from modules.candidate_interpretation import build_candidate_interpretation
@@ -190,8 +193,8 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str) -
     ordered = sorted(picks, key=lambda x: -x["p"])
     for i, p in enumerate(ordered, start=1):
         src = {"ticker": p["ticker"], "market_type": p["market"], "scan_mode": "SWING", "decision_score": p["p"],
-               "ml_prob": round(p["p"] * 100, 2), "run_id": run_id, "priority_rank": i, "decision": "SWING_ENSEMBLE_BUY",
-               "decision_bucket": "swing_ensemble", "recommended_at": recommended_at, "selection_lane": "SWING_ENSEMBLE",
+               "ml_prob": round(p["p"] * 100, 2), "run_id": run_id, "priority_rank": i, "decision": decision,
+               "decision_bucket": bucket, "recommended_at": recommended_at, "selection_lane": lane,
                "entry_reference_price": p.get("entry_reference_price")}
         payload = build_scan_result_payload(src, overrides={"market": p["market"], "recommended_at": recommended_at})
         payload["allow_incomplete_scan_result"] = True
@@ -201,8 +204,8 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str) -
     for i, p in enumerate(ordered, start=1):
         row = {"report_id": f"{run_id}-{p['ticker']}", "report_version": 1,
                "ticker": p["ticker"], "stock_name": p["ticker"], "market": p["market"], "run_id": run_id,
-               "scan_mode": "SWING", "rank": i, "decision": "SWING_ENSEMBLE_BUY", "decision_bucket": "swing_ensemble",
-               "signal_label": "SWING_ENSEMBLE_BUY", "analysis_section": "Top5", "analysis_section_rank": i,
+               "scan_mode": "SWING", "rank": i, "decision": decision, "decision_bucket": bucket,
+               "signal_label": decision, "analysis_section": "Top5", "analysis_section_rank": i,
                "buy_score": p["p"], "generated_at": recommended_at,
                "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": i}}
         row["candidate_interpretation"] = build_candidate_interpretation(row)

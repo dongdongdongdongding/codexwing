@@ -218,6 +218,20 @@ if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
       --top-pct "${AG_SWING_ENSEMBLE_TOP_PCT:-1.0}" --min-liq "${AG_SWING_ENSEMBLE_MIN_LIQ:-100}"
 fi
 
+if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
+  # LIVE KOSPI INTRADAY lane (2026-06-24, operator) -- Claude lane of the Claude+Codex synthesis
+  # KR_INTRADAY_3D_T5_CONTEXT_VWAP_GUARD. 3-model ensemble over intraday-path + daily-context
+  # features -> 3-day +5% MFE touch, KOSPI >=100억, close-buy, guards close_vwap>=0 AND idx_vol20>=8,
+  # top2, 3D close hold (no tight stop). Backtest 85% hit / monthly floor 71% / +6.2% (vol guard
+  # repairs the one low-vol weak month). Routes live (AG_KOSPI_INTRADAY_PRODUCTION=1) + ledger that
+  # auto-resolves 3D +5% touch + return. Needs KIS minute bars (daily_minute_bars, full session post-
+  # close) + FDR daily. Codex runs the KOSDAQ 15:00 lane separately. decision_bucket=kospi_intraday.
+  echo "[STEP] report_kospi_intraday_swing"
+  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kospi_intraday_swing" \
+    python3 multi_agent/tools/report_kospi_intraday_swing.py \
+      --min-liq "${AG_KOSPI_INTRADAY_MIN_LIQ:-100}"
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
