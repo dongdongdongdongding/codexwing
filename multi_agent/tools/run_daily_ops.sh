@@ -232,6 +232,23 @@ if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
       --min-liq "${AG_KOSPI_INTRADAY_MIN_LIQ:-100}"
 fi
 
+if [[ "${AG_KOSDAQ_INTRADAY_ENABLE:-1}" == "1" ]]; then
+  # LIVE KOSDAQ INTRADAY lane (2026-06-24, operator) -- Codex lane of the Claude+Codex synthesis.
+  # KR_INTRADAY_3D_T5 15:00 VWAP-guard model. Stored artifact:
+  # models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl.
+  # Scores KOSDAQ minute bars at/after 15:00, requires calibrated p>=0.80 and pre_vwap_dist_pct>=0,
+  # emits daily top2, records target_touch3d_t5 + 3D close return/MFE/MAE in a separate INTRADAY
+  # ledger, and routes live with scan_mode=INTRADAY when AG_KOSDAQ_INTRADAY_PRODUCTION=1 (default ON).
+  # Tracks both liquidity lanes: >=30억 main edge and >=100억 tradeability.
+  echo "[STEP] report_kosdaq_intraday_vwap_guard"
+  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kosdaq_intraday_vwap_guard" \
+    python3 multi_agent/tools/report_kosdaq_intraday_vwap_guard.py \
+      --min-liq "${AG_KOSDAQ_INTRADAY_MIN_LIQ:-30}" \
+      --tradeability-liq "${AG_KOSDAQ_INTRADAY_TRADEABILITY_LIQ:-100}" \
+      --max-symbols "${AG_KOSDAQ_INTRADAY_MAX_SYMBOLS:-0}" \
+      --daily-context-source "${AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE:-cache}"
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then

@@ -26,13 +26,14 @@ def build_intraday_candidate_registry(
     """
 
     candidates = [_kospi_0905_5d_shadow(), _kosdaq_1500_3d_t5_vwap_guard_shadow(), _kosdaq_tail_guard_research()]
+    production_enabled = sum(1 for row in candidates if (row.get("promotion_guard") or {}).get("production_enabled") is True)
     return {
         "report_version": REPORT_VERSION,
         "as_of_date": as_of_date or str(date.today()),
         "generated_at": generated_at or datetime.now(timezone.utc).isoformat(),
         "scope": {
             "scan_mode": "INTRADAY",
-            "production_enabled": False,
+            "production_enabled": bool(production_enabled),
             "swing_contamination_allowed": False,
             "note": "Minute-bar candidates only. Do not route these through SWING gates.",
         },
@@ -40,8 +41,9 @@ def build_intraday_candidate_registry(
         "summary": {
             "total": len(candidates),
             "shadow_candidates": sum(1 for row in candidates if row.get("status") == "shadow_candidate"),
+            "live_forward_candidates": sum(1 for row in candidates if row.get("status") == "live_forward_candidate"),
             "research_only": sum(1 for row in candidates if row.get("status") == "research_only"),
-            "production_enabled": 0,
+            "production_enabled": production_enabled,
         },
     }
 
@@ -141,7 +143,7 @@ def _kospi_0905_5d_shadow() -> Dict[str, Any]:
 def _kosdaq_1500_3d_t5_vwap_guard_shadow() -> Dict[str, Any]:
     return {
         "candidate_id": "kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1",
-        "status": "shadow_candidate",
+        "status": "live_forward_candidate",
         "market": "KOSDAQ",
         "scan_mode": "INTRADAY",
         "strategy_family": "KR_INTRADAY_3D_T5",
@@ -150,6 +152,30 @@ def _kosdaq_1500_3d_t5_vwap_guard_shadow() -> Dict[str, Any]:
         "entry_time_kst": "15:00",
         "target_horizon_days": 3,
         "liquidity_floor_eok": 30,
+        "liquidity_lanes": [
+            {
+                "floor_eok": 30,
+                "role": "main_edge_lane",
+                "validation_n": 81,
+                "hit_pct": 90.123457,
+                "hit_ci_low_pct": 81.70331,
+                "close3_net033_pct": 10.26736,
+                "liquidity_decile_excess_pct": 9.295331,
+                "month_hit_min_pct": 80.0,
+                "median_adv_eok": 98.378294,
+            },
+            {
+                "floor_eok": 100,
+                "role": "tradeability_lane",
+                "validation_n": 40,
+                "hit_pct": 85.0,
+                "hit_ci_low_pct": 70.927374,
+                "close3_net033_pct": 5.107395,
+                "liquidity_decile_excess_pct": 5.050415,
+                "month_hit_min_pct": 75.0,
+                "median_adv_eok": 319.60669,
+            },
+        ],
         "model_family": "LGBM classifier + previous-month isotonic calibration",
         "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl",
         "selection_policy": {
@@ -189,9 +215,9 @@ def _kosdaq_1500_3d_t5_vwap_guard_shadow() -> Dict[str, Any]:
             "months_close_positive": 6,
         },
         "promotion_guard": {
-            "status": "shadow_only",
-            "reason": "VWAP guard fixes the historical low-month failure and clears the 3D +5% target-touch goal, but it was added after failure analysis. Forward ledger gates are required before production.",
-            "production_enabled": False,
+            "status": "live_forward_validation",
+            "reason": "Operator approved KOSDAQ INTRADAY deployment. The lane routes live with scan_mode=INTRADAY and keeps a forward ledger; full promotion still requires the micro-production gate.",
+            "production_enabled": True,
             "micro_production_gate": {
                 "minimum_forward_picks": 60,
                 "minimum_forward_days": 30,

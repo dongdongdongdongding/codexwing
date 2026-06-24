@@ -10,7 +10,7 @@ def test_intraday_candidate_registry_is_intraday_only():
 
     assert report["report_version"] == REPORT_VERSION
     assert report["scope"]["scan_mode"] == "INTRADAY"
-    assert report["scope"]["production_enabled"] is False
+    assert report["scope"]["production_enabled"] is True
     assert report["scope"]["swing_contamination_allowed"] is False
     assert {row["scan_mode"] for row in report["candidates"]} == {"INTRADAY"}
     assert {row["strategy_family"] for row in report["candidates"]} == {"KR_INTRADAY_5D", "KR_INTRADAY_3D_T5"}
@@ -29,9 +29,12 @@ def test_intraday_candidate_registry_separates_shadow_from_research_only():
 
     touch5 = by_id["kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1"]
     assert touch5["market"] == "KOSDAQ"
-    assert touch5["status"] == "shadow_candidate"
+    assert touch5["status"] == "live_forward_candidate"
     assert touch5["strategy_family"] == "KR_INTRADAY_3D_T5"
     assert touch5["target_horizon_days"] == 3
+    assert {lane["floor_eok"] for lane in touch5["liquidity_lanes"]} == {30, 100}
+    assert touch5["liquidity_lanes"][0]["hit_ci_low_pct"] >= 70
+    assert touch5["liquidity_lanes"][1]["hit_ci_low_pct"] >= 70
     assert touch5["validation"]["hit_pct"] >= 70
     assert touch5["validation"]["hit_ci_pct"][0] >= 70
     assert touch5["selection_policy"]["min_calibrated_probability"] == 0.80
@@ -42,7 +45,7 @@ def test_intraday_candidate_registry_separates_shadow_from_research_only():
     assert touch5["validation"]["liquidity_decile_excess_ci_pct"][0] > 0
     assert touch5["validation"]["month_hit_min_pct"] >= 70
     assert touch5["promotion_guard"]["micro_production_gate"]["minimum_forward_picks"] == 60
-    assert touch5["promotion_guard"]["production_enabled"] is False
+    assert touch5["promotion_guard"]["production_enabled"] is True
 
     kosdaq = by_id["kosdaq_intraday_tail_guard_research_v1"]
     assert kosdaq["market"] == "KOSDAQ"

@@ -2,7 +2,7 @@
 
 - Version: `intraday_candidate_registry_v1`
 - Scope: `INTRADAY`
-- Production enabled: `False`
+- Production enabled: `True`
 - Swing contamination allowed: `False`
 
 ## Candidates
@@ -19,13 +19,13 @@
 
 ### kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1
 
-- Status: `shadow_candidate`
+- Status: `live_forward_candidate`
 - Segment: `KOSDAQ` / `INTRADAY` / `KR_INTRADAY_3D_T5`
 - Entry: `15:00 minute-confirmed entry, daily top2 if calibrated probability >=80% and pre-entry VWAP distance >=0%; return policy holds to 3D close`
 - Horizon: `3D`
 - Liquidity floor: `30eok`
 - Validation: n=81, days=49, months=7, hit=90.10%, hit_ci=[81.70,94.90]%, day_hit=93.90%, avg_pred=92.70%, close_net=10.30%, stop2_touch=66.70%
-- Promotion guard: `shadow_only` - VWAP guard fixes the historical low-month failure and clears the 3D +5% target-touch goal, but it was added after failure analysis. Forward ledger gates are required before production.
+- Promotion guard: `live_forward_validation` - Operator approved KOSDAQ INTRADAY deployment. The lane routes live with scan_mode=INTRADAY and keeps a forward ledger; full promotion still requires the micro-production gate.
 
 ### kosdaq_intraday_tail_guard_research_v1
 
