@@ -25,7 +25,7 @@ def build_intraday_candidate_registry(
     is 5D.
     """
 
-    candidates = [_kospi_0905_5d_shadow(), _kosdaq_1400_3d_t5_shadow(), _kosdaq_tail_guard_research()]
+    candidates = [_kospi_0905_5d_shadow(), _kosdaq_1500_3d_t5_returnmax_shadow(), _kosdaq_tail_guard_research()]
     return {
         "report_version": REPORT_VERSION,
         "as_of_date": as_of_date or str(date.today()),
@@ -138,51 +138,57 @@ def _kospi_0905_5d_shadow() -> Dict[str, Any]:
     }
 
 
-def _kosdaq_1400_3d_t5_shadow() -> Dict[str, Any]:
+def _kosdaq_1500_3d_t5_returnmax_shadow() -> Dict[str, Any]:
     return {
-        "candidate_id": "kosdaq_intraday_1400_3d_t5_lgbm_shadow_v1",
+        "candidate_id": "kosdaq_intraday_1500_3d_t5_returnmax_shadow_v1",
         "status": "shadow_candidate",
         "market": "KOSDAQ",
         "scan_mode": "INTRADAY",
         "strategy_family": "KR_INTRADAY_3D_T5",
-        "candidate_family": "intraday_confirmed_3d_touch5",
-        "entry_policy": "14:00 minute-confirmed entry, daily top5 if calibrated probability >=75%",
-        "entry_time_kst": "14:00",
+        "candidate_family": "intraday_returnmax_3d_touch5",
+        "entry_policy": "15:00 minute-confirmed entry, daily top2 if calibrated probability >=80%; return policy holds to 3D close",
+        "entry_time_kst": "15:00",
         "target_horizon_days": 3,
         "liquidity_floor_eok": 30,
         "model_family": "LGBM classifier + previous-month isotonic calibration",
-        "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1400_lgbm_isotonic.pkl",
+        "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_returnmax.pkl",
         "selection_policy": {
-            "min_calibrated_probability": 0.75,
-            "max_picks_per_day": 5,
-            "probability_target": "touch +5% within 3 trading days from the 14:00 entry price",
+            "min_calibrated_probability": 0.80,
+            "max_picks_per_day": 2,
+            "probability_target": "touch +5% within 3 trading days from the 15:00 entry price",
+            "return_policy": "hold_3d_close",
         },
         "exit_contract": {
-            "primary_return_col": "target_touch3d_t5",
+            "primary_return_col": "close_3d_ret_pct",
+            "target_diagnostic_col": "target_touch3d_t5",
             "target_tp_pct": 5.0,
             "stop_sl_pct": None,
             "hold_days": 3,
             "cost_pct": 0.33,
         },
         "validation": {
-            "source": "/private/tmp/intraday_3d_t5_calibrated_lgbm_scan.json",
-            "sample": "KOSDAQ >=30eok, 14:00, calibrated p>=75%, top5 per day",
-            "n": 218,
-            "days": 91,
-            "months": 8,
-            "hit_pct": 81.7,
-            "hit_ci_pct": [76.6, 86.2],
-            "day_hit_pct": 93.4,
-            "avg_pred_pct": 88.2,
-            "mfe3_avg_pct": 19.3,
-            "mae3_avg_pct": -9.2,
-            "close3_avg_pct": 3.6,
-            "stop2_touch_pct": 78.4,
-            "months_hit_ge_70": 7,
+            "source": "runtime_state/reports/learning/intraday_3d_t5_return_optimized_latest.json",
+            "sample": "KOSDAQ >=30eok, 15:00, calibrated p>=80%, top2 per day, 3D close hold",
+            "n": 105,
+            "days": 65,
+            "months": 7,
+            "hit_pct": 82.9,
+            "hit_ci_pct": [74.5, 88.9],
+            "day_hit_pct": 84.6,
+            "avg_pred_pct": 92.8,
+            "mfe3_avg_pct": 22.4,
+            "mae3_avg_pct": -8.3,
+            "close3_avg_pct": 7.7,
+            "close3_net033_pct": 7.3,
+            "liquidity_decile_excess_pct": 6.5,
+            "liquidity_decile_excess_ci_pct": [2.4, 11.0],
+            "stop2_touch_pct": 74.3,
+            "months_hit_ge_70": 5,
+            "months_close_positive": 5,
         },
         "promotion_guard": {
             "status": "shadow_only",
-            "reason": "Meets the 3D +5% target-touch probability goal, but stop/drawdown incidence is high. Forward ledger must track target-touch and drawdown separately before production.",
+            "reason": "Return-max policy clears the overall 3D +5% target-touch goal and liquidity-matched return control, but drawdown is high and two OOS months are below 70% target hit. Forward ledger required before production.",
             "production_enabled": False,
         },
     }
@@ -247,6 +253,7 @@ def _validation_metric_text(validation: Dict[str, Any]) -> str:
             f"{_fmt((validation.get('hit_ci_pct') or [None, None])[1])}]%, "
             f"day_hit={_fmt(validation.get('day_hit_pct'))}%, "
             f"avg_pred={_fmt(validation.get('avg_pred_pct'))}%, "
+            f"close_net={_fmt(validation.get('close3_net033_pct'))}%, "
             f"stop2_touch={_fmt(validation.get('stop2_touch_pct'))}%"
         )
     return (

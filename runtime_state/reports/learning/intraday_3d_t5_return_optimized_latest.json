@@ -1,0 +1,92 @@
+{
+  "model_version": "kosdaq_intraday_3d_t5_lgbm_isotonic_returnmax_v1",
+  "market": "KOSDAQ",
+  "scan_mode": "INTRADAY",
+  "strategy_family": "KR_INTRADAY_3D_T5",
+  "entry_label": "1500",
+  "entry_time_kst": "15:00",
+  "liquidity_floor_eok": 30,
+  "target": "target_touch3d_t5",
+  "selection_policy": {
+    "min_calibrated_probability": 0.8,
+    "max_picks_per_day": 2,
+    "rank_field": "calibrated_probability",
+    "return_policy": "hold_3d_close",
+    "roundtrip_cost_pct": 0.33
+  },
+  "validation": {
+    "sample": "KOSDAQ >=30eok, entry 15:00, rolling OOS calibrated probability, daily top2 p>=80%",
+    "oos_rows": 73448,
+    "base_hit_pct": 43.78063391787387,
+    "oos_auc_calibrated": 0.6227505422502142,
+    "n": 105,
+    "days": 65,
+    "months": 7,
+    "codes": 76,
+    "hit_pct": 82.85714285714286,
+    "hit_ci_pct": [
+      74.52257441289754,
+      88.87230401593851
+    ],
+    "day_hit_pct": 84.61538461538461,
+    "avg_pred_pct": 92.81793393441616,
+    "close3_exact_avg_pct": 7.655977103856598,
+    "close3_exact_ci_pct": [
+      3.543810234300459,
+      12.06977339175007
+    ],
+    "close3_exact_net033_pct": 7.325977103856598,
+    "close3_panel_avg_pct": 7.558878167614052,
+    "mfe3_exact_avg_pct": 22.35490445952956,
+    "mae3_exact_avg_pct": -8.280634602831562,
+    "stop2_touch_pct": 74.28571428571429,
+    "exit_returns_exact_net033_pct": {
+      "hold_3d_close": 7.325977103856598,
+      "tp5_no_stop_else_close": 2.116073065147662,
+      "tp10_no_stop_else_close": 3.1599806466761975,
+      "tp15_no_stop_else_close": 4.287951183303114,
+      "tp5_sl2_first_touch": 1.47,
+      "tp5_sl3_first_touch": 1.47,
+      "tp10_sl5_first_touch": 2.942595731876007,
+      "tp15_sl5_first_touch": 3.9732993457738015
+    },
+    "return_control": {
+      "same_day_universe_close3_excess_pct": 6.605324,
+      "liquidity_decile_close3_excess_pct": 6.545958,
+      "liquidity_decile_close3_excess_ci_pct": [
+        2.416691,
+        11.035224
+      ]
+    },
+    "month_hit_pct": {
+      "2025-10": 66.66666666666666,
+      "2025-12": 75.0,
+      "2026-01": 80.0,
+      "2026-02": 62.5,
+      "2026-03": 88.23529411764706,
+      "2026-04": 88.23529411764706,
+      "2026-06": 85.71428571428571
+    },
+    "month_close3_exact_avg_pct": {
+      "2025-10": -2.7533033856098377,
+      "2025-12": 8.071290051595719,
+      "2026-01": 5.3991386128182395,
+      "2026-02": 1.7507380413531282,
+      "2026-03": 11.253534191948058,
+      "2026-04": 10.360935075820876,
+      "2026-06": -1.6866495051991894
+    },
+    "months_hit_ge_70": 5,
+    "months_close_positive": 5,
+    "liquidity_median_eok": 107.514507915,
+    "warning": "Return-max policy passes the overall 70% target-touch goal, but 2025-10 and 2026-02 are below 70% by month and drawdown is large. Shadow/forward ledger only."
+  },
+  "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_returnmax.pkl",
+  "comparison_to_prior_1400_p75_top5": {
+    "prior_hit_pct": 81.65137614678899,
+    "prior_close3_exact_net033_pct": 3.231,
+    "prior_n": 218,
+    "optimized_hit_pct": 82.85714285714286,
+    "optimized_close3_exact_net033_pct": 7.325977103856598
+  }
+}
