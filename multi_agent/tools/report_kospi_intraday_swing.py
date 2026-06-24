@@ -175,7 +175,9 @@ def score_today(min_liq: float) -> List[Dict[str, Any]]:
         feat = {**itf, **{k + "_d": v for k, v in dfe.items()}, "idx_mom20_d": idx_mom20, "idx_vol20_d": idx_vol20}
         x = pd.Series(feat).reindex(FEAT).replace([np.inf, -np.inf], np.nan).clip(-1e4, 1e4).fillna(0)
         p = float(np.mean([mm.predict_proba(x.values.reshape(1, -1))[:, 1][0] for mm in mk]))
-        rows.append({"code": code, "p": p, "close_vwap": itf["close_vwap"], "liq": itf["_liq"], "close": itf["_close"]})
+        _prevc = float(h["Close"].iloc[-2])
+        _daychg = round((itf["_close"] / _prevc - 1) * 100, 2) if _prevc else None
+        rows.append({"code": code, "p": p, "close_vwap": itf["close_vwap"], "liq": itf["_liq"], "close": itf["_close"], "day_change": _daychg})
     if not rows:
         return []
     X = pd.DataFrame(rows)
@@ -186,6 +188,7 @@ def score_today(min_liq: float) -> List[Dict[str, Any]]:
     top = X.nlargest(2, "p")
     return [{"ticker": str(r["code"]) + ".KS", "market": "KOSPI", "p": round(float(r["p"]), 4),
              "liq억": round(float(r["liq"]) / 1e8, 1), "close_vwap": round(float(r["close_vwap"]), 2),
+             "day_change": (None if pd.isna(r.get("day_change")) else float(r["day_change"])),
              "entry_reference_price": round(float(r["close"]), 1)} for _, r in top.iterrows()]
 
 

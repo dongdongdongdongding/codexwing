@@ -481,8 +481,36 @@ def _readiness(row: Dict[str, Any]) -> Dict[str, Any]:
     return readiness if isinstance(readiness, dict) else {}
 
 
+def _field_value_model_lane(interp: Dict[str, Any]) -> str:
+    """Concise card for model-validated lanes (swing ensemble / KOSPI intraday).
+
+    The legacy 17-line block is mostly '-' for these price/intraday models (no flow/theme/
+    policy/admission axes), which buried the signal. This surfaces only the actionable key
+    point: buy + hit-probability + entry→target + hold."""
+    def _money(v: Any) -> str:
+        try:
+            return f"{float(v):,.0f}"
+        except Exception:
+            return "-"
+    prob = interp.get("model_hit_prob_pct")
+    prob_s = f"{prob:.0f}%" if isinstance(prob, (int, float)) else "-"
+    tp = interp.get("target_tp_pct") or 5.0
+    dc = interp.get("day_change_pct")
+    lines = [
+        f"🎯 {interp.get('action_label') or '모델 매수'} · 적중확률 {prob_s}",
+        f"진입 {_money(interp.get('entry_reference_price'))} → 목표 +{tp:.0f}% {_money(interp.get('target_price'))}"
+        f" · {interp.get('hold_note') or '종가 보유'}",
+        f"{interp.get('model_prob_label') or '적중확률'} {prob_s} (모델 상위픽)"
+        + (f" · 전일비 {dc:+.1f}%" if isinstance(dc, (int, float)) else ""),
+        f"구분 {interp.get('section') or 'Top5'} #{interp.get('section_rank') or '-'} · 손절 분산(타이트 X)",
+    ]
+    return "\n".join(line for line in lines if line)[:1024]
+
+
 def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
     interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
+    if interpretation.get("model_lane"):
+        return _field_value_model_lane(interpretation)
     data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
     readiness = _readiness(row)
     quality = readiness.get("quality") if isinstance(readiness.get("quality"), dict) else {}
@@ -1035,6 +1063,8 @@ def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
 
 def _archive_row_value(row: Dict[str, Any]) -> str:
     interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
+    if interpretation.get("model_lane"):
+        return _field_value_model_lane(interpretation)
     data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
     decision = row.get("decision") or row.get("Decision") or row.get("signal_label") or row.get("Strategy") or row.get("전략") or "-"
     score = row.get("buy_score") or row.get("Decision Score") or row.get("Score")

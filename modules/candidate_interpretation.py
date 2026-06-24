@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 
 from modules.operational_candidate_scoring import (
     DEFAULT_BUY_PREMIUM_PCT,
+    MODEL_VALIDATED_LANES,
     build_operational_candidate_score,
 )
 
@@ -13,6 +14,31 @@ INTERPRETATION_VERSION = "candidate_interpretation_v2"
 BUY_PREMIUM_EXECUTION_GATE_VERSION = "buy_premium_execution_gate_v1"
 BUY_READY_TARGET_PROFIT_PCT = 5.0
 STOP_FIRST_MAX_DRAWDOWN_PCT = -10.0
+
+# Model-validated lanes are scored by backtested forward touch-probability + walk-forward
+# OOS, NOT by the legacy chart/non-chart operational gate (flow/theme/news axes). Those axes
+# are structurally absent for these price/intraday-only models, so the legacy gate would
+# demote every pick to "운용 보류 / AVOID_WEAK_SUPPORT" even though the model says BUY. These
+# lanes therefore get a dedicated, honest interpretation that surfaces the model's own buy
+# contract (entry=close, +5% target, hold N days, no tight stop). Only these exact buckets
+# branch — planner picks are untouched. MODEL_VALIDATED_LANES is imported from
+# operational_candidate_scoring (canonical home) so both gates agree.
+LANE_PROFILE = {
+    "swing_ensemble": {
+        "label": "스윙 앙상블 매수",
+        "operational_label": "모델 매수 · 가격앙상블",
+        "horizon_days": 5,
+        "prob_label": "5일내 +5% 선터치(ft_5_5) 확률",
+        "hold_note": "5거래일 종가 보유 · 분산(타이트 손절 X)",
+    },
+    "kospi_intraday": {
+        "label": "코스피 인트라데이 매수",
+        "operational_label": "모델 매수 · 일중+컨텍스트",
+        "horizon_days": 3,
+        "prob_label": "3일내 +5% 터치 확률",
+        "hold_note": "3거래일 종가 보유 · 분산(타이트 손절 X)",
+    },
+}
 
 
 def _present(value: Any) -> bool:
@@ -325,8 +351,85 @@ def _buy_premium_execution_gate(
     }
 
 
+def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[str, Any]:
+    """Interpretation for model-validated lanes (price-ML ensemble / KOSPI intraday).
+
+    The pick IS the model's buy call (top ~1-2% per market by backtested forward
+    touch-probability). It surfaces as a model BUY with an explicit entry/+5%/hold contract
+    instead of being demoted to "운용 보류" for lacking the legacy flow/theme/news axes."""
+    profile = LANE_PROFILE.get(bucket, LANE_PROFILE["swing_ensemble"])
+    trade_plan = row.get("trade_plan") if isinstance(row.get("trade_plan"), dict) else {}
+    admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}
+    price = row.get("price") if isinstance(row.get("price"), dict) else {}
+    theme = row.get("theme") if isinstance(row.get("theme"), dict) else {}
+    alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
+
+    entry = _to_float(_first(trade_plan.get("entry_reference_price"), row.get("entry_reference_price")))
+    target = _to_float(_first(trade_plan.get("target_price"), row.get("target_price")))
+    if target is None and entry is not None:
+        target = round(entry * 1.05, 2)
+    target_tp = _to_float(_first(trade_plan.get("target_tp_pct"), row.get("target_tp_pct"))) or 5.0
+    hd = profile["horizon_days"]
+    prob = _to_float(_first(admission.get(f"{hd}d_prob"), admission.get("3d_prob"), admission.get("5d_prob"),
+                            row.get("model_hit_prob"), row.get("buy_score")))
+    prob01 = prob if (prob is not None and prob <= 1.0) else (prob / 100.0 if prob is not None else None)
+    prob_pct = round(prob01 * 100, 1) if prob01 is not None else None
+    hold_days = _to_int(_first(trade_plan.get("hold_days"), hd))
+    thesis = _first(row.get("selection_thesis"), trade_plan.get("hold_note"))
+    section = str(_first(alignment.get("analysis_section"), row.get("analysis_section"), "Top5"))
+    section_rank = _to_int(_first(alignment.get("analysis_section_rank"), row.get("analysis_section_rank"), row.get("rank")))
+
+    return {
+        "version": INTERPRETATION_VERSION,
+        "model_lane": bucket,
+        "run_id": row.get("run_id"),
+        "ticker": _first(row.get("ticker"), row.get("Ticker"), row.get("symbol")),
+        "stock_name": _first(row.get("stock_name"), row.get("Name"), row.get("name")),
+        "market": _first(row.get("market"), row.get("Market")),
+        "section": section,
+        "section_rank": section_rank,
+        "display_status": "VISIBLE",
+        "action_label": profile["label"],
+        "signal_label": row.get("signal_label"),
+        "decision": _first(row.get("decision"), row.get("decision_bucket")),
+        "entry_reference_price": entry,
+        "target_price": target,
+        "stop_price": None,
+        "target_tp_pct": target_tp,
+        "stop_sl_pct": None,
+        "stop_display_source": "model_lane_no_tight_stop",
+        "hold_days": hold_days,
+        "hold_note": profile["hold_note"],
+        "model_prob_label": profile["prob_label"],
+        "model_hit_prob_pct": prob_pct,
+        "realized_expectancy_3d_prob": prob01 if hd == 3 else None,
+        "realized_expectancy_5d_prob": prob01 if hd == 5 else None,
+        "selection_thesis": thesis,
+        "primary_theme": _first(theme.get("primary_theme"), row.get("primary_theme")),
+        "day_change_pct": _to_float(_first(row.get("day_change_pct"), price.get("day_change_pct"))),
+        "buy_score": _to_float(_first(row.get("buy_score"), row.get("decision_score"))),
+        "operational_action_level": "MODEL_BUY",
+        "operational_action_label": profile["operational_label"],
+        "operational_total_score": prob_pct,
+        "operational_non_chart_avg_score": None,
+        "chart_only_candidate": False,
+        "buy_ready": True,
+        "buy_ready_blocked": False,
+        "buy_ready_block_reasons": [],
+        "touch_model_found": True,
+        "touch_scout_candidate": False,
+        "touch_vs_buy_ready_explanation": (
+            f"{profile['prob_label']} 기준 모델 매수 후보입니다. 진입=종가, 목표 +{target_tp:.0f}%, "
+            f"{profile['hold_note']}. 차트외 수급/테마 점수 게이트는 이 모델 레인에 적용하지 않습니다."
+        ),
+    }
+
+
 def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
     row = row if isinstance(row, dict) else {}
+    _bucket = str(_first(row.get("decision_bucket"), row.get("bucket"), "") or "").strip()
+    if _bucket in MODEL_VALIDATED_LANES:
+        return build_model_lane_interpretation(row, _bucket)
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
     display_contract = row.get("display_contract") if isinstance(row.get("display_contract"), dict) else {}
     admission = row.get("realized_expectancy_admission") if isinstance(row.get("realized_expectancy_admission"), dict) else {}

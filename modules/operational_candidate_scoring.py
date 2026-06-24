@@ -12,6 +12,11 @@ from modules.kis_ticker_valuechain_master import load_ticker_valuechain_master
 OPERATIONAL_CANDIDATE_SCORE_VERSION = "operational_candidate_score_axes_v1"
 DEFAULT_BUY_PREMIUM_PCT = 2.0
 
+# Lanes validated by backtested forward touch-probability (not the chart/non-chart axes,
+# which are structurally absent for these price/intraday models). Defined here, the lowest
+# module in the dependency graph, so candidate_interpretation can import it without a cycle.
+MODEL_VALIDATED_LANES = {"swing_ensemble", "kospi_intraday"}
+
 
 def _present(value: Any) -> bool:
     if value is None:
@@ -331,6 +336,27 @@ def build_operational_candidate_score(
     buy_premium_pct: float = DEFAULT_BUY_PREMIUM_PCT,
 ) -> Dict[str, Any]:
     row = row if isinstance(row, Mapping) else {}
+    bucket = str(row.get("decision_bucket") or row.get("bucket") or "").strip()
+    if bucket in MODEL_VALIDATED_LANES:
+        # Surface as a model BUY so consumers reading operational_action directly (ui_helpers,
+        # top_deep) don't demote these to "운용 보류 / AVOID_WEAK_SUPPORT" for lacking the
+        # legacy flow/theme/news axes. Buy contract + probability live in the interpretation.
+        zero_axes = {"chart": 0.0, "flow": 0.0, "market": 0.0, "theme_valuechain": 0.0, "financial_news": 0.0}
+        return {
+            "version": OPERATIONAL_CANDIDATE_SCORE_VERSION,
+            "buy_premium_pct": float(buy_premium_pct),
+            "axes": zero_axes,
+            "axis_reasons": {key: [] for key in zero_axes},
+            "total_score": None,
+            "non_chart_avg_score": None,
+            "chart_dominance_pct": None,
+            "chart_only": False,
+            "weak_support_axes": [],
+            "action_level": "MODEL_BUY",
+            "action_label": "모델 매수",
+            "model_lane": bucket,
+            "return_after_buy_premium_pct": {},
+        }
     kis = _kis_features(row)
     chart, chart_reasons = _chart_axis(row)
     flow, flow_reasons = _flow_axis(row, kis)

@@ -27,6 +27,8 @@ CODE_COPY = {
     "EXPECTED_EDGE_WATCH_GUARD": "관찰 후보 기대수익 가드",
     "EXPECTED_EDGE_WATCH_GUARD_SOFT": "관찰 후보 기대수익 주의",
     "KOSDAQ_SWING_TREND_GUARD": "KOSDAQ 스윙 추세 가드",
+    "SWING_ENSEMBLE_BUY": "스윙 앙상블 매수",
+    "KOSPI_INTRADAY_BUY": "코스피 인트라데이 매수",
     "unavailable": "미제공",
     "UNAVAILABLE": "미제공",
 }

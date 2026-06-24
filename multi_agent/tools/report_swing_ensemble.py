@@ -124,7 +124,9 @@ def score_market(market: str, top_pct: float, min_liq: float) -> List[Dict[str, 
         x = feat.reindex(FEAT).replace([np.inf, -np.inf], np.nan).clip(-1e6, 1e6).fillna(0)
         p = float(np.mean([m.predict_proba(x.values.reshape(1, -1))[:, 1][0] for m in mk]))
         liq = float((h["Close"] * h["Volume"]).tail(20).mean())
-        rows.append({"code": code, "p": p, "liq": liq, "close": float(h["Close"].iloc[-1])})
+        _pc = float(h["Close"].iloc[-2])
+        _dc = round((float(h["Close"].iloc[-1]) / _pc - 1) * 100, 2) if _pc else None
+        rows.append({"code": code, "p": p, "liq": liq, "close": float(h["Close"].iloc[-1]), "day_change": _dc})
     if not rows:
         return []
     X = pd.DataFrame(rows)
@@ -136,7 +138,9 @@ def score_market(market: str, top_pct: float, min_liq: float) -> List[Dict[str, 
     picks = []
     for _, r in X[X["p"] >= thr].sort_values("p", ascending=False).iterrows():
         picks.append({"ticker": str(r["code"]) + sfx, "market": market, "p": round(float(r["p"]), 4),
-                      "liq억": round(float(r["liq"]) / 1e8, 1), "entry_reference_price": round(float(r["close"]), 1)})
+                      "liq억": round(float(r["liq"]) / 1e8, 1),
+                      "day_change": (None if pd.isna(r.get("day_change")) else float(r["day_change"])),
+                      "entry_reference_price": round(float(r["close"]), 1)})
     return picks
 
 
@@ -199,14 +203,35 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
         payload = build_scan_result_payload(src, overrides={"market": p["market"], "recommended_at": recommended_at})
         payload["allow_incomplete_scan_result"] = True
         db.upsert_scan_result(payload); n += 1
+    # horizon + thesis differ per lane (swing ensemble = 5d/ft_5_5, kospi intraday = 3d/+5% touch)
+    _hd = 3 if bucket == "kospi_intraday" else 5
+    _hnote = f"{_hd}거래일 종가 보유 · 분산(타이트 손절 X)"
+    _plabel = "3일내 +5% 터치 확률" if _hd == 3 else "5일내 +5% 선터치(ft_5_5) 확률"
     # direct deep rows (preserve bucket + both markets, production Top5 section)
     deep_rows = []
     for i, p in enumerate(ordered, start=1):
+        entry = p.get("entry_reference_price")
+        target = round(float(entry) * 1.05, 1) if entry else None
+        prob_pct = round(float(p["p"]) * 100, 1)
+        guard_bits = []
+        if p.get("close_vwap") is not None:
+            guard_bits.append(f"VWAP {'위' if float(p['close_vwap']) >= 0 else '아래'}({float(p['close_vwap']):+.1f}%)")
+        if p.get("liq억") is not None:
+            guard_bits.append(f"유동성 {p['liq억']}억")
+        thesis = (f"{_plabel} {prob_pct:.0f}% (모델 상위픽). 진입=종가 {entry}, 목표 +5% {target}, {_hnote}."
+                  + (" · " + " · ".join(guard_bits) if guard_bits else ""))
         row = {"report_id": f"{run_id}-{p['ticker']}", "report_version": 1,
                "ticker": p["ticker"], "stock_name": p["ticker"], "market": p["market"], "run_id": run_id,
                "scan_mode": "SWING", "rank": i, "decision": decision, "decision_bucket": bucket,
                "signal_label": decision, "analysis_section": "Top5", "analysis_section_rank": i,
                "buy_score": p["p"], "generated_at": recommended_at,
+               "entry_reference_price": entry,
+               "trade_plan": {"entry_reference_price": entry, "target_price": target, "target_tp_pct": 5.0,
+                              "stop_price": None, "hold_days": _hd, "hold_note": _hnote},
+               "realized_expectancy_admission": {f"{_hd}d_prob": round(float(p["p"]), 4)},
+               "price": {"last": entry, "day_change_pct": p.get("day_change")},
+               "day_change_pct": p.get("day_change"),
+               "selection_thesis": thesis,
                "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": i}}
         row["candidate_interpretation"] = build_candidate_interpretation(row)
         deep_rows.append(row)
