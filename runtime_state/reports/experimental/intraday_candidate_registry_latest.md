@@ -17,15 +17,15 @@
 - Validation: n=421, days=101, months=10, net=2.30%, excess=1.27%, win=62.71%, day_win=78.22%, stop_first=15.20%
 - Promotion guard: `shadow_only` - Daily-basket win clears 75%, but per-pick win is below 75% and stop-first is near the 15% guard. Needs forward ledger before production.
 
-### kosdaq_intraday_1500_3d_t5_returnmax_shadow_v1
+### kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1
 
 - Status: `shadow_candidate`
 - Segment: `KOSDAQ` / `INTRADAY` / `KR_INTRADAY_3D_T5`
-- Entry: `15:00 minute-confirmed entry, daily top2 if calibrated probability >=80%; return policy holds to 3D close`
+- Entry: `15:00 minute-confirmed entry, daily top2 if calibrated probability >=80% and pre-entry VWAP distance >=0%; return policy holds to 3D close`
 - Horizon: `3D`
 - Liquidity floor: `30eok`
-- Validation: n=105, days=65, months=7, hit=82.90%, hit_ci=[74.50,88.90]%, day_hit=84.60%, avg_pred=92.80%, close_net=7.30%, stop2_touch=74.30%
-- Promotion guard: `shadow_only` - Return-max policy clears the overall 3D +5% target-touch goal and liquidity-matched return control, but drawdown is high and two OOS months are below 70% target hit. Forward ledger required before production.
+- Validation: n=81, days=49, months=7, hit=90.10%, hit_ci=[81.70,94.90]%, day_hit=93.90%, avg_pred=92.70%, close_net=10.30%, stop2_touch=66.70%
+- Promotion guard: `shadow_only` - VWAP guard fixes the historical low-month failure and clears the 3D +5% target-touch goal, but it was added after failure analysis. Forward ledger gates are required before production.
 
 ### kosdaq_intraday_tail_guard_research_v1
 

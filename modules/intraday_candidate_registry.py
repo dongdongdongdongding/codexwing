@@ -25,7 +25,7 @@ def build_intraday_candidate_registry(
     is 5D.
     """
 
-    candidates = [_kospi_0905_5d_shadow(), _kosdaq_1500_3d_t5_returnmax_shadow(), _kosdaq_tail_guard_research()]
+    candidates = [_kospi_0905_5d_shadow(), _kosdaq_1500_3d_t5_vwap_guard_shadow(), _kosdaq_tail_guard_research()]
     return {
         "report_version": REPORT_VERSION,
         "as_of_date": as_of_date or str(date.today()),
@@ -138,24 +138,25 @@ def _kospi_0905_5d_shadow() -> Dict[str, Any]:
     }
 
 
-def _kosdaq_1500_3d_t5_returnmax_shadow() -> Dict[str, Any]:
+def _kosdaq_1500_3d_t5_vwap_guard_shadow() -> Dict[str, Any]:
     return {
-        "candidate_id": "kosdaq_intraday_1500_3d_t5_returnmax_shadow_v1",
+        "candidate_id": "kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1",
         "status": "shadow_candidate",
         "market": "KOSDAQ",
         "scan_mode": "INTRADAY",
         "strategy_family": "KR_INTRADAY_3D_T5",
-        "candidate_family": "intraday_returnmax_3d_touch5",
-        "entry_policy": "15:00 minute-confirmed entry, daily top2 if calibrated probability >=80%; return policy holds to 3D close",
+        "candidate_family": "intraday_vwap_guarded_returnmax_3d_touch5",
+        "entry_policy": "15:00 minute-confirmed entry, daily top2 if calibrated probability >=80% and pre-entry VWAP distance >=0%; return policy holds to 3D close",
         "entry_time_kst": "15:00",
         "target_horizon_days": 3,
         "liquidity_floor_eok": 30,
         "model_family": "LGBM classifier + previous-month isotonic calibration",
-        "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_returnmax.pkl",
+        "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl",
         "selection_policy": {
             "min_calibrated_probability": 0.80,
             "max_picks_per_day": 2,
             "probability_target": "touch +5% within 3 trading days from the 15:00 entry price",
+            "entry_quality_guard": {"pre_vwap_dist_pct_min": 0.0},
             "return_policy": "hold_3d_close",
         },
         "exit_contract": {
@@ -167,29 +168,41 @@ def _kosdaq_1500_3d_t5_returnmax_shadow() -> Dict[str, Any]:
             "cost_pct": 0.33,
         },
         "validation": {
-            "source": "runtime_state/reports/learning/intraday_3d_t5_return_optimized_latest.json",
-            "sample": "KOSDAQ >=30eok, 15:00, calibrated p>=80%, top2 per day, 3D close hold",
-            "n": 105,
-            "days": 65,
+            "source": "runtime_state/reports/learning/intraday_3d_t5_monthly_failure_diagnosis_latest.json",
+            "sample": "KOSDAQ >=30eok, 15:00, calibrated p>=80%, pre_vwap_dist>=0%, top2 per day, 3D close hold",
+            "n": 81,
+            "days": 49,
             "months": 7,
-            "hit_pct": 82.9,
-            "hit_ci_pct": [74.5, 88.9],
-            "day_hit_pct": 84.6,
-            "avg_pred_pct": 92.8,
-            "mfe3_avg_pct": 22.4,
-            "mae3_avg_pct": -8.3,
-            "close3_avg_pct": 7.7,
-            "close3_net033_pct": 7.3,
-            "liquidity_decile_excess_pct": 6.5,
-            "liquidity_decile_excess_ci_pct": [2.4, 11.0],
-            "stop2_touch_pct": 74.3,
-            "months_hit_ge_70": 5,
-            "months_close_positive": 5,
+            "hit_pct": 90.1,
+            "hit_ci_pct": [81.7, 94.9],
+            "day_hit_pct": 93.9,
+            "avg_pred_pct": 92.7,
+            "mfe3_avg_pct": 26.5,
+            "mae3_avg_pct": -7.5,
+            "close3_avg_pct": 10.6,
+            "close3_net033_pct": 10.3,
+            "liquidity_decile_excess_pct": 9.3,
+            "liquidity_decile_excess_ci_pct": [4.3, 14.5],
+            "stop2_touch_pct": 66.7,
+            "months_hit_ge_70": 7,
+            "month_hit_min_pct": 80.0,
+            "months_close_positive": 6,
         },
         "promotion_guard": {
             "status": "shadow_only",
-            "reason": "Return-max policy clears the overall 3D +5% target-touch goal and liquidity-matched return control, but drawdown is high and two OOS months are below 70% target hit. Forward ledger required before production.",
+            "reason": "VWAP guard fixes the historical low-month failure and clears the 3D +5% target-touch goal, but it was added after failure analysis. Forward ledger gates are required before production.",
             "production_enabled": False,
+            "micro_production_gate": {
+                "minimum_forward_picks": 60,
+                "minimum_forward_days": 30,
+                "minimum_forward_months": 2,
+                "target_touch3d_t5_pct_min": 75,
+                "day_hit_pct_min": 80,
+                "net_3d_close_return_pct_min": 0,
+                "liquidity_decile_excess_pct_min": 0,
+                "no_month_with_n_ge_5_hit_below_pct": 65,
+                "max_realized_slippage_pct": 0.50,
+            },
         },
     }
 

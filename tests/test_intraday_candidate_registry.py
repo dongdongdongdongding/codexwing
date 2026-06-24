@@ -27,7 +27,7 @@ def test_intraday_candidate_registry_separates_shadow_from_research_only():
     assert kospi["validation"]["day_win_pct"] >= 75
     assert kospi["promotion_guard"]["production_enabled"] is False
 
-    touch5 = by_id["kosdaq_intraday_1500_3d_t5_returnmax_shadow_v1"]
+    touch5 = by_id["kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1"]
     assert touch5["market"] == "KOSDAQ"
     assert touch5["status"] == "shadow_candidate"
     assert touch5["strategy_family"] == "KR_INTRADAY_3D_T5"
@@ -36,9 +36,12 @@ def test_intraday_candidate_registry_separates_shadow_from_research_only():
     assert touch5["validation"]["hit_ci_pct"][0] >= 70
     assert touch5["selection_policy"]["min_calibrated_probability"] == 0.80
     assert touch5["selection_policy"]["max_picks_per_day"] == 2
+    assert touch5["selection_policy"]["entry_quality_guard"]["pre_vwap_dist_pct_min"] == 0.0
     assert touch5["selection_policy"]["return_policy"] == "hold_3d_close"
     assert touch5["validation"]["close3_net033_pct"] > 0
     assert touch5["validation"]["liquidity_decile_excess_ci_pct"][0] > 0
+    assert touch5["validation"]["month_hit_min_pct"] >= 70
+    assert touch5["promotion_guard"]["micro_production_gate"]["minimum_forward_picks"] == 60
     assert touch5["promotion_guard"]["production_enabled"] is False
 
     kosdaq = by_id["kosdaq_intraday_tail_guard_research_v1"]

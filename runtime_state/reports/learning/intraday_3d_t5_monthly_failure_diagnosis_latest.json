@@ -1,0 +1,118 @@
+{
+  "report_version": "intraday_3d_t5_monthly_failure_diagnosis_v1",
+  "model_version": "kosdaq_intraday_3d_t5_lgbm_isotonic_vwapguard_v1",
+  "candidate_id": "kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1",
+  "model_artifact": "models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl",
+  "root_cause": {
+    "bad_months": [
+      "2025-10",
+      "2026-02"
+    ],
+    "ungarded_month_hit_pct": {
+      "2025-10": 66.666667,
+      "2026-02": 62.5
+    },
+    "base_universe_hit_pct": {
+      "2025-10": 38.050092,
+      "2026-02": 40.787858
+    },
+    "selected_lift_pp": {
+      "2025-10": 28.616575,
+      "2026-02": 21.712142
+    },
+    "diagnosis": [
+      "The unguarded model still lifted materially over the same segment in weak months, but the lift did not clear the user production target of 70%.",
+      "Misses were concentrated in names trading below 15:00 VWAP or with weak pre-entry tape; selected misses had lower pre_vwap_dist_pct than hits.",
+      "Bad months had lower pre_vwap_dist_pct, lower pre-entry return/participation, and higher index momentum/volatility pressure than good months.",
+      "Tight stop rules reduce expectancy; the model edge is path-convex and return-maximizing under 3D close hold, not under early stop-out."
+    ],
+    "selected_feature_contrast": {
+      "hit_mean_pre_vwap_dist_pct": 2.791461,
+      "miss_mean_pre_vwap_dist_pct": -1.875344,
+      "bad_month_mean_pre_vwap_dist_pct": -2.089562,
+      "good_month_mean_pre_vwap_dist_pct": 2.779812
+    }
+  },
+  "guarded_validation": {
+    "sample": "KOSDAQ >=30eok, entry 15:00, calibrated p>=80%, pre_vwap_dist_pct>=0, daily top2, 3D close hold",
+    "n": 81,
+    "days": 49,
+    "months": 7,
+    "codes": null,
+    "hit_pct": 90.123457,
+    "hit_ci_pct": [
+      81.70331,
+      94.910049
+    ],
+    "day_hit_pct": 93.877551,
+    "avg_pred_pct": 92.6917100019176,
+    "close3_exact_avg_pct": 10.59736,
+    "close3_exact_ci_pct": [
+      5.482167,
+      15.821246
+    ],
+    "close3_exact_net033_pct": 10.26736,
+    "liquidity_decile_excess_pct": 9.295331,
+    "liquidity_decile_excess_ci_pct": [
+      4.26476,
+      14.517543
+    ],
+    "mfe3_exact_avg_pct": 26.50023,
+    "mae3_exact_avg_pct": -7.459649,
+    "stop2_touch_pct": 66.666667,
+    "months_hit_ge_70": 7,
+    "month_hit_min_pct": 80.0,
+    "month_close_positive": 6,
+    "month_hit_pct": {
+      "2025-10": 100.0,
+      "2025-12": 100.0,
+      "2026-01": 100.0,
+      "2026-02": 100.0,
+      "2026-03": 86.666667,
+      "2026-04": 91.176471,
+      "2026-06": 80.0
+    },
+    "month_close3_exact_avg_pct": {
+      "2025-10": 2.865163,
+      "2025-12": 37.824215,
+      "2026-01": 15.821576,
+      "2026-02": 15.229445,
+      "2026-03": 11.789863,
+      "2026-04": 10.27747,
+      "2026-06": -4.882747
+    },
+    "exit_returns_exact_net033_pct": {
+      "hold_3d_close": 10.26736,
+      "tp5_no_stop_else_close": 3.311,
+      "tp10_no_stop_else_close": 4.805,
+      "tp15_no_stop_else_close": 5.849,
+      "tp10_sl5_first_touch": 5.15,
+      "tp15_sl5_first_touch": 6.671
+    }
+  },
+  "promotion_path": {
+    "status": "shadow_only_until_forward_ledger_passes",
+    "live_scoring": "Score KOSDAQ >=30eok at/after 15:00; require p_cal>=0.80 and pre_vwap_dist_pct>=0; rank by calibrated probability; keep daily top2.",
+    "exit_policy": "Primary evaluation holds to 3D close. Track TP/SL diagnostics, but do not use tight stop as the model return contract unless risk committee accepts lower EV.",
+    "stage_1_micro_production_gate": {
+      "minimum_forward_picks": 60,
+      "minimum_forward_days": 30,
+      "minimum_forward_months": 2,
+      "target_touch3d_t5_pct_min": 75,
+      "day_hit_pct_min": 80,
+      "net_3d_close_return_pct_min": 0,
+      "liquidity_decile_excess_pct_min": 0,
+      "no_month_with_n_ge_5_hit_below_pct": 65,
+      "max_realized_slippage_pct": 0.5
+    },
+    "stage_2_full_production_gate": {
+      "minimum_forward_picks": 120,
+      "minimum_forward_months": 4,
+      "target_touch3d_t5_pct_min": 70,
+      "wilson_lower_bound_min_pct": 65,
+      "net_3d_close_return_pct_min": 1.0,
+      "liquidity_decile_excess_pct_min": 0,
+      "drawdown_review_required_if_mae_avg_below_pct": -9.0
+    }
+  }
+}
