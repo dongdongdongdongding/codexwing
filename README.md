@@ -1,173 +1,163 @@
-# Codex Swing Quant Scanner
+# Swing Main - Current Operating System
 
-KR/US swing and intraday scanner with multi-agent execution support, scan archive learning, realized-outcome tracking, and Streamlit operator UI.
+Last updated: 2026-06-24
 
-## Current Status
+This repository is a quant trading research and execution-support system for KR/US swing and intraday candidate generation. It contains scanners, model-lane producers, multi-agent traces, Streamlit and Discord operator surfaces, Supabase/local persistence, and forward-validation ledgers.
 
-Updated: 2026-05-19
+The current KR research direction has shifted from daily stock picking toward intraday path and entry-quality models. The strongest current deployment candidate is the KOSDAQ 15:00 VWAP-guard `KR_INTRADAY_3D_T5` lane.
 
-- Primary repository: `git@github-codexwing:dongdongdongdongding/codexwing.git`
-- Issue database: beads through `scripts/issue`
-- Beads remote: `git+ssh://git@github-dolt-beads/dongdongdongdongding/dolt.git`
-- Streamlit UI: `python3 -m streamlit run app.py --server.port 8501`
-- Runtime artifact policy is active: generated run trees and large archives are ignored; curated learning, validation, and trading reports are tracked intentionally.
+## Start Here
 
-Recent stabilization work:
+- [Current Operations Manual](docs/operations/CURRENT_OPERATIONS_MANUAL_2026-06-24.md)
+- [Backend And Data Architecture](docs/architecture/BACKEND_DATA_ARCHITECTURE_2026-06-24.md)
+- [Frontend, Discord, And Design Structure](docs/architecture/FRONTEND_OPERATOR_UI_2026-06-24.md)
+- [System Analysis](docs/architecture/SYSTEM_ANALYSIS_2026-06-24.md)
+- [Model Trading Strategies](docs/research/MODEL_TRADING_STRATEGIES_2026-06-24.md)
 
-- Scan archive writes are run-scoped so repeated same-day ticker scans do not corrupt top-rank parity.
-- Scanner archive rows now carry 5-day high-touch labels such as `max_high_return_5d_pct` and `hit_5pct_within_5d`.
-- KR swing context includes US lead and macro/derivative signals for planner-facing diagnostics.
-- UI cards expose planner action trace fields without changing the core scoring engine.
-- Practical 80% entry gating now uses dynamic theme profiles generated from scan archive outcomes instead of fixed theme names.
-- Discord remote-control integration has a setup-safe command/config contract for KOSPI/KOSDAQ full scans, macro refresh, Top deep reports, and archive lookup.
-- Scanner product semantics are documented: Top5 is the production priority stream, Exception/Shadow/Radar are separate observation streams, and action labels are deterministic trace interpretations rather than hidden suppression.
-- `runtime_state` was pruned from the Git index: generated `artifacts`, `shared_working`, context caches, and large archive datasets remain local artifacts rather than source-controlled files.
+Older docs remain useful as history, but some contain retracted daily-edge conclusions. Use the current docs above as the operating baseline.
 
-## Core Capabilities
+## Current Live Lanes
 
-- KR/US market scanning with legacy-safe production defaults and relaxed development profiles.
-- Streamlit operator cockpit for scan review, report inspection, and planner traces.
-- Multi-agent workflow contracts for scanner, aggregation, backtest/learning, market/news context, and PM planner stages.
-- Learning and validation tools for KR swing slices, live policy performance, paper-trade ledgers, and scan archive consistency.
-- Realized outcome tracking and postmortem artifacts for recommendation auditability.
+| Lane | Market | Mode | Entry | Target | Status |
+|---|---|---|---|---|---|
+| SWING ensemble | KOSPI/KOSDAQ | `SWING` | latest/next session daily contract | `ft_5_5`, 5D | live-forward, modest daily edge |
+| KOSPI intraday | KOSPI | intraday model lane | close-buy/full-session minute context | 3D +5% touch | live-forward |
+| KOSDAQ intraday VWAP guard | KOSDAQ | `INTRADAY` | 15:00 minute-confirmed | 3D +5% touch | live-forward, current best intraday lane |
 
-## Setup
+Observation or disabled lanes include KOSPI NORMAL PEAD shadow, first-touch down shadow, KOSPI 09:05 5D intraday shadow, KOSDAQ tail guard research, and KIS touch5/dd10 research.
+
+## Main Commands
+
+Daily operations:
 
 ```bash
-git clone git@github-codexwing:dongdongdongdongding/codexwing.git
-cd codexwing
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
+multi_agent/tools/run_daily_ops.sh
 ```
 
-Fill `.env` with local API keys and database credentials. Do not commit secrets.
-
-## Run The UI
+Automatic KR scans:
 
 ```bash
-python3 -m streamlit run app.py --server.port 8501
+python3 multi_agent/tools/run_kr_daily_auto_scans.py
 ```
 
-Current local URL:
-
-```text
-http://localhost:8501
-```
-
-## Model And Learning Jobs
-
-Large model binaries are ignored under `models/*.pkl`. Regenerate them locally when needed:
+KIS operational scan:
 
 ```bash
-python3 train_ml_targets.py
-python3 train_global_brain.py
-python3 retrain_ml.py
+python3 -m multi_agent.tools.run_kis_operational_kr_scan --market KOSDAQ --scan-mode INTRADAY
 ```
 
-Useful learning/reporting commands:
+KOSDAQ intraday VWAP guard producer:
 
 ```bash
-python3 multi_agent/tools/update_outcome_return_metrics.py
-python3 multi_agent/tools/export_scan_archive_learning_dataset.py --market ALL
-python3 multi_agent/tools/verify_scan_archive_top_consistency.py
-python3 multi_agent/tools/report_live_policy_performance.py
-python3 multi_agent/tools/report_dynamic_theme_entry_profiles.py
-python3 multi_agent/tools/report_scan_cohort_performance.py
-python3 multi_agent/tools/build_paper_trade_ledger.py
+KIS_ENABLE_LIVE_CALLS=1 python3 multi_agent/tools/report_kosdaq_intraday_vwap_guard.py --min-liq 30 --tradeability-liq 100 --daily-context-source cache
 ```
 
-## Non-UI Scan Pipeline
+Streamlit UI:
 
 ```bash
-python3 -m multi_agent.workflows.non_ui_scan_pipeline --market KOSDAQ --profile prod --max-scan 100 --max-workers 4
-python3 -m multi_agent.workflows.non_ui_scan_pipeline --market KOSPI --profile prod --max-scan 100 --max-workers 4
-python3 -m multi_agent.workflows.non_ui_scan_pipeline --market NASDAQ --profile dev --tickers AAPL,NVDA,MSFT --max-scan 3 --max-workers 1
+streamlit run app.py
 ```
 
-Discord KR scan commands use the same non-UI boundary and fix full KOSPI/KOSDAQ scans at `max_scan=2000`.
-When `DISCORD_DRY_RUN=0` and `DISCORD_ENABLE_SCAN_EXECUTION=1`, the bot runs the scan in a separate process,
-uses `runtime_state/discord_jobs/full_kr_scan.lock`, and posts the result summary to the configured Discord channel.
-
-KR daily automation is split by timing:
-
-- `08:20 KST`: pre-market theme prior only. This uses US lead/macro context and the US-to-KR theme transfer graph, and is not a buy list.
-- `09:35 KST`: confirmed KOSPI/KOSDAQ full scans after the 09:30 intraday confirmation window. The default run covers `KOSPI/SWING`, `KOSDAQ/SWING`, `KOSPI/INTRADAY`, and `KOSDAQ/INTRADAY`, then publishes Top Deep, archive, section performance, post-scan validation, and Discord embeds.
-
-## Discord Remote Control
-
-Initial setup validation:
+Discord bot:
 
 ```bash
-python3 multi_agent/tools/discord_setup_doctor.py
-python3 multi_agent/tools/discord_register_commands.py
 python3 multi_agent/tools/discord_bot.py
 ```
 
-Discord historical lookup uses `/runs` to list stored `RUN-XXXXXXXX` IDs, then
-`/top_deep run_id:...` or `/archive run_id:...` to retrieve a selected run.
-Both lookup commands support `offset` and `limit` for paging.
+## Core Architecture
 
-Persistent local bot runner:
+The scanner pipeline:
 
-```bash
-cp scripts/launchd/com.codex.swing.discord-bot.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.codex.swing.discord-bot.plist
+1. Acquires market data through KIS/FDR/fallback sources.
+2. Builds scanner candidates with explicit `scan_mode`.
+3. Writes scanner handoff into local short-term memory.
+4. Runs aggregation, backtest diagnostics, market/news context, planner, and postmortem traces.
+5. Generates Top Deep reports.
+6. Persists local artifacts, Supabase rows, runtime artifacts, scan-universe snapshots, and post-scan outcome ledgers.
+
+The model-lane producer path:
+
+1. Scores a fixed validated model lane.
+2. Writes its own JSON/MD report and JSONL ledger.
+3. Resolves pending forward outcomes after the horizon passes.
+4. Optionally routes picks directly to `market_scan_results` and `scan_deep_reports`.
+
+These two paths coexist. Do not assume every live pick went through the same planner gate.
+
+## Data Locations
+
+Repo-local operational state:
+
+- `runtime_state/artifacts/RUN-*`
+- `runtime_state/shared_working/RUN-*`
+- `runtime_state/reports/*`
+- `runtime_state/long_term/*`
+
+External research cache:
+
+- `~/research_cache/px_long.parquet`
+- `~/research_cache/intraday/{code}.parquet`
+- `~/research_cache/intraday_3d_panel.parquet`
+- other research stores: flow, DART, fund, PEAD, shares
+
+Supabase tables used by the app:
+
+- `market_scan_results`
+- `scan_deep_reports`
+- `post_scan_outcome_ledger`
+- `runtime_artifacts`
+- `scan_universe_snapshots`
+- `agent_realized_outcomes`
+
+## Current Important Caveat
+
+KOSDAQ intraday VWAP guard is deployed through its producer and direct Supabase routing, but the existing model-lane consumer whitelist currently contains only:
+
+```python
+{"swing_ensemble", "kospi_intraday"}
 ```
 
-Configure Discord values in `.env.local` and keep `DISCORD_DRY_RUN=1` until the doctor passes. See:
+That means `/signals` and dedicated model-lane interpretation may omit or generically render the KOSDAQ intraday bucket until the consumer whitelist/profile is extended. Top Deep and Archive can still display the direct rows.
 
-- `docs/operations/DISCORD_INTEGRATION.md`
+## Development Rules
 
-Recommended KR universe hygiene:
+- Keep scanner, backend, UI, and planner logic separated.
+- Do not bury engine logic in Streamlit-only files.
+- Use Beads for task tracking.
+- Preserve run artifacts and structured traces for every recommendation-worthy candidate.
+- Treat missing data as missing; do not fabricate prices, flow, or stop values.
+- Keep `SWING` and `INTRADAY` separate from source to storage to UI.
+- Do not treat old model files as live status. Live status comes from producer flags, daily ops, and route code.
 
-```bash
-AG_KRX_MIN_LISTING_DAYS=330
-AG_KRX_EXCLUDE_SPACS=1
-AG_KRX_EXCLUDE_NON_NUMERIC_CODES=1
-```
+## Issue Tracking
 
-## Report Policy
-
-Tracked reports are curated evidence, not raw runtime dumps. Keep compact JSON/Markdown summaries that explain model quality, validation, or trading outcomes. Do not commit whole run directories, context caches, large archive datasets, or per-run scanner artifacts.
-
-Primary tracked report areas:
-
-- `runtime_state/reports/learning/`
-- `runtime_state/reports/validation/`
-- `runtime_state/reports/trading/`
-- selected long-term summary JSONL files under `runtime_state/long_term/`
-
-See `docs/migration/RUNTIME_ARTIFACT_POLICY.md` for exact rules.
-
-## Issue Workflow
-
-Use beads for all work tracking:
+Use the project shortcut:
 
 ```bash
-scripts/issue
-scripts/issue start <issue-id>
-scripts/issue end <issue-id> "reason"
-bd dolt push
+scripts/issue status
+scripts/issue start <id>
+scripts/issue end <id> "reason"
+scripts/issue sync
+scripts/issue log
 ```
 
-Before ending a coding session:
+Shared Claude/Codex coordination thread:
 
 ```bash
-git pull --rebase
-bd dolt push
-git push
-git status --short --branch
+bd comments swing-main-0to
+bd comment swing-main-0to "[Codex] ..."
 ```
 
-## Key Docs
+## Validation Discipline
 
-- `AGENTS.md`: project rules and session completion workflow
-- `multi_agent/README.md`: multi-agent workflow and tool commands
-- `docs/operations/CODEX_TAKEOVER.md`: Codex operating handoff
-- `docs/operations/SCANNER_PRODUCT_CONTRACT.md`: Top5/Exception/Shadow/Radar and action-label semantics
-- `docs/operations/KR_INTRADAY_DATA_ADAPTERS.md`: KR intraday source decision, adapter contract, and bounded storage policy
-- `docs/operations/PYKRX_INVESTOR_FLOW_DIAGNOSTICS.md`: pykrx empty investor-flow response classification and fallback rules
-- `docs/operations/dynamic_theme_entry_profiles.md`: dynamic theme profile gate design
-- `docs/migration/RUNTIME_ARTIFACT_POLICY.md`: runtime artifact tracking policy
+A model is not production-mature because a headline win rate is high. It needs:
+
+- fixed entry and exit contract
+- explicit cost and liquidity assumptions
+- corrected same-day or liquidity/size-matched control
+- walk-forward/OOS evidence
+- forward ledger
+- enough picks, days, and months
+- web/archive/Discord/DB consumer parity
+
+Current priority is forward-validating and operationally hardening the KOSDAQ intraday `KR_INTRADAY_3D_T5` lane.
