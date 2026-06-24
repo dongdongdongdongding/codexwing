@@ -204,6 +204,20 @@ if [[ "${AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE:-1}" == "1" ]]; then
       --top-picks "${AG_KOSPI_NORMAL_PEAD_TOP_PICKS:-5}"
 fi
 
+if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
+  # LIVE SWING structure-1 (2026-06-24, operator decision): daily price-ML ENSEMBLE
+  # (LGBM+XGB+ET) -> ft_5_5 first-touch (+5/-5), KOSPI+KOSDAQ, >=100억, top ~1% confidence,
+  # scan_mode=SWING. Validated 8y walk-forward / same-day size-matched: top-1% hits ~66-67%
+  # (not the 75% goal; efficient-market ceiling ~70%), shipped LIVE to validate while running.
+  # Structure-2 of the 2-structure SWING scan = Exception Leader (unchanged, from the planner).
+  # Routes to the live surface when AG_SWING_ENSEMBLE_PRODUCTION=1 (default ON per operator) and
+  # records a ledger that auto-resolves realised 5D ft_5_5 hit + first-touch return. Needs FDR.
+  echo "[STEP] report_swing_ensemble"
+  run_optional "report_swing_ensemble" \
+    python3 multi_agent/tools/report_swing_ensemble.py \
+      --top-pct "${AG_SWING_ENSEMBLE_TOP_PCT:-1.0}" --min-liq "${AG_SWING_ENSEMBLE_MIN_LIQ:-100}"
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
