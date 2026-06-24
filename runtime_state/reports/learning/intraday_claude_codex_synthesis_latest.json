@@ -55,6 +55,36 @@
     "months_hit_ge70": 7,
     "months": 7
   },
+  "liquidity_floor_split": [
+    {
+      "market": "KOSDAQ",
+      "floor_eok": 30,
+      "policy": "15:00 p>=0.80 + pre_vwap_dist_pct>=0 top2",
+      "n": 81,
+      "hit_pct": 90.123457,
+      "hit_ci_low_pct": 81.70331,
+      "ret3_net033_pct": 10.26736,
+      "liquidity_decile_excess_pct": 9.295331,
+      "liquidity_decile_excess_ci_low_pct": 4.26476,
+      "month_hit_min_pct": 80.0,
+      "median_liq_prev_eok": 98.378294,
+      "interpretation": "return-max discovery lane"
+    },
+    {
+      "market": "KOSDAQ",
+      "floor_eok": 100,
+      "policy": "15:00 p>=0.80 + pre_vwap_dist_pct>=0 top2",
+      "n": 40,
+      "hit_pct": 85.0,
+      "hit_ci_low_pct": 70.927374,
+      "ret3_net033_pct": 5.107395,
+      "liquidity_decile_excess_pct": 5.050415,
+      "liquidity_decile_excess_ci_low_pct": 1.027191,
+      "month_hit_min_pct": 75.0,
+      "median_liq_prev_eok": 319.60669,
+      "interpretation": "tradeability lane; smaller sample, conservative sibling"
+    }
+  ],
   "best_common_family": "KR_INTRADAY_3D_T5_CONTEXT_VWAP_GUARD",
   "candidate_ranking": [
     "KOSDAQ live 15:00 VWAP-guard candidate",
@@ -64,6 +94,7 @@
   ],
   "production_direction": {
     "first_forward_ledger": "KOSDAQ live 15:00 VWAP-guard",
+    "liquidity_floor_policy": "Track >=30eok as main edge lane and >=100eok as larger-order tradeability lane.",
     "second_forward_ledger": "KOSDAQ close-buy enhanced VWAP-guard",
     "kospi_status": "research_only_until_monthly_regime_guard",
     "micro_production_gate": {

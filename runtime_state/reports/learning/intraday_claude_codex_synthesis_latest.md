@@ -43,6 +43,23 @@ Reproduced the enhanced intraday+daily-context walk-forward model and applied a 
 |---|---:|---:|---:|---:|---:|---:|---:|
 | KOSDAQ | 15:00 p>=0.80 + pre_vwap_dist>=0 top2 | 81 | 90.12% | 81.70% | +10.27% | 80.00% | 7/7 |
 
+## Liquidity Floor Split
+
+The live 15:00 VWAP-guard candidate was rechecked under the same rule across liquidity floors:
+
+`15:00`, `p_cal>=0.80`, `pre_vwap_dist_pct>=0`, daily top2, 3D close hold, cost 0.33%.
+
+| Floor | n | Hit | CI low | 3D net | Liquidity-decile excess | Month min hit | Median ADV |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| KOSDAQ >=30eok | 81 | 90.12% | 81.70% | +10.27% | +9.30% | 80.00% | 98eok |
+| KOSDAQ >=100eok | 40 | 85.00% | 70.93% | +5.11% | +5.05% | 75.00% | 320eok |
+
+Interpretation:
+
+- `>=30eok` is the return-max / discovery lane.
+- `>=100eok` is the tradeability / larger-order lane.
+- Both survive, but `>=100eok` has a much smaller OOS sample and should be run as a conservative sibling, not as a replacement.
+
 ## Synthesis
 
 Best common family:
@@ -69,6 +86,7 @@ The shared edge is not just classifier confidence. The strongest common pattern 
 Immediate shared direction:
 
 - Keep KOSDAQ live 15:00 VWAP-guard model as the first forward ledger candidate.
+- Track both liquidity floors: `>=30eok` as the main edge lane and `>=100eok` as the tradeability lane.
 - Add a separate KOSDAQ close-buy lane from Claude's enhanced model, with close_vwap guard.
 - Do not promote KOSPI yet despite high aggregate hit; monthly instability remains.
 
@@ -78,4 +96,3 @@ Promotion should require forward evidence:
 - Target touch >=75%, day hit >=80%, net 3D return >0, liquidity-matched excess >0.
 - No month with n>=5 below 65% hit.
 - Full production only after 120 forward picks and 4 forward months.
-
