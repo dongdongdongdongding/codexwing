@@ -91,6 +91,12 @@ POST_SCAN_VALIDATION_COMMANDS = (
         "json_path": "runtime_state/reports/validation/segment_top5_validation.json",
     },
     {
+        "name": "Intraday Candidate Registry",
+        "command": [sys.executable, "multi_agent/tools/report_intraday_candidate_registry.py"],
+        "md_path": "runtime_state/reports/experimental/intraday_candidate_registry_latest.md",
+        "json_path": "runtime_state/reports/experimental/intraday_candidate_registry_latest.json",
+    },
+    {
         "name": "Loss Exclusion Guard Watch",
         "command": [
             sys.executable,

@@ -29,6 +29,15 @@ def apply_strategy_family_policy(
             horizon = 5
         rationale.append("strategy_family_horizon_reroute=AMEX_MOONSHOT:5d")
 
+    # Intraday-confirmed KR candidates are still scan_mode=INTRADAY, but this
+    # family tracks setups whose validated outcome contract is a 5D path/close
+    # label. Keeping the family explicit prevents them from contaminating
+    # ordinary same-day/1D intraday performance ledgers.
+    if family == "KR_INTRADAY_5D" and market_key in {"KR", "KOSPI", "KOSDAQ"} and mode == "INTRADAY":
+        if horizon < 5:
+            horizon = 5
+        rationale.append("strategy_family_horizon_reroute=KR_INTRADAY_5D:5d")
+
     # UNKNOWN/KR/INTRADAY is mostly legacy missing-family data, so a blanket
     # drop would contaminate live decisions. The matrix is still bad enough
     # (1D win=13.72%, avg=-4.72%; 3D win=21.99%, avg=-3.49%) to block PRIORITY

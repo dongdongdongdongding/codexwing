@@ -520,13 +520,16 @@ def _intraday_market_key(sym: str, is_us: bool, is_amex: bool) -> str:
     return "KR"
 
 
-def resolve_strategy_family(market_type: str, *, is_amex: bool = False) -> str:
+def resolve_strategy_family(market_type: str, *, is_amex: bool = False, scan_mode: str | None = None) -> str:
     market = str(market_type or "").upper()
+    mode = str(scan_mode or "").upper()
     if is_amex or market == "AMEX":
         return "AMEX_MOONSHOT"
     if market in {"US", "NASDAQ", "S&P500", "SP500", "NYSE"}:
         return "US_MAIN"
     if market in {"KOSPI", "KOSDAQ", "KR"}:
+        if mode == "INTRADAY":
+            return "KR_INTRADAY"
         return "KR_CORE"
     return "GENERAL"
 
@@ -1057,7 +1060,7 @@ def evaluate_intraday_candidate(
             "_routing_path": theme_overlay.get("routing_path", "core_only"),
             "테마": (theme_overlay.get("theme_context", {}) or {}).get("primary_theme", "-"),
             "scan_mode": "INTRADAY",
-            "strategy_family": resolve_strategy_family("KR"),
+            "strategy_family": resolve_strategy_family("KR", scan_mode="INTRADAY"),
             "scanner_timeframe_profile": timeframe_profile,
             "kr_universe_role": selection_lane,
             "explosive_leader_flag": bool(kr_intraday_role.get("explosive_leader_flag", True)),
@@ -1085,7 +1088,7 @@ def evaluate_intraday_candidate(
             "surge": surge_tag,
             "win_rate": "-",
             "decision_score": decision_score,
-            "strategy_family": resolve_strategy_family("KR"),
+            "strategy_family": resolve_strategy_family("KR", scan_mode="INTRADAY"),
             "phase25_prob": ml_pred.get("phase25_prob"),
             "phase25_variant": ml_pred.get("phase25_variant"),
             "phase25_shadow_variant": ml_pred.get("phase25_shadow_variant"),

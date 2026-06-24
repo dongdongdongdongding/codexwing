@@ -297,7 +297,11 @@ def run_non_ui_scan_pipeline(
         "us_signal_window": resolve_us_signal_window_gate() if is_us else None,
         "us_hard_filter": resolve_us_hard_filter_gate() if is_us else None,
     }
-    strategy_family = resolve_strategy_family("AMEX" if is_amex else ("US" if is_us else market), is_amex=is_amex)
+    strategy_family = resolve_strategy_family(
+        "AMEX" if is_amex else ("US" if is_us else market),
+        is_amex=is_amex,
+        scan_mode=scan_mode,
+    )
     backoff_state = SharedBackoffState()
     diag_lock = threading.Lock()
     diagnostics: Dict[str, Any] = {

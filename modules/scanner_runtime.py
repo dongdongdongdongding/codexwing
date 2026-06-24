@@ -19,6 +19,7 @@ from modules.scanner_services import (
     evaluate_universe_candidate,
     passes_liquidity_filter,
     resolve_liquidity_gate,
+    resolve_strategy_family,
 )
 
 _DB_MANAGER_LOCK = threading.Lock()
@@ -102,7 +103,11 @@ def scan_symbol_with_retry(
             if mode == "INTRADAY":
                 qs = quant_analysis.QuantStrategy(sym, is_advanced_engine=is_advanced_engine)
                 qs.scan_mode = mode
-                qs.strategy_family = "AMEX_MOONSHOT" if is_amex else ("US_MAIN" if is_us else "KR_CORE")
+                qs.strategy_family = resolve_strategy_family(
+                    "AMEX" if is_amex else ("US" if is_us else "KR"),
+                    is_amex=is_amex,
+                    scan_mode=mode,
+                )
                 if not qs.fetch_data(period="60d", interval="1h"):
                     _reject("INTRADAY_FETCH_FAIL")
                     return None
@@ -132,7 +137,11 @@ def scan_symbol_with_retry(
 
             qs = quant_analysis.QuantStrategy(sym, is_advanced_engine=is_advanced_engine)
             qs.scan_mode = mode
-            qs.strategy_family = "AMEX_MOONSHOT" if is_amex else ("US_MAIN" if is_us else "KR_CORE")
+            qs.strategy_family = resolve_strategy_family(
+                "AMEX" if is_amex else ("US" if is_us else "KR"),
+                is_amex=is_amex,
+                scan_mode=mode,
+            )
             if not qs.fetch_data(period="5y"):
                 _reject("FETCH_DATA_FAIL")
                 return None

@@ -1,0 +1,113 @@
+{
+  "report_version": "intraday_candidate_registry_v1",
+  "as_of_date": "2026-06-24",
+  "generated_at": "2026-06-24T03:16:51.681552+00:00",
+  "scope": {
+    "scan_mode": "INTRADAY",
+    "production_enabled": false,
+    "swing_contamination_allowed": false,
+    "note": "Minute-bar candidates only. Do not route these through SWING gates."
+  },
+  "candidates": [
+    {
+      "candidate_id": "kospi_intraday_0905_5d_t10s5_shadow_v1",
+      "status": "shadow_candidate",
+      "market": "KOSPI",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_INTRADAY_5D",
+      "candidate_family": "intraday_confirmed_5d_path",
+      "entry_policy": "09:05 minute-confirmed entry",
+      "entry_time_kst": "09:05",
+      "target_horizon_days": 5,
+      "liquidity_floor_eok": 100,
+      "model_family": "OOS ensemble: LGBM + ExtraTrees, label=t10_s5",
+      "exit_contract": {
+        "primary_return_col": "exit5d_ret_t10_s5",
+        "target_tp_pct": 10.0,
+        "stop_sl_pct": -5.0,
+        "hold_days": 5,
+        "cost_pct": 0.28
+      },
+      "validation": {
+        "source": "/private/tmp/intraday_kospi100_0905_t10_ensemble_verify.json",
+        "sample": "KOSPI >=100eok, OOS months, top5_q55, t10_s5",
+        "n": 421,
+        "days": 101,
+        "months": 10,
+        "net_avg_pct": 2.299,
+        "net_ci_pct": [
+          1.794,
+          3.137
+        ],
+        "excess_avg_pct": 1.272,
+        "excess_ci_pct": [
+          0.925,
+          2.217
+        ],
+        "win_pct": 62.71,
+        "day_win_pct": 78.22,
+        "target_first_pct": 21.6,
+        "stop_first_pct": 15.2,
+        "months_pos": 10
+      },
+      "promotion_guard": {
+        "status": "shadow_only",
+        "reason": "Daily-basket win clears 75%, but per-pick win is below 75% and stop-first is near the 15% guard. Needs forward ledger before production.",
+        "production_enabled": false
+      }
+    },
+    {
+      "candidate_id": "kosdaq_intraday_tail_guard_research_v1",
+      "status": "research_only",
+      "market": "KOSDAQ",
+      "scan_mode": "INTRADAY",
+      "strategy_family": "KR_INTRADAY_5D",
+      "candidate_family": "intraday_tail_guard_5d_path",
+      "entry_policy": "11:30 minute-confirmed entry with nostop/MAE guard",
+      "entry_time_kst": "11:30",
+      "target_horizon_days": 5,
+      "liquidity_floor_eok": 30,
+      "model_family": "OOS LGBM return model + tail-risk guard",
+      "exit_contract": {
+        "primary_return_col": "exit5d_ret_t10_s5",
+        "target_tp_pct": 10.0,
+        "stop_sl_pct": -5.0,
+        "hold_days": 5,
+        "cost_pct": 0.33
+      },
+      "validation": {
+        "source": "/private/tmp/kosdaq_intraday_tail_guard_focused_search.json",
+        "sample": "KOSDAQ >=30eok, 11:30 combo top2, nostop_q=0.9, mae_q=0.7",
+        "n": 174,
+        "days": 101,
+        "months": 9,
+        "net_avg_pct": 1.08,
+        "net_ci_pct": [
+          0.358,
+          1.908
+        ],
+        "excess_avg_pct": 1.19,
+        "excess_ci_pct": [
+          0.59,
+          1.85
+        ],
+        "win_pct": 49.4,
+        "day_win_pct": 50.5,
+        "target_first_pct": 17.2,
+        "stop_first_pct": 17.8,
+        "months_pos": 5
+      },
+      "promotion_guard": {
+        "status": "research_only",
+        "reason": "Tail guard lowers stop-first, but win/day-win stay near 50%; not an operating promotion candidate.",
+        "production_enabled": false
+      }
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "shadow_candidates": 1,
+    "research_only": 1,
+    "production_enabled": 0
+  }
+}
