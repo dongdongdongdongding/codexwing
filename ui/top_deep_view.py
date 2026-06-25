@@ -12,6 +12,7 @@ import streamlit as st
 from modules import db_manager
 from modules.admission_metric_copy import metric_help, metric_label
 from modules.candidate_interpretation import build_candidate_interpretation
+from modules.operational_candidate_scoring import MODEL_VALIDATED_LANES
 from modules.kis_theme_news_evidence import format_kis_theme_news_summary
 from modules.portfolio_exposure import build_portfolio_exposure_summary, render_portfolio_exposure_lines
 from ui.scan_integrity_view import (
@@ -454,9 +455,26 @@ def render_top_deep_reports_page() -> None:
         return
     selected_date = col_date.selectbox("날짜", dates, index=0)
     day_df = market_df[market_df["report_date"] == selected_date].copy()
+    # Default to model-lane runs only (swing_ensemble / kospi_intraday / kosdaq vwap-guard);
+    # the legacy planner runs (admission / near-miss / KIS shadow) stay for learning but are
+    # hidden from the operator's signal view unless the diagnostic toggle is on.
+    show_legacy = st.checkbox(
+        "플래너 진단 런 포함 (admission·KIS쉐도우 등 학습용)",
+        value=False,
+        help="기본은 검증된 모델 레인(스윙/인트라데이)만 표시. 켜면 학습용 플래너 런도 봅니다.",
+    )
+
+    def _is_model_run(group: pd.DataFrame) -> bool:
+        return "decision_bucket" in group and group["decision_bucket"].astype(str).isin(MODEL_VALIDATED_LANES).any()
+
     run_summaries = []
     for run_id, group in day_df.groupby("run_id", dropna=True):
+        if not show_legacy and not _is_model_run(group):
+            continue
         run_summaries.append((str(run_id), scan_display_label(group), group["generated_at_dt"].max()))
+    if not run_summaries:
+        st.info("이 날짜에 검증 모델 레인 신호가 없습니다. 모델 신호는 매 영업일 daily_ops가 생성합니다 (Discord /signals). 학습용 플래너 런을 보려면 위 체크박스를 켜세요.")
+        return
     run_summaries = sorted(run_summaries, key=lambda item: item[2], reverse=True)
     runs = [item[0] for item in run_summaries]
     run_labels = {item[0]: item[1] for item in run_summaries}
