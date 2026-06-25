@@ -100,6 +100,10 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
         if block:
             out["error"] = block
             return out
+        # Intraday producers need live KIS minute bars. The web app runs with
+        # KIS_ENABLE_LIVE_CALLS=0 (lightweight browsing); enable it just for this scan, matching
+        # how run_daily_ops invokes the producers (KIS_ENABLE_LIVE_CALLS=1).
+        os.environ["KIS_ENABLE_LIVE_CALLS"] = "1"
     _ensure_tools_on_path()
     today = datetime.now().strftime("%Y%m%d")
     rec = datetime.now(timezone.utc).isoformat()
