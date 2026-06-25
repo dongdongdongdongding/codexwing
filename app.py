@@ -1189,7 +1189,12 @@ def _render_model_lane_scan_result(snapshot):
             "인트라데이는 장마감 후 전체세션 데이터가 필요합니다."
         )
         return
-    st.success(f"✅ 신규 모델({bucket}) {len(picks)}건 · {market} {scan_mode} — 티커는 모델 픽과 100% 동일")
+    is_intraday = str(scan_mode).upper() == "INTRADAY"
+    badge = "🟢 장중" if is_intraday else "🔵 스윙"
+    entry_label = ("15:00" if str(market).upper() == "KOSDAQ" else "종가") if is_intraday else "종가"
+    hold_days = 3 if is_intraday else 5
+    st.success(f"✅ {badge} 모델 `{bucket}` · {market} {len(picks)}건 — 티커는 daily_ops 모델 픽과 100% 동일")
+    st.caption(f"계약: 진입 {entry_label} · 목표 +5% · 보유 {hold_days}거래일 · 분산(타이트 손절 없음)")
     table = []
     for i, p in enumerate(picks, start=1):
         entry = p.get("entry_reference_price")
@@ -1197,11 +1202,12 @@ def _render_model_lane_scan_result(snapshot):
             "순위": i,
             "티커": p.get("ticker"),
             "적중확률%": round(float(p.get("p") or 0.0) * 100.0, 1),
-            "진입": entry,
+            f"진입({entry_label})": entry,
             "목표(+5%)": round(float(entry) * 1.05, 1) if entry else None,
+            "보유": f"{hold_days}일",
         })
     st.dataframe(pd.DataFrame(table), use_container_width=True, hide_index=True)
-    st.caption("상세 카드(매매계획·근거·적중확률)는 'Top 분석' 탭에서 동일 run_id로 확인하세요. · 손절은 분산(타이트 손절 없음).")
+    st.caption("상세 카드(매매계획·근거·적중확률)는 'Top 분석' 탭에서 동일 run_id로 확인하세요.")
 
 
 def _render_scan_results_snapshot(snapshot):
@@ -1632,9 +1638,9 @@ if active_main_tab == "🕸️ 테마 네트워크":
 if active_main_tab == "🚀 스캐너":
     _render_section_intro(
         "스캐너",
-        "전종목 자동 스캔",
-        "시장과 모드만 고르고 큰 버튼 한 번이면 바로 스캔이 시작됩니다. 운영 후보는 신규 운영 모델 통과 여부로 표시합니다.",
-        ["운영 모델", "시장 필터", "추적 근거"],
+        "검증 모델 스캔",
+        "시장과 모드만 고르고 버튼 한 번이면 됩니다. 코스피·코스닥은 검증된 모델 레인(스윙 앙상블 / 인트라데이)으로 돌며, 결과 티커는 매일 자동 생성되는 모델 픽과 100% 동일합니다.",
+        ["검증 모델 레인", "진입·목표 고정 계약", "100% 동일 픽"],
     )
 
     # Row 1: 시장 (좌) · 모드 (우) — 두 핵심 결정만
@@ -1652,21 +1658,38 @@ if active_main_tab == "🚀 스캐너":
         key="scanner_mode_radio",
     )
     scan_mode = "INTRADAY" if scan_mode_label == "장중" else "SWING"
-    _filter_caption = (
-        "⏱️ 장중 돌파/추세" if scan_mode == "INTRADAY"
-        else "🔥 통합 스윙 점수"
-    )
+    from modules.model_lane_scan import model_lane_for, model_lane_scan_enabled
+    _model_bucket = model_lane_for(market, scan_mode)
+    _is_kr_model = _model_bucket is not None and model_lane_scan_enabled()
 
-    # Row 2: Advanced 옵션 (스캔 개수) — 엔진은 V32.Flawless 단일화
-    # 기존 Legacy(T+0) 엔진은 실전 슬리피지/볼륨 보정이 없어 production 표준으로 부적합 → 제거.
-    engine_opt = "🔬 완전무결 엔진 (V32.Flawless: T+1 시가 진입, 실전 슬리피지 적용, U-Shape 거래량 보정, 소표본 패널티)"
-    is_advanced_engine = True
-    with st.expander("⚙️ 고급 옵션 · 스캔 개수", expanded=False):
-        max_scan = st.slider(
-            "스캔 개수 (0 = 전종목)",
-            0, 3500, 0,
-            key="scanner_max_scan_slider",
-        )
+    if _is_kr_model:
+        # KR markets run the validated model lane: the legacy "V32.Flawless / 스캔 개수" options
+        # do not apply (the producer scores its own liquidity universe with a fixed contract).
+        if scan_mode == "INTRADAY":
+            _filter_caption = "🟢 인트라데이 모델 · 3일내 +5% 터치"
+            _contract_note = "코스피=종가 · 코스닥=15:00 진입 · 보유 3일 · 목표 +5% · 분산(타이트 손절 X)"
+            _window_note = "장중 모델은 일중 피처가 완성되는 마감 후에만 유효합니다 — 코스피 15:30 / 코스닥 15:00(KST) 이후 스캔하세요. 그 전에는 신호가 나오지 않습니다."
+        else:
+            _filter_caption = "🔵 스윙 앙상블 · 5일내 +5% 선터치(ft_5_5)"
+            _contract_note = "진입 종가 · 보유 5일 · 목표 +5% · 분산(타이트 손절 X)"
+            _window_note = ""
+        engine_opt = "model_lane"
+        is_advanced_engine = False
+        max_scan = 0
+        st.caption(f"✅ 검증 모델 레인 `{_model_bucket}` — 결과 티커는 daily_ops 모델 픽과 100% 동일합니다. {_contract_note}")
+        if _window_note:
+            st.info(f"⏱️ {_window_note}")
+    else:
+        # US markets keep the legacy flawless engine + scan-count control.
+        _filter_caption = "⏱️ 장중 돌파/추세" if scan_mode == "INTRADAY" else "🔥 통합 스윙 점수"
+        engine_opt = "🔬 완전무결 엔진 (V32.Flawless: T+1 시가 진입, 실전 슬리피지 적용, U-Shape 거래량 보정, 소표본 패널티)"
+        is_advanced_engine = True
+        with st.expander("⚙️ 고급 옵션 · 스캔 개수", expanded=False):
+            max_scan = st.slider(
+                "스캔 개수 (0 = 전종목)",
+                0, 3500, 0,
+                key="scanner_max_scan_slider",
+            )
 
     # Row 3: Primary CTA — 작은 caption 으로 현재 적용 모드 명시
     cta_col, hint_col = st.columns([1.1, 1.4])
