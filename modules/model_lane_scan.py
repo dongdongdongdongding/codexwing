@@ -81,6 +81,37 @@ def model_lane_for(market: str, scan_mode: str) -> str | None:
     return LANE_BY_MODE.get((str(market).upper(), str(scan_mode).upper()))
 
 
+def _latest_stored_picks(bucket: str, market: str = "") -> Dict[str, Any]:
+    """Latest stored picks for a lane from scan_deep_reports (the last complete session's
+    daily_ops output). Used pre-market / mid-session so an intraday scan surfaces the last valid
+    signal instead of re-running on incomplete intraday data."""
+    try:
+        from modules.db_manager import DBManager
+        db = DBManager()
+        if not db.client:
+            return {"run_id": "", "picks": [], "generated_at": ""}
+        q = db.client.table("scan_deep_reports").select(
+            "ticker,run_id,buy_score,generated_at,candidate_interpretation,trade_plan"
+        ).eq("decision_bucket", bucket)
+        if market:
+            q = q.eq("market", market.upper())
+        rows = q.order("generated_at", desc=True).limit(20).execute().data or []
+        if not rows:
+            return {"run_id": "", "picks": [], "generated_at": ""}
+        latest_run = str(rows[0].get("run_id") or "")
+        picks = []
+        for r in rows:
+            if str(r.get("run_id") or "") != latest_run:
+                continue
+            ci = r.get("candidate_interpretation") if isinstance(r.get("candidate_interpretation"), dict) else {}
+            tp = r.get("trade_plan") if isinstance(r.get("trade_plan"), dict) else {}
+            picks.append({"ticker": r.get("ticker"), "p": float(r.get("buy_score") or 0.0),
+                          "entry_reference_price": ci.get("entry_reference_price") or tp.get("entry_reference_price")})
+        return {"run_id": latest_run, "picks": picks, "generated_at": str(rows[0].get("generated_at") or "")}
+    except Exception:
+        return {"run_id": "", "picks": [], "generated_at": ""}
+
+
 def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> Dict[str, Any]:
     """Run the validated model-lane producer for (market, scan_mode) and return its picks.
 
@@ -91,14 +122,20 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
     mode = str(scan_mode).upper()
     bucket = model_lane_for(market, mode)
     out: Dict[str, Any] = {"run_id": "", "market": market, "scan_mode": mode, "bucket": bucket,
-                           "picks": [], "routed": 0, "error": None}
+                           "picks": [], "routed": 0, "error": None, "stale_session": False, "note": None}
     if bucket is None:
         out["error"] = f"unsupported market/scan_mode: {market}/{mode}"
         return out
     if mode == "INTRADAY":
         block = _intraday_window_block(market)
         if block:
-            out["error"] = block
+            # Window not complete (pre-market / mid-session): re-running would score incomplete
+            # intraday features. Surface the last complete session's stored picks instead — the
+            # same signal /signals shows, valid until the next close run.
+            stored = _latest_stored_picks(bucket, market)
+            out.update(picks=stored.get("picks") or [], run_id=stored.get("run_id") or "",
+                       stale_session=True,
+                       note=f"{block.split('.')[0]}. 최신 완성 세션({stored.get('generated_at', '')[:10]}) 신호를 표시합니다.")
             return out
         # Intraday producers need live KIS minute bars. The web app runs with
         # KIS_ENABLE_LIVE_CALLS=0 (lightweight browsing); enable it just for this scan, matching

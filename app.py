@@ -591,7 +591,10 @@ def _run_model_lane_scan_job(*, scan_state, market, scan_mode):
         total_scans=len(rows),
         completed_scans=len(rows),
         bridge_info={"model_lane_scan": True, "model_lane_result": res, "decision_bucket": res.get("bucket")},
-        status_line=f"신규 모델 {res.get('bucket')} {len(rows)}건 — 티커=producer 픽과 100% 동일 (라우팅 완료). 상세 카드는 'Top 분석' 탭.",
+        status_line=(
+            res.get("note") if res.get("stale_session")
+            else f"신규 모델 {res.get('bucket')} {len(rows)}건 — 티커=producer 픽과 100% 동일 (라우팅 완료). 상세 카드는 'Top 분석' 탭."
+        ),
     )
 
 
@@ -1207,17 +1210,20 @@ def _render_model_lane_scan_result(snapshot):
     market = snapshot.get("market", "")
     scan_mode = snapshot.get("scan_mode", "")
     st.caption(snapshot.get("status_line", ""))
+    if res.get("stale_session"):
+        st.info(f"⏱️ {res.get('note') or '장 시작 전/장중이라 최신 완성 세션 신호를 표시합니다.'} (장마감 후 스캔하면 당일 신호가 새로 나옵니다.)")
     if not picks:
         st.warning(
-            "신규 모델 신호 없음 — 오늘 조건(유동성·VWAP·변동성 가드 등)을 통과한 종목이 없습니다. "
-            "인트라데이는 장마감 후 전체세션 데이터가 필요합니다."
+            "표시할 모델 신호가 없습니다 — 마지막 완성 세션에서 조건(유동성·VWAP·변동성 가드 등)을 통과한 종목이 없었습니다. "
+            "인트라데이는 장마감 후 전체세션 데이터로 생성됩니다."
         )
         return
     is_intraday = str(scan_mode).upper() == "INTRADAY"
     badge = "🟢 장중" if is_intraday else "🔵 스윙"
     entry_label = ("15:00" if str(market).upper() == "KOSDAQ" else "종가") if is_intraday else "종가"
     hold_days = 3 if is_intraday else 5
-    st.success(f"✅ {badge} 모델 `{bucket}` · {market} {len(picks)}건 — 티커는 daily_ops 모델 픽과 100% 동일")
+    _src = "최신 완성 세션" if res.get("stale_session") else "daily_ops 모델 픽과 100% 동일"
+    st.success(f"✅ {badge} 모델 `{bucket}` · {market} {len(picks)}건 — {_src}")
     st.caption(f"계약: 진입 {entry_label} · 목표 +5% · 보유 {hold_days}거래일 · 분산(타이트 손절 없음)")
     table = []
     for i, p in enumerate(picks, start=1):
