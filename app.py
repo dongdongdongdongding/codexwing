@@ -532,20 +532,44 @@ def _run_model_lane_scan_job(*, scan_state, market, scan_mode):
     """Run the (market, scan_mode) scan through the validated model-lane producer. The picks
     are routed live (scan_deep_reports + market_scan_results) and are the exact producer
     tickers — see modules/model_lane_scan."""
+    import threading
+    import time as _time
     from modules.model_lane_scan import run_model_lane_scan, model_lane_for
 
     bucket = model_lane_for(market, scan_mode)
+    is_intraday = str(scan_mode).upper() == "INTRADAY"
+    # The producer call is opaque and blocks 25s (swing) to ~4min (intraday KIS minute bars).
+    # Run it in a sub-thread and emit a heartbeat (elapsed + creeping progress) so the UI shows
+    # active work instead of a frozen 10% bar that looks like a stall.
+    _expected = 240.0 if is_intraday else 45.0
+    _phase = "KIS 분봉 수집·모델 스코어링" if is_intraday else "유니버스 모델 스코어링"
     scan_state.update(
         status="running",
         total_scans=0,
-        progress=0.1,
-        status_line=f"{market} {scan_mode}: 신규 모델 레인({bucket}) 실행 중 — 결과 티커는 모델 픽과 100% 동일합니다.",
+        progress=0.05,
+        current_symbol="",
+        status_line=f"{market} {scan_mode} 검증 모델 레인({bucket}) — {_phase} 시작…",
     )
-    try:
-        res = run_model_lane_scan(market, scan_mode)
-    except Exception as exc:  # pragma: no cover - live data dependent
-        scan_state.update(status="failed", error=str(exc), status_line=f"모델 레인 스캔 실패: {exc}")
-        return
+    _box: dict = {}
+
+    def _producer_worker():
+        try:
+            _box["res"] = run_model_lane_scan(market, scan_mode)
+        except Exception as exc:  # pragma: no cover - live data dependent
+            _box["res"] = {"error": str(exc)}
+
+    _th = threading.Thread(target=_producer_worker, daemon=True)
+    _th.start()
+    _t0 = _time.time()
+    while _th.is_alive():
+        _elapsed = _time.time() - _t0
+        scan_state.update(
+            progress=min(0.92, 0.05 + (_elapsed / _expected) * 0.85),
+            status_line=f"{market} {scan_mode} 검증 모델 레인 — {_phase} 중 ({int(_elapsed)}초 경과)",
+        )
+        _time.sleep(2)
+    _th.join(timeout=1)
+    res = _box.get("res") or {"error": "모델 레인 실행 결과를 받지 못했습니다."}
     if res.get("error"):
         scan_state.update(status="failed", error=str(res["error"]), status_line=f"모델 레인 스캔 실패: {res['error']}")
         return
