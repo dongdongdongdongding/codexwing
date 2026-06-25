@@ -1376,26 +1376,26 @@ def build_runs_embed(*, market: str = "", offset: int = 0, limit: int = 10) -> D
 def build_scan_ack_embed(config: DiscordIntegrationConfig, *, market: str) -> Dict[str, Any]:
     enabled = bool(config.enable_scan_execution and not config.dry_run)
     return {
-        "title": f"{market} 전체 스캔",
+        "title": f"{market} 검증 모델 스캔",
         "description": (
-            f"요청 확인: `{market}` 전체 스캔은 max_scan={FULL_KR_SCAN_MAX}, scan_mode=SWING, profile=prod로 고정됩니다.\n"
+            f"요청 확인: `{market}` 검증 모델 레인(스윙 앙상블)을 실행합니다. 결과 티커는 daily_ops 모델 픽과 100% 동일합니다.\n"
             + ("실행 준비 완료 상태입니다." if enabled else "현재는 안전 모드라 실제 실행은 막혀 있습니다.")
         ),
         "color": 0x2ECC71 if enabled else 0xF1C40F,
         "fields": [
             {"name": "Dry Run", "value": str(config.dry_run), "inline": True},
             {"name": "Scan Exec", "value": str(config.enable_scan_execution), "inline": True},
-            {"name": "Max Scan", "value": str(FULL_KR_SCAN_MAX), "inline": True},
+            {"name": "모델", "value": "스윙 앙상블 (ft_5_5)", "inline": True},
         ],
     }
 
 
 def build_scan_started_embed(config: DiscordIntegrationConfig, *, job: DiscordScanJob) -> Dict[str, Any]:
     return {
-        "title": f"{job.market} 전체 스캔 접수",
+        "title": f"{job.market} 검증 모델 스캔 접수",
         "description": (
-            f"Job `{job.job_id}` 실행을 시작했습니다.\n"
-            f"max_scan={FULL_KR_SCAN_MAX}, scan_mode=SWING, profile=prod 고정입니다."
+            f"Job `{job.job_id}` 검증 모델 레인(스윙 앙상블) 실행을 시작했습니다.\n"
+            f"결과 티커는 daily_ops 모델 픽과 100% 동일하며, 완료 시 `/signals` 형식 카드로 표시됩니다."
         ),
         "color": 0x3498DB,
         "fields": [

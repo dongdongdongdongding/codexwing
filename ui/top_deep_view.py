@@ -268,6 +268,37 @@ def top_deep_section_name(value: Dict[str, Any]) -> str:
     return "Top5"
 
 
+def _render_model_lane_detail_card(row: Dict[str, Any], interp: Dict[str, Any]) -> None:
+    """Clean detail card for a model-lane pick — its own buy contract instead of the legacy
+    admission metrics / buy-premium gate / readiness cards (which are empty for these lanes)."""
+    is_intraday = str(interp.get("scan_mode") or "").upper() == "INTRADAY"
+    badge = "🟢 장중" if is_intraday else "🔵 스윙"
+    section = interp.get("section") or "Top5"
+    rank = interp.get("section_rank") or row.get("rank") or 0
+    name = row.get("stock_name") or row.get("ticker")
+    entry = interp.get("entry_reference_price")
+    target = interp.get("target_price")
+    tp = interp.get("target_tp_pct") or 5.0
+    entry_label = interp.get("entry_label") or "종가"
+    dc = interp.get("day_change_pct")
+    with st.container(border=True):
+        st.markdown(f"### {section} #{int(rank or 0)} · {name} ({row.get('ticker')})")
+        st.caption(f"{badge} · {interp.get('action_label') or '모델 매수'} · `{interp.get('model_lane')}`")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("적중확률", f"{interp.get('model_hit_prob_pct')}%" if interp.get("model_hit_prob_pct") is not None else "-")
+        c2.metric(f"진입({entry_label})", fmt_metric_num(entry, 0) if entry else "-")
+        c3.metric(f"목표(+{tp:.0f}%)", fmt_metric_num(target, 0) if target else "-")
+        c4.metric("보유", f"{interp.get('hold_days') or '-'}거래일")
+        bits = [interp.get("model_prob_label") or "", "손절 분산(타이트 손절 없음)"]
+        if isinstance(dc, (int, float)):
+            bits.append(f"전일비 {dc:+.1f}%")
+        st.caption(" · ".join(b for b in bits if b))
+        if interp.get("selection_thesis"):
+            st.caption(f"근거: {interp.get('selection_thesis')}")
+        if interp.get("touch_vs_buy_ready_explanation"):
+            st.caption(interp.get("touch_vs_buy_ready_explanation"))
+
+
 def _readiness_score_card(title: str, block: Dict[str, Any]) -> None:
     block = block if isinstance(block, dict) else {}
     score = block.get("score")
@@ -559,8 +590,13 @@ def render_top_deep_reports_page() -> None:
         admission_model = row.get("scan_universe_admission") if isinstance(row.get("scan_universe_admission"), dict) else {}
         candidate_data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
         interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else {}
-        if not isinstance(interpretation.get("buy_premium_execution_gate"), dict):
+        if not interpretation.get("model_lane") and not isinstance(interpretation.get("buy_premium_execution_gate"), dict):
             interpretation = build_candidate_interpretation(row)
+        if interpretation.get("model_lane") or str(row.get("decision_bucket") or "") in MODEL_VALIDATED_LANES:
+            if not interpretation.get("model_lane"):
+                interpretation = build_candidate_interpretation(row)
+            _render_model_lane_detail_card(row, interpretation)
+            continue
         section = alignment.get("analysis_section") or "Top5"
         section_rank = alignment.get("analysis_section_rank") or row.get("rank") or 0
         title = f"{section} #{int(section_rank or 0)} {row.get('stock_name') or row.get('ticker')} ({row.get('ticker')})"

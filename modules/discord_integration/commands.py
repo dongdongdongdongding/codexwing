@@ -122,7 +122,7 @@ class DiscordCommandSpec:
 COMMAND_SPECS: Dict[str, DiscordCommandSpec] = {
     "kospi_scan": DiscordCommandSpec(
         name="kospi_scan",
-        description="KOSPI 전체 스윙 스캔을 실행합니다. max_scan은 2000으로 고정됩니다.",
+        description="KOSPI 검증 모델 레인(스윙 앙상블)을 실행합니다. 결과 티커는 daily_ops 모델 픽과 100% 동일합니다.",
         kind="scan",
         market="KOSPI",
         max_scan=FULL_KR_SCAN_MAX,
@@ -132,7 +132,7 @@ COMMAND_SPECS: Dict[str, DiscordCommandSpec] = {
     ),
     "kosdaq_scan": DiscordCommandSpec(
         name="kosdaq_scan",
-        description="KOSDAQ 전체 스윙 스캔을 실행합니다. max_scan은 2000으로 고정됩니다.",
+        description="KOSDAQ 검증 모델 레인(스윙 앙상블)을 실행합니다. 결과 티커는 daily_ops 모델 픽과 100% 동일합니다.",
         kind="scan",
         market="KOSDAQ",
         max_scan=FULL_KR_SCAN_MAX,
