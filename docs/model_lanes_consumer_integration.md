@@ -19,7 +19,16 @@ function, same defaults, deterministic data). Gated by `AG_SCAN_MODEL_LANE` (def
 markets and the flag-off path keep the legacy scanner. Dispatch:
 `(KR, SWING)→score_market`, `(KOSPI, INTRADAY)→score_today`, `(KOSDAQ, INTRADAY)→score_live_candidates`.
 The picks are routed live and shown via `_render_model_lane_scan_result` (app.py) + Top 분석.
-The legacy planner keeps running via `run_kr_daily_auto_scans` for learning/validation only.
+**Discord** `/kospi_scan` / `/kosdaq_scan` are wired the same way (`_run_scan_background` →
+`run_model_lane_scan` → `build_model_signals_embed`). The legacy planner keeps running via
+`run_kr_daily_auto_scans` for learning/validation only.
+
+**Intraday feature window (not a data limit):** the intraday models compute end-of-window
+features — KOSPI uses the full session (close, `late30_ret` vs 15:00, day VWAP), KOSDAQ uses up
+to the 15:00 entry. Before that window the features are incomplete, so a scan would yield invalid
+picks. `_intraday_window_block` returns a clear message before KOSPI 15:30 / KOSDAQ 15:00 KST
+(override `AG_INTRADAY_IGNORE_WINDOW=1`). SWING (daily px) has no time constraint. A "scan
+anytime intraday" signal would require a *different* model trained on partial-day features.
 
 Both producers also run inside `run_daily_ops.sh` (KOSPI intraday needs post-close full-session KIS minute bars,
 so it is **not** an on-demand mid-session scan). They dual-write the SAME picks to

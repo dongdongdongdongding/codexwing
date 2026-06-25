@@ -362,8 +362,23 @@ def main() -> int:
                     await channel.send(embed=_embed(discord, build_scan_started_embed(config, job=job)))
                 except Exception as exc:
                     print(f"Discord start message failed for {job.job_id}: {exc}", file=sys.stderr)
-            summary = await run_scan_job(job)
-            payloads = build_scan_result_embeds(summary, config=config)
+            from modules.model_lane_scan import model_lane_for, model_lane_scan_enabled, run_model_lane_scan
+            if model_lane_scan_enabled() and model_lane_for(job.market, job.scan_mode) is not None:
+                # Run the validated model lane (100% identical tickers); render the model-lane card.
+                res = await asyncio.to_thread(run_model_lane_scan, job.market, job.scan_mode)
+                if res.get("error"):
+                    payloads = [{
+                        "title": f"{job.market} {job.scan_mode} 모델 스캔",
+                        "description": f"신호를 생성하지 못했습니다: {res['error']}",
+                        "color": 0xF1C40F,
+                    }]
+                else:
+                    payloads = await asyncio.to_thread(
+                        build_model_signals_embed, market=job.market, scan_mode=job.scan_mode
+                    )
+            else:
+                summary = await run_scan_job(job)
+                payloads = build_scan_result_embeds(summary, config=config)
             if channel is not None:
                 try:
                     await _send_embed_chunks(discord, channel, payloads)

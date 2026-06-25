@@ -528,13 +528,6 @@ def _start_market_scan_job(*, market, max_scan, scan_mode, engine_opt, is_advanc
     return True
 
 
-def _model_lane_scan_enabled() -> bool:
-    """When on (default), a KR scan runs the validated model-lane producer instead of the
-    legacy admission scanner, so results are 100% identical tickers to the model's picks.
-    The legacy planner still runs via run_kr_daily_auto_scans for learning."""
-    return os.getenv("AG_SCAN_MODEL_LANE", "1").strip() not in {"0", "false", "False", ""}
-
-
 def _run_model_lane_scan_job(*, scan_state, market, scan_mode):
     """Run the (market, scan_mode) scan through the validated model-lane producer. The picks
     are routed live (scan_deep_reports + market_scan_results) and are the exact producer
@@ -580,8 +573,8 @@ def _run_model_lane_scan_job(*, scan_state, market, scan_mode):
 
 def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt, is_advanced_engine, macro_ctx, market_gate):
     try:
-        from modules.model_lane_scan import model_lane_for
-        if _model_lane_scan_enabled() and model_lane_for(market, scan_mode) is not None:
+        from modules.model_lane_scan import model_lane_for, model_lane_scan_enabled
+        if model_lane_scan_enabled() and model_lane_for(market, scan_mode) is not None:
             _run_model_lane_scan_job(scan_state=scan_state, market=market, scan_mode=scan_mode)
             return
         scan_state.update(status="running", status_line="스캔 실행을 준비 중입니다.")
