@@ -156,7 +156,21 @@ COMMAND_SPECS: Dict[str, DiscordCommandSpec] = {
     ),
     "signals": DiscordCommandSpec(
         name="signals",
-        description="라이브 모델 레인(스윙 앙상블·코스피 인트라데이)의 최신 매수 시그널만 간결히 조회합니다.",
+        description="라이브 모델 레인(스윙+인트라데이) 최신 매수 시그널을 모두 간결히 조회합니다.",
+        kind="model_signals_lookup",
+        response_style="embed",
+        web_equivalent_sections=["top_deep"],
+    ),
+    "intraday": DiscordCommandSpec(
+        name="intraday",
+        description="장중(인트라데이) 모델 레인만 조회합니다 — 코스피 인트라데이 + 코스닥 15:00 VWAP가드.",
+        kind="model_signals_lookup",
+        response_style="embed",
+        web_equivalent_sections=["top_deep"],
+    ),
+    "swing": DiscordCommandSpec(
+        name="swing",
+        description="스윙 모델 레인(가격앙상블 5일 ft_5_5)만 조회합니다.",
         kind="model_signals_lookup",
         response_style="embed",
         web_equivalent_sections=["top_deep"],

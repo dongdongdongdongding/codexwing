@@ -132,7 +132,7 @@ def _command_options(name: str) -> List[Dict[str, Any]]:
                 "max_value": 15,
             },
         ]
-    if name == "signals":
+    if name in ("signals", "intraday", "swing"):
         return [
             {
                 "type": 3,

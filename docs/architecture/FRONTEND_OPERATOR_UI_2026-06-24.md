@@ -246,7 +246,9 @@ KOSDAQ VWAP guard producer가 쓰는 주요 필드:
 - `/kosdaq_scan`: KOSDAQ scan 시작
 - `/macro_refresh`: macro context refresh
 - `/top_deep`: Top Deep 조회
-- `/signals`: 모델 신호 조회
+- `/signals`: 모델 신호 전체 조회 (스윙+인트라데이)
+- `/intraday`: 장중(인트라데이) 모델 레인만 조회 — 코스피 인트라데이 + 코스닥 15:00 VWAP가드 **[2026-06-25 추가]**
+- `/swing`: 스윙 모델 레인만 조회 (가격앙상블) **[2026-06-25 추가]**
 - `/archive`: archive 조회
 - `/runs`: run 조회
 - `/status`: bot/server/status 조회

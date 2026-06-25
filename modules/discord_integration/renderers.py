@@ -9,7 +9,7 @@ from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
 from modules.admission_metric_copy import metric_label
-from modules.candidate_interpretation import build_candidate_interpretation
+from modules.candidate_interpretation import LANE_PROFILE, build_candidate_interpretation
 from modules.operational_candidate_scoring import MODEL_VALIDATED_LANES
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
@@ -809,17 +809,48 @@ def build_top_deep_embeds(
     )
 
 
-def build_model_signals_embed(*, market: str = "", limit: int = 10) -> List[Dict[str, Any]]:
-    """Concise read of the live model-validated lanes (swing ensemble / KOSPI intraday).
+_SIGNALS_VIEW = {
+    "": {
+        "title": "🎯 모델 시그널 (라이브 레인)",
+        "description": (
+            "🟢장중: 코스피 인트라데이(3일 +5% 터치) · 코스닥 인트라데이(15:00 VWAP가드) | "
+            "🔵스윙: 가격앙상블(5일 ft_5_5) · 모델 상위픽 · 목표 +5% · 분산(타이트 손절 X)"
+        ),
+        "color": 0x2ECC71,
+        "empty": "표시할 모델 레인 픽이 없습니다.",
+    },
+    "INTRADAY": {
+        "title": "🟢 인트라데이 시그널 (장중 모델 레인)",
+        "description": "코스피 인트라데이(3일 +5% 터치) · 코스닥 인트라데이(15:00 VWAP가드) · 목표 +5% · 분산(타이트 손절 X)",
+        "color": 0x2ECC71,
+        "empty": "표시할 인트라데이 모델 픽이 없습니다.",
+    },
+    "SWING": {
+        "title": "🔵 스윙 시그널 (스윙 모델 레인)",
+        "description": "가격앙상블(5일 ft_5_5) · 진입 종가 · 목표 +5% · 분산(타이트 손절 X)",
+        "color": 0x3498DB,
+        "empty": "표시할 스윙 모델 픽이 없습니다.",
+    },
+}
 
-    These run in daily ops and write to scan_deep_reports. /signals surfaces ONLY their picks
-    (planner /top_deep mixes in admission rows), latest run per lane, with the model-lane card."""
+
+def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: str = "") -> List[Dict[str, Any]]:
+    """Concise read of the live model-validated lanes (swing ensemble / KOSPI+KOSDAQ intraday).
+
+    These run in daily ops and write to scan_deep_reports. Surfaces ONLY their picks (planner
+    /top_deep mixes in admission rows), latest run per lane, with the model-lane card.
+    scan_mode "" = all (/signals), "INTRADAY" = /intraday, "SWING" = /swing — filtered by the
+    canonical LANE_PROFILE scan_mode so stale row values can't leak the wrong lane."""
+    mode = str(scan_mode or "").upper()
+    view = _SIGNALS_VIEW.get(mode, _SIGNALS_VIEW[""])
     rows = _load_top_deep_reports(limit=500, market=market)
     rows = [r for r in rows if isinstance(r, dict) and str(r.get("decision_bucket") or "") in MODEL_VALIDATED_LANES]
+    if mode:
+        rows = [r for r in rows if str(LANE_PROFILE.get(str(r.get("decision_bucket")), {}).get("scan_mode") or "").upper() == mode]
     if market:
         rows = [r for r in rows if str(r.get("market") or "").upper() == str(market).upper()]
     if not rows:
-        return [{"title": "🎯 모델 시그널", "description": "표시할 모델 레인 픽이 없습니다.", "color": 0xF1C40F}]
+        return [{"title": view["title"], "description": view["empty"], "color": 0xF1C40F}]
     # keep only the latest run_id per lane (today's signals, not stale)
     latest: Dict[str, tuple] = {}
     for r in rows:
@@ -840,12 +871,9 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10) -> List[Dict
         interp = r.get("candidate_interpretation") if isinstance(r.get("candidate_interpretation"), dict) else build_candidate_interpretation(r)
         fields.append({"name": header, "value": _field_value_model_lane(interp), "inline": False})
     return _split_embed_fields(
-        title="🎯 모델 시그널 (라이브 레인)",
-        description=(
-            "🟢장중: 코스피 인트라데이(3일 +5% 터치) · 코스닥 인트라데이(15:00 VWAP가드) | "
-            "🔵스윙: 가격앙상블(5일 ft_5_5) · 모델 상위픽 · 목표 +5% · 분산(타이트 손절 X)"
-        ),
-        color=0x2ECC71,
+        title=view["title"],
+        description=view["description"],
+        color=view["color"],
         fields=fields,
         timestamp=datetime.now(timezone.utc).isoformat(),
     )

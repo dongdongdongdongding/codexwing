@@ -226,6 +226,36 @@ def main() -> int:
         payloads = await asyncio.to_thread(build_model_signals_embed, market=market, limit=limit)
         await _send_followup_chunks(discord, interaction, payloads)
 
+    @tree.command(name="intraday", description=COMMAND_SPECS["intraday"].description)
+    @app_commands.describe(market="시장 필터", limit="표시 개수")
+    @app_commands.choices(
+        market=[
+            app_commands.Choice(name="KOSPI", value="KOSPI"),
+            app_commands.Choice(name="KOSDAQ", value="KOSDAQ"),
+        ]
+    )
+    async def intraday(interaction, market: str = "", limit: int = 10):
+        if not await _guard(interaction):
+            return
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        payloads = await asyncio.to_thread(build_model_signals_embed, market=market, limit=limit, scan_mode="INTRADAY")
+        await _send_followup_chunks(discord, interaction, payloads)
+
+    @tree.command(name="swing", description=COMMAND_SPECS["swing"].description)
+    @app_commands.describe(market="시장 필터", limit="표시 개수")
+    @app_commands.choices(
+        market=[
+            app_commands.Choice(name="KOSPI", value="KOSPI"),
+            app_commands.Choice(name="KOSDAQ", value="KOSDAQ"),
+        ]
+    )
+    async def swing(interaction, market: str = "", limit: int = 10):
+        if not await _guard(interaction):
+            return
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        payloads = await asyncio.to_thread(build_model_signals_embed, market=market, limit=limit, scan_mode="SWING")
+        await _send_followup_chunks(discord, interaction, payloads)
+
     @tree.command(name="archive", description=COMMAND_SPECS["archive"].description)
     @app_commands.describe(
         market="시장 필터",

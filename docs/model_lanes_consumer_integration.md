@@ -46,12 +46,16 @@ Planner picks (no matching bucket) are untouched — they keep the full legacy g
 
 `/kospi_scan` and `/kosdaq_scan` trigger the **planner** SWING pipeline only.
 
-**`/signals`** is the dedicated read command for the model lanes: it surfaces ONLY their picks
-(all three lanes — KOSPI intraday → KOSDAQ intraday → swing ensemble, grouped by `bucket_order`),
-latest run per lane, as the concise model-lane card —
-`build_model_signals_embed` in `renderers.py`, spec `signals` (kind `model_signals_lookup`) in
-`commands.py`, handler in `discord_bot.py`, options in `register.py::_command_options`. The lanes
-also still appear in the general `/top_deep`, `/archive`, `/runs`.
+Three read commands surface the model lanes, all backed by `build_model_signals_embed(scan_mode=…)`
+(spec kind `model_signals_lookup`, handlers in `discord_bot.py`, options in
+`register.py::_command_options`), filtered by the canonical `LANE_PROFILE` scan_mode:
+
+- **`/signals`** — all model lanes (KOSPI intraday → KOSDAQ intraday → swing, by `bucket_order`).
+- **`/intraday`** — 🟢 장중 lanes only (kospi_intraday + kosdaq_intraday_3d_t5_vwap_guard).
+- **`/swing`** — 🔵 스윙 lane only (swing_ensemble).
+
+Each is latest-run-per-lane, concise model-lane card. The lanes also appear in the general
+`/top_deep`, `/archive`, `/runs`.
 
 **Order/badge consistency**: each lane sets `priority_rank = rank = analysis_section_rank = -p`
 order, so the scan-result, web Top분석 and Discord views all order picks identically within a run
