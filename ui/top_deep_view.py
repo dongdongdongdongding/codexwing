@@ -238,12 +238,15 @@ def scan_display_label(run_df: pd.DataFrame) -> str:
         return "-"
     run_id = str(run_df["run_id"].dropna().iloc[0]) if "run_id" in run_df and not run_df["run_id"].dropna().empty else "-"
     market = str(run_df["_market"].dropna().iloc[0]) if "_market" in run_df and not run_df["_market"].dropna().empty else "-"
+    mode = str(run_df["scan_mode"].dropna().iloc[0]) if "scan_mode" in run_df and not run_df["scan_mode"].dropna().empty else ""
+    mode_tag = {"INTRADAY": "🟢장중", "SWING": "🔵스윙"}.get(mode.upper(), mode)
+    prefix = f"{mode_tag} · " if mode_tag else ""
     generated = pd.to_datetime(run_df.get("generated_at"), errors="coerce", utc=True)
     generated = generated.dropna()
     if not generated.empty:
         ts = generated.max().tz_convert("Asia/Seoul").strftime("%Y-%m-%d %H:%M")
-        return f"{ts} · {market} · {len(run_df)}건 · {run_id}"
-    return f"{market} · {len(run_df)}건 · {run_id}"
+        return f"{ts} · {prefix}{market} · {len(run_df)}건 · {run_id}"
+    return f"{prefix}{market} · {len(run_df)}건 · {run_id}"
 
 
 def top_deep_section_order(value: Dict[str, Any]) -> int:

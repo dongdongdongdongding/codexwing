@@ -213,6 +213,9 @@ whitelist bucket은 `build_model_lane_interpretation`이 아래를 만든다.
 
 ## KOSDAQ 인트라데이 consumer gap
 
+> **[2026-06-25 해결됨]** `kosdaq_intraday_3d_t5_vwap_guard`를 `MODEL_VALIDATED_LANES` + `LANE_PROFILE`(15:00 진입·VWAP가드·≥30억·3D)에 추가. `/signals` `bucket_order`에 포함(KOSPI인트라데이→KOSDAQ인트라데이→스윙). 카드는 🟢장중·코스닥 인트라데이 배지 + "진입 15:00" 표시. 아래는 갭 당시 기록.
+
+
 KOSDAQ VWAP guard producer가 쓰는 주요 필드:
 
 - `decision_bucket="kosdaq_intraday_3d_t5_vwap_guard"`
@@ -280,8 +283,8 @@ KOSDAQ VWAP guard producer가 쓰는 주요 필드:
 
 ## UI 후속 작업
 
-1. KOSDAQ intraday bucket을 model-lane consumer에 추가한다.
-2. `/signals`에서 KOSDAQ intraday를 보이게 한다.
-3. `app.py`의 archive/deep-dive 로직을 더 작은 모듈로 분리한다.
-4. SWING/INTRADAY 표시가 섞이지 않게 UI badge와 filter를 고정한다.
-5. 오래된 phase25/legacy 문구가 현재 모델 레인과 혼동되지 않게 표시 copy를 정리한다.
+1. ~~KOSDAQ intraday bucket을 model-lane consumer에 추가한다.~~ **[2026-06-25 완료]**
+2. ~~`/signals`에서 KOSDAQ intraday를 보이게 한다.~~ **[2026-06-25 완료]**
+3. `app.py`의 archive/deep-dive 로직을 더 작은 모듈로 분리한다. (별도 작업)
+4. ~~SWING/INTRADAY 표시가 섞이지 않게 UI badge와 filter를 고정한다.~~ **[2026-06-25 완료]** — 🔵스윙/🟢장중 배지 + run 선택 scan_mode prefix. (웹 Top분석은 run 1개만 표시라 본래 섞이지 않음.)
+5. 오래된 phase25/legacy 문구가 현재 모델 레인과 혼동되지 않게 표시 copy를 정리한다. (별도 작업)

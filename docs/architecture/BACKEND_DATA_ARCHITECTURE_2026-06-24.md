@@ -344,7 +344,7 @@ Top Deep 상세 surface다. web/Discord가 후보 상세를 읽는 주요 테이
 
 ## 현재 백엔드 리스크
 
-1. KOSDAQ intraday bucket이 아직 `MODEL_VALIDATED_LANES`에 없다.
+1. ~~KOSDAQ intraday bucket이 아직 `MODEL_VALIDATED_LANES`에 없다.~~ **[2026-06-25 해결]** `kosdaq_intraday_3d_t5_vwap_guard` 추가 — MODEL_BUY 게이트·LANE_PROFILE(15:00)·/signals 반영.
 2. KOSPI intraday는 live producer 안에서 학습한다.
 3. `runtime_state`에 많은 generated file이 남아 있어 commit hygiene가 중요하다.
 4. Supabase timeout 이슈가 backfill/조회 경로를 막을 수 있다.

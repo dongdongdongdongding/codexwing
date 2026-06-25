@@ -15,7 +15,7 @@ DEFAULT_BUY_PREMIUM_PCT = 2.0
 # Lanes validated by backtested forward touch-probability (not the chart/non-chart axes,
 # which are structurally absent for these price/intraday models). Defined here, the lowest
 # module in the dependency graph, so candidate_interpretation can import it without a cycle.
-MODEL_VALIDATED_LANES = {"swing_ensemble", "kospi_intraday"}
+MODEL_VALIDATED_LANES = {"swing_ensemble", "kospi_intraday", "kosdaq_intraday_3d_t5_vwap_guard"}
 
 
 def _present(value: Any) -> bool:

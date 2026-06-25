@@ -27,6 +27,9 @@ LANE_PROFILE = {
     "swing_ensemble": {
         "label": "스윙 앙상블 매수",
         "operational_label": "모델 매수 · 가격앙상블",
+        "scan_mode": "SWING",
+        "lane_badge": "가격앙상블",
+        "entry_label": "종가",
         "horizon_days": 5,
         "prob_label": "5일내 +5% 선터치(ft_5_5) 확률",
         "hold_note": "5거래일 종가 보유 · 분산(타이트 손절 X)",
@@ -34,9 +37,22 @@ LANE_PROFILE = {
     "kospi_intraday": {
         "label": "코스피 인트라데이 매수",
         "operational_label": "모델 매수 · 일중+컨텍스트",
+        "scan_mode": "INTRADAY",
+        "lane_badge": "코스피 인트라데이",
+        "entry_label": "종가",
         "horizon_days": 3,
         "prob_label": "3일내 +5% 터치 확률",
         "hold_note": "3거래일 종가 보유 · 분산(타이트 손절 X)",
+    },
+    "kosdaq_intraday_3d_t5_vwap_guard": {
+        "label": "코스닥 인트라데이 매수",
+        "operational_label": "모델 매수 · 15:00 VWAP가드",
+        "scan_mode": "INTRADAY",
+        "lane_badge": "코스닥 인트라데이",
+        "entry_label": "15:00",
+        "horizon_days": 3,
+        "prob_label": "3일내 +5% 터치 확률(15:00 진입·VWAP가드)",
+        "hold_note": "3거래일 보유 · 분산(타이트 손절 X) · ≥30억 유동성",
     },
 }
 
@@ -390,6 +406,9 @@ def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[st
         "section_rank": section_rank,
         "display_status": "VISIBLE",
         "action_label": profile["label"],
+        "scan_mode": _first(profile.get("scan_mode"), row.get("scan_mode")),
+        "lane_badge": profile.get("lane_badge"),
+        "entry_label": profile.get("entry_label"),
         "signal_label": row.get("signal_label"),
         "decision": _first(row.get("decision"), row.get("decision_bucket")),
         "entry_reference_price": entry,

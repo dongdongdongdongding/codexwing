@@ -497,9 +497,14 @@ def _field_value_model_lane(interp: Dict[str, Any]) -> str:
     prob_s = f"{prob:.0f}%" if isinstance(prob, (int, float)) else "-"
     tp = interp.get("target_tp_pct") or 5.0
     dc = interp.get("day_change_pct")
+    scan_mode = str(interp.get("scan_mode") or "").upper()
+    badge = interp.get("lane_badge") or ("인트라데이" if scan_mode == "INTRADAY" else "스윙")
+    mode_tag = "🟢장중" if scan_mode == "INTRADAY" else "🔵스윙"
+    entry_label = interp.get("entry_label")
+    entry_str = f"{entry_label} {_money(interp.get('entry_reference_price'))}" if entry_label and entry_label != "종가" else _money(interp.get("entry_reference_price"))
     lines = [
-        f"🎯 {interp.get('action_label') or '모델 매수'} · 적중확률 {prob_s}",
-        f"진입 {_money(interp.get('entry_reference_price'))} → 목표 +{tp:.0f}% {_money(interp.get('target_price'))}"
+        f"[{mode_tag}·{badge}] 🎯 {interp.get('action_label') or '모델 매수'} · 적중확률 {prob_s}",
+        f"진입 {entry_str} → 목표 +{tp:.0f}% {_money(interp.get('target_price'))}"
         f" · {interp.get('hold_note') or '종가 보유'}",
         f"{interp.get('model_prob_label') or '적중확률'} {prob_s} (모델 상위픽)"
         + (f" · 전일비 {dc:+.1f}%" if isinstance(dc, (int, float)) else ""),
@@ -824,7 +829,7 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10) -> List[Dict
             latest[bucket] = (str(r.get("run_id") or ""), stamp)
     keep_runs = {run for run, _ in latest.values()}
     rows = [r for r in rows if str(r.get("run_id") or "") in keep_runs]
-    bucket_order = {"kospi_intraday": 0, "swing_ensemble": 1}
+    bucket_order = {"kospi_intraday": 0, "kosdaq_intraday_3d_t5_vwap_guard": 1, "swing_ensemble": 2}
     rows.sort(key=lambda r: (bucket_order.get(str(r.get("decision_bucket")), 9), int(r.get("rank") or 0)))
     rows = rows[: max(1, int(limit or 10))]
     fields = []
@@ -837,8 +842,8 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10) -> List[Dict
     return _split_embed_fields(
         title="🎯 모델 시그널 (라이브 레인)",
         description=(
-            "가격앙상블(스윙 5일 ft_5_5) + 코스피 인트라데이(3일 +5% 터치) · "
-            "모델 상위픽 · 진입=종가 · 목표 +5% · 분산(타이트 손절 X)"
+            "🟢장중: 코스피 인트라데이(3일 +5% 터치) · 코스닥 인트라데이(15:00 VWAP가드) | "
+            "🔵스윙: 가격앙상블(5일 ft_5_5) · 모델 상위픽 · 목표 +5% · 분산(타이트 손절 X)"
         ),
         color=0x2ECC71,
         fields=fields,
