@@ -851,13 +851,16 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
         rows = [r for r in rows if str(r.get("market") or "").upper() == str(market).upper()]
     if not rows:
         return [{"title": view["title"], "description": view["empty"], "color": 0xF1C40F}]
-    # keep only the latest run_id per lane (today's signals, not stale)
-    latest: Dict[str, tuple] = {}
+    # keep only the latest run per (lane, market) so a per-market web scan (swing_ensemble routed
+    # under SWING-ENS-...-KOSPI vs -KOSDAQ) doesn't hide one market; daily_ops' single combined
+    # run_id still works (both markets share it).
+    latest: Dict[tuple, tuple] = {}
     for r in rows:
         bucket = str(r.get("decision_bucket") or "")
+        key = (bucket, str(r.get("market") or "").upper())
         stamp = str(r.get("generated_at") or "")
-        if bucket and (bucket not in latest or stamp > latest[bucket][1]):
-            latest[bucket] = (str(r.get("run_id") or ""), stamp)
+        if bucket and (key not in latest or stamp > latest[key][1]):
+            latest[key] = (str(r.get("run_id") or ""), stamp)
     keep_runs = {run for run, _ in latest.values()}
     rows = [r for r in rows if str(r.get("run_id") or "") in keep_runs]
     bucket_order = {"kospi_intraday": 0, "kosdaq_intraday_3d_t5_vwap_guard": 1, "swing_ensemble": 2}
