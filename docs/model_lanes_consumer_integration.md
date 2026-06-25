@@ -10,7 +10,18 @@ Three live producer lanes sit **alongside** the planner pipeline, not inside it:
 
 각 레인은 `LANE_PROFILE`에 `scan_mode`/`lane_badge`/`entry_label`(종가 vs 15:00)/`horizon_days`/`prob_label`/`hold_note`를 가진다. 카드·웹은 이 프로필로 SWING(🔵)/INTRADAY(🟢)를 배지로 구분한다.
 
-Both run inside `run_daily_ops.sh` (KOSPI intraday needs post-close full-session KIS minute bars,
+## Web/Discord scan = the model lane (identical tickers)
+
+A manual **web scan** (KOSPI/KOSDAQ × 스윙/장중) no longer runs the legacy admission scanner —
+it runs the matching validated producer via `modules/model_lane_scan.py::run_model_lane_scan`,
+so the result tickers are **100% identical** to the model's daily_ops picks (same scoring
+function, same defaults, deterministic data). Gated by `AG_SCAN_MODEL_LANE` (default on); US
+markets and the flag-off path keep the legacy scanner. Dispatch:
+`(KR, SWING)→score_market`, `(KOSPI, INTRADAY)→score_today`, `(KOSDAQ, INTRADAY)→score_live_candidates`.
+The picks are routed live and shown via `_render_model_lane_scan_result` (app.py) + Top 분석.
+The legacy planner keeps running via `run_kr_daily_auto_scans` for learning/validation only.
+
+Both producers also run inside `run_daily_ops.sh` (KOSPI intraday needs post-close full-session KIS minute bars,
 so it is **not** an on-demand mid-session scan). They dual-write the SAME picks to
 `market_scan_results` (archive/learning) and directly to `scan_deep_reports` (web/Discord surface)
 via the shared `_route_live`, bypassing `generate_and_store_top_deep_reports` (which would re-run the

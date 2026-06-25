@@ -528,8 +528,62 @@ def _start_market_scan_job(*, market, max_scan, scan_mode, engine_opt, is_advanc
     return True
 
 
+def _model_lane_scan_enabled() -> bool:
+    """When on (default), a KR scan runs the validated model-lane producer instead of the
+    legacy admission scanner, so results are 100% identical tickers to the model's picks.
+    The legacy planner still runs via run_kr_daily_auto_scans for learning."""
+    return os.getenv("AG_SCAN_MODEL_LANE", "1").strip() not in {"0", "false", "False", ""}
+
+
+def _run_model_lane_scan_job(*, scan_state, market, scan_mode):
+    """Run the (market, scan_mode) scan through the validated model-lane producer. The picks
+    are routed live (scan_deep_reports + market_scan_results) and are the exact producer
+    tickers — see modules/model_lane_scan."""
+    from modules.model_lane_scan import run_model_lane_scan, model_lane_for
+
+    bucket = model_lane_for(market, scan_mode)
+    scan_state.update(
+        status="running",
+        total_scans=0,
+        progress=0.1,
+        status_line=f"{market} {scan_mode}: 신규 모델 레인({bucket}) 실행 중 — 결과 티커는 모델 픽과 100% 동일합니다.",
+    )
+    try:
+        res = run_model_lane_scan(market, scan_mode)
+    except Exception as exc:  # pragma: no cover - live data dependent
+        scan_state.update(status="failed", error=str(exc), status_line=f"모델 레인 스캔 실패: {exc}")
+        return
+    if res.get("error"):
+        scan_state.update(status="failed", error=str(res["error"]), status_line=f"모델 레인 스캔 실패: {res['error']}")
+        return
+    picks = res.get("picks") or []
+    rows = []
+    for i, p in enumerate(picks, start=1):
+        rows.append({
+            "Ticker": p.get("ticker"), "ticker": p.get("ticker"), "Name": p.get("ticker"), "Market": market,
+            "market": market, "Decision Score": round(float(p.get("p") or 0.0) * 100.0, 1),
+            "decision_bucket": res.get("bucket"), "scan_mode": str(scan_mode).upper(),
+            "entry_reference_price": p.get("entry_reference_price"), "rank": i,
+        })
+    scan_state.update(
+        status="completed",
+        run_id=res.get("run_id") or scan_state.run_id,
+        progress=1.0,
+        current_symbol="",
+        results=rows,
+        total_scans=len(rows),
+        completed_scans=len(rows),
+        bridge_info={"model_lane_scan": True, "model_lane_result": res, "decision_bucket": res.get("bucket")},
+        status_line=f"신규 모델 {res.get('bucket')} {len(rows)}건 — 티커=producer 픽과 100% 동일 (라우팅 완료). 상세 카드는 'Top 분석' 탭.",
+    )
+
+
 def _run_market_scan_job(*, scan_state, market, max_scan, scan_mode, engine_opt, is_advanced_engine, macro_ctx, market_gate):
     try:
+        from modules.model_lane_scan import model_lane_for
+        if _model_lane_scan_enabled() and model_lane_for(market, scan_mode) is not None:
+            _run_model_lane_scan_job(scan_state=scan_state, market=market, scan_mode=scan_mode)
+            return
         scan_state.update(status="running", status_line="스캔 실행을 준비 중입니다.")
         regime = quant_analysis.QuantStrategy.detect_market_regime(market)
         scan_state.update(regime=regime or {})
@@ -1129,10 +1183,41 @@ def _render_theme_distribution_workspace(market, intel_data, summary=None):
             )
 
 
+def _render_model_lane_scan_result(snapshot):
+    res = (snapshot.get("bridge_info") or {}).get("model_lane_result") or {}
+    picks = res.get("picks") or []
+    bucket = res.get("bucket")
+    market = snapshot.get("market", "")
+    scan_mode = snapshot.get("scan_mode", "")
+    st.caption(snapshot.get("status_line", ""))
+    if not picks:
+        st.warning(
+            "신규 모델 신호 없음 — 오늘 조건(유동성·VWAP·변동성 가드 등)을 통과한 종목이 없습니다. "
+            "인트라데이는 장마감 후 전체세션 데이터가 필요합니다."
+        )
+        return
+    st.success(f"✅ 신규 모델({bucket}) {len(picks)}건 · {market} {scan_mode} — 티커는 모델 픽과 100% 동일")
+    table = []
+    for i, p in enumerate(picks, start=1):
+        entry = p.get("entry_reference_price")
+        table.append({
+            "순위": i,
+            "티커": p.get("ticker"),
+            "적중확률%": round(float(p.get("p") or 0.0) * 100.0, 1),
+            "진입": entry,
+            "목표(+5%)": round(float(entry) * 1.05, 1) if entry else None,
+        })
+    st.dataframe(pd.DataFrame(table), use_container_width=True, hide_index=True)
+    st.caption("상세 카드(매매계획·근거·적중확률)는 'Top 분석' 탭에서 동일 run_id로 확인하세요. · 손절은 분산(타이트 손절 없음).")
+
+
 def _render_scan_results_snapshot(snapshot):
     results = snapshot.get("results", [])
     bridge_info = snapshot.get("bridge_info", {})
     market = snapshot.get("market", "KOSPI")
+    if isinstance(bridge_info, dict) and bridge_info.get("model_lane_scan"):
+        _render_model_lane_scan_result(snapshot)
+        return
     if not results:
         if isinstance(snapshot.get("intel_data"), dict) and snapshot.get("intel_data"):
             _render_market_intelligence_panel(snapshot.get("intel_data", {}), market, compact=True)
