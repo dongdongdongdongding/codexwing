@@ -204,6 +204,24 @@ if [[ "${AG_KOSPI_NORMAL_PEAD_SHADOW_ENABLE:-1}" == "1" ]]; then
       --top-picks "${AG_KOSPI_NORMAL_PEAD_TOP_PICKS:-5}"
 fi
 
+# --- Research-cache data refresh (keep the model lanes fresh) ------------------------------------
+# These run BEFORE the model producers so swing/intraday train + build their universe on current
+# data. Sources live in ~/research_cache (outside the repo). Both are date-incremental/idempotent.
+if [[ "${AG_PX_LONG_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/build_px_long.py" ]]; then
+  # 일봉 px_long: full rebuild to today (PX_REBUILD writes a .tmp then atomic-swaps, so readers keep
+  # the old panel until it finishes). Heavy (~30-60min). Disable with AG_PX_LONG_REFRESH=0.
+  echo "[STEP] px_long_refresh (일봉)"
+  run_optional "px_long_refresh" \
+    env PX_REBUILD=1 PX_END="${DATE_TARGET}" python3 "${HOME}/research_cache/build_px_long.py"
+fi
+if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday_backfill.py" ]]; then
+  # 분봉 minute bars: incremental KIS backfill of today's full session (post-close). Only fetches
+  # days not already cached, so the daily run just adds today. Disable with AG_INTRADAY_BACKFILL=0.
+  echo "[STEP] intraday_backfill (분봉)"
+  run_optional "intraday_backfill" \
+    python3 "${HOME}/research_cache/intraday_backfill.py"
+fi
+
 if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
   # LIVE SWING structure-1 (2026-06-24, operator decision): daily price-ML ENSEMBLE
   # (LGBM+XGB+ET) -> ft_5_5 first-touch (+5/-5), KOSPI+KOSDAQ, >=100억, top ~1% confidence,
