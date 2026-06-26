@@ -222,6 +222,21 @@ if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday
     python3 "${HOME}/research_cache/intraday_backfill.py"
 fi
 
+# B 엔진 (signal_class=B, 시장중립 적응형 앙상블, A와 별개). 일봉주기 매일 top10 픽 + forward-shadow.
+# 데이터(px_long 위 + flow)가 신선해야 하므로 위 px_long_refresh 다음에 배치. 비활성: AG_B_ENGINE=0.
+if [[ "${AG_B_ENGINE:-1}" == "1" && -d "b_engine" ]]; then
+  if [[ -f "${HOME}/research_cache/flow_bf.py" ]]; then
+    echo "[STEP] b_engine flow_refresh (외국인/기관 수급)"
+    run_optional "b_flow_refresh" python3 "${HOME}/research_cache/flow_bf.py"
+  fi
+  echo "[STEP] b_engine retrain (적응형 앙상블)"
+  run_optional "b_retrain" python3 -m b_engine.model_engine train
+  echo "[STEP] b_engine scan (매일 top10 픽)"
+  run_optional "b_scan" python3 -m b_engine.model_scan scan
+  echo "[STEP] b_engine settle (forward-shadow 채점)"
+  run_optional "b_settle" python3 -m b_engine.model_scan settle
+fi
+
 if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
   # LIVE SWING structure-1 (2026-06-24, operator decision): daily price-ML ENSEMBLE
   # (LGBM+XGB+ET) -> ft_5_5 first-touch (+5/-5), KOSPI+KOSDAQ, >=100억, top ~1% confidence,

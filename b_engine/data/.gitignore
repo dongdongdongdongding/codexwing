@@ -1,0 +1,10 @@
+# 재생성 가능한 바이너리/런타임 (model_engine train / model_scan scan 으로 복원)
+*.pkl
+*.parquet
+picks_latest.json
+shadow.jsonl
+b_picks_latest.json
+b_shadow.jsonl
+# *_model_meta.json 은 정직한 검증/메타 기록이므로 커밋 유지
+!model_meta.json
+!b_model_meta.json

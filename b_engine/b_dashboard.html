@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>B 엔진 · 실시간 픽</title>
+<style>
+  :root{--bg:#0b0e14;--panel:#141a24;--line:#222b39;--txt:#e6edf3;--mut:#8b98a9;--up:#26a269;--dn:#e0526a;--accent:#4c8dff;--gold:#e3b341}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo",sans-serif;font-size:14px}
+  header{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .badge{background:var(--accent);color:#fff;font-weight:700;border-radius:6px;padding:3px 9px;font-size:12px;letter-spacing:.5px}
+  h1{font-size:18px;margin:0;font-weight:700}
+  .sub{color:var(--mut);font-size:12px}
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 22px}
+  .note{background:#1a1408;border:1px solid #3a2e10;color:#e3b341;border-radius:8px;padding:10px 14px;font-size:12.5px;margin-bottom:16px;line-height:1.55}
+  .cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 16px;min-width:150px;flex:1}
+  .card .k{color:var(--mut);font-size:11.5px;margin-bottom:5px}
+  .card .v{font-size:20px;font-weight:700}
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{padding:11px 13px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  th{color:var(--mut);font-weight:600;font-size:11.5px;text-align:right;cursor:pointer;user-select:none;background:#10151d}
+  th:first-child,td:first-child{text-align:left}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#19212e}
+  .code{font-weight:700;font-size:15px}
+  .rank{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;background:#222b39;border-radius:6px;color:var(--mut);font-size:12px;margin-right:9px;font-weight:700}
+  .up{color:var(--up)} .dn{color:var(--dn)} .mut{color:var(--mut)}
+  .bar{height:6px;background:#222b39;border-radius:4px;overflow:hidden;min-width:54px;display:inline-block;vertical-align:middle}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7db0ff)}
+  .toolbar{display:flex;gap:9px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  button{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer;font-size:13px}
+  button:hover{border-color:var(--accent)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--up);display:inline-block;margin-right:5px;animation:p 1.6s infinite}
+  @keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+  .live{color:var(--mut);font-size:12px}
+  a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">B</span>
+  <div>
+    <h1>B 엔진 · 실시간 픽 <span class="sub">시장중립 적응형 앙상블 (A 스윙/장중과 별개)</span></h1>
+    <div class="sub" id="meta">로딩…</div>
+  </div>
+  <div style="margin-left:auto" class="live"><span class="dot"></span><span id="clock"></span></div>
+</header>
+
+<div class="wrap">
+  <div class="note">
+    ⚠️ <b>정직 고지</b> — 엣지는 <b>일봉 주기</b>(매일 픽 갱신, 분봉 단타 아님). 검증: OOS 2024·25·26 전부 양·플라시보 통과, top5% Sharpe ~1.2. 단 <b>낙관치</b>(비용·슬리피지·OOS 1.8년 미반영) → 아래 <b>forward-shadow가 라이브 실적</b>을 쌓는 중. <b>절대수익엔 시장 베타 포함</b>(상승장에 큼, 하락장 위험), <b>알파</b>가 로버스트한 부분. 관측전용 — 실자본 전 라이브 검증.
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="toolbar">
+    <button onclick="refresh()">↻ 새로고침</button>
+    <button onclick="rescan()">🔄 픽 재생성</button>
+    <span class="live" id="prstatus"></span>
+  </div>
+
+  <table id="tbl">
+    <thead><tr>
+      <th data-k="rank">#</th><th data-k="code">종목</th>
+      <th data-k="close">종가</th><th data-k="live">실시간</th><th data-k="chg">등락%</th>
+      <th data-k="pred">예측랭킹α</th><th data-k="smart5">스마트머니5d</th>
+      <th data-k="rsi14">RSI</th><th data-k="ret_20d">20일%</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="sub" style="margin-top:10px">예측랭킹α = 모델의 상대 점수(랭킹용, 문자 그대로의 기대수익 아님). 스마트머니 = 외국인+기관 5일 순매수(발행주 대비 bps). 보유 5거래일 가정.</div>
+</div>
+
+<script>
+let PICKS=null, sortK='rank', sortAsc=true;
+const fmt=(x,d=0)=>x==null?'–':Number(x).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+const sign=x=>x==null?'mut':(x>0?'up':(x<0?'dn':'mut'));
+
+async function loadPicks(){
+  const r=await fetch('/api/picks'); PICKS=await r.json();
+  const m=PICKS.model_meta||{};
+  document.getElementById('meta').textContent=
+    `스캔일 ${PICKS.scan_date||'–'} · 유니버스 ${PICKS.universe||'–'}종목 · 학습~${m.trained_through||'–'} · 보유 ${PICKS.hold_days||5}일 · 매일 top${PICKS.top_n||10}`;
+  render(); loadPrices();
+}
+async function loadShadow(){
+  const s=await (await fetch('/api/shadow')).json();
+  const c=document.getElementById('cards');
+  const card=(k,v,cls='')=>`<div class="card"><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`;
+  c.innerHTML =
+    card('forward-shadow 채점', `${s.settled||0}건`)+
+    card('라이브 알파(시장초과)', s.alpha_mean!=null?`${s.alpha_mean>0?'+':''}${s.alpha_mean}%`:'누적중', sign(s.alpha_mean))+
+    card('시장초과 승률', s.alpha_winrate!=null?`${s.alpha_winrate}%`:'–')+
+    card('절대수익', s.abs_mean!=null?`${s.abs_mean>0?'+':''}${s.abs_mean}%`:'누적중', sign(s.abs_mean))+
+    card('관측중(미채점)', `${s.open||0}건`);
+}
+async function loadPrices(){
+  if(!PICKS||!PICKS.picks) return;
+  const codes=PICKS.picks.map(p=>p.code).join(',');
+  document.getElementById('prstatus').textContent='시세 갱신중…';
+  try{
+    const pr=await (await fetch('/api/prices?codes='+codes)).json();
+    PICKS.picks.forEach(p=>{ if(pr[p.code]){p._live=pr[p.code].price; p._chg=pr[p.code].change_pct;} });
+    const n=Object.keys(pr).length;
+    document.getElementById('prstatus').textContent = n? `실시간 시세 ${n}종목 (자동갱신 15s)` : '장외/시세없음 → 종가 표시';
+  }catch(e){ document.getElementById('prstatus').textContent='시세 불가 → 종가 표시'; }
+  render();
+}
+function render(){
+  if(!PICKS||!PICKS.picks){document.getElementById('rows').innerHTML='<tr><td colspan="9" class="mut">픽 없음 — 재생성</td></tr>';return;}
+  const maxA=Math.max(...PICKS.picks.map(p=>Math.abs(p.pred_alpha_5d||0)),1);
+  let ps=PICKS.picks.map((p,i)=>({...p,rank:i+1,live:p._live??p.close,chg:p._chg}));
+  ps.sort((a,b)=>{let x=a[sortK],y=b[sortK];if(sortK==='code'){x=a.code;y=b.code}x=x??-1e9;y=y??-1e9;return (x<y?-1:x>y?1:0)*(sortAsc?1:-1)});
+  document.getElementById('rows').innerHTML=ps.map(p=>{
+    const w=Math.round(Math.abs(p.pred_alpha_5d||0)/maxA*100);
+    const liveCls = p._live? (p._live>p.close?'up':(p._live<p.close?'dn':'')):'mut';
+    return `<tr>
+      <td><span class="rank">${p.rank}</span></td>
+      <td class="code">${p.code} <a href="https://finance.naver.com/item/main.naver?code=${p.code}" target="_blank" class="sub">↗</a></td>
+      <td>${fmt(p.close)}</td>
+      <td class="${liveCls}">${p._live?fmt(p._live):'<span class=mut>–</span>'}</td>
+      <td class="${sign(p._chg)}">${p._chg!=null?(p._chg>0?'+':'')+fmt(p._chg,2)+'%':'–'}</td>
+      <td><span class="bar"><i style="width:${w}%"></i></span> <span class="mut">${fmt(p.pred_alpha_5d,2)}</span></td>
+      <td class="${sign(p.smart5)}">${fmt(p.smart5,1)}</td>
+      <td>${fmt(p.rsi14,1)}</td>
+      <td class="${sign(p.ret_20d)}">${p.ret_20d!=null?(p.ret_20d>0?'+':'')+fmt(p.ret_20d,1)+'%':'–'}</td>
+    </tr>`;}).join('');
+}
+document.querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(k==='live')return;sortAsc=(sortK===k)?!sortAsc:false;sortK=k;render();});
+async function refresh(){await loadPicks();await loadShadow();}
+async function rescan(){document.getElementById('prstatus').textContent='재생성중…';await fetch('/api/rescan');await refresh();}
+function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('ko-KR');}
+setInterval(clock,1000);clock();
+setInterval(loadPrices,15000);
+refresh();
+</script>
+</body>
+</html>
