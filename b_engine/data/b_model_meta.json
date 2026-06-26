@@ -41,6 +41,6 @@
   "universe_n": 500,
   "train_months": 9,
   "n_seeds": 3,
-  "trained_through": "2026-06-15",
-  "train_rows": 87000
+  "trained_through": "2026-06-18",
+  "train_rows": 89500
 }

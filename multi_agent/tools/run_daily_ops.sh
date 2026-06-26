@@ -225,9 +225,10 @@ fi
 # B 엔진 (signal_class=B, 시장중립 적응형 앙상블, A와 별개). 일봉주기 매일 top10 픽 + forward-shadow.
 # 데이터(px_long 위 + flow)가 신선해야 하므로 위 px_long_refresh 다음에 배치. 비활성: AG_B_ENGINE=0.
 if [[ "${AG_B_ENGINE:-1}" == "1" && -d "b_engine" ]]; then
-  if [[ -f "${HOME}/research_cache/flow_bf.py" ]]; then
-    echo "[STEP] b_engine flow_refresh (외국인/기관 수급)"
-    run_optional "b_flow_refresh" python3 "${HOME}/research_cache/flow_bf.py"
+  # flow_update.py = 증분 일일 갱신(flow_bf.py는 6/15 하드코딩·기존종목skip이라 안 돎 → 사용금지).
+  if [[ -f "${HOME}/research_cache/flow_update.py" ]]; then
+    echo "[STEP] b_engine flow_update (외국인/기관 수급 증분)"
+    run_optional "b_flow_update" python3 "${HOME}/research_cache/flow_update.py"
   fi
   echo "[STEP] b_engine retrain (적응형 앙상블)"
   run_optional "b_retrain" python3 -m b_engine.model_engine train

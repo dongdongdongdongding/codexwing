@@ -37,7 +37,7 @@ def _kis():
     try:
         from dotenv import load_dotenv
         load_dotenv(os.path.join(os.path.dirname(HERE), ".env.local"))
-        os.environ.setdefault("KIS_ENABLE_LIVE_CALLS", "1")
+        os.environ["KIS_ENABLE_LIVE_CALLS"] = "1"   # 대시보드는 라이브 시세가 목적 → 강제 on(.env 값 덮어씀)
         from modules.kis_openapi import KISOpenAPIClient
         c = KISOpenAPIClient(timeout=5.0); c.get_access_token()
         _CLIENT = c
@@ -52,11 +52,11 @@ def _fetch(codes, out):
     c = _kis()
     if c is None:
         return
-    from modules.kis_openapi import parse_quote_snapshot
     for code in codes:
         try:
-            snap = parse_quote_snapshot(code, c.quote_snapshot(code))
-            out[code] = {"price": snap.get("price"), "change_pct": snap.get("change_pct")}
+            q = c.quote_snapshot(code)   # 이미 파싱된 dict: last_price / day_change_pct
+            out[code] = {"price": q.get("last_price"), "change_pct": q.get("day_change_pct"),
+                         "status": q.get("source_status")}
         except Exception:
             pass
 
@@ -107,6 +107,9 @@ class H(BaseHTTPRequestHandler):
 
 
 def main():
+    # KIS 클라이언트를 시작시 백그라운드로 워밍(토큰 캐시) → 첫 시세요청부터 빠름.
+    threading.Thread(target=lambda: (_kis() and print("[B server] KIS 라이브 준비됨", flush=True)),
+                     daemon=True).start()
     srv = ThreadingHTTPServer(("0.0.0.0", PORT), H)
     print(f"[B 엔진 대시보드] http://localhost:{PORT}  (Ctrl+C 종료)", flush=True)
     srv.serve_forever()

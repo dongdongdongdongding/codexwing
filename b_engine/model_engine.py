@@ -25,6 +25,8 @@ RESEARCH = os.environ.get("B_RESEARCH_CACHE", os.path.expanduser("~/research_cac
 PX_LONG = os.path.join(RESEARCH, "px_long.parquet")
 FLOW = os.path.join(RESEARCH, "flow.parquet")
 SHARES = os.path.join(RESEARCH, "shares.parquet")
+NAMES = os.path.join(RESEARCH, "names.parquet")
+FLOW_FFILL_LIMIT = 20   # 수급 데이터 지연시 마지막값 유지 한도(거래일) — 픽을 최신가격에 맞춤
 MODEL_PATH = os.path.join(DATA, "b_model.pkl")
 META_PATH = os.path.join(DATA, "b_model_meta.json")
 
@@ -59,11 +61,16 @@ def load_panel(min_date="2023-12-01"):
         fl[f"{inv}_acc20"] = gf[inv + "_r"].transform(lambda s: s.rolling(20).sum())
     fl["smart5"] = fl["frgn_acc5"] + fl["orgn_acc5"]; fl["smart20"] = fl["frgn_acc20"] + fl["orgn_acc20"]
     px = px.merge(fl[["code", "date"] + FL], on=["code", "date"], how="left").sort_values(["code", "date"])
+    # 수급이 px_long보다 늦으면(파이프라인 지연) 마지막값 ffill → 픽이 최신 가격일에 나오게.
+    for c in FL:
+        px[c] = px.groupby("code")[c].ffill(limit=FLOW_FFILL_LIMIT)
     g = px.groupby("code")
     px["nxe"] = g["close"].shift(-(HOLD + 1)); px["f5"] = (px["nxe"] / g["close"].shift(-1) - 1) * 100
     liq = px[px["date"] >= px["date"].max() - pd.Timedelta(days=120)].groupby("code")["liq"].median()
     codes = set(liq.sort_values(ascending=False).head(UNIVERSE_N).index.astype(str))
-    px = px[px["code"].isin(codes) & (px["date"] >= pd.Timestamp(min_date)) & px["smart5"].notna()].copy()
+    # 수급 notna 강제 대신 핵심 가격피처(ret_20d) 존재 + 수급 ffill 결과 존재로 완화 → 최신일 픽 가능.
+    px = px[px["code"].isin(codes) & (px["date"] >= pd.Timestamp(min_date))
+            & px["ret_20d"].notna() & px["smart5"].notna()].copy()
     px["a5"] = px["f5"] - px.groupby("date")["f5"].transform("mean")  # 시장중립 알파(타깃)
     for c in ALLF:
         px[c] = pd.to_numeric(px[c], errors="coerce").replace([np.inf, -np.inf], np.nan)
@@ -118,10 +125,17 @@ def pick(as_of=None):
     s["pred_alpha"] = _predict(models, s)
     s = s.sort_values("pred_alpha", ascending=False)
     top = s.head(TOP_N)
+    names = {}
+    if os.path.exists(NAMES):
+        try:
+            nm = pd.read_parquet(NAMES); nm["code"] = nm["code"].astype(str)
+            names = dict(zip(nm["code"], nm["name"]))
+        except Exception:
+            pass
     picks = []
     for _, r in top.iterrows():
         picks.append({
-            "code": r["code"], "signal_class": "B",
+            "code": r["code"], "name": names.get(r["code"], r["code"]), "signal_class": "B",
             "pred_alpha_5d": round(float(r["pred_alpha"]), 3),
             "close": round(float(r["close"]), 2),
             "ret_20d": round(float(r["ret_20d"]), 2) if pd.notna(r["ret_20d"]) else None,

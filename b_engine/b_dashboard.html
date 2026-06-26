@@ -118,7 +118,7 @@ function render(){
     const liveCls = p._live? (p._live>p.close?'up':(p._live<p.close?'dn':'')):'mut';
     return `<tr>
       <td><span class="rank">${p.rank}</span></td>
-      <td class="code">${p.code} <a href="https://finance.naver.com/item/main.naver?code=${p.code}" target="_blank" class="sub">↗</a></td>
+      <td><span class="code">${p.name||p.code}</span> <a href="https://finance.naver.com/item/main.naver?code=${p.code}" target="_blank" class="sub">${p.code}↗</a></td>
       <td>${fmt(p.close)}</td>
       <td class="${liveCls}">${p._live?fmt(p._live):'<span class=mut>–</span>'}</td>
       <td class="${sign(p._chg)}">${p._chg!=null?(p._chg>0?'+':'')+fmt(p._chg,2)+'%':'–'}</td>
