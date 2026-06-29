@@ -133,7 +133,8 @@ async function refresh(){await loadPicks();await loadShadow();}
 async function rescan(){document.getElementById('prstatus').textContent='재생성중…';await fetch('/api/rescan');await refresh();}
 function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('ko-KR');}
 setInterval(clock,1000);clock();
-setInterval(loadPrices,15000);
+setInterval(loadPrices,15000);       // 시세 15초
+setInterval(refresh,300000);          // 픽+성과 5분(서버 자동 재스캔 반영)
 refresh();
 </script>
 </body>

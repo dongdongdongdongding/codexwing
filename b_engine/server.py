@@ -69,6 +69,47 @@ def live_prices(codes):
     return out
 
 
+_SCAN_LOCK = threading.Lock()
+_RESCAN_INTERVAL = int(os.environ.get("B_RESCAN_INTERVAL", "600"))  # 새데이터 점검 주기(초)
+
+
+def _picks_scan_date():
+    p = os.path.join(E.DATA, "b_picks_latest.json")
+    try:
+        return json.load(open(p)).get("scan_date", "")
+    except Exception:
+        return ""
+
+
+def _latest_data_date():
+    import pandas as pd
+    return str(pd.read_parquet(E.PX_LONG, columns=["date"])["date"].max())[:10]
+
+
+def rescan_if_new():
+    """px_long 최신 거래일 > 현재 픽 스캔일이면 자동 재스캔(저장모델로 스코어). 락으로 중복방지."""
+    if not _SCAN_LOCK.acquire(blocking=False):
+        return False
+    try:
+        latest, cur = _latest_data_date(), _picks_scan_date()
+        if latest and latest > cur:
+            print(f"[B server] 새 데이터 {latest} 감지 (현재 {cur}) → 자동 재스캔", flush=True)
+            S.scan()
+            return True
+    except Exception as e:
+        print(f"[B server] 자동 재스캔 점검 실패: {e}", flush=True)
+    finally:
+        _SCAN_LOCK.release()
+    return False
+
+
+def _auto_rescan_loop():
+    import time as _t
+    while True:
+        rescan_if_new()
+        _t.sleep(_RESCAN_INTERVAL)
+
+
 class H(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="application/json"):
         b = body.encode("utf-8") if isinstance(body, str) else body
@@ -98,7 +139,8 @@ class H(BaseHTTPRequestHandler):
                 codes = [c for c in codes if c]
                 self._send(200, json.dumps(live_prices(codes), ensure_ascii=False))
             elif path == "/api/rescan":
-                out = S.scan()
+                with _SCAN_LOCK:                  # 자동 재스캔과 충돌 방지
+                    out = S.scan()
                 self._send(200, json.dumps({"ok": bool(out), "scan_date": out["scan_date"] if out else None}, ensure_ascii=False))
             else:
                 self._send(404, json.dumps({"error": "not found"}))
@@ -110,6 +152,10 @@ def main():
     # KIS 클라이언트를 시작시 백그라운드로 워밍(토큰 캐시) → 첫 시세요청부터 빠름.
     threading.Thread(target=lambda: (_kis() and print("[B server] KIS 라이브 준비됨", flush=True)),
                      daemon=True).start()
+    # 새 거래일 데이터 감지 → 자동 재스캔(daily ops/버튼 없이도 픽 최신 유지).
+    rescan_if_new()
+    threading.Thread(target=_auto_rescan_loop, daemon=True).start()
+    print(f"[B server] 자동 재스캔 감시 시작 ({_RESCAN_INTERVAL}s 주기)", flush=True)
     srv = ThreadingHTTPServer(("0.0.0.0", PORT), H)
     print(f"[B 엔진 대시보드] http://localhost:{PORT}  (Ctrl+C 종료)", flush=True)
     srv.serve_forever()
