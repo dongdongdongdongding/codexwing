@@ -33,6 +33,7 @@ export function Term({ k, children }: { k: string; children?: React.ReactNode })
 // 시장 배지 (코스피/코스닥)
 export function MarketBadge({ market }: { market?: string }) {
   const m = (market || "").toUpperCase();
+  if (m.includes("NASDAQ")) return <span style={pillStyle("#7D5BD6")}>나스닥</span>;
   const isKospi = m.includes("KOSPI") || m === "KS";
   const label = isKospi ? "코스피" : m.includes("KOSDAQ") || m === "KQ" ? "코스닥" : m || "–";
   const col = isKospi ? "#2D7FF9" : "#E08A2B";

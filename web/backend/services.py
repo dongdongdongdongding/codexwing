@@ -86,7 +86,8 @@ def _next_trading_day(scan_date):
 
 
 def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name=None, scan_date=None, source="A", extra=None):
-    code6 = str(code).split(".")[0].zfill(6)
+    raw = str(code).split(".")[0]
+    code6 = raw.zfill(6) if raw.isdigit() else raw   # KR=6자리, US=원형 유지
     meta = LANES.get(lane_key, {})
     row = {
         "code": code6,
@@ -163,13 +164,81 @@ def b_picks():
     return rows
 
 
+# ── NASDAQ 픽 (Supabase scan_deep_reports, 캐시·타임아웃 가드) ─────────
+_DB = None
+_DB_TRIED = False
+_NASDAQ_CACHE = {"ts": 0.0, "rows": []}
+
+
+def _db():
+    global _DB, _DB_TRIED
+    if _DB is not None or _DB_TRIED:
+        return _DB
+    _DB_TRIED = True
+    try:
+        from modules.db_manager import DBManager
+        _DB = DBManager()
+    except Exception:
+        _DB = None
+    return _DB
+
+
+def nasdaq_picks():
+    """NASDAQ 최신 스캔 픽 (scan_deep_reports). 5분 캐시 + 워커 타임아웃(웹 안 멈춤)."""
+    import time
+    if time.time() - _NASDAQ_CACHE["ts"] < 300 and _NASDAQ_CACHE["rows"]:
+        return _NASDAQ_CACHE["rows"]
+    out = {"rows": []}
+
+    def work():
+        db = _db()
+        if db is None:
+            return
+        try:
+            import json as _j
+            q = (db.client.table("scan_deep_reports")
+                 .select("ticker,stock_name,candidate_interpretation,prediction,run_id,generated_at,scan_mode")
+                 .eq("market", "NASDAQ").order("generated_at", desc=True).limit(60).execute())
+            rows = q.data or []
+            if not rows:
+                return
+            latest_run = rows[0].get("run_id")
+            picks = []
+            for r in rows:
+                if r.get("run_id") != latest_run:
+                    continue
+                ci = r.get("candidate_interpretation") or {}
+                if isinstance(ci, str):
+                    ci = _j.loads(ci) if ci else {}
+                pred = r.get("prediction") or {}
+                if isinstance(pred, str):
+                    pred = _j.loads(pred) if pred else {}
+                entry = ci.get("entry_reference_price")
+                prob = pred.get("phase25_prob")
+                picks.append(_pick_row(r.get("ticker"), "NASDAQ", "nasdaq_swing",
+                                       entry=entry, prob=prob, name=r.get("stock_name"),
+                                       scan_date=str(r.get("generated_at"))[:10], source="A",
+                                       extra={"lane_label": "나스닥 스윙", "kind": "SWING", "badge": "🟢",
+                                              "edge_score": pred.get("expected_edge_score"),
+                                              "exp_ret_3d": pred.get("expected_return_3d_pct")}))
+            out["rows"] = picks
+        except Exception:
+            pass
+    t = threading.Thread(target=work, daemon=True); t.start(); t.join(7.0)
+    if out["rows"]:
+        _NASDAQ_CACHE["ts"] = time.time(); _NASDAQ_CACHE["rows"] = out["rows"]
+    return out["rows"]
+
+
 def picks(lane=None):
     if lane == "b_market_neutral":
         return b_picks()
+    if lane == "nasdaq_swing":
+        return nasdaq_picks()
     if lane:
         return a_picks(lane)
-    # 전체: 확률(p) 기준 통일 정렬 → 개요와 픽 순서 일치.
-    allp = a_picks() + b_picks()
+    # 전체: KR(A) + B + NASDAQ. 확률(p) 기준 통일 정렬 → 개요와 픽 순서 일치.
+    allp = a_picks() + b_picks() + nasdaq_picks()
     return sorted(allp, key=lambda x: (x.get("prob") is None, -(x.get("prob") or 0)))
 
 

@@ -100,6 +100,7 @@ def archive(date_from: str = "", date_to: str = "", market: str = "", ticker: st
 def lanes():
     """레인 메타(프론트 필터용)."""
     out = [{"key": k, **{kk: v[kk] for kk in ("label", "kind", "badge")}} for k, v in S.LANES.items()]
+    out.append({"key": "nasdaq_swing", "label": "나스닥 스윙", "kind": "SWING", "badge": "🟢"})
     out.append({"key": "b_market_neutral", "label": "B 시장중립", "kind": "B", "badge": "🟣"})
     return {"lanes": out}
 
