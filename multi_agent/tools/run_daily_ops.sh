@@ -222,6 +222,14 @@ if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday
     python3 "${HOME}/research_cache/intraday_backfill.py"
 fi
 
+# DART 공시 증분 갱신 (dart_update.py = 증분; dart_events_bf.py는 6/19 하드코딩이라 사용금지).
+# 공시/이벤트 근거 신선도 유지. 비활성: AG_DART_REFRESH=0.
+if [[ "${AG_DART_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/dart_update.py" ]]; then
+  echo "[STEP] dart_update (공시 증분)"
+  run_optional "dart_update" \
+    python3 "${HOME}/research_cache/dart_update.py"
+fi
+
 # B 엔진 (signal_class=B, 시장중립 적응형 앙상블, A와 별개). 일봉주기 매일 top10 픽 + forward-shadow.
 # 데이터(px_long 위 + flow)가 신선해야 하므로 위 px_long_refresh 다음에 배치. 비활성: AG_B_ENGINE=0.
 if [[ "${AG_B_ENGINE:-1}" == "1" && -d "b_engine" ]]; then

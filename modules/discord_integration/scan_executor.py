@@ -78,6 +78,26 @@ class DiscordScanLock:
             pass
 
 
+def _tag_scan_sources_discord(output: str) -> None:
+    """스캔 출력에서 run_id 추출 → runtime_state/scan_sources.json 에 'discord' 기록.
+    신웹 스캔피드 게시물의 소스 표시용. web 의존성 없이 inline(파일 공유)."""
+    import re as _re
+    try:
+        ids = set(_re.findall(r"(?:RUN-[0-9A-Fa-f]+|SWING-ENS-\d+[\w-]*|KOSPI-ITD-\d+[\w-]*|KQ-ITD-[\w-]+)", output or ""))
+        if not ids:
+            return
+        path = PROJECT_ROOT / "runtime_state" / "scan_sources.json"
+        try:
+            m = json.loads(path.read_text()) if path.exists() else {}
+        except Exception:
+            m = {}
+        for rid in ids:
+            m[rid] = "discord"
+        path.write_text(json.dumps(m, ensure_ascii=False))
+    except Exception:
+        pass
+
+
 def _pid_exists(pid: int) -> bool:
     try:
         os.kill(pid, 0)
@@ -217,6 +237,7 @@ def _run_scan_job_sync(job: DiscordScanJob, env_overrides: Mapping[str, Any] | N
         summary = _load_recent_artifact_summary(job)
     if summary is None:
         summary = {}
+    _tag_scan_sources_discord(output)   # 스캔피드 게시물에 'discord' 소스 표시
     summary["discord_job"] = {
         "job_id": job.job_id,
         "market": job.market,
