@@ -1,0 +1,6542 @@
+{
+  "cache_dir": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_5m_cache",
+  "candidate_count": 176,
+  "data_limit": "yfinance_recent_intraday_only; 5m bars are approximately 60 calendar days",
+  "date_max": "2026-06-22",
+  "date_min": "2026-04-02",
+  "fetch_stats": {
+    "date_max": "2026-06-22",
+    "date_min": "2026-04-02",
+    "errors": {},
+    "rows": 25936,
+    "sources": {
+      "cache": 120
+    },
+    "symbols_requested": 120,
+    "symbols_with_rows": 119
+  },
+  "generated_at": "2026-06-29T17:09:45.446267+00:00",
+  "interval": "5m",
+  "max_symbols": 120,
+  "min_liq20": 100000000.0,
+  "panel_path": "/Users/dongdong/research_cache/us_daily/NASDAQ/daily_features_20180101_20260630_20260629_113805.parquet",
+  "period": "60d",
+  "promotion_gate_thresholds": {
+    "max_dd3": 0.35,
+    "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+    "min_alpha5_net_cost_0_2_pct": 0.5,
+    "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+    "min_days": 250.0,
+    "min_ft55": 0.55,
+    "min_n": 1000.0,
+    "min_ret5_pct": 1.0,
+    "min_ret5_pos_rate": 0.55,
+    "min_touch3": 0.55,
+    "min_years_alpha5_net_0_2_pos": 5.0
+  },
+  "promotion_ready_count": 0,
+  "raw_dir": "/Users/dongdong/research_cache/us_daily/NASDAQ/raw_ohlcv",
+  "recent_shadow_ready_count": 14,
+  "report_version": "nasdaq_session_edge_search_v1",
+  "rows": 25936,
+  "session_coverage": [
+    {
+      "alpha5_net_cost_0_2": -0.2,
+      "alpha5_net_cost_0_2_ci95": [
+        -0.457038,
+        0.057038
+      ],
+      "alpha5_net_cost_0_2_pos_rate": 0.440156,
+      "annual": [
+        {
+          "alpha5_net_0_2": -0.2,
+          "alpha5_net_0_2_pos_rate": 0.440156,
+          "days": 54,
+          "dd3": 0.300078,
+          "ft55": 0.419767,
+          "n": 6425,
+          "ret5": 2.1027,
+          "ret5_pos_rate": 0.558755,
+          "touch3": 0.385837,
+          "year": 2026
+        }
+      ],
+      "days": 54,
+      "dd3": 0.300078,
+      "dd3_ci95": [
+        0.288871,
+        0.311285
+      ],
+      "ft55": 0.419767,
+      "ft55_ci95": [
+        0.407698,
+        0.431835
+      ],
+      "n": 6425,
+      "ret5": 2.1027,
+      "ret5_ci95": [
+        1.822033,
+        2.383367
+      ],
+      "ret5_pos_rate": 0.558755,
+      "rows": 6425,
+      "same_day_touch_stop_ambiguous": 0.010739,
+      "session_mode": "afterhours",
+      "symbols": 119,
+      "touch3": 0.385837,
+      "touch3_ci95": [
+        0.373932,
+        0.397741
+      ],
+      "years_alpha5_net_0_2_pos": 0
+    },
+    {
+      "alpha5_net_cost_0_2": -0.2,
+      "alpha5_net_cost_0_2_ci95": [
+        -0.448059,
+        0.048059
+      ],
+      "alpha5_net_cost_0_2_pos_rate": 0.446958,
+      "annual": [
+        {
+          "alpha5_net_0_2": -0.2,
+          "alpha5_net_0_2_pos_rate": 0.446958,
+          "days": 55,
+          "dd3": 0.291807,
+          "ft55": 0.407368,
+          "n": 6542,
+          "ret5": 1.931605,
+          "ret5_pos_rate": 0.557322,
+          "touch3": 0.358453,
+          "year": 2026
+        }
+      ],
+      "days": 55,
+      "dd3": 0.291807,
+      "dd3_ci95": [
+        0.28079,
+        0.302824
+      ],
+      "ft55": 0.407368,
+      "ft55_ci95": [
+        0.39546,
+        0.419275
+      ],
+      "n": 6542,
+      "ret5": 1.931605,
+      "ret5_ci95": [
+        1.660208,
+        2.203003
+      ],
+      "ret5_pos_rate": 0.557322,
+      "rows": 6542,
+      "same_day_touch_stop_ambiguous": 0.007796,
+      "session_mode": "premarket",
+      "symbols": 119,
+      "touch3": 0.358453,
+      "touch3_ci95": [
+        0.346832,
+        0.370075
+      ],
+      "years_alpha5_net_0_2_pos": 0
+    },
+    {
+      "alpha5_net_cost_0_2": -0.2,
+      "alpha5_net_cost_0_2_ci95": [
+        -0.460401,
+        0.060401
+      ],
+      "alpha5_net_cost_0_2_pos_rate": 0.442957,
+      "annual": [
+        {
+          "alpha5_net_0_2": -0.2,
+          "alpha5_net_0_2_pos_rate": 0.442957,
+          "days": 54,
+          "dd3": 0.299767,
+          "ft55": 0.423191,
+          "n": 6425,
+          "ret5": 2.228031,
+          "ret5_pos_rate": 0.559377,
+          "touch3": 0.390039,
+          "year": 2026
+        }
+      ],
+      "days": 54,
+      "dd3": 0.299767,
+      "dd3_ci95": [
+        0.288563,
+        0.31097
+      ],
+      "ft55": 0.423191,
+      "ft55_ci95": [
+        0.411109,
+        0.435273
+      ],
+      "n": 6425,
+      "ret5": 2.228031,
+      "ret5_ci95": [
+        1.942924,
+        2.513137
+      ],
+      "ret5_pos_rate": 0.559377,
+      "rows": 6425,
+      "same_day_touch_stop_ambiguous": 0.011051,
+      "session_mode": "regular_close",
+      "symbols": 119,
+      "touch3": 0.390039,
+      "touch3_ci95": [
+        0.378111,
+        0.401967
+      ],
+      "years_alpha5_net_0_2_pos": 0
+    },
+    {
+      "alpha5_net_cost_0_2": -0.2,
+      "alpha5_net_cost_0_2_ci95": [
+        -0.442473,
+        0.042473
+      ],
+      "alpha5_net_cost_0_2_pos_rate": 0.448808,
+      "annual": [
+        {
+          "alpha5_net_0_2": -0.2,
+          "alpha5_net_0_2_pos_rate": 0.448808,
+          "days": 55,
+          "dd3": 0.285758,
+          "ft55": 0.400214,
+          "n": 6544,
+          "ret5": 1.927397,
+          "ret5_pos_rate": 0.560055,
+          "touch3": 0.373625,
+          "year": 2026
+        }
+      ],
+      "days": 55,
+      "dd3": 0.285758,
+      "dd3_ci95": [
+        0.274811,
+        0.296705
+      ],
+      "ft55": 0.400214,
+      "ft55_ci95": [
+        0.388342,
+        0.412086
+      ],
+      "n": 6544,
+      "ret5": 1.927397,
+      "ret5_ci95": [
+        1.662039,
+        2.192755
+      ],
+      "ret5_pos_rate": 0.560055,
+      "rows": 6544,
+      "same_day_touch_stop_ambiguous": 0.025978,
+      "session_mode": "regular_open",
+      "symbols": 119,
+      "touch3": 0.373625,
+      "touch3_ci95": [
+        0.361903,
+        0.385347
+      ],
+      "years_alpha5_net_0_2_pos": 0
+    }
+  ],
+  "symbols": 119,
+  "top_candidates": [
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 6.509766,
+        "alpha5_net_cost_0_2_ci95": [
+          3.012721,
+          10.006812
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.648148,
+        "annual": [
+          {
+            "alpha5_net_0_2": 6.509766,
+            "alpha5_net_0_2_pos_rate": 0.648148,
+            "days": 54,
+            "dd3": 0.481481,
+            "ft55": 0.592593,
+            "n": 54,
+            "ret5": 9.907117,
+            "ret5_pos_rate": 0.685185,
+            "touch3": 0.759259,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.481481,
+        "dd3_ci95": [
+          0.34696,
+          0.616002
+        ],
+        "ft55": 0.592593,
+        "ft55_ci95": [
+          0.460308,
+          0.724878
+        ],
+        "n": 54,
+        "ret5": 9.907117,
+        "ret5_ci95": [
+          5.700442,
+          14.113793
+        ],
+        "ret5_pos_rate": 0.685185,
+        "same_day_touch_stop_ambiguous": 0.037037,
+        "symbols": 11,
+        "touch3": 0.759259,
+        "touch3_ci95": [
+          0.644156,
+          0.874363
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:54<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.481481>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:54<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.481481>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.481481>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 22.842809,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 5.711348,
+        "alpha5_net_cost_0_2_ci95": [
+          2.481548,
+          8.941147
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.64,
+        "annual": [
+          {
+            "alpha5_net_0_2": 5.711348,
+            "alpha5_net_0_2_pos_rate": 0.64,
+            "days": 50,
+            "dd3": 0.34,
+            "ft55": 0.74,
+            "n": 50,
+            "ret5": 9.359025,
+            "ret5_pos_rate": 0.68,
+            "touch3": 0.72,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.34,
+        "dd3_ci95": [
+          0.207362,
+          0.472638
+        ],
+        "ft55": 0.74,
+        "ft55_ci95": [
+          0.617182,
+          0.862818
+        ],
+        "n": 50,
+        "ret5": 9.359025,
+        "ret5_ci95": [
+          5.293973,
+          13.424077
+        ],
+        "ret5_pos_rate": 0.68,
+        "same_day_touch_stop_ambiguous": 0.02,
+        "symbols": 18,
+        "touch3": 0.72,
+        "touch3_ci95": [
+          0.59428,
+          0.84572
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:50<1000",
+        "days_below_min:50<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:50<1000",
+          "days_below_min:50<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 21.950373,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_strength_liq_ma200",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 5.182121,
+        "alpha5_net_cost_0_2_ci95": [
+          1.817911,
+          8.546331
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.611111,
+        "annual": [
+          {
+            "alpha5_net_0_2": 5.182121,
+            "alpha5_net_0_2_pos_rate": 0.611111,
+            "days": 54,
+            "dd3": 0.296296,
+            "ft55": 0.685185,
+            "n": 54,
+            "ret5": 8.445805,
+            "ret5_pos_rate": 0.648148,
+            "touch3": 0.666667,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.296296,
+        "dd3_ci95": [
+          0.173361,
+          0.419231
+        ],
+        "ft55": 0.685185,
+        "ft55_ci95": [
+          0.560145,
+          0.810225
+        ],
+        "n": 54,
+        "ret5": 8.445805,
+        "ret5_ci95": [
+          4.446255,
+          12.445354
+        ],
+        "ret5_pos_rate": 0.648148,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 17,
+        "touch3": 0.666667,
+        "touch3_ci95": [
+          0.539752,
+          0.793581
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:54<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:54<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 20.164963,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 5.014389,
+        "alpha5_net_cost_0_2_ci95": [
+          1.833613,
+          8.195165
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.611111,
+        "annual": [
+          {
+            "alpha5_net_0_2": 5.014389,
+            "alpha5_net_0_2_pos_rate": 0.611111,
+            "days": 54,
+            "dd3": 0.277778,
+            "ft55": 0.685185,
+            "n": 54,
+            "ret5": 8.288219,
+            "ret5_pos_rate": 0.666667,
+            "touch3": 0.666667,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.277778,
+        "dd3_ci95": [
+          0.15719,
+          0.398365
+        ],
+        "ft55": 0.685185,
+        "ft55_ci95": [
+          0.560145,
+          0.810225
+        ],
+        "n": 54,
+        "ret5": 8.288219,
+        "ret5_ci95": [
+          4.577363,
+          11.999076
+        ],
+        "ret5_pos_rate": 0.666667,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 17,
+        "touch3": 0.666667,
+        "touch3_ci95": [
+          0.539752,
+          0.793581
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:54<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:54<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 19.950757,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 5.046904,
+        "alpha5_net_cost_0_2_ci95": [
+          2.726854,
+          7.366954
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.583333,
+        "annual": [
+          {
+            "alpha5_net_0_2": 5.046904,
+            "alpha5_net_0_2_pos_rate": 0.583333,
+            "days": 54,
+            "dd3": 0.462963,
+            "ft55": 0.564815,
+            "n": 108,
+            "ret5": 8.39182,
+            "ret5_pos_rate": 0.638889,
+            "touch3": 0.712963,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.462963,
+        "dd3_ci95": [
+          0.368483,
+          0.557443
+        ],
+        "ft55": 0.564815,
+        "ft55_ci95": [
+          0.470874,
+          0.658756
+        ],
+        "n": 108,
+        "ret5": 8.39182,
+        "ret5_ci95": [
+          5.552545,
+          11.231096
+        ],
+        "ret5_pos_rate": 0.638889,
+        "same_day_touch_stop_ambiguous": 0.046296,
+        "symbols": 17,
+        "touch3": 0.712963,
+        "touch3_ci95": [
+          0.627246,
+          0.79868
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:108<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.462963>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:108<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.462963>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.462963>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 19.373909,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_close_trend",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 4.313772,
+        "alpha5_net_cost_0_2_ci95": [
+          1.217324,
+          7.41022
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.592593,
+        "annual": [
+          {
+            "alpha5_net_0_2": 4.313772,
+            "alpha5_net_0_2_pos_rate": 0.592593,
+            "days": 54,
+            "dd3": 0.333333,
+            "ft55": 0.722222,
+            "n": 54,
+            "ret5": 7.791275,
+            "ret5_pos_rate": 0.648148,
+            "touch3": 0.703704,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.333333,
+        "dd3_ci95": [
+          0.206419,
+          0.460248
+        ],
+        "ft55": 0.722222,
+        "ft55_ci95": [
+          0.601635,
+          0.84281
+        ],
+        "n": 54,
+        "ret5": 7.791275,
+        "ret5_ci95": [
+          3.972555,
+          11.609995
+        ],
+        "ret5_pos_rate": 0.648148,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 21,
+        "touch3": 0.703704,
+        "touch3_ci95": [
+          0.580769,
+          0.826639
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:54<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:54<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 18.660604,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_strength_liq_ma200",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 4.469969,
+        "alpha5_net_cost_0_2_ci95": [
+          0.875659,
+          8.064279
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.611111,
+        "annual": [
+          {
+            "alpha5_net_0_2": 4.469969,
+            "alpha5_net_0_2_pos_rate": 0.611111,
+            "days": 54,
+            "dd3": 0.444444,
+            "ft55": 0.555556,
+            "n": 54,
+            "ret5": 7.946295,
+            "ret5_pos_rate": 0.62963,
+            "touch3": 0.611111,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.444444,
+        "dd3_ci95": [
+          0.310665,
+          0.578224
+        ],
+        "ft55": 0.555556,
+        "ft55_ci95": [
+          0.421776,
+          0.689335
+        ],
+        "n": 54,
+        "ret5": 7.946295,
+        "ret5_ci95": [
+          3.686638,
+          12.205952
+        ],
+        "ret5_pos_rate": 0.62963,
+        "same_day_touch_stop_ambiguous": 0.0,
+        "symbols": 14,
+        "touch3": 0.611111,
+        "touch3_ci95": [
+          0.479864,
+          0.742359
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:54<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.444444>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:54<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.444444>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.444444>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 18.212563,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 4.148422,
+        "alpha5_net_cost_0_2_ci95": [
+          1.101132,
+          7.195713
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.7,
+        "annual": [
+          {
+            "alpha5_net_0_2": 4.148422,
+            "alpha5_net_0_2_pos_rate": 0.7,
+            "days": 50,
+            "dd3": 0.38,
+            "ft55": 0.64,
+            "n": 50,
+            "ret5": 7.471332,
+            "ret5_pos_rate": 0.62,
+            "touch3": 0.64,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.38,
+        "dd3_ci95": [
+          0.244092,
+          0.515908
+        ],
+        "ft55": 0.64,
+        "ft55_ci95": [
+          0.5056,
+          0.7744
+        ],
+        "n": 50,
+        "ret5": 7.471332,
+        "ret5_ci95": [
+          3.581303,
+          11.36136
+        ],
+        "ret5_pos_rate": 0.62,
+        "same_day_touch_stop_ambiguous": 0.0,
+        "symbols": 14,
+        "touch3": 0.64,
+        "touch3_ci95": [
+          0.5056,
+          0.7744
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:50<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.38>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:50<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.38>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.38>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 17.999754,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_strength_liq_ma200",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.907326,
+        "alpha5_net_cost_0_2_ci95": [
+          0.637812,
+          7.176841
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.648148,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.907326,
+            "alpha5_net_0_2_pos_rate": 0.648148,
+            "days": 54,
+            "dd3": 0.407407,
+            "ft55": 0.574074,
+            "n": 54,
+            "ret5": 7.374447,
+            "ret5_pos_rate": 0.62963,
+            "touch3": 0.648148,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.407407,
+        "dd3_ci95": [
+          0.275122,
+          0.539692
+        ],
+        "ft55": 0.574074,
+        "ft55_ci95": [
+          0.440946,
+          0.707202
+        ],
+        "n": 54,
+        "ret5": 7.374447,
+        "ret5_ci95": [
+          3.439058,
+          11.309835
+        ],
+        "ret5_pos_rate": 0.62963,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 15,
+        "touch3": 0.648148,
+        "touch3_ci95": [
+          0.519579,
+          0.776717
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:54<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.407407>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:54<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.407407>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.407407>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 17.374367,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.797591,
+        "alpha5_net_cost_0_2_ci95": [
+          1.879449,
+          5.715732
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.621212,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.797591,
+            "alpha5_net_0_2_pos_rate": 0.621212,
+            "days": 50,
+            "dd3": 0.371212,
+            "ft55": 0.659091,
+            "n": 132,
+            "ret5": 7.157793,
+            "ret5_pos_rate": 0.651515,
+            "touch3": 0.659091,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.371212,
+        "dd3_ci95": [
+          0.288478,
+          0.453946
+        ],
+        "ft55": 0.659091,
+        "ft55_ci95": [
+          0.577918,
+          0.740264
+        ],
+        "n": 132,
+        "ret5": 7.157793,
+        "ret5_ci95": [
+          4.78439,
+          9.531196
+        ],
+        "ret5_pos_rate": 0.651515,
+        "same_day_touch_stop_ambiguous": 0.007576,
+        "symbols": 23,
+        "touch3": 0.659091,
+        "touch3_ci95": [
+          0.577918,
+          0.740264
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:132<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.371212>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:132<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.371212>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.371212>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 17.31902,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.677997,
+        "alpha5_net_cost_0_2_ci95": [
+          2.105737,
+          5.250257
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.607735,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.677997,
+            "alpha5_net_0_2_pos_rate": 0.607735,
+            "days": 50,
+            "dd3": 0.364641,
+            "ft55": 0.657459,
+            "n": 181,
+            "ret5": 7.171468,
+            "ret5_pos_rate": 0.662983,
+            "touch3": 0.657459,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.364641,
+        "dd3_ci95": [
+          0.294324,
+          0.434958
+        ],
+        "ft55": 0.657459,
+        "ft55_ci95": [
+          0.58813,
+          0.726787
+        ],
+        "n": 181,
+        "ret5": 7.171468,
+        "ret5_ci95": [
+          5.157387,
+          9.185549
+        ],
+        "ret5_pos_rate": 0.662983,
+        "same_day_touch_stop_ambiguous": 0.005525,
+        "symbols": 25,
+        "touch3": 0.657459,
+        "touch3_ci95": [
+          0.58813,
+          0.726787
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:181<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.364641>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:181<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.364641>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.364641>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 17.225156,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.738859,
+        "alpha5_net_cost_0_2_ci95": [
+          1.913617,
+          5.5641
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.613636,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.738859,
+            "alpha5_net_0_2_pos_rate": 0.613636,
+            "days": 50,
+            "dd3": 0.363636,
+            "ft55": 0.643939,
+            "n": 132,
+            "ret5": 7.088887,
+            "ret5_pos_rate": 0.674242,
+            "touch3": 0.636364,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.363636,
+        "dd3_ci95": [
+          0.281259,
+          0.446014
+        ],
+        "ft55": 0.643939,
+        "ft55_ci95": [
+          0.561941,
+          0.725938
+        ],
+        "n": 132,
+        "ret5": 7.088887,
+        "ret5_ci95": [
+          4.766588,
+          9.411187
+        ],
+        "ret5_pos_rate": 0.674242,
+        "same_day_touch_stop_ambiguous": 0.007576,
+        "symbols": 23,
+        "touch3": 0.636364,
+        "touch3_ci95": [
+          0.553986,
+          0.718741
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:132<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.363636>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:132<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.363636>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.363636>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 17.198956,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 4.102721,
+        "alpha5_net_cost_0_2_ci95": [
+          2.242582,
+          5.96286
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.555556,
+        "annual": [
+          {
+            "alpha5_net_0_2": 4.102721,
+            "alpha5_net_0_2_pos_rate": 0.555556,
+            "days": 54,
+            "dd3": 0.462963,
+            "ft55": 0.549383,
+            "n": 162,
+            "ret5": 7.342649,
+            "ret5_pos_rate": 0.635802,
+            "touch3": 0.666667,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.462963,
+        "dd3_ci95": [
+          0.38594,
+          0.539986
+        ],
+        "ft55": 0.549383,
+        "ft55_ci95": [
+          0.472526,
+          0.62624
+        ],
+        "n": 162,
+        "ret5": 7.342649,
+        "ret5_ci95": [
+          5.077546,
+          9.607753
+        ],
+        "ret5_pos_rate": 0.635802,
+        "same_day_touch_stop_ambiguous": 0.037037,
+        "symbols": 19,
+        "touch3": 0.666667,
+        "touch3_ci95": [
+          0.593849,
+          0.739484
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:162<1000",
+        "days_below_min:54<250",
+        "ft55_below_min:0.549383<0.55",
+        "dd3_above_max:0.462963>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:162<1000",
+          "days_below_min:54<250",
+          "ft55_below_min:0.549383<0.55",
+          "dd3_above_max:0.462963>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "ft55_below_min:0.549383<0.55",
+          "dd3_above_max:0.462963>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 17.16142,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.559456,
+        "alpha5_net_cost_0_2_ci95": [
+          1.960961,
+          5.157952
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.624309,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.559456,
+            "alpha5_net_0_2_pos_rate": 0.624309,
+            "days": 50,
+            "dd3": 0.364641,
+            "ft55": 0.668508,
+            "n": 181,
+            "ret5": 6.981278,
+            "ret5_pos_rate": 0.662983,
+            "touch3": 0.668508,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.364641,
+        "dd3_ci95": [
+          0.294324,
+          0.434958
+        ],
+        "ft55": 0.668508,
+        "ft55_ci95": [
+          0.599737,
+          0.73728
+        ],
+        "n": 181,
+        "ret5": 6.981278,
+        "ret5_ci95": [
+          4.933137,
+          9.02942
+        ],
+        "ret5_pos_rate": 0.662983,
+        "same_day_touch_stop_ambiguous": 0.005525,
+        "symbols": 24,
+        "touch3": 0.668508,
+        "touch3_ci95": [
+          0.599737,
+          0.73728
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:181<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.364641>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:181<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.364641>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.364641>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 17.010343,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.6074,
+        "alpha5_net_cost_0_2_ci95": [
+          1.420017,
+          5.794784
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.595745,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.6074,
+            "alpha5_net_0_2_pos_rate": 0.595745,
+            "days": 50,
+            "dd3": 0.37234,
+            "ft55": 0.659574,
+            "n": 94,
+            "ret5": 7.023931,
+            "ret5_pos_rate": 0.648936,
+            "touch3": 0.648936,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.37234,
+        "dd3_ci95": [
+          0.274087,
+          0.470594
+        ],
+        "ft55": 0.659574,
+        "ft55_ci95": [
+          0.563268,
+          0.755881
+        ],
+        "n": 94,
+        "ret5": 7.023931,
+        "ret5_ci95": [
+          4.25144,
+          9.796422
+        ],
+        "ret5_pos_rate": 0.648936,
+        "same_day_touch_stop_ambiguous": 0.010638,
+        "symbols": 21,
+        "touch3": 0.648936,
+        "touch3_ci95": [
+          0.551928,
+          0.745944
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:94<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.37234>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:94<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.37234>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.37234>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 16.88665,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.506933,
+        "alpha5_net_cost_0_2_ci95": [
+          1.930852,
+          5.083014
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.61326,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.506933,
+            "alpha5_net_0_2_pos_rate": 0.61326,
+            "days": 50,
+            "dd3": 0.359116,
+            "ft55": 0.662983,
+            "n": 181,
+            "ret5": 6.936726,
+            "ret5_pos_rate": 0.662983,
+            "touch3": 0.662983,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.359116,
+        "dd3_ci95": [
+          0.289031,
+          0.429201
+        ],
+        "ft55": 0.662983,
+        "ft55_ci95": [
+          0.593928,
+          0.732039
+        ],
+        "n": 181,
+        "ret5": 6.936726,
+        "ret5_ci95": [
+          4.915444,
+          8.958008
+        ],
+        "ret5_pos_rate": 0.662983,
+        "same_day_touch_stop_ambiguous": 0.005525,
+        "symbols": 24,
+        "touch3": 0.662983,
+        "touch3_ci95": [
+          0.593928,
+          0.732039
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:181<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.359116>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:181<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.359116>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.359116>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 16.869071,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.528835,
+        "alpha5_net_cost_0_2_ci95": [
+          1.254075,
+          5.803594
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.617021,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.528835,
+            "alpha5_net_0_2_pos_rate": 0.617021,
+            "days": 50,
+            "dd3": 0.37234,
+            "ft55": 0.670213,
+            "n": 94,
+            "ret5": 6.912251,
+            "ret5_pos_rate": 0.638298,
+            "touch3": 0.680851,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.37234,
+        "dd3_ci95": [
+          0.274087,
+          0.470594
+        ],
+        "ft55": 0.670213,
+        "ft55_ci95": [
+          0.574661,
+          0.765764
+        ],
+        "n": 94,
+        "ret5": 6.912251,
+        "ret5_ci95": [
+          4.060994,
+          9.763509
+        ],
+        "ret5_pos_rate": 0.638298,
+        "same_day_touch_stop_ambiguous": 0.010638,
+        "symbols": 19,
+        "touch3": 0.680851,
+        "touch3_ci95": [
+          0.58611,
+          0.775592
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:94<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.37234>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:94<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.37234>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.37234>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 16.802789,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.785249,
+        "alpha5_net_cost_0_2_ci95": [
+          2.369206,
+          5.201291
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.566667,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.785249,
+            "alpha5_net_0_2_pos_rate": 0.566667,
+            "days": 54,
+            "dd3": 0.444444,
+            "ft55": 0.577778,
+            "n": 270,
+            "ret5": 7.050298,
+            "ret5_pos_rate": 0.651852,
+            "touch3": 0.677778,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.444444,
+        "dd3_ci95": [
+          0.385063,
+          0.503826
+        ],
+        "ft55": 0.577778,
+        "ft55_ci95": [
+          0.518753,
+          0.636802
+        ],
+        "n": 270,
+        "ret5": 7.050298,
+        "ret5_ci95": [
+          5.303878,
+          8.796717
+        ],
+        "ret5_pos_rate": 0.651852,
+        "same_day_touch_stop_ambiguous": 0.037037,
+        "symbols": 20,
+        "touch3": 0.677778,
+        "touch3_ci95": [
+          0.621931,
+          0.733625
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:270<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.444444>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:270<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.444444>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.444444>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 16.76518,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.276981,
+        "alpha5_net_cost_0_2_ci95": [
+          2.073931,
+          4.480031
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.611111,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.276981,
+            "alpha5_net_0_2_pos_rate": 0.611111,
+            "days": 54,
+            "dd3": 0.325926,
+            "ft55": 0.648148,
+            "n": 270,
+            "ret5": 6.56381,
+            "ret5_pos_rate": 0.688889,
+            "touch3": 0.67037,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.325926,
+        "dd3_ci95": [
+          0.269912,
+          0.381939
+        ],
+        "ft55": 0.648148,
+        "ft55_ci95": [
+          0.59108,
+          0.705217
+        ],
+        "n": 270,
+        "ret5": 6.56381,
+        "ret5_ci95": [
+          5.081427,
+          8.046194
+        ],
+        "ret5_pos_rate": 0.688889,
+        "same_day_touch_stop_ambiguous": 0.014815,
+        "symbols": 19,
+        "touch3": 0.67037,
+        "touch3_ci95": [
+          0.614194,
+          0.726546
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:270<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:270<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 16.414864,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.266678,
+        "alpha5_net_cost_0_2_ci95": [
+          1.595013,
+          4.938343
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.592593,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.266678,
+            "alpha5_net_0_2_pos_rate": 0.592593,
+            "days": 54,
+            "dd3": 0.32716,
+            "ft55": 0.635802,
+            "n": 162,
+            "ret5": 6.519067,
+            "ret5_pos_rate": 0.685185,
+            "touch3": 0.67284,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.32716,
+        "dd3_ci95": [
+          0.254687,
+          0.399634
+        ],
+        "ft55": 0.635802,
+        "ft55_ci95": [
+          0.561471,
+          0.710134
+        ],
+        "n": 162,
+        "ret5": 6.519067,
+        "ret5_ci95": [
+          4.512662,
+          8.525473
+        ],
+        "ret5_pos_rate": 0.685185,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 19,
+        "touch3": 0.67284,
+        "touch3_ci95": [
+          0.600366,
+          0.745313
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:162<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:162<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 16.267228,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.453219,
+        "alpha5_net_cost_0_2_ci95": [
+          0.242994,
+          6.663445
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.62,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.453219,
+            "alpha5_net_0_2_pos_rate": 0.62,
+            "days": 50,
+            "dd3": 0.48,
+            "ft55": 0.58,
+            "n": 50,
+            "ret5": 7.017072,
+            "ret5_pos_rate": 0.62,
+            "touch3": 0.62,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.48,
+        "dd3_ci95": [
+          0.340112,
+          0.619888
+        ],
+        "ft55": 0.58,
+        "ft55_ci95": [
+          0.441804,
+          0.718196
+        ],
+        "n": 50,
+        "ret5": 7.017072,
+        "ret5_ci95": [
+          3.023796,
+          11.010348
+        ],
+        "ret5_pos_rate": 0.62,
+        "same_day_touch_stop_ambiguous": 0.0,
+        "symbols": 15,
+        "touch3": 0.62,
+        "touch3_ci95": [
+          0.484092,
+          0.755908
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:50<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.48>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:50<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.48>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.48>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 16.250291,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.293667,
+        "alpha5_net_cost_0_2_ci95": [
+          1.211191,
+          5.376143
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.564815,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.293667,
+            "alpha5_net_0_2_pos_rate": 0.564815,
+            "days": 54,
+            "dd3": 0.314815,
+            "ft55": 0.62963,
+            "n": 108,
+            "ret5": 6.660136,
+            "ret5_pos_rate": 0.675926,
+            "touch3": 0.62963,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.314815,
+        "dd3_ci95": [
+          0.226812,
+          0.402817
+        ],
+        "ft55": 0.62963,
+        "ft55_ci95": [
+          0.538129,
+          0.72113
+        ],
+        "n": 108,
+        "ret5": 6.660136,
+        "ret5_ci95": [
+          4.187865,
+          9.132407
+        ],
+        "ret5_pos_rate": 0.675926,
+        "same_day_touch_stop_ambiguous": 0.027778,
+        "symbols": 22,
+        "touch3": 0.62963,
+        "touch3_ci95": [
+          0.538129,
+          0.72113
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:108<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:108<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 16.240842,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_close_trend",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.232792,
+        "alpha5_net_cost_0_2_ci95": [
+          1.174528,
+          5.291056
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.579439,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.232792,
+            "alpha5_net_0_2_pos_rate": 0.579439,
+            "days": 54,
+            "dd3": 0.364486,
+            "ft55": 0.663551,
+            "n": 107,
+            "ret5": 6.629517,
+            "ret5_pos_rate": 0.663551,
+            "touch3": 0.654206,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.364486,
+        "dd3_ci95": [
+          0.272863,
+          0.456109
+        ],
+        "ft55": 0.663551,
+        "ft55_ci95": [
+          0.573602,
+          0.753501
+        ],
+        "n": 107,
+        "ret5": 6.629517,
+        "ret5_ci95": [
+          4.073789,
+          9.185244
+        ],
+        "ret5_pos_rate": 0.663551,
+        "same_day_touch_stop_ambiguous": 0.018692,
+        "symbols": 24,
+        "touch3": 0.654206,
+        "touch3_ci95": [
+          0.56366,
+          0.744752
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:107<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.364486>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:107<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.364486>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.364486>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 16.161372,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.142526,
+        "alpha5_net_cost_0_2_ci95": [
+          1.570309,
+          4.714744
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.60221,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.142526,
+            "alpha5_net_0_2_pos_rate": 0.60221,
+            "days": 50,
+            "dd3": 0.364641,
+            "ft55": 0.651934,
+            "n": 181,
+            "ret5": 6.639303,
+            "ret5_pos_rate": 0.657459,
+            "touch3": 0.651934,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.364641,
+        "dd3_ci95": [
+          0.294324,
+          0.434958
+        ],
+        "ft55": 0.651934,
+        "ft55_ci95": [
+          0.582343,
+          0.721525
+        ],
+        "n": 181,
+        "ret5": 6.639303,
+        "ret5_ci95": [
+          4.639086,
+          8.63952
+        ],
+        "ret5_pos_rate": 0.657459,
+        "same_day_touch_stop_ambiguous": 0.005525,
+        "symbols": 25,
+        "touch3": 0.651934,
+        "touch3_ci95": [
+          0.582343,
+          0.721525
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:181<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.364641>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:181<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.364641>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.364641>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_calm_strength",
+      "selection_key": 16.096749,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_open_liquid_drive",
+      "condition_specs": [
+        [
+          "r_anchor_ret",
+          0.7
+        ],
+        [
+          "r_liq20",
+          0.7
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.307432,
+        "alpha5_net_cost_0_2_ci95": [
+          1.420912,
+          5.193951
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.618182,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.307432,
+            "alpha5_net_0_2_pos_rate": 0.618182,
+            "days": 55,
+            "dd3": 0.436364,
+            "ft55": 0.545455,
+            "n": 55,
+            "ret5": 6.303485,
+            "ret5_pos_rate": 0.745455,
+            "touch3": 0.709091,
+            "year": 2026
+          }
+        ],
+        "days": 55,
+        "dd3": 0.436364,
+        "dd3_ci95": [
+          0.304087,
+          0.56864
+        ],
+        "ft55": 0.545455,
+        "ft55_ci95": [
+          0.412646,
+          0.678263
+        ],
+        "n": 55,
+        "ret5": 6.303485,
+        "ret5_ci95": [
+          3.603392,
+          9.003577
+        ],
+        "ret5_pos_rate": 0.745455,
+        "same_day_touch_stop_ambiguous": 0.036364,
+        "symbols": 23,
+        "touch3": 0.709091,
+        "touch3_ci95": [
+          0.587951,
+          0.830231
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:55<1000",
+        "days_below_min:55<250",
+        "ft55_below_min:0.545455<0.55",
+        "dd3_above_max:0.436364>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:55<1000",
+          "days_below_min:55<250",
+          "ft55_below_min:0.545455<0.55",
+          "dd3_above_max:0.436364>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "ft55_below_min:0.545455<0.55",
+          "dd3_above_max:0.436364>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 16.083647,
+      "session_mode": "regular_open",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.164409,
+        "alpha5_net_cost_0_2_ci95": [
+          1.312246,
+          5.016571
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.598485,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.164409,
+            "alpha5_net_0_2_pos_rate": 0.598485,
+            "days": 50,
+            "dd3": 0.386364,
+            "ft55": 0.643939,
+            "n": 132,
+            "ret5": 6.58894,
+            "ret5_pos_rate": 0.659091,
+            "touch3": 0.643939,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.386364,
+        "dd3_ci95": [
+          0.302981,
+          0.469746
+        ],
+        "ft55": 0.643939,
+        "ft55_ci95": [
+          0.561941,
+          0.725938
+        ],
+        "n": 132,
+        "ret5": 6.58894,
+        "ret5_ci95": [
+          4.243499,
+          8.93438
+        ],
+        "ret5_pos_rate": 0.659091,
+        "same_day_touch_stop_ambiguous": 0.007576,
+        "symbols": 23,
+        "touch3": 0.643939,
+        "touch3_ci95": [
+          0.561941,
+          0.725938
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:132<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.386364>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:132<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.386364>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.386364>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 15.988196,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "afterhours_calm_positive",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.7
+        ],
+        [
+          "ir_session_range_pct",
+          0.5
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 4.014514,
+        "alpha5_net_cost_0_2_ci95": [
+          0.618746,
+          7.410283
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.528302,
+        "annual": [
+          {
+            "alpha5_net_0_2": 4.014514,
+            "alpha5_net_0_2_pos_rate": 0.528302,
+            "days": 53,
+            "dd3": 0.415094,
+            "ft55": 0.528302,
+            "n": 53,
+            "ret5": 6.451955,
+            "ret5_pos_rate": 0.622642,
+            "touch3": 0.566038,
+            "year": 2026
+          }
+        ],
+        "days": 53,
+        "dd3": 0.415094,
+        "dd3_ci95": [
+          0.281167,
+          0.549022
+        ],
+        "ft55": 0.528302,
+        "ft55_ci95": [
+          0.392618,
+          0.663986
+        ],
+        "n": 53,
+        "ret5": 6.451955,
+        "ret5_ci95": [
+          2.512904,
+          10.391006
+        ],
+        "ret5_pos_rate": 0.622642,
+        "same_day_touch_stop_ambiguous": 0.018868,
+        "symbols": 29,
+        "touch3": 0.566038,
+        "touch3_ci95": [
+          0.431327,
+          0.700749
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:53<1000",
+        "days_below_min:53<250",
+        "alpha5_net_cost_0_2_pos_rate_below_min:0.528302<0.55",
+        "ft55_below_min:0.528302<0.55",
+        "dd3_above_max:0.415094>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:53<1000",
+          "days_below_min:53<250",
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.528302<0.55",
+          "ft55_below_min:0.528302<0.55",
+          "dd3_above_max:0.415094>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.528302<0.55",
+          "ft55_below_min:0.528302<0.55",
+          "dd3_above_max:0.415094>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 15.900435,
+      "session_mode": "afterhours",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.101051,
+        "alpha5_net_cost_0_2_ci95": [
+          1.661796,
+          4.540306
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.590909,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.101051,
+            "alpha5_net_0_2_pos_rate": 0.590909,
+            "days": 54,
+            "dd3": 0.359504,
+            "ft55": 0.603306,
+            "n": 242,
+            "ret5": 6.414577,
+            "ret5_pos_rate": 0.669421,
+            "touch3": 0.636364,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.359504,
+        "dd3_ci95": [
+          0.29892,
+          0.420088
+        ],
+        "ft55": 0.603306,
+        "ft55_ci95": [
+          0.541541,
+          0.665071
+        ],
+        "n": 242,
+        "ret5": 6.414577,
+        "ret5_ci95": [
+          4.719586,
+          8.109568
+        ],
+        "ret5_pos_rate": 0.669421,
+        "same_day_touch_stop_ambiguous": 0.016529,
+        "symbols": 27,
+        "touch3": 0.636364,
+        "touch3_ci95": [
+          0.575629,
+          0.697098
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:242<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.359504>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:242<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.359504>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.359504>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 15.726371,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.972165,
+        "alpha5_net_cost_0_2_ci95": [
+          1.195168,
+          4.749163
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.590909,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.972165,
+            "alpha5_net_0_2_pos_rate": 0.590909,
+            "days": 50,
+            "dd3": 0.378788,
+            "ft55": 0.628788,
+            "n": 132,
+            "ret5": 6.438575,
+            "ret5_pos_rate": 0.643939,
+            "touch3": 0.621212,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.378788,
+        "dd3_ci95": [
+          0.295719,
+          0.461857
+        ],
+        "ft55": 0.628788,
+        "ft55_ci95": [
+          0.546054,
+          0.711522
+        ],
+        "n": 132,
+        "ret5": 6.438575,
+        "ret5_ci95": [
+          4.189875,
+          8.687275
+        ],
+        "ret5_pos_rate": 0.643939,
+        "same_day_touch_stop_ambiguous": 0.007576,
+        "symbols": 24,
+        "touch3": 0.621212,
+        "touch3_ci95": [
+          0.538143,
+          0.704281
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:132<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.378788>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:132<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.378788>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.378788>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_calm_strength",
+      "selection_key": 15.501647,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.947657,
+        "alpha5_net_cost_0_2_ci95": [
+          1.287388,
+          4.607926
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.563291,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.947657,
+            "alpha5_net_0_2_pos_rate": 0.563291,
+            "days": 54,
+            "dd3": 0.329114,
+            "ft55": 0.613924,
+            "n": 158,
+            "ret5": 6.30284,
+            "ret5_pos_rate": 0.677215,
+            "touch3": 0.613924,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.329114,
+        "dd3_ci95": [
+          0.255611,
+          0.402617
+        ],
+        "ft55": 0.613924,
+        "ft55_ci95": [
+          0.537769,
+          0.690079
+        ],
+        "n": 158,
+        "ret5": 6.30284,
+        "ret5_ci95": [
+          4.352097,
+          8.253584
+        ],
+        "ret5_pos_rate": 0.677215,
+        "same_day_touch_stop_ambiguous": 0.018987,
+        "symbols": 25,
+        "touch3": 0.613924,
+        "touch3_ci95": [
+          0.537769,
+          0.690079
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:158<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:158<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 15.446698,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_core_close_trend",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.85388,
+        "alpha5_net_cost_0_2_ci95": [
+          1.200226,
+          4.507533
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.567742,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.85388,
+            "alpha5_net_0_2_pos_rate": 0.567742,
+            "days": 54,
+            "dd3": 0.380645,
+            "ft55": 0.619355,
+            "n": 155,
+            "ret5": 6.370772,
+            "ret5_pos_rate": 0.677419,
+            "touch3": 0.645161,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.380645,
+        "dd3_ci95": [
+          0.303957,
+          0.457333
+        ],
+        "ft55": 0.619355,
+        "ft55_ci95": [
+          0.542667,
+          0.696043
+        ],
+        "n": 155,
+        "ret5": 6.370772,
+        "ret5_ci95": [
+          4.325827,
+          8.415718
+        ],
+        "ret5_pos_rate": 0.677419,
+        "same_day_touch_stop_ambiguous": 0.019355,
+        "symbols": 28,
+        "touch3": 0.645161,
+        "touch3_ci95": [
+          0.569592,
+          0.720731
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:155<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.380645>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:155<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.380645>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.380645>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 15.405296,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.042346,
+        "alpha5_net_cost_0_2_ci95": [
+          1.034368,
+          5.050325
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.574074,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.042346,
+            "alpha5_net_0_2_pos_rate": 0.574074,
+            "days": 54,
+            "dd3": 0.351852,
+            "ft55": 0.574074,
+            "n": 108,
+            "ret5": 6.34349,
+            "ret5_pos_rate": 0.62037,
+            "touch3": 0.62037,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.351852,
+        "dd3_ci95": [
+          0.261366,
+          0.442338
+        ],
+        "ft55": 0.574074,
+        "ft55_ci95": [
+          0.480379,
+          0.667769
+        ],
+        "n": 108,
+        "ret5": 6.34349,
+        "ret5_ci95": [
+          3.961618,
+          8.725363
+        ],
+        "ret5_pos_rate": 0.62037,
+        "same_day_touch_stop_ambiguous": 0.009259,
+        "symbols": 19,
+        "touch3": 0.62037,
+        "touch3_ci95": [
+          0.528417,
+          0.712324
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:108<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.351852>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:108<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.351852>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.351852>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_calm_strength",
+      "selection_key": 15.274722,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_strength_liq_ma200",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.088599,
+        "alpha5_net_cost_0_2_ci95": [
+          1.006289,
+          5.170909
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.556604,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.088599,
+            "alpha5_net_0_2_pos_rate": 0.556604,
+            "days": 54,
+            "dd3": 0.377358,
+            "ft55": 0.584906,
+            "n": 106,
+            "ret5": 6.342658,
+            "ret5_pos_rate": 0.641509,
+            "touch3": 0.59434,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.377358,
+        "dd3_ci95": [
+          0.284642,
+          0.470075
+        ],
+        "ft55": 0.584906,
+        "ft55_ci95": [
+          0.490656,
+          0.679155
+        ],
+        "n": 106,
+        "ret5": 6.342658,
+        "ret5_ci95": [
+          3.817711,
+          8.867605
+        ],
+        "ret5_pos_rate": 0.641509,
+        "same_day_touch_stop_ambiguous": 0.009434,
+        "symbols": 20,
+        "touch3": 0.59434,
+        "touch3_ci95": [
+          0.500419,
+          0.68826
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:106<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.377358>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:106<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.377358>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.377358>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 15.270881,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.970788,
+        "alpha5_net_cost_0_2_ci95": [
+          1.144642,
+          4.796934
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.588608,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.970788,
+            "alpha5_net_0_2_pos_rate": 0.588608,
+            "days": 54,
+            "dd3": 0.405063,
+            "ft55": 0.582278,
+            "n": 158,
+            "ret5": 6.265803,
+            "ret5_pos_rate": 0.658228,
+            "touch3": 0.639241,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.405063,
+        "dd3_ci95": [
+          0.328274,
+          0.481853
+        ],
+        "ft55": 0.582278,
+        "ft55_ci95": [
+          0.505132,
+          0.659425
+        ],
+        "n": 158,
+        "ret5": 6.265803,
+        "ret5_ci95": [
+          4.11342,
+          8.418187
+        ],
+        "ret5_pos_rate": 0.658228,
+        "same_day_touch_stop_ambiguous": 0.018987,
+        "symbols": 26,
+        "touch3": 0.639241,
+        "touch3_ci95": [
+          0.564122,
+          0.714359
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:158<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.405063>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:158<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.405063>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.405063>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 15.268239,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.780936,
+        "alpha5_net_cost_0_2_ci95": [
+          0.607551,
+          4.95432
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.617021,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.780936,
+            "alpha5_net_0_2_pos_rate": 0.617021,
+            "days": 50,
+            "dd3": 0.425532,
+            "ft55": 0.638298,
+            "n": 94,
+            "ret5": 6.248909,
+            "ret5_pos_rate": 0.648936,
+            "touch3": 0.648936,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.425532,
+        "dd3_ci95": [
+          0.325044,
+          0.52602
+        ],
+        "ft55": 0.638298,
+        "ft55_ci95": [
+          0.540641,
+          0.735955
+        ],
+        "n": 94,
+        "ret5": 6.248909,
+        "ret5_ci95": [
+          3.522025,
+          8.975793
+        ],
+        "ret5_pos_rate": 0.648936,
+        "same_day_touch_stop_ambiguous": 0.010638,
+        "symbols": 18,
+        "touch3": 0.648936,
+        "touch3_ci95": [
+          0.551928,
+          0.745944
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:94<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.425532>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:94<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.425532>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.425532>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 15.200056,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_close_trend",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.921479,
+        "alpha5_net_cost_0_2_ci95": [
+          0.700791,
+          5.142168
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.588785,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.921479,
+            "alpha5_net_0_2_pos_rate": 0.588785,
+            "days": 54,
+            "dd3": 0.420561,
+            "ft55": 0.588785,
+            "n": 107,
+            "ret5": 6.260701,
+            "ret5_pos_rate": 0.635514,
+            "touch3": 0.626168,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.420561,
+        "dd3_ci95": [
+          0.326584,
+          0.514538
+        ],
+        "ft55": 0.588785,
+        "ft55_ci95": [
+          0.495112,
+          0.682458
+        ],
+        "n": 107,
+        "ret5": 6.260701,
+        "ret5_ci95": [
+          3.605667,
+          8.915736
+        ],
+        "ret5_pos_rate": 0.635514,
+        "same_day_touch_stop_ambiguous": 0.028037,
+        "symbols": 23,
+        "touch3": 0.626168,
+        "touch3_ci95": [
+          0.534062,
+          0.718274
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:107<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.420561>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:107<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.420561>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.420561>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 15.079375,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.716792,
+        "alpha5_net_cost_0_2_ci95": [
+          1.378181,
+          4.055402
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.578512,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.716792,
+            "alpha5_net_0_2_pos_rate": 0.578512,
+            "days": 54,
+            "dd3": 0.326446,
+            "ft55": 0.603306,
+            "n": 242,
+            "ret5": 6.092077,
+            "ret5_pos_rate": 0.68595,
+            "touch3": 0.603306,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.326446,
+        "dd3_ci95": [
+          0.267244,
+          0.385649
+        ],
+        "ft55": 0.603306,
+        "ft55_ci95": [
+          0.541541,
+          0.665071
+        ],
+        "n": 242,
+        "ret5": 6.092077,
+        "ret5_ci95": [
+          4.508321,
+          7.675833
+        ],
+        "ret5_pos_rate": 0.68595,
+        "same_day_touch_stop_ambiguous": 0.012397,
+        "symbols": 27,
+        "touch3": 0.603306,
+        "touch3_ci95": [
+          0.541541,
+          0.665071
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:242<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:242<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 15.048537,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.653304,
+        "alpha5_net_cost_0_2_ci95": [
+          -0.13921,
+          5.445818
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.6,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.653304,
+            "alpha5_net_0_2_pos_rate": 0.6,
+            "days": 50,
+            "dd3": 0.38,
+            "ft55": 0.6,
+            "n": 50,
+            "ret5": 6.176605,
+            "ret5_pos_rate": 0.66,
+            "touch3": 0.6,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.38,
+        "dd3_ci95": [
+          0.244092,
+          0.515908
+        ],
+        "ft55": 0.6,
+        "ft55_ci95": [
+          0.462829,
+          0.737171
+        ],
+        "n": 50,
+        "ret5": 6.176605,
+        "ret5_ci95": [
+          2.7624,
+          9.59081
+        ],
+        "ret5_pos_rate": 0.66,
+        "same_day_touch_stop_ambiguous": 0.0,
+        "symbols": 16,
+        "touch3": 0.6,
+        "touch3_ci95": [
+          0.462829,
+          0.737171
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:50<1000",
+        "days_below_min:50<250",
+        "alpha5_net_cost_0_2_ci95_lo_below_min:-0.13921<0",
+        "dd3_above_max:0.38>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:50<1000",
+          "days_below_min:50<250",
+          "alpha5_net_cost_0_2_ci95_lo_below_min:-0.13921<0",
+          "dd3_above_max:0.38>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "alpha5_net_cost_0_2_ci95_lo_below_min:-0.13921<0",
+          "dd3_above_max:0.38>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_calm_strength",
+      "selection_key": 14.909909,
+      "session_mode": "regular_close",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.809329,
+        "alpha5_net_cost_0_2_ci95": [
+          0.506202,
+          5.112455
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.592593,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.809329,
+            "alpha5_net_0_2_pos_rate": 0.592593,
+            "days": 54,
+            "dd3": 0.425926,
+            "ft55": 0.574074,
+            "n": 108,
+            "ret5": 6.081579,
+            "ret5_pos_rate": 0.657407,
+            "touch3": 0.611111,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.425926,
+        "dd3_ci95": [
+          0.332231,
+          0.519621
+        ],
+        "ft55": 0.574074,
+        "ft55_ci95": [
+          0.480379,
+          0.667769
+        ],
+        "n": 108,
+        "ret5": 6.081579,
+        "ret5_ci95": [
+          3.386037,
+          8.777121
+        ],
+        "ret5_pos_rate": 0.657407,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 22,
+        "touch3": 0.611111,
+        "touch3_ci95": [
+          0.51874,
+          0.703482
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:108<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.425926>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:108<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.425926>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.425926>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 14.816833,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.649653,
+        "alpha5_net_cost_0_2_ci95": [
+          1.355693,
+          3.943614
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.574074,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.649653,
+            "alpha5_net_0_2_pos_rate": 0.574074,
+            "days": 54,
+            "dd3": 0.396296,
+            "ft55": 0.625926,
+            "n": 270,
+            "ret5": 5.960951,
+            "ret5_pos_rate": 0.662963,
+            "touch3": 0.674074,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.396296,
+        "dd3_ci95": [
+          0.337844,
+          0.454749
+        ],
+        "ft55": 0.625926,
+        "ft55_ci95": [
+          0.5681,
+          0.683752
+        ],
+        "n": 270,
+        "ret5": 5.960951,
+        "ret5_ci95": [
+          4.375098,
+          7.546803
+        ],
+        "ret5_pos_rate": 0.662963,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 21,
+        "touch3": 0.674074,
+        "touch3_ci95": [
+          0.618061,
+          0.730088
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:270<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.396296>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:270<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.396296>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.396296>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 14.792086,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.631013,
+        "alpha5_net_cost_0_2_ci95": [
+          0.915783,
+          4.346244
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.561728,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.631013,
+            "alpha5_net_0_2_pos_rate": 0.561728,
+            "days": 54,
+            "dd3": 0.41358,
+            "ft55": 0.62963,
+            "n": 162,
+            "ret5": 5.909972,
+            "ret5_pos_rate": 0.666667,
+            "touch3": 0.685185,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.41358,
+        "dd3_ci95": [
+          0.337508,
+          0.489653
+        ],
+        "ft55": 0.62963,
+        "ft55_ci95": [
+          0.555036,
+          0.704224
+        ],
+        "n": 162,
+        "ret5": 5.909972,
+        "ret5_ci95": [
+          3.806841,
+          8.013102
+        ],
+        "ret5_pos_rate": 0.666667,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 18,
+        "touch3": 0.685185,
+        "touch3_ci95": [
+          0.613443,
+          0.756927
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:162<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.41358>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:162<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.41358>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.41358>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 14.695307,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_strength_liq_trend",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.568517,
+        "alpha5_net_cost_0_2_ci95": [
+          0.574461,
+          4.562574
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.606383,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.568517,
+            "alpha5_net_0_2_pos_rate": 0.606383,
+            "days": 50,
+            "dd3": 0.393617,
+            "ft55": 0.606383,
+            "n": 94,
+            "ret5": 6.124681,
+            "ret5_pos_rate": 0.62766,
+            "touch3": 0.617021,
+            "year": 2026
+          }
+        ],
+        "days": 50,
+        "dd3": 0.393617,
+        "dd3_ci95": [
+          0.294323,
+          0.492911
+        ],
+        "ft55": 0.606383,
+        "ft55_ci95": [
+          0.507089,
+          0.705677
+        ],
+        "n": 94,
+        "ret5": 6.124681,
+        "ret5_ci95": [
+          3.587946,
+          8.661416
+        ],
+        "ret5_pos_rate": 0.62766,
+        "same_day_touch_stop_ambiguous": 0.010638,
+        "symbols": 20,
+        "touch3": 0.617021,
+        "touch3_ci95": [
+          0.518222,
+          0.71582
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:94<1000",
+        "days_below_min:50<250",
+        "dd3_above_max:0.393617>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:94<1000",
+          "days_below_min:50<250",
+          "dd3_above_max:0.393617>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.393617>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_calm_strength",
+      "selection_key": 14.682561,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_core_close_trend",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.55375,
+        "alpha5_net_cost_0_2_ci95": [
+          1.15914,
+          3.94836
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.558036,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.55375,
+            "alpha5_net_0_2_pos_rate": 0.558036,
+            "days": 54,
+            "dd3": 0.375,
+            "ft55": 0.625,
+            "n": 224,
+            "ret5": 6.018307,
+            "ret5_pos_rate": 0.665179,
+            "touch3": 0.633929,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.375,
+        "dd3_ci95": [
+          0.311458,
+          0.438542
+        ],
+        "ft55": 0.625,
+        "ft55_ci95": [
+          0.561458,
+          0.688542
+        ],
+        "n": 224,
+        "ret5": 6.018307,
+        "ret5_ci95": [
+          4.301712,
+          7.734902
+        ],
+        "ret5_pos_rate": 0.665179,
+        "same_day_touch_stop_ambiguous": 0.013393,
+        "symbols": 30,
+        "touch3": 0.633929,
+        "touch3_ci95": [
+          0.570701,
+          0.697156
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:224<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.375>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:224<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.375>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.375>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 14.674739,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_core_close_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.6195,
+        "alpha5_net_cost_0_2_ci95": [
+          1.203475,
+          4.035524
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.57438,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.6195,
+            "alpha5_net_0_2_pos_rate": 0.57438,
+            "days": 54,
+            "dd3": 0.359504,
+            "ft55": 0.61157,
+            "n": 242,
+            "ret5": 5.891209,
+            "ret5_pos_rate": 0.665289,
+            "touch3": 0.623967,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.359504,
+        "dd3_ci95": [
+          0.29892,
+          0.420088
+        ],
+        "ft55": 0.61157,
+        "ft55_ci95": [
+          0.550035,
+          0.673106
+        ],
+        "n": 242,
+        "ret5": 5.891209,
+        "ret5_ci95": [
+          4.171883,
+          7.610536
+        ],
+        "ret5_pos_rate": 0.665289,
+        "same_day_touch_stop_ambiguous": 0.016529,
+        "symbols": 26,
+        "touch3": 0.623967,
+        "touch3_ci95": [
+          0.562811,
+          0.685123
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:242<1000",
+        "days_below_min:54<250",
+        "dd3_above_max:0.359504>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:242<1000",
+          "days_below_min:54<250",
+          "dd3_above_max:0.359504>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "dd3_above_max:0.359504>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 14.647071,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_open_liquid_drive",
+      "condition_specs": [
+        [
+          "r_anchor_ret",
+          0.7
+        ],
+        [
+          "r_liq20",
+          0.7
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 3.004303,
+        "alpha5_net_cost_0_2_ci95": [
+          1.197538,
+          4.811068
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.572727,
+        "annual": [
+          {
+            "alpha5_net_0_2": 3.004303,
+            "alpha5_net_0_2_pos_rate": 0.572727,
+            "days": 55,
+            "dd3": 0.554545,
+            "ft55": 0.363636,
+            "n": 110,
+            "ret5": 6.052252,
+            "ret5_pos_rate": 0.709091,
+            "touch3": 0.672727,
+            "year": 2026
+          }
+        ],
+        "days": 55,
+        "dd3": 0.554545,
+        "dd3_ci95": [
+          0.461239,
+          0.647852
+        ],
+        "ft55": 0.363636,
+        "ft55_ci95": [
+          0.273328,
+          0.453945
+        ],
+        "n": 110,
+        "ret5": 6.052252,
+        "ret5_ci95": [
+          4.003122,
+          8.101382
+        ],
+        "ret5_pos_rate": 0.709091,
+        "same_day_touch_stop_ambiguous": 0.1,
+        "symbols": 26,
+        "touch3": 0.672727,
+        "touch3_ci95": [
+          0.584639,
+          0.760815
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:110<1000",
+        "days_below_min:55<250",
+        "ft55_below_min:0.363636<0.55",
+        "dd3_above_max:0.554545>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:110<1000",
+          "days_below_min:55<250",
+          "ft55_below_min:0.363636<0.55",
+          "dd3_above_max:0.554545>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "ft55_below_min:0.363636<0.55",
+          "dd3_above_max:0.554545>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 14.574736,
+      "session_mode": "regular_open",
+      "topn": 2
+    },
+    {
+      "condition": "regular_open_liquid_drive",
+      "condition_specs": [
+        [
+          "r_anchor_ret",
+          0.7
+        ],
+        [
+          "r_liq20",
+          0.7
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.711602,
+        "alpha5_net_cost_0_2_ci95": [
+          -0.222938,
+          5.646142
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.6,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.711602,
+            "alpha5_net_0_2_pos_rate": 0.6,
+            "days": 55,
+            "dd3": 0.454545,
+            "ft55": 0.545455,
+            "n": 55,
+            "ret5": 5.62606,
+            "ret5_pos_rate": 0.672727,
+            "touch3": 0.636364,
+            "year": 2026
+          }
+        ],
+        "days": 55,
+        "dd3": 0.454545,
+        "dd3_ci95": [
+          0.321737,
+          0.587354
+        ],
+        "ft55": 0.545455,
+        "ft55_ci95": [
+          0.412646,
+          0.678263
+        ],
+        "n": 55,
+        "ret5": 5.62606,
+        "ret5_ci95": [
+          2.301381,
+          8.950738
+        ],
+        "ret5_pos_rate": 0.672727,
+        "same_day_touch_stop_ambiguous": 0.072727,
+        "symbols": 17,
+        "touch3": 0.636364,
+        "touch3_ci95": [
+          0.508058,
+          0.764669
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:55<1000",
+        "days_below_min:55<250",
+        "alpha5_net_cost_0_2_ci95_lo_below_min:-0.222938<0",
+        "ft55_below_min:0.545455<0.55",
+        "dd3_above_max:0.454545>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:55<1000",
+          "days_below_min:55<250",
+          "alpha5_net_cost_0_2_ci95_lo_below_min:-0.222938<0",
+          "ft55_below_min:0.545455<0.55",
+          "dd3_above_max:0.454545>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "alpha5_net_cost_0_2_ci95_lo_below_min:-0.222938<0",
+          "ft55_below_min:0.545455<0.55",
+          "dd3_above_max:0.454545>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 14.283118,
+      "session_mode": "regular_open",
+      "topn": 1
+    },
+    {
+      "condition": "regular_close_core_close_trend",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.75
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.409453,
+        "alpha5_net_cost_0_2_ci95": [
+          0.964052,
+          3.854854
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.549107,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.409453,
+            "alpha5_net_0_2_pos_rate": 0.549107,
+            "days": 54,
+            "dd3": 0.383929,
+            "ft55": 0.625,
+            "n": 224,
+            "ret5": 5.802174,
+            "ret5_pos_rate": 0.65625,
+            "touch3": 0.647321,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.383929,
+        "dd3_ci95": [
+          0.320096,
+          0.447761
+        ],
+        "ft55": 0.625,
+        "ft55_ci95": [
+          0.561458,
+          0.688542
+        ],
+        "n": 224,
+        "ret5": 5.802174,
+        "ret5_ci95": [
+          4.026288,
+          7.57806
+        ],
+        "ret5_pos_rate": 0.65625,
+        "same_day_touch_stop_ambiguous": 0.013393,
+        "symbols": 31,
+        "touch3": 0.647321,
+        "touch3_ci95": [
+          0.584609,
+          0.710034
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:224<1000",
+        "days_below_min:54<250",
+        "alpha5_net_cost_0_2_pos_rate_below_min:0.549107<0.55",
+        "dd3_above_max:0.383929>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:224<1000",
+          "days_below_min:54<250",
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.549107<0.55",
+          "dd3_above_max:0.383929>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.549107<0.55",
+          "dd3_above_max:0.383929>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_reversal",
+      "selection_key": 14.260732,
+      "session_mode": "regular_close",
+      "topn": 5
+    },
+    {
+      "condition": "regular_close_core_ma200",
+      "condition_specs": [
+        [
+          "r_liq20",
+          0.7
+        ],
+        [
+          "r_ret_20d",
+          0.6
+        ],
+        [
+          "r_ma200_slope",
+          0.65
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.357062,
+        "alpha5_net_cost_0_2_ci95": [
+          0.685678,
+          4.028446
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.564815,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.357062,
+            "alpha5_net_0_2_pos_rate": 0.564815,
+            "days": 54,
+            "dd3": 0.333333,
+            "ft55": 0.62963,
+            "n": 108,
+            "ret5": 5.577703,
+            "ret5_pos_rate": 0.666667,
+            "touch3": 0.675926,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.333333,
+        "dd3_ci95": [
+          0.244011,
+          0.422655
+        ],
+        "ft55": 0.62963,
+        "ft55_ci95": [
+          0.538129,
+          0.72113
+        ],
+        "n": 108,
+        "ret5": 5.577703,
+        "ret5_ci95": [
+          3.393447,
+          7.761959
+        ],
+        "ret5_pos_rate": 0.666667,
+        "same_day_touch_stop_ambiguous": 0.018519,
+        "symbols": 18,
+        "touch3": 0.675926,
+        "touch3_ci95": [
+          0.587244,
+          0.764608
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:108<1000",
+        "days_below_min:54<250",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:108<1000",
+          "days_below_min:54<250",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": true,
+        "status": "recent_shadow_candidate_not_production",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": true,
+      "score": "score_liquid_open_drive",
+      "selection_key": 14.240324,
+      "session_mode": "regular_close",
+      "topn": 2
+    },
+    {
+      "condition": "regular_close_strength_liq_ma200",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.591735,
+        "alpha5_net_cost_0_2_ci95": [
+          0.838235,
+          4.345236
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.54902,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.591735,
+            "alpha5_net_0_2_pos_rate": 0.54902,
+            "days": 54,
+            "dd3": 0.385621,
+            "ft55": 0.588235,
+            "n": 153,
+            "ret5": 5.882799,
+            "ret5_pos_rate": 0.633987,
+            "touch3": 0.588235,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.385621,
+        "dd3_ci95": [
+          0.30824,
+          0.463002
+        ],
+        "ft55": 0.588235,
+        "ft55_ci95": [
+          0.509994,
+          0.666476
+        ],
+        "n": 153,
+        "ret5": 5.882799,
+        "ret5_ci95": [
+          3.719198,
+          8.0464
+        ],
+        "ret5_pos_rate": 0.633987,
+        "same_day_touch_stop_ambiguous": 0.006536,
+        "symbols": 20,
+        "touch3": 0.588235,
+        "touch3_ci95": [
+          0.509994,
+          0.666476
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:153<1000",
+        "days_below_min:54<250",
+        "alpha5_net_cost_0_2_pos_rate_below_min:0.54902<0.55",
+        "dd3_above_max:0.385621>0.35",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:153<1000",
+          "days_below_min:54<250",
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.54902<0.55",
+          "dd3_above_max:0.385621>0.35",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.54902<0.55",
+          "dd3_above_max:0.385621>0.35"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_session_momentum",
+      "selection_key": 14.23924,
+      "session_mode": "regular_close",
+      "topn": 3
+    },
+    {
+      "condition": "regular_close_strength_liq_ma200",
+      "condition_specs": [
+        [
+          "r_session_ret",
+          0.55
+        ],
+        [
+          "r_session_close_loc",
+          0.65
+        ],
+        [
+          "r_liq20",
+          0.75
+        ],
+        [
+          "r_ma200_slope",
+          0.55
+        ]
+      ],
+      "metrics": {
+        "alpha5_net_cost_0_2": 2.568906,
+        "alpha5_net_cost_0_2_ci95": [
+          0.459303,
+          4.67851
+        ],
+        "alpha5_net_cost_0_2_pos_rate": 0.518868,
+        "annual": [
+          {
+            "alpha5_net_0_2": 2.568906,
+            "alpha5_net_0_2_pos_rate": 0.518868,
+            "days": 54,
+            "dd3": 0.311321,
+            "ft55": 0.59434,
+            "n": 106,
+            "ret5": 5.816999,
+            "ret5_pos_rate": 0.613208,
+            "touch3": 0.603774,
+            "year": 2026
+          }
+        ],
+        "days": 54,
+        "dd3": 0.311321,
+        "dd3_ci95": [
+          0.222753,
+          0.399888
+        ],
+        "ft55": 0.59434,
+        "ft55_ci95": [
+          0.500419,
+          0.68826
+        ],
+        "n": 106,
+        "ret5": 5.816999,
+        "ret5_ci95": [
+          3.273222,
+          8.360776
+        ],
+        "ret5_pos_rate": 0.613208,
+        "same_day_touch_stop_ambiguous": 0.018868,
+        "symbols": 22,
+        "touch3": 0.603774,
+        "touch3_ci95": [
+          0.510218,
+          0.697329
+        ],
+        "years_alpha5_net_0_2_pos": 1
+      },
+      "promotion_blocking_reasons": [
+        "n_below_min:106<1000",
+        "days_below_min:54<250",
+        "alpha5_net_cost_0_2_pos_rate_below_min:0.518868<0.55",
+        "years_alpha5_net_0_2_pos_below_min:1<5"
+      ],
+      "promotion_gate": {
+        "blocking_reasons": [
+          "n_below_min:106<1000",
+          "days_below_min:54<250",
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.518868<0.55",
+          "years_alpha5_net_0_2_pos_below_min:1<5"
+        ],
+        "capital_status": "research_shadow_only_win_return_gate_blocked",
+        "gate_version": "nasdaq_swing_win_return_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 250.0,
+          "min_ft55": 0.55,
+          "min_n": 1000.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 5.0
+        }
+      },
+      "promotion_ready": false,
+      "recent_shadow_gate": {
+        "blocking_reasons": [
+          "alpha5_net_cost_0_2_pos_rate_below_min:0.518868<0.55"
+        ],
+        "capital_status": "research_shadow_recent_intraday_only",
+        "gate_version": "nasdaq_session_recent_shadow_gate_v1",
+        "promotion_ready": false,
+        "status": "research_shadow_only_win_return_gate_blocked",
+        "thresholds": {
+          "max_dd3": 0.35,
+          "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+          "min_alpha5_net_cost_0_2_pct": 0.5,
+          "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+          "min_days": 15.0,
+          "min_ft55": 0.55,
+          "min_n": 35.0,
+          "min_ret5_pct": 1.0,
+          "min_ret5_pos_rate": 0.55,
+          "min_touch3": 0.55,
+          "min_years_alpha5_net_0_2_pos": 1.0
+        }
+      },
+      "recent_shadow_ready": false,
+      "score": "score_liquid_open_drive",
+      "selection_key": 14.168927,
+      "session_mode": "regular_close",
+      "topn": 2
+    }
+  ],
+  "unsupported_session_warning": "This source covers 04:00-20:00 America/New_York premarket/regular/afterhours. 20:00-04:00 overnight/day-market bars are not present and require a separate provider."
+}

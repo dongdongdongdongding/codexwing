@@ -65,6 +65,7 @@ runtime_state/reports/validation/*.jsonl
 !runtime_state/reports/validation/supabase_scan_data_quality.md
 runtime_state/reports/experimental/*.jsonl
 runtime_state/reports/us_research/*_ledger.jsonl
+runtime_state/reports/us_research/nasdaq_session_5m_cache/
 runtime_state/models/
 
 # Catboost training artifacts (학습 부산물, repo에 keep 의미 없음)
