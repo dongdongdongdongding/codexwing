@@ -102,9 +102,14 @@ def scan_status():
     return jobs.status()
 
 
+@app.get("/api/ops/scan-targets")
+def scan_targets():
+    return {"targets": jobs.targets()}
+
+
 @app.post("/api/ops/scan")
-def scan_start(market: str = Query("", description="KOSPI|KOSDAQ|'' 전체")):
-    return jobs.start(market or "")
+def scan_start(target: str = Query("all", description="kospi_swing|kosdaq_swing|nasdaq_swing|kospi_intraday|kosdaq_intraday|b|kospi_all|kosdaq_all|all")):
+    return jobs.start(target or "all")
 
 
 @app.get("/api/archive")

@@ -7,21 +7,22 @@ import { Card, Term } from "../components/ui";
 export function Ops() {
   const [status, setStatus] = useState<any>(null);
   const [scan, setScan] = useState<any>(null);
-  const [market, setMarket] = useState("");
+  const [target, setTarget] = useState("all");
+  const [targets, setTargets] = useState<Array<{ key: string; label: string }>>([]);
 
   const refresh = () => { api.opsStatus().then(setStatus).catch(() => {}); api.scanStatus().then(setScan).catch(() => {}); };
-  useEffect(() => { refresh(); const t = setInterval(() => api.scanStatus().then(setScan).catch(() => {}), 3000); return () => clearInterval(t); }, []);
+  useEffect(() => { refresh(); api.scanTargets().then((d) => setTargets(d.targets)).catch(() => {}); const t = setInterval(() => api.scanStatus().then(setScan).catch(() => {}), 3000); return () => clearInterval(t); }, []);
 
   const running = scan?.status === "running";
-  const start = async () => { await api.scanStart(market); setTimeout(refresh, 500); };
+  const start = async () => { await api.scanStart(target); setTimeout(refresh, 500); };
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <Card>
         <div style={{ color: C.mut, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>스캔 제어 (백그라운드 — 탭 이동해도 계속)</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <select value={market} onChange={(e) => setMarket(e.target.value)} style={{ background: C.surface2, color: C.text, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px" }}>
-            <option value="">전체</option><option value="KOSPI">코스피</option><option value="KOSDAQ">코스닥</option>
+          <select value={target} onChange={(e) => setTarget(e.target.value)} style={{ background: C.surface2, color: C.text, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px" }}>
+            {targets.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
           </select>
           <button onClick={start} disabled={running} style={{ background: running ? C.surface2 : C.accent, color: running ? C.mut : "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, cursor: running ? "default" : "pointer" }}>
             {running ? "스캔 중…" : "▶ 스캔 실행"}
