@@ -1,97 +1,98 @@
 # Loss Exclusion Guard Mining
 
-- generated_at: `2026-05-27T06:04:37.219131+00:00`
+- generated_at: `2026-06-29T07:07:51.371562+00:00`
 - report_version: `loss_exclusion_guard_mining_v1`
-- input_rows: `3697`
-- guard_count: `1938`
+- input_rows: `6906`
+- quality_scope: `all`
+- guard_count: `9494`
 - production_candidate_count: `0`
-- shadow_candidate_count: `118`
-- guard_levels: `{'diagnostic': 1007, 'sample_fail': 479, 'coverage_fail': 334, 'shadow_candidate': 118}`
+- shadow_candidate_count: `117`
+- guard_levels: `{'coverage_fail': 4443, 'diagnostic': 4220, 'sample_fail': 714, 'shadow_candidate': 117}`
 
 ## Top Exclusion Guards
 
 | Rank | Level | Market | Scope | Horizon | Terms | Retain | Base Win | Kept Win | ΔWin | Base Avg | Kept Avg | ΔAvg | Kept Min | Bad ↓ | Stop ↓ | Exclude Conditions |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| 1 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3521 | 45.07 | 64.0 | 18.93 | 0.4866 | 6.6116 | 6.125 | -16.1826 | 15.155 | 9.352 | ml_prob <= 41.6<br>priority_rank >= 10 |
-| 2 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3803 | 45.07 | 62.963 | 17.893 | 0.4866 | 5.929 | 5.4424 | -16.1826 | 11.007 | 6.834 | priority_rank >= 10<br>prob_clean <= 34.76 |
-| 3 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3803 | 45.07 | 62.963 | 17.893 | 0.4866 | 5.929 | 5.4424 | -16.1826 | 11.007 | 6.834 | alpha_score <= 72<br>priority_rank >= 10 |
-| 4 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3803 | 45.07 | 62.963 | 17.893 | 0.4866 | 5.929 | 5.4424 | -16.1826 | 11.007 | 6.834 | alpha_score <= 80<br>priority_rank >= 10 |
-| 5 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 2 | 0.3803 | 45.07 | 66.667 | 21.597 | 1.1593 | 4.379 | 3.2197 | -12.5074 | 11.007 | 6.834 | decision_score <= 79.64<br>priority_rank >= 10 |
-| 6 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 2 | 0.3803 | 45.07 | 66.667 | 21.597 | 1.1593 | 4.379 | 3.2197 | -12.5074 | 11.007 | 6.834 | decision_score <= 84.475<br>priority_rank >= 10 |
-| 7 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 1 | 0.3662 | 45.07 | 61.538 | 16.468 | 0.4866 | 4.4349 | 3.9483 | -24.7525 | 13.001 | 9.967 | priority_rank >= 6.05 |
-| 8 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3521 | 36.62 | 60.0 | 23.38 | -0.3714 | 3.1872 | 3.5586 | -3.8614 | 3.155 | -6.648 | decision == WATCHLIST<br>whale_score >= 90.1 |
-| 9 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3521 | 36.62 | 60.0 | 23.38 | -0.3714 | 3.1872 | 3.5586 | -3.8614 | 3.155 | -6.648 | decision == WATCHLIST<br>tier == 🏆T1 |
-| 10 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 1 | 0.3662 | 45.07 | 57.692 | 12.622 | 1.1593 | 3.1108 | 1.9515 | -12.5074 | 13.001 | 9.967 | priority_rank >= 6.05 |
-| 11 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4507 | 36.62 | 56.25 | 19.63 | -0.3714 | 1.7514 | 2.1228 | -14.0774 | 2.905 | -2.773 | alpha_score >= 86<br>ml_prob >= 59 |
-| 12 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 1 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | whale_score >= 90.1 |
-| 13 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 1 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tier == 🏆T1 |
-| 14 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tier == 🏆T1<br>whale_score >= 90.1 |
-| 15 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 80<br>whale_score >= 90.1 |
-| 16 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score >= 82<br>whale_score >= 90.1 |
-| 17 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 🚀 Intraday Breakout<br>whale_score >= 90.1 |
-| 18 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 86<br>whale_score >= 90.1 |
-| 19 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 90<br>whale_score >= 90.1 |
-| 20 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score >= 90<br>whale_score >= 90.1 |
-| 21 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score >= 88<br>whale_score >= 90.1 |
-| 22 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score <= 82<br>whale_score >= 90.1 |
-| 23 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score <= 88<br>whale_score >= 90.1 |
-| 24 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score <= 72<br>whale_score >= 90.1 |
-| 25 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 📈 Intraday Trend<br>whale_score >= 90.1 |
-| 26 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | priority_rank >= 20<br>whale_score >= 90.1 |
-| 27 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 80<br>tier == 🏆T1 |
-| 28 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score >= 82<br>tier == 🏆T1 |
-| 29 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 🚀 Intraday Breakout<br>tier == 🏆T1 |
-| 30 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tier == 🏆T1<br>whale_score >= 100 |
-| 31 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 86<br>tier == 🏆T1 |
-| 32 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 90<br>tier == 🏆T1 |
-| 33 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score >= 90<br>tier == 🏆T1 |
-| 34 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score >= 88<br>tier == 🏆T1 |
-| 35 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score <= 82<br>tier == 🏆T1 |
-| 36 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score <= 88<br>tier == 🏆T1 |
-| 37 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score <= 72<br>tier == 🏆T1 |
-| 38 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 📈 Intraday Trend<br>tier == 🏆T1 |
-| 39 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | priority_rank >= 20<br>tier == 🏆T1 |
-| 40 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 80<br>whale_score >= 100 |
-| 41 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 80<br>tech_score <= 82 |
-| 42 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 80<br>tech_score <= 88 |
-| 43 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 80<br>tech_score <= 72 |
-| 44 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score >= 82<br>whale_score >= 100 |
-| 45 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 🚀 Intraday Breakout<br>whale_score >= 100 |
-| 46 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 🚀 Intraday Breakout<br>tech_score <= 82 |
-| 47 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 🚀 Intraday Breakout<br>tech_score <= 88 |
-| 48 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | position == 🚀 Intraday Breakout<br>tech_score <= 72 |
-| 49 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | tech_score <= 88<br>whale_score >= 100 |
-| 50 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 53.333 | 16.713 | -0.3714 | 2.3945 | 2.7659 | -3.8614 | 2.488 | -4.648 | alpha_score >= 86<br>tech_score <= 88 |
-| 51 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4789 | 36.62 | 52.941 | 16.321 | -0.3714 | 1.5962 | 1.9676 | -14.0774 | 6.214 | -1.119 | alpha_score >= 86<br>decision == WATCHLIST |
-| 52 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4507 | 36.62 | 53.125 | 16.505 | -0.3714 | 2.2478 | 2.6192 | -3.8614 | 2.905 | -5.898 | alpha_score >= 86<br>tech_score <= 82 |
-| 53 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 1 | 0.5352 | 45.07 | 55.263 | 10.193 | 0.4866 | 3.5416 | 3.055 | -24.7525 | 6.523 | 6.931 | priority_rank >= 10 |
-| 54 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.5211 | 36.62 | 54.054 | 17.434 | -0.3714 | 1.5663 | 1.9377 | -14.0774 | 2.398 | -1.675 | alpha_score >= 90<br>ml_prob >= 59 |
-| 55 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.5211 | 36.62 | 54.054 | 17.434 | -0.3714 | 1.5663 | 1.9377 | -14.0774 | 2.398 | -1.675 | ml_prob >= 59<br>tech_score >= 90 |
-| 56 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 1 | 0.5352 | 45.07 | 55.263 | 10.193 | 1.1593 | 3.268 | 2.1087 | -12.5074 | 6.523 | 6.931 | priority_rank >= 10 |
-| 57 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4507 | 36.62 | 53.125 | 16.505 | -0.3714 | 1.6488 | 2.0202 | -14.0774 | 2.905 | -2.773 | alpha_score >= 80<br>decision == WATCHLIST |
-| 58 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4507 | 36.62 | 53.125 | 16.505 | -0.3714 | 1.6488 | 2.0202 | -14.0774 | 2.905 | -2.773 | decision == WATCHLIST<br>position == 🚀 Intraday Breakout |
-| 59 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3944 | 36.62 | 53.571 | 16.951 | -0.3714 | 1.6206 | 1.992 | -3.8614 | 2.012 | -6.791 | priority_rank >= 17<br>whale_score >= 90.1 |
-| 60 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3944 | 36.62 | 53.571 | 16.951 | -0.3714 | 1.6206 | 1.992 | -3.8614 | 2.012 | -6.791 | priority_rank >= 17<br>tier == 🏆T1 |
-| 61 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4225 | 36.62 | 50.0 | 13.38 | -0.3714 | 0.4664 | 0.8378 | -15.7969 | 5.822 | 8.685 | ml_prob >= 59<br>priority_rank >= 10 |
-| 62 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.493 | 36.62 | 51.429 | 14.809 | -0.3714 | 1.5238 | 1.8952 | -14.0774 | 4.869 | -3.219 | decision == WATCHLIST<br>tech_score >= 88 |
-| 63 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4789 | 36.62 | 50.0 | 13.38 | -0.3714 | 2.0235 | 2.3949 | -3.8614 | 3.273 | -7.001 | alpha_score >= 86<br>tech_score <= 72 |
-| 64 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.4789 | 36.62 | 50.0 | 13.38 | -0.3714 | 2.0235 | 2.3949 | -3.8614 | 3.273 | -7.001 | alpha_score >= 86<br>position == 📈 Intraday Trend |
-| 65 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 2 | 0.3521 | 45.07 | 56.0 | 10.93 | 1.1593 | 3.1808 | 2.0215 | -6.3758 | 11.155 | -6.648 | ml_prob <= 41.6<br>tech_score >= 88 |
-| 66 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4225 | 45.07 | 53.333 | 8.263 | 0.4866 | 2.9651 | 2.4785 | -24.7525 | 5.822 | 8.685 | expected_edge_score <= 4.39<br>priority_rank >= 10 |
-| 67 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4225 | 45.07 | 53.333 | 8.263 | 0.4866 | 2.9651 | 2.4785 | -24.7525 | 5.822 | 8.685 | expected_return_1d_pct <= 0.48<br>priority_rank >= 10 |
-| 68 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4225 | 45.07 | 53.333 | 8.263 | 0.4866 | 2.9651 | 2.4785 | -24.7525 | 5.822 | 8.685 | expected_return_3d_pct <= 0.9<br>priority_rank >= 10 |
-| 69 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3521 | 36.62 | 48.0 | 11.38 | -0.3714 | 1.5278 | 1.8992 | -3.8614 | 3.155 | -2.648 | priority_rank >= 13<br>whale_score >= 90.1 |
-| 70 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3521 | 36.62 | 48.0 | 11.38 | -0.3714 | 1.5278 | 1.8992 | -3.8614 | 3.155 | -2.648 | alpha_score >= 80<br>priority_rank >= 13 |
-| 71 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3521 | 36.62 | 48.0 | 11.38 | -0.3714 | 1.5278 | 1.8992 | -3.8614 | 3.155 | -2.648 | priority_rank >= 13<br>tech_score >= 82 |
-| 72 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.3521 | 36.62 | 48.0 | 11.38 | -0.3714 | 1.5278 | 1.8992 | -3.8614 | 3.155 | -2.648 | position == 🚀 Intraday Breakout<br>priority_rank >= 13 |
-| 73 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 1 | 0.5211 | 36.62 | 48.649 | 12.029 | -0.3714 | 1.214 | 1.5854 | -14.0774 | 2.398 | -1.675 | position == 🚀 Intraday Breakout |
-| 74 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.5211 | 36.62 | 48.649 | 12.029 | -0.3714 | 1.214 | 1.5854 | -14.0774 | 2.398 | -1.675 | alpha_score >= 86<br>tech_score >= 82 |
-| 75 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.5211 | 36.62 | 48.649 | 12.029 | -0.3714 | 1.214 | 1.5854 | -14.0774 | 2.398 | -1.675 | alpha_score >= 86<br>position == 🚀 Intraday Breakout |
-| 76 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.5211 | 36.62 | 48.649 | 12.029 | -0.3714 | 1.214 | 1.5854 | -14.0774 | 2.398 | -1.675 | position == 🚀 Intraday Breakout<br>tech_score >= 90 |
-| 77 | shadow_candidate | KOSDAQ | ranked_top20 | 1d | 2 | 0.5211 | 36.62 | 48.649 | 12.029 | -0.3714 | 1.214 | 1.5854 | -14.0774 | 2.398 | -1.675 | position == 🚀 Intraday Breakout<br>tech_score >= 88 |
-| 78 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4366 | 45.07 | 51.613 | 6.543 | 0.4866 | 2.8372 | 2.3506 | -24.7525 | 4.316 | 5.997 | expected_edge_score <= 3.98<br>priority_rank >= 10 |
-| 79 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4366 | 45.07 | 51.613 | 6.543 | 0.4866 | 2.8372 | 2.3506 | -24.7525 | 4.316 | 5.997 | expected_return_1d_pct <= 0.44<br>priority_rank >= 10 |
-| 80 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4366 | 45.07 | 51.613 | 6.543 | 0.4866 | 2.8372 | 2.3506 | -24.7525 | 4.316 | 5.997 | expected_return_3d_pct <= 0.83<br>priority_rank >= 10 |
+| 1 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.5 | 33.333 | 50.0 | 16.667 | -10.1449 | 0.0806 | 10.2255 | -33.3333 | 20.834 | 16.667 | institution_3d <= -21.75<br>regime_adjusted_grade == RELATIVE_WATCHLIST |
+| 2 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.5 | 33.333 | 50.0 | 16.667 | -10.1449 | 0.0806 | 10.2255 | -33.3333 | 20.834 | 16.667 | institution_3d <= -21.75<br>regime_adjusted_grade == RELATIVE_WATCHLIST |
+| 3 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.4 | 32.0 | 50.0 | 18.0 | -5.503 | 1.2996 | 6.8026 | -23.6417 | 9.0 | 12.0 | ml_prob >= 60.2 |
+| 4 | shadow_candidate | KOSDAQ | top5 | 3d | 2 | 0.4 | 32.0 | 50.0 | 18.0 | -5.503 | 1.2996 | 6.8026 | -23.6417 | 9.0 | 12.0 | ml_prob >= 60.2<br>volume_ratio >= 8.05 |
+| 5 | shadow_candidate | KOSDAQ | top5 | 3d | 2 | 0.4 | 32.0 | 50.0 | 18.0 | -5.503 | 1.2996 | 6.8026 | -23.6417 | 9.0 | 12.0 | ml_prob >= 60.2<br>volume_ratio >= 12.625 |
+| 6 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3704 | 18.518 | 33.333 | 14.815 | -12.8097 | -6.2764 | 6.5333 | -38.1679 | 7.16 | 8.025 | expected_edge_score <= 4.095<br>volume_ratio >= 11.525 |
+| 7 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.38 | 32.0 | 47.368 | 15.368 | -5.503 | 1.5998 | 7.1028 | -24.6519 | 5.053 | 8.316 | volume_ratio >= 1.9025 |
+| 8 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.38 | 32.0 | 47.368 | 15.368 | -5.503 | 1.5998 | 7.1028 | -24.6519 | 5.053 | 8.316 | volume_ratio >= 2 |
+| 9 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.38 | 32.0 | 47.368 | 15.368 | -5.503 | 1.5998 | 7.1028 | -24.6519 | 5.053 | 8.316 | volume_ratio >= 1.9025 |
+| 10 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.38 | 32.0 | 47.368 | 15.368 | -5.503 | 1.5998 | 7.1028 | -24.6519 | 5.053 | 8.316 | volume_ratio >= 2 |
+| 11 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3827 | 18.518 | 32.258 | 13.74 | -12.8097 | -7.1757 | 5.634 | -38.1679 | 6.73 | 7.487 | expected_edge_score <= 4.095<br>volume_ratio >= 13.6 |
+| 12 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.38 | 32.0 | 47.368 | 15.368 | -5.503 | 0.6029 | 6.1059 | -23.6417 | 5.053 | 8.316 | conviction_score >= 69.95 |
+| 13 | shadow_candidate | KOSDAQ | top5 | 3d | 2 | 0.38 | 32.0 | 47.368 | 15.368 | -5.503 | 0.6029 | 6.1059 | -23.6417 | 5.053 | 8.316 | conviction_score >= 69.95<br>ml_prob >= 60.2 |
+| 14 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.38 | 32.0 | 47.368 | 15.368 | -5.503 | 0.6029 | 6.1059 | -23.6417 | 5.053 | 8.316 | conviction_score >= 69.95 |
+| 15 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.54 | 32.0 | 44.444 | 12.444 | -5.503 | -0.7051 | 4.7979 | -24.6519 | 9.926 | 11.63 | volume_ratio >= 8.05 |
+| 16 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.54 | 32.0 | 44.444 | 12.444 | -5.503 | -0.7051 | 4.7979 | -24.6519 | 9.926 | 11.63 | volume_ratio >= 8.05 |
+| 17 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -4.4347 | 5.7102 | -33.5536 | 12.5 | 8.333 | institution_10d >= 349.85<br>relative_rank_pct >= 0.166667 |
+| 18 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -4.4347 | 5.7102 | -33.5536 | 12.5 | 8.333 | institution_3d >= 83<br>relative_rank_pct >= 0.166667 |
+| 19 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -4.4347 | 5.7102 | -33.5536 | 12.5 | 8.333 | institution_10d >= 349.85<br>relative_rank_pct >= 0.166667 |
+| 20 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -4.4347 | 5.7102 | -33.5536 | 12.5 | 8.333 | institution_3d >= 83<br>relative_rank_pct >= 0.166667 |
+| 21 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -4.4347 | 5.7102 | -33.5536 | 12.5 | 8.333 | expected_edge_score >= 14.23<br>relative_rank_pct >= 0.166667 |
+| 22 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -4.4347 | 5.7102 | -33.5536 | 12.5 | 8.333 | expected_return_1d_pct >= 1.28<br>relative_rank_pct >= 0.166667 |
+| 23 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -4.4347 | 5.7102 | -33.5536 | 12.5 | 8.333 | expected_return_3d_pct >= 1.855<br>relative_rank_pct >= 0.166667 |
+| 24 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.58 | 32.0 | 44.828 | 12.828 | -5.503 | -0.9927 | 4.5103 | -24.6519 | 8.138 | 9.586 | volume_ratio >= 12.625 |
+| 25 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4074 | 18.518 | 30.303 | 11.785 | -12.8097 | -9.23 | 3.5797 | -41.0168 | 8.978 | 12.57 | expected_return_1d_pct >= 1.27<br>priority_rank >= 9 |
+| 26 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4074 | 18.518 | 30.303 | 11.785 | -12.8097 | -9.8024 | 3.0073 | -41.0168 | 8.978 | 12.57 | priority_rank >= 9<br>retail_10d <= -10646.3 |
+| 27 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -5.7129 | 4.432 | -33.5536 | 12.5 | 8.333 | foreigner_3d >= 6452.25<br>relative_rank_pct >= 0.166667 |
+| 28 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.375 | 33.333 | 44.444 | 11.111 | -10.1449 | -5.7129 | 4.432 | -33.5536 | 12.5 | 8.333 | foreigner_3d >= 6452.25<br>relative_rank_pct >= 0.166667 |
+| 29 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4321 | 18.518 | 31.429 | 12.911 | -12.8097 | -10.0181 | 2.7916 | -41.0168 | 8.113 | 8.501 | expected_edge_score <= 4.095<br>priority_rank >= 9 |
+| 30 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3827 | 18.518 | 32.258 | 13.74 | -12.8097 | -10.2369 | 2.5728 | -56.139 | 9.956 | 13.939 | institution_10d <= -246.4<br>priority_rank >= 10 |
+| 31 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -0.6879 | 4.8151 | -24.6519 | 5.739 | 8.087 | ml_prob >= 66.6 |
+| 32 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -0.6879 | 4.8151 | -24.6519 | 5.739 | 8.087 | conviction_score >= 75.2 |
+| 33 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -0.6879 | 4.8151 | -24.6519 | 5.739 | 8.087 | ml_prob >= 65.7 |
+| 34 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -0.6879 | 4.8151 | -24.6519 | 5.739 | 8.087 | ml_prob >= 66.6 |
+| 35 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -0.6879 | 4.8151 | -24.6519 | 5.739 | 8.087 | conviction_score >= 75.2 |
+| 36 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.625 | 33.333 | 40.0 | 6.667 | -10.1449 | -5.5523 | 4.5926 | -35.4605 | 12.5 | 8.333 | institution_1d >= 20.75<br>regime_adjusted_grade == RELATIVE_WATCHLIST |
+| 37 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.625 | 33.333 | 40.0 | 6.667 | -10.1449 | -5.5523 | 4.5926 | -35.4605 | 12.5 | 8.333 | institution_1d >= 20.75<br>regime_adjusted_grade == RELATIVE_WATCHLIST |
+| 38 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.358 | 18.518 | 31.034 | 12.516 | -12.8097 | -9.268 | 3.5417 | -56.139 | 7.62 | 12.048 | retail_10d <= -10646.3<br>volume_ratio >= 13.6 |
+| 39 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 1 | 0.3827 | 18.518 | 29.032 | 10.514 | -12.8097 | -8.3059 | 4.5038 | -56.139 | 6.73 | 10.713 | volume_ratio >= 6.5905 |
+| 40 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -2.9551 | 2.5479 | -26.3566 | 10.087 | 12.435 | expected_edge_score >= 12.37 |
+| 41 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -2.9551 | 2.5479 | -26.3566 | 10.087 | 12.435 | expected_return_1d_pct >= 1.11 |
+| 42 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.46 | 32.0 | 43.478 | 11.478 | -5.503 | -2.9551 | 2.5479 | -26.3566 | 10.087 | 12.435 | expected_return_3d_pct >= 1.63 |
+| 43 | shadow_candidate | KOSPI | top5 | 3d | 2 | 0.3846 | 15.385 | 28.0 | 12.615 | -9.324 | -5.4633 | 3.8607 | -28.9944 | 5.846 | 6.769 | priority_rank >= 3<br>relative_rank_pct >= 0.050627 |
+| 44 | shadow_candidate | KOSPI | top5 | 3d | 2 | 0.3846 | 15.385 | 28.0 | 12.615 | -9.324 | -5.4633 | 3.8607 | -28.9944 | 5.846 | 6.769 | priority_rank >= 3<br>relative_rank_pct >= 0.066667 |
+| 45 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.5417 | 33.333 | 38.462 | 5.129 | -10.1449 | -6.566 | 3.5789 | -41.0168 | 17.629 | 13.462 | institution_1d >= 20.75<br>institution_3d <= -21.75 |
+| 46 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.5417 | 33.333 | 38.462 | 5.129 | -10.1449 | -6.566 | 3.5789 | -41.0168 | 17.629 | 13.462 | institution_1d >= 20.75<br>institution_3d <= -21.75 |
+| 47 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3827 | 18.518 | 29.032 | 10.514 | -12.8097 | -8.7932 | 4.0165 | -56.139 | 6.73 | 10.713 | expected_return_1d_pct >= 1.27<br>volume_ratio >= 11.525 |
+| 48 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3827 | 18.518 | 29.032 | 10.514 | -12.8097 | -8.7932 | 4.0165 | -56.139 | 6.73 | 10.713 | expected_return_1d_pct >= 1.27<br>volume_ratio >= 13.6 |
+| 49 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 1 | 0.4198 | 18.518 | 29.412 | 10.894 | -12.8097 | -8.7718 | 4.0379 | -56.139 | 5.592 | 9.005 | volume_ratio >= 11.525 |
+| 50 | shadow_candidate | KOSDAQ | top5 | 1d | 1 | 0.4412 | 45.588 | 56.667 | 11.079 | -1.1847 | 2.0234 | 3.2081 | -28.2258 | 11.274 | 9.118 | theme_inference_status == inferred |
+| 51 | shadow_candidate | KOSDAQ | top5_exception | 1d | 1 | 0.4412 | 45.588 | 56.667 | 11.079 | -1.1847 | 2.0234 | 3.2081 | -28.2258 | 11.274 | 9.118 | theme_inference_status == inferred |
+| 52 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 1 | 0.4691 | 18.518 | 28.947 | 10.429 | -12.8097 | -10.6433 | 2.1664 | -41.0168 | 6.985 | 9.779 | priority_rank >= 9 |
+| 53 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3704 | 18.518 | 30.0 | 11.482 | -12.8097 | -9.4732 | 3.3365 | -41.0168 | 3.827 | 4.691 | priority_rank >= 12<br>relative_rank_pct >= 0.241379 |
+| 54 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.625 | 33.333 | 40.0 | 6.667 | -10.1449 | -8.1351 | 2.0098 | -41.0168 | 12.5 | 15.0 | institution_10d <= -668.5<br>retail_10d <= -1763 |
+| 55 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3704 | 18.518 | 30.0 | 11.482 | -12.8097 | -9.9229 | 2.8868 | -41.0168 | 3.827 | 4.691 | expected_return_1d_pct >= 1.27<br>relative_rank_pct >= 0.241379 |
+| 56 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 1 | 0.4321 | 18.518 | 28.571 | 10.053 | -12.8097 | -9.497 | 3.3127 | -56.139 | 5.256 | 8.501 | volume_ratio >= 13.6 |
+| 57 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.6667 | 33.333 | 37.5 | 4.167 | -10.1449 | -6.8736 | 3.2713 | -41.0168 | 10.417 | 12.5 | institution_10d >= 349.85<br>institution_3d <= -21.75 |
+| 58 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.6667 | 33.333 | 37.5 | 4.167 | -10.1449 | -6.8736 | 3.2713 | -41.0168 | 10.417 | 12.5 | institution_10d >= 349.85<br>institution_3d <= -21.75 |
+| 59 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.4568 | 18.518 | 29.73 | 11.212 | -12.8097 | -11.4184 | 1.3913 | -41.0168 | 4.638 | 7.574 | day_return_pct <= 9.162<br>priority_rank >= 10 |
+| 60 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 1 | 0.4286 | 24.49 | 31.746 | 7.256 | -8.2432 | -5.156 | 3.0872 | -32.2321 | 5.895 | 8.616 | volume_ratio >= 6.5905 |
+| 61 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3827 | 18.518 | 29.032 | 10.514 | -12.8097 | -10.5601 | 2.2496 | -41.0168 | 3.504 | 4.261 | institution_10d <= -4242.5<br>relative_rank_pct >= 0.241379 |
+| 62 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.44 | 32.0 | 40.909 | 8.909 | -5.503 | -1.3799 | 4.1231 | -24.6519 | 2.182 | 4.727 | prob_clean >= 50.4 |
+| 63 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.5 | 32.0 | 40.0 | 8.0 | -5.503 | -1.873 | 3.63 | -24.6519 | 4.0 | 6.0 | volume_ratio >= 3 |
+| 64 | shadow_candidate | KOSDAQ | top5 | 3d | 1 | 0.5 | 32.0 | 40.0 | 8.0 | -5.503 | -1.873 | 3.63 | -24.6519 | 4.0 | 6.0 | volume_ratio >= 3.525 |
+| 65 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.5 | 32.0 | 40.0 | 8.0 | -5.503 | -1.873 | 3.63 | -24.6519 | 4.0 | 6.0 | volume_ratio >= 3 |
+| 66 | shadow_candidate | KOSDAQ | top5_exception | 3d | 1 | 0.5 | 32.0 | 40.0 | 8.0 | -5.503 | -1.873 | 3.63 | -24.6519 | 4.0 | 6.0 | volume_ratio >= 3.525 |
+| 67 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 1 | 0.5782 | 24.49 | 34.118 | 9.628 | -8.2432 | -6.0175 | 2.2257 | -35.7887 | 3.785 | 4.097 | priority_rank >= 10 |
+| 68 | shadow_candidate | KOSPI | top5 | 1d | 1 | 0.3626 | 26.374 | 39.394 | 13.02 | -3.2413 | -1.3942 | 1.8471 | -29.9191 | 4.995 | 5.561 | volume_ratio <= 10.125 |
+| 69 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3704 | 18.518 | 26.667 | 8.149 | -12.8097 | -10.263 | 2.5467 | -41.0168 | 3.827 | 4.691 | foreigner_10d >= 8991.5<br>relative_rank_pct >= 0.241379 |
+| 70 | shadow_candidate | KOSDAQ | ranked_top20 | 5d | 2 | 0.3704 | 18.518 | 26.667 | 8.149 | -12.8097 | -10.263 | 2.5467 | -41.0168 | 3.827 | 4.691 | relative_rank_pct >= 0.241379<br>retail_10d <= -10646.3 |
+| 71 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 1 | 0.517 | 24.49 | 32.895 | 8.405 | -8.2432 | -6.4303 | 1.8129 | -35.7887 | 5.039 | 5.63 | priority_rank >= 9 |
+| 72 | shadow_candidate | KOSDAQ | ranked_top20 | 3d | 1 | 0.3537 | 24.49 | 30.769 | 6.279 | -8.2432 | -4.7062 | 3.537 | -32.2321 | 2.812 | 6.541 | volume_ratio >= 2 |
+| 73 | shadow_candidate | KOSDAQ | top5 | 5d | 1 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | relative_rank_pct >= 0.166667 |
+| 74 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | institution_3d <= -1386.6<br>relative_rank_pct >= 0.166667 |
+| 75 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | relative_rank_pct >= 0.166667<br>retail_10d <= -87543.8 |
+| 76 | shadow_candidate | KOSDAQ | top5 | 5d | 2 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | relative_rank_pct >= 0.166667<br>retail_1d >= 328.25 |
+| 77 | shadow_candidate | KOSDAQ | top5_exception | 5d | 1 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | relative_rank_pct >= 0.166667 |
+| 78 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | foreigner_3d <= -47897.3<br>relative_rank_pct >= 0.166667 |
+| 79 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | foreigner_3d <= -17947<br>relative_rank_pct >= 0.166667 |
+| 80 | shadow_candidate | KOSDAQ | top5_exception | 5d | 2 | 0.4167 | 33.333 | 40.0 | 6.667 | -10.1449 | -7.3246 | 2.8203 | -33.5536 | 9.167 | 5.0 | institution_3d <= -1386.6<br>relative_rank_pct >= 0.166667 |
 
 ## Production Candidates
 
@@ -99,45 +100,45 @@
 
 ## Shadow Candidates
 
-- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3521 win_delta=18.93 avg_delta=6.125 :: ml_prob <= 41.6 / priority_rank >= 10
-- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3803 win_delta=17.893 avg_delta=5.4424 :: priority_rank >= 10 / prob_clean <= 34.76
-- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3803 win_delta=17.893 avg_delta=5.4424 :: alpha_score <= 72 / priority_rank >= 10
-- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3803 win_delta=17.893 avg_delta=5.4424 :: alpha_score <= 80 / priority_rank >= 10
-- `KOSDAQ` `ranked_top20` `3d` level=shadow_candidate retain=0.3803 win_delta=21.597 avg_delta=3.2197 :: decision_score <= 79.64 / priority_rank >= 10
-- `KOSDAQ` `ranked_top20` `3d` level=shadow_candidate retain=0.3803 win_delta=21.597 avg_delta=3.2197 :: decision_score <= 84.475 / priority_rank >= 10
-- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3662 win_delta=16.468 avg_delta=3.9483 :: priority_rank >= 6.05
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.3521 win_delta=23.38 avg_delta=3.5586 :: decision == WATCHLIST / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.3521 win_delta=23.38 avg_delta=3.5586 :: decision == WATCHLIST / tier == 🏆T1
-- `KOSDAQ` `ranked_top20` `3d` level=shadow_candidate retain=0.3662 win_delta=12.622 avg_delta=1.9515 :: priority_rank >= 6.05
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4507 win_delta=19.63 avg_delta=2.1228 :: alpha_score >= 86 / ml_prob >= 59
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tier == 🏆T1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tier == 🏆T1 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: alpha_score >= 80 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tech_score >= 82 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: position == 🚀 Intraday Breakout / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: alpha_score >= 86 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: alpha_score >= 90 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tech_score >= 90 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tech_score >= 88 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tech_score <= 82 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tech_score <= 88 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tech_score <= 72 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: position == 📈 Intraday Trend / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: priority_rank >= 20 / whale_score >= 90.1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: alpha_score >= 80 / tier == 🏆T1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tech_score >= 82 / tier == 🏆T1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: position == 🚀 Intraday Breakout / tier == 🏆T1
-- `KOSDAQ` `ranked_top20` `1d` level=shadow_candidate retain=0.4225 win_delta=16.713 avg_delta=2.7659 :: tier == 🏆T1 / whale_score >= 100
+- `KOSDAQ` `top5` `5d` level=shadow_candidate retain=0.5 win_delta=16.667 avg_delta=10.2255 :: institution_3d <= -21.75 / regime_adjusted_grade == RELATIVE_WATCHLIST
+- `KOSDAQ` `top5_exception` `5d` level=shadow_candidate retain=0.5 win_delta=16.667 avg_delta=10.2255 :: institution_3d <= -21.75 / regime_adjusted_grade == RELATIVE_WATCHLIST
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.4 win_delta=18.0 avg_delta=6.8026 :: ml_prob >= 60.2
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.4 win_delta=18.0 avg_delta=6.8026 :: ml_prob >= 60.2 / volume_ratio >= 8.05
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.4 win_delta=18.0 avg_delta=6.8026 :: ml_prob >= 60.2 / volume_ratio >= 12.625
+- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3704 win_delta=14.815 avg_delta=6.5333 :: expected_edge_score <= 4.095 / volume_ratio >= 11.525
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.38 win_delta=15.368 avg_delta=7.1028 :: volume_ratio >= 1.9025
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.38 win_delta=15.368 avg_delta=7.1028 :: volume_ratio >= 2
+- `KOSDAQ` `top5_exception` `3d` level=shadow_candidate retain=0.38 win_delta=15.368 avg_delta=7.1028 :: volume_ratio >= 1.9025
+- `KOSDAQ` `top5_exception` `3d` level=shadow_candidate retain=0.38 win_delta=15.368 avg_delta=7.1028 :: volume_ratio >= 2
+- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3827 win_delta=13.74 avg_delta=5.634 :: expected_edge_score <= 4.095 / volume_ratio >= 13.6
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.38 win_delta=15.368 avg_delta=6.1059 :: conviction_score >= 69.95
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.38 win_delta=15.368 avg_delta=6.1059 :: conviction_score >= 69.95 / ml_prob >= 60.2
+- `KOSDAQ` `top5_exception` `3d` level=shadow_candidate retain=0.38 win_delta=15.368 avg_delta=6.1059 :: conviction_score >= 69.95
+- `KOSDAQ` `top5` `3d` level=shadow_candidate retain=0.54 win_delta=12.444 avg_delta=4.7979 :: volume_ratio >= 8.05
+- `KOSDAQ` `top5_exception` `3d` level=shadow_candidate retain=0.54 win_delta=12.444 avg_delta=4.7979 :: volume_ratio >= 8.05
+- `KOSDAQ` `top5` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=5.7102 :: institution_10d >= 349.85 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=5.7102 :: institution_3d >= 83 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5_exception` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=5.7102 :: institution_10d >= 349.85 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5_exception` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=5.7102 :: institution_3d >= 83 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5_exception` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=5.7102 :: expected_edge_score >= 14.23 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5_exception` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=5.7102 :: expected_return_1d_pct >= 1.28 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5_exception` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=5.7102 :: expected_return_3d_pct >= 1.855 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5_exception` `3d` level=shadow_candidate retain=0.58 win_delta=12.828 avg_delta=4.5103 :: volume_ratio >= 12.625
+- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.4074 win_delta=11.785 avg_delta=3.5797 :: expected_return_1d_pct >= 1.27 / priority_rank >= 9
+- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.4074 win_delta=11.785 avg_delta=3.0073 :: priority_rank >= 9 / retail_10d <= -10646.3
+- `KOSDAQ` `top5` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=4.432 :: foreigner_3d >= 6452.25 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `top5_exception` `5d` level=shadow_candidate retain=0.375 win_delta=11.111 avg_delta=4.432 :: foreigner_3d >= 6452.25 / relative_rank_pct >= 0.166667
+- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.4321 win_delta=12.911 avg_delta=2.7916 :: expected_edge_score <= 4.095 / priority_rank >= 9
+- `KOSDAQ` `ranked_top20` `5d` level=shadow_candidate retain=0.3827 win_delta=13.74 avg_delta=2.5728 :: institution_10d <= -246.4 / priority_rank >= 10
 
 ## Diagnostics
 
-- `KOSPI` `top5` rows=72 days=12 cut=2026-05-21 predicates=0 levels={}
-- `KOSPI` `top5_exception` rows=85 days=12 cut=2026-05-21 predicates=9 levels={'sample_fail': 27}
-- `KOSPI` `ranked_top20` rows=275 days=12 cut=2026-05-21 predicates=84 levels={'sample_fail': 252}
-- `KOSDAQ` `top5` rows=68 days=11 cut=2026-04-15 predicates=0 levels={}
-- `KOSDAQ` `top5_exception` rows=88 days=11 cut=2026-04-15 predicates=23 levels={'diagnostic': 222, 'coverage_fail': 56, 'sample_fail': 24}
-- `KOSDAQ` `ranked_top20` rows=275 days=11 cut=2026-04-15 predicates=110 levels={'diagnostic': 785, 'coverage_fail': 278, 'sample_fail': 176, 'shadow_candidate': 118}
+- `KOSPI` `top5` rows=317 days=37 cut=2026-06-16 predicates=332 levels={'diagnostic': 656, 'coverage_fail': 521, 'sample_fail': 86, 'shadow_candidate': 11}
+- `KOSPI` `top5_exception` rows=329 days=37 cut=2026-06-16 predicates=337 levels={'diagnostic': 659, 'coverage_fail': 530, 'sample_fail': 98, 'shadow_candidate': 7}
+- `KOSPI` `ranked_top20` rows=925 days=37 cut=2026-06-16 predicates=375 levels={'coverage_fail': 931, 'diagnostic': 754, 'sample_fail': 78, 'shadow_candidate': 6}
+- `KOSDAQ` `top5` rows=298 days=35 cut=2026-06-17 predicates=309 levels={'diagnostic': 760, 'coverage_fail': 664, 'sample_fail': 165, 'shadow_candidate': 25}
+- `KOSDAQ` `top5_exception` rows=320 days=35 cut=2026-06-17 predicates=310 levels={'diagnostic': 741, 'coverage_fail': 717, 'sample_fail': 166, 'shadow_candidate': 34}
+- `KOSDAQ` `ranked_top20` rows=942 days=35 cut=2026-06-17 predicates=334 levels={'coverage_fail': 1080, 'diagnostic': 650, 'sample_fail': 121, 'shadow_candidate': 34}
 
 ## Notes
 - Internal research only; production scanner/model artifacts are unchanged.

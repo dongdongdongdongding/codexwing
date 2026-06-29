@@ -1,23 +1,23 @@
 # Prediction Validation (KOSDAQ)
 
-- generated_at: 2026-05-27T10:53:41.627059+00:00
-- runs_considered: 20
-- rows_considered: 987
+- generated_at: 2026-06-29T08:31:41.453467+00:00
+- runs_considered: 35
+- rows_considered: 455
 - excluded_runs: 0
 
 ## Buckets
 - picked:
-  - 1d: n=31 win=38.7% avg=-0.41% med=-1.61% min=-17.43% max=+29.98% loss5=25.8% hit5=19.4%
-  - 3d: n=31 win=38.7% avg=-1.19% med=-1.93% min=-20.86% max=+68.87% loss5=48.4% hit5=25.8%
-  - 5d: n=31 win=51.6% avg=+5.95% med=+0.90% min=-20.89% max=+141.54% loss5=38.7% hit5=32.3%
-  - 7d: n=31 win=51.6% avg=+5.64% med=+0.36% min=-19.73% max=+175.81% loss5=38.7% hit5=35.5%
+  - 1d: n=0 win=0.0% avg=+0.00% med=+0.00% min=+0.00% max=+0.00% loss5=0.0% hit5=0.0%
+  - 3d: n=0 win=0.0% avg=+0.00% med=+0.00% min=+0.00% max=+0.00% loss5=0.0% hit5=0.0%
+  - 5d: n=0 win=0.0% avg=+0.00% med=+0.00% min=+0.00% max=+0.00% loss5=0.0% hit5=0.0%
+  - 7d: n=0 win=0.0% avg=+0.00% med=+0.00% min=+0.00% max=+0.00% loss5=0.0% hit5=0.0%
 - watchlist:
-  - 1d: n=290 win=43.1% avg=+0.10% med=-0.71% min=-18.51% max=+29.98% loss5=14.8% hit5=16.9%
-  - 3d: n=290 win=42.1% avg=-0.04% med=-1.73% min=-25.87% max=+71.02% loss5=32.1% hit5=26.6%
-  - 5d: n=290 win=47.9% avg=+1.36% med=-0.36% min=-33.30% max=+75.99% loss5=37.6% hit5=33.1%
-  - 7d: n=290 win=43.8% avg=+0.08% med=-2.98% min=-38.98% max=+85.37% loss5=43.8% hit5=33.1%
+  - 1d: n=316 win=35.8% avg=-1.74% med=-2.51% min=-28.23% max=+30.00% loss5=37.0% hit5=18.4%
+  - 3d: n=284 win=33.8% avg=-4.78% med=-6.46% min=-35.79% max=+69.22% loss5=55.3% hit5=20.8%
+  - 5d: n=244 win=20.1% avg=-9.96% med=-10.72% min=-56.14% max=+53.80% loss5=68.0% hit5=12.3%
+  - 7d: n=171 win=14.0% avg=-15.20% med=-15.14% min=-43.49% max=+48.17% loss5=76.0% hit5=5.3%
 - exception_leader:
-  - 1d: n=63 win=47.6% avg=-1.14% med=-0.51% min=-16.02% max=+11.25% loss5=23.8% hit5=12.7%
-  - 3d: n=63 win=47.6% avg=-0.17% med=-0.22% min=-21.15% max=+22.52% loss5=19.1% hit5=27.0%
-  - 5d: n=63 win=52.4% avg=+1.26% med=+0.19% min=-18.82% max=+26.83% loss5=22.2% hit5=30.2%
-  - 7d: n=63 win=63.5% avg=+6.37% med=+2.53% min=-26.53% max=+45.55% loss5=14.3% hit5=38.1%
+  - 1d: n=43 win=30.2% avg=-2.86% med=-3.05% min=-22.52% max=+17.24% loss5=41.9% hit5=18.6%
+  - 3d: n=41 win=36.6% avg=-5.48% med=-3.24% min=-25.64% max=+17.35% loss5=46.3% hit5=14.6%
+  - 5d: n=33 win=12.1% avg=-11.81% med=-12.07% min=-38.12% max=+21.72% loss5=75.8% hit5=9.1%
+  - 7d: n=15 win=6.7% avg=-15.30% med=-16.98% min=-40.65% max=+22.83% loss5=86.7% hit5=6.7%

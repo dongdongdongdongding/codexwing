@@ -1,33 +1,30 @@
 # Feature Combo Watchlist
 
-- generated_at: `2026-05-27T12:51:48.668032+00:00`
+- generated_at: `2026-06-29T07:07:07.705183+00:00`
 - production_scanner_changed: `False`
 - review_candidate_count: `0`
 
 | Rule | Issue | Status | Market | Scope | All | Train | Test | Conditions |
 |---|---|---|---|---|---:|---:|---:|---|
-| kospi_exact_path_low_alpha_low_ml_top5_exception | swing-main-n7og | watch_failed_current_gate | KOSPI | top5_exception / exact_path | n=32 days=14 win5=81.481% avg5=10.976% min5=-29.9776% bad=28.125% drop1d=15.625% loss5=15.625% stop=12.5% | n=22 days=7 win5=81.818% avg5=11.6746% min5=-29.9776% bad=22.727% drop1d=9.091% loss5=18.182% stop=18.182% | n=10 days=7 win5=80.0% avg5=7.9019% min5=-3.2595% bad=40.0% drop1d=30.0% loss5=10.0% stop=0.0% | alpha_score <= 67.0; ml_prob <= 30.45 |
+| kospi_exact_path_low_alpha_low_ml_top5_exception | swing-main-n7og | watch_failed_current_gate | KOSPI | top5_exception / exact_path | n=44 days=23 win5=66.667% avg5=7.7321% min5=-29.9776% bad=43.182% drop1d=22.727% loss5=29.545% stop=20.454% | n=30 days=12 win5=76.667% avg5=10.1639% min5=-29.9776% bad=26.667% drop1d=13.333% loss5=23.333% stop=13.333% | n=14 days=11 win5=33.333% avg5=-0.3741% min5=-15.493% bad=78.571% drop1d=42.857% loss5=42.857% stop=35.714% | alpha_score <= 67.0; ml_prob <= 30.45 |
 
 ## Gate Checks
 
 ### kospi_exact_path_low_alpha_low_ml_top5_exception
-- train_n: `PASS` actual `22` expected `>=18`
-- train_days: `PASS` actual `7` expected `>=6`
-- train_win_5d: `PASS` actual `81.818` expected `>=70.0%`
-- test_n: `PASS` actual `10` expected `>=8`
-- test_days: `PASS` actual `7` expected `>=5`
-- test_win_5d: `PASS` actual `80.0` expected `>=75.0%`
-- test_avg_5d: `PASS` actual `7.9019` expected `>=5.0%`
-- test_bad_path: `FAIL` actual `40.0` expected `<=25.0%`
-- test_stop5: `PASS` actual `0.0` expected `<=10.0%`
+- train_n: `PASS` actual `30` expected `>=18`
+- train_days: `PASS` actual `12` expected `>=6`
+- train_win_5d: `PASS` actual `76.667` expected `>=70.0%`
+- test_n: `PASS` actual `14` expected `>=8`
+- test_days: `PASS` actual `11` expected `>=5`
+- test_win_5d: `FAIL` actual `33.333` expected `>=75.0%`
+- test_avg_5d: `FAIL` actual `-0.3741` expected `>=5.0%`
+- test_bad_path: `FAIL` actual `78.571` expected `<=25.0%`
+- test_stop5: `FAIL` actual `35.714` expected `<=10.0%`
 
 ## Refinement Candidates
 
 ### kospi_exact_path_low_alpha_low_ml_top5_exception
-| Condition | Status | Score | Train | Test |
-|---|---|---:|---:|---:|
-| decision_score >= 60.5 | watch_refinement_candidate | 216.3461 | n=16 days=5 win5=81.25% avg5=9.956% min5=-29.9776% bad=25.0% drop1d=6.25% loss5=18.75% stop=18.75% | n=6 days=5 win5=100.0% avg5=10.6922% min5=3.1098% bad=0.0% drop1d=0.0% loss5=0.0% stop=0.0% |
-| theme_inference_status == inferred | diagnostic_only | 68.5079 | n=7 days=3 win5=85.714% avg5=14.2293% min5=-12.6667% bad=14.286% drop1d=14.286% loss5=14.286% stop=14.286% | n=9 days=6 win5=80.0% avg5=7.9019% min5=-3.2595% bad=33.333% drop1d=22.222% loss5=11.111% stop=0.0% |
+- 추가 refinement 후보 없음
 
 ## Notes
 

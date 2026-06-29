@@ -1,49 +1,72 @@
 {
   "market": "KOSDAQ",
-  "runs_considered": 30,
+  "runs_considered": 1,
   "route_distribution": {
-    "core_only": 308
+    "theme_shadow": 4,
+    "core_only": 4
   },
   "theme_source_distribution": {
-    "stock_master": 3,
-    "unknown": 305
+    "keyword_fallback": 3,
+    "stock_master": 5
   },
   "theme_distribution": {
+    "지주/투자": 3,
     "반도체": 2,
-    "바이오/헬스케어": 1
+    "바이오/헬스케어": 1,
+    "전자부품/디스플레이": 1,
+    "철강/금속/소재": 1
   },
   "unclassified_ratio": 0.0,
-  "theme_routed_stock_master_ratio": 0.0,
-  "performance_by_route": {
-    "core_only": {
-      "status_counts": {
-        "PENDING": 418
-      },
-      "1d": {
-        "n": 343,
-        "avg_return_pct": -0.4444,
-        "win_rate": 39.94
-      }
-    }
-  },
+  "theme_routed_stock_master_ratio": 0.25,
+  "performance_by_route": {},
   "top_themes": [
+    {
+      "theme_name": "지주/투자",
+      "candidate_count": 3,
+      "leaders": [
+        {
+          "ticker": "039030.KQ",
+          "score": 54.3,
+          "theme_rank": 1,
+          "leader_score": 100.0,
+          "routing_path": "theme_shadow",
+          "theme_source": "keyword_fallback"
+        },
+        {
+          "ticker": "403870.KQ",
+          "score": 100.0,
+          "theme_rank": 2,
+          "leader_score": 100.0,
+          "routing_path": "theme_shadow",
+          "theme_source": "keyword_fallback"
+        },
+        {
+          "ticker": "131970.KQ",
+          "score": 75.8,
+          "theme_rank": 3,
+          "leader_score": 100.0,
+          "routing_path": "theme_shadow",
+          "theme_source": "keyword_fallback"
+        }
+      ]
+    },
     {
       "theme_name": "반도체",
       "candidate_count": 2,
       "leaders": [
         {
-          "ticker": "095340.KQ",
-          "score": 71.3,
+          "ticker": "084370.KQ",
+          "score": 53.6,
           "theme_rank": 1,
-          "leader_score": 76.9,
+          "leader_score": 100.0,
           "routing_path": "core_only",
           "theme_source": "stock_master"
         },
         {
-          "ticker": "095340.KQ",
-          "score": 70.6,
-          "theme_rank": 1,
-          "leader_score": 76.9,
+          "ticker": "144960.KQ",
+          "score": 73.7,
+          "theme_rank": 2,
+          "leader_score": 97.1,
           "routing_path": "core_only",
           "theme_source": "stock_master"
         }
@@ -54,10 +77,38 @@
       "candidate_count": 1,
       "leaders": [
         {
-          "ticker": "028300.KQ",
-          "score": 61.0,
+          "ticker": "096530.KQ",
+          "score": 100.0,
           "theme_rank": 1,
-          "leader_score": 73.6,
+          "leader_score": 52.3,
+          "routing_path": "theme_shadow",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "전자부품/디스플레이",
+      "candidate_count": 1,
+      "leaders": [
+        {
+          "ticker": "252990.KQ",
+          "score": 54.5,
+          "theme_rank": 1,
+          "leader_score": 100.0,
+          "routing_path": "core_only",
+          "theme_source": "stock_master"
+        }
+      ]
+    },
+    {
+      "theme_name": "철강/금속/소재",
+      "candidate_count": 1,
+      "leaders": [
+        {
+          "ticker": "066430.KQ",
+          "score": 66.6,
+          "theme_rank": 1,
+          "leader_score": 100.0,
           "routing_path": "core_only",
           "theme_source": "stock_master"
         }

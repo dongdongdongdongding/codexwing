@@ -1,46 +1,148 @@
 {
-  "generated_at": "2026-05-07T14:57:52.266373+00:00",
+  "generated_at": "2026-06-26T20:41:41.346647+00:00",
   "market": "NASDAQ",
   "theme_states": [
     {
-      "theme_id": "automobile",
-      "theme_name": "자동차",
-      "direction": "BENEFICIARY",
-      "strength_score": 20.0,
-      "confidence": 0.573,
-      "driver_categories": [],
-      "evidence": [
-        "[2026-05-07T14:44:27Z] S&P 500 Nuclear Play Vistra Pops Above Key Level On Earnings | Investor's Business Daily",
-        "[Wed, 06 May 2026 17:48:21 GMT] Goodbye quarterly earnings? Here's when traders believe this big change will happen | CNBC"
+      "beneficiary_keywords": [],
+      "confidence": 0.607,
+      "direction": "HEADWIND",
+      "driver_categories": [
+        "ECONOMY",
+        "LIQUIDITY",
+        "EARNINGS",
+        "REGULATION"
       ],
-      "beneficiary_keywords": [
-        "자동차",
-        "차량",
-        "전기차",
-        "모빌리티",
-        "자율주행",
-        "automobile"
-      ],
-      "victim_keywords": [],
+      "evidence": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "updated_at": "2026-05-07T14:57:52.265993+00:00"
-    }
-  ],
-  "beneficiary_themes": [
+      "strength_score": 36.0,
+      "theme_id": "semiconductor",
+      "theme_name": "반도체",
+      "updated_at": "2026-06-26T20:41:38.311019+00:00",
+      "victim_keywords": [
+        "반도체",
+        "메모리",
+        "파운드리",
+        "HBM",
+        "유리기판",
+        "칩"
+      ]
+    },
     {
+      "beneficiary_keywords": [],
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Fri, 26 Jun 2026 17:39:09 GMT] Trump eases pressure on Fed Chairman Kevin Warsh as inflation tops 4% | CNBC"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
       "theme_id": "automobile",
       "theme_name": "자동차",
+      "updated_at": "2026-06-26T20:41:38.310183+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[2026-06-25T10:49:07Z] What You Need to Know Ahead of Bank of America's Earnings Release | Barchart"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
+      "theme_id": "finance",
+      "theme_name": "금융",
+      "updated_at": "2026-06-26T20:41:38.310506+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.479,
+      "direction": "HEADWIND",
+      "driver_categories": [
+        "GEOPOLITICS",
+        "POLITICS",
+        "EARNINGS"
+      ],
+      "evidence": [],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 18.0,
+      "theme_id": "defense",
+      "theme_name": "방산",
+      "updated_at": "2026-06-26T20:28:06.280540+00:00",
+      "victim_keywords": [
+        "방산",
+        "미사일",
+        "탄약",
+        "군수",
+        "무기",
+        "defense"
+      ]
+    },
+    {
+      "beneficiary_keywords": [
+        "소비재/유통",
+        "화장품",
+        "식품",
+        "음료",
+        "유통",
+        "면세"
+      ],
+      "confidence": 0.573,
+      "direction": "BENEFICIARY",
+      "driver_categories": [],
+      "evidence": [
+        "[Thu, 25 Jun 2026 13:44:00 GMT] Consumer spending rises again — and now cheaper gas is on the way | MarketWatch",
+        "[Thu, 25 Jun 2026 14:14:42 GMT] Wendy's shares soar for a second day as retail investors pile into their new meme darling | CNBC"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
       "strength_score": 20.0,
-      "confidence": 0.573
+      "theme_id": "consumer_retail",
+      "theme_name": "소비재/유통",
+      "updated_at": "2026-06-25T14:18:12.436141+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Mon, 22 Jun 2026 13:55:00 GMT] Alan Greenspan, the most powerful Fed chairman of the modern era, dies at 100 | MarketWatch"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
+      "theme_id": "telecom",
+      "theme_name": "통신/네트워크",
+      "updated_at": "2026-06-22T14:16:41.575154+00:00",
+      "victim_keywords": []
     }
   ],
-  "headwind_themes": [],
+  "beneficiary_themes": [],
+  "headwind_themes": [
+    {
+      "confidence": 0.607,
+      "strength_score": 36.0,
+      "theme_id": "semiconductor",
+      "theme_name": "반도체"
+    }
+  ],
   "theme_evidence": {
     "automobile": [
-      "[2026-05-07T14:44:27Z] S&P 500 Nuclear Play Vistra Pops Above Key Level On Earnings | Investor's Business Daily",
-      "[Wed, 06 May 2026 17:48:21 GMT] Goodbye quarterly earnings? Here's when traders believe this big change will happen | CNBC"
-    ]
+      "[Fri, 26 Jun 2026 17:39:09 GMT] Trump eases pressure on Fed Chairman Kevin Warsh as inflation tops 4% | CNBC"
+    ],
+    "finance": [
+      "[2026-06-25T10:49:07Z] What You Need to Know Ahead of Bank of America's Earnings Release | Barchart"
+    ],
+    "semiconductor": []
   },
   "source": "gemini"
 }

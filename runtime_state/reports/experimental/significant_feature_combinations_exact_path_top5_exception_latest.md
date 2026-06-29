@@ -1,121 +1,121 @@
 # Significant Feature Combination Mining
 
-- generated_at: `2026-05-27T11:52:02.195161+00:00`
+- generated_at: `2026-06-29T07:04:58.718518+00:00`
 - report_version: `significant_feature_combo_mining_v2`
-- input_rows: `4220`
+- input_rows: `4882`
 - quality_scope: `exact_path`
 - mined_combinations: `576`
-- production_safe_count: `1`
+- production_safe_count: `0`
 
 ## Top Validated Combinations
 
 | Rank | Market | Scope | Horizon | Terms | Valid N | Days | Win | Avg | Min | Max | Bad | Stop | Conditions |
 |---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| 1 | KOSPI | top5_exception | 5d | 2 | 5 | 4 | 80.0 | 7.9019 | -3.2595 | 17.5781 | 20.0 | 0.0 | alpha_score <= 67<br>ml_prob <= 30.45 |
-| 2 | KOSPI | top5_exception | 3d | 1 | 4 | 2 | 100.0 | 6.9372 | 1.9462 | 10.2167 | 100.0 | 50.0 | ml_prob <= 23.85 |
-| 3 | KOSPI | top5_exception | 3d | 3 | 9 | 4 | 77.778 | 4.0346 | -3.512 | 15.1825 | 66.667 | 55.556 | alpha_score <= 99<br>decision_score >= 113<br>prob_clean <= 32.8 |
-| 4 | KOSPI | top5_exception | 3d | 3 | 12 | 5 | 75.0 | 1.546 | -22.0867 | 15.1825 | 75.0 | 50.0 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean >= 22.51 |
-| 5 | KOSPI | top5_exception | 3d | 3 | 12 | 5 | 75.0 | 1.546 | -22.0867 | 15.1825 | 75.0 | 50.0 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean >= 22.51 |
-| 6 | KOSPI | top5_exception | 3d | 3 | 11 | 5 | 72.727 | 3.4714 | -7.4334 | 15.1825 | 72.727 | 63.636 | decision_score >= 113<br>explosive_leader_flag_bool == False<br>prob_clean <= 32.8 |
-| 7 | KOSPI | top5_exception | 3d | 3 | 11 | 5 | 72.727 | 3.4714 | -7.4334 | 15.1825 | 72.727 | 63.636 | decision_score >= 113<br>kr_universe_role == CORE_TREND<br>prob_clean <= 32.8 |
-| 8 | KOSPI | top5_exception | 3d | 3 | 11 | 5 | 72.727 | 3.4714 | -7.4334 | 15.1825 | 72.727 | 63.636 | core_trend_flag_bool == True<br>decision_score >= 113<br>prob_clean <= 32.8 |
-| 9 | KOSPI | top5_exception | 3d | 3 | 10 | 4 | 70.0 | 0.6729 | -22.0867 | 15.1825 | 80.0 | 50.0 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean >= 25.525 |
-| 10 | KOSPI | top5_exception | 3d | 2 | 13 | 5 | 69.231 | 1.6643 | -22.0867 | 15.1825 | 76.923 | 61.538 | decision_score >= 113<br>explosive_leader_flag_bool == False |
-| 11 | KOSPI | top5_exception | 3d | 2 | 13 | 5 | 69.231 | 1.6643 | -22.0867 | 15.1825 | 76.923 | 61.538 | decision_score >= 113<br>kr_universe_role == CORE_TREND |
-| 12 | KOSPI | top5_exception | 3d | 2 | 13 | 5 | 69.231 | 1.6643 | -22.0867 | 15.1825 | 76.923 | 61.538 | core_trend_flag_bool == True<br>decision_score >= 113 |
-| 13 | KOSPI | top5_exception | 3d | 2 | 12 | 5 | 66.667 | 3.1392 | -7.4334 | 15.1825 | 75.0 | 66.667 | decision_score >= 113<br>prob_clean <= 32.8 |
-| 14 | KOSPI | top5_exception | 3d | 3 | 12 | 5 | 66.667 | 3.1392 | -7.4334 | 15.1825 | 75.0 | 66.667 | decision_score >= 113<br>ml_prob >= 21.445<br>prob_clean <= 32.8 |
-| 15 | KOSPI | top5_exception | 3d | 3 | 12 | 5 | 66.667 | 3.1392 | -7.4334 | 15.1825 | 75.0 | 66.667 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean <= 32.8 |
-| 16 | KOSPI | top5_exception | 3d | 3 | 12 | 5 | 66.667 | 3.1392 | -7.4334 | 15.1825 | 75.0 | 66.667 | decision_score >= 113<br>feature_completeness >= 0.4<br>prob_clean <= 32.8 |
-| 17 | KOSPI | top5_exception | 3d | 3 | 12 | 5 | 66.667 | 3.1392 | -7.4334 | 15.1825 | 75.0 | 66.667 | decision_score >= 113<br>feature_completeness >= 0.5<br>prob_clean <= 32.8 |
-| 18 | KOSPI | top5_exception | 3d | 1 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113 |
-| 19 | KOSPI | top5_exception | 3d | 2 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>prob_clean <= 34.5 |
-| 20 | KOSPI | top5_exception | 3d | 2 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>prob_clean <= 37.045 |
-| 21 | KOSPI | top5_exception | 3d | 2 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 7 |
-| 22 | KOSPI | top5_exception | 3d | 2 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 10 |
-| 23 | KOSPI | top5_exception | 3d | 2 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.4 |
-| 24 | KOSPI | top5_exception | 3d | 2 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.5 |
-| 25 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>ml_prob >= 21.445<br>prob_clean <= 34.5 |
-| 26 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>ml_prob >= 21.445<br>prob_clean <= 37.045 |
-| 27 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.4<br>priority_rank <= 7 |
-| 28 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.5<br>priority_rank <= 7 |
-| 29 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean <= 37.045 |
-| 30 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean <= 34.5 |
-| 31 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.4<br>priority_rank <= 10 |
-| 32 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.5<br>priority_rank <= 10 |
-| 33 | KOSPI | top5_exception | 3d | 3 | 15 | 5 | 66.667 | 1.7887 | -22.0867 | 15.1825 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean <= 37.045 |
-| 34 | KOSPI | top5_exception | 3d | 3 | 14 | 5 | 64.286 | 1.1867 | -22.0867 | 15.1825 | 78.571 | 57.143 | decision_score >= 113<br>ml_prob >= 23.85<br>prob_clean <= 37.045 |
-| 35 | KOSPI | top5_exception | 3d | 2 | 14 | 5 | 64.286 | 0.832 | -22.0867 | 10.2167 | 78.571 | 57.143 | decision_score >= 113<br>theme_inference_status == inferred |
-| 36 | KOSPI | top5_exception | 3d | 3 | 14 | 5 | 64.286 | 0.832 | -22.0867 | 10.2167 | 78.571 | 57.143 | decision_score >= 113<br>prob_clean <= 37.045<br>theme_inference_status == inferred |
-| 37 | KOSPI | top5_exception | 3d | 3 | 14 | 5 | 64.286 | 0.832 | -22.0867 | 10.2167 | 78.571 | 57.143 | decision_score >= 113<br>prob_clean <= 34.5<br>theme_inference_status == inferred |
-| 38 | KOSPI | top5_exception | 3d | 1 | 10 | 6 | 60.0 | 3.7308 | -3.6133 | 17.2005 | 70.0 | 40.0 | ml_prob <= 27.655 |
-| 39 | KOSPI | top5_exception | 3d | 3 | 10 | 4 | 60.0 | 2.822 | -7.4334 | 15.1825 | 80.0 | 70.0 | alpha_score >= 78<br>decision_score >= 113<br>prob_clean <= 32.8 |
-| 40 | KOSPI | top5_exception | 5d | 1 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113 |
-| 41 | KOSPI | top5_exception | 5d | 2 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 7 |
-| 42 | KOSPI | top5_exception | 5d | 2 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 10 |
-| 43 | KOSPI | top5_exception | 5d | 2 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>prob_clean <= 34.5 |
-| 44 | KOSPI | top5_exception | 5d | 2 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>prob_clean <= 37.045 |
-| 45 | KOSPI | top5_exception | 5d | 2 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>ml_prob >= 21.445 |
-| 46 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>ml_prob >= 21.445<br>prob_clean <= 34.5 |
-| 47 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean <= 34.5 |
-| 48 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean <= 37.045 |
-| 49 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.4<br>priority_rank <= 7 |
-| 50 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.5<br>priority_rank <= 7 |
-| 51 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>ml_prob >= 21.445<br>prob_clean <= 37.045 |
-| 52 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean <= 37.045 |
-| 53 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean <= 34.5 |
-| 54 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.4<br>priority_rank <= 10 |
-| 55 | KOSPI | top5_exception | 5d | 3 | 15 | 5 | 53.333 | 0.5513 | -13.1436 | 16.821 | 80.0 | 60.0 | decision_score >= 113<br>feature_completeness >= 0.5<br>priority_rank <= 10 |
-| 56 | KOSPI | top5_exception | 5d | 3 | 10 | 4 | 50.0 | 0.7648 | -13.1436 | 16.821 | 80.0 | 50.0 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean >= 25.525 |
-| 57 | KOSPI | top5_exception | 5d | 2 | 14 | 5 | 50.0 | 0.4027 | -13.1436 | 16.821 | 78.571 | 57.143 | decision_score >= 113<br>ml_prob >= 23.85 |
-| 58 | KOSPI | top5_exception | 5d | 3 | 14 | 5 | 50.0 | 0.4027 | -13.1436 | 16.821 | 78.571 | 57.143 | decision_score >= 113<br>ml_prob >= 23.85<br>prob_clean <= 37.045 |
-| 59 | KOSPI | top5_exception | 5d | 3 | 12 | 5 | 50.0 | -0.1257 | -13.1436 | 16.821 | 75.0 | 50.0 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean >= 22.51 |
-| 60 | KOSPI | top5_exception | 5d | 3 | 12 | 5 | 50.0 | -0.1257 | -13.1436 | 16.821 | 75.0 | 50.0 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean >= 22.51 |
-| 61 | KOSPI | top5_exception | 5d | 2 | 12 | 5 | 50.0 | -0.2045 | -9.901 | 14.3535 | 75.0 | 66.667 | decision_score >= 113<br>prob_clean <= 32.8 |
-| 62 | KOSPI | top5_exception | 5d | 3 | 12 | 5 | 50.0 | -0.2045 | -9.901 | 14.3535 | 75.0 | 66.667 | decision_score >= 113<br>ml_prob >= 21.445<br>prob_clean <= 32.8 |
-| 63 | KOSPI | top5_exception | 5d | 3 | 12 | 5 | 50.0 | -0.2045 | -9.901 | 14.3535 | 75.0 | 66.667 | decision_score >= 113<br>priority_rank <= 7<br>prob_clean <= 32.8 |
-| 64 | KOSPI | top5_exception | 5d | 3 | 12 | 5 | 50.0 | -0.2045 | -9.901 | 14.3535 | 75.0 | 66.667 | decision_score >= 113<br>priority_rank <= 10<br>prob_clean <= 32.8 |
-| 65 | KOSDAQ | top5_exception | 5d | 1 | 4 | 3 | 50.0 | -0.5231 | -13.8914 | 13.3901 | 75.0 | 75.0 | alpha_score <= 36.5 |
-| 66 | KOSPI | top5_exception | 3d | 1 | 48 | 9 | 47.917 | 0.5343 | -20.6854 | 33.4586 | 77.083 | 45.833 | conviction_score <= 65.06 |
-| 67 | KOSPI | top5_exception | 5d | 3 | 11 | 7 | 45.454 | 2.3707 | -20.1285 | 54.4834 | 63.636 | 36.364 | alpha_score <= 67<br>decision_score <= 95.525<br>ml_prob <= 36.7 |
-| 68 | KOSPI | top5_exception | 3d | 1 | 29 | 8 | 44.828 | -0.4119 | -22.0867 | 17.2005 | 86.207 | 72.414 | feature_origin == scanner_archive_outcome |
-| 69 | KOSPI | top5_exception | 3d | 3 | 9 | 6 | 44.444 | -2.3288 | -16.3543 | 13.67 | 66.667 | 22.222 | alpha_score >= 83<br>ml_prob >= 36.7<br>prob_clean >= 37.045 |
-| 70 | KOSDAQ | top5_exception | 3d | 2 | 18 | 7 | 44.444 | -3.5217 | -30.1013 | 10.745 | 66.667 | 38.889 | alpha_score <= 70<br>phase25_prob <= 50 |
-| 71 | KOSPI | top5_exception | 5d | 2 | 14 | 7 | 42.857 | 1.5969 | -20.1285 | 54.4834 | 64.286 | 42.857 | alpha_score <= 67<br>ml_prob <= 36.7 |
-| 72 | KOSPI | top5_exception | 3d | 1 | 17 | 8 | 41.176 | 0.0985 | -16.3543 | 28.1513 | 58.823 | 29.412 | expected_return_3d_pct >= 0.76 |
-| 73 | KOSPI | top5_exception | 3d | 2 | 17 | 8 | 41.176 | 0.0985 | -16.3543 | 28.1513 | 58.823 | 29.412 | alpha_score <= 99<br>expected_return_3d_pct >= 0.76 |
-| 74 | KOSPI | top5_exception | 3d | 2 | 17 | 8 | 41.176 | 0.0985 | -16.3543 | 28.1513 | 58.823 | 29.412 | expected_return_3d_pct >= 0.76<br>ml_prob >= 23.85 |
-| 75 | KOSPI | top5_exception | 3d | 2 | 17 | 8 | 41.176 | 0.0985 | -16.3543 | 28.1513 | 58.823 | 29.412 | expected_return_3d_pct >= 0.76<br>ml_prob >= 21.445 |
-| 76 | KOSPI | top5_exception | 3d | 1 | 57 | 10 | 40.351 | -0.8021 | -22.0867 | 28.1513 | 80.702 | 54.386 | decision_score >= 95.525 |
-| 77 | KOSPI | top5_exception | 5d | 1 | 10 | 6 | 40.0 | -1.2245 | -11.615 | 17.5781 | 70.0 | 40.0 | ml_prob <= 27.655 |
-| 78 | KOSPI | top5_exception | 3d | 1 | 5 | 1 | 40.0 | -2.7384 | -7.8947 | 4.7872 | 100.0 | 100.0 | decision == EXCEPTION_LEADER |
-| 79 | KOSPI | top5_exception | 3d | 1 | 5 | 1 | 40.0 | -2.7384 | -7.8947 | 4.7872 | 100.0 | 100.0 | decision_bucket == exception_leader |
-| 80 | KOSPI | top5_exception | 3d | 1 | 5 | 1 | 40.0 | -2.7384 | -7.8947 | 4.7872 | 100.0 | 100.0 | exception_leader == True |
+| 1 | KOSDAQ | top5_exception | 5d | 1 | 2 | 2 | 100.0 | 3.8535 | 3.212 | 4.4951 | 0.0 | 0.0 | ml_prob <= 23.3 |
+| 2 | KOSDAQ | top5_exception | 3d | 3 | 6 | 6 | 83.333 | 3.3386 | -17.2662 | 20.6642 | 100.0 | 50.0 | alpha_score <= 53<br>priority_rank <= 1<br>selection_lane == 3d |
+| 3 | KOSDAQ | top5_exception | 3d | 2 | 9 | 6 | 77.778 | 2.1005 | -17.2662 | 20.6642 | 88.889 | 44.444 | alpha_score <= 53<br>priority_rank <= 1 |
+| 4 | KOSPI | top5_exception | 5d | 3 | 11 | 5 | 72.727 | 6.6581 | -25.5403 | 28.4932 | 54.546 | 18.182 | alpha_score <= 70.5<br>feature_origin == scanner_archive_outcome<br>priority_rank <= 4 |
+| 5 | KOSDAQ | top5_exception | 3d | 3 | 7 | 5 | 71.429 | 2.0591 | -17.2662 | 20.6642 | 85.714 | 42.857 | alpha_score <= 53<br>kr_universe_role == CORE_TREND<br>priority_rank <= 1 |
+| 6 | KOSDAQ | top5_exception | 3d | 3 | 7 | 5 | 71.429 | 2.0591 | -17.2662 | 20.6642 | 85.714 | 42.857 | alpha_score <= 53<br>core_trend_flag_bool == True<br>priority_rank <= 1 |
+| 7 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 1.9545 | -6.8182 | 20.6642 | 100.0 | 14.286 | alpha_score <= 42.35<br>priority_rank <= 10 |
+| 8 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 0.777 | -15.0606 | 20.6642 | 100.0 | 28.571 | alpha_score <= 42.35<br>decision_score <= 91 |
+| 9 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 0.777 | -15.0606 | 20.6642 | 100.0 | 28.571 | alpha_score <= 42.35<br>decision_score <= 90 |
+| 10 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 0.494 | -15.0606 | 20.6642 | 100.0 | 28.571 | alpha_score <= 42.35<br>feature_completeness <= 0.9 |
+| 11 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 0.494 | -15.0606 | 20.6642 | 100.0 | 28.571 | alpha_score <= 42.35<br>feature_quality == incomplete |
+| 12 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 0.494 | -15.0606 | 20.6642 | 100.0 | 28.571 | alpha_score <= 42.35<br>feature_completeness <= 0.8 |
+| 13 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 0.494 | -15.0606 | 20.6642 | 100.0 | 28.571 | alpha_score <= 42.35<br>kr_universe_role == CORE_TREND |
+| 14 | KOSDAQ | top5_exception | 3d | 2 | 7 | 6 | 71.429 | 0.494 | -15.0606 | 20.6642 | 100.0 | 28.571 | alpha_score <= 42.35<br>core_trend_flag_bool == True |
+| 15 | KOSPI | top5_exception | 3d | 2 | 27 | 8 | 66.667 | 4.3874 | -13.0798 | 21.2195 | 66.667 | 40.741 | decision_score >= 105<br>decision == EXCEPTION_LEADER |
+| 16 | KOSPI | top5_exception | 3d | 2 | 27 | 8 | 66.667 | 4.3874 | -13.0798 | 21.2195 | 66.667 | 40.741 | decision_bucket == exception_leader<br>decision_score >= 105 |
+| 17 | KOSPI | top5_exception | 3d | 2 | 27 | 8 | 66.667 | 4.3874 | -13.0798 | 21.2195 | 66.667 | 40.741 | decision_score >= 105<br>exception_leader == True |
+| 18 | KOSDAQ | top5_exception | 3d | 1 | 3 | 3 | 66.667 | 2.5535 | -15.9341 | 12.6338 | 0.0 | 0.0 | ml_prob <= 23.3 |
+| 19 | KOSPI | top5_exception | 5d | 3 | 9 | 5 | 66.667 | 2.0731 | -14.6497 | 9.6426 | 66.667 | 44.444 | feature_quality == incomplete<br>kr_universe_role == EXPLOSIVE_LEADER<br>priority_rank <= 1 |
+| 20 | KOSPI | top5_exception | 5d | 3 | 9 | 5 | 66.667 | 2.0731 | -14.6497 | 9.6426 | 66.667 | 44.444 | explosive_leader_flag_bool == True<br>feature_quality == incomplete<br>priority_rank <= 1 |
+| 21 | KOSDAQ | top5_exception | 3d | 2 | 6 | 5 | 66.667 | 1.9954 | -6.8182 | 20.6642 | 100.0 | 16.667 | alpha_score <= 42.35<br>priority_rank <= 6.8 |
+| 22 | KOSDAQ | top5_exception | 3d | 2 | 6 | 5 | 66.667 | 1.9954 | -6.8182 | 20.6642 | 100.0 | 16.667 | alpha_score <= 42.35<br>priority_rank <= 4 |
+| 23 | KOSDAQ | top5_exception | 3d | 2 | 6 | 5 | 66.667 | 1.9954 | -6.8182 | 20.6642 | 100.0 | 16.667 | alpha_score <= 42.35<br>priority_rank <= 5 |
+| 24 | KOSDAQ | top5_exception | 3d | 3 | 6 | 6 | 66.667 | 0.7668 | -6.8182 | 7.7586 | 100.0 | 16.667 | alpha_score <= 65<br>decision_score >= 79.8<br>prob_clean <= 24.975 |
+| 25 | KOSPI | top5_exception | 5d | 3 | 6 | 4 | 66.667 | -0.533 | -25.5403 | 24.2188 | 50.0 | 16.667 | alpha_score <= 66<br>decision_bucket == watchlist<br>feature_origin == scanner_archive_outcome |
+| 26 | KOSPI | top5_exception | 5d | 3 | 6 | 4 | 66.667 | -0.533 | -25.5403 | 24.2188 | 50.0 | 16.667 | alpha_score <= 66<br>exception_leader == False<br>feature_origin == scanner_archive_outcome |
+| 27 | KOSPI | top5_exception | 3d | 2 | 28 | 8 | 64.286 | 4.2269 | -13.0798 | 21.2195 | 67.857 | 39.286 | decision_score >= 99.55<br>decision == EXCEPTION_LEADER |
+| 28 | KOSPI | top5_exception | 3d | 2 | 28 | 8 | 64.286 | 4.2269 | -13.0798 | 21.2195 | 67.857 | 39.286 | decision_score >= 100<br>decision == EXCEPTION_LEADER |
+| 29 | KOSPI | top5_exception | 3d | 2 | 28 | 8 | 64.286 | 4.2269 | -13.0798 | 21.2195 | 67.857 | 39.286 | decision_bucket == exception_leader<br>decision_score >= 99.55 |
+| 30 | KOSPI | top5_exception | 3d | 2 | 28 | 8 | 64.286 | 4.2269 | -13.0798 | 21.2195 | 67.857 | 39.286 | decision_bucket == exception_leader<br>decision_score >= 100 |
+| 31 | KOSPI | top5_exception | 3d | 2 | 28 | 8 | 64.286 | 4.2269 | -13.0798 | 21.2195 | 67.857 | 39.286 | decision_score >= 99.55<br>exception_leader == True |
+| 32 | KOSPI | top5_exception | 3d | 2 | 28 | 8 | 64.286 | 4.2269 | -13.0798 | 21.2195 | 67.857 | 39.286 | decision_score >= 100<br>exception_leader == True |
+| 33 | KOSDAQ | top5_exception | 3d | 2 | 11 | 7 | 63.636 | 1.7127 | -15.0606 | 20.6642 | 90.909 | 45.454 | alpha_score <= 53<br>prob_clean <= 24.975 |
+| 34 | KOSPI | top5_exception | 3d | 2 | 8 | 6 | 62.5 | 3.3362 | -6.1602 | 18.0822 | 50.0 | 12.5 | alpha_score <= 66<br>decision_score >= 99.55 |
+| 35 | KOSPI | top5_exception | 3d | 2 | 8 | 6 | 62.5 | 3.3362 | -6.1602 | 18.0822 | 50.0 | 12.5 | alpha_score <= 66<br>decision_score >= 100 |
+| 36 | KOSPI | top5_exception | 3d | 3 | 8 | 6 | 62.5 | 3.3362 | -6.1602 | 18.0822 | 50.0 | 12.5 | alpha_score <= 66<br>decision_score >= 99.55<br>priority_rank >= 3 |
+| 37 | KOSPI | top5_exception | 3d | 3 | 8 | 6 | 62.5 | 3.3362 | -6.1602 | 18.0822 | 50.0 | 12.5 | alpha_score <= 66<br>decision_score >= 100<br>priority_rank >= 3 |
+| 38 | KOSDAQ | top5_exception | 3d | 1 | 8 | 7 | 62.5 | -0.1724 | -15.0606 | 20.6642 | 100.0 | 25.0 | alpha_score <= 42.35 |
+| 39 | KOSDAQ | top5_exception | 3d | 2 | 8 | 7 | 62.5 | -0.1724 | -15.0606 | 20.6642 | 100.0 | 25.0 | alpha_score <= 42.35<br>prob_clean <= 32.935 |
+| 40 | KOSDAQ | top5_exception | 3d | 2 | 8 | 7 | 62.5 | -0.1724 | -15.0606 | 20.6642 | 100.0 | 25.0 | alpha_score <= 42.35<br>prob_clean <= 34.625 |
+| 41 | KOSDAQ | top5_exception | 3d | 2 | 8 | 7 | 62.5 | -0.1724 | -15.0606 | 20.6642 | 100.0 | 25.0 | alpha_score <= 42.35<br>prob_clean <= 30.3 |
+| 42 | KOSPI | top5_exception | 5d | 2 | 5 | 4 | 60.0 | 8.6036 | -6.5708 | 28.4932 | 40.0 | 20.0 | decision_score >= 105<br>ml_prob <= 32.7 |
+| 43 | KOSPI | top5_exception | 3d | 1 | 5 | 4 | 60.0 | -0.3936 | -10.6122 | 10.7943 | 60.0 | 20.0 | trend == NEUTRAL |
+| 44 | KOSPI | top5_exception | 3d | 2 | 5 | 4 | 60.0 | -0.3936 | -10.6122 | 10.7943 | 60.0 | 20.0 | feature_quality == incomplete<br>trend == NEUTRAL |
+| 45 | KOSDAQ | top5_exception | 3d | 3 | 5 | 4 | 60.0 | -1.7384 | -6.8182 | 1.6313 | 100.0 | 0.0 | alpha_score <= 42.35<br>priority_rank <= 4<br>theme_source == stock_master |
+| 46 | KOSDAQ | top5_exception | 5d | 2 | 5 | 4 | 60.0 | -2.4158 | -15.7978 | 8.2657 | 100.0 | 40.0 | alpha_score <= 42.35<br>decision_score <= 79.8 |
+| 47 | KOSDAQ | top5_exception | 5d | 3 | 5 | 4 | 60.0 | -2.4158 | -15.7978 | 8.2657 | 100.0 | 40.0 | alpha_score <= 42.35<br>decision_score <= 79.8<br>prob_clean >= 20.185 |
+| 48 | KOSPI | top5_exception | 5d | 3 | 31 | 7 | 58.064 | 5.0303 | -25.5403 | 52.1531 | 54.839 | 32.258 | alpha_score <= 70.5<br>feature_origin == scanner_archive_outcome<br>prob_clean <= 25.5 |
+| 49 | KOSDAQ | top5_exception | 3d | 1 | 7 | 5 | 57.143 | 0.4653 | -8.0429 | 12.0863 | 71.429 | 0.0 | expected_edge_score >= 8.076 |
+| 50 | KOSDAQ | top5_exception | 3d | 2 | 7 | 5 | 57.143 | 0.4653 | -8.0429 | 12.0863 | 71.429 | 0.0 | alpha_score <= 84<br>expected_edge_score >= 8.076 |
+| 51 | KOSPI | top5_exception | 5d | 3 | 7 | 4 | 57.143 | -0.894 | -19.2714 | 12.5691 | 85.714 | 71.429 | alpha_score >= 83<br>priority_rank >= 5<br>prob_clean >= 32.325 |
+| 52 | KOSPI | top5_exception | 5d | 3 | 11 | 5 | 54.546 | -0.3584 | -14.6497 | 9.6426 | 72.727 | 45.454 | core_trend_flag_bool == False<br>feature_quality == incomplete<br>priority_rank <= 1 |
+| 53 | KOSPI | top5_exception | 5d | 3 | 23 | 6 | 52.174 | 2.3942 | -25.5403 | 38.4365 | 60.87 | 39.13 | alpha_score <= 66<br>feature_origin == scanner_archive_outcome<br>prob_clean <= 25.5 |
+| 54 | KOSPI | top5_exception | 5d | 1 | 37 | 8 | 51.351 | 2.1174 | -19.2714 | 39.4197 | 72.973 | 43.243 | decision_score >= 105 |
+| 55 | KOSPI | top5_exception | 3d | 2 | 37 | 10 | 51.351 | 1.6449 | -18.3014 | 21.2195 | 70.27 | 37.838 | decision_score >= 105<br>prob_clean <= 32.325 |
+| 56 | KOSPI | top5_exception | 3d | 1 | 43 | 10 | 51.163 | 1.066 | -18.3014 | 21.2195 | 74.419 | 44.186 | decision_score >= 105 |
+| 57 | KOSPI | top5_exception | 5d | 3 | 6 | 5 | 50.0 | 8.0835 | -6.5708 | 28.4932 | 50.0 | 16.667 | alpha_score <= 66<br>decision_score >= 100<br>prob_clean <= 29.6 |
+| 58 | KOSPI | top5_exception | 5d | 3 | 6 | 5 | 50.0 | 8.0835 | -6.5708 | 28.4932 | 50.0 | 16.667 | alpha_score <= 66<br>decision_score >= 99.55<br>prob_clean <= 29.6 |
+| 59 | KOSPI | top5_exception | 5d | 2 | 14 | 7 | 50.0 | 5.0773 | -11.588 | 28.4932 | 64.286 | 35.714 | alpha_score <= 70.5<br>decision_score >= 100 |
+| 60 | KOSPI | top5_exception | 5d | 2 | 14 | 7 | 50.0 | 5.0773 | -11.588 | 28.4932 | 64.286 | 35.714 | alpha_score <= 70.5<br>decision_score >= 99.55 |
+| 61 | KOSPI | top5_exception | 5d | 2 | 22 | 6 | 50.0 | 3.6496 | -19.2714 | 39.4197 | 63.636 | 40.909 | decision_score >= 105<br>decision == EXCEPTION_LEADER |
+| 62 | KOSPI | top5_exception | 5d | 2 | 22 | 6 | 50.0 | 3.6496 | -19.2714 | 39.4197 | 63.636 | 40.909 | decision_bucket == exception_leader<br>decision_score >= 105 |
+| 63 | KOSPI | top5_exception | 5d | 2 | 22 | 6 | 50.0 | 3.6496 | -19.2714 | 39.4197 | 63.636 | 40.909 | decision_score >= 105<br>exception_leader == True |
+| 64 | KOSPI | top5_exception | 3d | 3 | 38 | 8 | 50.0 | 3.5438 | -26.947 | 29.9674 | 57.895 | 34.21 | decision == EXCEPTION_LEADER<br>ml_prob <= 42.2<br>prob_clean <= 25.5 |
+| 65 | KOSPI | top5_exception | 3d | 3 | 38 | 8 | 50.0 | 3.5438 | -26.947 | 29.9674 | 57.895 | 34.21 | decision_bucket == exception_leader<br>ml_prob <= 42.2<br>prob_clean <= 25.5 |
+| 66 | KOSPI | top5_exception | 3d | 3 | 38 | 8 | 50.0 | 3.5438 | -26.947 | 29.9674 | 57.895 | 34.21 | exception_leader == True<br>ml_prob <= 42.2<br>prob_clean <= 25.5 |
+| 67 | KOSPI | top5_exception | 5d | 2 | 10 | 6 | 50.0 | 3.0528 | -15.493 | 28.4932 | 60.0 | 40.0 | decision == EXCEPTION_LEADER<br>ml_prob <= 32.7 |
+| 68 | KOSPI | top5_exception | 5d | 2 | 10 | 6 | 50.0 | 3.0528 | -15.493 | 28.4932 | 60.0 | 40.0 | decision_bucket == exception_leader<br>ml_prob <= 32.7 |
+| 69 | KOSPI | top5_exception | 5d | 2 | 10 | 6 | 50.0 | 3.0528 | -15.493 | 28.4932 | 60.0 | 40.0 | exception_leader == True<br>ml_prob <= 32.7 |
+| 70 | KOSDAQ | top5_exception | 3d | 2 | 28 | 14 | 50.0 | 2.6456 | -20.9302 | 57.2505 | 89.286 | 50.0 | alpha_score <= 65<br>prob_clean <= 24.975 |
+| 71 | KOSPI | top5_exception | 5d | 1 | 4 | 2 | 50.0 | 2.4822 | -5.1656 | 11.7886 | 75.0 | 25.0 | expected_return_3d_pct >= 0.83 |
+| 72 | KOSPI | top5_exception | 5d | 1 | 4 | 2 | 50.0 | 2.4822 | -5.1656 | 11.7886 | 75.0 | 25.0 | expected_edge_score >= 6.4355 |
+| 73 | KOSPI | top5_exception | 5d | 1 | 4 | 2 | 50.0 | 2.4822 | -5.1656 | 11.7886 | 75.0 | 25.0 | expected_return_1d_pct >= 0.45 |
+| 74 | KOSPI | top5_exception | 5d | 1 | 4 | 3 | 50.0 | 2.1362 | -10.6395 | 11.1111 | 50.0 | 25.0 | trend == NEUTRAL |
+| 75 | KOSPI | top5_exception | 3d | 1 | 4 | 2 | 50.0 | 0.2672 | -5.1795 | 5.8266 | 75.0 | 25.0 | expected_return_3d_pct >= 0.83 |
+| 76 | KOSPI | top5_exception | 3d | 1 | 4 | 2 | 50.0 | 0.2672 | -5.1795 | 5.8266 | 75.0 | 25.0 | expected_edge_score >= 6.4355 |
+| 77 | KOSPI | top5_exception | 3d | 1 | 4 | 2 | 50.0 | 0.2672 | -5.1795 | 5.8266 | 75.0 | 25.0 | expected_return_1d_pct >= 0.45 |
+| 78 | KOSDAQ | top5_exception | 3d | 1 | 6 | 4 | 50.0 | -0.272 | -8.0429 | 12.0863 | 83.333 | 0.0 | expected_return_1d_pct >= 0.604 |
+| 79 | KOSDAQ | top5_exception | 3d | 2 | 6 | 4 | 50.0 | -0.272 | -8.0429 | 12.0863 | 83.333 | 0.0 | alpha_score <= 84<br>expected_return_1d_pct >= 0.604 |
+| 80 | KOSDAQ | top5_exception | 3d | 2 | 6 | 4 | 50.0 | -0.272 | -8.0429 | 12.0863 | 83.333 | 0.0 | alpha_score <= 92<br>expected_return_1d_pct >= 0.604 |
 
 ## Production Safe Candidates
 
-- `KOSPI` `top5_exception` `5d` win=80.0 avg=7.9019 bad=20.0 stop=0.0 :: alpha_score <= 67 / ml_prob <= 30.45
+- None found under current holdout gate.
 
 ## Search Diagnostics
 
 - scopes evaluated: `2`
-- candidate features: `{'numeric': 68, 'categorical': 50, 'total': 118}`
-- predicates: `{'raw': 501, 'unique': 501, 'numeric': 413, 'after_support_screen': 403, 'categorical': 88, 'duplicates': 0}`
-- predicate support screen: `{'kept': 403, 'rejected_train_support': 55, 'rejected_test_support': 50}`
-- result counts: `{'mined_combinations': 576, 'production_safe': 1}`
+- candidate features: `{'numeric': 92, 'categorical': 51, 'total': 143}`
+- predicates: `{'raw': 1399, 'unique': 1399, 'numeric': 1265, 'after_support_screen': 1246, 'categorical': 134, 'duplicates': 0}`
+- predicate support screen: `{'kept': 1246, 'rejected_train_support': 91, 'rejected_test_support': 87}`
+- result counts: `{'mined_combinations': 576, 'production_safe': 0}`
 - exact exhaustive: `{'enabled_scopes': 0, 'disabled_scopes': {'disabled': 2}, 'checked_combinations': 0, 'production_safe_combinations': 0}`
 
 ### Gate Rejections
-- `3d`: `{'test_bad_path': 288, 'test_stop5': 286, 'test_win': 280, 'test_avg': 243, 'train_bad_path': 52, 'train_stop5': 10, 'test_days': 8, 'train_win': 4, 'test_n': 3}`
-- `5d`: `{'test_win': 287, 'test_bad_path': 287, 'test_stop5': 284, 'test_avg': 260, 'train_bad_path': 50, 'train_stop5': 9, 'test_days': 7, 'test_n': 2}`
+- `3d`: `{'test_bad_path': 287, 'test_win': 276, 'test_stop5': 251, 'test_avg': 156, 'train_bad_path': 138, 'train_win': 80, 'train_stop5': 38, 'test_days': 5, 'test_n': 4, 'train_avg': 2}`
+- `5d`: `{'test_bad_path': 287, 'test_win': 286, 'test_avg': 222, 'test_stop5': 208, 'train_bad_path': 143, 'train_win': 75, 'train_stop5': 39, 'test_n': 7, 'test_days': 7, 'train_avg': 1}`
 
 ### Beam Pruning
-- `3d`: `{'attempted': 18432, 'rejected_train_n': 7150, 'expanded_survivors': 6064, 'pruned_by_beam': 5872, 'rejected_test_n': 4426, 'skipped_feature_conflict': 2189, 'skipped_duplicate': 1271, 'rejected_test_days': 425, 'base_pool': 384, 'parent_beam': 192, 'next_beam': 192, 'emitted': 192, 'rejected_train_days': 69}`
-- `5d`: `{'attempted': 18432, 'rejected_train_n': 7425, 'expanded_survivors': 5794, 'pruned_by_beam': 5602, 'rejected_test_n': 4117, 'skipped_feature_conflict': 2220, 'skipped_duplicate': 1375, 'rejected_test_days': 425, 'base_pool': 384, 'parent_beam': 192, 'next_beam': 192, 'emitted': 192, 'rejected_train_days': 48}`
+- `3d`: `{'attempted': 18432, 'rejected_test_n': 6857, 'rejected_train_n': 6745, 'expanded_survivors': 6110, 'pruned_by_beam': 5918, 'skipped_feature_conflict': 1874, 'skipped_duplicate': 1423, 'base_pool': 384, 'rejected_test_days': 276, 'parent_beam': 192, 'next_beam': 192, 'emitted': 192, 'rejected_train_days': 25}`
+- `5d`: `{'attempted': 18432, 'rejected_test_n': 7721, 'rejected_train_n': 6651, 'expanded_survivors': 5888, 'pruned_by_beam': 5696, 'skipped_feature_conflict': 1898, 'skipped_duplicate': 1343, 'rejected_test_days': 402, 'base_pool': 384, 'parent_beam': 192, 'next_beam': 192, 'emitted': 192, 'rejected_train_days': 20}`
 
 ### Scope Diagnostics
-- `KOSPI` `top5_exception` rows=508 days=39 predicates=171 results=288 safe=1 skip=-
-- `KOSDAQ` `top5_exception` rows=530 days=39 predicates=232 results=288 safe=0 skip=-
+- `KOSPI` `top5_exception` rows=735 days=58 predicates=643 results=288 safe=0 skip=-
+- `KOSDAQ` `top5_exception` rows=679 days=54 predicates=603 results=288 safe=0 skip=-
 
 ## Notes
 - Internal research only; production scanner/model artifacts are unchanged.
