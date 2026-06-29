@@ -1,0 +1,148 @@
+# NASDAQ High-Win High-Return Edge Search
+
+- report_version: `nasdaq_high_win_edge_search_v1`
+- generated_at: `2026-06-29T16:43:45.612355+00:00`
+- panel_path: `/Users/dongdong/research_cache/us_daily/NASDAQ/daily_features_20180101_20260630_20260629_113805.parquet`
+- rows_eligible: `1288099`
+- symbols_eligible: `2301`
+- date_range: `2020-01-02` ~ `2026-06-18`
+- train_years: `2020-2023`
+- holdout_years: `2024-2026`
+- promotion_gate_thresholds: `{'min_n': 1000.0, 'min_days': 250.0, 'min_ret5_pct': 1.0, 'min_alpha5_net_cost_0_2_pct': 0.5, 'min_alpha5_net_cost_0_2_ci95_lo_pct': 0.0, 'min_ret5_pos_rate': 0.55, 'min_alpha5_net_cost_0_2_pos_rate': 0.55, 'min_touch3': 0.55, 'min_ft55': 0.55, 'max_dd3': 0.35, 'min_years_alpha5_net_0_2_pos': 5.0}`
+
+## Data Availability
+
+- session_data_status: `missing_nasdaq_premarket_regular_afterhours_panel`
+- us_daily_panel_found: `True`
+- us_daily_raw_ohlcv_found: `True`
+- nasdaq_session_panel_found: `False`
+- local_intraday_looks_kr_numeric: `True`
+- local_intraday_ext_looks_kr_numeric: `True`
+
+## Summary
+
+- candidates_evaluated: `369`
+- promotion_ready_count: `0`
+- holdout_gate_ready_count: `0`
+
+## Frontier Diagnostics
+
+### holdout_best_overall
+- `first_touch_low_upper_wick` / `score_breakout_confirmed` floor `100,000,000` top1 holdout ret5 `+2.112%` win `54.99%` touch `52.56%` ft `52.56%` dd `43.67%`; full ret5 `+1.838%` win `52.98%` touch `47.55%` ft `47.42%` dd `45.96%`
+- `first_touch_low_gap` / `score_breakout_confirmed` floor `100,000,000` top1 holdout ret5 `+1.996%` win `53.64%` touch `53.94%` ft `52.48%` dd `49.27%`; full ret5 `+2.236%` win `55.78%` touch `51.43%` ft `52.52%` dd `44.35%`
+- `first_touch_low_upper_wick` / `score_breakout_confirmed` floor `100,000,000` top2 holdout ret5 `+1.786%` win `54.81%` touch `49.66%` ft `50.52%` dd `45.36%`; full ret5 `+1.661%` win `52.94%` touch `46.60%` ft `47.15%` dd `45.86%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top1 holdout ret5 `+1.665%` win `55.10%` touch `51.02%` ft `51.02%` dd `48.69%`; full ret5 `+2.198%` win `55.51%` touch `49.93%` ft `51.70%` dd `44.22%`
+- `first_touch_cmf` / `score_pullback_quality` floor `100,000,000` top3 holdout ret5 `+1.649%` win `55.01%` touch `55.34%` ft `53.83%` dd `48.46%`; full ret5 `+1.228%` win `52.77%` touch `52.18%` ft `51.00%` dd `48.67%`
+
+### holdout_dd_safe
+- `pullback_not_broken` / `score_first_touch_trend` floor `30,000,000` top1 holdout ret5 `+1.243%` win `54.97%` touch `34.21%` ft `41.01%` dd `28.27%`; full ret5 `+0.850%` win `53.55%` touch `32.16%` ft `39.27%` dd `27.88%`
+- `pullback_not_broken` / `score_touch_return` floor `30,000,000` top1 holdout ret5 `+1.201%` win `53.58%` touch `35.25%` ft `39.62%` dd `28.45%`; full ret5 `+0.902%` win `54.24%` touch `33.33%` ft `39.48%` dd `27.47%`
+- `pullback_not_broken` / `score_first_touch_trend` floor `10,000,000` top1 holdout ret5 `+1.021%` win `53.83%` touch `37.82%` ft `43.95%` dd `32.20%`; full ret5 `+0.726%` win `53.53%` touch `36.47%` ft `43.33%` dd `31.80%`
+- `pullback_uptrend` / `score_breakout_confirmed` floor `10,000,000` top1 holdout ret5 `+0.799%` win `55.34%` touch `32.36%` ft `36.89%` dd `28.96%`; full ret5 `+0.457%` win `53.57%` touch `30.91%` ft `37.56%` dd `28.51%`
+- `volume_trend` / `score_breakout_confirmed` floor `100,000,000` top3 holdout ret5 `+0.763%` win `52.88%` touch `37.57%` ft `40.12%` dd `34.85%`; full ret5 `+0.543%` win `52.74%` touch `34.53%` ft `38.12%` dd `32.74%`
+
+### holdout_touch_win
+- `first_touch_cmf` / `score_pullback_quality` floor `100,000,000` top3 holdout ret5 `+1.649%` win `55.01%` touch `55.34%` ft `53.83%` dd `48.46%`; full ret5 `+1.228%` win `52.77%` touch `52.18%` ft `51.00%` dd `48.67%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top1 holdout ret5 `+1.665%` win `55.10%` touch `51.02%` ft `51.02%` dd `48.69%`; full ret5 `+2.198%` win `55.51%` touch `49.93%` ft `51.70%` dd `44.22%`
+- `first_touch_trend` / `score_pullback_quality` floor `100,000,000` top2 holdout ret5 `+1.538%` win `55.01%` touch `55.10%` ft `54.49%` dd `46.29%`; full ret5 `+1.015%` win `51.83%` touch `51.28%` ft `51.13%` dd `46.82%`
+- `first_touch_low_upper_wick` / `score_pullback_quality` floor `100,000,000` top1 holdout ret5 `+1.568%` win `56.06%` touch `48.52%` ft `50.40%` dd `45.01%`; full ret5 `+1.574%` win `53.91%` touch `45.70%` ft `46.76%` dd `44.37%`
+- `first_touch_trend` / `score_pullback_quality` floor `100,000,000` top1 holdout ret5 `+1.323%` win `55.41%` touch `53.55%` ft `53.38%` dd `46.45%`; full ret5 `+0.862%` win `51.78%` touch `50.82%` ft `51.30%` dd `46.44%`
+
+### full_oos_best_net
+- `first_touch_low_gap` / `score_breakout_confirmed` floor `100,000,000` top1 holdout ret5 `+1.996%` win `53.64%` touch `53.94%` ft `52.48%` dd `49.27%`; full ret5 `+2.236%` win `55.78%` touch `51.43%` ft `52.52%` dd `44.35%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top1 holdout ret5 `+1.665%` win `55.10%` touch `51.02%` ft `51.02%` dd `48.69%`; full ret5 `+2.198%` win `55.51%` touch `49.93%` ft `51.70%` dd `44.22%`
+- `first_touch_low_gap` / `score_touch_return` floor `100,000,000` top1 holdout ret5 `+1.681%` win `53.35%` touch `51.60%` ft `51.31%` dd `50.15%`; full ret5 `+2.130%` win `54.56%` touch `50.75%` ft `51.70%` dd `45.17%`
+- `first_touch_low_gap` / `score_first_touch_trend` floor `100,000,000` top1 holdout ret5 `+1.094%` win `53.06%` touch `51.60%` ft `50.73%` dd `51.02%`; full ret5 `+2.031%` win `54.97%` touch `50.61%` ft `51.84%` dd `45.17%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top2 holdout ret5 `+1.559%` win `52.64%` touch `50.88%` ft `51.08%` dd `47.55%`; full ret5 `+1.888%` win `54.24%` touch `49.76%` ft `50.73%` dd `44.21%`
+
+### full_oos_best_touch
+- `first_touch_low_gap` / `score_breakout_confirmed` floor `100,000,000` top1 holdout ret5 `+1.996%` win `53.64%` touch `53.94%` ft `52.48%` dd `49.27%`; full ret5 `+2.236%` win `55.78%` touch `51.43%` ft `52.52%` dd `44.35%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top1 holdout ret5 `+1.665%` win `55.10%` touch `51.02%` ft `51.02%` dd `48.69%`; full ret5 `+2.198%` win `55.51%` touch `49.93%` ft `51.70%` dd `44.22%`
+- `first_touch_low_gap` / `score_touch_return` floor `100,000,000` top1 holdout ret5 `+1.681%` win `53.35%` touch `51.60%` ft `51.31%` dd `50.15%`; full ret5 `+2.130%` win `54.56%` touch `50.75%` ft `51.70%` dd `45.17%`
+- `first_touch_low_gap` / `score_first_touch_trend` floor `100,000,000` top1 holdout ret5 `+1.094%` win `53.06%` touch `51.60%` ft `50.73%` dd `51.02%`; full ret5 `+2.031%` win `54.97%` touch `50.61%` ft `51.84%` dd `45.17%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top2 holdout ret5 `+1.559%` win `52.64%` touch `50.88%` ft `51.08%` dd `47.55%`; full ret5 `+1.888%` win `54.24%` touch `49.76%` ft `50.73%` dd `44.21%`
+
+### full_oos_dd_safe
+- `pullback_not_broken` / `score_touch_return` floor `30,000,000` top1 holdout ret5 `+1.201%` win `53.58%` touch `35.25%` ft `39.62%` dd `28.45%`; full ret5 `+0.902%` win `54.24%` touch `33.33%` ft `39.48%` dd `27.47%`
+- `pullback_not_broken` / `score_first_touch_trend` floor `30,000,000` top1 holdout ret5 `+1.243%` win `54.97%` touch `34.21%` ft `41.01%` dd `28.27%`; full ret5 `+0.850%` win `53.55%` touch `32.16%` ft `39.27%` dd `27.88%`
+- `pullback_not_broken` / `score_first_touch_trend` floor `10,000,000` top1 holdout ret5 `+1.021%` win `53.83%` touch `37.82%` ft `43.95%` dd `32.20%`; full ret5 `+0.726%` win `53.53%` touch `36.47%` ft `43.33%` dd `31.80%`
+- `pullback_not_broken` / `score_touch_return` floor `10,000,000` top1 holdout ret5 `+0.659%` win `51.96%` touch `37.48%` ft `42.25%` dd `32.37%`; full ret5 `+0.606%` win `53.20%` touch `35.80%` ft `42.67%` dd `30.73%`
+- `breakout_confirmed` / `score_first_touch_trend` floor `100,000,000` top2 holdout ret5 `+0.501%` win `53.80%` touch `41.26%` ft `46.20%` dd `36.57%`; full ret5 `+0.668%` win `53.17%` touch `36.48%` ft `41.19%` dd `33.83%`
+
+## Top Holdout Candidates
+
+- `first_touch_low_upper_wick` / `score_breakout_confirmed` floor `100,000,000` top1 holdout n `371` days `371` ret5 `+2.112%` ret5_pos `54.99%` net `+1.554%` net_pos `53.37%` touch3 `52.56%` ft55 `52.56%` dd3 `43.67%` full_gate `BLOCK`
+  - blockers: `n_below_min:755<1000, ret5_pos_rate_below_min:0.529801<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.50596<0.55, touch3_below_min:0.475497<0.55, ft55_below_min:0.474172<0.55, dd3_above_max:0.459603>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `755` days `755` ret5 `+1.838%` touch3 `47.55%` ft55 `47.42%` dd3 `45.96%`
+- `first_touch_low_gap` / `score_breakout_confirmed` floor `100,000,000` top1 holdout n `343` days `343` ret5 `+1.996%` ret5_pos `53.64%` net `+1.576%` net_pos `52.48%` touch3 `53.94%` ft55 `52.48%` dd3 `49.27%` full_gate `BLOCK`
+  - blockers: `n_below_min:735<1000, alpha5_net_cost_0_2_pos_rate_below_min:0.540136<0.55, touch3_below_min:0.514286<0.55, ft55_below_min:0.52517<0.55, dd3_above_max:0.443537>0.35`
+  - full_oos: n `735` days `735` ret5 `+2.236%` touch3 `51.43%` ft55 `52.52%` dd3 `44.35%`
+- `first_touch_low_upper_wick` / `score_breakout_confirmed` floor `100,000,000` top2 holdout n `582` days `371` ret5 `+1.786%` ret5_pos `54.81%` net `+1.266%` net_pos `51.89%` touch3 `49.66%` ft55 `50.52%` dd3 `45.36%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.529412<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.5<0.55, touch3_below_min:0.465993<0.55, ft55_below_min:0.471507<0.55, dd3_above_max:0.45864>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `1088` days `755` ret5 `+1.661%` touch3 `46.60%` ft55 `47.15%` dd3 `45.86%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top1 holdout n `343` days `343` ret5 `+1.665%` ret5_pos `55.10%` net `+1.172%` net_pos `54.52%` touch3 `51.02%` ft55 `51.02%` dd3 `48.69%` full_gate `BLOCK`
+  - blockers: `n_below_min:735<1000, alpha5_net_cost_0_2_pos_rate_below_min:0.541497<0.55, touch3_below_min:0.49932<0.55, ft55_below_min:0.517007<0.55, dd3_above_max:0.442177>0.35`
+  - full_oos: n `735` days `735` ret5 `+2.198%` touch3 `49.93%` ft55 `51.70%` dd3 `44.22%`
+- `first_touch_cmf` / `score_pullback_quality` floor `100,000,000` top3 holdout n `1527` days `578` ret5 `+1.649%` ret5_pos `55.01%` net `+1.054%` net_pos `53.24%` touch3 `55.34%` ft55 `53.83%` dd3 `48.46%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.527745<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.505313<0.55, touch3_below_min:0.521842<0.55, ft55_below_min:0.510035<0.55, dd3_above_max:0.486718>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `3388` days `1387` ret5 `+1.228%` touch3 `52.18%` ft55 `51.00%` dd3 `48.67%`
+- `first_touch_trend` / `score_pullback_quality` floor `100,000,000` top3 holdout n `1645` days `592` ret5 `+1.620%` ret5_pos `54.95%` net `+1.076%` net_pos `53.43%` touch3 `54.89%` ft55 `53.07%` dd3 `47.78%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.519895<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.499868<0.55, touch3_below_min:0.516996<0.55, ft55_below_min:0.50751<0.55, dd3_above_max:0.48195>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `3795` days `1462` ret5 `+1.232%` touch3 `51.70%` ft55 `50.75%` dd3 `48.20%`
+- `first_touch_low_gap` / `score_touch_return` floor `100,000,000` top1 holdout n `343` days `343` ret5 `+1.681%` ret5_pos `53.35%` net `+1.244%` net_pos `51.60%` touch3 `51.60%` ft55 `51.31%` dd3 `50.15%` full_gate `BLOCK`
+  - blockers: `n_below_min:735<1000, ret5_pos_rate_below_min:0.545578<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.534694<0.55, touch3_below_min:0.507483<0.55, ft55_below_min:0.517007<0.55, dd3_above_max:0.451701>0.35`
+  - full_oos: n `735` days `735` ret5 `+2.130%` touch3 `50.75%` ft55 `51.70%` dd3 `45.17%`
+- `first_touch_cmf` / `score_pullback_quality` floor `100,000,000` top2 holdout n `1096` days `578` ret5 `+1.605%` ret5_pos `54.65%` net `+1.035%` net_pos `53.38%` touch3 `54.84%` ft55 `54.11%` dd3 `47.35%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.52749<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.505578<0.55, touch3_below_min:0.516335<0.55, ft55_below_min:0.512351<0.55, dd3_above_max:0.475299>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `2510` days `1387` ret5 `+1.221%` touch3 `51.63%` ft55 `51.24%` dd3 `47.53%`
+- `first_touch_trend` / `score_pullback_quality` floor `100,000,000` top2 holdout n `1147` days `592` ret5 `+1.538%` ret5_pos `55.01%` net `+0.973%` net_pos `53.27%` touch3 `55.10%` ft55 `54.49%` dd3 `46.29%` full_gate `BLOCK`
+  - blockers: `alpha5_net_cost_0_2_below_min:0.478202<0.5, alpha5_net_cost_0_2_ci95_lo_below_min:-0.019049<0, ret5_pos_rate_below_min:0.518288<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.495245<0.55, touch3_below_min:0.512802<0.55, ft55_below_min:0.511339<0.55, dd3_above_max:0.468178>0.35, years_alpha5_net_0_2_pos_below_min:3<5`
+  - full_oos: n `2734` days `1462` ret5 `+1.015%` touch3 `51.28%` ft55 `51.13%` dd3 `46.82%`
+- `first_touch_low_gap` / `score_first_touch_trend` floor `100,000,000` top2 holdout n `511` days `343` ret5 `+1.555%` ret5_pos `53.82%` net `+1.122%` net_pos `52.64%` touch3 `51.66%` ft55 `51.47%` dd3 `48.14%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.547225<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.528724<0.55, touch3_below_min:0.501461<0.55, ft55_below_min:0.50925<0.55, dd3_above_max:0.447907>0.35`
+  - full_oos: n `1027` days `735` ret5 `+1.831%` touch3 `50.15%` ft55 `50.92%` dd3 `44.79%`
+- `first_touch_low_upper_wick` / `score_pullback_quality` floor `100,000,000` top1 holdout n `371` days `371` ret5 `+1.568%` ret5_pos `56.06%` net `+0.964%` net_pos `54.18%` touch3 `48.52%` ft55 `50.40%` dd3 `45.01%` full_gate `BLOCK`
+  - blockers: `n_below_min:755<1000, ret5_pos_rate_below_min:0.539073<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.509934<0.55, touch3_below_min:0.456954<0.55, ft55_below_min:0.46755<0.55, dd3_above_max:0.443709>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `755` days `755` ret5 `+1.574%` touch3 `45.70%` ft55 `46.76%` dd3 `44.37%`
+- `first_touch_low_gap` / `score_pullback_quality` floor `100,000,000` top2 holdout n `511` days `343` ret5 `+1.559%` ret5_pos `52.64%` net `+1.140%` net_pos `52.25%` touch3 `50.88%` ft55 `51.08%` dd3 `47.55%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.542356<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.528724<0.55, touch3_below_min:0.497566<0.55, ft55_below_min:0.507303<0.55, dd3_above_max:0.442064>0.35`
+  - full_oos: n `1027` days `735` ret5 `+1.888%` touch3 `49.76%` ft55 `50.73%` dd3 `44.21%`
+- `first_touch_trend` / `score_pullback_quality` floor `100,000,000` top5 holdout n `2464` days `592` ret5 `+1.454%` ret5_pos `54.42%` net `+0.919%` net_pos `52.39%` touch3 `54.87%` ft55 `52.80%` dd3 `48.54%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.52341<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.498414<0.55, touch3_below_min:0.520052<0.55, ft55_below_min:0.50886<0.55, dd3_above_max:0.484611>0.35`
+  - full_oos: n `5361` days `1462` ret5 `+1.175%` touch3 `52.01%` ft55 `50.89%` dd3 `48.46%`
+- `first_touch_low_gap` / `score_breakout_confirmed` floor `30,000,000` top1 holdout n `499` days `499` ret5 `+1.416%` ret5_pos `53.11%` net `+1.044%` net_pos `51.50%` touch3 `52.71%` ft55 `51.30%` dd3 `49.30%` full_gate `BLOCK`
+  - blockers: `alpha5_net_cost_0_2_ci95_lo_below_min:-0.147667<0, ret5_pos_rate_below_min:0.526403<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.500825<0.55, touch3_below_min:0.491749<0.55, ft55_below_min:0.504125<0.55, dd3_above_max:0.466172>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `1212` days `1212` ret5 `+1.086%` touch3 `49.17%` ft55 `50.41%` dd3 `46.62%`
+- `first_touch_cmf` / `score_pullback_quality` floor `100,000,000` top1 holdout n `578` days `578` ret5 `+1.386%` ret5_pos `53.63%` net `+0.872%` net_pos `52.94%` touch3 `52.77%` ft55 `53.63%` dd3 `46.71%` full_gate `BLOCK`
+  - blockers: `ret5_below_min:0.952625<1, alpha5_net_cost_0_2_below_min:0.428754<0.5, alpha5_net_cost_0_2_ci95_lo_below_min:-0.325122<0, ret5_pos_rate_below_min:0.515501<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.489546<0.55, touch3_below_min:0.503965<0.55, ft55_below_min:0.512617<0.55, dd3_above_max:0.464311>0.35`
+  - full_oos: n `1387` days `1387` ret5 `+0.953%` touch3 `50.40%` ft55 `51.26%` dd3 `46.43%`
+- `first_touch_trend` / `score_pullback_quality` floor `100,000,000` top1 holdout n `592` days `592` ret5 `+1.323%` ret5_pos `55.41%` net `+0.794%` net_pos `52.36%` touch3 `53.55%` ft55 `53.38%` dd3 `46.45%` full_gate `BLOCK`
+  - blockers: `ret5_below_min:0.86188<1, alpha5_net_cost_0_2_below_min:0.315351<0.5, alpha5_net_cost_0_2_ci95_lo_below_min:-0.384034<0, ret5_pos_rate_below_min:0.517784<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.490424<0.55, touch3_below_min:0.508208<0.55, ft55_below_min:0.512996<0.55, dd3_above_max:0.464432>0.35`
+  - full_oos: n `1462` days `1462` ret5 `+0.862%` touch3 `50.82%` ft55 `51.30%` dd3 `46.44%`
+- `first_touch_close_strong` / `score_return_quality` floor `100,000,000` top1 holdout n `524` days `524` ret5 `+1.346%` ret5_pos `53.63%` net `+0.835%` net_pos `53.05%` touch3 `53.24%` ft55 `52.48%` dd3 `48.47%` full_gate `BLOCK`
+  - blockers: `ret5_below_min:0.889476<1, alpha5_net_cost_0_2_below_min:0.276526<0.5, alpha5_net_cost_0_2_ci95_lo_below_min:-0.486208<0, ret5_pos_rate_below_min:0.516694<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.506678<0.55, touch3_below_min:0.516694<0.55, ft55_below_min:0.495826<0.55, dd3_above_max:0.503339>0.35`
+  - full_oos: n `1198` days `1198` ret5 `+0.889%` touch3 `51.67%` ft55 `49.58%` dd3 `50.33%`
+- `first_touch_trend` / `score_return_quality` floor `100,000,000` top1 holdout n `592` days `592` ret5 `+1.333%` ret5_pos `54.05%` net `+0.758%` net_pos `52.70%` touch3 `53.38%` ft55 `53.55%` dd3 `46.96%` full_gate `BLOCK`
+  - blockers: `ret5_below_min:0.869203<1, alpha5_net_cost_0_2_below_min:0.321077<0.5, alpha5_net_cost_0_2_ci95_lo_below_min:-0.337872<0, ret5_pos_rate_below_min:0.511628<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.492476<0.55, touch3_below_min:0.500684<0.55, ft55_below_min:0.49658<0.55, dd3_above_max:0.48632>0.35`
+  - full_oos: n `1462` days `1462` ret5 `+0.869%` touch3 `50.07%` ft55 `49.66%` dd3 `48.63%`
+- `first_touch_low_gap` / `score_breakout_confirmed` floor `100,000,000` top2 holdout n `511` days `343` ret5 `+1.426%` ret5_pos `51.27%` net `+1.047%` net_pos `49.90%` touch3 `50.29%` ft55 `49.90%` dd3 `49.71%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.534567<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.514119<0.55, touch3_below_min:0.49075<0.55, ft55_below_min:0.499513<0.55, dd3_above_max:0.457644>0.35`
+  - full_oos: n `1027` days `735` ret5 `+1.686%` touch3 `49.08%` ft55 `49.95%` dd3 `45.76%`
+- `first_touch_low_upper_wick` / `score_breakout_confirmed` floor `10,000,000` top1 holdout n `570` days `570` ret5 `+1.305%` ret5_pos `52.98%` net `+0.916%` net_pos `52.11%` touch3 `52.28%` ft55 `50.53%` dd3 `47.72%` full_gate `BLOCK`
+  - blockers: `ret5_below_min:0.991972<1, alpha5_net_cost_0_2_ci95_lo_below_min:-0.232394<0, ret5_pos_rate_below_min:0.509246<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.492176<0.55, touch3_below_min:0.512802<0.55, ft55_below_min:0.5<0.55, dd3_above_max:0.481508>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `1406` days `1406` ret5 `+0.992%` touch3 `51.28%` ft55 `50.00%` dd3 `48.15%`
+- `first_touch_cmf` / `score_pullback_quality` floor `100,000,000` top5 holdout n `2180` days `578` ret5 `+1.360%` ret5_pos `53.81%` net `+0.781%` net_pos `51.65%` touch3 `54.54%` ft55 `52.43%` dd3 `50.28%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.523778<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.498222<0.55, touch3_below_min:0.524889<0.55, ft55_below_min:0.509333<0.55, dd3_above_max:0.494222>0.35`
+  - full_oos: n `4500` days `1387` ret5 `+1.113%` touch3 `52.49%` ft55 `50.93%` dd3 `49.42%`
+- `first_touch_low_upper_wick` / `score_touch_return` floor `100,000,000` top1 holdout n `371` days `371` ret5 `+1.381%` ret5_pos `53.64%` net `+0.802%` net_pos `50.67%` touch3 `51.21%` ft55 `51.21%` dd3 `46.63%` full_gate `BLOCK`
+  - blockers: `n_below_min:755<1000, alpha5_net_cost_0_2_ci95_lo_below_min:-0.08846<0, ret5_pos_rate_below_min:0.529801<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.496689<0.55, touch3_below_min:0.475497<0.55, ft55_below_min:0.472848<0.55, dd3_above_max:0.464901>0.35`
+  - full_oos: n `755` days `755` ret5 `+1.563%` touch3 `47.55%` ft55 `47.28%` dd3 `46.49%`
+- `first_touch_low_gap` / `score_return_quality` floor `100,000,000` top3 holdout n `593` days `343` ret5 `+1.342%` ret5_pos `51.94%` net `+0.942%` net_pos `50.25%` touch3 `50.42%` ft55 `50.76%` dd3 `48.06%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.538462<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.516608<0.55, touch3_below_min:0.495629<0.55, ft55_below_min:0.507867<0.55, dd3_above_max:0.446678>0.35`
+  - full_oos: n `1144` days `735` ret5 `+1.670%` touch3 `49.56%` ft55 `50.79%` dd3 `44.67%`
+- `first_touch_close_strong` / `score_pullback_quality` floor `100,000,000` top1 holdout n `524` days `524` ret5 `+1.196%` ret5_pos `54.58%` net `+0.704%` net_pos `53.05%` touch3 `57.44%` ft55 `54.20%` dd3 `49.05%` full_gate `BLOCK`
+  - blockers: `ret5_below_min:0.784807<1, alpha5_net_cost_0_2_below_min:0.197143<0.5, alpha5_net_cost_0_2_ci95_lo_below_min:-0.617222<0, ret5_pos_rate_below_min:0.518364<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.497496<0.55, touch3_below_min:0.540067<0.55, ft55_below_min:0.506678<0.55, dd3_above_max:0.505008>0.35`
+  - full_oos: n `1198` days `1198` ret5 `+0.785%` touch3 `54.01%` ft55 `50.67%` dd3 `50.50%`
+- `first_touch_low_upper_wick` / `score_return_quality` floor `100,000,000` top2 holdout n `582` days `371` ret5 `+1.371%` ret5_pos `53.78%` net `+0.830%` net_pos `50.86%` touch3 `48.11%` ft55 `50.00%` dd3 `46.39%` full_gate `BLOCK`
+  - blockers: `ret5_pos_rate_below_min:0.525735<0.55, alpha5_net_cost_0_2_pos_rate_below_min:0.494485<0.55, touch3_below_min:0.462316<0.55, ft55_below_min:0.471507<0.55, dd3_above_max:0.457721>0.35, years_alpha5_net_0_2_pos_below_min:4<5`
+  - full_oos: n `1088` days `755` ret5 `+1.486%` touch3 `46.23%` ft55 `47.15%` dd3 `45.77%`
