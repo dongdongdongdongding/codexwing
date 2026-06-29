@@ -86,7 +86,7 @@ function Panel({ scanId, card, onBack }: { scanId: string; card: TickerCard; onB
           <div style={{ display: "grid", gap: 14 }}>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <Chip on={!!a.model.in_a}>{a.model.in_a ? `A 픽 ${a.model.in_a.prob}%` : "A 미픽"}</Chip>
-              <Chip on={!!a.model.in_b}>{a.model.in_b ? "B 픽" : "B 미픽"}</Chip>
+              <Chip on={!!a.model.in_b}>{a.model.in_b ? `B 시장중립 ${a.model.in_b.prob ?? ""}% · 예측α ${fmt(a.model.in_b.pred_alpha_5d, 2)}` : "B 미픽"}</Chip>
               <span style={{ color: C.mut, fontSize: 13, alignSelf: "center" }}><Term k="레짐">레짐</Term> {a.regime}</span>
             </div>
             <div style={{ background: C.surface2, border: `1px solid ${C.accent}44`, borderRadius: 10, padding: 12 }}>

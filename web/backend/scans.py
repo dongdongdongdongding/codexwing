@@ -5,7 +5,7 @@
 소스: runtime_state/scan_sources.json (manual/discord 기록) + 기본 auto. run_id 접두사로 레인 추론.
 """
 from __future__ import annotations
-import os, json, time, threading
+import os, json, time
 from web.backend import services as S
 
 REPO = S.REPO
@@ -113,7 +113,8 @@ def scan_detail(scan_id):
     """게시물의 티커카드 — 해당 run_id 픽들(스캔시점 점수/진입)."""
     if scan_id.startswith("B-"):
         bp = json.load(open(os.path.join(REPO, "b_engine/data/b_picks_latest.json")))
-        cards = [{"ticker": p["code"], "code": p["code"], "name": p.get("name"), "market": "NASDAQ" if False else "",
+        cards = [{"ticker": p["code"], "code": p["code"], "name": p.get("name"),
+                  "market": S._market_of(p["code"]),   # B픽도 KR종목 → 시장 배지 표시
                   "lane": "B 시장중립", "prob": p.get("prob_win"), "score": p.get("pred_alpha_5d"),
                   "entry": p.get("close")} for p in bp.get("picks", [])]
         return {"scan_id": scan_id, "time": bp.get("scan_date"), "cards": cards}
