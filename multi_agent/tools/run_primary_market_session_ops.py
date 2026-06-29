@@ -42,6 +42,20 @@ class SessionSpec:
 
 SESSION_SPECS: tuple[SessionSpec, ...] = (
     SessionSpec(
+        session_id="kr_premarket_refresh",
+        label_ko="국장 개장 데이터 갱신",
+        timezone_name="Asia/Seoul",
+        trigger_time="09:35",
+        markets=("KOSPI", "KOSDAQ"),
+        scan_scope="kr_premarket_refresh_plus_primary_daily_ops",
+        actions=("kr_confirmed_scan", "primary_daily_ops"),
+        rationale=(
+            "매일 개장 직후 전 데이터(일봉 px_long·분봉·수급 flow) 갱신 후 KR 스캔/픽 생성. "
+            "KIS 투자자수급 API는 00:00~15:40만 호출 가능 → 15:40/20:05 마감세션은 수급을 못 받으므로 "
+            "수급 갱신은 이 아침 세션이 담당(직전 거래일 확정치 반영)."
+        ),
+    ),
+    SessionSpec(
         session_id="kr_regular_close",
         label_ko="국장 장마감",
         timezone_name="Asia/Seoul",
