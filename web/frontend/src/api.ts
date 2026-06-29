@@ -22,8 +22,16 @@ export interface PickDetail {
   dart?: Array<{ ann: string; type: string }>;
 }
 
+// 운영(Vercel): VITE_API_BASE = 로컬 백엔드 터널 주소(예: https://xxx.trycloudflare.com).
+// 미설정시 "" → 같은 오리진 /api (vite dev 프록시 / 백엔드 직접 서빙).
+const BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
+// 토큰: 백엔드 WEB_API_TOKEN과 일치해야 함. ⚠️ 프론트 번들에 포함되어 사이트 열람자에겐 노출됨
+// (드라이브-바이 차단용 경량 게이트). 진짜 비공개는 터널단 인증(Cloudflare Access) 권장.
+const TOKEN = (import.meta.env.VITE_API_TOKEN ?? "").trim();
+const authHeaders: Record<string, string> = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
+
 const j = async <T>(u: string): Promise<T> => {
-  const r = await fetch(u);
+  const r = await fetch(BASE + u, { headers: authHeaders });
   if (!r.ok) throw new Error(`${u} ${r.status}`);
   return r.json();
 };
@@ -56,7 +64,7 @@ export const api = {
   opsStatus: () => j<any>(`/api/ops/status`),
   scanStatus: () => j<{ status: string; progress: number; current: string; target?: string; steps: Array<{ step: string; ok: boolean; note: string }>; finished_at?: string }>(`/api/ops/scan`),
   scanTargets: () => j<{ targets: Array<{ key: string; label: string }> }>(`/api/ops/scan-targets`),
-  scanStart: (target = "all") => fetch(`/api/ops/scan?target=${target}`, { method: "POST" }).then((r) => r.json()),
+  scanStart: (target = "all") => fetch(`${BASE}/api/ops/scan?target=${target}`, { method: "POST", headers: authHeaders }).then((r) => r.json()),
   market: () => j<any>(`/api/market`),
   theme: () => j<any>(`/api/theme`),
   scans: (source = "", market = "") => j<{ count: number; scans: ScanPost[] }>(`/api/scans?source=${source}&market=${market}&limit=60`),

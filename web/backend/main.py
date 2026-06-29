@@ -4,7 +4,8 @@
 정직 원칙: 모든 응답에 데이터 신선도/배지 정보 포함. 비밀키는 백엔드만(.env.local).
 """
 from __future__ import annotations
-from fastapi import FastAPI, Query
+import os
+from fastapi import FastAPI, Query, Header, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -12,10 +13,24 @@ from web.backend import services as S
 from web.backend import jobs
 from web.backend import scans as SC
 
-app = FastAPI(title="SWING 신웹 API", version="0.1")
+# --- 배포 보안 (터널로 공개 노출시 필수) -------------------------------------
+# CORS: WEB_ALLOWED_ORIGINS(콤마구분, 예: https://xxx.vercel.app)로 제한. 미설정시 * (로컬).
+_origins = [o.strip() for o in os.getenv("WEB_ALLOWED_ORIGINS", "").split(",") if o.strip()] or ["*"]
+# 토큰: WEB_API_TOKEN 설정시 모든 요청에 Authorization: Bearer <token> 요구. 미설정시 무인증(로컬).
+_API_TOKEN = os.getenv("WEB_API_TOKEN", "").strip()
+
+
+def require_token(authorization: str = Header(default="")):
+    if not _API_TOKEN:
+        return  # 로컬 개발 = 무인증
+    if authorization != f"Bearer {_API_TOKEN}":
+        raise HTTPException(status_code=401, detail="unauthorized")
+
+
+app = FastAPI(title="SWING 신웹 API", version="0.1", dependencies=[Depends(require_token)])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 개발: React dev서버(5173). 운영선 도메인 제한.
+    allow_origins=_origins,
     allow_methods=["*"], allow_headers=["*"],
 )
 
