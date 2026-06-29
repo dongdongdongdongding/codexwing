@@ -78,6 +78,11 @@ cat > "${NIGHTLY_PLIST}" <<EOF
 <dict>
   <key>Label</key>
   <string>com.codex.swing.learning.nightly</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>TZ</key>
+    <string>Asia/Seoul</string>
+  </dict>
   <key>ProgramArguments</key>
   <array>
     <string>${LAUNCHER_PATH}</string>
@@ -109,6 +114,11 @@ cat > "${WEEKLY_PLIST}" <<EOF
 <dict>
   <key>Label</key>
   <string>com.codex.swing.learning.weekly</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>TZ</key>
+    <string>Asia/Seoul</string>
+  </dict>
   <key>ProgramArguments</key>
   <array>
     <string>${LAUNCHER_PATH}</string>

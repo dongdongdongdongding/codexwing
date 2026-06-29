@@ -72,6 +72,11 @@ cat > "${PLIST_PATH}" <<EOF
 <dict>
   <key>Label</key>
   <string>com.codex.swing.dailyops</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>TZ</key>
+    <string>Asia/Seoul</string>
+  </dict>
   <key>ProgramArguments</key>
   <array>
     <string>${LAUNCHER_PATH}</string>

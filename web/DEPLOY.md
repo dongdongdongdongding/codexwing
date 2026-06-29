@@ -12,10 +12,13 @@
 ## 1. 로컬 백엔드 띄우기
 ```bash
 # .env(.local)에 보안 변수 설정 후:
+export TZ="Asia/Seoul"                                    # 서버시간 KST 고정(데이터 날짜/스캔 시각)
 export WEB_API_TOKEN="<길고-랜덤한-토큰>"
 export WEB_ALLOWED_ORIGINS="https://<당신>.vercel.app"   # 콤마로 여러개 가능
 python3 -m uvicorn web.backend.main:app --host 127.0.0.1 --port 8800
 ```
+> `TZ=Asia/Seoul`은 호스트(특히 UTC 기본인 클라우드)와 무관하게 naive `datetime.now()`를 KST로 고정합니다.
+> launchd 운영잡(dailyops·auto-scan·premarket·learning·discord)엔 plist EnvironmentVariables로 이미 박혀 있음.
 - `WEB_API_TOKEN` 설정 → 모든 `/api`가 `Authorization: Bearer <토큰>` 요구 (미설정시 무인증=로컬전용).
 - `WEB_ALLOWED_ORIGINS` 설정 → CORS를 내 Vercel 도메인으로 제한 (미설정시 `*`).
 - 터널이 외부 노출을 담당하므로 `--host 127.0.0.1`로 충분.
