@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Production-grade NASDAQ edge search.
+"""Promotion-gated NASDAQ edge search.
 
 This script is intentionally more aggressive than the first pass:
 - train future liquidity-bucket excess returns directly
 - include market-regime context features available at scan close
-- rank deployable top-N policies by cost-adjusted OOS alpha
+- rank top-N research policies by cost-adjusted OOS alpha
+- fail closed unless both return quality and win-rate/touch quality clear gates
 """
 
 from __future__ import annotations
@@ -29,6 +30,21 @@ from multi_agent.tools.research_nasdaq_daily_edge import DEFAULT_PANEL, FEATURES
 
 
 DEFAULT_OUT_DIR = PROJECT_ROOT / "runtime_state" / "reports" / "us_research"
+
+PROMOTION_GATE_VERSION = "nasdaq_swing_win_return_gate_v1"
+PROMOTION_GATE_THRESHOLDS: Dict[str, float] = {
+    "min_n": 1000.0,
+    "min_days": 250.0,
+    "min_ret5_pct": 1.0,
+    "min_alpha5_net_cost_0_2_pct": 0.50,
+    "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
+    "min_ret5_pos_rate": 0.55,
+    "min_alpha5_net_cost_0_2_pos_rate": 0.55,
+    "min_touch3": 0.55,
+    "min_ft55": 0.55,
+    "max_dd3": 0.35,
+    "min_years_alpha5_net_0_2_pos": 5.0,
+}
 
 REGIME_GUARDS = {
     "all": lambda df: pd.Series(True, index=df.index),
@@ -293,6 +309,87 @@ def _mean_ci(series: pd.Series) -> tuple[Optional[float], Optional[float], Optio
     return mean, mean - 1.96 * se, mean + 1.96 * se
 
 
+def _positive_rate(series: pd.Series) -> Optional[float]:
+    clean = pd.to_numeric(series, errors="coerce").dropna()
+    if clean.empty:
+        return None
+    return float(clean.gt(0.0).mean())
+
+
+def evaluate_nasdaq_promotion_gate(
+    metrics: Mapping[str, Any],
+    *,
+    thresholds: Mapping[str, float] = PROMOTION_GATE_THRESHOLDS,
+) -> Dict[str, Any]:
+    """Fail-closed gate: positive alpha alone is not enough for promotion."""
+    blocking: List[str] = []
+
+    def _number(key: str) -> Optional[float]:
+        value = metrics.get(key)
+        try:
+            if value is None:
+                return None
+            out = float(value)
+            if math.isnan(out) or math.isinf(out):
+                return None
+            return out
+        except Exception:
+            return None
+
+    def _require_min(key: str, threshold_key: str) -> None:
+        value = _number(key)
+        minimum = float(thresholds[threshold_key])
+        if value is None:
+            blocking.append(f"missing_{key}")
+        elif value < minimum:
+            blocking.append(f"{key}_below_min:{value:.6g}<{minimum:.6g}")
+
+    def _require_max(key: str, threshold_key: str) -> None:
+        value = _number(key)
+        maximum = float(thresholds[threshold_key])
+        if value is None:
+            blocking.append(f"missing_{key}")
+        elif value > maximum:
+            blocking.append(f"{key}_above_max:{value:.6g}>{maximum:.6g}")
+
+    _require_min("n", "min_n")
+    _require_min("days", "min_days")
+    _require_min("ret5", "min_ret5_pct")
+    _require_min("alpha5_net_cost_0_2", "min_alpha5_net_cost_0_2_pct")
+    ci = metrics.get("alpha5_net_cost_0_2_ci95")
+    ci_lo = ci[0] if isinstance(ci, list) and ci else None
+    if ci_lo is None:
+        blocking.append("missing_alpha5_net_cost_0_2_ci95_lo")
+    else:
+        try:
+            ci_lo_f = float(ci_lo)
+        except Exception:
+            ci_lo_f = math.nan
+        threshold = float(thresholds["min_alpha5_net_cost_0_2_ci95_lo_pct"])
+        if math.isnan(ci_lo_f) or ci_lo_f < threshold:
+            blocking.append(f"alpha5_net_cost_0_2_ci95_lo_below_min:{ci_lo_f:.6g}<{threshold:.6g}")
+    _require_min("ret5_pos_rate", "min_ret5_pos_rate")
+    _require_min("alpha5_net_cost_0_2_pos_rate", "min_alpha5_net_cost_0_2_pos_rate")
+    _require_min("touch3", "min_touch3")
+    _require_min("ft55", "min_ft55")
+    _require_max("dd3", "max_dd3")
+    _require_min("years_alpha5_net_0_2_pos", "min_years_alpha5_net_0_2_pos")
+
+    ready = not blocking
+    return {
+        "gate_version": PROMOTION_GATE_VERSION,
+        "promotion_ready": ready,
+        "status": "promotion_ready" if ready else "research_shadow_only_win_return_gate_blocked",
+        "capital_status": (
+            "promotion_ready_pending_forward_capital_review"
+            if ready
+            else "research_shadow_only_win_return_gate_blocked"
+        ),
+        "blocking_reasons": blocking,
+        "thresholds": {key: float(value) for key, value in thresholds.items()},
+    }
+
+
 def _metric_block(picks: pd.DataFrame, *, costs: Sequence[float]) -> Dict[str, Any]:
     out: Dict[str, Any] = {"n": int(len(picks)), "days": int(picks["date"].nunique())}
     if picks.empty:
@@ -312,20 +409,32 @@ def _metric_block(picks: pd.DataFrame, *, costs: Sequence[float]) -> Dict[str, A
         out[name] = round(float(vals.mean()), 6) if vals.notna().any() else None
         mean, lo, hi = _mean_ci(vals)
         out[f"{name}_ci95"] = [None if lo is None else round(lo, 6), None if hi is None else round(hi, 6)]
+        if name in {"ret3", "ret5", "alpha3", "alpha5"}:
+            rate = _positive_rate(vals)
+            out[f"{name}_pos_rate"] = None if rate is None else round(rate, 6)
     for cost in costs:
         net = pd.to_numeric(picks["alpha5_liq"], errors="coerce") - float(cost)
         mean, lo, hi = _mean_ci(net)
         key = f"alpha5_net_cost_{str(cost).replace('.', '_')}"
         out[key] = None if mean is None else round(mean, 6)
         out[f"{key}_ci95"] = [None if lo is None else round(lo, 6), None if hi is None else round(hi, 6)]
+        rate = _positive_rate(net)
+        out[f"{key}_pos_rate"] = None if rate is None else round(rate, 6)
     annual = []
     for year, grp in picks.groupby("year", observed=True):
         item = {"year": int(year), "n": int(len(grp)), "days": int(grp["date"].nunique())}
-        for col, name in [("alpha3_liq", "alpha3"), ("alpha5_liq", "alpha5"), ("fwd_close_ret_5d", "ret5"), ("touch5_3d", "touch3"), ("dd5_3d", "dd3")]:
+        for col, name in [("alpha3_liq", "alpha3"), ("alpha5_liq", "alpha5"), ("fwd_close_ret_5d", "ret5"), ("touch5_3d", "touch3"), ("ft_5_5", "ft55"), ("dd5_3d", "dd3")]:
             vals = pd.to_numeric(grp[col], errors="coerce")
             item[name] = round(float(vals.mean()), 6) if vals.notna().any() else None
+            if name in {"ret5", "alpha5"}:
+                rate = _positive_rate(vals)
+                item[f"{name}_pos_rate"] = None if rate is None else round(rate, 6)
         for cost in costs:
-            item[f"alpha5_net_{str(cost).replace('.', '_')}"] = round(float((grp["alpha5_liq"] - float(cost)).mean()), 6)
+            net = pd.to_numeric(grp["alpha5_liq"], errors="coerce") - float(cost)
+            key = f"alpha5_net_{str(cost).replace('.', '_')}"
+            item[key] = round(float(net.mean()), 6)
+            rate = _positive_rate(net)
+            item[f"{key}_pos_rate"] = None if rate is None else round(rate, 6)
         annual.append(item)
     out["annual"] = annual
     out["years_alpha5_pos"] = int(sum((item.get("alpha5") or 0.0) > 0 for item in annual))
@@ -378,6 +487,9 @@ def evaluate_policies(
                                 "topn": int(topn),
                             }
                         )
+                        metrics["promotion_gate"] = evaluate_nasdaq_promotion_gate(metrics)
+                        metrics["promotion_ready"] = bool(metrics["promotion_gate"]["promotion_ready"])
+                        metrics["promotion_blocking_reasons"] = list(metrics["promotion_gate"]["blocking_reasons"])
                         metrics["selection_key"] = _selection_key(metrics)
                         rows.append(metrics)
     return sorted(rows, key=lambda r: r.get("selection_key", -999), reverse=True)
@@ -400,8 +512,16 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
 
 
 def _write_md(path: Path, report: Mapping[str, Any]) -> None:
+    def _fmt_rate(value: Any) -> str:
+        try:
+            if value is None:
+                return "-"
+            return f"{float(value):.2%}"
+        except Exception:
+            return "-"
+
     lines = [
-        "# NASDAQ Production Edge Search",
+        "# NASDAQ Promotion-Gated Edge Search",
         "",
         f"- generated_at: `{report.get('generated_at')}`",
         f"- panel_path: `{report.get('panel_path')}`",
@@ -420,9 +540,16 @@ def _write_md(path: Path, report: Mapping[str, Any]) -> None:
             f"floor `{row['liq20_floor']:,.0f}` top{row['topn']} "
             f"n `{row['n']}` alpha5 `{row.get('alpha5', 0):+.3f}%` "
             f"net@0.2 `{row.get('alpha5_net_cost_0_2', 0):+.3f}%` "
+            f"ret5_pos `{_fmt_rate(row.get('ret5_pos_rate'))}` "
+            f"net_pos `{_fmt_rate(row.get('alpha5_net_cost_0_2_pos_rate'))}` "
             f"alpha3 `{row.get('alpha3', 0):+.3f}%` touch3 `{row.get('touch3', 0):.2%}` "
+            f"ft55 `{row.get('ft55', 0):.2%}` "
             f"dd3 `{row.get('dd3', 0):.2%}` years_net_pos `{row.get('years_alpha5_net_0_2_pos')}/{len(row.get('annual') or [])}`"
+            f" gate `{'PASS' if row.get('promotion_ready') else 'BLOCK'}`"
         )
+        reasons = row.get("promotion_blocking_reasons") or []
+        if reasons:
+            lines.append(f"  - promotion_blocking_reasons: `{', '.join(str(reason) for reason in reasons[:8])}`")
     lines.extend(["", "## Fold Summary", ""])
     for fold in report.get("folds", []):
         lines.append(
@@ -434,7 +561,7 @@ def _write_md(path: Path, report: Mapping[str, Any]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Search production-grade NASDAQ daily edge.")
+    parser = argparse.ArgumentParser(description="Search promotion-gated NASDAQ daily edge.")
     parser.add_argument("--panel", default=str(DEFAULT_PANEL))
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
     parser.add_argument("--min-price", type=float, default=1.0)
@@ -500,7 +627,9 @@ def main() -> int:
     report = {
         "generated_at": _utc_now(),
         "panel_path": str(panel_path),
-        "caveat": "Current-listed NASDAQ universe; production gate still needs forward shadow before capital.",
+        "gate_version": PROMOTION_GATE_VERSION,
+        "promotion_gate_thresholds": dict(PROMOTION_GATE_THRESHOLDS),
+        "caveat": "Research search only; capital promotion requires the win-rate, touch, drawdown, return, and forward-shadow gates.",
         "rows_loaded": int(len(raw)),
         "rows_eligible": int(len(eligible)),
         "symbols_eligible": int(eligible["symbol"].nunique()),

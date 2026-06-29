@@ -132,6 +132,52 @@ def test_policy_diagnostics_explain_zero_pick_gate_failures():
     assert diagnostics[0]["top_blocked"][0]["blocking_reasons"] == ["pred_alpha5_net_pos_below_0_60"]
 
 
+def test_promotion_gate_blocks_positive_alpha_low_touch_policy(tmp_path):
+    report = {
+        "top_policies": [
+            {
+                "guard": "all",
+                "entry_gate": "pred_pos_ge_0_60",
+                "score": "score_alpha3",
+                "liq20_floor": 30_000_000.0,
+                "topn": 10,
+                "n": 2674,
+                "days": 435,
+                "symbols": 539,
+                "ret5": 1.443868,
+                "ret5_pos_rate": 0.58,
+                "alpha5": 0.894348,
+                "alpha5_pos_rate": 0.56,
+                "alpha5_net_cost_0_2": 0.694348,
+                "alpha5_net_cost_0_2_ci95": [0.276913, 1.111784],
+                "alpha5_net_cost_0_2_pos_rate": 0.56,
+                "touch3": 0.393792,
+                "ft55": 0.380329,
+                "dd3": 0.367988,
+                "years_alpha5_net_0_2_pos": 5,
+            }
+        ]
+    }
+    (tmp_path / "nasdaq_production_edge_search_20260629_154916.json").write_text(
+        json.dumps(report),
+        encoding="utf-8",
+    )
+
+    validation = tool.load_policy_historical_validation(
+        tmp_path,
+        policies=[tool.POLICIES[0]],
+    )
+    gate = validation["policies"]["nasdaq_swing_alpha3_pos60_liq30_top10_v1"]["promotion_gate"]
+    lane_gate = tool.summarize_lane_promotion_gate(validation)
+
+    assert gate["promotion_ready"] is False
+    assert lane_gate["promotion_ready"] is False
+    assert gate["capital_status"] == "research_shadow_only_win_return_gate_blocked"
+    assert any("touch3_below_min" in reason for reason in gate["blocking_reasons"])
+    assert any("ft55_below_min" in reason for reason in gate["blocking_reasons"])
+    assert any("dd3_above_max" in reason for reason in gate["blocking_reasons"])
+
+
 def test_ledger_upsert_is_idempotent_and_settlement_tracks_alpha_net_costs():
     pick = {
         "ledger_key": "primary:2026-06-20:AAA",

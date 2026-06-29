@@ -393,6 +393,16 @@ def main() -> int:
                             "value": str(res.get("session_block_reason") or res.get("note") or "non_final_session_blocked")[:1000],
                             "inline": False,
                         })
+                    gate = res.get("promotion_gate") if isinstance(res.get("promotion_gate"), dict) else {}
+                    fields.append({
+                        "name": "승격 게이트",
+                        "value": (
+                            f"promotion_ready={bool(res.get('promotion_ready'))} | "
+                            f"capital_status={res.get('capital_status') or gate.get('capital_status') or '-'} | "
+                            f"reasons={', '.join(str(reason) for reason in (gate.get('blocking_reasons') or [])[:5]) or '-'}"
+                        )[:1000],
+                        "inline": False,
+                    })
                     for idx, pick in enumerate(list(res.get("picks") or [])[:10], start=1):
                         prob = pick.get("pred_alpha5_net_pos", pick.get("p"))
                         fields.append({
@@ -405,8 +415,11 @@ def main() -> int:
                             "inline": False,
                         })
                     payloads = [{
-                        "title": "NASDAQ SWING 모델 shadow",
-                        "description": "종가 진입 / 5D alpha5 유동성매칭 초과수익 forward-shadow 추적. 실자본 아님.",
+                        "title": "NASDAQ SWING research shadow",
+                        "description": (
+                            "종가 진입 / 5D alpha5 유동성매칭 초과수익 forward-shadow 추적. "
+                            "승률·수익률 promotion gate 통과 전까지 실자본/실사용 아님."
+                        ),
                         "color": 0x3498DB,
                         "fields": fields
                         + (

@@ -12,11 +12,12 @@ from multi_agent.tools.run_primary_market_session_ops import (
 )
 
 
-def test_primary_market_schedule_has_user_requested_six_windows():
+def test_primary_market_schedule_has_user_requested_windows():
     by_id = {spec.session_id: spec for spec in SESSION_SPECS}
 
     assert tuple(PRIMARY_MARKETS) == ("KOSPI", "KOSDAQ", "NASDAQ")
     assert set(by_id) == {
+        "kr_premarket_refresh",
         "kr_regular_close",
         "kr_nxt_close",
         "nasdaq_premarket_early",
@@ -24,6 +25,7 @@ def test_primary_market_schedule_has_user_requested_six_windows():
         "nasdaq_regular_close",
         "nasdaq_afterhours_early",
     }
+    assert by_id["kr_premarket_refresh"].trigger_time == "09:35"
     assert by_id["kr_regular_close"].trigger_time == "15:40"
     assert by_id["kr_nxt_close"].trigger_time == "20:05"
     assert by_id["nasdaq_premarket_early"].trigger_time == "04:15"
@@ -82,7 +84,7 @@ def test_schedule_report_exposes_local_and_utc_next_times():
 
     assert report["version"] == "primary_market_schedule_v1"
     assert report["primary_markets"] == ["KOSPI", "KOSDAQ", "NASDAQ"]
-    assert len(report["sessions"]) == 6
+    assert len(report["sessions"]) == 7
     first = report["sessions"][0]
     assert "next_local" in first
     assert "next_utc" in first

@@ -184,7 +184,10 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
             report = nas.run_model(args)
             picks = list(report.get("picks") or [])
             run_id = f"NASDAQ-SWING-EDGE-{str(report.get('score_date') or today).replace('-', '')}"
-            note = "NASDAQ SWING model lane is forward-shadow only; no live recommendation routing."
+            note = (
+                "NASDAQ SWING research-shadow only; promotion is blocked until both win-rate "
+                "and return gates pass. No live recommendation routing."
+            )
             if report.get("session_blocked"):
                 note = (
                     f"NASDAQ SWING EOD model blocked for session `{report.get('market_session')}`: "
@@ -203,6 +206,10 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
                 finality_status=report.get("finality_status"),
                 session_blocked=bool(report.get("session_blocked")),
                 session_block_reason=report.get("session_block_reason") or "",
+                promotion_ready=bool(report.get("promotion_ready")),
+                promotion_gate=report.get("promotion_gate") or {},
+                capital_status=report.get("capital_status") or "",
+                promotion_note=report.get("promotion_note") or "",
             )
         elif mode == "SWING":
             from report_swing_ensemble import score_market, _route_live

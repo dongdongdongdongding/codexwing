@@ -1383,16 +1383,21 @@ def build_scan_ack_embed(config: DiscordIntegrationConfig, *, market: str) -> Di
 
         bucket = model_lane_for(market, "SWING")
         if bucket == "nasdaq_swing_daily_edge":
-            model_label = "NASDAQ SWING daily edge shadow"
+            model_label = "NASDAQ SWING research shadow (promotion blocked)"
             source_price_kind = "daily_eod_close"
             session_contract = "manual_eod_latest / nasdaq_regular_close only; cutoff 16:05 America/New_York"
-            finality_contract = "latest_eod_panel_scored / finalized_eod_session; non-final sessions blocked"
+            finality_contract = "final EOD only; non-final sessions blocked; win+return gate required"
     except Exception:
         pass
     return {
         "title": f"{market} 검증 모델 스캔",
         "description": (
             f"요청 확인: `{market}` 검증 모델 레인({model_label})을 실행합니다. 결과 티커는 daily_ops 모델 픽과 100% 동일합니다.\n"
+            + (
+                "NASDAQ은 승률·수익률 promotion gate 통과 전까지 research-shadow 전용입니다.\n"
+                if str(market).upper() == "NASDAQ"
+                else ""
+            )
             + ("실행 준비 완료 상태입니다." if enabled else "현재는 안전 모드라 실제 실행은 막혀 있습니다.")
         ),
         "color": 0x2ECC71 if enabled else 0xF1C40F,

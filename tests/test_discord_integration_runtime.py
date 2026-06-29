@@ -459,11 +459,12 @@ def test_scan_ack_names_nasdaq_swing_daily_edge_model():
     config = DiscordIntegrationConfig(dry_run=True, enable_scan_execution=True)
     embed = build_scan_ack_embed(config, market="NASDAQ")
 
-    assert "NASDAQ SWING daily edge shadow" in embed["description"]
-    assert any(field["name"] == "모델" and field["value"] == "NASDAQ SWING daily edge shadow" for field in embed["fields"])
+    assert "NASDAQ SWING research shadow (promotion blocked)" in embed["description"]
+    assert "promotion gate 통과 전까지 research-shadow 전용" in embed["description"]
+    assert any(field["name"] == "모델" and field["value"] == "NASDAQ SWING research shadow (promotion blocked)" for field in embed["fields"])
     assert any(field["name"] == "Source" and field["value"] == "daily_eod_close" for field in embed["fields"])
     assert any(field["name"] == "Session" and "nasdaq_regular_close" in field["value"] for field in embed["fields"])
-    assert any(field["name"] == "Finality" and "non-final sessions blocked" in field["value"] for field in embed["fields"])
+    assert any(field["name"] == "Finality" and "win+return gate required" in field["value"] for field in embed["fields"])
 
 
 def test_scan_executor_command_defaults_to_kis_operational_prefilter(monkeypatch, tmp_path):

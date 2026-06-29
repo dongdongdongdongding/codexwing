@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""NASDAQ SWING model lane: daily alpha3 edge picks + forward shadow ledger.
+"""NASDAQ SWING research-shadow lane: daily alpha3 edge picks + forward ledger.
 
-This promotes the 2026-06-29 NASDAQ daily edge research into an operational
-model lane without treating it as trade capital. It trains the same target
-family used by ``research_nasdaq_production_edge.py`` on historical rows,
-scores the latest feature date, writes daily picks, and settles a 5D forward
-ledger as future labels become available.
+This keeps the 2026-06-29 NASDAQ daily edge research observable without
+promoting it to live capital. It trains the same target family used by
+``research_nasdaq_production_edge.py`` on historical rows, scores the latest
+feature date, writes daily research-shadow picks, and settles a 5D forward
+ledger as future labels become available. Promotion fails closed unless the
+shared win-rate and return gate passes.
 """
 from __future__ import annotations
 
@@ -27,11 +28,14 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from multi_agent.tools.research_nasdaq_daily_edge import DEFAULT_PANEL, FEATURES, LABELS
 from multi_agent.tools.research_nasdaq_production_edge import (
+    PROMOTION_GATE_THRESHOLDS,
+    PROMOTION_GATE_VERSION,
     _add_context_and_targets,
     _add_prediction_ranks,
     _fit_classifier,
     _fit_regressor,
     _sample_train,
+    evaluate_nasdaq_promotion_gate,
 )
 
 REPORT_VERSION = "nasdaq_swing_daily_edge_shadow_v1"
@@ -66,6 +70,9 @@ POLICIES: Tuple[Dict[str, Any], ...] = (
         "lane": "primary_liq30_top10",
         "score_col": "score_alpha3",
         "entry_gate": "pred_alpha5_pos_ge_0_60",
+        "research_guard": "all",
+        "research_entry_gate": "pred_pos_ge_0_60",
+        "research_score": "score_alpha3",
         "pred_alpha5_pos_min": 0.60,
         "liq20_floor": 30_000_000.0,
         "topn": 10,
@@ -75,6 +82,9 @@ POLICIES: Tuple[Dict[str, Any], ...] = (
         "lane": "high_liquidity_liq100_top5",
         "score_col": "score_alpha3",
         "entry_gate": "pred_alpha5_pos_ge_0_60",
+        "research_guard": "all",
+        "research_entry_gate": "pred_pos_ge_0_60",
+        "research_score": "score_alpha3",
         "pred_alpha5_pos_min": 0.60,
         "liq20_floor": 100_000_000.0,
         "topn": 5,
@@ -199,6 +209,162 @@ def build_session_contract(
         finality_status="blocked_non_final_session",
     )
     return contract
+
+
+def _gate_metric_snapshot(metrics: Mapping[str, Any]) -> Dict[str, Any]:
+    keys = (
+        "n",
+        "days",
+        "symbols",
+        "median_liq20",
+        "ret5",
+        "ret5_ci95",
+        "ret5_pos_rate",
+        "alpha5",
+        "alpha5_pos_rate",
+        "alpha5_net_cost_0_2",
+        "alpha5_net_cost_0_2_ci95",
+        "alpha5_net_cost_0_2_pos_rate",
+        "touch3",
+        "ft55",
+        "dd3",
+        "years_alpha5_net_0_2_pos",
+        "annual",
+        "guard",
+        "entry_gate",
+        "liq20_floor",
+        "score",
+        "topn",
+    )
+    return {key: metrics.get(key) for key in keys if key in metrics}
+
+
+def _historical_match(policy: Mapping[str, Any], row: Mapping[str, Any]) -> bool:
+    try:
+        return (
+            str(row.get("guard") or "all") == str(policy.get("research_guard") or "all")
+            and str(row.get("entry_gate") or "") == str(policy.get("research_entry_gate") or "")
+            and str(row.get("score") or "") == str(policy.get("research_score") or policy.get("score_col") or "")
+            and int(row.get("topn")) == int(policy.get("topn"))
+            and abs(float(row.get("liq20_floor")) - float(policy.get("liq20_floor"))) < 1.0
+        )
+    except Exception:
+        return False
+
+
+def _missing_validation_gate(reason: str) -> Dict[str, Any]:
+    gate = evaluate_nasdaq_promotion_gate({})
+    gate["blocking_reasons"] = [reason] + [
+        item for item in gate.get("blocking_reasons", []) if item != reason
+    ]
+    gate["status"] = "research_shadow_only_win_return_gate_blocked"
+    gate["capital_status"] = "research_shadow_only_win_return_gate_blocked"
+    gate["promotion_ready"] = False
+    return gate
+
+
+def load_policy_historical_validation(
+    out_dir: Path,
+    *,
+    policies: Sequence[Mapping[str, Any]] = POLICIES,
+) -> Dict[str, Any]:
+    """Load the latest research report and evaluate the shared promotion gate.
+
+    The daily scorer should not silently promote itself. If a matching
+    historical validation row is absent or stale/missing win-rate fields, the
+    gate remains blocked with explicit reasons.
+    """
+    files = sorted(
+        [path for path in Path(out_dir).glob("nasdaq_production_edge_search_*.json") if path.is_file()],
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    report_payload: Dict[str, Any] = {}
+    report_path: Optional[Path] = files[0] if files else None
+    if report_path:
+        try:
+            report_payload = json.loads(report_path.read_text(encoding="utf-8"))
+        except Exception:
+            report_payload = {}
+    rows = report_payload.get("top_policies") if isinstance(report_payload.get("top_policies"), list) else []
+    by_policy: Dict[str, Any] = {}
+    for policy in policies:
+        candidate_id = str(policy.get("candidate_id") or "")
+        match = next((row for row in rows if isinstance(row, dict) and _historical_match(policy, row)), None)
+        if match is None:
+            gate = _missing_validation_gate(
+                "historical_validation_report_missing"
+                if report_path is None
+                else "historical_policy_validation_missing"
+            )
+            by_policy[candidate_id] = {
+                "candidate_id": candidate_id,
+                "source_report": str(report_path) if report_path else None,
+                "metrics": {},
+                "promotion_gate": gate,
+            }
+            continue
+        metrics = _gate_metric_snapshot(match)
+        gate = evaluate_nasdaq_promotion_gate(match)
+        by_policy[candidate_id] = {
+            "candidate_id": candidate_id,
+            "source_report": str(report_path) if report_path else None,
+            "metrics": metrics,
+            "promotion_gate": gate,
+        }
+    return {
+        "gate_version": PROMOTION_GATE_VERSION,
+        "thresholds": dict(PROMOTION_GATE_THRESHOLDS),
+        "source_report": str(report_path) if report_path else None,
+        "policies": by_policy,
+    }
+
+
+def summarize_lane_promotion_gate(historical_validation: Mapping[str, Any]) -> Dict[str, Any]:
+    policies = historical_validation.get("policies") if isinstance(historical_validation.get("policies"), dict) else {}
+    ready = [
+        candidate_id
+        for candidate_id, item in policies.items()
+        if isinstance(item, dict)
+        and isinstance(item.get("promotion_gate"), dict)
+        and item["promotion_gate"].get("promotion_ready")
+    ]
+    reasons: List[str] = []
+    for item in policies.values():
+        if not isinstance(item, dict):
+            continue
+        gate = item.get("promotion_gate") if isinstance(item.get("promotion_gate"), dict) else {}
+        for reason in gate.get("blocking_reasons") or []:
+            text = str(reason)
+            if text not in reasons:
+                reasons.append(text)
+    promotion_ready = bool(ready)
+    return {
+        "gate_version": PROMOTION_GATE_VERSION,
+        "promotion_ready": promotion_ready,
+        "status": "promotion_ready" if promotion_ready else "research_shadow_only_win_return_gate_blocked",
+        "capital_status": (
+            "promotion_ready_pending_forward_capital_review"
+            if promotion_ready
+            else "research_shadow_only_win_return_gate_blocked"
+        ),
+        "ready_policy_count": len(ready),
+        "ready_candidate_ids": ready,
+        "blocking_reasons": [] if promotion_ready else reasons,
+        "source_report": historical_validation.get("source_report"),
+        "thresholds": dict(PROMOTION_GATE_THRESHOLDS),
+    }
+
+
+def _policy_gate_for(
+    historical_validation: Mapping[str, Any],
+    candidate_id: str,
+) -> Dict[str, Any]:
+    policies = historical_validation.get("policies") if isinstance(historical_validation.get("policies"), dict) else {}
+    item = policies.get(candidate_id) if isinstance(policies, dict) else None
+    if isinstance(item, dict) and isinstance(item.get("promotion_gate"), dict):
+        return dict(item["promotion_gate"])
+    return _missing_validation_gate("historical_policy_validation_missing")
 
 
 def _with_score_date(contract: Mapping[str, Any], score_date: Any) -> Dict[str, Any]:
@@ -626,8 +792,9 @@ def write_report(path_json: Path, path_md: Path, report: Mapping[str, Any]) -> N
     path_json.parent.mkdir(parents=True, exist_ok=True)
     path_json.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=_json_default, sort_keys=True), encoding="utf-8")
     session = report.get("session_contract") if isinstance(report.get("session_contract"), dict) else {}
+    promotion_gate = report.get("promotion_gate") if isinstance(report.get("promotion_gate"), dict) else {}
     lines = [
-        "# NASDAQ SWING Daily Edge Model",
+        "# NASDAQ SWING Research Shadow Model",
         "",
         f"- report_version: `{report.get('report_version')}`",
         f"- generated_at: `{report.get('generated_at')}`",
@@ -642,8 +809,23 @@ def write_report(path_json: Path, path_md: Path, report: Mapping[str, Any]) -> N
         f"- picks: `{report.get('pick_count')}`",
         f"- ledger_appended: `{report.get('ledger_appended')}`",
         f"- ledger_settled: `{report.get('ledger_settled')}`",
+        f"- promotion_ready: `{promotion_gate.get('promotion_ready')}`",
+        f"- capital_status: `{report.get('capital_status')}`",
+        f"- promotion_note: {report.get('promotion_note')}",
         "",
     ]
+    lines.extend(
+        [
+            "## Promotion Gate",
+            "",
+            f"- gate_version: `{promotion_gate.get('gate_version')}`",
+            f"- status: `{promotion_gate.get('status')}`",
+            f"- source_report: `{promotion_gate.get('source_report')}`",
+            f"- ready_policy_count: `{promotion_gate.get('ready_policy_count')}`",
+            f"- blocking_reasons: `{', '.join(str(reason) for reason in (promotion_gate.get('blocking_reasons') or [])[:12]) or '-'}`",
+            "",
+        ]
+    )
     if report.get("session_blocked"):
         lines.extend(
             [
@@ -677,6 +859,15 @@ def write_report(path_json: Path, path_md: Path, report: Mapping[str, Any]) -> N
                 f"  - `{row.get('ticker')}` score `{row.get('score')}` "
                 f"p `{row.get('pred_alpha5_net_pos')}` reasons `{','.join(row.get('blocking_reasons') or []) or 'pass'}`"
             )
+        hist = diag.get("historical_validation") if isinstance(diag.get("historical_validation"), dict) else {}
+        gate = diag.get("promotion_gate") if isinstance(diag.get("promotion_gate"), dict) else {}
+        if hist or gate:
+            lines.append(
+                f"  - historical: ret5 `{hist.get('ret5')}` ret5_pos `{hist.get('ret5_pos_rate')}` "
+                f"net@0.2 `{hist.get('alpha5_net_cost_0_2')}` net_pos `{hist.get('alpha5_net_cost_0_2_pos_rate')}` "
+                f"touch3 `{hist.get('touch3')}` ft55 `{hist.get('ft55')}` dd3 `{hist.get('dd3')}` "
+                f"gate `{'PASS' if gate.get('promotion_ready') else 'BLOCK'}`"
+            )
     lines.extend(["", "## Forward Ledger", "", "```json", json.dumps(report.get("ledger_summary"), ensure_ascii=False, indent=2), "```"])
     path_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -690,6 +881,9 @@ def save_model_bundle(path: Path, bundle: Mapping[str, Any]) -> str:
 
 
 def run_model(args: argparse.Namespace) -> Dict[str, Any]:
+    out_dir = Path(args.out_dir)
+    historical_validation = load_policy_historical_validation(out_dir)
+    promotion_gate = summarize_lane_promotion_gate(historical_validation)
     session_contract = build_session_contract(
         market_session=getattr(args, "market_session", ""),
         session_cutoff=getattr(args, "session_cutoff", ""),
@@ -728,8 +922,16 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         session_contract = _with_score_date(session_contract, score_date)
         picks = select_policy_picks(latest, session_contract=session_contract)
         policy_diagnostics = build_policy_diagnostics(latest)
+        for pick in picks:
+            gate = _policy_gate_for(historical_validation, str(pick.get("base_candidate_id") or pick.get("candidate_id") or ""))
+            pick["promotion_ready"] = bool(gate.get("promotion_ready"))
+            pick["capital_status"] = str(gate.get("capital_status") or promotion_gate.get("capital_status") or "")
+            pick["promotion_gate_status"] = str(gate.get("status") or "")
+            pick["promotion_blocking_reasons"] = list(gate.get("blocking_reasons") or [])
         if not args.no_model_bundle:
             bundle["session_contract"] = dict(session_contract)
+            bundle["promotion_gate"] = dict(promotion_gate)
+            bundle["historical_validation"] = dict(historical_validation)
             model_bundle_path = save_model_bundle(Path(args.model_bundle), bundle)
     elif not args.settle_only:
         train_report = {
@@ -749,6 +951,21 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
             for policy in POLICIES
         ]
 
+    historical_by_policy = (
+        historical_validation.get("policies")
+        if isinstance(historical_validation.get("policies"), dict)
+        else {}
+    )
+    for diag in policy_diagnostics:
+        candidate_id = str(diag.get("candidate_id") or "")
+        validation = historical_by_policy.get(candidate_id) if isinstance(historical_by_policy, dict) else None
+        if isinstance(validation, dict):
+            diag["historical_validation"] = validation.get("metrics") or {}
+            diag["promotion_gate"] = validation.get("promotion_gate") or _missing_validation_gate("historical_policy_validation_missing")
+        else:
+            diag["historical_validation"] = {}
+            diag["promotion_gate"] = _missing_validation_gate("historical_policy_validation_missing")
+
     appended = 0
     ledger_rows = settled_rows
     if not args.no_ledger:
@@ -762,7 +979,7 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         "model_version": MODEL_VERSION,
         "strategy_family": STRATEGY_FAMILY,
         "signal_class": SIGNAL_CLASS,
-        "mode": "model_lane_forward_shadow",
+        "mode": "research_shadow_forward_ledger",
         "panel_path": str(panel_path),
         "score_date": score_date,
         "session_contract": dict(session_contract),
@@ -775,6 +992,9 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         "session_block_reason": session_contract.get("block_reason") or "",
         "policies": list(POLICIES),
         "policy_diagnostics": policy_diagnostics,
+        "historical_validation": historical_validation,
+        "promotion_gate": promotion_gate,
+        "promotion_ready": bool(promotion_gate.get("promotion_ready")),
         "train_report": train_report,
         "model_bundle_path": model_bundle_path,
         "picks": picks,
@@ -783,11 +1003,13 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         "ledger_appended": appended,
         "ledger_settled": settled_count,
         "ledger_summary": summarize_ledger(ledger_rows),
-        "capital_status": "shadow_only_no_real_capital",
-        "promotion_note": "NASDAQ SWING model lane is active for daily shadow observation; real capital requires forward alpha confirmation.",
+        "capital_status": str(promotion_gate.get("capital_status") or "research_shadow_only_win_return_gate_blocked"),
+        "promotion_note": (
+            "NASDAQ SWING stays research-shadow only until return, positive-rate, +5% touch, first-touch, "
+            "drawdown, and year-stability gates all pass. Positive average alpha alone is not sufficient."
+        ),
     }
     if not args.dry_run:
-        out_dir = Path(args.out_dir)
         write_report(
             out_dir / "nasdaq_swing_daily_edge_shadow_latest.json",
             out_dir / "nasdaq_swing_daily_edge_shadow_latest.md",
@@ -848,6 +1070,8 @@ def main() -> int:
                 "finality_status": report.get("finality_status"),
                 "session_blocked": report.get("session_blocked"),
                 "picks": report.get("pick_count"),
+                "promotion_ready": report.get("promotion_ready"),
+                "capital_status": report.get("capital_status"),
                 "ledger_appended": report.get("ledger_appended"),
                 "ledger_settled": report.get("ledger_settled"),
                 "ledger_path": report.get("ledger_path"),

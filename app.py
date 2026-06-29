@@ -1228,6 +1228,16 @@ def _render_model_lane_scan_result(snapshot):
             f"NASDAQ EOD 스윙 모델은 이 세션에서 새 후보를 만들지 않습니다: "
             f"{res.get('session_block_reason') or res.get('note') or 'non_final_session_blocked'}"
         )
+    if str(bucket) == "nasdaq_swing_daily_edge":
+        gate = res.get("promotion_gate") if isinstance(res.get("promotion_gate"), dict) else {}
+        if not bool(res.get("promotion_ready")):
+            reasons = gate.get("blocking_reasons") if isinstance(gate.get("blocking_reasons"), list) else []
+            st.warning(
+                "NASDAQ SWING은 승률·수익률 promotion gate 통과 전까지 research-shadow 전용입니다. "
+                f"capital_status={res.get('capital_status') or gate.get('capital_status') or '-'}"
+            )
+            if reasons:
+                st.caption("차단 사유: " + ", ".join(str(reason) for reason in reasons[:6]))
     if not picks:
         st.warning(
             "표시할 모델 신호가 없습니다 — 세션 차단 또는 마지막 완성 세션에서 조건(유동성·VWAP·변동성 가드 등)을 "
@@ -1242,7 +1252,7 @@ def _render_model_lane_scan_result(snapshot):
     _src = "최신 완성 세션" if res.get("stale_session") else "daily_ops 모델 픽과 100% 동일"
     st.success(f"✅ {badge} 모델 `{bucket}` · {market} {len(picks)}건 — {_src}")
     if is_nasdaq_swing:
-        st.caption("계약: daily_eod_close 진입 종가 · 보유 5거래일 · alpha5 유동성매칭 초과수익 forward-shadow 채점 · 실자본 아님")
+        st.caption("계약: daily_eod_close 진입 종가 · 보유 5거래일 · alpha5 유동성매칭 초과수익 research-shadow 채점 · 승률/수익률 gate 통과 전 실사용 금지")
     else:
         st.caption(f"계약: 진입 {entry_label} · 목표 +5% · 보유 {hold_days}거래일 · 분산(타이트 손절 없음)")
     table = []
@@ -1260,7 +1270,7 @@ def _render_model_lane_scan_result(snapshot):
         })
     st.dataframe(pd.DataFrame(table), use_container_width=True, hide_index=True)
     if is_nasdaq_swing:
-        st.caption("NASDAQ SWING 모델은 runtime_state/reports/us_research/latest 리포트와 shadow ledger로 추적됩니다.")
+        st.caption("NASDAQ SWING은 runtime_state/reports/us_research/latest 리포트와 shadow ledger로 관찰하며 promotion_ready=false면 매수 후보가 아닙니다.")
     else:
         st.caption("상세 카드(매매계획·근거·적중확률)는 'Top 분석' 탭에서 동일 run_id로 확인하세요.")
 
