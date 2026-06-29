@@ -86,11 +86,46 @@ def _latest_data_date():
     return str(pd.read_parquet(E.PX_LONG, columns=["date"])["date"].max())[:10]
 
 
+_AUTO_PX = os.environ.get("B_AUTO_PX_REFRESH", "1") == "1"
+_BUILD_PX = os.path.expanduser("~/research_cache/build_px_long.py")
+
+
+def _market_latest_trading_day():
+    """FDR KOSPI 지수 최신 거래일(=시장 EOD 가용일). 실패시 빈값."""
+    try:
+        import FinanceDataReader as fdr, pandas as pd
+        idx = fdr.DataReader("KS11", (pd.Timestamp.now() - pd.Timedelta(days=12)).strftime("%Y-%m-%d"))
+        return str(idx.index.max())[:10]
+    except Exception:
+        return ""
+
+
+def _refresh_px_if_behind():
+    """px_long이 시장 최신 거래일보다 뒤처지면 build_px_long 으로 갱신(하루 1회). daily ops 없어도 자율."""
+    if not (_AUTO_PX and os.path.exists(_BUILD_PX)):
+        return False
+    mkt = _market_latest_trading_day()
+    if not mkt or _latest_data_date() >= mkt:
+        return False
+    print(f"[B server] px_long 뒤처짐(시장 {mkt}) → 자동 갱신 시작(~수분)", flush=True)
+    import subprocess
+    env = dict(os.environ, PX_REBUILD="1", PX_END=mkt)
+    try:
+        subprocess.run(["python3", _BUILD_PX], env=env, cwd=os.path.dirname(_BUILD_PX),
+                       timeout=900, check=False)
+        print(f"[B server] px_long 갱신 완료 → {_latest_data_date()}", flush=True)
+        return True
+    except Exception as e:
+        print(f"[B server] px_long 갱신 실패: {e}", flush=True)
+        return False
+
+
 def rescan_if_new():
-    """px_long 최신 거래일 > 현재 픽 스캔일이면 자동 재스캔(저장모델로 스코어). 락으로 중복방지."""
+    """시장에 새 거래일이 있으면 px_long까지 자동 갱신 후, 픽 스캔일보다 최신이면 재스캔. 락으로 중복방지."""
     if not _SCAN_LOCK.acquire(blocking=False):
         return False
     try:
+        _refresh_px_if_behind()                      # 데이터부터 최신화(자율)
         latest, cur = _latest_data_date(), _picks_scan_date()
         if latest and latest > cur:
             print(f"[B server] 새 데이터 {latest} 감지 (현재 {cur}) → 자동 재스캔", flush=True)
