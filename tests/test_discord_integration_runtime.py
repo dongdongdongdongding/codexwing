@@ -450,8 +450,17 @@ def test_scan_ack_refuses_execution_while_dry_run():
     config = DiscordIntegrationConfig(dry_run=True, enable_scan_execution=True)
     embed = build_scan_ack_embed(config, market="KOSPI")
 
-    assert "max_scan=2000" in embed["description"]
+    assert "검증 모델 레인" in embed["description"]
+    assert any(field["name"] == "모델" and "스윙 앙상블" in field["value"] for field in embed["fields"])
     assert "막혀" in embed["description"]
+
+
+def test_scan_ack_names_nasdaq_swing_daily_edge_model():
+    config = DiscordIntegrationConfig(dry_run=True, enable_scan_execution=True)
+    embed = build_scan_ack_embed(config, market="NASDAQ")
+
+    assert "NASDAQ SWING daily edge shadow" in embed["description"]
+    assert any(field["name"] == "모델" and field["value"] == "NASDAQ SWING daily edge shadow" for field in embed["fields"])
 
 
 def test_scan_executor_command_defaults_to_kis_operational_prefilter(monkeypatch, tmp_path):

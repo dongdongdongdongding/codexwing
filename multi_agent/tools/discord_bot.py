@@ -372,6 +372,25 @@ def main() -> int:
                         "description": f"신호를 생성하지 못했습니다: {res['error']}",
                         "color": 0xF1C40F,
                     }]
+                elif str(res.get("bucket") or "") == "nasdaq_swing_daily_edge":
+                    fields = []
+                    for idx, pick in enumerate(list(res.get("picks") or [])[:10], start=1):
+                        prob = pick.get("pred_alpha5_net_pos", pick.get("p"))
+                        fields.append({
+                            "name": f"{idx}. {pick.get('ticker')}",
+                            "value": (
+                                f"lane={pick.get('lane')} | p(alpha5_net>0)={float(prob or 0.0) * 100:.1f}% | "
+                                f"score={float(pick.get('score') or 0.0):.4f} | "
+                                f"liq20=${float(pick.get('liq20') or 0.0):,.0f}"
+                            ),
+                            "inline": False,
+                        })
+                    payloads = [{
+                        "title": "NASDAQ SWING 모델 shadow",
+                        "description": "종가 진입 / 5D alpha5 유동성매칭 초과수익 forward-shadow 추적. 실자본 아님.",
+                        "color": 0x3498DB,
+                        "fields": fields or [{"name": "결과", "value": "조건 통과 후보 없음", "inline": False}],
+                    }]
                 else:
                     payloads = await asyncio.to_thread(
                         build_model_signals_embed, market=job.market, scan_mode=job.scan_mode

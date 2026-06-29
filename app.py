@@ -593,7 +593,7 @@ def _run_model_lane_scan_job(*, scan_state, market, scan_mode):
         completed_scans=len(rows),
         bridge_info={"model_lane_scan": True, "model_lane_result": res, "decision_bucket": res.get("bucket")},
         status_line=(
-            res.get("note") if res.get("stale_session")
+            res.get("note") if res.get("note")
             else f"신규 모델 {res.get('bucket')} {len(rows)}건 — 티커=producer 픽과 100% 동일 (라우팅 완료). 상세 카드는 'Top 분석' 탭."
         ),
     )
@@ -1220,26 +1220,34 @@ def _render_model_lane_scan_result(snapshot):
         )
         return
     is_intraday = str(scan_mode).upper() == "INTRADAY"
+    is_nasdaq_swing = str(bucket) == "nasdaq_swing_daily_edge"
     badge = "🟢 장중" if is_intraday else "🔵 스윙"
     entry_label = ("15:00" if str(market).upper() == "KOSDAQ" else "종가") if is_intraday else "종가"
     hold_days = 3 if is_intraday else 5
     _src = "최신 완성 세션" if res.get("stale_session") else "daily_ops 모델 픽과 100% 동일"
     st.success(f"✅ {badge} 모델 `{bucket}` · {market} {len(picks)}건 — {_src}")
-    st.caption(f"계약: 진입 {entry_label} · 목표 +5% · 보유 {hold_days}거래일 · 분산(타이트 손절 없음)")
+    if is_nasdaq_swing:
+        st.caption("계약: 진입 종가 · 보유 5거래일 · alpha5 유동성매칭 초과수익 forward-shadow 채점 · 실자본 아님")
+    else:
+        st.caption(f"계약: 진입 {entry_label} · 목표 +5% · 보유 {hold_days}거래일 · 분산(타이트 손절 없음)")
     table = []
     for i, p in enumerate(picks, start=1):
         entry = p.get("entry_reference_price")
+        prob = p.get("pred_alpha5_net_pos", p.get("p"))
         table.append({
             "순위": i,
             "종목명": resolve_name(p.get("ticker"), default=str(p.get("ticker") or "")),
             "티커": p.get("ticker"),
-            "적중확률%": round(float(p.get("p") or 0.0) * 100.0, 1),
+            "적중확률%": round(float(prob or 0.0) * 100.0, 1),
             f"진입({entry_label})": entry,
             "목표(+5%)": round(float(entry) * 1.05, 1) if entry else None,
             "보유": f"{hold_days}일",
         })
     st.dataframe(pd.DataFrame(table), use_container_width=True, hide_index=True)
-    st.caption("상세 카드(매매계획·근거·적중확률)는 'Top 분석' 탭에서 동일 run_id로 확인하세요.")
+    if is_nasdaq_swing:
+        st.caption("NASDAQ SWING 모델은 runtime_state/reports/us_research/latest 리포트와 shadow ledger로 추적됩니다.")
+    else:
+        st.caption("상세 카드(매매계획·근거·적중확률)는 'Top 분석' 탭에서 동일 run_id로 확인하세요.")
 
 
 def _render_scan_results_snapshot(snapshot):
@@ -1692,12 +1700,16 @@ if active_main_tab == "🚀 스캐너":
     scan_mode = "INTRADAY" if scan_mode_label == "장중" else "SWING"
     from modules.model_lane_scan import model_lane_for, model_lane_scan_enabled
     _model_bucket = model_lane_for(market, scan_mode)
-    _is_kr_model = _model_bucket is not None and model_lane_scan_enabled()
+    _is_model_lane = _model_bucket is not None and model_lane_scan_enabled()
 
-    if _is_kr_model:
-        # KR markets run the validated model lane: the legacy "V32.Flawless / 스캔 개수" options
+    if _is_model_lane:
+        # Validated model lanes: the legacy "V32.Flawless / 스캔 개수" options
         # do not apply (the producer scores its own liquidity universe with a fixed contract).
-        if scan_mode == "INTRADAY":
+        if market == "NASDAQ" and scan_mode == "SWING":
+            _filter_caption = "🔵 나스닥 스윙 모델 · 5D alpha forward-shadow"
+            _contract_note = "진입 종가 · 보유 5일 · 유동성매칭 alpha5/net-cost/touch3/dd3 shadow 채점 · 실자본 아님"
+            _window_note = ""
+        elif scan_mode == "INTRADAY":
             _filter_caption = "🟢 인트라데이 모델 · 3일내 +5% 터치"
             _contract_note = "코스피=종가 · 코스닥=15:00 진입 · 보유 3일 · 목표 +5% · 분산(타이트 손절 X)"
             _window_note = "장중 모델은 일중 피처가 완성되는 마감 후에만 유효합니다 — 코스피 15:30 / 코스닥 15:00(KST) 이후 스캔하세요. 그 전에는 신호가 나오지 않습니다."

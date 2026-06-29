@@ -238,6 +238,26 @@ if [[ "${AG_B_ENGINE:-1}" == "1" && -d "b_engine" ]]; then
   run_optional "b_settle" python3 -m b_engine.model_scan settle
 fi
 
+if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
+  # NASDAQ SWING model lane (2026-06-29): score_alpha3 daily edge, pred alpha5-net-positive
+  # gate >=0.60, primary liq20>=30M top10 plus high-liquidity liq20>=100M top5. This is promoted
+  # into operations as a model lane, but remains forward-shadow only: it writes
+  # nasdaq_swing_daily_edge_shadow_ledger.jsonl and a latest report, then auto-settles alpha5
+  # liquidity-matched excess / net-cost / touch3 / dd3 as the feature panel matures.
+  NASDAQ_SWING_ARGS=(
+    --panel "${AG_NASDAQ_SWING_PANEL:-latest}"
+    --min-train-rows "${AG_NASDAQ_SWING_MIN_TRAIN_ROWS:-100000}"
+    --max-train-rows "${AG_NASDAQ_SWING_MAX_TRAIN_ROWS:-160000}"
+    --lgbm-estimators "${AG_NASDAQ_SWING_LGBM_ESTIMATORS:-110}"
+  )
+  if [[ "${AG_NASDAQ_SWING_NO_MODEL_BUNDLE:-0}" == "1" ]]; then
+    NASDAQ_SWING_ARGS+=(--no-model-bundle)
+  fi
+  echo "[STEP] report_nasdaq_daily_edge_shadow"
+  run_optional "report_nasdaq_daily_edge_shadow" \
+    python3 multi_agent/tools/report_nasdaq_daily_edge_shadow.py "${NASDAQ_SWING_ARGS[@]}"
+fi
+
 if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
   # LIVE SWING structure-1 (2026-06-24, operator decision): daily price-ML ENSEMBLE
   # (LGBM+XGB+ET) -> ft_5_5 first-touch (+5/-5), KOSPI+KOSDAQ, >=100억, top ~1% confidence,

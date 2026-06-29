@@ -264,6 +264,8 @@ def build_command_plan(spec: SessionSpec) -> List[Dict[str, Any]]:
                     "DAILY_OPS_DRY_RUN": os.getenv("DAILY_OPS_DRY_RUN", "0"),
                     "AG_STALE_FALLBACK_ALERT_DRY_RUN": os.getenv("AG_STALE_FALLBACK_ALERT_DRY_RUN", "0"),
                     "AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE": os.getenv("AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE", "1"),
+                    "AG_NASDAQ_SWING_MODEL_ENABLE": os.getenv("AG_NASDAQ_SWING_MODEL_ENABLE", "1"),
+                    "AG_NASDAQ_SWING_PANEL": os.getenv("AG_NASDAQ_SWING_PANEL", "latest"),
                 },
                 required=True,
             )

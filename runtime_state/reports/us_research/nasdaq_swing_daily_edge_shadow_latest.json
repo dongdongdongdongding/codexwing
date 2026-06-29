@@ -1,0 +1,313 @@
+{
+  "capital_status": "shadow_only_no_real_capital",
+  "generated_at": "2026-06-29T07:34:11.347252+00:00",
+  "ledger_appended": 0,
+  "ledger_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_swing_daily_edge_shadow_ledger.jsonl",
+  "ledger_settled": 0,
+  "ledger_summary": {
+    "by_candidate": [],
+    "open": 0,
+    "rows": 0,
+    "settled": 0
+  },
+  "mode": "model_lane_forward_shadow",
+  "model_bundle_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/models/nasdaq_swing_daily_edge/nasdaq_swing_daily_edge_latest.pkl",
+  "model_version": "nasdaq_swing_alpha3_pos60_v1",
+  "panel_path": "/Users/dongdong/research_cache/us_daily/NASDAQ/daily_features_20180101_20260630_20260629_113805.parquet",
+  "pick_count": 0,
+  "picks": [],
+  "policies": [
+    {
+      "candidate_id": "nasdaq_swing_alpha3_pos60_liq30_top10_v1",
+      "entry_gate": "pred_alpha5_pos_ge_0_60",
+      "lane": "primary_liq30_top10",
+      "liq20_floor": 30000000.0,
+      "pred_alpha5_pos_min": 0.6,
+      "score_col": "score_alpha3",
+      "topn": 10
+    },
+    {
+      "candidate_id": "nasdaq_swing_alpha3_pos60_liq100_top5_v1",
+      "entry_gate": "pred_alpha5_pos_ge_0_60",
+      "lane": "high_liquidity_liq100_top5",
+      "liq20_floor": 100000000.0,
+      "pred_alpha5_pos_min": 0.6,
+      "score_col": "score_alpha3",
+      "topn": 5
+    }
+  ],
+  "policy_diagnostics": [
+    {
+      "candidate_id": "nasdaq_swing_alpha3_pos60_liq30_top10_v1",
+      "gate_pass_rows": 0,
+      "lane": "primary_liq30_top10",
+      "liq20_floor": 30000000.0,
+      "max_pred_alpha5_net_pos": 0.566305,
+      "max_score": 0.999592,
+      "pool_rows": 816,
+      "pred_alpha5_pos_min": 0.6,
+      "score_col": "score_alpha3",
+      "top_blocked": [
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 10303655936.4,
+          "pred_alpha3": 0.173204,
+          "pred_alpha5": 0.089742,
+          "pred_alpha5_net_pos": 0.542397,
+          "score": 0.999592,
+          "stock_name": "Alphabet Inc Class C",
+          "ticker": "GOOG"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 14729452900.81,
+          "pred_alpha3": 0.173204,
+          "pred_alpha5": 0.089742,
+          "pred_alpha5_net_pos": 0.536751,
+          "score": 0.999592,
+          "stock_name": "Alphabet Inc Class A",
+          "ticker": "GOOGL"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 639933281.89,
+          "pred_alpha3": 0.173092,
+          "pred_alpha5": 0.090726,
+          "pred_alpha5_net_pos": 0.537487,
+          "score": 0.998366,
+          "stock_name": "Marriott International Inc",
+          "ticker": "MAR"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 34484789.82,
+          "pred_alpha3": 0.172551,
+          "pred_alpha5": 0.086894,
+          "pred_alpha5_net_pos": 0.554749,
+          "score": 0.997549,
+          "stock_name": "Star Bulk Carriers Corp",
+          "ticker": "SBLK"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 907476405.76,
+          "pred_alpha3": 0.17145,
+          "pred_alpha5": 0.090367,
+          "pred_alpha5_net_pos": 0.543878,
+          "score": 0.996732,
+          "stock_name": "Ross Stores Inc",
+          "ticker": "ROST"
+        }
+      ],
+      "topn": 10
+    },
+    {
+      "candidate_id": "nasdaq_swing_alpha3_pos60_liq100_top5_v1",
+      "gate_pass_rows": 0,
+      "lane": "high_liquidity_liq100_top5",
+      "liq20_floor": 100000000.0,
+      "max_pred_alpha5_net_pos": 0.562278,
+      "max_score": 0.999592,
+      "pool_rows": 427,
+      "pred_alpha5_pos_min": 0.6,
+      "score_col": "score_alpha3",
+      "top_blocked": [
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 10303655936.4,
+          "pred_alpha3": 0.173204,
+          "pred_alpha5": 0.089742,
+          "pred_alpha5_net_pos": 0.542397,
+          "score": 0.999592,
+          "stock_name": "Alphabet Inc Class C",
+          "ticker": "GOOG"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 14729452900.81,
+          "pred_alpha3": 0.173204,
+          "pred_alpha5": 0.089742,
+          "pred_alpha5_net_pos": 0.536751,
+          "score": 0.999592,
+          "stock_name": "Alphabet Inc Class A",
+          "ticker": "GOOGL"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 639933281.89,
+          "pred_alpha3": 0.173092,
+          "pred_alpha5": 0.090726,
+          "pred_alpha5_net_pos": 0.537487,
+          "score": 0.998366,
+          "stock_name": "Marriott International Inc",
+          "ticker": "MAR"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 907476405.76,
+          "pred_alpha3": 0.17145,
+          "pred_alpha5": 0.090367,
+          "pred_alpha5_net_pos": 0.543878,
+          "score": 0.996732,
+          "stock_name": "Ross Stores Inc",
+          "ticker": "ROST"
+        },
+        {
+          "blocking_reasons": [
+            "pred_alpha5_net_pos_below_0_60"
+          ],
+          "liq20": 325315855.41,
+          "pred_alpha3": 0.169602,
+          "pred_alpha5": 0.077132,
+          "pred_alpha5_net_pos": 0.559993,
+          "score": 0.993873,
+          "stock_name": "United Therapeutics Corp",
+          "ticker": "UTHR"
+        }
+      ],
+      "topn": 5
+    }
+  ],
+  "promotion_note": "NASDAQ SWING model lane is active for daily shadow observation; real capital requires forward alpha confirmation.",
+  "report_version": "nasdaq_swing_daily_edge_shadow_v1",
+  "score_date": "2026-06-26",
+  "signal_class": "NASDAQ_SWING_MODEL",
+  "strategy_family": "NASDAQ_SWING_DAILY_EDGE",
+  "train_report": {
+    "features": [
+      "ret_1d",
+      "ret_3d",
+      "ret_5d",
+      "ret_10d",
+      "ret_20d",
+      "ret_60d",
+      "ma5_dist",
+      "ma10_dist",
+      "ma20_dist",
+      "ma50_dist",
+      "ma60_dist",
+      "ma120_dist",
+      "ma200_dist",
+      "ma20_slope",
+      "ma60_slope",
+      "ma200_slope",
+      "rsi14",
+      "rsi_slope",
+      "accel",
+      "consec_up",
+      "dist_hi20",
+      "dist_hi60",
+      "dist_hi120",
+      "dist_lo20",
+      "dist_lo60",
+      "pos20",
+      "bb_pctb",
+      "bb_bw",
+      "atr_pct",
+      "vol20",
+      "close_loc",
+      "gap",
+      "abs_gap",
+      "vol_ratio",
+      "vol_trend",
+      "turn_z",
+      "volume_z60",
+      "dollar_volume_ratio20",
+      "dollar_volume_z60",
+      "obv_slope",
+      "cmf20",
+      "macd",
+      "macd_signal",
+      "macd_hist",
+      "range_pct",
+      "body_pct",
+      "upper_wick_pct",
+      "lower_wick_pct",
+      "high_low_spread_pct",
+      "mkt_ret1_mean",
+      "mkt_ret5_mean",
+      "mkt_ret20_mean",
+      "mkt_ret60_mean",
+      "mkt_breadth1",
+      "mkt_breadth5",
+      "mkt_vol20_mean",
+      "mkt_atr_mean",
+      "xrank_ret_5d",
+      "xrank_ret_20d",
+      "xrank_ret_60d",
+      "xrank_ma60_slope",
+      "xrank_ma200_slope",
+      "xrank_dist_hi20",
+      "xrank_dist_hi120",
+      "xrank_atr_pct",
+      "xrank_vol20",
+      "xrank_vol_ratio",
+      "xrank_dollar_volume_ratio20",
+      "xrank_rsi14",
+      "xrank_bb_bw",
+      "xrank_pos20"
+    ],
+    "score_date": "2026-06-26",
+    "targets": {
+      "alpha3_liq": {
+        "kind": "reg",
+        "output_column": "pred_alpha3",
+        "pred_mean": -0.078114,
+        "target_mean": 0.012343,
+        "train_rows_available": 1470013,
+        "train_rows_used": 160000
+      },
+      "alpha5_liq": {
+        "kind": "reg",
+        "output_column": "pred_alpha5",
+        "pred_mean": -0.105416,
+        "target_mean": -0.032789,
+        "train_rows_available": 1470005,
+        "train_rows_used": 160000
+      },
+      "alpha5_net_pos": {
+        "kind": "clf",
+        "output_column": "pred_alpha5_pos",
+        "pred_mean": 0.511115,
+        "target_mean": 0.470744,
+        "train_rows_available": 1470005,
+        "train_rows_used": 160000
+      },
+      "dd5_3d": {
+        "kind": "clf",
+        "output_column": "pred_dd3",
+        "pred_mean": 0.55035,
+        "target_mean": 0.281087,
+        "train_rows_available": 1470013,
+        "train_rows_used": 160000
+      },
+      "ft_5_5": {
+        "kind": "clf",
+        "output_column": "pred_ft55",
+        "pred_mean": 0.557869,
+        "target_mean": 0.335,
+        "train_rows_available": 1470005,
+        "train_rows_used": 160000
+      }
+    },
+    "train_cutoff": "2026-06-06"
+  }
+}

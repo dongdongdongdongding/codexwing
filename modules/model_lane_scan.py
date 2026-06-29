@@ -5,6 +5,7 @@ The data pipeline (KIS / FDR / px_long / KIS minute bars) is unchanged; only the
 MODEL is swapped from the legacy admission scanner to the validated model lane:
 
     (KOSPI|KOSDAQ, SWING)   -> report_swing_ensemble.score_market   -> swing_ensemble
+    (NASDAQ,       SWING)   -> report_nasdaq_daily_edge_shadow.run_model -> nasdaq_swing_daily_edge
     (KOSPI,        INTRADAY) -> report_kospi_intraday_swing.score_today -> kospi_intraday
     (KOSDAQ,       INTRADAY) -> report_kosdaq_intraday_vwap_guard.score_live_candidates
                                                               -> kosdaq_intraday_3d_t5_vwap_guard
@@ -72,6 +73,7 @@ KOSDAQ_INTRADAY_TRADEABILITY_LIQ = 100.0
 LANE_BY_MODE = {
     ("KOSPI", "SWING"): "swing_ensemble",
     ("KOSDAQ", "SWING"): "swing_ensemble",
+    ("NASDAQ", "SWING"): "nasdaq_swing_daily_edge",
     ("KOSPI", "INTRADAY"): "kospi_intraday",
     ("KOSDAQ", "INTRADAY"): "kosdaq_intraday_3d_t5_vwap_guard",
 }
@@ -145,7 +147,33 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
     today = datetime.now().strftime("%Y%m%d")
     rec = datetime.now(timezone.utc).isoformat()
     try:
-        if mode == "SWING":
+        if market == "NASDAQ" and mode == "SWING":
+            import argparse
+            import report_nasdaq_daily_edge_shadow as nas
+            args = argparse.Namespace(
+                panel=os.getenv("AG_NASDAQ_SWING_PANEL", "latest"),
+                out_dir=str(nas.DEFAULT_OUT_DIR),
+                ledger=str(nas.DEFAULT_LEDGER),
+                model_bundle=str(nas.DEFAULT_MODEL_BUNDLE),
+                score_date="",
+                min_price=1.0,
+                research_liq_floor=10_000_000.0,
+                cost_pct=0.20,
+                embargo_days=20,
+                min_train_rows=int(os.getenv("AG_NASDAQ_SWING_MIN_TRAIN_ROWS", "100000")),
+                max_train_rows=int(os.getenv("AG_NASDAQ_SWING_MAX_TRAIN_ROWS", "160000")),
+                lgbm_estimators=int(os.getenv("AG_NASDAQ_SWING_LGBM_ESTIMATORS", "110")),
+                seed=20260629,
+                settle_only=False,
+                no_ledger=not bool(route),
+                no_model_bundle=os.getenv("AG_NASDAQ_SWING_NO_MODEL_BUNDLE", "0").strip() in {"1", "true", "True"},
+                dry_run=False,
+            )
+            report = nas.run_model(args)
+            picks = list(report.get("picks") or [])
+            run_id = f"NASDAQ-SWING-EDGE-{str(report.get('score_date') or today).replace('-', '')}"
+            out.update(run_id=run_id, picks=picks, routed=0, note="NASDAQ SWING model lane is forward-shadow only; no live recommendation routing.")
+        elif mode == "SWING":
             from report_swing_ensemble import score_market, _route_live
             picks = score_market(market, SWING_TOP_PCT, SWING_MIN_LIQ)
             run_id = f"SWING-ENS-{today}-{market}"

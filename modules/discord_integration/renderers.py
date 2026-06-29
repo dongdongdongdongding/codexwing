@@ -1374,17 +1374,26 @@ def build_runs_embed(*, market: str = "", offset: int = 0, limit: int = 10) -> D
 
 def build_scan_ack_embed(config: DiscordIntegrationConfig, *, market: str) -> Dict[str, Any]:
     enabled = bool(config.enable_scan_execution and not config.dry_run)
+    model_label = "스윙 앙상블 (ft_5_5)"
+    try:
+        from modules.model_lane_scan import model_lane_for
+
+        bucket = model_lane_for(market, "SWING")
+        if bucket == "nasdaq_swing_daily_edge":
+            model_label = "NASDAQ SWING daily edge shadow"
+    except Exception:
+        pass
     return {
         "title": f"{market} 검증 모델 스캔",
         "description": (
-            f"요청 확인: `{market}` 검증 모델 레인(스윙 앙상블)을 실행합니다. 결과 티커는 daily_ops 모델 픽과 100% 동일합니다.\n"
+            f"요청 확인: `{market}` 검증 모델 레인({model_label})을 실행합니다. 결과 티커는 daily_ops 모델 픽과 100% 동일합니다.\n"
             + ("실행 준비 완료 상태입니다." if enabled else "현재는 안전 모드라 실제 실행은 막혀 있습니다.")
         ),
         "color": 0x2ECC71 if enabled else 0xF1C40F,
         "fields": [
             {"name": "Dry Run", "value": str(config.dry_run), "inline": True},
             {"name": "Scan Exec", "value": str(config.enable_scan_execution), "inline": True},
-            {"name": "모델", "value": "스윙 앙상블 (ft_5_5)", "inline": True},
+            {"name": "모델", "value": model_label, "inline": True},
         ],
     }
 
