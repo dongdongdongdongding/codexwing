@@ -272,6 +272,32 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_nasdaq_daily_edge_shadow.py "${NASDAQ_SWING_ARGS[@]}"
 fi
 
+if [[ "${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-1}" == "1" ]]; then
+  # NASDAQ regular-close session edge lane (2026-06-30): promotes the strongest recent
+  # regular_close session candidate into forward-shadow only. The rule is NOT a production
+  # capital model until multi-year 04:00-20:00 ET plus 20:00-04:00 ET overnight coverage clears
+  # the shared NASDAQ gates.
+  NASDAQ_SESSION_EDGE_ARGS=(
+    --panel "${AG_NASDAQ_SESSION_EDGE_PANEL:-latest}"
+    --market-session "${AG_NASDAQ_SESSION_EDGE_MARKET_SESSION:-${AG_PRIMARY_SESSION_ID:-manual_regular_close}}"
+    --session-cutoff "${AG_NASDAQ_SESSION_EDGE_SESSION_CUTOFF:-${AG_PRIMARY_SESSION_CUTOFF:-}}"
+    --max-symbols "${AG_NASDAQ_SESSION_EDGE_MAX_SYMBOLS:-120}"
+    --min-liq20 "${AG_NASDAQ_SESSION_EDGE_MIN_LIQ20:-100000000}"
+  )
+  if [[ "${AG_NASDAQ_SESSION_EDGE_NO_FETCH:-0}" == "1" ]]; then
+    NASDAQ_SESSION_EDGE_ARGS+=(--no-fetch)
+  fi
+  if [[ "${AG_NASDAQ_SESSION_EDGE_REFRESH_CACHE:-0}" == "1" ]]; then
+    NASDAQ_SESSION_EDGE_ARGS+=(--refresh-cache)
+  fi
+  if [[ "${AG_NASDAQ_SESSION_EDGE_NO_MODEL_BUNDLE:-0}" == "1" ]]; then
+    NASDAQ_SESSION_EDGE_ARGS+=(--no-model-bundle)
+  fi
+  echo "[STEP] report_nasdaq_session_edge_shadow"
+  run_optional "report_nasdaq_session_edge_shadow" \
+    python3 multi_agent/tools/report_nasdaq_session_edge_shadow.py "${NASDAQ_SESSION_EDGE_ARGS[@]}"
+fi
+
 if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
   # LIVE SWING structure-1 (2026-06-24, operator decision): daily price-ML ENSEMBLE
   # (LGBM+XGB+ET) -> ft_5_5 first-touch (+5/-5), KOSPI+KOSDAQ, >=100억, top ~1% confidence,

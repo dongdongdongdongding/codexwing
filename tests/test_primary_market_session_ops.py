@@ -77,6 +77,8 @@ def test_command_plan_runs_session_scan_then_primary_daily_ops():
     assert nasdaq_plan[1]["env"]["AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE"] == "1"
     assert nasdaq_plan[1]["env"]["AG_NASDAQ_SWING_MODEL_ENABLE"] == "1"
     assert nasdaq_plan[1]["env"]["AG_NASDAQ_SWING_PANEL"] == "latest"
+    assert nasdaq_plan[1]["env"]["AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE"] == "1"
+    assert nasdaq_plan[1]["env"]["AG_NASDAQ_SESSION_EDGE_PANEL"] == "latest"
 
 
 def test_schedule_report_exposes_local_and_utc_next_times():

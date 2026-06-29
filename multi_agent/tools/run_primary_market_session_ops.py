@@ -295,6 +295,8 @@ def build_command_plan(spec: SessionSpec) -> List[Dict[str, Any]]:
                     "AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE": os.getenv("AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE", "1"),
                     "AG_NASDAQ_SWING_MODEL_ENABLE": os.getenv("AG_NASDAQ_SWING_MODEL_ENABLE", "1"),
                     "AG_NASDAQ_SWING_PANEL": os.getenv("AG_NASDAQ_SWING_PANEL", "latest"),
+                    "AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE": os.getenv("AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE", "1"),
+                    "AG_NASDAQ_SESSION_EDGE_PANEL": os.getenv("AG_NASDAQ_SESSION_EDGE_PANEL", "latest"),
                 },
                 required=True,
             )

@@ -34,6 +34,20 @@ DEFAULT_OUT_DIR = PROJECT_ROOT / "runtime_state" / "reports" / "us_research"
 DEFAULT_CACHE_DIR = DEFAULT_OUT_DIR / "nasdaq_session_5m_cache"
 DEFAULT_RAW_OHLCV_DIR = Path("/Users/dongdong/research_cache/us_daily/NASDAQ/raw_ohlcv")
 SESSION_MODES = ("premarket", "regular_open", "regular_close", "afterhours")
+OUTCOME_COLUMNS = (
+    "fwd_close_ret_3d",
+    "fwd_close_ret_5d",
+    "fwd_high_ret_3d",
+    "fwd_high_ret_5d",
+    "fwd_low_ret_3d",
+    "fwd_low_ret_5d",
+    "touch5_3d",
+    "touch5_5d",
+    "dd5_3d",
+    "dd5_5d",
+    "ft_5_5",
+    "same_day_touch_stop_ambiguous",
+)
 
 DAILY_CONTEXT_COLUMNS = [
     "date",
@@ -298,6 +312,7 @@ def aggregate_symbol_sessions(
     *,
     daily_rows: Mapping[Tuple[str, pd.Timestamp], Mapping[str, Any]],
     raw_daily: pd.DataFrame,
+    require_outcome: bool = True,
 ) -> List[Dict[str, Any]]:
     if intraday.empty:
         return []
@@ -368,8 +383,10 @@ def aggregate_symbol_sessions(
                 entry_price=float(entry),
                 include_current_date=include_current,
             )
-            if not outcome:
+            if not outcome and require_outcome:
                 continue
+            if not outcome:
+                outcome = {key: np.nan for key in OUTCOME_COLUMNS}
             row: Dict[str, Any] = {
                 "date": date,
                 "symbol": symbol,
@@ -416,6 +433,7 @@ def build_session_panel(
     timeout: int,
     refresh: bool,
     fetch: bool,
+    require_outcome: bool = True,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     daily_rows = _daily_lookup(daily, symbols)
     rows: List[Dict[str, Any]] = []
@@ -438,11 +456,22 @@ def build_session_panel(
         if raw_daily.empty:
             fetch_stats["errors"][symbol] = "missing_raw_daily"
             continue
-        rows.extend(aggregate_symbol_sessions(symbol, intraday, daily_rows=daily_rows, raw_daily=raw_daily))
+        rows.extend(
+            aggregate_symbol_sessions(
+                symbol,
+                intraday,
+                daily_rows=daily_rows,
+                raw_daily=raw_daily,
+                require_outcome=require_outcome,
+            )
+        )
     panel = pd.DataFrame(rows)
     if not panel.empty:
         panel["date"] = pd.to_datetime(panel["date"], errors="coerce").dt.normalize()
-        panel = panel.dropna(subset=["date", "symbol", "session_mode", "entry_price", "fwd_close_ret_5d"])
+        required = ["date", "symbol", "session_mode", "entry_price"]
+        if require_outcome:
+            required.append("fwd_close_ret_5d")
+        panel = panel.dropna(subset=required)
     fetch_stats["rows"] = int(len(panel))
     fetch_stats["symbols_with_rows"] = int(panel["symbol"].nunique()) if not panel.empty else 0
     fetch_stats["date_min"] = str(panel["date"].min().date()) if not panel.empty else None
@@ -461,6 +490,20 @@ def add_ranks_and_alpha(panel: pd.DataFrame) -> pd.DataFrame:
     out = out.join(base.rename("base_session_liq_ret5"), on=["date", "session_mode", "liq_bucket"])
     out["alpha5_session_liq"] = out["fwd_close_ret_5d"] - out["base_session_liq_ret5"]
     out["alpha5_net"] = out["alpha5_session_liq"] - 0.20
+
+    regime = (
+        out.groupby(["date", "session_mode"], observed=True)
+        .agg(
+            mkt_ret5_mean=("ret_5d", "mean"),
+            mkt_ret20_mean=("ret_20d", "mean"),
+            mkt_ret60_mean=("ret_60d", "mean"),
+            mkt_breadth20=("ret_20d", lambda series: pd.to_numeric(series, errors="coerce").gt(0.0).mean()),
+            mkt_atr_median=("atr_pct", "median"),
+            mkt_vol_ratio_median=("vol_ratio", "median"),
+        )
+        .reset_index()
+    )
+    out = out.merge(regime, on=["date", "session_mode"], how="left")
 
     rank_cols = [
         "session_ret",
@@ -523,6 +566,22 @@ def add_ranks_and_alpha(panel: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _regime_specs() -> List[Tuple[str, Tuple[Tuple[str, str, float], ...]]]:
+    raw: List[Tuple[str, Sequence[Tuple[str, str, float]]]] = [
+        ("all", []),
+        ("market_up20", [("mkt_ret20_mean", ">=", 0.0)]),
+        ("market_strong20", [("mkt_ret20_mean", ">=", 5.0)]),
+        ("market_breadth20", [("mkt_breadth20", ">=", 0.55)]),
+        ("market_calm", [("mkt_atr_median", "<=", 5.0)]),
+        ("market_active_volume", [("mkt_vol_ratio_median", ">=", 1.0)]),
+        ("market_up20_calm", [("mkt_ret20_mean", ">=", 0.0), ("mkt_atr_median", "<=", 5.0)]),
+        ("market_strong20_breadth", [("mkt_ret20_mean", ">=", 5.0), ("mkt_breadth20", ">=", 0.55)]),
+        ("market_up20_active_volume", [("mkt_ret20_mean", ">=", 0.0), ("mkt_vol_ratio_median", ">=", 1.0)]),
+        ("market_pullback20", [("mkt_ret20_mean", "<", 0.0)]),
+    ]
+    return [(name, tuple(specs)) for name, specs in raw]
+
+
 def _condition_specs() -> List[Tuple[str, str, Tuple[Tuple[str, float], ...]]]:
     raw: List[Tuple[str, str, Sequence[Tuple[str, float]]]] = [
         ("premarket_gap_volume", "premarket", [("r_session_ret", 0.70), ("r_session_dollar_volume", 0.70)]),
@@ -570,6 +629,25 @@ def _mask(frame: pd.DataFrame, specs: Sequence[Tuple[str, float]]) -> np.ndarray
         if col not in frame.columns:
             return np.zeros(len(frame), dtype=bool)
         mask &= pd.to_numeric(frame[col], errors="coerce").ge(float(threshold)).to_numpy()
+    return mask
+
+
+def _regime_mask(frame: pd.DataFrame, specs: Sequence[Tuple[str, str, float]]) -> np.ndarray:
+    mask = np.ones(len(frame), dtype=bool)
+    for col, op, threshold in specs:
+        if col not in frame.columns:
+            return np.zeros(len(frame), dtype=bool)
+        values = pd.to_numeric(frame[col], errors="coerce")
+        if op == ">=":
+            mask &= values.ge(float(threshold)).to_numpy()
+        elif op == ">":
+            mask &= values.gt(float(threshold)).to_numpy()
+        elif op == "<=":
+            mask &= values.le(float(threshold)).to_numpy()
+        elif op == "<":
+            mask &= values.lt(float(threshold)).to_numpy()
+        else:
+            return np.zeros(len(frame), dtype=bool)
     return mask
 
 
@@ -644,46 +722,51 @@ def search_edges(panel: pd.DataFrame, *, topn_values: Sequence[int]) -> List[Dic
         "score_liquid_open_drive",
     ]
     results: List[Dict[str, Any]] = []
+    regime_specs = _regime_specs()
     for condition_name, mode, condition_specs in _condition_specs():
         mode_frame = panel[panel["session_mode"].eq(mode)]
-        base = mode_frame[_mask(mode_frame, condition_specs)]
-        if len(base) < 40 or base["date"].nunique() < 15:
-            continue
-        for score_col in score_cols:
-            if score_col not in base.columns:
+        condition_mask = _mask(mode_frame, condition_specs)
+        for regime_name, regime_filters in regime_specs:
+            base = mode_frame[condition_mask & _regime_mask(mode_frame, regime_filters)]
+            if len(base) < 40 or base["date"].nunique() < 15:
                 continue
-            for topn in topn_values:
-                picks = _ranked_pick(base, score_col, int(topn))
-                if len(picks) < 20 or picks["date"].nunique() < 10:
+            for score_col in score_cols:
+                if score_col not in base.columns:
                     continue
-                metrics = metric_block(picks)
-                shadow_gate = recent_shadow_gate(metrics)
-                promotion_gate = evaluate_nasdaq_promotion_gate(metrics)
-                selection_key = (
-                    float(metrics.get("ret5") or 0.0)
-                    + float(metrics.get("alpha5_net_cost_0_2") or 0.0)
-                    + 4.0 * float(metrics.get("ret5_pos_rate") or 0.0)
-                    + 3.0 * float(metrics.get("alpha5_net_cost_0_2_pos_rate") or 0.0)
-                    + 2.0 * float(metrics.get("touch3") or 0.0)
-                    + 2.0 * float(metrics.get("ft55") or 0.0)
-                    - 2.0 * float(metrics.get("dd3") or 0.0)
-                )
-                results.append(
-                    {
-                        "condition": condition_name,
-                        "session_mode": mode,
-                        "condition_specs": list(condition_specs),
-                        "score": score_col,
-                        "topn": int(topn),
-                        "selection_key": round(selection_key, 6),
-                        "metrics": metrics,
-                        "recent_shadow_gate": shadow_gate,
-                        "promotion_gate": promotion_gate,
-                        "recent_shadow_ready": bool(shadow_gate.get("promotion_ready")),
-                        "promotion_ready": bool(promotion_gate.get("promotion_ready")),
-                        "promotion_blocking_reasons": list(promotion_gate.get("blocking_reasons") or []),
-                    }
-                )
+                for topn in topn_values:
+                    picks = _ranked_pick(base, score_col, int(topn))
+                    if len(picks) < 20 or picks["date"].nunique() < 10:
+                        continue
+                    metrics = metric_block(picks)
+                    shadow_gate = recent_shadow_gate(metrics)
+                    promotion_gate = evaluate_nasdaq_promotion_gate(metrics)
+                    selection_key = (
+                        float(metrics.get("ret5") or 0.0)
+                        + float(metrics.get("alpha5_net_cost_0_2") or 0.0)
+                        + 4.0 * float(metrics.get("ret5_pos_rate") or 0.0)
+                        + 3.0 * float(metrics.get("alpha5_net_cost_0_2_pos_rate") or 0.0)
+                        + 2.0 * float(metrics.get("touch3") or 0.0)
+                        + 2.0 * float(metrics.get("ft55") or 0.0)
+                        - 2.0 * float(metrics.get("dd3") or 0.0)
+                    )
+                    results.append(
+                        {
+                            "condition": condition_name,
+                            "session_mode": mode,
+                            "condition_specs": list(condition_specs),
+                            "regime": regime_name,
+                            "regime_specs": list(regime_filters),
+                            "score": score_col,
+                            "topn": int(topn),
+                            "selection_key": round(selection_key, 6),
+                            "metrics": metrics,
+                            "recent_shadow_gate": shadow_gate,
+                            "promotion_gate": promotion_gate,
+                            "recent_shadow_ready": bool(shadow_gate.get("promotion_ready")),
+                            "promotion_ready": bool(promotion_gate.get("promotion_ready")),
+                            "promotion_blocking_reasons": list(promotion_gate.get("blocking_reasons") or []),
+                        }
+                    )
     return sorted(results, key=lambda row: float(row.get("selection_key") or -999.0), reverse=True)
 
 
@@ -737,7 +820,8 @@ def _write_md(path: Path, report: Mapping[str, Any]) -> None:
     for row in report.get("top_candidates", [])[:30]:
         metrics = row.get("metrics") or {}
         lines.append(
-            f"- `{row.get('session_mode')}` `{row.get('condition')}` / `{row.get('score')}` top{row.get('topn')} "
+            f"- `{row.get('session_mode')}` `{row.get('condition')}` regime `{row.get('regime', 'all')}` / "
+            f"`{row.get('score')}` top{row.get('topn')} "
             f"n `{metrics.get('n')}` days `{metrics.get('days')}` symbols `{metrics.get('symbols')}` "
             f"ret5 `{_fmt_num(metrics.get('ret5'))}%` win `{_fmt_pct(metrics.get('ret5_pos_rate'))}` "
             f"net `{_fmt_num(metrics.get('alpha5_net_cost_0_2'))}%` net_win `{_fmt_pct(metrics.get('alpha5_net_cost_0_2_pos_rate'))}` "
