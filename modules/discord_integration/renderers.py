@@ -1375,12 +1375,18 @@ def build_runs_embed(*, market: str = "", offset: int = 0, limit: int = 10) -> D
 def build_scan_ack_embed(config: DiscordIntegrationConfig, *, market: str) -> Dict[str, Any]:
     enabled = bool(config.enable_scan_execution and not config.dry_run)
     model_label = "스윙 앙상블 (ft_5_5)"
+    source_price_kind = "close"
+    session_contract = "regular_close"
+    finality_contract = "finalized session"
     try:
         from modules.model_lane_scan import model_lane_for
 
         bucket = model_lane_for(market, "SWING")
         if bucket == "nasdaq_swing_daily_edge":
             model_label = "NASDAQ SWING daily edge shadow"
+            source_price_kind = "daily_eod_close"
+            session_contract = "manual_eod_latest / nasdaq_regular_close only; cutoff 16:05 America/New_York"
+            finality_contract = "latest_eod_panel_scored / finalized_eod_session; non-final sessions blocked"
     except Exception:
         pass
     return {
@@ -1394,6 +1400,9 @@ def build_scan_ack_embed(config: DiscordIntegrationConfig, *, market: str) -> Di
             {"name": "Dry Run", "value": str(config.dry_run), "inline": True},
             {"name": "Scan Exec", "value": str(config.enable_scan_execution), "inline": True},
             {"name": "모델", "value": model_label, "inline": True},
+            {"name": "Source", "value": source_price_kind, "inline": True},
+            {"name": "Session", "value": session_contract, "inline": True},
+            {"name": "Finality", "value": finality_contract, "inline": False},
         ],
     }
 

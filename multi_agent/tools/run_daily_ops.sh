@@ -246,10 +246,16 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
   # liquidity-matched excess / net-cost / touch3 / dd3 as the feature panel matures.
   NASDAQ_SWING_ARGS=(
     --panel "${AG_NASDAQ_SWING_PANEL:-latest}"
+    --market-session "${AG_NASDAQ_SWING_MARKET_SESSION:-${AG_PRIMARY_SESSION_ID:-manual_eod_latest}}"
+    --session-cutoff "${AG_NASDAQ_SWING_SESSION_CUTOFF:-${AG_PRIMARY_SESSION_CUTOFF:-}}"
+    --source-price-kind "${AG_NASDAQ_SWING_SOURCE_PRICE_KIND:-daily_eod_close}"
     --min-train-rows "${AG_NASDAQ_SWING_MIN_TRAIN_ROWS:-100000}"
     --max-train-rows "${AG_NASDAQ_SWING_MAX_TRAIN_ROWS:-160000}"
     --lgbm-estimators "${AG_NASDAQ_SWING_LGBM_ESTIMATORS:-110}"
   )
+  if [[ "${AG_NASDAQ_SWING_ALLOW_NON_FINAL_SESSION:-0}" == "1" ]]; then
+    NASDAQ_SWING_ARGS+=(--allow-non-final-session)
+  fi
   if [[ "${AG_NASDAQ_SWING_NO_MODEL_BUNDLE:-0}" == "1" ]]; then
     NASDAQ_SWING_ARGS+=(--no-model-bundle)
   fi

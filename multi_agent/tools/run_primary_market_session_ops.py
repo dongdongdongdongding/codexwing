@@ -182,6 +182,17 @@ def _env_csv(name: str, default: Sequence[str]) -> str:
     return ",".join(default)
 
 
+def _session_env(spec: SessionSpec) -> Dict[str, str]:
+    return {
+        "AG_PRIMARY_SESSION_ID": spec.session_id,
+        "AG_PRIMARY_SESSION_LABEL": spec.label_ko,
+        "AG_PRIMARY_SESSION_TIMEZONE": spec.timezone_name,
+        "AG_PRIMARY_SESSION_TRIGGER_TIME": spec.trigger_time,
+        "AG_PRIMARY_SESSION_CUTOFF": f"{spec.trigger_time} {spec.timezone_name}",
+        "AG_PRIMARY_SESSION_SCAN_SCOPE": spec.scan_scope,
+    }
+
+
 def _command_row(
     *,
     name: str,
@@ -199,6 +210,7 @@ def _command_row(
 
 def build_command_plan(spec: SessionSpec) -> List[Dict[str, Any]]:
     commands: List[Dict[str, Any]] = []
+    session_env = _session_env(spec)
     if "kr_confirmed_scan" in spec.actions:
         commands.append(
             _command_row(
@@ -210,6 +222,7 @@ def build_command_plan(spec: SessionSpec) -> List[Dict[str, Any]]:
                     "scan",
                 ],
                 env={
+                    **session_env,
                     "AG_KR_DAILY_SCAN_ENGINE": os.getenv("AG_KR_DAILY_SCAN_ENGINE", "kis_operational"),
                     "AG_KR_DAILY_LEGACY_FALLBACK": os.getenv("AG_KR_DAILY_LEGACY_FALLBACK", "1"),
                     "AG_KR_DAILY_SCAN_TARGETS": os.getenv(
@@ -251,6 +264,7 @@ def build_command_plan(spec: SessionSpec) -> List[Dict[str, Any]]:
                     if os.getenv("AG_PRIMARY_OPS_NASDAQ_LIMIT_TICKERS")
                     else []
                 ),
+                env=session_env,
                 required=False,
             )
         )
@@ -260,6 +274,7 @@ def build_command_plan(spec: SessionSpec) -> List[Dict[str, Any]]:
                 name="primary_daily_ops",
                 argv=["/bin/bash", "multi_agent/tools/run_daily_ops.sh"],
                 env={
+                    **session_env,
                     "DAILY_OPS_MARKETS": _env_csv("PRIMARY_OPS_MARKETS", PRIMARY_MARKETS),
                     "DAILY_OPS_DRY_RUN": os.getenv("DAILY_OPS_DRY_RUN", "0"),
                     "AG_STALE_FALLBACK_ALERT_DRY_RUN": os.getenv("AG_STALE_FALLBACK_ALERT_DRY_RUN", "0"),

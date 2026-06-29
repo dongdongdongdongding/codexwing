@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -37,11 +38,27 @@ REPORT_VERSION = "nasdaq_swing_daily_edge_shadow_v1"
 MODEL_VERSION = "nasdaq_swing_alpha3_pos60_v1"
 STRATEGY_FAMILY = "NASDAQ_SWING_DAILY_EDGE"
 SIGNAL_CLASS = "NASDAQ_SWING_MODEL"
+SESSION_CONTRACT_VERSION = "nasdaq_swing_session_contract_v1"
 
 DEFAULT_OUT_DIR = PROJECT_ROOT / "runtime_state" / "reports" / "us_research"
 DEFAULT_PANEL_ROOT = Path("~/research_cache/us_daily/NASDAQ").expanduser()
 DEFAULT_LEDGER = PROJECT_ROOT / "runtime_state" / "reports" / "us_research" / "nasdaq_swing_daily_edge_shadow_ledger.jsonl"
 DEFAULT_MODEL_BUNDLE = PROJECT_ROOT / "runtime_state" / "models" / "nasdaq_swing_daily_edge" / "nasdaq_swing_daily_edge_latest.pkl"
+
+EOD_SCORING_SESSIONS = {
+    "manual_eod_latest",
+    "nasdaq_regular_close",
+    "nasdaq_eod",
+    "regular_close",
+    "eod",
+    "final",
+}
+
+KNOWN_NON_FINAL_SESSIONS = {
+    "nasdaq_premarket_early",
+    "nasdaq_regular_open",
+    "nasdaq_afterhours_early",
+}
 
 POLICIES: Tuple[Dict[str, Any], ...] = (
     {
@@ -111,6 +128,86 @@ def _json_default(value: Any) -> Any:
     if isinstance(value, np.floating):
         return float(value)
     raise TypeError(f"Unsupported JSON type: {type(value)!r}")
+
+
+def _clean_session_id(value: Any) -> str:
+    text = str(value or "").strip()
+    return text or "manual_eod_latest"
+
+
+def _session_suffix(value: str) -> str:
+    return "".join(ch if ch.isalnum() else "_" for ch in str(value).lower()).strip("_")
+
+
+def build_session_contract(
+    *,
+    market_session: str = "",
+    session_cutoff: str = "",
+    source_price_kind: str = "daily_eod_close",
+    allow_non_final_session: bool = False,
+) -> Dict[str, Any]:
+    """Declare which NASDAQ session this EOD model is allowed to represent."""
+    session = _clean_session_id(market_session)
+    session_key = session.lower()
+    price_kind = str(source_price_kind or "daily_eod_close").strip() or "daily_eod_close"
+    contract: Dict[str, Any] = {
+        "contract_version": SESSION_CONTRACT_VERSION,
+        "market_session": session,
+        "session_cutoff": str(session_cutoff or "").strip(),
+        "source_price_kind": price_kind,
+        "scoring_allowed": True,
+        "session_blocked": False,
+        "block_reason": "",
+        "freshness_status": "pending_score_date",
+        "finality_status": "eod_close_finalized_required",
+        "candidate_id_suffix": "",
+    }
+
+    if price_kind != "daily_eod_close" and not allow_non_final_session:
+        contract.update(
+            scoring_allowed=False,
+            session_blocked=True,
+            block_reason=f"source_price_kind_not_validated_for_eod_model:{price_kind}",
+            freshness_status="blocked_non_eod_source",
+            finality_status="blocked_non_eod_source",
+        )
+        return contract
+
+    if session_key in EOD_SCORING_SESSIONS:
+        contract.update(
+            freshness_status="eod_panel_latest_available",
+            finality_status="finalized_eod_session",
+        )
+        return contract
+
+    if allow_non_final_session:
+        contract.update(
+            freshness_status="session_override_no_finality_guarantee",
+            finality_status="non_final_session_override_shadow",
+            candidate_id_suffix=f"session_{_session_suffix(session_key)}",
+        )
+        return contract
+
+    reason = "non_final_nasdaq_session_requires_separate_shadow_lane"
+    if session_key not in KNOWN_NON_FINAL_SESSIONS:
+        reason = f"unrecognized_nasdaq_session_requires_explicit_eod_contract:{session}"
+    contract.update(
+        scoring_allowed=False,
+        session_blocked=True,
+        block_reason=reason,
+        freshness_status="settle_existing_only_no_new_eod_score",
+        finality_status="blocked_non_final_session",
+    )
+    return contract
+
+
+def _with_score_date(contract: Mapping[str, Any], score_date: Any) -> Dict[str, Any]:
+    out = dict(contract)
+    if score_date:
+        out["panel_score_date"] = str(score_date)
+        if out.get("scoring_allowed") and out.get("freshness_status") == "eod_panel_latest_available":
+            out["freshness_status"] = "latest_eod_panel_scored"
+    return out
 
 
 def _available_columns(path: Path) -> set[str]:
@@ -278,13 +375,27 @@ def select_policy_picks(
     *,
     policies: Sequence[Mapping[str, Any]] = POLICIES,
     model_version: str = MODEL_VERSION,
+    session_contract: Optional[Mapping[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     if latest.empty:
         return []
+    contract = dict(session_contract or build_session_contract())
+    contract_fields = {
+        "session_contract_version": contract.get("contract_version", SESSION_CONTRACT_VERSION),
+        "market_session": contract.get("market_session", "manual_eod_latest"),
+        "session_cutoff": contract.get("session_cutoff", ""),
+        "source_price_kind": contract.get("source_price_kind", "daily_eod_close"),
+        "freshness_status": contract.get("freshness_status", ""),
+        "finality_status": contract.get("finality_status", ""),
+    }
+    candidate_suffix = str(contract.get("candidate_id_suffix") or "").strip()
     rows: List[Dict[str, Any]] = []
     score_date = pd.to_datetime(latest["date"].iloc[0]).date().isoformat()
     for policy in policies:
         score_col = str(policy["score_col"])
+        candidate_id = str(policy["candidate_id"])
+        if candidate_suffix:
+            candidate_id = f"{candidate_id}__{candidate_suffix}"
         gate_col = "pred_alpha5_pos"
         pool = latest[
             pd.to_numeric(latest["liq20"], errors="coerce").ge(float(policy["liq20_floor"]))
@@ -297,11 +408,12 @@ def select_policy_picks(
         selected = pool[pool["_policy_rank"].le(int(policy["topn"]))].sort_values(score_col, ascending=False)
         for idx, row in enumerate(selected.to_dict("records"), start=1):
             ticker = str(row.get("symbol") or "").strip()
-            ledger_key = f"{policy['candidate_id']}:{score_date}:{ticker}"
+            ledger_key = f"{candidate_id}:{score_date}:{ticker}"
             rows.append(
                 {
                     "ledger_key": ledger_key,
-                    "candidate_id": str(policy["candidate_id"]),
+                    "candidate_id": candidate_id,
+                    "base_candidate_id": str(policy["candidate_id"]),
                     "strategy_family": STRATEGY_FAMILY,
                     "signal_class": SIGNAL_CLASS,
                     "model_version": model_version,
@@ -331,6 +443,7 @@ def select_policy_picks(
                     "costs_pct": [0.10, 0.20, 0.35],
                     "status": "open",
                     "logged_at": _utc_now(),
+                    **contract_fields,
                 }
             )
     return rows
@@ -512,6 +625,7 @@ def summarize_ledger(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
 def write_report(path_json: Path, path_md: Path, report: Mapping[str, Any]) -> None:
     path_json.parent.mkdir(parents=True, exist_ok=True)
     path_json.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=_json_default, sort_keys=True), encoding="utf-8")
+    session = report.get("session_contract") if isinstance(report.get("session_contract"), dict) else {}
     lines = [
         "# NASDAQ SWING Daily Edge Model",
         "",
@@ -520,15 +634,32 @@ def write_report(path_json: Path, path_md: Path, report: Mapping[str, Any]) -> N
         f"- model_version: `{report.get('model_version')}`",
         f"- score_date: `{report.get('score_date')}`",
         f"- panel_path: `{report.get('panel_path')}`",
+        f"- market_session: `{session.get('market_session')}`",
+        f"- session_cutoff: `{session.get('session_cutoff')}`",
+        f"- source_price_kind: `{session.get('source_price_kind')}`",
+        f"- freshness_status: `{session.get('freshness_status')}`",
+        f"- finality_status: `{session.get('finality_status')}`",
         f"- picks: `{report.get('pick_count')}`",
         f"- ledger_appended: `{report.get('ledger_appended')}`",
         f"- ledger_settled: `{report.get('ledger_settled')}`",
         "",
+    ]
+    if report.get("session_blocked"):
+        lines.extend(
+            [
+                "## Session Gate",
+                "",
+                f"- status: `blocked`",
+                f"- reason: `{report.get('session_block_reason')}`",
+                "",
+            ]
+        )
+    lines.extend([
         "## Policy Picks",
         "",
         "| Lane | Rank | Ticker | Score | p(alpha5 net>0) | liq20 |",
         "|---|---:|---|---:|---:|---:|",
-    ]
+    ])
     for row in report.get("picks", []):
         lines.append(
             f"| {row.get('lane')} | {row.get('rank')} | {row.get('ticker')} | "
@@ -559,6 +690,12 @@ def save_model_bundle(path: Path, bundle: Mapping[str, Any]) -> str:
 
 
 def run_model(args: argparse.Namespace) -> Dict[str, Any]:
+    session_contract = build_session_contract(
+        market_session=getattr(args, "market_session", ""),
+        session_cutoff=getattr(args, "session_cutoff", ""),
+        source_price_kind=getattr(args, "source_price_kind", "daily_eod_close"),
+        allow_non_final_session=bool(getattr(args, "allow_non_final_session", False)),
+    )
     panel_path = resolve_panel_path(str(args.panel))
     raw = read_panel(panel_path)
     context = prepare_context_frame(
@@ -575,8 +712,9 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
     policy_diagnostics: List[Dict[str, Any]] = []
     model_bundle_path: Optional[str] = None
     score_date = str(_score_date(context, args.score_date).date()) if not context.empty else None
+    session_contract = _with_score_date(session_contract, score_date)
 
-    if not args.settle_only:
+    if not args.settle_only and session_contract.get("scoring_allowed"):
         latest, train_report, bundle = train_and_score_latest(
             context,
             score_date=args.score_date,
@@ -587,10 +725,29 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
             seed=int(args.seed),
         )
         score_date = str(pd.to_datetime(latest["date"].iloc[0]).date())
-        picks = select_policy_picks(latest)
+        session_contract = _with_score_date(session_contract, score_date)
+        picks = select_policy_picks(latest, session_contract=session_contract)
         policy_diagnostics = build_policy_diagnostics(latest)
         if not args.no_model_bundle:
+            bundle["session_contract"] = dict(session_contract)
             model_bundle_path = save_model_bundle(Path(args.model_bundle), bundle)
+    elif not args.settle_only:
+        train_report = {
+            "skipped": True,
+            "skip_reason": session_contract.get("block_reason") or "session_contract_blocked_scoring",
+            "session_contract": dict(session_contract),
+        }
+        policy_diagnostics = [
+            {
+                "candidate_id": str(policy["candidate_id"]),
+                "lane": str(policy["lane"]),
+                "skipped": True,
+                "blocking_reasons": [str(session_contract.get("block_reason") or "session_contract_blocked_scoring")],
+                "pool_rows": 0,
+                "gate_pass_rows": 0,
+            }
+            for policy in POLICIES
+        ]
 
     appended = 0
     ledger_rows = settled_rows
@@ -608,6 +765,14 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         "mode": "model_lane_forward_shadow",
         "panel_path": str(panel_path),
         "score_date": score_date,
+        "session_contract": dict(session_contract),
+        "market_session": session_contract.get("market_session"),
+        "session_cutoff": session_contract.get("session_cutoff"),
+        "source_price_kind": session_contract.get("source_price_kind"),
+        "freshness_status": session_contract.get("freshness_status"),
+        "finality_status": session_contract.get("finality_status"),
+        "session_blocked": bool(session_contract.get("session_blocked")),
+        "session_block_reason": session_contract.get("block_reason") or "",
         "policies": list(POLICIES),
         "policy_diagnostics": policy_diagnostics,
         "train_report": train_report,
@@ -637,6 +802,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
     parser.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     parser.add_argument("--model-bundle", default=str(DEFAULT_MODEL_BUNDLE))
+    parser.add_argument(
+        "--market-session",
+        default=os.getenv("AG_NASDAQ_SWING_MARKET_SESSION") or os.getenv("AG_PRIMARY_SESSION_ID") or "manual_eod_latest",
+        help="NASDAQ session for this run; only regular-close/manual EOD sessions create EOD swing picks.",
+    )
+    parser.add_argument(
+        "--session-cutoff",
+        default=os.getenv("AG_NASDAQ_SWING_SESSION_CUTOFF") or os.getenv("AG_PRIMARY_SESSION_CUTOFF") or "",
+    )
+    parser.add_argument(
+        "--source-price-kind",
+        default=os.getenv("AG_NASDAQ_SWING_SOURCE_PRICE_KIND", "daily_eod_close"),
+    )
+    parser.add_argument(
+        "--allow-non-final-session",
+        action="store_true",
+        help="Replay/debug only: score a non-final session with session-specific candidate ids.",
+    )
     parser.add_argument("--score-date", default="")
     parser.add_argument("--min-price", type=float, default=1.0)
     parser.add_argument("--research-liq-floor", type=float, default=10_000_000.0)
@@ -660,6 +843,10 @@ def main() -> int:
         json.dumps(
             {
                 "score_date": report.get("score_date"),
+                "market_session": report.get("market_session"),
+                "source_price_kind": report.get("source_price_kind"),
+                "finality_status": report.get("finality_status"),
+                "session_blocked": report.get("session_blocked"),
                 "picks": report.get("pick_count"),
                 "ledger_appended": report.get("ledger_appended"),
                 "ledger_settled": report.get("ledger_settled"),

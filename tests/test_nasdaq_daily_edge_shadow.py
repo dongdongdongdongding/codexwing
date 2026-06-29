@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import argparse
 
 import pandas as pd
 
@@ -88,6 +89,9 @@ def test_select_policy_picks_applies_primary_and_high_liquidity_contracts():
     assert picks[0]["strategy_family"] == "NASDAQ_SWING_DAILY_EDGE"
     assert picks[0]["p"] == 0.72
     assert picks[0]["ledger_key"] == "primary:2026-06-26:AAA"
+    assert picks[0]["market_session"] == "manual_eod_latest"
+    assert picks[0]["source_price_kind"] == "daily_eod_close"
+    assert picks[0]["finality_status"] == "finalized_eod_session"
 
 
 def test_policy_diagnostics_explain_zero_pick_gate_failures():
@@ -188,3 +192,62 @@ def test_resolve_panel_path_uses_latest_non_snapshot_panel(tmp_path, monkeypatch
     monkeypatch.setattr(tool, "DEFAULT_PANEL_ROOT", tmp_path)
 
     assert tool.resolve_panel_path("latest") == new
+
+
+def test_non_final_nasdaq_session_blocks_new_eod_picks(monkeypatch, tmp_path):
+    panel = tmp_path / "panel.parquet"
+    panel.write_text("stub", encoding="utf-8")
+    context = pd.DataFrame(
+        [
+            {
+                "date": "2026-06-26",
+                "symbol": "AAA",
+                "close": 10.0,
+                "liq20": 50_000_000,
+                "feature_ready": 1,
+            }
+        ]
+    )
+
+    monkeypatch.setattr(tool, "resolve_panel_path", lambda _value: panel)
+    monkeypatch.setattr(tool, "read_panel", lambda _path: context.copy())
+    monkeypatch.setattr(tool, "prepare_context_frame", lambda *_args, **_kwargs: context.copy())
+
+    def fail_train(*_args, **_kwargs):
+        raise AssertionError("non-final NASDAQ sessions must not score the EOD swing model")
+
+    monkeypatch.setattr(tool, "train_and_score_latest", fail_train)
+    args = argparse.Namespace(
+        panel="latest",
+        out_dir=str(tmp_path),
+        ledger=str(tmp_path / "ledger.jsonl"),
+        model_bundle=str(tmp_path / "model.pkl"),
+        market_session="nasdaq_regular_open",
+        session_cutoff="09:35 America/New_York",
+        source_price_kind="daily_eod_close",
+        allow_non_final_session=False,
+        score_date="",
+        min_price=1.0,
+        research_liq_floor=10_000_000.0,
+        cost_pct=0.20,
+        embargo_days=20,
+        min_train_rows=1,
+        max_train_rows=10,
+        lgbm_estimators=1,
+        seed=1,
+        settle_only=False,
+        no_ledger=False,
+        no_model_bundle=False,
+        dry_run=True,
+    )
+
+    report = tool.run_model(args)
+
+    assert report["session_blocked"] is True
+    assert report["market_session"] == "nasdaq_regular_open"
+    assert report["source_price_kind"] == "daily_eod_close"
+    assert report["finality_status"] == "blocked_non_final_session"
+    assert report["freshness_status"] == "settle_existing_only_no_new_eod_score"
+    assert report["pick_count"] == 0
+    assert report["ledger_appended"] == 0
+    assert report["train_report"]["skipped"] is True

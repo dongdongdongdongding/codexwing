@@ -66,8 +66,12 @@ def test_command_plan_runs_session_scan_then_primary_daily_ops():
     assert [row["name"] for row in kr_plan] == ["kr_confirmed_scan", "primary_daily_ops"]
     assert "run_kr_daily_auto_scans.py" in " ".join(kr_plan[0]["argv"])
     assert kr_plan[1]["env"]["DAILY_OPS_MARKETS"] == "KOSPI,KOSDAQ,NASDAQ"
+    assert kr_plan[1]["env"]["AG_PRIMARY_SESSION_ID"] == "kr_regular_close"
     assert [row["name"] for row in nasdaq_plan] == ["nasdaq_full_universe_scan", "primary_daily_ops"]
     assert "run_us_full_universe_research.py" in " ".join(nasdaq_plan[0]["argv"])
+    assert nasdaq_plan[0]["env"]["AG_PRIMARY_SESSION_ID"] == "nasdaq_regular_open"
+    assert nasdaq_plan[1]["env"]["AG_PRIMARY_SESSION_ID"] == "nasdaq_regular_open"
+    assert nasdaq_plan[1]["env"]["AG_PRIMARY_SESSION_CUTOFF"] == "09:35 America/New_York"
     assert nasdaq_plan[1]["env"]["AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE"] == "1"
     assert nasdaq_plan[1]["env"]["AG_NASDAQ_SWING_MODEL_ENABLE"] == "1"
     assert nasdaq_plan[1]["env"]["AG_NASDAQ_SWING_PANEL"] == "latest"

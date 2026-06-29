@@ -373,7 +373,26 @@ def main() -> int:
                         "color": 0xF1C40F,
                     }]
                 elif str(res.get("bucket") or "") == "nasdaq_swing_daily_edge":
-                    fields = []
+                    session = res.get("session_contract") if isinstance(res.get("session_contract"), dict) else {}
+                    fields = [
+                        {
+                            "name": "세션",
+                            "value": (
+                                f"{session.get('market_session') or res.get('market_session') or 'manual_eod_latest'} | "
+                                f"{session.get('session_cutoff') or res.get('session_cutoff') or '-'} | "
+                                f"{session.get('source_price_kind') or res.get('source_price_kind') or 'daily_eod_close'} | "
+                                f"{session.get('freshness_status') or res.get('freshness_status') or '-'} | "
+                                f"{session.get('finality_status') or res.get('finality_status') or '-'}"
+                            ),
+                            "inline": False,
+                        }
+                    ]
+                    if res.get("session_blocked"):
+                        fields.append({
+                            "name": "차단",
+                            "value": str(res.get("session_block_reason") or res.get("note") or "non_final_session_blocked")[:1000],
+                            "inline": False,
+                        })
                     for idx, pick in enumerate(list(res.get("picks") or [])[:10], start=1):
                         prob = pick.get("pred_alpha5_net_pos", pick.get("p"))
                         fields.append({
@@ -389,7 +408,12 @@ def main() -> int:
                         "title": "NASDAQ SWING 모델 shadow",
                         "description": "종가 진입 / 5D alpha5 유동성매칭 초과수익 forward-shadow 추적. 실자본 아님.",
                         "color": 0x3498DB,
-                        "fields": fields or [{"name": "결과", "value": "조건 통과 후보 없음", "inline": False}],
+                        "fields": fields
+                        + (
+                            []
+                            if res.get("picks")
+                            else [{"name": "결과", "value": "세션 차단" if res.get("session_blocked") else "조건 통과 후보 없음", "inline": False}]
+                        ),
                     }]
                 else:
                     payloads = await asyncio.to_thread(

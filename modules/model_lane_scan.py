@@ -155,6 +155,18 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
                 out_dir=str(nas.DEFAULT_OUT_DIR),
                 ledger=str(nas.DEFAULT_LEDGER),
                 model_bundle=str(nas.DEFAULT_MODEL_BUNDLE),
+                market_session=os.getenv(
+                    "AG_NASDAQ_SWING_MARKET_SESSION",
+                    os.getenv("AG_PRIMARY_SESSION_ID", "manual_eod_latest"),
+                ),
+                session_cutoff=os.getenv(
+                    "AG_NASDAQ_SWING_SESSION_CUTOFF",
+                    os.getenv("AG_PRIMARY_SESSION_CUTOFF", ""),
+                ),
+                source_price_kind=os.getenv("AG_NASDAQ_SWING_SOURCE_PRICE_KIND", "daily_eod_close"),
+                allow_non_final_session=os.getenv(
+                    "AG_NASDAQ_SWING_ALLOW_NON_FINAL_SESSION", "0"
+                ).strip() in {"1", "true", "True"},
                 score_date="",
                 min_price=1.0,
                 research_liq_floor=10_000_000.0,
@@ -172,7 +184,26 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
             report = nas.run_model(args)
             picks = list(report.get("picks") or [])
             run_id = f"NASDAQ-SWING-EDGE-{str(report.get('score_date') or today).replace('-', '')}"
-            out.update(run_id=run_id, picks=picks, routed=0, note="NASDAQ SWING model lane is forward-shadow only; no live recommendation routing.")
+            note = "NASDAQ SWING model lane is forward-shadow only; no live recommendation routing."
+            if report.get("session_blocked"):
+                note = (
+                    f"NASDAQ SWING EOD model blocked for session `{report.get('market_session')}`: "
+                    f"{report.get('session_block_reason')}. Existing ledger settlement only."
+                )
+            out.update(
+                run_id=run_id,
+                picks=picks,
+                routed=0,
+                note=note,
+                session_contract=report.get("session_contract") or {},
+                market_session=report.get("market_session"),
+                session_cutoff=report.get("session_cutoff"),
+                source_price_kind=report.get("source_price_kind"),
+                freshness_status=report.get("freshness_status"),
+                finality_status=report.get("finality_status"),
+                session_blocked=bool(report.get("session_blocked")),
+                session_block_reason=report.get("session_block_reason") or "",
+            )
         elif mode == "SWING":
             from report_swing_ensemble import score_market, _route_live
             picks = score_market(market, SWING_TOP_PCT, SWING_MIN_LIQ)

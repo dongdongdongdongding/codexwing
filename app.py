@@ -1213,10 +1213,25 @@ def _render_model_lane_scan_result(snapshot):
     st.caption(snapshot.get("status_line", ""))
     if res.get("stale_session"):
         st.info(f"⏱️ {res.get('note') or '장 시작 전/장중이라 최신 완성 세션 신호를 표시합니다.'} (장마감 후 스캔하면 당일 신호가 새로 나옵니다.)")
+    session = res.get("session_contract") if isinstance(res.get("session_contract"), dict) else {}
+    if session:
+        st.caption(
+            "세션 계약: "
+            f"{session.get('market_session') or res.get('market_session') or '-'} · "
+            f"{session.get('session_cutoff') or res.get('session_cutoff') or '-'} · "
+            f"{session.get('source_price_kind') or res.get('source_price_kind') or '-'} · "
+            f"{session.get('freshness_status') or res.get('freshness_status') or '-'} / "
+            f"{session.get('finality_status') or res.get('finality_status') or '-'}"
+        )
+    if res.get("session_blocked"):
+        st.warning(
+            f"NASDAQ EOD 스윙 모델은 이 세션에서 새 후보를 만들지 않습니다: "
+            f"{res.get('session_block_reason') or res.get('note') or 'non_final_session_blocked'}"
+        )
     if not picks:
         st.warning(
-            "표시할 모델 신호가 없습니다 — 마지막 완성 세션에서 조건(유동성·VWAP·변동성 가드 등)을 통과한 종목이 없었습니다. "
-            "인트라데이는 장마감 후 전체세션 데이터로 생성됩니다."
+            "표시할 모델 신호가 없습니다 — 세션 차단 또는 마지막 완성 세션에서 조건(유동성·VWAP·변동성 가드 등)을 "
+            "통과한 종목이 없었습니다. 인트라데이는 장마감 후 전체세션 데이터로 생성됩니다."
         )
         return
     is_intraday = str(scan_mode).upper() == "INTRADAY"
@@ -1227,7 +1242,7 @@ def _render_model_lane_scan_result(snapshot):
     _src = "최신 완성 세션" if res.get("stale_session") else "daily_ops 모델 픽과 100% 동일"
     st.success(f"✅ {badge} 모델 `{bucket}` · {market} {len(picks)}건 — {_src}")
     if is_nasdaq_swing:
-        st.caption("계약: 진입 종가 · 보유 5거래일 · alpha5 유동성매칭 초과수익 forward-shadow 채점 · 실자본 아님")
+        st.caption("계약: daily_eod_close 진입 종가 · 보유 5거래일 · alpha5 유동성매칭 초과수익 forward-shadow 채점 · 실자본 아님")
     else:
         st.caption(f"계약: 진입 {entry_label} · 목표 +5% · 보유 {hold_days}거래일 · 분산(타이트 손절 없음)")
     table = []
@@ -1707,8 +1722,8 @@ if active_main_tab == "🚀 스캐너":
         # do not apply (the producer scores its own liquidity universe with a fixed contract).
         if market == "NASDAQ" and scan_mode == "SWING":
             _filter_caption = "🔵 나스닥 스윙 모델 · 5D alpha forward-shadow"
-            _contract_note = "진입 종가 · 보유 5일 · 유동성매칭 alpha5/net-cost/touch3/dd3 shadow 채점 · 실자본 아님"
-            _window_note = ""
+            _contract_note = "daily_eod_close 종가 · 보유 5일 · 유동성매칭 alpha5/net-cost/touch3/dd3 shadow 채점 · 실자본 아님"
+            _window_note = "NASDAQ SWING 모델은 EOD 일봉 패널 기반입니다. 프리장/장초/애프터 세션에서는 같은 EOD 후보를 재발행하지 않고 세션 차단/ledger 정산만 수행합니다."
         elif scan_mode == "INTRADAY":
             _filter_caption = "🟢 인트라데이 모델 · 3일내 +5% 터치"
             _contract_note = "코스피=종가 · 코스닥=15:00 진입 · 보유 3일 · 목표 +5% · 분산(타이트 손절 X)"

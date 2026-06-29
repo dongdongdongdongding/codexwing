@@ -1,6 +1,8 @@
 {
   "capital_status": "shadow_only_no_real_capital",
-  "generated_at": "2026-06-29T07:34:11.347252+00:00",
+  "finality_status": "finalized_eod_session",
+  "freshness_status": "latest_eod_panel_scored",
+  "generated_at": "2026-06-29T08:10:14.181161+00:00",
   "ledger_appended": 0,
   "ledger_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_swing_daily_edge_shadow_ledger.jsonl",
   "ledger_settled": 0,
@@ -10,6 +12,7 @@
     "rows": 0,
     "settled": 0
   },
+  "market_session": "nasdaq_regular_close",
   "mode": "model_lane_forward_shadow",
   "model_bundle_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/models/nasdaq_swing_daily_edge/nasdaq_swing_daily_edge_latest.pkl",
   "model_version": "nasdaq_swing_alpha3_pos60_v1",
@@ -189,7 +192,24 @@
   "promotion_note": "NASDAQ SWING model lane is active for daily shadow observation; real capital requires forward alpha confirmation.",
   "report_version": "nasdaq_swing_daily_edge_shadow_v1",
   "score_date": "2026-06-26",
+  "session_block_reason": "",
+  "session_blocked": false,
+  "session_contract": {
+    "block_reason": "",
+    "candidate_id_suffix": "",
+    "contract_version": "nasdaq_swing_session_contract_v1",
+    "finality_status": "finalized_eod_session",
+    "freshness_status": "latest_eod_panel_scored",
+    "market_session": "nasdaq_regular_close",
+    "panel_score_date": "2026-06-26",
+    "scoring_allowed": true,
+    "session_blocked": false,
+    "session_cutoff": "16:05 America/New_York",
+    "source_price_kind": "daily_eod_close"
+  },
+  "session_cutoff": "16:05 America/New_York",
   "signal_class": "NASDAQ_SWING_MODEL",
+  "source_price_kind": "daily_eod_close",
   "strategy_family": "NASDAQ_SWING_DAILY_EDGE",
   "train_report": {
     "features": [

@@ -461,6 +461,9 @@ def test_scan_ack_names_nasdaq_swing_daily_edge_model():
 
     assert "NASDAQ SWING daily edge shadow" in embed["description"]
     assert any(field["name"] == "모델" and field["value"] == "NASDAQ SWING daily edge shadow" for field in embed["fields"])
+    assert any(field["name"] == "Source" and field["value"] == "daily_eod_close" for field in embed["fields"])
+    assert any(field["name"] == "Session" and "nasdaq_regular_close" in field["value"] for field in embed["fields"])
+    assert any(field["name"] == "Finality" and "non-final sessions blocked" in field["value"] for field in embed["fields"])
 
 
 def test_scan_executor_command_defaults_to_kis_operational_prefilter(monkeypatch, tmp_path):
