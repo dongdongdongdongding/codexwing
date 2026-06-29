@@ -50,7 +50,8 @@ def resolve_name(ticker, default: str = "") -> str:
 
 
 def display_label(ticker, stock_name=None) -> str:
-    """'종목명 (티커)' 표기. stock_name 있으면 우선, 없으면 해석, 둘 다 없으면 티커만."""
+    """'종목명 (티커)' 표기. KR은 resolve_name 우선(저장 stock_name이 티커인 경우 보정),
+    못 찾으면 stock_name(미국 영문명 등) 폴백, 둘 다 없으면 티커만."""
     tk = str(ticker or "-")
-    name = str(stock_name or "").strip() or resolve_name(ticker)
+    name = resolve_name(ticker) or str(stock_name or "").strip()
     return f"{name} ({tk})" if name and name != tk else tk

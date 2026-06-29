@@ -835,6 +835,57 @@ _SIGNALS_VIEW = {
 }
 
 
+def _b_signal_fields(limit: int = 5) -> List[Dict[str, Any]]:
+    """B 시장중립 픽 (b_engine/data/b_picks_latest.json) → 디스코드 필드."""
+    import json, os
+    fp = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                      "b_engine", "data", "b_picks_latest.json")
+    try:
+        d = json.load(open(fp))
+    except Exception:
+        return []
+    out = []
+    for p in d.get("picks", [])[:limit]:
+        out.append({"name": "🟣 " + display_label(p.get("code"), p.get("name")),
+                    "value": f"B 시장중립 · 확률 {p.get('prob_win', '–')}% · 예측α {p.get('pred_alpha_5d', '–')} · 진입 {p.get('close', '–')} · 보유 {p.get('hold_days', 5)}일",
+                    "inline": False})
+    return out
+
+
+def _nasdaq_signal_fields(limit: int = 5) -> List[Dict[str, Any]]:
+    """NASDAQ 최신 스캔 픽 (scan_deep_reports market=NASDAQ) → 디스코드 필드."""
+    try:
+        import json as _j
+        from modules.db_manager import DBManager
+        db = DBManager()
+        if not getattr(db, "client", None):
+            return []
+        q = (db.client.table("scan_deep_reports")
+             .select("ticker,stock_name,candidate_interpretation,prediction,run_id,generated_at")
+             .eq("market", "NASDAQ").order("generated_at", desc=True).limit(40).execute())
+        rows = q.data or []
+        if not rows:
+            return []
+        latest = rows[0].get("run_id")
+        out = []
+        for r in rows:
+            if r.get("run_id") != latest:
+                continue
+            ci = r.get("candidate_interpretation") or {}; pred = r.get("prediction") or {}
+            if isinstance(ci, str):
+                ci = _j.loads(ci) if ci else {}
+            if isinstance(pred, str):
+                pred = _j.loads(pred) if pred else {}
+            out.append({"name": "🟢 " + f"{r.get('stock_name') or r.get('ticker')} ({r.get('ticker')})",
+                        "value": f"나스닥 스윙 · 확률 {pred.get('phase25_prob', '–')}% · 진입 {ci.get('entry_reference_price', '–')}",
+                        "inline": False})
+            if len(out) >= limit:
+                break
+        return out
+    except Exception:
+        return []
+
+
 def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: str = "") -> List[Dict[str, Any]]:
     """Concise read of the live model-validated lanes (swing ensemble / KOSPI+KOSDAQ intraday).
 
@@ -850,7 +901,14 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
         rows = [r for r in rows if str(LANE_PROFILE.get(str(r.get("decision_bucket")), {}).get("scan_mode") or "").upper() == mode]
     if market:
         rows = [r for r in rows if str(r.get("market") or "").upper() == str(market).upper()]
-    if not rows:
+    # B/NASDAQ 추가 필드(KR 픽이 0이어도 이것만으로 표시될 수 있게 먼저 계산)
+    extra = []
+    if not market:
+        if mode in ("", "SWING"):
+            extra += _nasdaq_signal_fields()
+        if mode == "":
+            extra += _b_signal_fields()
+    if not rows and not extra:
         return [{"title": view["title"], "description": view["empty"], "color": 0xF1C40F}]
     # keep only the latest run per (lane, market) so a per-market web scan (swing_ensemble routed
     # under SWING-ENS-...-KOSPI vs -KOSDAQ) doesn't hide one market; daily_ops' single combined
@@ -872,6 +930,7 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
         header = display_label(r.get("ticker"), r.get("stock_name"))   # 종목명 폴백 해석(빈 stock_name 보완)
         interp = r.get("candidate_interpretation") if isinstance(r.get("candidate_interpretation"), dict) else build_candidate_interpretation(r)
         fields.append({"name": header, "value": _field_value_model_lane(interp), "inline": False})
+    fields += extra   # B 시장중립 + NASDAQ 스윙 (위에서 계산, 신웹과 정합)
     return _split_embed_fields(
         title=view["title"],
         description=view["description"],
