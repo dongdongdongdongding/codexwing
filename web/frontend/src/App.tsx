@@ -1,0 +1,77 @@
+import { useEffect, useState } from "react";
+import { api, Freshness } from "./api";
+import { C } from "./theme";
+import { Overview } from "./pages/Overview";
+import { Picks } from "./pages/Picks";
+
+// IA 7섹션 (기획 R1). 1차: 개요·픽 구현, 나머지 준비중(정직).
+const NAV = [
+  { key: "overview", label: "개요", icon: "◆" },
+  { key: "picks", label: "픽", icon: "◎" },
+  { key: "analyze", label: "정밀분석", icon: "🔎" },
+  { key: "performance", label: "성과", icon: "📈" },
+  { key: "market", label: "시장·근거", icon: "🌐" },
+  { key: "theme", label: "테마 네트워크", icon: "🕸" },
+  { key: "ops", label: "운영", icon: "⚙", admin: true },
+];
+
+export default function App() {
+  const [tab, setTab] = useState("overview");
+  const [fr, setFr] = useState<Freshness>({});
+  useEffect(() => { api.freshness().then(setFr).catch(() => {}); }, []);
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "Pretendard, sans-serif" }}>
+      {/* 좌측 네비 */}
+      <nav style={{ width: 200, borderRight: `1px solid ${C.line}`, padding: "16px 10px", position: "sticky", top: 0, height: "100vh" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px 18px" }}>
+          <span style={{ color: C.accent, fontSize: 20 }}>◆</span>
+          <b style={{ fontSize: 18, letterSpacing: 1 }}>SWING</b>
+        </div>
+        {NAV.map((n) => (
+          <button key={n.key} onClick={() => setTab(n.key)}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left",
+              background: tab === n.key ? C.surface2 : "transparent", color: tab === n.key ? C.text : C.mut,
+              border: "none", borderLeft: `2px solid ${tab === n.key ? C.accent : "transparent"}`,
+              borderRadius: 8, padding: "10px 12px", fontSize: 14, cursor: "pointer", marginBottom: 2,
+            }}>
+            <span style={{ width: 18 }}>{n.icon}</span>{n.label}{n.admin && <span style={{ marginLeft: "auto", fontSize: 11 }}>🔒</span>}
+          </button>
+        ))}
+      </nav>
+
+      {/* 메인 */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        {/* 상단바 */}
+        <header style={{ height: 56, borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 16, padding: "0 22px", fontSize: 13 }}>
+          <FreshChip label="일봉" v={fr.daily} />
+          <FreshChip label="분봉" v={fr.minute} />
+          <FreshChip label="수급" v={fr.flow} warnIf={fr.daily} />
+          <span style={{ marginLeft: "auto", color: C.mut }}>운영자</span>
+        </header>
+
+        <main style={{ flex: 1, padding: 22, maxWidth: 1280, width: "100%", margin: "0 auto" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 18px" }}>{NAV.find((n) => n.key === tab)?.label}</h1>
+          {tab === "overview" && <Overview />}
+          {tab === "picks" && <Picks />}
+          {!["overview", "picks"].includes(tab) && (
+            <div style={{ color: C.mut, padding: 50, textAlign: "center", border: `1px dashed ${C.line}`, borderRadius: 12 }}>
+              이 섹션은 1차 개발 후속 단계입니다 (기획 web/PLAN 준수). 곧 제공됩니다.
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function FreshChip({ label, v, warnIf }: { label: string; v?: string; warnIf?: string }) {
+  const stale = warnIf && v && v < warnIf;
+  const col = !v ? C.mut : stale ? C.warn : C.up;
+  return (
+    <span style={{ display: "inline-flex", gap: 5, alignItems: "center", color: col }}>
+      <span style={{ color: C.mut }}>{label}</span>{v || "–"}{stale ? " ⚠" : ""}
+    </span>
+  );
+}
