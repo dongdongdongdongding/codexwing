@@ -3,6 +3,8 @@ import { api, Freshness } from "./api";
 import { C } from "./theme";
 import { Overview } from "./pages/Overview";
 import { Picks } from "./pages/Picks";
+import { Analyze } from "./pages/Analyze";
+import { Performance } from "./pages/Performance";
 
 // IA 7섹션 (기획 R1). 1차: 개요·픽 구현, 나머지 준비중(정직).
 const NAV = [
@@ -55,7 +57,9 @@ export default function App() {
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 18px" }}>{NAV.find((n) => n.key === tab)?.label}</h1>
           {tab === "overview" && <Overview />}
           {tab === "picks" && <Picks />}
-          {!["overview", "picks"].includes(tab) && (
+          {tab === "analyze" && <Analyze />}
+          {tab === "performance" && <Performance />}
+          {!["overview", "picks", "analyze", "performance"].includes(tab) && (
             <div style={{ color: C.mut, padding: 50, textAlign: "center", border: `1px dashed ${C.line}`, borderRadius: 12 }}>
               이 섹션은 1차 개발 후속 단계입니다 (기획 web/PLAN 준수). 곧 제공됩니다.
             </div>

@@ -55,6 +55,21 @@ def pick_detail(code: str):
     return S.pick_detail(code)
 
 
+@app.get("/api/analyze/{code}")
+def analyze(code: str):
+    return S.analyze(code)
+
+
+@app.get("/api/performance")
+def performance():
+    return S.performance()
+
+
+@app.get("/api/archive")
+def archive(date_from: str = "", date_to: str = "", market: str = "", ticker: str = "", limit: int = 200, offset: int = 0):
+    return S.archive(date_from or None, date_to or None, market or None, ticker or None, limit, offset)
+
+
 @app.get("/api/lanes")
 def lanes():
     """레인 메타(프론트 필터용)."""
