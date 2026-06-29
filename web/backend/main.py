@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from web.backend import services as S
+from web.backend import jobs
 
 app = FastAPI(title="SWING 신웹 API", version="0.1")
 app.add_middleware(
@@ -63,6 +64,31 @@ def analyze(code: str):
 @app.get("/api/performance")
 def performance():
     return S.performance()
+
+
+@app.get("/api/market")
+def market():
+    return S.market()
+
+
+@app.get("/api/theme")
+def theme():
+    return S.theme()
+
+
+@app.get("/api/ops/status")
+def ops_status():
+    return S.ops_status()
+
+
+@app.get("/api/ops/scan")
+def scan_status():
+    return jobs.status()
+
+
+@app.post("/api/ops/scan")
+def scan_start(market: str = Query("", description="KOSPI|KOSDAQ|'' 전체")):
+    return jobs.start(market or "")
 
 
 @app.get("/api/archive")

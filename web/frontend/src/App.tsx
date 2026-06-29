@@ -5,6 +5,9 @@ import { Overview } from "./pages/Overview";
 import { Picks } from "./pages/Picks";
 import { Analyze } from "./pages/Analyze";
 import { Performance } from "./pages/Performance";
+import { Ops } from "./pages/Ops";
+import { Market } from "./pages/Market";
+import { Theme } from "./pages/Theme";
 
 // IA 7섹션 (기획 R1). 1차: 개요·픽 구현, 나머지 준비중(정직).
 const NAV = [
@@ -20,7 +23,9 @@ const NAV = [
 export default function App() {
   const [tab, setTab] = useState("overview");
   const [fr, setFr] = useState<Freshness>({});
+  const [scan, setScan] = useState<{ status: string; progress: number; current: string } | null>(null);
   useEffect(() => { api.freshness().then(setFr).catch(() => {}); }, []);
+  useEffect(() => { const t = setInterval(() => api.scanStatus().then(setScan).catch(() => {}), 3000); return () => clearInterval(t); }, []);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "Pretendard, sans-serif" }}>
@@ -50,6 +55,12 @@ export default function App() {
           <FreshChip label="일봉" v={fr.daily} />
           <FreshChip label="분봉" v={fr.minute} />
           <FreshChip label="수급" v={fr.flow} warnIf={fr.daily} />
+          {scan && scan.status === "running" && (
+            <span onClick={() => setTab("ops")} style={{ cursor: "pointer", color: C.accent, display: "inline-flex", gap: 6, alignItems: "center" }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.accent, display: "inline-block", animation: "none" }} />
+              스캔 {scan.progress}% ({scan.current})
+            </span>
+          )}
           <span style={{ marginLeft: "auto", color: C.mut }}>운영자</span>
         </header>
 
@@ -59,11 +70,9 @@ export default function App() {
           {tab === "picks" && <Picks />}
           {tab === "analyze" && <Analyze />}
           {tab === "performance" && <Performance />}
-          {!["overview", "picks", "analyze", "performance"].includes(tab) && (
-            <div style={{ color: C.mut, padding: 50, textAlign: "center", border: `1px dashed ${C.line}`, borderRadius: 12 }}>
-              이 섹션은 1차 개발 후속 단계입니다 (기획 web/PLAN 준수). 곧 제공됩니다.
-            </div>
-          )}
+          {tab === "ops" && <Ops />}
+          {tab === "market" && <Market />}
+          {tab === "theme" && <Theme />}
         </main>
       </div>
     </div>

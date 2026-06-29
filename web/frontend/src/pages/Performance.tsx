@@ -33,6 +33,7 @@ function Summary() {
         <Seg on={basis === "abs"} onClick={() => setBasis("abs")}>절대수익</Seg>
         <span style={{ marginLeft: "auto", color: C.mut, fontSize: 12 }}>기준일 {pf.as_of}</span>
       </div>
+      <div style={{ color: C.mut, fontSize: 12 }}>진입 기준 = <b style={{ color: C.text }}>다음 거래일 종가</b>(현실 매수 시점). 스캔일 종가가 아니라 실제 살 수 있는 가격으로 측정합니다.</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 12 }}>
         <Stat label={basis === "alpha" ? "알파 평균" : "절대 평균"} value={pct(mainVal)} color={signColor(mainVal)} />

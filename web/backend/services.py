@@ -432,7 +432,9 @@ def analyze(code):
 
 
 def performance():
-    """④ 성과 — 레인별 실현 승률 + 시장대비 알파(베타 분리) + 절대수익. measure_model_lane_picks 로직."""
+    """④ 성과 — 레인별 실현 승률 + 시장대비 알파(베타 분리) + 절대수익.
+    ★ 진입 기준 = '다음 거래일 종가'(현실 진입). 스캔일 종가가 아니라 실제 매수가능 시점 → 정직.
+    """
     import pandas as pd, numpy as np, math
     px = pd.read_parquet(os.path.join(RESEARCH, "px_long.parquet"), columns=["code", "date", "close", "liq"])
     px["code"] = px["code"].astype(str); px["date"] = pd.to_datetime(px["date"])
@@ -456,7 +458,8 @@ def performance():
            "코스닥 스윙": ("swing_ensemble_ledger.jsonl", "KOSDAQ"),
            "코스피 장중": ("kospi_intraday_swing_ledger.jsonl", "KOSPI"),
            "코스닥 장중": ("kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "KOSDAQ")}
-    rows = []
+    # 픽 먼저 수집 → 해당 종목들의 일별 종가 시리즈로 '다음 거래일' 진입 조회.
+    raw = []
     for label, (fn, want) in LED.items():
         seen = set()
         for r in _read_ledger(fn):
@@ -464,17 +467,38 @@ def performance():
             if want and mk and mk != want:
                 continue
             code = str(r.get("ticker", "")).split(".")[0].zfill(6)
-            e = r.get("entry_reference_price")
             key = (label, str(r.get("date")), code)
-            if not e or code not in cur or key in seen:
+            if not r.get("entry_reference_price") or code not in cur or key in seen:
                 continue
             seen.add(key)
-            ret = (cur[code] / e - 1) * 100
-            m = mkt_ret(r.get("date"))
-            rows.append({"lane": label, "date": str(r.get("date")), "code": code,
-                         "name": resolve_name(code, default=code), "ret": ret,
-                         "alpha": (ret - m) if m is not None else None,
-                         "days": (cur_date - pd.Timestamp(r.get("date"))).days})
+            raw.append({"lane": label, "scan_date": str(r.get("date")), "code": code})
+    codes = {x["code"] for x in raw}
+    by_code = {}
+    sub = px[px["code"].isin(codes)].sort_values("date")
+    for code, g in sub.groupby("code"):
+        by_code[code] = (g["date"].values, g["close"].values)
+
+    def next_entry(code, scan_date):
+        """스캔일 다음 거래일의 (날짜, 종가) = 현실 진입."""
+        if code not in by_code:
+            return None, None
+        dates, closes = by_code[code]
+        i = int(np.searchsorted(dates, np.datetime64(pd.Timestamp(scan_date)), side="right"))
+        if i >= len(dates):
+            return None, None  # 다음 거래일 데이터 아직 없음(너무 최근) → 미해결
+        return pd.Timestamp(dates[i]), float(closes[i])
+
+    rows = []
+    for x in raw:
+        entry_day, entry = next_entry(x["code"], x["scan_date"])
+        if entry is None or entry <= 0:
+            continue  # 다음 거래일 미도래 → 평가 보류
+        ret = (cur[x["code"]] / entry - 1) * 100
+        m = mkt_ret(entry_day)
+        rows.append({"lane": x["lane"], "date": x["scan_date"], "buy_date": str(entry_day.date()),
+                     "code": x["code"], "name": resolve_name(x["code"], default=x["code"]), "ret": ret,
+                     "alpha": (ret - m) if m is not None else None,
+                     "days": (cur_date - entry_day).days})
     def agg(rs):
         rs = [r for r in rs if r["alpha"] is not None]
         if not rs:
@@ -560,6 +584,112 @@ def _num(x):
         return round(v, 2) if math.isfinite(v) else None
     except Exception:
         return None
+
+
+@lru_cache(maxsize=1)
+def _index_snapshot(_day):
+    import FinanceDataReader as fdr
+    out = {}
+    for name, sym in [("KOSPI", "KS11"), ("KOSDAQ", "KQ11")]:
+        try:
+            d = fdr.DataReader(sym, (datetime.now()).strftime("%Y-01-01"))["Close"]
+            out[name] = {"level": round(float(d.iloc[-1]), 2), "change_pct": round(float(d.pct_change().iloc[-1] * 100), 2)}
+        except Exception:
+            out[name] = None
+    return out
+
+
+def market():
+    """⑤ 시장·근거 — 지수/레짐 + 근거 피드(공시·수급)."""
+    import pandas as pd
+    today = datetime.now().strftime("%Y-%m-%d")
+    idx = _index_snapshot(today)
+    # 레짐(px_long idx_mom20 최신, 시장공통)
+    regime = "정보없음"
+    try:
+        px = pd.read_parquet(os.path.join(RESEARCH, "px_long.parquet"), columns=["date", "idx_mom20"])
+        px["date"] = pd.to_datetime(px["date"])
+        v = px[px["date"] == px["date"].max()]["idx_mom20"].median()
+        regime = _regime_label(float(v), None)
+    except Exception:
+        pass
+    # 공시(DART 최신)
+    dart = []
+    try:
+        dr = pd.read_parquet(os.path.join(RESEARCH, "dart_events.parquet")); dr["code"] = dr["code"].astype(str)
+        dr["ann"] = dr["ann"].astype(str)
+        for _, r in dr.sort_values("ann").tail(12).iloc[::-1].iterrows():
+            dart.append({"ann": r["ann"], "code": r["code"], "name": resolve_name(r["code"], default=r["code"]), "type": str(r.get("etype", ""))})
+    except Exception:
+        pass
+    # 수급 상위(외국인 순매수, flow 최신일)
+    flow_top = []
+    flow_asof = None
+    try:
+        fl = pd.read_parquet(os.path.join(RESEARCH, "flow.parquet")); fl["code"] = fl["code"].astype(str); fl["date"] = pd.to_datetime(fl["date"])
+        last = fl["date"].max(); flow_asof = str(last.date())
+        s = fl[fl["date"] == last].nlargest(10, "frgn_ntby")
+        flow_top = [{"code": r["code"], "name": resolve_name(r["code"], default=r["code"]), "frgn": int(r["frgn_ntby"])} for _, r in s.iterrows()]
+    except Exception:
+        pass
+    return {"index": idx, "regime": regime, "dart": dart, "flow_top": flow_top, "flow_asof": flow_asof}
+
+
+@lru_cache(maxsize=1)
+def _theme_records():
+    return json.load(open(os.path.join(REPO, "runtime_state/long_term/theme_membership/KR.json")))["records"]
+
+
+def theme():
+    """⑥ 테마 네트워크 — primary_theme 그룹 + 오늘 픽 겹침(주도 테마). 가치사슬 요약."""
+    try:
+        recs = _theme_records()
+    except Exception:
+        return {"themes": [], "note": "테마 데이터 없음"}
+    pick_codes = {p["code"] for p in picks()}
+    groups = {}
+    for r in recs:
+        th = r.get("primary_theme")
+        if not th:
+            continue
+        code = str(r.get("symbol", "")).split(".")[0].zfill(6)
+        g = groups.setdefault(th, {"theme": th, "members": [], "pick_hits": []})
+        g["members"].append({"code": code, "name": r.get("name") or resolve_name(code, default=code)})
+        if code in pick_codes:
+            g["pick_hits"].append(code)
+    out = [{"theme": g["theme"], "size": len(g["members"]), "pick_hits": len(g["pick_hits"]),
+            "members": g["members"][:30]} for g in groups.values()]
+    out.sort(key=lambda x: (-x["pick_hits"], -x["size"]))
+    return {"themes": out, "total_themes": len(out), "as_of": _theme_records and "최신"}
+
+
+def ops_status():
+    """⑦ 운영 — 스케줄러 세션 상태·데이터 신선도·모델 메타."""
+    out = {"freshness": freshness(), "sessions": [], "models": {}}
+    # 세션 상태(primary_market_session_state.json)
+    sp = os.path.join(REPO, "runtime_state/long_term/ops/primary_market_session_state.json")
+    try:
+        st = json.load(open(sp))
+        sessions = st.get("sessions", st) if isinstance(st, dict) else {}
+        for sid, v in (sessions.items() if isinstance(sessions, dict) else []):
+            if isinstance(v, dict):
+                out["sessions"].append({"id": sid, "last_run": v.get("last_run_date") or v.get("last_ran_at") or v.get("last_run"),
+                                        "status": v.get("status") or v.get("last_status")})
+    except Exception:
+        pass
+    # B 모델 메타
+    try:
+        m = json.load(open(os.path.join(REPO, "b_engine/data/b_model_meta.json")))
+        out["models"]["B"] = {"trained_through": m.get("trained_through"), "engine": m.get("engine")}
+    except Exception:
+        pass
+    # 스케줄(코드 정의)
+    out["schedule"] = [
+        {"id": "kr_premarket_refresh", "time": "09:35 KST", "desc": "개장 데이터 갱신(수급 포함)+스캔"},
+        {"id": "kr_regular_close", "time": "15:40 KST", "desc": "마감 스캔+일일 ops"},
+        {"id": "kr_nxt_close", "time": "20:05 KST", "desc": "NXT 마감 갱신"},
+    ]
+    return out
 
 
 def overview(top=6):

@@ -50,6 +50,11 @@ export const api = {
   overview: (top = 6) => j<Overview>(`/api/overview?top=${top}`),
   analyze: (code: string) => j<Analysis>(`/api/analyze/${code}`),
   performance: () => j<Performance>(`/api/performance`),
+  opsStatus: () => j<any>(`/api/ops/status`),
+  scanStatus: () => j<{ status: string; progress: number; current: string; steps: Array<{ step: string; ok: boolean; note: string }>; finished_at?: string }>(`/api/ops/scan`),
+  scanStart: (market = "") => fetch(`/api/ops/scan?market=${market}`, { method: "POST" }).then((r) => r.json()),
+  market: () => j<any>(`/api/market`),
+  theme: () => j<any>(`/api/theme`),
   archive: (q: { from?: string; to?: string; market?: string; ticker?: string; limit?: number; offset?: number } = {}) =>
     j<Archive>(`/api/archive?date_from=${q.from || ""}&date_to=${q.to || ""}&market=${q.market || ""}&ticker=${q.ticker || ""}&limit=${q.limit || 100}&offset=${q.offset || 0}`),
   picks: (lane = "") => j<{ count: number; picks: Pick[] }>(`/api/picks?lane=${lane}`),
