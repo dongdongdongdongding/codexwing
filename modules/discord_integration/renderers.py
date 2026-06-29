@@ -815,7 +815,7 @@ _SIGNALS_VIEW = {
         "title": "🎯 모델 시그널 (라이브 레인)",
         "description": (
             "🟢장중: 코스피 인트라데이(3일 +5% 터치) · 코스닥 인트라데이(15:00 VWAP가드) | "
-            "🔵스윙: 가격앙상블(5일 ft_5_5) · 모델 상위픽 · 목표 +5% · 분산(타이트 손절 X)"
+            "🔵스윙: 가격앙상블 + 나스닥 정규장마감 세션(5일 ft_5_5) · 목표 +5% · 분산(타이트 손절 X)"
         ),
         "color": 0x2ECC71,
         "empty": "표시할 모델 레인 픽이 없습니다.",
@@ -828,7 +828,7 @@ _SIGNALS_VIEW = {
     },
     "SWING": {
         "title": "🔵 스윙 시그널 (스윙 모델 레인)",
-        "description": "가격앙상블(5일 ft_5_5) · 진입 종가 · 목표 +5% · 분산(타이트 손절 X)",
+        "description": "가격앙상블 + 나스닥 정규장마감 세션(5일 ft_5_5) · 진입 종가 · 목표 +5% · 분산(타이트 손절 X)",
         "color": 0x3498DB,
         "empty": "표시할 스윙 모델 픽이 없습니다.",
     },
@@ -901,11 +901,14 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
         rows = [r for r in rows if str(LANE_PROFILE.get(str(r.get("decision_bucket")), {}).get("scan_mode") or "").upper() == mode]
     if market:
         rows = [r for r in rows if str(r.get("market") or "").upper() == str(market).upper()]
-    # B/NASDAQ 추가 필드(KR 픽이 0이어도 이것만으로 표시될 수 있게 먼저 계산)
+    # B/NASDAQ fallback fields. NASDAQ is now a first-class model lane, so only use the
+    # fallback when no NASDAQ model-lane row is present in scan_deep_reports.
     extra = []
     if not market:
         if mode in ("", "SWING"):
-            extra += _nasdaq_signal_fields()
+            has_nasdaq_model_lane = any(str(r.get("market") or "").upper() == "NASDAQ" for r in rows)
+            if not has_nasdaq_model_lane:
+                extra += _nasdaq_signal_fields()
         if mode == "":
             extra += _b_signal_fields()
     if not rows and not extra:
@@ -922,7 +925,7 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
             latest[key] = (str(r.get("run_id") or ""), stamp)
     keep_runs = {run for run, _ in latest.values()}
     rows = [r for r in rows if str(r.get("run_id") or "") in keep_runs]
-    bucket_order = {"kospi_intraday": 0, "kosdaq_intraday_3d_t5_vwap_guard": 1, "swing_ensemble": 2}
+    bucket_order = {"kospi_intraday": 0, "kosdaq_intraday_3d_t5_vwap_guard": 1, "swing_ensemble": 2, "nasdaq_session_edge": 3}
     rows.sort(key=lambda r: (bucket_order.get(str(r.get("decision_bucket")), 9), int(r.get("rank") or 0)))
     rows = rows[: max(1, int(limit or 10))]
     fields = []
@@ -1441,22 +1444,17 @@ def build_scan_ack_embed(config: DiscordIntegrationConfig, *, market: str) -> Di
         from modules.model_lane_scan import model_lane_for
 
         bucket = model_lane_for(market, "SWING")
-        if bucket == "nasdaq_swing_daily_edge":
-            model_label = "NASDAQ SWING research shadow (promotion blocked)"
-            source_price_kind = "daily_eod_close"
-            session_contract = "manual_eod_latest / nasdaq_regular_close only; cutoff 16:05 America/New_York"
-            finality_contract = "final EOD only; non-final sessions blocked; win+return gate required"
+        if bucket == "nasdaq_session_edge":
+            model_label = "NASDAQ regular-close session edge"
+            source_price_kind = "yfinance_5m_prepost"
+            session_contract = "nasdaq_regular_close only; cutoff 16:05 America/New_York"
+            finality_contract = "operator-enabled live scan; recent 60D intraday sample limits traced"
     except Exception:
         pass
     return {
         "title": f"{market} 검증 모델 스캔",
         "description": (
             f"요청 확인: `{market}` 검증 모델 레인({model_label})을 실행합니다. 결과 티커는 daily_ops 모델 픽과 100% 동일합니다.\n"
-            + (
-                "NASDAQ은 승률·수익률 promotion gate 통과 전까지 research-shadow 전용입니다.\n"
-                if str(market).upper() == "NASDAQ"
-                else ""
-            )
             + ("실행 준비 완료 상태입니다." if enabled else "현재는 안전 모드라 실제 실행은 막혀 있습니다.")
         ),
         "color": 0x2ECC71 if enabled else 0xF1C40F,

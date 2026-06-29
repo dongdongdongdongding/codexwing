@@ -35,6 +35,16 @@ LANE_PROFILE = {
         "prob_label": "5일내 +5% 선터치(ft_5_5) 확률",
         "hold_note": "5거래일 종가 보유 · 분산(타이트 손절 X)",
     },
+    "nasdaq_session_edge": {
+        "label": "나스닥 세션 엣지 매수",
+        "operational_label": "모델 매수 · 나스닥 정규장마감 세션",
+        "scan_mode": "SWING",
+        "lane_badge": "나스닥 정규장마감",
+        "entry_label": "정규장 종가",
+        "horizon_days": 5,
+        "prob_label": "5일내 +5% 선터치(ft_5_5) 확률",
+        "hold_note": "5거래일 보유 · 정규장마감 세션 기준 · 분산(타이트 손절 X)",
+    },
     "kospi_intraday": {
         "label": "코스피 인트라데이 매수",
         "operational_label": "모델 매수 · 일중+컨텍스트",

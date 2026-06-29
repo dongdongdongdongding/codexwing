@@ -272,11 +272,11 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_nasdaq_daily_edge_shadow.py "${NASDAQ_SWING_ARGS[@]}"
 fi
 
-if [[ "${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-1}" == "1" ]]; then
+if [[ "${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-1}}" == "1" ]]; then
   # NASDAQ regular-close session edge lane (2026-06-30): promotes the strongest recent
-  # regular_close session candidate into forward-shadow only. The rule is NOT a production
-  # capital model until multi-year 04:00-20:00 ET plus 20:00-04:00 ET overnight coverage clears
-  # the shared NASDAQ gates.
+  # regular_close session candidate into the operator-enabled new-web scan lane. It still
+  # carries sample-limit trace metadata until multi-year 04:00-20:00 ET plus 20:00-04:00 ET
+  # overnight coverage clears the shared NASDAQ gates.
   NASDAQ_SESSION_EDGE_ARGS=(
     --panel "${AG_NASDAQ_SESSION_EDGE_PANEL:-latest}"
     --market-session "${AG_NASDAQ_SESSION_EDGE_MARKET_SESSION:-${AG_PRIMARY_SESSION_ID:-manual_regular_close}}"

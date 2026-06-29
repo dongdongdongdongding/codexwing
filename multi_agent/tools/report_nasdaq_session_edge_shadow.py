@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""NASDAQ regular-close session edge shadow lane.
+"""NASDAQ regular-close session edge operational scan lane.
 
-This promotes the strongest recent NASDAQ session candidate into an operational
-shadow lane without bypassing production gates. It records regular-close picks
-from the yfinance 5m pre/post session panel, writes a forward ledger, and settles
-outcomes once 5D daily bars are available.
+This promotes the strongest recent NASDAQ session candidate into the operator-enabled
+new-web scan lane while preserving the sample-limit trace. It records regular-close
+picks from the yfinance 5m pre/post session panel, writes a forward ledger, and
+settles outcomes once 5D daily bars are available.
 """
 from __future__ import annotations
 
@@ -40,12 +40,14 @@ from multi_agent.tools.research_nasdaq_session_edge import (
     select_symbols,
 )
 
-REPORT_VERSION = "nasdaq_session_edge_shadow_v1"
+REPORT_VERSION = "nasdaq_session_edge_operational_scan_v1"
 MODEL_VERSION = "nasdaq_session_regular_close_strength_liq_trend_top1_v1"
 STRATEGY_FAMILY = "NASDAQ_SESSION_EDGE"
 SIGNAL_CLASS = "NASDAQ_SWING_SESSION_MODEL"
-DEFAULT_LEDGER = DEFAULT_OUT_DIR / "nasdaq_session_edge_shadow_ledger.jsonl"
-DEFAULT_MODEL_BUNDLE = PROJECT_ROOT / "runtime_state" / "models" / "nasdaq_session_edge" / "nasdaq_session_edge_shadow_latest.pkl"
+OPERATIONAL_STATUS = "operator_enabled_live_scan"
+SAMPLE_LIMIT_WARNING = "recent_60d_yfinance_5m_intraday_only; multi_year_overnight_provider_not_loaded"
+DEFAULT_LEDGER = DEFAULT_OUT_DIR / "nasdaq_session_edge_operational_ledger.jsonl"
+DEFAULT_MODEL_BUNDLE = PROJECT_ROOT / "runtime_state" / "models" / "nasdaq_session_edge" / "nasdaq_session_edge_operational_latest.pkl"
 DEFAULT_SOURCE_REPORT = DEFAULT_OUT_DIR / "nasdaq_session_edge_search_20260630_020945.json"
 
 SCORING_SESSIONS = {"nasdaq_regular_close", "regular_close", "manual_regular_close"}
@@ -111,7 +113,7 @@ def build_session_contract(*, market_session: str, session_cutoff: str = "") -> 
     session = str(market_session or "manual_regular_close").strip() or "manual_regular_close"
     scoring_allowed = session.lower() in SCORING_SESSIONS
     return {
-        "contract_version": "nasdaq_session_edge_shadow_contract_v1",
+        "contract_version": "nasdaq_session_edge_operational_contract_v1",
         "market_session": session,
         "session_cutoff": str(session_cutoff or "").strip(),
         "source_price_kind": "yfinance_5m_prepost",
@@ -119,6 +121,9 @@ def build_session_contract(*, market_session: str, session_cutoff: str = "") -> 
         "session_blocked": not bool(scoring_allowed),
         "block_reason": "" if scoring_allowed else "regular_close_core_edge_requires_regular_close_session",
         "data_limit": "yfinance_recent_intraday_only_04_00_20_00_et",
+        "operational_route": "new_web_scan_model_lane",
+        "capital_status": OPERATIONAL_STATUS,
+        "sample_limit_warning": SAMPLE_LIMIT_WARNING,
         "unsupported_session_warning": "20:00-04:00 ET overnight/day-market bars require a separate provider.",
     }
 
@@ -151,7 +156,7 @@ def _blocked_validation(reason: str) -> Dict[str, Any]:
     gate = evaluate_nasdaq_promotion_gate({})
     gate["gate_version"] = "nasdaq_session_recent_shadow_gate_v1"
     gate["status"] = "blocked"
-    gate["capital_status"] = "research_shadow_recent_intraday_only"
+    gate["capital_status"] = OPERATIONAL_STATUS
     gate["promotion_ready"] = False
     gate["blocking_reasons"] = [reason] + list(gate.get("blocking_reasons") or [])
     return {
@@ -239,6 +244,10 @@ def select_shadow_picks(
             ticker = str(row.get("symbol") or "").strip()
             date_key = pd.Timestamp(row.get("date")).date().isoformat()
             ledger_key = f"{candidate_id}:{date_key}:{ticker}:{mode}"
+            metrics = gate.get("metrics") if isinstance(gate.get("metrics"), dict) else {}
+            model_hit_prob = _round(
+                metrics.get("ft55", metrics.get("touch3", metrics.get("ret5_pos_rate", 0.0)))
+            )
             rows.append(
                 {
                     "ledger_key": ledger_key,
@@ -255,11 +264,15 @@ def select_shadow_picks(
                     "date": date_key,
                     "score_date": date_key,
                     "rank": rank,
+                    "p": model_hit_prob,
+                    "model_hit_prob": model_hit_prob,
+                    "model_hit_prob_source": "validation_ft55",
                     "score_col": score_col,
                     "score": _round(row.get(score_col)),
                     "entry_gate": condition_name,
                     "condition_specs": list(specs),
                     "entry_reference_price": _round(row.get("entry_price")),
+                    "day_change": _round(row.get("session_ret")),
                     "session_ret": _round(row.get("session_ret")),
                     "anchor_ret": _round(row.get("anchor_ret")),
                     "session_close_loc": _round(row.get("session_close_loc")),
@@ -277,10 +290,19 @@ def select_shadow_picks(
                     "stop_pct": 5.0,
                     "cost_pct": 0.20,
                     "status": "open",
-                    "capital_status": "research_shadow_recent_intraday_only",
+                    "capital_status": OPERATIONAL_STATUS,
+                    "operator_enabled": True,
+                    "operational_route": "new_web_scan_model_lane",
+                    "sample_limit_warning": SAMPLE_LIMIT_WARNING,
                     "promotion_ready": False,
                     "recent_shadow_ready": True,
-                    "validation_metrics": gate.get("metrics") or {},
+                    "validation_metrics": metrics,
+                    "ret5_pos_rate": _round(metrics.get("ret5_pos_rate")),
+                    "touch3_rate": _round(metrics.get("touch3")),
+                    "ft55_rate": _round(metrics.get("ft55")),
+                    "dd3_rate": _round(metrics.get("dd3")),
+                    "expected_ret5_pct": _round(metrics.get("ret5")),
+                    "expected_net_pct": _round(metrics.get("alpha5_net_cost_0_2")),
                     "validation_source_report": gate.get("source_report"),
                     "market_session": session_contract.get("market_session"),
                     "session_cutoff": session_contract.get("session_cutoff"),
@@ -404,7 +426,7 @@ def write_report(path_json: Path, path_md: Path, report: Mapping[str, Any]) -> N
     path_json.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, default=_json_default), encoding="utf-8")
     contract = report.get("session_contract") if isinstance(report.get("session_contract"), dict) else {}
     lines = [
-        "# NASDAQ Session Edge Shadow",
+        "# NASDAQ Session Edge Operational Scan Lane",
         "",
         f"- report_version: `{report.get('report_version')}`",
         f"- generated_at: `{report.get('generated_at')}`",
@@ -428,7 +450,7 @@ def write_report(path_json: Path, path_md: Path, report: Mapping[str, Any]) -> N
         metrics = validation.get("metrics") or {}
         lines.append(
             f"- `{policy.get('candidate_id')}` `{policy.get('condition')}` / `{policy.get('score_col')}` top{policy.get('topn')} "
-            f"recent_shadow `{validation.get('recent_shadow_ready')}` production `{validation.get('promotion_ready')}` "
+            f"recent_validated `{validation.get('recent_shadow_ready')}` production `{validation.get('promotion_ready')}` "
             f"ret5 `{metrics.get('ret5')}` win `{metrics.get('ret5_pos_rate')}` net `{metrics.get('alpha5_net_cost_0_2')}` "
             f"touch `{metrics.get('touch3')}` ft `{metrics.get('ft55')}` dd `{metrics.get('dd3')}`"
         )
@@ -501,7 +523,9 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         "policies": list(POLICIES),
         "validation": validation,
         "session_contract": contract,
-        "capital_status": "research_shadow_recent_intraday_only",
+        "capital_status": OPERATIONAL_STATUS,
+        "operational_route": "new_web_scan_model_lane",
+        "sample_limit_warning": SAMPLE_LIMIT_WARNING,
     }
     if not args.no_model_bundle and not args.dry_run:
         model_bundle_path = save_model_bundle(Path(args.model_bundle), bundle)
@@ -512,7 +536,7 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         "model_version": MODEL_VERSION,
         "strategy_family": STRATEGY_FAMILY,
         "signal_class": SIGNAL_CLASS,
-        "mode": "research_shadow_forward_ledger",
+        "mode": "operator_enabled_new_web_scan_forward_ledger",
         "session_contract": contract,
         "market_session": contract.get("market_session"),
         "session_blocked": bool(contract.get("session_blocked")),
@@ -529,24 +553,26 @@ def run_model(args: argparse.Namespace) -> Dict[str, Any]:
         "ledger_settled": settled_count,
         "ledger_summary": summarize_ledger(ledger_rows),
         "model_bundle_path": model_bundle_path,
-        "capital_status": "research_shadow_recent_intraday_only",
+        "capital_status": OPERATIONAL_STATUS,
+        "operational_route": "new_web_scan_model_lane",
+        "sample_limit_warning": SAMPLE_LIMIT_WARNING,
         "promotion_ready": False,
         "promotion_note": (
-            "This NASDAQ regular-close session edge is operational shadow only. Production/capital promotion "
-            "requires multi-year session data, overnight coverage, and shared NASDAQ promotion gates."
+            "Operator-enabled for the new-web NASDAQ/SWING scan lane. Position sizing remains conservative because "
+            "the validation sample is recent 5m intraday only; multi-year/overnight provider expansion is still traced."
         ),
     }
     if not args.dry_run:
         write_report(
-            out_dir / "nasdaq_session_edge_shadow_latest.json",
-            out_dir / "nasdaq_session_edge_shadow_latest.md",
+            out_dir / "nasdaq_session_edge_operational_latest.json",
+            out_dir / "nasdaq_session_edge_operational_latest.md",
             report,
         )
     return report
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run NASDAQ regular-close session edge shadow lane.")
+    parser = argparse.ArgumentParser(description="Run NASDAQ regular-close session edge operational scan lane.")
     parser.add_argument("--panel", default=os.getenv("AG_NASDAQ_SESSION_EDGE_PANEL", "latest"))
     parser.add_argument("--raw-dir", default=os.getenv("AG_NASDAQ_SESSION_EDGE_RAW_DIR", str(DEFAULT_RAW_OHLCV_DIR)))
     parser.add_argument("--cache-dir", default=os.getenv("AG_NASDAQ_SESSION_EDGE_CACHE_DIR", str(DEFAULT_CACHE_DIR)))

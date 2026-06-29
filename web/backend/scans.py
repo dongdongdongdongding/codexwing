@@ -48,6 +48,8 @@ def _lane_label(bucket, mode, run_id):
     b = str(bucket or "")
     if "swing_ensemble" in b or run_id.startswith("SWING-ENS"):
         return "스윙(앙상블)"
+    if "nasdaq_session_edge" in b or run_id.startswith("NASDAQ-SESSION-EDGE"):
+        return "나스닥 세션"
     if "kospi_intraday" in b or run_id.startswith("KOSPI-ITD"):
         return "코스피 장중"
     if "kosdaq_intraday" in b or run_id.startswith("KQ-ITD"):

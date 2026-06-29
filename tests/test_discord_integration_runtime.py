@@ -455,16 +455,16 @@ def test_scan_ack_refuses_execution_while_dry_run():
     assert "막혀" in embed["description"]
 
 
-def test_scan_ack_names_nasdaq_swing_daily_edge_model():
+def test_scan_ack_names_nasdaq_session_edge_model():
     config = DiscordIntegrationConfig(dry_run=True, enable_scan_execution=True)
     embed = build_scan_ack_embed(config, market="NASDAQ")
 
-    assert "NASDAQ SWING research shadow (promotion blocked)" in embed["description"]
-    assert "promotion gate 통과 전까지 research-shadow 전용" in embed["description"]
-    assert any(field["name"] == "모델" and field["value"] == "NASDAQ SWING research shadow (promotion blocked)" for field in embed["fields"])
-    assert any(field["name"] == "Source" and field["value"] == "daily_eod_close" for field in embed["fields"])
+    assert "NASDAQ regular-close session edge" in embed["description"]
+    assert "research-shadow" not in embed["description"]
+    assert any(field["name"] == "모델" and field["value"] == "NASDAQ regular-close session edge" for field in embed["fields"])
+    assert any(field["name"] == "Source" and field["value"] == "yfinance_5m_prepost" for field in embed["fields"])
     assert any(field["name"] == "Session" and "nasdaq_regular_close" in field["value"] for field in embed["fields"])
-    assert any(field["name"] == "Finality" and "win+return gate required" in field["value"] for field in embed["fields"])
+    assert any(field["name"] == "Finality" and "operator-enabled live scan" in field["value"] for field in embed["fields"])
 
 
 def test_scan_executor_command_defaults_to_kis_operational_prefilter(monkeypatch, tmp_path):

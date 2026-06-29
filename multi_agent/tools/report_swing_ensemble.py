@@ -208,6 +208,9 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
         db.upsert_scan_result(payload); n += 1
     _hnote = f"{_hd}거래일 종가 보유 · 분산(타이트 손절 X)"
     _plabel = "3일내 +5% 터치 확률" if _hd == 3 else "5일내 +5% 선터치(ft_5_5) 확률"
+    if bucket == "nasdaq_session_edge":
+        _hnote = "5거래일 보유 · 나스닥 정규장마감 세션 기준 · 분산(타이트 손절 X)"
+        _plabel = "5일내 +5% 선터치(ft_5_5) 확률"
     # direct deep rows (preserve bucket + both markets, production Top5 section)
     deep_rows = []
     for i, p in enumerate(ordered, start=1):
@@ -222,7 +225,7 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
         thesis = (f"{_plabel} {prob_pct:.0f}% (모델 상위픽). 진입=종가 {entry}, 목표 +5% {target}, {_hnote}."
                   + (" · " + " · ".join(guard_bits) if guard_bits else ""))
         row = {"report_id": f"{run_id}-{p['ticker']}", "report_version": 1,
-               "ticker": p["ticker"], "stock_name": p["ticker"], "market": p["market"], "run_id": run_id,
+               "ticker": p["ticker"], "stock_name": p.get("stock_name") or p["ticker"], "market": p["market"], "run_id": run_id,
                "scan_mode": _scan_mode, "rank": i, "decision": decision, "decision_bucket": bucket,
                "signal_label": decision, "analysis_section": "Top5", "analysis_section_rank": i,
                "buy_score": p["p"], "generated_at": recommended_at,
@@ -230,10 +233,19 @@ def _route_live(picks: List[Dict[str, Any]], run_id: str, recommended_at: str,
                "trade_plan": {"entry_reference_price": entry, "target_price": target, "target_tp_pct": 5.0,
                               "stop_price": None, "hold_days": _hd, "hold_note": _hnote},
                "realized_expectancy_admission": {f"{_hd}d_prob": round(float(p["p"]), 4)},
+               "prediction": {"phase25_prob": prob_pct, "expected_edge_score": round(float(p.get("score") or p["p"]), 4)},
                "price": {"last": entry, "day_change_pct": p.get("day_change")},
                "day_change_pct": p.get("day_change"),
                "selection_thesis": thesis,
-               "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": i}}
+               "selection_alignment": {"analysis_section": "Top5", "analysis_section_rank": i},
+               "model_lane_trace": {
+                   "candidate_id": p.get("candidate_id"),
+                   "model_version": p.get("model_version"),
+                   "score_date": p.get("score_date"),
+                   "market_session": p.get("market_session"),
+                   "sample_limit_warning": p.get("sample_limit_warning"),
+                   "validation_metrics": p.get("validation_metrics"),
+               }}
         row["candidate_interpretation"] = build_candidate_interpretation(row)
         deep_rows.append(row)
     try:

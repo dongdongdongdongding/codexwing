@@ -372,17 +372,16 @@ def main() -> int:
                         "description": f"신호를 생성하지 못했습니다: {res['error']}",
                         "color": 0xF1C40F,
                     }]
-                elif str(res.get("bucket") or "") == "nasdaq_swing_daily_edge":
+                elif str(res.get("bucket") or "") == "nasdaq_session_edge":
                     session = res.get("session_contract") if isinstance(res.get("session_contract"), dict) else {}
                     fields = [
                         {
                             "name": "세션",
                             "value": (
-                                f"{session.get('market_session') or res.get('market_session') or 'manual_eod_latest'} | "
+                                f"{session.get('market_session') or res.get('market_session') or 'nasdaq_regular_close'} | "
                                 f"{session.get('session_cutoff') or res.get('session_cutoff') or '-'} | "
-                                f"{session.get('source_price_kind') or res.get('source_price_kind') or 'daily_eod_close'} | "
-                                f"{session.get('freshness_status') or res.get('freshness_status') or '-'} | "
-                                f"{session.get('finality_status') or res.get('finality_status') or '-'}"
+                                f"{session.get('source_price_kind') or res.get('source_price_kind') or 'yfinance_5m_prepost'} | "
+                                f"{session.get('sample_limit_warning') or res.get('sample_limit_warning') or '-'}"
                             ),
                             "inline": False,
                         }
@@ -395,30 +394,30 @@ def main() -> int:
                         })
                     gate = res.get("promotion_gate") if isinstance(res.get("promotion_gate"), dict) else {}
                     fields.append({
-                        "name": "승격 게이트",
+                        "name": "운영 상태",
                         "value": (
-                            f"promotion_ready={bool(res.get('promotion_ready'))} | "
                             f"capital_status={res.get('capital_status') or gate.get('capital_status') or '-'} | "
-                            f"reasons={', '.join(str(reason) for reason in (gate.get('blocking_reasons') or [])[:5]) or '-'}"
+                            f"routed={res.get('routed', 0)} | "
+                            f"trace={res.get('promotion_note') or res.get('note') or '-'}"
                         )[:1000],
                         "inline": False,
                     })
                     for idx, pick in enumerate(list(res.get("picks") or [])[:10], start=1):
-                        prob = pick.get("pred_alpha5_net_pos", pick.get("p"))
+                        prob = pick.get("model_hit_prob", pick.get("p"))
                         fields.append({
                             "name": f"{idx}. {pick.get('ticker')}",
                             "value": (
-                                f"lane={pick.get('lane')} | p(alpha5_net>0)={float(prob or 0.0) * 100:.1f}% | "
+                                f"lane={pick.get('lane')} | p(ft_5_5)={float(prob or 0.0) * 100:.1f}% | "
                                 f"score={float(pick.get('score') or 0.0):.4f} | "
                                 f"liq20=${float(pick.get('liq20') or 0.0):,.0f}"
                             ),
                             "inline": False,
                         })
                     payloads = [{
-                        "title": "NASDAQ SWING research shadow",
+                        "title": "NASDAQ SWING operational model lane",
                         "description": (
-                            "종가 진입 / 5D alpha5 유동성매칭 초과수익 forward-shadow 추적. "
-                            "승률·수익률 promotion gate 통과 전까지 실자본/실사용 아님."
+                            "정규장마감 세션 진입 / 5D +5% 선터치 모델. "
+                            "신웹 스캔 lane에 저장되며 최근 intraday 샘플 한계는 추적 필드에 남깁니다."
                         ),
                         "color": 0x3498DB,
                         "fields": fields

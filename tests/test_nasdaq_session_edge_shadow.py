@@ -107,7 +107,10 @@ def test_select_shadow_picks_uses_validated_regular_close_core_candidate():
     assert picks[0]["candidate_id"] == "nasdaq_session_regular_close_strength_liq_trend_top1_v1"
     assert picks[0]["ticker"] == "SYM4"
     assert picks[0]["status"] == "open"
-    assert picks[0]["capital_status"] == "research_shadow_recent_intraday_only"
+    assert picks[0]["capital_status"] == "operator_enabled_live_scan"
+    assert picks[0]["operational_route"] == "new_web_scan_model_lane"
+    assert picks[0]["p"] == 0.74
+    assert picks[0]["model_hit_prob_source"] == "validation_ft55"
 
 
 def test_settle_ledger_rows_resolves_session_shadow_pick():

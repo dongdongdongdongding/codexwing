@@ -5,7 +5,7 @@ The data pipeline (KIS / FDR / px_long / KIS minute bars) is unchanged; only the
 MODEL is swapped from the legacy admission scanner to the validated model lane:
 
     (KOSPI|KOSDAQ, SWING)   -> report_swing_ensemble.score_market   -> swing_ensemble
-    (NASDAQ,       SWING)   -> report_nasdaq_daily_edge_shadow.run_model -> nasdaq_swing_daily_edge
+    (NASDAQ,       SWING)   -> report_nasdaq_session_edge_shadow.run_model -> nasdaq_session_edge
     (KOSPI,        INTRADAY) -> report_kospi_intraday_swing.score_today -> kospi_intraday
     (KOSDAQ,       INTRADAY) -> report_kosdaq_intraday_vwap_guard.score_live_candidates
                                                               -> kosdaq_intraday_3d_t5_vwap_guard
@@ -73,7 +73,7 @@ KOSDAQ_INTRADAY_TRADEABILITY_LIQ = 100.0
 LANE_BY_MODE = {
     ("KOSPI", "SWING"): "swing_ensemble",
     ("KOSDAQ", "SWING"): "swing_ensemble",
-    ("NASDAQ", "SWING"): "nasdaq_swing_daily_edge",
+    ("NASDAQ", "SWING"): "nasdaq_session_edge",
     ("KOSPI", "INTRADAY"): "kospi_intraday",
     ("KOSDAQ", "INTRADAY"): "kosdaq_intraday_3d_t5_vwap_guard",
 }
@@ -149,61 +149,70 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
     try:
         if market == "NASDAQ" and mode == "SWING":
             import argparse
-            import report_nasdaq_daily_edge_shadow as nas
+            import report_nasdaq_session_edge_shadow as nas
+            from report_swing_ensemble import _route_live
             args = argparse.Namespace(
-                panel=os.getenv("AG_NASDAQ_SWING_PANEL", "latest"),
+                panel=os.getenv("AG_NASDAQ_SESSION_EDGE_PANEL", "latest"),
+                raw_dir=os.getenv("AG_NASDAQ_SESSION_EDGE_RAW_DIR", str(nas.DEFAULT_RAW_OHLCV_DIR)),
+                cache_dir=os.getenv("AG_NASDAQ_SESSION_EDGE_CACHE_DIR", str(nas.DEFAULT_CACHE_DIR)),
                 out_dir=str(nas.DEFAULT_OUT_DIR),
                 ledger=str(nas.DEFAULT_LEDGER),
                 model_bundle=str(nas.DEFAULT_MODEL_BUNDLE),
+                source_report=os.getenv("AG_NASDAQ_SESSION_EDGE_SOURCE_REPORT", ""),
                 market_session=os.getenv(
-                    "AG_NASDAQ_SWING_MARKET_SESSION",
-                    os.getenv("AG_PRIMARY_SESSION_ID", "manual_eod_latest"),
+                    "AG_NASDAQ_SESSION_EDGE_MARKET_SESSION",
+                    os.getenv("AG_PRIMARY_SESSION_ID", "nasdaq_regular_close"),
                 ),
                 session_cutoff=os.getenv(
-                    "AG_NASDAQ_SWING_SESSION_CUTOFF",
-                    os.getenv("AG_PRIMARY_SESSION_CUTOFF", ""),
+                    "AG_NASDAQ_SESSION_EDGE_SESSION_CUTOFF",
+                    os.getenv("AG_PRIMARY_SESSION_CUTOFF", "16:05 America/New_York"),
                 ),
-                source_price_kind=os.getenv("AG_NASDAQ_SWING_SOURCE_PRICE_KIND", "daily_eod_close"),
-                allow_non_final_session=os.getenv(
-                    "AG_NASDAQ_SWING_ALLOW_NON_FINAL_SESSION", "0"
-                ).strip() in {"1", "true", "True"},
-                score_date="",
-                min_price=1.0,
-                research_liq_floor=10_000_000.0,
-                cost_pct=0.20,
-                embargo_days=20,
-                min_train_rows=int(os.getenv("AG_NASDAQ_SWING_MIN_TRAIN_ROWS", "100000")),
-                max_train_rows=int(os.getenv("AG_NASDAQ_SWING_MAX_TRAIN_ROWS", "160000")),
-                lgbm_estimators=int(os.getenv("AG_NASDAQ_SWING_LGBM_ESTIMATORS", "110")),
-                seed=20260629,
+                max_symbols=int(os.getenv("AG_NASDAQ_SESSION_EDGE_MAX_SYMBOLS", "120")),
+                min_liq20=float(os.getenv("AG_NASDAQ_SESSION_EDGE_MIN_LIQ20", "100000000")),
+                period=os.getenv("AG_NASDAQ_SESSION_EDGE_PERIOD", "60d"),
+                interval=os.getenv("AG_NASDAQ_SESSION_EDGE_INTERVAL", "5m"),
+                timeout=int(os.getenv("AG_NASDAQ_SESSION_EDGE_TIMEOUT", "20")),
+                refresh_cache=os.getenv("AG_NASDAQ_SESSION_EDGE_REFRESH_CACHE", "0").strip() in {"1", "true", "True"},
+                no_fetch=os.getenv("AG_NASDAQ_SESSION_EDGE_NO_FETCH", "0").strip() in {"1", "true", "True"},
                 settle_only=False,
+                settle_blocked_session=False,
                 no_ledger=not bool(route),
-                no_model_bundle=os.getenv("AG_NASDAQ_SWING_NO_MODEL_BUNDLE", "0").strip() in {"1", "true", "True"},
+                no_model_bundle=os.getenv("AG_NASDAQ_SESSION_EDGE_NO_MODEL_BUNDLE", "0").strip() in {"1", "true", "True"},
                 dry_run=False,
             )
             report = nas.run_model(args)
             picks = list(report.get("picks") or [])
-            run_id = f"NASDAQ-SWING-EDGE-{str(report.get('score_date') or today).replace('-', '')}"
+            score_key = str(report.get("score_date") or today).replace("-", "")
+            run_id = f"NASDAQ-SESSION-EDGE-{score_key}"
             note = (
-                "NASDAQ SWING research-shadow only; promotion is blocked until both win-rate "
-                "and return gates pass. No live recommendation routing."
+                "NASDAQ regular-close session edge is operator-enabled for the new-web scan lane; "
+                "recent-intraday sample limits and regime validation are traced in the report."
             )
             if report.get("session_blocked"):
                 note = (
-                    f"NASDAQ SWING EOD model blocked for session `{report.get('market_session')}`: "
-                    f"{report.get('session_block_reason')}. Existing ledger settlement only."
+                    f"NASDAQ session edge blocked for session `{report.get('market_session')}`: "
+                    f"{report.get('session_block_reason')}. No live route written."
+                )
+            routed = 0
+            if route and picks and not report.get("session_blocked"):
+                routed = _route_live(
+                    picks,
+                    run_id,
+                    rec,
+                    bucket="nasdaq_session_edge",
+                    decision="NASDAQ_SESSION_EDGE_BUY",
+                    lane="NASDAQ_SESSION_EDGE",
                 )
             out.update(
                 run_id=run_id,
                 picks=picks,
-                routed=0,
+                routed=routed,
                 note=note,
                 session_contract=report.get("session_contract") or {},
                 market_session=report.get("market_session"),
-                session_cutoff=report.get("session_cutoff"),
-                source_price_kind=report.get("source_price_kind"),
-                freshness_status=report.get("freshness_status"),
-                finality_status=report.get("finality_status"),
+                session_cutoff=(report.get("session_contract") or {}).get("session_cutoff"),
+                source_price_kind=(report.get("session_contract") or {}).get("source_price_kind"),
+                sample_limit_warning=(report.get("session_contract") or {}).get("sample_limit_warning") or report.get("sample_limit_warning"),
                 session_blocked=bool(report.get("session_blocked")),
                 session_block_reason=report.get("session_block_reason") or "",
                 promotion_ready=bool(report.get("promotion_ready")),
