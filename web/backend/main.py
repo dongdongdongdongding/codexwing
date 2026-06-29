@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from web.backend import services as S
 from web.backend import jobs
+from web.backend import scans as SC
 
 app = FastAPI(title="SWING 신웹 API", version="0.1")
 app.add_middleware(
@@ -74,6 +75,21 @@ def market():
 @app.get("/api/theme")
 def theme():
     return S.theme()
+
+
+@app.get("/api/scans")
+def scans(limit: int = 40, source: str = "", market: str = ""):
+    return SC.list_scans(limit=limit, source=source or None, market=market or None)
+
+
+@app.get("/api/scans/{scan_id}")
+def scan_detail(scan_id: str):
+    return SC.scan_detail(scan_id)
+
+
+@app.get("/api/scans/{scan_id}/analyze/{ticker}")
+def scan_analyze(scan_id: str, ticker: str):
+    return SC.scan_analyze(scan_id, ticker)
 
 
 @app.get("/api/ops/status")

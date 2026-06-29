@@ -51,6 +51,11 @@ def _run(market_filter: str = ""):
                     ok, note = False, str(res.get("error"))[:80]
                 else:
                     note = f"{len(res.get('picks', []))}픽"
+                    try:   # 수동(웹) 스캔 소스 기록 → 스캔피드 게시물에 'manual' 표시
+                        from web.backend.scans import record_source
+                        record_source(res.get("run_id"), "manual")
+                    except Exception:
+                        pass
         except Exception as e:
             ok, note = False, f"{type(e).__name__}: {str(e)[:80]}"
         done.append({"step": label, "ok": ok, "note": note})

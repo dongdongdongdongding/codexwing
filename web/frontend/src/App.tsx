@@ -3,7 +3,7 @@ import { api, Freshness } from "./api";
 import { C } from "./theme";
 import { Overview } from "./pages/Overview";
 import { Picks } from "./pages/Picks";
-import { Analyze } from "./pages/Analyze";
+import { ScanFeed } from "./pages/ScanFeed";
 import { Performance } from "./pages/Performance";
 import { Ops } from "./pages/Ops";
 import { Market } from "./pages/Market";
@@ -13,7 +13,7 @@ import { Theme } from "./pages/Theme";
 const NAV = [
   { key: "overview", label: "개요", icon: "◆" },
   { key: "picks", label: "픽", icon: "◎" },
-  { key: "analyze", label: "정밀분석", icon: "🔎" },
+  { key: "analyze", label: "스캔·정밀분석", icon: "🔎" },
   { key: "performance", label: "성과", icon: "📈" },
   { key: "market", label: "시장·근거", icon: "🌐" },
   { key: "theme", label: "테마 네트워크", icon: "🕸" },
@@ -68,7 +68,7 @@ export default function App() {
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 18px" }}>{NAV.find((n) => n.key === tab)?.label}</h1>
           {tab === "overview" && <Overview />}
           {tab === "picks" && <Picks />}
-          {tab === "analyze" && <Analyze />}
+          {tab === "analyze" && <ScanFeed />}
           {tab === "performance" && <Performance />}
           {tab === "ops" && <Ops />}
           {tab === "market" && <Market />}

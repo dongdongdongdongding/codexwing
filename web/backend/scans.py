@@ -1,0 +1,164 @@
+"""스캔 피드 (게시물 모델) — 스캔=기본단위(run_id), 자동+수동+디스코드 누적.
+게시물 목록 → 티커카드 → 정밀분석 패널. 정밀분석은 로컬 JSON 캐시(누적), Gemini lazy-once.
+
+결정(07 기획): 1b(Gemini 클릭시1회+캐시) 2a(로컬JSON) 3a(스캔피드) 4b(피처=스냅샷·차트=라이브).
+소스: runtime_state/scan_sources.json (manual/discord 기록) + 기본 auto. run_id 접두사로 레인 추론.
+"""
+from __future__ import annotations
+import os, json, time, threading
+from web.backend import services as S
+
+REPO = S.REPO
+CACHE_DIR = os.path.join(REPO, "runtime_state", "precision_cache")
+SOURCES_PATH = os.path.join(REPO, "runtime_state", "scan_sources.json")
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+_LIST_CACHE = {"ts": 0.0, "data": None}
+
+
+def record_source(run_id, source):
+    """스캔 소스 기록(manual/discord/auto). 트리거가 호출."""
+    if not run_id:
+        return
+    try:
+        m = json.load(open(SOURCES_PATH)) if os.path.exists(SOURCES_PATH) else {}
+    except Exception:
+        m = {}
+    m[str(run_id)] = source
+    try:
+        json.dump(m, open(SOURCES_PATH, "w"), ensure_ascii=False)
+    except Exception:
+        pass
+
+
+def _sources():
+    try:
+        return json.load(open(SOURCES_PATH)) if os.path.exists(SOURCES_PATH) else {}
+    except Exception:
+        return {}
+
+
+def _infer_source(run_id, override):
+    if run_id in override:
+        return override[run_id]
+    return "auto"  # 스케줄/일일ops 기본
+
+
+def _lane_label(bucket, mode, run_id):
+    b = str(bucket or "")
+    if "swing_ensemble" in b or run_id.startswith("SWING-ENS"):
+        return "스윙(앙상블)"
+    if "kospi_intraday" in b or run_id.startswith("KOSPI-ITD"):
+        return "코스피 장중"
+    if "kosdaq_intraday" in b or run_id.startswith("KQ-ITD"):
+        return "코스닥 장중"
+    return str(mode or bucket or "스캔")
+
+
+def list_scans(limit=40, source=None, market=None):
+    """게시물 목록 — scan_deep_reports run_id 그룹 + B 스캔. 5분 캐시."""
+    if time.time() - _LIST_CACHE["ts"] < 300 and _LIST_CACHE["data"] is not None:
+        posts = _LIST_CACHE["data"]
+    else:
+        posts = _build_list()
+        _LIST_CACHE.update(ts=time.time(), data=posts)
+    out = posts
+    if source:
+        out = [p for p in out if p["source"] == source]
+    if market:
+        out = [p for p in out if market.upper() in p["markets"]]
+    return {"count": len(out), "scans": out[:limit]}
+
+
+def _build_list():
+    posts = {}
+    override = _sources()
+    db = S._db()
+    if db is not None:
+        try:
+            q = (db.client.table("scan_deep_reports")
+                 .select("run_id,market,decision_bucket,scan_mode,generated_at")
+                 .order("generated_at", desc=True).limit(800).execute())
+            for r in (q.data or []):
+                rid = r.get("run_id")
+                if not rid:
+                    continue
+                p = posts.setdefault(rid, {"scan_id": rid, "time": str(r.get("generated_at")),
+                                           "markets": set(), "lanes": set(), "pick_count": 0})
+                p["markets"].add(str(r.get("market") or ""))
+                p["lanes"].add(_lane_label(r.get("decision_bucket"), r.get("scan_mode"), rid))
+                p["pick_count"] += 1
+                if str(r.get("generated_at")) > p["time"]:
+                    p["time"] = str(r.get("generated_at"))
+        except Exception:
+            pass
+    res = []
+    for rid, p in posts.items():
+        res.append({"scan_id": rid, "time": p["time"][:19].replace("T", " "),
+                    "source": _infer_source(rid, override), "markets": sorted(m for m in p["markets"] if m),
+                    "lanes": sorted(p["lanes"]), "pick_count": p["pick_count"]})
+    # B 스캔(b_picks_latest)을 게시물 1건으로
+    try:
+        bp = json.load(open(os.path.join(REPO, "b_engine/data/b_picks_latest.json")))
+        res.append({"scan_id": f"B-{bp.get('scan_date')}", "time": bp.get("scan_date"),
+                    "source": "auto", "markets": ["B시장중립"], "lanes": ["B 시장중립"],
+                    "pick_count": len(bp.get("picks", []))})
+    except Exception:
+        pass
+    res.sort(key=lambda x: x["time"] or "", reverse=True)
+    return res
+
+
+def scan_detail(scan_id):
+    """게시물의 티커카드 — 해당 run_id 픽들(스캔시점 점수/진입)."""
+    if scan_id.startswith("B-"):
+        bp = json.load(open(os.path.join(REPO, "b_engine/data/b_picks_latest.json")))
+        cards = [{"ticker": p["code"], "code": p["code"], "name": p.get("name"), "market": "NASDAQ" if False else "",
+                  "lane": "B 시장중립", "prob": p.get("prob_win"), "score": p.get("pred_alpha_5d"),
+                  "entry": p.get("close")} for p in bp.get("picks", [])]
+        return {"scan_id": scan_id, "time": bp.get("scan_date"), "cards": cards}
+    db = S._db()
+    cards = []
+    time_s = ""
+    if db is not None:
+        try:
+            import json as _j
+            q = (db.client.table("scan_deep_reports")
+                 .select("ticker,stock_name,market,decision_bucket,scan_mode,prediction,candidate_interpretation,generated_at")
+                 .eq("run_id", scan_id).order("generated_at", desc=True).limit(60).execute())
+            for r in (q.data or []):
+                time_s = str(r.get("generated_at"))[:19].replace("T", " ")
+                ci = r.get("candidate_interpretation") or {}; pred = r.get("prediction") or {}
+                if isinstance(ci, str): ci = _j.loads(ci) if ci else {}
+                if isinstance(pred, str): pred = _j.loads(pred) if pred else {}
+                code = str(r.get("ticker", "")).split(".")[0]
+                cards.append({"ticker": r.get("ticker"), "code": code if not code.isdigit() else code.zfill(6),
+                              "name": r.get("stock_name") or S.resolve_name(code, default=code),
+                              "market": str(r.get("market") or ""), "lane": _lane_label(r.get("decision_bucket"), r.get("scan_mode"), scan_id),
+                              "prob": pred.get("phase25_prob"), "score": pred.get("expected_edge_score"),
+                              "entry": ci.get("entry_reference_price")})
+        except Exception:
+            pass
+    return {"scan_id": scan_id, "time": time_s, "cards": cards}
+
+
+def scan_analyze(scan_id, ticker):
+    """정밀분석 패널 — (scan_id,ticker) 로컬캐시. 미스시 생성(스캔컨텍스트 + services.analyze + Gemini) 후 저장."""
+    code = str(ticker).split(".")[0]
+    code = code.zfill(6) if code.isdigit() else code
+    d = os.path.join(CACHE_DIR, scan_id.replace("/", "_"))
+    os.makedirs(d, exist_ok=True)
+    fp = os.path.join(d, f"{code}.json")
+    if os.path.exists(fp):
+        try:
+            return json.load(open(fp))
+        except Exception:
+            pass
+    base = S.analyze(code)            # 현 데이터 기반 7블록(모델멤버십·차트가능·수급·이벤트·레짐·Gemini)
+    base["scan_id"] = scan_id
+    base["cached_at"] = time.strftime("%Y-%m-%d %H:%M")
+    try:
+        json.dump(base, open(fp, "w"), ensure_ascii=False)
+    except Exception:
+        pass
+    return base
