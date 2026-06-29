@@ -48,6 +48,7 @@ export function Picks() {
               <Th><Term k="진입">진입</Term></Th>
               <Th><Term k="목표">목표</Term></Th>
               <Th><Term k="확률">확률</Term></Th>
+              <Th><Term k="알파">알파</Term></Th>
               <Th style={{ textAlign: "left" }}>신호</Th>
             </tr>
           </thead>
@@ -73,6 +74,7 @@ export function Picks() {
                   <Td>{fmt(p.entry)}</Td>
                   <Td style={{ color: C.mut }}>{p.signal_class === "B" ? "α기준" : fmt(p.target)}</Td>
                   <Td>{p.prob != null ? `${p.prob}%` : "–"}</Td>
+                  <Td style={{ color: signColor(p.alpha) }}>{p.alpha != null ? pct(p.alpha) : "–"}</Td>
                   <Td style={{ textAlign: "left" }}><LaneBadge kind={p.kind} badge={p.badge} label={p.lane_label} /></Td>
                 </tr>
               );
@@ -80,8 +82,10 @@ export function Picks() {
           </tbody>
         </table>
       )}
-      <div style={{ color: C.mut, fontSize: 12, marginTop: 10 }}>
-        픽은 저장된 스캔과 동일(재계산 아님). 실시간 시세 15초 자동갱신(장외=종가). 절대수익엔 시장 베타 포함 — 성과는 <Term k="알파">알파</Term> 기준으로 보세요.
+      <div style={{ color: C.mut, fontSize: 12, marginTop: 10, lineHeight: 1.7 }}>
+        🗓 <b style={{ color: C.text }}>픽 = 다음 거래일 매수 대상</b> (스캔은 장마감 후 <Term k="진입">종가</Term> 기준 산출 → 그 다음 거래일 진입). 행의 매수일은 상세에서 확인.<br />
+        확률 = A 모델 적중확률 · <Term k="시장중립">B</Term>는 시장대비 초과 확률(보정). 알파 = B 예측 초과수익(A는 확률형이라 –).<br />
+        픽은 저장된 스캔과 동일(재계산 아님). 실시간 시세 15초 자동갱신(장외=종가). 순서는 개요와 동일(확률순).
       </div>
 
       {sel && <Drawer pick={sel} live={prices[sel.code]} onClose={() => setSel(null)} />}
@@ -111,7 +115,8 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
         <div style={{ margin: "16px 0" }}><Chart code={pick.code} /></div>
 
         <Section title="매매 계획">
-          <Row k="진입" v={fmt(pick.entry)} />
+          <Row k="매수 대상일" v={pick.buy_date ? `${pick.buy_date} (다음 거래일)` : "다음 거래일"} />
+          <Row k={`진입 (${pick.scan_date || ""} 종가)`} v={fmt(pick.entry)} />
           <Row k="목표(+5%)" v={pick.signal_class === "B" ? "α기준(시장중립)" : fmt(pick.target)} />
           <Row k="보유" v={pick.signal_class === "B" ? `${pick.hold_days ?? 5}거래일` : (pick.kind === "INTRADAY" ? "3거래일" : "5거래일")} />
           <Row k="적중확률" v={pick.prob != null ? `${pick.prob}%` : "–"} />

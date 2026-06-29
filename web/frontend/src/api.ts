@@ -2,8 +2,8 @@
 export interface Pick {
   code: string; ticker: string; name: string; market: string;
   lane: string; lane_label: string; kind: string; badge: string;
-  signal_class: "A" | "B"; scan_date?: string;
-  prob?: number | null; entry?: number | null; target?: number | null; target_pct?: number;
+  signal_class: "A" | "B"; scan_date?: string; buy_date?: string;
+  prob?: number | null; alpha?: number | null; entry?: number | null; target?: number | null; target_pct?: number;
   pred_alpha_5d?: number; smart5?: number; rsi14?: number; hold_days?: number;
 }
 export interface Lane { key: string; label: string; kind: string; badge: string; }

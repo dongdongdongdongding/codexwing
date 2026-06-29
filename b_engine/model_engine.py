@@ -101,9 +101,19 @@ def train():
     train_df = px[(px["date"] > start) & (px["date"] <= last)]
     models = _fit_ensemble(train_df)
     joblib.dump(models, MODEL_PATH)
+    # 확률 보정: pred_alpha → P(시장대비 초과, a5>0) 로지스틱. B픽에 '확률' 표시용.
+    calib = {"a": 0.0, "b": 0.0}
+    try:
+        from sklearn.linear_model import LogisticRegression
+        pred_tr = _predict(models, train_df)
+        y = (train_df["a5"].values > 0).astype(int)
+        lr = LogisticRegression().fit(pred_tr.reshape(-1, 1), y)
+        calib = {"a": float(lr.coef_[0][0]), "b": float(lr.intercept_[0])}
+    except Exception:
+        pass
     meta = {"signal_class": "B", "engine": "market_neutral_adaptive_ensemble_v2",
             "features": ALLF, "hold_days": HOLD, "top_n": TOP_N, "universe_n": UNIVERSE_N,
-            "train_months": TRAIN_MONTHS, "n_seeds": N_SEEDS,
+            "train_months": TRAIN_MONTHS, "n_seeds": N_SEEDS, "prob_calib": calib,
             "trained_through": str(last.date()), "train_rows": int(len(train_df))}
     with open(META_PATH, "w") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
@@ -125,6 +135,19 @@ def pick(as_of=None):
     s["pred_alpha"] = _predict(models, s)
     s = s.sort_values("pred_alpha", ascending=False)
     top = s.head(TOP_N)
+    # 확률(보정): 시장대비 초과 가능성. meta의 로지스틱 계수 사용.
+    calib = {"a": 0.0, "b": 0.0}
+    try:
+        with open(META_PATH) as f:
+            calib = json.load(f).get("prob_calib", calib)
+    except Exception:
+        pass
+    import math
+    def _prob(pa):
+        try:
+            return round(1.0 / (1.0 + math.exp(-(calib["a"] * float(pa) + calib["b"]))) * 100, 1)
+        except Exception:
+            return None
     names = {}
     if os.path.exists(NAMES):
         try:
@@ -137,6 +160,7 @@ def pick(as_of=None):
         picks.append({
             "code": r["code"], "name": names.get(r["code"], r["code"]), "signal_class": "B",
             "pred_alpha_5d": round(float(r["pred_alpha"]), 3),
+            "prob_win": _prob(r["pred_alpha"]),   # 시장대비 초과 확률(보정)
             "close": round(float(r["close"]), 2),
             "ret_20d": round(float(r["ret_20d"]), 2) if pd.notna(r["ret_20d"]) else None,
             "smart5": round(float(r["smart5"]), 2) if pd.notna(r["smart5"]) else None,

@@ -73,7 +73,19 @@ def _read_ledger(fn):
     return out
 
 
-def _pick_row(code, market, lane_key, *, entry=None, prob=None, name=None, scan_date=None, source="A", extra=None):
+def _next_trading_day(scan_date):
+    """스캔일(마감 후 산출) → 매수 대상일 = 다음 영업일(주말 skip; 공휴일 미반영 근사)."""
+    try:
+        import pandas as pd
+        d = pd.Timestamp(scan_date) + pd.Timedelta(days=1)
+        while d.weekday() >= 5:  # 토/일
+            d += pd.Timedelta(days=1)
+        return str(d.date())
+    except Exception:
+        return None
+
+
+def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name=None, scan_date=None, source="A", extra=None):
     code6 = str(code).split(".")[0].zfill(6)
     meta = LANES.get(lane_key, {})
     row = {
@@ -87,7 +99,9 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, name=None, scan_
         "badge": meta.get("badge", "🟣" if source == "B" else ""),
         "signal_class": source,
         "scan_date": scan_date,
+        "buy_date": _next_trading_day(scan_date),   # 매수 대상일(다음 거래일)
         "prob": round(float(prob) * 100, 1) if (prob is not None and prob <= 1.5) else (round(float(prob), 1) if prob is not None else None),
+        "alpha": round(float(alpha), 2) if alpha is not None else None,   # 예측 알파(B). A는 None.
         "entry": float(entry) if entry else None,
         "target": round(float(entry) * (1 + TARGET_PCT / 100), 2) if entry else None,
         "target_pct": TARGET_PCT,
@@ -141,8 +155,8 @@ def b_picks():
     rows = []
     for p in d.get("picks", []):
         rows.append(_pick_row(p.get("code"), _market_of(p.get("code")), "b_market_neutral",
-                              entry=p.get("close"), prob=None, name=p.get("name"),
-                              scan_date=d.get("scan_date"), source="B",
+                              entry=p.get("close"), prob=p.get("prob_win"), alpha=p.get("pred_alpha_5d"),
+                              name=p.get("name"), scan_date=d.get("scan_date"), source="B",
                               extra={"lane_label": "B 시장중립", "kind": "B", "badge": "🟣",
                                      "pred_alpha_5d": p.get("pred_alpha_5d"), "smart5": p.get("smart5"),
                                      "rsi14": p.get("rsi14"), "hold_days": p.get("hold_days")}))
@@ -154,7 +168,9 @@ def picks(lane=None):
         return b_picks()
     if lane:
         return a_picks(lane)
-    return a_picks() + b_picks()
+    # 전체: 확률(p) 기준 통일 정렬 → 개요와 픽 순서 일치.
+    allp = a_picks() + b_picks()
+    return sorted(allp, key=lambda x: (x.get("prob") is None, -(x.get("prob") or 0)))
 
 
 # ── 실시간 시세 (KIS, 타임아웃 가드 — 행 방지) ──────────────
@@ -547,14 +563,10 @@ def _num(x):
 
 
 def overview(top=6):
-    allp = picks()
-    # 통합 상위: prob 있는 A 우선 + B 일부. 단순 정렬(추후 통합 점수).
-    a = [p for p in allp if p["signal_class"] == "A" and p.get("prob") is not None]
-    b = [p for p in allp if p["signal_class"] == "B"]
-    a.sort(key=lambda x: x.get("prob") or 0, reverse=True)
-    merged = (a[: max(3, top - 2)] + b[:2])[:top]
+    allp = picks()   # 이미 확률 통일 정렬됨 → 픽 화면과 동일 순서
+    merged = allp[:top]
     fr = freshness()
     return {"generated_at": datetime.now().isoformat(timespec="seconds"),
             "top_picks": merged, "freshness": fr,
             "counts": {"A": len([p for p in allp if p["signal_class"] == "A"]),
-                       "B": len(b)}}
+                       "B": len([p for p in allp if p["signal_class"] == "B"])}}
