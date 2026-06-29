@@ -8,6 +8,7 @@ from modules.operational_candidate_scoring import (
     MODEL_VALIDATED_LANES,
     build_operational_candidate_score,
 )
+from modules.ticker_names import resolve_name
 
 
 INTERPRETATION_VERSION = "candidate_interpretation_v2"
@@ -400,7 +401,8 @@ def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[st
         "model_lane": bucket,
         "run_id": row.get("run_id"),
         "ticker": _first(row.get("ticker"), row.get("Ticker"), row.get("symbol")),
-        "stock_name": _first(row.get("stock_name"), row.get("Name"), row.get("name")),
+        "stock_name": _first(row.get("stock_name"), row.get("Name"), row.get("name"),
+                             resolve_name(_first(row.get("ticker"), row.get("Ticker"), row.get("symbol")))),
         "market": _first(row.get("market"), row.get("Market")),
         "section": section,
         "section_rank": section_rank,

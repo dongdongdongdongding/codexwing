@@ -17,6 +17,7 @@ load_dotenv(".env.local")
 
 from modules import quant_analysis, db_manager, market_intelligence
 from modules.live_scan_context import live_mode_enabled, normalize_market_key
+from modules.ticker_names import resolve_name
 from modules.admission_metric_copy import metric_help, metric_label
 from modules.macro_scheduler import get_macro_context
 from modules.operational_readiness_ui import build_operational_readiness_view
@@ -1230,6 +1231,7 @@ def _render_model_lane_scan_result(snapshot):
         entry = p.get("entry_reference_price")
         table.append({
             "순위": i,
+            "종목명": resolve_name(p.get("ticker"), default=str(p.get("ticker") or "")),
             "티커": p.get("ticker"),
             "적중확률%": round(float(p.get("p") or 0.0) * 100.0, 1),
             f"진입({entry_label})": entry,

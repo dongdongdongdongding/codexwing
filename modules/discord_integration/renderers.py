@@ -11,6 +11,7 @@ from .scan_executor import DiscordScanJob
 from modules.admission_metric_copy import metric_label
 from modules.candidate_interpretation import LANE_PROFILE, build_candidate_interpretation
 from modules.operational_candidate_scoring import MODEL_VALIDATED_LANES
+from modules.ticker_names import display_label
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
 from modules.next_day_explosive_radar import build_next_day_radar_records
@@ -868,9 +869,7 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
     rows = rows[: max(1, int(limit or 10))]
     fields = []
     for r in rows:
-        name = str(r.get("stock_name") or r.get("ticker") or "-")
-        ticker_value = str(r.get("ticker") or "-")
-        header = ticker_value if name == ticker_value else f"{name} ({ticker_value})"
+        header = display_label(r.get("ticker"), r.get("stock_name"))   # 종목명 폴백 해석(빈 stock_name 보완)
         interp = r.get("candidate_interpretation") if isinstance(r.get("candidate_interpretation"), dict) else build_candidate_interpretation(r)
         fields.append({"name": header, "value": _field_value_model_lane(interp), "inline": False})
     return _split_embed_fields(
