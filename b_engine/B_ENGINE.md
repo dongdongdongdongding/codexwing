@@ -85,8 +85,8 @@
 
 엔진은 **현실 진입가**로 수정 완료(`detect_ignition`이 `max(시가,레벨)` + `gap_open` 플래그). 수익 엔진은 아니나, 인프라는 향후 연구에 재사용:
 
-- `engine.py` — 점화 탐지/패널/학습/검증 (누수차단·현실진입 내장). `build|train|validate`.
-- `scan.py` — 실시간 점화 탐지 → 스코어 → 픽 JSON + forward-shadow 채점. KIS 라이브(`B_LIVE=1`) 또는 분봉캐시. `scan|settle`.
+- ~~`engine.py`/`scan.py`~~ — **삭제됨(2026-06-30)**: 점화 트랙은 갭 아티팩트로 죽어 코드 정리.
+  방법론 기록은 이 문서 §연구기록에 보존(현실진입·누수차단 교훈). 배포 엔진은 model_engine/model_scan.
 - `data/model_meta.json` — 정직한 OOS(현실진입=breakeven) 기록.
 
 **경고: 이 엔진을 수익 픽으로 배포 금지** (breakeven). 관측/연구 용도만.
