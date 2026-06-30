@@ -222,6 +222,14 @@ if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday
     python3 "${HOME}/research_cache/intraday_backfill.py"
 fi
 
+# 분봉 3D 패널 재구성: report_kospi_intraday_swing._train()이 매 스캔 읽는 학습 패널을
+# 최신 분봉(위 backfill)으로 갱신해 항상 최신 거래일까지 학습. 비활성: AG_INTRADAY_PANEL=0.
+if [[ "${AG_INTRADAY_PANEL:-1}" == "1" && -f "multi_agent/tools/build_intraday_3d_panel.py" ]]; then
+  echo "[STEP] build_intraday_3d_panel (분봉 학습패널)"
+  run_optional "build_intraday_3d_panel" \
+    python3 multi_agent/tools/build_intraday_3d_panel.py
+fi
+
 # DART 공시 증분 갱신 (dart_update.py = 증분; dart_events_bf.py는 6/19 하드코딩이라 사용금지).
 # 공시/이벤트 근거 신선도 유지. 비활성: AG_DART_REFRESH=0.
 if [[ "${AG_DART_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/dart_update.py" ]]; then

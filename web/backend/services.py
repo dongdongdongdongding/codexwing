@@ -112,8 +112,8 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     return row
 
 
-def a_picks(lane=None):
-    """A 레인 픽 — 각 레인 최신 스캔일만. lane=None이면 전체."""
+def _a_picks_ledger(lane=None):
+    """A 레인 픽 (ledger 기반) — DB 불가시 폴백. 각 레인 최신 스캔일만."""
     keys = [lane] if lane and lane in LANES else list(LANES.keys())
     rows = []
     # swing_ensemble 원장은 코스피/코스닥 공용 → market으로 분리
@@ -143,6 +143,93 @@ def a_picks(lane=None):
             rows.append(_pick_row(code, want_market or mk, key, entry=r.get("entry_reference_price"),
                                   prob=r.get("p"), scan_date=last, source="A"))
     return rows
+
+
+# 모델 레인 ↔ (scan_deep_reports decision_bucket, market)
+_KR_LANE_OF = {
+    ("swing_ensemble", "KOSPI"): "kospi_swing",
+    ("swing_ensemble", "KOSDAQ"): "kosdaq_swing",
+    ("kospi_intraday", "KOSPI"): "kospi_intraday",
+    ("kosdaq_intraday_3d_t5_vwap_guard", "KOSDAQ"): "kosdaq_intraday",
+}
+_KR_CACHE = {"ts": 0.0, "rows": []}
+
+
+def _kr_scan_picks():
+    """KR 모델 레인 픽 — scan_deep_reports의 레인별 최신 run. 웹·일일·디스코드 스캔 모두 반영.
+    120초 캐시 + 워커 타임아웃(웹 안 멈춤)."""
+    if time.time() - _KR_CACHE["ts"] < 120 and _KR_CACHE["rows"]:
+        return _KR_CACHE["rows"]
+    out = {"rows": []}
+
+    def work():
+        db = _db()
+        if db is None:
+            return
+        try:
+            import json as _j
+            buckets = list({b for (b, _m) in _KR_LANE_OF})
+            q = (db.client.table("scan_deep_reports")
+                 .select("ticker,stock_name,candidate_interpretation,prediction,run_id,generated_at,market,decision_bucket")
+                 .in_("market", ["KOSPI", "KOSDAQ"]).in_("decision_bucket", buckets)
+                 .order("generated_at", desc=True).limit(400).execute())
+            rows = q.data or []
+            latest_run = {}
+            for r in rows:
+                lane = _KR_LANE_OF.get((str(r.get("decision_bucket")), str(r.get("market")).upper()))
+                if lane and lane not in latest_run:
+                    latest_run[lane] = r.get("run_id")
+            picks, seen = [], set()
+            for r in rows:
+                lane = _KR_LANE_OF.get((str(r.get("decision_bucket")), str(r.get("market")).upper()))
+                if not lane or r.get("run_id") != latest_run.get(lane):
+                    continue
+                ci = r.get("candidate_interpretation") or {}
+                if isinstance(ci, str):
+                    ci = _j.loads(ci) if ci else {}
+                pred = r.get("prediction") or {}
+                if isinstance(pred, str):
+                    pred = _j.loads(pred) if pred else {}
+                mk = str(r.get("market")).upper()
+                code = str(r.get("ticker", ""))
+                base = code.split(".")[0]
+                code6 = base.zfill(6) if base.isdigit() else base
+                if (lane, code6) in seen:
+                    continue
+                seen.add((lane, code6))
+                # KR은 stock_name이 티커인 경우가 많아 code로 resolve(한글명) — name=None이면 _pick_row가 처리
+                picks.append(_pick_row(code, mk, lane, entry=ci.get("entry_reference_price"),
+                                       prob=pred.get("phase25_prob"), name=None,
+                                       scan_date=str(r.get("generated_at"))[:10], source="A"))
+            out["rows"] = picks
+        except Exception:
+            pass
+    t = threading.Thread(target=work, daemon=True); t.start(); t.join(7.0)
+    if out["rows"]:
+        _KR_CACHE.update(ts=time.time(), rows=out["rows"])
+    return out["rows"]
+
+
+def a_picks(lane=None):
+    """A 레인 픽 — 레인별 최신: scan_deep_reports(웹·일일·디스코드 스캔) 우선, 없는 레인은 ledger 폴백.
+    → 스캔하면 픽·개요에 즉시 반영(스캔 완료시 jobs가 캐시 무효화)."""
+    by_lane = {}
+    for r in _a_picks_ledger():
+        by_lane.setdefault(r["lane"], []).append(r)
+    scan = {}
+    for r in _kr_scan_picks():
+        scan.setdefault(r["lane"], []).append(r)
+    by_lane.update(scan)  # 스캔이 있는 레인은 최신 스캔으로 교체
+    rows = [r for rs in by_lane.values() for r in rs]
+    if lane:
+        rows = [r for r in rows if r.get("lane") == lane]
+    return rows
+
+
+def invalidate_pick_caches():
+    """스캔 완료 후 호출 — 픽/개요가 최신 스캔을 즉시 반영하도록 캐시 비움."""
+    _KR_CACHE.update(ts=0.0, rows=[])
+    _NASDAQ_CACHE.update(ts=0.0, rows=[])
 
 
 def b_picks():

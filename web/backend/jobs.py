@@ -86,6 +86,14 @@ def _run(target):
         ok, note = _run_step(spec)
         done.append({"step": label, "ok": ok, "note": note})
         _set(steps=list(done))
+    # 스캔 결과가 픽·개요·피드에 즉시 반영되도록 캐시 무효화
+    try:
+        from web.backend import services as _S
+        _S.invalidate_pick_caches()
+        from web.backend import scans as _SC
+        _SC._LIST_CACHE.update(ts=0.0, data=None)
+    except Exception:
+        pass
     _set(status="done", progress=100, current="",
          finished_at=datetime.now().isoformat(timespec="seconds"), message="완료")
 
