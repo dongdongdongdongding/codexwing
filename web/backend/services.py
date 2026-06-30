@@ -587,8 +587,62 @@ def analyze(code):
     return out
 
 
+_PERF_BUCKET_LANE = {
+    ("swing_ensemble", "KOSPI"): "코스피 스윙",
+    ("swing_ensemble", "KOSDAQ"): "코스닥 스윙",
+    ("kospi_intraday", "KOSPI"): "코스피 장중",
+    ("kosdaq_intraday_3d_t5_vwap_guard", "KOSDAQ"): "코스닥 장중",
+}
+
+
+def _scan_deep_perf_rows():
+    """scan_deep_reports 모델버킷 픽(전체 history) → [(lane_label, scan_date_KST, code6)].
+    성과 누적용 — 웹·디스코드·일일 모든 스캔 포함. DB 워커 타임아웃(웹 안 멈춤)."""
+    out = {"rows": []}
+
+    def work():
+        db = _db()
+        if db is None:
+            return
+        try:
+            from datetime import datetime as _dt, timezone as _tz
+            try:
+                from zoneinfo import ZoneInfo
+                _kst = ZoneInfo("Asia/Seoul")
+            except Exception:
+                _kst = None
+            buckets = list({b for (b, _m) in _PERF_BUCKET_LANE})
+            q = (db.client.table("scan_deep_reports")
+                 .select("ticker,market,decision_bucket,generated_at")
+                 .in_("decision_bucket", buckets).order("generated_at", desc=True).limit(3000).execute())
+            res = []
+            for r in (q.data or []):
+                lane = _PERF_BUCKET_LANE.get((str(r.get("decision_bucket")), str(r.get("market")).upper()))
+                if not lane:
+                    continue
+                base = str(r.get("ticker", "")).split(".")[0]
+                if not base.isdigit():
+                    continue
+                ts = str(r.get("generated_at") or "")
+                sdate = ts[:10]
+                try:
+                    d = _dt.fromisoformat(ts.replace("Z", "+00:00"))
+                    if d.tzinfo is None:
+                        d = d.replace(tzinfo=_tz.utc)
+                    sdate = (d.astimezone(_kst) if _kst else d).strftime("%Y-%m-%d")
+                except Exception:
+                    pass
+                res.append((lane, sdate, base.zfill(6)))
+            out["rows"] = res
+        except Exception:
+            pass
+    t = threading.Thread(target=work, daemon=True); t.start(); t.join(7.0)
+    return out["rows"]
+
+
 def performance():
-    """④ 성과 — 레인별 실현 승률 + 시장대비 알파(베타 분리) + 절대수익.
+    """④ 성과 — 레인별 실현 승률 + 시장대비 알파(베타 분리) + 절대수익. **누적**(갈아치우지 않음):
+    ledger(일일ops) + scan_deep_reports(웹·디스코드·일일 모든 스캔) 전체 history를 합쳐 평가.
     ★ 진입 기준 = '다음 거래일 종가'(현실 진입). 스캔일 종가가 아니라 실제 매수가능 시점 → 정직.
     """
     import pandas as pd, numpy as np, math
@@ -616,8 +670,8 @@ def performance():
            "코스닥 장중": ("kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "KOSDAQ")}
     # 픽 먼저 수집 → 해당 종목들의 일별 종가 시리즈로 '다음 거래일' 진입 조회.
     raw = []
+    seen = set()
     for label, (fn, want) in LED.items():
-        seen = set()
         for r in _read_ledger(fn):
             mk = (r.get("market") or "").upper()
             if want and mk and mk != want:
@@ -628,6 +682,13 @@ def performance():
                 continue
             seen.add(key)
             raw.append({"lane": label, "scan_date": str(r.get("date")), "code": code})
+    # scan_deep_reports(웹·디스코드·일일 모든 스캔) 전체 history도 누적 — 중복은 (lane,date,code)로 제외
+    for label, sdate, code in _scan_deep_perf_rows():
+        key = (label, sdate, code)
+        if code not in cur or key in seen:
+            continue
+        seen.add(key)
+        raw.append({"lane": label, "scan_date": sdate, "code": code})
     codes = {x["code"] for x in raw}
     by_code = {}
     sub = px[px["code"].isin(codes)].sort_values("date")
