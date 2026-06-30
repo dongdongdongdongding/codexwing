@@ -24,7 +24,7 @@ APP_SUPPORT_DIR="${HOME}/Library/Application Support/CodexSwing"
 ROOT_FILE="${APP_SUPPORT_DIR}/project_root"
 
 resolve_root() {
-  if [[ -n "${CODEX_SWING_PROJECT_ROOT:-}" && -f "${CODEX_SWING_PROJECT_ROOT}/AGENTS.md" && -f "${CODEX_SWING_PROJECT_ROOT}/app.py" ]]; then
+  if [[ -n "${CODEX_SWING_PROJECT_ROOT:-}" && -f "${CODEX_SWING_PROJECT_ROOT}/AGENTS.md" && -f "${CODEX_SWING_PROJECT_ROOT}/requirements.txt" ]]; then
     printf "%s" "${CODEX_SWING_PROJECT_ROOT}"
     return 0
   fi
@@ -32,7 +32,7 @@ resolve_root() {
   if [[ -f "${ROOT_FILE}" ]]; then
     local saved_root
     saved_root="$(tr -d '\r' < "${ROOT_FILE}")"
-    if [[ -f "${saved_root}/AGENTS.md" && -f "${saved_root}/app.py" ]]; then
+    if [[ -f "${saved_root}/AGENTS.md" && -f "${saved_root}/requirements.txt" ]]; then
       printf "%s" "${saved_root}"
       return 0
     fi
@@ -45,7 +45,7 @@ resolve_root() {
   )
   local candidate
   for candidate in "${candidates[@]}"; do
-    if [[ -f "${candidate}/AGENTS.md" && -f "${candidate}/app.py" ]]; then
+    if [[ -f "${candidate}/AGENTS.md" && -f "${candidate}/requirements.txt" ]]; then
       printf "%s" "${candidate}"
       return 0
     fi
