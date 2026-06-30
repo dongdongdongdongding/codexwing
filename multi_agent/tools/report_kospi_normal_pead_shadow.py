@@ -254,7 +254,9 @@ def build_panel(universe_n: int) -> pd.DataFrame:
     # coarse PEAD (leak-blocked reaction), identical to research
     g2 = df.groupby("code")
     df["rfwd2"] = g2["close"].transform(lambda s: (s.shift(-2) / s - 1) * 100)
-    da = pd.read_parquet(CACHE / "dart_ann.parquet"); da["code"] = da["code"].astype(str)
+    _dap = CACHE / "dart_ann.parquet"   # 캐시(없으면 빈 df로 시작 → _refresh_dart가 DART API에서 재생성)
+    da = pd.read_parquet(_dap) if _dap.exists() else pd.DataFrame(columns=["code", "period", "ann", "rpt"])
+    da["code"] = da["code"].astype(str)
     da = _refresh_dart(codes, da)  # pull newly-disclosed quarters so days_since stays fresh
     da["ann"] = pd.to_datetime(da["ann"], format="%Y%m%d", errors="coerce")
     da = da.dropna(subset=["ann"]).sort_values("ann").drop_duplicates(["code", "period"], keep="first")
