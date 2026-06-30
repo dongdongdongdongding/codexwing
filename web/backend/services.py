@@ -617,7 +617,7 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
     d = df.copy()
     dcol = "recommended_at" if "recommended_at" in d.columns else None
     if dcol:
-        d["_d"] = pd.to_datetime(d[dcol], errors="coerce", utc=True).dt.tz_localize(None)
+        d["_d"] = pd.to_datetime(d[dcol], errors="coerce", utc=True).dt.tz_convert("Asia/Seoul").dt.tz_localize(None)
         if date_from:
             d = d[d["_d"] >= pd.Timestamp(date_from)]
         if date_to:
@@ -639,7 +639,7 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
         nm = resolve_name(code, default="") or _s(r.get("stock_name")).strip() or code
         lane = _s(r.get("decision_bucket")).strip() or _s(r.get("scan_mode")).strip() or "–"
         rv = _num(ret)
-        out.append({"date": _s(r.get(dcol))[:10] if dcol else None, "run_id": _s(r.get("run_id")),
+        out.append({"date": (r["_d"].strftime("%Y-%m-%d") if dcol and pd.notna(r.get("_d")) else None), "run_id": _s(r.get("run_id")),
                     "code": code, "name": nm, "market": _s(r.get("market")) or _s(r.get("market_type")),
                     "lane": lane, "entry": _num(r.get("entry_reference_price")), "prob": _num(r.get("alpha_score")),
                     "ret": rv, "result": ("승" if rv is not None and rv > 0 else ("패" if rv is not None else "미해결"))})

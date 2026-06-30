@@ -6,7 +6,33 @@
 """
 from __future__ import annotations
 import os, json, time
+from datetime import datetime, timezone
 from web.backend import services as S
+
+try:
+    from zoneinfo import ZoneInfo
+    _KST = ZoneInfo("Asia/Seoul")
+except Exception:
+    _KST = None
+
+
+def _fmt_kst(ts):
+    """저장 타임스탬프(scan_deep_reports=UTC) → KST 'YYYY-MM-DD HH:MM:SS' 표시.
+    날짜만(예: '2026-06-30')이면 그대로. 파싱실패시 원본 19자."""
+    s = str(ts or "")
+    if not s:
+        return ""
+    if len(s) <= 10:
+        return s
+    try:
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)  # scan_deep_reports는 UTC 기록
+        if _KST is not None:
+            dt = dt.astimezone(_KST)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return s[:19].replace("T", " ")
 
 REPO = S.REPO
 CACHE_DIR = os.path.join(REPO, "runtime_state", "precision_cache")
@@ -96,7 +122,7 @@ def _build_list():
             pass
     res = []
     for rid, p in posts.items():
-        res.append({"scan_id": rid, "time": p["time"][:19].replace("T", " "),
+        res.append({"scan_id": rid, "time": _fmt_kst(p["time"]),
                     "source": _infer_source(rid, override), "markets": sorted(m for m in p["markets"] if m),
                     "lanes": sorted(p["lanes"]), "pick_count": p["pick_count"]})
     # B 스캔(b_picks_latest)을 게시물 1건으로
@@ -130,7 +156,7 @@ def scan_detail(scan_id):
                  .select("ticker,stock_name,market,decision_bucket,scan_mode,prediction,candidate_interpretation,generated_at")
                  .eq("run_id", scan_id).order("generated_at", desc=True).limit(60).execute())
             for r in (q.data or []):
-                time_s = str(r.get("generated_at"))[:19].replace("T", " ")
+                time_s = _fmt_kst(r.get("generated_at"))
                 ci = r.get("candidate_interpretation") or {}; pred = r.get("prediction") or {}
                 if isinstance(ci, str): ci = _j.loads(ci) if ci else {}
                 if isinstance(pred, str): pred = _j.loads(pred) if pred else {}
