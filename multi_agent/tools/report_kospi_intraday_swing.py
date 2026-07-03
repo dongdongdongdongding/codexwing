@@ -52,6 +52,33 @@ DLF = ["ret_1d", "ret_3d", "ret_5d", "ret_10d", "ret_20d", "ret_60d", "ma5_dist"
        "pos20", "bb_pctb", "atr_pct", "vol_ratio", "turn_z", "obv_slope", "cmf20", "idx_mom20", "idx_vol20"]
 
 
+def market_drawdown_state(market: str, px: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
+    """Observation-only market drawdown state (swing-main-tufc, 8y-validated construction).
+
+    Equal-weight liquid-pool cumulated return (KOSPI liq>=100억, KOSDAQ liq>=30억) from
+    px_long; RISK_OFF when 20d drawdown < -5% OR 5d return < -3%. 8y evidence: momentum-
+    profile picks lose -1.1~-1.8%/5d in this state (KOSPI 7/9y, KOSDAQ 6/9y worse), while
+    the pool itself rebounds — so this flags lane-style risk, not market risk.
+    """
+    min_liq = 100e8 if market == "KOSPI" else 30e8
+    try:
+        if px is None:
+            px = pd.read_parquet(CACHE / "px_long.parquet", columns=["date", "market", "liq", "ret_1d"])
+        d = px[(px["market"] == market) & (px["liq"] >= min_liq)].copy()
+        d["date"] = pd.to_datetime(d["date"])
+        d = d[d["date"] >= d["date"].max() - pd.Timedelta(days=60)]
+        mret = d.groupby("date")["ret_1d"].mean().sort_index()
+        if len(mret) < 25:
+            return {"mkt_dd20": None, "mkt_ret5": None, "mkt_state": "UNKNOWN"}
+        lvl = (1 + mret / 100).cumprod()
+        dd20 = float((lvl.iloc[-1] / lvl.iloc[-20:].max() - 1) * 100)
+        ret5 = float((lvl.iloc[-1] / lvl.iloc[-6] - 1) * 100)
+        state = "RISK_OFF" if (dd20 < -5.0 or ret5 < -3.0) else "NORMAL"
+        return {"mkt_dd20": round(dd20, 2), "mkt_ret5": round(ret5, 2), "mkt_state": state}
+    except Exception:
+        return {"mkt_dd20": None, "mkt_ret5": None, "mkt_state": "UNKNOWN"}
+
+
 def _rsi(s: pd.Series, n: int = 14) -> pd.Series:
     d = s.diff(); up = d.clip(lower=0).rolling(n).mean(); dn = (-d.clip(upper=0)).rolling(n).mean()
     return 100 - 100 / (1 + up / (dn + 1e-9))
@@ -268,10 +295,11 @@ def main() -> None:
         REPORT_JSON.parent.mkdir(parents=True, exist_ok=True)
         REPORT_JSON.write_text(json.dumps({"error": repr(exc)[:300], "today": today}, ensure_ascii=False, indent=2), encoding="utf-8")
         print(json.dumps({"error": repr(exc)[:200]}, ensure_ascii=False)); return
+    state = market_drawdown_state("KOSPI")
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     with LEDGER.open("a", encoding="utf-8") as fh:
         for p in picks:
-            fh.write(json.dumps({"date": today, "touch5": None, "ret3d": None, **p}, ensure_ascii=False) + "\n")
+            fh.write(json.dumps({"date": today, "touch5": None, "ret3d": None, **state, **p}, ensure_ascii=False) + "\n")
     summary = resolve_pending(today)
     production = os.getenv("AG_KOSPI_INTRADAY_PRODUCTION", "1").strip() not in ("0", "", "false", "False")
     routed = 0
@@ -287,6 +315,7 @@ def main() -> None:
             routed = -1; print(json.dumps({"route_error": repr(exc)[:200]}, ensure_ascii=False))
     report = {"generated_at": datetime.now(timezone.utc).isoformat(), "today": today, "lane": "kospi_intraday (Claude)",
               "picks": picks, "forward_summary": summary, "production_enabled": production, "routed": routed,
+              "market_state": state,
               "note": "KOSPI intraday 3D+5% ensemble (intraday+daily ctx), close_vwap>=0 + idx_vol20>=8 guards, top2, "
                       "3D close hold. Backtest hit 85%/floor 71%/+6.2%. Live to validate (n=1 weak-month guard)."}
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

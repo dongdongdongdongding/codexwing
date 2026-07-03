@@ -607,6 +607,14 @@ def main() -> int:
         return 1
 
     picks = list(score_result.get("picks") or [])
+    # observation-only market drawdown state (swing-main-tufc): 8y evidence says momentum-
+    # style KOSDAQ picks lose in this state (6/9y). Flag only; enforcement is an operator call.
+    try:
+        from multi_agent.tools.report_kospi_intraday_swing import market_drawdown_state
+        mkt_state = market_drawdown_state("KOSDAQ")
+    except Exception:
+        mkt_state = {"mkt_dd20": None, "mkt_ret5": None, "mkt_state": "UNKNOWN"}
+    picks = [{**p, **mkt_state} for p in picks]
     recorded = record_picks(picks, generated_at=generated_at)
     forward_summary = resolve_pending(client, today_trade_date=trade_date)
     production = os.getenv("AG_KOSDAQ_INTRADAY_PRODUCTION", "1").strip() not in {"0", "", "false", "False"}
@@ -630,6 +638,7 @@ def main() -> int:
         "routed": routed,
         "ledger_recorded": recorded,
         "forward_summary": forward_summary,
+        "market_state": mkt_state,
         **score_result,
     }
     _write_report(report)

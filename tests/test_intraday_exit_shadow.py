@@ -80,3 +80,29 @@ def test_resolve_pending_exit_shadow_waits_for_five_sessions(tmp_path, monkeypat
     assert out["touch3d_t5"] is not None
     assert "exit_t5_h5" not in out or out["exit_t5_h5"] is None
     assert "exit_shadow" not in summary
+
+
+def test_market_drawdown_state_flags_risk_off():
+    from multi_agent.tools.report_kospi_intraday_swing import market_drawdown_state
+
+    idx = pd.bdate_range("2026-05-01", periods=40)
+    # two synthetic stocks: flat for 30 days then -1.5%/day for 10 days -> dd20 < -5, ret5 < -3
+    rets = [0.0] * 30 + [-1.5] * 10
+    px = pd.DataFrame(
+        {
+            "date": list(idx) * 2,
+            "market": ["KOSDAQ"] * 80,
+            "liq": [50e8] * 80,
+            "ret_1d": rets * 2,
+        }
+    )
+    st = market_drawdown_state("KOSDAQ", px=px)
+    assert st["mkt_state"] == "RISK_OFF"
+    assert st["mkt_dd20"] < -5.0
+    assert st["mkt_ret5"] < -3.0
+
+    # flat market -> NORMAL
+    px_flat = px.copy()
+    px_flat["ret_1d"] = 0.1
+    st2 = market_drawdown_state("KOSDAQ", px=px_flat)
+    assert st2["mkt_state"] == "NORMAL"
