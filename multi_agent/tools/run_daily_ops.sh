@@ -222,6 +222,14 @@ if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday
     python3 "${HOME}/research_cache/intraday_backfill.py"
 fi
 
+# ohlc_daily 증분 갱신: 패널 y3 라벨 + KOSPI 레인 정책수익(EVREG) 라벨의 원천.
+# 6/26 정체가 패널 꼬리 라벨 절단을 유발했음(§6). 비활성: AG_OHLC_DAILY_REFRESH=0.
+if [[ "${AG_OHLC_DAILY_REFRESH:-1}" == "1" && -f "multi_agent/tools/update_ohlc_daily.py" ]]; then
+  echo "[STEP] update_ohlc_daily"
+  run_optional "update_ohlc_daily" \
+    python3 multi_agent/tools/update_ohlc_daily.py
+fi
+
 # 분봉 3D 패널 재구성: report_kospi_intraday_swing._train()이 매 스캔 읽는 학습 패널을
 # 최신 분봉(위 backfill)으로 갱신해 항상 최신 거래일까지 학습. 비활성: AG_INTRADAY_PANEL=0.
 if [[ "${AG_INTRADAY_PANEL:-1}" == "1" && -f "multi_agent/tools/build_intraday_3d_panel.py" ]]; then

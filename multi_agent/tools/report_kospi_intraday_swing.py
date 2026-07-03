@@ -136,6 +136,43 @@ def intraday_features(g: pd.DataFrame, prev_close: float, vol_hist: Optional[pd.
             "vol_z": vol_z, "_close": c, "_liq": float(c * vol)}
 
 
+def policy_t5_h5_labels(panel: pd.DataFrame) -> pd.Series:
+    """Realized +5%-touch/5d policy return per panel row (the promoted contract, §7-E).
+
+    Entry = close(t) from ohlc_daily; first 5 fwd sessions: high>=+5% -> fill max(open, target)
+    (gap-up fills better), else 5d close. NaN when the forward window is incomplete.
+    EVREG training target — model-zoo validated: +0.77 EV, negMo 2->1 vs trees alone (§10).
+    """
+    d = pd.read_parquet(CACHE / "ohlc_daily.parquet")
+    d["code"] = d["code"].astype(str).str.zfill(6)
+    d["date"] = pd.to_datetime(d["date"])
+    d = d.sort_values(["code", "date"]).reset_index(drop=True)
+    g = d.groupby("code")
+    cols = {"entry": d["close"]}
+    for k in range(1, 6):
+        for f in ("open", "high", "close"):
+            cols[f"{f}{k}"] = g[f].shift(-k)
+    path = pd.concat([d[["code", "date"]], pd.DataFrame(cols)], axis=1)
+    key = panel[["code", "date"]].copy()
+    key["code"] = key["code"].astype(str).str.zfill(6)
+    m = key.merge(path, on=["code", "date"], how="left")
+
+    e = m["entry"].values
+    tgt = e * 1.05
+    out = np.full(len(m), np.nan)
+    done = np.zeros(len(m), dtype=bool)
+    ok = np.isfinite(e) & (e > 0) & np.isfinite(m["close5"].values)
+    for k in range(1, 6):
+        hi = m[f"high{k}"].values; op = m[f"open{k}"].values
+        hit = ok & ~done & np.isfinite(hi) & (hi >= tgt)
+        fill = np.where(np.isfinite(op) & (op > 0), np.maximum(tgt, op), tgt)
+        out[hit] = (fill[hit] / e[hit] - 1) * 100
+        done |= hit
+    rest = ok & ~done
+    out[rest] = (m["close5"].values[rest] / e[rest] - 1) * 100
+    return pd.Series(out, index=panel.index)
+
+
 def _train():
     import lightgbm as lgb, xgboost as xgb
     from sklearn.ensemble import ExtraTreesClassifier
@@ -151,14 +188,26 @@ def _train():
           ExtraTreesClassifier(n_estimators=250, min_samples_leaf=40, random_state=0, n_jobs=-1)]
     for m in mk:
         m.fit(X, y)
-    return mk, FEAT
+    # EVREG 4th head (§10 model zoo): regress the promoted contract's policy return;
+    # selection ranks by rank-mean(tree_p, evreg) while p keeps probability semantics for the tier.
+    ev = None
+    try:
+        pol = policy_t5_h5_labels(d)
+        okm = pol.notna().values
+        if okm.sum() >= 5000:
+            ev = lgb.LGBMRegressor(n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=60,
+                                   subsample=0.8, colsample_bytree=0.7, reg_lambda=3, random_state=0, verbose=-1)
+            ev.fit(X[okm], pol[okm].values)
+    except Exception:
+        ev = None
+    return mk, ev, FEAT
 
 
 def score_today(min_liq: float) -> List[Dict[str, Any]]:
     import FinanceDataReader as fdr
     from modules.kis_openapi import KISOpenAPIClient, KISConfig
     from modules.kis_operational_adapter import normalize_kis_minute_bars
-    mk, FEAT = _train()
+    mk, ev, FEAT = _train()
     # universe + KS11 vol context
     pxl = pd.read_parquet(CACHE / "px_long.parquet", columns=["code", "date", "liq", "market"])
     pxl = pxl[pxl["market"] == "KOSPI"]; pxl["date"] = pd.to_datetime(pxl["date"])
@@ -202,9 +251,10 @@ def score_today(min_liq: float) -> List[Dict[str, Any]]:
         feat = {**itf, **{k + "_d": v for k, v in dfe.items()}, "idx_mom20_d": idx_mom20, "idx_vol20_d": idx_vol20}
         x = pd.Series(feat).reindex(FEAT).replace([np.inf, -np.inf], np.nan).clip(-1e4, 1e4).fillna(0)
         p = float(np.mean([mm.predict_proba(x.values.reshape(1, -1))[:, 1][0] for mm in mk]))
+        ev_pred = float(ev.predict(x.values.reshape(1, -1))[0]) if ev is not None else None
         _prevc = float(h["Close"].iloc[-2])
         _daychg = round((itf["_close"] / _prevc - 1) * 100, 2) if _prevc else None
-        rows.append({"code": code, "p": p, "close_vwap": itf["close_vwap"], "liq": itf["_liq"], "close": itf["_close"], "day_change": _daychg})
+        rows.append({"code": code, "p": p, "ev_pred": ev_pred, "close_vwap": itf["close_vwap"], "liq": itf["_liq"], "close": itf["_close"], "day_change": _daychg})
     if not rows:
         return []
     X = pd.DataFrame(rows)
@@ -212,7 +262,13 @@ def score_today(min_liq: float) -> List[Dict[str, Any]]:
     X = X[(X["liq"] >= min_liq * 1e8) & (X["close_vwap"] >= 0)]
     if idx_vol20 < 8 or X.empty:
         return []
-    top = X.nlargest(int(os.getenv("AG_KOSPI_INTRADAY_TOP_N", "1")), "p")
+    # selection score (§10): rank-mean of tree probability and EVREG predicted policy return
+    # (3-seed validated: EV 2.87->3.64, negMo 2->1). p keeps probability semantics for the tier.
+    if X["ev_pred"].notna().all() and len(X) > 1:
+        X["sel"] = (X["p"].rank(pct=True) + X["ev_pred"].rank(pct=True)) / 2
+    else:
+        X["sel"] = X["p"]
+    top = X.nlargest(int(os.getenv("AG_KOSPI_INTRADAY_TOP_N", "1")), "sel")
     return [{"ticker": str(r["code"]) + ".KS", "market": "KOSPI", "p": round(float(r["p"]), 4),
              "liq억": round(float(r["liq"]) / 1e8, 1), "close_vwap": round(float(r["close_vwap"]), 2),
              "day_change": (None if pd.isna(r.get("day_change")) else float(r["day_change"])),
