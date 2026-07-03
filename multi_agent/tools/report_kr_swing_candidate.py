@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -24,6 +25,8 @@ import numpy as np
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 CACHE = Path(os.path.expanduser("~/research_cache"))
 EXP = PROJECT_ROOT / "runtime_state" / "reports" / "experimental"
 LEDGER = EXP / "kr_swing_candidate_ledger.jsonl"
@@ -56,8 +59,15 @@ def score_today(top_k: int) -> Dict[str, Any]:
                                subsample=0.8, colsample_bytree=0.7, reg_lambda=5, random_state=0, verbose=-1)
         m.fit(tr[FEATS].clip(-1e4, 1e4), tr["ft_5_5"])
         te["p"] = m.predict_proba(te[FEATS].clip(-1e4, 1e4))[:, 1]
+        # RISK_OFF flag: swing ranker EV roughly doubles in drawdown states (8y: 0.85 vs
+        # 0.49 KOSDAQ, 0.76 vs 0.50 KOSPI touch-exit) — complementary to the intraday lanes.
+        try:
+            from multi_agent.tools.report_kospi_intraday_swing import market_drawdown_state
+            state = market_drawdown_state(mkt)
+        except Exception:
+            state = {"mkt_state": "UNKNOWN"}
         for _, r in te.nlargest(top_k, "p").iterrows():
-            out["picks"].append({"date": str(latest.date()), "market": mkt,
+            out["picks"].append({"date": str(latest.date()), "market": mkt, **state,
                                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
                                  "liq_eok": round(float(r["liq"]) / 1e8, 1),
