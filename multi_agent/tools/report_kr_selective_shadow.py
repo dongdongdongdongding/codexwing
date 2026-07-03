@@ -26,11 +26,18 @@ import numpy as np
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 EXP = PROJECT_ROOT / "runtime_state" / "reports" / "experimental"
+# Tier rule: PRIMARY when rank-1 p >= trailing `window`-session `quantile` of rank-1 p's
+# (self-calibrating — immune to live-vs-sim p distribution shift; validated: rolling-q0.2
+# reproduces the absolute-0.65 frontier: win 89.0%, EV 4.80, 3.2 days/wk). Falls back to
+# `fallback_threshold` until `min_history` rank-1 days exist. KOSDAQ needs no threshold per
+# research (rank-1 alone EV 5.18) -> fallback 0.0, quantile tag kept for observation.
 LANES = {
     "KOSPI": {"ledger": EXP / "kospi_intraday_swing_ledger.jsonl", "exit_key": "exit_t5_h5",
-              "p_threshold": 0.65, "date_key": "date"},
+              "quantile": 0.2, "window": 40, "min_history": 15, "fallback_threshold": 0.65,
+              "date_key": "date"},
     "KOSDAQ": {"ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "exit_key": "exit_t10_h5",
-               "p_threshold": 0.65, "date_key": "date"},
+               "quantile": 0.2, "window": 40, "min_history": 15, "fallback_threshold": 0.0,
+               "date_key": "date"},
 }
 REPORT_JSON = EXP / "kr_selective_shadow_latest.json"
 REPORT_MD = EXP / "kr_selective_shadow_latest.md"
@@ -51,7 +58,8 @@ def _rows(path: Path) -> List[Dict[str, Any]]:
 
 
 def _p_value(row: Dict[str, Any]) -> float:
-    for key in ("p", "p_cal", "probability", "success_probability"):
+    # p_raw first: KOSDAQ lane's isotonic p saturates at 1.0 while p_raw stays informative
+    for key in ("p_raw", "p", "p_cal", "probability", "success_probability"):
         v = row.get(key)
         if isinstance(v, (int, float)):
             return float(v)
@@ -67,16 +75,23 @@ def lane_view(market: str) -> Dict[str, Any]:
         if d:
             bydate.setdefault(d, []).append(r)
     picks = []
+    p_hist: List[float] = []
     for d, items in sorted(bydate.items()):
         items = [r for r in items if np.isfinite(_p_value(r))]
         if not items:
             continue
         top = max(items, key=_p_value)
         p = _p_value(top)
+        if len(p_hist) >= cfg["min_history"]:
+            thr = float(np.quantile(p_hist[-cfg["window"]:], cfg["quantile"]))
+        else:
+            thr = cfg["fallback_threshold"]
         picks.append({"date": d, "ticker": top.get("ticker"), "p": round(p, 4),
-                      "tier": "PRIMARY" if p >= cfg["p_threshold"] else "CANDIDATE",
+                      "tier": "PRIMARY" if p >= thr else "CANDIDATE",
+                      "tier_threshold": round(thr, 4),
                       "mkt_state": top.get("mkt_state"),
                       "exit_ret": top.get(cfg["exit_key"]), "ret3d": top.get("ret3d")})
+        p_hist.append(p)
 
     def _summ(sel: List[Dict[str, Any]]) -> Dict[str, Any]:
         res = [x for x in sel if isinstance(x.get("exit_ret"), (int, float))]
@@ -87,7 +102,7 @@ def lane_view(market: str) -> Dict[str, Any]:
                 "win_pct": round(float(np.mean([r > 0.3 for r in rets])) * 100, 1),
                 "worst": round(float(np.min(rets)), 2)}
 
-    return {"market": market, "exit_contract": cfg["exit_key"], "p_threshold": cfg["p_threshold"],
+    return {"market": market, "exit_contract": cfg["exit_key"], "tier_rule": f"rank1 p >= trailing{cfg['window']} q{cfg['quantile']} (fallback {cfg['fallback_threshold']})",
             "picks_total_days": len(picks),
             "rank1_all": _summ(picks),
             "rank1_primary": _summ([x for x in picks if x["tier"] == "PRIMARY"]),
@@ -103,7 +118,7 @@ def main() -> None:
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = [f"# KR selective high-conviction shadow — {report['generated_at'][:10]}", ""]
     for m, lv in report["lanes"].items():
-        lines.append(f"## {m} (exit={lv['exit_contract']}, p>={lv['p_threshold']})")
+        lines.append(f"## {m} (exit={lv['exit_contract']}, tier: {lv['tier_rule']})")
         lines.append(f"- days with rank-1 pick: {lv['picks_total_days']}")
         lines.append(f"- rank-1 all: {lv['rank1_all']}")
         lines.append(f"- rank-1 PRIMARY: {lv['rank1_primary']}")

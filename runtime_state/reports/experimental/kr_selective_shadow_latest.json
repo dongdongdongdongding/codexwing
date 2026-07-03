@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-07-03T04:56:25.738259+00:00",
+  "note": "observation-only view over lane ledgers; forward evidence for the selective high-conviction contract (RESEARCH_LOG §7). No routing, no pick changes.",
+  "lanes": {
+    "KOSPI": {
+      "market": "KOSPI",
+      "exit_contract": "exit_t5_h5",
+      "tier_rule": "rank1 p >= trailing40 q0.2 (fallback 0.65)",
+      "picks_total_days": 7,
+      "rank1_all": {
+        "n": 1,
+        "ev_avg": 5.0,
+        "win_pct": 100.0,
+        "worst": 5.0
+      },
+      "rank1_primary": {
+        "n": 1,
+        "ev_avg": 5.0,
+        "win_pct": 100.0,
+        "worst": 5.0
+      },
+      "latest": [
+        {
+          "date": "2026-06-26",
+          "ticker": "336260.KS",
+          "p": 0.7998,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.65,
+          "mkt_state": null,
+          "exit_ret": null,
+          "ret3d": 14.86
+        },
+        {
+          "date": "2026-06-29",
+          "ticker": "336260.KS",
+          "p": 0.8389,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.65,
+          "mkt_state": null,
+          "exit_ret": null,
+          "ret3d": null
+        },
+        {
+          "date": "2026-07-01",
+          "ticker": "000990.KS",
+          "p": 0.7859,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.65,
+          "mkt_state": null,
+          "exit_ret": null,
+          "ret3d": null
+        },
+        {
+          "date": "2026-07-02",
+          "ticker": "011070.KS",
+          "p": 0.8507,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.65,
+          "mkt_state": null,
+          "exit_ret": null,
+          "ret3d": null
+        },
+        {
+          "date": "2026-07-03",
+          "ticker": "001820.KS",
+          "p": 0.8394,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.65,
+          "mkt_state": "RISK_OFF",
+          "exit_ret": null,
+          "ret3d": null
+        }
+      ]
+    },
+    "KOSDAQ": {
+      "market": "KOSDAQ",
+      "exit_contract": "exit_t10_h5",
+      "tier_rule": "rank1 p >= trailing40 q0.2 (fallback 0.0)",
+      "picks_total_days": 2,
+      "rank1_all": {
+        "n": 0
+      },
+      "rank1_primary": {
+        "n": 0
+      },
+      "latest": [
+        {
+          "date": "2026-06-26",
+          "ticker": "327260.KQ",
+          "p": 0.9284,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.0,
+          "mkt_state": null,
+          "exit_ret": null,
+          "ret3d": 1.7274
+        },
+        {
+          "date": "2026-06-29",
+          "ticker": "178320.KQ",
+          "p": 0.9119,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.0,
+          "mkt_state": null,
+          "exit_ret": null,
+          "ret3d": null
+        }
+      ]
+    }
+  }
+}

@@ -159,4 +159,10 @@
 ### 7-C. 배포 — 원장 위의 뷰로 즉시 forward 검증
 `report_kr_selective_shadow.py`: 기존 두 레인 원장에서 일자별 **rank-1 by p** 선택, PRIMARY(p≥0.65)/CANDIDATE 티어, exit shadow 필드(exit_t5_h5/exit_t10_h5)로 자동 채점. 신규 픽/라우팅 없음(관측 전용). 첫 resolved: KOSPI rank-1 +5.0 (n=1). 테스트 4 passed.
 - 운영 형태 제안: PRIMARY = 매수픽(주 3~4일), CANDIDATE = 후보픽(p미달일·스윙랭커) — "픽 없는 날" 문제 해결.
-- 후속: 라이브 p 캘리브레이션, 선별계약 성숙 후 라우팅 결정, 스윙 랭커 후보픽 발행기.
+- 후속: 라이브 p 캘리브레이션, 선별계약 성숙 후 라우팅 결정, 스윙 랭커 후보픽 발행기. → **§7-D에서 완료**
+
+### 7-D. 캘리브레이션 + 발행기 완성 (같은 날 후속)
+- **분위수 티어 규칙 검증**: 절대 p≥0.65 대신 "rank-1 p ≥ 직전 40세션 rank-1 p의 q0.2" — 시뮬 재현 **win 89.0% / EV 4.80 / 주 3.2일** (q0.3→90.3%/5.41/주2.8, q0.5→94.8%/6.55/주2.2 — 단조). 자기-캘리브레이션이라 라이브 p 분포 이동에 면역. 뷰에 배선(fallback: KOSPI 0.65, KOSDAQ 0.0=rank-1 전부).
+- KOSDAQ p 포화 수정: 원장의 isotonic `p`=1.0 포화 → `p_raw`(0.91) 우선 랭킹.
+- **스윙 CANDIDATE 발행기** `report_kr_swing_candidate.py`: px_long 롤링 2년 ft_5_5 LGBM, 일자 최신 풀 top-3/시장, 익일시가 진입 계약, fdr 자동 채점(터치 체결 max(시가,목표), 진입일 포함 5세션). 관측 전용, 라우팅 없음. 첫 발행 2026-07-03: 6픽 (066570 LG전자 p0.87 등, 유동성 37~5224억).
+- 테스트 5 passed (exit shadow ×2, drawdown state, selective view, candidate resolver).

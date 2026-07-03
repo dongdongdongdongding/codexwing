@@ -119,7 +119,8 @@ def test_selective_shadow_view_rank1_and_tiers(tmp_path, monkeypatch):
     ]
     ledger.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
     monkeypatch.setitem(sel.LANES, "KOSPI", {"ledger": ledger, "exit_key": "exit_t5_h5",
-                                             "p_threshold": 0.65, "date_key": "date"})
+                                             "quantile": 0.2, "window": 40, "min_history": 15,
+                                             "fallback_threshold": 0.65, "date_key": "date"})
     lv = sel.lane_view("KOSPI")
     assert lv["picks_total_days"] == 2
     # rank-1 on 06-01 is A (p 0.9, PRIMARY, +5); 06-02 is C (CANDIDATE, -2)
@@ -127,3 +128,32 @@ def test_selective_shadow_view_rank1_and_tiers(tmp_path, monkeypatch):
     assert lv["rank1_primary"]["n"] == 1 and lv["rank1_primary"]["ev_avg"] == 5.0
     tiers = {x["date"]: x["tier"] for x in lv["latest"]}
     assert tiers["2026-06-01"] == "PRIMARY" and tiers["2026-06-02"] == "CANDIDATE"
+
+
+def test_swing_candidate_resolution_touch_and_entry(tmp_path, monkeypatch):
+    import sys, types
+    import multi_agent.tools.report_kr_swing_candidate as swc
+
+    idx = pd.bdate_range("2026-06-02", periods=7)  # sessions after a 06-01 signal
+    frame = pd.DataFrame(
+        {
+            "Open": [1000, 1010, 1020, 990, 980, 970, 960],
+            "High": [1030, 1040, 1060, 1000, 990, 980, 970],
+            "Low": [990, 1000, 1010, 960, 950, 940, 930],
+            "Close": [1010, 1030, 1040, 980, 960, 950, 940],
+        },
+        index=idx,
+    )
+    fake = types.SimpleNamespace(DataReader=lambda code, start: frame)
+    monkeypatch.setitem(sys.modules, "FinanceDataReader", fake)
+    ledger = tmp_path / "cand.jsonl"
+    ledger.write_text(json.dumps({"date": "2026-06-01", "ticker": "000001.KS"}) + "\n", encoding="utf-8")
+    monkeypatch.setattr(swc, "LEDGER", ledger)
+
+    summary = swc.resolve_pending(pd.Timestamp("2026-06-20"))
+
+    row = json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])
+    assert row["entry_open"] == 1000.0          # next-open entry
+    assert row["ft_touch5"] == 1                # day3 high 1060 >= 1050
+    assert row["policy_ret"] == 5.0             # fill max(1050, open 1020) = 1050
+    assert summary["resolved"] == 1 and summary["touch5_pct"] == 100.0

@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-07-03T04:57:39.137647+00:00",
+  "as_of": "2026-07-03",
+  "tier": "CANDIDATE",
+  "expectation": "8y walk-forward: ~60-62% touch +5%, EV ~+0.65/trade net — honest modest edge",
+  "picks": [
+    {
+      "date": "2026-07-03",
+      "market": "KOSPI",
+      "ticker": "066570.KS",
+      "p": 0.8697,
+      "close": 185000.0,
+      "liq_eok": 5224.7,
+      "tier": "CANDIDATE",
+      "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"
+    },
+    {
+      "date": "2026-07-03",
+      "market": "KOSPI",
+      "ticker": "010060.KS",
+      "p": 0.8055,
+      "close": 205500.0,
+      "liq_eok": 737.2,
+      "tier": "CANDIDATE",
+      "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"
+    },
+    {
+      "date": "2026-07-03",
+      "market": "KOSPI",
+      "ticker": "034230.KS",
+      "p": 0.8018,
+      "close": 12470.0,
+      "liq_eok": 104.7,
+      "tier": "CANDIDATE",
+      "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"
+    },
+    {
+      "date": "2026-07-03",
+      "market": "KOSDAQ",
+      "ticker": "025950.KQ",
+      "p": 0.8177,
+      "close": 13350.0,
+      "liq_eok": 37.3,
+      "tier": "CANDIDATE",
+      "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"
+    },
+    {
+      "date": "2026-07-03",
+      "market": "KOSDAQ",
+      "ticker": "122350.KQ",
+      "p": 0.8011,
+      "close": 2345.0,
+      "liq_eok": 58.3,
+      "tier": "CANDIDATE",
+      "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"
+    },
+    {
+      "date": "2026-07-03",
+      "market": "KOSDAQ",
+      "ticker": "068760.KQ",
+      "p": 0.7937,
+      "close": 41100.0,
+      "liq_eok": 39.9,
+      "tier": "CANDIDATE",
+      "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"
+    }
+  ],
+  "forward_summary": {
+    "resolved": 0
+  }
+}
