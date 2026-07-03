@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-07-03T15:10:11.775660+00:00",
+  "as_of": "2026-07-02",
+  "capital_status": "observation_only_shadow",
+  "expectation": "backtest: rank-1 win 79.3%, EV 1.68 net (placebo-separated +9.4pp/5sig); honest true edge ~+0.5-1.0/trade \u2014 no capital before forward n>=30",
+  "train_rows": 243006,
+  "universe": 315,
+  "picks": [
+    {
+      "date": "2026-07-02",
+      "symbol": "EOSE",
+      "p": 0.8683,
+      "entry": 5.23,
+      "tier": "SHADOW",
+      "contract": "+5% touch within 5 sessions else 5d close (close entry)"
+    }
+  ],
+  "forward_summary": {
+    "resolved": 0
+  }
+}

@@ -322,6 +322,18 @@ if [[ "${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-
     python3 multi_agent/tools/report_nasdaq_session_edge_shadow.py "${NASDAQ_SESSION_EDGE_ARGS[@]}"
 fi
 
+# NASDAQ 세션테이프 shadow (swing-main-f9yw, §12-D): 시간봉 증분 갱신 → rank-1 shadow 픽.
+# 검증: 29개월 walk-forward 승률 79.3%(플라시보 +9.4pp/5σ), 진짜엣지 ~+0.5~1.0/트레이드.
+# 관측 전용(라우팅 없음) — forward n>=30 전 운용 금지. 비활성: AG_NASDAQ_SESSION_TAPE_ENABLE=0.
+if [[ "${AG_NASDAQ_SESSION_TAPE_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] update_us_hourly (시간봉 증분)"
+  run_optional "update_us_hourly" \
+    python3 multi_agent/tools/update_us_hourly.py
+  echo "[STEP] report_nasdaq_session_tape"
+  run_optional "report_nasdaq_session_tape" \
+    python3 multi_agent/tools/report_nasdaq_session_tape.py
+fi
+
 if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
   # LIVE SWING structure-1 (2026-06-24, operator decision): daily price-ML ENSEMBLE
   # (LGBM+XGB+ET) -> ft_5_5 first-touch (+5/-5), KOSPI+KOSDAQ, >=100억, top ~1% confidence,
