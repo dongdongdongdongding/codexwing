@@ -30,8 +30,13 @@ LANES = {
     "kosdaq_swing":  {"ledger": "swing_ensemble_ledger.jsonl",                 "label": "코스닥 스윙",  "kind": "SWING",    "badge": "🟢"},
     "kospi_intraday":{"ledger": "kospi_intraday_swing_ledger.jsonl",           "label": "코스피 장중",  "kind": "INTRADAY", "badge": "🔵"},
     "kosdaq_intraday":{"ledger":"kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl","label":"코스닥 장중","kind":"INTRADAY","badge":"🔵"},
+    # 8년 검증 스윙 first-touch 랭커 (RESEARCH_LOG §7-A) — 정직한 modest 엣지, 후보픽 전용 (라우팅 없음)
+    "swing_candidate":{"ledger": "kr_swing_candidate_ledger.jsonl",            "label": "스윙 후보",   "kind": "CANDIDATE","badge": "🧪"},
 }
 TARGET_PCT = 5.0
+# 승격 계약(§7-E)의 원장 필드 → 웹 노출 (티어/레짐상태/계약)
+_LEDGER_EXTRA_KEYS = ("tier", "tier_threshold", "mkt_state", "mkt_dd20", "hold_days",
+                      "target_tp_pct", "ev_pred", "exit_contract")
 
 
 @lru_cache(maxsize=1)
@@ -108,7 +113,12 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         "target_pct": TARGET_PCT,
     }
     if extra:
-        row.update(extra)
+        row.update({k: v for k, v in extra.items() if v is not None})
+        # 레인별 계약 TP(§7-E: KOSDAQ +10%)가 있으면 목표가 재계산
+        tp = row.get("target_tp_pct")
+        if tp and entry:
+            row["target"] = round(float(entry) * (1 + float(tp) / 100), 2)
+            row["target_pct"] = float(tp)
     return row
 
 
@@ -124,7 +134,7 @@ def _a_picks_ledger(lane=None):
         if not led:
             continue
         want_market = "KOSPI" if "kospi" in key else ("KOSDAQ" if "kosdaq" in key else "")
-        recs = [r for r in led if (str(r.get("market", "")).upper() == want_market or not r.get("market"))]
+        recs = [r for r in led if (not want_market or str(r.get("market", "")).upper() == want_market or not r.get("market"))]
         if not recs:
             continue
         last = max(str(r.get("date", "")) for r in recs)
@@ -140,8 +150,10 @@ def _a_picks_ledger(lane=None):
             if code6 in seen:
                 continue
             seen.add(code6)
-            rows.append(_pick_row(code, want_market or mk, key, entry=r.get("entry_reference_price"),
-                                  prob=r.get("p"), scan_date=last, source="A"))
+            rows.append(_pick_row(code, want_market or mk, key,
+                                  entry=r.get("entry_reference_price") or r.get("close"),
+                                  prob=r.get("p"), scan_date=last, source="A",
+                                  extra={k: r.get(k) for k in _LEDGER_EXTRA_KEYS}))
     return rows
 
 
@@ -638,6 +650,38 @@ def _scan_deep_perf_rows():
             pass
     t = threading.Thread(target=work, daemon=True); t.start(); t.join(7.0)
     return out["rows"]
+
+
+def contract_performance():
+    """④-b 계약 실현 성과 — 승격 계약(§7-E)의 자동 채점 결과.
+    원천: 레인 원장의 exit shadow 필드(리졸버가 해상 9일차에 기록) + 선별 shadow 뷰 + 스윙 후보 원장.
+    마크투마켓(performance)과 달리 '터치익절 계약대로 매매했을 때'의 실현 수익."""
+    out = {"note": "터치익절 계약 실현 수익 (자동 채점, 비용 전). 마크투마켓 성과와 별개.", "lanes": {}}
+
+    def _agg(vals):
+        if not vals:
+            return {"n": 0}
+        return {"n": len(vals), "ev_avg": round(sum(vals) / len(vals), 2),
+                "win_pct": round(sum(1 for v in vals if v > 0.3) / len(vals) * 100, 1),
+                "worst": round(min(vals), 2)}
+
+    for key, exit_key, label in (("kospi_intraday", "exit_t5_h5", "코스피 장중 (+5% 터치/5일)"),
+                                 ("kosdaq_intraday", "exit_t10_h5", "코스닥 장중 (+10% 터치/5일)")):
+        rows = _read_ledger(LANES[key]["ledger"])
+        vals = [float(r[exit_key]) for r in rows if isinstance(r.get(exit_key), (int, float))]
+        out["lanes"][key] = {"label": label, **_agg(vals)}
+    # 스윙 후보 (익일 시가 진입, +5% 터치/5일, policy_ret에 비용 전 수익)
+    rows = _read_ledger(LANES["swing_candidate"]["ledger"])
+    vals = [float(r["policy_ret"]) for r in rows if isinstance(r.get("policy_ret"), (int, float))]
+    out["lanes"]["swing_candidate"] = {"label": "스윙 후보 (+5% 터치/5일, 익일시가)", **_agg(vals)}
+    # 선별 shadow (rank-1 고확신 트랙) 요약 패스스루
+    try:
+        sel = json.load(open(os.path.join(REPO, "runtime_state/reports/experimental/kr_selective_shadow_latest.json")))
+        out["selective"] = {m: {"rank1": v.get("rank1_all"), "primary": v.get("rank1_primary")}
+                            for m, v in (sel.get("lanes") or {}).items()}
+    except Exception:
+        out["selective"] = None
+    return out
 
 
 def performance():

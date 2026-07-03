@@ -82,6 +82,12 @@ def performance():
     return S.performance()
 
 
+@app.get("/api/contract-performance")
+def contract_performance():
+    """계약 실현 성과 — 승격 계약(터치익절)의 자동 채점 (exit shadow + 선별 뷰 + 스윙 후보)."""
+    return S.contract_performance()
+
+
 @app.get("/api/market")
 def market():
     return S.market()

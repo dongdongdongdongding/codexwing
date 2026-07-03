@@ -75,7 +75,14 @@ export function Picks() {
                   <Td style={{ color: C.mut }}>{p.signal_class === "B" ? "α기준" : fmt(p.target)}</Td>
                   <Td>{p.prob != null ? `${p.prob}%` : "–"}</Td>
                   <Td style={{ color: signColor(p.alpha) }}>{p.alpha != null ? pct(p.alpha) : "–"}</Td>
-                  <Td style={{ textAlign: "left" }}><LaneBadge kind={p.kind} badge={p.badge} label={p.lane_label} /></Td>
+                  <Td style={{ textAlign: "left" }}>
+                    <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
+                      <LaneBadge kind={p.kind} badge={p.badge} label={p.lane_label} />
+                      {p.tier === "PRIMARY" && <Chip color="#22c55e">주력</Chip>}
+                      {p.tier === "CANDIDATE" && <Chip color="#94a3b8">후보</Chip>}
+                      {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
+                    </div>
+                  </Td>
                 </tr>
               );
             })}
@@ -91,6 +98,10 @@ export function Picks() {
       {sel && <Drawer pick={sel} live={prices[sel.code]} onClose={() => setSel(null)} />}
     </div>
   );
+}
+
+function Chip({ color, children }: { color: string; children: any }) {
+  return <span style={{ fontSize: 11, padding: "1px 7px", borderRadius: 999, border: `1px solid ${color}`, color }}>{children}</span>;
 }
 
 function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: () => void }) {
@@ -117,8 +128,10 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
         <Section title="매매 계획">
           <Row k="매수 대상일" v={pick.buy_date ? `${pick.buy_date} (다음 거래일)` : "다음 거래일"} />
           <Row k={`진입 (${pick.scan_date || ""} 종가)`} v={fmt(pick.entry)} />
-          <Row k="목표(+5%)" v={pick.signal_class === "B" ? "α기준(시장중립)" : fmt(pick.target)} />
-          <Row k="보유" v={pick.signal_class === "B" ? `${pick.hold_days ?? 5}거래일` : (pick.kind === "INTRADAY" ? "3거래일" : "5거래일")} />
+          <Row k={`목표(+${pick.target_pct ?? 5}%)`} v={pick.signal_class === "B" ? "α기준(시장중립)" : fmt(pick.target)} />
+          <Row k="보유" v={`${pick.hold_days ?? 5}거래일 (목표 터치시 익절, 아니면 종가 청산)`} />
+          {pick.tier && <Row k="발행 티어" v={pick.tier === "PRIMARY" ? "주력(고확신 선별)" : "후보(관측용 — 매수 판단 참고만)"} />}
+          {pick.mkt_state === "RISK_OFF" && <Row k="시장 상태" v={`약세 구간 (20일 낙폭 ${pick.mkt_dd20 ?? "-"}%) — 모멘텀 픽 주의`} />}
           <Row k="적중확률" v={pick.prob != null ? `${pick.prob}%` : "–"} />
         </Section>
 

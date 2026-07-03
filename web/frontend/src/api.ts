@@ -5,6 +5,14 @@ export interface Pick {
   signal_class: "A" | "B"; scan_date?: string; buy_date?: string;
   prob?: number | null; alpha?: number | null; entry?: number | null; target?: number | null; target_pct?: number;
   pred_alpha_5d?: number; smart5?: number; rsi14?: number; hold_days?: number;
+  // 승격 계약(§7-E) 필드: 선별 티어 / 레짐 상태
+  tier?: "PRIMARY" | "CANDIDATE"; tier_threshold?: number;
+  mkt_state?: "RISK_OFF" | "NORMAL" | "UNKNOWN"; mkt_dd20?: number; ev_pred?: number;
+}
+export interface ContractLane { label: string; n: number; ev_avg?: number; win_pct?: number; worst?: number; }
+export interface ContractPerf {
+  note: string; lanes: Record<string, ContractLane>;
+  selective?: Record<string, { rank1?: { n: number; ev_avg?: number; win_pct?: number }; primary?: { n: number; ev_avg?: number; win_pct?: number } }> | null;
 }
 export interface Lane { key: string; label: string; kind: string; badge: string; }
 export interface Freshness { daily?: string; minute?: string; flow?: string; dart?: string; pead?: string; }
@@ -61,6 +69,7 @@ export const api = {
   overview: (top = 6) => j<Overview>(`/api/overview?top=${top}`),
   analyze: (code: string) => j<Analysis>(`/api/analyze/${code}`),
   performance: () => j<Performance>(`/api/performance`),
+  contractPerformance: () => j<ContractPerf>(`/api/contract-performance`),
   opsStatus: () => j<any>(`/api/ops/status`),
   scanStatus: () => j<{ status: string; progress: number; current: string; target?: string; steps: Array<{ step: string; ok: boolean; note: string }>; finished_at?: string }>(`/api/ops/scan`),
   scanTargets: () => j<{ targets: Array<{ key: string; label: string }> }>(`/api/ops/scan-targets`),

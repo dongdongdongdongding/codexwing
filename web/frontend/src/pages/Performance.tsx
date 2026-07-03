@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, Performance as PF, Archive as AR } from "../api";
+import { api, Performance as PF, Archive as AR, ContractPerf } from "../api";
 import { C, fmt, pct, signColor } from "../theme";
 import { Card, Term, MarketBadge, WarnBadge } from "../components/ui";
 
@@ -19,8 +19,9 @@ export function Performance() {
 
 function Summary() {
   const [pf, setPf] = useState<PF | null>(null);
+  const [cp, setCp] = useState<ContractPerf | null>(null);
   const [basis, setBasis] = useState<"alpha" | "abs">("alpha");
-  useEffect(() => { api.performance().then(setPf).catch(() => {}); }, []);
+  useEffect(() => { api.performance().then(setPf).catch(() => {}); api.contractPerformance().then(setCp).catch(() => {}); }, []);
   if (!pf) return <Sk />;
   const o = pf.overall;
   const mainVal = basis === "alpha" ? o.alpha_mean : o.abs_mean;
@@ -64,6 +65,33 @@ function Summary() {
           </tbody>
         </table>
       </Card>
+
+      {cp && (
+        <Card>
+          <div style={{ color: C.mut, fontSize: 12, marginBottom: 4, fontWeight: 600 }}>계약 실현 성과 (터치익절 자동 채점)</div>
+          <div style={{ color: C.mut, fontSize: 11, marginBottom: 10 }}>{cp.note} 위 표(마크투마켓: 익일종가→현재가)와 달리, 계약대로 익절/청산했을 때의 확정 수익입니다. 해상까지 ~9일 소요.</div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead><tr style={{ color: C.mut, textAlign: "right" }}><th style={{ textAlign: "left", padding: 6 }}>레인 (계약)</th><th style={{ padding: 6 }}>해상</th><th style={{ padding: 6 }}>평균수익</th><th style={{ padding: 6 }}>승률</th><th style={{ padding: 6 }}>최악</th></tr></thead>
+            <tbody>
+              {Object.entries(cp.lanes).map(([k, v]) => (
+                <tr key={k} style={{ borderTop: `1px solid ${C.line}`, fontVariantNumeric: "tabular-nums" }}>
+                  <td style={{ textAlign: "left", padding: 6 }}>{v.label}</td>
+                  <td style={{ textAlign: "right", padding: 6 }}>{v.n}</td>
+                  <td style={{ textAlign: "right", padding: 6, color: signColor(v.ev_avg) }}>{v.n ? pct(v.ev_avg) : "관측중"}</td>
+                  <td style={{ textAlign: "right", padding: 6 }}>{v.n ? `${v.win_pct}%` : "–"}</td>
+                  <td style={{ textAlign: "right", padding: 6, color: signColor(v.worst) }}>{v.n ? pct(v.worst) : "–"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {cp.selective && (
+            <div style={{ color: C.mut, fontSize: 11, marginTop: 8 }}>
+              선별 rank-1 트랙: {Object.entries(cp.selective).map(([m, v]) =>
+                `${m} 전체 n=${v.rank1?.n ?? 0}${v.rank1?.n ? ` 평균 ${v.rank1?.ev_avg}%` : ""} · 주력 n=${v.primary?.n ?? 0}${v.primary?.n ? ` 평균 ${v.primary?.ev_avg}%` : ""}`).join("  |  ")}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }
