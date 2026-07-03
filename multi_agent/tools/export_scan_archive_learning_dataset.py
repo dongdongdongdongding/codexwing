@@ -98,16 +98,23 @@ def _dedupe_archive_rows(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
 
 
 def _infer_decision_bucket(df: pd.DataFrame) -> pd.Series:
+    # stored bucket wins (model lanes write it explicitly: swing_ensemble / kospi_intraday /
+    # kosdaq_intraday_3d_t5_vwap_guard ...). Inference from decision strings is fallback only —
+    # it used to OVERWRITE stored buckets, flattening all model-lane rows to "unknown".
+    stored = (df["decision_bucket"].fillna("").astype(str).str.strip()
+              if "decision_bucket" in df.columns else pd.Series("", index=df.index, dtype="object"))
+    stored = stored.mask(stored.str.lower().isin(["unknown", "none", "nan"]), "")
     if "decision" in df.columns:
         decision = df["decision"].fillna("").astype(str).str.upper()
         inferred = pd.Series("unknown", index=df.index, dtype="object")
         inferred = inferred.mask(decision.eq("EXCEPTION_LEADER"), "exception_leader")
         inferred = inferred.mask(decision.isin(["WATCHLIST_ONLY", "FALLBACK_WATCHLIST", "WATCHLIST", "OBSERVE"]), "watchlist")
         inferred = inferred.mask(decision.isin(["PRIORITY_WATCHLIST"]), "picked")
-        return inferred.fillna("unknown").astype(str)
-    if "decision_bucket" in df.columns:
-        return df["decision_bucket"].fillna("unknown").astype(str)
-    return pd.Series("unknown", index=df.index, dtype="object")
+        inferred = inferred.mask(decision.eq("SWING_ENSEMBLE_BUY"), "swing_ensemble")
+        inferred = inferred.mask(decision.eq("KOSPI_INTRADAY_BUY"), "kospi_intraday")
+        inferred = inferred.mask(decision.eq("KOSDAQ_INTRADAY_3D_T5_BUY"), "kosdaq_intraday_3d_t5_vwap_guard")
+        return stored.where(stored.ne(""), inferred).fillna("unknown").astype(str)
+    return stored.where(stored.ne(""), "unknown").astype(str)
 
 
 def _price_band(series: pd.Series) -> pd.Series:

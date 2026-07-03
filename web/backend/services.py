@@ -830,6 +830,17 @@ def archive(date_from=None, date_to=None, market=None, ticker=None, limit=200, o
         ret = r.get("return_5d_pct") if pd.notna(r.get("return_5d_pct")) else r.get("return_3d_pct")
         nm = resolve_name(code, default="") or _s(r.get("stock_name")).strip() or code
         lane = _s(r.get("decision_bucket")).strip() or _s(r.get("scan_mode")).strip() or "–"
+        # 과거 export가 모델레인 bucket을 unknown으로 눌러쓴 행 폴백: run_id로 레인 복원
+        if lane in ("unknown", "", "–"):
+            rid = _s(r.get("run_id"))
+            if rid.startswith("SWING-ENS"):
+                lane = "swing_ensemble"
+            elif rid.startswith("KOSPI-ITD"):
+                lane = "kospi_intraday"
+            elif rid.startswith("KQ-ITD"):
+                lane = "kosdaq_intraday"
+            elif rid.startswith("NASDAQ-SESSION-EDGE"):
+                lane = "nasdaq_session_edge"
         rv = _num(ret)
         out.append({"date": (r["_d"].strftime("%Y-%m-%d") if dcol and pd.notna(r.get("_d")) else None), "run_id": _s(r.get("run_id")),
                     "code": code, "name": nm, "market": _s(r.get("market")) or _s(r.get("market_type")),
