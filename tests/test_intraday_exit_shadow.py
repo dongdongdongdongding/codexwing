@@ -157,3 +157,24 @@ def test_swing_candidate_resolution_touch_and_entry(tmp_path, monkeypatch):
     assert row["ft_touch5"] == 1                # day3 high 1060 >= 1050
     assert row["policy_ret"] == 5.0             # fill max(1050, open 1020) = 1050
     assert summary["resolved"] == 1 and summary["touch5_pct"] == 100.0
+
+
+def test_kospi_tier_threshold_quantile_and_fallback(tmp_path, monkeypatch):
+    import multi_agent.tools.report_kospi_intraday_swing as lane
+
+    ledger = tmp_path / "led.jsonl"
+    # 20 days of rank-1 p = 0.60..0.79 (plus a lower second pick that must be ignored)
+    rows = []
+    for i in range(20):
+        rows.append({"date": f"2026-06-{i+1:02d}", "p": 0.60 + i * 0.01, "ticker": "A.KS"})
+        rows.append({"date": f"2026-06-{i+1:02d}", "p": 0.10, "ticker": "B.KS"})
+    ledger.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    monkeypatch.setattr(lane, "LEDGER", ledger)
+    thr = lane._tier_threshold(quantile=0.2, window=40, min_history=15, fallback=0.65)
+    # 20th percentile of 0.60..0.79 ~= 0.638 (rank-1 series only)
+    assert 0.63 <= thr <= 0.65 and thr != 0.65
+
+    short = tmp_path / "short.jsonl"
+    short.write_text(json.dumps({"date": "2026-06-01", "p": 0.9, "ticker": "A.KS"}) + "\n", encoding="utf-8")
+    monkeypatch.setattr(lane, "LEDGER", short)
+    assert lane._tier_threshold() == 0.65  # insufficient history -> fallback

@@ -321,13 +321,14 @@ if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
 fi
 
 if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
-  # LIVE KOSPI INTRADAY lane (2026-06-24, operator) -- Claude lane of the Claude+Codex synthesis
-  # KR_INTRADAY_3D_T5_CONTEXT_VWAP_GUARD. 3-model ensemble over intraday-path + daily-context
-  # features -> 3-day +5% MFE touch, KOSPI >=100억, close-buy, guards close_vwap>=0 AND idx_vol20>=8,
-  # top2, 3D close hold (no tight stop). Backtest 85% hit / monthly floor 71% / +6.2% (vol guard
-  # repairs the one low-vol weak month). Routes live (AG_KOSPI_INTRADAY_PRODUCTION=1) + ledger that
-  # auto-resolves 3D +5% touch + return. Needs KIS minute bars (daily_minute_bars, full session post-
-  # close) + FDR daily. Codex runs the KOSDAQ 15:00 lane separately. decision_bucket=kospi_intraday.
+  # LIVE KOSPI INTRADAY lane -- Claude lane of the Claude+Codex synthesis.
+  # PROMOTED 2026-07-03 (RESEARCH_LOG §7-E): rank-1 selective issuance, PRIMARY tier only routes
+  # (p >= trailing-40 q0.2 of rank-1 p, fallback 0.65; CANDIDATE days ledgered, not routed),
+  # exit = +5% touch within 5 sessions else 5d close, no stop. Walk-forward 8 OOS mo:
+  # win 89.0% / EV +4.80 net CI>0 / 3.2 pick-days-wk / 0-1 neg months incl 2026-06.
+  # Replaces top2 + 3d-close-hold (win 45%, EV 1.56 CI incl 0). Guards unchanged
+  # (>=100억, close_vwap>=0, idx_vol20>=8). Needs KIS minute bars + FDR daily.
+  # decision_bucket=kospi_intraday. Codex runs the KOSDAQ 15:00 lane separately.
   echo "[STEP] report_kospi_intraday_swing"
   KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kospi_intraday_swing" \
     python3 multi_agent/tools/report_kospi_intraday_swing.py \

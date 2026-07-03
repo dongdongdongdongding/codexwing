@@ -87,6 +87,7 @@ def test_selection_and_live_pick_keep_intraday_liquidity_lanes():
     assert picks[0]["liquidity_lane"] == "gte30eok"
     assert picks[1]["liquidity_lane"] == "gte100eok"
     assert picks[1]["tradeability_floor_pass"] is True
-    assert picks[0]["target_tp_pct"] == 5.0
-    assert picks[0]["hold_days"] == 3
+    # promoted contract (2026-07-03, RESEARCH_LOG §7-E): +10% touch-exit within 5 sessions
+    assert picks[0]["target_tp_pct"] == 10.0
+    assert picks[0]["hold_days"] == 5
 

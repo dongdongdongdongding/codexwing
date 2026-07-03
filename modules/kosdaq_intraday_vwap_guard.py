@@ -338,9 +338,12 @@ def live_pick_payload(row: Mapping[str, Any], *, rank: int, trade_date: str, run
         "ordered_entry_at": row.get("entry_bar_at"),
         "ordered_entry_price": safe_float(row.get("entry_reference_price")),
         "base_trade_date": trade_date,
-        "target_tp_pct": 5.0,
+        # promoted contract (2026-07-03, RESEARCH_LOG §7-E): +10% touch take-profit within
+        # 5 sessions else 5d close, no stop — win 76.6% EV +5.18 net CI(3.15,6.93) vs
+        # 3d-close-hold win 57.9% (melt-up-loaded EV, worse monthly floor).
+        "target_tp_pct": 10.0,
         "stop_sl_pct": None,
-        "hold_days": 3,
+        "hold_days": 5,
         "source_ref": CANDIDATE_ID,
         "run_id": run_id,
     }

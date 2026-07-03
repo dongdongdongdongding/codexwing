@@ -166,3 +166,13 @@
 - KOSDAQ p 포화 수정: 원장의 isotonic `p`=1.0 포화 → `p_raw`(0.91) 우선 랭킹.
 - **스윙 CANDIDATE 발행기** `report_kr_swing_candidate.py`: px_long 롤링 2년 ft_5_5 LGBM, 일자 최신 풀 top-3/시장, 익일시가 진입 계약, fdr 자동 채점(터치 체결 max(시가,목표), 진입일 포함 5세션). 관측 전용, 라우팅 없음. 첫 발행 2026-07-03: 6픽 (066570 LG전자 p0.87 등, 유동성 37~5224억).
 - 테스트 5 passed (exit shadow ×2, drawdown state, selective view, candidate resolver).
+
+### 7-E. **운영 승격** (2026-07-03, 운영자 지시: "기존보다 좋으면 바로 반영, 검증은 제대로")
+검증 비교 (동일 데이터·동일 폴드 8 OOS월, 비용후):
+| 레인 | 기존 (top-2, 3d 종가홀드) | 신규 (rank-1 선별 + 터치익절) | 판정 |
+|---|---|---|---|
+| KOSPI | win 45.2%, EV 1.56 **CI 0 포함**, 음수월 2/7 | **win 89.0%, EV +4.80 CI>0, 주3.2일, 음수월 0~1 (6월 포함)** | 전 축 우위 → 승격 |
+| KOSDAQ | win 57.9%, EV 7.42 (1~4월 급등장 적재, 5·6월 음수) | **win 76.6%, EV +5.18 CI(3.15,6.93), 음수월 1/8** | EV는 급등장 러너 포기로 낮지만 승률·바닥·8:2 우위 → 승격 (정직 트레이드오프 기록) |
+- 변경: KOSPI `top_n 2→1`(env AG_KOSPI_INTRADAY_TOP_N) + PRIMARY 티어만 라우팅(분위수 임계, CANDIDATE는 원장 기록만) + 계약 필드 t5/5d. KOSDAQ `top_n 2→1`(env AG_KOSDAQ_INTRADAY_TOP_N) + `target_tp_pct 5→10`, `hold_days 3→5`. decision/strategy_family 식별자는 하위 호환 위해 유지.
+- 부트스트랩: KOSPI 티어 임계는 원장 rank-1 이력 15일 미만 동안 fallback 0.65 (현 라이브 p 0.78~0.85라 초기 사실상 전부 PRIMARY) → 이력 차면 분위수 자동 전환.
+- 롤백: env 두 개로 즉시 top-2 복원 가능. 테스트 9 passed.

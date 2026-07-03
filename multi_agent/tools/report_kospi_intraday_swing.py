@@ -212,11 +212,39 @@ def score_today(min_liq: float) -> List[Dict[str, Any]]:
     X = X[(X["liq"] >= min_liq * 1e8) & (X["close_vwap"] >= 0)]
     if idx_vol20 < 8 or X.empty:
         return []
-    top = X.nlargest(2, "p")
+    top = X.nlargest(int(os.getenv("AG_KOSPI_INTRADAY_TOP_N", "1")), "p")
     return [{"ticker": str(r["code"]) + ".KS", "market": "KOSPI", "p": round(float(r["p"]), 4),
              "liq억": round(float(r["liq"]) / 1e8, 1), "close_vwap": round(float(r["close_vwap"]), 2),
              "day_change": (None if pd.isna(r.get("day_change")) else float(r["day_change"])),
-             "entry_reference_price": round(float(r["close"]), 1)} for _, r in top.iterrows()]
+             "entry_reference_price": round(float(r["close"]), 1),
+             "target_tp_pct": 5.0, "stop_sl_pct": None, "hold_days": 5,
+             "exit_contract": "+5% touch take-profit within 5 sessions else 5d close"} for _, r in top.iterrows()]
+
+
+def _tier_threshold(quantile: float = 0.2, window: int = 40, min_history: int = 15,
+                    fallback: float = 0.65) -> float:
+    """Self-calibrating PRIMARY threshold: trailing quantile of the ledger's daily rank-1 p.
+
+    Validated (RESEARCH_LOG §7-D): rolling-q0.2 reproduces the absolute-0.65 frontier
+    (win 89.0%, EV +4.80, 3.2 pick-days/week) and is immune to p-distribution shift.
+    """
+    try:
+        if not LEDGER.exists():
+            return fallback
+        bydate: Dict[str, float] = {}
+        for line in LEDGER.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            d, p = str(row.get("date") or "")[:10], row.get("p")
+            if d and isinstance(p, (int, float)):
+                bydate[d] = max(bydate.get(d, 0.0), float(p))
+        hist = [bydate[d] for d in sorted(bydate)]
+        if len(hist) >= min_history:
+            return float(np.quantile(hist[-window:], quantile))
+        return fallback
+    except Exception:
+        return fallback
 
 
 def resolve_pending(today: str) -> Dict[str, Any]:
@@ -296,10 +324,17 @@ def main() -> None:
         REPORT_JSON.write_text(json.dumps({"error": repr(exc)[:300], "today": today}, ensure_ascii=False, indent=2), encoding="utf-8")
         print(json.dumps({"error": repr(exc)[:200]}, ensure_ascii=False)); return
     state = market_drawdown_state("KOSPI")
+    # selective issuance (promoted 2026-07-03, RESEARCH_LOG §7-E): only PRIMARY-tier
+    # rank-1 picks route live; CANDIDATE days are ledgered for observation, not routed.
+    thr = _tier_threshold(quantile=float(os.getenv("AG_KOSPI_INTRADAY_TIER_Q", "0.2")))
+    for p in picks:
+        p["tier"] = "PRIMARY" if float(p["p"]) >= thr else "CANDIDATE"
+        p["tier_threshold"] = round(thr, 4)
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     with LEDGER.open("a", encoding="utf-8") as fh:
         for p in picks:
             fh.write(json.dumps({"date": today, "touch5": None, "ret3d": None, **state, **p}, ensure_ascii=False) + "\n")
+    picks = [p for p in picks if p["tier"] == "PRIMARY"]
     summary = resolve_pending(today)
     production = os.getenv("AG_KOSPI_INTRADAY_PRODUCTION", "1").strip() not in ("0", "", "false", "False")
     routed = 0
@@ -316,8 +351,10 @@ def main() -> None:
     report = {"generated_at": datetime.now(timezone.utc).isoformat(), "today": today, "lane": "kospi_intraday (Claude)",
               "picks": picks, "forward_summary": summary, "production_enabled": production, "routed": routed,
               "market_state": state,
-              "note": "KOSPI intraday 3D+5% ensemble (intraday+daily ctx), close_vwap>=0 + idx_vol20>=8 guards, top2, "
-                      "3D close hold. Backtest hit 85%/floor 71%/+6.2%. Live to validate (n=1 weak-month guard)."}
+              "note": "KOSPI intraday selective (promoted 2026-07-03, §7-E): rank-1 only, PRIMARY tier "
+                      "(p >= trailing-40 q0.2 of rank-1 p, fallback 0.65), exit=+5% touch within 5 sessions "
+                      "else 5d close, no stop. Walk-forward 8 OOS mo: win 89.0%, EV +4.80 net CI>0, "
+                      "3.2 pick-days/wk, 0-1 neg months incl 2026-06. Replaces top2/3d-close (win 45%, EV CI incl 0)."}
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = [f"# KOSPI intraday SWING (3D +5%) — {today}", "",
              f"- picks: {len(picks)} | routed: {routed} | production: {production}",

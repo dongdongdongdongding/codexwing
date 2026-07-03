@@ -316,7 +316,9 @@ def score_live_candidates(
         min_pre_vwap_dist_pct=float(((model_bundle.get("selection_policy") or {}).get("entry_quality_guard") or {}).get("pre_vwap_dist_pct_min") or 0.0),
         min_liq_eok=min_liq_eok,
         tradeability_floor_eok=tradeability_floor_eok,
-        top_n=int((model_bundle.get("selection_policy") or {}).get("max_picks_per_day") or 2),
+        # promoted 2026-07-03 (§7-E): rank-1 selective issuance (was bundle top2);
+        # env AG_KOSDAQ_INTRADAY_TOP_N overrides.
+        top_n=int(os.getenv("AG_KOSDAQ_INTRADAY_TOP_N", "1")),
     )
     run_id = "KQ-ITD-3D-T5-" + str(trade_date)
     picks = [live_pick_payload(row, rank=i, trade_date=trade_date, run_id=run_id) for i, row in enumerate(selected, start=1)]
