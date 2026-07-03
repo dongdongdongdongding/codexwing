@@ -199,19 +199,45 @@ def resolve_pending(today: str) -> Dict[str, Any]:
     rows = [json.loads(l) for l in LEDGER.read_text(encoding="utf-8").splitlines() if l.strip()]
     changed = False
     for row in rows:
-        if row.get("touch5") is not None:
+        need3 = row.get("touch5") is None
+        need5 = row.get("exit_t5_h5") is None
+        if not need3 and not need5:
             continue
         d = pd.to_datetime(row.get("date"), errors="coerce")
-        if pd.isna(d) or (pd.Timestamp(today) - d).days < 6:
+        if pd.isna(d):
+            continue
+        age = (pd.Timestamp(today) - d).days
+        if (not need3 or age < 6) and (not need5 or age < 9):
             continue
         try:
             bare = str(row["ticker"]).replace(".KS", "")
             h = fdr.DataReader(bare, str(d.date()))
             c0 = float(pd.to_numeric(h["Close"], errors="coerce").iloc[0])
-            fhi = pd.to_numeric(h["High"], errors="coerce").iloc[1:4]; fc = pd.to_numeric(h["Close"], errors="coerce").iloc[1:4]
-            if len(fhi) >= 1:
-                row["touch5"] = int((fhi.max() / c0 - 1) * 100 >= 5)
-                row["ret3d"] = round(float((fc.iloc[-1] / c0 - 1) * 100), 2); changed = True
+            if need3 and age >= 6:
+                fhi = pd.to_numeric(h["High"], errors="coerce").iloc[1:4]; fc = pd.to_numeric(h["Close"], errors="coerce").iloc[1:4]
+                if len(fhi) >= 1:
+                    row["touch5"] = int((fhi.max() / c0 - 1) * 100 >= 5)
+                    row["ret3d"] = round(float((fc.iloc[-1] / c0 - 1) * 100), 2); changed = True
+            # observation-only exit-policy shadow (swing-main-ayu1): sell-at-touch limit
+            # (gap-up fills at open) else 5d close hold. Never changes picks or contract.
+            if need5 and age >= 9:
+                f5 = h.iloc[1:6]
+                if len(f5) >= 5:
+                    op = pd.to_numeric(f5["Open"], errors="coerce"); hi5 = pd.to_numeric(f5["High"], errors="coerce")
+                    cl5 = pd.to_numeric(f5["Close"], errors="coerce")
+                    ret5 = float((cl5.iloc[-1] / c0 - 1) * 100)
+                    row["ret5d"] = round(ret5, 2)
+                    for tp, key in ((5.0, "exit_t5_h5"), (10.0, "exit_t10_h5")):
+                        tgt = c0 * (1 + tp / 100.0)
+                        r5 = ret5
+                        for k in range(5):
+                            if pd.notna(hi5.iloc[k]) and float(hi5.iloc[k]) >= tgt:
+                                o = op.iloc[k]
+                                fill = max(tgt, float(o)) if pd.notna(o) and float(o) > 0 else tgt
+                                r5 = (fill / c0 - 1) * 100
+                                break
+                        row[key] = round(float(r5), 2)
+                    changed = True
         except Exception:
             pass
     if changed:
@@ -219,8 +245,16 @@ def resolve_pending(today: str) -> Dict[str, Any]:
     res = [r for r in rows if r.get("touch5") is not None]
     if not res:
         return {"resolved": 0, "touch5_pct": None, "ret3d_avg": None}
-    return {"resolved": len(res), "touch5_pct": round(float(np.mean([r["touch5"] for r in res]) * 100), 1),
-            "ret3d_avg": round(float(np.mean([r["ret3d"] for r in res])), 2)}
+    out = {"resolved": len(res), "touch5_pct": round(float(np.mean([r["touch5"] for r in res]) * 100), 1),
+           "ret3d_avg": round(float(np.mean([r["ret3d"] for r in res])), 2)}
+    res5 = [r for r in rows if r.get("exit_t5_h5") is not None]
+    if res5:
+        out["exit_shadow"] = {"n": len(res5),
+                              "exit_t5_h5_avg": round(float(np.mean([r["exit_t5_h5"] for r in res5])), 2),
+                              "exit_t10_h5_avg": round(float(np.mean([r["exit_t10_h5"] for r in res5])), 2),
+                              "ret5d_avg": round(float(np.mean([r["ret5d"] for r in res5])), 2),
+                              "win_t5_pct": round(float(np.mean([1 if r["exit_t5_h5"] > 0.3 else 0 for r in res5]) * 100), 1)}
+    return out
 
 
 def main() -> None:

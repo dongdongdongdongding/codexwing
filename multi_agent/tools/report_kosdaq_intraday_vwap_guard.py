@@ -385,37 +385,61 @@ def resolve_pending(client: Any, *, today_trade_date: str) -> Dict[str, Any]:
         return {"resolved": 0, "touch3d_t5_pct": None, "ret3d_avg": None, "mfe3_avg": None, "mae3_avg": None}
     changed = False
     for row in rows:
-        if row.get("touch3d_t5") is not None:
+        need3 = row.get("touch3d_t5") is None
+        need5 = row.get("exit_t5_h5") is None
+        if not need3 and not need5:
             continue
         trade_date = str(row.get("trade_date") or "").replace("-", "")
         entry = safe_float(row.get("ordered_entry_price") or row.get("entry_reference_price"))
         if not trade_date or entry is None or entry <= 0:
             continue
         try:
-            if (pd.to_datetime(today_trade_date, format="%Y%m%d") - pd.to_datetime(trade_date, format="%Y%m%d")).days < 5:
-                continue
+            age = (pd.to_datetime(today_trade_date, format="%Y%m%d") - pd.to_datetime(trade_date, format="%Y%m%d")).days
         except Exception:
+            continue
+        if (not need3 or age < 5) and (not need5 or age < 9):
             continue
         code = normalize_kr_code(row.get("ticker"))
         try:
             payload = client.daily_bars(code, start_date=trade_date, end_date=today_trade_date, period="D", adjusted=True)
             frame = normalize_kis_daily_bars(code, payload if isinstance(payload, Mapping) else {})
             frame.index = pd.to_datetime(frame.index)
-            future = frame[frame.index.normalize() > pd.to_datetime(trade_date, format="%Y%m%d").normalize()].head(3)
-            if len(future) < 3:
-                continue
-            highs = pd.to_numeric(future["High"], errors="coerce")
-            lows = pd.to_numeric(future["Low"], errors="coerce")
-            closes = pd.to_numeric(future["Close"], errors="coerce")
-            mfe = float((highs.max() / entry - 1) * 100)
-            mae = float((lows.min() / entry - 1) * 100)
-            ret3 = float((closes.iloc[-1] / entry - 1) * 100)
-            row["touch3d_t5"] = int(mfe >= 5.0)
-            row["mfe3"] = round(mfe, 4)
-            row["mae3"] = round(mae, 4)
-            row["ret3d"] = round(ret3, 4)
-            row["resolved_at"] = datetime.now(timezone.utc).isoformat()
-            changed = True
+            future_all = frame[frame.index.normalize() > pd.to_datetime(trade_date, format="%Y%m%d").normalize()]
+            future = future_all.head(3)
+            if need3 and age >= 5 and len(future) >= 3:
+                highs = pd.to_numeric(future["High"], errors="coerce")
+                lows = pd.to_numeric(future["Low"], errors="coerce")
+                closes = pd.to_numeric(future["Close"], errors="coerce")
+                mfe = float((highs.max() / entry - 1) * 100)
+                mae = float((lows.min() / entry - 1) * 100)
+                ret3 = float((closes.iloc[-1] / entry - 1) * 100)
+                row["touch3d_t5"] = int(mfe >= 5.0)
+                row["mfe3"] = round(mfe, 4)
+                row["mae3"] = round(mae, 4)
+                row["ret3d"] = round(ret3, 4)
+                row["resolved_at"] = datetime.now(timezone.utc).isoformat()
+                changed = True
+            # observation-only exit-policy shadow (swing-main-ayu1): sell-at-touch limit
+            # (gap-up fills at open) else 5d close hold. Never changes picks or contract.
+            if need5 and age >= 9:
+                f5 = future_all.head(5)
+                if len(f5) >= 5:
+                    op5 = pd.to_numeric(f5["Open"], errors="coerce")
+                    hi5 = pd.to_numeric(f5["High"], errors="coerce")
+                    cl5 = pd.to_numeric(f5["Close"], errors="coerce")
+                    ret5 = float((cl5.iloc[-1] / entry - 1) * 100)
+                    row["ret5d"] = round(ret5, 4)
+                    for tp, key in ((5.0, "exit_t5_h5"), (10.0, "exit_t10_h5")):
+                        tgt = entry * (1 + tp / 100.0)
+                        r5 = ret5
+                        for k in range(5):
+                            if pd.notna(hi5.iloc[k]) and float(hi5.iloc[k]) >= tgt:
+                                o = op5.iloc[k]
+                                fill = max(tgt, float(o)) if pd.notna(o) and float(o) > 0 else tgt
+                                r5 = (fill / entry - 1) * 100
+                                break
+                        row[key] = round(float(r5), 4)
+                    changed = True
         except Exception:
             continue
     if changed:
@@ -423,13 +447,23 @@ def resolve_pending(client: Any, *, today_trade_date: str) -> Dict[str, Any]:
     resolved = [row for row in rows if row.get("touch3d_t5") is not None]
     if not resolved:
         return {"resolved": 0, "touch3d_t5_pct": None, "ret3d_avg": None, "mfe3_avg": None, "mae3_avg": None}
-    return {
+    out = {
         "resolved": len(resolved),
         "touch3d_t5_pct": round(float(np.mean([row["touch3d_t5"] for row in resolved]) * 100), 2),
         "ret3d_avg": round(float(np.mean([row["ret3d"] for row in resolved])), 4),
         "mfe3_avg": round(float(np.mean([row["mfe3"] for row in resolved])), 4),
         "mae3_avg": round(float(np.mean([row["mae3"] for row in resolved])), 4),
     }
+    res5 = [row for row in rows if row.get("exit_t5_h5") is not None]
+    if res5:
+        out["exit_shadow"] = {
+            "n": len(res5),
+            "exit_t5_h5_avg": round(float(np.mean([row["exit_t5_h5"] for row in res5])), 4),
+            "exit_t10_h5_avg": round(float(np.mean([row["exit_t10_h5"] for row in res5])), 4),
+            "ret5d_avg": round(float(np.mean([row["ret5d"] for row in res5])), 4),
+            "win_t10_pct": round(float(np.mean([1 if row["exit_t10_h5"] > 0.3 else 0 for row in res5]) * 100), 1),
+        }
+    return out
 
 
 def route_live_intraday(picks: List[Dict[str, Any]], *, run_id: str, recommended_at: str) -> int:
