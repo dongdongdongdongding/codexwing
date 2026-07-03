@@ -239,9 +239,13 @@ def a_picks(lane=None):
 
 
 def invalidate_pick_caches():
-    """스캔 완료 후 호출 — 픽/개요가 최신 스캔을 즉시 반영하도록 캐시 비움."""
+    """스캔 완료 후 호출 — 픽/개요/성과가 최신 스캔을 즉시 반영하도록 캐시 비움."""
     _KR_CACHE.update(ts=0.0, rows=[])
     _NASDAQ_CACHE.update(ts=0.0, rows=[])
+    try:
+        _PERF_CACHE.update(ts=0.0, data=None)
+    except Exception:
+        pass
 
 
 def b_picks():
@@ -685,11 +689,17 @@ def contract_performance():
     return out
 
 
+_PERF_CACHE = {"ts": 0.0, "data": None}
+
+
 def performance():
     """④ 성과 — 레인별 실현 승률 + 시장대비 알파(베타 분리) + 절대수익. **누적**(갈아치우지 않음):
     ledger(일일ops) + scan_deep_reports(웹·디스코드·일일 모든 스캔) 전체 history를 합쳐 평가.
     ★ 진입 기준 = '다음 거래일 종가'(현실 진입). 스캔일 종가가 아니라 실제 매수가능 시점 → 정직.
+    px_long 전체 읽기(무거움) → 10분 TTL 캐시. 스캔 완료시 invalidate_pick_caches가 비움.
     """
+    if time.time() - _PERF_CACHE["ts"] < 600 and _PERF_CACHE["data"] is not None:
+        return _PERF_CACHE["data"]
     import pandas as pd, numpy as np, math
     px = pd.read_parquet(os.path.join(RESEARCH, "px_long.parquet"), columns=["code", "date", "close", "liq"])
     px["code"] = px["code"].astype(str); px["date"] = pd.to_datetime(px["date"])
@@ -751,10 +761,12 @@ def performance():
         return pd.Timestamp(dates[i]), float(closes[i])
 
     rows = []
+    pending = {}
     for x in raw:
         entry_day, entry = next_entry(x["code"], x["scan_date"])
         if entry is None or entry <= 0:
-            continue  # 다음 거래일 미도래 → 평가 보류
+            pending[x["lane"]] = pending.get(x["lane"], 0) + 1
+            continue  # 다음 거래일 미도래 → 평가 보류(집계엔 pending으로 표시)
         ret = (cur[x["code"]] / entry - 1) * 100
         m = mkt_ret(entry_day)
         rows.append({"lane": x["lane"], "date": x["scan_date"], "buy_date": str(entry_day.date()),
@@ -771,7 +783,10 @@ def performance():
                 "abs_mean": round(float(np.mean(ab)), 2), "abs_win": round(float(np.mean([x > 0 for x in ab])) * 100),
                 "immature": int(sum(1 for r in rs if r["days"] < 3))}
     lanes_out = {label: agg([r for r in rows if r["lane"] == label]) for label in LED}
+    for label in lanes_out:
+        lanes_out[label]["pending"] = pending.get(label, 0)
     overall = agg(rows)
+    overall["pending"] = int(sum(pending.values()))
     # B forward-shadow
     b = {"settled": 0}
     sp = os.path.join(REPO, "b_engine/data/b_shadow.jsonl")
@@ -782,8 +797,10 @@ def performance():
         if sett:
             b["alpha_mean"] = round(float(np.mean([r["alpha"] for r in sett])), 2)
             b["alpha_win"] = round(float(np.mean([r.get("win", 0) for r in sett])) * 100)
-    return {"as_of": str(cur_date.date()), "overall": overall, "lanes": lanes_out,
+    out = {"as_of": str(cur_date.date()), "overall": overall, "lanes": lanes_out,
             "b_shadow": b, "rows": sorted(rows, key=lambda x: (x["alpha"] is None, -(x["alpha"] or -999)))}
+    _PERF_CACHE.update(ts=time.time(), data=out)
+    return out
 
 
 @lru_cache(maxsize=1)

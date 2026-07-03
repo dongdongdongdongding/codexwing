@@ -56,7 +56,7 @@ export interface Analysis {
   verdict: { text: string; source: string };
 }
 
-export interface LaneAgg { n: number; alpha_mean?: number; alpha_win?: number; abs_mean?: number; abs_win?: number; immature?: number; }
+export interface LaneAgg { n: number; alpha_mean?: number; alpha_win?: number; abs_mean?: number; abs_win?: number; immature?: number; pending?: number; }
 export interface Performance {
   as_of: string; overall: LaneAgg; lanes: Record<string, LaneAgg>;
   b_shadow: { settled: number; open?: number; alpha_mean?: number; alpha_win?: number };

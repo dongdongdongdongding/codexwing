@@ -51,19 +51,21 @@ function Summary() {
       <Card>
         <div style={{ color: C.mut, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>레인별</div>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead><tr style={{ color: C.mut, textAlign: "right" }}><th style={{ textAlign: "left", padding: 6 }}>레인</th><th style={{ padding: 6 }}>픽</th><th style={{ padding: 6 }}>알파</th><th style={{ padding: 6 }}>알파승</th><th style={{ padding: 6 }}>절대</th></tr></thead>
+          <thead><tr style={{ color: C.mut, textAlign: "right" }}><th style={{ textAlign: "left", padding: 6 }}>레인</th><th style={{ padding: 6 }}>픽</th><th style={{ padding: 6 }}>알파</th><th style={{ padding: 6 }}>알파승</th><th style={{ padding: 6 }}>절대</th><th style={{ padding: 6 }}>대기</th></tr></thead>
           <tbody>
-            {Object.entries(pf.lanes).filter(([, v]) => v.n).map(([k, v]) => (
+            {Object.entries(pf.lanes).filter(([, v]) => v.n || v.pending).map(([k, v]) => (
               <tr key={k} style={{ borderTop: `1px solid ${C.line}`, fontVariantNumeric: "tabular-nums" }}>
                 <td style={{ textAlign: "left", padding: 6 }}>{k}</td>
                 <td style={{ textAlign: "right", padding: 6 }}>{v.n}</td>
-                <td style={{ textAlign: "right", padding: 6, color: signColor(v.alpha_mean) }}>{pct(v.alpha_mean)}</td>
-                <td style={{ textAlign: "right", padding: 6 }}>{v.alpha_win}%</td>
-                <td style={{ textAlign: "right", padding: 6, color: signColor(v.abs_mean) }}>{pct(v.abs_mean)}</td>
+                <td style={{ textAlign: "right", padding: 6, color: signColor(v.alpha_mean) }}>{v.n ? pct(v.alpha_mean) : "–"}</td>
+                <td style={{ textAlign: "right", padding: 6 }}>{v.n ? `${v.alpha_win}%` : "–"}</td>
+                <td style={{ textAlign: "right", padding: 6, color: signColor(v.abs_mean) }}>{v.n ? pct(v.abs_mean) : "–"}</td>
+                <td style={{ textAlign: "right", padding: 6, color: C.mut }}>{v.pending || 0}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        <div style={{ color: C.mut, fontSize: 11, marginTop: 6 }}>대기 = 스캔 직후 아직 '다음 거래일 종가'가 없어 평가 보류 중인 픽 (다음 거래일 도래 시 자동 편입).</div>
       </Card>
 
       {cp && (
