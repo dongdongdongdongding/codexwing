@@ -48,6 +48,7 @@ def _log_shadow(out):
                 continue
             rec = {"code": p["code"], "scan_date": out["scan_date"], "signal_class": "B",
                    "pred_alpha_5d": p["pred_alpha_5d"], "entry_close": p["close"], "hold_days": E.HOLD,
+                   "rank": p.get("rank"), "tier": p.get("tier"),
                    "logged_at": datetime.now().isoformat(timespec="seconds"),
                    "status": "open", "abs_ret": None, "alpha": None, "win": None}
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")

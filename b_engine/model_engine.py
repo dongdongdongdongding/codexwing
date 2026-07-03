@@ -156,7 +156,7 @@ def pick(as_of=None):
         except Exception:
             pass
     picks = []
-    for _, r in top.iterrows():
+    for rank, (_, r) in enumerate(top.iterrows(), start=1):
         picks.append({
             "code": r["code"], "name": names.get(r["code"], r["code"]), "signal_class": "B",
             "pred_alpha_5d": round(float(r["pred_alpha"]), 3),
@@ -166,6 +166,10 @@ def pick(as_of=None):
             "smart5": round(float(r["smart5"]), 2) if pd.notna(r["smart5"]) else None,
             "rsi14": round(float(r["rsi14"]), 1) if pd.notna(r["rsi14"]) else None,
             "hold_days": HOLD,
+            # b_model_zoo(2026-07-03, 월별 walk-forward 24폴드): top3 집중 α 2.18 CI(1.07,3.19)
+            # vs top10 1.63 — 연도별 단조, 플라시보 사망. top1은 CI 넓고 2024 붕괴 → 3이 안전 집중.
+            "rank": rank,
+            "tier": "PRIMARY" if rank <= 3 else "CANDIDATE",
         })
     return {"scan_date": str(day.date()), "signal_class": "B", "hold_days": HOLD,
             "top_n": TOP_N, "universe": int(s["code"].nunique()), "picks": picks}

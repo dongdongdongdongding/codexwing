@@ -259,7 +259,8 @@ def b_picks():
                               name=p.get("name"), scan_date=d.get("scan_date"), source="B",
                               extra={"lane_label": "B 시장중립", "kind": "B", "badge": "🟣",
                                      "pred_alpha_5d": p.get("pred_alpha_5d"), "smart5": p.get("smart5"),
-                                     "rsi14": p.get("rsi14"), "hold_days": p.get("hold_days")}))
+                                     "rsi14": p.get("rsi14"), "hold_days": p.get("hold_days"),
+                                     "tier": p.get("tier")}))
     return rows
 
 
