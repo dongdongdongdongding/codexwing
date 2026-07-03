@@ -351,6 +351,25 @@ if [[ "${AG_KOSDAQ_INTRADAY_ENABLE:-1}" == "1" ]]; then
       --daily-context-source "${AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE:-cache}"
 fi
 
+if [[ "${AG_KR_SELECTIVE_SHADOW_ENABLE:-1}" == "1" ]]; then
+  # Observation-only selective high-conviction view over both intraday lane ledgers
+  # (RESEARCH_LOG §7): rank-1 by p per day, PRIMARY/CANDIDATE via trailing-40 q0.2 rule,
+  # scored by exit-shadow fields. Runs AFTER the two lane steps above. No routing.
+  echo "[STEP] report_kr_selective_shadow"
+  run_optional "report_kr_selective_shadow" \
+    python3 multi_agent/tools/report_kr_selective_shadow.py
+fi
+
+if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
+  # Observation-only swing CANDIDATE picks (RESEARCH_LOG §7-A/D): 8y ft_5_5 ranker,
+  # rolling 2y train on px_long, next-open entry / +5% touch-exit contract, fdr auto-scoring.
+  # Honest modest edge (EV ~+0.65/trade, 60-62% touch). Never routed to buy lists.
+  echo "[STEP] report_kr_swing_candidate"
+  run_optional "report_kr_swing_candidate" \
+    python3 multi_agent/tools/report_kr_swing_candidate.py \
+      --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
