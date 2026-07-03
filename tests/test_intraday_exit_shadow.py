@@ -106,3 +106,24 @@ def test_market_drawdown_state_flags_risk_off():
     px_flat["ret_1d"] = 0.1
     st2 = market_drawdown_state("KOSDAQ", px=px_flat)
     assert st2["mkt_state"] == "NORMAL"
+
+
+def test_selective_shadow_view_rank1_and_tiers(tmp_path, monkeypatch):
+    import multi_agent.tools.report_kr_selective_shadow as sel
+
+    ledger = tmp_path / "led.jsonl"
+    rows = [
+        {"date": "2026-06-01", "ticker": "A.KS", "p": 0.9, "exit_t5_h5": 5.0},
+        {"date": "2026-06-01", "ticker": "B.KS", "p": 0.5, "exit_t5_h5": -3.0},
+        {"date": "2026-06-02", "ticker": "C.KS", "p": 0.4, "exit_t5_h5": -2.0},
+    ]
+    ledger.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    monkeypatch.setitem(sel.LANES, "KOSPI", {"ledger": ledger, "exit_key": "exit_t5_h5",
+                                             "p_threshold": 0.65, "date_key": "date"})
+    lv = sel.lane_view("KOSPI")
+    assert lv["picks_total_days"] == 2
+    # rank-1 on 06-01 is A (p 0.9, PRIMARY, +5); 06-02 is C (CANDIDATE, -2)
+    assert lv["rank1_all"]["n"] == 2 and lv["rank1_all"]["ev_avg"] == 1.5
+    assert lv["rank1_primary"]["n"] == 1 and lv["rank1_primary"]["ev_avg"] == 5.0
+    tiers = {x["date"]: x["tier"] for x in lv["latest"]}
+    assert tiers["2026-06-01"] == "PRIMARY" and tiers["2026-06-02"] == "CANDIDATE"
