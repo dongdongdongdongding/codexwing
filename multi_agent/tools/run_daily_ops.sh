@@ -238,6 +238,14 @@ if [[ "${AG_DART_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/dart_update.p
     python3 "${HOME}/research_cache/dart_update.py"
 fi
 
+# 신용잔고/대주잔고 증분 갱신 (KIS daily_credit_balance, swing-main-5r7t 기계적 수급 데이터).
+# 종목당 1콜로 최근 30일 갭 채움 → ~/research_cache/credit.parquet. 비활성: AG_CREDIT_REFRESH=0.
+if [[ "${AG_CREDIT_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/credit_update.py" ]]; then
+  echo "[STEP] credit_update (신용/대주 잔고 증분)"
+  run_optional "credit_update" \
+    python3 "${HOME}/research_cache/credit_update.py"
+fi
+
 # B 엔진 (signal_class=B, 시장중립 적응형 앙상블, A와 별개). 일봉주기 매일 top10 픽 + forward-shadow.
 # 데이터(px_long 위 + flow)가 신선해야 하므로 위 px_long_refresh 다음에 배치. 비활성: AG_B_ENGINE=0.
 if [[ "${AG_B_ENGINE:-1}" == "1" && -d "b_engine" ]]; then

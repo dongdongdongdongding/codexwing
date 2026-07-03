@@ -112,6 +112,15 @@ KIS_ENDPOINTS: Dict[str, KISEndpoint] = {
         "",
         paper_supported=False,
     ),
+    "daily_credit_balance": KISEndpoint(
+        "daily_credit_balance",
+        "Domestic daily credit balance trend by stock",
+        "GET",
+        "/uapi/domestic-stock/v1/quotations/daily-credit-balance",
+        "FHPST04760000",
+        "",
+        paper_supported=False,
+    ),
     "investor_trend_estimate": KISEndpoint(
         "investor_trend_estimate",
         "Domestic foreigner/institution estimate",
@@ -832,6 +841,20 @@ class KISOpenAPIClient:
         return self._request_json(
             "stock_investor_current",
             params={"FID_COND_MRKT_DIV_CODE": market_div, "FID_INPUT_ISCD": code},
+        )
+
+    def daily_credit_balance(self, symbol: str, *, trade_date: str, market_div: str = "J") -> Dict[str, Any]:
+        """국내주식 신용잔고 일별추이 (FHPST04760000). ~30 rows per call ending at trade_date;
+        walk trade_date backwards for history. Mechanical-flow research input (swing-main-5r7t)."""
+        code = normalize_kr_stock_code(symbol)
+        return self._request_json(
+            "daily_credit_balance",
+            params={
+                "FID_COND_MRKT_DIV_CODE": market_div,
+                "FID_COND_SCR_DIV_CODE": "20476",
+                "FID_INPUT_ISCD": code,
+                "FID_INPUT_DATE_1": trade_date,
+            },
         )
 
     def investor_flow_snapshot(self, symbol: str, *, trade_date: str, market_div: str = "J") -> Dict[str, Any]:
