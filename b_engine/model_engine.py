@@ -9,6 +9,9 @@
 
 ⚠️ 낙관(비용0.3%·슬리피지/decay 미반영·OOS 1.8년) → forward-shadow로 라이브 확인 후 실자본.
 ⚠️ 누수금지: px_long의 ft_*/exec_*/cl_* (forward 라벨) 피처 사용 금지.
+2026-07 P2 검증: credit(신용잔고) 피처 기각(동수 노이즈 플라시보 대조 CI 0 포함 — 피처 수
+자체가 top-k α를 부풀리는 아티팩트 확인, 피처군 주장엔 노이즈 플라시보 필수), HOLD 3/5/10
+프런티어에서 5 확정(net α/일 동률, 3d 라벨은 노이지, 10d는 2024 음수).
 
 데이터: ~/research_cache/{px_long.parquet, flow.parquet, shares.parquet}.
 CLI: python -m b_engine.model_engine train|pick
