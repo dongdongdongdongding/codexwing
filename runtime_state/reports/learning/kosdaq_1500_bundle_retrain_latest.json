@@ -1,0 +1,7 @@
+{
+  "retrained_at": "2026-07-04T14:03:08.521477+00:00",
+  "train_rows": 25046,
+  "train_span": "2025-07-01..2026-06-30",
+  "val_pcal_ge_070_frac": 0.0625,
+  "basis": "P1 frontier (8 OOS mo): monthly-retrain pcal>=0.70 -> win 71.2%, EV 2.85 CI(0.65,4.80), 3.0 picks/wk vs static bundle win 65.5%/EV CI incl 0 (RESEARCH_LOG P1)"
+}

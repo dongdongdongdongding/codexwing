@@ -363,6 +363,15 @@ if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
       --min-liq "${AG_KOSPI_INTRADAY_MIN_LIQ:-100}"
 fi
 
+# 코스닥 15:00 번들 일일 재학습 (P1-H2, swing-main-67zc): 정적 번들은 부패(승률 65.5%/EV CI 0포함,
+# 미래월 p_cal 0.75+ 희소 → 0픽 사태). 재학습시 승률 71.2%/EV 2.85 CI>0/주3픽 (p_cal>=0.70).
+# 이전 번들 .bak 보존. 비활성: AG_KOSDAQ_BUNDLE_RETRAIN_ENABLE=0.
+if [[ "${AG_KOSDAQ_BUNDLE_RETRAIN_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] train_kosdaq_1500_bundle (일일 재학습)"
+  run_optional "train_kosdaq_1500_bundle" \
+    python3 multi_agent/tools/train_kosdaq_1500_bundle.py
+fi
+
 if [[ "${AG_KOSDAQ_INTRADAY_ENABLE:-1}" == "1" ]]; then
   # LIVE KOSDAQ INTRADAY lane (2026-06-24, operator) -- Codex lane of the Claude+Codex synthesis.
   # KR_INTRADAY_3D_T5 15:00 VWAP-guard model. Stored artifact:
