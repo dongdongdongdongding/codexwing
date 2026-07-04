@@ -399,6 +399,14 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
       --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
 fi
 
+# 재귀 연구 게이트: 레인별 forward 자동채점 vs 동결 백테스트 기대 → CONFIRM/DEGRADE/EXCEED,
+# 판정 변화 시 beads 재연구 티켓 자동 발행. 비활성: AG_RECURSION_GATE_ENABLE=0.
+if [[ "${AG_RECURSION_GATE_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] report_research_recursion_gate"
+  run_optional "report_research_recursion_gate" \
+    python3 multi_agent/tools/report_research_recursion_gate.py
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
