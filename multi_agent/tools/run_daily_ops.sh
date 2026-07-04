@@ -416,6 +416,14 @@ if [[ "${AG_RECURSION_GATE_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_research_recursion_gate.py
 fi
 
+# 픽 부검 수집: 해상된 모든 픽에 모드 태그(WIN_TOUCH/LOSS_TAIL 등)+맥락(레짐상태) 축적 —
+# 데이터가 낳는 가설의 기질. 비활성: AG_PICK_AUTOPSY_ENABLE=0.
+if [[ "${AG_PICK_AUTOPSY_ENABLE:-1}" == "1" ]]; then
+  echo "[STEP] build_pick_autopsy"
+  run_optional "build_pick_autopsy" \
+    python3 multi_agent/tools/build_pick_autopsy.py
+fi
+
 if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   DRIFT_ARGS=()
   if [[ -n "${AG_DRIFT_ALERT_WEBHOOK_URL:-}" ]]; then
