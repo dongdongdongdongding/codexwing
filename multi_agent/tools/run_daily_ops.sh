@@ -296,7 +296,7 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_nasdaq_daily_edge_shadow.py "${NASDAQ_SWING_ARGS[@]}"
 fi
 
-if [[ "${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-1}}" == "1" ]]; then
+if [[ "${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-0}}" == "1" ]]; then
   # NASDAQ regular-close session edge lane (2026-06-30): promotes the strongest recent
   # regular_close session candidate into the operator-enabled new-web scan lane. It still
   # carries sample-limit trace metadata until multi-year 04:00-20:00 ET plus 20:00-04:00 ET
@@ -317,6 +317,7 @@ if [[ "${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-
   if [[ "${AG_NASDAQ_SESSION_EDGE_NO_MODEL_BUNDLE:-0}" == "1" ]]; then
     NASDAQ_SESSION_EDGE_ARGS+=(--no-model-bundle)
   fi
+  # 2026-07-05 기본 OFF: 세션테이프 레인(report_nasdaq_session_tape, §12-D)이 후계 — 원장 1행/검증 False였음.
   echo "[STEP] report_nasdaq_session_edge_shadow"
   run_optional "report_nasdaq_session_edge_shadow" \
     python3 multi_agent/tools/report_nasdaq_session_edge_shadow.py "${NASDAQ_SESSION_EDGE_ARGS[@]}"

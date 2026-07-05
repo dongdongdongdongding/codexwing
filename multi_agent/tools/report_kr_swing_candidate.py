@@ -146,10 +146,24 @@ def main() -> None:
             if (p["date"], p["ticker"]) not in existing:
                 fh.write(json.dumps({**p, "ft_touch5": None, "policy_ret": None,
                                      "logged_at": now.isoformat()}, ensure_ascii=False) + "\n")
+    # P3 교체 스위치 (기본 OFF): AG_SWING_CANDIDATE_ROUTE=1이면 후보픽을 라이브 라우팅 —
+    # 스윙 앙상블(fwd 45%/-0.5, DEGRADE 궤도) 교체 결정 시 env 플립 하나로 전환.
+    # 근거: 8y walk-forward +0.65 CI>0 (§7-A) vs 앙상블 실측 미달 (§13/재귀게이트).
+    routed = 0
+    if os.getenv("AG_SWING_CANDIDATE_ROUTE", "0").strip() in ("1", "true", "True") and scored["picks"]:
+        try:
+            from report_swing_ensemble import _route_live
+            rp = [{"ticker": p["ticker"], "market": p["market"], "p": p["p"] if p["p"] <= 1.5 else p["p"] / 100.0,
+                   "entry_reference_price": p["close"]} for p in scored["picks"]]
+            routed = _route_live(rp, "SWING-CAND-" + scored["as_of"].replace("-", ""), now.isoformat(),
+                                 bucket="swing_candidate", decision="SWING_CANDIDATE_BUY", lane="SWING_CANDIDATE")
+        except Exception as exc:
+            routed = -1
+            print(json.dumps({"route_error": repr(exc)[:200]}))
     summary = resolve_pending(pd.Timestamp(now.date()))
     report = {"generated_at": now.isoformat(), "as_of": scored["as_of"], "tier": "CANDIDATE",
               "expectation": "8y walk-forward: ~60-62% touch +5%, EV ~+0.65/trade net — honest modest edge",
-              "picks": scored["picks"], "forward_summary": summary}
+              "picks": scored["picks"], "forward_summary": summary, "routed": routed}
     REPORT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = [f"# KR swing CANDIDATE picks — {scored['as_of']}", "",
              f"- tier: CANDIDATE (후보픽) | forward: {summary}", "",
