@@ -83,7 +83,7 @@ def _tag_scan_sources_discord(output: str) -> None:
     신웹 스캔피드 게시물의 소스 표시용. web 의존성 없이 inline(파일 공유)."""
     import re as _re
     try:
-        ids = set(_re.findall(r"(?:RUN-[0-9A-Fa-f]+|SWING-ENS-\d+[\w-]*|KOSPI-ITD-\d+[\w-]*|KQ-ITD-[\w-]+)", output or ""))
+        ids = set(_re.findall(r"(?:RUN-[0-9A-Fa-f]+|SWING-ENS-\d+[\w-]*|SWING-CAND-\d+[\w-]*|KOSPI-ITD-\d+[\w-]*|KQ-ITD-[\w-]+)", output or ""))
         if not ids:
             return
         path = PROJECT_ROOT / "runtime_state" / "scan_sources.json"

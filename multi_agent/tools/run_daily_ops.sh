@@ -341,7 +341,7 @@ if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
   # scan_mode=SWING. Validated 8y walk-forward / same-day size-matched: top-1% hits ~66-67%
   # (not the 75% goal; efficient-market ceiling ~70%), shipped LIVE to validate while running.
   # Structure-2 of the 2-structure SWING scan = Exception Leader (unchanged, from the planner).
-  # Routes to the live surface when AG_SWING_ENSEMBLE_PRODUCTION=1 (default ON per operator) and
+  # 2026-07-06 P3: routing default OFF (shadow) — AG_SWING_ENSEMBLE_PRODUCTION=1로만 복원. and
   # records a ledger that auto-resolves realised 5D ft_5_5 hit + first-touch return. Needs FDR.
   echo "[STEP] report_swing_ensemble"
   run_optional "report_swing_ensemble" \

@@ -925,7 +925,7 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
             latest[key] = (str(r.get("run_id") or ""), stamp)
     keep_runs = {run for run, _ in latest.values()}
     rows = [r for r in rows if str(r.get("run_id") or "") in keep_runs]
-    bucket_order = {"kospi_intraday": 0, "kosdaq_intraday_3d_t5_vwap_guard": 1, "swing_ensemble": 2, "nasdaq_session_edge": 3}
+    bucket_order = {"kospi_intraday": 0, "kosdaq_intraday_3d_t5_vwap_guard": 1, "swing_candidate": 2, "swing_ensemble": 3, "nasdaq_session_edge": 4}
     rows.sort(key=lambda r: (bucket_order.get(str(r.get("decision_bucket")), 9), int(r.get("rank") or 0)))
     rows = rows[: max(1, int(limit or 10))]
     fields = []

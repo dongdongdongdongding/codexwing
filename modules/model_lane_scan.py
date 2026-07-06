@@ -71,8 +71,8 @@ KOSDAQ_INTRADAY_MIN_LIQ = 30.0
 KOSDAQ_INTRADAY_TRADEABILITY_LIQ = 100.0
 
 LANE_BY_MODE = {
-    ("KOSPI", "SWING"): "swing_ensemble",
-    ("KOSDAQ", "SWING"): "swing_ensemble",
+    ("KOSPI", "SWING"): "swing_candidate",   # 2026-07-06 P3 교체
+    ("KOSDAQ", "SWING"): "swing_candidate",
     ("NASDAQ", "SWING"): "nasdaq_session_edge",
     ("KOSPI", "INTRADAY"): "kospi_intraday",
     ("KOSDAQ", "INTRADAY"): "kosdaq_intraday_3d_t5_vwap_guard",

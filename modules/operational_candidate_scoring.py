@@ -16,7 +16,8 @@ DEFAULT_BUY_PREMIUM_PCT = 2.0
 # which are structurally absent for these price/intraday models). Defined here, the lowest
 # module in the dependency graph, so candidate_interpretation can import it without a cycle.
 MODEL_VALIDATED_LANES = {
-    "swing_ensemble",
+    "swing_candidate",   # 2026-07-06 P3 교체 본선 (8y first-touch 랭커, §7-A)
+    "swing_ensemble",    # 은퇴(shadow) — 과거 픽 해석 호환용 유지
     "nasdaq_session_edge",
     "kospi_intraday",
     "kosdaq_intraday_3d_t5_vwap_guard",

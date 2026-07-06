@@ -25,6 +25,16 @@ STOP_FIRST_MAX_DRAWDOWN_PCT = -10.0
 # branch — planner picks are untouched. MODEL_VALIDATED_LANES is imported from
 # operational_candidate_scoring (canonical home) so both gates agree.
 LANE_PROFILE = {
+    "swing_candidate": {
+        "label": "스윙 매수",
+        "operational_label": "모델 매수 · 8y first-touch 랭커",
+        "scan_mode": "SWING",
+        "lane_badge": "스윙 랭커",
+        "entry_label": "익일 시가",
+        "horizon_days": 5,
+        "prob_label": "5일내 +5% 선터치(ft_5_5) 확률",
+        "hold_note": "+5% 터치 익절, 아니면 5거래일 종가 청산 · 분산(타이트 손절 X)",
+    },
     "swing_ensemble": {
         "label": "스윙 앙상블 매수",
         "operational_label": "모델 매수 · 가격앙상블",
