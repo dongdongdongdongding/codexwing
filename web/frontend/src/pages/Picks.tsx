@@ -60,6 +60,7 @@ export function Picks() {
                   <LaneBadge kind={p.kind} badge={p.badge} label={p.lane_label} />
                   {p.tier === "PRIMARY" && <Chip color="#22c55e">주력</Chip>}
                   {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
+                  {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
                   <span style={{ marginLeft: "auto", color: C.mut, fontSize: 12 }}>
                     {p.prob != null ? `확률 ${p.prob}%` : ""} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
                   </span>
@@ -111,6 +112,7 @@ export function Picks() {
                       {p.tier === "PRIMARY" && <Chip color="#22c55e">주력</Chip>}
                       {p.tier === "CANDIDATE" && <Chip color="#94a3b8">후보</Chip>}
                       {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
+                      {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
                     </div>
                   </Td>
                 </tr>
@@ -167,6 +169,7 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
 
         <Section title="근거">
           {pick.rationale && <Row k="모델 근거" v={pick.rationale} />}
+          {pick.size_note && <Row k="권장 비중" v={pick.size_note} />}
           {detail?.events?.map((e: { type: string; date: string; d_left: number; note: string }, i: number) => (
             <Row key={"ev" + i} k={`⚠ ${e.type} D-${e.d_left}`} v={`${e.date} — ${e.note}`} />
           ))}

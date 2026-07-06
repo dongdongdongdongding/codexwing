@@ -165,6 +165,13 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         bits.append("고확신 선별")
     if bits:
         row["rationale"] = " · ".join(bits)
+    # 권장 비중 (§20 구성수학, swing-main-wdu2): 검증 레인 = 총자본 2%/픽 (8:2, 분수Kelly 0.10).
+    # 관측(shadow)·후보성 레인은 사이징 권고 제외 — forward 미확인 스트림에 실자본 배분 금지.
+    _sized_lanes = {"kospi_intraday", "kosdaq_intraday", "kosdaq_intraday_3d_t5_vwap_guard",
+                    "kospi_swing", "kosdaq_swing", "swing_candidate"}
+    if lane_key in _sized_lanes and row.get("tier") != "VETO_DD_OVERHEAT":
+        row["size_pct_total"] = 2.0
+        row["size_note"] = "총자본 2%/픽 (8:2 정책 · §20: 연 +15.6% 중앙, 최악5%년 +2.8%)"
     return row
 
 

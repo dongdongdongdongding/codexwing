@@ -1,5 +1,6 @@
 // API 클라이언트 + 타입. /api → FastAPI(프록시).
 export interface Pick {
+  size_pct_total?: number | null; size_note?: string | null;
   code: string; ticker: string; name: string; market: string;
   lane: string; lane_label: string; kind: string; badge: string;
   signal_class: "A" | "B"; scan_date?: string; buy_date?: string;
