@@ -411,6 +411,18 @@ def freshness():
             mi = pd.read_parquet(f[0]); out["minute"] = str(pd.to_datetime(mi.index).max())[:10]
     except Exception:
         out["minute"] = None
+    # 모델 학습 신선도 (자동학습이 조용히 돌아 "안 도는 것처럼" 보이던 문제 — 2026-07-06)
+    try:
+        bm = json.load(open(os.path.join(REPO, "b_engine/data/b_model_meta.json")))
+        out["b_model"] = {"trained_at": bm.get("trained_at"), "trained_through": bm.get("trained_through"),
+                          "note": "trained_through는 라벨 구조상 최신일−6세션(정상)"}
+    except Exception:
+        out["b_model"] = None
+    try:
+        kb = json.load(open(os.path.join(REPO, "runtime_state/reports/learning/kosdaq_1500_bundle_retrain_latest.json")))
+        out["kosdaq_bundle"] = {"retrained_at": kb.get("retrained_at"), "train_span": kb.get("train_span")}
+    except Exception:
+        out["kosdaq_bundle"] = None
     return out
 
 

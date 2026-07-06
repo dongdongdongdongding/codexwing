@@ -117,7 +117,11 @@ def train():
     meta = {"signal_class": "B", "engine": "market_neutral_adaptive_ensemble_v2",
             "features": ALLF, "hold_days": HOLD, "top_n": TOP_N, "universe_n": UNIVERSE_N,
             "train_months": TRAIN_MONTHS, "n_seeds": N_SEEDS, "prob_calib": calib,
-            "trained_through": str(last.date()), "train_rows": int(len(train_df))}
+            "trained_through": str(last.date()), "train_rows": int(len(train_df)),
+            # trained_through는 라벨 구조상 항상 최신일-6세션 (5d forward 알파 완성 필요) — 정상.
+            "trained_at": __import__("datetime").datetime.now().isoformat(timespec="seconds"),
+            "px_data_through": str(px["date"].max().date()),
+            "note": "매일 자동 재학습(daily ops b_retrain). trained_through = 최신 라벨가능일(구조적 -6세션)."}
     with open(META_PATH, "w") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
     print(f"B모델 학습 저장: {len(models)}앙상블 · 학습 {train_df['date'].min().date()}~{last.date()} · {len(train_df):,}행", flush=True)
