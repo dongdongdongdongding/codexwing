@@ -51,6 +51,36 @@ def _code_market():
         return {}
 
 
+@lru_cache(maxsize=1)
+def _us_names():
+    """US symbol -> company name (나스닥 8y 패널의 name 컬럼, 1회 캐시)."""
+    try:
+        import pandas as pd
+        fp = os.path.join(RESEARCH, "us_daily/NASDAQ/daily_features_latest_20260629_113805.parquet")
+        d = pd.read_parquet(fp, columns=["symbol", "name"]).dropna()
+        return dict(zip(d["symbol"].astype(str), d["name"].astype(str)))
+    except Exception:
+        return {}
+
+
+def resolve_any_name(code: str, stock_name: str | None = None) -> str:
+    """모든 화면 공용 이름 해석: KR=resolve_name 우선(저장된 stock_name이 티커인 경우 방지),
+    US=패널 회사명 맵. 실패시 코드 그대로."""
+    raw = str(code).split(".")[0]
+    if raw.isdigit():
+        nm = resolve_name(raw.zfill(6), default="")
+        if nm:
+            return nm
+    else:
+        nm = _us_names().get(raw.upper())
+        if nm:
+            return nm
+    sn = str(stock_name or "").strip()
+    if sn and sn.split(".")[0] != raw:  # stock_name이 티커 재탕이면 무시
+        return sn
+    return raw
+
+
 def _market_of(code, fallback=""):
     m = _code_market().get(str(code).split(".")[0].zfill(6), "")
     if m:
@@ -325,7 +355,7 @@ def nasdaq_picks():
             continue
         out.append(_pick_row(r.get("symbol"), "NASDAQ", "nasdaq_swing",
                              entry=r.get("entry"), prob=r.get("p"),
-                             name=r.get("symbol"), scan_date=last, source="A",
+                             name=resolve_any_name(r.get("symbol")), scan_date=last, source="A",
                              extra={"lane_label": "나스닥 세션테이프", "kind": "SWING", "badge": "🟢",
                                     "hold_days": 5, "target_tp_pct": 5.0,
                                     "tier": "SHADOW" if r.get("tier") == "SHADOW" else r.get("tier"),

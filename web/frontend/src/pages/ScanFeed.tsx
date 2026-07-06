@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { api, ScanPost, TickerCard, Analysis } from "../api";
+import { useIsMobile } from "../useIsMobile";
 import { C, fmt, pct, signColor } from "../theme";
 import { Card, MarketBadge, Term } from "../components/ui";
 import { Chart } from "../components/Chart";
 
 // ③ 스캔 피드 — 게시물(스캔)→티커카드→정밀분석 패널. 자동+수동+디스코드 누적.
 export function ScanFeed() {
+  const isMobile = useIsMobile();
   const [scans, setScans] = useState<ScanPost[]>([]);
   const [source, setSource] = useState("");
   const [sel, setSel] = useState<ScanPost | null>(null);
@@ -16,7 +18,7 @@ export function ScanFeed() {
   const openScan = (s: ScanPost) => { setSel(s); setCards(null); setTicker(null); api.scanDetail(s.scan_id).then((d) => setCards(d.cards)).catch(() => setCards([])); };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: ticker ? "300px 1fr" : sel ? "300px 1fr" : "1fr", gap: 16 }}>
+    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : ticker ? "300px 1fr" : sel ? "300px 1fr" : "1fr", gap: 16 }}>
       {/* 왼쪽: 게시물 목록 */}
       <div>
         <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
@@ -24,7 +26,7 @@ export function ScanFeed() {
             <button key={s} onClick={() => setSource(s)} style={segBtn(source === s)}>{s === "" ? "전체" : s === "auto" ? "자동" : s === "manual" ? "수동" : "디스코드"}</button>
           ))}
         </div>
-        <div style={{ display: "grid", gap: 8, maxHeight: sel ? "78vh" : "none", overflowY: sel ? "auto" : "visible" }}>
+        <div style={{ display: isMobile && sel ? "none" : "grid", gap: 8, maxHeight: sel && !isMobile ? "78vh" : "none", overflowY: sel && !isMobile ? "auto" : "visible" }}>
           {scans.map((s) => (
             <div key={s.scan_id} onClick={() => openScan(s)}
               style={{ background: sel?.scan_id === s.scan_id ? C.surface2 : C.surface, border: `1px solid ${sel?.scan_id === s.scan_id ? C.accent : C.line}`, borderRadius: 10, padding: 12, cursor: "pointer" }}>
@@ -44,6 +46,9 @@ export function ScanFeed() {
         <div>
           {!ticker ? (
             <div>
+              {isMobile && (
+                <button onClick={() => setSel(null)} style={{ background: "none", border: "none", color: C.accent, fontSize: 14, padding: "0 0 10px", cursor: "pointer" }}>← 스캔 목록</button>
+              )}
               <div style={{ marginBottom: 12, color: C.mut, fontSize: 13 }}>{sel.scan_id} · {cards?.length || 0} 종목 — 카드를 클릭하면 정밀분석</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 10 }}>
                 {(cards || []).map((c) => (
@@ -59,6 +64,14 @@ export function ScanFeed() {
                   </div>
                 ))}
                 {cards && cards.length === 0 && <div style={{ color: C.mut }}>이 스캔의 픽 카드 없음</div>}
+              </div>
+            </div>
+          ) : isMobile ? (
+            <div onClick={() => setTicker(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 100, display: "flex", alignItems: "flex-end" }}>
+              <div onClick={(e) => e.stopPropagation()}
+                style={{ width: "100%", maxHeight: "86vh", overflowY: "auto", background: C.bg, borderTop: `1px solid ${C.line}`, borderRadius: "18px 18px 0 0", padding: "10px 14px calc(20px + env(safe-area-inset-bottom))" }}>
+                <div style={{ width: 40, height: 4, borderRadius: 2, background: C.line, margin: "0 auto 10px" }} />
+                <Panel scanId={sel.scan_id} card={ticker} onBack={() => setTicker(null)} />
               </div>
             </div>
           ) : (

@@ -162,7 +162,7 @@ def scan_detail(scan_id):
                 if isinstance(pred, str): pred = _j.loads(pred) if pred else {}
                 code = str(r.get("ticker", "")).split(".")[0]
                 cards.append({"ticker": r.get("ticker"), "code": code if not code.isdigit() else code.zfill(6),
-                              "name": r.get("stock_name") or S.resolve_name(code, default=code),
+                              "name": S.resolve_any_name(r.get("ticker"), r.get("stock_name")),
                               "market": str(r.get("market") or ""), "lane": _lane_label(r.get("decision_bucket"), r.get("scan_mode"), scan_id),
                               "prob": pred.get("phase25_prob"), "score": pred.get("expected_edge_score"),
                               "entry": ci.get("entry_reference_price")})
