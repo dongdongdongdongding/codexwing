@@ -5,13 +5,17 @@ from datetime import datetime, timedelta
 
 from modules import market_data
 
+# 픽스처 날짜는 오늘 기준 동적 생성 — 하드코딩 시 "최근 1개월" 필터 창에서 밀려나
+# 시간이 지나면 테스트가 스스로 부패한다 (2026-07-07 확인된 사전 부채).
+_D = [(datetime.now() - timedelta(days=n)).strftime("%Y%m%d") for n in (4, 3, 2, 1)]
+
 
 class FakeKISClient:
     def daily_bars(self, symbol, *, start_date, end_date, period="D", adjusted=True, market_div="J"):
         return {
             "output2": [
                 {
-                    "stck_bsop_date": "20260602",
+                    "stck_bsop_date": _D[0],
                     "stck_oprc": "100",
                     "stck_hgpr": "110",
                     "stck_lwpr": "95",
@@ -19,7 +23,7 @@ class FakeKISClient:
                     "acml_vol": "1000",
                 },
                 {
-                    "stck_bsop_date": "20260603",
+                    "stck_bsop_date": _D[1],
                     "stck_oprc": "106",
                     "stck_hgpr": "112",
                     "stck_lwpr": "101",
@@ -33,7 +37,7 @@ class FakeKISClient:
         return {
             "output2": [
                 {
-                    "stck_bsop_date": "20260603",
+                    "stck_bsop_date": _D[1],
                     "stck_cntg_hour": "090000",
                     "stck_prpr": "100",
                     "stck_oprc": "100",
@@ -42,7 +46,7 @@ class FakeKISClient:
                     "cntg_vol": "10",
                 },
                 {
-                    "stck_bsop_date": "20260603",
+                    "stck_bsop_date": _D[1],
                     "stck_cntg_hour": "090100",
                     "stck_prpr": "102",
                     "stck_oprc": "101",
@@ -87,7 +91,7 @@ class FakeIntradayKISClient:
         return {
             "output2": [
                 {
-                    "stck_bsop_date": "20260605",
+                    "stck_bsop_date": _D[3],
                     "stck_cntg_hour": "090000",
                     "stck_prpr": "100",
                     "stck_oprc": "100",
@@ -96,7 +100,7 @@ class FakeIntradayKISClient:
                     "cntg_vol": "10",
                 },
                 {
-                    "stck_bsop_date": "20260605",
+                    "stck_bsop_date": _D[3],
                     "stck_cntg_hour": "100000",
                     "stck_prpr": "102",
                     "stck_oprc": "101",
@@ -132,7 +136,7 @@ class FakeKISIndexClient:
         return {
             "output2": [
                 {
-                    "stck_bsop_date": "20260604",
+                    "stck_bsop_date": _D[2],
                     "bstp_nmix_oprc": "1032.91",
                     "bstp_nmix_hgpr": "1065.90",
                     "bstp_nmix_lwpr": "1032.29",

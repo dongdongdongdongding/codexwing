@@ -166,7 +166,21 @@ def test_permission_requires_user_or_role_allowlist():
     assert is_authorized_user(by_role, user_id="1", role_ids=["223456789012345678"]) is True
 
 
+
+
+def _isolate_db(monkeypatch):
+    """readonly 렌더러 테스트를 라이브 Supabase에서 격리 — DB가 살아있으면 실운영 스캔이
+    '최신 run'을 바꿔 픽스처 기대(RUN-TEST)가 깨진다 (2026-07-07 확인된 사전 부채)."""
+    import modules.db_manager as db_manager
+
+    class _NoDB:
+        def __init__(self, *a, **k):
+            self.client = None
+
+    monkeypatch.setattr(db_manager, "DBManager", _NoDB)
+
 def test_readonly_renderers_use_top_deep_artifacts(tmp_path, monkeypatch):
+    _isolate_db(monkeypatch)
     report_dir = tmp_path / "top_deep"
     report_dir.mkdir()
     (report_dir / "RUN-TEST.json").write_text(
@@ -317,6 +331,7 @@ def test_run_index_and_archive_can_select_accumulated_runs(tmp_path, monkeypatch
 
 
 def test_archive_embed_falls_back_to_latest_raw_artifact_without_top_deep(tmp_path, monkeypatch):
+    _isolate_db(monkeypatch)
     report_dir = tmp_path / "top_deep"
     artifact_dir = tmp_path / "artifacts"
     report_dir.mkdir()
