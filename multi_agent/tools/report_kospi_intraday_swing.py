@@ -256,7 +256,8 @@ def score_today(min_liq: float) -> List[Dict[str, Any]]:
         ev_pred = float(ev.predict(x.values.reshape(1, -1))[0]) if ev is not None else None
         _prevc = float(h["Close"].iloc[-2])
         _daychg = round((itf["_close"] / _prevc - 1) * 100, 2) if _prevc else None
-        rows.append({"code": code, "p": p, "ev_pred": ev_pred, "close_vwap": itf["close_vwap"], "liq": itf["_liq"], "close": itf["_close"], "day_change": _daychg})
+        rows.append({"code": code, "p": p, "ev_pred": ev_pred, "close_vwap": itf["close_vwap"], "liq": itf["_liq"], "close": itf["_close"], "day_change": _daychg,
+                     "rsi14_d": dfe.get("rsi14"), "ret_5d_d": dfe.get("ret_5d")})
     if not rows:
         return []
     X = pd.DataFrame(rows)
@@ -275,6 +276,8 @@ def score_today(min_liq: float) -> List[Dict[str, Any]]:
              "liq억": round(float(r["liq"]) / 1e8, 1), "close_vwap": round(float(r["close_vwap"]), 2),
              "day_change": (None if pd.isna(r.get("day_change")) else float(r["day_change"])),
              "entry_reference_price": round(float(r["close"]), 1),
+             "rsi14_d": (None if pd.isna(r.get("rsi14_d")) else round(float(r["rsi14_d"]), 1)),
+             "ret_5d_d": (None if pd.isna(r.get("ret_5d_d")) else round(float(r["ret_5d_d"]), 2)),
              "target_tp_pct": 5.0, "stop_sl_pct": None, "hold_days": 5,
              "exit_contract": "+5% touch take-profit within 5 sessions else 5d close"} for _, r in top.iterrows()]
 
@@ -388,6 +391,14 @@ def main() -> None:
     for p in picks:
         p["tier"] = "PRIMARY" if float(p["p"]) >= thr else "CANDIDATE"
         p["tier_threshold"] = round(thr, 4)
+    # 드로다운×과열 베토 (§17, swing-main-41o8): RISK_OFF 상태에서 rsi14>=65 & ret_5d>0 픽은
+    # 8 OOS월 3시드에서 유일한 음수 EV 세그먼트(-0.38, worst -36.4) — NORMAL에선 +5.51로 반전되므로
+    # 레짐 조건부로만 강등. soft: 원장엔 남겨 forward로 양쪽 branch 측정, 라우팅만 차단.
+    if os.getenv("AG_KOSPI_INTRADAY_DD_OVERHEAT_VETO", "1").strip() not in ("0", "false", "False") \
+            and state.get("mkt_state") == "RISK_OFF":
+        for p in picks:
+            if p["tier"] == "PRIMARY" and (p.get("rsi14_d") or 0) >= 65 and (p.get("ret_5d_d") or 0) > 0:
+                p["tier"] = "VETO_DD_OVERHEAT"
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     seen = set()
     if LEDGER.exists():
