@@ -121,6 +121,15 @@ KIS_ENDPOINTS: Dict[str, KISEndpoint] = {
         "",
         paper_supported=False,
     ),
+    "daily_short_sale": KISEndpoint(
+        "daily_short_sale",
+        "Domestic daily short-sale trend by stock",
+        "GET",
+        "/uapi/domestic-stock/v1/quotations/daily-short-sale",
+        "FHPST04830000",
+        "",
+        paper_supported=False,
+    ),
     "investor_trend_estimate": KISEndpoint(
         "investor_trend_estimate",
         "Domestic foreigner/institution estimate",
@@ -854,6 +863,20 @@ class KISOpenAPIClient:
                 "FID_COND_SCR_DIV_CODE": "20476",
                 "FID_INPUT_ISCD": code,
                 "FID_INPUT_DATE_1": trade_date,
+            },
+        )
+
+    def daily_short_sale(self, symbol: str, *, start_date: str, end_date: str, market_div: str = "J") -> Dict[str, Any]:
+        """국내주식 공매도 일별추이 (FHPST04830000). pykrx/KRX 웹 우회 — 벤치 데이터 수집용
+        (공매도 거래량/잔고 축적, 미래 스퀴즈 가설 검증 재료)."""
+        code = normalize_kr_stock_code(symbol)
+        return self._request_json(
+            "daily_short_sale",
+            params={
+                "FID_COND_MRKT_DIV_CODE": market_div,
+                "FID_INPUT_ISCD": code,
+                "FID_INPUT_DATE_1": start_date,
+                "FID_INPUT_DATE_2": end_date,
             },
         )
 

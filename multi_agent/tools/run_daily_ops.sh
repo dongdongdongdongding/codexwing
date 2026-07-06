@@ -222,6 +222,19 @@ if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday
     python3 "${HOME}/research_cache/intraday_backfill.py"
 fi
 
+# 벤치 데이터 수집 (2026-07-07, swing-main-h3cu 후속): 미래 엣지 재료 축적 — 표본이 익으면
+# research_reopen_queue가 자동으로 연구 티켓을 발행한다. 비활성: AG_BENCH_DATA=0.
+if [[ "${AG_BENCH_DATA:-1}" == "1" ]]; then
+  if [[ -f "${HOME}/research_cache/short_update.py" ]]; then
+    echo "[STEP] short_update (공매도 일별, KIS 우회)"
+    run_optional "short_update" python3 "${HOME}/research_cache/short_update.py"
+  fi
+  if [[ -f "${HOME}/research_cache/intraday_ext_update.py" ]]; then
+    echo "[STEP] intraday_ext_update (확장세션 08:00-20:00)"
+    run_optional "intraday_ext_update" python3 "${HOME}/research_cache/intraday_ext_update.py"
+  fi
+fi
+
 # ohlc_daily 증분 갱신: 패널 y3 라벨 + KOSPI 레인 정책수익(EVREG) 라벨의 원천.
 # 6/26 정체가 패널 꼬리 라벨 절단을 유발했음(§6). 비활성: AG_OHLC_DAILY_REFRESH=0.
 if [[ "${AG_OHLC_DAILY_REFRESH:-1}" == "1" && -f "multi_agent/tools/update_ohlc_daily.py" ]]; then
@@ -415,6 +428,14 @@ if [[ "${AG_RECURSION_GATE_ENABLE:-1}" == "1" ]]; then
   echo "[STEP] report_research_recursion_gate"
   run_optional "report_research_recursion_gate" \
     python3 multi_agent/tools/report_research_recursion_gate.py
+fi
+
+# 연구 재개봉 큐: "표본 부족 보류" 실험이 데이터 성숙(공매도 120일/확장세션 120일/정산 100건 등)
+# 도달 시 자동으로 bd 티켓 발행 — 연구 큐가 스스로 깨어난다. 비활성: AG_REOPEN_QUEUE=0.
+if [[ "${AG_REOPEN_QUEUE:-1}" == "1" ]]; then
+  echo "[STEP] research_reopen_queue"
+  run_optional "research_reopen_queue" \
+    python3 multi_agent/tools/research_reopen_queue.py
 fi
 
 # 픽 부검 수집: 해상된 모든 픽에 모드 태그(WIN_TOUCH/LOSS_TAIL 등)+맥락(레짐상태) 축적 —
