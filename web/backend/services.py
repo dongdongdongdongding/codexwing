@@ -26,12 +26,12 @@ from modules.ticker_names import resolve_name  # noqa: E402
 
 # 레인 메타: ledger 파일 · 표시명 · 신호유형 · 시장(원장에 있으면 우선)
 LANES = {
-    "kospi_swing":   {"ledger": "swing_ensemble_ledger.jsonl",                 "label": "코스피 스윙",  "kind": "SWING",    "badge": "🟢"},
-    "kosdaq_swing":  {"ledger": "swing_ensemble_ledger.jsonl",                 "label": "코스닥 스윙",  "kind": "SWING",    "badge": "🟢"},
+    # 2026-07-06 P3 교체: 스윙 = 8y first-touch 랭커(구 후보). 앙상블은 shadow 강등(게이트 감시 지속).
+    "kospi_swing":   {"ledger": "kr_swing_candidate_ledger.jsonl",             "label": "코스피 스윙",  "kind": "SWING",    "badge": "🟢"},
+    "kosdaq_swing":  {"ledger": "kr_swing_candidate_ledger.jsonl",             "label": "코스닥 스윙",  "kind": "SWING",    "badge": "🟢"},
     "kospi_intraday":{"ledger": "kospi_intraday_swing_ledger.jsonl",           "label": "코스피 장중",  "kind": "INTRADAY", "badge": "🔵"},
     "kosdaq_intraday":{"ledger":"kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl","label":"코스닥 장중","kind":"INTRADAY","badge":"🔵"},
-    # 8년 검증 스윙 first-touch 랭커 (RESEARCH_LOG §7-A) — 정직한 modest 엣지, 후보픽 전용 (라우팅 없음)
-    "swing_candidate":{"ledger": "kr_swing_candidate_ledger.jsonl",            "label": "스윙 후보",   "kind": "CANDIDATE","badge": "🧪"},
+
 }
 TARGET_PCT = 5.0
 # 승격 계약(§7-E)의 원장 필드 → 웹 노출 (티어/레짐상태/계약)
@@ -159,8 +159,8 @@ def _a_picks_ledger(lane=None):
 
 # 모델 레인 ↔ (scan_deep_reports decision_bucket, market)
 _KR_LANE_OF = {
-    ("swing_ensemble", "KOSPI"): "kospi_swing",
-    ("swing_ensemble", "KOSDAQ"): "kosdaq_swing",
+    ("swing_candidate", "KOSPI"): "kospi_swing",
+    ("swing_candidate", "KOSDAQ"): "kosdaq_swing",
     ("kospi_intraday", "KOSPI"): "kospi_intraday",
     ("kosdaq_intraday_3d_t5_vwap_guard", "KOSDAQ"): "kosdaq_intraday",
 }
@@ -605,8 +605,10 @@ def analyze(code):
 
 
 _PERF_BUCKET_LANE = {
-    ("swing_ensemble", "KOSPI"): "코스피 스윙",
-    ("swing_ensemble", "KOSDAQ"): "코스닥 스윙",
+    ("swing_ensemble", "KOSPI"): "코스피 스윙(구)",
+    ("swing_ensemble", "KOSDAQ"): "코스닥 스윙(구)",
+    ("swing_candidate", "KOSPI"): "코스피 스윙",
+    ("swing_candidate", "KOSDAQ"): "코스닥 스윙",
     ("kospi_intraday", "KOSPI"): "코스피 장중",
     ("kosdaq_intraday_3d_t5_vwap_guard", "KOSDAQ"): "코스닥 장중",
 }
@@ -719,8 +721,8 @@ def performance():
         v = ((pv.loc[cur_date] / pv.loc[d] - 1) * 100).mean()
         return float(v) if math.isfinite(v) else None
 
-    LED = {"코스피 스윙": ("swing_ensemble_ledger.jsonl", "KOSPI"),
-           "코스닥 스윙": ("swing_ensemble_ledger.jsonl", "KOSDAQ"),
+    LED = {"코스피 스윙": ("kr_swing_candidate_ledger.jsonl", "KOSPI"),
+           "코스닥 스윙": ("kr_swing_candidate_ledger.jsonl", "KOSDAQ"),
            "코스피 장중": ("kospi_intraday_swing_ledger.jsonl", "KOSPI"),
            "코스닥 장중": ("kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "KOSDAQ")}
     # 픽 먼저 수집 → 해당 종목들의 일별 종가 시리즈로 '다음 거래일' 진입 조회.

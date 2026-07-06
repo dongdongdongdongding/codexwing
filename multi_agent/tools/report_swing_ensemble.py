@@ -278,7 +278,9 @@ def main() -> None:
             fh.write(json.dumps({"date": today, "ft55": None, "first_touch_ret": None, **p}, ensure_ascii=False) + "\n")
     summary = resolve_pending(today)
 
-    production = os.getenv("AG_SWING_ENSEMBLE_PRODUCTION", "1").strip() not in ("0", "", "false", "False")
+    # 2026-07-06 운영자 결정(P3 교체): 라우팅 기본 OFF — 재귀게이트 DEGRADE(fwd -0.11, n=44,
+    # swing-main-3qtc) + 부검 LOSS_DEEP 편중. 원장/shadow는 유지(게이트 감시 지속). 후계 = 스윙 후보.
+    production = os.getenv("AG_SWING_ENSEMBLE_PRODUCTION", "0").strip() not in ("0", "", "false", "False")
     routed = 0
     if production and picks:
         try:

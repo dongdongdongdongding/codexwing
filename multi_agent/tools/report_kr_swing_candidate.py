@@ -71,7 +71,6 @@ def score_today(top_k: int) -> Dict[str, Any]:
                                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
                                  "liq_eok": round(float(r["liq"]) / 1e8, 1),
-                                 "tier": "CANDIDATE",
                                  "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"})
     return out
 
@@ -150,7 +149,8 @@ def main() -> None:
     # 스윙 앙상블(fwd 45%/-0.5, DEGRADE 궤도) 교체 결정 시 env 플립 하나로 전환.
     # 근거: 8y walk-forward +0.65 CI>0 (§7-A) vs 앙상블 실측 미달 (§13/재귀게이트).
     routed = 0
-    if os.getenv("AG_SWING_CANDIDATE_ROUTE", "0").strip() in ("1", "true", "True") and scored["picks"]:
+    # 2026-07-06 운영자 결정(P3): 기본 ON — 스윙 앙상블(DEGRADE) 교체. 근거: 8y +0.65 CI>0 (§7-A).
+    if os.getenv("AG_SWING_CANDIDATE_ROUTE", "1").strip() in ("1", "true", "True") and scored["picks"]:
         try:
             from report_swing_ensemble import _route_live
             rp = [{"ticker": p["ticker"], "market": p["market"], "p": p["p"] if p["p"] <= 1.5 else p["p"] / 100.0,
