@@ -13,3 +13,9 @@ table { font-variant-numeric: tabular-nums; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #243044; border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ── 모바일 앱형 (2026-07-07) ───────────────────────── */
+* { -webkit-tap-highlight-color: transparent; }
+@media (max-width: 768px) {
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}

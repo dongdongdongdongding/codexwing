@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useIsMobile } from "../useIsMobile";
 import { api, Pick, Lane, Price } from "../api";
 import { C, fmt, pct, signColor } from "../theme";
 import { MarketBadge, LaneBadge, Term, WarnBadge } from "../components/ui";
 import { Chart } from "../components/Chart";
 
 export function Picks() {
+  const isMobile = useIsMobile();
   const [lanes, setLanes] = useState<Lane[]>([]);
   const [lane, setLane] = useState("");
   const [picks, setPicks] = useState<Pick[]>([]);
@@ -37,6 +39,34 @@ export function Picks() {
       {loading ? <Skeleton /> : picks.length === 0 ? (
         <div style={{ color: C.mut, padding: 40, textAlign: "center" }}>
           표시할 픽이 없습니다 — 스캔이 아직 돌지 않았거나 조건을 통과한 종목이 없습니다.
+        </div>
+      ) : isMobile ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          {picks.map((p) => {
+            const pr = prices[p.code];
+            const live = pr?.price ?? p.entry;
+            return (
+              <div key={p.code + p.lane} onClick={() => setSel(p)}
+                style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: "12px 14px", cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <b style={{ fontSize: 15 }}>{p.name}</b>
+                  <span style={{ color: C.mut, fontSize: 11 }}>{p.code}</span>
+                  <MarketBadge market={p.market} />
+                  <span style={{ marginLeft: "auto", fontVariantNumeric: "tabular-nums", fontWeight: 700, color: pr?.change_pct != null ? signColor(pr.change_pct) : C.text }}>
+                    {fmt(live)} {pr?.change_pct != null ? pct(pr.change_pct) : ""}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+                  <LaneBadge kind={p.kind} badge={p.badge} label={p.lane_label} />
+                  {p.tier === "PRIMARY" && <Chip color="#22c55e">주력</Chip>}
+                  {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
+                  <span style={{ marginLeft: "auto", color: C.mut, fontSize: 12 }}>
+                    {p.prob != null ? `확률 ${p.prob}%` : ""} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <table style={{ width: "100%", borderCollapse: "collapse", background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12, overflow: "hidden" }}>
@@ -109,7 +139,7 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
   useEffect(() => { api.detail(pick.code).then(setDetail).catch(() => {}); }, [pick.code]);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 100, display: "flex", justifyContent: "flex-end" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: 560, maxWidth: "92vw", height: "100%", background: C.bg, borderLeft: `1px solid ${C.line}`, padding: 20, overflowY: "auto" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: 560, maxWidth: "100vw", height: "100%", background: C.bg, borderLeft: `1px solid ${C.line}`, padding: 20, overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <b style={{ fontSize: 20 }}>{pick.name}</b>
