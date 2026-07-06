@@ -108,8 +108,9 @@ def evaluate(name: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
     if len(vals) < cfg["n_min"]:
         res.update(verdict="OBSERVING", note=f"n={len(vals)}<{cfg['n_min']} — 참고치만")
         return res
-    if hi < cfg["expect_ev"] * 0.5:
-        res.update(verdict="DEGRADE", note="forward CI 상단 < 기대EV 50% — 사이징 축소 + 재연구")
+    if hi < cfg["expect_ev"] * 0.5 or arr.mean() <= 0:
+        why = "forward 평균 <= 0" if arr.mean() <= 0 else "forward CI 상단 < 기대EV 50%"
+        res.update(verdict="DEGRADE", note=f"{why} — 사이징 축소 + 재연구")
     elif arr.mean() > cfg["expect_ev"] * 1.5:
         res.update(verdict="EXCEED", note="기대 초과 — 승격/확대 검토")
     else:

@@ -198,7 +198,9 @@ def _train():
             ev = lgb.LGBMRegressor(n_estimators=400, learning_rate=0.05, num_leaves=31, min_child_samples=60,
                                    subsample=0.8, colsample_bytree=0.7, reg_lambda=3, random_state=0, verbose=-1)
             ev.fit(X[okm], pol[okm].values)
-    except Exception:
+    except Exception as _exc:
+        import sys as _sys
+        print(f"[warn] EVREG head unavailable: {_exc!r}", file=_sys.stderr)
         ev = None
     return mk, ev, FEAT
 
@@ -387,8 +389,19 @@ def main() -> None:
         p["tier"] = "PRIMARY" if float(p["p"]) >= thr else "CANDIDATE"
         p["tier_threshold"] = round(thr, 4)
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    seen = set()
+    if LEDGER.exists():
+        for ln in LEDGER.read_text(encoding="utf-8").splitlines():
+            if ln.strip():
+                try:
+                    r0 = json.loads(ln)
+                    seen.add((r0.get("date"), r0.get("ticker")))
+                except Exception:
+                    pass
     with LEDGER.open("a", encoding="utf-8") as fh:
         for p in picks:
+            if (today, p.get("ticker")) in seen:
+                continue  # 같은 날 재실행(웹/디스코드 스캔) 시 중복 기록 방지 — forward 통계 왜곡 방지
             fh.write(json.dumps({"date": today, "touch5": None, "ret3d": None, **state, **p}, ensure_ascii=False) + "\n")
     picks = [p for p in picks if p["tier"] == "PRIMARY"]
     summary = resolve_pending(today)

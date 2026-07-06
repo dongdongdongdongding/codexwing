@@ -83,7 +83,15 @@ def _trade_date_arg(value: str | None) -> str:
     text = str(value or "").strip().replace("-", "")
     if text:
         return text
-    return _now_kst().strftime("%Y%m%d")
+    now = _now_kst()
+    # 15:10 KST 이전엔 당일 15:00 스냅샷이 없음 → 직전 영업일 스코어링 (아침 ops가
+    # 당일을 빈 데이터로 스코어링해 무의미한 0픽 리포트를 내던 버그 수정, 2026-07-06)
+    d = now
+    if now.strftime("%H%M") < "1510":
+        d = d - pd.Timedelta(days=1)
+    while d.weekday() >= 5:
+        d = d - pd.Timedelta(days=1)
+    return d.strftime("%Y%m%d")
 
 
 def _iso_trade_date(trade_date: str) -> str:
