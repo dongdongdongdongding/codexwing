@@ -78,3 +78,4 @@ catboost_info/
 .dolt/
 *.db
 .beads-credential-key
+models/**/*.pkl.bak

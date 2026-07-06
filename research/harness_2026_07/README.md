@@ -16,3 +16,8 @@ intraday/(분봉), us_daily/(나스닥 8y 패널·시간봉·어닝스).
 | b_model_zoo / p2_b_* | §11-B, §13-B | top3 채택, credit·HOLD 기각 |
 | nasdaq_edge_p1 / pead_test / nasdaq_session_p2 | §12 | 플라시보 기각·PEAD 소·테이프 생존 |
 | p4_meta_labeling / p4_meta_safe | §13-C | 메타라벨링 hindsight 기각 |
+| kospi_robustness | §13-D | 시드·비용 강건성 통과 |
+| rebound_habitat_lane | §14 | 묘지 재감사 — 반등 서식지 절반성공 |
+| tail_veto_research | §16 | 테일 서명 실재, veto 승격 기각 → tail_p 관측 |
+| swing_zoo / event_ensemble_research | §10-B / §5-A | 스윙 목적함수·이벤트 기각 |
+| earnings_backfill / us_hourly_backfill | §12 데이터 | 어닝스 108k·시간봉 351종목 확보 |
