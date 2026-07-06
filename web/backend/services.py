@@ -688,10 +688,10 @@ def contract_performance():
         rows = _read_ledger(LANES[key]["ledger"])
         vals = [float(r[exit_key]) for r in rows if isinstance(r.get(exit_key), (int, float))]
         out["lanes"][key] = {"label": label, **_agg(vals)}
-    # 스윙 후보 (익일 시가 진입, +5% 터치/5일, policy_ret에 비용 전 수익)
-    rows = _read_ledger(LANES["swing_candidate"]["ledger"])
+    # 스윙 (P3 교체 후 본선 — 익일 시가 진입, +5% 터치/5일)
+    rows = _read_ledger("kr_swing_candidate_ledger.jsonl")
     vals = [float(r["policy_ret"]) for r in rows if isinstance(r.get("policy_ret"), (int, float))]
-    out["lanes"]["swing_candidate"] = {"label": "스윙 후보 (+5% 터치/5일, 익일시가)", **_agg(vals)}
+    out["lanes"]["swing"] = {"label": "스윙 (+5% 터치/5일, 익일시가)", **_agg(vals)}
     # 선별 shadow (rank-1 고확신 트랙) 요약 패스스루
     try:
         sel = json.load(open(os.path.join(REPO, "runtime_state/reports/experimental/kr_selective_shadow_latest.json")))
