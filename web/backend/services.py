@@ -304,50 +304,33 @@ def _db():
 
 
 def nasdaq_picks():
-    """NASDAQ 최신 스캔 픽 (scan_deep_reports). 5분 캐시 + 워커 타임아웃(웹 안 멈춤)."""
-    import time
-    if time.time() - _NASDAQ_CACHE["ts"] < 300 and _NASDAQ_CACHE["rows"]:
-        return _NASDAQ_CACHE["rows"]
-    out = {"rows": []}
-
-    def work():
-        db = _db()
-        if db is None:
-            return
-        try:
-            import json as _j
-            q = (db.client.table("scan_deep_reports")
-                 .select("ticker,stock_name,candidate_interpretation,prediction,run_id,generated_at,scan_mode")
-                 .eq("market", "NASDAQ").order("generated_at", desc=True).limit(60).execute())
-            rows = q.data or []
-            if not rows:
-                return
-            latest_run = rows[0].get("run_id")
-            picks = []
-            for r in rows:
-                if r.get("run_id") != latest_run:
-                    continue
-                ci = r.get("candidate_interpretation") or {}
-                if isinstance(ci, str):
-                    ci = _j.loads(ci) if ci else {}
-                pred = r.get("prediction") or {}
-                if isinstance(pred, str):
-                    pred = _j.loads(pred) if pred else {}
-                entry = ci.get("entry_reference_price")
-                prob = pred.get("phase25_prob")
-                picks.append(_pick_row(r.get("ticker"), "NASDAQ", "nasdaq_swing",
-                                       entry=entry, prob=prob, name=r.get("stock_name"),
-                                       scan_date=str(r.get("generated_at"))[:10], source="A",
-                                       extra={"lane_label": "나스닥 스윙", "kind": "SWING", "badge": "🟢",
-                                              "edge_score": pred.get("expected_edge_score"),
-                                              "exp_ret_3d": pred.get("expected_return_3d_pct")}))
-            out["rows"] = picks
-        except Exception:
-            pass
-    t = threading.Thread(target=work, daemon=True); t.start(); t.join(7.0)
-    if out["rows"]:
-        _NASDAQ_CACHE["ts"] = time.time(); _NASDAQ_CACHE["rows"] = out["rows"]
-    return out["rows"]
+    """나스닥 픽 = 세션테이프 shadow 원장 (§12-D: 유일한 플라시보-분리 신호, rank-1/일).
+    2026-07-07 교체: 이전엔 구식 범용 스캔(RUN-*)의 음수엣지 종목이 확률 50% 스텁으로 표시되던 문제."""
+    fp = os.path.join(REPO, "runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl")
+    if not os.path.exists(fp):
+        return []
+    rows = []
+    for ln in open(fp, encoding="utf-8"):
+        if ln.strip():
+            try:
+                rows.append(json.loads(ln))
+            except Exception:
+                pass
+    if not rows:
+        return []
+    last = max(str(r.get("date", "")) for r in rows)
+    out = []
+    for r in rows:
+        if str(r.get("date")) != last:
+            continue
+        out.append(_pick_row(r.get("symbol"), "NASDAQ", "nasdaq_swing",
+                             entry=r.get("entry"), prob=r.get("p"),
+                             name=r.get("symbol"), scan_date=last, source="A",
+                             extra={"lane_label": "나스닥 세션테이프", "kind": "SWING", "badge": "🟢",
+                                    "hold_days": 5, "target_tp_pct": 5.0,
+                                    "tier": "SHADOW" if r.get("tier") == "SHADOW" else r.get("tier"),
+                                    "rationale_extra": "관측 shadow — forward n>=30 전 실자본 금지"}))
+    return out
 
 
 def picks(lane=None):
@@ -444,7 +427,25 @@ def freshness():
 def chart(code, tf="day", days=120):
     """차트 데이터. tf=minute(분봉 OHLC, intraday캐시) / day(일봉: ohlc_daily 있으면 OHLC, 없으면 close 라인)."""
     import pandas as pd
-    code6 = str(code).split(".")[0].zfill(6)
+    raw = str(code).split(".")[0]
+    if not raw.isdigit():  # 미국 심볼 → 시간봉 캐시 (351종목, 일일 갱신)
+        fp = os.path.join(RESEARCH, "us_daily", "hourly", f"{raw.upper()}.parquet")
+        if not os.path.exists(fp):
+            return {"type": "candle", "tf": tf, "bars": []}
+        h = pd.read_parquet(fp)
+        h.index = pd.to_datetime(h.index)
+        h = h.sort_index()
+        if tf == "minute":  # 시간봉 최근 ~10거래일
+            h = h.tail(7 * 10)
+            bars = [{"time": int(t.timestamp()), "open": float(r.Open), "high": float(r.High),
+                     "low": float(r.Low), "close": float(r.Close)} for t, r in h.iterrows()]
+            return {"type": "candle", "tf": "minute", "bars": bars}
+        d = h.resample("1D").agg({"Open": "first", "High": "max", "Low": "min", "Close": "last"}).dropna()
+        d = d.tail(days)
+        bars = [{"time": str(t.date()), "open": float(r.Open), "high": float(r.High),
+                 "low": float(r.Low), "close": float(r.Close)} for t, r in d.iterrows()]
+        return {"type": "candle", "tf": "day", "bars": bars}
+    code6 = raw.zfill(6)
     if tf == "minute":
         fp = os.path.join(RESEARCH, "intraday", f"{code6}.parquet")
         if not os.path.exists(fp):
