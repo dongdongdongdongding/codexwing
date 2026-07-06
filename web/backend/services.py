@@ -119,6 +119,22 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         if tp and entry:
             row["target"] = round(float(entry) * (1 + float(tp) / 100), 2)
             row["target_pct"] = float(tp)
+    # 근거 한 줄 — 가진 필드로 조합 (모델이 "왜"를 말하게)
+    bits = []
+    if row.get("prob") is not None:
+        bits.append(f"적중확률 {row['prob']}%")
+    cv = (extra or {}).get("close_vwap")
+    if isinstance(cv, (int, float)):
+        bits.append(f"VWAP {'상방' if cv >= 0 else '하방'} {cv:+.1f}%")
+    liq_eok = row.get("liq억") or (extra or {}).get("liq_eok")
+    if liq_eok:
+        bits.append(f"유동성 {liq_eok}억")
+    if row.get("mkt_state") == "RISK_OFF":
+        bits.append("⚠약세장")
+    if row.get("tier") == "PRIMARY":
+        bits.append("고확신 선별")
+    if bits:
+        row["rationale"] = " · ".join(bits)
     return row
 
 
@@ -489,7 +505,42 @@ def pick_detail(code):
         detail["dart"] = [{"ann": str(r["ann"]), "type": str(r.get("etype", ""))} for _, r in s.iterrows()]
     except Exception:
         pass
+    try:
+        detail["events"] = _events_ahead(code6, detail["market"])
+    except Exception:
+        detail["events"] = []
     return detail
+
+
+def _events_ahead(code6: str, market: str):
+    """픽 보유기간(~5거래일) 내 리스크 이벤트 — 만기일(계산) + US 어닝스 예정(캐시).
+    KR 실적 '예정일'은 소스 미확보(사후 공시만) — 확보 시 추가."""
+    import pandas as pd
+    out = []
+    today = pd.Timestamp.now().normalize()
+    for mo in (today, today + pd.offsets.MonthBegin(1)):
+        first = pd.Timestamp(mo.year, mo.month, 1)
+        expiry = first + pd.Timedelta(days=(3 - first.weekday()) % 7 + 7)
+        d = (expiry - today).days
+        if 0 <= d <= 7:
+            quad = expiry.month in (3, 6, 9, 12)
+            out.append({"type": "동시만기(네 마녀)" if quad else "옵션만기",
+                        "date": str(expiry.date()), "d_left": int(d),
+                        "note": "만기 주간 변동성 확대 가능"})
+            break
+    if market not in ("KOSPI", "KOSDAQ"):
+        try:
+            e = pd.read_parquet(os.path.join(RESEARCH, "us_daily/earnings_dates.parquet"))
+            e = e[e["symbol"] == code6]
+            ts = pd.to_datetime(e["ann_ts"], errors="coerce", utc=True).dt.tz_localize(None)
+            fut = ts[(ts >= today) & (ts <= today + pd.Timedelta(days=10))]
+            if len(fut):
+                d = (fut.min().normalize() - today).days
+                out.append({"type": "실적발표", "date": str(fut.min().date()), "d_left": int(d),
+                            "note": "어닝스 갭 리스크 — 보유 중 발표"})
+        except Exception:
+            pass
+    return out
 
 
 def _regime_label(idx_mom, idx_vol):

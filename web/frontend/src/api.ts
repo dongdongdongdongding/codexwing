@@ -6,7 +6,7 @@ export interface Pick {
   prob?: number | null; alpha?: number | null; entry?: number | null; target?: number | null; target_pct?: number;
   pred_alpha_5d?: number; smart5?: number; rsi14?: number; hold_days?: number;
   // 승격 계약(§7-E) 필드: 선별 티어 / 레짐 상태
-  tier?: "PRIMARY" | "CANDIDATE"; tier_threshold?: number;
+  tier?: "PRIMARY" | "CANDIDATE"; tier_threshold?: number; rationale?: string;
   mkt_state?: "RISK_OFF" | "NORMAL" | "UNKNOWN"; mkt_dd20?: number; ev_pred?: number;
 }
 export interface ContractLane { label: string; n: number; ev_avg?: number; win_pct?: number; worst?: number; }
@@ -28,6 +28,7 @@ export interface PickDetail {
   code: string; name: string; market: string; in_picks: boolean; pick?: Pick;
   flow?: { frgn_5d: number; orgn_5d: number; asof: string };
   dart?: Array<{ ann: string; type: string }>;
+  events?: Array<{ type: string; date: string; d_left: number; note: string }>;
 }
 
 // 운영(Vercel): VITE_API_BASE = 로컬 백엔드 터널 주소(예: https://xxx.trycloudflare.com).

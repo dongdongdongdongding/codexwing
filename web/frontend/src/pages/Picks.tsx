@@ -136,6 +136,10 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
         </Section>
 
         <Section title="근거">
+          {pick.rationale && <Row k="모델 근거" v={pick.rationale} />}
+          {detail?.events?.map((e, i) => (
+            <Row key={"ev" + i} k={`⚠ ${e.type} D-${e.d_left}`} v={`${e.date} — ${e.note}`} />
+          ))}
           {detail?.flow && <Row k="수급(5일)" v={`외국인 ${fmt(detail.flow.frgn_5d)} · 기관 ${fmt(detail.flow.orgn_5d)} (${detail.flow.asof})`} />}
           {detail?.dart?.length ? detail.dart.map((d: any, i: number) => <Row key={i} k="공시" v={`${d.ann} ${d.type}`} />) : <Row k="공시" v="없음" />}
           {pick.signal_class === "B" && <Row k="스마트머니5d" v={fmt(pick.smart5, 1)} />}
