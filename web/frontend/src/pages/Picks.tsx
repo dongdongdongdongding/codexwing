@@ -137,7 +137,7 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
 
         <Section title="근거">
           {pick.rationale && <Row k="모델 근거" v={pick.rationale} />}
-          {detail?.events?.map((e, i) => (
+          {detail?.events?.map((e: { type: string; date: string; d_left: number; note: string }, i: number) => (
             <Row key={"ev" + i} k={`⚠ ${e.type} D-${e.d_left}`} v={`${e.date} — ${e.note}`} />
           ))}
           {detail?.flow && <Row k="수급(5일)" v={`외국인 ${fmt(detail.flow.frgn_5d)} · 기관 ${fmt(detail.flow.orgn_5d)} (${detail.flow.asof})`} />}
