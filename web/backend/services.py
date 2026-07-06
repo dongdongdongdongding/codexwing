@@ -774,6 +774,25 @@ def contract_performance():
     rows = _read_ledger("kr_swing_candidate_ledger.jsonl")
     vals = [float(r["policy_ret"]) for r in rows if isinstance(r.get("policy_ret"), (int, float))]
     out["lanes"]["swing"] = {"label": "스윙 (+5% 터치/5일, 익일시가)", **_agg(vals)}
+    # 나스닥 세션테이프 (관측 shadow, +5% 터치/5일 정책 채점)
+    try:
+        fp = os.path.join(REPO, "runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl")
+        rows = [json.loads(l) for l in open(fp, encoding="utf-8") if l.strip()] if os.path.exists(fp) else []
+        vals = [float(r["policy_ret"]) for r in rows if isinstance(r.get("policy_ret"), (int, float))]
+        out["lanes"]["nasdaq_tape"] = {"label": "나스닥 세션테이프 (+5% 터치/5일, 관측)", **_agg(vals)}
+    except Exception:
+        pass
+    # B 시장중립 (알파 = 시장대비 %p — 절대수익 아님 주의)
+    try:
+        rows = [json.loads(l) for l in open(os.path.join(REPO, "b_engine/data/b_shadow.jsonl"), encoding="utf-8") if l.strip()]
+        st = [r for r in rows if r.get("status") == "settled" and isinstance(r.get("alpha"), (int, float))]
+        vals = [float(r["alpha"]) for r in st]
+        out["lanes"]["b_alpha"] = {"label": "B 시장중립 (α=시장대비%p, 절대수익 아님)", **_agg(vals)}
+        pr = [float(r["alpha"]) for r in st if r.get("tier") == "PRIMARY"]
+        if pr:
+            out["lanes"]["b_primary_alpha"] = {"label": "B PRIMARY top3 (α)", **_agg(pr)}
+    except Exception:
+        pass
     # 선별 shadow (rank-1 고확신 트랙) 요약 패스스루
     try:
         sel = json.load(open(os.path.join(REPO, "runtime_state/reports/experimental/kr_selective_shadow_latest.json")))
