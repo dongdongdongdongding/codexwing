@@ -221,13 +221,21 @@ def run_model_lane_scan(market: str, scan_mode: str, *, route: bool = True) -> D
                 promotion_note=report.get("promotion_note") or "",
             )
         elif mode == "SWING":
-            from report_swing_ensemble import score_market, _route_live
-            picks = score_market(market, SWING_TOP_PCT, SWING_MIN_LIQ)
-            run_id = f"SWING-ENS-{today}-{market}"
+            # 2026-07-07: P3 교체 반영 누락 수정 — 웹/디스코드 스윙 스캔이 은퇴한 앙상블을 돌려
+            # 픽 탭(8y first-touch 랭커)과 다른 종목을 라우팅하던 버그. 이제 본선 랭커를 실행.
+            from report_kr_swing_candidate import score_today as swing_score
+            from report_swing_ensemble import _route_live
+            scored = swing_score(3)
+            picks = [{"ticker": p["ticker"], "market": p["market"],
+                      "p": p["p"] if p["p"] <= 1.5 else p["p"] / 100.0,
+                      "entry_reference_price": p["close"], "liq억": p.get("liq_eok"),
+                      "mkt_state": p.get("mkt_state")}
+                     for p in scored.get("picks", []) if p.get("market") == market]
+            run_id = f"SWING-CAND-{today}-{market}"
             out.update(run_id=run_id, picks=picks)
             if route and picks:
-                out["routed"] = _route_live(picks, run_id, rec, bucket="swing_ensemble",
-                                            decision="SWING_ENSEMBLE_BUY", lane="SWING_ENSEMBLE")
+                out["routed"] = _route_live(picks, run_id, rec, bucket="swing_candidate",
+                                            decision="SWING_CANDIDATE_BUY", lane="SWING_CANDIDATE")
         elif market == "KOSPI":  # INTRADAY
             from report_kospi_intraday_swing import score_today
             from report_swing_ensemble import _route_live

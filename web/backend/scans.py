@@ -72,8 +72,10 @@ def _infer_source(run_id, override):
 
 def _lane_label(bucket, mode, run_id):
     b = str(bucket or "")
+    if "swing_candidate" in b or run_id.startswith("SWING-CAND"):
+        return "스윙"
     if "swing_ensemble" in b or run_id.startswith("SWING-ENS"):
-        return "스윙(앙상블)"
+        return "스윙(구)"
     if "nasdaq_session_edge" in b or run_id.startswith("NASDAQ-SESSION-EDGE"):
         return "나스닥 세션"
     if "kospi_intraday" in b or run_id.startswith("KOSPI-ITD"):
