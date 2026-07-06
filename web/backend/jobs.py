@@ -54,25 +54,72 @@ def _set(**kw):
     _STATE.update(kw)
 
 
-def _run_step(spec):
-    """단일 스텝 실행 → (ok, note)."""
+def _norm_picks(picks):
+    out = []
+    for p in picks or []:
+        t = p.get("ticker") or p.get("code")
+        if not t:
+            continue
+        prob = p.get("p") if p.get("p") is not None else p.get("prob_win")
+        out.append({"ticker": str(t), "name": p.get("name"), "prob": prob,
+                    "entry": p.get("entry_reference_price") or p.get("close") or p.get("entry_price"),
+                    "market": str(p.get("market") or "")})
+    return out
+
+
+def _run_step(label, spec):
+    """단일 스텝 실행 → 저널 레코드. 결과가 무엇이든(0픽/저장픽/세션블록/에러) 사유와 함께 남긴다 —
+    스캔 피드가 이 레코드를 게시물로 보장 표시한다 (swing-main-bbe9)."""
+    rec = {"label": label, "ok": False, "note": "", "run_id": "", "picks": [], "stale": False,
+           "market": "B시장중립" if spec == "b" else spec[0]}
     try:
         if spec == "b":
             from b_engine import model_scan
             out = model_scan.scan()
-            return True, (f"top{len(out['picks'])}" if out else "no-data")
+            rec.update(ok=bool(out), run_id=f"B-{(out or {}).get('scan_date', '')}",
+                       picks=_norm_picks((out or {}).get("picks")),
+                       note=f"top{len((out or {}).get('picks') or [])}" if out else "no-data")
+            return rec
         from modules.model_lane_scan import run_model_lane_scan
         res = run_model_lane_scan(spec[0], spec[1], route=True)
+        rec.update(run_id=str(res.get("run_id") or ""), picks=_norm_picks(res.get("picks")),
+                   stale=bool(res.get("stale_session")))
         if res.get("error"):
-            return False, str(res.get("error"))[:80]
+            rec["note"] = str(res["error"])[:120]
+            return rec
+        rec["ok"] = True
+        if res.get("session_blocked"):
+            rec["note"] = f"세션 블록: {str(res.get('session_block_reason'))[:100]}"
+        elif res.get("stale_session"):
+            rec["note"] = str(res.get("note") or "장중 창 미완성 — 최신 세션 저장픽 표시")[:160]
+        elif not rec["picks"]:
+            rec["note"] = "0픽 (모델 기권)"
+        else:
+            rec["note"] = f"{len(rec['picks'])}픽"
         try:
             from web.backend.scans import record_source
-            record_source(res.get("run_id"), "manual")
+            record_source(rec["run_id"], "manual")
         except Exception:
             pass
-        return True, f"{len(res.get('picks', []))}픽"
     except Exception as e:
-        return False, f"{type(e).__name__}: {str(e)[:80]}"
+        rec["note"] = f"{type(e).__name__}: {str(e)[:100]}"
+    return rec
+
+
+def _write_journal(target, details):
+    """스캔 버튼 1회 = 저널 1행 (피드 게시물 1건)."""
+    try:
+        import json
+        from datetime import timezone
+        d = os.path.join(REPO, "runtime_state", "local_short_term")
+        os.makedirs(d, exist_ok=True)
+        row = {"scan_id": "MANUAL-" + datetime.now().strftime("%Y%m%d-%H%M%S"),
+               "time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+               "target": TARGET_LABELS.get(target, target), "steps": details}
+        with open(os.path.join(d, "scan_runs.jsonl"), "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
 
 
 def _run(target):
@@ -81,11 +128,14 @@ def _run(target):
     _set(status="running", progress=0, steps=[], started_at=datetime.now().isoformat(timespec="seconds"),
          finished_at=None, message="", current="", target=TARGET_LABELS.get(target, target))
     done = []
+    details = []
     for i, (label, spec) in enumerate(steps):
         _set(current=label, progress=int(i / len(steps) * 100))
-        ok, note = _run_step(spec)
-        done.append({"step": label, "ok": ok, "note": note})
+        rec = _run_step(label, spec)
+        details.append(rec)
+        done.append({"step": label, "ok": rec["ok"], "note": rec["note"]})
         _set(steps=list(done))
+    _write_journal(target, details)
     # 스캔 결과가 픽·개요·피드에 즉시 반영되도록 캐시 무효화
     try:
         from web.backend import services as _S

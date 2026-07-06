@@ -40,6 +40,16 @@ SOURCES_PATH = os.path.join(REPO, "runtime_state", "scan_sources.json")
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 _LIST_CACHE = {"ts": 0.0, "data": None}
+JOURNAL = os.path.join(REPO, "runtime_state", "local_short_term", "scan_runs.jsonl")
+
+
+def _journal_rows(limit=30):
+    """수동 스캔 실행 저널 (jobs._write_journal) — 버튼 1회=1행, 스텝별 결과/사유 포함."""
+    try:
+        lines = open(JOURNAL, encoding="utf-8").read().splitlines()[-limit:]
+        return [json.loads(l) for l in lines if l.strip()]
+    except Exception:
+        return []
 
 
 def record_source(run_id, source):
@@ -122,11 +132,34 @@ def _build_list():
                     p["time"] = str(r.get("generated_at"))
         except Exception:
             pass
-    res = []
+    # 수동 스캔 저널 — 버튼 1회=게시물 1건 보장 (0픽/저장픽/세션블록/에러 사유 포함, swing-main-bbe9).
+    # 같은 실행이 라우팅으로 만든 DB run_id 게시물은 저널 게시물이 대체(중복 억제).
+    covered = set()
+    jposts = []
+    for row in _journal_rows():
+        lanes, markets, notes, n = [], set(), [], 0
+        for st in row.get("steps", []):
+            if st.get("label"):
+                lanes.append(str(st["label"]))
+            if st.get("run_id"):
+                covered.add(str(st["run_id"]))
+            n += len(st.get("picks") or [])
+            if st.get("market"):
+                markets.add(str(st["market"]))
+            note = str(st.get("note") or "")
+            if note and not note.endswith("픽") and not note.startswith("top"):
+                notes.append(f"{st.get('label')}: {note.split('.')[0]}")
+        jposts.append({"scan_id": str(row.get("scan_id")), "time": _fmt_kst(row.get("time")),
+                       "source": "manual", "markets": sorted(m for m in markets if m),
+                       "lanes": lanes, "pick_count": n,
+                       "note": (" · ".join(notes)[:220] or None)})
+    res = list(jposts)
     for rid, p in posts.items():
+        if rid in covered:
+            continue
         res.append({"scan_id": rid, "time": _fmt_kst(p["time"]),
                     "source": _infer_source(rid, override), "markets": sorted(m for m in p["markets"] if m),
-                    "lanes": sorted(p["lanes"]), "pick_count": p["pick_count"]})
+                    "lanes": sorted(p["lanes"]), "pick_count": p["pick_count"], "note": None})
     # B 스캔(b_picks_latest)을 게시물 1건으로
     try:
         bp = json.load(open(os.path.join(REPO, "b_engine/data/b_picks_latest.json")))
@@ -141,6 +174,25 @@ def _build_list():
 
 def scan_detail(scan_id):
     """게시물의 티커카드 — 해당 run_id 픽들(스캔시점 점수/진입)."""
+    if scan_id.startswith("MANUAL-"):
+        for row in reversed(_journal_rows(120)):
+            if str(row.get("scan_id")) != scan_id:
+                continue
+            cards, notes = [], []
+            for st in row.get("steps", []):
+                note = str(st.get("note") or "")
+                if note and not note.endswith("픽") and not note.startswith("top"):
+                    notes.append(f"{st.get('label')}: {note}")
+                for p in st.get("picks") or []:
+                    t = str(p.get("ticker") or "")
+                    code = t.split(".")[0]
+                    cards.append({"ticker": t, "code": code.zfill(6) if code.isdigit() else code,
+                                  "name": S.resolve_any_name(t, p.get("name")),
+                                  "market": str(p.get("market") or S._market_of(t)),
+                                  "lane": str(st.get("label") or ""),
+                                  "prob": p.get("prob"), "score": None, "entry": p.get("entry")})
+            return {"scan_id": scan_id, "time": _fmt_kst(row.get("time")), "cards": cards, "notes": notes}
+        return {"scan_id": scan_id, "time": "", "cards": [], "notes": ["저널에 기록 없음"]}
     if scan_id.startswith("B-"):
         bp = json.load(open(os.path.join(REPO, "b_engine/data/b_picks_latest.json")))
         cards = [{"ticker": p["code"], "code": p["code"], "name": p.get("name"),

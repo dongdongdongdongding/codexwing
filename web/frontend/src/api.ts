@@ -45,7 +45,7 @@ const j = async <T>(u: string): Promise<T> => {
   return r.json();
 };
 
-export interface ScanPost { scan_id: string; time: string; source: string; markets: string[]; lanes: string[]; pick_count: number; }
+export interface ScanPost { scan_id: string; time: string; source: string; markets: string[]; lanes: string[]; pick_count: number; note?: string | null; }
 export interface TickerCard { ticker: string; code: string; name: string; market: string; lane: string; prob?: number | null; score?: number | null; entry?: number | null; }
 
 export interface Analysis {
@@ -78,7 +78,7 @@ export const api = {
   market: () => j<any>(`/api/market`),
   theme: () => j<any>(`/api/theme`),
   scans: (source = "", market = "") => j<{ count: number; scans: ScanPost[] }>(`/api/scans?source=${source}&market=${market}&limit=60`),
-  scanDetail: (id: string) => j<{ scan_id: string; time: string; cards: TickerCard[] }>(`/api/scans/${encodeURIComponent(id)}`),
+  scanDetail: (id: string) => j<{ scan_id: string; time: string; cards: TickerCard[]; notes?: string[] }>(`/api/scans/${encodeURIComponent(id)}`),
   scanAnalyze: (id: string, ticker: string) => j<Analysis & { scan_id: string; cached_at: string }>(`/api/scans/${encodeURIComponent(id)}/analyze/${ticker}`),
   archive: (q: { from?: string; to?: string; market?: string; ticker?: string; limit?: number; offset?: number } = {}) =>
     j<Archive>(`/api/archive?date_from=${q.from || ""}&date_to=${q.to || ""}&market=${q.market || ""}&ticker=${q.ticker || ""}&limit=${q.limit || 100}&offset=${q.offset || 0}`),

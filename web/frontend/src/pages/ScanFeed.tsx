@@ -13,9 +13,10 @@ export function ScanFeed() {
   const [sel, setSel] = useState<ScanPost | null>(null);
   const [cards, setCards] = useState<TickerCard[] | null>(null);
   const [ticker, setTicker] = useState<TickerCard | null>(null);
+  const [notes, setNotes] = useState<string[]>([]);
 
   useEffect(() => { api.scans(source).then((d) => setScans(d.scans)).catch(() => {}); }, [source]);
-  const openScan = (s: ScanPost) => { setSel(s); setCards(null); setTicker(null); api.scanDetail(s.scan_id).then((d) => setCards(d.cards)).catch(() => setCards([])); };
+  const openScan = (s: ScanPost) => { setSel(s); setCards(null); setTicker(null); setNotes([]); api.scanDetail(s.scan_id).then((d) => { setCards(d.cards); setNotes(d.notes || []); }).catch(() => setCards([])); };
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : ticker ? "300px 1fr" : sel ? "300px 1fr" : "1fr", gap: 16 }}>
@@ -36,6 +37,7 @@ export function ScanFeed() {
               </div>
               <div style={{ fontWeight: 600, fontSize: 14 }}>{s.lanes.join(", ")}</div>
               <div style={{ fontSize: 12, color: C.mut, marginTop: 4 }}>{s.markets.join("·")} · {s.pick_count}픽</div>
+              {s.note && <div style={{ fontSize: 11, color: C.mut, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{s.note}</div>}
             </div>
           ))}
         </div>
@@ -50,6 +52,7 @@ export function ScanFeed() {
                 <button onClick={() => setSel(null)} style={{ background: "none", border: "none", color: C.accent, fontSize: 14, padding: "0 0 10px", cursor: "pointer" }}>← 스캔 목록</button>
               )}
               <div style={{ marginBottom: 12, color: C.mut, fontSize: 13 }}>{sel.scan_id} · {cards?.length || 0} 종목 — 카드를 클릭하면 정밀분석</div>
+              {notes.length > 0 && <div style={{ marginBottom: 12, padding: 10, background: C.surface2, borderRadius: 8, fontSize: 12, color: C.mut }}>{notes.map((n, i) => <div key={i}>{n}</div>)}</div>}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 10 }}>
                 {(cards || []).map((c) => (
                   <div key={c.code} onClick={() => setTicker(c)} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, padding: 12, cursor: "pointer" }}>
