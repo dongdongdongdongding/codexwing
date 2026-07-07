@@ -36,7 +36,7 @@ LANES = {
 TARGET_PCT = 5.0
 # 승격 계약(§7-E)의 원장 필드 → 웹 노출 (티어/레짐상태/계약)
 _LEDGER_EXTRA_KEYS = ("tier", "tier_threshold", "mkt_state", "mkt_dd20", "hold_days",
-                      "target_tp_pct", "ev_pred", "exit_contract")
+                      "target_tp_pct", "ev_pred", "exit_contract", "ret_5d", "ret_5d_d")
 
 
 @lru_cache(maxsize=1)
@@ -161,6 +161,11 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         bits.append(f"유동성 {liq_eok}억")
     if row.get("mkt_state") == "RISK_OFF":
         bits.append("⚠약세장")
+        # §24 항복 해부: 시장 동반붕괴 중 항복픽 = 반등코어 (8y 픽레벨 +1.51 CI>0, 7/8년 —
+        # 시장 상승 중 단독붕괴는 반대로 음수). 정보 태그만, 계약/발행 불변.
+        r5 = row.get("ret_5d") if row.get("ret_5d") is not None else (extra or {}).get("ret_5d_d")
+        if isinstance(r5, (int, float)) and r5 <= -13:
+            bits.append("반등코어(동반항복)")
     if row.get("tier") == "PRIMARY":
         bits.append("고확신 선별")
     if bits:

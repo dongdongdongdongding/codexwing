@@ -70,6 +70,7 @@ def score_today(top_k: int) -> Dict[str, Any]:
             out["picks"].append({"date": str(latest.date()), "market": mkt, **state,
                                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
+                                 "ret_5d": round(float(r["ret_5d"]), 2) if pd.notna(r.get("ret_5d")) else None,
                                  "liq_eok": round(float(r["liq"]) / 1e8, 1),
                                  "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"})
     return out
