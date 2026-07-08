@@ -214,6 +214,21 @@ if [[ "${AG_PX_LONG_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/build_px_l
   run_optional "px_long_refresh" \
     env PX_REBUILD=1 PX_END="${DATE_TARGET}" python3 "${HOME}/research_cache/build_px_long.py"
 fi
+# 경량 증분 업데이터 (수급/신용/공시) — 2026-07-08: 분봉 백필이 KIS 스로틀링으로 5h+ 걸리며
+# 뒤 스텝들을 며칠씩 굶기던 문제(수급 7/6, 신용 7/3 정지) → 무거운 백필 "앞"으로 이동.
+if [[ "${AG_FLOW_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/flow_update.py" ]]; then
+  echo "[STEP] flow_update (외국인/기관 수급 증분)"
+  run_optional "flow_update" python3 "${HOME}/research_cache/flow_update.py"
+fi
+if [[ "${AG_CREDIT_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/credit_update.py" ]]; then
+  echo "[STEP] credit_update (신용/대주 잔고 증분)"
+  run_optional "credit_update" python3 "${HOME}/research_cache/credit_update.py"
+fi
+if [[ "${AG_DART_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/dart_update.py" ]]; then
+  echo "[STEP] dart_update (공시 증분)"
+  run_optional "dart_update" python3 "${HOME}/research_cache/dart_update.py"
+fi
+
 if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday_backfill.py" ]]; then
   # 분봉 minute bars: incremental KIS backfill of today's full session (post-close). Only fetches
   # days not already cached, so the daily run just adds today. Disable with AG_INTRADAY_BACKFILL=0.
@@ -252,29 +267,9 @@ if [[ "${AG_INTRADAY_PANEL:-1}" == "1" && -f "multi_agent/tools/build_intraday_3
 fi
 
 # DART 공시 증분 갱신 (dart_update.py = 증분; dart_events_bf.py는 6/19 하드코딩이라 사용금지).
-# 공시/이벤트 근거 신선도 유지. 비활성: AG_DART_REFRESH=0.
-if [[ "${AG_DART_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/dart_update.py" ]]; then
-  echo "[STEP] dart_update (공시 증분)"
-  run_optional "dart_update" \
-    python3 "${HOME}/research_cache/dart_update.py"
-fi
-
-# 신용잔고/대주잔고 증분 갱신 (KIS daily_credit_balance, swing-main-5r7t 기계적 수급 데이터).
-# 종목당 1콜로 최근 30일 갭 채움 → ~/research_cache/credit.parquet. 비활성: AG_CREDIT_REFRESH=0.
-if [[ "${AG_CREDIT_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/credit_update.py" ]]; then
-  echo "[STEP] credit_update (신용/대주 잔고 증분)"
-  run_optional "credit_update" \
-    python3 "${HOME}/research_cache/credit_update.py"
-fi
-
 # B 엔진 (signal_class=B, 시장중립 적응형 앙상블, A와 별개). 일봉주기 매일 top10 픽 + forward-shadow.
 # 데이터(px_long 위 + flow)가 신선해야 하므로 위 px_long_refresh 다음에 배치. 비활성: AG_B_ENGINE=0.
 if [[ "${AG_B_ENGINE:-1}" == "1" && -d "b_engine" ]]; then
-  # flow_update.py = 증분 일일 갱신(flow_bf.py는 6/15 하드코딩·기존종목skip이라 안 돎 → 사용금지).
-  if [[ -f "${HOME}/research_cache/flow_update.py" ]]; then
-    echo "[STEP] b_engine flow_update (외국인/기관 수급 증분)"
-    run_optional "b_flow_update" python3 "${HOME}/research_cache/flow_update.py"
-  fi
   echo "[STEP] b_engine retrain (적응형 앙상블)"
   run_optional "b_retrain" python3 -m b_engine.model_engine train
   echo "[STEP] b_engine scan (매일 top10 픽)"
