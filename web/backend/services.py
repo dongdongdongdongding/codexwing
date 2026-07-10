@@ -168,6 +168,8 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
             bits.append("반등코어(동반항복)")
     if row.get("tier") == "PRIMARY":
         bits.append("고확신 선별")
+    if (extra or {}).get("rationale_extra"):
+        bits.append(str(extra["rationale_extra"]))
     if bits:
         row["rationale"] = " · ".join(bits)
     # 권장 비중 (§20 구성수학, swing-main-wdu2): 검증 레인 = 총자본 2%/픽 (8:2, 분수Kelly 0.10).
@@ -322,7 +324,11 @@ def b_picks():
                               extra={"lane_label": "B 시장중립", "kind": "B", "badge": "🟣",
                                      "pred_alpha_5d": p.get("pred_alpha_5d"), "smart5": p.get("smart5"),
                                      "rsi14": p.get("rsi14"), "hold_days": p.get("hold_days"),
-                                     "tier": p.get("tier")}))
+                                     "tier": p.get("tier"),
+                                     # §26 C1: RISK_OFF에서 B 발행보류 (α 1/6 + 라이브 -5.1) — 보류 사유 표시
+                                     "regime_hold": d.get("regime_hold") or None,
+                                     "rationale_extra": ("⛔ 약세장 보류 — RISK_OFF에서 B α는 정상장의 1/6 (§26), 관측만"
+                                                         if d.get("regime_hold") else None)}))
     return rows
 
 

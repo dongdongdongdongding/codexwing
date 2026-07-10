@@ -399,6 +399,15 @@ def main() -> None:
         for p in picks:
             if p["tier"] == "PRIMARY" and (p.get("rsi14_d") or 0) >= 65 and (p.get("ret_5d_d") or 0) > 0:
                 p["tier"] = "VETO_DD_OVERHEAT"
+    # 반등국면 베토 (§26, swing-main-l2n8): dd20<-8인데 mkt5>-3 = 저점 반등 국면 — 라이브
+    # 7/1-3 손실 클러스터의 정확한 재현 셀이 8OOS월 3시드에서도 EV −4.62 (§24 메커니즘: 반등은
+    # 항복주가 주도, 레인 픽은 뒤처짐). soft: 원장 기록 유지, 라우팅만 차단, forward 양쪽 측정.
+    if os.getenv("AG_KOSPI_INTRADAY_REBOUND_VETO", "1").strip() not in ("0", "false", "False"):
+        dd20, r5 = state.get("mkt_dd20"), state.get("mkt_ret5")
+        if isinstance(dd20, (int, float)) and isinstance(r5, (int, float)) and dd20 < -8 and r5 > -3:
+            for p in picks:
+                if p["tier"] == "PRIMARY":
+                    p["tier"] = "VETO_REBOUND_PHASE"
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     seen = set()
     if LEDGER.exists():

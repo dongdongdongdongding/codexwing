@@ -21,6 +21,18 @@ def scan(as_of=None):
     if not out:
         return None
     out["generated_at"] = datetime.now().isoformat(timespec="seconds")
+    # C1 레짐 보류 (swing-main-l2n8, 24폴드 §26): RISK_OFF에서 B α는 NORMAL의 1/6
+    # (top3 +0.46 vs +2.74), 라이브 2026-06/07 RISK_OFF 구간 α −5.1 실현. soft:
+    # 픽/원장 유지(양쪽 forward 측정), regime_hold 플래그로 소비자가 보류 표시.
+    out["regime_hold"] = False
+    try:
+        if os.getenv("AG_B_REGIME_HOLD", "1").strip() not in ("0", "false", "False"):
+            from multi_agent.tools.report_kospi_intraday_swing import market_drawdown_state
+            st = market_drawdown_state("KOSDAQ")   # B 픽 다수가 코스닥 — 보수적으로 코스닥 상태
+            out["mkt_state"] = st.get("mkt_state")
+            out["regime_hold"] = st.get("mkt_state") == "RISK_OFF"
+    except Exception:
+        pass
     with open(E.META_PATH) as f:
         out["model_meta"] = json.load(f)
     with open(PICKS, "w") as f:
