@@ -1164,12 +1164,19 @@ def buy_timing(days=5):
             touched = bool((win["high"].astype(float) >= target).any()) if len(win) else False
             elapsed = len(win)
             left = max(0, 5 - elapsed)
+            # 트레일 (ant.wiki RRG 스타일): 발행(여력=tp, 잔여5) → 매 세션 종가 좌표 경로
+            trail = [{"d": str(pd.Timestamp(d).date()), "headroom": round(tp, 2), "left": 5}]
+            for i in range(len(win)):
+                c_i = float(win["close"].iloc[i])
+                trail.append({"d": str(win["date"].iloc[i].date()),
+                              "headroom": round((target / c_i - 1) * 100, 2), "left": max(0, 5 - (i + 1))})
             picks.append({"code": code, "ticker": r.get("ticker"), "name": resolve_any_name(code),
                           "lane": key, "lane_label": meta["label"], "kind": meta["kind"], "badge": meta["badge"],
                           "scan_date": d, "ref": round(ref, 1), "target": round(target, 1), "tp_pct": tp,
                           "age": elapsed, "sessions_left": left, "touched": touched,
                           "tier": r.get("tier"), "mkt_state": r.get("mkt_state"),
-                          "prob": r.get("p"), "entry_note": "익일 시가 진입" if swing else "15:00 종가 기준"})
+                          "prob": r.get("p"), "trail": trail,
+                          "entry_note": "익일 시가 진입" if swing else "15:00 종가 기준"})
     # 현재가 일괄 (KIS)
     quotes = prices(list({p["code"] for p in picks}))
     for p in picks:

@@ -19,6 +19,7 @@ const SM: Record<string, { color: string; icon: string }> = {
 };
 
 function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: TimingPick | null; onSel: (p: TimingPick) => void; isMobile: boolean }) {
+  const [hov, setHov] = useState<string | null>(null);
   const W = 900, H = 360, PAD = { l: 46, r: 16, t: 26, b: 34 };
   const xs = picks.map((p) => p.headroom ?? 0);
   const xMin = Math.min(-6, ...xs) - 1, xMax = Math.max(8, ...xs) + 1;
@@ -54,6 +55,29 @@ function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: 
         <text x={(PAD.l + W - PAD.r) / 2} y={H - 6} textAnchor="middle" fill={C.mut} fontSize="11">← 여력 소진 · 목표까지 남은 수익률(%) · 여력 큼 →</text>
         <text x={12} y={(PAD.t + H - PAD.b) / 2} fill={C.mut} fontSize="11" transform={`rotate(-90 12 ${(PAD.t + H - PAD.b) / 2})`} textAnchor="middle">잔여 세션</text>
         {[0, 5].map((v) => <text key={v} x={PAD.l - 8} y={Y(v) + 4} textAnchor="end" fill={C.mut} fontSize="10">{v}</text>)}
+        {/* 트레일 (호버/선택 시): 발행→현재의 (여력,잔여) 경로 — 현재로 갈수록 진해짐 (ant.wiki RRG 방식) */}
+        {picks.map((p, i) => {
+          const key = p.code + p.scan_date;
+          const active = hov === key || (sel && sel.code === p.code && sel.scan_date === p.scan_date);
+          const tr = p.trail || [];
+          if (!active || tr.length < 1) return null;
+          const pts = tr.map((t) => [X(Math.max(xMin, Math.min(xMax, t.headroom))), Y(Math.max(0, Math.min(5, t.left)))] as [number, number]);
+          const hx = p.headroom ?? tr[tr.length - 1]?.headroom ?? 0;
+          pts.push([X(Math.max(xMin, Math.min(xMax, hx))), Y(Math.max(0, Math.min(5, p.sessions_left)))]);
+          const col = SM[p.state]?.color || "#94a3b8";
+          return (
+            <g key={"trail" + key + i} pointerEvents="none">
+              {pts.slice(0, -1).map(([ax, ay], j) => {
+                const [bx, by] = pts[j + 1];
+                const o = 0.15 + 0.55 * ((j + 1) / (pts.length - 1));
+                return <line key={j} x1={ax} y1={ay} x2={bx} y2={by} stroke={col} strokeWidth={2} strokeLinecap="round" opacity={o} />;
+              })}
+              {pts.slice(0, -1).map(([ax, ay], j) => (
+                <circle key={"n" + j} cx={ax} cy={ay} r={2.5} fill={col} opacity={0.25 + 0.5 * (j / Math.max(1, pts.length - 2))} />
+              ))}
+            </g>
+          );
+        })}
         {/* 버블 */}
         {picks.map((p, i) => {
           const hx = p.headroom ?? 0;
@@ -63,7 +87,9 @@ function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: 
           const cy = Y(Math.max(0, Math.min(5, p.sessions_left + jit(p))));
           const on = sel && sel.code === p.code && sel.scan_date === p.scan_date;
           return (
-            <g key={p.code + p.scan_date + i} onClick={() => onSel(p)} style={{ cursor: "pointer" }} opacity={dead ? 0.35 : 1}>
+            <g key={p.code + p.scan_date + i} onClick={() => onSel(p)}
+               onMouseEnter={() => setHov(p.code + p.scan_date)} onMouseLeave={() => setHov(null)}
+               style={{ cursor: "pointer" }} opacity={dead ? 0.35 : 1}>
               <circle cx={cx} cy={cy} r={r} fill={`${SM[p.state]?.color}55`} stroke={on ? C.accent : SM[p.state]?.color} strokeWidth={on ? 2.5 : 1.2} />
               <text x={cx} y={cy - r - 4} textAnchor="middle" fill={on ? C.text : C.mut} fontSize={isMobile ? 10 : 11} fontWeight={on ? 700 : 500}>{p.name}</text>
             </g>
