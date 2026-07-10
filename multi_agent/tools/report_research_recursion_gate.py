@@ -54,6 +54,13 @@ LANES: Dict[str, Dict[str, Any]] = {
         "filter": {"status": "settled", "tier": "PRIMARY"},
         "expect_ev": 2.18, "expect_win": 55.0, "n_min": 30,
         "basis": "§11-B 24폴드 (top3 집중, α/트레이드)"},
+    "b_all_top10": {
+        # 2026-07-10: 전체 스트림 감시 추가 — PRIMARY 정산 대기 중 top10 전체가 α −5.1로 붕괴한
+        # 사각지대 발견(운영자 질의). tier 스탬프 이전 정산분 포함 전체를 게이트가 공식 판정.
+        "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha",
+        "filter": {"status": "settled"},
+        "expect_ev": 1.20, "expect_win": 55.0, "n_min": 30,
+        "basis": "§11-B 24폴드 (top10 전체, α/트레이드)"},
     "nasdaq_session_tape": {
         "ledger": USR / "nasdaq_session_tape_ledger.jsonl", "field": "policy_ret",
         "expect_ev": 0.75, "expect_win": 79.3, "n_min": 30,
