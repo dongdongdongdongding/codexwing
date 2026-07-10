@@ -110,8 +110,17 @@ export function Timing() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.buyTiming(5).then((d) => { setPicks(d.picks); setAsof(d.asof); setLoading(false); }).catch(() => setLoading(false));
+    const load = () => api.buyTiming(5).then((d) => { setPicks(d.picks); setAsof(d.asof); setLoading(false); }).catch(() => setLoading(false));
+    load();
+    const t = setInterval(load, 30000);   // 픽 탭과 동일하게 주기 갱신 (시세→신호등/여력/트레일 재계산)
+    return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    if (!sel) return;
+    const fresh = picks.find((p) => p.code === sel.code && p.scan_date === sel.scan_date && p.lane === sel.lane);
+    if (fresh && (fresh.current !== sel.current || fresh.state !== sel.state)) setSel(fresh);
+  }, [picks]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const dates = useMemo(() => Array.from(new Set(picks.map((p) => p.scan_date))).sort().reverse(), [picks]);
   const lanes = useMemo(() => Array.from(new Set(picks.map((p) => p.lane_label))), [picks]);
