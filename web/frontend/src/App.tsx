@@ -4,6 +4,7 @@ import { api, Freshness } from "./api";
 import { C } from "./theme";
 import { Overview } from "./pages/Overview";
 import { Picks } from "./pages/Picks";
+import { Timing } from "./pages/Timing";
 import { ScanFeed } from "./pages/ScanFeed";
 import { Performance } from "./pages/Performance";
 import { Ops } from "./pages/Ops";
@@ -14,6 +15,7 @@ import { Theme } from "./pages/Theme";
 const NAV = [
   { key: "overview", label: "개요", icon: "◆" },
   { key: "picks", label: "픽", icon: "◎" },
+  { key: "timing", label: "매수 타이밍", icon: "⏱" },
   { key: "analyze", label: "스캔·정밀분석", icon: "🔎" },
   { key: "performance", label: "성과", icon: "📈" },
   { key: "market", label: "시장·근거", icon: "🌐" },
@@ -21,7 +23,7 @@ const NAV = [
   { key: "ops", label: "운영", icon: "⚙", admin: true },
 ];
 
-const MOBILE_MAIN = ["overview", "picks", "analyze", "performance"];
+const MOBILE_MAIN = ["overview", "picks", "timing", "performance"];
 
 export default function App() {
   const isMobile = useIsMobile();
@@ -74,6 +76,7 @@ export default function App() {
           <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, margin: isMobile ? "0 0 12px" : "0 0 18px" }}>{NAV.find((n) => n.key === tab)?.label}</h1>
           {tab === "overview" && <Overview />}
           {tab === "picks" && <Picks />}
+          {tab === "timing" && <Timing />}
           {tab === "analyze" && <ScanFeed />}
           {tab === "performance" && <Performance />}
           {tab === "ops" && <Ops />}

@@ -77,6 +77,11 @@ def analyze(code: str):
     return S.analyze(code)
 
 
+@app.get("/api/buy-timing")
+def buy_timing(days: int = Query(5, ge=1, le=5)):
+    return S.buy_timing(days)
+
+
 @app.get("/api/performance")
 def performance():
     return S.performance()

@@ -1122,3 +1122,78 @@ def overview(top=6):
             "top_picks": merged, "freshness": fr,
             "counts": {"A": len([p for p in allp if p["signal_class"] == "A"]),
                        "B": len([p for p in allp if p["signal_class"] == "B"])}}
+
+
+# ── 매수 타이밍 (§26 후속, 운영자 요청): "지금 가격에 사도 되나" — 계약 오버레이 판단 ──
+def buy_timing(days=5):
+    """최근 N거래일 픽 전체 + 계약 대비 현재 위치 → 매수 신호등.
+    상태: DONE(터치완료=추격금지) EXPIRED(만기) GREEN(기준가~+1%) YELLOW(+1~2.5%) RED(>+2.5%).
+    근거: 진입가 초과분은 검증된 엣지를 1:1로 소진 (first-touch 계약 구조)."""
+    import pandas as pd
+    oh = pd.read_parquet(os.path.join(RESEARCH, "ohlc_daily.parquet"))
+    oh["date"] = pd.to_datetime(oh["date"])
+    sessions = sorted(oh["date"].unique())
+    cutoff = sessions[-days] if len(sessions) >= days else sessions[0]
+    picks = []
+    for key, meta in LANES.items():
+        for r in _read_ledger(meta["ledger"]):
+            d = r.get("date")
+            if not d or pd.Timestamp(d) < cutoff:
+                continue
+            mkt = r.get("market") or _market_of(r.get("ticker"))
+            if key.startswith("kospi") and mkt != "KOSPI":
+                continue
+            if key.startswith("kosdaq") and mkt != "KOSDAQ":
+                continue
+            if r.get("tier") in ("CANDIDATE", "VETO_DD_OVERHEAT", "VETO_REBOUND_PHASE"):
+                continue  # 발행 안 된 픽은 매수 화면에서 제외
+            code = str(r.get("ticker", "")).split(".")[0].zfill(6)
+            tp = float(r.get("target_tp_pct") or (10.0 if "kosdaq_intraday" in key else 5.0))
+            swing = meta.get("kind") == "SWING"
+            h = oh[(oh["code"] == code) & (oh["date"] > pd.Timestamp(d))].sort_values("date").head(6)
+            if swing:
+                # 익일시가 진입 — 아직 미개장(진입 전)이면 기준가=전일종가 참조
+                ref = float(h["open"].iloc[0]) if len(h) else float(r.get("close") or 0)
+                win = h.head(5)
+            else:
+                ref = float(r.get("entry_reference_price") or r.get("close_1500") or r.get("close") or 0)
+                win = h.head(5)
+            if not ref:
+                continue
+            target = ref * (1 + tp / 100)
+            touched = bool((win["high"].astype(float) >= target).any()) if len(win) else False
+            elapsed = len(win)
+            left = max(0, 5 - elapsed)
+            picks.append({"code": code, "ticker": r.get("ticker"), "name": resolve_any_name(code),
+                          "lane": key, "lane_label": meta["label"], "kind": meta["kind"], "badge": meta["badge"],
+                          "scan_date": d, "ref": round(ref, 1), "target": round(target, 1), "tp_pct": tp,
+                          "age": elapsed, "sessions_left": left, "touched": touched,
+                          "tier": r.get("tier"), "mkt_state": r.get("mkt_state"),
+                          "prob": r.get("p"), "entry_note": "익일 시가 진입" if swing else "15:00 종가 기준"})
+    # 현재가 일괄 (KIS)
+    quotes = prices(list({p["code"] for p in picks}))
+    for p in picks:
+        q = quotes.get(p["code"]) or {}
+        cur = q.get("price")
+        p["current"] = cur
+        p["change_pct"] = q.get("change_pct")
+        if cur and p["ref"]:
+            pos = (float(cur) / p["ref"] - 1) * 100
+            p["pos_vs_ref"] = round(pos, 2)
+            p["headroom"] = round((p["target"] / float(cur) - 1) * 100, 2)
+            if p["touched"] or float(cur) >= p["target"]:
+                # ohlc는 전일까지만 — 당일 장중 목표 초과도 현재가로 터치완료 처리
+                p["touched"] = True
+                p["state"], p["state_label"] = "DONE", "터치완료 — 추격 금지"
+            elif p["sessions_left"] <= 0:
+                p["state"], p["state_label"] = "EXPIRED", "만기 — 계약 종료"
+            elif pos <= 1.0:
+                p["state"], p["state_label"] = "GREEN", "기준가권 — 계약 그대로 유효"
+            elif pos <= 2.5:
+                p["state"], p["state_label"] = "YELLOW", f"기준가 +{pos:.1f}% — 여력 절반 소진"
+            else:
+                p["state"], p["state_label"] = "RED", f"기준가 +{pos:.1f}% — 추격 비추천"
+        else:
+            p["state"], p["state_label"] = "UNKNOWN", "시세 조회 실패"
+    picks.sort(key=lambda x: (x["scan_date"], x["lane"]), reverse=True)
+    return {"days": days, "asof": datetime.now().strftime("%Y-%m-%d %H:%M"), "picks": picks}

@@ -4,7 +4,8 @@ import { api, ChartData } from "../api";
 import { C } from "../theme";
 
 // 토스급 분봉/일봉 차트 (기획 R6) — 미니멀·부드러운 크로스헤어·기간토글·견고.
-export function Chart({ code, height = 260 }: { code: string; height?: number }) {
+export interface PriceLine { price: number; label: string; color: string; }
+export function Chart({ code, height = 260, lines }: { code: string; height?: number; lines?: PriceLine[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const [tf, setTf] = useState<"day" | "minute">("day");
@@ -29,19 +30,21 @@ export function Chart({ code, height = 260 }: { code: string; height?: number })
     setLoading(true); setEmpty(false);
     api.chart(code, tf).then((d: ChartData) => {
       if (!d.bars.length) { setEmpty(true); setLoading(false); return; }
+      let series: any;
       if (d.type === "candle") {
-        const s = chart.addCandlestickSeries({ upColor: C.up, downColor: C.down, borderVisible: false, wickUpColor: C.up, wickDownColor: C.down });
-        s.setData(d.bars as any);
+        series = chart.addCandlestickSeries({ upColor: C.up, downColor: C.down, borderVisible: false, wickUpColor: C.up, wickDownColor: C.down });
+        series.setData(d.bars as any);
       } else {
-        const s = chart.addAreaSeries({ lineColor: C.accent, topColor: `${C.accent}33`, bottomColor: `${C.accent}05`, lineWidth: 2 });
-        s.setData(d.bars as any);
+        series = chart.addAreaSeries({ lineColor: C.accent, topColor: `${C.accent}33`, bottomColor: `${C.accent}05`, lineWidth: 2 });
+        series.setData(d.bars as any);
       }
+      (lines || []).forEach((l) => series.createPriceLine({ price: l.price, color: l.color, lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: l.label }));
       chart.timeScale().fitContent();
       setLoading(false);
     }).catch(() => { setEmpty(true); setLoading(false); });
 
     return () => { ro.disconnect(); chart.remove(); };
-  }, [code, tf, height]);
+  }, [code, tf, height, JSON.stringify(lines || [])]);
 
   return (
     <div>
