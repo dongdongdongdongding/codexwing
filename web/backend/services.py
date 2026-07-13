@@ -1203,4 +1203,17 @@ def buy_timing(days=5):
         else:
             p["state"], p["state_label"] = "UNKNOWN", "시세 조회 실패"
     picks.sort(key=lambda x: (x["scan_date"], x["lane"]), reverse=True)
+    # 오늘의 최선 (§27, swing-main-xfnc): 기권일 강제발행은 실측 EV<0으로 기각 —
+    # 대신 레인 교차로 "지금 살 수 있는(GREEN) 픽 중 실측 티어 승률 최고" 1개를 지목.
+    # 스윙(매일 top3)·나스닥(매일 rank-1)이 기권하지 않으므로 항상 후보가 존재.
+    TIER_WIN = {("kospi_intraday", "PRIMARY"): 86, ("kosdaq_intraday", None): 72,
+                ("kospi_swing", None): 62, ("kosdaq_swing", None): 62}
+    def _w(p):
+        return TIER_WIN.get((p["lane"], p.get("tier"))) or TIER_WIN.get((p["lane"], None)) or 50
+    live = [p for p in picks if p["state"] == "GREEN"]
+    pool2 = live or [p for p in picks if p["state"] == "YELLOW"]
+    if pool2:
+        best = max(pool2, key=lambda p: (_w(p), -(p.get("pos_vs_ref") or 0)))
+        best["today_best"] = True
+        best["today_best_note"] = f"레인 교차 최선 — {best['lane_label']} 실측 승률 ~{_w(best)}%"
     return {"days": days, "asof": datetime.now().strftime("%Y-%m-%d %H:%M"), "picks": picks}

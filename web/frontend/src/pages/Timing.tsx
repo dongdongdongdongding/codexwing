@@ -91,7 +91,7 @@ function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: 
                onMouseEnter={() => setHov(p.code + p.scan_date)} onMouseLeave={() => setHov(null)}
                style={{ cursor: "pointer" }} opacity={dead ? 0.35 : 1}>
               <circle cx={cx} cy={cy} r={r} fill={`${SM[p.state]?.color}55`} stroke={on ? C.accent : SM[p.state]?.color} strokeWidth={on ? 2.5 : 1.2} />
-              <text x={cx} y={cy - r - 4} textAnchor="middle" fill={on ? C.text : C.mut} fontSize={isMobile ? 10 : 11} fontWeight={on ? 700 : 500}>{p.name}</text>
+              <text x={cx} y={cy - r - 4} textAnchor="middle" fill={on ? C.text : C.mut} fontSize={isMobile ? 10 : 11} fontWeight={on ? 700 : 500}>{(p.today_best ? "⭐" : "") + p.name}</text>
             </g>
           );
         })}
@@ -141,6 +141,14 @@ export function Timing() {
         <span style={{ marginLeft: "auto", color: C.mut, fontSize: 11, alignSelf: "center" }}>{asof} 기준 · 버블크기=적중확률</span>
       </div>
 
+      {/* 오늘의 최선 (레인 교차) */}
+      {(() => { const b = picks.find((p) => p.today_best); return b ? (
+        <div onClick={() => setSel(b)} style={{ display: "flex", alignItems: "center", gap: 8, background: "#22c55e14", border: "1px solid #22c55e55", borderRadius: 12, padding: "10px 14px", marginBottom: 10, cursor: "pointer", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 16 }}>⭐</span>
+          <b>오늘의 최선: {b.name}</b>
+          <span style={{ fontSize: 12, color: C.mut }}>{b.today_best_note} · 여력 {b.headroom != null && b.headroom >= 0 ? "+" : ""}{b.headroom}% · 잔여 {b.sessions_left}세션</span>
+        </div>
+      ) : null; })()}
       {/* 사분면 버블 맵 */}
       <BubbleMap picks={shown} sel={sel} onSel={setSel} isMobile={isMobile} />
 
