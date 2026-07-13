@@ -35,8 +35,8 @@ STATE = PROJECT_ROOT / "runtime_state" / "long_term" / "learning" / "recursion_g
 LANES: Dict[str, Dict[str, Any]] = {
     "kospi_intraday_t5": {
         "ledger": EXP / "kospi_intraday_swing_ledger.jsonl", "field": "exit_t5_h5",
-        "expect_ev": 4.80, "expect_win": 89.0, "n_min": 20,
-        "basis": "§7-E 8 OOS월 walk-forward (rank-1 선별+터치익절)"},
+        "expect_ev": 5.65, "expect_win": 92.0, "n_min": 20,
+        "basis": "§28 q0.5 승격 (2026-07-13) — 8 OOS월 rank-1 선별 q0.5 티어+터치익절"},
     "kosdaq_intraday_t10": {
         "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5",
         "expect_ev": 3.14, "expect_win": 75.8, "n_min": 20,

@@ -387,7 +387,7 @@ def main() -> None:
     state = market_drawdown_state("KOSPI")
     # selective issuance (promoted 2026-07-03, RESEARCH_LOG §7-E): only PRIMARY-tier
     # rank-1 picks route live; CANDIDATE days are ledgered for observation, not routed.
-    thr = _tier_threshold(quantile=float(os.getenv("AG_KOSPI_INTRADAY_TIER_Q", "0.2")))
+    thr = _tier_threshold(quantile=float(os.getenv("AG_KOSPI_INTRADAY_TIER_Q", "0.5")))  # §28 승격(운영자): q0.2→0.5, 8OOS월 win 86→92%/EV 3.83→5.65/주간총EV도 우세
     for p in picks:
         p["tier"] = "PRIMARY" if float(p["p"]) >= thr else "CANDIDATE"
         p["tier_threshold"] = round(thr, 4)
