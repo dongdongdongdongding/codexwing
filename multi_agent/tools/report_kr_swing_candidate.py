@@ -71,8 +71,23 @@ def score_today(top_k: int) -> Dict[str, Any]:
                                  "ticker": str(r["code"]) + (".KS" if mkt == "KOSPI" else ".KQ"),
                                  "p": round(float(r["p"]), 4), "close": float(r["close"]),
                                  "ret_5d": round(float(r["ret_5d"]), 2) if pd.notna(r.get("ret_5d")) else None,
+                                 "atr_pct": round(float(r["atr_pct"]), 2) if pd.notna(r.get("atr_pct")) else None,
                                  "liq_eok": round(float(r["liq"]) / 1e8, 1),
                                  "contract": "buy next open; +5% touch exit within 5 sessions else 5d close"})
+    # §29 출구혼합 shadow: 당일 픽 내 ATR 3분위 밴드 → 출구 플랜 스탬프 (계약 불변, 병행채점용)
+    atrs = [p["atr_pct"] for p in out["picks"] if p.get("atr_pct") is not None]
+    if len(atrs) >= 3:
+        lo_t, hi_t = float(np.quantile(atrs, 0.33)), float(np.quantile(atrs, 0.67))
+        for p in out["picks"]:
+            a = p.get("atr_pct")
+            if a is None:
+                continue
+            if a > hi_t:
+                p["exit_band"], p["exit_mix_plan"] = "HIGH", f"고ATR → +{1.5*a:.1f}%(1.5×ATR) 배리어 shadow"
+            elif a <= lo_t:
+                p["exit_band"], p["exit_mix_plan"] = "LOW", f"저ATR → 트레일링(고점-{1.5*a:.1f}%) shadow"
+            else:
+                p["exit_band"], p["exit_mix_plan"] = "MID", "중ATR → 현행 +5% 터치 (shadow 동일)"
     return out
 
 
@@ -112,6 +127,31 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
             row["entry_open"] = round(entry, 2)
             row["ft_touch5"] = touched
             row["policy_ret"] = round(ret, 2)
+            # §29 출구혼합 shadow 병행채점 (계약 불변): 밴드별 대체 출구의 실현수익
+            a = row.get("atr_pct"); band = row.get("exit_band")
+            if a is not None and band in ("HIGH", "LOW", "MID"):
+                op5 = win5["Open"].astype(float); hi5v = win5["High"].astype(float)
+                cl5 = win5["Close"].astype(float)
+                if band == "HIGH":
+                    mtg = entry * (1 + 0.015 * float(a))
+                    mret = float((cl5.iloc[-1] / entry - 1) * 100)
+                    for k in range(len(win5)):
+                        if np.isfinite(hi5v.iloc[k]) and hi5v.iloc[k] >= mtg:
+                            o = op5.iloc[k]
+                            fill = max(mtg, float(o)) if (k > 0 and np.isfinite(o) and o > 0) else mtg
+                            mret = (fill / entry - 1) * 100
+                            break
+                elif band == "LOW":
+                    hh = entry
+                    mret = float((cl5.iloc[-1] / entry - 1) * 100)
+                    for k in range(len(win5)):
+                        hh = max(hh, float(hi5v.iloc[k]) if np.isfinite(hi5v.iloc[k]) else hh)
+                        if float(cl5.iloc[k]) <= hh * (1 - 0.015 * float(a)):
+                            mret = (float(cl5.iloc[k]) / entry - 1) * 100
+                            break
+                else:
+                    mret = ret
+                row["exit_mix"] = round(float(mret), 2)
             changed = True
         except Exception:
             continue
@@ -121,7 +161,9 @@ def resolve_pending(today: pd.Timestamp) -> Dict[str, Any]:
     if not res:
         return {"resolved": 0}
     rets = [float(r["policy_ret"]) - COST for r in res]
+    mix = [float(r["exit_mix"]) - COST for r in res if isinstance(r.get("exit_mix"), (int, float))]
     return {"resolved": len(res),
+            **({"exit_mix_n": len(mix), "exit_mix_ev": round(float(np.mean(mix)), 2)} if mix else {}),
             "touch5_pct": round(float(np.mean([r["ft_touch5"] for r in res])) * 100, 1),
             "ev_net_avg": round(float(np.mean(rets)), 2),
             "worst": round(float(np.min(rets)), 2)}

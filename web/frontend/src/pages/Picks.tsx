@@ -170,6 +170,7 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
         <Section title="근거">
           {pick.rationale && <Row k="모델 근거" v={pick.rationale} />}
           {pick.size_note && <Row k="권장 비중" v={pick.size_note} />}
+          {(pick as any).exit_mix_plan && <Row k="출구 shadow" v={`${(pick as any).exit_mix_plan} — 실매도는 현행 계약(+5% 터치) 기준, 혼합안은 §29 검증중`} />}
           {detail?.events?.map((e: { type: string; date: string; d_left: number; note: string }, i: number) => (
             <Row key={"ev" + i} k={`⚠ ${e.type} D-${e.d_left}`} v={`${e.date} — ${e.note}`} />
           ))}

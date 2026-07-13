@@ -36,7 +36,8 @@ LANES = {
 TARGET_PCT = 5.0
 # 승격 계약(§7-E)의 원장 필드 → 웹 노출 (티어/레짐상태/계약)
 _LEDGER_EXTRA_KEYS = ("tier", "tier_threshold", "mkt_state", "mkt_dd20", "hold_days",
-                      "target_tp_pct", "ev_pred", "exit_contract", "ret_5d", "ret_5d_d")
+                      "target_tp_pct", "ev_pred", "exit_contract", "ret_5d", "ret_5d_d",
+                      "atr_pct", "exit_band", "exit_mix_plan")
 
 
 @lru_cache(maxsize=1)
@@ -792,6 +793,13 @@ def contract_performance():
     rows = _read_ledger("kr_swing_candidate_ledger.jsonl")
     vals = [float(r["policy_ret"]) for r in rows if isinstance(r.get("policy_ret"), (int, float))]
     out["lanes"]["swing"] = {"label": "스윙 (+5% 터치/5일, 익일시가)", **_agg(vals)}
+    # §29 스윙 출구혼합 shadow (동일 픽, 대체 출구 병행채점 — 계약 불변)
+    try:
+        rows = _read_ledger("kr_swing_candidate_ledger.jsonl")
+        vals = [float(r["exit_mix"]) - 0.3 for r in rows if isinstance(r.get("exit_mix"), (int, float))]
+        out["lanes"]["swing_exit_mix"] = {"label": "스윙 출구혼합 shadow (§29 검증중)", **_agg(vals)}
+    except Exception:
+        pass
     # 나스닥 세션테이프 (관측 shadow, +5% 터치/5일 정책 채점)
     try:
         fp = os.path.join(REPO, "runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl")
