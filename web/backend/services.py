@@ -419,22 +419,48 @@ def _kis():
     return _CLIENT
 
 
-def prices(codes, budget=8.0):
-    out = {}
+_QUOTE_CACHE: dict = {}   # code -> (ts, row) — 25s TTL (매수타이밍 30s 폴링과 정합)
+
+
+def prices(codes, budget=None):
+    """KIS 시세 일괄 조회 — 2026-07-14 수리: 8s 순차 예산이 36코드 중 24개를 자르던 병목
+    (사용자 보고 '시세 조회 실패'). 캐시(25s) + 4-워커 병렬 + 코드수 비례 예산."""
+    now = time.time()
+    codes6 = [str(c).split(".")[0].zfill(6) for c in codes]
+    out = {c: r for c, (ts, r) in _QUOTE_CACHE.items() if c in codes6 and now - ts < 25}
+    todo = [c for c in codes6 if c not in out]
+    if not todo:
+        return out
+    if budget is None:
+        budget = min(25.0, 3.0 + 0.35 * len(todo))
+    cli = _kis()
+    if cli is None:
+        return out
+    import queue
+    q_in = queue.Queue()
+    for c in todo:
+        q_in.put(c)
 
     def work():
-        c = _kis()
-        if c is None:
-            return
-        for code in codes:
+        while True:
             try:
-                q = c.quote_snapshot(str(code).split(".")[0].zfill(6))
-                out[str(code).split(".")[0].zfill(6)] = {
-                    "price": q.get("last_price"), "change_pct": q.get("day_change_pct"),
-                    "status": q.get("source_status")}
+                code = q_in.get_nowait()
+            except Exception:
+                return
+            try:
+                q = cli.quote_snapshot(code)
+                row = {"price": q.get("last_price"), "change_pct": q.get("day_change_pct"),
+                       "status": q.get("source_status")}
+                out[code] = row
+                _QUOTE_CACHE[code] = (time.time(), row)
             except Exception:
                 pass
-    t = threading.Thread(target=work, daemon=True); t.start(); t.join(budget)
+    threads = [threading.Thread(target=work, daemon=True) for _ in range(4)]
+    for t in threads:
+        t.start()
+    deadline = time.time() + budget
+    for t in threads:
+        t.join(max(0.1, deadline - time.time()))
     return out
 
 
@@ -1209,7 +1235,29 @@ def buy_timing(days=5):
             else:
                 p["state"], p["state_label"] = "RED", f"기준가 +{pos:.1f}% — 추격 비추천"
         else:
-            p["state"], p["state_label"] = "UNKNOWN", "시세 조회 실패"
+            # KIS 실패 폴백: 최신 종가로 잠정 판정 (전일 기준임을 명시)
+            try:
+                g = oh[oh["code"] == p["code"]]
+                cur = float(g["close"].iloc[-1]) if len(g) else None
+            except Exception:
+                cur = None
+            if cur and p["ref"]:
+                pos = (cur / p["ref"] - 1) * 100
+                p["current"] = cur
+                p["pos_vs_ref"] = round(pos, 2)
+                p["headroom"] = round((p["target"] / cur - 1) * 100, 2)
+                if p["touched"] or cur >= p["target"]:
+                    p["state"], p["state_label"] = "DONE", "터치완료 — 추격 금지"
+                elif p["sessions_left"] <= 0:
+                    p["state"], p["state_label"] = "EXPIRED", "만기 — 계약 종료"
+                elif pos <= 1.0:
+                    p["state"], p["state_label"] = "GREEN", "기준가권 (전일종가 기준)"
+                elif pos <= 2.5:
+                    p["state"], p["state_label"] = "YELLOW", f"기준가 +{pos:.1f}% (전일종가 기준)"
+                else:
+                    p["state"], p["state_label"] = "RED", f"기준가 +{pos:.1f}% (전일종가 기준)"
+            else:
+                p["state"], p["state_label"] = "UNKNOWN", "시세 조회 실패"
     picks.sort(key=lambda x: (x["scan_date"], x["lane"]), reverse=True)
     # 오늘의 최선 (§27, swing-main-xfnc): 기권일 강제발행은 실측 EV<0으로 기각 —
     # 대신 레인 교차로 "지금 살 수 있는(GREEN) 픽 중 실측 티어 승률 최고" 1개를 지목.
