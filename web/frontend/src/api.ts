@@ -103,6 +103,7 @@ export const api = {
   lanes: () => j<{ lanes: Lane[] }>(`/api/lanes`),
   prices: (codes: string[]) => j<Record<string, Price>>(`/api/prices?codes=${codes.join(",")}`),
   chart: (code: string, tf: "day" | "minute") => j<ChartData>(`/api/chart?code=${code}&tf=${tf}`),
+  compass: () => j<{ asof: string; night?: { symbol: string; change_pct: number; note: string } | null; markets: Array<{ market: string; phase: string; judge: string; judge_label: string; basis: string; dd20: number; ret5: number; live: boolean; lane_note: string }> }>(`/api/compass`),
   buyTiming: (days = 5) => j<{ days: number; asof: string; picks: TimingPick[] }>(`/api/buy-timing?days=${days}`),
   detail: (code: string) => j<PickDetail>(`/api/picks/${code}`),
   freshness: () => j<Freshness>(`/api/health/freshness`),

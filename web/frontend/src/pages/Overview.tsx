@@ -11,6 +11,7 @@ export function Overview() {
   const fr = ov.freshness;
   return (
     <div style={{ display: "grid", gap: 16 }}>
+      <Compass />
       <Card>
         <div style={{ color: C.mut, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>오늘의 핵심 픽 (A {ov.counts.A} · B {ov.counts.B})</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
@@ -50,6 +51,43 @@ export function Overview() {
             픽의 확률·수익은 <Term k="낙관치">낙관치</Term>일 수 있습니다.
           </div>
         </Card>
+      </div>
+    </div>
+  );
+}
+
+
+function Compass() {
+  const [c, setC] = useState<Awaited<ReturnType<typeof api.compass>> | null>(null);
+  useEffect(() => {
+    const load = () => api.compass().then(setC).catch(() => {});
+    load(); const t = setInterval(load, 60000); return () => clearInterval(t);
+  }, []);
+  if (!c) return null;
+  const JC: Record<string, string> = { LONG: "#22c55e", LEAN_LONG: "#eab308", NEUTRAL: "#94a3b8", WAIT: "#ef4444" };
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <b>국면 나침반</b>
+        <span style={{ fontSize: 11, color: C.mut }}>8y 검증 레짐 지도 · {c.asof} · 60초 갱신</span>
+      </div>
+      <div style={{ display: "grid", gap: 8 }}>
+        {c.markets.map((m) => (
+          <div key={m.market} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", fontSize: 13 }}>
+            <b style={{ width: 70 }}>{m.market}</b>
+            <span style={{ color: JC[m.judge], fontWeight: 700 }}>{m.judge_label}</span>
+            <span style={{ color: C.mut }}>{m.phase} (dd20 {m.dd20}% · 5d {m.ret5}%)</span>
+            <span style={{ color: C.mut, fontSize: 11 }}>{m.basis}{m.live ? " · 실시간" : ""}</span>
+            {m.lane_note && <span style={{ color: "#818cf8", fontSize: 11 }}>{m.lane_note}</span>}
+          </div>
+        ))}
+        {c.night && (
+          <div style={{ display: "flex", gap: 10, fontSize: 12, color: C.mut, borderTop: `1px dashed ${C.line}`, paddingTop: 8, flexWrap: "wrap" }}>
+            <b>🌙 {c.night.symbol}</b>
+            <span style={{ color: c.night.change_pct >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{c.night.change_pct >= 0 ? "+" : ""}{c.night.change_pct}%</span>
+            <span style={{ fontSize: 11 }}>{c.night.note}</span>
+          </div>
+        )}
       </div>
     </div>
   );

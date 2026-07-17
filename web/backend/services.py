@@ -1273,3 +1273,86 @@ def buy_timing(days=5):
         best["today_best"] = True
         best["today_best_note"] = f"레인 교차 최선 — {best['lane_label']} 실측 승률 ~{_w(best)}%"
     return {"days": days, "asof": datetime.now().strftime("%Y-%m-%d %H:%M"), "picks": picks}
+
+
+# ── 국면 나침반 (2026-07-17, 운영자 요청): 실시간 지수 → 검증된 레짐 지도 투영 ──
+_COMPASS_CACHE = {"ts": 0.0, "data": None}
+
+# 8y 실증 forward 5d (harness: 국면 백테스트 2026-07-17) — 판단 근거를 숫자로 명시
+_PHASE_MAP = {
+    "KOSPI":  {"동반붕괴": ("LONG", "+0.69%/5d 승60%"), "반등국면": ("WAIT", "-0.67%/5d — 유일 음수 국면"),
+               "NORMAL": ("LEAN_LONG", "+0.14%/5d"), "과열": ("LONG", "+1.24%/5d 승63% (추세지속)")},
+    "KOSDAQ": {"동반붕괴": ("LONG", "+0.66%/5d 승58%"), "반등국면": ("WAIT", "-0.78%/5d — 유일 음수 국면"),
+               "NORMAL": ("NEUTRAL", "±0%/5d"), "과열": ("NEUTRAL", "+0.02%/5d")},
+    "NASDAQ": {"동반붕괴": ("LONG", "+0.64%/5d 승59%"), "반등국면": ("LEAN_LONG", "+0.38%/5d (KR과 달리 양수)"),
+               "NORMAL": ("LEAN_LONG", "+0.28%/5d"), "과열": ("LONG", "+0.53%/5d")},
+}
+_JUDGE_LABEL = {"LONG": "🟢 롱 우호", "LEAN_LONG": "🟡 약한 롱", "NEUTRAL": "🟡 중립", "WAIT": "🔴 관망(현금)"}
+
+
+def _phase_of(lvl):
+    import pandas as pd
+    dd20 = float((lvl.iloc[-1] / lvl.iloc[-20:].max() - 1) * 100)
+    r5 = float((lvl.iloc[-1] / lvl.iloc[-6] - 1) * 100)
+    r20 = float((lvl.iloc[-1] / lvl.iloc[-21] - 1) * 100)
+    if r5 <= -3:
+        ph = "동반붕괴"
+    elif dd20 < -8 and r5 > -3:
+        ph = "반등국면"
+    elif dd20 > -2 and r20 > 8:
+        ph = "과열"
+    else:
+        ph = "NORMAL"
+    return ph, round(dd20, 1), round(r5, 1)
+
+
+def market_compass():
+    """코스피/코스닥/나스닥(+선물 야간신호) 실시간 국면 → 8y 검증 지도 기반 롱/숏 판단.
+    '숏' 대신 관망(현금) — 검증된 숏 엣지는 없음(정직). 60s 캐시."""
+    import time as _t
+    if _t.time() - _COMPASS_CACHE["ts"] < 60 and _COMPASS_CACHE["data"]:
+        return _COMPASS_CACHE["data"]
+    import pandas as pd
+    out = {"asof": datetime.now().strftime("%H:%M:%S"), "markets": [], "night": None}
+    try:
+        import FinanceDataReader as fdr
+        hist = {}
+        for sym, mkt in (("KS11", "KOSPI"), ("KQ11", "KOSDAQ"), ("IXIC", "NASDAQ")):
+            hist[mkt] = fdr.DataReader(sym, (pd.Timestamp.now() - pd.Timedelta(days=90)).strftime("%Y-%m-%d"))["Close"]
+        live = {}
+        try:
+            import yfinance as yf
+            for ysym, mkt in (("^KS11", "KOSPI"), ("^KQ11", "KOSDAQ"), ("^IXIC", "NASDAQ")):
+                try:
+                    fi = yf.Ticker(ysym).fast_info
+                    lp = fi.get("last_price") or fi.get("lastPrice")
+                    if lp:
+                        live[mkt] = float(lp)
+                except Exception:
+                    pass
+            try:
+                nq = yf.Ticker("NQ=F").fast_info
+                nql, nqp = nq.get("last_price"), nq.get("previous_close")
+                if nql and nqp:
+                    chg = (float(nql) / float(nqp) - 1) * 100
+                    out["night"] = {"symbol": "나스닥 선물(NQ, 24h)", "change_pct": round(chg, 2),
+                                    "note": "KR 야간 프록시 — 익일 시가 갭이 대부분 흡수(§30), 방향 참고용"}
+            except Exception:
+                pass
+        except Exception:
+            pass
+        for mkt in ("KOSPI", "KOSDAQ", "NASDAQ"):
+            lvl = hist[mkt].copy()
+            if mkt in live and live[mkt] > 0:
+                lvl = pd.concat([lvl, pd.Series([live[mkt]], index=[pd.Timestamp.now()])])
+            ph, dd20, r5 = _phase_of(lvl)
+            judge, basis = _PHASE_MAP[mkt][ph]
+            out["markets"].append({"market": mkt, "phase": ph, "judge": judge, "judge_label": _JUDGE_LABEL[judge],
+                                   "basis": f"8y: {basis}", "dd20": dd20, "ret5": r5,
+                                   "live": mkt in live,
+                                   "lane_note": ("항복픽 골든존 — 픽 뜨면 사는 국면" if ph == "동반붕괴" else
+                                                 "레인 베토 활성 구간" if (ph == "반등국면" and mkt != "NASDAQ") else "")})
+    except Exception as exc:
+        out["error"] = repr(exc)[:120]
+    _COMPASS_CACHE.update(ts=_t.time(), data=out)
+    return out
