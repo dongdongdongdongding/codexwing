@@ -306,6 +306,7 @@ def score_live_candidates(
 
     feature_rows: List[Dict[str, Any]] = []
     diagnostics = {"universe": len(codes), "daily_context_ok": 0, "minute_ok": 0, "feature_ok": 0}
+    retry_codes = []
     for code in codes:
         cache_ctx = _cache_daily_context(px, code, trade_date=trade_date)
         daily_ctx = {}
@@ -322,6 +323,7 @@ def score_live_candidates(
             continue
         minute = _fetch_minute_frame(client, code, trade_date=trade_date, entry_input_hour=entry_input_hour, sleep_sec=sleep_sec)
         if minute.empty:
+            retry_codes.append((code, daily_ctx))
             continue
         diagnostics["minute_ok"] += 1
         row = build_feature_row(code=code, daily_context=daily_ctx, minute_bars=minute, trade_date=trade_date)
@@ -329,6 +331,23 @@ def score_live_candidates(
             continue
         diagnostics["feature_ok"] += 1
         feature_rows.append(row)
+
+    # 2026-07-18 재시도 패스: 15시 스캔 시점 KIS 부하로 분봉 fetch가 일시 실패(커버리지 55%
+    # 관측 — 야간 재검엔 174/174 정상). 실패 종목을 느린 슬립으로 1회 재시도 → 후보풀 복원.
+    if retry_codes:
+        time.sleep(2.0)
+        for code, daily_ctx in retry_codes:
+            minute = _fetch_minute_frame(client, code, trade_date=trade_date,
+                                         entry_input_hour=entry_input_hour, sleep_sec=max(sleep_sec, 0.12))
+            if minute.empty:
+                continue
+            diagnostics["minute_ok"] += 1
+            row = build_feature_row(code=code, daily_context=daily_ctx, minute_bars=minute, trade_date=trade_date)
+            if not row:
+                continue
+            diagnostics["feature_ok"] += 1
+            feature_rows.append(row)
+        diagnostics["retried"] = len(retry_codes)
 
     scored = score_feature_rows(feature_rows, model_bundle)
     selected = select_vwap_guard_candidates(
