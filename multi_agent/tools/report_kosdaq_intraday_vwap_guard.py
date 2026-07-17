@@ -91,6 +91,19 @@ def _trade_date_arg(value: str | None) -> str:
         d = d - pd.Timedelta(days=1)
     while d.weekday() >= 5:
         d = d - pd.Timedelta(days=1)
+    # 휴장일 가드 (2026-07-17): 주중 공휴일이면 px_long 캘린더 기준 직전 세션으로 —
+    # 휴장일 스캔이 전일 분봉을 받아 feature_ok=0 정크 리포트를 내던 아티팩트 방지.
+    try:
+        cal = pd.read_parquet(os.path.expanduser("~/research_cache/px_long.parquet"), columns=["date"])
+        sessions = set(pd.to_datetime(cal["date"]).dt.strftime("%Y%m%d"))
+        for _ in range(7):
+            if d.strftime("%Y%m%d") in sessions:
+                break
+            d = d - pd.Timedelta(days=1)
+            while d.weekday() >= 5:
+                d = d - pd.Timedelta(days=1)
+    except Exception:
+        pass
     return d.strftime("%Y%m%d")
 
 
