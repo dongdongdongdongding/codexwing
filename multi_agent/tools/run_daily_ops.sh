@@ -248,6 +248,10 @@ if [[ "${AG_BENCH_DATA:-1}" == "1" ]]; then
     echo "[STEP] intraday_ext_update (확장세션 08:00-20:00)"
     run_optional "intraday_ext_update" python3 "${HOME}/research_cache/intraday_ext_update.py"
   fi
+  if [[ -f "${HOME}/research_cache/ohlc_full_backfill.py" ]]; then
+    echo "[STEP] ohlc_full_incremental (8y 경로 증분)"
+    run_optional "ohlc_full_incremental" python3 "${HOME}/research_cache/ohlc_full_backfill.py"
+  fi
 fi
 
 # ohlc_daily 증분 갱신: 패널 y3 라벨 + KOSPI 레인 정책수익(EVREG) 라벨의 원천.
@@ -343,19 +347,8 @@ if [[ "${AG_NASDAQ_SESSION_TAPE_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_nasdaq_session_tape.py
 fi
 
-if [[ "${AG_SWING_ENSEMBLE_ENABLE:-1}" == "1" ]]; then
-  # LIVE SWING structure-1 (2026-06-24, operator decision): daily price-ML ENSEMBLE
-  # (LGBM+XGB+ET) -> ft_5_5 first-touch (+5/-5), KOSPI+KOSDAQ, >=100억, top ~1% confidence,
-  # scan_mode=SWING. Validated 8y walk-forward / same-day size-matched: top-1% hits ~66-67%
-  # (not the 75% goal; efficient-market ceiling ~70%), shipped LIVE to validate while running.
-  # Structure-2 of the 2-structure SWING scan = Exception Leader (unchanged, from the planner).
-  # 2026-07-06 P3: routing default OFF (shadow) — AG_SWING_ENSEMBLE_PRODUCTION=1로만 복원. and
-  # records a ledger that auto-resolves realised 5D ft_5_5 hit + first-touch return. Needs FDR.
-  echo "[STEP] report_swing_ensemble"
-  run_optional "report_swing_ensemble" \
-    python3 multi_agent/tools/report_swing_ensemble.py \
-      --top-pct "${AG_SWING_ENSEMBLE_TOP_PCT:-1.0}" --min-liq "${AG_SWING_ENSEMBLE_MIN_LIQ:-100}"
-fi
+# 2026-07-19 운영자 승인 정리: 구 스윙 앙상블 일일 실행 중지 — DEGRADE 확정(정산 112, EV −0.72)·
+# P3 교체 완료 상태에서 감시 소임 종료. 원장은 동결 보존. 복원: 이 블록을 git 이력에서.
 
 if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
   # LIVE KOSPI INTRADAY lane -- Claude lane of the Claude+Codex synthesis.
@@ -431,6 +424,13 @@ if [[ "${AG_REOPEN_QUEUE:-1}" == "1" ]]; then
   echo "[STEP] research_reopen_queue"
   run_optional "research_reopen_queue" \
     python3 multi_agent/tools/research_reopen_queue.py
+fi
+
+# 데이터 매니페스트: 전 학습자산 신선도 선언·감시 — 정체 시 bd 티켓 자동 (2026-07-19 체계화).
+if [[ "${AG_DATA_MANIFEST:-1}" == "1" ]]; then
+  echo "[STEP] report_data_manifest"
+  run_optional "report_data_manifest" \
+    python3 multi_agent/tools/report_data_manifest.py
 fi
 
 # 픽 부검 수집: 해상된 모든 픽에 모드 태그(WIN_TOUCH/LOSS_TAIL 등)+맥락(레짐상태) 축적 —

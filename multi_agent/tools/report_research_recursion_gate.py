@@ -45,10 +45,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret",
         "expect_ev": 0.65, "expect_win": 62.0, "n_min": 30,
         "basis": "§7-A 8년 분기 walk-forward (플라시보 사망)"},
-    "swing_ensemble": {
-        "ledger": EXP / "swing_ensemble_ledger.jsonl", "field": "first_touch_ret",
-        "expect_ev": 0.65, "expect_win": 60.0, "n_min": 30,
-        "basis": "일봉 횡단면 8년 천장(§8) — 이 이하면 교체 검토(스윙 후보로)"},
+    # swing_ensemble: 2026-07-19 아카이브 — DEGRADE 확정(n=112, EV −0.72)·교체 완료, 일일 실행 중지.
     "b_primary_top3": {
         "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha",
         "filter": {"status": "settled", "tier": "PRIMARY"},

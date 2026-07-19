@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
+
 import argparse
 import json
 import subprocess
@@ -255,8 +257,13 @@ def run_learning_cycle(
                     PROJECT_ROOT,
                 )
             )
-            commands.append(_run_command(["python3", "retrain_ml.py"], PROJECT_ROOT))
-            action = "weekly_retrain"
+            # 2026-07-19 운영자 승인 정리: phase25 모델 재학습 중지 (AUC~0.5 랜덤 판정, 신웹 미소비).
+            # 데이터셋 export(위)는 유지 — 수집 파이프라인은 계속. 복원: AG_PHASE25_RETRAIN=1.
+            if os.getenv("AG_PHASE25_RETRAIN", "0").strip() in ("1", "true", "True"):
+                commands.append(_run_command(["python3", "retrain_ml.py"], PROJECT_ROOT))
+                action = "weekly_retrain"
+            else:
+                action = "weekly_dataset_only"
             retrain_cmd = next((cmd for cmd in commands if str((cmd.get("cmd") or [""])[-1]).endswith("retrain_ml.py")), {})
             if all(cmd.get("ok") for cmd in commands):
                 reason = (
