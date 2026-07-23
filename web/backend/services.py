@@ -175,11 +175,16 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         row["rationale"] = " · ".join(bits)
     # 권장 비중 (§20 구성수학, swing-main-wdu2): 검증 레인 = 총자본 2%/픽 (8:2, 분수Kelly 0.10).
     # 관측(shadow)·후보성 레인은 사이징 권고 제외 — forward 미확인 스트림에 실자본 배분 금지.
-    _sized_lanes = {"kospi_intraday", "kosdaq_intraday", "kosdaq_intraday_3d_t5_vwap_guard",
-                    "kospi_swing", "kosdaq_swing", "swing_candidate"}
-    if lane_key in _sized_lanes and row.get("tier") != "VETO_DD_OVERHEAT":
-        row["size_pct_total"] = 2.0
-        row["size_note"] = "총자본 2%/픽 (8:2 정책 · §20: 연 +15.6% 중앙, 최악5%년 +2.8%)"
+    # 2026-07-23 운영자 승인: 스윙 EXCEED(게이트 n=61, 기대 2.2배) → 3% 승격. 장중은 2% 유지.
+    _swing_lanes = {"kospi_swing", "kosdaq_swing", "swing_candidate"}
+    _itd_lanes = {"kospi_intraday", "kosdaq_intraday", "kosdaq_intraday_3d_t5_vwap_guard"}
+    if row.get("tier") not in ("VETO_DD_OVERHEAT", "VETO_REBOUND_PHASE"):
+        if lane_key in _swing_lanes:
+            row["size_pct_total"] = 3.0
+            row["size_note"] = "총자본 3%/픽 (스윙 EXCEED 승격 2026-07-23 · §20 f=0.15: 연 +23.8% 중앙, 최악5%년 +2.4%)"
+        elif lane_key in _itd_lanes:
+            row["size_pct_total"] = 2.0
+            row["size_note"] = "총자본 2%/픽 (8:2 정책 · §20)"
     return row
 
 
