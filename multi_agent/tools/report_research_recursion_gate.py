@@ -87,7 +87,7 @@ def _load_state() -> Dict[str, str]:
 
 def _bd_create(title: str, desc: str) -> bool:
     try:
-        r = subprocess.run(["bd", "create", f"--title={title}", f"--description={desc}",
+        r = subprocess.run([os.environ.get("BD_BIN", "/Users/dongdong/.local/bin/bd"), "create", f"--title={title}", f"--description={desc}",
                             "--type=task", "--priority=1"], capture_output=True, text=True, timeout=60)
         return r.returncode == 0
     except Exception:

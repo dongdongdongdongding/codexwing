@@ -113,7 +113,7 @@ def main() -> None:
                                 "ready": ready, "ticketed": bool(state.get(key))})
         if ready and not state.get(key) and not args.no_tickets:
             try:
-                r = subprocess.run(["bd", "create", f"--title={cfg['title']}",
+                r = subprocess.run([os.environ.get("BD_BIN", "/Users/dongdong/.local/bin/bd"), "create", f"--title={cfg['title']}",
                                     f"--description={cfg['desc']} (재개봉 큐 자동 발행: {have}/{cfg['need']})",
                                     "--type=task", "--priority=1"],
                                    capture_output=True, text=True, timeout=60)

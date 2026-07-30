@@ -103,7 +103,7 @@ def main() -> None:
                 continue
             row = next(r for r in rows if r["asset"] == name)
             try:
-                r = subprocess.run(["bd", "create",
+                r = subprocess.run([os.environ.get("BD_BIN", "/Users/dongdong/.local/bin/bd"), "create",
                                     f"--title=[데이터정체] {name} — {row.get('lag_days','?')}일 지연",
                                     f"--description=Why: 데이터 매니페스트 자동 감지 — {name} 최신 {row.get('latest')} (허용 {row.get('max_lag')}일). 갱신 주체: {row.get('owner')}. What: 갱신 경로 점검·복구. (report_data_manifest 자동 발행)",
                                     "--type=bug", "--priority=1"], capture_output=True, text=True, timeout=60)
