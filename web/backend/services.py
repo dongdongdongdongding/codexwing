@@ -121,6 +121,37 @@ def _next_trading_day(scan_date):
         return None
 
 
+
+
+_MEASURED_WIN_CACHE = {"ts": 0.0, "data": {}}
+
+
+def _measured_win():
+    """레인별 실측 승률 (정산 원장) — §38: 개별 p는 라이브 비캘리브레이션 → 표시용 통계는
+    실측으로. n<20 레인은 동결 백테스트 승률로 폴백(출처 표기)."""
+    import time as _t
+    if _t.time() - _MEASURED_WIN_CACHE["ts"] < 600 and _MEASURED_WIN_CACHE["data"]:
+        return _MEASURED_WIN_CACHE["data"]
+    out = {}
+    spec = [("kospi_swing", "kr_swing_candidate_ledger.jsonl", "policy_ret"),
+            ("kosdaq_swing", "kr_swing_candidate_ledger.jsonl", "policy_ret"),
+            ("kospi_intraday", "kospi_intraday_swing_ledger.jsonl", "exit_t5_h5"),
+            ("kosdaq_intraday", "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "exit_t10_h5")]
+    fallback = {"kospi_intraday": (92, "백테스트 q0.5"), "kosdaq_intraday": (72, "백테스트"),
+                "kospi_swing": (62, "백테스트 8y"), "kosdaq_swing": (62, "백테스트 8y")}
+    for lane, fn, field in spec:
+        try:
+            vals = [r[field] for r in _read_ledger(fn) if isinstance(r.get(field), (int, float))]
+            if len(vals) >= 20:
+                out[lane] = (round(sum(1 for v in vals if v > 0.3) / len(vals) * 100), f"실측 {len(vals)}건")
+                continue
+        except Exception:
+            pass
+        out[lane] = fallback.get(lane, (None, ""))
+    _MEASURED_WIN_CACHE.update(ts=_t.time(), data=out)
+    return out
+
+
 def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name=None, scan_date=None, source="A", extra=None):
     raw = str(code).split(".")[0]
     code6 = raw.zfill(6) if raw.isdigit() else raw   # KR=6자리, US=원형 유지
@@ -152,8 +183,13 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
             row["target_pct"] = float(tp)
     # 근거 한 줄 — 가진 필드로 조합 (모델이 "왜"를 말하게)
     bits = []
-    if row.get("prob") is not None:
-        bits.append(f"적중확률 {row['prob']}%")
+    mw = _measured_win().get(lane_key)
+    if mw and mw[0] is not None:
+        row["measured_win"] = mw[0]
+        row["measured_win_src"] = mw[1]
+        bits.append(f"승률 {mw[0]}% ({mw[1]})")
+    elif row.get("prob") is not None:
+        bits.append(f"모델확률 {row['prob']}% (미캘리브레이션)")
     cv = (extra or {}).get("close_vwap")
     if isinstance(cv, (int, float)):
         bits.append(f"VWAP {'상방' if cv >= 0 else '하방'} {cv:+.1f}%")

@@ -62,7 +62,7 @@ export function Picks() {
                   {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
                   {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
                   <span style={{ marginLeft: "auto", color: C.mut, fontSize: 12 }}>
-                    {p.prob != null ? `확률 ${p.prob}%` : ""} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
+                    {(p as any).measured_win != null ? `승률 ${(p as any).measured_win}%` : p.prob != null ? `확률 ${p.prob}%` : ""} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
                   </span>
                 </div>
               </div>
