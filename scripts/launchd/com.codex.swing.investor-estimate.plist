@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.codex.swing.investor-estimate</string>
+  <!-- PKG-C ④ (§40): KIS 장중 잠정수급 스냅샷 — 공표 회차(10:00/11:30/13:20/14:30) 직후 수집.
+       백필 불가 자산이라 수집 개시일이 미래 검증 가능일을 결정. 관측 전용, 피처 주장 금지. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/dongdong/Library/Application Support/CodexSwing/bin/codex_swing_launch.sh</string>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>KIS_ENABLE_LIVE_CALLS=1 python3 multi_agent/tools/collect_investor_estimate.py</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>3</integer></dict>
+    <dict><key>Hour</key><integer>11</integer><key>Minute</key><integer>33</integer></dict>
+    <dict><key>Hour</key><integer>13</integer><key>Minute</key><integer>23</integer></dict>
+    <dict><key>Hour</key><integer>14</integer><key>Minute</key><integer>33</integer></dict>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/dongdong/Library/Application Support/CodexSwing</string>
+  <key>StandardOutPath</key>
+  <string>/Users/dongdong/Library/Logs/codex_swing/investor_estimate.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/dongdong/Library/Logs/codex_swing/investor_estimate.err.log</string>
+</dict>
+</plist>
