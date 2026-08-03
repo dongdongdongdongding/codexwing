@@ -32,34 +32,38 @@ OUT_MD = PROJECT_ROOT / "runtime_state" / "reports" / "validation" / "research_r
 STATE = PROJECT_ROOT / "runtime_state" / "long_term" / "learning" / "recursion_gate_state.json"
 
 # 레인별: 원장, 실현수익 필드, 동결된 백테스트 기대(연구 로그 근거), 성숙 표본 수
+# cost: 왕복 비용(%p) — 원장은 gross를 저장하므로 게이트가 차감해 net으로 판정 (2026-08-03 PKG-B ②).
+#   기대치는 전부 net 기준으로 동결돼 있었음(§28 threshold_frontier=net−0.3, §11-A=net−0.33,
+#   §7-A=net, §12-D=net−0.25) — 종전 게이트는 gross forward vs net 기대로 forward에 0.25~0.33
+#   관대했음. B는 시장중립 α(백테스트와 동일 기저)라 cost=0.
 LANES: Dict[str, Dict[str, Any]] = {
     "kospi_intraday_t5": {
-        "ledger": EXP / "kospi_intraday_swing_ledger.jsonl", "field": "exit_t5_h5",
+        "ledger": EXP / "kospi_intraday_swing_ledger.jsonl", "field": "exit_t5_h5", "cost": 0.3,
         "expect_ev": 5.65, "expect_win": 92.0, "n_min": 20,
         "basis": "§28 q0.5 승격 (2026-07-13) — 8 OOS월 rank-1 선별 q0.5 티어+터치익절"},
     "kosdaq_intraday_t10": {
-        "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5",
+        "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5", "cost": 0.33,
         "expect_ev": 3.14, "expect_win": 75.8, "n_min": 20,
         "basis": "§11-A 15:00 실파이프라인 재검증"},
     "swing_candidate": {
-        "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret",
+        "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret", "cost": 0.3,
         "expect_ev": 0.65, "expect_win": 62.0, "n_min": 30,
         "basis": "§7-A 8년 분기 walk-forward (플라시보 사망)"},
     # swing_ensemble: 2026-07-19 아카이브 — DEGRADE 확정(n=112, EV −0.72)·교체 완료, 일일 실행 중지.
     "b_primary_top3": {
-        "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha",
+        "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha", "cost": 0.0,
         "filter": {"status": "settled", "tier": "PRIMARY"},
         "expect_ev": 2.18, "expect_win": 55.0, "n_min": 30,
         "basis": "§11-B 24폴드 (top3 집중, α/트레이드)"},
     "b_all_top10": {
         # 2026-07-10: 전체 스트림 감시 추가 — PRIMARY 정산 대기 중 top10 전체가 α −5.1로 붕괴한
         # 사각지대 발견(운영자 질의). tier 스탬프 이전 정산분 포함 전체를 게이트가 공식 판정.
-        "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha",
+        "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha", "cost": 0.0,
         "filter": {"status": "settled"},
         "expect_ev": 1.20, "expect_win": 55.0, "n_min": 30,
         "basis": "§11-B 24폴드 (top10 전체, α/트레이드)"},
     "nasdaq_session_tape": {
-        "ledger": USR / "nasdaq_session_tape_ledger.jsonl", "field": "policy_ret",
+        "ledger": USR / "nasdaq_session_tape_ledger.jsonl", "field": "policy_ret", "cost": 0.25,
         "expect_ev": 0.75, "expect_win": 79.3, "n_min": 30,
         "basis": "§12-D 29개월 (정직 추정 +0.5~1.0 — 기대는 중간값 0.75)"},
 }
@@ -98,8 +102,9 @@ def evaluate(name: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
     rows = _rows(cfg["ledger"])
     flt = cfg.get("filter") or {}
     rows = [r for r in rows if all(r.get(k) == v for k, v in flt.items())]
-    vals = [float(r[cfg["field"]]) for r in rows if isinstance(r.get(cfg["field"]), (int, float))]
-    res: Dict[str, Any] = {"lane": name, "basis": cfg["basis"], "n": len(vals),
+    cost = float(cfg.get("cost", 0.0))  # PKG-B ②: 원장 gross → net 통일 (기대치는 전부 net 동결)
+    vals = [float(r[cfg["field"]]) - cost for r in rows if isinstance(r.get(cfg["field"]), (int, float))]
+    res: Dict[str, Any] = {"lane": name, "basis": cfg["basis"], "n": len(vals), "cost": cost,
                            "expect_ev": cfg["expect_ev"], "expect_win": cfg["expect_win"], "n_min": cfg["n_min"]}
     if len(vals) < 5:
         res.update(verdict="OBSERVING", note=f"n={len(vals)} (표본 축적 중)")
@@ -114,9 +119,14 @@ def evaluate(name: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
         return res
     if hi < cfg["expect_ev"] * 0.5 or arr.mean() <= 0:
         why = "forward 평균 <= 0" if arr.mean() <= 0 else "forward CI 상단 < 기대EV 50%"
-        res.update(verdict="DEGRADE", note=f"{why} — 사이징 축소 + 재연구")
+        res.update(verdict="DEGRADE", note=f"{why} — 스트림 제외(§20 자동) + 재연구")
     elif arr.mean() > cfg["expect_ev"] * 1.5:
-        res.update(verdict="EXCEED", note="기대 초과 — 승격/확대 검토")
+        # PKG-B ⑤ 래칫 메타규칙(§40): §36 whipsaw(EXCEED 5영업일 뒤 DEGRADE) 재발 방지 —
+        # EXCEED가 곧 승격이 아님. 승격 검토 조건 3개를 판정문에 박아 사람이 우회 못 하게.
+        ok_n = len(vals) >= 100
+        res.update(verdict="EXCEED",
+                   note=("기대 초과 — 승격 검토 가능" if ok_n else f"기대 초과 — 승격 불가(n={len(vals)}<100)")
+                        + " · 래칫규칙: ①성숙시차(~5영업일) 지연 표본 재확인 ②n≥100 ③EXCEED 10영업일 유지 후")
     else:
         res.update(verdict="CONFIRM", note="백테스트 기대와 정합")
     return res
@@ -128,9 +138,19 @@ def main() -> None:
     args = ap.parse_args()
     state = _load_state()
     results = [evaluate(name, cfg) for name, cfg in LANES.items()]
+    today = datetime.now(timezone.utc).date().isoformat()
     tickets = []
+
+    def _prev_verdict(lane: str) -> str:
+        v = state.get(lane)
+        return v.get("verdict") if isinstance(v, dict) else (v or "")
+
     for r in results:
-        if r["verdict"] in ("DEGRADE", "EXCEED") and state.get(r["lane"]) != r["verdict"] and not args.no_tickets:
+        # 래칫규칙 ③: verdict 시작일 추적 (EXCEED 10영업일 유지 확인용)
+        prev = state.get(r["lane"])
+        since = prev.get("since") if isinstance(prev, dict) and _prev_verdict(r["lane"]) == r["verdict"] else today
+        r["verdict_since"] = since
+        if r["verdict"] in ("DEGRADE", "EXCEED") and _prev_verdict(r["lane"]) != r["verdict"] and not args.no_tickets:
             title = f"[재귀게이트:{r['verdict']}] {r['lane']} forward {r.get('fwd_ev')} vs 기대 {r['expect_ev']}"
             desc = (f"Why: 재귀 연구 게이트 자동 발행 — {r['lane']} forward n={r['n']} EV {r.get('fwd_ev')} "
                     f"CI {r.get('fwd_ci')} vs 백테스트 기대 {r['expect_ev']} ({r['basis']}). "
@@ -138,7 +158,7 @@ def main() -> None:
                     f"판정 근거: {r['note']}")
             if _bd_create(title, desc):
                 tickets.append(title)
-        state[r["lane"]] = r["verdict"]
+        state[r["lane"]] = {"verdict": r["verdict"], "since": r["verdict_since"]}
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(state, ensure_ascii=False, indent=1))
     report = {"generated_at": datetime.now(timezone.utc).isoformat(), "results": results, "tickets_created": tickets}

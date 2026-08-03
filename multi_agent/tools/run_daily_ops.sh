@@ -423,6 +423,11 @@ if [[ "${AG_RECURSION_GATE_ENABLE:-1}" == "1" ]]; then
   echo "[STEP] report_research_recursion_gate"
   run_optional "report_research_recursion_gate" \
     python3 multi_agent/tools/report_research_recursion_gate.py
+
+  # PKG-B ④ (§40): 동시노출·슬리브 자본곡선 계기판 — 8:2 예산 준수 일일 측정.
+  echo "[STEP] report_portfolio_exposure"
+  run_optional "report_portfolio_exposure" \
+    python3 multi_agent/tools/report_portfolio_exposure.py
 fi
 
 # 연구 재개봉 큐: "표본 부족 보류" 실험이 데이터 성숙(공매도 120일/확장세션 120일/정산 100건 등)
