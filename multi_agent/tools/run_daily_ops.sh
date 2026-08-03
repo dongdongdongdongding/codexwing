@@ -274,10 +274,17 @@ fi
 # B 엔진 (signal_class=B, 시장중립 적응형 앙상블, A와 별개). 일봉주기 매일 top10 픽 + forward-shadow.
 # 데이터(px_long 위 + flow)가 신선해야 하므로 위 px_long_refresh 다음에 배치. 비활성: AG_B_ENGINE=0.
 if [[ "${AG_B_ENGINE:-1}" == "1" && -d "b_engine" ]]; then
-  echo "[STEP] b_engine retrain (적응형 앙상블)"
-  run_optional "b_retrain" python3 -m b_engine.model_engine train
-  echo "[STEP] b_engine scan (매일 top10 픽)"
-  run_optional "b_scan" python3 -m b_engine.model_scan scan
+  # 2026-08-03 PKG-A(운영자 승인, §40): b_all_top10 forward n=315 EV -2.65 CI[-4.14,-1.16]
+  # 전체 음수(시스템 사상 최강 음성 확정) — 재학습/신규 픽 발행 중지. settle은 잔여 open 픽
+  # (~65건) 정산 완료를 위해 유지(forward 원장 무결성). 재개: AG_B_ENGINE_SCAN=1.
+  if [[ "${AG_B_ENGINE_SCAN:-0}" == "1" ]]; then
+    echo "[STEP] b_engine retrain (적응형 앙상블)"
+    run_optional "b_retrain" python3 -m b_engine.model_engine train
+    echo "[STEP] b_engine scan (매일 top10 픽)"
+    run_optional "b_scan" python3 -m b_engine.model_scan scan
+  else
+    echo "[SKIP] b_engine retrain/scan — PKG-A 중지 (§40 CI<0 확정, AG_B_ENGINE_SCAN=1로 재개)"
+  fi
   echo "[STEP] b_engine settle (forward-shadow 채점)"
   run_optional "b_settle" python3 -m b_engine.model_scan settle
 fi

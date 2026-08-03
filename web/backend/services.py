@@ -126,6 +126,32 @@ def _next_trading_day(scan_date):
 _MEASURED_WIN_CACHE = {"ts": 0.0, "data": {}}
 
 
+_GATE_VERDICT_CACHE = {"ts": 0.0, "data": {}}
+# 웹 레인키 → 재귀게이트 레인명 (report_research_recursion_gate.py LANES)
+_GATE_LANE_MAP = {"kospi_swing": "swing_candidate", "kosdaq_swing": "swing_candidate",
+                  "kospi_intraday": "kospi_intraday_t5", "kosdaq_intraday": "kosdaq_intraday_t10"}
+
+
+def _gate_verdicts():
+    """재귀게이트 최신 판정 (research_recursion_gate_latest.json, 10분 캐시, fail-safe).
+    2026-08-03 PKG-A(§40): §20 'DEGRADE 레인은 스트림 제외' 정책의 발행 연동 —
+    DEGRADE 레인 픽은 사이징 권고를 제거하고 관측 전용으로 강등(원장·표시는 유지,
+    forward 측정 연속성 보존). 롤백: AG_DEGRADE_STREAM_EXCLUSION=0."""
+    import time as _t
+    if _t.time() - _GATE_VERDICT_CACHE["ts"] < 600 and _GATE_VERDICT_CACHE["data"]:
+        return _GATE_VERDICT_CACHE["data"]
+    out = {}
+    try:
+        fp = os.path.join(REPO, "runtime_state/reports/validation/research_recursion_gate_latest.json")
+        rep = json.load(open(fp, encoding="utf-8"))
+        for r in rep.get("results", []):
+            out[r.get("lane")] = {"verdict": r.get("verdict"), "fwd_ev": r.get("fwd_ev"), "n": r.get("n")}
+    except Exception:
+        pass
+    _GATE_VERDICT_CACHE.update(ts=_t.time(), data=out)
+    return out
+
+
 def _measured_win():
     """레인별 실측 승률 (정산 원장) — §38: 개별 p는 라이브 비캘리브레이션 → 표시용 통계는
     실측으로. n<20 레인은 동결 백테스트 승률로 폴백(출처 표기)."""
@@ -211,16 +237,29 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         row["rationale"] = " · ".join(bits)
     # 권장 비중 (§20 구성수학, swing-main-wdu2): 검증 레인 = 총자본 2%/픽 (8:2, 분수Kelly 0.10).
     # 관측(shadow)·후보성 레인은 사이징 권고 제외 — forward 미확인 스트림에 실자본 배분 금지.
-    # 2026-07-23 운영자 승인: 스윙 EXCEED(게이트 n=61, 기대 2.2배) → 3% 승격. 장중은 2% 유지.
+    # 2026-07-23 운영자 승인: 스윙 EXCEED(게이트 n=61, 기대 2.2배) → 3% 승격.
+    # 2026-08-03 PKG-A(운영자 승인): 3%→2% 원복 — §36 EXCEED는 크래시 미성숙 표본의 래칫이었고
+    # (§39: 07-23 승격 직후 크래시분 성숙하며 DEGRADE 전환), §39 사이징 원복 권고 집행.
+    # 재승격 조건: §40 래칫 메타규칙(성숙시차 지연 표본 + n>=100 + 10영업일 엠바고) 충족 시.
     _swing_lanes = {"kospi_swing", "kosdaq_swing", "swing_candidate"}
     _itd_lanes = {"kospi_intraday", "kosdaq_intraday", "kosdaq_intraday_3d_t5_vwap_guard"}
     if row.get("tier") not in ("VETO_DD_OVERHEAT", "VETO_REBOUND_PHASE"):
         if lane_key in _swing_lanes:
-            row["size_pct_total"] = 3.0
-            row["size_note"] = "총자본 3%/픽 (스윙 EXCEED 승격 2026-07-23 · §20 f=0.15: 연 +23.8% 중앙, 최악5%년 +2.4%)"
+            row["size_pct_total"] = 2.0
+            row["size_note"] = "총자본 2%/픽 (§39 원복 2026-08-03 · 8:2 정책 · §20 f=0.10)"
         elif lane_key in _itd_lanes:
             row["size_pct_total"] = 2.0
             row["size_note"] = "총자본 2%/픽 (8:2 정책 · §20)"
+    # PKG-A(§40): DEGRADE 레인 스트림 제외 — 사이징 권고 제거 + 관측 라벨 (§20 정책 집행).
+    # 픽 자체는 계속 표시(nyg6 계약: 후보 가시성 유지 + 라우팅만 명시적 차단), 원장 채점도 지속.
+    if os.environ.get("AG_DEGRADE_STREAM_EXCLUSION", "1") == "1":
+        gv = _gate_verdicts().get(_GATE_LANE_MAP.get(lane_key) or "")
+        if gv and gv.get("verdict") == "DEGRADE":
+            row.pop("size_pct_total", None)
+            row["stream_excluded"] = True
+            row["size_note"] = (f"⛔ 발행 제외(관측) — 재귀게이트 DEGRADE (forward n={gv.get('n')} "
+                                f"EV {gv.get('fwd_ev')}, §20 스트림 제외 정책)")
+            row["rationale"] = ((row.get("rationale") + " · ") if row.get("rationale") else "") + "⛔관측전용(DEGRADE)"
     return row
 
 
@@ -351,6 +390,10 @@ def invalidate_pick_caches():
 
 
 def b_picks():
+    # 2026-08-03 PKG-A(§40): B 레인 발행 중지 — 마커 존재 시 stale 픽을 계속 노출하지 않음.
+    # (스캔이 멈추면 b_picks_latest.json 날짜가 동결되므로 명시적 서스펜션 게이트 필요)
+    if os.path.exists(os.path.join(REPO, "b_engine/data/b_lane_suspended.json")):
+        return []
     fp = os.path.join(REPO, "b_engine/data/b_picks_latest.json")
     if not os.path.exists(fp):
         return []

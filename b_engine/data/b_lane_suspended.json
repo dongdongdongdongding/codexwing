@@ -1,0 +1,7 @@
+{
+  "suspended": true,
+  "since": "2026-08-03",
+  "reason": "PKG-A (운영자 승인, RESEARCH_LOG §40): b_all_top10 forward n=315 EV -2.65 CI[-4.14,-1.16] 전체 음수 — 신규 픽 발행 중지. settle은 잔여 open 픽 정산까지 유지.",
+  "resume_condition": "운영자 승인 + AG_B_ENGINE_SCAN=1 + 이 파일 삭제",
+  "issue": "swing-main-21zn"
+}
