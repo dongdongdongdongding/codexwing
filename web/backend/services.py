@@ -226,9 +226,30 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         bits.append("⚠약세장")
         # §24 항복 해부: 시장 동반붕괴 중 항복픽 = 반등코어 (8y 픽레벨 +1.51 CI>0, 7/8년 —
         # 시장 상승 중 단독붕괴는 반대로 음수). 정보 태그만, 계약/발행 불변.
+        # §39 섹터 차원 (2026-08-04 운영자 승인, swing-main-pwen): 진앙지(섹터 60d 하위 1/4)
+        # 항복만 반등코어 승격 태그 — 8y +1.44/크래시 +1.73 vs 비진앙 크래시 −0.17.
+        # 비진앙(상위 1/2) 단독항복은 soft 강등(사이징 권고 제거 + ⚠라벨, 계약/원장 불변).
+        # 롤백: AG_SECTOR_CAPITULATION=0.
         r5 = row.get("ret_5d") if row.get("ret_5d") is not None else (extra or {}).get("ret_5d_d")
         if isinstance(r5, (int, float)) and r5 <= -13:
-            bits.append("반등코어(동반항복)")
+            cls = None
+            if os.environ.get("AG_SECTOR_CAPITULATION", "1") == "1":
+                try:
+                    from modules.sector_capitulation import classify_capitulation, sec_q_of
+                    cls = classify_capitulation(row["code"])
+                except Exception:
+                    cls = None
+            if cls == "epicenter":
+                sq = sec_q_of(row["code"])
+                bits.append(f"반등코어(섹터동반↑ {sq['industry']} 60d {sq['sec_ret60']:+.0f}%)")
+                row["sector_capitulation"] = "epicenter"
+            elif cls == "resilient":
+                bits.append("⚠비진앙 단독항복 — 버틴 섹터의 단독 폭락은 정보성 하락 가능 (§39, 관측)")
+                row["sector_capitulation"] = "resilient"
+            else:
+                bits.append("반등코어(동반항복)")
+                if cls:
+                    row["sector_capitulation"] = cls
     if row.get("tier") == "PRIMARY":
         bits.append("고확신 선별")
     if (extra or {}).get("rationale_extra"):
@@ -250,6 +271,10 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         elif lane_key in _itd_lanes:
             row["size_pct_total"] = 2.0
             row["size_note"] = "총자본 2%/픽 (8:2 정책 · §20)"
+    # §39 ②: 비진앙 단독항복 soft 강등 — 사이징 권고 제거 (계약/원장/가시성 불변).
+    if row.get("sector_capitulation") == "resilient" and row.get("size_pct_total") is not None:
+        row.pop("size_pct_total", None)
+        row["size_note"] = "⚠ 사이징 보류 — 비진앙 단독항복 (§39: 크래시 셀 −0.17, 관측 권고)"
     # PKG-A(§40): DEGRADE 레인 스트림 제외 — 사이징 권고 제거 + 관측 라벨 (§20 정책 집행).
     # 픽 자체는 계속 표시(nyg6 계약: 후보 가시성 유지 + 라우팅만 명시적 차단), 원장 채점도 지속.
     if os.environ.get("AG_DEGRADE_STREAM_EXCLUSION", "1") == "1":
@@ -1440,5 +1465,14 @@ def market_compass():
                                                  "레인 베토 활성 구간" if (ph == "반등국면" and mkt != "NASDAQ") else "")})
     except Exception as exc:
         out["error"] = repr(exc)[:120]
+    # §39 ③ (2026-08-04 운영자 승인): 섹터 로테이션 패널 — 20d 신 리더십 + 60d 진앙지(하위 1/4).
+    # px_long 일 1회 갱신 데이터라 모듈 캐시가 비용 흡수. fail-safe(None이면 키 생략).
+    try:
+        from modules.sector_capitulation import rotation_panel
+        sr = rotation_panel()
+        if sr:
+            out["sector_rotation"] = sr
+    except Exception:
+        pass
     _COMPASS_CACHE.update(ts=_t.time(), data=out)
     return out
