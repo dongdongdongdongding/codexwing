@@ -224,6 +224,13 @@ if [[ "${AG_CREDIT_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/credit_upda
   echo "[STEP] credit_update (신용/대주 잔고 증분)"
   run_optional "credit_update" python3 "${HOME}/research_cache/credit_update.py"
 fi
+
+# PKG-D ② (§40, 2026-08-04): KOFIA 스트레스 축 — 예탁금/미수금·반대매매/신용융자 일별 증분.
+# 크래시 레짐 게이트 후보 데이터(관측 수집만, 피처 주장은 사전등록 필수). 비활성: AG_KOFIA_STRESS=0.
+if [[ "${AG_KOFIA_STRESS:-1}" == "1" && -f "${HOME}/research_cache/kofia_stress_update.py" ]]; then
+  echo "[STEP] kofia_stress_update (예탁금/반대매매/신용융자)"
+  run_optional "kofia_stress_update" python3 "${HOME}/research_cache/kofia_stress_update.py"
+fi
 if [[ "${AG_DART_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/dart_update.py" ]]; then
   echo "[STEP] dart_update (공시 증분)"
   run_optional "dart_update" python3 "${HOME}/research_cache/dart_update.py"
