@@ -88,6 +88,31 @@ function Compass() {
             <span style={{ fontSize: 11 }}>{c.night.note}</span>
           </div>
         )}
+        {/* §39 섹터 로테이션 (2026-08-04 운영자 승인): 20d 신 리더십 + 60d 진앙지(하위 1/4) */}
+        {c.sector_rotation && (
+          <div style={{ borderTop: `1px dashed ${C.line}`, paddingTop: 8, fontSize: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <b>🔄 섹터 로테이션</b>
+              <span style={{ fontSize: 11, color: C.mut }}>{c.sector_rotation.note}</span>
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
+              <span style={{ color: C.mut, fontSize: 11, width: 88 }}>리더십 20d</span>
+              {c.sector_rotation.leadership_20d.slice(0, 5).map((s) => (
+                <span key={s.industry} style={{ background: "rgba(34,197,94,.12)", color: "#22c55e", borderRadius: 6, padding: "1px 6px", fontSize: 11 }}>
+                  {s.industry} {s.ret20 != null ? `${s.ret20 >= 0 ? "+" : ""}${s.ret20}%` : ""}
+                </span>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ color: C.mut, fontSize: 11, width: 88 }}>진앙지 60d</span>
+              {c.sector_rotation.epicenter_60d.slice(0, 5).map((s) => (
+                <span key={s.industry} style={{ background: "rgba(239,68,68,.12)", color: "#ef4444", borderRadius: 6, padding: "1px 6px", fontSize: 11 }}>
+                  {s.industry} {s.ret60}%
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

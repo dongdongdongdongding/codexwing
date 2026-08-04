@@ -61,6 +61,9 @@ export function Picks() {
                   {p.tier === "PRIMARY" && <Chip color="#22c55e">주력</Chip>}
                   {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
                   {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
+                  {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
+                  {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
+                  {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
                   <span style={{ marginLeft: "auto", color: C.mut, fontSize: 12 }}>
                     {(p as any).measured_win != null ? `승률 ${(p as any).measured_win}%` : p.prob != null ? `확률 ${p.prob}%` : ""} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
                   </span>
@@ -113,6 +116,9 @@ export function Picks() {
                       {p.tier === "CANDIDATE" && <Chip color="#94a3b8">후보</Chip>}
                       {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
                       {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
+                  {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
+                  {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
+                  {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
                     </div>
                   </Td>
                 </tr>

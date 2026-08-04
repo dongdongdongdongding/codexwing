@@ -1,6 +1,7 @@
 // API 클라이언트 + 타입. /api → FastAPI(프록시).
 export interface Pick {
   size_pct_total?: number | null; size_note?: string | null;
+  stream_excluded?: boolean; sector_capitulation?: "epicenter" | "resilient" | "mid" | null;
   code: string; ticker: string; name: string; market: string;
   lane: string; lane_label: string; kind: string; badge: string;
   signal_class: "A" | "B"; scan_date?: string; buy_date?: string;
@@ -103,7 +104,7 @@ export const api = {
   lanes: () => j<{ lanes: Lane[] }>(`/api/lanes`),
   prices: (codes: string[]) => j<Record<string, Price>>(`/api/prices?codes=${codes.join(",")}`),
   chart: (code: string, tf: "day" | "minute") => j<ChartData>(`/api/chart?code=${code}&tf=${tf}`),
-  compass: () => j<{ asof: string; night?: { symbol: string; change_pct: number; note: string } | null; markets: Array<{ market: string; phase: string; judge: string; judge_label: string; basis: string; dd20: number; ret5: number; live: boolean; lane_note: string }> }>(`/api/compass`),
+  compass: () => j<{ asof: string; night?: { symbol: string; change_pct: number; note: string } | null; markets: Array<{ market: string; phase: string; judge: string; judge_label: string; basis: string; dd20: number; ret5: number; live: boolean; lane_note: string }>; sector_rotation?: { asof: string; note: string; leadership_20d: Array<{ industry: string; ret20: number | null; ret60: number; sec_q: number; n: number }>; epicenter_60d: Array<{ industry: string; ret20: number | null; ret60: number; sec_q: number; n: number }> } | null }>(`/api/compass`),
   buyTiming: (days = 5) => j<{ days: number; asof: string; picks: TimingPick[] }>(`/api/buy-timing?days=${days}`),
   detail: (code: string) => j<PickDetail>(`/api/picks/${code}`),
   freshness: () => j<Freshness>(`/api/health/freshness`),
