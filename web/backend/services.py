@@ -226,14 +226,15 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         bits.append("⚠약세장")
         # §24 항복 해부: 시장 동반붕괴 중 항복픽 = 반등코어 (8y 픽레벨 +1.51 CI>0, 7/8년 —
         # 시장 상승 중 단독붕괴는 반대로 음수). 정보 태그만, 계약/발행 불변.
-        # §39 섹터 차원 (2026-08-04 운영자 승인, swing-main-pwen): 진앙지(섹터 60d 하위 1/4)
-        # 항복만 반등코어 승격 태그 — 8y +1.44/크래시 +1.73 vs 비진앙 크래시 −0.17.
-        # 비진앙(상위 1/2) 단독항복은 soft 강등(사이징 권고 제거 + ⚠라벨, 계약/원장 불변).
-        # 롤백: AG_SECTOR_CAPITULATION=0.
+        # §39 섹터 차원 — ⚠️ 2026-08-05 §41 철회 (기본 OFF): 심화 검증(A2)에서 §39 스프레드가
+        # 날짜 구성 아티팩트로 판명 — 같은날 페어(공존 355일) −0.13 CI 0포함, 랜덤섹터 플라시보
+        # p_perm 0.95, 랭커 피처 Δ=노이즈 동일, 청산형 크래시에선 역방향. Exception Leader·
+        # 하락장엣지와 동일 사인(같은날대조 위반). §24 시장 레벨 태그(반등코어(동반항복))는 유효 유지.
+        # 재활성화(비권고): AG_SECTOR_CAPITULATION=1.
         r5 = row.get("ret_5d") if row.get("ret_5d") is not None else (extra or {}).get("ret_5d_d")
         if isinstance(r5, (int, float)) and r5 <= -13:
             cls = None
-            if os.environ.get("AG_SECTOR_CAPITULATION", "1") == "1":
+            if os.environ.get("AG_SECTOR_CAPITULATION", "0") == "1":
                 try:
                     from modules.sector_capitulation import classify_capitulation, sec_q_of
                     cls = classify_capitulation(row["code"])

@@ -91,6 +91,7 @@ def rotation_panel(top_n: int = 6) -> Optional[Dict[str, Any]]:
         epi = sorted(secs, key=lambda s: s["sec_q"])[:top_n]
         return {"asof": _CACHE.get("asof"),
                 "leadership_20d": lead, "epicenter_60d": epi,
-                "note": "§39: 진앙지(60d 하위 1/4) 항복만 반등코어 — 버틴 섹터의 단독 폭락은 정보성(회피)"}
+                # §41(2026-08-05): §39 선택 주장 철회 — 패널은 사실 표시(섹터 수익 순위)로만 유지.
+                "note": "섹터 20d 리더십 / 60d 최약 — 정보 표시 전용 (픽 선별 주장 아님, §41)"}
     except Exception:
         return None

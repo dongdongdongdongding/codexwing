@@ -68,12 +68,9 @@ def _lanes_resolved_total() -> int:
 
 # 사전등록: 가설·조건·근거. 조건 함수는 지연 평가.
 QUEUE: Dict[str, Dict[str, Any]] = {
-    "short_squeeze_hypothesis": {
-        "need": 120, "have": _short_days,
-        "title": "[재개봉] 공매도 비중 신호: 스퀴즈 연료·비중 전환 (short.parquet 120일 도달)",
-        "desc": "사전등록(2026-07-07): ①공매도 비중 급증 × 항복픽 → 스퀴즈 증폭? ②비중 피크아웃 전환 시그널? "
-                "검증규율: 시장초과 + 일내셔플 플라시보(서브셋 편향 감지, §18) + 랭커 증분(노이즈 플라시보, §19 측정하한) + 시드3.",
-    },
+    # short_squeeze_hypothesis: 제거(2026-08-05, §40 킬대조 후속) — 등록 당일 §23이 8.7y 백필로
+    # 두 가설(급증×항복 H-A, 피크아웃 H-B) 모두 킬 완료(informed shorts 보조정리). 큐 좀비였음.
+    # 공매도 축 잔여는 분봉/이벤트 입도 재탐사감으로만 보류(§23 명시).
     "ext_session_transfer": {
         "need": 120, "have": _ext_days,
         "title": "[재개봉] 확장세션 가격발견 → 익일 전이 (intraday_ext 120거래일 도달)",
