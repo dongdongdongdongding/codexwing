@@ -25,6 +25,13 @@ from zoneinfo import ZoneInfo
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+# 2026-08-05 수리: launchd 환경에는 KIS 키가 없음 — .env.local 명시 로드 (short_update 패턴).
+# 첫 이틀(08-04~05) 수집분은 전 콜 'Missing KIS_APP_KEY' — 시계 시작일은 실질 08-06.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(PROJECT_ROOT / ".env.local")
+except Exception:
+    pass
 
 OUT_DIR = Path(os.path.expanduser("~/research_cache/investor_estimate"))
 ROUNDS = ["0930", "1000", "1130", "1320", "1430"]
