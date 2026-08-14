@@ -468,9 +468,11 @@ if [[ "${AG_DRIFT_ALERT_ENABLE:-1}" == "1" ]]; then
   if [[ "${AG_DRIFT_ALERT_DRY_RUN:-0}" == "1" ]]; then
     DRIFT_ARGS+=(--dry-run)
   fi
-  echo "[STEP] emit_daily_backtest ${DRIFT_ARGS[*]}"
+  # bash 3.2(macOS 기본)는 set -u 아래에서 빈 배열 확장을 unbound variable로 죽인다.
+  # 이 두 줄이 2026-06-08~08-14 데일리옵스 153/153 실패의 원인이었다 (swing-main-7x7h).
+  echo "[STEP] emit_daily_backtest ${DRIFT_ARGS[*]:-}"
   run_optional "emit_daily_backtest" \
-    python3 multi_agent/tools/emit_daily_backtest.py "${DRIFT_ARGS[@]}"
+    python3 multi_agent/tools/emit_daily_backtest.py ${DRIFT_ARGS[@]+"${DRIFT_ARGS[@]}"}
 fi
 
 if [[ "${AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE:-1}" == "1" ]]; then
