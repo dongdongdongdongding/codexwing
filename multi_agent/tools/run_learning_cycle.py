@@ -157,6 +157,10 @@ def _render_report(report: Dict[str, Any]) -> str:
         f"- reason: {report.get('reason')}",
         f"- total_resolved: {report.get('total_resolved', 0)}",
         f"- new_resolved_since_last_cycle: {report.get('new_resolved_since_last_cycle', 0)}",
+        f"- dropped_resolved_since_last_cycle: {report.get('dropped_resolved_since_last_cycle', 0)}",
+        f"- new_resolved_measurement_basis: {report.get('new_resolved_measurement_basis', 'unknown')}",
+        f"- consecutive_skip_cycles: {report.get('consecutive_skip_cycles', 0)}",
+        f"- counter_rebaselined_from: {report.get('counter_rebaselined_from')}",
         f"- resolved_by_market: {report.get('resolved_by_market', {})}",
         f"- resolved_by_bucket: {report.get('resolved_by_bucket', {})}",
         "",
@@ -177,23 +181,92 @@ def _render_report(report: Dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _baseline_for(state: Dict[str, Any], key: str, total_resolved: int) -> tuple[int, Optional[int]]:
-    """직전 기준선을 돌려주되, 카운터가 뒤로 갔으면 현재값으로 재기준선을 잡는다.
+def _keys_field(total_field: str) -> str:
+    return total_field.replace("_resolved_total", "_resolved_keys")
 
-    표본 원천(runtime_state/shared_working/RUN-*)이 정리되면 total_resolved가 줄어든다.
-    기존 `max(0, total - previous)`는 그 사건을 "새 작업 없음"으로 덮어버려 기준선이
-    영원히 내려오지 않았고, 2026-06-14 표본 리셋(8180 → ~4100) 이후 nightly/weekly가
-    9주간 전부 skip했다 — 학습 데이터셋 export와 KOSPI/KOSDAQ walk-forward 릴리스
-    게이트 리포트가 그동안 한 번도 갱신되지 않았다. 조용한 실패라 아무도 몰랐다.
 
-    재기준선 주기 자체는 여전히 skip이지만(new=0), 다음 주기부터 정상 측정된다.
-    리포트에 `counter_rebaselined_from`으로 남겨 축소 사건이 보이게 한다.
+def _skip_streak_field(mode: str) -> str:
+    return f"consecutive_{mode}_skip_cycles"
+
+
+def _bump_skip_streak(state: Dict[str, Any], mode: str, action: str) -> int:
+    """연속 skip 횟수를 세어 상태파일과 리포트에 남긴다.
+
+    2026-06-14 이후 9주간 아무도 몰랐던 진짜 이유는 skip이 '정상 상태'와 구분되지
+    않았기 때문이다. 한 번의 skip은 정상이지만 63번 연속 skip은 사고다. 누적 침묵을
+    셈으로 바꿔 리포트 표면에 올린다.
     """
-    previous_total = int(state.get(key, 0) or 0)
+    field = _skip_streak_field(mode)
+    streak = 0 if action != "skip" else int(state.get(field, 0) or 0) + 1
+    state[field] = streak
+    return streak
+
+
+def _stored_keys(state: Dict[str, Any], total_field: str) -> Optional[set]:
+    """상태파일에 기록된 '이미 소화한 outcome_key' 집합. 없으면 None(구 상태파일)."""
+    raw = state.get(_keys_field(total_field))
+    if not isinstance(raw, list):
+        return None
+    return {str(k) for k in raw if k not in (None, "")}
+
+
+def _adopt_baseline(state: Dict[str, Any], total_field: str, total_resolved: int, resolved_keys: List[str]) -> None:
+    """이번 창을 새 기준선으로 채택한다. 집합 크기는 창 크기로 유한하다."""
+    state[total_field] = int(total_resolved)
+    state[_keys_field(total_field)] = sorted({str(k) for k in resolved_keys if k not in (None, "")})
+
+
+def _measure_new_resolved(
+    state: Dict[str, Any],
+    total_field: str,
+    total_resolved: int,
+    resolved_keys: List[str],
+) -> Dict[str, Any]:
+    """직전 기준선 이후 새로 생긴 표본 수를 센다.
+
+    `total_resolved` 델타는 **누적 카운터**를 가정한다. 실제 원천은 그렇지 않다 —
+    `_collect_outcomes`가 매번 `shared_dir` 전체를 재스캔하므로 total_resolved는
+    *현재 창의 개수*다. 창이 주기적으로 정리되면(매일 N건 추가 / N건 제거) total은
+    줄지도 늘지도 않고 **평평해지고**, `max(0, total - previous)`는 영구히 0을 낸다.
+    그러면 사이클이 영원히 skip인데 `counter_rebaselined_from`은 null이라 리포트에
+    아무 이상도 안 뜬다 — 2026-06-14 이후 9주간 아무도 몰랐던 그 조용한 실패와
+    증상·가시성이 똑같다. 감소(<)만 잡는 재기준선으로는 정체(=)를 절대 못 잡는다.
+
+    그래서 델타가 아니라 처리한 `outcome_key` 집합의 차분으로 센다
+    (`_resolved_summary`가 `resolved_keys`를 이미 만들어 놓고 안 쓰고 있었다).
+    집합은 '마지막으로 실제 작업한 사이클의 창'만 담으므로 크기가 창 크기로 유한하다.
+
+    구 상태파일(키 집합 없음)에는 기존 델타 + 축소-재기준선 동작을 그대로 유지하고,
+    어느 근거로 셌는지를 `new_resolved_measurement_basis`로 리포트에 남긴다.
+    """
+    previous_total = int(state.get(total_field, 0) or 0)
+    current_keys = {str(k) for k in resolved_keys if k not in (None, "")}
+    seen_keys = _stored_keys(state, total_field)
+
+    if seen_keys is not None:
+        return {
+            "new_resolved": len(current_keys - seen_keys),
+            "dropped_resolved": len(seen_keys - current_keys),
+            "rebaselined_from": None,
+            "basis": "outcome_key_set",
+        }
+
+    # --- 구 상태파일 경로 (1회성 마이그레이션) ---
     if total_resolved < previous_total:
-        state[key] = total_resolved
-        return total_resolved, previous_total
-    return previous_total, None
+        # 축소 사건: 현재 창을 새 기준선으로 채택하고 키 집합도 이때 채운다.
+        _adopt_baseline(state, total_field, total_resolved, resolved_keys)
+        return {
+            "new_resolved": 0,
+            "dropped_resolved": max(0, previous_total - total_resolved),
+            "rebaselined_from": previous_total,
+            "basis": "total_delta_fallback",
+        }
+    return {
+        "new_resolved": max(0, total_resolved - previous_total),
+        "dropped_resolved": 0,
+        "rebaselined_from": None,
+        "basis": "total_delta_fallback",
+    }
 
 
 def run_learning_cycle(
@@ -212,9 +285,12 @@ def run_learning_cycle(
     state = _load_learning_state(state_path)
     total_resolved = int(resolved["total_resolved"])
 
+    resolved_keys: List[str] = list(resolved["resolved_keys"])
+
     if mode == "nightly":
-        previous_total, rebaselined_from = _baseline_for(state, "last_nightly_resolved_total", total_resolved)
-        new_resolved = max(0, total_resolved - previous_total)
+        measured = _measure_new_resolved(state, "last_nightly_resolved_total", total_resolved, resolved_keys)
+        new_resolved = int(measured["new_resolved"])
+        rebaselined_from = measured["rebaselined_from"]
         min_needed = int(nightly_min_new_resolved)
         action = "skip"
         reason = "insufficient_new_resolved"
@@ -249,6 +325,8 @@ def run_learning_cycle(
             "reason": reason,
             "total_resolved": total_resolved,
             "new_resolved_since_last_cycle": new_resolved,
+            "dropped_resolved_since_last_cycle": int(measured["dropped_resolved"]),
+            "new_resolved_measurement_basis": measured["basis"],
             "minimum_required_new_resolved": min_needed,
             "counter_rebaselined_from": rebaselined_from,
             "resolved_by_market": resolved["resolved_by_market"],
@@ -259,10 +337,12 @@ def run_learning_cycle(
         }
         state["last_nightly_run_at"] = report["generated_at"]
         if action != "skip":
-            state["last_nightly_resolved_total"] = total_resolved
+            _adopt_baseline(state, "last_nightly_resolved_total", total_resolved, resolved_keys)
+        report["consecutive_skip_cycles"] = _bump_skip_streak(state, "nightly", action)
     else:
-        previous_total, rebaselined_from = _baseline_for(state, "last_weekly_resolved_total", total_resolved)
-        new_resolved = max(0, total_resolved - previous_total)
+        measured = _measure_new_resolved(state, "last_weekly_resolved_total", total_resolved, resolved_keys)
+        new_resolved = int(measured["new_resolved"])
+        rebaselined_from = measured["rebaselined_from"]
         commands = []
         if total_resolved < int(weekly_min_total_resolved):
             action = "skip"
@@ -300,6 +380,8 @@ def run_learning_cycle(
             "reason": reason,
             "total_resolved": total_resolved,
             "new_resolved_since_last_cycle": new_resolved,
+            "dropped_resolved_since_last_cycle": int(measured["dropped_resolved"]),
+            "new_resolved_measurement_basis": measured["basis"],
             "minimum_required_total_resolved": int(weekly_min_total_resolved),
             "minimum_required_new_resolved": int(weekly_min_new_resolved),
             "counter_rebaselined_from": rebaselined_from,
@@ -309,13 +391,23 @@ def run_learning_cycle(
             "commands": commands,
         }
         state["last_weekly_run_at"] = report["generated_at"]
+        commands_ok = bool(commands) and all(cmd.get("ok") for cmd in commands)
+        # 기준선 전진 조건에서 `action == "weekly_retrain"`을 뺀다.
+        # 2026-07-19 운영자 결정으로 AG_PHASE25_RETRAIN=0이 기본이라 action은 항상
+        # `weekly_dataset_only`이고, 그래서 기준선이 **영원히** 전진하지 않았다.
+        # 그 결과 `new_resolved_since_last_cycle`이 "직전 주기 이후"가 아니라
+        # "마지막 성공 재학습 이후"를 뜻하는 거짓 라벨이 됐고(무한 증가),
+        # `weekly_min_new_resolved` 게이트도 첫 통과 이후 영구 무력화됐다.
+        # 표본을 어디까지 소화했는가(기준선)와 모델을 언제 학습했는가(train_at)는 서로 다른 사실이다.
+        if action != "skip" and commands_ok:
+            _adopt_baseline(state, "last_weekly_resolved_total", total_resolved, resolved_keys)
         if (
             action == "weekly_retrain"
-            and all(cmd.get("ok") for cmd in commands)
+            and commands_ok
             and retrain_cmd.get("semantic_status") != "deferred_not_failed"
         ):
-            state["last_weekly_resolved_total"] = total_resolved
             state["last_weekly_train_at"] = report["generated_at"]
+        report["consecutive_skip_cycles"] = _bump_skip_streak(state, "weekly", action)
 
     report_json = report_dir / f"learning_cycle_{mode}.json"
     report_md = report_dir / f"learning_cycle_{mode}.md"
