@@ -2,6 +2,8 @@
 export interface Pick {
   size_pct_total?: number | null; size_note?: string | null;
   stream_excluded?: boolean; sector_capitulation?: "epicenter" | "resilient" | "mid" | null;
+  // §16 tail 사전탐지 관측 필드 (swing-main-clbb, AG_TAIL_P_OBS=1일 때만 존재 — 관측 전용)
+  tail_p?: number | null; tail_warn?: boolean;
   code: string; ticker: string; name: string; market: string;
   lane: string; lane_label: string; kind: string; badge: string;
   signal_class: "A" | "B"; scan_date?: string; buy_date?: string;

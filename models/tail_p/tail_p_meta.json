@@ -1,0 +1,112 @@
+{
+  "issue": "swing-main-clbb",
+  "section": "§16 tail 사전탐지 (관측 전용 — 강제 베토 REJECT)",
+  "trained_at": "2026-08-14T03:30:07.361420+00:00",
+  "recipe": "research/harness_2026_07/tail_veto_research.py (동일 피처·하이퍼파라미터·라벨)",
+  "features": [
+    "dist_hi20",
+    "dist_hi60",
+    "consec_up",
+    "ret_5d",
+    "ret_20d",
+    "rsi14",
+    "atr_pct",
+    "gap",
+    "vol_ratio",
+    "turn_z",
+    "bb_bw",
+    "liq_log",
+    "p",
+    "mkt_dd20",
+    "mkt_ret5"
+  ],
+  "tail_label": "policy_ret <= -10.0",
+  "lgbm_params": {
+    "n_estimators": 200,
+    "learning_rate": 0.05,
+    "num_leaves": 15,
+    "min_child_samples": 50,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_lambda": 3,
+    "random_state": 0,
+    "scale_pos_weight": 5
+  },
+  "n_train_picks": 10671,
+  "n_tail_events": 890,
+  "train_tail_rate_pct": 8.34,
+  "train_date_range": [
+    "2019-01-02",
+    "2026-06-30"
+  ],
+  "validation": {
+    "scheme": "연도별 walk-forward OOS (연도 t 예측은 t 이전 데이터만 학습)",
+    "n_oos": 8070,
+    "oos_years": [
+      2021,
+      2026
+    ],
+    "auc_oos": 0.6658,
+    "auc_placebo_label_shuffle": 0.4744,
+    "auc_by_year": {
+      "2021": 0.6154,
+      "2022": 0.6278,
+      "2023": 0.7361,
+      "2024": 0.701,
+      "2025": 0.7282,
+      "2026": 0.604
+    },
+    "separation_top_quintile": {
+      "oos_q80_tail_p": 0.348,
+      "tail_rate_top20pct": 17.84,
+      "tail_rate_bottom80pct": 6.27,
+      "n_top20pct": 1614
+    },
+    "veto_curve_reference_only": {
+      "0%": {
+        "n": 8070,
+        "ev": 0.218,
+        "tail_pct": 8.59,
+        "cvar10": -16.52,
+        "worst": -71.6
+      },
+      "10%": {
+        "n": 7263,
+        "ev": 0.292,
+        "tail_pct": 7.42,
+        "cvar10": -14.47,
+        "worst": -71.6
+      },
+      "20%": {
+        "n": 6456,
+        "ev": 0.425,
+        "tail_pct": 6.27,
+        "cvar10": -13.13,
+        "worst": -71.6
+      },
+      "30%": {
+        "n": 5649,
+        "ev": 0.5,
+        "tail_pct": 5.65,
+        "cvar10": -12.33,
+        "worst": -71.6
+      }
+    },
+    "note": "veto_curve는 §16 재현 참고용 — 베토는 REJECT됨(최악픽 -71.6 미탐). 관측 전용."
+  },
+  "serving": {
+    "flag": "AG_TAIL_P_OBS=1 (기본 0=OFF, OFF시 payload 불변)",
+    "fields": {
+      "tail_p": "P(policy_ret<=-10), float 0-1",
+      "tail_warn": "tail_p>=0.348 (§16 OOS top-quintile 경계, 번들에서 로드)"
+    },
+    "warn_threshold": 0.348,
+    "scorer": "multi_agent/tools/score_tail_p.py (web/backend/services.py _pick_row에서 플래그 게이트 하에 호출)"
+  },
+  "forward_tracking": {
+    "goal": "tail_p vs 실현 policy_ret forward 상관 — 관측 누적 후에만 개입 논의 (§16 승인 방향)",
+    "log": "runtime_state/reports/experimental/tail_p_obs.jsonl — 플래그 ON일 때 픽별 {logged_at, scan_date, code, lane, tail_p} append (기존 원장 스키마 불변, 사이드카)",
+    "join": "픽 원장(kr_swing_candidate_ledger.jsonl 등)의 (date, ticker) ↔ 사이드카 (scan_date, code)로 조인 → 실현 policy_ret/exit_* 대비 tail_p 상관·상위 quintile 실현 tail율을 후행 계산",
+    "eval": "충분 표본(n>=100) 후: spearman(tail_p, realized), tail_warn 그룹 vs 나머지 tail율/CVaR 비교. 개입(발행/사이징) 전환은 별도 승인 필요 — 이 피처는 관측 전용으로 동결"
+  }
+}

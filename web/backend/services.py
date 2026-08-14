@@ -286,6 +286,21 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
             row["size_note"] = (f"⛔ 발행 제외(관측) — 재귀게이트 DEGRADE (forward n={gv.get('n')} "
                                 f"EV {gv.get('fwd_ev')}, §20 스트림 제외 정책)")
             row["rationale"] = ((row.get("rationale") + " · ") if row.get("rationale") else "") + "⛔관측전용(DEGRADE)"
+    # §16 tail 사전탐지(swing-main-clbb): tail_p 관측 필드 — 발행/사이징/베토/랭킹 불변.
+    # 강제 베토는 §16에서 REJECT(최악픽 -71.6 미탐·동결기준 미충족) → 승인 방향은 관측 노출
+    # + 경고 배지 + forward 상관 추적뿐. 경고 경계는 학습 시 기록된 OOS 상위 20%(top-quintile).
+    # 기본 OFF: AG_TAIL_P_OBS=1 일 때만 부착 (OFF시 payload byte-identical).
+    if os.environ.get("AG_TAIL_P_OBS", "0") == "1":
+        try:
+            from multi_agent.tools.score_tail_p import tail_p_for_pick, log_tail_p_obs, warn_threshold
+            tp = tail_p_for_pick(row["code"], scan_date, prob=prob, market=row.get("market"))
+            if tp is not None:
+                row["tail_p"] = round(float(tp), 4)
+                if tp >= warn_threshold():
+                    row["tail_warn"] = True
+                log_tail_p_obs(row)  # forward 추적 사이드카(원장 스키마 불변, 관측 전용)
+        except Exception:
+            pass
     return row
 
 

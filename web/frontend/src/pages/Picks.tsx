@@ -64,6 +64,7 @@ export function Picks() {
                   {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
                   {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
                   {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
+                  {p.tail_warn && <Chip color="#f59e0b">⚠tail</Chip>}
                   <span style={{ marginLeft: "auto", color: C.mut, fontSize: 12 }}>
                     {(p as any).measured_win != null ? `승률 ${(p as any).measured_win}%` : p.prob != null ? `확률 ${p.prob}%` : ""} · 목표 {p.signal_class === "B" ? "α" : fmt(p.target)}
                   </span>
@@ -119,6 +120,7 @@ export function Picks() {
                   {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
                   {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
                   {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
+                  {p.tail_warn && <Chip color="#f59e0b">⚠tail</Chip>}
                     </div>
                   </Td>
                 </tr>

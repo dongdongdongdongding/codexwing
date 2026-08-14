@@ -68,6 +68,9 @@ runtime_state/reports/us_research/*_ledger.jsonl
 runtime_state/reports/us_research/nasdaq_session_5m_cache/
 runtime_state/models/
 
+# Frontend deps (web/frontend — 로컬 설치물/심볼릭 공유, 커밋 금지)
+node_modules
+
 # Catboost training artifacts (학습 부산물, repo에 keep 의미 없음)
 catboost_info/
 
