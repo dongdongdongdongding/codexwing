@@ -10,7 +10,7 @@ import sys
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -177,6 +177,25 @@ def _render_report(report: Dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _baseline_for(state: Dict[str, Any], key: str, total_resolved: int) -> tuple[int, Optional[int]]:
+    """직전 기준선을 돌려주되, 카운터가 뒤로 갔으면 현재값으로 재기준선을 잡는다.
+
+    표본 원천(runtime_state/shared_working/RUN-*)이 정리되면 total_resolved가 줄어든다.
+    기존 `max(0, total - previous)`는 그 사건을 "새 작업 없음"으로 덮어버려 기준선이
+    영원히 내려오지 않았고, 2026-06-14 표본 리셋(8180 → ~4100) 이후 nightly/weekly가
+    9주간 전부 skip했다 — 학습 데이터셋 export와 KOSPI/KOSDAQ walk-forward 릴리스
+    게이트 리포트가 그동안 한 번도 갱신되지 않았다. 조용한 실패라 아무도 몰랐다.
+
+    재기준선 주기 자체는 여전히 skip이지만(new=0), 다음 주기부터 정상 측정된다.
+    리포트에 `counter_rebaselined_from`으로 남겨 축소 사건이 보이게 한다.
+    """
+    previous_total = int(state.get(key, 0) or 0)
+    if total_resolved < previous_total:
+        state[key] = total_resolved
+        return total_resolved, previous_total
+    return previous_total, None
+
+
 def run_learning_cycle(
     *,
     mode: str,
@@ -194,7 +213,7 @@ def run_learning_cycle(
     total_resolved = int(resolved["total_resolved"])
 
     if mode == "nightly":
-        previous_total = int(state.get("last_nightly_resolved_total", 0) or 0)
+        previous_total, rebaselined_from = _baseline_for(state, "last_nightly_resolved_total", total_resolved)
         new_resolved = max(0, total_resolved - previous_total)
         min_needed = int(nightly_min_new_resolved)
         action = "skip"
@@ -231,6 +250,7 @@ def run_learning_cycle(
             "total_resolved": total_resolved,
             "new_resolved_since_last_cycle": new_resolved,
             "minimum_required_new_resolved": min_needed,
+            "counter_rebaselined_from": rebaselined_from,
             "resolved_by_market": resolved["resolved_by_market"],
             "resolved_by_bucket": resolved["resolved_by_bucket"],
             "collection_stats": collect_stats,
@@ -241,7 +261,7 @@ def run_learning_cycle(
         if action != "skip":
             state["last_nightly_resolved_total"] = total_resolved
     else:
-        previous_total = int(state.get("last_weekly_resolved_total", 0) or 0)
+        previous_total, rebaselined_from = _baseline_for(state, "last_weekly_resolved_total", total_resolved)
         new_resolved = max(0, total_resolved - previous_total)
         commands = []
         if total_resolved < int(weekly_min_total_resolved):
@@ -282,6 +302,7 @@ def run_learning_cycle(
             "new_resolved_since_last_cycle": new_resolved,
             "minimum_required_total_resolved": int(weekly_min_total_resolved),
             "minimum_required_new_resolved": int(weekly_min_new_resolved),
+            "counter_rebaselined_from": rebaselined_from,
             "resolved_by_market": resolved["resolved_by_market"],
             "resolved_by_bucket": resolved["resolved_by_bucket"],
             "collection_stats": collect_stats,
