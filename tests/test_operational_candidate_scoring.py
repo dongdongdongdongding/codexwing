@@ -1,8 +1,22 @@
+import pytest
+
+from modules import operational_candidate_scoring as ocs
 from modules.operational_candidate_scoring import (
     adjust_return_for_buy_premium,
     attach_operational_candidate_score,
     build_operational_candidate_score,
 )
+
+# 공식 밸류체인 마스터(runtime_state/long_term/kis_ticker_valuechain/master.json)는
+# .gitignore 대상 런타임 산출물이라 메인 체크아웃에만 있다. 실물에 의존하면 theme_valuechain
+# 축이 환경마다 달라져(메인 >60 / 새 클론 56.0) 클론·워커 워크트리에서 항상 깨진다.
+# 축의 의도(공식 밸류체인 검증 엣지가 있으면 테마축이 올라간다)를 고정값으로 못 박는다.
+_PINNED_VALUECHAIN = {"005930.KS": {"verified_edge_count": 2}}
+
+
+@pytest.fixture(autouse=True)
+def _pin_valuechain_profiles(monkeypatch):
+    monkeypatch.setattr(ocs, "_valuechain_profiles", lambda: dict(_PINNED_VALUECHAIN))
 
 
 def test_adjust_return_for_buy_premium_uses_entry_price_ratio():
