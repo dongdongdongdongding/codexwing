@@ -1,146 +1,146 @@
 {
-  "generated_at": "2026-06-14T09:14:28.237639",
+  "generated_at": "2026-07-03T09:52:29.116408",
   "execution_status": "trained",
   "defer_reason": null,
-  "last_successful_model_train_at": "2026-06-14T09:14:28.237639",
-  "rows_loaded": 24927,
+  "last_successful_model_train_at": "2026-07-03T09:52:29.116408",
+  "rows_loaded": 32965,
   "backend": "lgb",
   "segments": [
     {
       "name": "phase25_global",
       "status": "trained",
-      "rows": 6437,
-      "positives": 1320,
-      "negative": 5117,
+      "rows": 6942,
+      "positives": 1398,
+      "negative": 5544,
       "return_col": "return_3d_pct",
       "target_horizon_days": 3,
       "positive_threshold": 5.0,
-      "auc": 0.5624649328360671,
-      "raw_auc": 0.5624649328360671,
-      "cv_median_auc": 0.6034982849071833,
-      "signal_direction": "normal",
-      "accuracy": 0.6376370280146163,
-      "positive_precision": 0.12259194395796848,
-      "positive_recall": 0.4268292682926829,
+      "auc": 0.6200952435268621,
+      "raw_auc": 0.6200952435268621,
+      "cv_median_auc": 0.5467436452888685,
+      "signal_direction": "uncertain",
+      "accuracy": 0.7480225988700565,
+      "positive_precision": 0.14473684210526316,
+      "positive_recall": 0.3125,
       "recommended_probability_threshold": 0.6,
       "threshold_sweep": [
         {
           "threshold": 0.25,
-          "picks": 1417,
-          "avg_return": -6.548771248412138,
-          "win_rate": 18.419195483415667,
-          "hit_rate": 10.303458009880028
+          "picks": 1388,
+          "avg_return": -5.406213172190202,
+          "win_rate": 21.253602305475503,
+          "hit_rate": 11.311239193083573
         },
         {
           "threshold": 0.3,
-          "picks": 1306,
-          "avg_return": -6.739411496937214,
-          "win_rate": 18.91271056661562,
-          "hit_rate": 10.719754977029096
+          "picks": 1253,
+          "avg_return": -5.180272687948922,
+          "win_rate": 22.106943335993616,
+          "hit_rate": 11.811652035115722
         },
         {
           "threshold": 0.35,
-          "picks": 1191,
-          "avg_return": -7.046223654911839,
-          "win_rate": 18.55583543240974,
-          "hit_rate": 10.579345088161208
+          "picks": 1056,
+          "avg_return": -5.206421242424243,
+          "win_rate": 22.064393939393938,
+          "hit_rate": 12.121212121212121
         },
         {
           "threshold": 0.4,
-          "picks": 1015,
-          "avg_return": -7.420159766502463,
-          "win_rate": 17.339901477832512,
-          "hit_rate": 10.738916256157635
+          "picks": 846,
+          "avg_return": -4.740533865248227,
+          "win_rate": 23.167848699763592,
+          "hit_rate": 13.829787234042554
         },
         {
           "threshold": 0.45,
-          "picks": 825,
-          "avg_return": -7.025990793939394,
-          "win_rate": 18.424242424242422,
-          "hit_rate": 11.15151515151515
+          "picks": 613,
+          "avg_return": -4.559950959216966,
+          "win_rate": 23.817292006525285,
+          "hit_rate": 13.70309951060359
         },
         {
           "threshold": 0.5,
-          "picks": 571,
-          "avg_return": -6.231621194395798,
-          "win_rate": 19.439579684763572,
-          "hit_rate": 12.259194395796849
+          "picks": 380,
+          "avg_return": -4.943681139473684,
+          "win_rate": 25.789473684210527,
+          "hit_rate": 14.473684210526317
         },
         {
           "threshold": 0.6,
-          "picks": 114,
-          "avg_return": -5.320417184210528,
-          "win_rate": 28.07017543859649,
-          "hit_rate": 16.666666666666664
+          "picks": 105,
+          "avg_return": -3.8537207809523806,
+          "win_rate": 24.761904761904763,
+          "hit_rate": 19.047619047619047
         }
       ],
       "best_threshold_row": {
         "threshold": 0.6,
-        "picks": 114,
-        "avg_return": -5.320417184210528,
-        "win_rate": 28.07017543859649,
-        "hit_rate": 16.666666666666664
+        "picks": 105,
+        "avg_return": -3.8537207809523806,
+        "win_rate": 24.761904761904763,
+        "hit_rate": 19.047619047619047
       },
       "feature_importance_top15": [
         {
-          "feature": "atr_pct_14",
-          "importance": 216.0
-        },
-        {
-          "feature": "obv_slope_5d",
-          "importance": 175.0
-        },
-        {
           "feature": "gap_open_pct",
-          "importance": 170.0
+          "importance": 182.0
         },
         {
-          "feature": "volatility_20d",
-          "importance": 162.0
-        },
-        {
-          "feature": "volatility_5d",
-          "importance": 147.0
-        },
-        {
-          "feature": "rsi_14",
-          "importance": 141.0
-        },
-        {
-          "feature": "whale_prob_gap",
-          "importance": 130.0
+          "feature": "atr_pct_14",
+          "importance": 169.0
         },
         {
           "feature": "prev_pct_change_1d",
-          "importance": 118.0
+          "importance": 148.0
         },
         {
-          "feature": "kosdaq_low_vol_score",
-          "importance": 115.0
+          "feature": "obv_slope_5d",
+          "importance": 145.0
         },
         {
           "feature": "prev_pct_change_5d",
-          "importance": 106.0
+          "importance": 139.0
         },
         {
-          "feature": "kospi_index_5d_return",
-          "importance": 100.0
+          "feature": "volatility_20d",
+          "importance": 138.0
         },
         {
-          "feature": "kospi_momentum_score",
-          "importance": 99.0
+          "feature": "kosdaq_low_vol_score",
+          "importance": 129.0
         },
         {
-          "feature": "kosdaq_kospi_spread_5d",
-          "importance": 84.0
+          "feature": "rsi_14",
+          "importance": 128.0
+        },
+        {
+          "feature": "whale_prob_gap",
+          "importance": 124.0
+        },
+        {
+          "feature": "volatility_5d",
+          "importance": 116.0
+        },
+        {
+          "feature": "kosdaq_index_5d_return",
+          "importance": 98.0
         },
         {
           "feature": "tech_prob_gap",
-          "importance": 68.0
+          "importance": 88.0
         },
         {
-          "feature": "alpha_score",
-          "importance": 65.0
+          "feature": "kospi_momentum_score",
+          "importance": 86.0
+        },
+        {
+          "feature": "model_prob_disagreement",
+          "importance": 78.0
+        },
+        {
+          "feature": "kospi_index_5d_return",
+          "importance": 78.0
         }
       ],
       "model_path": "models/phase25_model.pkl",
@@ -148,32 +148,32 @@
       "walk_forward_cv": [
         {
           "fold": 0,
-          "train_size": 3009,
-          "val_size": 820,
-          "auc": 0.4747412935323383,
-          "val_win_rate": 34.5679012345679
+          "train_size": 3245,
+          "val_size": 885,
+          "auc": 0.47175904763797516,
+          "val_win_rate": 36.41304347826087
         },
         {
           "fold": 1,
-          "train_size": 3829,
-          "val_size": 820,
-          "auc": 0.6420648036858974,
-          "val_win_rate": 16.18705035971223
+          "train_size": 4130,
+          "val_size": 885,
+          "auc": 0.6646331130316896,
+          "val_win_rate": 16.969696969696972
         },
         {
           "fold": 2,
-          "train_size": 4649,
-          "val_size": 820,
-          "auc": 0.6034982849071833,
-          "val_win_rate": 47.16981132075472
+          "train_size": 5015,
+          "val_size": 885,
+          "auc": 0.5467436452888685,
+          "val_win_rate": 31.28205128205128
         }
       ],
       "oos_holdout": {
-        "size": 966,
-        "auc": 0.6139121898982688,
-        "picks": 69,
-        "win_rate_pct": 28.985507246376812,
-        "avg_return_pct": -5.335579144927537
+        "size": 1042,
+        "auc": 0.585703155434359,
+        "picks": 138,
+        "win_rate_pct": 33.33333333333333,
+        "avg_return_pct": -2.2415131159420287
       }
     }
   ],
@@ -182,8 +182,8 @@
       "name": "phase25_global",
       "model_path": "models/phase25_model.pkl",
       "exists": true,
-      "mtime": "2026-06-14T09:14:28.236689",
-      "size_bytes": 309269
+      "mtime": "2026-07-03T09:52:29.115529",
+      "size_bytes": 304600
     }
   ],
   "no_dummy_policy": {

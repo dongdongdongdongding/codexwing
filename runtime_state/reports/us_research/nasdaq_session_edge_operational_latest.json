@@ -11,7 +11,7 @@
     "symbols_requested": 120,
     "symbols_with_rows": 120
   },
-  "generated_at": "2026-06-29T17:51:12.479398+00:00",
+  "generated_at": "2026-08-14T00:53:27.628455+00:00",
   "ledger_appended": 0,
   "ledger_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_operational_ledger.jsonl",
   "ledger_settled": 0,
@@ -33,133 +33,8 @@
   "model_bundle_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/models/nasdaq_session_edge/nasdaq_session_edge_operational_latest.pkl",
   "model_version": "nasdaq_session_regular_close_strength_liq_trend_top1_v1",
   "operational_route": "new_web_scan_model_lane",
-  "pick_count": 1,
-  "picks": [
-    {
-      "anchor_ret": 5.595374,
-      "candidate_id": "nasdaq_session_regular_close_strength_liq_trend_top1_v1",
-      "capital_status": "operator_enabled_live_scan",
-      "condition_specs": [
-        [
-          "r_session_ret",
-          0.55
-        ],
-        [
-          "r_session_close_loc",
-          0.65
-        ],
-        [
-          "r_liq20",
-          0.75
-        ],
-        [
-          "r_ret_20d",
-          0.75
-        ]
-      ],
-      "cost_pct": 0.2,
-      "date": "2026-06-26",
-      "day_change": 5.901288,
-      "dd3_rate": 0.34,
-      "entry_gate": "regular_close_strength_liq_trend",
-      "entry_reference_price": 98.699997,
-      "expected_net_pct": 5.711348,
-      "expected_ret5_pct": 9.359025,
-      "ft55_rate": 0.74,
-      "lane": "regular_close_strength_liq_trend_top1",
-      "ledger_key": "nasdaq_session_regular_close_strength_liq_trend_top1_v1:2026-06-26:HOOD:regular_close",
-      "liq20": 3495831148.57,
-      "logged_at": "2026-06-29T17:51:12.451525+00:00",
-      "market": "NASDAQ",
-      "market_session": "nasdaq_regular_close",
-      "mkt_breadth20": 0.433333,
-      "mkt_ret20_mean": -2.302999,
-      "model_hit_prob": 0.74,
-      "model_hit_prob_source": "validation_ft55",
-      "model_version": "nasdaq_session_regular_close_strength_liq_trend_top1_v1",
-      "operational_route": "new_web_scan_model_lane",
-      "operator_enabled": true,
-      "p": 0.74,
-      "promotion_ready": false,
-      "r_liq20": 0.791667,
-      "r_ret_20d": 0.875,
-      "r_session_close_loc": 0.916667,
-      "r_session_ret": 0.933333,
-      "rank": 1,
-      "recent_shadow_ready": true,
-      "ret5_pos_rate": 0.68,
-      "ret_20d": 16.324855,
-      "sample_limit_warning": "recent_60d_yfinance_5m_intraday_only; multi_year_overnight_provider_not_loaded",
-      "scan_mode": "SWING",
-      "score": 3.366667,
-      "score_col": "score_liquid_open_drive",
-      "score_date": "2026-06-26",
-      "session_bars": 78,
-      "session_close_loc": 0.883647,
-      "session_cutoff": "16:05 America/New_York",
-      "session_mode": "regular_close",
-      "session_ret": 5.901288,
-      "signal_class": "NASDAQ_SWING_SESSION_MODEL",
-      "source_price_kind": "yfinance_5m_prepost",
-      "status": "open",
-      "stock_name": "Robinhood Markets Inc",
-      "stop_pct": 5.0,
-      "strategy_family": "NASDAQ_SESSION_EDGE",
-      "target_horizon_days": 5,
-      "target_pct": 5.0,
-      "ticker": "HOOD",
-      "touch3_rate": 0.72,
-      "validation_metrics": {
-        "alpha5_net_cost_0_2": 5.711348,
-        "alpha5_net_cost_0_2_ci95": [
-          2.481548,
-          8.941147
-        ],
-        "alpha5_net_cost_0_2_pos_rate": 0.64,
-        "annual": [
-          {
-            "alpha5_net_0_2": 5.711348,
-            "alpha5_net_0_2_pos_rate": 0.64,
-            "days": 50,
-            "dd3": 0.34,
-            "ft55": 0.74,
-            "n": 50,
-            "ret5": 9.359025,
-            "ret5_pos_rate": 0.68,
-            "touch3": 0.72,
-            "year": 2026
-          }
-        ],
-        "days": 50,
-        "dd3": 0.34,
-        "dd3_ci95": [
-          0.207362,
-          0.472638
-        ],
-        "ft55": 0.74,
-        "ft55_ci95": [
-          0.617182,
-          0.862818
-        ],
-        "n": 50,
-        "ret5": 9.359025,
-        "ret5_ci95": [
-          5.293973,
-          13.424077
-        ],
-        "ret5_pos_rate": 0.68,
-        "same_day_touch_stop_ambiguous": 0.02,
-        "symbols": 18,
-        "touch3": 0.72,
-        "touch3_ci95": [
-          0.59428,
-          0.84572
-        ],
-        "years_alpha5_net_0_2_pos": 1
-      },
-      "validation_source_report": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_search_20260630_022637.json"
-    }
-  ],
+  "pick_count": 0,
+  "picks": [],
   "policies": [
     {
       "candidate_id": "nasdaq_session_regular_close_strength_liq_trend_top1_v1",
@@ -177,7 +52,7 @@
   "promotion_ready": false,
   "report_version": "nasdaq_session_edge_operational_scan_v1",
   "sample_limit_warning": "recent_60d_yfinance_5m_intraday_only; multi_year_overnight_provider_not_loaded",
-  "score_date": "2026-06-26",
+  "score_date": null,
   "session_block_reason": "",
   "session_blocked": false,
   "session_contract": {
@@ -195,65 +70,25 @@
     "unsupported_session_warning": "20:00-04:00 ET overnight/day-market bars require a separate provider."
   },
   "signal_class": "NASDAQ_SWING_SESSION_MODEL",
-  "source_report": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_search_20260630_022637.json",
+  "source_report": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_search_20260630_020522.json",
   "strategy_family": "NASDAQ_SESSION_EDGE",
   "validation": {
     "policies": {
       "nasdaq_session_regular_close_strength_liq_trend_top1_v1": {
-        "condition": "regular_close_strength_liq_trend",
-        "metrics": {
-          "alpha5_net_cost_0_2": 5.711348,
-          "alpha5_net_cost_0_2_ci95": [
-            2.481548,
-            8.941147
-          ],
-          "alpha5_net_cost_0_2_pos_rate": 0.64,
-          "annual": [
-            {
-              "alpha5_net_0_2": 5.711348,
-              "alpha5_net_0_2_pos_rate": 0.64,
-              "days": 50,
-              "dd3": 0.34,
-              "ft55": 0.74,
-              "n": 50,
-              "ret5": 9.359025,
-              "ret5_pos_rate": 0.68,
-              "touch3": 0.72,
-              "year": 2026
-            }
-          ],
-          "days": 50,
-          "dd3": 0.34,
-          "dd3_ci95": [
-            0.207362,
-            0.472638
-          ],
-          "ft55": 0.74,
-          "ft55_ci95": [
-            0.617182,
-            0.862818
-          ],
-          "n": 50,
-          "ret5": 9.359025,
-          "ret5_ci95": [
-            5.293973,
-            13.424077
-          ],
-          "ret5_pos_rate": 0.68,
-          "same_day_touch_stop_ambiguous": 0.02,
-          "symbols": 18,
-          "touch3": 0.72,
-          "touch3_ci95": [
-            0.59428,
-            0.84572
-          ],
-          "years_alpha5_net_0_2_pos": 1
-        },
+        "metrics": {},
         "promotion_gate": {
           "blocking_reasons": [
-            "n_below_min:50<1000",
-            "days_below_min:50<250",
-            "years_alpha5_net_0_2_pos_below_min:1<5"
+            "missing_n",
+            "missing_days",
+            "missing_ret5",
+            "missing_alpha5_net_cost_0_2",
+            "missing_alpha5_net_cost_0_2_ci95_lo",
+            "missing_ret5_pos_rate",
+            "missing_alpha5_net_cost_0_2_pos_rate",
+            "missing_touch3",
+            "missing_ft55",
+            "missing_dd3",
+            "missing_years_alpha5_net_0_2_pos"
           ],
           "capital_status": "research_shadow_only_win_return_gate_blocked",
           "gate_version": "nasdaq_swing_win_return_gate_v1",
@@ -275,32 +110,42 @@
         },
         "promotion_ready": false,
         "recent_shadow_gate": {
-          "blocking_reasons": [],
-          "capital_status": "research_shadow_recent_intraday_only",
+          "blocking_reasons": [
+            "validated_candidate_missing",
+            "missing_n",
+            "missing_days",
+            "missing_ret5",
+            "missing_alpha5_net_cost_0_2",
+            "missing_alpha5_net_cost_0_2_ci95_lo",
+            "missing_ret5_pos_rate",
+            "missing_alpha5_net_cost_0_2_pos_rate",
+            "missing_touch3",
+            "missing_ft55",
+            "missing_dd3",
+            "missing_years_alpha5_net_0_2_pos"
+          ],
+          "capital_status": "operator_enabled_live_scan",
           "gate_version": "nasdaq_session_recent_shadow_gate_v1",
-          "promotion_ready": true,
-          "status": "recent_shadow_candidate_not_production",
+          "promotion_ready": false,
+          "status": "blocked",
           "thresholds": {
             "max_dd3": 0.35,
             "min_alpha5_net_cost_0_2_ci95_lo_pct": 0.0,
             "min_alpha5_net_cost_0_2_pct": 0.5,
             "min_alpha5_net_cost_0_2_pos_rate": 0.55,
-            "min_days": 15.0,
+            "min_days": 250.0,
             "min_ft55": 0.55,
-            "min_n": 35.0,
+            "min_n": 1000.0,
             "min_ret5_pct": 1.0,
             "min_ret5_pos_rate": 0.55,
             "min_touch3": 0.55,
-            "min_years_alpha5_net_0_2_pos": 1.0
+            "min_years_alpha5_net_0_2_pos": 5.0
           }
         },
-        "recent_shadow_ready": true,
-        "regime": "all",
-        "score": "score_liquid_open_drive",
-        "source_report": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_search_20260630_022637.json",
-        "topn": 1
+        "recent_shadow_ready": false,
+        "source_report": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_search_20260630_020522.json"
       }
     },
-    "source_report": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_search_20260630_022637.json"
+    "source_report": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/reports/us_research/nasdaq_session_edge_search_20260630_020522.json"
   }
 }

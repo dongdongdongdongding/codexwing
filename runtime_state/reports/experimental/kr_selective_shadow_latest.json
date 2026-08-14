@@ -1,72 +1,72 @@
 {
-  "generated_at": "2026-07-03T04:56:25.738259+00:00",
+  "generated_at": "2026-08-14T01:11:44.510058+00:00",
   "note": "observation-only view over lane ledgers; forward evidence for the selective high-conviction contract (RESEARCH_LOG §7). No routing, no pick changes.",
   "lanes": {
     "KOSPI": {
       "market": "KOSPI",
       "exit_contract": "exit_t5_h5",
       "tier_rule": "rank1 p >= trailing40 q0.2 (fallback 0.65)",
-      "picks_total_days": 7,
+      "picks_total_days": 36,
       "rank1_all": {
-        "n": 1,
-        "ev_avg": 5.0,
-        "win_pct": 100.0,
-        "worst": 5.0
+        "n": 29,
+        "ev_avg": 1.99,
+        "win_pct": 75.9,
+        "worst": -16.07
       },
       "rank1_primary": {
-        "n": 1,
-        "ev_avg": 5.0,
-        "win_pct": 100.0,
-        "worst": 5.0
+        "n": 22,
+        "ev_avg": 1.03,
+        "win_pct": 68.2,
+        "worst": -16.07
       },
       "latest": [
         {
-          "date": "2026-06-26",
-          "ticker": "336260.KS",
-          "p": 0.7998,
+          "date": "2026-08-10",
+          "ticker": "010060.KS",
+          "p": 0.6601,
           "tier": "PRIMARY",
-          "tier_threshold": 0.65,
-          "mkt_state": null,
-          "exit_ret": null,
-          "ret3d": 14.86
-        },
-        {
-          "date": "2026-06-29",
-          "ticker": "336260.KS",
-          "p": 0.8389,
-          "tier": "PRIMARY",
-          "tier_threshold": 0.65,
-          "mkt_state": null,
+          "tier_threshold": 0.6516,
+          "mkt_state": "NORMAL",
           "exit_ret": null,
           "ret3d": null
         },
         {
-          "date": "2026-07-01",
-          "ticker": "000990.KS",
-          "p": 0.7859,
-          "tier": "PRIMARY",
-          "tier_threshold": 0.65,
-          "mkt_state": null,
+          "date": "2026-08-11",
+          "ticker": "009150.KS",
+          "p": 0.6356,
+          "tier": "CANDIDATE",
+          "tier_threshold": 0.6516,
+          "mkt_state": "NORMAL",
           "exit_ret": null,
           "ret3d": null
         },
         {
-          "date": "2026-07-02",
-          "ticker": "011070.KS",
-          "p": 0.8507,
+          "date": "2026-08-12",
+          "ticker": "161890.KS",
+          "p": 0.6587,
           "tier": "PRIMARY",
-          "tier_threshold": 0.65,
-          "mkt_state": null,
+          "tier_threshold": 0.6448,
+          "mkt_state": "NORMAL",
           "exit_ret": null,
           "ret3d": null
         },
         {
-          "date": "2026-07-03",
-          "ticker": "001820.KS",
-          "p": 0.8394,
-          "tier": "PRIMARY",
-          "tier_threshold": 0.65,
-          "mkt_state": "RISK_OFF",
+          "date": "2026-08-13",
+          "ticker": "090460.KS",
+          "p": 0.5278,
+          "tier": "CANDIDATE",
+          "tier_threshold": 0.647,
+          "mkt_state": "NORMAL",
+          "exit_ret": null,
+          "ret3d": null
+        },
+        {
+          "date": "2026-08-14",
+          "ticker": "003230.KS",
+          "p": 0.4455,
+          "tier": "CANDIDATE",
+          "tier_threshold": 0.6393,
+          "mkt_state": "NORMAL",
           "exit_ret": null,
           "ret3d": null
         }
@@ -76,12 +76,18 @@
       "market": "KOSDAQ",
       "exit_contract": "exit_t10_h5",
       "tier_rule": "rank1 p >= trailing40 q0.2 (fallback 0.0)",
-      "picks_total_days": 2,
+      "picks_total_days": 5,
       "rank1_all": {
-        "n": 0
+        "n": 4,
+        "ev_avg": 11.43,
+        "win_pct": 100.0,
+        "worst": 10.0
       },
       "rank1_primary": {
-        "n": 0
+        "n": 4,
+        "ev_avg": 11.43,
+        "win_pct": 100.0,
+        "worst": 10.0
       },
       "latest": [
         {
@@ -91,7 +97,7 @@
           "tier": "PRIMARY",
           "tier_threshold": 0.0,
           "mkt_state": null,
-          "exit_ret": null,
+          "exit_ret": 10.0,
           "ret3d": 1.7274
         },
         {
@@ -101,6 +107,36 @@
           "tier": "PRIMARY",
           "tier_threshold": 0.0,
           "mkt_state": null,
+          "exit_ret": 10.0,
+          "ret3d": -0.7663
+        },
+        {
+          "date": "2026-07-31",
+          "ticker": "323280.KQ",
+          "p": 0.9244,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.0,
+          "mkt_state": "RISK_OFF",
+          "exit_ret": 15.36,
+          "ret3d": 43.36
+        },
+        {
+          "date": "2026-08-03",
+          "ticker": "240810.KQ",
+          "p": 0.9327,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.0,
+          "mkt_state": "RISK_OFF",
+          "exit_ret": 10.3632,
+          "ret3d": -1.0684
+        },
+        {
+          "date": "2026-08-11",
+          "ticker": "043260.KQ",
+          "p": 0.9224,
+          "tier": "PRIMARY",
+          "tier_threshold": 0.0,
+          "mkt_state": "NORMAL",
           "exit_ret": null,
           "ret3d": null
         }

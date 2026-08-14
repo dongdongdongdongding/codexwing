@@ -1,63 +1,82 @@
 {
-  "generated_at": "2026-06-29T07:02:03.724358+00:00",
+  "generated_at": "2026-08-14T00:49:57.038659+00:00",
   "market": "KOSPI",
   "theme_states": [
     {
-      "confidence": 0.688,
+      "beneficiary_keywords": [
+        "IT서비스/플랫폼",
+        "AI",
+        "데이터센터",
+        "클라우드",
+        "서버",
+        "GPU"
+      ],
+      "confidence": 0.723,
+      "direction": "BENEFICIARY",
+      "driver_categories": [
+        "ECONOMY",
+        "LIQUIDITY",
+        "EARNINGS",
+        "RATES"
+      ],
+      "evidence": [
+        "[2026-08-14 09:33] 삼성전자, 딥러닝·데이터 전문가 영입…반도체 AX 가속 | 블로터",
+        "[DART 20260813] SIMPAC - 투자판단관련주요경영사항 | 전자공시",
+        "overnight:ai_datacenter:BENEFICIARY +18.6"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "overnight_theme_lead": {
+        "direction": "BENEFICIARY",
+        "source": "us_overnight_theme_transfer",
+        "strength_score": 18.59
+      },
+      "strength_score": 41.0,
+      "theme_id": "it_platform",
+      "theme_name": "IT서비스/플랫폼",
+      "updated_at": "2026-08-14T00:36:04.887773+00:00",
+      "victim_keywords": []
+    },
+    {
+      "confidence": 0.793,
       "contributing_edges": [
         {
-          "confidence": 0.738,
-          "effective_dir": "HEADWIND",
+          "confidence": 0.732,
+          "effective_dir": "BENEFICIARY",
           "relationship": "CO_MOVE",
-          "signed_contribution": -44.671,
+          "signed_contribution": 27.077,
           "source_theme_id": "semiconductor",
-          "us_direction": "HEADWIND",
-          "us_strength": 60.53
+          "us_direction": "BENEFICIARY",
+          "us_strength": 36.99
+        },
+        {
+          "confidence": 0.662,
+          "effective_dir": "BENEFICIARY",
+          "relationship": "CO_MOVE",
+          "signed_contribution": 27.354,
+          "source_theme_id": "ai_datacenter",
+          "us_direction": "BENEFICIARY",
+          "us_strength": 41.32
         }
       ],
-      "direction": "HEADWIND",
+      "direction": "BENEFICIARY",
       "evidence": [
-        "semiconductor:HEADWIND -44.7"
+        "semiconductor:BENEFICIARY +27.1",
+        "ai_datacenter:BENEFICIARY +27.4"
       ],
       "previous_theme_state": {
         "direction": "BENEFICIARY",
         "source": null,
-        "strength_score": 43.0
+        "strength_score": 38.0
       },
       "source": "us_overnight_theme_transfer",
-      "strength_score": 44.67,
+      "strength_score": 54.43,
       "theme_id": "semiconductor",
       "theme_name": "반도체",
-      "updated_at": "2026-06-29T06:46:29.257996+00:00",
-      "momentum_avg_change_pct": 4.04,
-      "momentum_class": "EXPLODING",
+      "updated_at": "2026-08-14T00:36:20.656888+00:00",
+      "momentum_avg_change_pct": 0.25,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 10
-    },
-    {
-      "beneficiary_keywords": [
-        "지주/투자",
-        "지주",
-        "투자",
-        "창업투자",
-        "벤처캐피탈",
-        "신기술사업금융"
-      ],
-      "confidence": 0.716,
-      "direction": "BENEFICIARY",
-      "driver_categories": [],
-      "evidence": [
-        "[2026-06-29 15:42] [메가프로젝트] 최태원 \"AIDC·반도체 팹 신축 2100조원 투자\" | 아이뉴스24",
-        "[2026-06-29 15:44] 삼성·SK, 최소 2500조 이상 투자…AI·반도체 초격차 완성(종합) | 뉴스1",
-        "[Fri, 26 Jun 2026 07:50:00 GMT] 美·日도 반도체 불장인데 왜 한국만 출렁?…엔비디아·키옥시아 봤더니 [투자360] | 헤럴드경제",
-        "[Mon, 29 Jun 2026 15:45:24 +09:00] “최소 연평균 4% 이상 금리 준다” ··· 정부, 개인투자용 국채 발행 | 매일경제"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 40.0,
-      "theme_id": "holding_investment",
-      "theme_name": "지주/투자",
-      "updated_at": "2026-06-29T06:46:15.694319+00:00",
-      "victim_keywords": []
     },
     {
       "beneficiary_keywords": [
@@ -68,7 +87,7 @@
         "전고체",
         "폐배터리"
       ],
-      "confidence": 0.709,
+      "confidence": 0.687,
       "direction": "BENEFICIARY",
       "driver_categories": [
         "OIL",
@@ -82,39 +101,10 @@
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "strength_score": 39.0,
+      "strength_score": 36.0,
       "theme_id": "secondary_battery",
       "theme_name": "2차전지",
-      "updated_at": "2026-06-29T06:46:15.694515+00:00",
-      "victim_keywords": []
-    },
-    {
-      "beneficiary_keywords": [
-        "IT서비스/플랫폼",
-        "AI",
-        "데이터센터",
-        "클라우드",
-        "서버",
-        "GPU"
-      ],
-      "confidence": 0.594,
-      "direction": "BENEFICIARY",
-      "driver_categories": [
-        "ECONOMY",
-        "LIQUIDITY",
-        "EARNINGS",
-        "RATES"
-      ],
-      "evidence": [
-        "[2026-06-29 15:42] [메가프로젝트] 최태원 \"AIDC·반도체 팹 신축 2100조원 투자\" | 아이뉴스24",
-        "[2026-06-29 15:44] 삼성·SK, 최소 2500조 이상 투자…AI·반도체 초격차 완성(종합) | 뉴스1"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 23.0,
-      "theme_id": "it_platform",
-      "theme_name": "IT서비스/플랫폼",
-      "updated_at": "2026-06-29T06:46:15.693556+00:00",
+      "updated_at": "2026-08-14T00:36:04.888940+00:00",
       "victim_keywords": []
     },
     {
@@ -130,121 +120,90 @@
       "strength_score": 12.0,
       "theme_id": "industrial_machinery",
       "theme_name": "산업재/기계",
-      "updated_at": "2026-06-29T06:46:15.693106+00:00",
+      "updated_at": "2026-08-14T00:36:04.887227+00:00",
       "victim_keywords": []
     },
     {
       "beneficiary_keywords": [],
-      "confidence": 0.407,
+      "confidence": 0.421,
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[Mon, 29 Jun 2026 15:37:17 +09:00] 코스피 하락 마감, 8,394.65P (-0.2%↓) KRX 삼성전자 TR 지수, 코스피 보험 등 하락 주도 | 매일경제"
+        "[DART 20260813] SIMPAC - 투자판단관련주요경영사항 | 전자공시"
       ],
-      "momentum_avg_change_pct": 5.87,
-      "momentum_class": "EXPLODING",
-      "strength_score": 8.0,
-      "theme_id": "finance",
-      "theme_name": "금융",
-      "updated_at": "2026-06-29T06:46:15.693739+00:00",
-      "victim_keywords": [],
-      "momentum_naver_count": 10
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
+      "theme_id": "holding_investment",
+      "theme_name": "지주/투자",
+      "updated_at": "2026-08-14T00:36:04.888705+00:00",
+      "victim_keywords": []
     },
     {
-      "confidence": 0.584,
+      "beneficiary_keywords": [],
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [
+        "OIL",
+        "GEOPOLITICS",
+        "EARNINGS"
+      ],
+      "evidence": [
+        "[2026-08-14 09:16] 코스피, 개장 후 ‘7000피’ 회복… 美 증시 훈풍·연준 긴축 완화 기... | 조선비즈"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
+      "theme_id": "shipbuilding",
+      "theme_name": "조선/해양",
+      "updated_at": "2026-08-14T00:36:04.889541+00:00",
+      "victim_keywords": []
+    },
+    {
+      "confidence": 0.564,
       "contributing_edges": [
         {
-          "confidence": 0.35,
+          "confidence": 0.53,
           "effective_dir": "BENEFICIARY",
           "relationship": "CO_MOVE",
-          "signed_contribution": 29.046,
-          "source_theme_id": "biotech",
+          "signed_contribution": 26.156,
+          "source_theme_id": "robotics",
           "us_direction": "BENEFICIARY",
-          "us_strength": 82.99
+          "us_strength": 49.35
         }
       ],
       "direction": "BENEFICIARY",
       "evidence": [
-        "biotech:BENEFICIARY +29.0"
+        "robotics:BENEFICIARY +26.2"
       ],
       "source": "us_overnight_theme_transfer",
-      "strength_score": 29.05,
-      "theme_id": "bio",
-      "theme_name": "바이오/헬스케어",
-      "updated_at": "2026-06-29T06:46:29.258000+00:00"
+      "strength_score": 26.16,
+      "theme_id": "robotics",
+      "theme_name": "로봇/자동화",
+      "updated_at": "2026-08-14T00:36:20.656895+00:00"
     },
     {
-      "confidence": 0.543,
+      "confidence": 0.449,
       "contributing_edges": [
         {
-          "confidence": 0.343,
+          "confidence": 0.414,
           "effective_dir": "HEADWIND",
           "relationship": "CO_MOVE",
-          "signed_contribution": -22.998,
-          "source_theme_id": "power_grid",
+          "signed_contribution": -8.847,
+          "source_theme_id": "crypto",
           "us_direction": "HEADWIND",
-          "us_strength": 67.05
+          "us_strength": 21.37
         }
       ],
       "direction": "HEADWIND",
       "evidence": [
-        "power_grid:HEADWIND -23.0"
+        "crypto:HEADWIND -8.8"
       ],
       "source": "us_overnight_theme_transfer",
-      "strength_score": 23.0,
-      "theme_id": "eco_energy",
-      "theme_name": "eco_energy",
-      "updated_at": "2026-06-29T06:46:29.258004+00:00",
-      "momentum_avg_change_pct": -0.33,
-      "momentum_class": "STEADY"
-    },
-    {
-      "confidence": 0.499,
-      "contributing_edges": [
-        {
-          "confidence": 0.414,
-          "effective_dir": "BENEFICIARY",
-          "relationship": "CO_MOVE",
-          "signed_contribution": 16.365,
-          "source_theme_id": "crypto",
-          "us_direction": "BENEFICIARY",
-          "us_strength": 39.53
-        }
-      ],
-      "direction": "BENEFICIARY",
-      "evidence": [
-        "crypto:BENEFICIARY +16.4"
-      ],
-      "source": "us_overnight_theme_transfer",
-      "strength_score": 16.37,
+      "strength_score": 8.85,
       "theme_id": "crypto",
       "theme_name": "가상자산/블록체인",
-      "updated_at": "2026-06-29T06:46:29.258007+00:00"
-    },
-    {
-      "beneficiary_keywords": [
-        "로봇/자동화",
-        "로봇",
-        "자동화",
-        "협동로봇",
-        "물류로봇",
-        "스마트팩토리"
-      ],
-      "confidence": 0.5,
-      "direction": "BENEFICIARY",
-      "driver_categories": [
-        "ECONOMY",
-        "LIQUIDITY",
-        "EARNINGS"
-      ],
-      "evidence": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 21.0,
-      "theme_id": "robotics",
-      "theme_name": "로봇/자동화",
-      "updated_at": "2026-06-29T06:46:20.889667+00:00",
-      "victim_keywords": []
+      "updated_at": "2026-08-14T00:36:20.656898+00:00"
     },
     {
       "beneficiary_keywords": [
@@ -253,7 +212,7 @@
         "전선",
         "전력설비"
       ],
-      "confidence": 0.5,
+      "confidence": 0.479,
       "direction": "BENEFICIARY",
       "driver_categories": [
         "ECONOMY",
@@ -263,46 +222,30 @@
       "evidence": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "strength_score": 21.0,
+      "strength_score": 18.0,
       "theme_id": "전력기기",
       "theme_name": "전력기기",
-      "updated_at": "2026-06-29T06:46:20.890099+00:00",
+      "updated_at": "2026-08-14T00:36:13.236688+00:00",
       "victim_keywords": []
     },
     {
       "beneficiary_keywords": [],
-      "confidence": 0.436,
-      "direction": "NEUTRAL",
-      "driver_categories": [],
-      "evidence": [
-        "[Mon, 29 Jun 2026 09:33:58 +09:00] “신분당선 역세권”…SK에코플랜트, 용인 수지삼성2차 재건축사업 수주 | 매일경제"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 12.0,
-      "theme_id": "construction_realestate",
-      "theme_name": "건설/부동산",
-      "updated_at": "2026-06-29T00:36:04.449019+00:00",
-      "victim_keywords": []
-    },
-    {
-      "beneficiary_keywords": [],
-      "confidence": 0.429,
+      "confidence": 0.457,
       "direction": "NEUTRAL",
       "driver_categories": [
-        "OIL",
-        "GEOPOLITICS",
+        "POLITICS",
+        "REGULATION",
         "EARNINGS"
       ],
       "evidence": [
-        "[2026-06-29 09:14] 출발하자마자 외국인 1조원 매도…코스피 1%대 하락세 | 조선비즈"
+        "[Fri, 14 Aug 2026 09:21:56 +0900] [특징주] HD현대중, 빌 게이츠 방한·SMR 기대감 부각에 강세 | 연합뉴스"
       ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 11.0,
-      "theme_id": "shipbuilding",
-      "theme_name": "조선/해양",
-      "updated_at": "2026-06-29T00:36:04.450803+00:00",
+      "momentum_avg_change_pct": -0.33,
+      "momentum_class": "STEADY",
+      "strength_score": 15.0,
+      "theme_id": "eco_energy",
+      "theme_name": "친환경/에너지",
+      "updated_at": "2026-08-14T00:36:13.235962+00:00",
       "victim_keywords": []
     },
     {
@@ -311,71 +254,19 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[Mon, 29 Jun 2026 08:07:40 +09:00] 산업부, 산하기관까지 ‘청렴주간’ 확대…청렴 네트워크 구축 | 매일경제"
+        "[Thu, 13 Aug 2026 07:58:00 GMT] 모건스탠리가 쏘아 올린 삼성전기 급등, AI 데이터센터 테마 전방위 확산 (2026.08.13) | 네이버 프리미엄콘텐츠"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 10.0,
-      "theme_id": "telecom",
-      "theme_name": "통신/네트워크",
-      "updated_at": "2026-06-29T00:36:04.449635+00:00",
+      "theme_id": "game_content_ent",
+      "theme_name": "게임/콘텐츠/엔터",
+      "updated_at": "2026-08-14T00:36:13.235544+00:00",
       "victim_keywords": []
     },
     {
       "beneficiary_keywords": [],
-      "confidence": 0.436,
-      "direction": "NEUTRAL",
-      "driver_categories": [],
-      "evidence": [
-        "[Mon, 29 Jun 2026 09:01:15 +0900] 고유가·고환율에 국내여행 '반사이익'…교원 호텔, 예약률 상승 | 한국경제"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 12.0,
-      "theme_id": "consumer_retail",
-      "theme_name": "소비재/유통",
-      "updated_at": "2026-06-29T00:35:56.016355+00:00",
-      "victim_keywords": []
-    },
-    {
-      "beneficiary_keywords": [],
-      "confidence": 0.371,
-      "direction": "NEUTRAL",
-      "driver_categories": [
-        "OIL",
-        "GEOPOLITICS",
-        "FX"
-      ],
-      "evidence": [
-        "[Mon, 29 Jun 2026 09:01:15 +0900] 고유가·고환율에 국내여행 '반사이익'…교원 호텔, 예약률 상승 | 한국경제"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 3.0,
-      "theme_id": "oil_energy",
-      "theme_name": "정유/에너지",
-      "updated_at": "2026-06-29T00:35:56.017235+00:00",
-      "victim_keywords": []
-    },
-    {
-      "beneficiary_keywords": [],
-      "confidence": 0.421,
-      "direction": "NEUTRAL",
-      "driver_categories": [],
-      "evidence": [
-        "[2026-06-28 09:32] 현대자동차, 칸 라이언즈 2026 그랑프리 포함 2개 부문 수상 | 뉴시스"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 10.0,
-      "theme_id": "automobile",
-      "theme_name": "자동차",
-      "updated_at": "2026-06-28T00:36:02.508945+00:00",
-      "victim_keywords": []
-    },
-    {
-      "beneficiary_keywords": [],
-      "confidence": 0.464,
+      "confidence": 0.443,
       "direction": "NEUTRAL",
       "driver_categories": [
         "GEOPOLITICS",
@@ -383,14 +274,14 @@
         "EARNINGS"
       ],
       "evidence": [
-        "[2026-06-28 09:00] 벌써 기술수출 13조원…K-바이오, 하반기 더 뜨거워진다 | 머니투데이"
+        "[2026-08-13 15:38] 친환경차 잘 팔렸다…7월 자동차 수출 62.4억 달러 ‘역대 최대’ | 동아일보"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "strength_score": 16.0,
+      "strength_score": 13.0,
       "theme_id": "defense",
       "theme_name": "방산",
-      "updated_at": "2026-06-28T00:36:02.108008+00:00",
+      "updated_at": "2026-08-13T06:41:31.072700+00:00",
       "victim_keywords": []
     },
     {
@@ -399,53 +290,76 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[Fri, 26 Jun 2026 15:35:06 +09:00] 자동차 보험사기, 참교육 좀 해봅시다…신고 포상금 최대 5000만원 | 매일경제"
+        "[2026-08-13 15:38] 친환경차 잘 팔렸다…7월 자동차 수출 62.4억 달러 ‘역대 최대’ | 동아일보"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 10.0,
-      "theme_id": "education_publishing",
-      "theme_name": "교육/출판",
-      "updated_at": "2026-06-26T06:43:08.627668+00:00",
+      "theme_id": "automobile",
+      "theme_name": "자동차",
+      "updated_at": "2026-08-13T06:41:31.072075+00:00",
       "victim_keywords": []
     },
     {
-      "confidence": 0.605,
+      "confidence": 0.463,
+      "contributing_edges": [
+        {
+          "confidence": 0.35,
+          "effective_dir": "BENEFICIARY",
+          "relationship": "CO_MOVE",
+          "signed_contribution": 10.909,
+          "source_theme_id": "biotech",
+          "us_direction": "BENEFICIARY",
+          "us_strength": 31.17
+        }
+      ],
+      "direction": "BENEFICIARY",
+      "evidence": [
+        "biotech:BENEFICIARY +10.9"
+      ],
+      "source": "us_overnight_theme_transfer",
+      "strength_score": 10.91,
+      "theme_id": "bio",
+      "theme_name": "바이오/헬스케어",
+      "updated_at": "2026-08-13T06:41:46.009593+00:00"
+    },
+    {
+      "confidence": 0.524,
       "contributing_edges": [
         {
           "confidence": 0.558,
-          "effective_dir": "HEADWIND",
+          "effective_dir": "BENEFICIARY",
           "relationship": "CO_MOVE",
-          "signed_contribution": -32.241,
+          "signed_contribution": 20.071,
           "source_theme_id": "quantum",
-          "us_direction": "HEADWIND",
-          "us_strength": 57.78
+          "us_direction": "BENEFICIARY",
+          "us_strength": 35.97
         }
       ],
-      "direction": "HEADWIND",
+      "direction": "BENEFICIARY",
       "evidence": [
-        "quantum:HEADWIND -32.2"
+        "quantum:BENEFICIARY +20.1"
       ],
       "source": "us_overnight_theme_transfer",
-      "strength_score": 32.24,
+      "strength_score": 20.07,
       "theme_id": "quantum",
       "theme_name": "양자",
-      "updated_at": "2026-06-26T06:43:25.082637+00:00"
+      "updated_at": "2026-08-13T06:41:46.009597+00:00"
     },
     {
       "beneficiary_keywords": [],
-      "confidence": 0.421,
+      "confidence": 0.436,
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[DART 20260626] 대한항공 - [기재정정]회사합병결정(종속회사의주요경영사항) | 전자공시"
+        "[Thu, 13 Aug 2026 15:36:50 +09:00] 코스닥 상승 마감, 861.37P (0.29%↑) 코스닥 기계·장비, 코스닥 건설 등 상승 주도 | 매일경제"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "strength_score": 10.0,
-      "theme_id": "aerospace_defense",
-      "theme_name": "우주항공/방산",
-      "updated_at": "2026-06-26T00:36:08.540236+00:00",
+      "strength_score": 12.0,
+      "theme_id": "construction_realestate",
+      "theme_name": "건설/부동산",
+      "updated_at": "2026-08-13T06:41:27.186171+00:00",
       "victim_keywords": []
     },
     {
@@ -454,14 +368,14 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[Thu, 25 Jun 2026 17:56:01 +09:00] 삼성 반도체·SK AI·LG OLED…대기업 50곳 '청년 인재' 키운다 | 매일경제"
+        "[2026-08-13 15:03] 전진 브릴스 대표 \"로봇 모듈화로 3년 후 '규모의 경제' 달성\" | 지디넷코리아"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 10.0,
       "theme_id": "electronic_components_display",
       "theme_name": "전자부품/디스플레이",
-      "updated_at": "2026-06-25T11:07:17.645782+00:00",
+      "updated_at": "2026-08-13T06:41:27.185941+00:00",
       "victim_keywords": []
     },
     {
@@ -470,14 +384,14 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[Thu, 25 Jun 2026 18:57:05 +0900] '봉제의복 제조업' 기도산업 등 3사 코스닥 상장예비심사 통과 | 연합뉴스"
+        "[DART 20260813] 대림제지 - 주식분할결정 | 전자공시"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 10.0,
-      "theme_id": "textile_apparel",
-      "theme_name": "섬유/의류",
-      "updated_at": "2026-06-25T11:07:27.357072+00:00",
+      "theme_id": "paper_packaging",
+      "theme_name": "제지/포장",
+      "updated_at": "2026-08-13T06:41:27.187372+00:00",
       "victim_keywords": []
     },
     {
@@ -486,14 +400,47 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[DART 20260625] 원풍물산 - 기타시장안내(관리종목지정우려종목)              (시가총액 150억원 미달) | 전자공시"
+        "[DART 20260812] 대동금속 - 기타시장안내              (관리종목지정우려종목)(시가총액 200억원 미달) | 전자공시"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 8.0,
-      "theme_id": "game_content_ent",
-      "theme_name": "게임/콘텐츠/엔터",
-      "updated_at": "2026-06-25T11:07:27.356192+00:00",
+      "theme_id": "steel_materials",
+      "theme_name": "철강/금속/소재",
+      "updated_at": "2026-08-13T00:36:10.701842+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Wed, 12 Aug 2026 13:36:21 +09:00] 외국인 보유 스테이블코인으로 국내가맹점서 결제…BC카드, 실증사업 완료 | 매일경제"
+      ],
+      "momentum_avg_change_pct": 0.77,
+      "momentum_class": "ACCELERATING",
+      "strength_score": 10.0,
+      "theme_id": "finance",
+      "theme_name": "금융",
+      "updated_at": "2026-08-12T06:45:14.036368+00:00",
+      "victim_keywords": [],
+      "momentum_naver_count": 10
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Wed, 12 Aug 2026 15:34:35 +0900] 한화, 동남권 국립대와 'AI·우주항공 생태계' 인재 양성 | 연합뉴스"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
+      "theme_id": "aerospace_defense",
+      "theme_name": "우주항공/방산",
+      "updated_at": "2026-08-12T06:45:14.038320+00:00",
       "victim_keywords": []
     },
     {
@@ -502,19 +449,19 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[DART 20260622] 수산인더스트리 - [기재정정]단일판매ㆍ공급계약체결 | 전자공시"
+        "[2026-08-12 04:01] 반도체·화장품 수출 훈풍에… 코스피·코스닥 동반 상승 | 머니투데이"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 12.0,
-      "theme_id": "agriculture_feed",
-      "theme_name": "농업/사료",
-      "updated_at": "2026-06-22T11:08:37.109856+00:00",
+      "theme_id": "consumer_retail",
+      "theme_name": "소비재/유통",
+      "updated_at": "2026-08-12T00:36:14.808227+00:00",
       "victim_keywords": []
     },
     {
       "beneficiary_keywords": [],
-      "confidence": 0.543,
+      "confidence": 0.5,
       "direction": "HEADWIND",
       "driver_categories": [
         "OIL",
@@ -522,12 +469,12 @@
         "ECONOMY"
       ],
       "evidence": [],
-      "momentum_avg_change_pct": 4.72,
-      "momentum_class": "EXPLODING",
-      "strength_score": 27.0,
+      "momentum_avg_change_pct": 1.7,
+      "momentum_class": "ACCELERATING",
+      "strength_score": 21.0,
       "theme_id": "해운",
       "theme_name": "해운",
-      "updated_at": "2026-06-21T00:36:03.586277+00:00",
+      "updated_at": "2026-08-11T00:36:12.812487+00:00",
       "victim_keywords": [
         "해운",
         "운임",
@@ -538,18 +485,70 @@
     },
     {
       "beneficiary_keywords": [],
+      "confidence": 0.357,
+      "direction": "NEUTRAL",
+      "driver_categories": [
+        "OIL",
+        "GEOPOLITICS",
+        "FX"
+      ],
+      "evidence": [
+        "[2026-08-10 08:31] [어제장 오늘장] 유가·금리 악화에 투심 위축…코스피 7주 연속 하락... | SBS Biz"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 1.0,
+      "theme_id": "oil_energy",
+      "theme_name": "정유/에너지",
+      "updated_at": "2026-08-10T00:36:13.674613+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.436,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Wed, 5 Aug 2026 15:36:04 +0900] [특징주] 광통신주, 트럼프 행정부 中부품 수입금지 추진에 강세(종합) | 연합뉴스"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 12.0,
+      "theme_id": "telecom",
+      "theme_name": "통신/네트워크",
+      "updated_at": "2026-08-05T06:41:53.237907+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
       "confidence": 0.407,
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[DART 20260619] 대진첨단소재 - [기재정정]주요사항보고서(전환사채권발행결정) | 전자공시"
+        "[Mon, 03 Aug 2026 15:38:01 +09:00] 코스피 하락 마감, 6,257.45P (-5.12%↓) 코스피 섬유·의류, KRX SK하이닉스 TR 지수 등 하락 주도 | 매일경제"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 8.0,
-      "theme_id": "steel_materials",
-      "theme_name": "철강/금속/소재",
-      "updated_at": "2026-06-19T04:38:32.175002+00:00",
+      "theme_id": "textile_apparel",
+      "theme_name": "섬유/의류",
+      "updated_at": "2026-08-03T06:43:28.955080+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.436,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Fri, 31 Jul 2026 15:35:33 +0900] 중동전쟁으로 中企피해 1천30건…\"물류비 상승·자재 수급난\" | 연합뉴스"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 12.0,
+      "theme_id": "transport_logistics",
+      "theme_name": "운송/물류",
+      "updated_at": "2026-07-31T06:42:40.447192+00:00",
       "victim_keywords": []
     },
     {
@@ -558,14 +557,30 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[2026-06-14 16:01] 삼성 휴머노이드 로봇, 쿠팡 물류센터서 일한다 | 전자신문"
+        "[Fri, 31 Jul 2026 09:22:35 +0900] [동포의 창] \"동포청의 금융교육·K바이오 캠프, 의미 있는 첫걸음\" | 연합뉴스"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 10.0,
-      "theme_id": "transport_logistics",
-      "theme_name": "운송/물류",
-      "updated_at": "2026-06-15T00:36:19.893031+00:00",
+      "theme_id": "education_publishing",
+      "theme_name": "교육/출판",
+      "updated_at": "2026-07-31T00:36:17.629509+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.436,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Tue, 14 Jul 2026 15:38:34 +0900] [특징주] 비료 관련주, 중동 긴장 재고조 공급망 우려에 상승(종합) | 연합뉴스"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 12.0,
+      "theme_id": "agriculture_feed",
+      "theme_name": "농업/사료",
+      "updated_at": "2026-07-14T06:44:37.350610+00:00",
       "victim_keywords": []
     },
     {
@@ -607,8 +622,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 11.87,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.96,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 10,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -622,8 +637,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 8.66,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.13,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 13,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -637,8 +652,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 6.69,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 1.29,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 7,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -652,8 +667,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 6.24,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.61,
+      "momentum_class": "FADING",
       "momentum_naver_count": 4,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -667,8 +682,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 7.98,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 1.59,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 6,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -682,8 +697,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 6.69,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 1.69,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 3,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -697,8 +712,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 7.81,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.18,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -712,8 +727,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 8.23,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.75,
+      "momentum_class": "ACCELERATING",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -727,8 +742,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 6.18,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.33,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -742,8 +757,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 7.45,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.29,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -757,8 +772,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 6.99,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.28,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 8,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -772,8 +787,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 7.68,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.12,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 6,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -787,8 +802,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 5.94,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.45,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 12,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -802,8 +817,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 10.27,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.05,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -817,8 +832,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 9.12,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.74,
+      "momentum_class": "FADING",
       "momentum_naver_count": 3,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -832,8 +847,8 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 6.75,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": -0.33,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 1,
       "updated_at": "2026-04-14T13:03:22.194688+00:00"
     },
@@ -847,86 +862,70 @@
       "evidence": [],
       "beneficiary_keywords": [],
       "victim_keywords": [],
-      "momentum_avg_change_pct": 8.63,
-      "momentum_class": "EXPLODING",
+      "momentum_avg_change_pct": 0.02,
+      "momentum_class": "STEADY",
       "momentum_naver_count": 13,
       "updated_at": "2026-05-08T18:48:12.546407+00:00"
     }
   ],
   "beneficiary_themes": [
     {
-      "confidence": 0.716,
-      "strength_score": 40.0,
-      "theme_id": "holding_investment",
-      "theme_name": "지주/투자"
-    },
-    {
-      "confidence": 0.709,
-      "strength_score": 39.0,
-      "theme_id": "secondary_battery",
-      "theme_name": "2차전지"
-    },
-    {
-      "confidence": 0.594,
-      "strength_score": 23.0,
+      "confidence": 0.723,
+      "strength_score": 41.0,
       "theme_id": "it_platform",
       "theme_name": "IT서비스/플랫폼"
     },
     {
-      "confidence": 0.584,
-      "strength_score": 29.05,
-      "theme_id": "bio",
-      "theme_name": "바이오/헬스케어"
-    },
-    {
-      "confidence": 0.499,
-      "strength_score": 16.37,
-      "theme_id": "crypto",
-      "theme_name": "가상자산/블록체인"
-    }
-  ],
-  "headwind_themes": [
-    {
-      "confidence": 0.688,
-      "strength_score": 44.67,
+      "confidence": 0.793,
+      "strength_score": 54.43,
       "theme_id": "semiconductor",
       "theme_name": "반도체"
     },
     {
-      "confidence": 0.543,
-      "strength_score": 23.0,
-      "theme_id": "eco_energy",
-      "theme_name": "eco_energy"
+      "confidence": 0.687,
+      "strength_score": 36.0,
+      "theme_id": "secondary_battery",
+      "theme_name": "2차전지"
+    },
+    {
+      "confidence": 0.564,
+      "strength_score": 26.16,
+      "theme_id": "robotics",
+      "theme_name": "로봇/자동화"
+    }
+  ],
+  "headwind_themes": [
+    {
+      "confidence": 0.449,
+      "strength_score": 8.85,
+      "theme_id": "crypto",
+      "theme_name": "가상자산/블록체인"
     }
   ],
   "theme_evidence": {
-    "finance": [
-      "[Mon, 29 Jun 2026 15:37:17 +09:00] 코스피 하락 마감, 8,394.65P (-0.2%↓) KRX 삼성전자 TR 지수, 코스피 보험 등 하락 주도 | 매일경제"
-    ],
     "holding_investment": [
-      "[2026-06-29 15:42] [메가프로젝트] 최태원 \"AIDC·반도체 팹 신축 2100조원 투자\" | 아이뉴스24",
-      "[2026-06-29 15:44] 삼성·SK, 최소 2500조 이상 투자…AI·반도체 초격차 완성(종합) | 뉴스1",
-      "[Fri, 26 Jun 2026 07:50:00 GMT] 美·日도 반도체 불장인데 왜 한국만 출렁?…엔비디아·키옥시아 봤더니 [투자360] | 헤럴드경제",
-      "[Mon, 29 Jun 2026 15:45:24 +09:00] “최소 연평균 4% 이상 금리 준다” ··· 정부, 개인투자용 국채 발행 | 매일경제"
+      "[DART 20260813] SIMPAC - 투자판단관련주요경영사항 | 전자공시"
     ],
     "industrial_machinery": [
       "[주달 상승테마] 2차전지 장비 | 주달"
     ],
     "it_platform": [
-      "[2026-06-29 15:42] [메가프로젝트] 최태원 \"AIDC·반도체 팹 신축 2100조원 투자\" | 아이뉴스24",
-      "[2026-06-29 15:44] 삼성·SK, 최소 2500조 이상 투자…AI·반도체 초격차 완성(종합) | 뉴스1"
+      "[2026-08-14 09:33] 삼성전자, 딥러닝·데이터 전문가 영입…반도체 AX 가속 | 블로터",
+      "[DART 20260813] SIMPAC - 투자판단관련주요경영사항 | 전자공시"
     ],
     "secondary_battery": [
       "[주달 상승테마] 2차전지 | 주달",
       "[주달 상승테마] 2차전지 장비 | 주달"
     ],
     "semiconductor": [
-      "[2026-06-29 15:42] [메가프로젝트] 최태원 \"AIDC·반도체 팹 신축 2100조원 투자\" | 아이뉴스24",
-      "[2026-06-29 15:43] ‘반도체머니’ 서울 상륙…송파 투룸도 25억 | 디지털타임스",
-      "[2026-06-29 15:44] 삼성·SK, 최소 2500조 이상 투자…AI·반도체 초격차 완성(종합) | 뉴스1",
-      "[Fri, 26 Jun 2026 07:50:00 GMT] 美·日도 반도체 불장인데 왜 한국만 출렁?…엔비디아·키옥시아 봤더니 [투자360] | 헤럴드경제"
+      "[2026-08-14 09:28] \"땡큐 샌디스크!\"…美 물가 안도에 삼전닉스 등 반도체株 급등 | 한국경제",
+      "[2026-08-14 09:33] 삼성전자, 딥러닝·데이터 전문가 영입…반도체 AX 가속 | 블로터",
+      "[2026-08-14 09:34] [특징주] 반도체 상승세 지속…하이닉스 4~5%대 급등 | 연합뉴스"
+    ],
+    "shipbuilding": [
+      "[2026-08-14 09:16] 코스피, 개장 후 ‘7000피’ 회복… 美 증시 훈풍·연준 긴축 완화 기... | 조선비즈"
     ]
   },
   "source": "gemini",
-  "theme_momentum_updated_at": "2026-06-29T07:02:03.905127+00:00"
+  "theme_momentum_updated_at": "2026-08-14T00:49:57.205951+00:00"
 }

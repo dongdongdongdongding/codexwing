@@ -2,7 +2,7 @@
   "capital_status": "research_shadow_only_win_return_gate_blocked",
   "finality_status": "finalized_eod_session",
   "freshness_status": "latest_eod_panel_scored",
-  "generated_at": "2026-06-29T18:00:21.040797+00:00",
+  "generated_at": "2026-08-14T00:52:42.233569+00:00",
   "historical_validation": {
     "gate_version": "nasdaq_swing_win_return_gate_v1",
     "policies": {
@@ -420,7 +420,7 @@
     "rows": 0,
     "settled": 0
   },
-  "market_session": "manual_eod_latest",
+  "market_session": "nasdaq_regular_close",
   "mode": "research_shadow_forward_ledger",
   "model_bundle_path": "/Users/dongdong/Projects/codex_swing/swing-main/runtime_state/models/nasdaq_swing_daily_edge/nasdaq_swing_daily_edge_latest.pkl",
   "model_version": "nasdaq_swing_alpha3_pos60_v1",
@@ -1030,14 +1030,14 @@
     "contract_version": "nasdaq_swing_session_contract_v1",
     "finality_status": "finalized_eod_session",
     "freshness_status": "latest_eod_panel_scored",
-    "market_session": "manual_eod_latest",
+    "market_session": "nasdaq_regular_close",
     "panel_score_date": "2026-06-26",
     "scoring_allowed": true,
     "session_blocked": false,
-    "session_cutoff": "",
+    "session_cutoff": "16:05 America/New_York",
     "source_price_kind": "daily_eod_close"
   },
-  "session_cutoff": "",
+  "session_cutoff": "16:05 America/New_York",
   "signal_class": "NASDAQ_SWING_MODEL",
   "source_price_kind": "daily_eod_close",
   "strategy_family": "NASDAQ_SWING_DAILY_EDGE",

@@ -1,7 +1,7 @@
 {
   "report_version": "intraday_candidate_registry_v1",
-  "as_of_date": "2026-06-29",
-  "generated_at": "2026-06-29T07:03:36.000163+00:00",
+  "as_of_date": "2026-08-14",
+  "generated_at": "2026-08-14T00:52:07.551991+00:00",
   "scope": {
     "scan_mode": "INTRADAY",
     "production_enabled": true,

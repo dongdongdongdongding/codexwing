@@ -1,0 +1,27 @@
+{
+ "kospi_intraday_t5": {
+  "verdict": "DEGRADE",
+  "since": "2026-08-03"
+ },
+ "kosdaq_intraday_t10": {
+  "verdict": "OBSERVING",
+  "since": "2026-08-03"
+ },
+ "swing_candidate": {
+  "verdict": "DEGRADE",
+  "since": "2026-08-03"
+ },
+ "swing_ensemble": "DEGRADE",
+ "b_primary_top3": {
+  "verdict": "DEGRADE",
+  "since": "2026-08-03"
+ },
+ "nasdaq_session_tape": {
+  "verdict": "DEGRADE",
+  "since": "2026-08-06"
+ },
+ "b_all_top10": {
+  "verdict": "DEGRADE",
+  "since": "2026-08-03"
+ }
+}

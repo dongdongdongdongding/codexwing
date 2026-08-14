@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-07-18T00:50:42.145678+00:00",
+  "today": "2026-07-18",
+  "structure": "swing_ensemble (1 of 2)",
+  "top_pct": 1.0,
+  "min_liq": 100.0,
+  "per_market": {
+    "KOSPI": 2,
+    "KOSDAQ": 1
+  },
+  "picks": [
+    {
+      "ticker": "006260.KS",
+      "market": "KOSPI",
+      "p": 0.6428,
+      "liq억": 667.8,
+      "day_change": -5.57,
+      "entry_reference_price": 288000.0
+    },
+    {
+      "ticker": "034020.KS",
+      "market": "KOSPI",
+      "p": 0.6385,
+      "liq억": 2619.7,
+      "day_change": -4.52,
+      "entry_reference_price": 69700.0
+    },
+    {
+      "ticker": "319400.KQ",
+      "market": "KOSDAQ",
+      "p": 0.6989,
+      "liq억": 232.7,
+      "day_change": -10.4,
+      "entry_reference_price": 19220.0
+    }
+  ],
+  "forward_summary": {
+    "resolved": 112,
+    "ft55_hit_pct": 39.3,
+    "first_touch_ret_avg": -0.72
+  },
+  "production_enabled": false,
+  "routed": 0,
+  "note": "Live SWING structure-1 = price-ML ensemble -> ft_5_5 top~1%, KOSPI+KOSDAQ, >=100억. Validated 8y size-matched (hit ~66-67%, not 75%). Structure-2 = Exception Leader (planner)."
+}

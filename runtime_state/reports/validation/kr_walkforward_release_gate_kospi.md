@@ -1,6 +1,6 @@
 # KR Walk-forward Release Gate (KOSPI)
 
-- generated_at: 2026-06-29T08:31:32.536892+00:00
+- generated_at: 2026-08-13T22:00:44.275802+00:00
 - confidence_level: 98.00%
 - release_ready: **FAIL**
 

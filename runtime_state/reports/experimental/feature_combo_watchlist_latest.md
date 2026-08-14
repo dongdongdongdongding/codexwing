@@ -1,25 +1,25 @@
 # Feature Combo Watchlist
 
-- generated_at: `2026-06-29T07:07:07.705183+00:00`
+- generated_at: `2026-08-14T00:55:57.800819+00:00`
 - production_scanner_changed: `False`
 - review_candidate_count: `0`
 
 | Rule | Issue | Status | Market | Scope | All | Train | Test | Conditions |
 |---|---|---|---|---|---:|---:|---:|---|
-| kospi_exact_path_low_alpha_low_ml_top5_exception | swing-main-n7og | watch_failed_current_gate | KOSPI | top5_exception / exact_path | n=44 days=23 win5=66.667% avg5=7.7321% min5=-29.9776% bad=43.182% drop1d=22.727% loss5=29.545% stop=20.454% | n=30 days=12 win5=76.667% avg5=10.1639% min5=-29.9776% bad=26.667% drop1d=13.333% loss5=23.333% stop=13.333% | n=14 days=11 win5=33.333% avg5=-0.3741% min5=-15.493% bad=78.571% drop1d=42.857% loss5=42.857% stop=35.714% | alpha_score <= 67.0; ml_prob <= 30.45 |
+| kospi_exact_path_low_alpha_low_ml_top5_exception | swing-main-n7og | watch_failed_current_gate | KOSPI | top5_exception / exact_path | n=53 days=28 win5=52.83% avg5=2.6763% min5=-29.9776% bad=50.943% drop1d=26.415% loss5=47.17% stop=24.528% | n=37 days=17 win5=70.27% avg5=8.6598% min5=-29.9776% bad=35.135% drop1d=18.919% loss5=29.73% stop=16.216% | n=16 days=11 win5=12.5% avg5=-11.1607% min5=-24.94% bad=87.5% drop1d=43.75% loss5=87.5% stop=43.75% | alpha_score <= 67.0; ml_prob <= 30.45 |
 
 ## Gate Checks
 
 ### kospi_exact_path_low_alpha_low_ml_top5_exception
-- train_n: `PASS` actual `30` expected `>=18`
-- train_days: `PASS` actual `12` expected `>=6`
-- train_win_5d: `PASS` actual `76.667` expected `>=70.0%`
-- test_n: `PASS` actual `14` expected `>=8`
+- train_n: `PASS` actual `37` expected `>=18`
+- train_days: `PASS` actual `17` expected `>=6`
+- train_win_5d: `PASS` actual `70.27` expected `>=70.0%`
+- test_n: `PASS` actual `16` expected `>=8`
 - test_days: `PASS` actual `11` expected `>=5`
-- test_win_5d: `FAIL` actual `33.333` expected `>=75.0%`
-- test_avg_5d: `FAIL` actual `-0.3741` expected `>=5.0%`
-- test_bad_path: `FAIL` actual `78.571` expected `<=25.0%`
-- test_stop5: `FAIL` actual `35.714` expected `<=10.0%`
+- test_win_5d: `FAIL` actual `12.5` expected `>=75.0%`
+- test_avg_5d: `FAIL` actual `-11.1607` expected `>=5.0%`
+- test_bad_path: `FAIL` actual `87.5` expected `<=25.0%`
+- test_stop5: `FAIL` actual `43.75` expected `<=10.0%`
 
 ## Refinement Candidates
 

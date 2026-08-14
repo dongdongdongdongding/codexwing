@@ -2,41 +2,41 @@
   "action": "skip",
   "collection_stats": {
     "buckets": {
-      "exception_leader": 221,
-      "ignored": 168,
+      "exception_leader": 518,
+      "ignored": 428,
       "picked": 1,
-      "watchlist": 3299
+      "watchlist": 10581
     },
     "markets": {
-      "KOSDAQ": 1052,
-      "KOSPI": 1210,
-      "NASDAQ": 1427
+      "KOSDAQ": 3471,
+      "KOSPI": 3611,
+      "NASDAQ": 4446
     },
-    "runs_seen": 427,
-    "runs_with_outcomes": 396,
+    "runs_seen": 1547,
+    "runs_with_outcomes": 1370,
     "statuses": {
-      "EXPIRED": 312,
-      "PENDING": 979,
-      "RESOLVED": 2398
+      "EXPIRED": 296,
+      "PENDING": 7107,
+      "RESOLVED": 4125
     }
   },
   "commands": [],
-  "generated_at": "2026-06-29T14:50:01.021163+00:00",
+  "generated_at": "2026-08-13T14:50:05.609922+00:00",
   "kis_touch5_full_matrix_requested": false,
   "minimum_required_new_resolved": 20,
   "mode": "nightly",
   "new_resolved_since_last_cycle": 0,
   "reason": "insufficient_new_resolved",
   "resolved_by_bucket": {
-    "exception_leader": 108,
-    "ignored": 89,
+    "exception_leader": 199,
+    "ignored": 161,
     "picked": 1,
-    "watchlist": 2200
+    "watchlist": 3764
   },
   "resolved_by_market": {
-    "KOSDAQ": 656,
-    "KOSPI": 804,
-    "NASDAQ": 938
+    "KOSDAQ": 1050,
+    "KOSPI": 1466,
+    "NASDAQ": 1609
   },
-  "total_resolved": 2398
+  "total_resolved": 4125
 }

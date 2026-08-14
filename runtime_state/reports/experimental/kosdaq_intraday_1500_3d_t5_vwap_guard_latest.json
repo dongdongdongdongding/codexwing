@@ -1,0 +1,45 @@
+{
+  "cache_max_date": "2026-08-13",
+  "candidate_id": "kosdaq_intraday_1500_3d_t5_vwap_guard_shadow_v1",
+  "daily_context_source": "cache",
+  "diagnostics": {
+    "daily_context_ok": 309,
+    "feature_ok": 210,
+    "minute_ok": 211,
+    "universe": 309
+  },
+  "forward_summary": {
+    "exit_shadow": {
+      "exit_t10_h5_avg": 7.0221,
+      "exit_t5_h5_avg": 3.3988,
+      "n": 7,
+      "ret5d_avg": 0.1276,
+      "win_t10_pct": 85.7
+    },
+    "mae3_avg": -2.773,
+    "mfe3_avg": 17.158,
+    "resolved": 7,
+    "ret3d_avg": 7.9881,
+    "touch3d_t5_pct": 85.71
+  },
+  "generated_at": "2026-08-14T01:07:00.724765+00:00",
+  "index_context": {
+    "idx_mom20_prev": 7.315852682145718,
+    "idx_vol20_prev": 22.417108166358293
+  },
+  "ledger_recorded": 0,
+  "market_state": {
+    "mkt_dd20": 0.0,
+    "mkt_ret5": 8.95,
+    "mkt_state": "NORMAL"
+  },
+  "picks": [],
+  "production_enabled": true,
+  "roundtrip_cost_pct": 0.33,
+  "routed": 0,
+  "run_id": "KQ-ITD-3D-T5-20260813",
+  "scored_rows": 210,
+  "strategy_family": "KR_INTRADAY_3D_T5",
+  "target": "target_touch3d_t5",
+  "trade_date": "20260813"
+}

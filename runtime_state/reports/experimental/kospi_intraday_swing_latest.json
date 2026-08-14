@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-08-14T01:03:21.174271+00:00",
+  "today": "2026-08-14",
+  "lane": "kospi_intraday (Claude)",
+  "picks": [],
+  "forward_summary": {
+    "resolved": 45,
+    "touch5_pct": 66.7,
+    "ret3d_avg": -2.65,
+    "exit_shadow": {
+      "n": 42,
+      "exit_t5_h5_avg": -0.3,
+      "exit_t10_h5_avg": -1.61,
+      "ret5d_avg": -3.84,
+      "win_t5_pct": 69.0
+    }
+  },
+  "production_enabled": true,
+  "routed": 0,
+  "market_state": {
+    "mkt_dd20": 0.0,
+    "mkt_ret5": 5.83,
+    "mkt_state": "NORMAL"
+  },
+  "note": "KOSPI intraday selective (promoted 2026-07-03, §7-E): rank-1 only, PRIMARY tier (p >= trailing-40 q0.2 of rank-1 p, fallback 0.65), exit=+5% touch within 5 sessions else 5d close, no stop. Walk-forward 8 OOS mo: win 89.0%, EV +4.80 net CI>0, 3.2 pick-days/wk, 0-1 neg months incl 2026-06. Replaces top2/3d-close (win 45%, EV CI incl 0)."
+}

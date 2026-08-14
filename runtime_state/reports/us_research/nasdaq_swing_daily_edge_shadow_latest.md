@@ -1,12 +1,12 @@
 # NASDAQ SWING Research Shadow Model
 
 - report_version: `nasdaq_swing_daily_edge_shadow_v1`
-- generated_at: `2026-06-29T18:00:21.040797+00:00`
+- generated_at: `2026-08-14T00:52:42.233569+00:00`
 - model_version: `nasdaq_swing_alpha3_pos60_v1`
 - score_date: `2026-06-26`
 - panel_path: `/Users/dongdong/research_cache/us_daily/NASDAQ/daily_features_20180101_20260630_20260629_113805.parquet`
-- market_session: `manual_eod_latest`
-- session_cutoff: ``
+- market_session: `nasdaq_regular_close`
+- session_cutoff: `16:05 America/New_York`
 - source_price_kind: `daily_eod_close`
 - freshness_status: `latest_eod_panel_scored`
 - finality_status: `finalized_eod_session`

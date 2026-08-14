@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-08-13T22:13:11.901460+00:00",
+  "today": "2026-08-13",
+  "asof": "2026-08-13",
+  "regime": "DOWN",
+  "picks": [],
+  "note": "NON-EDGE falsification ledger (edge retracted 2026-06-23: ~0 vs internally-consistent benchmark, CI includes 0). KOSPI NORMAL; price+flow+coarse-PEAD ENS; >=100억; top-5. Primary metric = panel_capw_excess (stock5d - panel cap-weighted 5d - 0.6%); ks11_excess is reference-only. Observation; production stays OFF.",
+  "forward_summary": {
+    "resolved": 10,
+    "panel_capw_excess_avg": 16.281,
+    "ks11_excess_avg": 15.321,
+    "win_rate_pct": 10.0
+  },
+  "production_enabled": false
+}

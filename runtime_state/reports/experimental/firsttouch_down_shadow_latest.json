@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-06-18T22:01:11.678651+00:00",
+  "version": "firsttouch_down_v1",
+  "today": "2026-06-18",
+  "model_tau": 0.6624923957013293,
+  "model_base_rate": 0.516212842953177,
+  "picks_today": [
+    {
+      "ticker": "124500.KQ",
+      "market": "KOSDAQ",
+      "p": 0.6984,
+      "liq": 135.4,
+      "entry_reference_price": 33150.0,
+      "volume_ratio": 0.725723117423013,
+      "position": 0.046874999999997904,
+      "trend": "DOWN",
+      "tier": "C"
+    },
+    {
+      "ticker": "035890.KQ",
+      "market": "KOSDAQ",
+      "p": 0.6855,
+      "liq": 42.3,
+      "entry_reference_price": 2285.0,
+      "volume_ratio": 0.4077036450967226,
+      "position": 0.3785310734459,
+      "trend": "DOWN",
+      "tier": "C"
+    },
+    {
+      "ticker": "295310.KQ",
+      "market": "KOSDAQ",
+      "p": 0.6666,
+      "liq": 387.4,
+      "entry_reference_price": 73900.0,
+      "volume_ratio": 0.85938459609184,
+      "position": 0.014064697609001208,
+      "trend": "DOWN",
+      "tier": "C"
+    }
+  ],
+  "forward_summary": {
+    "resolved": 0,
+    "first_touch_pct": null
+  },
+  "scan_persisted": 0,
+  "deep_persisted": 0,
+  "production_enabled": false,
+  "note": "DOWN-regime only; emits 0 outside DOWN. Observation-only until AG_FIRSTTOUCH_DOWN_PRODUCTION=1."
+}

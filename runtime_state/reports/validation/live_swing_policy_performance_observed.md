@@ -1,7 +1,7 @@
 # Live Swing Policy Performance
 
-- generated_at: `2026-06-29T07:03:24.280461+00:00`
-- source_rows: `30766`
+- generated_at: `2026-08-14T00:51:51.464657+00:00`
+- source_rows: `44256`
 - quality_scope: `observed_archive`
 - quality_note: Observed policy performance audits retracted legacy gates; it is not a production edge claim. It ignores legacy validation_excluded flags so old resolved rows can be audited. Use --strict-quality for gold-style feature-complete validation.
 - goal: source OHLCV High 기준 hit_5pct_within_5d >= 70%, avg_max_high_return_5d >= +5%, target_rows >= 30
@@ -10,44 +10,44 @@
 
 ### KOSPI
 - policy: `RETRACTED legacy audit: exception_leader OR expected_edge_score>=5`
-- rows: `1017`
-- target_rows: `571`
+- rows: `1286`
+- target_rows: `636`
 - target_definition: `forward_high_within_5d`
-- win_5d_pct: `64.012`
-- hit_5pct_within_5d_high_pct: `74.956`
-- avg_max_high_return_5d_pct: `12.7731`
-- median_max_high_return_5d_pct: `9.9944`
-- min_max_high_return_5d_pct: `-1.0938`
+- win_5d_pct: `57.076`
+- hit_5pct_within_5d_high_pct: `72.327`
+- avg_max_high_return_5d_pct: `12.0825`
+- median_max_high_return_5d_pct: `8.9501`
+- min_max_high_return_5d_pct: `-6.4205`
 - max_max_high_return_5d_pct: `69.4118`
-- hit_5pct_within_observed_5d_pct: `74.956`
-- avg_return_5d_pct: `5.6008`
-- median_return_5d_pct: `4.662`
-- min_return_5d_pct: `-32.0755`
+- hit_5pct_within_observed_5d_pct: `72.327`
+- avg_return_5d_pct: `3.1231`
+- median_return_5d_pct: `2.3483`
+- min_return_5d_pct: `-41.0496`
 - max_return_5d_pct: `54.3027`
-- loss_5pct_or_worse_5d_pct: `17.896`
-- hit_5pct_or_better_close_5d_pct: `48.083`
-- avg_max_return_observed_5d_pct: `12.7731`
+- loss_5pct_or_worse_5d_pct: `25.505`
+- hit_5pct_or_better_close_5d_pct: `40.98`
+- avg_max_return_observed_5d_pct: `12.0825`
 - passes_goal: `True`
 - close_5d_quality_pass: `False`
 
 ### KOSDAQ
 - policy: `RETRACTED legacy audit: exception_leader AND trend=UP`
-- rows: `474`
-- target_rows: `224`
+- rows: `543`
+- target_rows: `259`
 - target_definition: `forward_high_within_5d`
-- win_5d_pct: `40.295`
-- hit_5pct_within_5d_high_pct: `66.071`
-- avg_max_high_return_5d_pct: `10.1257`
-- median_max_high_return_5d_pct: `7.3211`
-- min_max_high_return_5d_pct: `-5.3398`
+- win_5d_pct: `39.411`
+- hit_5pct_within_5d_high_pct: `66.409`
+- avg_max_high_return_5d_pct: `10.3162`
+- median_max_high_return_5d_pct: `7.4024`
+- min_max_high_return_5d_pct: `-6.0403`
 - max_max_high_return_5d_pct: `73.703`
-- hit_5pct_within_observed_5d_pct: `66.071`
-- avg_return_5d_pct: `-2.2088`
-- median_return_5d_pct: `-3.1882`
+- hit_5pct_within_observed_5d_pct: `66.409`
+- avg_return_5d_pct: `-2.5504`
+- median_return_5d_pct: `-3.8614`
 - min_return_5d_pct: `-38.1162`
 - max_return_5d_pct: `65.653`
-- loss_5pct_or_worse_5d_pct: `43.882`
-- hit_5pct_or_better_close_5d_pct: `25.949`
-- avg_max_return_observed_5d_pct: `10.1257`
+- loss_5pct_or_worse_5d_pct: `46.041`
+- hit_5pct_or_better_close_5d_pct: `25.783`
+- avg_max_return_observed_5d_pct: `10.3162`
 - passes_goal: `False`
 - close_5d_quality_pass: `False`

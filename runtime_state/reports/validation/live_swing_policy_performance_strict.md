@@ -1,7 +1,7 @@
 # Live Swing Policy Performance
 
-- generated_at: `2026-08-05T06:55:49.390509+00:00`
-- source_rows: `39424`
+- generated_at: `2026-08-14T00:51:53.081812+00:00`
+- source_rows: `44256`
 - quality_scope: `strict_feature_complete`
 - quality_note: Strict policy performance excludes validation_excluded and dummy rows.
 - goal: source OHLCV High 기준 hit_5pct_within_5d >= 70%, avg_max_high_return_5d >= +5%, target_rows >= 30

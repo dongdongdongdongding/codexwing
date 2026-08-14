@@ -1,10 +1,50 @@
 {
-  "generated_at": "2026-06-26T20:41:41.346647+00:00",
+  "generated_at": "2026-08-13T20:44:20.388297+00:00",
   "market": "NASDAQ",
   "theme_states": [
     {
+      "beneficiary_keywords": [
+        "자동차",
+        "차량",
+        "전기차",
+        "모빌리티",
+        "자율주행",
+        "자동차 부품"
+      ],
+      "confidence": 0.573,
+      "direction": "BENEFICIARY",
+      "driver_categories": [],
+      "evidence": [
+        "[Thu, 13 Aug 2026 15:16:00 GMT] 'Big Short' investor Steve Eisman sees an Achilles' heel in the AI boom | CNBC",
+        "[Wed, 12 Aug 2026 22:54:18 GMT] Cisco's stock drops despite earnings, revenue beat | CNBC"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 20.0,
+      "theme_id": "automobile",
+      "theme_name": "자동차",
+      "updated_at": "2026-08-13T20:44:13.092566+00:00",
+      "victim_keywords": []
+    },
+    {
       "beneficiary_keywords": [],
-      "confidence": 0.607,
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[Thu, 13 Aug 2026 19:51:00 GMT] Rich Americans are propping up the travel economy as airfares soar 25% from a year ago | MarketWatch"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
+      "theme_id": "telecom",
+      "theme_name": "통신/네트워크",
+      "updated_at": "2026-08-13T20:44:13.092940+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.479,
       "direction": "HEADWIND",
       "driver_categories": [
         "ECONOMY",
@@ -15,10 +55,10 @@
       "evidence": [],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "strength_score": 36.0,
+      "strength_score": 18.0,
       "theme_id": "semiconductor",
       "theme_name": "반도체",
-      "updated_at": "2026-06-26T20:41:38.311019+00:00",
+      "updated_at": "2026-08-13T20:38:04.703790+00:00",
       "victim_keywords": [
         "반도체",
         "메모리",
@@ -30,18 +70,22 @@
     },
     {
       "beneficiary_keywords": [],
-      "confidence": 0.421,
+      "confidence": 0.443,
       "direction": "NEUTRAL",
-      "driver_categories": [],
+      "driver_categories": [
+        "GEOPOLITICS",
+        "POLITICS",
+        "EARNINGS"
+      ],
       "evidence": [
-        "[Fri, 26 Jun 2026 17:39:09 GMT] Trump eases pressure on Fed Chairman Kevin Warsh as inflation tops 4% | CNBC"
+        "[2026-08-13T13:22:46Z] SpaceX, Defense Contractors Progress On Orbital Interceptors, Pass Golden Dome Test | Investor's Business Daily"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
-      "strength_score": 10.0,
-      "theme_id": "automobile",
-      "theme_name": "자동차",
-      "updated_at": "2026-06-26T20:41:38.310183+00:00",
+      "strength_score": 13.0,
+      "theme_id": "defense",
+      "theme_name": "방산",
+      "updated_at": "2026-08-13T13:46:05.340667+00:00",
       "victim_keywords": []
     },
     {
@@ -50,99 +94,50 @@
       "direction": "NEUTRAL",
       "driver_categories": [],
       "evidence": [
-        "[2026-06-25T10:49:07Z] What You Need to Know Ahead of Bank of America's Earnings Release | Barchart"
+        "[2026-08-12T14:04:03Z] Why fast food chains like McDonald's and Starbucks are going all in on energy drinks | Yahoo Finance"
+      ],
+      "momentum_avg_change_pct": null,
+      "momentum_class": null,
+      "strength_score": 10.0,
+      "theme_id": "consumer_retail",
+      "theme_name": "소비재/유통",
+      "updated_at": "2026-08-12T14:14:55.011148+00:00",
+      "victim_keywords": []
+    },
+    {
+      "beneficiary_keywords": [],
+      "confidence": 0.421,
+      "direction": "NEUTRAL",
+      "driver_categories": [],
+      "evidence": [
+        "[2026-07-24T13:59:55Z] Russia's central bank gingerly cuts rates, caught between business complaints and inflation | Associated Press"
       ],
       "momentum_avg_change_pct": null,
       "momentum_class": null,
       "strength_score": 10.0,
       "theme_id": "finance",
       "theme_name": "금융",
-      "updated_at": "2026-06-26T20:41:38.310506+00:00",
+      "updated_at": "2026-07-24T14:15:41.732988+00:00",
       "victim_keywords": []
-    },
+    }
+  ],
+  "beneficiary_themes": [
     {
-      "beneficiary_keywords": [],
-      "confidence": 0.479,
-      "direction": "HEADWIND",
-      "driver_categories": [
-        "GEOPOLITICS",
-        "POLITICS",
-        "EARNINGS"
-      ],
-      "evidence": [],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 18.0,
-      "theme_id": "defense",
-      "theme_name": "방산",
-      "updated_at": "2026-06-26T20:28:06.280540+00:00",
-      "victim_keywords": [
-        "방산",
-        "미사일",
-        "탄약",
-        "군수",
-        "무기",
-        "defense"
-      ]
-    },
-    {
-      "beneficiary_keywords": [
-        "소비재/유통",
-        "화장품",
-        "식품",
-        "음료",
-        "유통",
-        "면세"
-      ],
       "confidence": 0.573,
-      "direction": "BENEFICIARY",
-      "driver_categories": [],
-      "evidence": [
-        "[Thu, 25 Jun 2026 13:44:00 GMT] Consumer spending rises again — and now cheaper gas is on the way | MarketWatch",
-        "[Thu, 25 Jun 2026 14:14:42 GMT] Wendy's shares soar for a second day as retail investors pile into their new meme darling | CNBC"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
       "strength_score": 20.0,
-      "theme_id": "consumer_retail",
-      "theme_name": "소비재/유통",
-      "updated_at": "2026-06-25T14:18:12.436141+00:00",
-      "victim_keywords": []
-    },
-    {
-      "beneficiary_keywords": [],
-      "confidence": 0.421,
-      "direction": "NEUTRAL",
-      "driver_categories": [],
-      "evidence": [
-        "[Mon, 22 Jun 2026 13:55:00 GMT] Alan Greenspan, the most powerful Fed chairman of the modern era, dies at 100 | MarketWatch"
-      ],
-      "momentum_avg_change_pct": null,
-      "momentum_class": null,
-      "strength_score": 10.0,
-      "theme_id": "telecom",
-      "theme_name": "통신/네트워크",
-      "updated_at": "2026-06-22T14:16:41.575154+00:00",
-      "victim_keywords": []
+      "theme_id": "automobile",
+      "theme_name": "자동차"
     }
   ],
-  "beneficiary_themes": [],
-  "headwind_themes": [
-    {
-      "confidence": 0.607,
-      "strength_score": 36.0,
-      "theme_id": "semiconductor",
-      "theme_name": "반도체"
-    }
-  ],
+  "headwind_themes": [],
   "theme_evidence": {
     "automobile": [
-      "[Fri, 26 Jun 2026 17:39:09 GMT] Trump eases pressure on Fed Chairman Kevin Warsh as inflation tops 4% | CNBC"
+      "[Thu, 13 Aug 2026 15:16:00 GMT] 'Big Short' investor Steve Eisman sees an Achilles' heel in the AI boom | CNBC",
+      "[Wed, 12 Aug 2026 22:54:18 GMT] Cisco's stock drops despite earnings, revenue beat | CNBC"
     ],
-    "finance": [
-      "[2026-06-25T10:49:07Z] What You Need to Know Ahead of Bank of America's Earnings Release | Barchart"
-    ],
-    "semiconductor": []
+    "telecom": [
+      "[Thu, 13 Aug 2026 19:51:00 GMT] Rich Americans are propping up the travel economy as airfares soar 25% from a year ago | MarketWatch"
+    ]
   },
   "source": "gemini"
 }

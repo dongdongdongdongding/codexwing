@@ -1,8 +1,8 @@
 # Prediction Validation (KOSDAQ)
 
-- generated_at: 2026-08-05T08:13:21.117443+00:00
-- runs_considered: 27
-- rows_considered: 246
+- generated_at: 2026-08-13T22:00:53.741704+00:00
+- runs_considered: 25
+- rows_considered: 245
 - excluded_runs: 0
 
 ## Buckets
@@ -12,12 +12,12 @@
   - 5d: n=0 win=0.0% avg=+0.00% med=+0.00% min=+0.00% max=+0.00% loss5=0.0% hit5=0.0%
   - 7d: n=0 win=0.0% avg=+0.00% med=+0.00% min=+0.00% max=+0.00% loss5=0.0% hit5=0.0%
 - watchlist:
-  - 1d: n=188 win=46.8% avg=+0.87% med=-0.49% min=-30.00% max=+30.00% loss5=29.3% hit5=27.7%
-  - 3d: n=159 win=40.2% avg=-1.36% med=-3.74% min=-38.03% max=+119.33% loss5=47.8% hit5=31.4%
-  - 5d: n=157 win=30.6% avg=-6.61% med=-6.86% min=-43.80% max=+66.49% loss5=56.0% hit5=21.7%
-  - 7d: n=147 win=18.4% avg=-13.18% med=-15.04% min=-51.13% max=+43.66% loss5=74.2% hit5=12.9%
+  - 1d: n=191 win=45.5% avg=+0.84% med=-0.94% min=-30.00% max=+30.00% loss5=28.8% hit5=26.7%
+  - 3d: n=191 win=47.6% avg=+1.08% med=-0.56% min=-38.03% max=+119.33% loss5=35.6% hit5=34.0%
+  - 5d: n=173 win=41.0% avg=-1.94% med=-2.30% min=-43.80% max=+184.40% loss5=44.5% hit5=30.6%
+  - 7d: n=153 win=34.6% avg=-4.52% med=-8.51% min=-51.13% max=+246.79% loss5=56.9% hit5=26.8%
 - exception_leader:
-  - 1d: n=26 win=23.1% avg=-4.10% med=-4.67% min=-22.52% max=+18.98% loss5=46.1% hit5=15.4%
-  - 3d: n=26 win=30.8% avg=-3.80% med=-2.61% min=-24.50% max=+12.34% loss5=42.3% hit5=23.1%
-  - 5d: n=26 win=26.9% avg=-7.57% med=-7.33% min=-27.99% max=+11.59% loss5=57.7% hit5=19.2%
-  - 7d: n=26 win=15.4% avg=-10.87% med=-11.36% min=-33.60% max=+22.80% loss5=73.1% hit5=15.4%
+  - 1d: n=23 win=34.8% avg=-1.30% med=-1.57% min=-11.90% max=+18.98% loss5=30.4% hit5=17.4%
+  - 3d: n=20 win=40.0% avg=+0.34% med=-0.41% min=-13.12% max=+12.34% loss5=25.0% hit5=30.0%
+  - 5d: n=20 win=35.0% avg=-4.58% med=-5.42% min=-23.72% max=+11.59% loss5=50.0% hit5=25.0%
+  - 7d: n=20 win=15.0% avg=-9.12% med=-9.63% min=-30.01% max=+22.80% loss5=70.0% hit5=15.0%

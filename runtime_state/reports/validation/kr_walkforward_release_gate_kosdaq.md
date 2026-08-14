@@ -1,6 +1,6 @@
 # KR Walk-forward Release Gate (KOSDAQ)
 
-- generated_at: 2026-06-29T08:31:43.991055+00:00
+- generated_at: 2026-08-13T22:00:57.132401+00:00
 - confidence_level: 98.00%
 - release_ready: **FAIL**
 
