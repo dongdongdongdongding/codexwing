@@ -79,3 +79,14 @@ catboost_info/
 *.db
 .beads-credential-key
 models/**/*.pkl.bak
+
+# Daily-rotation / cache / per-session artifacts — no tracking precedent (2026-08-14 checkpoint)
+runtime_state/reports/us_research/nasdaq_swing_research_*
+runtime_state/reports/ops/
+runtime_state/shared/
+runtime_state/precision_cache/
+runtime_state/long_term/ops/
+runtime_state/discord_jobs/
+runtime_state/reports/external_data/
+runtime_state/reports/learning/*_grid_*.json
+research/harness_2026_07/kosdaq_1500_panel.parquet
