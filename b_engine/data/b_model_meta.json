@@ -42,12 +42,12 @@
   "train_months": 9,
   "n_seeds": 3,
   "prob_calib": {
-    "a": 0.36972227959933956,
-    "b": -0.4462203111051508
+    "a": 0.34183313128931514,
+    "b": -0.4193611391257275
   },
-  "trained_through": "2026-06-26",
-  "train_rows": 89500,
-  "trained_at": "2026-07-06T21:29:38",
-  "px_data_through": "2026-06-26",
+  "trained_through": "2026-07-24",
+  "train_rows": 91474,
+  "trained_at": "2026-08-03T20:03:30",
+  "px_data_through": "2026-07-24",
   "note": "매일 자동 재학습(daily ops b_retrain). trained_through = 최신 라벨가능일(구조적 -6세션)."
 }
