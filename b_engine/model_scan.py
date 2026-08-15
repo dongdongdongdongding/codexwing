@@ -14,9 +14,50 @@ from b_engine import model_engine as E
 
 PICKS = os.path.join(E.DATA, "b_picks_latest.json")
 SHADOW = os.path.join(E.DATA, "b_shadow.jsonl")
+SUSPEND_MARKER = os.path.join(E.DATA, "b_lane_suspended.json")
+
+
+def suspension():
+    """정지 마커를 읽는다. 정지면 dict, 아니면 None.
+
+    2026-08-15 (trace-b-lane-f7.md): 정지가 **엔진의 계약**이 아니라 호출자 각각의
+    관례였다. 가드가 `run_daily_ops.sh`(환경변수)와 `services.py`(표시 경로)에만 있고
+    `jobs.py`의 웹 스캔 경로에는 없어서, `POST /api/ops/scan?target=all` 3건이
+    정지(08-03) 이후 원장에 30건을 썼다. `TARGETS["all"]`의 첫 스텝이 b라
+    B를 의도하지 않아도 발행된다.
+
+    더 고약한 건 **생성 경로는 정지를 무시해 쓰고 표시 경로는 정지를 지켜 안 띄웠다**는 점이다.
+    버튼을 누른 사람은 자기가 방금 정지된 레인에 10건을 기록했다는 걸 알 방법이 없었다 —
+    가드가 "부분적으로만" 맞은 것이 무가드보다 더 조용한 실패를 만들었다.
+
+    그래서 판정을 여기로 내린다. **관례를 모르는 네 번째 호출자가 생겨도 안전해야 한다.**
+
+    마커를 못 읽으면 정지로 본다(fail-closed) — 정지 해제는 파일 삭제 또는
+    명시적인 `"suspended": false`이지 파싱 실패가 아니다.
+    """
+    if not os.path.exists(SUSPEND_MARKER):
+        return None
+    try:
+        with open(SUSPEND_MARKER, encoding="utf-8") as f:
+            marker = json.load(f)
+    except Exception as e:
+        return {"suspended": True, "reason": f"정지 마커를 읽을 수 없음 ({type(e).__name__}) — 안전하게 정지로 취급",
+                "since": "", "marker_unreadable": True}
+    if isinstance(marker, dict):
+        if marker.get("suspended") is False:
+            return None
+        return marker
+    return {"suspended": True, "reason": "정지 마커 형식 오류 — 안전하게 정지로 취급", "since": ""}
 
 
 def scan(as_of=None):
+    susp = suspension()
+    if susp:
+        # settle()은 막지 않는다 — 마커 계약: "신규 픽 발행 중지. settle은 잔여 open 픽 정산까지 유지."
+        reason = str(susp.get("reason") or "")[:160]
+        print(f"[b_engine] scan 정지됨 (since {susp.get('since') or '?'}) — 신규 픽 미발행. 사유: {reason}",
+              flush=True)
+        return None
     out = E.pick(as_of)
     if not out:
         return None
