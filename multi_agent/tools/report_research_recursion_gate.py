@@ -69,8 +69,16 @@ LANES: Dict[str, Dict[str, Any]] = {
         "basis": "§28 q0.5 승격 (2026-07-13) — 8 OOS월 rank-1 선별 q0.5 티어+터치익절"},
     "kosdaq_intraday_t10": {
         "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5", "cost": 0.33,
-        "expect_ev": 3.14, "expect_win": 75.8, "n_min": 20,
-        "basis": "§11-A 15:00 실파이프라인 재검증"},
+        # 2026-08-16 정본 통일(운영자 승인, audit-lane-basis.md "소비자 간 동결값 불일치"):
+        #   expect_win 75.8 → 72.0. 게이트는 §11-A:263(2026-07-03, n=66)의 75.8 을, 웹
+        #   폴백(services.py:166)은 §27:584(2026-07-13, n=101)의 72 를 써서 **같은 레인에
+        #   두 개의 "백테스트 승률"이 동시에 노출**되고 있었다. 더 늦고 표본이 큰 §27 을
+        #   정본으로 삼는다 — 게이트를 웹에 맞춘다(웹은 이미 §27, 즉 소비자 한쪽만 갱신돼
+        #   있던 상태였다). expect_ev 3.14 는 §11-A 그대로다(§27 은 EV 를 주지 않는다).
+        #   ⚠️ 그래서 이 레인은 EV 근거와 승률 근거의 § 가 서로 다르다. 값을 바꿀 때
+        #   한쪽만 보고 고치면 다시 갈라진다.
+        "expect_ev": 3.14, "expect_win": 72.0, "n_min": 20,
+        "basis": "EV=§11-A:263 15:00 실파이프라인 재검증(n=66) · 승률=§27:584 티어 승률 맵(n=101, 2026-07-13 정본)"},
     "swing_candidate": {
         "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret", "cost": 0.3,
         "expect_ev": 0.65, "expect_win": 62.0, "n_min": 30,

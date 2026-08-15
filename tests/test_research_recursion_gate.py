@@ -732,3 +732,20 @@ def test_self_reference_of_b_lane_expect_win_is_documented():
     """
     src = Path(gate.__file__).read_text(encoding="utf-8")
     assert "자기참조" in src, "b 레인 승률축 무력화(자기참조)가 코드에 명시돼 있지 않다"
+
+
+def test_kosdaq_expect_win_matches_the_web_consumer():
+    """소비자 간 동결값 불일치 해소 (audit-lane-basis.md, 운영자 승인 2026-08-16).
+
+    게이트가 §11-A(2026-07-03, n=66)의 75.8 을, 웹 폴백이 §27(2026-07-13, n=101)의 72 를
+    써서 같은 레인에 두 개의 "백테스트 승률"이 동시에 노출됐다. 더 늦고 표본이 큰 §27 이 정본.
+    """
+    assert gate.LANES["kosdaq_intraday_t10"]["expect_win"] == 72.0
+    basis = gate.LANES["kosdaq_intraday_t10"]["basis"]
+    assert "§27" in basis and "§11-A" in basis, (
+        f"EV 와 승률의 근거 §가 다른 레인인데 basis 가 한쪽만 가리킨다: {basis}")
+
+
+def test_kosdaq_expect_ev_is_unchanged():
+    """§27 은 EV 를 주지 않는다 — EV 는 §11-A 그대로 둔다."""
+    assert gate.LANES["kosdaq_intraday_t10"]["expect_ev"] == 3.14

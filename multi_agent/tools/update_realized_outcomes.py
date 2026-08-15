@@ -58,7 +58,13 @@ def _iter_target_runs(shared_dir: Path, run_ids: List[str], limit_runs: int) -> 
         return [p for p in runs if p.exists()]
 
     runs = [p for p in shared_dir.iterdir() if p.is_dir() and p.name.startswith("RUN-")]
-    runs = sorted(runs, key=lambda p: p.name)
+    # 2026-08-16 수리: 종전 정렬키가 p.name 이었다. RUN 디렉터리 이름은 RUN-<랜덤16진수>라
+    #   **시간 정보가 없다** → runs[-limit:] 가 "최근 N개"가 아니라 이름이 RUN-FF… 쪽인
+    #   고정된 임의 N개를 뽑았다. 라이브 실측(RUN 1601개): 이름순 최근200 ∩ 시간순 최근200
+    #   = 25/200, 이름순 200 의 mtime 이 06-15~08-15 두 달에 흩어져 있었다. 같은 200개만
+    #   반복 처리되고 나머지는 손이 닿지 않아 미정산이 쌓였다(적체 7,529건).
+    #   mtime 오름차순 정렬 후 뒤에서 자른다.
+    runs = sorted(runs, key=lambda p: p.stat().st_mtime)
     if limit_runs > 0:
         runs = runs[-limit_runs:]
     return runs
