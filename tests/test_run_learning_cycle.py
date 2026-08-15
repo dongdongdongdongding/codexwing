@@ -2,6 +2,8 @@ import json
 import shutil
 from pathlib import Path
 
+import pytest
+
 from multi_agent.tools import run_learning_cycle as runner
 
 
@@ -281,6 +283,105 @@ def test_weekly_dataset_only_does_not_claim_a_model_was_trained(monkeypatch, tmp
     assert report["action"] == "weekly_dataset_only"
     assert state["last_weekly_resolved_total"] == 75      # 표본 기준선은 전진
     assert state.get("last_weekly_train_at") is None      # 재학습 시각은 그대로
+
+
+def _live_shaped_state(key_count: int = 200) -> dict:
+    """라이브와 같은 모양(키집합 2개를 든 큰 상태파일)."""
+    keys = [f"RUN-2026081{i % 9}-001:{i:06d}:{i % 5}" for i in range(key_count)]
+    return {
+        "last_nightly_resolved_total": key_count,
+        "last_nightly_resolved_keys": sorted(keys),
+        "last_weekly_resolved_total": key_count,
+        "last_weekly_resolved_keys": sorted(keys),
+        "last_weekly_train_at": "2026-06-14T00:14:28.513171+00:00",
+    }
+
+
+def test_state_file_survives_a_write_that_dies_midway(monkeypatch, tmp_path):
+    """반려사유 ① 회귀: 쓰기가 도중에 죽어도 기존 기준선이 남아 있어야 한다.
+
+    `open("w")`는 **먼저 절단하고** 그 자리에 쓴다. 262B짜리 파일은 사실상 안 찢어지지만,
+    23aff46이 키집합 2개를 넣으면서 상태파일이 262B → 251,920B(**962배**)가 된다.
+    252KB는 여러 페이지에 걸쳐 launchd 타임아웃·절전·디스크풀·강제종료에서 얼마든지 찢어진다.
+    찢어지면 `_load_json`이 예외를 삼켜 `{}`를 주고 전 기준선이 **조용히 0으로 리셋**된다 —
+    로그도 필드도 없고, 게이트에는 "건강한 대량 신규 수확"으로 보인다(new=4156 >= min=1 통과).
+
+    tmp + os.replace면 실패한 쓰기가 원본을 건드리지 못한다.
+    리포에 이미 있는 패턴이다: train_kosdaq_1500_bundle.py:167, kis_openapi.py:431.
+    """
+    state_path = tmp_path / "state.json"
+    original = _live_shaped_state()
+    runner._write_json(state_path, original)
+    assert json.loads(state_path.read_text(encoding="utf-8")) == original
+
+    def _die_midway(*args, **kwargs):
+        raise OSError("No space left on device")
+
+    monkeypatch.setattr(runner.json, "dump", _die_midway)
+    with pytest.raises(OSError):
+        runner._write_json(state_path, {"last_nightly_resolved_total": 999})
+
+    # 원본이 온전해야 한다. 비원자적 쓰기였다면 여기서 빈 파일이 된다.
+    assert json.loads(state_path.read_text(encoding="utf-8")) == original
+    # tmp 잔재를 남기지 않아야 한다 (다음 쓰기·디스크를 갉아먹지 않도록).
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["state.json"]
+
+
+def test_corrupt_state_file_is_surfaced_instead_of_silently_resetting(monkeypatch, tmp_path):
+    """반려사유 ① 회귀: 손상된 상태파일이 '정상 대량 수확'으로 보이면 안 된다.
+
+    수정 전 실측(50% 절단): 전 기준선 0 · 키집합 소실 · 예외 없음 · 로그 없음 →
+    다음 사이클이 action=dataset_refresh, new=4156으로 게이트를 **통과**한다.
+    23aff46이 새로 넣은 관측장치(consecutive_skip_cycles / counter_rebaselined_from /
+    dropped_resolved / basis)는 전부 0·None·fallback으로 정상처럼 찍혀 사고를 못 가리킨다.
+    """
+    monkeypatch.setattr(runner, "_run_command", _fake_ok_command)
+    shared_dir, report_dir = tmp_path / "shared", tmp_path / "reports"
+    state_path = tmp_path / "state.json"
+    _write_resolved(shared_dir, "RUN-20260814-001", 5)
+
+    # 부분쓰기 재현 — 유효한 JSON의 앞 절반만 남은 상태
+    full = json.dumps(_live_shaped_state(), indent=2)
+    state_path.write_text(full[: len(full) // 2], encoding="utf-8")
+
+    report = _cycle("nightly", shared_dir, report_dir, state_path)
+
+    assert report["state_load_error"] is not None
+    assert "state.json" in report["state_load_error"]
+    # md 리포트 표면에도 떠야 운영자가 본다.
+    md = (report_dir / "learning_cycle_nightly.md").read_text(encoding="utf-8")
+    assert "state_load_error" in md
+    # 손상본은 덮어쓰지 말고 보존해야 복구가 가능하다.
+    assert state_path.with_suffix(".json.corrupt").exists()
+
+
+def test_missing_state_file_is_not_reported_as_corruption(monkeypatch, tmp_path):
+    """첫 실행(파일 없음)과 손상(파싱 실패)은 서로 다른 사건이다.
+
+    지금은 둘 다 조용히 `{}`로 뭉개진다. 구분하지 않으면 손상 경보가 매 신규 설치마다
+    울려 곧 무시당한다 — 경보를 살리려면 정상 초기화는 조용해야 한다.
+    """
+    monkeypatch.setattr(runner, "_run_command", _fake_ok_command)
+    shared_dir, report_dir = tmp_path / "shared", tmp_path / "reports"
+    state_path = tmp_path / "state.json"
+    _write_resolved(shared_dir, "RUN-20260814-001", 5)
+
+    report = _cycle("nightly", shared_dir, report_dir, state_path)
+
+    assert report["state_load_error"] is None
+    assert report["action"] == "dataset_refresh"
+    assert not state_path.with_suffix(".json.corrupt").exists()
+
+
+def test_atomic_write_round_trips_a_live_sized_state(tmp_path):
+    """원자화가 라이브 크기(키집합 2개, 실측 251,920B)에서도 정확히 왕복해야 한다."""
+    state_path = tmp_path / "state.json"
+    payload = _live_shaped_state(4156)
+    runner._write_json(state_path, payload)
+
+    assert json.loads(state_path.read_text(encoding="utf-8")) == payload
+    assert state_path.stat().st_size > 100_000
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["state.json"]
 
 
 def test_legacy_state_without_key_set_still_rebaselines_on_shrink(monkeypatch, tmp_path):

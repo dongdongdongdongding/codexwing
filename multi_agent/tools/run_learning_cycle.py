@@ -5,6 +5,7 @@ import os
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -18,21 +19,56 @@ if str(PROJECT_ROOT) not in sys.path:
 RETRAIN_REPORT_PATH = PROJECT_ROOT / "runtime_state" / "reports" / "learning" / "retrain_v2_report.json"
 
 
-def _load_json(path: Path) -> Dict[str, Any]:
+def _load_json_checked(path: Path) -> Tuple[Dict[str, Any], Optional[str]]:
+    """`(payload, error)`. error가 None이 아니면 **파일은 있는데 못 읽었다**는 뜻이다.
+
+    "파일 없음"(정상 초기화)과 "파싱 실패"(사고)를 구분하지 않으면 손상이 조용히
+    기본값으로 둔갑한다. 구분해서 후자만 표면화한다 — 정상 초기화까지 경보를 울리면
+    경보가 곧 무시당하기 때문이다.
+    """
     if not path.exists():
-        return {}
+        return {}, None
     try:
         with path.open("r", encoding="utf-8") as f:
             payload = json.load(f)
-        return payload if isinstance(payload, dict) else {}
-    except Exception:
-        return {}
+    except Exception as e:
+        return {}, f"{path.name}: {type(e).__name__}: {e}"
+    if not isinstance(payload, dict):
+        return {}, f"{path.name}: expected a JSON object, got {type(payload).__name__}"
+    return payload, None
+
+
+def _load_json(path: Path) -> Dict[str, Any]:
+    payload, _ = _load_json_checked(path)
+    return payload
 
 
 def _write_json(path: Path, payload: Dict[str, Any]) -> None:
+    """tmp 파일에 다 쓴 뒤 원자적으로 갈아끼운다.
+
+    `open("w")`는 **먼저 절단하고** 그 자리에 쓴다 — 쓰기가 도중에 죽으면 원본이 잘린 채 남고,
+    `_load_json`이 예외를 삼켜 전 기준선이 조용히 0으로 리셋된다. 상태파일이 262B이던
+    시절엔 사실상 안 찢어졌지만, 키집합 2개를 담으면서 251,920B(**962배**)가 됐다.
+    252KB는 launchd 타임아웃·절전·디스크풀·강제종료에서 얼마든지 찢어진다.
+
+    `os.replace`는 같은 파일시스템 안에서 원자적이므로, 실패한 쓰기는 원본에 닿지 못한다.
+    리포 기존 패턴과 동일하다: train_kosdaq_1500_bundle.py:167, kis_openapi.py:431.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2, sort_keys=True)
+    tmp_path = path.with_name(f"{path.name}.tmp.{os.getpid()}")
+    try:
+        with tmp_path.open("w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2, sort_keys=True)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    except Exception:
+        # 실패한 쓰기의 잔재가 디스크에 쌓이지 않게 한다. 원본은 손대지 않았다.
+        try:
+            tmp_path.unlink()
+        except OSError:
+            pass
+        raise
 
 
 def _write_text(path: Path, text: str) -> None:
@@ -46,8 +82,20 @@ def _iter_run_dirs(shared_dir: Path) -> Iterable[Path]:
     return sorted([p for p in shared_dir.iterdir() if p.is_dir() and p.name.startswith("RUN-")], key=lambda p: p.name)
 
 
-def _load_learning_state(state_path: Path) -> Dict[str, Any]:
-    payload = _load_json(state_path)
+def _load_learning_state(state_path: Path) -> Tuple[Dict[str, Any], Optional[str]]:
+    """`(state, load_error)`.
+
+    load_error가 실리면 **기준선 전체가 방금 0으로 리셋됐다**는 뜻이다. 그대로 두면
+    다음 사이클이 `action=dataset_refresh`, `new_resolved=<전체>`로 게이트를 통과해
+    사고가 "건강한 대량 신규 수확"처럼 보인다(실측). 그래서 리포트로 끌어올리고,
+    손상본은 덮어쓰기 전에 보존해 복구 가능성을 남긴다.
+    """
+    payload, load_error = _load_json_checked(state_path)
+    if load_error:
+        try:
+            shutil.copy2(state_path, state_path.with_name(state_path.name + ".corrupt"))
+        except OSError:
+            pass
     if not payload:
         return {
             "last_nightly_resolved_total": 0,
@@ -55,8 +103,8 @@ def _load_learning_state(state_path: Path) -> Dict[str, Any]:
             "last_nightly_run_at": None,
             "last_weekly_run_at": None,
             "last_weekly_train_at": None,
-        }
-    return payload
+        }, load_error
+    return payload, load_error
 
 
 def _collect_outcomes(shared_dir: Path) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
@@ -160,6 +208,7 @@ def _render_report(report: Dict[str, Any]) -> str:
         f"- dropped_resolved_since_last_cycle: {report.get('dropped_resolved_since_last_cycle', 0)}",
         f"- new_resolved_measurement_basis: {report.get('new_resolved_measurement_basis', 'unknown')}",
         f"- consecutive_skip_cycles: {report.get('consecutive_skip_cycles', 0)}",
+        f"- state_load_error: {report.get('state_load_error')}",
         f"- counter_rebaselined_from: {report.get('counter_rebaselined_from')}",
         f"- resolved_by_market: {report.get('resolved_by_market', {})}",
         f"- resolved_by_bucket: {report.get('resolved_by_bucket', {})}",
@@ -282,7 +331,7 @@ def run_learning_cycle(
 ) -> Dict[str, Any]:
     rows, collect_stats = _collect_outcomes(shared_dir)
     resolved = _resolved_summary(rows)
-    state = _load_learning_state(state_path)
+    state, state_load_error = _load_learning_state(state_path)
     total_resolved = int(resolved["total_resolved"])
 
     resolved_keys: List[str] = list(resolved["resolved_keys"])
@@ -332,6 +381,7 @@ def run_learning_cycle(
             "resolved_by_market": resolved["resolved_by_market"],
             "resolved_by_bucket": resolved["resolved_by_bucket"],
             "collection_stats": collect_stats,
+            "state_load_error": state_load_error,
             "kis_touch5_full_matrix_requested": bool(run_kis_touch5_full_matrix),
             "commands": commands,
         }
@@ -388,6 +438,7 @@ def run_learning_cycle(
             "resolved_by_market": resolved["resolved_by_market"],
             "resolved_by_bucket": resolved["resolved_by_bucket"],
             "collection_stats": collect_stats,
+            "state_load_error": state_load_error,
             "commands": commands,
         }
         state["last_weekly_run_at"] = report["generated_at"]
