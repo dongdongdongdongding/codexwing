@@ -122,28 +122,29 @@ def test_every_published_lane_key_resolves_to_its_gate_lane(tmp_path, lane_key, 
     assert row["stream_excluded"] is True, f"{lane_key} → {gate_lane} 매핑이 끊겼다"
 
 
-def test_unmapped_lanes_are_left_alone_and_declared(tmp_path):
-    """게이트가 덮지 않는 레인은 건드리지 않는다 — 남의 판정을 입히지 않는다.
+def test_unmapped_lanes_are_excluded_without_inheriting_another_verdict(tmp_path):
+    """게이트 미판단 레인은 발행 불가(2026-08-16 정책)지만, **남의 판정을 입히지는 않는다.**
 
-    `nasdaq_session_edge`는 라이브 모델 레인이고 원장이
-    `nasdaq_session_edge_operational_ledger.jsonl`이다. 게이트의 `nasdaq_session_tape`는
-    `nasdaq_session_tape_ledger.jsonl`을 보는 **별개 스트림**이라 판정을 물려받으면 틀린다.
+    `nasdaq_session_edge`는 원장이 `nasdaq_session_edge_operational_ledger.jsonl`이고
+    게이트의 `nasdaq_session_tape`는 `nasdaq_session_tape_ledger.jsonl`을 보는 **별개 스트림**이다.
+    제외 사유가 `degrade`가 아니라 `lane_unadjudicated`여야 그 구분이 지켜진 것이다 —
+    tape가 DEGRADE라서 막힌 게 아니라 **판단받은 적이 없어서** 막힌 것이다.
     """
     path = _write_gate(tmp_path, {"nasdaq_session_tape": "DEGRADE"})
 
     for lane_key in ("nasdaq_session_edge", "b_market_neutral", "swing_ensemble"):
         row = se.apply_stream_exclusion(_sized_row(), lane_key, gate_path=path)
-        assert row.get("stream_excluded") is not True, f"{lane_key}는 무게이트여야 한다"
-        assert row["size_pct_total"] == 2.0
+        assert row["stream_excluded"] is True
+        assert row["stream_exclusion_reason"] != "degrade", f"{lane_key}가 타 레인 판정을 물려받았다"
         assert lane_key in se.UNGATED_PUBLISHED_LANES
 
 
-def test_unmapped_lanes_stay_sized_even_when_the_gate_is_missing(tmp_path):
-    """fail-closed 범위는 '게이트가 덮는 레인'뿐 (운영자 결정 2026-08-15)."""
+def test_ungated_lanes_are_excluded_regardless_of_gate_availability(tmp_path):
+    """게이트 유무와 무관하다 — 애초에 게이트가 판단하지 않는 레인이기 때문이다."""
     row = se.apply_stream_exclusion(_sized_row(), "nasdaq_session_edge", gate_path=tmp_path / "nope.json")
 
-    assert row.get("stream_excluded") is not True
-    assert row["size_pct_total"] == 2.0
+    assert row["stream_excluded"] is True
+    assert row["stream_exclusion_reason"] == "lane_unadjudicated"
 
 
 # --------------------------------------------------------------------------
@@ -349,8 +350,8 @@ def test_future_dated_gate_report_is_rejected(tmp_path):
     assert row["stream_exclusion_reason"] == "gate_stale"
 
 
-def test_ungated_lane_keeps_its_card_even_without_a_gate(monkeypatch, tmp_path):
-    """nasdaq_session_edge는 무게이트 — 게이트가 없어도 현상 유지 (운영자 결정)."""
+def test_ungated_lane_loses_its_card(monkeypatch, tmp_path):
+    """2026-08-16 정책 — 게이트가 판단하지 않는 레인은 매수카드를 못 낸다."""
     from modules.candidate_interpretation import build_candidate_interpretation
 
     monkeypatch.setattr(se, "DEFAULT_GATE_PATH", tmp_path / "absent.json")
@@ -358,8 +359,8 @@ def test_ungated_lane_keeps_its_card_even_without_a_gate(monkeypatch, tmp_path):
 
     interp = build_candidate_interpretation(_model_lane_row("nasdaq_session_edge"))
 
-    assert interp.get("stream_excluded") is not True
-    assert interp["buy_ready"] is True
+    assert interp["stream_excluded"] is True
+    assert interp["buy_ready"] is False
 
 
 # --------------------------------------------------------------------------

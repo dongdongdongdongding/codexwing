@@ -19,9 +19,18 @@
   신선도 검사도 없어 며칠 묵은 판정이 무한정 쓰였다. 안전장치가 **열리는 방향으로** 실패했다.
   → 여기서는 fail-**closed**다. 게이트를 못 읽거나 낡았으면 사이징을 뺀다.
 
-fail-closed 적용 범위는 **게이트가 덮는 레인뿐**이다(운영자 결정 2026-08-15).
-`GATE_LANE_MAP`에 없는 발행 레인은 원래 게이트 밖이었으므로 현상을 유지하고,
-대신 `UNGATED_PUBLISHED_LANES`로 그 공백을 코드에 명시한다 — 조용한 공백보다 낫다.
+**2026-08-16 운영자 정책 (2026-08-15 결정을 대체):**
+`UNGATED`는 "게이트가 판단하지 않는다"이지 **"발행해도 된다"가 아니다.**
+게이트 미판단 레인은 발행 불가로 다룬다.
+
+직전 정책은 "fail-closed 범위는 게이트가 덮는 레인뿐"이라 `UNGATED_PUBLISHED_LANES`를
+선언만 하고 통과시켰는데, 그 결과 2026-07-19에 아카이브된 `swing_ensemble`의 저장행이
+계속 매수카드로 나갔다 — **판단하지 않는다는 사실이 발행 허가로 읽히고 있었다.**
+지금은 선언된 발행 레인이 게이트에 없으면 제외하고, 사유(`UNGATED_LANE_KINDS`)로
+왜 막혔고 어떻게 풀리는지를 남긴다.
+
+정책 대상은 **선언된 발행 레인**이지 임의 `decision_bucket`이 아니다 —
+admission 등 비-발행 버킷까지 막으면 top_deep 일반 후보 카드가 통째로 죽는다.
 """
 from __future__ import annotations
 
@@ -65,6 +74,40 @@ GATE_LANE_MAP: Dict[str, str] = {
 UNGATED_PUBLISHED_LANES = frozenset({
     "nasdaq_session_edge", "nasdaq_swing", "b_market_neutral", "swing_ensemble",
 })
+
+# UNGATED 레인의 사유 분류. 전부 발행 불가지만 **왜 막혔고 어떻게 풀리는지**가 다르다.
+# 2026-08-16 운영자 정책: **UNGATED는 "게이트가 판단하지 않는다"이지 "발행해도 된다"가 아니다.**
+#
+# 일괄 차단 근거 (실측):
+#   swing_ensemble      판정 완료 DEGRADE(n=112, EV −0.72) 후 2026-07-19 아카이브
+#   nasdaq_session_edge 자기 원장 1행(2026-06-26, 7주 경과) — forward 근거 없음
+#   nasdaq_swing        위 레인의 웹 어휘
+#   b_market_neutral    게이트가 b 두 레인 모두 DEGRADE + 2026-08-03 정지 마커
+# **네 레인 중 현재 forward 근거를 가진 레인이 하나도 없다.** 따라서 '자기 원장 근거로 가른다'는
+# 분기는 오늘 결과를 바꾸지 못하고, **게이트 밖에 두 번째 판정 권위**를 만들 뿐이다 —
+# F1·R5에서 닫아 온 '판정 사본이 둘' 실패 계열 그 자체다.
+# nasdaq_session_edge를 다시 발행하려면 그 레인을 **게이트 LANES에 배선**하는 게 정답이지
+# 여기에 예외를 두는 것이 아니다(tape 판정을 물려주는 오배선과는 별개 문제다).
+UNGATED_LANE_KINDS: Dict[str, str] = {
+    "swing_ensemble": "retired",
+    "nasdaq_session_edge": "unadjudicated",
+    "nasdaq_swing": "unadjudicated",
+    "b_market_neutral": "suspended",
+}
+
+UNGATED_LANE_NOTES: Dict[str, str] = {
+    "retired": ("⛔ 발행 제외(관측) — 은퇴한 레인 (2026-07-19 아카이브, "
+                "판정 완료 DEGRADE n=112 EV −0.72). 복귀 경로 없음 — 교체 완료된 레인이다"),
+    "unadjudicated": ("⛔ 발행 제외(관측) — 재귀게이트가 판단하지 않는 레인 "
+                      "(자기 스트림이라 타 레인 판정을 물려줄 수 없음). "
+                      "발행하려면 게이트 LANES에 이 레인의 원장을 배선해야 한다"),
+    "suspended": ("⛔ 발행 제외(관측) — 정지된 레인 "
+                  "(b_lane_suspended.json, 2026-08-03 · AG_B_ENGINE_SCAN=0)"),
+}
+
+_missing_kind = UNGATED_PUBLISHED_LANES - frozenset(UNGATED_LANE_KINDS)
+if _missing_kind:
+    raise RuntimeError(f"UNGATED 레인에 사유 분류가 없다: {sorted(_missing_kind)}")
 
 # 발행 레인은 **두 집합 중 정확히 하나**에 속해야 한다.
 DECLARED_PUBLISHED_LANES = frozenset(GATE_LANE_MAP) | UNGATED_PUBLISHED_LANES
@@ -173,9 +216,15 @@ def stream_status(lane_key: Any, *, gate_state: Optional[Dict[str, Any]] = None,
     key = str(lane_key or "")
     gate_lane = GATE_LANE_MAP.get(key)
     if gate_lane is None:
-        if strict and key not in UNGATED_PUBLISHED_LANES:
+        if key in UNGATED_PUBLISHED_LANES:
+            # 2026-08-16 정책: 게이트 미판단 = 발행 불가. 사유는 레인별로 다르다.
+            kind = UNGATED_LANE_KINDS[key]
+            return {"gated": False, "excluded": True, "reason": "lane_" + kind,
+                    "gate_lane": None, "verdict": None, "ungated_kind": kind}
+        if strict:
             return {"gated": True, "excluded": True, "reason": "lane_undeclared",
                     "gate_lane": None, "verdict": None, "error": "lane_undeclared:" + (key or "-")}
+        # 선언된 발행 레인이 아닌 임의 decision_bucket(admission 등)은 정책 대상이 아니다.
         return {"gated": False, "excluded": False, "reason": None, "gate_lane": None, "verdict": None}
 
     state = gate_state if gate_state is not None else load_gate_state(gate_path)
@@ -220,6 +269,9 @@ def _size_note(status: Dict[str, Any]) -> str:
     if reason == "degrade":
         return (f"⛔ 발행 제외(관측) — 재귀게이트 DEGRADE (forward n={status.get('n')} "
                 f"EV {status.get('fwd_ev')}, §20 스트림 제외 정책)")
+    kind = status.get("ungated_kind")
+    if kind:
+        return UNGATED_LANE_NOTES[kind]
     if reason == "lane_undeclared":
         return ("⛔ 발행 제외(관측) — 이 레인이 스트림 계약에 선언되지 않음 "
                 "(modules/stream_exclusion.py의 GATE_LANE_MAP 또는 UNGATED_PUBLISHED_LANES에 추가 필요)")

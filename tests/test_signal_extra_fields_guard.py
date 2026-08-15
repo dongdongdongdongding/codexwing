@@ -53,8 +53,20 @@ def test_suspended_b_lane_does_not_reach_the_signals_card(b_picks):
     assert renderers._b_signal_fields() == []
 
 
-def test_b_picks_still_render_when_the_lane_is_live(b_picks):
-    """양성 대조 — 정지가 아니면 평소대로 나간다(과잉차단 방지)."""
+def test_b_picks_render_only_when_the_lane_is_both_live_and_adjudicated(b_picks, monkeypatch, tmp_path):
+    """양성 대조 — 과잉차단이 아님을 보인다.
+
+    2026-08-16 정책 이후 b_market_neutral은 UNGATED라 정지 여부와 무관하게 막힌다.
+    그래서 '정지 아님'만으로는 부족하고, 게이트에 배선돼 정상 판정을 받아야 나간다.
+    """
+    from conftest import write_gate_report
+    from modules import stream_exclusion as se
+
+    monkeypatch.setattr(se, "DEFAULT_GATE_PATH",
+                        write_gate_report(tmp_path / "g.json", {"b_all_top10": "OBSERVING"}))
+    monkeypatch.setitem(se.GATE_LANE_MAP, "b_market_neutral", "b_all_top10")
+    se.invalidate_cache()
+
     fields = renderers._b_signal_fields()
 
     assert len(fields) == 1

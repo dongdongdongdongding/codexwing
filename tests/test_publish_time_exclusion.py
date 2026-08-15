@@ -123,16 +123,20 @@ def test_reapplication_is_idempotent(degrade_gate):
     assert twice["buy_ready_before_exclusion"] is True
 
 
-def test_ungated_lane_stored_rows_are_untouched(degrade_gate):
-    """무게이트 레인의 저장 해석은 건드리지 않는다."""
+def test_ungated_lane_stored_rows_are_also_blocked(degrade_gate):
+    """무게이트 레인의 저장 해석도 발행 불가다 (2026-08-16 정책).
+
+    사유는 `lane_unadjudicated` — tape의 DEGRADE를 물려받은 게 아니다.
+    """
     row = _row_with_stored_interpretation()
     row["decision_bucket"] = "nasdaq_session_edge"
     row["candidate_interpretation"]["lane"] = "nasdaq_session_edge"
 
     interp = renderers._interpretation_for_render(row)
 
-    assert interp.get("stream_excluded") is not True
-    assert interp["buy_ready"] is True
+    assert interp["stream_excluded"] is True
+    assert interp["stream_exclusion_reason"] == "lane_unadjudicated"
+    assert interp["buy_ready"] is False
 
 
 def test_rows_without_stored_interpretation_still_build_one(degrade_gate):
