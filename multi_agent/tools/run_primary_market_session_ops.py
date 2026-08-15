@@ -295,7 +295,13 @@ def build_command_plan(spec: SessionSpec) -> List[Dict[str, Any]]:
                     "AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE": os.getenv("AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE", "1"),
                     "AG_NASDAQ_SWING_MODEL_ENABLE": os.getenv("AG_NASDAQ_SWING_MODEL_ENABLE", "1"),
                     "AG_NASDAQ_SWING_PANEL": os.getenv("AG_NASDAQ_SWING_PANEL", "latest"),
-                    "AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE": os.getenv("AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE", "1"),
+                    # AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE 은 **의도적으로 주입하지 않는다**
+                    # (2026-08-16, trace-ops-flag-mismatch.md). 여기서 os.getenv(..., "1") 로
+                    # 기본값을 만들면 그것이 실질 스위치가 되어 run_daily_ops.sh 의 기본값이
+                    # 영원히 도달하지 못한다 — 2026-07-05 의 중지 선언이 no-op 이 된 원인이
+                    # 정확히 이것이다. _run_command 가 os.environ 을 복사한 뒤 이 delta 를
+                    # 덮으므로, 운영자가 설정한 값은 주입 없이도 그대로 자식에 전달된다.
+                    # 기본값의 유일한 기록처는 run_daily_ops.sh 의 가드 한 곳이다.
                     "AG_NASDAQ_SESSION_EDGE_PANEL": os.getenv("AG_NASDAQ_SESSION_EDGE_PANEL", "latest"),
                 },
                 required=True,

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from multi_agent.tools.run_primary_market_session_ops import (
     PRIMARY_MARKETS,
+    _run_command,
     SESSION_SPECS,
     build_command_plan,
     due_sessions,
@@ -77,8 +78,43 @@ def test_command_plan_runs_session_scan_then_primary_daily_ops():
     assert nasdaq_plan[1]["env"]["AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE"] == "1"
     assert nasdaq_plan[1]["env"]["AG_NASDAQ_SWING_MODEL_ENABLE"] == "1"
     assert nasdaq_plan[1]["env"]["AG_NASDAQ_SWING_PANEL"] == "latest"
-    assert nasdaq_plan[1]["env"]["AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE"] == "1"
     assert nasdaq_plan[1]["env"]["AG_NASDAQ_SESSION_EDGE_PANEL"] == "latest"
+
+
+def test_orchestrator_does_not_manufacture_the_session_edge_default():
+    """이 단언은 예전에 `== "1"` 이었고, **틀린 동작을 고정하고 있었다**.
+
+    호출자가 os.getenv(..., "1") 로 기본값을 만들어 주입하면 그것이 실질 스위치가 되어
+    run_daily_ops.sh 의 기본값이 도달 불가해진다 — 2026-07-05 의 중지 선언이 no-op 이 된
+    원인이 정확히 이것이고(trace-ops-flag-mismatch.md), `== "1"` 단언은 그 상태를 "정상"으로
+    못박아 두고 있었다. 보장해야 할 것은 "켜져 있다"가 아니라 **"기본값을 여기서 만들지
+    않는다"** 이다. 값 자체의 진실은 가드가 갖고, 그 동작은 test_daily_ops_flag_switch.py 가 본다.
+    """
+    by_id = {spec.session_id: spec for spec in SESSION_SPECS}
+    env = build_command_plan(by_id["nasdaq_regular_open"])[1]["env"]
+
+    assert "AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE" not in env, (
+        "호출자가 다시 기본값을 주입한다 — 스크립트 쪽 기본값이 도달 불가해진다")
+
+
+def test_operator_setting_reaches_the_child_without_injection(monkeypatch):
+    """주입을 없앤 대가를 확인한다 — 없애도 운영자 설정은 자식에 도달해야 한다.
+
+    _run_command 가 os.environ 을 복사한 뒤 delta 를 덮기 때문에 성립한다. 이 성질이
+    깨지면 주입 제거가 곧 '끌 방법이 사라짐'이 되므로 반드시 고정해 둔다.
+    """
+    monkeypatch.setenv("AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE", "0")
+    result = _run_command(
+        {
+            "name": "probe",
+            "argv": ["/bin/bash", "-c", 'echo "flag=${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-unset}"'],
+            "env": {"UNRELATED_DELTA": "x"},
+        },
+        dry_run=False,
+    )
+
+    assert result["returncode"] == 0, result
+    assert "flag=0" in result["stdout_tail"], result
 
 
 def test_schedule_report_exposes_local_and_utc_next_times():
