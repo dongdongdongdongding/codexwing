@@ -14,7 +14,6 @@
 """
 from __future__ import annotations
 
-import glob
 import os
 import re
 import signal
@@ -57,6 +56,19 @@ def _git(cwd, *args, check=True):
                           capture_output=True, text=True, check=check)
 
 
+def _terminate(proc) -> None:
+    """래퍼를 정리한다. **SIGTERM 을 먼저 준다** — SIGKILL 은 trap 을 건너뛰어 임시파일을
+    남기므로, 테스트 정리 코드가 스스로 그 구멍을 밟으면 다음 테스트가 무작위로 깨진다."""
+    if proc.poll() is not None:
+        return
+    proc.send_signal(signal.SIGTERM)
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait(timeout=10)
+
+
 class Sandbox:
     """bare origin + 작업 클론 + 스텁 cloudflared. 실 운영 리포는 절대 건드리지 않는다."""
 
@@ -66,6 +78,11 @@ class Sandbox:
         self.work = root / "work"
         self.bin = root / "bin"
         self.pidfile = root / "cfpid"
+        # 래퍼의 임시파일 전용 디렉터리. 전역 /tmp 를 단언 대상으로 삼으면 **라이브 터널이**
+        # (launchd KeepAlive 로) 테스트 도중 재시작하며 /tmp/cloudflared.* 를 새로 만들어
+        # 무작위로 깨진다 — 실측으로 재현했다. 여기 안에서만 관찰한다.
+        self.tmp = root / "wrappertmp"
+        self.tmp.mkdir()
 
         subprocess.run(["git", "init", "-q", "--bare", str(self.origin)], check=True)
         subprocess.run(["git", "clone", "-q", str(self.origin), str(self.work)],
@@ -111,6 +128,7 @@ class Sandbox:
         env = dict(os.environ)
         env["TUNNEL_REPO"] = str(self.work if repo_override is None else repo_override)
         env["CLOUDFLARED_BIN"] = str(self.stub)
+        env["TUNNEL_TMP_DIR"] = str(self.tmp)
         env["GIT_CONFIG_NOSYSTEM"] = "1"
         env.update(env_extra or {})
         return subprocess.run([SYSTEM_BASH, str(SCRIPT)], capture_output=True,
@@ -284,23 +302,61 @@ def test_repo_is_derived_from_script_location_when_unset(sb):
 # C — /tmp 로그 누적 (이번 수리가 만든 신규 회귀)
 # ---------------------------------------------------------------------------
 
-def _tmp_logs() -> set:
-    return set(glob.glob("/tmp/cloudflared.*")) | set(glob.glob("/tmp/tunnelidx.*"))
+def decoy(name: str = "cloudflared.LIVEROTATE") -> Path:
+    """라이브 터널이 테스트 도중 재시작하며 /tmp 에 로그를 만드는 상황을 흉내낸다."""
+    p = Path("/tmp") / name
+    p.touch()
+    return p
 
 
 def test_tmp_log_is_removed_on_success(sb):
-    before = _tmp_logs()
-    r = sb.run_wrapper()
-    assert r.returncode == 0, r.stderr
-    assert _tmp_logs() - before == set(), "성공 경로가 /tmp 잔재를 남겼다"
+    d = decoy()
+    try:
+        r = sb.run_wrapper()
+        assert r.returncode == 0, r.stderr
+        assert list(sb.tmp.iterdir()) == [], f"성공 경로가 잔재를 남겼다: {list(sb.tmp.iterdir())}"
+    finally:
+        d.unlink(missing_ok=True)
 
 
 def test_tmp_log_is_removed_on_failure(sb):
-    before = _tmp_logs()
-    _git(sb.work, "remote", "set-url", "origin", str(sb.root / "does-not-exist.git"))
-    r = sb.run_wrapper()
-    assert r.returncode != 0
-    assert _tmp_logs() - before == set(), "실패 경로가 /tmp 잔재를 남겼다"
+    d = decoy()
+    try:
+        _git(sb.work, "remote", "set-url", "origin", str(sb.root / "does-not-exist.git"))
+        r = sb.run_wrapper()
+        assert r.returncode != 0
+        assert list(sb.tmp.iterdir()) == [], f"실패 경로가 잔재를 남겼다: {list(sb.tmp.iterdir())}"
+    finally:
+        d.unlink(missing_ok=True)
+
+
+def test_wrapper_actually_used_the_injected_tmp_dir(sb):
+    """단언 범위를 좁힌 대가로 '아무것도 안 봤는데 통과'가 되지 않도록 seam 을 검증한다.
+
+    래퍼가 TUNNEL_TMP_DIR 을 무시하고 /tmp 를 쓰면 이 테스트가 잡는다 — 그 경우 위 두
+    테스트는 빈 디렉터리를 보고 무의미하게 통과한다.
+    """
+    sb.install_stub(lifetime=30)
+    env = dict(os.environ)
+    env.update({"TUNNEL_REPO": str(sb.work), "CLOUDFLARED_BIN": str(sb.stub),
+                "TUNNEL_TMP_DIR": str(sb.tmp)})
+    proc = subprocess.Popen([SYSTEM_BASH, str(SCRIPT)], env=env, cwd=str(sb.root),
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        deadline = time.time() + 20
+        while time.time() < deadline and not any(sb.tmp.iterdir()):
+            time.sleep(0.1)
+        made = [p.name for p in sb.tmp.iterdir()]
+        assert made and all(n.startswith("cloudflared.") for n in made), (
+            f"래퍼가 주입된 임시 디렉터리를 쓰지 않았다: {made}")
+    finally:
+        _terminate(proc)
+
+
+def test_default_tmp_dir_is_still_tmp():
+    """운영 동작 불변 계약 — 기본값이 /tmp 가 아니면 launchd 환경에서 위치가 바뀐다."""
+    body = SCRIPT.read_text(encoding="utf-8")
+    assert 'TUNNEL_TMP_DIR="${TUNNEL_TMP_DIR:-/tmp}"' in body
 
 
 # ---------------------------------------------------------------------------
@@ -310,7 +366,8 @@ def test_tmp_log_is_removed_on_failure(sb):
 def test_sigterm_does_not_orphan_cloudflared(sb):
     sb.install_stub(lifetime=60)
     env = dict(os.environ)
-    env.update({"TUNNEL_REPO": str(sb.work), "CLOUDFLARED_BIN": str(sb.stub)})
+    env.update({"TUNNEL_REPO": str(sb.work), "CLOUDFLARED_BIN": str(sb.stub),
+                "TUNNEL_TMP_DIR": str(sb.tmp)})
     proc = subprocess.Popen([SYSTEM_BASH, str(SCRIPT)], env=env, cwd=str(sb.root),
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
@@ -332,10 +389,9 @@ def test_sigterm_does_not_orphan_cloudflared(sb):
             time.sleep(0.1)
         else:
             pytest.fail(f"SIGTERM 후 cloudflared({child}) 가 고아로 남았다")
+        assert list(sb.tmp.iterdir()) == [], "SIGTERM 경로가 임시파일을 남겼다"
     finally:
-        if proc.poll() is None:
-            proc.kill()
-            proc.wait(timeout=10)
+        _terminate(proc)
 
 
 # ---------------------------------------------------------------------------

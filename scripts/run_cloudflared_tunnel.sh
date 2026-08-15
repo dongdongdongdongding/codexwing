@@ -25,6 +25,10 @@ set -uo pipefail
 
 TUNNEL_JSON_REL="web/frontend/public/tunnel.json"
 CLOUDFLARED_BIN="${CLOUDFLARED_BIN:-cloudflared}"
+# 임시파일 위치. 기본 /tmp 로 운영 동작은 종전과 같다. 테스트가 전용 디렉터리를 주입해
+# 라이브 터널의 /tmp/cloudflared.* 와 섞이지 않게 하기 위한 seam
+# (KeepAlive 재시작이 테스트 도중 새 로그를 만들면 전역 /tmp 단언이 무작위로 깨진다).
+TUNNEL_TMP_DIR="${TUNNEL_TMP_DIR:-/tmp}"
 export PATH="/opt/homebrew/bin:/usr/local/bin:${PATH}"
 
 # --- G: 리포 위치 유도 -------------------------------------------------------
@@ -46,7 +50,7 @@ if [[ ! -d "$REPO/$(dirname "$TUNNEL_JSON_REL")" ]]; then
 fi
 
 # --- C/F: 로그 파일 ----------------------------------------------------------
-LOG="$(mktemp /tmp/cloudflared.XXXXXX)" || {
+LOG="$(mktemp "$TUNNEL_TMP_DIR/cloudflared.XXXXXX")" || {
   echo "[tunnel] 실패: 로그 파일 생성 실패 (mktemp)" >&2; exit 1; }
 IDX=""
 CFPID=""
@@ -107,7 +111,7 @@ publish_url() {
       sleep 3; continue
     fi
 
-    IDX="$(mktemp /tmp/tunnelidx.XXXXXX)" || {
+    IDX="$(mktemp "$TUNNEL_TMP_DIR/tunnelidx.XXXXXX")" || {
       echo "[tunnel] 발행 실패: 임시 인덱스 생성 불가" >&2; return 1; }
     if ! GIT_INDEX_FILE="$IDX" git -C "$REPO" read-tree "$remote" \
       || ! GIT_INDEX_FILE="$IDX" git -C "$REPO" update-index --add \
