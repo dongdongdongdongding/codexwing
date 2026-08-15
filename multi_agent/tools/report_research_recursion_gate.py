@@ -57,6 +57,11 @@ MATURITY_LAG_BDAYS = 5      # ① 성숙시차 — 이 기간의 최신 표본�
 # 그 레인이다. 나머지 5레인은 CI 가 기대에 걸쳐 있어 잡음으로 판정하지 않는다.
 WIN_TOL = 1.0
 
+# 발행 스트림 선언용 센티널. **모든 레인이 publish_scope 를 명시해야 한다** — 미선언이
+# 조용히 "원장 전체"로 떨어지면 kospi_intraday 에서 난 사고(발행되지 않는 픽으로 발행
+# 레인을 강등)가 다른 레인에서 그대로 반복된다. 전체가 발행분인 레인도 값을 적어 선언한다.
+WHOLE_LEDGER = "WHOLE_LEDGER"
+
 # 레인별: 원장, 실현수익 필드, 동결된 백테스트 기대(연구 로그 근거), 성숙 표본 수
 # cost: 왕복 비용(%p) — 원장은 gross를 저장하므로 게이트가 차감해 net으로 판정 (2026-08-03 PKG-B ②).
 #   기대치는 전부 net 기준으로 동결돼 있었음(§28 threshold_frontier=net−0.3, §11-A=net−0.33,
@@ -65,10 +70,19 @@ WIN_TOL = 1.0
 LANES: Dict[str, Dict[str, Any]] = {
     "kospi_intraday_t5": {
         "ledger": EXP / "kospi_intraday_swing_ledger.jsonl", "field": "exit_t5_h5", "cost": 0.3,
+        # 2026-08-16 판정범위 수정(운영자 승인, audit-lane-champions.md): §7-E:178 은 이 레인이
+        #   PRIMARY 만 라우팅하고 "CANDIDATE 는 원장 기록만"이라고 명시한다. 그런데 게이트는
+        #   원장 전체 43건으로 DEGRADE 를 냈고, 그 표본에 **게이트 자신이 베토한 3건**
+        #   (VETO_REBOUND_PHASE, net −4.83), 티어제 이전 15건(−3.03), 라우팅 안 되는
+        #   CANDIDATE 15건이 섞여 있었다. 발행되지 않는 픽으로 발행 레인을 강등한 것이다.
+        #   (베토분이 원장에 남는 것 자체는 정상이다 — forward 연속성. 판정에 쓰는 게 문제다.)
+        "publish_scope": {"tier": "PRIMARY"},
         "expect_ev": 5.65, "expect_win": 92.0, "n_min": 20,
         "basis": "§28 q0.5 승격 (2026-07-13) — 8 OOS월 rank-1 선별 q0.5 티어+터치익절"},
     "kosdaq_intraday_t10": {
         "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5", "cost": 0.33,
+        # 원장 8행 전부 decision=KOSDAQ_INTRADAY_3D_T5_BUY 인 발행분이다(티어 구분 없음).
+        "publish_scope": WHOLE_LEDGER,
         # 2026-08-16 정본 통일(운영자 승인, audit-lane-basis.md "소비자 간 동결값 불일치"):
         #   expect_win 75.8 → 72.0. 게이트는 §11-A:263(2026-07-03, n=66)의 75.8 을, 웹
         #   폴백(services.py:166)은 §27:584(2026-07-13, n=101)의 72 를 써서 **같은 레인에
@@ -81,12 +95,19 @@ LANES: Dict[str, Dict[str, Any]] = {
         "basis": "EV=§11-A:263 15:00 실파이프라인 재검증(n=66) · 승률=§27:584 티어 승률 맵(n=101, 2026-07-13 정본)"},
     "swing_candidate": {
         "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret", "cost": 0.3,
+        # ⚠️ 종전 동작(원장 전체)을 그대로 선언한다 — **바꾸지 않기 위해서가 아니라 확인이
+        #   안 돼서다.** tier 스탬프가 213행 중 17행(CANDIDATE)에만 있어 나머지 196행이
+        #   발행분인지 판별할 근거가 원장에 없다. 근거가 생기면 좁혀야 한다(§ 확인 필요).
+        "publish_scope": WHOLE_LEDGER,
         "expect_ev": 0.65, "expect_win": 62.0, "n_min": 30,
         "basis": "§7-A 8년 분기 walk-forward (플라시보 사망)"},
     # swing_ensemble: 2026-07-19 아카이브 — DEGRADE 확정(n=112, EV −0.72)·교체 완료, 일일 실행 중지.
     "b_primary_top3": {
         "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha", "cost": 0.0,
-        "filter": {"status": "settled", "tier": "PRIMARY"}, "date_field": "scan_date",
+        "filter": {"status": "settled"}, "date_field": "scan_date",
+        # 발행 스트림 = PRIMARY 티어. 종전에는 filter 에 섞여 있었는데, filter(성숙 조건)와
+        # publish_scope(발행 범위)는 다른 개념이라 분리했다. 판정 대상은 종전과 동일하다.
+        "publish_scope": {"tier": "PRIMARY"},
         "suspend_marker": PROJECT_ROOT / "b_engine" / "data" / "b_lane_suspended.json",
         # 2026-08-15 F4 정정: expect_win 55.0 은 §11-B 표에 승률 열 자체가 없어 근거가
         #   없었다. 원장이 이미 win=int(alpha>0) 을 저장하므로 실측으로 교체(정지 이후
@@ -98,6 +119,10 @@ LANES: Dict[str, Dict[str, Any]] = {
         # 사각지대 발견(운영자 질의). tier 스탬프 이전 정산분 포함 전체를 게이트가 공식 판정.
         "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha", "cost": 0.0,
         "filter": {"status": "settled"}, "date_field": "scan_date",
+        # 이 레인은 **설계상 전체 스트림 감시용**이다(2026-07-10, PRIMARY 정산 대기 중
+        # top10 전체가 α −5.1 로 붕괴한 사각지대를 잡으려고 추가). 발행분만 보면 존재 이유가
+        # 사라진다 — 여기서 WHOLE_LEDGER 는 미선언 폴백이 아니라 명시적 설계 선택이다.
+        "publish_scope": WHOLE_LEDGER,
         "suspend_marker": PROJECT_ROOT / "b_engine" / "data" / "b_lane_suspended.json",
         # 2026-08-15 F4 정정(운영자 승인, audit-lane-basis.md): expect_ev 1.20 → 1.63.
         #   커밋 9e47d73 이 "expect +1.20 per §11-B"라 명시했으나 §11-B:271 의 top10
@@ -110,6 +135,8 @@ LANES: Dict[str, Dict[str, Any]] = {
         "basis": "§11-B:271 24폴드 BASE top10 점추정 +1.63 (α/트레이드) · 승률=원장 실측 2026-08-15"},
     "nasdaq_session_tape": {
         "ledger": USR / "nasdaq_session_tape_ledger.jsonl", "field": "policy_ret", "cost": 0.25,
+        # 원장 54행 전부 tier=SHADOW — shadow 레인이라 기록분이 곧 발행(shadow)분이다.
+        "publish_scope": WHOLE_LEDGER,
         "expect_ev": 0.75, "expect_win": 79.3, "n_min": 30,
         "basis": "§12-D 29개월 (정직 추정 +0.5~1.0 — 기대는 중간값 0.75)"},
 }
@@ -316,6 +343,16 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
     rows = _rows(cfg["ledger"])
     flt = cfg.get("filter") or {}
     rows = [r for r in rows if all(r.get(k) == v for k, v in flt.items())]
+
+    # --- 판정 범위 = 발행 스트림 -------------------------------------------
+    # 미선언은 오류다. 기본값을 주면 그 기본값이 조용히 정책이 된다(플래그 P0 의 교훈).
+    if "publish_scope" not in cfg:
+        raise KeyError(f"{name}: publish_scope 미선언 — 발행 스트림 기준을 명시해야 한다 "
+                       f"(행 필터 dict 또는 WHOLE_LEDGER)")
+    scope = cfg["publish_scope"]
+    ledger_n = len(rows)
+    if scope != WHOLE_LEDGER:
+        rows = [r for r in rows if all(r.get(k) == v for k, v in scope.items())]
     cost = float(cfg.get("cost", 0.0))  # PKG-B ②: 원장 gross → net 통일 (기대치는 전부 net 동결)
     dfield = cfg.get("date_field", "date")
     tfield = cfg.get("time_field", "logged_at")
@@ -342,6 +379,8 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
     res: Dict[str, Any] = {"lane": name, "basis": cfg["basis"], "n": len(vals), "cost": cost,
                            "expect_ev": cfg["expect_ev"], "expect_win": cfg["expect_win"],
                            "n_min": cfg["n_min"], "win_verdict": "NA",
+                           "publish_scope": "WHOLE_LEDGER" if scope == WHOLE_LEDGER else dict(scope),
+                           "ledger_rows_before_scope": ledger_n,
                            "suspended_since": susp["since"] or None,
                            "excluded_post_suspension": dropped,
                            "suspend_marker_broken": susp["broken"],

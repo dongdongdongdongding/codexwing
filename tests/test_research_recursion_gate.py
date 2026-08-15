@@ -46,7 +46,8 @@ def write_ledger(path: Path, vals, dates=None, date_key="date", extra=None) -> P
 
 def cfg_for(path: Path, expect_ev=1.0, expect_win=60.0, n_min=20, **kw):
     c = {"ledger": path, "field": "ret", "cost": 0.0, "expect_ev": expect_ev,
-         "expect_win": expect_win, "n_min": n_min, "basis": "테스트"}
+         "expect_win": expect_win, "n_min": n_min, "basis": "테스트",
+         "publish_scope": gate.WHOLE_LEDGER}
     c.update(kw)
     return c
 
@@ -288,7 +289,8 @@ def test_win_definition_matches_the_b_ledger_win_field(tmp_path):
     led = tmp_path / "b.jsonl"
     led.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
     cfg = {"ledger": led, "field": "alpha", "cost": 0.0, "expect_ev": 1.0, "expect_win": 60.0,
-           "n_min": 20, "basis": "테스트", "filter": {"status": "settled"}}
+           "n_min": 20, "basis": "테스트", "filter": {"status": "settled"},
+           "publish_scope": gate.WHOLE_LEDGER}
     r = gate.evaluate("b", cfg, {}, TODAY)
     ledger_win = round(100 * sum(x["win"] for x in rows) / len(rows), 1)
     assert r["fwd_win"] == pytest.approx(ledger_win), (r["fwd_win"], ledger_win)
@@ -749,3 +751,86 @@ def test_kosdaq_expect_win_matches_the_web_consumer():
 def test_kosdaq_expect_ev_is_unchanged():
     """§27 은 EV 를 주지 않는다 — EV 는 §11-A 그대로 둔다."""
     assert gate.LANES["kosdaq_intraday_t10"]["expect_ev"] == 3.14
+
+
+# ---------------------------------------------------------------------------
+# 판정 범위 = 발행 스트림 (audit-lane-champions.md, 운영자 승인 2026-08-16)
+# ---------------------------------------------------------------------------
+# 게이트가 **발행되지 않는 픽으로 발행 레인을 강등**하고 있었다. kospi_intraday_t5 는
+# §7-E:178 상 PRIMARY 만 라우팅하는데, 게이트는 원장 전체 43건(베토 3 + 티어제 이전 15 +
+# CANDIDATE 15 포함)으로 DEGRADE 를 냈다. 실제 발행 스트림(PRIMARY n=10)은 +1.62 다.
+
+def test_every_lane_declares_its_publish_scope():
+    """미선언이 조용히 '원장 전체'로 떨어지면 같은 버그가 다른 레인에서 반복된다."""
+    missing = [n for n, c in gate.LANES.items() if "publish_scope" not in c]
+    assert not missing, f"publish_scope 미선언 레인: {missing}"
+
+
+def test_undeclared_scope_is_an_error_not_a_default(tmp_path):
+    """기본값을 주면 그 기본값이 조용히 정책이 된다 — 플래그 P0 의 교훈."""
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 30)
+    cfg = cfg_for(led)
+    del cfg["publish_scope"]
+    with pytest.raises(KeyError, match="publish_scope"):
+        gate.evaluate("lane", cfg, {}, TODAY)
+
+
+def test_kospi_intraday_judges_only_the_routed_tier():
+    assert gate.LANES["kospi_intraday_t5"]["publish_scope"] == {"tier": "PRIMARY"}
+
+
+def test_b_all_top10_watches_the_whole_stream_by_design():
+    """이 레인은 전체 스트림 감시가 존재 이유다 — 발행분만 보면 사각지대가 되살아난다."""
+    assert gate.LANES["b_all_top10"]["publish_scope"] == gate.WHOLE_LEDGER
+    assert gate.LANES["b_primary_top3"]["publish_scope"] == {"tier": "PRIMARY"}
+
+
+def test_scope_excludes_vetoed_and_unrouted_rows(tmp_path):
+    """라이브 실패 형태 재현: 베토·티어제 이전·미라우팅 행이 판정에서 빠져야 한다."""
+    led = tmp_path / "l.jsonl"
+    rows = ([{"ret": 1.62, "date": "2026-07-01", "tier": "PRIMARY"}] * 10
+            + [{"ret": 1.60, "date": "2026-07-01", "tier": "CANDIDATE"}] * 15
+            + [{"ret": -4.83, "date": "2026-07-01", "tier": "VETO_REBOUND_PHASE"}] * 3
+            + [{"ret": -3.03, "date": "2026-07-01"}] * 15)
+    led.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+    whole = gate.evaluate("l", cfg_for(led, n_min=5), {}, TODAY)
+    scoped = gate.evaluate("l", cfg_for(led, n_min=5, publish_scope={"tier": "PRIMARY"}), {}, TODAY)
+
+    assert whole["n"] == 43 and scoped["n"] == 10
+    assert scoped["fwd_ev"] == pytest.approx(1.62, abs=0.01)
+    assert whole["fwd_ev"] < 0, "전제가 바뀌었다 — 원장 전체가 음수여야 이 버그가 재현된다"
+    assert scoped["ledger_rows_before_scope"] == 43, "범위 적용 전 규모가 보고돼야 한다"
+
+
+def test_scope_narrowing_can_drop_below_n_min(tmp_path):
+    """발행분만 보면 표본이 줄어 OBSERVING 이 될 수 있다 — 그건 정상이고 숨기면 안 된다.
+
+    ⚠️ 다만 OBSERVING 은 DEGRADE 가 아니므로 stream_exclusion 의 발행 제외가 **풀린다.**
+    범위 수정이 곧 발행 재개를 뜻할 수 있다는 점이 이 테스트가 고정하는 사실이다.
+    """
+    led = tmp_path / "l.jsonl"
+    rows = ([{"ret": 1.62, "date": "2026-07-01", "tier": "PRIMARY"}] * 10
+            + [{"ret": -3.0, "date": "2026-07-01", "tier": "CANDIDATE"}] * 33)
+    led.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+    whole = gate.evaluate("l", cfg_for(led, expect_ev=5.65, n_min=20), {}, TODAY)
+    scoped = gate.evaluate("l", cfg_for(led, expect_ev=5.65, n_min=20,
+                                        publish_scope={"tier": "PRIMARY"}), {}, TODAY)
+
+    assert whole["verdict"] == "DEGRADE"
+    assert scoped["verdict"] == "OBSERVING", "발행분 n<n_min 이면 판정 불가가 맞다"
+    assert scoped["publish_block" if False else "publication_block"] is False, (
+        "OBSERVING 은 발행 제외를 걸지 않는다 — 이 변경이 발행을 되살릴 수 있다")
+
+
+def test_scope_and_maturity_filter_are_separate_concepts(tmp_path):
+    """filter(성숙: settled) 와 publish_scope(발행 범위: tier) 는 다른 개념이다."""
+    led = tmp_path / "l.jsonl"
+    rows = [{"ret": 2.0, "date": "2026-07-01", "status": "settled", "tier": "PRIMARY"}] * 8 \
+         + [{"ret": 9.0, "date": "2026-07-01", "status": "open", "tier": "PRIMARY"}] * 8 \
+         + [{"ret": 2.0, "date": "2026-07-01", "status": "settled", "tier": "CANDIDATE"}] * 8
+    led.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    r = gate.evaluate("l", cfg_for(led, n_min=5, filter={"status": "settled"},
+                                   publish_scope={"tier": "PRIMARY"}), {}, TODAY)
+    assert r["n"] == 8 and r["ledger_rows_before_scope"] == 16
