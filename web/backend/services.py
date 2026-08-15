@@ -154,20 +154,40 @@ def _gate_verdicts():
 
 def _measured_win():
     """레인별 실측 승률 (정산 원장) — §38: 개별 p는 라이브 비캘리브레이션 → 표시용 통계는
-    실측으로. n<20 레인은 동결 백테스트 승률로 폴백(출처 표기)."""
+    실측으로. n<20 레인은 동결 백테스트 승률로 폴백(출처 표기).
+
+    2026-08-15 (audit-gate.md F8) 두 가지를 고쳤다:
+
+    ① **레인별 market 필터.** kospi_swing과 kosdaq_swing이 같은 원장
+       (kr_swing_candidate_ledger.jsonl)을 필터 없이 읽어, 두 레인에 **동일한 풀링 승률**이
+       각각 "실측 N건"이라는 레인별 라벨을 달고 표시됐다(실측: 양쪽 다 71%, n=167).
+       레인이 다른데 숫자가 같으면 그건 레인별 실측이 아니다.
+    ② **비용 기준을 게이트와 통일.** 웹은 cost 미차감 gross > 0.3이었고
+       게이트(report_research_recursion_gate.py:105·115)는 `gross - cost` 후 net > 0.3이다.
+       같은 원장의 두 소비자가 다른 기준을 써서 웹이 정확히 cost만큼 관대했다
+       (스윙 71.4% 웹 vs 69.6% 게이트). cost 상수는 게이트 LANES와 같은 값을 쓴다.
+
+    market 필드가 없는 원장(F9 스키마 드리프트)에서는 필터로 표본을 통째로 날리지 않고
+    전체를 쓴다 — 조용히 n=0이 되는 것보다 낫다.
+    """
     import time as _t
     if _t.time() - _MEASURED_WIN_CACHE["ts"] < 600 and _MEASURED_WIN_CACHE["data"]:
         return _MEASURED_WIN_CACHE["data"]
     out = {}
-    spec = [("kospi_swing", "kr_swing_candidate_ledger.jsonl", "policy_ret"),
-            ("kosdaq_swing", "kr_swing_candidate_ledger.jsonl", "policy_ret"),
-            ("kospi_intraday", "kospi_intraday_swing_ledger.jsonl", "exit_t5_h5"),
-            ("kosdaq_intraday", "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "exit_t10_h5")]
+    # (레인, 원장, 필드, 시장, cost) — cost는 게이트 LANES와 동일해야 한다.
+    spec = [("kospi_swing", "kr_swing_candidate_ledger.jsonl", "policy_ret", "KOSPI", 0.30),
+            ("kosdaq_swing", "kr_swing_candidate_ledger.jsonl", "policy_ret", "KOSDAQ", 0.30),
+            ("kospi_intraday", "kospi_intraday_swing_ledger.jsonl", "exit_t5_h5", "KOSPI", 0.30),
+            ("kosdaq_intraday", "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "exit_t10_h5", "KOSDAQ", 0.33)]
     fallback = {"kospi_intraday": (92, "백테스트 q0.5"), "kosdaq_intraday": (72, "백테스트"),
                 "kospi_swing": (62, "백테스트 8y"), "kosdaq_swing": (62, "백테스트 8y")}
-    for lane, fn, field in spec:
+    for lane, fn, field, market, cost in spec:
         try:
-            vals = [r[field] for r in _read_ledger(fn) if isinstance(r.get(field), (int, float))]
+            rows = _read_ledger(fn)
+            scoped = [r for r in rows if str(r.get("market") or "").upper() == market]
+            if not scoped and not any(r.get("market") for r in rows):
+                scoped = rows          # 원장에 market 필드 자체가 없음 → 단일시장 원장으로 취급
+            vals = [float(r[field]) - cost for r in scoped if isinstance(r.get(field), (int, float))]
             if len(vals) >= 20:
                 out[lane] = (round(sum(1 for v in vals if v > 0.3) / len(vals) * 100), f"실측 {len(vals)}건")
                 continue
@@ -278,14 +298,11 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
         row["size_note"] = "⚠ 사이징 보류 — 비진앙 단독항복 (§39: 크래시 셀 −0.17, 관측 권고)"
     # PKG-A(§40): DEGRADE 레인 스트림 제외 — 사이징 권고 제거 + 관측 라벨 (§20 정책 집행).
     # 픽 자체는 계속 표시(nyg6 계약: 후보 가시성 유지 + 라우팅만 명시적 차단), 원장 채점도 지속.
-    if os.environ.get("AG_DEGRADE_STREAM_EXCLUSION", "1") == "1":
-        gv = _gate_verdicts().get(_GATE_LANE_MAP.get(lane_key) or "")
-        if gv and gv.get("verdict") == "DEGRADE":
-            row.pop("size_pct_total", None)
-            row["stream_excluded"] = True
-            row["size_note"] = (f"⛔ 발행 제외(관측) — 재귀게이트 DEGRADE (forward n={gv.get('n')} "
-                                f"EV {gv.get('fwd_ev')}, §20 스트림 제외 정책)")
-            row["rationale"] = ((row.get("rationale") + " · ") if row.get("rationale") else "") + "⛔관측전용(DEGRADE)"
+    # 2026-08-15(audit-gate F1·F2): 판정 로직을 modules.stream_exclusion으로 올렸다.
+    # 여기 한 곳에만 있어서 Discord 카드·top_deep이 게이트를 못 읽었고(F1),
+    # 리더가 fail-open이라 게이트가 깨지면 제외가 조용히 풀렸다(F2). 이제 fail-closed다.
+    from modules.stream_exclusion import apply_stream_exclusion
+    apply_stream_exclusion(row, lane_key)
     # §16 tail 사전탐지(swing-main-clbb): tail_p 관측 필드 — 발행/사이징/베토/랭킹 불변.
     # 강제 베토는 §16에서 REJECT(최악픽 -71.6 미탐·동결기준 미충족) → 승인 방향은 관측 노출
     # + 경고 배지 + forward 상관 추적뿐. 경고 경계는 학습 시 기록된 OOS 상위 20%(top-quintile).

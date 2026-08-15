@@ -467,8 +467,47 @@ def build_model_lane_interpretation(row: Dict[str, Any], bucket: str) -> Dict[st
 
 
 def build_candidate_interpretation(row: Dict[str, Any]) -> Dict[str, Any]:
+    """픽 해석 + 재귀게이트 스트림 제외 (audit-gate.md F1).
+
+    Discord 카드(`build_model_signals_embed` / `build_top_deep_embeds`)와 top_deep이
+    전부 이 함수를 지나므로, 여기서 한 번 걸면 세 발행 경로에 동시에 적용된다.
+    이전에는 `web/backend/services.py`에만 배선돼 있어 DEGRADE 레인 픽이 Discord에서는
+    ⛔ 표시 없이 `operational_action_level="MODEL_BUY"` · `buy_ready=True` ·
+    "…모델 매수 후보입니다. 진입=종가, 목표 +N%"를 단 **실행가능 매수카드**로 나갔다.
+    """
     row = row if isinstance(row, dict) else {}
     _bucket = str(_first(row.get("decision_bucket"), row.get("bucket"), "") or "").strip()
+    interp = _build_candidate_interpretation_ungated(row, _bucket)
+    return _apply_stream_exclusion_to_interpretation(interp, _bucket)
+
+
+def _apply_stream_exclusion_to_interpretation(interp: Dict[str, Any], bucket: str) -> Dict[str, Any]:
+    """제외된 스트림이면 실행가능 표식을 전부 회수하고 관측 전용으로 되돌린다."""
+    if not isinstance(interp, dict):
+        return interp
+    from modules.stream_exclusion import apply_stream_exclusion
+
+    before = interp.get("buy_ready")
+    apply_stream_exclusion(interp, bucket)
+    if not interp.get("stream_excluded"):
+        return interp
+
+    reason = interp.get("stream_exclusion_reason")
+    detail = interp.get("size_note") or "재귀게이트 스트림 제외"
+    interp["operational_action_label"] = "⛔ 관측 전용 (발행 제외)"
+    interp["buy_ready_blocked"] = bool(before)
+    reasons = interp.get("buy_ready_block_reasons")
+    interp["buy_ready_block_reasons"] = (list(reasons) if isinstance(reasons, list) else []) + [detail]
+    interp["touch_vs_buy_ready_explanation"] = (
+        f"{detail} 이 레인은 forward 검증에서 기대를 밑돌아 실자본 배분 대상이 아닙니다. "
+        "픽은 관측·채점 목적으로만 표시됩니다."
+    )
+    if reason == "degrade":
+        interp["selection_thesis"] = "⛔ 관측 전용 — 재귀게이트 DEGRADE 레인"
+    return interp
+
+
+def _build_candidate_interpretation_ungated(row: Dict[str, Any], _bucket: str) -> Dict[str, Any]:
     if _bucket in MODEL_VALIDATED_LANES:
         return build_model_lane_interpretation(row, _bucket)
     alignment = row.get("selection_alignment") if isinstance(row.get("selection_alignment"), dict) else {}
