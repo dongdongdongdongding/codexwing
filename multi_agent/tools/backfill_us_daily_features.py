@@ -799,11 +799,53 @@ def _panel_max_age_days() -> float:
         return PANEL_MAX_AGE_DAYS_DEFAULT
 
 
-def _newest_latest_panel(paths: BackfillPaths, output_prefix: str) -> Optional[Path]:
+def _consumer_panel(paths: BackfillPaths, output_prefix: str) -> Optional[Path]:
+    """소비자가 실제로 집는 패널 파일.
+
+    `report_nasdaq_daily_edge_shadow.py:388-403 resolve_panel_path`와 **같은 규칙**이어야 한다:
+    `{prefix}_*.parquet` glob에서 이름에 `_latest_`가 든 것을 제외하고 **mtime 최신순** 첫 번째.
+
+    `_latest_*.parquet`을 보고 판정하면 안 된다 — 소비자가 그 파일을 **명시적으로 제외**하므로,
+    그쪽이 신선하고 스탬프 패널이 낡은 상태에서 "최신"으로 오판한다.
+    goblin §3의 함정(리포트를 감시하고 원장을 놓친 것)과 같은 실패 형태다.
+    """
     if not paths.market_root.exists():
         return None
-    files = sorted(paths.market_root.glob(f"{output_prefix}_latest_*.parquet"), key=lambda p: p.name)
-    return files[-1] if files else None
+    candidates = sorted(
+        [p for p in paths.market_root.glob(f"{output_prefix}_*.parquet")
+         if "_latest_" not in p.name and p.is_file()],
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    return candidates[0] if candidates else None
+
+
+def _panel_max_date(path: Path):
+    """패널의 최대 date. **parquet 푸터 통계로 읽어 본문을 스캔하지 않는다.**
+
+    소비자가 읽는 전량 패널은 실측 평균 2.92GB다. 하루 3회 호출되는 판정이 매번 2.92GB를
+    읽으면 그 자체가 비용이 된다. row-group 통계는 푸터에만 있어 사실상 즉시 읽힌다.
+    통계가 없으면 date 컬럼만 읽는 경로로 폴백한다.
+    """
+    try:
+        import pyarrow.parquet as pq
+
+        pf = pq.ParquetFile(path)
+        date_idx = pf.schema_arrow.get_field_index("date")
+        if date_idx >= 0:
+            best = None
+            md = pf.metadata
+            for rg in range(md.num_row_groups):
+                stats = md.row_group(rg).column(date_idx).statistics
+                if stats is not None and stats.has_min_max:
+                    value = pd.Timestamp(stats.max)
+                    if best is None or value > best:
+                        best = value
+            if best is not None:
+                return best
+    except Exception:
+        pass
+    return pd.to_datetime(pd.read_parquet(path, columns=["date"])["date"], errors="coerce").max()
 
 
 def panel_status(paths: BackfillPaths, *, output_prefix: str = "daily_features") -> Dict[str, Any]:
@@ -814,10 +856,11 @@ def panel_status(paths: BackfillPaths, *, output_prefix: str = "daily_features")
     5분봉 캐시가 `exists()`만 보고 무한정 재사용되던 것. 파일이 새것인지가 아니라
     **데이터가 어디까지 있는지**를 본다.
 
-    최대일은 `{prefix}_latest_*.parquet`(실측 2.2MB)에서 읽는다 — 전량 패널(3.4GB)을
-    열지 않고도 같은 최대일을 얻으므로, 하루 3회 호출돼도 비용이 무시할 수준이다.
+    판정 대상은 **소비자가 실제로 읽는 파일**이다(`_latest_` 제외, mtime 최신순) —
+    소비자와 다른 파일을 보면 "스텝은 도는데 원장은 0행"이 그대로 재발한다.
+    최대일은 parquet 푸터 통계로 읽어 2.92GB 본문을 스캔하지 않는다.
     """
-    latest = _newest_latest_panel(paths, output_prefix)
+    latest = _consumer_panel(paths, output_prefix)
     limit = _panel_max_age_days()
     out: Dict[str, Any] = {"latest_panel": str(latest) if latest else None,
                            "panel_max_date": None, "age_days": None,
@@ -826,11 +869,10 @@ def panel_status(paths: BackfillPaths, *, output_prefix: str = "daily_features")
         out["reason"] = "no panel found"
         return out
     try:
-        frame = pd.read_parquet(latest, columns=["date"])
+        newest = _panel_max_date(latest)
     except Exception as exc:
         out["reason"] = f"panel unreadable: {type(exc).__name__}"
         return out
-    newest = pd.to_datetime(frame["date"], errors="coerce").max()
     if pd.isna(newest):
         out["reason"] = "panel has no usable date"
         return out

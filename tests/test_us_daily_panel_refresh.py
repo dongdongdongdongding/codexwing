@@ -217,12 +217,25 @@ def test_retention_disabled_keeps_everything(paths):
 # 판정은 **내용 기준**(패널 최대일)이다. mtime 기준은 이번 사고들의 공통 함정이라 쓰지 않는다.
 # --------------------------------------------------------------------------
 
-def _write_latest_panel(paths, stamp, max_date):
-    paths.market_root.mkdir(parents=True, exist_ok=True)
+def _panel_frame(max_date):
     idx = pd.bdate_range(end=pd.Timestamp(max_date), periods=3)
-    pd.DataFrame({"date": idx, "symbol": "AAA", "close": 1.0}).to_parquet(
+    return pd.DataFrame({"date": idx, "symbol": "AAA", "close": 1.0})
+
+
+def _write_latest_panel(paths, stamp, max_date):
+    """스탬프 패널(소비자가 읽는 것) + `_latest_`(소비자가 무시하는 것)을 함께 쓴다."""
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    _panel_frame(max_date).to_parquet(
         paths.market_root / f"daily_features_latest_{stamp}.parquet", index=False)
-    (paths.market_root / f"daily_features_20180101_20260630_{stamp}.parquet").write_text("x")
+    _panel_frame(max_date).to_parquet(
+        paths.market_root / f"daily_features_20180101_20260630_{stamp}.parquet", index=False)
+
+
+def _write_latest_only(paths, stamp, max_date):
+    """`_latest_` 만 — 소비자는 이걸 절대 안 본다."""
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    _panel_frame(max_date).to_parquet(
+        paths.market_root / f"daily_features_latest_{stamp}.parquet", index=False)
 
 
 def test_panel_status_reads_content_not_mtime(paths):
@@ -288,3 +301,52 @@ def test_daily_refresh_runs_when_stale(paths, monkeypatch):
     monkeypatch.setattr(bf, "_run_refresh", lambda *a, **k: {"status": "refreshed"})
 
     assert bf.daily_refresh(paths, output_prefix="daily_features", force=False)["status"] == "refreshed"
+
+
+# --------------------------------------------------------------------------
+# 소비자와 같은 파일을 봐야 한다 (anglerfish 실측 (3))
+#
+# report_nasdaq_daily_edge_shadow.py:388-403 의 resolve_panel_path 는
+# glob 결과에서 이름에 '_latest_' 가 든 파일을 **명시적으로 제외**한다.
+# 따라서 신선도 판정도 소비자가 실제로 읽는 파일(스탬프 전량 패널)로 해야 한다.
+# `_latest_` 를 보고 판정하면 goblin §3 의 함정(리포트를 보고 원장을 놓친 것)과 같은 실패다.
+# --------------------------------------------------------------------------
+
+def _write_stamped_panel(paths, stamp, max_date):
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    _panel_frame(max_date).to_parquet(
+        paths.market_root / f"daily_features_20180101_20260630_{stamp}.parquet", index=False)
+
+
+def test_panel_status_uses_the_file_the_consumer_reads(paths):
+    """`_latest_` 가 신선해도 소비자가 읽는 스탬프 패널이 낡았으면 낡은 것이다."""
+    _write_stamped_panel(paths, "20260629_113805", "2026-06-26")     # 소비자가 보는 것 — 낡음
+    _write_latest_only(paths, "20260816_010101", _today_minus(1))    # 소비자가 무시하는 것 — 신선
+
+    status = bf.panel_status(paths, output_prefix="daily_features")
+
+    assert status["panel_max_date"] == "2026-06-26"
+    assert status["current"] is False
+    assert "_latest_" not in (status["latest_panel"] or "")
+
+
+def test_panel_status_ignores_latest_only_directory(paths):
+    """`_latest_` 만 있고 스탬프 패널이 없으면 소비자는 볼 게 없다 → 최신 아님."""
+    _write_latest_only(paths, "20260816_010101", _today_minus(1))
+
+    assert bf.panel_status(paths, output_prefix="daily_features")["current"] is False
+
+
+def test_produced_panel_name_is_visible_to_the_consumer(paths, monkeypatch):
+    """산출물 이름에 '_latest_' 가 들어가면 소비자가 영원히 못 본다 —
+    '스텝은 도는데 원장은 0행'이 되고, 방금 고친 P0 와 같은 형태의 실패다."""
+    import re
+    _write_stamped_panel(paths, "20260816_010101", _today_minus(1))
+
+    consumer_visible = [
+        p for p in paths.market_root.glob("daily_features_*.parquet")
+        if "_latest_" not in p.name and p.is_file()
+    ]
+
+    assert consumer_visible, "소비자 glob 조건에 걸리는 산출물이 없다"
+    assert re.match(r"daily_features_\d{8}_\d{8}_\d{8}_\d{6}\.parquet$", consumer_visible[0].name)
