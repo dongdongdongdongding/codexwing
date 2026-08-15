@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -11,6 +12,7 @@ from .scan_executor import DiscordScanJob
 from modules.admission_metric_copy import metric_label
 from modules.candidate_interpretation import LANE_PROFILE, build_candidate_interpretation
 from modules.operational_candidate_scoring import MODEL_VALIDATED_LANES
+from modules.stream_exclusion import apply_stream_exclusion
 from modules.ticker_names import display_label
 from modules.execution_stop_display import build_execution_stop_display
 from modules.model_governance import active_policy_metadata
@@ -835,13 +837,44 @@ _SIGNALS_VIEW = {
 }
 
 
-def _b_signal_fields(limit: int = 5) -> List[Dict[str, Any]]:
-    """B 시장중립 픽 (b_engine/data/b_picks_latest.json) → 디스코드 필드."""
-    import json, os
-    fp = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                      "b_engine", "data", "b_picks_latest.json")
+_B_PICKS_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "b_engine", "data", "b_picks_latest.json")
+
+
+def _b_lane_suspended():
+    """B 레인 정지 여부. 판정 원본은 엔진(b_engine.model_scan.suspension)이다.
+
+    9d65181에서 정지를 엔진 계약으로 내렸으므로 여기서도 그걸 묻는다 — 마커 해석을
+    또 한 벌 복제하면 그게 바로 이 사고(호출자마다의 관례)의 재발이다.
+    엔진을 임포트할 수 없는 환경에서는 마커 존재만으로 fail-closed 판단한다.
+    """
     try:
-        d = json.load(open(fp))
+        from b_engine.model_scan import suspension
+        return suspension()
+    except Exception:
+        marker = os.path.join(os.path.dirname(_B_PICKS_PATH), "b_lane_suspended.json")
+        return {"suspended": True, "since": "", "reason": "정지 마커 확인 경로 제한 — 안전하게 정지로 취급"} \
+            if os.path.exists(marker) else None
+
+
+def _b_signal_fields(limit: int = 5) -> List[Dict[str, Any]]:
+    """B 시장중립 픽 (b_engine/data/b_picks_latest.json) → 디스코드 필드.
+
+    2026-08-16 (audit-stream-exclusion.md R2): 이 함수는 픽 파일을 **직독**해서
+    `build_candidate_interpretation` 훅도, 게이트도, 정지 마커도 지나지 않았다.
+    웹은 같은 픽을 `services.py:453`에서 막으면서 이유까지 적어놨는데
+    ("스캔이 멈추면 b_picks_latest.json 날짜가 동결되므로 명시적 서스펜션 게이트 필요")
+    Discord는 정반대로 동작했다 — 실측 당시 scan_date 2026-08-10에 동결된 10픽이
+    확률 98.1%를 달고 `/signals`로 나가고 있었다. 8067dc5와 무관한 기존 라이브 결함.
+    """
+    import json
+    if _b_lane_suspended():
+        return []
+    if apply_stream_exclusion({}, "b_market_neutral").get("stream_excluded"):
+        return []
+    try:
+        d = json.load(open(_B_PICKS_PATH))
     except Exception:
         return []
     out = []
@@ -852,18 +885,32 @@ def _b_signal_fields(limit: int = 5) -> List[Dict[str, Any]]:
     return out
 
 
-def _nasdaq_signal_fields(limit: int = 5) -> List[Dict[str, Any]]:
-    """NASDAQ 최신 스캔 픽 (scan_deep_reports market=NASDAQ) → 디스코드 필드."""
+def _nasdaq_rows(limit: int = 40) -> List[Dict[str, Any]]:
+    """NASDAQ 최신 스캔 행 조회 (테스트에서 갈아끼울 수 있게 분리)."""
     try:
-        import json as _j
         from modules.db_manager import DBManager
         db = DBManager()
         if not getattr(db, "client", None):
             return []
         q = (db.client.table("scan_deep_reports")
              .select("ticker,stock_name,candidate_interpretation,prediction,run_id,generated_at")
-             .eq("market", "NASDAQ").order("generated_at", desc=True).limit(40).execute())
-        rows = q.data or []
+             .eq("market", "NASDAQ").order("generated_at", desc=True).limit(limit).execute())
+        return q.data or []
+    except Exception:
+        return []
+
+
+def _nasdaq_signal_fields(limit: int = 5) -> List[Dict[str, Any]]:
+    """NASDAQ 최신 스캔 픽 (scan_deep_reports market=NASDAQ) → 디스코드 필드.
+
+    R2: 이 경로도 훅을 지나지 않아 저장된 해석에서 `entry_reference_price`만 꺼내 썼다.
+    지금은 UNGATED라 판정 결과가 안 바뀌지만, 나중에 매핑되면 걸려야 한다.
+    """
+    if apply_stream_exclusion({}, "nasdaq_session_edge").get("stream_excluded"):
+        return []
+    try:
+        import json as _j
+        rows = _nasdaq_rows(40)
         if not rows:
             return []
         latest = rows[0].get("run_id")

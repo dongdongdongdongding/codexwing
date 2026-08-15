@@ -126,32 +126,6 @@ def _next_trading_day(scan_date):
 _MEASURED_WIN_CACHE = {"ts": 0.0, "data": {}}
 
 
-_GATE_VERDICT_CACHE = {"ts": 0.0, "data": {}}
-# 웹 레인키 → 재귀게이트 레인명 (report_research_recursion_gate.py LANES)
-_GATE_LANE_MAP = {"kospi_swing": "swing_candidate", "kosdaq_swing": "swing_candidate",
-                  "kospi_intraday": "kospi_intraday_t5", "kosdaq_intraday": "kosdaq_intraday_t10"}
-
-
-def _gate_verdicts():
-    """재귀게이트 최신 판정 (research_recursion_gate_latest.json, 10분 캐시, fail-safe).
-    2026-08-03 PKG-A(§40): §20 'DEGRADE 레인은 스트림 제외' 정책의 발행 연동 —
-    DEGRADE 레인 픽은 사이징 권고를 제거하고 관측 전용으로 강등(원장·표시는 유지,
-    forward 측정 연속성 보존). 롤백: AG_DEGRADE_STREAM_EXCLUSION=0."""
-    import time as _t
-    if _t.time() - _GATE_VERDICT_CACHE["ts"] < 600 and _GATE_VERDICT_CACHE["data"]:
-        return _GATE_VERDICT_CACHE["data"]
-    out = {}
-    try:
-        fp = os.path.join(REPO, "runtime_state/reports/validation/research_recursion_gate_latest.json")
-        rep = json.load(open(fp, encoding="utf-8"))
-        for r in rep.get("results", []):
-            out[r.get("lane")] = {"verdict": r.get("verdict"), "fwd_ev": r.get("fwd_ev"), "n": r.get("n")}
-    except Exception:
-        pass
-    _GATE_VERDICT_CACHE.update(ts=_t.time(), data=out)
-    return out
-
-
 def _measured_win():
     """레인별 실측 승률 (정산 원장) — §38: 개별 p는 라이브 비캘리브레이션 → 표시용 통계는
     실측으로. n<20 레인은 동결 백테스트 승률로 폴백(출처 표기).
@@ -302,7 +276,7 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     # 여기 한 곳에만 있어서 Discord 카드·top_deep이 게이트를 못 읽었고(F1),
     # 리더가 fail-open이라 게이트가 깨지면 제외가 조용히 풀렸다(F2). 이제 fail-closed다.
     from modules.stream_exclusion import apply_stream_exclusion
-    apply_stream_exclusion(row, lane_key)
+    apply_stream_exclusion(row, lane_key, strict=True)
     # §16 tail 사전탐지(swing-main-clbb): tail_p 관측 필드 — 발행/사이징/베토/랭킹 불변.
     # 강제 베토는 §16에서 REJECT(최악픽 -71.6 미탐·동결기준 미충족) → 승인 방향은 관측 노출
     # + 경고 배지 + forward 상관 추적뿐. 경고 경계는 학습 시 기록된 OOS 상위 20%(top-quintile).

@@ -267,6 +267,88 @@ def test_missing_gate_file_also_withdraws_the_discord_buy_card(monkeypatch, tmp_
     assert interp["stream_exclusion_reason"] == "gate_unavailable"
 
 
+# --------------------------------------------------------------------------
+# R3 — 레인 선언 불변식
+# --------------------------------------------------------------------------
+
+def test_web_nasdaq_lane_is_declared(tmp_path):
+    """`nasdaq_swing`(services.py:517)이 두 집합 어디에도 없어 조용히 통과했다.
+
+    커밋이 내세운 계약은 "공백을 코드에 명시한다"였는데 그 명시가 **Discord 어휘에만**
+    적용됐다. 잡겠다던 근본원인(두 어휘)이 선언 계층에서 재발한 것이다.
+    """
+    assert "nasdaq_swing" in se.UNGATED_PUBLISHED_LANES
+
+
+def test_lane_sets_are_disjoint():
+    """'정확히 하나' — 두 집합에 동시에 들어가면 의미가 모순된다."""
+    assert not (set(se.GATE_LANE_MAP) & set(se.UNGATED_PUBLISHED_LANES))
+
+
+def test_every_discord_publish_lane_is_declared():
+    from modules.operational_candidate_scoring import MODEL_VALIDATED_LANES
+
+    assert not (set(MODEL_VALIDATED_LANES) - se.DECLARED_PUBLISHED_LANES)
+
+
+def test_undeclared_lane_is_fail_closed_at_the_publish_chokepoint(tmp_path):
+    """불변식을 **프로덕션 코드**로 강제한다 — 테스트 단언 하나로는 다음 레인을 못 막는다.
+
+    발행 관문(`_pick_row`)에서 미선언 레인은 조용히 통과하는 대신 사이징을 잃고
+    이유를 남긴다. 선언을 잊으면 조용히 새는 게 아니라 눈에 띄게 막힌다.
+    """
+    row = se.apply_stream_exclusion(
+        _sized_row(), "brand_new_lane_nobody_declared", gate_path=tmp_path / "absent.json", strict=True)
+
+    assert row["stream_excluded"] is True
+    assert row["stream_exclusion_reason"] == "lane_undeclared"
+    assert "size_pct_total" not in row
+
+
+def test_arbitrary_discord_buckets_are_not_fail_closed(tmp_path):
+    """비-strict 경로(해석 빌더)는 admission 등 임의 버킷을 지나므로 막으면 안 된다."""
+    row = se.apply_stream_exclusion(_sized_row(), "", gate_path=tmp_path / "absent.json")
+
+    assert row.get("stream_excluded") is not True
+    assert row["size_pct_total"] == 2.0
+
+
+# --------------------------------------------------------------------------
+# R4 — verdict 화이트리스트 + 미래시각
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize("verdict", ["CONFIRM", "OBSERVING", "EXCEED"])
+def test_known_healthy_verdicts_keep_sizing(tmp_path, verdict):
+    path = _write_gate(tmp_path, {"swing_candidate": verdict})
+
+    row = se.apply_stream_exclusion(_sized_row(), "kospi_swing", gate_path=path)
+
+    assert row.get("stream_excluded") is not True
+
+
+@pytest.mark.parametrize("verdict", ["DEGRADE", "DEGRADED", "degrade", 0, None, "", "UNKNOWN"])
+def test_anything_not_on_the_whitelist_is_excluded(tmp_path, verdict):
+    """`== "DEGRADE"` 블랙리스트는 값만 오염돼도 fail-**open**이었다.
+
+    리포에 이미 다른 의미의 "DEGRADED"(파이프라인 헬스)가 있어 어휘충돌은 가설이 아니다.
+    """
+    path = _write_gate(tmp_path, {"swing_candidate": verdict})
+
+    row = se.apply_stream_exclusion(_sized_row(), "kospi_swing", gate_path=path)
+
+    assert row["stream_excluded"] is True, f"verdict={verdict!r} 가 통과했다"
+
+
+def test_future_dated_gate_report_is_rejected(tmp_path):
+    """음수 age 미검사 — 미래시각 리포트가 영원히 '신선'했다."""
+    path = _write_gate(tmp_path, {"swing_candidate": "OBSERVING"}, age_hours=-100)
+
+    row = se.apply_stream_exclusion(_sized_row(), "kospi_swing", gate_path=path)
+
+    assert row["stream_excluded"] is True
+    assert row["stream_exclusion_reason"] == "gate_stale"
+
+
 def test_ungated_lane_keeps_its_card_even_without_a_gate(monkeypatch, tmp_path):
     """nasdaq_session_edge는 무게이트 — 게이트가 없어도 현상 유지 (운영자 결정)."""
     from modules.candidate_interpretation import build_candidate_interpretation
@@ -278,3 +360,20 @@ def test_ungated_lane_keeps_its_card_even_without_a_gate(monkeypatch, tmp_path):
 
     assert interp.get("stream_excluded") is not True
     assert interp["buy_ready"] is True
+
+
+# --------------------------------------------------------------------------
+# R5 — 사문화된 옛 리더 제거
+# --------------------------------------------------------------------------
+
+def test_old_fail_open_gate_reader_is_gone():
+    """`_gate_verdicts`/`_GATE_LANE_MAP`는 호출자가 없는 **두 번째 낡은 사본**이다.
+
+    단일 출처를 만든다는 목적과 정반대다 — 나중에 이쪽을 고치면 아무 효과가 없고,
+    `_gate_verdicts`를 재사용하면 F2(fail-open)가 되살아난다.
+    """
+    from web.backend import services
+
+    assert not hasattr(services, "_gate_verdicts")
+    assert not hasattr(services, "_GATE_LANE_MAP")
+    assert not hasattr(services, "_GATE_VERDICT_CACHE")
