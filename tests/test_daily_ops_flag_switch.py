@@ -44,14 +44,17 @@ run_optional() { echo "[RAN] $1"; }
 """
 
 
-def guard_block(step: str = STEP) -> str:
-    """스텝을 감싸는 `if ... fi` 블록을 run_daily_ops.sh 에서 원문 그대로 추출한다."""
+def guard_block(step: str = STEP, flag: str = FLAG) -> str:
+    """스텝을 감싸는 `if ... fi` 블록을 run_daily_ops.sh 에서 원문 그대로 추출한다.
+
+    가드는 들여쓰기될 수 있으므로(중첩) strip 후 판정한다.
+    """
     lines = OPS.read_text(encoding="utf-8").splitlines()
     step_idx = next((i for i, l in enumerate(lines) if f'[STEP] {step}' in l), None)
     assert step_idx is not None, f"{step} 스텝을 찾지 못했다 — 추출이 깨진 것"
     start = next((i for i in range(step_idx, -1, -1)
-                  if lines[i].startswith("if [[") and "SESSION_EDGE" in lines[i]), None)
-    assert start is not None, "가드 if 문을 찾지 못했다 — 추출이 깨진 것"
+                  if lines[i].strip().startswith("if [[") and flag in lines[i]), None)
+    assert start is not None, f"{flag} 가드 if 문을 찾지 못했다 — 추출이 깨진 것"
     depth = 0
     for i in range(start, len(lines)):
         s = lines[i].strip()
@@ -176,3 +179,129 @@ def test_every_declared_stop_has_a_visible_skip():
     block = guard_block()
     assert "else" in block and "[SKIP]" in block, (
         f"가드에 SKIP 분기가 없다 — 꺼져도 로그에 흔적이 없다:\n{block[:400]}")
+
+
+# ---------------------------------------------------------------------------
+# NASDAQ 일봉 패널 갱신 스텝 배선 (audit-ledger-rewrite-pattern.md §2.2)
+# ---------------------------------------------------------------------------
+# 원장이 승격 이래 0행이었던 직접 원인은 원천 패널이 2026-06-29 동결이고 재생성 스텝이
+# 아예 없었던 것이다. 생산자 계약은 impl-nasdaq-daily-panel-seaslug.md.
+
+PANEL_FLAG = "AG_US_DAILY_PANEL_REFRESH_ENABLE"
+PANEL_STEP = "backfill_us_daily_features"
+PANEL_CONSUMER = "report_nasdaq_daily_edge_shadow"
+
+# 생산자를 대신하는 스텁. 블록이 python3 를 호출하므로 셸 함수로 가로챈다.
+PANEL_HARNESS = """#!/bin/bash
+set -uo pipefail
+run_optional() { echo "[RAN] $1"; }
+python3() { echo '%s'; return %d; }
+%s
+"""
+PANEL_JSON_OK = '{"status": "already_current", "panel_max_date": "2026-08-14", "age_days": 2}'
+PANEL_JSON_FAIL = '{"status": "error", "reason": "network"}'
+
+
+def run_panel_block(tmp_path: Path, *, stdout=PANEL_JSON_OK, rc=0, **flags) -> str:
+    script = tmp_path / "panel.sh"
+    script.write_text(PANEL_HARNESS % (stdout, rc, guard_block(PANEL_STEP, PANEL_FLAG)),
+                      encoding="utf-8")
+    env = {k: v for k, v in os.environ.items() if not k.startswith("AG_US_DAILY")}
+    env.update({k: str(v) for k, v in flags.items()})
+    r = subprocess.run([SYSTEM_BASH, str(script)], capture_output=True, text=True,
+                       timeout=60, env=env, cwd=str(REPO))
+    return r.stdout + r.stderr
+
+
+# --- (a) 가드 선언 = 실제 실행 -------------------------------------------------
+
+def test_panel_step_runs_by_default(tmp_path):
+    out = run_panel_block(tmp_path)
+    assert f"[STEP] {PANEL_STEP}" in out, out
+
+
+def test_panel_flag_zero_actually_skips(tmp_path):
+    out = run_panel_block(tmp_path, **{PANEL_FLAG: "0"})
+    assert f"[SKIP] {PANEL_STEP}" in out, out
+    assert f"[STEP] {PANEL_STEP}" not in out, out
+    assert PANEL_FLAG in out, "SKIP 줄이 어떤 플래그 때문인지 밝히지 않는다"
+
+
+def test_panel_guard_is_single_name():
+    head = guard_block(PANEL_STEP, PANEL_FLAG).splitlines()[0]
+    assert PANEL_FLAG in head and ":-${" not in head, head
+
+
+# --- (b) 소비자가 새 패널을 집는가 ---------------------------------------------
+
+def test_consumer_picks_the_newest_non_latest_panel(tmp_path, monkeypatch):
+    """배선의 성패는 소비자가 갱신분을 실제로 여는지에 달렸다.
+
+    소비자는 `_latest_` 가 든 이름을 **명시적으로 제외**한다. 생산자가 그 이름으로 쓰면
+    "스텝은 already_current 인데 소비자는 동결 패널을 본다" — seaslug 초기 구현의 결함이
+    정확히 이것이었고 내가 배선 전 경고한 함정이다. 실제 소비자 함수로 고정한다.
+    """
+    consumer = pytest.importorskip("multi_agent.tools.report_nasdaq_daily_edge_shadow")
+    monkeypatch.setattr(consumer, "DEFAULT_PANEL_ROOT", tmp_path)
+    old = tmp_path / "daily_features_20180101_20260630_20260629_113805.parquet"
+    new = tmp_path / "daily_features_20180101_20260814_20260816_010101.parquet"
+    trap = tmp_path / "daily_features_latest_20260816_010101.parquet"
+    for f in (old, new, trap):
+        f.write_bytes(b"x")
+    os.utime(old, (1, 1))
+    os.utime(new, (100, 100))
+    os.utime(trap, (999, 999))          # 가장 최신이지만 소비자는 봐선 안 된다
+
+    picked = consumer.resolve_panel_path("latest")
+
+    assert picked == new, f"소비자가 갱신 패널을 집지 않았다: {picked}"
+    assert "_latest_" not in picked.name
+
+
+def test_producer_output_name_must_not_contain_latest():
+    """생산자 산출물 이름 규칙 — 계약의 핵심 조건이라 배선 쪽에서도 고정한다."""
+    consumer = pytest.importorskip("multi_agent.tools.report_nasdaq_daily_edge_shadow")
+    src = Path(consumer.__file__).read_text(encoding="utf-8")
+    assert '"_latest_" not in' in src, "소비자의 _latest_ 제외 규칙이 사라졌다 — 계약 전제가 바뀐다"
+
+
+# --- (c) stdout status 가 로그에 남는가 ----------------------------------------
+
+def test_panel_status_json_is_logged_on_success(tmp_path):
+    """run_optional 은 실패를 [WARN] 한 줄로 삼킨다. 이번 사고들의 뿌리가 그 삼킴이라
+    생산자가 stdout 에 내는 status 를 라벨 붙여 남긴다(생산자 요청 사항)."""
+    out = run_panel_block(tmp_path)
+    assert "already_current" in out, f"stdout status 가 로그에 없다:\n{out}"
+    assert "[DATA]" in out, "status 줄에 라벨이 없어 grep 이 어렵다"
+
+
+def test_panel_failure_is_visible_and_does_not_kill_dailyops(tmp_path):
+    out = run_panel_block(tmp_path, stdout=PANEL_JSON_FAIL, rc=1)
+    assert "[WARN]" in out, f"실패가 로그에 드러나지 않는다:\n{out}"
+    assert "rc=1" in out, "종료코드가 로그에 없다"
+    assert PANEL_JSON_FAIL.split(",")[0][2:] in out or "error" in out, "실패 status 가 유실됐다"
+
+
+def test_panel_failure_does_not_abort_the_block(tmp_path):
+    """run_daily_ops.sh 는 set -e 다 — 실패를 잘못 다루면 dailyops 전체가 죽는다."""
+    out = run_panel_block(tmp_path, stdout=PANEL_JSON_FAIL, rc=1)
+    assert "[WARN]" in out and "[STEP]" in out
+
+
+# --- 순서 — 갱신이 소비자보다 앞이어야 그날 갱신분이 반영된다 ---------------------
+
+def test_panel_refresh_runs_before_its_consumer():
+    lines = OPS.read_text(encoding="utf-8").splitlines()
+    refresh = next(i for i, l in enumerate(lines) if f"[STEP] {PANEL_STEP}" in l)
+    consumer = next(i for i, l in enumerate(lines) if f"[STEP] {PANEL_CONSUMER}" in l)
+    assert refresh < consumer, (
+        f"갱신({refresh})이 소비자({consumer})보다 뒤에 있다 — 그날 갱신분이 반영되지 않는다")
+
+
+def test_panel_step_is_inside_the_nasdaq_swing_lane_guard():
+    """레인이 꺼져 있으면 패널도 갱신하지 않는다 — 선례(update_us_hourly)와 같은 구조."""
+    lines = OPS.read_text(encoding="utf-8").splitlines()
+    refresh = next(i for i, l in enumerate(lines) if f"[STEP] {PANEL_STEP}" in l)
+    lane = next(i for i, l in enumerate(lines)
+                if l.startswith("if [[") and "AG_NASDAQ_SWING_MODEL_ENABLE" in l)
+    assert lane < refresh, "패널 갱신이 레인 가드 밖에 있다"

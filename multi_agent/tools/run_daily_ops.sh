@@ -317,6 +317,41 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
   if [[ "${AG_NASDAQ_SWING_NO_MODEL_BUNDLE:-0}" == "1" ]]; then
     NASDAQ_SWING_ARGS+=(--no-model-bundle)
   fi
+  # --- NASDAQ 일봉 피처 패널 갱신 (2026-08-16, audit-ledger-rewrite-pattern.md §2.2) ---
+  # nasdaq_swing_daily_edge 원장이 승격(06-30) 이래 0행이었다. 세션 차단도 오류도 아니고,
+  # 원천 패널(~/research_cache/us_daily/NASDAQ/daily_features_*.parquet)이 2026-06-29 에
+  # 동결됐는데 **재생성 스텝이 아예 없었다.** 매일 돌면서 0을 쓰고 파일만 다시 만들었다.
+  # 소비자(아래 report_nasdaq_daily_edge_shadow)가 --panel latest 로 그 캐시를 glob 하므로
+  # 갱신은 반드시 **소비자보다 앞**이어야 그날 갱신분이 반영된다.
+  # 선례: 세션테이프 레인(update_us_hourly → report_nasdaq_session_tape)과 같은 순서다.
+  # 생산자 계약: orca/reports/impl-nasdaq-daily-panel-seaslug.md
+  #   - 이미 최신이면 즉시 반환(멱등) — primary_daily_ops 가 하루 3회 돌기 때문에 필수다
+  #   - stdout 에 JSON 한 줄, 종료코드 0 = already_current|refreshed
+  #   - AG_US_DAILY_PANEL_MAX_AGE_DAYS(4) / _RAW_MAX_AGE_DAYS(5) / _KEEP_PANELS(3)
+  if [[ "${AG_US_DAILY_PANEL_REFRESH_ENABLE:-1}" == "1" ]]; then
+    US_DAILY_PANEL_ARGS=(--daily-refresh --market NASDAQ)
+    if [[ "${AG_US_DAILY_PANEL_FORCE_REFRESH:-0}" == "1" ]]; then
+      US_DAILY_PANEL_ARGS+=(--force-refresh)
+    fi
+    echo "[STEP] backfill_us_daily_features (NASDAQ 일봉패널)"
+    # run_optional 을 그대로 쓰지 않는 이유: 실패가 "[WARN] … (continuing)" 한 줄로 삼켜진다.
+    # 이 리포의 사고들(원장 0행 7주, 플래그 무효 100회, 데일리옵스 153/153)이 전부 그 삼킴
+    # 계열이라, 생산자가 stdout 에 내는 status JSON 을 라벨 붙여 남긴다. 실패해도 dailyops
+    # 전체는 계속한다(생산자 권고) — 대신 조용히 지나가지는 않는다.
+    if US_DAILY_PANEL_OUT="$(python3 multi_agent/tools/backfill_us_daily_features.py "${US_DAILY_PANEL_ARGS[@]}")"; then
+      US_DAILY_PANEL_RC=0
+    else
+      US_DAILY_PANEL_RC=$?
+    fi
+    echo "[DATA] us_daily_panel rc=${US_DAILY_PANEL_RC} ${US_DAILY_PANEL_OUT}"
+    if [[ "${US_DAILY_PANEL_RC}" == "0" ]]; then
+      echo "[OK] backfill_us_daily_features"
+    else
+      echo "[WARN] backfill_us_daily_features failed rc=${US_DAILY_PANEL_RC} — 소비자는 이전 패널로 채점한다(원장 정체 가능)"
+    fi
+  else
+    echo "[SKIP] backfill_us_daily_features — AG_US_DAILY_PANEL_REFRESH_ENABLE=0 (재개: =1)"
+  fi
   echo "[STEP] report_nasdaq_daily_edge_shadow"
   run_optional "report_nasdaq_daily_edge_shadow" \
     python3 multi_agent/tools/report_nasdaq_daily_edge_shadow.py "${NASDAQ_SWING_ARGS[@]}"
