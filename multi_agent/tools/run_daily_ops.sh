@@ -322,7 +322,16 @@ if [[ "${AG_NASDAQ_SWING_MODEL_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_nasdaq_daily_edge_shadow.py "${NASDAQ_SWING_ARGS[@]}"
 fi
 
-if [[ "${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-0}}" == "1" ]]; then
+# 2026-08-16 수리 (추적 orca/reports/trace-ops-flag-mismatch.md): 중첩 2이름 폴백 제거.
+#   이전: ${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-0}}
+#   1순위 신규명은 리포 전체에서 설정하는 곳이 0건이고, 2순위 레거시명은 호출자
+#   (run_primary_market_session_ops.py)가 항상 주입했다 → 3순위 리터럴은 **도달 불가**.
+#   2026-07-05 b6d2477 이 "기본 OFF"라며 바꾼 것이 정확히 그 도달 불가 리터럴이라
+#   스케줄 경로에서 no-op 이었고, 레인은 06-30 승격 이래 100회 실행 SKIP 0회로 계속 돌았다.
+#   이름 하나·기본값 하나·기록 한 곳으로 정리한다. 기본값 1 은 종전 실효 동작(항상 ON)을
+#   그대로 옮긴 것이며, 운영자 결정도 이 레인은 수리해 존속이다. 끄려면 =0 을 주면 되고
+#   그때는 아래 else 가 [SKIP] 을 남긴다(꺼진 사실이 로그에 보여야 한다).
+if [[ "${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-1}" == "1" ]]; then
   # NASDAQ regular-close session edge lane (2026-06-30): promotes the strongest recent
   # regular_close session candidate into the operator-enabled new-web scan lane. It still
   # carries sample-limit trace metadata until multi-year 04:00-20:00 ET plus 20:00-04:00 ET
@@ -343,10 +352,14 @@ if [[ "${AG_NASDAQ_SESSION_EDGE_ENABLE:-${AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE:-
   if [[ "${AG_NASDAQ_SESSION_EDGE_NO_MODEL_BUNDLE:-0}" == "1" ]]; then
     NASDAQ_SESSION_EDGE_ARGS+=(--no-model-bundle)
   fi
-  # 2026-07-05 기본 OFF: 세션테이프 레인(report_nasdaq_session_tape, §12-D)이 후계 — 원장 1행/검증 False였음.
+  # 2026-07-05 주석은 "기본 OFF"라고 적혀 있었으나 실제로는 한 번도 꺼진 적이 없다(위 참조).
+  # 후계 논의(report_nasdaq_session_tape, §12-D)는 유효하나 중지 여부는 운영자 결정 사항이며,
+  # 지금은 이 플래그가 실제로 동작한다는 것까지가 코드의 책임이다.
   echo "[STEP] report_nasdaq_session_edge_shadow"
   run_optional "report_nasdaq_session_edge_shadow" \
     python3 multi_agent/tools/report_nasdaq_session_edge_shadow.py "${NASDAQ_SESSION_EDGE_ARGS[@]}"
+else
+  echo "[SKIP] report_nasdaq_session_edge_shadow — AG_NASDAQ_SESSION_EDGE_SHADOW_ENABLE=0 (재개: =1)"
 fi
 
 # NASDAQ 세션테이프 shadow (swing-main-f9yw, §12-D): 시간봉 증분 갱신 → rank-1 shadow 픽.
