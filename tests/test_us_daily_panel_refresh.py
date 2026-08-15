@@ -1,0 +1,290 @@
+"""US 일봉 피처 패널의 증분 갱신·보존 (audit-ledger-rewrite-pattern.md §2.2).
+
+`~/research_cache/us_daily/NASDAQ/daily_features_*.parquet`가 2026-06-29 기록 후 동결됐고
+**갱신 주체가 아예 없었다.** 그 결과 `nasdaq_swing_daily_edge_shadow_ledger.jsonl`이
+승격 이래 **0행**인 채로 매일 재기록됐고(차단도 오류도 아님),
+`nasdaq_session_edge`도 같은 일봉 컨텍스트를 물어 `score_date`가 06-26에 고정됐다.
+
+생산자는 이미 존재한다: `backfill_us_daily_features.py`.
+파일명 규칙이 동결된 산출물과 정확히 일치한다
+(`daily_features_{start}_{end}_{stamp}.parquet` / `daily_features_latest_{stamp}.parquet`).
+새로 쓰지 않고 이 스크립트를 되살린다 — 같은 스키마·같은 가정을 유지하기 위해서다.
+
+되살리려면 두 가지를 고쳐야 한다:
+
+1. **raw OHLCV가 5분봉 캐시와 똑같은 결함을 갖고 있다.**
+       to_fetch = [sym for sym in symbols if force_raw or not _raw_path(paths, sym).exists()]
+   파일이 **존재하기만 하면** 건너뛴다 — 신선도 검사가 없다. 그래서 매일 돌려도
+   3,882개 raw가 전부 skip되고 06-29 데이터로 패널만 다시 만든다.
+   `--force-raw`는 전 종목 전 기간 재fetch라 일일 운영에 못 쓴다.
+
+2. **패널이 실행마다 새 타임스탬프 파일로 쌓인다.** 실측 3.4GB/회(이미 2회분 5.8GB).
+   보존 정책 없이 일일 실행하면 디스크가 하루 3.4GB씩 는다.
+"""
+from __future__ import annotations
+
+from datetime import date, datetime, timedelta
+
+import pandas as pd
+import pytest
+
+from multi_agent.tools import backfill_us_daily_features as bf
+
+RAW_COLUMNS = ["date", "symbol", "name", "market", "open", "high", "low", "close",
+               "raw_close", "adj_close", "volume", "adj_factor", "dollar_volume", "source"]
+
+
+def _raw_frame(symbol: str, start: str, days: int, close: float = 10.0) -> pd.DataFrame:
+    idx = pd.bdate_range(start=start, periods=days)
+    return pd.DataFrame({
+        "date": idx, "symbol": symbol, "name": symbol, "market": "NASDAQ",
+        "open": close, "high": close, "low": close, "close": close,
+        "raw_close": close, "adj_close": close, "volume": 1000,
+        "adj_factor": 1.0, "dollar_volume": close * 1000, "source": "yfinance",
+    })[RAW_COLUMNS]
+
+
+@pytest.fixture
+def paths(tmp_path):
+    p = bf.BackfillPaths(root=tmp_path, market="NASDAQ")
+    p.raw_dir.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def _write_raw(paths, symbol, frame):
+    frame.to_parquet(bf._raw_path(paths, symbol), index=False)
+
+
+def _today_minus(days):
+    return (date.today() - timedelta(days=days)).isoformat()
+
+
+# --------------------------------------------------------------------------
+# raw 신선도 — 5분봉 캐시와 같은 계열의 결함
+# --------------------------------------------------------------------------
+
+def test_stale_raw_is_detected(paths):
+    """존재만으로 통과시키던 지점. 06-29 동결 raw는 낡은 것으로 판정돼야 한다."""
+    _write_raw(paths, "AAA", _raw_frame("AAA", "2026-06-01", 20))
+
+    assert bf._raw_stale_reason(bf._raw_path(paths, "AAA")) is not None
+
+
+def test_fresh_raw_is_not_flagged(paths):
+    _write_raw(paths, "AAA", _raw_frame("AAA", _today_minus(10), 5))
+
+    assert bf._raw_stale_reason(bf._raw_path(paths, "AAA")) is None
+
+
+def test_missing_raw_is_reported_as_absent(paths):
+    assert bf._raw_stale_reason(bf._raw_path(paths, "NOPE")) is not None
+
+
+def test_refresh_stale_raw_selects_only_stale_symbols(paths, monkeypatch):
+    """신선한 심볼까지 매일 재fetch하면 3,882종목이 감당이 안 된다."""
+    _write_raw(paths, "OLD", _raw_frame("OLD", "2026-06-01", 20))
+    _write_raw(paths, "NEW", _raw_frame("NEW", _today_minus(6), 4))
+    universe = pd.DataFrame([{"symbol": "OLD", "name": "OLD"}, {"symbol": "NEW", "name": "NEW"}])
+
+    seen = []
+
+    def _fake_batch(symbols, start, end, timeout):
+        seen.extend(symbols)
+        return pd.DataFrame()
+
+    monkeypatch.setattr(bf, "_download_batch", _fake_batch)
+    monkeypatch.setattr(bf, "_download_single", lambda s, st, e, t: _raw_frame(s, _today_minus(3), 2))
+
+    bf.fetch_raw_ohlcv(universe, paths, start="2018-01-01", end=_today_minus(0),
+                       batch_size=10, timeout=5, sleep=0, force_raw=False, refresh_stale=True)
+
+    assert "OLD" in seen
+    assert "NEW" not in seen, "신선한 심볼을 다시 받았다"
+
+
+# --------------------------------------------------------------------------
+# 병합 — 과거 구간을 잃지 않는다 (5분봉 캐시와 같은 원칙)
+# --------------------------------------------------------------------------
+
+def test_incremental_refresh_merges_and_keeps_history(paths, monkeypatch):
+    """증분 갱신이 **과거를 잘라먹으면 안 된다**."""
+    old = _raw_frame("AAA", "2018-01-01", 30, close=5.0)
+    _write_raw(paths, "AAA", old)
+    universe = pd.DataFrame([{"symbol": "AAA", "name": "AAA"}])
+    monkeypatch.setattr(bf, "_download_batch", lambda s, st, e, t: pd.DataFrame())
+    monkeypatch.setattr(bf, "_download_single",
+                        lambda s, st, e, t: _raw_frame("AAA", _today_minus(5), 3, close=9.0))
+
+    bf.fetch_raw_ohlcv(universe, paths, start="2018-01-01", end=_today_minus(0),
+                       batch_size=10, timeout=5, sleep=0, force_raw=False, refresh_stale=True)
+
+    merged = pd.read_parquet(bf._raw_path(paths, "AAA"))
+    assert pd.to_datetime(merged["date"]).min() == pd.to_datetime(old["date"]).min()
+    assert pd.to_datetime(merged["date"]).max() > pd.to_datetime(old["date"]).max()
+    assert not merged["date"].duplicated().any()
+    assert merged["date"].is_monotonic_increasing
+
+
+def test_empty_fetch_leaves_raw_untouched(paths, monkeypatch):
+    old = _raw_frame("AAA", "2018-01-01", 30)
+    _write_raw(paths, "AAA", old)
+    universe = pd.DataFrame([{"symbol": "AAA", "name": "AAA"}])
+    monkeypatch.setattr(bf, "_download_batch", lambda s, st, e, t: pd.DataFrame())
+    monkeypatch.setattr(bf, "_download_single", lambda s, st, e, t: pd.DataFrame())
+
+    bf.fetch_raw_ohlcv(universe, paths, start="2018-01-01", end=_today_minus(0),
+                       batch_size=10, timeout=5, sleep=0, force_raw=False, refresh_stale=True)
+
+    assert len(pd.read_parquet(bf._raw_path(paths, "AAA"))) == len(old)
+
+
+def test_fetch_exception_does_not_destroy_raw(paths, monkeypatch):
+    old = _raw_frame("AAA", "2018-01-01", 30)
+    _write_raw(paths, "AAA", old)
+    universe = pd.DataFrame([{"symbol": "AAA", "name": "AAA"}])
+
+    def _boom(*a, **k):
+        raise RuntimeError("network down")
+
+    monkeypatch.setattr(bf, "_download_batch", _boom)
+    monkeypatch.setattr(bf, "_download_single", _boom)
+
+    bf.fetch_raw_ohlcv(universe, paths, start="2018-01-01", end=_today_minus(0),
+                       batch_size=10, timeout=5, sleep=0, force_raw=False, refresh_stale=True)
+
+    assert len(pd.read_parquet(bf._raw_path(paths, "AAA"))) == len(old)
+
+
+def test_new_bars_win_on_overlapping_dates(paths, monkeypatch):
+    """겹치는 날짜는 신규가 이긴다 (수정·분할 반영)."""
+    _write_raw(paths, "AAA", _raw_frame("AAA", "2018-01-01", 30, close=5.0))
+    universe = pd.DataFrame([{"symbol": "AAA", "name": "AAA"}])
+    monkeypatch.setattr(bf, "_download_batch", lambda s, st, e, t: pd.DataFrame())
+    monkeypatch.setattr(bf, "_download_single",
+                        lambda s, st, e, t: _raw_frame("AAA", "2018-01-01", 3, close=77.0))
+
+    bf.fetch_raw_ohlcv(universe, paths, start="2018-01-01", end=_today_minus(0),
+                       batch_size=10, timeout=5, sleep=0, force_raw=False, refresh_stale=True)
+
+    merged = pd.read_parquet(bf._raw_path(paths, "AAA")).sort_values("date")
+    assert float(merged["close"].iloc[0]) == 77.0
+
+
+# --------------------------------------------------------------------------
+# 패널 보존 — 3.4GB/회가 무한 적재되면 안 된다
+# --------------------------------------------------------------------------
+
+def _touch_panel(paths, stamp):
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    for suffix in ("parquet",):
+        (paths.market_root / f"daily_features_20180101_20260630_{stamp}.{suffix}").write_text("x")
+        (paths.market_root / f"daily_features_latest_{stamp}.{suffix}").write_text("x")
+
+
+def test_retention_keeps_only_the_newest_panels(paths):
+    for stamp in ("20260601_010101", "20260615_010101", "20260629_113805", "20260816_010101"):
+        _touch_panel(paths, stamp)
+
+    removed = bf.prune_old_panels(paths, output_prefix="daily_features", keep=2)
+
+    remaining = sorted(p.name for p in paths.market_root.glob("daily_features_2*.parquet"))
+    assert len(remaining) == 2
+    assert any("20260816_010101" in n for n in remaining)
+    assert removed, "정리된 파일이 보고되지 않았다"
+
+
+def test_retention_never_removes_the_newest(paths):
+    _touch_panel(paths, "20260816_010101")
+
+    bf.prune_old_panels(paths, output_prefix="daily_features", keep=1)
+
+    assert list(paths.market_root.glob("daily_features_2*.parquet"))
+
+
+def test_retention_disabled_keeps_everything(paths):
+    for stamp in ("20260601_010101", "20260816_010101"):
+        _touch_panel(paths, stamp)
+
+    removed = bf.prune_old_panels(paths, output_prefix="daily_features", keep=0)
+
+    assert removed == []
+    assert len(list(paths.market_root.glob("daily_features_2*.parquet"))) == 2
+
+
+# --------------------------------------------------------------------------
+# 멱등성 / TTL — primary_daily_ops 가 하루 3회 돈다 (중앙값 4.46h, n=25)
+# 이미 최신이면 즉시 반환해야 나머지 2회가 순수 낭비가 되지 않는다.
+# 판정은 **내용 기준**(패널 최대일)이다. mtime 기준은 이번 사고들의 공통 함정이라 쓰지 않는다.
+# --------------------------------------------------------------------------
+
+def _write_latest_panel(paths, stamp, max_date):
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    idx = pd.bdate_range(end=pd.Timestamp(max_date), periods=3)
+    pd.DataFrame({"date": idx, "symbol": "AAA", "close": 1.0}).to_parquet(
+        paths.market_root / f"daily_features_latest_{stamp}.parquet", index=False)
+    (paths.market_root / f"daily_features_20180101_20260630_{stamp}.parquet").write_text("x")
+
+
+def test_panel_status_reads_content_not_mtime(paths):
+    """패널 최대일로 판정한다. 파일을 새로 만져도(mtime 갱신) 내용이 낡으면 낡은 것이다."""
+    _write_latest_panel(paths, "20260629_113805", "2026-06-26")
+    p = paths.market_root / "daily_features_latest_20260629_113805.parquet"
+    p.touch()   # mtime 을 지금으로 — 그래도 stale 이어야 한다
+
+    status = bf.panel_status(paths, output_prefix="daily_features")
+
+    assert status["panel_max_date"] == "2026-06-26"
+    assert status["current"] is False
+
+
+def test_fresh_panel_is_reported_current(paths):
+    _write_latest_panel(paths, "20260816_010101", _today_minus(1))
+
+    assert bf.panel_status(paths, output_prefix="daily_features")["current"] is True
+
+
+def test_weekend_and_holiday_gap_is_still_current(paths):
+    """금요일 패널이 화요일(연휴)까지는 최신으로 취급돼야 한다 — 오탐 방지."""
+    _write_latest_panel(paths, "20260816_010101", _today_minus(4))
+
+    assert bf.panel_status(paths, output_prefix="daily_features")["current"] is True
+
+
+def test_multi_week_freeze_is_not_current(paths):
+    """실제 사고(48일 동결)는 반드시 잡아야 한다."""
+    _write_latest_panel(paths, "20260629_113805", _today_minus(48))
+
+    assert bf.panel_status(paths, output_prefix="daily_features")["current"] is False
+
+
+def test_missing_panel_is_not_current(paths):
+    status = bf.panel_status(paths, output_prefix="daily_features")
+
+    assert status["current"] is False
+    assert status["panel_max_date"] is None
+
+
+def test_daily_refresh_short_circuits_when_current(paths, monkeypatch):
+    """하루 3회 실행 중 2회는 즉시 반환해야 한다 — 이게 3배 비용을 막는 장치다."""
+    _write_latest_panel(paths, "20260816_010101", _today_minus(1))
+    called = []
+    monkeypatch.setattr(bf, "fetch_raw_ohlcv", lambda *a, **k: called.append("fetch") or (0, 0, []))
+
+    result = bf.daily_refresh(paths, output_prefix="daily_features", force=False)
+
+    assert result["status"] == "already_current"
+    assert called == [], "이미 최신인데 fetch 를 돌렸다"
+
+
+def test_daily_refresh_can_be_forced(paths, monkeypatch):
+    _write_latest_panel(paths, "20260816_010101", _today_minus(1))
+    monkeypatch.setattr(bf, "_run_refresh", lambda *a, **k: {"status": "refreshed"})
+
+    assert bf.daily_refresh(paths, output_prefix="daily_features", force=True)["status"] == "refreshed"
+
+
+def test_daily_refresh_runs_when_stale(paths, monkeypatch):
+    _write_latest_panel(paths, "20260629_113805", _today_minus(48))
+    monkeypatch.setattr(bf, "_run_refresh", lambda *a, **k: {"status": "refreshed"})
+
+    assert bf.daily_refresh(paths, output_prefix="daily_features", force=False)["status"] == "refreshed"

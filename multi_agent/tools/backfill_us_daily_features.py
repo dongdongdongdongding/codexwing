@@ -236,6 +236,97 @@ def _raw_path(paths: BackfillPaths, symbol: str) -> Path:
     return paths.raw_dir / f"{_safe_filename(symbol)}.parquet"
 
 
+RAW_MAX_AGE_DAYS_DEFAULT = 5.0
+
+
+def _raw_max_age_days() -> float:
+    """raw OHLCV 정체 허용 한도(일).
+
+    일봉이라 5일로 둔다 — 3일 연휴 + 주말이 겹쳐도 4일을 넘지 않고, 실제 사고
+    (2026-06-29 동결 → 48일)는 첫날 잡는다. 5분봉 캐시(7일)보다 짧은 이유는
+    일봉은 하루 1행이라 정체가 더 빨리 치명적이기 때문이다.
+    """
+    raw = os.getenv("AG_US_DAILY_RAW_MAX_AGE_DAYS", "").strip()
+    try:
+        return float(raw) if raw else RAW_MAX_AGE_DAYS_DEFAULT
+    except ValueError:
+        return RAW_MAX_AGE_DAYS_DEFAULT
+
+
+def _raw_stale_reason(path: Path) -> Optional[str]:
+    """raw 파일이 없거나 낡았으면 사유, 아니면 None.
+
+    기존 로직은 `path.exists()`만 봤다 — 5분봉 캐시와 **완전히 같은 결함**이라,
+    파일이 있기만 하면 얼마나 낡았든 건너뛰었다. 그래서 매일 돌려도 3,882개 raw가
+    전부 skip되고 06-29 데이터로 패널만 다시 만들어졌다.
+    """
+    if not path.exists():
+        return "raw missing"
+    try:
+        frame = pd.read_parquet(path, columns=["date"])
+    except Exception as exc:
+        return f"raw unreadable: {type(exc).__name__}"
+    if frame.empty:
+        return "raw empty"
+    newest = pd.to_datetime(frame["date"], errors="coerce").max()
+    if pd.isna(newest):
+        return "raw has no usable date"
+    age = (pd.Timestamp.now().normalize() - pd.Timestamp(newest).normalize()).days
+    limit = _raw_max_age_days()
+    if age > limit:
+        return f"stale raw: newest {str(newest)[:10]} is {age}d old (limit {limit:.0f}d)"
+    return None
+
+
+def _merge_raw(existing: pd.DataFrame, fetched: pd.DataFrame) -> pd.DataFrame:
+    """기존 raw와 신규를 합친다. 같은 날짜는 신규가 이긴다.
+
+    덮어쓰지 않는 이유는 5분봉 캐시와 같다 — 부분 응답이 오면 과거를 잃는다.
+    일봉은 60일 창 제약이 없어 위험이 더 낮지만, 상장폐지·심볼 변경·일시적
+    부분 응답에서 같은 사고가 나므로 원칙을 동일하게 적용한다.
+    """
+    if fetched is None or fetched.empty:
+        return existing
+    if existing is None or existing.empty:
+        return fetched
+    try:
+        combined = pd.concat([existing, fetched], ignore_index=True)
+        combined["date"] = pd.to_datetime(combined["date"], errors="coerce")
+        combined = combined.dropna(subset=["date"])
+        combined = combined.drop_duplicates(subset=["date"], keep="last")
+        return combined.sort_values("date").reset_index(drop=True)
+    except Exception:
+        return existing
+
+
+def prune_old_panels(paths: BackfillPaths, *, output_prefix: str = "daily_features", keep: int = 3) -> List[str]:
+    """오래된 패널 산출물을 정리한다. `keep<=0`이면 아무것도 지우지 않는다.
+
+    패널 1회분이 **실측 3.4GB**다(이미 2회분 5.8GB 적재). 보존 정책 없이 일일 실행하면
+    디스크가 하루 3.4GB씩 는다. 최신 것은 절대 지우지 않는다 — 소비자
+    (`report_nasdaq_daily_edge_shadow.py`, `research_nasdaq_session_edge.py`)가 전량 패널을 읽는다.
+    """
+    if keep <= 0:
+        return []
+    root = paths.market_root
+    if not root.exists():
+        return []
+    stamped = sorted(
+        [p for p in root.glob(f"{output_prefix}_2*.parquet") if "_latest_" not in p.name],
+        key=lambda p: p.name,
+    )
+    removed: List[str] = []
+    for path in stamped[:-keep] if len(stamped) > keep else []:
+        stamp = path.stem.split("_")[-2] + "_" + path.stem.split("_")[-1]
+        for sibling in root.glob(f"{output_prefix}_*{stamp}.*"):
+            try:
+                sibling.unlink()
+                removed.append(sibling.name)
+            except OSError:
+                pass
+    return removed
+
+
 def _extract_yfinance_frame(payload: pd.DataFrame, symbol: str) -> pd.DataFrame:
     if payload is None or payload.empty:
         return pd.DataFrame()
@@ -333,11 +424,19 @@ def fetch_raw_ohlcv(
     timeout: int,
     sleep: float,
     force_raw: bool,
+    refresh_stale: bool = False,
 ) -> Tuple[int, int, List[str]]:
     paths.raw_dir.mkdir(parents=True, exist_ok=True)
     symbol_to_name = dict(zip(universe["symbol"].astype(str), universe["name"].astype(str)))
     symbols = list(symbol_to_name.keys())
-    to_fetch = [sym for sym in symbols if force_raw or not _raw_path(paths, sym).exists()]
+    if force_raw:
+        to_fetch = list(symbols)
+    elif refresh_stale:
+        # 존재 여부가 아니라 **신선도**로 고른다. 신선한 심볼까지 매일 재fetch하면
+        # 3,882종목을 감당할 수 없고, 존재만 보면 06-29 동결이 영원히 skip된다.
+        to_fetch = [sym for sym in symbols if _raw_stale_reason(_raw_path(paths, sym)) is not None]
+    else:
+        to_fetch = [sym for sym in symbols if not _raw_path(paths, sym).exists()]
     skipped = len(symbols) - len(to_fetch)
     fetched = 0
     failed: List[str] = []
@@ -380,7 +479,14 @@ def fetch_raw_ohlcv(
                     "source",
                 ]
             ].copy()
-            frame.to_parquet(_raw_path(paths, sym), index=False)
+            raw_path = _raw_path(paths, sym)
+            if raw_path.exists():
+                # 증분 갱신: 덮어쓰지 않고 병합한다. 부분 응답이 과거를 지우면 안 된다.
+                try:
+                    frame = _merge_raw(pd.read_parquet(raw_path), frame)
+                except Exception:
+                    pass
+            frame.to_parquet(raw_path, index=False)
             fetched += 1
         if sleep > 0:
             time.sleep(float(sleep))
@@ -661,11 +767,157 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--force-raw", action="store_true")
     parser.add_argument("--skip-fetch", action="store_true")
     parser.add_argument("--raw-only", action="store_true")
+    # --- dailyops 진입점 (impl-nasdaq-daily-panel-seaslug.md 배선 계약) ---
+    parser.add_argument("--daily-refresh", action="store_true",
+                        help="증분 갱신 모드. 패널이 이미 최신이면 아무 일도 하지 않고 즉시 반환한다.")
+    parser.add_argument("--force-refresh", action="store_true",
+                        help="--daily-refresh 와 함께: 최신이어도 강제 재생성.")
+    parser.add_argument("--keep-panels", type=int,
+                        default=int(os.getenv("AG_US_DAILY_KEEP_PANELS", "3")),
+                        help="보존할 타임스탬프 패널 수(0=정리 안 함). 1회분 실측 3.4GB.")
     return parser.parse_args()
+
+
+PANEL_MAX_AGE_DAYS_DEFAULT = 4.0
+
+
+def _panel_max_age_days() -> float:
+    """패널 최대일 허용 지연(달력일).
+
+    4일로 둔 근거 — 휴장 달력 의존 없이 오탐을 없애는 최소값이다:
+      평일 정상   패널=어제 → 1일  → 최신
+      주말        패널=금요일, 일요일 → 2일 / 월요일 → 3일 → 최신
+      월요일 연휴 패널=금요일, 화요일 → 4일 → 최신
+    즉 **정상 휴장 조합으로는 절대 안 걸리고**, 실제 사고(48일 동결)는 잡는다.
+    거래소 휴장 달력을 들이면 더 정밀하지만 새 의존성이 생기고, 이 스텝이 막으려는 것은
+    1~2일 지연이 아니라 **수 주 동결**이라 달력일 허용치로 충분하다.
+    """
+    raw = os.getenv("AG_US_DAILY_PANEL_MAX_AGE_DAYS", "").strip()
+    try:
+        return float(raw) if raw else PANEL_MAX_AGE_DAYS_DEFAULT
+    except ValueError:
+        return PANEL_MAX_AGE_DAYS_DEFAULT
+
+
+def _newest_latest_panel(paths: BackfillPaths, output_prefix: str) -> Optional[Path]:
+    if not paths.market_root.exists():
+        return None
+    files = sorted(paths.market_root.glob(f"{output_prefix}_latest_*.parquet"), key=lambda p: p.name)
+    return files[-1] if files else None
+
+
+def panel_status(paths: BackfillPaths, *, output_prefix: str = "daily_features") -> Dict[str, Any]:
+    """패널이 최신인지 **내용 기준**으로 판정한다.
+
+    mtime은 쓰지 않는다. 이번 일련의 사고가 전부 그 함정이었다 —
+    `write_ledger`가 append 0에도 전량 재기록해 mtime만 새것이 되던 것,
+    5분봉 캐시가 `exists()`만 보고 무한정 재사용되던 것. 파일이 새것인지가 아니라
+    **데이터가 어디까지 있는지**를 본다.
+
+    최대일은 `{prefix}_latest_*.parquet`(실측 2.2MB)에서 읽는다 — 전량 패널(3.4GB)을
+    열지 않고도 같은 최대일을 얻으므로, 하루 3회 호출돼도 비용이 무시할 수준이다.
+    """
+    latest = _newest_latest_panel(paths, output_prefix)
+    limit = _panel_max_age_days()
+    out: Dict[str, Any] = {"latest_panel": str(latest) if latest else None,
+                           "panel_max_date": None, "age_days": None,
+                           "limit_days": limit, "current": False, "reason": None}
+    if latest is None:
+        out["reason"] = "no panel found"
+        return out
+    try:
+        frame = pd.read_parquet(latest, columns=["date"])
+    except Exception as exc:
+        out["reason"] = f"panel unreadable: {type(exc).__name__}"
+        return out
+    newest = pd.to_datetime(frame["date"], errors="coerce").max()
+    if pd.isna(newest):
+        out["reason"] = "panel has no usable date"
+        return out
+    age = (pd.Timestamp.now().normalize() - pd.Timestamp(newest).normalize()).days
+    out["panel_max_date"] = str(newest)[:10]
+    out["age_days"] = int(age)
+    out["current"] = bool(age <= limit)
+    if not out["current"]:
+        out["reason"] = f"panel max date {out['panel_max_date']} is {age}d old (limit {limit:.0f}d)"
+    return out
+
+
+def _run_refresh(
+    paths: BackfillPaths,
+    *,
+    output_prefix: str = "daily_features",
+    start: str = "2018-01-01",
+    end: Optional[str] = None,
+    batch_size: int = 80,
+    feature_batch_size: int = 100,
+    timeout: int = 30,
+    sleep: float = 0.1,
+    max_symbols: int = 0,
+    keep_panels: int = 3,
+) -> Dict[str, Any]:
+    """증분 갱신 1회분: 낡은 raw만 병합 갱신 → 패널 재생성 → 오래된 패널 정리."""
+    end = end or (date.today() + timedelta(days=1)).isoformat()
+    paths.market_root.mkdir(parents=True, exist_ok=True)
+    universe = _fetch_universe(paths.market)
+    if universe.empty:
+        return {"status": "failed", "reason": f"no universe for market={paths.market}"}
+    if int(max_symbols or 0) > 0:
+        universe = universe.head(int(max_symbols)).copy()
+    universe.to_csv(paths.universe_path, index=False)
+
+    fetched, skipped, failed = fetch_raw_ohlcv(
+        universe, paths, start=start, end=end, batch_size=batch_size,
+        timeout=timeout, sleep=sleep, force_raw=False, refresh_stale=True,
+    )
+    feature_info = write_feature_panel(
+        universe, paths, start=start, end=end,
+        output_prefix=output_prefix, feature_batch_size=feature_batch_size,
+    )
+    removed = prune_old_panels(paths, output_prefix=output_prefix, keep=keep_panels)
+    after = panel_status(paths, output_prefix=output_prefix)
+    return {"status": "refreshed", "universe_size": int(len(universe)),
+            "raw_refreshed": int(fetched), "raw_skipped_fresh": int(skipped),
+            "raw_failed": len(failed), "pruned_panels": removed,
+            "panel_max_date": after.get("panel_max_date"),
+            **{k: feature_info.get(k) for k in ("output_feature_path", "output_latest_path",
+                                                "feature_symbols", "feature_rows")}}
+
+
+def daily_refresh(
+    paths: BackfillPaths,
+    *,
+    output_prefix: str = "daily_features",
+    force: bool = False,
+    **kwargs: Any,
+) -> Dict[str, Any]:
+    """dailyops 진입점. **이미 최신이면 아무 일도 하지 않고 즉시 반환한다.**
+
+    `primary_daily_ops`가 하루 3회 돌기 때문에(중앙값 4.46h/회) 멱등성이 없으면
+    같은 3.4GB 패널을 하루 3번 재생성한다 — 2회분은 순수 낭비다.
+    배선으로는 막을 수 없어 생산자 쪽에 둔다.
+    """
+    status = panel_status(paths, output_prefix=output_prefix)
+    if status["current"] and not force:
+        return {"status": "already_current", **status}
+    return _run_refresh(paths, output_prefix=output_prefix, **kwargs)
 
 
 def main() -> int:
     args = parse_args()
+    if bool(getattr(args, "daily_refresh", False)):
+        paths = BackfillPaths(root=Path(args.output_root).expanduser(), market=str(args.market).upper())
+        result = daily_refresh(
+            paths,
+            output_prefix=str(args.output_prefix),
+            force=bool(getattr(args, "force_refresh", False)),
+            start=str(args.start), end=str(args.end),
+            batch_size=int(args.batch_size), feature_batch_size=int(args.feature_batch_size),
+            timeout=int(args.timeout), sleep=float(args.sleep),
+            max_symbols=int(args.max_symbols or 0), keep_panels=int(args.keep_panels),
+        )
+        print(json.dumps(result, ensure_ascii=False, default=str))
+        return 0 if result.get("status") in {"already_current", "refreshed"} else 1
     market = str(args.market).upper()
     paths = BackfillPaths(root=Path(args.output_root).expanduser(), market=market)
     paths.market_root.mkdir(parents=True, exist_ok=True)
