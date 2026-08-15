@@ -10,7 +10,8 @@ from .commands import FULL_KR_SCAN_MAX
 from .config import DiscordIntegrationConfig
 from .scan_executor import DiscordScanJob
 from modules.admission_metric_copy import metric_label
-from modules.candidate_interpretation import LANE_PROFILE, build_candidate_interpretation
+from modules.candidate_interpretation import (
+    LANE_PROFILE, apply_publish_time_exclusion, build_candidate_interpretation)
 from modules.operational_candidate_scoring import MODEL_VALIDATED_LANES
 from modules.stream_exclusion import apply_stream_exclusion
 from modules.ticker_names import display_label
@@ -516,8 +517,27 @@ def _field_value_model_lane(interp: Dict[str, Any]) -> str:
     return "\n".join(line for line in lines if line)[:1024]
 
 
+def _interpretation_for_render(row: Dict[str, Any]) -> Dict[str, Any]:
+    """렌더 시점 해석 — 저장본이 있어도 **발행시점 판정**을 다시 적용한다.
+
+    audit-stream-exclusion.md R1: 세 렌더 지점이 전부 저장된 `candidate_interpretation`을
+    우선해 훅을 지나지 않았다. 그 해석은 스캔 시점(장중)에 만들어져 영속 저장되고
+    재귀게이트는 야간에 돌므로, 카드에는 최소 한 사이클 낡은 판정이 굳는다.
+    archive 경로는 과거 run을 렌더하므로 지연이 무기한이고, 8067dc5 이전 저장행은
+    애초에 게이트를 안 거친 해석을 들고 있다.
+
+    저장본을 **복사해서** 판정만 다시 입힌다 — 원본을 제자리 수정하면 저장 행이 오염되고
+    재적용이 1회성이 된다.
+    """
+    stored = row.get("candidate_interpretation")
+    if isinstance(stored, dict):
+        bucket = str(row.get("decision_bucket") or row.get("bucket") or "")
+        return apply_publish_time_exclusion(dict(stored), bucket)
+    return build_candidate_interpretation(row)
+
+
 def _field_value_for_top_deep(row: Dict[str, Any]) -> str:
-    interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
+    interpretation = _interpretation_for_render(row)
     if interpretation.get("model_lane"):
         return _field_value_model_lane(interpretation)
     data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
@@ -978,7 +998,7 @@ def build_model_signals_embed(*, market: str = "", limit: int = 10, scan_mode: s
     fields = []
     for r in rows:
         header = display_label(r.get("ticker"), r.get("stock_name"))   # 종목명 폴백 해석(빈 stock_name 보완)
-        interp = r.get("candidate_interpretation") if isinstance(r.get("candidate_interpretation"), dict) else build_candidate_interpretation(r)
+        interp = _interpretation_for_render(r)
         fields.append({"name": header, "value": _field_value_model_lane(interp), "inline": False})
     fields += extra   # B 시장중립 + NASDAQ 스윙 (위에서 계산, 신웹과 정합)
     return _split_embed_fields(
@@ -1249,7 +1269,7 @@ def _archive_row_name(row: Dict[str, Any], rank: int) -> str:
 
 
 def _archive_row_value(row: Dict[str, Any]) -> str:
-    interpretation = row.get("candidate_interpretation") if isinstance(row.get("candidate_interpretation"), dict) else build_candidate_interpretation(row)
+    interpretation = _interpretation_for_render(row)
     if interpretation.get("model_lane"):
         return _field_value_model_lane(interpretation)
     data_quality = row.get("candidate_data_quality") if isinstance(row.get("candidate_data_quality"), dict) else {}
