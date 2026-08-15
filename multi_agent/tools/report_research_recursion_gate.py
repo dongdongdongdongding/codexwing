@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -153,8 +154,10 @@ def _prev_entry(state: Dict[str, Any], lane: str) -> Dict[str, str]:
     v = state.get(lane)
     if isinstance(v, dict):
         return {"verdict": str(v.get("verdict") or ""), "since": str(v.get("since") or ""),
-                "win_verdict": str(v.get("win_verdict") or "")}
-    return {"verdict": str(v or ""), "since": "", "win_verdict": ""}
+                "win_verdict": str(v.get("win_verdict") or ""),
+                # 마커가 삭제돼도 정지 창을 잃지 않으려면 게이트가 스스로 기억해야 한다
+                "suspension": v.get("suspension") or None}
+    return {"verdict": str(v or ""), "since": "", "win_verdict": "", "suspension": None}
 
 
 def _row_date(row: Dict[str, Any], key: str) -> str:
@@ -175,40 +178,98 @@ def _bd(d: str) -> Any:
     return np.datetime64(d, "D")
 
 
-def _suspension(cfg: Dict[str, Any]) -> Dict[str, Any]:
-    """정지 마커 판독 (F7).
+def _norm_ts(value: Any) -> str:
+    """타임스탬프/날짜를 비교 가능한 ISO 문자열로. **시각을 버리지 않는다.**
 
-    규칙: **정지된 레인은 정지 시각 이후에 생성된 표본으로 판정하지 않는다.**
-    b 레인은 2026-08-03 정지 선언 후에도 웹 스캔 경로(web/backend/jobs.py::_run_step)에
-    가드가 없어 08-04·08-05·08-10 에 30건이 더 생성됐다(orca/reports/trace-b-lane-f7.md).
-    생성 경로는 정지를 무시하고 표시 경로는 정지를 지켜서 아무도 모르는 채 정지 레인의
-    판정 표본이 불어났다.
+    d42d1a2 는 `str(since)[:10]` 로 시각을 잘라냈다. 정지가 09:00 이어도 같은 날 09:30 픽이
+    표본에 남는다 — 이 게이트가 제거하려는 바로 그 희석이다(verify-gate-d42d1a2.md §2).
 
-    **왜 원장 플래그가 아니라 게이트 쪽 배제인가**
-      - 일반해다. "정지 이후 표본 무시"는 레인 단위 규칙이고, 앞으로 정지되는 어떤 레인에도
-        마커 배선만으로 적용된다. 행마다 플래그를 박는 방식은 사고가 날 때마다 소급 편집이
-        필요하다.
-      - 되돌리기 쉽다. 원장(b_shadow.jsonl)은 수정하지 않으므로 판단이 바뀌면 이 배선만
-        떼면 되고, 원본 표본은 그대로 남아 재분석이 가능하다.
-      - 원장 스키마·내용 변경은 승인 대상이기도 하다.
+    한계(명시): 타임존 표기는 떼고 **벽시계로 비교**한다. 마커와 원장이 같은 호스트에서
+    생성되므로 실무상 성립하지만, 서로 다른 타임존이 섞이면 어긋난다.
+    """
+    s = str(value or "").strip()
+    if not s:
+        return ""
+    s = re.sub(r"(Z|[+-]\d{2}:?\d{2})$", "", s)
+    if len(s) > 10 and s[10] == " ":
+        s = s[:10] + "T" + s[11:]
+    if len(s) >= 8 and s[:8].isdigit() and "-" not in s[:10]:
+        s = f"{s[:4]}-{s[4:6]}-{s[6:8]}" + s[8:]
+    return s
 
-    **파싱 실패 시 배제하지 않는다** — 표본을 줄이면 n<n_min 에서 DEGRADE 가 OBSERVING 이
-    되고, services.py 는 DEGRADE 만 발행 제외하므로 정지 레인이 조용히 발행으로 돌아온다.
-    안전장치가 열리는 방향으로 실패하면 안 된다. 대신 note 에 크게 남긴다.
+
+def _is_post_suspension(row_ts: str, row_date: str, since: str) -> bool:
+    """행이 정지 시각 **이후** 생성됐는가 (경계는 배타적).
+
+    since 에 시각이 있고 행에도 시각이 있으면 시각까지 비교한다. 둘 중 하나라도 날짜뿐이면
+    날짜 경계로 떨어진다 — 정지 당일 픽을 통째로 지우지 않기 위해서다. 2026-08-03 정지
+    (커밋 22:28)의 그날 13건은 13:48·20:03 생성으로 전부 정지 이전이었고, 날짜 경계라야 산다.
+    """
+    if not since:
+        return False
+    if len(since) > 10 and row_ts and len(row_ts) > 10:
+        return row_ts > since
+    rd = (row_ts or row_date)[:10]
+    return bool(rd) and rd > since[:10]
+
+
+def _stamp_record(rec: Any, today: str) -> Any:
+    """정지 창 기록의 최초 관측일을 채운다(이미 있으면 보존)."""
+    if not rec or not rec.get("since"):
+        return rec or None
+    return {"since": rec["since"], "first_seen": rec.get("first_seen") or today}
+
+
+def _suspension(cfg: Dict[str, Any], prev: Dict[str, Any]) -> Dict[str, Any]:
+    """정지 마커 판독 (F7). **엔진 b_engine/model_scan.suspension() 과 같은 의미론.**
+
+    규칙: 정지된 레인은 정지 시각 이후에 생성된 표본으로 판정하지 않는다. b 레인은
+    2026-08-03 정지 선언 후에도 웹 스캔 경로에 가드가 없어 30건이 더 생성됐다
+    (orca/reports/trace-b-lane-f7.md).
+
+    **왜 원장 플래그가 아니라 게이트 쪽 배제인가** — 일반해이고(앞으로 정지되는 어떤 레인도
+    마커 배선만으로 적용), 원장을 수정하지 않아 되돌리기 쉬우며, 원장 내용 변경은 승인 대상이다.
+
+    **fail-closed (2026-08-16 교정)** — 마커를 못 읽으면 정지로 본다. 해제는 파일 삭제 또는
+    명시적 `"suspended": false` 이지 파싱 실패가 아니다. d42d1a2 는 `if not d.get("suspended")`
+    라 키 누락·리스트·falsy 를 해제로 읽어 **엔진과 어긋나 있었다** — 엔진은 멈추는데 게이트는
+    정지 이후 표본으로 계속 판정하는 형태로, F7 을 만든 "호출자마다의 관례"의 재발이다.
+
+    d42d1a2 가 fail-open 을 택한 근거("표본을 줄이면 n<n_min 에서 DEGRADE 가 OBSERVING 이
+    되고 stream_exclusion 은 verdict 만 읽으므로 발행이 재개된다")는 옳았다. 해법은 fail-open 이
+    아니라 **정지 자체가 발행을 막게** 하는 것이다 — 그러면 표본 크기가 판정을 좌우하지 않아
+    fail-closed 와 안전성을 동시에 얻는다. evaluate() 의 publication_block 참조.
+
+    **마커 삭제 감지** — 삭제는 마커 자신의 resume_condition 이 규정한 정상 재개 절차이면서
+    동시에 사고 경로이고, 둘이 같은 몸짓이라 구분 신호가 없었다. 게이트가 관측한 정지 창을
+    state 에 기억해, 마커가 사라져도 **그 창에 생성된 표본은 계속 배제**한다. 재개는 앞으로를
+    여는 것이지 정지 중 계약 위반 표본을 소급 정당화하지 않는다. 발행 자체는 다시 허용한다 —
+    막으면 문서화된 재개 절차가 동작하지 않는다.
     """
     mk = cfg.get("suspend_marker")
+    rec = (prev or {}).get("suspension") or None
+    rec_since = (rec or {}).get("since") or ""
+
+    def _resumed(reason: str) -> Dict[str, Any]:
+        return {"suspended": False, "broken": False, "resumed": bool(rec),
+                "since": rec_since, "record": rec, "reason": reason if rec else ""}
+
     if not mk or not Path(mk).exists():
-        return {"since": None, "broken": False}
+        return _resumed("정지 마커가 사라졌다 — 재개 절차이거나 실수다(수동 확인 필요)")
     try:
         d = json.loads(Path(mk).read_text(encoding="utf-8"))
-        if not d.get("suspended"):
-            return {"since": None, "broken": False}
-        since = str(d.get("since") or "")[:10]
-        if len(since) != 10:
-            return {"since": None, "broken": True}
-        return {"since": since, "broken": False}
     except Exception:
-        return {"since": None, "broken": True}
+        return {"suspended": True, "broken": True, "resumed": False, "since": rec_since,
+                "record": rec, "reason": "정지 마커를 읽을 수 없다 — 안전하게 정지로 취급(fail-closed)"}
+    if isinstance(d, dict):
+        if d.get("suspended") is False:          # 엔진과 동일한 정체 비교
+            return _resumed("정지가 명시적으로 해제됐다(suspended=false)")
+        since = _norm_ts(d.get("since")) or rec_since
+        return {"suspended": True, "broken": False, "resumed": False, "since": since,
+                "record": {"since": since, "first_seen": (rec or {}).get("first_seen") or ""},
+                "reason": f"레인 정지 중(since={since or '미상'})"}
+    return {"suspended": True, "broken": True, "resumed": False, "since": rec_since,
+            "record": rec, "reason": "정지 마커 형식 오류 — 안전하게 정지로 취급(fail-closed)"}
 
 
 def _win_verdict(fwd_win_hi: float, expect_win: float) -> str:
@@ -220,11 +281,20 @@ def _win_verdict(fwd_win_hi: float, expect_win: float) -> str:
 
     **왜 강등에는 안 쓰는가 (비대칭)** — expect_win 의 근거가 레인마다 불균질하다.
     감사 F4 기준 b 레인 두 개의 55.0 은 §11-B 에 근거 수치가 없고, nasdaq 79.3 은 EV 만
-    헤어컷된 채 남은 원수치다. 게다가 fwd_win 은 '순수익 > 0.3%' 비율인데 expect_win 의
+    헤어컷된 채 남은 원수치다. 게다가 fwd_win 은 '순수익 > 0' 비율인데 expect_win 의
     출처(예: §28 의 92%)는 터치익절 도달률로 보여 **정의가 일치한다는 보장이 없다**.
     근거가 불확실한 수치로 DEGRADE 를 띄우면 멀쩡한 레인이 발행에서 빠진다(되돌리기 어려운
     방향). 반대로 승격 차단은 틀려도 '아직 안 올림'에 그친다. 그래서 SHORT 는
     ④ 승격 차단 + 진단 티켓까지만 하고, 사이징·발행 판정(verdict)은 건드리지 않는다.
+
+    ⚠️ **알려진 무력화 — 두 b 레인에서 이 축은 자기참조다** (verify-gate-d42d1a2.md §5).
+    2026-08-15 F4 정정이 근거 없던 expect_win 55.0 을 **그 시점의 실측값**으로 채웠다
+    (top3 38.5 / top10 40.3). 기대치가 측정치와 같으면 CI 상단은 반드시 기대 이상이므로
+    **이 두 레인은 정의상 SHORT 가 될 수 없다.** 즉 승률 축은 b 레인에 대해 지금 아무것도
+    감시하지 못한다. 근거 없는 상수를 실측으로 바꾼 것 자체는 개선이지만, 동결 기대치를
+    측정치로 채우는 것은 §7-A 류 walk-forward 관행과 어긋난다. 독립 근거(백테스트 승률)로
+    재동결하기 전까지는 이 두 레인의 win_verdict=OK 를 "승률이 기대에 부합한다"로 읽으면 안
+    된다 — 표본이 자기 기준이라 항상 OK 다. 나머지 4레인은 정상 작동한다.
     """
     return "SHORT" if fwd_win_hi < expect_win * WIN_TOL else "OK"
 
@@ -240,32 +310,48 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
     rows = [r for r in rows if all(r.get(k) == v for k, v in flt.items())]
     cost = float(cfg.get("cost", 0.0))  # PKG-B ②: 원장 gross → net 통일 (기대치는 전부 net 동결)
     dfield = cfg.get("date_field", "date")
-    pairs = [(_row_date(r, dfield), float(r[cfg["field"]]) - cost)
-             for r in rows if isinstance(r.get(cfg["field"]), (int, float))]
+    tfield = cfg.get("time_field", "logged_at")
+    triples = [(_row_date(r, dfield), _norm_ts(r.get(tfield)), float(r[cfg["field"]]) - cost)
+               for r in rows if isinstance(r.get(cfg["field"]), (int, float))]
 
     # --- F7: 정지 이후 생성된 표본 배제 ---------------------------------------
-    susp = _suspension(cfg)
-    dropped = 0
-    if susp["since"]:
-        keep_pairs = [(d, v) for d, v in pairs if not (d and d > susp["since"])]
-        dropped = len(pairs) - len(keep_pairs)
-        pairs = keep_pairs
-    if susp["broken"]:
-        susp_note = " · ⚠️정지 마커 판독 실패 — 표본 배제를 적용하지 못했다(수동 확인 필요)"
-    elif dropped:
-        susp_note = f" · 정지({susp['since']}) 이후 {dropped}건 제외 — 정지 레인은 정지 이후 표본으로 판정하지 않음"
-    else:
-        susp_note = ""
+    susp = _suspension(cfg, prev)
+    kept = [t for t in triples if not _is_post_suspension(t[1], t[0], susp["since"])]
+    dropped = len(triples) - len(kept)
+    triples = kept
 
-    vals = [v for _, v in pairs]
+    notes = []
+    if susp["broken"]:
+        notes.append(f"⚠️{susp['reason']}")
+    if susp["resumed"]:
+        notes.append(f"⚠️{susp['reason']} — 기록된 정지 창({susp['since']}) 표본은 계속 배제한다")
+    if dropped:
+        notes.append(f"정지({susp['since']}) 이후 {dropped}건 제외 — 정지 레인은 정지 이후 표본으로 판정하지 않음")
+    susp_note = ("" if not notes else " · " + " · ".join(notes))
+
+    vals = [v for _, _, v in triples]
+    block = bool(susp["suspended"])
     res: Dict[str, Any] = {"lane": name, "basis": cfg["basis"], "n": len(vals), "cost": cost,
                            "expect_ev": cfg["expect_ev"], "expect_win": cfg["expect_win"],
                            "n_min": cfg["n_min"], "win_verdict": "NA",
-                           "suspended_since": susp["since"], "excluded_post_suspension": dropped,
-                           "suspend_marker_broken": susp["broken"]}
+                           "suspended_since": susp["since"] or None,
+                           "excluded_post_suspension": dropped,
+                           "suspend_marker_broken": susp["broken"],
+                           "marker_resumed": susp["resumed"],
+                           "suspension_record": _stamp_record(susp["record"], today),
+                           "publication_block": block,
+                           "publication_block_reason": susp["reason"] if block else ""}
 
     def _finish(verdict: str, note: str) -> Dict[str, Any]:
-        # verdict_since: 계열이 유지되는 동안만 이어받는다 (③이 실제로 소비하는 값).
+        # 정지 레인은 성적과 무관하게 발행되지 않아야 한다. 소비자(services.py·
+        # stream_exclusion)가 읽는 신호는 verdict 하나뿐이고 DEGRADE 만 사이징을 뺀다 —
+        # 새 문자열을 만들면 소비자가 모르는 값이라 오히려 발행이 열린다. 그래서 판정을
+        # DEGRADE 로 내리되 **원 판정을 note 에 남겨** 성적 판단과 구분되게 한다.
+        # (더 나은 형태는 픽 계약 레벨의 publication_block 필드를 소비자가 읽는 것이다 —
+        #  audit-gate.md F1·F2 권고. services.py 는 내 소유가 아니라 여기서는 못 한다.)
+        if block and verdict != "DEGRADE":
+            note = f"발행 차단({susp['reason']}) · 원 판정 {verdict}: {note}"
+            verdict = "DEGRADE"
         keep = prev["since"] and _family(prev["verdict"]) == _family(verdict)
         res.update(verdict=verdict, note=note + susp_note,
                    verdict_since=prev["since"] if keep else today)
@@ -302,7 +388,7 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
         gate_hold = hold >= EXCEED_HOLD_BDAYS
         # ① 성숙시차 재확인 — 원장 최신일 기준 최근 N영업일을 빼고도 기대*1.5 를 넘는가.
         #   기준을 today 가 아니라 원장 최신일로 잡아야 파이프가 멈춰도 보수적으로 남는다.
-        dated = [(d, v) for d, v in pairs if d]
+        dated = [(d, v) for d, _, v in triples if d]
         lag_ev = None
         gate_lag = False
         if dated:
@@ -348,7 +434,9 @@ def main() -> None:
         # 승격 티켓은 EXCEED_ELIGIBLE 에서만. EXCEED_PENDING 은 관측일 뿐 승격 신호가 아니다(F3).
         if changed and r["verdict"] in ("DEGRADE", "EXCEED_ELIGIBLE") and not args.no_tickets:
             title = f"[재귀게이트:{r['verdict']}] {r['lane']} forward {r.get('fwd_ev')} vs 기대 {r['expect_ev']}"
-            desc = (f"Why: 재귀 연구 게이트 자동 발행 — {r['lane']} forward n={r['n']} EV {r.get('fwd_ev')} "
+            why = (f"발행 차단 — {r['publication_block_reason']}. " if r.get("publication_block")
+                   else "")
+            desc = (f"Why: 재귀 연구 게이트 자동 발행 — {why}{r['lane']} forward n={r['n']} EV {r.get('fwd_ev')} "
                     f"CI {r.get('fwd_ci')} vs 백테스트 기대 {r['expect_ev']} ({r['basis']}). "
                     f"What: {'열화 원인 진단(레짐/드리프트/계약) 후 재연구 or 레인 축소' if r['verdict']=='DEGRADE' else '승격/사이징 확대 검토 + 과최적화 점검'}. "
                     f"판정 근거: {r['note']}")
@@ -364,12 +452,17 @@ def main() -> None:
                     f"(forward {r.get('fwd_win')}% CI {r.get('fwd_win_ci')}, n={r['n']}). "
                     f"EV 만으로 통과하는 레인의 사각지대 — 프로젝트 목표의 정확도 축이 무감시가 된다. "
                     f"What: ①레인이 실제 열화했는지 ②아니면 동결 기대 {r['expect_win']}%의 근거·정의가 "
-                    f"틀렸는지(승률 정의 불일치 가능 — 게이트 fwd_win 은 '순수익>0.3%' 비율) 판별. "
+                    f"틀렸는지(승률 정의 불일치 가능 — 게이트 fwd_win 은 '순수익>0' 비율) 판별. "
                     f"근거: {r['basis']}")
             if _bd_create(title, desc):
                 tickets.append(title)
-        state[r["lane"]] = {"verdict": r["verdict"], "since": r["verdict_since"],
-                            "win_verdict": r["win_verdict"]}
+        entry = {"verdict": r["verdict"], "since": r["verdict_since"],
+                 "win_verdict": r["win_verdict"]}
+        # 정지 창은 마커가 사라져도 보존한다 — 재개가 정지 중 표본을 소급 정당화하지 않도록.
+        rec = r.get("suspension_record") or prev.get("suspension")
+        if rec:
+            entry["suspension"] = rec
+        state[r["lane"]] = entry
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(state, ensure_ascii=False, indent=1))
     report = {"generated_at": datetime.now(timezone.utc).isoformat(), "results": results, "tickets_created": tickets}

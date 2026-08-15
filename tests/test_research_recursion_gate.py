@@ -364,15 +364,22 @@ def test_unreadable_marker_does_not_silently_shrink_the_sample(tmp_path):
     assert "정지 마커" in r["note"], f"마커 파손이 조용히 지나갔다: {r['note']}"
 
 
-def test_exclusion_is_never_silent_in_the_note(tmp_path):
-    """제외로 표본이 n_min 아래로 떨어지면 판정이 OBSERVING 이 된다 —
-    그 사실이 note 에 드러나야 한다(발행 제외가 풀리는 방향이라 특히)."""
+def test_shrinking_the_sample_never_reopens_publication(tmp_path):
+    """제외로 n 이 n_min 아래로 떨어져도 발행 차단이 풀리면 안 된다.
+
+    d42d1a2 에서 fail-open 을 택한 근거가 바로 이 경로였다("표본을 줄이면 DEGRADE 가
+    OBSERVING 이 되고 stream_exclusion 은 verdict 만 읽는다"). 정지 자체가 발행을 막게
+    하면 이 경로가 닫히고, 그래야 fail-closed 로 갈 수 있다.
+    """
     pre = [(bdays_before(TODAY, 40), 1.0)] * 5
     post = [("2026-08-10", 1.0)] * 60
     led = write_ledger(tmp_path / "l.jsonl", [v for _, v in pre + post],
                        dates=[d for d, _ in pre + post])
     r = gate.evaluate("b", cfg_for(led, n_min=30, suspend_marker=marker(tmp_path / "s.json")), {}, TODAY)
-    assert r["verdict"] == "OBSERVING"
+    assert r["n"] == 5, "제외가 안 됐다 — 전제가 무너졌다"
+    assert r["verdict"] == "DEGRADE", (
+        f"n={r['n']}<n_min 에서 {r['verdict']} 가 됐다 — stream_exclusion 이 발행을 못 막는다")
+    assert r["publication_block"] is True
     assert "이후 60건 제외" in r["note"] and "2026-08-03" in r["note"], r["note"]
 
 
@@ -495,3 +502,233 @@ def test_report_exposes_the_promotion_conditions(harness, tmp_path, monkeypatch)
     assert set(g) >= {"n", "hold", "lag", "win"}
     md = (tmp_path / "out.md").read_text()
     assert "EXCEED_PENDING" in md and "승률" in md
+
+
+# ---------------------------------------------------------------------------
+# 마커 계약 — 엔진과 게이트가 같은 파일을 같은 의미로 읽는가
+# ---------------------------------------------------------------------------
+# 근거: verify-gate-d42d1a2.md §2·§3 (handfish) + 66c9725 (seaslug, 엔진 fail-closed).
+# F7 의 근본 원인이 "정지가 엔진의 계약이 아니라 호출자 각각의 관례"였다. 두 벌이 서로 다르게
+# 읽으면 그 사고가 다른 얼굴로 재발한다 — 엔진은 멈추는데 게이트는 계속 판정하는 형태로.
+
+# 엔진 b_engine/model_scan.suspension() 의 의미론을 명세로 고정한다.
+# (엔진은 `marker.get("suspended") is False` 로 **정체 비교**하므로 0·"false"·null 은 전부 정지다)
+MARKER_SPEC = [
+    (None,                                          False, "파일 없음"),
+    ('{"suspended": false}',                         False, "명시적 해제"),
+    ('{"suspended": true, "since": "2026-08-03"}',   True,  "정상 정지"),
+    ('{}',                                           True,  "suspended 키 누락"),
+    ('{"since": "2026-08-03"}',                      True,  "since 만 있고 키 누락"),
+    ('{"suspended": null}',                          True,  "null"),
+    ('{"suspended": 0}',                             True,  "falsy 지만 False 아님"),
+    ('{"suspended": "false"}',                       True,  "문자열 false"),
+    ('[1, 2, 3]',                                    True,  "리스트"),
+    ('"just a string"',                              True,  "문자열 JSON"),
+    ('{ not json',                                   True,  "JSON 깨짐"),
+    ('',                                             True,  "빈 파일"),
+]
+
+
+@pytest.mark.parametrize("raw,expected,label", MARKER_SPEC, ids=[s[2] for s in MARKER_SPEC])
+def test_gate_marker_semantics_match_the_engine_spec(tmp_path, raw, expected, label):
+    """게이트의 마커 판독이 엔진 명세와 일치해야 한다.
+
+    d42d1a2 의 게이트는 `if not d.get("suspended")` 라 **키 누락·리스트·falsy 를 해제로 읽었다**.
+    엔진은 같은 경우를 전부 정지로 읽는다. 마커가 손상되면 엔진은 신규 픽을 멈추는데 게이트는
+    정지 이후 표본으로 계속 판정하는 어긋남이 생긴다.
+    """
+    mk = tmp_path / "s.json"
+    if raw is None:
+        mk = tmp_path / "absent.json"
+    else:
+        mk.write_text(raw, encoding="utf-8")
+    assert gate._suspension(cfg_for(tmp_path / "x", suspend_marker=mk), {})["suspended"] is expected, label
+
+
+def test_gate_matches_the_live_engine_implementation(tmp_path):
+    """명세표가 아니라 **실제 엔진 코드**와 대조한다 (b_engine 병합 후 활성화).
+
+    명세표는 내가 읽은 엔진을 옮겨 적은 것이라 엔진이 바뀌면 같이 틀릴 수 있다. 실물 대조가
+    있어야 두 벌의 어긋남을 양방향으로 잡는다.
+    """
+    model_scan = pytest.importorskip(
+        "b_engine.model_scan",
+        reason="b_engine.model_scan 미존재 — main 병합 후 활성화된다")
+    if not hasattr(model_scan, "suspension"):
+        pytest.skip("b_engine.model_scan.suspension 미존재 — 66c9725 병합 후 활성화된다")
+    mk = tmp_path / "s.json"
+    for raw, expected, label in MARKER_SPEC:
+        if raw is None:
+            if mk.exists():
+                mk.unlink()
+        else:
+            mk.write_text(raw, encoding="utf-8")
+        model_scan.SUSPEND_MARKER = str(mk)
+        engine = model_scan.suspension() is not None
+        mine = gate._suspension(cfg_for(tmp_path / "x", suspend_marker=mk), {})["suspended"]
+        assert engine is mine is expected, f"{label}: 엔진={engine} 게이트={mine} 기대={expected}"
+
+
+# ---------------------------------------------------------------------------
+# 발행 차단 — 손상 신호가 실제로 소비되는가
+# ---------------------------------------------------------------------------
+
+def test_suspended_lane_is_publication_blocked_regardless_of_performance(tmp_path):
+    """정지 레인은 성적이 아무리 좋아도 발행되지 않는다.
+
+    handfish: suspend_marker_broken 은 결과 JSON 에 실리지만 stream_exclusion 은 verdict 만
+    읽어 아무도 소비하지 않는다. 그래서 신호를 **verdict 로 내보낸다** — 새 문자열을 만들면
+    소비자가 모르는 값이라 오히려 발행이 열린다.
+    """
+    led = write_ledger(tmp_path / "l.jsonl", [5.0] * 40, dates=["2026-07-01"] * 40)
+    mk = marker(tmp_path / "s.json")               # 정지, since=2026-08-03 (표본은 그 이전)
+    r = gate.evaluate("b", cfg_for(led, expect_ev=1.0, suspend_marker=mk), {}, TODAY)
+    assert r["excluded_post_suspension"] == 0, "이 표본은 배제 대상이 아니다(정지 이전)"
+    assert r["publication_block"] is True
+    assert r["publication_block_reason"]
+    assert r["verdict"] == "DEGRADE", (
+        f"정지 레인인데 {r['verdict']} — 배제가 0건이면 발행이 열린다")
+
+
+def test_publication_block_reason_is_specific(tmp_path):
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 40, dates=["2026-07-01"] * 40)
+    ok = gate.evaluate("b", cfg_for(led, suspend_marker=marker(tmp_path / "a.json")), {}, TODAY)
+    broken = gate.evaluate("b", cfg_for(led, suspend_marker=marker(tmp_path / "b.json", raw="{x")), {}, TODAY)
+    assert "정지" in ok["publication_block_reason"]
+    assert "마커" in broken["publication_block_reason"]
+    assert ok["publication_block_reason"] != broken["publication_block_reason"]
+
+
+def test_unsuspended_lane_is_not_publication_blocked(tmp_path):
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 40)
+    r = gate.evaluate("lane", cfg_for(led), {}, TODAY)
+    assert r["publication_block"] is False
+    assert r["verdict"] == "CONFIRM"
+
+
+# ---------------------------------------------------------------------------
+# 마커 삭제 감지 — 재개는 정지 중 생성분을 소급 정당화하지 않는다
+# ---------------------------------------------------------------------------
+
+def test_marker_deletion_keeps_excluding_the_recorded_window(tmp_path):
+    """마커 삭제는 문서화된 재개 절차(resume_condition)이자 사고 경로다.
+
+    삭제되면 정지 창이 사라져 **정지 중 생성된 30건이 조용히 표본으로 복귀**한다.
+    재개는 앞으로를 여는 것이지 정지 중 계약 위반 표본을 정당화하지 않는다.
+    """
+    pre = [("2026-07-01", 1.0)] * 40
+    during = [("2026-08-10", 9.0)] * 30
+    led = write_ledger(tmp_path / "l.jsonl", [v for _, v in pre + during],
+                       dates=[d for d, _ in pre + during])
+    state = {"b": {"verdict": "DEGRADE", "since": "2026-08-03",
+                   "suspension": {"since": "2026-08-03", "first_seen": "2026-08-03"}}}
+    r = gate.evaluate("b", cfg_for(led, suspend_marker=tmp_path / "gone.json"), state, TODAY)
+
+    assert r["excluded_post_suspension"] == 30, "마커가 사라지자 정지 중 표본이 복귀했다"
+    assert r["marker_resumed"] is True
+    assert "재개" in r["note"] or "삭제" in r["note"], r["note"]
+
+
+def test_marker_deletion_allows_publication_again(tmp_path):
+    """재개 자체는 막지 않는다 — 마커 삭제가 문서화된 재개 절차이기 때문이다."""
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 40, dates=["2026-07-01"] * 40)
+    state = {"b": {"verdict": "DEGRADE", "since": "2026-08-03",
+                   "suspension": {"since": "2026-08-03", "first_seen": "2026-08-03"}}}
+    r = gate.evaluate("b", cfg_for(led, suspend_marker=tmp_path / "gone.json"), state, TODAY)
+    assert r["publication_block"] is False, "재개 절차를 밟았는데 영구히 막혔다"
+    assert r["marker_resumed"] is True
+
+
+def test_never_suspended_lane_has_no_resume_signal(tmp_path):
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 40)
+    r = gate.evaluate("lane", cfg_for(led, suspend_marker=tmp_path / "absent.json"), {}, TODAY)
+    assert r["marker_resumed"] is False
+    assert r["suspended_since"] is None
+
+
+def test_suspension_window_is_recorded_for_persistence(tmp_path):
+    """삭제 감지가 가능하려면 정지 창을 게이트가 스스로 기억해야 한다."""
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 40, dates=["2026-07-01"] * 40)
+    r = gate.evaluate("b", cfg_for(led, suspend_marker=marker(tmp_path / "s.json")), {}, TODAY)
+    assert r["suspension_record"] == {"since": "2026-08-03", "first_seen": TODAY}
+
+
+def test_main_persists_and_reuses_the_suspension_record(harness, tmp_path, monkeypatch):
+    """state 에 실제로 저장되고 다음 실행에서 읽히는지 — 삭제 감지의 전제."""
+    led = write_ledger(tmp_path / "lane.jsonl", [1.0] * 40, dates=["2026-07-01"] * 40)
+    mk = marker(tmp_path / "s.json")
+    monkeypatch.setattr(gate, "LANES", {"lane": cfg_for(led, suspend_marker=mk)})
+    gate.main()
+    saved = json.loads((tmp_path / "state.json").read_text())["lane"]
+    assert saved["suspension"]["since"] == "2026-08-03"
+
+    mk.unlink()                                   # 운영자가 재개 절차대로 삭제
+    gate.main()
+    rep = json.loads((tmp_path / "out.json").read_text())["results"][0]
+    assert rep["marker_resumed"] is True, "삭제를 감지하지 못했다"
+    assert rep["suspended_since"] == "2026-08-03", "기록된 정지 창을 잃었다"
+
+
+# ---------------------------------------------------------------------------
+# 마커 시각 — since 의 시각을 버리지 않는다
+# ---------------------------------------------------------------------------
+
+def test_same_day_rows_after_the_suspension_time_are_excluded(tmp_path):
+    """handfish §2: since='2026-09-01T09:00:00Z' 인데 09:30·14:00 픽이 표본에 남았다.
+
+    `str(since)[:10]` 이 시각을 버려서 같은 날 정지 이후 픽이 그대로 남는다 — 이 커밋이
+    제거하려는 바로 그 희석이다.
+    """
+    rows = [("2026-09-01T08:00:00Z", 1.0), ("2026-09-01T09:30:00Z", 9.0),
+            ("2026-09-01T14:00:00Z", 9.0)]
+    led = tmp_path / "l.jsonl"
+    led.write_text("".join(json.dumps({"ret": v, "date": "2026-09-01", "logged_at": t}) + "\n"
+                           for t, v in rows), encoding="utf-8")
+    cfg = cfg_for(led, n_min=1, suspend_marker=marker(tmp_path / "s.json", since="2026-09-01T09:00:00Z"))
+    r = gate.evaluate("b", cfg, {}, TODAY)
+    assert r["excluded_post_suspension"] == 2, f"정지 시각 이후 픽이 표본에 남았다 (n={r['n']})"
+    assert r["n"] == 1
+
+
+def test_date_only_since_keeps_the_whole_suspension_day(tmp_path):
+    """시각이 없으면 날짜 경계를 유지한다 — 08-03 정지 당일 13건은 정지 이전 생성이었다.
+
+    handfish 가 실측으로 확인한 현 동작이고, 이를 깨면 정상 표본을 지운다.
+    """
+    led = tmp_path / "l.jsonl"
+    led.write_text("".join(json.dumps({"ret": 1.0, "date": "2026-08-03",
+                                       "logged_at": f"2026-08-03T{h}:00:00Z"}) + "\n"
+                           for h in ("13", "20", "23")), encoding="utf-8")
+    r = gate.evaluate("b", cfg_for(led, n_min=1, suspend_marker=marker(tmp_path / "s.json")), {}, TODAY)
+    assert r["n"] == 3 and r["excluded_post_suspension"] == 0
+
+
+def test_rows_without_timestamps_fall_back_to_date_comparison(tmp_path):
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 3 + [9.0] * 3,
+                       dates=["2026-09-01"] * 3 + ["2026-09-02"] * 3)
+    cfg = cfg_for(led, n_min=1, suspend_marker=marker(tmp_path / "s.json", since="2026-09-01T09:00:00Z"))
+    r = gate.evaluate("b", cfg, {}, TODAY)
+    assert r["excluded_post_suspension"] == 3, "타임스탬프가 없으면 날짜 비교로 떨어져야 한다"
+
+
+# ---------------------------------------------------------------------------
+# 오기 2건 + 자기참조 명시 (handfish §5)
+# ---------------------------------------------------------------------------
+
+def test_win_definition_wording_matches_the_code():
+    """3-c 가 net>0.3 → net>0 으로 바꿨는데 문구가 남아 있었다.
+
+    티켓 본문 쪽이 특히 문제였다 — 승률 미달 티켓을 받은 사람이 틀린 정의로 원인을 판별한다.
+    """
+    src = Path(gate.__file__).read_text(encoding="utf-8")
+    assert "0.3%" not in src, "승률 정의 오기(0.3%)가 남아 있다"
+    assert "순수익>0.3" not in src and "순수익 > 0.3" not in src
+
+
+def test_self_reference_of_b_lane_expect_win_is_documented():
+    """b 레인 expect_win 이 측정치와 같아 CI 상단이 항상 기대 이상 → 영원히 SHORT 가 안 된다.
+
+    이 사실이 코드에 적혀 있지 않으면 다음 사람이 승률 축이 살아 있다고 오해한다.
+    """
+    src = Path(gate.__file__).read_text(encoding="utf-8")
+    assert "자기참조" in src, "b 레인 승률축 무력화(자기참조)가 코드에 명시돼 있지 않다"
