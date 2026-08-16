@@ -49,7 +49,7 @@ def cfg_for(path: Path, expect_ev=1.0, expect_win=60.0, n_min=20, **kw):
     # 같은 값을 주고, 한쪽만 보려는 테스트는 kw 로 개별 지정한다.
     c = {"ledger": path, "field": "ret", "cost": 0.0, "expect_ev": expect_ev,
          "expect_win": expect_win, "basis": "테스트",
-         "n_min_adjudicate": n_min, "n_min_confirm": n_min,
+         "n_min_adjudicate": n_min, "deff_prior": 1.0,
          "publish_scope": gate.WHOLE_LEDGER}
     c.update(kw)
     return c
@@ -292,7 +292,7 @@ def test_win_definition_matches_the_b_ledger_win_field(tmp_path):
     led = tmp_path / "b.jsonl"
     led.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
     cfg = {"ledger": led, "field": "alpha", "cost": 0.0, "expect_ev": 1.0, "expect_win": 60.0,
-           "n_min_adjudicate": 20, "n_min_confirm": 20, "basis": "테스트",
+           "n_min_adjudicate": 20, "deff_prior": 1.0, "basis": "테스트",
            "filter": {"status": "settled"}, "publish_scope": gate.WHOLE_LEDGER}
     r = gate.evaluate("b", cfg, {}, TODAY)
     ledger_win = round(100 * sum(x["win"] for x in rows) / len(rows), 1)
@@ -852,14 +852,14 @@ def test_scope_and_maturity_filter_are_separate_concepts(tmp_path):
 def test_lanes_declare_both_floors():
     for lane, cfg in gate.LANES.items():
         assert "n_min_adjudicate" in cfg, f"{lane}: DEGRADE 개시 floor 미선언"
-        assert "n_min_confirm" in cfg, f"{lane}: 승격 자격 floor 미선언"
+        assert "deff_prior" in cfg, f"{lane}: 승격 자격 floor 의 prior 미선언"
 
 
 def test_adjudication_floor_gates_degrade_onset(tmp_path):
     """개시 floor 아래에서는 판정하지 않는다 — mean<=0 분기의 유일한 소표본 방어선."""
     led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 15)
-    below = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=20), {}, TODAY)
-    above = gate.evaluate("l", cfg_for(led, n_min_adjudicate=10, n_min_confirm=10), {}, TODAY)
+    below = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20), {}, TODAY)
+    above = gate.evaluate("l", cfg_for(led, n_min_adjudicate=10), {}, TODAY)
     assert below["verdict"] == "OBSERVING"
     assert above["verdict"] == "DEGRADE", "개시 floor 를 내리면 보호가 앞당겨져야 한다"
 
@@ -871,8 +871,8 @@ def test_raising_the_adjudication_floor_removes_protection_entirely(tmp_path):
     OBSERVING 은 발행 제외 대상이 아니라 미판정 상태로 사이징을 단 채 발행된다.
     """
     led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 40)      # 레인 총 표본 40
-    ok = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=20), {}, TODAY)
-    gone = gate.evaluate("l", cfg_for(led, n_min_adjudicate=50, n_min_confirm=50), {}, TODAY)
+    ok = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20), {}, TODAY)
+    gone = gate.evaluate("l", cfg_for(led, n_min_adjudicate=50), {}, TODAY)
     assert ok["verdict"] == "DEGRADE"
     assert gone["verdict"] == "OBSERVING", "처리량 위로 올렸는데 DEGRADE 가 살아 있다"
     assert gone["publication_block"] is False, (
@@ -888,7 +888,7 @@ def test_confirm_floor_does_not_change_the_verdict_vocabulary(tmp_path):
     """
     led = write_ledger(tmp_path / "l.jsonl", [1.0] * 25)
     r = gate.evaluate("l", cfg_for(led, expect_ev=1.0, expect_win=50.0,
-                                   n_min_adjudicate=20, n_min_confirm=67), {}, TODAY)
+                                   n_min_adjudicate=20, deff_prior=2.24), {}, TODAY)
     assert r["verdict"] == "CONFIRM", "자격 미달을 verdict 로 표현하면 소비자 어휘가 깨진다"
     assert r["confirm_qualified"] is False
     assert "승격 자격" in r["note"]
@@ -897,14 +897,14 @@ def test_confirm_floor_does_not_change_the_verdict_vocabulary(tmp_path):
 def test_confirm_qualified_when_sample_clears_the_floor(tmp_path):
     led = write_ledger(tmp_path / "l.jsonl", [1.0] * 80)
     r = gate.evaluate("l", cfg_for(led, expect_ev=1.0, expect_win=50.0,
-                                   n_min_adjudicate=20, n_min_confirm=67), {}, TODAY)
+                                   n_min_adjudicate=20, deff_prior=2.24), {}, TODAY)
     assert r["verdict"] == "CONFIRM" and r["confirm_qualified"] is True
 
 
 def test_confirm_floor_never_blocks_degrade(tmp_path):
     """승격 자격 floor 는 보호를 늦추면 안 된다 — 방향이 반대인 두 역할이므로."""
     led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 25)
-    r = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=200), {}, TODAY)
+    r = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, deff_prior=5.0), {}, TODAY)
     assert r["verdict"] == "DEGRADE", "승격 floor 가 DEGRADE 개시를 막았다"
 
 
@@ -916,10 +916,11 @@ def test_maturity_lag_floor_uses_the_adjudication_floor(tmp_path):
     """
     led = write_ledger(tmp_path / "l.jsonl", [3.0] * 120)
     st = state_for("EXCEED_PENDING", bdays_before(TODAY, 15))
-    low = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=20), st, TODAY)
-    high = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=1000), st, TODAY)
-    assert low["exceed_gate"]["lag"] is True
-    assert high["exceed_gate"]["lag"] is True, "승격 floor 가 성숙시차 조건을 함께 조였다"
+    r = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, deff_prior=5.0), st, TODAY)
+    # 승격 floor 가 150(=30x5)까지 올라가지만 지연표본은 그보다 적다.
+    # ②가 승격 floor 를 쓰면 막히고, 개시 floor(20)를 쓰면 통과한다.
+    assert r["n_min_confirm"] >= 100, r["n_min_confirm"]
+    assert r["exceed_gate"]["lag"] is True, "승격 floor 가 성숙시차 조건을 함께 조였다"
 
 
 def test_exceed_promotion_floor_is_still_its_own_constant():
@@ -939,3 +940,122 @@ def test_adjudication_floor_respects_lane_throughput():
             for n, cap in thirteen_week.items()
             if gate.LANES[n]["n_min_adjudicate"] > cap}
     assert set(over) <= {"kosdaq_intraday_t10"}, f"처리량 상한 위반: {over}"
+
+
+# ---------------------------------------------------------------------------
+# OD-27 / OD-30 — 개시 floor 통일 · DEFF 재산출
+# ---------------------------------------------------------------------------
+
+def test_adjudication_floor_is_twenty_for_every_lane():
+    """OD-27: 근거 없던 상수 6개(20/20/30/30/30/30)를 하나로 줄인다."""
+    vals = {n: c["n_min_adjudicate"] for n, c in gate.LANES.items()}
+    assert set(vals.values()) == {20}, vals
+
+
+def test_deff_reproduces_the_audit_formula():
+    """DEFF = 1 + (m̄-1)·ICC. 감사 실측(swing 2.21)을 같은 입력으로 재현한다."""
+    # 23일에 167행, ICC 0.194 → 2.21. 여기서는 공식 자체를 고정한다.
+    assert gate._design_effect_from(1.0, 0.5) == pytest.approx(1.0)   # 클러스터 없음
+    assert gate._design_effect_from(7.26, 0.194) == pytest.approx(2.21, abs=0.01)
+    assert gate._design_effect_from(14.07, 0.112) == pytest.approx(2.47, abs=0.01)
+
+
+def test_deff_is_recomputed_from_the_judged_sample(tmp_path):
+    """상수로 박지 않는다 — 판정 표본이 바뀌면 DEFF 도 따라간다."""
+    flat = [(f"2026-07-{d:02d}", 1.0) for d in range(1, 29) for _ in range(2)]
+    led = tmp_path / "l.jsonl"
+    led.write_text("".join(json.dumps({"ret": v, "date": d}) + "\n" for d, v in flat),
+                   encoding="utf-8")
+    r = gate.evaluate("l", cfg_for(led, deff_prior=9.9), {}, TODAY)
+    assert r["deff_source"] == "computed", r
+    assert r["deff"] < 9.9, "prior 를 그대로 쓰고 있다 — 재산출이 안 된다"
+    assert r["n_min_confirm"] == int(np.ceil(30 * r["deff"]))
+
+
+def test_deff_falls_back_to_prior_when_sample_is_too_small(tmp_path):
+    """ICC 0.000 은 무상관 근거가 아니라 표본 부족이다(감사 명시).
+
+    OD-15 로 판정 표본이 좁아진 뒤 kospi_intraday_t5 가 정확히 이 상태다(10행·9일).
+    """
+    # 12행 x 4일(하루 3건) — ICC 는 **계산 가능**하지만 행 12<30, 일 4<10 이라 믿을 수 없다.
+    # 가드가 없으면 이 표본으로 DEFF 를 계산해버린다.
+    dates = [f"2026-07-{(i // 3) + 1:02d}" for i in range(12)]
+    led = write_ledger(tmp_path / "l.jsonl", [1.0, 5.0, -3.0] * 4, dates=dates)
+    assert gate._icc_by_day(list(zip(dates, [1.0, 5.0, -3.0] * 4))) is not None, \
+        "이 표본은 ICC 가 계산되는 표본이어야 가드를 검사할 수 있다"
+
+    r = gate.evaluate("l", cfg_for(led, n_min_adjudicate=5, deff_prior=1.16), {}, TODAY)
+
+    assert r["deff_source"] == "prior", f"표본 부족인데 계산값을 썼다: {r['deff_source']}"
+    assert r["deff"] == pytest.approx(1.16)
+
+
+def test_confirm_floor_never_drops_below_the_policy_base(tmp_path):
+    """DEFF>=1 이므로 floor 는 §20:478 의 n>=30 아래로 절대 못 내려간다.
+
+    재산출이 floor 를 **완화하는** 방향으로는 작동하지 않는다는 성질이다.
+    """
+    # prior 경로(표본 부족)에서 1 미만 prior 가 들어와도 floor 는 30 아래로 못 간다
+    small = write_ledger(tmp_path / "s.jsonl", [1.0] * 8)
+    r = gate.evaluate("l", cfg_for(small, n_min_adjudicate=5, deff_prior=0.1), {}, TODAY)
+    assert r["deff_source"] == "prior" and r["deff"] >= 1.0, r
+    assert r["n_min_confirm"] >= 30, "재산출이 정책 하한을 완화하는 방향으로 작동했다"
+
+    # 계산 경로에서도 마찬가지 — DEFF 는 정의상 1 미만이 될 수 없다
+    big = write_ledger(tmp_path / "b.jsonl", [1.0] * 60,
+                       dates=[f"2026-07-{(i % 28) + 1:02d}" for i in range(60)])
+    r2 = gate.evaluate("l", cfg_for(big, deff_prior=0.1), {}, TODAY)
+    assert r2["deff"] >= 1.0 and r2["n_min_confirm"] >= 30
+    assert gate._design_effect_from(0.5, 1.0) == 1.0, "m̄<1 은 있을 수 없고 클램프돼야 한다"
+
+
+def test_deff_is_capped_against_runaway(tmp_path):
+    assert gate._design_effect_from(1000.0, 1.0) == gate.DEFF_CAP
+
+
+def test_deff_inputs_are_reported_for_audit(tmp_path):
+    """상수가 아니라 계산값이므로 입력이 산출물에 실려야 검증 가능하다."""
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 60,
+                       dates=[f"2026-07-{(i % 28) + 1:02d}" for i in range(60)])
+    r = gate.evaluate("l", cfg_for(led), {}, TODAY)
+    for k in ("deff", "deff_source", "deff_icc", "deff_days", "deff_picks_per_day"):
+        assert k in r, f"{k} 미노출 — 재산출값을 검증할 수 없다"
+
+
+# --- OD-28: 게이트가 노출하는 판정 지속 일수 --------------------------------
+
+def test_verdict_hold_days_is_exposed_for_any_verdict(tmp_path):
+    """OD-28 은 OBSERVING 장기 지속을 경보로 올린다 — 그 판단에 쓸 값을 게이트가 낸다."""
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 8)
+    st = state_for("OBSERVING", bdays_before(TODAY, 12))
+    r = gate.evaluate("lane", cfg_for(led, n_min_adjudicate=20), st, TODAY)
+    assert r["verdict"] == "OBSERVING"
+    assert r["verdict_hold_bdays"] == 12, "OBSERVING 지속 일수가 안 나온다"
+
+
+def test_verdict_hold_days_resets_with_the_verdict(tmp_path):
+    led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 40)
+    r = gate.evaluate("lane", cfg_for(led), state_for("OBSERVING", bdays_before(TODAY, 30)), TODAY)
+    assert r["verdict"] == "DEGRADE" and r["verdict_hold_bdays"] == 0
+
+
+# --- OD-29: confirm_qualified 계약 (seaslug 배선 대상) ----------------------
+
+def test_confirm_qualified_contract_boundaries(tmp_path):
+    """seaslug 가 발행 경로에 배선한다 — True/False/None 경계를 계약으로 고정한다."""
+    # None: 판정 개시 전(OBSERVING) — 자격을 묻지 않았다
+    few = write_ledger(tmp_path / "a.jsonl", [1.0] * 8)
+    assert gate.evaluate("l", cfg_for(few, n_min_adjudicate=20), {}, TODAY)["confirm_qualified"] is None
+    # None: DEGRADE — 자격 판정이 무의미하다
+    bad = write_ledger(tmp_path / "b.jsonl", [-5.0] * 40)
+    assert gate.evaluate("l", cfg_for(bad), {}, TODAY)["confirm_qualified"] is None
+    # False: CONFIRM 이지만 표본이 floor 미달
+    mid = write_ledger(tmp_path / "c.jsonl", [1.0] * 25)
+    r = gate.evaluate("l", cfg_for(mid, expect_ev=1.0, expect_win=50.0,
+                                   n_min_adjudicate=20, deff_prior=2.3), {}, TODAY)
+    assert r["verdict"] == "CONFIRM" and r["confirm_qualified"] is False
+    # True: CONFIRM 이고 floor 통과
+    many = write_ledger(tmp_path / "d.jsonl", [1.0] * 80)
+    r2 = gate.evaluate("l", cfg_for(many, expect_ev=1.0, expect_win=50.0,
+                                    n_min_adjudicate=20, deff_prior=1.0), {}, TODAY)
+    assert r2["verdict"] == "CONFIRM" and r2["confirm_qualified"] is True

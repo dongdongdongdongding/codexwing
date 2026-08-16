@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
@@ -62,6 +63,21 @@ WIN_TOL = 1.0
 # 레인을 강등)가 다른 레인에서 그대로 반복된다. 전체가 발행분인 레인도 값을 적어 선언한다.
 WHOLE_LEDGER = "WHOLE_LEDGER"
 
+# --- OD-30: DEFF 재산출 ------------------------------------------------------
+# n_min_confirm 을 상수로 박지 않고 매 실행 판정 표본에서 다시 계산한다.
+#   DEFF = 1 + (m̄-1)·ICC        m̄ = 일평균 픽수, ICC = 일 단위 급내상관
+# **왜 매 실행인가** — 픽/일이 바뀌면 DEFF 도 바뀐다(감사 명시). 게이트는 매일 돌고 이 floor 는
+#   CONFIRM 경계에서만 구속하므로, 상수로 얼리면 이 워크스트림이 계속 고쳐 온 "낡은 상수"가
+#   하나 더 생긴다. 대신 입력(ICC·일수·픽/일)을 산출물에 실어 매번 검증 가능하게 한다.
+# **입력 구간** — 판정 표본 그대로(발행범위·정지배제 적용 후). floor 가 지배하는 모집단과
+#   다른 구간을 쓰면 서로 다른 것을 비교하게 된다. 이력이 길어지면 최근 구간으로 좁히는 게
+#   맞지만, 현재 레인들은 총 4~27일치라 좁히면 추정 자체가 무너진다.
+# **완화 방향으로는 작동하지 않는다** — DEFF>=1 이라 floor 는 항상 §20:478 의 n>=30 이상이다.
+CONFIRM_BASE_N = 30          # §20:478 "forward CONFIRM(n>=30)" — 독립 트레이드 상정
+DEFF_MIN_ROWS = 30           # 이보다 적으면 ICC 추정이 표본부족이라 prior 를 쓴다
+DEFF_MIN_DAYS = 10           # 클러스터 수 하한 — 일수가 적으면 급간분산이 잡음에 지배된다
+DEFF_CAP = 5.0               # 폭주 방지
+
 # --- OD-25: n_min 을 셋으로 (audit-nmin-basis.md) --------------------------
 # 한 숫자가 세 역할을 겸하고 있었다. F3 가 승격(③)을 EXCEED_MIN_N 으로 떼어냈으므로
 # 나머지 둘도 가른다. **두 역할은 방향이 반대라 한 숫자로 동시에 최적화할 수 없다.**
@@ -89,7 +105,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   (베토분이 원장에 남는 것 자체는 정상이다 — forward 연속성. 판정에 쓰는 게 문제다.)
         "publish_scope": {"tier": "PRIMARY"},
         "expect_ev": 5.65, "expect_win": 92.0,
-        "n_min_adjudicate": 20, "n_min_confirm": 35,   # DEFF 1.16 · 13주 상한 88
+        "n_min_adjudicate": 20, "deff_prior": 1.16,   # 13주 상한 88
         "basis": "§28 q0.5 승격 (2026-07-13) — 8 OOS월 rank-1 선별 q0.5 티어+터치익절"},
     "kosdaq_intraday_t10": {
         "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5", "cost": 0.33,
@@ -107,7 +123,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         # ⚠️ 변경 금지(감사 권고). 13주 처리량이 17 이라 현행 20 이 이미 상한 위다 —
         #   올리면 DEGRADE 가 더 멀어지고, 내리면 mean 6.69 > 4.71 이라 즉시 EXCEED 로
         #   넘어가 n=7 짜리 소표본 승격이 된다. confirm floor 는 형제 레인 prior.
-        "n_min_adjudicate": 20, "n_min_confirm": 35,
+        "n_min_adjudicate": 20, "deff_prior": 1.16,   # 형제 레인 prior (n=7 로 추정 불가)
         "basis": "EV=§11-A:263 15:00 실파이프라인 재검증(n=66) · 승률=§27:584 티어 승률 맵(n=101, 2026-07-13 정본)"},
     "swing_candidate": {
         "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret", "cost": 0.3,
@@ -116,7 +132,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   발행분인지 판별할 근거가 원장에 없다. 근거가 생기면 좁혀야 한다(§ 확인 필요).
         "publish_scope": WHOLE_LEDGER,
         "expect_ev": 0.65, "expect_win": 62.0,
-        "n_min_adjudicate": 30, "n_min_confirm": 67,   # DEFF 2.21
+        "n_min_adjudicate": 20, "deff_prior": 2.21,
         "basis": "§7-A 8년 분기 walk-forward (플라시보 사망)"},
     # swing_ensemble: 2026-07-19 아카이브 — DEGRADE 확정(n=112, EV −0.72)·교체 완료, 일일 실행 중지.
     "b_primary_top3": {
@@ -130,7 +146,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   없었다. 원장이 이미 win=int(alpha>0) 을 저장하므로 실측으로 교체(정지 이후
         #   제외 후 n=52). expect_ev 2.18 은 §11-B:271 BASE top3 와 일치 — 유지.
         "expect_ev": 2.18, "expect_win": 38.5,
-        "n_min_adjudicate": 30, "n_min_confirm": 39,   # DEFF 1.30
+        "n_min_adjudicate": 20, "deff_prior": 1.30,
         "basis": "§11-B:271 24폴드 BASE top3 +2.18 (α/트레이드) · 승률=원장 실측 2026-08-15"},
     "b_all_top10": {
         # 2026-07-10: 전체 스트림 감시 추가 — PRIMARY 정산 대기 중 top10 전체가 α −5.1로 붕괴한
@@ -150,14 +166,14 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   (kosdaq §11-A 도 CI 하단 0.21 을 두고 점추정 3.14 를 쓰고 있어 이쪽이 일관).
         # expect_win: 근거 없던 55.0 → 원장 실측(net>0, 정지 이후 제외 후 n=380) 40.3.
         "expect_ev": 1.63, "expect_win": 40.3,
-        "n_min_adjudicate": 30, "n_min_confirm": 75,   # DEFF 2.47
+        "n_min_adjudicate": 20, "deff_prior": 2.47,
         "basis": "§11-B:271 24폴드 BASE top10 점추정 +1.63 (α/트레이드) · 승률=원장 실측 2026-08-15"},
     "nasdaq_session_tape": {
         "ledger": USR / "nasdaq_session_tape_ledger.jsonl", "field": "policy_ret", "cost": 0.25,
         # 원장 54행 전부 tier=SHADOW — shadow 레인이라 기록분이 곧 발행(shadow)분이다.
         "publish_scope": WHOLE_LEDGER,
         "expect_ev": 0.75, "expect_win": 79.3,
-        "n_min_adjudicate": 30, "n_min_confirm": 39,   # DEFF 1.29
+        "n_min_adjudicate": 20, "deff_prior": 1.29,
         "basis": "§12-D 29개월 (정직 추정 +0.5~1.0 — 기대는 중간값 0.75)"},
 }
 
@@ -231,6 +247,32 @@ def _row_date(row: Dict[str, Any], key: str) -> str:
 
 def _bd(d: str) -> Any:
     return np.datetime64(d, "D")
+
+
+def _design_effect_from(picks_per_day: float, icc: float) -> float:
+    """DEFF = 1 + (m̄-1)·ICC, [1, DEFF_CAP] 으로 절단."""
+    deff = 1.0 + (max(1.0, float(picks_per_day)) - 1.0) * max(0.0, min(1.0, float(icc)))
+    return float(min(DEFF_CAP, max(1.0, deff)))
+
+
+def _icc_by_day(pairs: List[Any]) -> Any:
+    """일 단위 급내상관(ANOVA 추정, 불균형 보정). 추정 불가면 None."""
+    by: Dict[str, List[float]] = {}
+    for d, v in pairs:
+        if d:
+            by.setdefault(d, []).append(v)
+    groups = [np.array(v, dtype=float) for v in by.values()]
+    k, total = len(groups), int(sum(len(g) for g in groups))
+    if k < 2 or total <= k:
+        return None
+    grand = float(np.concatenate(groups).mean())
+    msb = sum(len(g) * (g.mean() - grand) ** 2 for g in groups) / (k - 1)
+    msw = sum(float(((g - g.mean()) ** 2).sum()) for g in groups) / (total - k)
+    m0 = (total - sum(len(g) ** 2 for g in groups) / total) / (k - 1)
+    denom = msb + (m0 - 1) * msw
+    if denom <= 0:
+        return 0.0
+    return max(0.0, min(1.0, (msb - msw) / denom))
 
 
 def _norm_ts(value: Any) -> str:
@@ -396,10 +438,31 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
 
     vals = [v for _, _, v in triples]
     block = bool(susp["suspended"])
+
+    # --- OD-30: DEFF 재산출 (판정 표본 기준) ---------------------------------
+    dated_pairs = [(d, v) for d, _, v in triples if d]
+    deff_days = len({d for d, _ in dated_pairs})
+    ppd = (len(dated_pairs) / deff_days) if deff_days else 0.0
+    icc = None
+    if len(dated_pairs) >= DEFF_MIN_ROWS and deff_days >= DEFF_MIN_DAYS:
+        icc = _icc_by_day(dated_pairs)
+    if icc is None:
+        # 표본 부족 — ICC 0.000 은 무상관 근거가 아니라 표본 부족이다(감사 명시).
+        deff = float(min(DEFF_CAP, max(1.0, float(cfg.get("deff_prior", 1.0)))))
+        deff_src = "prior"
+    else:
+        deff = _design_effect_from(ppd, icc)
+        deff_src = "computed"
+    n_min_confirm = int(math.ceil(CONFIRM_BASE_N * deff))
     res: Dict[str, Any] = {"lane": name, "basis": cfg["basis"], "n": len(vals), "cost": cost,
                            "expect_ev": cfg["expect_ev"], "expect_win": cfg["expect_win"],
                            "n_min_adjudicate": cfg["n_min_adjudicate"],
-                           "n_min_confirm": cfg["n_min_confirm"],
+                           "n_min_confirm": n_min_confirm,
+                           "deff": round(deff, 3), "deff_source": deff_src,
+                           "deff_icc": None if icc is None else round(icc, 3),
+                           "deff_days": deff_days, "deff_picks_per_day": round(ppd, 2),
+                           # OD-29 계약: None = 자격을 묻지 않았다(OBSERVING/DEGRADE 등),
+                           #   True/False = CONFIRM 판정에서 표본이 n_min_confirm 을 넘었는가.
                            "confirm_qualified": None, "win_verdict": "NA",
                            "publish_scope": "WHOLE_LEDGER" if scope == WHOLE_LEDGER else dict(scope),
                            "ledger_rows_before_scope": ledger_n,
@@ -422,8 +485,15 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
             note = f"발행 차단({susp['reason']}) · 원 판정 {verdict}: {note}"
             verdict = "DEGRADE"
         keep = prev["since"] and _family(prev["verdict"]) == _family(verdict)
+        since = prev["since"] if keep else today
+        # OD-28: 판정이 얼마나 오래 유지됐는가. OBSERVING 장기 지속 경보의 입력이다
+        # (EXCEED 전용이던 유지일수 계산을 전 판정으로 넓힌 것).
+        try:
+            held = int(np.busday_count(_bd(since), _bd(today))) if since <= today else 0
+        except Exception:
+            held = 0
         res.update(verdict=verdict, note=note + susp_note,
-                   verdict_since=prev["since"] if keep else today)
+                   verdict_since=since, verdict_hold_bdays=held)
         return res
 
     if len(vals) < 5:
@@ -488,11 +558,11 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
         return _finish("EXCEED_PENDING", "기대 초과 — 승격 불가, 미충족: " + " / ".join(unmet))
     # 승격 자격은 **필드로** 낸다. 새 verdict 문자열을 만들면 소비자 화이트리스트가
     # 그 값을 몰라 발행이 끊긴다 — F3 의 EXCEED 분할이 그 사고를 냈다(OD-23).
-    res["confirm_qualified"] = len(vals) >= cfg["n_min_confirm"]
+    res["confirm_qualified"] = len(vals) >= n_min_confirm
     if res["confirm_qualified"]:
         return _finish("CONFIRM", "백테스트 기대와 정합")
     return _finish("CONFIRM", f"백테스트 기대와 정합 — 다만 승격 자격 미달 "
-                              f"(n={len(vals)}<{cfg['n_min_confirm']}, 사이징 승격 불가)")
+                              f"(n={len(vals)}<{n_min_confirm}, 사이징 승격 불가)")
 
 
 def main() -> None:
