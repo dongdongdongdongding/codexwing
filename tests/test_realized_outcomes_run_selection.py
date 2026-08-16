@@ -119,3 +119,35 @@ def test_selection_is_ordered_oldest_first(tmp_path):
     mtimes = [p.stat().st_mtime for p in picked]
     assert mtimes == sorted(mtimes), "정렬이 오름차순이 아니다 — [-limit:] 가 최근을 못 집는다"
     assert picked[-1] == made["09"]
+
+
+# ---------------------------------------------------------------------------
+# 형제 도구 — 같은 이름-정렬 버그 (만료의 상류)
+# ---------------------------------------------------------------------------
+# update_realized_outcomes 만 고쳐서는 재발을 못 막는다. 수익률 지표 산출기가 같은 방식으로
+# RUN 을 고르기 때문에 대부분의 RUN 에서 return_{h}d_pct 가 계산되지 않고, 정산기는 해결
+# 근거를 못 찾아 HORIZON_ELAPSED_NO_RESOLUTION 으로 만료시킨다. 7,171건 만료의 상류가 여기다.
+
+metrics = importlib.import_module("multi_agent.tools.update_outcome_return_metrics")
+
+
+def test_metrics_producer_also_selects_by_time(tmp_path):
+    specs = [(f"{i:02X}", 1000 + (100 - i)) for i in range(1, 21)]   # 이름↑ = 시간↓
+    made = make_runs(tmp_path, specs)
+
+    picked = metrics._iter_runs(shared_dir=tmp_path, run_ids=[], limit_runs=5)
+
+    newest = sorted(made.values(), key=lambda p: p.stat().st_mtime)[-5:]
+    assert set(picked) == set(newest), (
+        "지표 산출기가 이름순으로 고른다 — 정산기만 고치면 만료가 계속 쌓인다\n"
+        f"  뽑힘: {sorted(p.name for p in picked)}")
+
+
+def test_both_producers_agree_on_the_same_runs(tmp_path):
+    """두 도구가 같은 RUN 집합을 봐야 지표→정산 사슬이 끊기지 않는다."""
+    import random
+    rng = random.Random(20260816)
+    make_runs(tmp_path, [("%016X" % rng.getrandbits(64), 1000 + i) for i in range(50)])
+    a = mod._iter_target_runs(shared_dir=tmp_path, run_ids=[], limit_runs=20)
+    b = metrics._iter_runs(shared_dir=tmp_path, run_ids=[], limit_runs=20)
+    assert {p.name for p in a} == {p.name for p in b}

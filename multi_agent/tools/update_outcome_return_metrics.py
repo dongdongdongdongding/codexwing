@@ -157,7 +157,13 @@ def _iter_runs(shared_dir: Path, run_ids: List[str], limit_runs: int) -> List[Pa
     if run_ids:
         return [shared_dir / rid for rid in run_ids if (shared_dir / rid).exists()]
     runs = [p for p in shared_dir.iterdir() if p.is_dir() and p.name.startswith("RUN-")] if shared_dir.exists() else []
-    runs = sorted(runs, key=lambda p: p.name)
+    # 2026-08-16 수리: 정렬키가 p.name 이었다. RUN-<랜덤16진수>에는 시간 정보가 없어
+    #   runs[-limit:] 가 "최근 N개"가 아니라 이름이 RUN-FF… 쪽인 고정된 임의 N개였다.
+    #   그 결과 대부분의 RUN 에서 return_{h}d_pct 가 한 번도 계산되지 않았고, 정산기는
+    #   해결 근거가 없어 HORIZON_ELAPSED_NO_RESOLUTION 으로 만료시켰다 —
+    #   **7,171건 만료의 상류가 여기다.** update_realized_outcomes.py 와 같은 수정이며,
+    #   두 도구가 같은 RUN 집합을 봐야 지표→정산 사슬이 끊기지 않는다.
+    runs = sorted(runs, key=lambda p: p.stat().st_mtime)
     if limit_runs > 0:
         runs = runs[-limit_runs:]
     return runs

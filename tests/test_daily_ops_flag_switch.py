@@ -305,3 +305,50 @@ def test_panel_step_is_inside_the_nasdaq_swing_lane_guard():
     lane = next(i for i, l in enumerate(lines)
                 if l.startswith("if [[") and "AG_NASDAQ_SWING_MODEL_ENABLE" in l)
     assert lane < refresh, "패널 갱신이 레인 가드 밖에 있다"
+
+
+# ---------------------------------------------------------------------------
+# 미채점 행 경보 배선 (F6)
+# ---------------------------------------------------------------------------
+
+STALE_FLAG = "AG_UNRESOLVED_STALENESS_ALERT"
+STALE_STEP = "report_unresolved_outcome_staleness"
+
+
+def run_stale_block(tmp_path: Path, *, stdout='{"total_stale": 0}', rc=0, **flags) -> str:
+    script = tmp_path / "stale.sh"
+    script.write_text(PANEL_HARNESS % (stdout, rc, guard_block(STALE_STEP, STALE_FLAG)),
+                      encoding="utf-8")
+    env = {k: v for k, v in os.environ.items() if not k.startswith("AG_UNRESOLVED")}
+    env.update({k: str(v) for k, v in flags.items()})
+    r = subprocess.run([SYSTEM_BASH, str(script)], capture_output=True, text=True,
+                       timeout=60, env=env, cwd=str(REPO))
+    return r.stdout + r.stderr
+
+
+def test_staleness_alert_runs_by_default(tmp_path):
+    assert f"[STEP] {STALE_STEP}" in run_stale_block(tmp_path)
+
+
+def test_staleness_alert_can_be_switched_off(tmp_path):
+    out = run_stale_block(tmp_path, **{STALE_FLAG: "0"})
+    assert f"[SKIP] {STALE_STEP}" in out and f"[STEP] {STALE_STEP}" not in out
+    assert STALE_FLAG in out
+
+
+def test_staleness_breach_is_loud_and_labelled(tmp_path):
+    """임계 초과가 조용히 지나가면 이 스텝을 만든 이유가 사라진다."""
+    out = run_stale_block(tmp_path, stdout='{"total_stale": 3}', rc=1)
+    assert "[WARN]" in out and "rc=1" in out
+    assert "total_stale" in out, "status 가 로그에 안 남았다"
+    assert "[DATA]" in out
+
+
+def test_staleness_breach_does_not_abort_dailyops(tmp_path):
+    out = run_stale_block(tmp_path, stdout='{"total_stale": 3}', rc=1)
+    assert "[STEP]" in out and "[WARN]" in out
+
+
+def test_staleness_guard_is_single_name():
+    head = guard_block(STALE_STEP, STALE_FLAG).splitlines()[0]
+    assert STALE_FLAG in head and ":-${" not in head, head

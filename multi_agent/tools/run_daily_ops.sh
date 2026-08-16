@@ -472,6 +472,30 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
       --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
 fi
 
+# 미채점 행 임계 초과 경보 (F6, swing-main-r6sb, 2026-08-16).
+#   원장에 채점되지 않은 행이 쌓여도 경보가 없었다 — resolver 는 bare except 라 실패가 안
+#   드러나고, 재시도 상한·dead-letter 가 없어 실패 행이 그냥 넘어가며, report_data_manifest 는
+#   원장 최신 date 만 봐서 개별 행 미채점을 못 본다. kr_swing_candidate 의 한 행이 32일간
+#   조용히 실패 중이었고, **이 침묵이 7,171건 만료의 상류다.**
+if [[ "${AG_UNRESOLVED_STALENESS_ALERT:-1}" == "1" ]]; then
+  echo "[STEP] report_unresolved_outcome_staleness"
+  # run_optional 을 그대로 쓰지 않는 이유는 패널 갱신과 같다 — 실패가 [WARN] 한 줄로 삼켜진다.
+  # 임계 초과 시 종료코드 1 이므로 status 를 라벨 붙여 남겨야 추적된다.
+  if STALENESS_OUT="$(python3 multi_agent/tools/report_unresolved_outcome_staleness.py --json-only)"; then
+    STALENESS_RC=0
+  else
+    STALENESS_RC=$?
+  fi
+  echo "[DATA] unresolved_staleness rc=${STALENESS_RC} ${STALENESS_OUT}"
+  if [[ "${STALENESS_RC}" == "0" ]]; then
+    echo "[OK] report_unresolved_outcome_staleness"
+  else
+    echo "[WARN] 미채점 행이 임계를 넘겼다 — 채점 파이프가 그 행들을 놓치고 있다(수동 확인 필요)"
+  fi
+else
+  echo "[SKIP] report_unresolved_outcome_staleness — AG_UNRESOLVED_STALENESS_ALERT=0 (재개: =1)"
+fi
+
 # 재귀 연구 게이트: 레인별 forward 자동채점 vs 동결 백테스트 기대 → CONFIRM/DEGRADE/EXCEED,
 # 판정 변화 시 beads 재연구 티켓 자동 발행. 비활성: AG_RECURSION_GATE_ENABLE=0.
 if [[ "${AG_RECURSION_GATE_ENABLE:-1}" == "1" ]]; then
