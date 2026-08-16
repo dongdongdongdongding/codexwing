@@ -62,6 +62,17 @@ WIN_TOL = 1.0
 # 레인을 강등)가 다른 레인에서 그대로 반복된다. 전체가 발행분인 레인도 값을 적어 선언한다.
 WHOLE_LEDGER = "WHOLE_LEDGER"
 
+# --- OD-25: n_min 을 셋으로 (audit-nmin-basis.md) --------------------------
+# 한 숫자가 세 역할을 겸하고 있었다. F3 가 승격(③)을 EXCEED_MIN_N 으로 떼어냈으므로
+# 나머지 둘도 가른다. **두 역할은 방향이 반대라 한 숫자로 동시에 최적화할 수 없다.**
+#   n_min_adjudicate — DEGRADE 개시 + ② EXCEED 성숙시차 표본 하한.
+#     **낮을수록 안전하다.** 레인 처리량 위로 올리면 임계가 이동하는 게 아니라 DEGRADE 가
+#     영원히 발동하지 않고, 그 레인은 미판정(OBSERVING) 상태로 사이징을 단 채 발행된다.
+#     설계효과(DEFF) 보정을 여기 적용하면 안 된다 — CI 를 넓혀 보호를 늦춘다.
+#   n_min_confirm  — 사이징 승격 자격(§20:478 "n>=30" 을 n_eff 로 읽어 30xDEFF).
+#     **높을수록 안전하고 도달 불가해도 무방하다.** 보호(DEGRADE)를 늦추지 않는다.
+#   EXCEED_MIN_N   — ③ 승격 표본 하한. 이미 위에 있다.
+
 # 레인별: 원장, 실현수익 필드, 동결된 백테스트 기대(연구 로그 근거), 성숙 표본 수
 # cost: 왕복 비용(%p) — 원장은 gross를 저장하므로 게이트가 차감해 net으로 판정 (2026-08-03 PKG-B ②).
 #   기대치는 전부 net 기준으로 동결돼 있었음(§28 threshold_frontier=net−0.3, §11-A=net−0.33,
@@ -77,7 +88,8 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   CANDIDATE 15건이 섞여 있었다. 발행되지 않는 픽으로 발행 레인을 강등한 것이다.
         #   (베토분이 원장에 남는 것 자체는 정상이다 — forward 연속성. 판정에 쓰는 게 문제다.)
         "publish_scope": {"tier": "PRIMARY"},
-        "expect_ev": 5.65, "expect_win": 92.0, "n_min": 20,
+        "expect_ev": 5.65, "expect_win": 92.0,
+        "n_min_adjudicate": 20, "n_min_confirm": 35,   # DEFF 1.16 · 13주 상한 88
         "basis": "§28 q0.5 승격 (2026-07-13) — 8 OOS월 rank-1 선별 q0.5 티어+터치익절"},
     "kosdaq_intraday_t10": {
         "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5", "cost": 0.33,
@@ -91,7 +103,11 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   있던 상태였다). expect_ev 3.14 는 §11-A 그대로다(§27 은 EV 를 주지 않는다).
         #   ⚠️ 그래서 이 레인은 EV 근거와 승률 근거의 § 가 서로 다르다. 값을 바꿀 때
         #   한쪽만 보고 고치면 다시 갈라진다.
-        "expect_ev": 3.14, "expect_win": 72.0, "n_min": 20,
+        "expect_ev": 3.14, "expect_win": 72.0,
+        # ⚠️ 변경 금지(감사 권고). 13주 처리량이 17 이라 현행 20 이 이미 상한 위다 —
+        #   올리면 DEGRADE 가 더 멀어지고, 내리면 mean 6.69 > 4.71 이라 즉시 EXCEED 로
+        #   넘어가 n=7 짜리 소표본 승격이 된다. confirm floor 는 형제 레인 prior.
+        "n_min_adjudicate": 20, "n_min_confirm": 35,
         "basis": "EV=§11-A:263 15:00 실파이프라인 재검증(n=66) · 승률=§27:584 티어 승률 맵(n=101, 2026-07-13 정본)"},
     "swing_candidate": {
         "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret", "cost": 0.3,
@@ -99,7 +115,8 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   안 돼서다.** tier 스탬프가 213행 중 17행(CANDIDATE)에만 있어 나머지 196행이
         #   발행분인지 판별할 근거가 원장에 없다. 근거가 생기면 좁혀야 한다(§ 확인 필요).
         "publish_scope": WHOLE_LEDGER,
-        "expect_ev": 0.65, "expect_win": 62.0, "n_min": 30,
+        "expect_ev": 0.65, "expect_win": 62.0,
+        "n_min_adjudicate": 30, "n_min_confirm": 67,   # DEFF 2.21
         "basis": "§7-A 8년 분기 walk-forward (플라시보 사망)"},
     # swing_ensemble: 2026-07-19 아카이브 — DEGRADE 확정(n=112, EV −0.72)·교체 완료, 일일 실행 중지.
     "b_primary_top3": {
@@ -112,7 +129,8 @@ LANES: Dict[str, Dict[str, Any]] = {
         # 2026-08-15 F4 정정: expect_win 55.0 은 §11-B 표에 승률 열 자체가 없어 근거가
         #   없었다. 원장이 이미 win=int(alpha>0) 을 저장하므로 실측으로 교체(정지 이후
         #   제외 후 n=52). expect_ev 2.18 은 §11-B:271 BASE top3 와 일치 — 유지.
-        "expect_ev": 2.18, "expect_win": 38.5, "n_min": 30,
+        "expect_ev": 2.18, "expect_win": 38.5,
+        "n_min_adjudicate": 30, "n_min_confirm": 39,   # DEFF 1.30
         "basis": "§11-B:271 24폴드 BASE top3 +2.18 (α/트레이드) · 승률=원장 실측 2026-08-15"},
     "b_all_top10": {
         # 2026-07-10: 전체 스트림 감시 추가 — PRIMARY 정산 대기 중 top10 전체가 α −5.1로 붕괴한
@@ -131,13 +149,15 @@ LANES: Dict[str, Dict[str, Any]] = {
         #   내려가 부실 레인을 살려두면서 승격은 앞당긴다. 규칙: **점추정을 동결한다**
         #   (kosdaq §11-A 도 CI 하단 0.21 을 두고 점추정 3.14 를 쓰고 있어 이쪽이 일관).
         # expect_win: 근거 없던 55.0 → 원장 실측(net>0, 정지 이후 제외 후 n=380) 40.3.
-        "expect_ev": 1.63, "expect_win": 40.3, "n_min": 30,
+        "expect_ev": 1.63, "expect_win": 40.3,
+        "n_min_adjudicate": 30, "n_min_confirm": 75,   # DEFF 2.47
         "basis": "§11-B:271 24폴드 BASE top10 점추정 +1.63 (α/트레이드) · 승률=원장 실측 2026-08-15"},
     "nasdaq_session_tape": {
         "ledger": USR / "nasdaq_session_tape_ledger.jsonl", "field": "policy_ret", "cost": 0.25,
         # 원장 54행 전부 tier=SHADOW — shadow 레인이라 기록분이 곧 발행(shadow)분이다.
         "publish_scope": WHOLE_LEDGER,
-        "expect_ev": 0.75, "expect_win": 79.3, "n_min": 30,
+        "expect_ev": 0.75, "expect_win": 79.3,
+        "n_min_adjudicate": 30, "n_min_confirm": 39,   # DEFF 1.29
         "basis": "§12-D 29개월 (정직 추정 +0.5~1.0 — 기대는 중간값 0.75)"},
 }
 
@@ -378,7 +398,9 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
     block = bool(susp["suspended"])
     res: Dict[str, Any] = {"lane": name, "basis": cfg["basis"], "n": len(vals), "cost": cost,
                            "expect_ev": cfg["expect_ev"], "expect_win": cfg["expect_win"],
-                           "n_min": cfg["n_min"], "win_verdict": "NA",
+                           "n_min_adjudicate": cfg["n_min_adjudicate"],
+                           "n_min_confirm": cfg["n_min_confirm"],
+                           "confirm_qualified": None, "win_verdict": "NA",
                            "publish_scope": "WHOLE_LEDGER" if scope == WHOLE_LEDGER else dict(scope),
                            "ledger_rows_before_scope": ledger_n,
                            "suspended_since": susp["since"] or None,
@@ -415,8 +437,8 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
     res.update(fwd_ev=round(float(arr.mean()), 2), fwd_win=round(float(wins.mean()) * 100, 1),
                fwd_ci=[round(lo, 2), round(hi, 2)], worst=round(float(arr.min()), 2),
                fwd_win_ci=[round(win_lo, 1), round(win_hi, 1)])
-    if len(vals) < cfg["n_min"]:
-        return _finish("OBSERVING", f"n={len(vals)}<{cfg['n_min']} — 참고치만")
+    if len(vals) < cfg["n_min_adjudicate"]:
+        return _finish("OBSERVING", f"n={len(vals)}<{cfg['n_min_adjudicate']} — 참고치만")
 
     # --- 승률 축 (F5). 표본이 성숙한 뒤에만 판정한다. -------------------------
     res["win_verdict"] = _win_verdict(win_hi, cfg["expect_win"])
@@ -441,7 +463,9 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
         if dated:
             cutoff = np.busday_offset(_bd(max(d for d, _ in dated)), -MATURITY_LAG_BDAYS, roll="backward")
             lagged = [v for d, v in dated if _bd(d) <= cutoff]
-            if len(lagged) >= cfg["n_min"]:
+            # ②는 개시 floor 를 쓴다. 승격 자격 floor 를 재사용하면 그걸 올릴 때마다
+            # 성숙시차 조건이 말없이 함께 조여진다(방향이 반대인 두 역할).
+            if len(lagged) >= cfg["n_min_adjudicate"]:
                 lag_ev = round(float(np.mean(lagged)), 2)
                 gate_lag = float(np.mean(lagged)) > cfg["expect_ev"] * 1.5
         gate_win = res["win_verdict"] != "SHORT"
@@ -462,7 +486,13 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
             (gate_win, f"④승률 {res.get('fwd_win')} vs 기대 {cfg['expect_win']}"),
         ) if not ok]
         return _finish("EXCEED_PENDING", "기대 초과 — 승격 불가, 미충족: " + " / ".join(unmet))
-    return _finish("CONFIRM", "백테스트 기대와 정합")
+    # 승격 자격은 **필드로** 낸다. 새 verdict 문자열을 만들면 소비자 화이트리스트가
+    # 그 값을 몰라 발행이 끊긴다 — F3 의 EXCEED 분할이 그 사고를 냈다(OD-23).
+    res["confirm_qualified"] = len(vals) >= cfg["n_min_confirm"]
+    if res["confirm_qualified"]:
+        return _finish("CONFIRM", "백테스트 기대와 정합")
+    return _finish("CONFIRM", f"백테스트 기대와 정합 — 다만 승격 자격 미달 "
+                              f"(n={len(vals)}<{cfg['n_min_confirm']}, 사이징 승격 불가)")
 
 
 def main() -> None:

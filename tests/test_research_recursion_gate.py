@@ -45,8 +45,11 @@ def write_ledger(path: Path, vals, dates=None, date_key="date", extra=None) -> P
 
 
 def cfg_for(path: Path, expect_ev=1.0, expect_win=60.0, n_min=20, **kw):
+    # n_min 은 OD-25 로 둘로 갈렸다. 기존 테스트의 의미(개시 floor)를 보존하려면 둘 다에
+    # 같은 값을 주고, 한쪽만 보려는 테스트는 kw 로 개별 지정한다.
     c = {"ledger": path, "field": "ret", "cost": 0.0, "expect_ev": expect_ev,
-         "expect_win": expect_win, "n_min": n_min, "basis": "테스트",
+         "expect_win": expect_win, "basis": "테스트",
+         "n_min_adjudicate": n_min, "n_min_confirm": n_min,
          "publish_scope": gate.WHOLE_LEDGER}
     c.update(kw)
     return c
@@ -289,8 +292,8 @@ def test_win_definition_matches_the_b_ledger_win_field(tmp_path):
     led = tmp_path / "b.jsonl"
     led.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
     cfg = {"ledger": led, "field": "alpha", "cost": 0.0, "expect_ev": 1.0, "expect_win": 60.0,
-           "n_min": 20, "basis": "테스트", "filter": {"status": "settled"},
-           "publish_scope": gate.WHOLE_LEDGER}
+           "n_min_adjudicate": 20, "n_min_confirm": 20, "basis": "테스트",
+           "filter": {"status": "settled"}, "publish_scope": gate.WHOLE_LEDGER}
     r = gate.evaluate("b", cfg, {}, TODAY)
     ledger_win = round(100 * sum(x["win"] for x in rows) / len(rows), 1)
     assert r["fwd_win"] == pytest.approx(ledger_win), (r["fwd_win"], ledger_win)
@@ -834,3 +837,105 @@ def test_scope_and_maturity_filter_are_separate_concepts(tmp_path):
     r = gate.evaluate("l", cfg_for(led, n_min=5, filter={"status": "settled"},
                                    publish_scope={"tier": "PRIMARY"}), {}, TODAY)
     assert r["n"] == 8 and r["ledger_rows_before_scope"] == 16
+
+
+# ---------------------------------------------------------------------------
+# OD-25 — n_min 을 셋으로 쪼갠다 (audit-nmin-basis.md)
+# ---------------------------------------------------------------------------
+# 한 숫자가 세 가지 일을 하고 있었다: DEGRADE 개시 · 사이징 승격 자격 · EXCEED 성숙시차
+# 표본 하한. F3 가 승격을 EXCEED_MIN_N=100 으로 떼어냈으므로 나머지도 가를 수 있다.
+#
+# ⚠️ 방향이 반대인 두 역할이라 한 숫자로 동시에 최적화할 수 없다:
+#   DEGRADE 개시 floor 는 **낮을수록 안전**(올리면 보호가 늦어지거나 아예 사라진다)
+#   승격 자격 floor 는 **높을수록 안전**(도달 불가해도 무방)
+
+def test_lanes_declare_both_floors():
+    for lane, cfg in gate.LANES.items():
+        assert "n_min_adjudicate" in cfg, f"{lane}: DEGRADE 개시 floor 미선언"
+        assert "n_min_confirm" in cfg, f"{lane}: 승격 자격 floor 미선언"
+
+
+def test_adjudication_floor_gates_degrade_onset(tmp_path):
+    """개시 floor 아래에서는 판정하지 않는다 — mean<=0 분기의 유일한 소표본 방어선."""
+    led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 15)
+    below = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=20), {}, TODAY)
+    above = gate.evaluate("l", cfg_for(led, n_min_adjudicate=10, n_min_confirm=10), {}, TODAY)
+    assert below["verdict"] == "OBSERVING"
+    assert above["verdict"] == "DEGRADE", "개시 floor 를 내리면 보호가 앞당겨져야 한다"
+
+
+def test_raising_the_adjudication_floor_removes_protection_entirely(tmp_path):
+    """감사의 핵심 경고: 레인 처리량 위로 올리면 DEGRADE 가 지연이 아니라 **사라진다**.
+
+    n_min 을 올리는 것은 보수적이지 않다 — 그 레인은 영구 OBSERVING 이 되고,
+    OBSERVING 은 발행 제외 대상이 아니라 미판정 상태로 사이징을 단 채 발행된다.
+    """
+    led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 40)      # 레인 총 표본 40
+    ok = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=20), {}, TODAY)
+    gone = gate.evaluate("l", cfg_for(led, n_min_adjudicate=50, n_min_confirm=50), {}, TODAY)
+    assert ok["verdict"] == "DEGRADE"
+    assert gone["verdict"] == "OBSERVING", "처리량 위로 올렸는데 DEGRADE 가 살아 있다"
+    assert gone["publication_block"] is False, (
+        "이 상태가 위험한 이유 — 미판정인데 발행 제외도 아니다")
+
+
+def test_confirm_floor_does_not_change_the_verdict_vocabulary(tmp_path):
+    """승격 자격 미달을 **새 verdict 문자열로 만들지 않는다.**
+
+    내 F3 가 EXCEED 를 둘로 쪼갠 뒤 stream_exclusion 의 HEALTHY_VERDICTS 화이트리스트가
+    그 값을 몰라 기대 초과 레인이 발행 차단됐다(audit-nmin-basis.md [중대], OD-23).
+    같은 사고를 두 번 내지 않는다 — 자격은 **필드**로 낸다.
+    """
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 25)
+    r = gate.evaluate("l", cfg_for(led, expect_ev=1.0, expect_win=50.0,
+                                   n_min_adjudicate=20, n_min_confirm=67), {}, TODAY)
+    assert r["verdict"] == "CONFIRM", "자격 미달을 verdict 로 표현하면 소비자 어휘가 깨진다"
+    assert r["confirm_qualified"] is False
+    assert "승격 자격" in r["note"]
+
+
+def test_confirm_qualified_when_sample_clears_the_floor(tmp_path):
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 80)
+    r = gate.evaluate("l", cfg_for(led, expect_ev=1.0, expect_win=50.0,
+                                   n_min_adjudicate=20, n_min_confirm=67), {}, TODAY)
+    assert r["verdict"] == "CONFIRM" and r["confirm_qualified"] is True
+
+
+def test_confirm_floor_never_blocks_degrade(tmp_path):
+    """승격 자격 floor 는 보호를 늦추면 안 된다 — 방향이 반대인 두 역할이므로."""
+    led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 25)
+    r = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=200), {}, TODAY)
+    assert r["verdict"] == "DEGRADE", "승격 floor 가 DEGRADE 개시를 막았다"
+
+
+def test_maturity_lag_floor_uses_the_adjudication_floor(tmp_path):
+    """②(EXCEED 성숙시차 표본 하한)는 개시 floor 를 쓴다.
+
+    단일 n_min 을 재사용하면 승격 자격 floor 를 올리는 순간 성숙시차 조건이 말없이 함께
+    조여진다 — 두 효과가 반대 방향이라 그렇게 묶이면 안 된다.
+    """
+    led = write_ledger(tmp_path / "l.jsonl", [3.0] * 120)
+    st = state_for("EXCEED_PENDING", bdays_before(TODAY, 15))
+    low = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=20), st, TODAY)
+    high = gate.evaluate("l", cfg_for(led, n_min_adjudicate=20, n_min_confirm=1000), st, TODAY)
+    assert low["exceed_gate"]["lag"] is True
+    assert high["exceed_gate"]["lag"] is True, "승격 floor 가 성숙시차 조건을 함께 조였다"
+
+
+def test_exceed_promotion_floor_is_still_its_own_constant():
+    """③은 F3 의 EXCEED_MIN_N 이 이미 담당한다 — 신규 상수 불필요."""
+    assert gate.EXCEED_MIN_N == 100
+
+
+def test_adjudication_floor_respects_lane_throughput():
+    """어떤 레인도 개시 floor 가 13주 처리량을 넘으면 안 된다(감사 실측 표).
+
+    넘으면 DEGRADE 가 구조적으로 발동 불가가 되고 안전장치가 꺼진다.
+    kosdaq 은 13주 표본이 17이라 현행 20 이 이미 상한 위다 — 그래서 **올리지 않는다**.
+    """
+    thirteen_week = {"kospi_intraday_t5": 88, "kosdaq_intraday_t10": 17, "swing_candidate": 447,
+                     "b_primary_top3": 164, "b_all_top10": 692, "nasdaq_session_tape": 104}
+    over = {n: (gate.LANES[n]["n_min_adjudicate"], cap)
+            for n, cap in thirteen_week.items()
+            if gate.LANES[n]["n_min_adjudicate"] > cap}
+    assert set(over) <= {"kosdaq_intraday_t10"}, f"처리량 상한 위반: {over}"
