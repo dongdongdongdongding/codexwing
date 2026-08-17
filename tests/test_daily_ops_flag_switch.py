@@ -415,3 +415,33 @@ def test_sentinel_runs_before_the_two_hour_backfill():
     backfill = next(i for i, l in enumerate(lines) if "[STEP] intraday_backfill" in l)
     assert sentinel < backfill, (
         f"판정기({sentinel})가 2시간 백필({backfill}) 뒤에 있다 — 기한·발화율 판정이 그만큼 늦는다")
+
+
+def test_od43_intraday_producers_run_before_the_backfill():
+    """OD-43: 웹 /api/picks 가 이 두 레인의 dailyops 산출을 유일한 소스로 읽는다.
+
+    백필 뒤에 두면 장중 픽이 14:12 에 갱신된다 — 마감 한 시간 전이다.
+    실측상 둘 다 그날 백필 산출을 읽지 않으므로 앞으로 옮겼다.
+    """
+    lines = OPS.read_text(encoding="utf-8").splitlines()
+    pos = {}
+    for i, l in enumerate(lines):
+        for step in ("intraday_backfill", "report_kosdaq_intraday_vwap_guard",
+                     "report_kr_swing_candidate", "report_kospi_intraday_swing",
+                     "build_intraday_3d_panel"):
+            if f"[STEP] {step}" in l and step not in pos:
+                pos[step] = i
+    assert pos["report_kosdaq_intraday_vwap_guard"] < pos["intraday_backfill"]
+    assert pos["report_kr_swing_candidate"] < pos["intraday_backfill"]
+    # 41 은 패널을 읽으므로 옮기지 않는다 — 패널 빌더 뒤에 있어야 한다
+    assert pos["report_kospi_intraday_swing"] > pos["build_intraday_3d_panel"], \
+        "코스피는 intraday_3d_panel 을 읽는다 — 패널 빌더보다 앞서면 안 된다"
+
+
+def test_moved_producers_still_run_after_px_long_refresh():
+    """옮긴 두 생산자는 px_long 만 읽는다 — 그 갱신보다는 뒤여야 한다."""
+    lines = OPS.read_text(encoding="utf-8").splitlines()
+    px = next(i for i, l in enumerate(lines) if "[STEP] px_long_refresh" in l)
+    for step in ("report_kosdaq_intraday_vwap_guard", "report_kr_swing_candidate"):
+        s = next(i for i, l in enumerate(lines) if f"[STEP] {step}" in l)
+        assert s > px, f"{step} 이 px_long_refresh 보다 앞에 있다 — 낡은 가격을 읽는다"

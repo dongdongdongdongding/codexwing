@@ -322,10 +322,34 @@ def run(root: Path, cfg: Dict[str, Any], today: str, state: Dict[str, Any]) -> D
     findings += check_artifact_freshness(root, cfg, today)
     findings += check_prereg_kill_criteria(cfg)
     worst = max((SEV_ORDER.get(f.get("severity", "info"), 0) for f in findings), default=0)
+    cal = {m: trading_days(root, m, today) for m in ("KR", "US")}
+
+    # OD-44: 이 산출이 발행 경로의 입력이 된다(OD-34 적용). **fail-closed 계약** —
+    # 파일이 없거나 낡으면 "통과"로 읽히면 안 된다. 소비자가 그걸 판단할 수 있도록
+    # 신선도 근거를 함께 싣고, 사이징 허용 여부를 파생시키지 말고 명시한다.
+    #   · 지도에 없는 레인은 **불허**로 읽어야 한다(빠진 레인이 통과가 되면 안 된다)
+    #   · allowed=true 는 "OD-34 발화 자격을 통과했다"만 뜻한다. OD-1 자격·게이트 판정 등
+    #     다른 조건은 여기서 판정하지 않는다.
+    lane_sizing = {}
+    for f in findings:
+        if f.get("check") != "firing_qualification" or not f.get("lane"):
+            continue
+        lane_sizing[f["lane"]] = {
+            "allowed": f["verdict"] in ("PASS", "GRACE", "EXEMPT"),
+            "verdict": f["verdict"], "reason": f.get("detail", ""),
+        }
     return {
+        "schema_version": 1,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "today": today,
-        "trading_days": {m: len(trading_days(root, m, today)) for m in ("KR", "US")},
+        "freshness": {
+            "last_trading_day": {m: (v[-1] if v else None) for m, v in cal.items()},
+            "max_age_hours": 36,
+            "contract": ("fail-closed: 이 파일이 없거나 generated_at 이 max_age_hours 를 넘으면 "
+                         "통과로 읽지 말 것. lane_sizing 에 없는 레인도 불허로 읽을 것."),
+        },
+        "lane_sizing": lane_sizing,
+        "trading_days": {m: len(v) for m, v in cal.items()},
         "worst_severity": [k for k, v in SEV_ORDER.items() if v == worst][0],
         "escalations": [f for f in findings if SEV_ORDER.get(f.get("severity", "info"), 0) >= 2],
         "findings": findings,

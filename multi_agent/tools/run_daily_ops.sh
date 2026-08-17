@@ -264,6 +264,41 @@ else
   echo "[SKIP] report_sentinel_expectations — AG_SENTINEL_CHECK=0 (재개: =1)"
 fi
 
+# --- OD-43 (2026-08-17): 아래 두 생산자를 2시간 intraday_backfill **앞**으로 옮겼다. ---
+#   실측: 둘 다 그날 백필 산출(~/research_cache/intraday/)을 읽지 않는다.
+#     43 코스닥 — px_long.parquet 만 읽는다(_load_px_cache:116). 41 에서 가져오는 것은
+#        market_drawdown_state 하나뿐이고 그 함수도 px_long 만 읽는다(:66).
+#     45 스윙   — px_long.parquet + 자기 원장만 읽는다. score_today 는 41 것이 아니라
+#        자기 파일의 동명 함수다(:54).
+#   px_long_refresh 는 백필보다 앞(스텝 213)이라 앞으로 옮겨도 신선도가 유지된다.
+#   41 코스피는 옮기지 않았다 — _train() 이 intraday_3d_panel.parquet 을 읽고(:179)
+#   그 패널은 백필 산출로 build_intraday_3d_panel 이 만든다.
+#   근거: 웹 /api/picks 가 이 두 레인의 dailyops 산출을 유일한 소스로 읽는다(OD-43).
+if [[ "${AG_KOSDAQ_INTRADAY_ENABLE:-1}" == "1" ]]; then
+  # LIVE KOSDAQ INTRADAY lane (2026-06-24, operator) -- Codex lane of the Claude+Codex synthesis.
+  # KR_INTRADAY_3D_T5 15:00 VWAP-guard model. Stored artifact:
+  # models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl.
+  # Scores KOSDAQ minute bars at/after 15:00, requires calibrated p>=0.80 and pre_vwap_dist_pct>=0,
+  # emits daily top2, records target_touch3d_t5 + 3D close return/MFE/MAE in a separate INTRADAY
+  # ledger, and routes live with scan_mode=INTRADAY when AG_KOSDAQ_INTRADAY_PRODUCTION=1 (default ON).
+  # Tracks both liquidity lanes: >=30억 main edge and >=100억 tradeability.
+  echo "[STEP] report_kosdaq_intraday_vwap_guard"
+  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kosdaq_intraday_vwap_guard" \
+    python3 multi_agent/tools/report_kosdaq_intraday_vwap_guard.py \
+      --min-liq "${AG_KOSDAQ_INTRADAY_MIN_LIQ:-30}" \
+      --tradeability-liq "${AG_KOSDAQ_INTRADAY_TRADEABILITY_LIQ:-100}" \
+      --max-symbols "${AG_KOSDAQ_INTRADAY_MAX_SYMBOLS:-0}" \
+      --daily-context-source "${AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE:-cache}"
+fi
+if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
+  # Observation-only swing CANDIDATE picks (RESEARCH_LOG §7-A/D): 8y ft_5_5 ranker,
+  # rolling 2y train on px_long, next-open entry / +5% touch-exit contract, fdr auto-scoring.
+  # Honest modest edge (EV ~+0.65/trade, 60-62% touch). Never routed to buy lists.
+  echo "[STEP] report_kr_swing_candidate"
+  run_optional "report_kr_swing_candidate" \
+    python3 multi_agent/tools/report_kr_swing_candidate.py \
+      --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
+fi
 if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday_backfill.py" ]]; then
   # 분봉 minute bars: incremental KIS backfill of today's full session (post-close). Only fetches
   # days not already cached, so the daily run just adds today. Disable with AG_INTRADAY_BACKFILL=0.
@@ -464,22 +499,6 @@ if [[ "${AG_KOSDAQ_BUNDLE_RETRAIN_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/train_kosdaq_1500_bundle.py
 fi
 
-if [[ "${AG_KOSDAQ_INTRADAY_ENABLE:-1}" == "1" ]]; then
-  # LIVE KOSDAQ INTRADAY lane (2026-06-24, operator) -- Codex lane of the Claude+Codex synthesis.
-  # KR_INTRADAY_3D_T5 15:00 VWAP-guard model. Stored artifact:
-  # models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl.
-  # Scores KOSDAQ minute bars at/after 15:00, requires calibrated p>=0.80 and pre_vwap_dist_pct>=0,
-  # emits daily top2, records target_touch3d_t5 + 3D close return/MFE/MAE in a separate INTRADAY
-  # ledger, and routes live with scan_mode=INTRADAY when AG_KOSDAQ_INTRADAY_PRODUCTION=1 (default ON).
-  # Tracks both liquidity lanes: >=30억 main edge and >=100억 tradeability.
-  echo "[STEP] report_kosdaq_intraday_vwap_guard"
-  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kosdaq_intraday_vwap_guard" \
-    python3 multi_agent/tools/report_kosdaq_intraday_vwap_guard.py \
-      --min-liq "${AG_KOSDAQ_INTRADAY_MIN_LIQ:-30}" \
-      --tradeability-liq "${AG_KOSDAQ_INTRADAY_TRADEABILITY_LIQ:-100}" \
-      --max-symbols "${AG_KOSDAQ_INTRADAY_MAX_SYMBOLS:-0}" \
-      --daily-context-source "${AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE:-cache}"
-fi
 
 if [[ "${AG_KR_SELECTIVE_SHADOW_ENABLE:-1}" == "1" ]]; then
   # Observation-only selective high-conviction view over both intraday lane ledgers
@@ -490,15 +509,6 @@ if [[ "${AG_KR_SELECTIVE_SHADOW_ENABLE:-1}" == "1" ]]; then
     python3 multi_agent/tools/report_kr_selective_shadow.py
 fi
 
-if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
-  # Observation-only swing CANDIDATE picks (RESEARCH_LOG §7-A/D): 8y ft_5_5 ranker,
-  # rolling 2y train on px_long, next-open entry / +5% touch-exit contract, fdr auto-scoring.
-  # Honest modest edge (EV ~+0.65/trade, 60-62% touch). Never routed to buy lists.
-  echo "[STEP] report_kr_swing_candidate"
-  run_optional "report_kr_swing_candidate" \
-    python3 multi_agent/tools/report_kr_swing_candidate.py \
-      --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
-fi
 
 # 미채점 행 임계 초과 경보 (F6, swing-main-r6sb, 2026-08-16).
 #   원장에 채점되지 않은 행이 쌓여도 경보가 없었다 — resolver 는 bare except 라 실패가 안

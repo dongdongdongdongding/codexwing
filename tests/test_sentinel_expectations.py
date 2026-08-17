@@ -285,3 +285,54 @@ def test_escalation_markdown_is_written_for_durability(tmp_path):
                          "verdict": "FAIL", "severity": "alert", "detail": "2/10"}]}
     md = sen._escalation_markdown(rep)
     assert "FAIL" in md and "l" in md and "sentinel 에스컬레이션" in md
+
+
+# ---------------------------------------------------------------------------
+# OD-44 — 이 산출이 발행 경로의 입력이 된다 (fail-closed 계약)
+# ---------------------------------------------------------------------------
+
+def test_output_carries_freshness_evidence(tmp_path):
+    """소비자가 '낡았다'를 판단할 수 없으면 fail-closed 가 성립하지 않는다."""
+    days = [f"2026-07-{d:02d}" for d in range(1, 16)]
+    build_repo(tmp_path, kospi=days, swing=days, nasdaq=days)
+    rep = sen.run(tmp_path, _cfg(), TODAY, {})
+    assert rep["schema_version"] == 1
+    fr = rep["freshness"]
+    assert fr["max_age_hours"] > 0
+    assert fr["last_trading_day"]["KR"] == days[-1]
+    assert "fail-closed" in fr["contract"]
+
+
+def test_lane_sizing_is_explicit_not_derived(tmp_path):
+    """소비자가 findings 를 재해석하게 두면 해석이 갈린다 — 허용 여부를 명시한다."""
+    days = [f"2026-07-{d:02d}" for d in range(1, 16)]
+    build_repo(tmp_path, kospi=days, swing=days, kosdaq=days[:3], nasdaq=days)
+    rep = sen.run(tmp_path, _cfg(), TODAY, {})
+    ls = rep["lane_sizing"]
+    assert ls["kosdaq_intraday_t10"]["allowed"] is False
+    assert ls["kosdaq_intraday_t10"]["verdict"] == "FAIL"
+    assert ls["kospi_intraday_t5"]["allowed"] is True
+
+
+def test_exempt_and_grace_are_allowed_but_fail_is_not(tmp_path):
+    """면제는 **게이트 산출의 suspended_since 에서만** 나온다 — 임의 입력이 아니다."""
+    days = [f"2026-07-{d:02d}" for d in range(1, 16)]
+    build_repo(tmp_path, kospi=days, swing=days, b=days[:2], nasdaq=days)
+    gate_out = tmp_path / "runtime_state/reports/validation/research_recursion_gate_latest.json"
+    gate_out.parent.mkdir(parents=True, exist_ok=True)
+    gate_out.write_text(json.dumps({"results": [
+        {"lane": "b_primary_top3", "suspended_since": "2026-07-03"},
+        {"lane": "b_all_top10", "suspended_since": None}]}), encoding="utf-8")
+
+    rep = sen.run(tmp_path, _cfg(), TODAY, {})
+
+    assert rep["lane_sizing"]["b_primary_top3"]["allowed"] is True     # EXEMPT
+    assert rep["lane_sizing"]["b_all_top10"]["allowed"] is False       # 마커 없음 → OD-39
+
+
+def test_missing_lane_must_be_read_as_disallowed(tmp_path):
+    """지도에 없는 레인이 통과가 되면 fail-closed 가 깨진다 — 계약에 명시돼 있어야 한다."""
+    days = [f"2026-07-{d:02d}" for d in range(1, 16)]
+    build_repo(tmp_path, kospi=days, swing=days, nasdaq=days)
+    rep = sen.run(tmp_path, _cfg(), TODAY, {})
+    assert "없는 레인도 불허" in rep["freshness"]["contract"]
