@@ -44,6 +44,11 @@ STATE = PROJECT_ROOT / "runtime_state" / "long_term" / "ops" / "sentinel_state.j
 
 SEV_ORDER = {"info": 0, "warn": 1, "alert": 2, "critical": 3}
 
+# OD-50: 노후 문턱은 **산출 파일이 싣고 소비자는 읽는다.** 배선 하루 만에 두 값(36/48)이
+# 생겼고, 어느 쪽이 맞느냐가 아니라 두 개라는 것 자체가 OD-44 가 막으려던 형태다.
+# 소비자가 자기 기본값을 갖지 않도록 이 필드는 **모든 산출에 반드시 실린다**(테스트로 고정).
+MAX_AGE_HOURS = 36
+
 # 레인 정의는 **게이트 LANES 에서 가져온다.** 여기 따로 적으면 두 벌이 갈린다 —
 # HEALTHY_VERDICTS 어휘 드리프트와 kosdaq 승률 이중화가 정확히 그 형태였다.
 # (아래 상수는 게이트를 못 읽는 환경의 폴백 겸 문서다.)
@@ -136,9 +141,27 @@ def _gate_suspensions(root: Path) -> Dict[str, Optional[str]]:
 # 판정
 # ---------------------------------------------------------------------------
 
+def expired_suspension_lanes(root: Path, cfg: Dict[str, Any], today: str) -> Dict[str, Dict[str, Any]]:
+    """OD-35 기한을 넘긴 정지 레인. OD-49 로 **면제를 내기 전에** 쓰인다."""
+    out: Dict[str, Dict[str, Any]] = {}
+    for d in check_suspension_deadlines(root, cfg, today):
+        if d.get("verdict") != "OVERDUE":
+            continue
+        for lane in (d.get("lanes") or []):
+            out[lane] = d
+    return out
+
+
 def check_firing_qualification(root: Path, cfg: Dict[str, Any], today: str,
-                               suspensions: Dict[str, Optional[str]]) -> List[Dict[str, Any]]:
-    """OD-34 발화 자격 + OD-39(마커 없는 정지는 면제 아님)."""
+                               suspensions: Dict[str, Optional[str]],
+                               expired: Optional[Dict[str, Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
+    """OD-34 발화 자격 + OD-39(마커 없는 정지는 면제 아님) + OD-49(면제에 기한이 있다).
+
+    OD-49: 기한 검사가 **여기** 있어야 한다. 발행 경로에 되살리면 "정지가 만료됐는가"를
+    두 곳이 판단하게 되어 OD-44 가 막으려는 형태가 된다. 그리고 이 검사가 없으면
+    정지 레인이 **무기한 면제**로 남는다 — 실제로 그 상태였다.
+    """
+    expired = expired or {}
     q = cfg.get("lane_firing_qualification") or {}
     crit = q.get("criterion") or {}
     window = int(crit.get("window_trading_days", 10))
@@ -159,7 +182,11 @@ def check_firing_qualification(root: Path, cfg: Dict[str, Any], today: str,
         first = min(days) if days else None
         elapsed = len([d for d in cal[market] if first and d >= first])
 
-        if suspended:
+        if suspended and lane in expired:
+            # 면제가 만료됐다. EXEMPT 로 내보내면 lane_sizing.allowed 가 참이 되어
+            # 무기한 정지가 발행 자격처럼 읽힌다.
+            verdict, sev = "SUSPENSION_EXPIRED", "alert"
+        elif suspended:
             verdict, sev = "EXEMPT", "info"
         elif first is None:
             # OD-39: 마커도 없고 픽도 없다 — 면제를 주면 고장이 정지로 위장된다.
@@ -174,7 +201,8 @@ def check_firing_qualification(root: Path, cfg: Dict[str, Any], today: str,
             "check": "firing_qualification", "lane": lane, "verdict": verdict, "severity": sev,
             "fired": fired, "window": len(recent), "rate": round(rate, 3), "floor": floor,
             "market": market, "suspended_since": suspended,
-            "action": "block_sizing" if verdict == "FAIL" else None,
+            "suspension_deadline": (expired.get(lane) or {}).get("detail"),
+            "action": "block_sizing" if verdict in ("FAIL", "SUSPENSION_EXPIRED") else None,
             "detail": f"{fired}/{len(recent)} = {rate:.2f} (하한 {floor})",
         })
     return findings
@@ -301,26 +329,176 @@ def _content_stats(path: Path):
     return rows, latest
 
 
-def check_prereg_kill_criteria(cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """OD-19. 기계 판독 가능한 킬 기준만 대조할 수 있다."""
+def _kc_rows(root: Path, rel: str) -> List[Dict[str, Any]]:
+    path = root / str(rel)
+    if not path.exists():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            try:
+                out.append(json.loads(line))
+            except Exception:
+                pass
+    return out
+
+
+def _kc_no_rows_after(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
+    """킬 선언일 이후 신규 행이 생기면 위반. '이미 발동한 킬이 유지되는가'를 묻는다."""
+    rows = _kc_rows(root, chk["ledger"])
+    after = str(chk["after"])
+    dates = [_iso(r.get(chk.get("date_field", "date"))) for r in rows]
+    newer = sorted({d for d in dates if d and d > after})
+    return {"fired": bool(newer), "observed": {"max_date": max(dates) if dates else None,
+                                               "rows_after": len(newer)},
+            "detail": f"킬 선언일 {after} 이후 행 {len(newer)}건"}
+
+
+def _kc_field_min(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
+    rows = _kc_rows(root, chk["ledger"])
+    field, floor = chk["field"], float(chk["min"])
+    vals = [float(r[field]) for r in rows if isinstance(r.get(field), (int, float))]
+    bad = [v for v in vals if v < floor]
+    return {"fired": bool(bad), "observed": {"rows": len(vals), "min": min(vals) if vals else None,
+                                             "violations": len(bad)},
+            "detail": f"{len(vals)}행 중 {field}<{floor} 위반 {len(bad)}건"}
+
+
+def _kc_symbol_absent(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
+    """어떤 이름이 발행 경로 설정에 등장하면 위반. 파일이 없으면 **판정 불가**로 낸다."""
+    path = root / str(chk["file"])
+    if not path.exists():
+        return {"fired": None, "observed": {"file": str(chk["file"])},
+                "detail": f"검사 대상 파일 없음 — 판정 불가"}
+    body = path.read_text(encoding="utf-8")
+    sym = str(chk["symbol"])
+    return {"fired": sym in body, "observed": {"file": str(chk["file"]), "symbol": sym},
+            "detail": f"{chk['file']} 안에 '{sym}' {'있음(위반)' if sym in body else '없음'}"}
+
+
+def _kc_rank_monotonicity(root: Path, chk: Dict[str, Any]) -> Dict[str, Any]:
+    """심도 단조성 — 순위~수익 상관(음수여야) + 같은날 top/bottom 차분(양수여야).
+
+    풀링 금지: 시장별로 따로 본다. 표본 하한 미달이면 **판정 불가**를 낸다(0건을 통과로 읽지 않는다).
+    """
+    import numpy as np
+    rows = _kc_rows(root, chk["ledger"])
+    rank_f, ret_f = chk.get("rank_field", "rank"), chk.get("return_field", "fwd5_cc")
+    cost = float(chk.get("cost", 0.0))
+    need_rows = int((chk.get("min_sample") or {}).get("scored_rows_per_market", 100))
+    need_days = int((chk.get("min_sample") or {}).get("days", 4))
+    per: Dict[str, Any] = {}
+    fired = False
+    undecided = []
+    for mkt in sorted({str(r.get("market")) for r in rows if r.get("market")}):
+        sel = [r for r in rows if str(r.get("market")) == mkt
+               and isinstance(r.get(ret_f), (int, float)) and isinstance(r.get(rank_f), (int, float))]
+        days = {_iso(r.get("date")) for r in sel}
+        if len(sel) < need_rows or len(days) < need_days:
+            per[mkt] = {"rows": len(sel), "days": len(days), "verdict": "UNDECIDED"}
+            undecided.append(mkt)
+            continue
+        rk = np.array([float(r[rank_f]) for r in sel])
+        rv = np.array([float(r[ret_f]) - cost for r in sel])
+        corr = float(np.corrcoef(rk, rv)[0, 1]) if rk.std() > 0 and rv.std() > 0 else 0.0
+        tops, bots = [], []
+        for d in sorted(days):
+            day = sorted((r for r in sel if _iso(r.get("date")) == d), key=lambda r: r[rank_f])
+            if len(day) < 20:
+                continue
+            tops.append(np.mean([float(r[ret_f]) - cost for r in day[:10]]))
+            bots.append(np.mean([float(r[ret_f]) - cost for r in day[-10:]]))
+        depth = float(np.mean(tops) - np.mean(bots)) if tops and bots else None
+        hit = (corr >= 0) or (depth is not None and depth <= 0)
+        fired = fired or hit
+        per[mkt] = {"rows": len(sel), "corr": round(corr, 3),
+                    "top10_minus_bottom10": None if depth is None else round(depth, 2),
+                    "verdict": "FIRED" if hit else "OK"}
+    if undecided and not fired:
+        return {"fired": None, "observed": per,
+                "detail": f"표본 하한 미달 {undecided} — 판정 불가(0건을 통과로 읽지 않는다)"}
+    return {"fired": fired, "observed": per,
+            "detail": " · ".join(f"{m}: corr={v.get('corr')} depth={v.get('top10_minus_bottom10')}"
+                                 for m, v in per.items())}
+
+
+KC_EVALUATORS = {
+    "no_rows_after_date": _kc_no_rows_after,
+    "field_min": _kc_field_min,
+    "symbol_absent_in_file": _kc_symbol_absent,
+    "rank_return_monotonicity": _kc_rank_monotonicity,
+}
+
+
+def check_prereg_kill_criteria(cfg: Dict[str, Any], root: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """OD-19 대조 + OD-47(등록과 평가기는 같은 변경에 들어간다).
+
+    **등록만 하고 세기만 하면 판정이 초록인데 검사는 없는 상태가 된다** — 이 리포의 상습
+    실패 형태다(부분 가드가 무가드보다 조용했고, 중지 선언이 no-op 이었다). 그래서 평가할 수
+    없는 항목은 통과가 아니라 `NOT_EVALUATED` 로 낸다.
+
+    OD-48: 일회형(트랙 종료 관문)은 상시 술어와 섞지 않는다 — 매일 같은 답을 내는 가짜 감시가 된다.
+    """
     reg = cfg.get("prereg_kill_criteria") or []
     if not reg:
         return [{"check": "prereg_kill_criteria", "verdict": "NONE_REGISTERED", "severity": "warn",
                  "detail": "기계 판독 가능한 사전등록 킬 기준이 0건이다 — OD-19 가 요구하는 "
-                           "매일 대조가 아직 성립하지 않는다(등록되면 여기서 판정한다)"}]
-    return [{"check": "prereg_kill_criteria", "verdict": "REGISTERED", "severity": "info",
-             "count": len(reg), "detail": f"{len(reg)}건 등록됨"}]
+                           "매일 대조가 성립하지 않는다"}]
+    root = root or PROJECT_ROOT
+    out: List[Dict[str, Any]] = []
+    for item in reg:
+        cid = item.get("id", "?")
+        base = {"check": "prereg_kill_criteria", "id": cid,
+                "narrowing": bool(item.get("narrowing")), "kind": item.get("kind", "standing")}
+        status = str(item.get("status", "active"))
+        if status == "blocked":
+            out.append({**base, "verdict": "BLOCKED", "severity": "info",
+                        "detail": f"{item.get('blocked_by')} — 해제 시 평가한다: {item.get('unblock_when','')}"})
+            continue
+        chk = item.get("check")
+        if not isinstance(chk, dict) or chk.get("type") not in KC_EVALUATORS:
+            out.append({**base, "verdict": "NOT_EVALUATED", "severity": "warn",
+                        "detail": f"평가기가 없는 술어(type={None if not isinstance(chk, dict) else chk.get('type')}) "
+                                  f"— 등록만으로는 대조가 아니다"})
+            continue
+        try:
+            res = KC_EVALUATORS[chk["type"]](root, chk)
+        except Exception as exc:                                   # pragma: no cover
+            out.append({**base, "verdict": "EVAL_ERROR", "severity": "warn",
+                        "detail": f"{type(exc).__name__}: {exc}"})
+            continue
+        if res["fired"] is None:
+            verdict, sev = "UNDECIDED", "warn"
+        elif res["fired"]:
+            verdict, sev = "FIRED", str(item.get("severity", "alert"))
+        else:
+            verdict, sev = "OK", "info"
+        out.append({**base, "verdict": verdict, "severity": sev,
+                    "observed": res.get("observed"), "detail": res["detail"],
+                    "on_fire": item.get("on_fire") if verdict == "FIRED" else None})
+    gates = cfg.get("prereg_track_end_gates") or []
+    if gates:
+        out.append({"check": "prereg_kill_criteria", "id": "track_end_gates", "verdict": "REGISTERED",
+                    "severity": "info", "count": len(gates),
+                    "detail": f"트랙 종료 관문 {len(gates)}건 — 종료 시 1회 판정(OD-48, 매일 대조 아님)"})
+    unreadable = cfg.get("prereg_kill_criteria_not_machine_readable") or []
+    if unreadable:
+        out.append({"check": "prereg_kill_criteria", "id": "not_machine_readable",
+                    "verdict": "NOT_MACHINE_READABLE", "severity": "warn", "count": len(unreadable),
+                    "detail": f"술어화 불가로 남긴 {len(unreadable)}건 — 목록으로만 존재한다"})
+    return out
 
 
 # ---------------------------------------------------------------------------
 
 def run(root: Path, cfg: Dict[str, Any], today: str, state: Dict[str, Any]) -> Dict[str, Any]:
     suspensions = _gate_suspensions(root)
-    findings = check_firing_qualification(root, cfg, today, suspensions)
+    expired = expired_suspension_lanes(root, cfg, today)      # OD-49: 면제보다 먼저
+    findings = check_firing_qualification(root, cfg, today, suspensions, expired)
     findings += check_qualification_transition(findings, state)
     findings += check_suspension_deadlines(root, cfg, today)
     findings += check_artifact_freshness(root, cfg, today)
-    findings += check_prereg_kill_criteria(cfg)
+    findings += check_prereg_kill_criteria(cfg, root)
     worst = max((SEV_ORDER.get(f.get("severity", "info"), 0) for f in findings), default=0)
     cal = {m: trading_days(root, m, today) for m in ("KR", "US")}
 
@@ -344,7 +522,7 @@ def run(root: Path, cfg: Dict[str, Any], today: str, state: Dict[str, Any]) -> D
         "today": today,
         "freshness": {
             "last_trading_day": {m: (v[-1] if v else None) for m, v in cal.items()},
-            "max_age_hours": 36,
+            "max_age_hours": MAX_AGE_HOURS,
             "contract": ("fail-closed: 이 파일이 없거나 generated_at 이 max_age_hours 를 넘으면 "
                          "통과로 읽지 말 것. lane_sizing 에 없는 레인도 불허로 읽을 것."),
         },

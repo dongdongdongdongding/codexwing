@@ -246,9 +246,12 @@ def test_absent_kill_criteria_are_reported_not_assumed_clean():
     assert out[0]["verdict"] == "NONE_REGISTERED" and out[0]["severity"] == "warn"
 
 
-def test_registered_kill_criteria_are_counted():
-    out = sen.check_prereg_kill_criteria({"prereg_kill_criteria": [{"id": "a"}, {"id": "b"}]})
-    assert out[0]["verdict"] == "REGISTERED" and out[0]["count"] == 2
+def test_registered_without_evaluator_is_not_green(tmp_path):
+    """OD-47: 등록만 하면 판정이 초록인데 검사가 없는 상태가 된다 — 그걸 만들지 않는다."""
+    out = sen.check_prereg_kill_criteria(
+        {"prereg_kill_criteria": [{"id": "a"}, {"id": "b", "check": {"type": "unknown"}}]}, tmp_path)
+    assert [f["verdict"] for f in out] == ["NOT_EVALUATED", "NOT_EVALUATED"]
+    assert all(f["severity"] == "warn" for f in out)
 
 
 def test_run_returns_escalations_and_worst_severity(tmp_path):
@@ -336,3 +339,168 @@ def test_missing_lane_must_be_read_as_disallowed(tmp_path):
     build_repo(tmp_path, kospi=days, swing=days, nasdaq=days)
     rep = sen.run(tmp_path, _cfg(), TODAY, {})
     assert "없는 레인도 불허" in rep["freshness"]["contract"]
+
+
+# ---------------------------------------------------------------------------
+# OD-49 — 면제에 기한이 있다
+# ---------------------------------------------------------------------------
+
+def test_expired_suspension_loses_its_exemption(tmp_path):
+    """기한 검사가 없으면 정지 레인이 **무기한 면제**로 남는다 — 실제로 그 상태였다."""
+    days = [f"2026-07-{d:02d}" for d in range(1, 27)]        # 07-03 이후 23거래일
+    build_repo(tmp_path, kospi=days, swing=days, b=days[:2], nasdaq=days)
+    gate_out = tmp_path / "runtime_state/reports/validation/research_recursion_gate_latest.json"
+    gate_out.parent.mkdir(parents=True, exist_ok=True)
+    gate_out.write_text(json.dumps({"results": [
+        {"lane": "b_primary_top3", "suspended_since": "2026-07-03"}]}), encoding="utf-8")
+    cfg = _cfg(deadlines=[{"id": "b", "lanes": ["b_primary_top3"], "market": "KR",
+                           "suspended_since": "2026-07-03", "deadline_trading_days": 20}])
+
+    rep = sen.run(tmp_path, cfg, TODAY, {})
+
+    b = [f for f in rep["findings"]
+         if f["check"] == "firing_qualification" and f["lane"] == "b_primary_top3"][0]
+    assert b["verdict"] == "SUSPENSION_EXPIRED", "기한을 넘겼는데 면제로 남았다"
+    assert b["severity"] == "alert" and b["action"] == "block_sizing"
+    assert rep["lane_sizing"]["b_primary_top3"]["allowed"] is False
+
+
+def test_suspension_within_deadline_is_still_exempt(tmp_path):
+    days = [f"2026-07-{d:02d}" for d in range(1, 12)]        # 07-03 이후 8거래일
+    build_repo(tmp_path, kospi=days, swing=days, b=days[:2], nasdaq=days)
+    gate_out = tmp_path / "runtime_state/reports/validation/research_recursion_gate_latest.json"
+    gate_out.parent.mkdir(parents=True, exist_ok=True)
+    gate_out.write_text(json.dumps({"results": [
+        {"lane": "b_primary_top3", "suspended_since": "2026-07-03"}]}), encoding="utf-8")
+    cfg = _cfg(deadlines=[{"id": "b", "lanes": ["b_primary_top3"], "market": "KR",
+                           "suspended_since": "2026-07-03", "deadline_trading_days": 20}])
+    rep = sen.run(tmp_path, cfg, TODAY, {})
+    b = [f for f in rep["findings"]
+         if f["check"] == "firing_qualification" and f["lane"] == "b_primary_top3"][0]
+    assert b["verdict"] == "EXEMPT"
+    assert rep["lane_sizing"]["b_primary_top3"]["allowed"] is True
+
+
+def test_deadline_is_checked_inside_the_checker_not_the_publish_path():
+    """OD-49: 발행 경로에 되살리면 두 곳이 판단하게 되어 OD-44 가 막으려는 형태가 된다."""
+    assert hasattr(sen, "expired_suspension_lanes")
+    import inspect
+    src = inspect.getsource(sen.check_firing_qualification)
+    assert "expired" in src and "SUSPENSION_EXPIRED" in src
+
+
+# ---------------------------------------------------------------------------
+# OD-50 — 노후 문턱은 산출이 싣는다
+# ---------------------------------------------------------------------------
+
+def test_max_age_hours_is_always_present(tmp_path):
+    """소비자가 자기 기본값을 갖지 않으려면 이 필드가 **항상** 실려야 한다."""
+    for build in (lambda: build_repo(tmp_path),                       # 빈 리포
+                  lambda: build_repo(tmp_path, kospi=["2026-07-01"], swing=["2026-07-01"])):
+        build()
+        rep = sen.run(tmp_path, _cfg(), TODAY, {})
+        assert rep["freshness"]["max_age_hours"] == sen.MAX_AGE_HOURS
+        assert isinstance(rep["freshness"]["max_age_hours"], (int, float))
+
+
+# ---------------------------------------------------------------------------
+# OD-47 — 술어 평가기
+# ---------------------------------------------------------------------------
+
+def _kc(root, item):
+    return sen.check_prereg_kill_criteria({"prereg_kill_criteria": [item]}, root)[0]
+
+
+def test_kill_enforced_fires_when_dead_board_resumes(tmp_path):
+    rel = "runtime_state/reports/experimental/kr_ranking_shadow_ledger.jsonl"
+    write_ledger(tmp_path, rel, ["2026-08-14", "2026-08-18"])       # 킬 이후 행 존재
+    r = _kc(tmp_path, {"id": "k", "status": "active", "severity": "critical",
+                       "check": {"type": "no_rows_after_date", "ledger": rel, "after": "2026-08-16"}})
+    assert r["verdict"] == "FIRED" and r["severity"] == "critical"
+
+
+def test_kill_enforced_is_ok_while_board_stays_dead(tmp_path):
+    rel = "runtime_state/reports/experimental/kr_ranking_shadow_ledger.jsonl"
+    write_ledger(tmp_path, rel, ["2026-08-14"])
+    assert _kc(tmp_path, {"id": "k", "status": "active",
+                          "check": {"type": "no_rows_after_date", "ledger": rel,
+                                    "after": "2026-08-16"}})["verdict"] == "OK"
+
+
+def test_field_min_catches_universe_floor_violation(tmp_path):
+    rel = "l.jsonl"
+    (tmp_path / rel).write_text("".join(json.dumps({"liq_eok": v}) + "\n" for v in (30.0, 12.5)),
+                                encoding="utf-8")
+    r = _kc(tmp_path, {"id": "u", "status": "active",
+                       "check": {"type": "field_min", "ledger": rel, "field": "liq_eok", "min": 30}})
+    assert r["verdict"] == "FIRED" and r["observed"]["violations"] == 1
+
+
+def test_symbol_absent_check_reports_undecided_when_file_missing(tmp_path):
+    """검사 대상 파일이 없으면 **통과가 아니라 판정 불가**다."""
+    r = _kc(tmp_path, {"id": "s", "status": "active",
+                       "check": {"type": "symbol_absent_in_file", "file": "nope.py", "symbol": "x"}})
+    assert r["verdict"] == "UNDECIDED" and r["severity"] == "warn"
+
+
+def test_monotonicity_reproduces_the_audit_numbers(tmp_path):
+    """심도 단조성 — 상위 픽이 하위보다 못하면 발동(OD-3 와 같은 귀속 검사)."""
+    rel = "l.jsonl"
+    rows = []
+    for d in range(1, 11):
+        date = f"2026-08-{d:02d}"
+        for rk in range(1, 21):
+            # 순위가 낮을수록(1위) 수익이 나쁨 → corr 양수 + depth 음수 = 발동
+            rows.append({"date": date, "market": "KOSPI", "rank": rk, "fwd5_cc": rk * 0.5})
+    (tmp_path / rel).write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    r = _kc(tmp_path, {"id": "m", "status": "active",
+                       "check": {"type": "rank_return_monotonicity", "ledger": rel,
+                                 "min_sample": {"scored_rows_per_market": 100, "days": 4}}})
+    assert r["verdict"] == "FIRED"
+    assert r["observed"]["KOSPI"]["corr"] > 0
+    assert r["observed"]["KOSPI"]["top10_minus_bottom10"] < 0
+
+
+def test_monotonicity_is_undecided_below_min_sample(tmp_path):
+    """표본 하한 미달을 통과로 읽으면 0건이 집행의 증거가 된다."""
+    rel = "l.jsonl"
+    rows = [{"date": "2026-08-01", "market": "KOSPI", "rank": i, "fwd5_cc": 1.0} for i in range(1, 6)]
+    (tmp_path / rel).write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    r = _kc(tmp_path, {"id": "m", "status": "active",
+                       "check": {"type": "rank_return_monotonicity", "ledger": rel,
+                                 "min_sample": {"scored_rows_per_market": 100, "days": 4}}})
+    assert r["verdict"] == "UNDECIDED"
+
+
+def test_blocked_criterion_is_not_evaluated(tmp_path):
+    r = _kc(tmp_path, {"id": "b", "status": "blocked", "blocked_by": "suspension",
+                       "unblock_when": "정지 해제 시"})
+    assert r["verdict"] == "BLOCKED" and r["severity"] == "info"
+
+
+def test_narrowing_flag_travels_with_the_item(tmp_path):
+    """술어가 원문을 좁힌 사실을 항목이 들고 다녀야 한다(스키마 필수 필드)."""
+    rel = "l.jsonl"
+    write_ledger(tmp_path, rel, ["2026-08-14"])
+    r = _kc(tmp_path, {"id": "k", "status": "active", "narrowing": "원문은 더 넓다",
+                       "check": {"type": "no_rows_after_date", "ledger": rel, "after": "2026-08-16"}})
+    assert r["narrowing"] is True
+
+
+def test_registered_criteria_all_have_narrowing_field():
+    """등록된 전 항목이 narrowing 을 들고 있어야 한다 — 좁힌 사실이 사라지면 안 된다."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    missing = [c.get("id") for c in cfg["prereg_kill_criteria"] if not c.get("narrowing")]
+    assert not missing, f"narrowing 없는 항목: {missing}"
+
+
+def test_one_shot_gates_are_kept_apart_from_standing_predicates():
+    """OD-48: 일회형을 매일 술어로 박으면 매일 같은 답을 내는 가짜 감시가 된다."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    standing_ids = {c["id"] for c in cfg["prereg_kill_criteria"]}
+    assert cfg.get("prereg_track_end_gates"), "트랙 종료 관문 섹션이 없다"
+    for g in cfg["prereg_track_end_gates"]:
+        assert g.get("prose") not in standing_ids
+        assert "why_not_daily" in g, "왜 매일이 아닌지가 없으면 다음 사람이 상시로 옮긴다"

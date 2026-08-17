@@ -417,31 +417,52 @@ def test_sentinel_runs_before_the_two_hour_backfill():
         f"판정기({sentinel})가 2시간 백필({backfill}) 뒤에 있다 — 기한·발화율 판정이 그만큼 늦는다")
 
 
-def test_od43_intraday_producers_run_before_the_backfill():
-    """OD-43: 웹 /api/picks 가 이 두 레인의 dailyops 산출을 유일한 소스로 읽는다.
-
-    백필 뒤에 두면 장중 픽이 14:12 에 갱신된다 — 마감 한 시간 전이다.
-    실측상 둘 다 그날 백필 산출을 읽지 않으므로 앞으로 옮겼다.
-    """
+def _step_positions():
     lines = OPS.read_text(encoding="utf-8").splitlines()
     pos = {}
     for i, l in enumerate(lines):
         for step in ("intraday_backfill", "report_kosdaq_intraday_vwap_guard",
                      "report_kr_swing_candidate", "report_kospi_intraday_swing",
-                     "build_intraday_3d_panel"):
+                     "build_intraday_3d_panel", "px_long_refresh"):
             if f"[STEP] {step}" in l and step not in pos:
                 pos[step] = i
-    assert pos["report_kosdaq_intraday_vwap_guard"] < pos["intraday_backfill"]
+    return pos
+
+
+def test_od43_moves_only_the_producer_with_no_wall_clock_dependency():
+    """OD-43: 백필 뒤에 두면 장중 픽이 14:12 에 갱신된다 — 마감 한 시간 전이다.
+
+    다만 옮길 수 있는 조건은 **파일 의존이 없다**가 아니라 **벽시계 의존도 없다**이다.
+    45 스윙만 그 조건을 만족한다(KIS 호출 없음).
+    """
+    pos = _step_positions()
     assert pos["report_kr_swing_candidate"] < pos["intraday_backfill"]
-    # 41 은 패널을 읽으므로 옮기지 않는다 — 패널 빌더 뒤에 있어야 한다
+
+
+def test_kis_minute_bar_producers_stay_after_the_session():
+    """당일 분봉을 KIS 에서 실시간 조회하는 생산자는 앞으로 당기면 안 된다.
+
+    **파일 읽기만 보면 안 잡힌다** — 43 은 px_long 만 읽지만 _fetch_minute_frame 이
+    ENTRY_INPUT_HOUR(15:00)를 포함한 시각의 봉을 요구하고, 41 은 HOURS 에 153000 을 넣어
+    "full session post-close"를 전제한다. 의존 대상이 파일이 아니라 벽시계다.
+    """
+    pos = _step_positions()
+    for step in ("report_kosdaq_intraday_vwap_guard", "report_kospi_intraday_swing"):
+        assert pos[step] > pos["intraday_backfill"], (
+            f"{step} 이 백필 앞으로 갔다 — 장 마감 전에 돌면 분봉이 없어 픽이 비거나 잘린다")
     assert pos["report_kospi_intraday_swing"] > pos["build_intraday_3d_panel"], \
         "코스피는 intraday_3d_panel 을 읽는다 — 패널 빌더보다 앞서면 안 된다"
 
 
-def test_moved_producers_still_run_after_px_long_refresh():
-    """옮긴 두 생산자는 px_long 만 읽는다 — 그 갱신보다는 뒤여야 한다."""
-    lines = OPS.read_text(encoding="utf-8").splitlines()
-    px = next(i for i, l in enumerate(lines) if "[STEP] px_long_refresh" in l)
-    for step in ("report_kosdaq_intraday_vwap_guard", "report_kr_swing_candidate"):
-        s = next(i for i, l in enumerate(lines) if f"[STEP] {step}" in l)
-        assert s > px, f"{step} 이 px_long_refresh 보다 앞에 있다 — 낡은 가격을 읽는다"
+def test_kis_producers_declare_their_session_hours():
+    """벽시계 의존의 근거가 코드에 남아 있어야 다음 사람이 다시 옮기지 않는다."""
+    kospi = (REPO / "multi_agent/tools/report_kospi_intraday_swing.py").read_text(encoding="utf-8")
+    kosdaq = (REPO / "multi_agent/tools/report_kosdaq_intraday_vwap_guard.py").read_text(encoding="utf-8")
+    assert "153000" in kospi, "41 의 장 마감 의존 근거(HOURS)가 사라졌다"
+    assert "_minute_hours" in kosdaq, "43 의 분봉 시각 요구 근거가 사라졌다"
+
+
+def test_moved_producer_still_runs_after_px_long_refresh():
+    """옮긴 생산자는 px_long 을 읽는다 — 그 갱신보다는 뒤여야 한다."""
+    pos = _step_positions()
+    assert pos["report_kr_swing_candidate"] > pos["px_long_refresh"]

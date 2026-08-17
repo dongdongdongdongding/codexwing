@@ -953,3 +953,130 @@ pending_verification:
     when: "2026-09-07"
     check: "master.json age <= 90d"
     on_fail: "스케줄된 생산자 없음 — 갱신 주체 지정 필요"
+
+# ---------------------------------------------------------------------------
+# 사전등록 킬 기준 (OD-19 / OD-45). 추출: goblin (audit-prereg-kill-criteria-goblin.md §6)
+# 술어 평가기: report_sentinel_expectations.py KC_EVALUATORS — **등록과 평가기는 같은 변경에
+# 들어간다**(OD-47). 등록만 하면 판정이 초록인데 검사가 없는 상태가 된다.
+#
+# `check.type` 은 평가기가 아는 어휘만 쓴다. 모르는 type 은 통과가 아니라 NOT_EVALUATED 다.
+# `narrowing` 은 술어가 원문을 좁힌 사실을 항목이 들고 다니게 하는 필수 필드다.
+# ---------------------------------------------------------------------------
+prereg_kill_criteria:
+
+  - id: kr_ranking_shadow_depth_monotonicity
+    source: "RESEARCH_LOG.md §40 PKG-C ③"
+    prose: "킬 기준(심도 단조성) 사전등록, 발행/라우팅 금지"
+    kind: standing
+    status: already_fired
+    fired_at: 2026-08-16
+    severity: alert
+    check:
+      type: rank_return_monotonicity
+      ledger: runtime_state/reports/experimental/kr_ranking_shadow_ledger.jsonl
+      rank_field: rank
+      return_field: fwd5_cc
+      cost: 0.3
+      min_sample: {scored_rows_per_market: 100, days: 4}
+    fires_when: "corr(rank, fwd5_cc) >= 0  OR  같은날 top10-bottom10 <= 0 (시장별, 풀링 금지)"
+    on_fire: "정지 지점으로 올린다 (OD-19). 발견자가 집행하지 않는다."
+    narrowing: >
+      §40 원문은 "심도 단조성" 다섯 글자뿐이고 조작화를 지정하지 않았다. 이 술어는 OD-18 이
+      실제 집행에 쓴 판(순위~수익 상관 + 같은날 top10/bottom10)이며 원문의 해석이지 원문이 아니다.
+      최종 확정은 운영자 몫. 코드 docstring(report_kr_swing_candidate.py:15,152)은 다른 판을
+      적었고 그 판은 표본 부족으로 발동하지 않는다 — 정본 확정 대기.
+
+  - id: kr_ranking_shadow_kill_enforced
+    source: "OD-18 / RESEARCH_LOG.md §40 PKG-C ③"
+    prose: "생산·발행을 중지하고 무덤에 기록한다"
+    kind: standing
+    status: active
+    severity: critical
+    check:
+      type: no_rows_after_date
+      ledger: runtime_state/reports/experimental/kr_ranking_shadow_ledger.jsonl
+      date_field: date
+      after: "2026-08-16"
+    fires_when: "킬 선언일 이후 신규 행이 존재"
+    on_fire: "즉시 정지 지점으로 올린다 — 죽은 보드가 생산을 재개했다"
+    narrowing: >
+      원문은 "생산·발행 중지"인데 이 술어는 **원장에 새 행이 생겼는가**만 본다.
+      가드(AG_SWING_RANKING_SHADOW)가 켜져 있어도 행이 안 쌓이면 통과로 읽힌다 —
+      부분 검사다. 가드 기본값 자체는 정지 지점 1이라 여기서 판정하지 않는다(OD-46, seaslug).
+
+  - id: kr_ranking_shadow_universe_floor
+    source: "RESEARCH_LOG.md §40 §717"
+    prose: "≥30억 한정 shadow 랭킹 보드"
+    kind: standing
+    status: active
+    severity: alert
+    check:
+      type: field_min
+      ledger: runtime_state/reports/experimental/kr_ranking_shadow_ledger.jsonl
+      field: liq_eok
+      min: 30
+    fires_when: "any(liq_eok < 30)"
+    on_fire: "정지 지점으로 올린다"
+    narrowing: "없음 — 원문이 수치를 직접 준다."
+
+  - id: kr_ranking_shadow_no_routing
+    source: "RESEARCH_LOG.md §40 PKG-C ③"
+    prose: "발행/라우팅 금지"
+    kind: standing
+    status: active
+    severity: critical
+    check:
+      type: symbol_absent_in_file
+      file: modules/stream_exclusion.py
+      symbol: kr_ranking_shadow
+    fires_when: "레인 이름이 발행 경로 설정에 등장"
+    on_fire: "정지 지점으로 올린다"
+    narrowing: >
+      "원시 p 표시 금지"의 전체는 덮지 못한다 — 발행되지 않아도 다른 화면에 노출될 수 있고
+      판정기는 web/ 렌더 경로를 읽지 않는다. **부분 검사임을 명시한다.**
+
+  - id: rebalance_calendar_no_lane
+    source: "RESEARCH_LOG.md §41 A5"
+    prose: "전 생존 셀 연간 기여 <1%p → 사전등록 규정대로 레인화 금지"
+    kind: standing
+    status: active
+    severity: alert
+    check:
+      type: symbol_absent_in_file
+      file: multi_agent/tools/report_research_recursion_gate.py
+      symbol: rebalance_calendar
+    fires_when: "해당 레인이 게이트 LANES 에 등장"
+    on_fire: "정지 지점으로 올린다 — '승인 대기'가 조용히 '배선됨'이 됐다"
+    narrowing: >
+      게이트 LANES 파일만 본다. GATE_LANE_MAP(stream_exclusion) 쪽 등장은 별도 검사가 필요하다.
+
+  - id: b_all_top10_death_verdict
+    source: "docs/research/PREREG_DEGRADE_AUTOPSY_2026-08.md §3.3 (T2)"
+    prose: "alpha 블록CI 상한 < 0 且 H2-a 역단조/무정보 → 레인 폐기 권고 + 무덤 등재"
+    kind: standing
+    status: blocked
+    blocked_by: suspension
+    unblock_when: "정지 해제 시. OD-35 기한이 먼저 온다"
+    severity: alert
+    narrowing: >
+      정지 중에는 평가하지 않는다(OD-14: 정지 이후 표본으로 판정하지 않는다).
+      해제 시 평가기를 붙여야 하며 지금은 술어를 등록하지 않았다 — 블록 상태로만 존재한다.
+
+# OD-48: 일회형은 상시 술어와 섞지 않는다. 매일 술어로 박으면 매일 같은 답을 내는 가짜 감시가
+# 되고, 빼 두면 종료 시점에 아무도 판정하지 않는다(§40 이 두 달 놓친 경위).
+prereg_track_end_gates:
+  - {source: "PREREG_MECH_FLOW_CALENDAR", prose: "8년 중 양수 연도 < 60%면 기각",
+     why_not_daily: "술어는 명확하나 8년 백테스트를 매일 돌릴 수 없다. 하니스 1회 결과 보관 대상"}
+
+# 술어화 불가 — 목록으로만 남긴다(억지 술어화 금지). 판정기가 건수를 보고한다.
+prereg_kill_criteria_not_machine_readable:
+  - {source: "§40 §717", prose: "티어 실측 승률 표기",
+     why: "표기 형식 요구. 무엇이 위반인지 원문에 없다"}
+  - {source: "§40 §717", prose: "원시 p 표시 금지",
+     why: "웹 렌더 경로 검사 필요. 부분만 등록됨(kr_ranking_shadow_no_routing)"}
+  - {source: "PREREG_MECH_FLOW_CALENDAR", prose: "셀사이드 선반영 분리 실패 시 H1 판정 불가",
+     why: "'분리 실패' 판정 자체가 사람 판단"}
+  - {source: "PREREG_DEGRADE_AUTOPSY T1", prose: "ΔEV >= 중요도 하한",
+     why: "원문에 수치가 없다. 다른 문서 값을 끌어오면 기준을 발명하는 것"}
+  - {source: "§38", prose: "n<200은 기술통계만",
+     why: "소비자를 특정하지 못했다 — 검사 대상 미상"}

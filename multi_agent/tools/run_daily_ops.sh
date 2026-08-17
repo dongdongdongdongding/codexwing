@@ -274,22 +274,6 @@ fi
 #   41 코스피는 옮기지 않았다 — _train() 이 intraday_3d_panel.parquet 을 읽고(:179)
 #   그 패널은 백필 산출로 build_intraday_3d_panel 이 만든다.
 #   근거: 웹 /api/picks 가 이 두 레인의 dailyops 산출을 유일한 소스로 읽는다(OD-43).
-if [[ "${AG_KOSDAQ_INTRADAY_ENABLE:-1}" == "1" ]]; then
-  # LIVE KOSDAQ INTRADAY lane (2026-06-24, operator) -- Codex lane of the Claude+Codex synthesis.
-  # KR_INTRADAY_3D_T5 15:00 VWAP-guard model. Stored artifact:
-  # models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl.
-  # Scores KOSDAQ minute bars at/after 15:00, requires calibrated p>=0.80 and pre_vwap_dist_pct>=0,
-  # emits daily top2, records target_touch3d_t5 + 3D close return/MFE/MAE in a separate INTRADAY
-  # ledger, and routes live with scan_mode=INTRADAY when AG_KOSDAQ_INTRADAY_PRODUCTION=1 (default ON).
-  # Tracks both liquidity lanes: >=30억 main edge and >=100억 tradeability.
-  echo "[STEP] report_kosdaq_intraday_vwap_guard"
-  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kosdaq_intraday_vwap_guard" \
-    python3 multi_agent/tools/report_kosdaq_intraday_vwap_guard.py \
-      --min-liq "${AG_KOSDAQ_INTRADAY_MIN_LIQ:-30}" \
-      --tradeability-liq "${AG_KOSDAQ_INTRADAY_TRADEABILITY_LIQ:-100}" \
-      --max-symbols "${AG_KOSDAQ_INTRADAY_MAX_SYMBOLS:-0}" \
-      --daily-context-source "${AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE:-cache}"
-fi
 if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
   # Observation-only swing CANDIDATE picks (RESEARCH_LOG §7-A/D): 8y ft_5_5 ranker,
   # rolling 2y train on px_long, next-open entry / +5% touch-exit contract, fdr auto-scoring.
@@ -475,6 +459,27 @@ fi
 # 2026-07-19 운영자 승인 정리: 구 스윙 앙상블 일일 실행 중지 — DEGRADE 확정(정산 112, EV −0.72)·
 # P3 교체 완료 상태에서 감시 소임 종료. 원장은 동결 보존. 복원: 이 블록을 git 이력에서.
 
+# ⚠️ 2026-08-17: 이 스텝을 OD-43 으로 백필 앞으로 옮겼다가 **되돌렸다.**
+#   파일 읽기만 보면 px_long 뿐이라 옮겨도 될 것처럼 보이지만, _fetch_minute_frame 이
+#   KIS 에서 **당일 분봉을 실시간 조회**한다(:271-273). _minute_hours 가 요구하는 시각에
+#   ENTRY_INPUT_HOUR(15:00)가 들어가므로 장이 그 시각에 닿기 전에는 봉이 없다.
+#   의존은 백필 산출이 아니라 **벽시계**다 — 파일 의존만 보면 안 잡힌다.
+if [[ "${AG_KOSDAQ_INTRADAY_ENABLE:-1}" == "1" ]]; then
+  # LIVE KOSDAQ INTRADAY lane (2026-06-24, operator) -- Codex lane of the Claude+Codex synthesis.
+  # KR_INTRADAY_3D_T5 15:00 VWAP-guard model. Stored artifact:
+  # models/kr_intraday_3d_t5/kosdaq_liq30_1500_lgbm_isotonic_vwapguard.pkl.
+  # Scores KOSDAQ minute bars at/after 15:00, requires calibrated p>=0.80 and pre_vwap_dist_pct>=0,
+  # emits daily top2, records target_touch3d_t5 + 3D close return/MFE/MAE in a separate INTRADAY
+  # ledger, and routes live with scan_mode=INTRADAY when AG_KOSDAQ_INTRADAY_PRODUCTION=1 (default ON).
+  # Tracks both liquidity lanes: >=30억 main edge and >=100억 tradeability.
+  echo "[STEP] report_kosdaq_intraday_vwap_guard"
+  KIS_ENABLE_LIVE_CALLS=1 run_optional "report_kosdaq_intraday_vwap_guard" \
+    python3 multi_agent/tools/report_kosdaq_intraday_vwap_guard.py \
+      --min-liq "${AG_KOSDAQ_INTRADAY_MIN_LIQ:-30}" \
+      --tradeability-liq "${AG_KOSDAQ_INTRADAY_TRADEABILITY_LIQ:-100}" \
+      --max-symbols "${AG_KOSDAQ_INTRADAY_MAX_SYMBOLS:-0}" \
+      --daily-context-source "${AG_KOSDAQ_INTRADAY_DAILY_CONTEXT_SOURCE:-cache}"
+fi
 if [[ "${AG_KOSPI_INTRADAY_ENABLE:-1}" == "1" ]]; then
   # LIVE KOSPI INTRADAY lane -- Claude lane of the Claude+Codex synthesis.
   # PROMOTED 2026-07-03 (RESEARCH_LOG §7-E): rank-1 selective issuance, PRIMARY tier only routes
