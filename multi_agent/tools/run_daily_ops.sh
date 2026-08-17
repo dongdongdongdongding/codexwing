@@ -472,6 +472,31 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
       --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
 fi
 
+# sentinel 판정기 (OD-37/38, 2026-08-17).
+#   expectations.yaml 에 기준·재계산법·에스컬레이션 대상이 다 적혀 있는데 **그걸 돌리는 것이
+#   없었다.** §40 킬 기준이 산문으로만 적혀 두 달 뒤 우연히 발견된 것과 같은 형태다.
+#   새 launchd 잡을 만들지 않고 dailyops 스텝으로 붙인다(OD-38).
+#   판정: OD-34 발화 자격 · OD-35 정지 기한 · OD-39 마커 없는 정지 · 자격 전이 WARN ·
+#         내용 기준 신선도 · OD-19 킬 기준 대조.
+if [[ "${AG_SENTINEL_CHECK:-1}" == "1" ]]; then
+  echo "[STEP] report_sentinel_expectations"
+  # run_optional 을 그대로 쓰지 않는 이유는 앞의 두 스텝과 같다 — 에스컬레이션이 있으면
+  # 종료코드 1 인데 [WARN] 한 줄로 삼켜지면 무엇이 걸렸는지가 남지 않는다.
+  if SENTINEL_OUT="$(python3 multi_agent/tools/report_sentinel_expectations.py --json-only)"; then
+    SENTINEL_RC=0
+  else
+    SENTINEL_RC=$?
+  fi
+  echo "[DATA] sentinel rc=${SENTINEL_RC} ${SENTINEL_OUT}"
+  if [[ "${SENTINEL_RC}" == "0" ]]; then
+    echo "[OK] report_sentinel_expectations"
+  else
+    echo "[WARN] sentinel 에스컬레이션 발생 — runtime_state/reports/validation/sentinel_escalations.md 확인"
+  fi
+else
+  echo "[SKIP] report_sentinel_expectations — AG_SENTINEL_CHECK=0 (재개: =1)"
+fi
+
 # 미채점 행 임계 초과 경보 (F6, swing-main-r6sb, 2026-08-16).
 #   원장에 채점되지 않은 행이 쌓여도 경보가 없었다 — resolver 는 bare except 라 실패가 안
 #   드러나고, 재시도 상한·dead-letter 가 없어 실패 행이 그냥 넘어가며, report_data_manifest 는

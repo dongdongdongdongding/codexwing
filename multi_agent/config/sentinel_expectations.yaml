@@ -1,0 +1,955 @@
+# multi_agent/config/sentinel_expectations.yaml
+#
+# 2026-08-17 OD-40: orca_pj/orca/sentinel/expectations.yaml 에서 이 위치로 옮겼다.
+#   판정기(multi_agent/tools/report_sentinel_expectations.py)가 리포 안에서 돌기 때문에
+#   리포 밖 절대경로에 의존하면 다른 클론·CI 에서 깨진다.
+#
+# 원래 헤더:
+# sentinel/expectations.yaml
+#
+# "이 아티팩트는 이 주기로 갱신돼야 한다"의 선언적 표. 무인 판정 스크립트가 읽는다.
+#
+# 작성: goblin (ops), 2026-08-14 23:28 KST
+# 근거: reports/ops-sweep.md
+#
+# 설계 원칙 (전부 실제 사고에서 나옴):
+#  1. mtime만 보면 안 된다. investor_estimate는 2일간 매일 mtime을 갱신하면서
+#     328행 전부 오류를 썼다 (ops-sweep §5.3). -> content 검사를 별도로 선언한다.
+#  2. exit code를 믿으면 안 된다. dailyops는 LastExitStatus=0이면서 154/154 실패했다
+#     (§1.2). run_optional()이 실패를 [WARN]으로 삼키고 성공을 반환한다.
+#     -> 로그 본문의 status 필드를 판정 근거로 쓴다.
+#  3. "파일이 새것"과 "내용이 새것"은 다르다. daily_backtest.jsonl은 곧 mtime이
+#     갱신되지만 내용은 39일 묵은 retrain 리포트에서 파생된다 (§5.2).
+#     -> content_max_age를 file_max_age와 분리한다.
+#  4. 좀비 로그의 mtime은 영구 오탐이다 (§4.5). -> ignore로 명시 격리한다.
+#  5. 정체가 곧 고장은 아니다. 생산자가 은퇴했으면 정체가 정상이다.
+#     -> producer_scheduled 필드로 "고장"과 "은퇴"를 갈라 적는다.
+#  6. 디렉토리를 최신 파일로 대표시키지 않는다. us_research 를 그렇게 판정해 🟢 0.0일로
+#     통과시켰는데, 매일 갱신되는 tape_ledger 가 7주 정지한 edge_ledger 를 가리고 있었다.
+#     건강한 형제 파일 하나가 죽은 파일 전부를 가린다 (trace-nasdaq-edge-stall.md §4.2).
+#  7. mtime이 아무 정보도 주지 않는 파일이 있다. 생산자가 신규 없이도 전량 재기록하면
+#     mtime은 매일 새것이 되고 내용은 몇 주째 그대로다. mtime_is_meaningless: true 로 표시하고
+#     행수·최대일로 판정한다 (§4.3). 이 조합 자체가 이상 신호다 -> watch_patterns 참조.
+
+# 감시 패턴: 개별 파일 규칙으로는 안 잡히는 이상 조합
+watch_patterns:
+  - id: ledger_rewritten_without_append
+    rule: "mtime 은 갱신되는데 행수·max(date) 가 불변인 원장"
+    why: >
+      write_ledger() 류가 append 0건에도 전량 재기록하면 신선도 감시가 영구 통과한다.
+      nasdaq_session_edge_operational_ledger 가 이 방식으로 7주를 숨었다.
+    action: "해당 원장의 생산자 로그에서 ledger_appended 추이를 확인"
+  - id: sibling_masking
+    rule: "디렉토리 판정이 초록인데 내부에 개별 정체 파일이 있는 경우"
+    action: "*_ledger.jsonl / *_latest.json 은 반드시 파일 단위로 판정"
+
+version: 1
+timezone: Asia/Seoul
+# repo_root: 2026-08-17 OD-40 으로 이 파일이 리포 안으로 들어왔다. 판정기는 자기 위치에서
+#   리포 최상위를 유도하므로 이 키는 더 이상 쓰이지 않는다(절대경로 의존 제거). 이력으로 남긴다.
+# was: repo_root: /Users/dongdong/Projects/codex_swing/swing-main
+
+# 관측 기준선. 판정기는 이 값과 현재를 비교해 "새로 나빠졌는지"를 본다.
+baseline:
+  observed_at: "2026-08-14T23:28:00+09:00"
+  observer: goblin
+  note: >
+    이 시점에 5개 수정(cef135c/9b1410b/ede9706/221ac63/532c921)이 17:41~17:58에
+    커밋됐고 터널을 제외하면 스케줄 검증 전이다. 첫 무인 실행은 이 미검증 상태를
+    기준선으로 삼되, 아래 pending_verification 항목은 별도로 판정해야 한다.
+
+# ---------------------------------------------------------------------------
+# 달력: 거래일 정의. every_trading_day 판정에 쓴다.
+# ---------------------------------------------------------------------------
+calendar:
+  # ⚠️ 예측을 적을 때 이 절을 먼저 볼 것. 2026-08-15 예측 실패의 직접 원인이 이걸 무시한 것이다
+  # (금요일 증분 +31을 토요일에 외삽). 표본 증가·정산·발행은 전부 거래일에만 일어난다.
+  # 실측 주말 ΔRESOLVED = [0, 0, 2] — 임계 20을 넘은 적이 없다.
+  prediction_rule: "다음 실행일이 거래일인지 먼저 확인하고, 임계 초과는 확률(과거 N/M)로 적는다"
+  trading_days: [mon, tue, wed, thu, fri]
+  # 한국 공휴일 미반영. 공휴일에는 오탐이 난다 — 판정기가 KRX 캘린더를 붙이기
+  # 전까지는 grace_hours로 흡수한다.
+  holidays_source: null
+  weekend_expected_idle: true
+
+# ---------------------------------------------------------------------------
+# launchd 잡. 로그 목적지가 5곳으로 흩어져 있어 전부 열거한다 (§4.4).
+# ---------------------------------------------------------------------------
+jobs:
+
+  - label: com.codex.swing.dailyops
+    schedule: {type: interval, seconds: 300}
+    stdout: "~/Library/Application Support/CodexSwing/logs/ops/launchd_primary_market_session_ops.log"
+    stderr: "~/Library/Application Support/CodexSwing/logs/ops/launchd_primary_market_session_ops.err.log"
+    log_format: concatenated_json
+    # exit code는 무의미하다. 로그 본문의 세션 report.status를 본다.
+    success_check:
+      type: json_stream_field
+      # due_count>0 인 실행만 채점 대상. due_count==0은 "발화 안 함"이지 실패가 아니다.
+      filter: "due_count > 0"
+      field: "reports[].status"
+      expect: "ok"
+      fail_values: ["failed"]
+    expected_fires_per_trading_day: {min: 2, max: 4}
+    severity: critical
+    baseline_state:
+      window: "2026-06-08 .. 2026-08-14"
+      fired: 154
+      succeeded: 0
+      failed: 154
+      cause: "run_daily_ops.sh:471 DRIFT_ARGS[*]: unbound variable (bash 3.2, set -u)"
+      fixed_by: "cef135c @ 2026-08-14 17:41"
+      pending_verification: true
+    alert_if:
+      - "consecutive_failures >= 2"
+      - "no_fire_during_trading_day"
+
+  - label: com.codex.swing.learning.nightly
+    schedule: {type: calendar, hour: 23, minute: 50}
+    stdout: "~/Library/Application Support/CodexSwing/logs/learning/nightly_learning.log"
+    stderr: "~/Library/Application Support/CodexSwing/logs/learning/nightly_learning.err.log"
+    log_format: json_tail
+    # 실행됨 != 학습함. action=skip이 9주간 조용한 실패였다.
+    success_check:
+      type: json_field
+      field: action
+      expect_not: skip
+      # 단 skip 자체가 항상 이상은 아니다 — 신규 표본이 정말 없으면 정상이다.
+      # 그래서 "연속 skip 일수"로 판정한다.
+    severity: critical
+    baseline_state:
+      last_actual_train: "2026-06-14"
+      consecutive_skips_days: 61
+      cause: "training_state.json high-water 8180 vs 표본 4125 역전"
+      fixed_by: "ede9706 @ 2026-08-14 17:49"
+      pending_verification: true
+    alert_if:
+      - "consecutive_skip_days >= 10"
+
+  - label: com.codex.swing.learning.weekly
+    schedule: {type: calendar, weekday: 7, hour: 9, minute: 0}
+    stdout: "~/Library/Application Support/CodexSwing/logs/learning/weekly_learning.log"
+    stderr: "~/Library/Application Support/CodexSwing/logs/learning/weekly_learning.err.log"
+    log_format: json_tail
+    success_check: {type: json_field, field: action, expect_not: skip}
+    severity: high
+    baseline_state: {consecutive_skips_weeks: 9, pending_verification: true}
+    alert_if: ["consecutive_skip_weeks >= 3"]
+
+  - label: com.codex.swing.investor-estimate
+    schedule: {type: calendar, times: ["10:03", "11:33", "13:23", "14:33"]}
+    stdout: "~/Library/Logs/codex_swing/investor_estimate.out.log"   # 소문자 트리
+    stderr: "~/Library/Logs/codex_swing/investor_estimate.err.log"
+    log_format: jsonl
+    # written==41 로는 부족하다. ok==written 이어야 한다 (§5.3).
+    success_check:
+      type: jsonl_field
+      require: "ok == written and ok > 0"
+      ignore_rows: ['{"skip": "weekend"}']   # 주말 skip은 정상
+    expected_rounds_per_trading_day: 4
+    severity: high
+    baseline_state:
+      window: "2026-08-04 .. 2026-08-14"
+      rounds: 36
+      ok: 28
+      failed: 8
+      cause: "2026-08-04~05 KISOpenAPIError: Missing KIS_APP_KEY or KIS_APP_SECRET"
+      self_recovered: "2026-08-06"
+    alert_if: ["any_round_with ok == 0"]
+
+  - label: com.codex.swing.kr-daily-auto-scan
+    schedule: {type: calendar, hour: 9, minute: 35}
+    stdout: "~/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_daily_auto_scan.out.log"
+    stderr: "~/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_daily_auto_scan.err.log"
+    severity: high
+    baseline_state: {window: "2026-08-03 .. 2026-08-14", days_ran: 12, days_expected: 12}
+
+  - label: com.codex.swing.kr-premarket-theme-prior
+    schedule: {type: calendar, hour: 8, minute: 20}
+    stdout: "~/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_premarket_theme_prior.out.log"
+    stderr: "~/Projects/codex_swing/swing-main/runtime_state/discord_jobs/kr_premarket_theme_prior.err.log"
+    severity: medium
+    # ⚠️ 판정기 주의: 산출 파일명이 UTC다 (08:20 KST -> ...T232011Z 전일자).
+    # 날짜 문자열 매칭으로 판정하면 매일 오탐이 난다. 실제로 한 번 낚였다.
+    timestamp_note: filenames_in_utc_while_schedule_is_kst
+    baseline_state: {window: "2026-08-03 .. 2026-08-14", days_ran: 12, days_expected: 12}
+
+  - label: com.codex.swing.tunnel
+    schedule: {type: keepalive}
+    stdout: "~/Library/Application Support/CodexSwing/logs/ops/tunnel.log"
+    stderr: "~/Library/Application Support/CodexSwing/logs/ops/tunnel.err.log"
+    success_check: {type: log_contains_recent, pattern: "https://.*trycloudflare\\.com"}
+    fail_check:   {type: log_contains_recent, pattern: "URL 파싱 실패"}
+    severity: high
+    baseline_state:
+      cause: "mktemp suffix template broke every restart for a month"
+      fixed_by: "532c921 @ 2026-08-14 17:58"
+      verified: true    # 17:58 이후 URL 발급 성공 1건 확인
+
+  - label: com.codex.swing.web-backend
+    schedule: {type: keepalive}
+    stdout: "~/Projects/codex_swing/swing-main/runtime_state/local_short_term/web_backend.out.log"
+    stderr: "~/Projects/codex_swing/swing-main/runtime_state/local_short_term/web_backend.err.log"
+    success_check: {type: process_alive}
+    severity: high
+
+  - label: com.codex.swing.web-frontend
+    schedule: {type: keepalive}
+    stdout: "~/Library/Application Support/CodexSwing/logs/ops/web_frontend.log"
+    stderr: "~/Library/Application Support/CodexSwing/logs/ops/web_frontend.err.log"
+    success_check: {type: process_alive}
+    severity: medium
+
+  - label: com.codex.swing.discord-bot
+    schedule: {type: keepalive}
+    stdout: "~/Projects/codex_swing/swing-main/runtime_state/discord_jobs/discord_bot.out.log"
+    stderr: "~/Projects/codex_swing/swing-main/runtime_state/discord_jobs/discord_bot.err.log"
+    success_check: {type: process_alive}
+    severity: high
+
+  - label: com.codex.swing.bd-dolt.keepalive
+    schedule: {type: interval, seconds: 60}
+    stdout: "~/Projects/codex_swing/swing-main/.beads/bd-dolt-launchd.out.log"
+    stderr: "~/Projects/codex_swing/swing-main/.beads/bd-dolt-launchd.err.log"
+    success_check: {type: process_alive}
+    severity: medium
+
+# ---------------------------------------------------------------------------
+# 아티팩트 신선도 선언
+#
+# file_max_age_days   : mtime 기준 허용 지연
+# content_max_age_days: 파일 내부 generated_at 기준 허용 지연 (없으면 mtime과 동일 취급)
+# producer_scheduled  : 살아있는 스케줄러가 이 생산자를 호출하는가.
+#                       false면 정체는 "고장"이 아니라 "은퇴"다 — 심각도를 낮춘다.
+# ---------------------------------------------------------------------------
+artifacts:
+
+  # ===== 이번 사고의 핵심 2건 =====
+
+  - path: runtime_state/reports/data_health/daily_backtest.jsonl
+    cadence: every_trading_day
+    file_max_age_days: 3
+    content_max_age_days: 3
+    producer: multi_agent/tools/emit_daily_backtest.py
+    producer_scheduled: true
+    producer_call_site: "multi_agent/tools/run_daily_ops.sh:471"
+    env_guard: {name: AG_DRIFT_ALERT_ENABLE, default: "1"}
+    severity: critical
+    baseline_state:
+      last_modified: "2026-05-06T17:00"
+      age_days_at_baseline: 100.3
+      rows: 7
+      all_rows_dated: "2026-05-06"
+      finding: >
+        스케줄 실행으로 성공한 적이 0건이다. 스텝이 스크립트에 추가된 게 2026-05-09
+        (커밋 0fd8f28)인데 데이터는 05-06자뿐 — 데이터가 스텝보다 3일 앞선다.
+        구 로그(04-04~06-09)에 emit_daily_backtest 문자열 0회.
+      pending_verification: true
+      expected_after_fix: "1회 실행당 3행 append (segment 1 + picked 2), dry-run 실측"
+    # ⚠️ 되살아나도 내용은 retrain_v2_report.json(39일 정체)에서 파생된다.
+    # 그래서 content 검사를 upstream으로 위임한다.
+    content_derives_from: runtime_state/reports/learning/retrain_v2_report.json
+
+  - path: runtime_state/reports/learning/daily_model_foundation_gate.json
+    cadence: every_trading_day
+    file_max_age_days: 3
+    producer: multi_agent/tools/report_daily_model_foundation_gate.py
+    producer_scheduled: true
+    producer_call_site: "multi_agent/tools/run_daily_ops.sh:479"
+    env_guard: {name: AG_DAILY_MODEL_FOUNDATION_GATE_ENABLE, default: "1"}
+    severity: critical
+    baseline_state:
+      last_modified: "2026-06-09T01:31"
+      age_days_at_baseline: 66.9
+      cause: "run_daily_ops.sh:471 크래시의 하류 (479줄)"
+      fixed_by: "cef135c"
+      pending_verification: true
+
+  # ===== 학습 사슬 =====
+
+  - path: runtime_state/reports/learning/retrain_v2_report.json
+    cadence: weekly
+    file_max_age_days: 10
+    content_max_age_days: 10       # 내부 generated_at 검사 필수
+    producer: multi_agent/tools/run_learning_cycle.py
+    producer_scheduled: true
+    severity: critical
+    baseline_state:
+      last_modified: "2026-07-07T00:47"
+      content_generated_at: "2026-07-03T09:52"
+      age_days_at_baseline: 38.9
+      cause: "학습주기 high-water 역전으로 61일간 재학습 없음"
+    downstream: [runtime_state/reports/data_health/daily_backtest.jsonl]
+
+  - path: runtime_state/long_term/learning/training_state.json
+    cadence: daily
+    file_max_age_days: 2
+    severity: critical
+    # 신선도가 아니라 정합성 검사가 본체다.
+    integrity_checks:
+      - name: high_water_not_above_sample
+        rule: "last_nightly_resolved_total <= current_total_resolved"
+        baseline_violation: {counter: 8180, sample: 4125, ratio: 1.98}
+      - name: weekly_high_water_not_above_sample
+        rule: "last_weekly_resolved_total <= current_total_resolved"
+        baseline_violation: {counter: 8180, sample: 3960, ratio: 2.07}
+      - name: train_recency
+        rule: "now - last_weekly_train_at <= 21 days"
+        baseline_violation: {last_weekly_train_at: "2026-06-14", days: 61}
+    expected_after_fix:
+      field: counter_rebaselined_from
+      appears_in: runtime_state/reports/learning/learning_cycle_nightly.json
+      value: 8180
+      when: "첫 nightly 실행 (2026-08-14 23:50)"
+      note: "이 필드가 안 찍히면 ede9706 수정이 안 먹은 것이다. 해당 주기는 여전히 skip이 정상."
+
+  - path: runtime_state/reports/learning/learning_cycle_nightly.json
+    cadence: daily
+    file_max_age_days: 2
+    severity: high
+
+  - path: runtime_state/reports/learning/learning_cycle_weekly.json
+    cadence: weekly
+    file_max_age_days: 9
+    severity: medium
+
+  # ===== 게이트 =====
+
+  - path: runtime_state/reports/validation/research_recursion_gate_latest.json
+    cadence: every_trading_day
+    file_max_age_days: 3
+    producer: multi_agent/tools/report_research_recursion_gate.py
+    producer_scheduled: true
+    producer_call_site: "multi_agent/tools/run_daily_ops.sh:430"   # 크래시(471) 상류라 살아있었다
+    severity: high
+    baseline_state:
+      last_modified: "2026-08-14T20:51"
+      verdicts:
+        b_all_top10:        {verdict: DEGRADE,   n: 400, fwd_ev: -1.61, ci: [-2.89, -0.33], since: "2026-08-03"}
+        b_primary_top3:     {verdict: DEGRADE,   n: 58,  fwd_ev: -2.61, ci: [-7.62, 2.29],  since: "2026-08-03"}
+        kospi_intraday_t5:  {verdict: DEGRADE,   n: 42,  fwd_ev: -0.60, ci: [-3.64, 2.10],  since: "2026-08-03"}
+        swing_candidate:    {verdict: DEGRADE,   n: 161, fwd_ev: -0.60, ci: [-2.14, 0.95],  since: "2026-08-03"}
+        nasdaq_session_tape: {verdict: DEGRADE,   n: 39,  fwd_ev: -0.41, ci: [-3.19, 2.33],  since: "2026-08-06"}
+        kosdaq_intraday_t10: {verdict: OBSERVING, n: 7,   fwd_ev: 6.69,  ci: [-0.97, 12.02], since: "2026-08-03"}
+    # 판정 변화 감시: 다음 관측에서 위 verdict와 달라지면 보고 대상.
+    watch: {type: verdict_diff, against: baseline_state.verdicts}
+    known_issue: >
+      DEGRADE 규칙이 forward 점추정 부호만 본다. 위 5개 DEGRADE 중 CI가 완전히 0 미만인
+      것은 b_all_top10 하나뿐 — 나머지 4개는 통계적으로 0과 구분 불가다. 소표본에서
+      노이즈로 발화하는 구조이며, DEGRADE 전이 시 bd 티켓을 자동 발행한다
+      (report_research_recursion_gate.py:_bd_create) -> 오탐이 티켓 스팸이 된다.
+    field_semantics_warning: >
+      fwd_win은 진짜 승률이 아니다. evaluate()에서 (net수익 > 0.3)의 비율로 계산되며 0.3은
+      레인 비용과 무관한 하드코딩 상수다. expect_win은 각 레인 백테스트의 자체 승률 정의라
+      정의가 다르다 -> 두 값을 그대로 빼면 안 된다. 2026-08-14 실측으로는 b_all_top10에서
+      차이가 1.0pp(39.8 vs 진짜 40.8), b_primary_top3는 동일해 결론에 영향 없었으나,
+      수익률이 0~0.3% 구간에 몰린 레인에서는 크게 벌어질 수 있다.
+
+  - path: runtime_state/long_term/learning/recursion_gate_state.json
+    cadence: every_trading_day
+    file_max_age_days: 3
+    severity: medium
+    integrity_checks:
+      - name: schema_uniform
+        rule: "모든 레인 값이 {verdict, since} dict"
+        baseline_violation: {lane: swing_ensemble, actual: '"DEGRADE" (맨 문자열, 고아 키)'}
+
+  # ===== 살아있는 일간 산출물 (기준선 정상) =====
+
+  - path: runtime_state/reports/archive/scan_archive_learning_dataset_all.csv
+    cadence: every_trading_day
+    file_max_age_days: 3
+    severity: high
+    baseline_state: {last_modified: "2026-08-14T17:27", ok: true}
+
+  - path: runtime_state/shared/theme_prior/kr_premarket_theme_prior_latest.json
+    cadence: every_trading_day
+    file_max_age_days: 2
+    severity: medium
+    baseline_state: {last_modified: "2026-08-14T08:20", ok: true}
+
+  - path: runtime_state/reports/experimental/exit_policy_watch_latest.json
+    cadence: every_trading_day
+    file_max_age_days: 3
+    severity: medium
+    baseline_state: {last_modified: "2026-08-14T17:37", ok: true}
+
+  # ⚠️ 감시 대상을 리포트 -> 원장으로 교체 (2026-08-16, audit-ledger-rewrite-pattern.md §3).
+  # 기존에 _latest.json 을 걸어뒀는데 그건 생산자가 돌기만 하면 갱신되는 쪽이라 무용지물이었다.
+  # 리포트는 "돌았나", 원장은 "결과가 있었나"를 말한다 — 감시해야 하는 건 대체로 원장이다.
+  - path: runtime_state/reports/experimental/kospi_normal_pead_shadow_ledger.jsonl
+    cadence: every_trading_day
+    severity: medium
+    content_checks:
+      - {name: max_date_recency, rule: "max(date) 가 5거래일 이내"}
+    baseline_state:
+      status: STALLED
+      rows: 10
+      max_date: "2026-07-06"
+      ledger_mtime: "2026-07-15 17:43"     # 31일 정체
+      report_mtime: "2026-08-15 07:22"     # 신선 — 이쪽만 보면 놓친다
+      note: "역방향 은폐 사례. 원장은 재기록되지 않으므로 원장 mtime 감시는 유효하다"
+
+  # ===== 원장(ledger) 계열: mtime이 아니라 행수·최대일로 본다 =====
+  #
+  # ⚠️ 판정 규칙 변경 (2026-08-16, trace-nasdaq-edge-stall.md §4):
+  # 디렉토리의 최신 파일 mtime을 그 디렉토리의 신선도 대표값으로 쓰지 않는다.
+  # us_research 를 그렇게 판정해서 🟢 0.0일로 통과시켰는데, 안에서 7주 정지한 원장을
+  # 매일 갱신되는 형제 파일(tape_ledger)이 가리고 있었다. 원장은 파일 단위로 본다.
+
+  - path: runtime_state/reports/us_research/nasdaq_session_edge_operational_ledger.jsonl
+    cadence: every_trading_day
+    severity: critical
+    producer: multi_agent/tools/report_nasdaq_session_edge_shadow.py
+    producer_scheduled: true
+    producer_call_site: "multi_agent/tools/run_daily_ops.sh:347"
+    # ❌ mtime 검사 금지 — write_ledger()가 append 0건에도 전량 재기록해 항상 신선하게 보인다.
+    mtime_is_meaningless: true
+    content_checks:
+      - name: row_count_growth
+        rule: "거래일마다 행수가 증가하거나, 최소한 max(date)가 갱신되어야 한다"
+      - name: max_date_recency
+        rule: "max(date) 가 3거래일 이내"
+    baseline_state:
+      status: KNOWN_STALLED
+      rows: 1
+      only_date: "2026-06-26"
+      only_row: {ticker: HOOD, ft55_rate: 0.74, capital_status: operator_enabled_live_scan}
+      file_mtime: "2026-08-15 10:02"      # 신선해 보이지만 내용은 7주 정지
+      stalled_since: "2026-06-26"
+      root_cause: >
+        research_nasdaq_session_edge.py:176-179 의 가격캐시에 TTL·최대일 검사가 없다.
+        cache_path.exists() and not refresh 이면 무조건 캐시 반환. --refresh-cache 는
+        AG_NASDAQ_SESSION_EDGE_REFRESH_CACHE 기본 0 이라 정상 운영에서 영원히 갱신 안 됨.
+        캐시 120개가 2026-06-30 02:03~02:05 기록 후 동결(데이터 04-02~06-29).
+        패널 max date 가 영구히 2026-06-26 -> ledger_key 동일 -> 중복제거로 구조적 0 append.
+      why_silent: "캐시 읽기가 성공하므로 errors:{} — 잡은 [OK] 로 끝나고 실패 신호가 없다"
+
+  - path: runtime_state/reports/us_research/nasdaq_swing_daily_edge_shadow_ledger.jsonl
+    cadence: every_trading_day
+    severity: critical
+    producer: multi_agent/tools/report_nasdaq_daily_edge_shadow.py
+    producer_scheduled: true
+    producer_call_site: "multi_agent/tools/run_daily_ops.sh:321"
+    mtime_is_meaningless: true     # write_ledger 가 0행에도 전량 재기록
+    content_checks:
+      - {name: row_count_nonzero, rule: "행수 > 0"}
+      - {name: max_date_recency, rule: "max(date) 가 3거래일 이내"}
+    baseline_state:
+      status: KNOWN_STALLED
+      rows: 0                      # 승격 이래 단 한 행도 쓴 적 없음
+      file_mtime: "2026-08-15 10:01"
+      score_date: "2026-06-26"
+      session_blocked: false       # 차단도 오류도 아니다 — 그냥 0을 쓴다
+      root_cause: >
+        데이터 원천 ~/research_cache/us_daily/NASDAQ/daily_features_*.parquet 가
+        2026-06-29 10:54~11:40 기록 후 동결(범위 ~20260630). run_daily_ops.sh 에 이
+        일봉 피처 패널을 재생성하는 스텝이 없다(update_us_hourly 는 시간봉=테이프 레인용, 별개).
+      note: >
+        nasdaq_session_edge 와 동일한 score_date(2026-06-26)이나 원천은 다른 파일이다.
+        seaslug 의 5m 캐시 갱신 작업 범위 밖 — 별도 갱신 주체 지정 필요.
+
+  - path: ~/research_cache/us_daily/NASDAQ/daily_features_*.parquet
+    cadence: {type: source_panel}
+    severity: high
+    kind: source_panel
+    producer_scheduled: false      # 재생성 스텝이 run_daily_ops.sh 에 없음
+    content_checks:
+      - {name: panel_mtime, rule: "최신 parquet mtime 이 3거래일 이내"}
+    baseline_state:
+      status: FROZEN
+      all_written: "2026-06-29 10:54~11:40"
+      data_range: "20180101 ~ 20260630"
+      note: "nasdaq_swing_daily_edge 레인 0행의 원천. 생산자 스크립트 미특정(§5-1)"
+
+  - path: runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl
+    cadence: every_trading_day
+    severity: high
+    producer: multi_agent/tools/report_nasdaq_session_tape.py
+    producer_scheduled: true
+    content_checks:
+      - {name: max_date_recency, rule: "max(date) 가 3거래일 이내"}
+    baseline_state: {status: HEALTHY, rows: 54, date_range: "2026-07-02 ~ 2026-08-14", note: "edge 레인의 후계(§12-D). 대조군"}
+
+  - path: runtime_state/reports/us_research/nasdaq_session_5m_cache/
+    cadence: every_trading_day
+    severity: high
+    kind: source_cache
+    content_checks:
+      - {name: cache_mtime, rule: "parquet 최신 mtime 이 3거래일 이내"}
+    baseline_state:
+      status: FROZEN
+      files: 120
+      all_written: "2026-06-30 02:03~02:05"
+      data_range: "2026-04-02 ~ 2026-06-29"
+      note: >
+        이 캐시가 edge 레인 정지의 원천이다. 단 갱신 시 주의 — yfinance 5m 는 최근 60일만
+        제공하므로(sample_limit_warning) refresh 하면 4~6월 구간을 잃을 수 있다. 미검증.
+
+  # ===== 외부 캐시: mtime이 아니라 내용 오류율을 본다 =====
+
+  - path: ~/research_cache/investor_estimate/{YYYYMM}.jsonl
+    cadence: every_trading_day
+    file_max_age_days: 2
+    severity: high
+    # 이 파일은 오류행으로도 mtime이 갱신된다. 행수도 일정하다. 오직 내용만이 갈라준다.
+    content_checks:
+      - name: error_row_ratio
+        rule: "당일 error 필드 보유 행 비율 == 0"
+        expected_rows_per_trading_day: 164     # 41종목 x 4라운드
+        baseline_violation:
+          dates: ["2026-08-04", "2026-08-05"]
+          errored_rows: 328
+          error: "KISOpenAPIError('Missing KIS_APP_KEY or KIS_APP_SECRET')"
+          note: "영구 캐시에 잔존. 하류 분석이 결측이 아닌 정상 데이터로 오인할 수 있다."
+
+  # ===== 느린 마스터: 아직 위반 아니나 생산자가 스케줄에 없다 =====
+
+  - path: runtime_state/long_term/kis_ticker_valuechain/master.json
+    cadence: {type: slow_master, refresh_cadence_days: 90}   # 파일 자체가 선언한 정책
+    file_max_age_days: 90
+    producer: multi_agent/tools/build_kis_ticker_valuechain_master.py
+    producer_scheduled: false        # ← 어떤 스케줄러도 호출하지 않는다
+    severity: high
+    consumers:
+      - modules/kis_ticker_valuechain_master.py:load_ticker_valuechain_master
+      - modules/operational_candidate_scoring.py     # 라이브 스코어링 경로
+      - modules/top_deep_report.py                   # top_deep 리포트는 매일 갱신 중
+    baseline_state:
+      last_modified: "2026-06-09T12:57"
+      content_generated_at: "2026-06-09T03:57"
+      age_days_at_baseline: 66.4
+      ticker_profiles: 20
+      verified_edges: 20
+      verdict: within_policy       # 66.4 < 90 이므로 현재는 위반 아님
+    # ⚠️ 예고된 조용한 실패: 90일 도달 시점에 자동 갱신할 주체가 없다.
+    predicted_breach:
+      date: "2026-09-07"
+      reason: "생산자가 어떤 스케줄러에도 연결돼 있지 않다. 90일 넘어도 아무도 갱신하지 않는다."
+      impact: "라이브 후보 스코어링이 만료된 밸류체인 맵을 계속 사용"
+
+  - path: runtime_state/long_term/kis_theme_valuechain/{KR,KOSPI,KOSDAQ}.json
+    cadence: {type: slow_master, refresh_cadence_days: 90}
+    file_max_age_days: 90
+    producer: multi_agent/tools/build_kis_theme_valuechain_snapshot.py
+    producer_scheduled: false
+    severity: medium
+    baseline_state: {last_modified: "2026-06-09T12:57", age_days_at_baseline: 66.4, verdict: within_policy}
+    predicted_breach: {date: "2026-09-07", reason: "동일 — 스케줄된 생산자 없음"}
+
+# ---------------------------------------------------------------------------
+# 은퇴/수동 전용. 정체가 정상이므로 판정기가 경보를 내면 안 된다.
+# 생산자 추적 결과에 근거한다 (ops-sweep §9).
+# ---------------------------------------------------------------------------
+retired_or_manual:
+  - {path: runtime_state/reports/external_signals,     class: RETIRED,     producer: multi_agent/tools/analyze_external_signals_csv.py,        note: "스케줄러 참조 0"}
+  - {path: runtime_state/reports/instrument_master,    class: RETIRED,     producer: multi_agent/tools/build_us_instrument_enrichment.py,      note: "스케줄러 참조 0"}
+  - {path: runtime_state/reports/theme_validation,     class: RETIRED,     producer: report_theme_shadow_validation.py 외 3,                    note: "스케줄러 참조 0"}
+  - {path: runtime_state/reports/kis_theme_valuechain, class: MANUAL_ONLY, producer: build_kis_theme_valuechain_snapshot.py,                    note: "리포트 사본. 실제 소비는 long_term 쪽"}
+  - {path: runtime_state/reports/kis_ticker_valuechain,class: MANUAL_ONLY, producer: build_kis_ticker_valuechain_master.py,                     note: "리포트 사본. 실제 소비는 long_term 쪽"}
+  - {path: runtime_state/reports/external_data,        class: MANUAL_ONLY, producer: null, note: "리포 전체에 생산자 코드 없음 (27개 파일). 임시 세션 산출물"}
+  - {path: runtime_state/reports/pm_planner,           class: MANUAL_ONLY, producer: null, note: "생산자 코드 없음. 에이전트가 직접 쓴 문서"}
+  - {path: runtime_state/reports/theme,                class: MANUAL_ONLY, producer: null, note: "생산자 코드 없음"}
+  - {path: runtime_state/reports/scanner,              class: MANUAL_ONLY, producer: "analyze_reject_csv_exceptions.py (11개 중 3개만)", note: "나머지 8개 생산자 없음"}
+  - {path: runtime_state/reports/data_quality,         class: EVENT_DRIVEN, producer: "modules/db_manager.py::_write_scan_feature_quarantine",
+     note: "격리 이벤트 발생 시에만 쓴다. 06-19 이후 무이벤트 = 건강 신호. 신선도로 판정하면 안 된다."}
+
+# ---------------------------------------------------------------------------
+# 좀비 로그. mtime이 영구히 안 움직인다 — 감시 대상에서 제외하지 않으면 상시 오탐.
+# 현행 plist가 다른 경로로 쓰고 있어 생긴 잔재다.
+# ---------------------------------------------------------------------------
+ignore:
+  - path: "~/Library/Application Support/CodexSwing/logs/ops/launchd_daily_ops.log"
+    reason: "구 dailyops 경로. 2026-06-09 정지, 52MB. 현행은 launchd_primary_market_session_ops.log"
+  - path: "~/Library/Application Support/CodexSwing/logs/ops/launchd_daily_ops.err.log"
+    reason: "동일"
+  - path: "~/Library/Logs/codex_swing/bd-dolt-launchd.{out,err}.log"
+    reason: "2026-06-15 정지. 현행 plist는 .beads/ 로 쓴다"
+  - path: "~/Library/Logs/codex_swing/discord_bot.{out,err}.log"
+    reason: "2026-06-15 정지. 현행 plist는 runtime_state/discord_jobs/ 로 쓴다"
+  - path: "~/Library/Application Support/codex_swing/launchd/*_from_orico.sh"
+    reason: >
+      고아 래퍼 3개. PROJECT_ROOT=/Volumes/ORICO/quant_pj1 (다른 프로젝트)를 가리키고
+      설치된 plist 11개 중 어느 것도 참조하지 않는다. 실행되지 않는 죽은 설정.
+
+# ---------------------------------------------------------------------------
+# 레인 발화 빈도 자격 (OD-31). 새 유형이다.
+#
+# 위의 artifacts 는 "파일이 신선한가"를 묻는다. 여기는 "레인이 매 거래일 픽을
+# 내놓는가"를 묻고, 미달이면 경보가 아니라 **사이징을 막는다**(OD-7/OD-33).
+#
+# OD-31: 느린 레인은 경보 대상이 아니라 자격 미달이다. 유예를 주지 않는다.
+# 근거 실측: orca/reports/audit-observing-duration-goblin.md (2026-08-17, goblin)
+#
+# 2026-08-16 초판의 OD-28 방아쇠 3종(A 상대 2.0배 / B 절대 60영업일 /
+# C 생산정지 10영업일)은 OD-31 로 **전부 폐기**됐다. 되살리지 말 것.
+# A/B 는 "느린 레인일수록 유예가 길어지는" 설계 자체가 거부된 것이고,
+# C 는 아래 자격 규칙이 더 빠르게(3거래일) 흡수했다.
+#
+# 판정 규칙 (mtime_is_meaningless 와 같은 자리의 함정들):
+#
+#   firing_is_production_not_maturation
+#     발화는 픽 도착일이다. 정산 완료일(settled_at)로 재면 hold_days 만큼 뒤로
+#     밀려 최근 생산일이 통째로 빠진다. b_shadow 의 픽 날짜는 scan_date 이며
+#     settled_at 이 아니다 — 초판이 여기서 틀렸다.
+#
+#   denominator_is_trading_days_not_weekdays
+#     월~금을 분모로 쓰면 휴장일이 결석으로 잡힌다. 실측에서 2026-06-30 ·
+#     2026-07-17 은 KR 두 레인이 동시에 비어 있어 휴장이지 결함이 아니었다.
+#     휴일표를 코드에 박지 말고 데이터에서 유도한다(아래 trading_calendar).
+#
+#   suspended_lanes_are_exempt_not_failing
+#     의도적으로 정지된 레인(AG_B_ENGINE_SCAN=0 등)을 발화율로 판정하면
+#     OD-14 와 같은 오류다 — 정지 이후 표본으로 정지 레인을 판정하는 것.
+#     면제하되 suspension_age 경보를 함께 둔다. 면제만 두면 정지가 판정도
+#     자격심사도 없는 영구 은신처가 된다(OD-17 이 막은 구멍의 정지축 재발).
+#
+#   qualification_blocks_it_does_not_warn
+#     자격 미달은 사이징 0 이다(OD-7/OD-33). 경보를 울리고 기다리는 게 아니다.
+#     초판이 전부 경보였던 것이 OD-31 이 지적한 느슨함의 정체다.
+#
+#   both_od1_axes_or_the_number_is_wrong
+#     OD-1 은 n>=30 AND 고유일>=20 이다. n축만 세면 과소추정한다. kosdaq 실측:
+#     n축 103영업일 대 고유일축 180영업일로 1.7배 차이 — n_min 을 채워
+#     OBSERVING 을 벗어나는 시점에도 OD-1 자격은 없다.
+# ---------------------------------------------------------------------------
+lane_firing_qualification:
+  decision: OD-34            # 채택됨 2026-08-17 (제안 근거 OD-31)
+  related: [OD-1, OD-2, OD-7, OD-14, OD-33, OD-35, OD-36]
+  supersedes_in_ledger: "OD-26 은 OD-36 으로 거둬짐 — kosdaq 예외 없음"
+  source_report: orca/reports/audit-observing-duration-goblin.md
+  action: block_sizing        # 경보 아님. OD-7/OD-33 집행.
+  gate_output: runtime_state/reports/validation/research_recursion_gate_latest.json
+
+  criterion:
+    metric: firing_rate
+    numerator: "픽이 도착한 거래일 수"
+    denominator: "레인 자기 시장의 거래일 수"
+    window_trading_days: 10
+    floor: 0.80               # = 8/10
+    derivation: "floor = 20 / W_판정,  W_판정 = 25거래일(5주)"
+    derivation_basis: >
+      20 은 OD-1 고유일 요건(고정). 25거래일은 정상 코호트의 판정 도달 실측
+      기간(24~27영업일)의 중앙값. 따라서 문턱은 "정상 레인이 실제로 걸리는
+      시간 안에 판정에 도달하라"이며 정상의 배수가 아니라 정상 그 자체다.
+    grace: "첫 픽 이후 10거래일 미만이면 판정 보류(신규 레인 보호)"
+    exempt_if: "게이트 산출의 suspended_since 가 non-null — 단 OD-35 기한 있음"
+
+  # OD-36 귀결: 자본 배분이 붙는 레인이 0개다. 픽 표시는 관측 전용으로 남는다.
+  # 판정기 주의 — "사이징 레인 0"은 이 시점의 정상 상태이지 고장이 아니다.
+  # 어떤 레인이든 사이징이 0 아닌 값으로 돌아오면 그것이 자격 통과를 뜻하므로
+  # 근거(발화율 + 게이트 판정)를 함께 확인한다.
+  capital_allocation_lanes: 0
+
+  trading_calendar:
+    method: derive_from_data   # 휴일표를 박지 않는다
+    KR: "union(kospi_intraday_t5, swing_candidate) 발화일"
+    US: "nasdaq_session_tape 자기 발화일 — 2번째 US 레인이 없어 독립 검증 불가(한계)"
+    exclude: "당일(미완결)"
+    note: "B 레인(b_shadow)은 6자리 종목코드 = KR 시장이다. KR 달력을 쓴다."
+
+  baseline_state:
+    measured_at: 2026-08-17
+    window: "각 레인 첫 픽 .. 2026-08-14"
+    lanes:
+      kospi_intraday_t5:    {fired: 36, trading_days: 36, rate: 1.000, verdict: PASS}
+      swing_candidate:      {fired: 30, trading_days: 30, rate: 1.000, verdict: PASS}
+      nasdaq_session_tape:  {fired: 31, trading_days: 31, rate: 1.000, verdict: PASS}
+      kosdaq_intraday_t10:  {fired: 5,  trading_days: 34, rate: 0.147, verdict: FAIL,
+                             sizing: 0, note: "OD-36 으로 OD-26 예외 거둬짐"}
+      b_primary_top3:       {suspended_since: 2026-08-03, verdict: EXEMPT,
+                             od35_deadline: 2026-08-31}
+      b_all_top10:          {suspended_since: 2026-08-03, verdict: EXEMPT,
+                             od35_deadline: 2026-08-31}
+    finding: >
+      운영 3개 레인의 결석은 통틀어 0일(97 레인-일). 정상은 "대부분의 날"이
+      아니라 "매 거래일"이다. rule of three 로 참 결석률 95% 상한 3.1%.
+      kosdaq 은 6.8배 아래이며 Wilson 95% 상한(0.280)조차 운영 코호트
+      하한(0.886)에 못 미친다 — 두 집단은 표본오차로 겹치지 않는다.
+    correction_of_initial_report: >
+      초판의 "정상 75~83%"는 세 오염의 합이었다 — 성숙일을 셈 / 월~금을
+      분모로 씀 / 정지된 B 레인 2개를 코호트에 포함. 셋을 고치면 1.000 이다.
+
+  historical_replay:
+    method: "실제 발화 이력에 이동창 규칙을 매 거래일 재적용"
+    floor: 0.80
+    results:
+      W10: {kospi: "0/27 fail", swing_candidate: "0/21 fail", nasdaq: "0/22 fail",
+            kosdaq: "first_fail 2026-07-10, 25/25 fail"}
+      W15: {kospi: "0/22 fail", swing_candidate: "0/16 fail", nasdaq: "0/17 fail",
+            kosdaq: "first_fail 2026-07-20, 20/20 fail"}
+      W20: {kospi: "0/17 fail", swing_candidate: "0/11 fail", nasdaq: "0/12 fail",
+            kosdaq: "first_fail 2026-07-27, 15/15 fail"}
+    conclusion: >
+      세 창 모두 오탈락 0건이고 kosdaq 을 100% 탈락시킨다. 차이는 속도뿐이라
+      최단 W=10 을 채택. kosdaq 탈락일 2026-07-10 은 폐기된 B 방아쇠
+      예상일(2026-09-18)보다 70일 빠르고 측정일 기준 이미 38일 전이다.
+    sensitivity: >
+      문턱 0.5~0.9, 창 10~20 어디로 흔들어도 판정이 바뀌지 않는다. 운영 3개는
+      최소 1.000, kosdaq 은 최대 0.147, 그 사이에 아무 레인도 없다.
+
+  subsumes:
+    - id: production_stall
+      note: >
+        발화율 1.000 레인이 멈추면 연속 3거래일 결석에 7/10=0.70 으로 탈락한다.
+        폐기된 C 방아쇠(10영업일)보다 7거래일 빠르다. 별도 정지 감시 불필요.
+
+  alerts:   # 자격이 구조적으로 표현할 수 없는 것만 남긴다
+    - id: qualification_transition
+      severity: warn
+      condition: "발화율 자격이 PASS -> FAIL 로 바뀔 때"
+      rationale: >
+        차단은 자동으로 일어나지만 이유가 보이지 않으면 안 된다. 사이징이 조용히
+        0 이 되고 아무도 모르는 상태는 이 리포의 반복 실패다(suspend_marker_broken
+        아무도 안 읽음, F1 한 경로에만 배선). 행위가 아니라 가시성을 위한 경보.
+
+    - id: suspension_age
+      severity: alert
+      decision: OD-35
+      condition: "suspended_since 경과 > 20거래일"
+      threshold_trading_days: 20
+      threshold_basis: >
+        운영자 결정 2026-08-17. 정상 레인의 판정 도달 기간(25거래일)보다 짧게
+        잡았다 — 정지가 working 레인을 판정하는 시간보다 오래 가면 안 된다.
+        실측 근거는 없다(정지 이력 1건이라 코호트 불가). goblin 은 OD-5/OD-30
+        원칙에 따라 수치를 지어내지 않고 비워 올렸고 운영자가 정했다.
+      on_fire: "해제할지 폐기할지 운영자 결정 — 자동 처리 금지"
+      escalate_to: orca-worker-fleet-infra
+      # 기한이 차면 exempt 가 자동 만료된다. 만료 후에도 정지가 유지되면
+      # 그 레인은 면제 없이 OD-34 판정을 받는다(발화 0 -> 미달 -> 사이징 0).
+      exempt_expires_at_deadline: true
+
+  retired_triggers:   # OD-31 로 폐기. 되살리지 말 것.
+    - {id: observing_slower_than_own_throughput, was: "elapsed > 2.0 x D_exp",
+       why_retired: "느린 레인일수록 유예가 길어지는 설계 자체가 거부됨(OD-31)"}
+    - {id: observing_absolute_exposure_cap, was: "elapsed > 60 bd",
+       why_retired: "정상 코호트가 24~27영업일인데 kosdaq 에 12주를 더 주는 셈(OD-31)"}
+    - {id: observing_production_stall, was: "no new row > 10 bd",
+       why_retired: "자격 규칙이 3거래일에 흡수 — subsumes.production_stall"}
+
+  # ---- 활성 추적: OD-35 기한 임박 -------------------------------------------
+  active_deadlines:
+    - id: b_lane_suspension_od35
+      lanes: [b_primary_top3, b_all_top10]
+      suspended_since: 2026-08-03
+      suspension_reason: "PKG-A 중지 (§40 CI<0 확정). AG_B_ENGINE_SCAN 기본값 0."
+      market: KR                    # 6자리 종목코드
+      deadline_trading_days: 20
+      elapsed_confirmed: 9          # 데이터 유래 KR 달력, 2026-08-14 까지
+      deadline_estimate: 2026-08-31
+      deadline_uncertainty: >
+        2026-08-17 이 KR 휴장이면 2026-09-01 로 하루 밀린다. 이 날짜를 하드코딩하지
+        말고 데이터 유래 KR 달력(union kospi|swing_candidate)에서 매일 재계산할 것.
+        광복절(08-15 토) 대체휴일 가능성이 있으나 데이터로 확정하지 못했다.
+      on_fire: "orca-worker-fleet-infra 에 보고. 해제/폐기는 운영자 결정."
+      status: tracking
+
+  open_questions:     # 채택 후 남은 것만
+    - "마커 없이 사실상 멈춘 레인의 기본값(현재: 면제 아님 = 미달). 안전한 방향이라 판단해 이렇게 뒀다."
+
+  resolved_questions:
+    - {q: "문턱 0.80 / 창 10거래일", a: "채택 — OD-34"}
+    - {q: "OD-2 와의 관계", a: "OD-34 가 '기존 3조건을 건드리지 않는 새 축이며 엄격화 아님'으로 판단"}
+    - {q: "suspension_age 임계값", a: "20거래일 — OD-35"}
+    - {q: "kosdaq OD-26 예외", a: "거둠 — OD-36. 재검토(OD-32) 종결, 대상 소멸."}
+
+  out_of_scope:
+    - lanes: [nasdaq_session_edge, nasdaq_swing, b_market_neutral, swing_ensemble]
+      reason: "UNGATED_PUBLISHED_LANES. OD-17 로 이미 발행 불가. 발화율 미측정."
+      # 지금은 무영향이나, 어느 하나라도 게이트에 배선되면 그 시점에 발화율이 필요하다.
+      # 배선은 GATE_LANE_MAP 에 항목이 생기는 것으로 감지된다.
+      trigger_to_measure: "modules/stream_exclusion.py 의 GATE_LANE_MAP 에 해당 레인이 추가될 때"
+      what_is_needed: >
+        측정 방법은 baseline_state 와 동일하다 — 픽 날짜 필드로 발화일을 세고
+        자기 시장 거래일을 분모로 쓴다. b_shadow 처럼 픽 날짜 필드가 settled_at 이
+        아닌 경우가 있으므로 원장별 필드를 먼저 확인할 것(firing_is_production_not_maturation).
+      status: recorded_not_measured
+
+  handed_off:         # 내 소관 아님 — 소유자에게 이관됨
+    - {id: verdict_since_restamped_by_migration, owner: anglerfish,
+       where: "report_research_recursion_gate.py:155-157,269-271",
+       note: "상태파일 dict 마이그레이션이 부분적(swing_ensemble 만 bare string)이라
+              전 레인이 2026-08-03 으로 재스탬프. 지속 기간으로 쓸 수 없다."}
+    - {id: observing_in_healthy_verdicts, owner: seaslug, decision: OD-33,
+       where: "modules/stream_exclusion.py:123,249",
+       note: "HEALTHY_VERDICTS 에 OBSERVING 포함 -> excluded = not healthy.
+              미판정이 사이징으로 흐른다. OD-33 으로 차단 결정."}
+
+# ---------------------------------------------------------------------------
+# kosdaq_intraday 조기 재검토 (OD-32) — 종결됨
+#
+# OD-36 으로 OD-26 예외가 거둬져 재검토 대상 자체가 소멸했다. 이 절은 감시
+# 항목이 아니라 근거 보존이다 — 판정기는 읽지 않는다.
+# kosdaq_intraday_t10 은 이제 lane_firing_qualification 의 일반 판정을 받는다
+# (발화율 0.147 -> 미달 -> 사이징 0).
+#
+# 지우지 않는 이유: DECISIONS.md 규칙 2("지우지 않는다 — 왜 뒤집혔는지가 남아야
+# 같은 논의를 두 번 하지 않는다"). 이 리포의 반복 사고가 값의 출처가 사라지는
+# 것이었다. OD-36 의 근거 수치가 여기 있다.
+# ---------------------------------------------------------------------------
+kosdaq_early_review:
+  decision: OD-32
+  status: CLOSED                 # OD-36 으로 예외 거둬짐 (2026-08-17)
+  closed_by: OD-36
+  outcome: "예외 회수. 재검토 대상 소멸. 이 절은 근거 보존용."
+  monitoring: none               # 판정기가 읽을 활성 항목 아님
+  exception_under: "OD-26 (OD-36 으로 대체됨)"
+  measured_at: 2026-08-17
+  firing_rate: 0.147
+  disqualified_since: 2026-07-10   # OD-31 문턱 적용 시. 측정일 기준 38일 전.
+  never_recovered: "25/25 평가 전부 미달"
+  od1_projection:
+    unique_days_now: {production: 5, matured: 4}
+    to_20_unique_production: {trading_days: 102, date: 2027-01-06, weeks: 20}
+    to_20_unique_matured: {trading_days: 109, date: 2027-01-15, weeks: 22}
+    axis_note: "n축 103영업일 < 고유일축 180영업일 — n_min 채워도 그 시점에 OD-1 자격 없음"
+  sample_quality:
+    matured_net_after_cost_0_33: [9.67, 9.67, 9.67, -16.90, 9.67, 15.03, 10.03]
+    at_touch_cap: "4/7 이 정확히 상한 9.67"
+    finding: >
+      승리는 계약이 만든 상한값이고 손실은 잘리지 않는다(유일 손실 -16.90).
+      RESEARCH_STANDARDS §4 의 출구계약 비대칭 전형. OD-26 한계 명시와 일치.
+  exposure_window:
+    stated_in_od26: "약 10주"
+    measured: "2026-06-26 .. 2027-01-15, 약 29주"
+    ratio: 2.9
+  what_i_do_not_decide: >
+    OD-26 예외의 유지/회수는 운영자 결정이며 권고하지 않는다. 다만 OD-26 은
+    "판정이 가능해질 때까지"라는 조건부 예외였고, 실측상 그 조건은 2027-01
+    이전에 충족되지 않는다. 유지한다면 10주가 아니라 29주 예외를 승인하는 것이다.
+
+# ---------------------------------------------------------------------------
+# 스케줄 드리프트 감시: plist ProgramArguments 진입점이 실재하고 이 리포로 수렴하는가.
+# ---------------------------------------------------------------------------
+schedule_drift:
+  launch_agents_glob: "~/Library/LaunchAgents/com.codex.swing.*.plist"
+  expected_count: 11
+  resolver:
+    launcher: "~/Library/Application Support/CodexSwing/bin/codex_swing_launch.sh"
+    root_file: "~/Library/Application Support/CodexSwing/project_root"
+    expected_root: /Users/dongdong/Projects/codex_swing/swing-main
+    # launcher는 root_file이 AGENTS.md+requirements.txt 검증에 실패하면 조용히
+    # 후보 경로로 넘어간다. 어느 경로로 해석됐는지를 기록해야 드리프트가 보인다.
+    fallback_candidates:
+      - ~/Projects/codex_swing/swing-main
+      - ~/Desktop/codex_swing/swing-main
+      - ~/codex_swing/swing-main
+  checks:
+    - name: entrypoint_exists
+      rule: "모든 plist의 ProgramArguments[0]이 실재"
+      baseline: {pass: 11, total: 11}
+    - name: single_repo_convergence
+      rule: "모든 잡이 expected_root로 수렴"
+      baseline: {pass: 11, total: 11}
+    - name: no_external_volume_root
+      rule: "해석된 root가 /Volumes/ 아래면 안 된다 (언마운트 시 전 잡 조용사)"
+      baseline: {pass: true}
+      note: >
+        /Volumes/ORICO/quant_pj1 은 실재하는 별개 프로젝트다(AGENTS.md 보유). 즉 고아 래퍼가
+        가리키는 경로는 깨진 게 아니라 살아 있다 -> 누가 plist를 거기로 돌리면 실제로 동작하고,
+        볼륨 언마운트 시 조용히 전멸한다. "경로가 없어서 안전"이 아니라는 점이 중요하다.
+
+  # 실행 중인 스크립트 편집 위험. 실제로 한 번 사고가 났다(2026-07-08 rc=127).
+  live_edit_hazard:
+    target: multi_agent/tools/run_daily_ops.sh
+    why: >
+      dailyops가 StartInterval 300s로 이 스크립트를 상시 실행한다. bash는 스크립트를 바이트
+      오프셋으로 이어 읽기 때문에 실행 중 파일이 바뀌면 새 파일의 엉뚱한 위치에서 재개해
+      단어 조각을 명령으로 해석한다. 2026-07-08 stderr에 "line 237: eady: command not found"
+      (eady = 단어 중간 조각) + "line 15: Terminated: 15" 가 동시에 찍힌 게 그 증거다.
+    detect: {pattern: "command not found", in: launchd_primary_market_session_ops.err.log}
+    mitigation_note: "편집은 임시파일에 쓰고 mv로 원자적 교체하면 회피된다 (운영자 판단)"
+
+# ---------------------------------------------------------------------------
+# 다음 관측에서 반드시 확인할 것 (기준선 시점 미검증 항목)
+# ---------------------------------------------------------------------------
+pending_verification:
+  - id: nightly_rebaseline
+    status: VERIFIED_PASS          # 2026-08-14 23:50:04 실측
+    when: "2026-08-14 23:50 이후"
+    check: "learning_cycle_nightly.json 에 counter_rebaselined_from == 8180 존재"
+    observed:
+      counter_rebaselined_from: 8180
+      action: skip                 # 재기준선 주기라 정상
+      total_resolved: 4156
+      last_nightly_resolved_total: "8180 -> 4156 (역전 해소)"
+    note: "ede9706 작동 확인. 해당 주기 skip은 예측대로 정상."
+
+  - id: weekly_rebaseline
+    status: STILL_INVERTED
+    when: "2026-08-16(일) 09:00 weekly 실행 이후"
+    check: "training_state.json 의 last_weekly_resolved_total <= total_resolved"
+    observed: {last_weekly_resolved_total: 8180, total_resolved: 4156}
+    note: >
+      nightly만 재기준선됐다. weekly 경로는 일요일에만 돌아 아직 8180으로 latch돼 있다.
+      08-16 주기도 skip이 정상이며, retrain_v2_report.json 정체는 최소 그때까지 지속된다.
+
+  - id: nightly_first_actual_train
+    status: FAILED_PREDICTION       # 2026-08-15 23:50 실측: action=skip, new_resolved=0
+    when: "2026-08-15 23:50"
+    check: "learning_cycle_nightly.json 의 action != skip"
+    rationale_original: "일일 증분 +31건(4125->4156) > 임계 20건이므로 학습이 돌아야 한다"
+    observed: {action: skip, new_resolved_since_last_cycle: 0, total_resolved: 4156}
+    why_wrong: >
+      2026-08-15는 토요일이다. 주말 증분은 실측 [0, 0, 2]로 전부 임계 미만이며 오늘의 0은
+      정상값이다. 오류 3겹: (1) 델타 단 하나(+31)를 일일 생산율로 삼은 n=1 외삽
+      (2) 실제 분포가 0~102로 산포가 큰데 점추정으로 단정 (3) 같은 파일의 calendar.trading_days
+      에 거래일을 직접 써 놓고도 예측에 적용하지 않음. 재기준선 로직(ede9706)은 정상 작동 중이며
+      이번 skip의 원인이 아니다 — last_nightly_resolved_total(4156) == total_resolved(4156).
+    lesson: >
+      다음 실행일이 거래일인지 먼저 확인한다. 그리고 "임계를 넘는다"가 아니라
+      "과거 분포에서 넘을 확률 N/M"으로 적는다. 평일 실측은 10회 중 8회가 임계 초과.
+    next_meaningful_check: "2026-08-17(월) 23:50 — 단 08-10(월) 증분이 8이었으므로 보장 아님"
+
+  # §2 — 예측 실패를 조사하다 찾은 진짜 결함. 오늘의 skip 원인은 아니지만
+  # 평일 증분이 8~102로 널뛰고 6월 픽이 아직 PENDING인 것의 원인이다.
+  - id: resolver_run_selection_bug
+    status: OPEN_DEFECT
+    where: "multi_agent/tools/update_realized_outcomes.py:55-64 _iter_target_runs"
+    defect: >
+      runs = sorted(runs, key=lambda p: p.name)[-limit_runs:] — RUN 디렉토리 이름이
+      RUN-<랜덤16진수>라 시간 정보가 없다. "최근 200개"라는 의도가 코드로 구현돼 있지 않고
+      실제로는 이름이 RUN-FF.. 쪽인 고정된 임의 200개가 선택된다.
+    evidence:
+      total_runs: 1601
+      selected_mtime_range: "2026-06-15 ~ 2026-08-15"   # 이름순 마지막 200
+      intended_mtime_range: "2026-08-08 ~ 2026-08-15"   # 시간순 최근 200
+      overlap: "200개 중 25개 (12.5%)"
+      new_runs_seen: "08-15 이후 생성 18개 중 처리대상 4개"
+    impact:
+      pending_by_recommend_month: {"2026-06": 1052, "2026-07": 3590, "2026-08": 2887}
+      unresolved_pct: {"2026-06": 27.3, "2026-07": 73.9, "2026-08": 88.3}
+      backlog_rate: "13일간 PENDING +2696 vs RESOLVED +419 (6.4배)"
+      note: "보유기간 1~5일 픽인데 6월 추천분 1052건이 2개월 넘게 PENDING. EXPIRED도 안 됨(290 고정)"
+    workaround_exists: "DAILY_OPS_RESOLVE_ALL=1 또는 --limit-runs 0 (기본값 아님, 비용 미측정)"
+    caution: >
+      이름순 선택이 유일한 원인이라고 단정하지 않았다. 정산기 시야에 들어와도 가격데이터 부재 등으로
+      계속 PENDING일 가능성은 미확인이다.
+  - id: dailyops_first_success
+    status: VERIFIED_PASS           # 2026-08-14 18:48:25 nasdaq_regular_open
+    when: "다음 세션 발화 이후"
+    check: "reports[].status != failed"
+    observed: {status_tally: {failed: 154, ok: 2}, first_ok: "2026-08-14T18:48:25",
+               fix_commit: "cef135c @ 2026-08-14 17:41", lag: "약 1시간 7분"}
+  - id: daily_backtest_revived
+    status: VERIFIED_PASS           # 예측(3행) 적중
+    when: "dailyops 첫 성공 이후"
+    check: "daily_backtest.jsonl 에 2026-05-06 이외 날짜 행 존재 (예상 +3행)"
+    observed: {mtime: "2026-08-15 03:48", rows: 10, dates: {"2026-05-06": 7, "2026-08-15": 3},
+               stalled_days_resolved: 100}
+    note: >
+      dry-run 실측(segment 1 + picked 2 = 3행)에 근거한 예측이 정확히 맞았다.
+      같은 날 세운 nightly_first_actual_train 예측은 외삽이라 틀렸다 — 근거의 종류가 갈랐다.
+    caveat: >
+      파일은 살아났으나 내용은 retrain_v2_report.json(생성 2026-07-03) 파생이라
+      08-15자 3행의 실체는 43일 묵은 모델 지표다. ops-sweep §5.2 경고가 그대로 실현됐다.
+      content_max_age 검사가 mtime 검사와 별도로 필요한 이유의 실례.
+  - id: foundation_gate_revived
+    status: VERIFIED_PASS           # 2026-08-15 10:20
+    when: "dailyops 첫 성공 이후"
+    check: "daily_model_foundation_gate.json mtime 갱신"
+    observed: {mtime: "2026-08-15 10:20", stalled_days_resolved: 67}
+  - id: valuechain_master_breach
+    when: "2026-09-07"
+    check: "master.json age <= 90d"
+    on_fail: "스케줄된 생산자 없음 — 갱신 주체 지정 필요"

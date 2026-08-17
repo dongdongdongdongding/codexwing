@@ -352,3 +352,54 @@ def test_staleness_breach_does_not_abort_dailyops(tmp_path):
 def test_staleness_guard_is_single_name():
     head = guard_block(STALE_STEP, STALE_FLAG).splitlines()[0]
     assert STALE_FLAG in head and ":-${" not in head, head
+
+
+# ---------------------------------------------------------------------------
+# sentinel 판정기 배선 (OD-38) — 새 launchd 잡 없이 dailyops 스텝으로
+# ---------------------------------------------------------------------------
+
+SENTINEL_FLAG = "AG_SENTINEL_CHECK"
+SENTINEL_STEP = "report_sentinel_expectations"
+
+
+def run_sentinel_block(tmp_path: Path, *, stdout='{"escalations": 0}', rc=0, **flags) -> str:
+    script = tmp_path / "sentinel.sh"
+    script.write_text(PANEL_HARNESS % (stdout, rc, guard_block(SENTINEL_STEP, SENTINEL_FLAG)),
+                      encoding="utf-8")
+    env = {k: v for k, v in os.environ.items() if not k.startswith("AG_SENTINEL")}
+    env.update({k: str(v) for k, v in flags.items()})
+    r = subprocess.run([SYSTEM_BASH, str(script)], capture_output=True, text=True,
+                       timeout=60, env=env, cwd=str(REPO))
+    return r.stdout + r.stderr
+
+
+def test_sentinel_declared_state_matches_execution(tmp_path):
+    """선언 = 실제 실행. c9cf7db 가 100회 동안 어긋났던 그 계약이다."""
+    assert f"[STEP] {SENTINEL_STEP}" in run_sentinel_block(tmp_path)
+    off = run_sentinel_block(tmp_path, **{SENTINEL_FLAG: "0"})
+    assert f"[SKIP] {SENTINEL_STEP}" in off and f"[STEP] {SENTINEL_STEP}" not in off
+    assert SENTINEL_FLAG in off
+
+
+def test_sentinel_guard_is_single_name():
+    head = guard_block(SENTINEL_STEP, SENTINEL_FLAG).splitlines()[0]
+    assert SENTINEL_FLAG in head and ":-${" not in head, head
+
+
+def test_sentinel_escalation_is_loud(tmp_path):
+    out = run_sentinel_block(tmp_path, stdout='{"escalations": 3}', rc=1)
+    assert "[WARN]" in out and "rc=1" in out and "[DATA]" in out
+    assert "escalations" in out, "status 가 로그에 안 남았다"
+    assert "sentinel_escalations.md" in out, "어디를 봐야 하는지가 없다"
+
+
+def test_sentinel_failure_does_not_abort_dailyops(tmp_path):
+    out = run_sentinel_block(tmp_path, stdout='{"escalations": 3}', rc=1)
+    assert "[STEP]" in out and "[WARN]" in out
+
+
+def test_no_new_launchd_job_was_added():
+    """OD-38: 새 launchd 잡을 만들지 않는다 — dailyops 스텝으로 붙인다."""
+    plists = list((REPO / "scripts" / "launchd").glob("*.plist"))
+    assert not any("sentinel" in p.name.lower() for p in plists), \
+        f"sentinel 용 launchd 잡이 생겼다: {[p.name for p in plists]}"
