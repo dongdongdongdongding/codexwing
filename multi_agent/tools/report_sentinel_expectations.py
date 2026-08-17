@@ -44,8 +44,10 @@ STATE = PROJECT_ROOT / "runtime_state" / "long_term" / "ops" / "sentinel_state.j
 
 SEV_ORDER = {"info": 0, "warn": 1, "alert": 2, "critical": 3}
 
-# 레인 → (원장 상대경로, 날짜 필드, 시장). 게이트 LANES 와 같은 원장을 본다.
-LANE_LEDGERS = {
+# 레인 정의는 **게이트 LANES 에서 가져온다.** 여기 따로 적으면 두 벌이 갈린다 —
+# HEALTHY_VERDICTS 어휘 드리프트와 kosdaq 승률 이중화가 정확히 그 형태였다.
+# (아래 상수는 게이트를 못 읽는 환경의 폴백 겸 문서다.)
+_FALLBACK_LANE_LEDGERS = {
     "kospi_intraday_t5": ("runtime_state/reports/experimental/kospi_intraday_swing_ledger.jsonl", "date", "KR"),
     "kosdaq_intraday_t10": ("runtime_state/reports/experimental/kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "date", "KR"),
     "swing_candidate": ("runtime_state/reports/experimental/kr_swing_candidate_ledger.jsonl", "date", "KR"),
@@ -53,6 +55,17 @@ LANE_LEDGERS = {
     "b_all_top10": ("b_engine/data/b_shadow.jsonl", "scan_date", "KR"),
     "nasdaq_session_tape": ("runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl", "date", "US"),
 }
+try:
+    from multi_agent.tools.report_research_recursion_gate import (  # noqa: E402
+        LANES as _GATE_LANES, trading_days as _gate_trading_days,
+    )
+    LANE_LEDGERS = {n: (str(c["ledger"]).split("swing-main/")[-1],
+                        c.get("date_field", "date"), c.get("market", "KR"))
+                    for n, c in _GATE_LANES.items()}
+except Exception:                                   # pragma: no cover
+    _GATE_LANES, _gate_trading_days = None, None
+    LANE_LEDGERS = _FALLBACK_LANE_LEDGERS
+
 KR_CALENDAR_LANES = ["kospi_intraday_t5", "swing_candidate"]
 US_CALENDAR_LANES = ["nasdaq_session_tape"]
 
@@ -84,7 +97,13 @@ def firing_days(root: Path, lane: str) -> Set[str]:
 
 
 def trading_days(root: Path, market: str, today: str) -> List[str]:
-    """거래일을 **데이터에서** 유래시킨다. 당일은 미완결이라 제외한다."""
+    """거래일을 **데이터에서** 유래시킨다. 당일은 미완결이라 제외한다.
+
+    구현은 게이트 한 곳에만 둔다 — 여기 사본을 두면 두 벌이 갈리고, 그게 이 리포가 반복해 온
+    드리프트다. 게이트를 못 읽거나 다른 리포 루트를 볼 때만 지역 계산으로 떨어진다.
+    """
+    if _gate_trading_days is not None and root == PROJECT_ROOT:
+        return _gate_trading_days(market, today)
     lanes = KR_CALENDAR_LANES if market == "KR" else US_CALENDAR_LANES
     union: Set[str] = set()
     for lane in lanes:

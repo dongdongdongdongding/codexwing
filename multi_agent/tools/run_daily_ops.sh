@@ -236,6 +236,34 @@ if [[ "${AG_DART_REFRESH:-1}" == "1" && -f "${HOME}/research_cache/dart_update.p
   run_optional "dart_update" python3 "${HOME}/research_cache/dart_update.py"
 fi
 
+# sentinel 판정기 (OD-37/38, 2026-08-17).
+#   expectations.yaml 에 기준·재계산법·에스컬레이션 대상이 다 적혀 있는데 **그걸 돌리는 것이
+#   없었다.** §40 킬 기준이 산문으로만 적혀 두 달 뒤 우연히 발견된 것과 같은 형태다.
+#   새 launchd 잡을 만들지 않고 dailyops 스텝으로 붙인다(OD-38).
+#   OD-41: 맨 뒤가 아니라 2시간짜리 intraday_backfill **앞**에 둔다. 판정기는 원장·마커·
+#   산출물만 읽어 그날 백필에 의존하지 않는데, 뒤에 두면 매 실행 4.5시간 뒤에야 판정이 나오고
+#   기한·발화율처럼 시각이 중요한 항목이 그만큼 늦게 드러난다.
+#   판정: OD-34 발화 자격 · OD-35 정지 기한 · OD-39 마커 없는 정지 · 자격 전이 WARN ·
+#         내용 기준 신선도 · OD-19 킬 기준 대조.
+if [[ "${AG_SENTINEL_CHECK:-1}" == "1" ]]; then
+  echo "[STEP] report_sentinel_expectations"
+  # run_optional 을 그대로 쓰지 않는 이유는 앞의 두 스텝과 같다 — 에스컬레이션이 있으면
+  # 종료코드 1 인데 [WARN] 한 줄로 삼켜지면 무엇이 걸렸는지가 남지 않는다.
+  if SENTINEL_OUT="$(python3 multi_agent/tools/report_sentinel_expectations.py --json-only)"; then
+    SENTINEL_RC=0
+  else
+    SENTINEL_RC=$?
+  fi
+  echo "[DATA] sentinel rc=${SENTINEL_RC} ${SENTINEL_OUT}"
+  if [[ "${SENTINEL_RC}" == "0" ]]; then
+    echo "[OK] report_sentinel_expectations"
+  else
+    echo "[WARN] sentinel 에스컬레이션 발생 — runtime_state/reports/validation/sentinel_escalations.md 확인"
+  fi
+else
+  echo "[SKIP] report_sentinel_expectations — AG_SENTINEL_CHECK=0 (재개: =1)"
+fi
+
 if [[ "${AG_INTRADAY_BACKFILL:-1}" == "1" && -f "${HOME}/research_cache/intraday_backfill.py" ]]; then
   # 분봉 minute bars: incremental KIS backfill of today's full session (post-close). Only fetches
   # days not already cached, so the daily run just adds today. Disable with AG_INTRADAY_BACKFILL=0.
@@ -470,31 +498,6 @@ if [[ "${AG_KR_SWING_CANDIDATE_ENABLE:-1}" == "1" ]]; then
   run_optional "report_kr_swing_candidate" \
     python3 multi_agent/tools/report_kr_swing_candidate.py \
       --top-k "${AG_KR_SWING_CANDIDATE_TOPK:-3}"
-fi
-
-# sentinel 판정기 (OD-37/38, 2026-08-17).
-#   expectations.yaml 에 기준·재계산법·에스컬레이션 대상이 다 적혀 있는데 **그걸 돌리는 것이
-#   없었다.** §40 킬 기준이 산문으로만 적혀 두 달 뒤 우연히 발견된 것과 같은 형태다.
-#   새 launchd 잡을 만들지 않고 dailyops 스텝으로 붙인다(OD-38).
-#   판정: OD-34 발화 자격 · OD-35 정지 기한 · OD-39 마커 없는 정지 · 자격 전이 WARN ·
-#         내용 기준 신선도 · OD-19 킬 기준 대조.
-if [[ "${AG_SENTINEL_CHECK:-1}" == "1" ]]; then
-  echo "[STEP] report_sentinel_expectations"
-  # run_optional 을 그대로 쓰지 않는 이유는 앞의 두 스텝과 같다 — 에스컬레이션이 있으면
-  # 종료코드 1 인데 [WARN] 한 줄로 삼켜지면 무엇이 걸렸는지가 남지 않는다.
-  if SENTINEL_OUT="$(python3 multi_agent/tools/report_sentinel_expectations.py --json-only)"; then
-    SENTINEL_RC=0
-  else
-    SENTINEL_RC=$?
-  fi
-  echo "[DATA] sentinel rc=${SENTINEL_RC} ${SENTINEL_OUT}"
-  if [[ "${SENTINEL_RC}" == "0" ]]; then
-    echo "[OK] report_sentinel_expectations"
-  else
-    echo "[WARN] sentinel 에스컬레이션 발생 — runtime_state/reports/validation/sentinel_escalations.md 확인"
-  fi
-else
-  echo "[SKIP] report_sentinel_expectations — AG_SENTINEL_CHECK=0 (재개: =1)"
 fi
 
 # 미채점 행 임계 초과 경보 (F6, swing-main-r6sb, 2026-08-16).

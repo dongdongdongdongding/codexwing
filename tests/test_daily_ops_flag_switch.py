@@ -403,3 +403,15 @@ def test_no_new_launchd_job_was_added():
     plists = list((REPO / "scripts" / "launchd").glob("*.plist"))
     assert not any("sentinel" in p.name.lower() for p in plists), \
         f"sentinel 용 launchd 잡이 생겼다: {[p.name for p in plists]}"
+
+
+def test_sentinel_runs_before_the_two_hour_backfill():
+    """OD-41: 맨 뒤에 두면 매 실행 4.5시간 뒤에야 판정이 나온다.
+
+    판정기는 원장·마커·산출물만 읽어 그날 백필 결과에 의존하지 않는다.
+    """
+    lines = OPS.read_text(encoding="utf-8").splitlines()
+    sentinel = next(i for i, l in enumerate(lines) if f"[STEP] {SENTINEL_STEP}" in l)
+    backfill = next(i for i, l in enumerate(lines) if "[STEP] intraday_backfill" in l)
+    assert sentinel < backfill, (
+        f"판정기({sentinel})가 2시간 백필({backfill}) 뒤에 있다 — 기한·발화율 판정이 그만큼 늦는다")

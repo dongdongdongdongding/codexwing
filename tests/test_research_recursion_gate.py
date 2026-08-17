@@ -1059,3 +1059,93 @@ def test_confirm_qualified_contract_boundaries(tmp_path):
     r2 = gate.evaluate("l", cfg_for(many, expect_ev=1.0, expect_win=50.0,
                                     n_min_adjudicate=20, deff_prior=1.0), {}, TODAY)
     assert r2["verdict"] == "CONFIRM" and r2["confirm_qualified"] is True
+
+
+# ---------------------------------------------------------------------------
+# verdict_since 재스탬프 버그 — 지속 기간은 기억하지 않고 재현한다
+# ---------------------------------------------------------------------------
+# goblin 발견: state dict 마이그레이션이 부분적이라(swing_ensemble 만 bare string) 전 레인이
+# 마이그레이션 시각으로 일괄 재스탬프됐다. 그 값은 "판정 시작일"이 아니라 "state 를 옮긴 날"이다.
+# 실측 6레인 전부 과소, kosdaq 은 10 vs 실제 36거래일. 판정기가 이걸 읽으면 경보가 늦게 울고
+# OD-35 의 20거래일 판정도 틀린다.
+
+def test_bare_string_state_entry_does_not_restamp_duration(tmp_path):
+    """구형 bare string 항목이 있으면 _prev 가 since:"" 를 줘서 매번 today 로 재스탬프된다.
+
+    유도값은 state 를 보지 않으므로 그 영향을 받지 않아야 한다.
+    """
+    led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 40,
+                       dates=[f"2026-07-{(i % 28) + 1:02d}" for i in range(40)])
+    cfg = cfg_for(led, market="KR")
+    monkey = {"lane": "DEGRADE"}                       # bare string (구형)
+    r = gate.evaluate("lane", cfg, monkey, TODAY)
+    assert r["verdict_hold_bdays"] == 0, "전제 재현 실패 — 재스탬프가 안 일어났다"
+    assert r["verdict_hold_trading_days"] is not None
+    assert r["verdict_hold_source"].startswith("derived")
+
+
+def test_duration_is_derived_from_the_ledger_not_the_state(tmp_path):
+    """state 가 무엇을 말하든 유도값은 같아야 한다."""
+    led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 30,
+                       dates=[f"2026-07-{(i % 20) + 1:02d}" for i in range(30)])
+    cfg = cfg_for(led, market="KR")
+    a = gate.evaluate("lane", cfg, {}, TODAY)
+    b = gate.evaluate("lane", cfg, state_for("DEGRADE", "2026-08-14"), TODAY)
+    assert a["verdict_hold_trading_days"] == b["verdict_hold_trading_days"]
+
+
+def test_state_derived_duration_is_flagged_unreliable(tmp_path):
+    """state 값을 지우지는 않되 **지속 기간으로 쓰지 말라**고 표시한다."""
+    led = write_ledger(tmp_path / "l.jsonl", [1.0] * 30)
+    r = gate.evaluate("lane", cfg_for(led), {}, TODAY)
+    assert r["verdict_since_reliable"] is False
+
+
+def test_derivation_stops_at_the_family_change(tmp_path):
+    """계열이 바뀐 지점에서 멈춰야 한다 — 그 전까지 세면 지속이 과대해진다."""
+    # 앞 10일은 강한 양수(EXCEED 계열), 뒤 10일은 음수가 섞여 DEGRADE 로 전환
+    dates = [f"2026-07-{d:02d}" for d in range(1, 21)]
+    vals = [9.0] * 10 + [-9.0] * 10
+    led = write_ledger(tmp_path / "l.jsonl", vals, dates=dates)
+    cfg = cfg_for(led, expect_ev=1.0, n_min=5, market="KR")
+    r = gate.evaluate("lane", cfg, {}, TODAY)
+    assert r["verdict"] == "DEGRADE"
+    assert 0 < r["verdict_hold_trading_days"] < 20, r["verdict_hold_trading_days"]
+
+
+def test_lookback_is_capped_and_says_so(tmp_path, monkeypatch):
+    monkeypatch.setattr(gate, "VERDICT_SINCE_MAX_LOOKBACK", 3)
+    led = write_ledger(tmp_path / "l.jsonl", [-5.0] * 30,
+                       dates=[f"2026-07-{(i % 20) + 1:02d}" for i in range(30)])
+    r = gate.evaluate("lane", cfg_for(led, market="KR"), {}, TODAY)
+    assert r["verdict_hold_source"].startswith("derived_capped")
+    assert r["verdict_hold_trading_days"] == 3
+
+
+def test_trading_days_come_from_data_not_weekdays():
+    """달력 정의를 sentinel 과 나눠 갖지 않는다 — 레인 정의가 여기 있으므로 여기서 만든다."""
+    assert hasattr(gate, "trading_days") and hasattr(gate, "lane_firing_days")
+    for lane in ("kospi_intraday_t5", "nasdaq_session_tape"):
+        assert "market" in gate.LANES[lane]
+
+
+def test_gate_calendar_is_data_derived_not_weekdays(tmp_path, monkeypatch):
+    """월~금을 쓰면 휴장일이 거래일로 잡힌다 — sentinel 과 같은 계약이 게이트에도 필요하다.
+
+    달력 구현이 게이트에 있고 sentinel 이 그걸 쓰므로, 여기서 깨지면 판정기도 함께 틀린다.
+    """
+    days = ["2026-08-12", "2026-08-13", "2026-08-14", "2026-08-18"]   # 08-17 휴장
+    led = write_ledger(tmp_path / "cal.jsonl", [1.0] * len(days), dates=days)
+    monkeypatch.setitem(gate.LANES, "kospi_intraday_t5", cfg_for(led, market="KR"))
+    monkeypatch.setattr(gate, "KR_CALENDAR_LANES", ["kospi_intraday_t5"])
+    cal = gate.trading_days("KR", "2026-08-19")
+    assert cal == days
+    assert "2026-08-17" not in cal, "휴장일이 거래일로 잡혔다"
+
+
+def test_gate_calendar_excludes_today(tmp_path, monkeypatch):
+    days = ["2026-08-13", "2026-08-14", "2026-08-17"]
+    led = write_ledger(tmp_path / "cal.jsonl", [1.0] * len(days), dates=days)
+    monkeypatch.setitem(gate.LANES, "kospi_intraday_t5", cfg_for(led, market="KR"))
+    monkeypatch.setattr(gate, "KR_CALENDAR_LANES", ["kospi_intraday_t5"])
+    assert gate.trading_days("KR", "2026-08-17") == ["2026-08-13", "2026-08-14"]

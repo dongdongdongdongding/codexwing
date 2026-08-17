@@ -36,7 +36,7 @@ import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -96,6 +96,7 @@ DEFF_CAP = 5.0               # 폭주 방지
 #   관대했음. B는 시장중립 α(백테스트와 동일 기저)라 cost=0.
 LANES: Dict[str, Dict[str, Any]] = {
     "kospi_intraday_t5": {
+        "market": "KR",
         "ledger": EXP / "kospi_intraday_swing_ledger.jsonl", "field": "exit_t5_h5", "cost": 0.3,
         # 2026-08-16 판정범위 수정(운영자 승인, audit-lane-champions.md): §7-E:178 은 이 레인이
         #   PRIMARY 만 라우팅하고 "CANDIDATE 는 원장 기록만"이라고 명시한다. 그런데 게이트는
@@ -108,6 +109,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         "n_min_adjudicate": 20, "deff_prior": 1.16,   # 13주 상한 88
         "basis": "§28 q0.5 승격 (2026-07-13) — 8 OOS월 rank-1 선별 q0.5 티어+터치익절"},
     "kosdaq_intraday_t10": {
+        "market": "KR",
         "ledger": EXP / "kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl", "field": "exit_t10_h5", "cost": 0.33,
         # 원장 8행 전부 decision=KOSDAQ_INTRADAY_3D_T5_BUY 인 발행분이다(티어 구분 없음).
         "publish_scope": WHOLE_LEDGER,
@@ -126,6 +128,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         "n_min_adjudicate": 20, "deff_prior": 1.16,   # 형제 레인 prior (n=7 로 추정 불가)
         "basis": "EV=§11-A:263 15:00 실파이프라인 재검증(n=66) · 승률=§27:584 티어 승률 맵(n=101, 2026-07-13 정본)"},
     "swing_candidate": {
+        "market": "KR",
         "ledger": EXP / "kr_swing_candidate_ledger.jsonl", "field": "policy_ret", "cost": 0.3,
         # ⚠️ 종전 동작(원장 전체)을 그대로 선언한다 — **바꾸지 않기 위해서가 아니라 확인이
         #   안 돼서다.** tier 스탬프가 213행 중 17행(CANDIDATE)에만 있어 나머지 196행이
@@ -136,6 +139,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         "basis": "§7-A 8년 분기 walk-forward (플라시보 사망)"},
     # swing_ensemble: 2026-07-19 아카이브 — DEGRADE 확정(n=112, EV −0.72)·교체 완료, 일일 실행 중지.
     "b_primary_top3": {
+        "market": "KR",
         "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha", "cost": 0.0,
         "filter": {"status": "settled"}, "date_field": "scan_date",
         # 발행 스트림 = PRIMARY 티어. 종전에는 filter 에 섞여 있었는데, filter(성숙 조건)와
@@ -149,6 +153,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         "n_min_adjudicate": 20, "deff_prior": 1.30,
         "basis": "§11-B:271 24폴드 BASE top3 +2.18 (α/트레이드) · 승률=원장 실측 2026-08-15"},
     "b_all_top10": {
+        "market": "KR",
         # 2026-07-10: 전체 스트림 감시 추가 — PRIMARY 정산 대기 중 top10 전체가 α −5.1로 붕괴한
         # 사각지대 발견(운영자 질의). tier 스탬프 이전 정산분 포함 전체를 게이트가 공식 판정.
         "ledger": PROJECT_ROOT / "b_engine" / "data" / "b_shadow.jsonl", "field": "alpha", "cost": 0.0,
@@ -169,6 +174,7 @@ LANES: Dict[str, Dict[str, Any]] = {
         "n_min_adjudicate": 20, "deff_prior": 2.47,
         "basis": "§11-B:271 24폴드 BASE top10 점추정 +1.63 (α/트레이드) · 승률=원장 실측 2026-08-15"},
     "nasdaq_session_tape": {
+        "market": "US",
         "ledger": USR / "nasdaq_session_tape_ledger.jsonl", "field": "policy_ret", "cost": 0.25,
         # 원장 54행 전부 tier=SHADOW — shadow 레인이라 기록분이 곧 발행(shadow)분이다.
         "publish_scope": WHOLE_LEDGER,
@@ -205,6 +211,79 @@ def _bd_create(title: str, desc: str) -> bool:
         return r.returncode == 0
     except Exception:
         return False
+
+
+KR_CALENDAR_LANES = ["kospi_intraday_t5", "swing_candidate"]
+US_CALENDAR_LANES = ["nasdaq_session_tape"]
+VERDICT_SINCE_MAX_LOOKBACK = 60      # 거래일. 이보다 길면 ">=60" 으로 보고한다
+
+
+def lane_firing_days(cfg: Dict[str, Any]) -> set:
+    """레인이 픽을 낸 날짜 집합(채점 여부 무관)."""
+    dfield = cfg.get("date_field", "date")
+    return {d for d in (_row_date(r, dfield) for r in _rows(cfg["ledger"])) if d}
+
+
+def trading_days(market: str, today: str) -> List[str]:
+    """거래일을 **데이터에서** 유래시킨다. 월~금을 쓰면 휴장일이 결석으로 잡힌다.
+
+    달력 정의를 sentinel 판정기와 나눠 갖지 않는다 — 레인 정의가 여기 있으므로 여기서 만든다.
+    두 벌로 두면 이 리포가 반복해 온 어휘 드리프트가 하나 더 생긴다.
+    """
+    names = KR_CALENDAR_LANES if market == "KR" else US_CALENDAR_LANES
+    union: set = set()
+    for n in names:
+        if n in LANES:
+            union |= lane_firing_days(LANES[n])
+    return sorted(d for d in union if d < today)
+
+
+def derive_verdict_hold(name: str, cfg: Dict[str, Any], family: str, today: str) -> Dict[str, Any]:
+    """현재 판정 계열이 **며칠째 유지되는지를 원장에서 재현**한다.
+
+    2026-08-17 수리: 종전에는 state 의 verdict_since 를 썼는데, dict 마이그레이션이 부분적이라
+    (`swing_ensemble` 만 bare string) 전 레인이 마이그레이션 시각으로 일괄 재스탬프됐다.
+    그 값은 "판정이 시작된 날"이 아니라 "state 를 옮긴 날"이라 지속 기간으로 쓸 수 없다 —
+    실측 6레인 전부 과소였고 kosdaq 은 10 vs 실제 36거래일로 26일 모자랐다.
+    판정기가 이 필드를 읽으면 경보가 그만큼 늦게 울고 OD-35 의 20거래일 판정도 틀린다.
+
+    그래서 기억하지 않고 **매번 다시 계산한다**. 그날까지의 원장만으로 판정을 재현해
+    계열이 바뀐 지점을 찾는다. 마이그레이션 아티팩트에 면역이고 자가교정된다.
+
+    한계(명시): 재현은 **현재 설정**으로 과거를 판정한다. 따라서 "지금 규칙으로 볼 때 이
+    판정이 며칠째 참인가"이지 "게이트가 며칠째 그렇게 보고해 왔는가"가 아니다. OD-35 처럼
+    레인의 상태를 묻는 용도에는 전자가 맞다.
+    """
+    cal = trading_days(cfg.get("market", "KR"), today)
+    own = False
+    if not cal:
+        # 시장 달력을 못 만들면 레인 자기 발화일로 떨어진다. **더 약한 근거다** — 멈춘 레인은
+        # 자기 날짜가 없어 지속을 과소 계산한다. 그래서 출처를 다르게 찍어 구분한다.
+        cal = sorted(d for d in lane_firing_days(cfg) if d < today)
+        own = True
+    if not cal:
+        return {"trading_days": None, "source": "no_calendar", "since": None}
+    rows = _rows(cfg["ledger"])
+    dfield = cfg.get("date_field", "date")
+    dated = [(_row_date(r, dfield), r) for r in rows]
+    window = cal[-VERDICT_SINCE_MAX_LOOKBACK:]
+    held = 0
+    since = None
+    for day in reversed(window):
+        subset = [r for d, r in dated if d and d <= day]
+        try:
+            fam = _family(evaluate(name, cfg, {}, day, rows=subset, _derive=False)["verdict"])
+        except Exception:
+            break
+        if fam != family:
+            break
+        held += 1
+        since = day
+    capped = held >= len(window) and len(cal) > len(window)
+    src = "derived_capped" if capped else "derived"
+    if own:
+        src += "_own_calendar"
+    return {"trading_days": held, "since": since, "source": src}
 
 
 def _today() -> str:
@@ -397,12 +476,13 @@ def _win_verdict(fwd_win_hi: float, expect_win: float) -> str:
 
 
 def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None,
-             today: str | None = None) -> Dict[str, Any]:
+             today: str | None = None, rows: Optional[List[Dict[str, Any]]] = None,
+             _derive: bool = True) -> Dict[str, Any]:
     state = state or {}
     today = today or _today()
     prev = _prev_entry(state, name)
 
-    rows = _rows(cfg["ledger"])
+    rows = _rows(cfg["ledger"]) if rows is None else list(rows)
     flt = cfg.get("filter") or {}
     rows = [r for r in rows if all(r.get(k) == v for k, v in flt.items())]
 
@@ -494,6 +574,14 @@ def evaluate(name: str, cfg: Dict[str, Any], state: Dict[str, Any] | None = None
             held = 0
         res.update(verdict=verdict, note=note + susp_note,
                    verdict_since=since, verdict_hold_bdays=held)
+        # 지속 기간은 state 가 아니라 원장 재현에서 얻는다(마이그레이션 재스탬프 면역).
+        # state 값은 "게이트가 언제부터 그렇게 보고했나"로 남기되 신뢰 불가를 명시한다.
+        res["verdict_since_reliable"] = False
+        if _derive:
+            d = derive_verdict_hold(name, cfg, _family(verdict), today)
+            res["verdict_hold_trading_days"] = d["trading_days"]
+            res["verdict_hold_source"] = d["source"]
+            res["verdict_family_since"] = d["since"]
         return res
 
     if len(vals) < 5:
