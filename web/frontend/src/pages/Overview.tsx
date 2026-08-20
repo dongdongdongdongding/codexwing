@@ -74,11 +74,20 @@ export function Overview() {
 
 function Compass() {
   const [c, setC] = useState<Awaited<ReturnType<typeof api.compass>> | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
-    const load = () => api.compass().then(setC).catch(() => {});
+    // 실패를 삼키면 카드가 통째로 사라진다. 2026-08-20 에 실제로 그랬고, 콜드 스타트
+    // 2초 지연을 "화면이 깨졌다"로 오인했다. 지연/실패를 각각 눈에 보이게 남긴다.
+    const load = () => api.compass().then((d) => { setC(d); setErr(null); })
+                                    .catch((e) => setErr(String(e?.message || e)));
     load(); const t = setInterval(load, 60000); return () => clearInterval(t);
   }, []);
-  if (!c) return null;
+  if (!c) return (
+    <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14,
+                  padding: 14, color: err ? "#ef4444" : C.mut, fontSize: 12 }}>
+      {err ? `국면 나침반 — 불러오지 못했다: ${err}` : "국면 나침반 — 불러오는 중…"}
+    </div>
+  );
   const JC: Record<string, string> = { LONG: "#22c55e", LEAN_LONG: "#eab308", NEUTRAL: "#94a3b8", WAIT: "#ef4444" };
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 14 }}>

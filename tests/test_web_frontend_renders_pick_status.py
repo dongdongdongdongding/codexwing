@@ -86,3 +86,16 @@ def test_kill_and_expiry_are_visible_not_only_in_a_tooltip(picks_src):
     assert '폐기선 EV' in picks_src
     assert '⏱ 만료' in picks_src
     assert '발화부족' in picks_src
+
+
+def test_compass_does_not_vanish_silently_on_failure():
+    """카드가 조용히 사라지면 사용자는 '없는 것'과 '못 불러온 것'을 구분 못 한다.
+
+    2026-08-20 에 실제로 겪었다 — `if (!c) return null` + `.catch(() => {})` 라
+    콜드 스타트 2초 동안 나침반이 통째로 없어졌고, 화면이 깨진 줄 알았다.
+    이 리포에서 가장 비쌌던 실패가 조용한 실패다.
+    """
+    ov = OVERVIEW.read_text(encoding="utf-8")
+    assert "if (!c) return null;" not in ov, "실패/지연을 화면에 남겨야 한다"
+    assert "불러오지 못했다" in ov and "불러오는 중" in ov
+    assert ".catch(() => {})" not in ov.split("function Compass")[1], "에러를 삼키면 안 된다"
