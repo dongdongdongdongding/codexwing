@@ -321,3 +321,13 @@ def test_performance_says_why_nasdaq_is_absent_from_the_alpha_table():
 
     tsx = (Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Performance.tsx").read_text(encoding="utf-8")
     assert "lanes_note" in tsx, "화면이 그 사유를 읽어야 한다"
+
+
+def test_timing_says_which_lanes_it_cannot_price():
+    """나스닥이 이 화면에 없는 것은 구조적 한계다 — ohlc_daily 는 KR 6자리 코드 전용이라
+    US 심볼에 가격을 못 붙인다. 조용히 빼면 "추적하지 않는다"로 읽힌다."""
+    import inspect
+    src = inspect.getsource(S.buy_timing)
+    assert "coverage_note" in src and "구조적 한계" in src
+    ts = (Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Timing.tsx").read_text(encoding="utf-8")
+    assert "coverage_note" in ts and "{cov}" in ts

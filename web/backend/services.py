@@ -1618,7 +1618,17 @@ def buy_timing(days=5):
                                    f"폐기선(EV<=+{OPERATOR_EV_KILL_PCT:.0f}%) 아래다. "
                                    + (worst_note or ""))
             break
-    return {"days": days, "asof": datetime.now().strftime("%Y-%m-%d %H:%M"), "picks": picks}
+    # 나스닥이 이 화면에 없는 것은 누락이 아니라 **구조적 한계**다: 현재가·여력을
+    # ohlc_daily.parquet(KR 6자리 코드 전용)로 계산하므로 US 심볼은 가격을 못 붙인다.
+    # 조용히 빼면 사용자는 "나스닥은 추적하지 않는다"로 읽는다 — 픽·성과 화면에는 있다.
+    covered = sorted({p["lane_label"] for p in picks})
+    missing = [m["label"] for k, m in LANES.items()
+               if m["label"] not in covered and m.get("dir") == "us_research"]
+    note = ("현재가·여력은 KR 가격데이터(ohlc_daily)로 계산한다 — "
+            + ", ".join(missing) + " 은(는) 이 화면에서 가격을 붙일 수 없다. "
+            "픽·성과 화면에서 본다.") if missing else None
+    return {"days": days, "asof": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "picks": picks, "coverage_note": note}
 
 
 # ── 국면 나침반 (2026-07-17, 운영자 요청): 실시간 지수 → 검증된 레짐 지도 투영 ──

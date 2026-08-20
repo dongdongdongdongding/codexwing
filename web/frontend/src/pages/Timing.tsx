@@ -103,6 +103,7 @@ function BubbleMap({ picks, sel, onSel, isMobile }: { picks: TimingPick[]; sel: 
 export function Timing() {
   const isMobile = useIsMobile();
   const [picks, setPicks] = useState<TimingPick[]>([]);
+  const [cov, setCov] = useState<string | null>(null);
   const [asof, setAsof] = useState("");
   const [dateSel, setDateSel] = useState("");
   const [laneSel, setLaneSel] = useState("");
@@ -110,7 +111,7 @@ export function Timing() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = () => api.buyTiming(5).then((d) => { setPicks(d.picks); setAsof(d.asof); setLoading(false); }).catch(() => setLoading(false));
+    const load = () => api.buyTiming(5).then((d) => { setPicks(d.picks); setAsof(d.asof); setCov((d as any).coverage_note ?? null); setLoading(false); }).catch(() => setLoading(false));
     load();
     const t = setInterval(load, 30000);   // 픽 탭과 동일하게 주기 갱신 (시세→신호등/여력/트레일 재계산)
     return () => clearInterval(t);
@@ -154,14 +155,17 @@ export function Timing() {
         // 최선이 없는 날은 **없다고 말한다.** 억지로 하나를 세우면 화면이 매일
         // 매수를 권하는 도구가 된다. 사유를 그대로 보인다.
         const why = (picks.find((p: any) => p.no_best_reason) as any)?.no_best_reason;
-        return why ? (
+        if (why) return (
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f59e0b14", border: "1px solid #f59e0b55", borderRadius: 12, padding: "10px 14px", marginBottom: 10, flexWrap: "wrap" }}>
             <span style={{ fontSize: 16 }}>⏸</span>
             <b>오늘의 최선: 없음</b>
             <span style={{ fontSize: 12, color: C.mut }}>{why}</span>
           </div>
-        ) : null;
+        );
+        return null;
       })()}
+      {/* 어떤 레인이 이 화면에 없는지 말한다 — 조용히 빼면 "추적하지 않는다"로 읽힌다. */}
+      {cov && <div style={{ color: C.mut, fontSize: 11, marginBottom: 8 }}>ⓘ {cov}</div>}
       {/* 사분면 버블 맵 */}
       <BubbleMap picks={shown} sel={sel} onSel={setSel} isMobile={isMobile} />
 
