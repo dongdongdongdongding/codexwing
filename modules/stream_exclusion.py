@@ -58,6 +58,9 @@ GATE_LANE_MAP: Dict[str, str] = {
     # Discord decision_bucket
     "swing_candidate": "swing_candidate",
     "kosdaq_intraday_3d_t5_vwap_guard": "kosdaq_intraday_t10",
+    # 2026-08-20: 나스닥을 화면에 올리며 매핑을 채웠다. 매핑이 없으면 미지 레인으로
+    # 일괄 차단돼(fail-closed) 게이트 판정이 아니라 "모른다"가 사유가 된다.
+    "nasdaq_intraday": "nasdaq_session_tape",
 }
 
 # 발행되지만 게이트가 덮지 않는 레인 — 의도적 미매핑이며, 남의 판정을 물려주지 않는다.

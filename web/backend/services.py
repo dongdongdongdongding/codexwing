@@ -31,13 +31,25 @@ LANES = {
     "kosdaq_swing":  {"ledger": "kr_swing_candidate_ledger.jsonl",             "label": "코스닥 스윙",  "kind": "SWING",    "badge": "🟢"},
     "kospi_intraday":{"ledger": "kospi_intraday_swing_ledger.jsonl",           "label": "코스피 장중",  "kind": "INTRADAY", "badge": "🔵"},
     "kosdaq_intraday":{"ledger":"kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl","label":"코스닥 장중","kind":"INTRADAY","badge":"🔵"},
+    # 2026-08-20 추가 — 운영자 지시로 나스닥을 화면에 올린다. 원장 디렉터리가 KR과 다르다.
+    # 상태는 정직하게: 재귀게이트는 CONFIRM 이지만 **EV +0.34 로 운영자 폐기선(+1%) 아래**다.
+    # 게이트 CONFIRM 은 "백테스트 기대와 맞는가"이지 "거래할 만한가"가 아니다.
+    "nasdaq_intraday":{"ledger":"nasdaq_session_tape_ledger.jsonl", "dir": "us_research",
+                       "label":"나스닥 장중", "kind":"INTRADAY", "badge":"🟠"},
 
 }
+
+# 운영자 수익 기준 (2026-08-20 지시): EV<=+1% 폐기 · EV>=+15%+승률>=75% 즉시적용.
+# 재귀게이트와 **다른 축**이다 — 게이트는 기대 정합을, 이것은 거래 가치를 본다.
+# nasdaq_session_tape 가 그 차이를 드러낸다: 게이트 CONFIRM 인데 fwd_ev +0.09 다.
+OPERATOR_EV_KILL_PCT = 1.0
+OPERATOR_EV_DEPLOY_PCT = 15.0
+OPERATOR_WIN_DEPLOY_PCT = 75.0
 TARGET_PCT = 5.0
 # 승격 계약(§7-E)의 원장 필드 → 웹 노출 (티어/레짐상태/계약)
 _LEDGER_EXTRA_KEYS = ("tier", "tier_threshold", "mkt_state", "mkt_dd20", "hold_days",
                       "target_tp_pct", "ev_pred", "exit_contract", "ret_5d", "ret_5d_d",
-                      "atr_pct", "exit_band", "exit_mix_plan")
+                      "atr_pct", "exit_band", "exit_mix_plan", "rank_in_day", "picks_in_day")
 
 
 @lru_cache(maxsize=1)
@@ -94,8 +106,10 @@ def _market_of(code, fallback=""):
     return fallback
 
 
-def _read_ledger(fn):
-    fp = os.path.join(EXP, fn)
+def _read_ledger(fn, subdir=None):
+    """원장 읽기. subdir 가 있으면 그쪽에서 찾는다(나스닥은 us_research/ 에 있다)."""
+    base = os.path.join(os.path.dirname(EXP.rstrip("/")), subdir) if subdir else EXP
+    fp = os.path.join(base, fn)
     if not os.path.exists(fp):
         return []
     out = []
@@ -170,6 +184,84 @@ def _measured_win():
         out[lane] = fallback.get(lane, (None, ""))
     _MEASURED_WIN_CACHE.update(ts=_t.time(), data=out)
     return out
+
+
+def _pick_is_stale(buy_date, today=None):
+    """매수 대상일이 이미 지났는가.
+
+    **왜 필요한가 (2026-08-20 실측)**: `_a_picks_ledger` 는 레인별 **최신 스캔일**을 쓴다.
+    레인이 며칠간 발화하지 않으면 그 낡은 픽이 그대로 오늘 픽처럼 올라온다.
+    실제로 `kosdaq_intraday` 성호전자가 scan=08-12 / buy=08-13 인데 08-20 화면에
+    **"총자본 2%/픽" 사이징 지시와 함께** 떠 있었다 — 7일 지난 진입가로 사게 된다.
+    게이트 판정이 OBSERVING 이라 스트림 제외도 통과했다.
+
+    신선도는 게이트 판정과 다른 축이다. 판정이 건강해도 픽이 낡으면 실행 불가다.
+    """
+    if not buy_date:
+        return None
+    try:
+        import datetime as _dt
+        bd = _dt.date.fromisoformat(str(buy_date)[:10])
+        td = _dt.date.fromisoformat(str(today)[:10]) if today else _dt.date.today()
+    except (ValueError, TypeError):
+        return None
+    return (td - bd).days if bd < td else 0
+
+
+@lru_cache(maxsize=1)
+def _lane_forward_ev():
+    """게이트 산출에서 레인별 forward EV/승률/n. 운영자 기준 대조용.
+
+    게이트 verdict 와 **다른 축**이다. `nasdaq_session_tape` 는 verdict=CONFIRM 인데
+    fwd_ev 가 +0.09 다 — 백테스트 기대(낮은 기대)와 맞았다는 뜻이지 거래할 만하다는
+    뜻이 아니다. 화면에 CONFIRM 만 보이면 사용자가 좋은 레인으로 읽는다.
+    """
+    fp = os.path.join(REPO, "runtime_state/reports/validation/research_recursion_gate_latest.json")
+    out = {}
+    try:
+        with open(fp) as fh:
+            for r in (json.load(fh).get("results") or []):
+                out[str(r.get("lane"))] = (r.get("fwd_ev"), r.get("fwd_win"), r.get("n"))
+    except Exception:
+        return {}
+    return out
+
+
+def _apply_operator_ev_floor(row, lane_key):
+    """운영자 수익 기준(2026-08-20)을 발행 경로에 집행한다.
+
+    EV<=+1% 폐기 · EV>=+15% & 승률>=75% 즉시적용 · 그 사이는 관측.
+    **판정 근거가 없으면 사이징을 뗀다(fail-closed)** — 모르는 것을 통과시키면
+    이 리포가 반복해 온 fail-open 이다.
+    """
+    try:
+        from modules.stream_exclusion import GATE_LANE_MAP
+        gate_lane = GATE_LANE_MAP.get(lane_key)
+    except Exception:
+        gate_lane = None
+    ev, win, n = (_lane_forward_ev().get(gate_lane) or (None, None, None))
+    if not isinstance(ev, (int, float)):
+        if row.get("size_pct_total") is not None:
+            row.pop("size_pct_total", None)
+            row["size_note"] = "⛔ 사이징 보류 — 이 레인의 forward EV 를 게이트 산출에서 찾지 못했다"
+        row["operator_verdict"] = "UNKNOWN"
+        return row
+    row["forward_ev"] = round(float(ev), 2)
+    if isinstance(win, (int, float)):
+        row["forward_win"] = round(float(win), 1)
+    row["forward_n"] = n
+    if ev <= OPERATOR_EV_KILL_PCT:
+        row["operator_verdict"] = "KILL"
+        row.pop("size_pct_total", None)
+        row["size_note"] = (f"⛔ 폐기선 — forward EV {ev:+.2f}% 가 운영자 기준 "
+                            f"+{OPERATOR_EV_KILL_PCT:.0f}% 이하다 (n={n}). 관측만 한다.")
+    elif ev >= OPERATOR_EV_DEPLOY_PCT and isinstance(win, (int, float)) and win >= OPERATOR_WIN_DEPLOY_PCT:
+        row["operator_verdict"] = "DEPLOY"
+        row["size_note"] = (f"✅ 즉시적용 기준 충족 — EV {ev:+.2f}% · 승률 {win:.1f}% (n={n}). "
+                            + (row.get("size_note") or ""))
+    else:
+        row["operator_verdict"] = "OBSERVE"
+    return row
 
 
 def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name=None, scan_date=None, source="A", extra=None):
@@ -277,6 +369,28 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     # 리더가 fail-open이라 게이트가 깨지면 제외가 조용히 풀렸다(F2). 이제 fail-closed다.
     from modules.stream_exclusion import apply_stream_exclusion
     apply_stream_exclusion(row, lane_key, strict=True)
+    # 신선도 — 매수 대상일이 지난 픽에서 사이징 지시를 걷어낸다.
+    # 낡은 픽에 "2%/픽" 이 붙어 나가면 사용자가 지난 진입가로 매매한다. 게이트 판정과
+    # 무관한 축이라 스트림 제외가 통과해도 여기서 막아야 한다.
+    _apply_operator_ev_floor(row, lane_key)
+    # top-1 표기 — 측정된 엣지가 있는 자리를 화면에서 구분한다.
+    _rk = row.get("rank_in_day")
+    if isinstance(_rk, int):
+        row["is_top1"] = (_rk == 1)
+        if _rk == 1:
+            row["rank_note"] = f"⭐ 당일 1순위 (총 {row.get('picks_in_day', '?')}건 중)"
+        else:
+            row["rank_note"] = (f"{_rk}순위 — 실측 엣지는 1순위에만 확인됐다 "
+                                f"(전체 평균은 EV≈0)")
+    _stale = _pick_is_stale(row.get("buy_date"))
+    if _stale:
+        row["stale_days"] = _stale
+        row["expired"] = True
+        row.pop("size_pct_total", None)
+        row["size_note"] = (f"⏱ 만료 — 매수일 {row.get('buy_date')} 이 {_stale}일 지났다. "
+                            f"이 레인의 마지막 발화가 {row.get('scan_date')} 이다(신규 픽 없음).")
+        row["rationale"] = (row.get("rationale") or "") + f" · ⏱만료({_stale}일 경과)"
+
     # §16 tail 사전탐지(swing-main-clbb): tail_p 관측 필드 — 발행/사이징/베토/랭킹 불변.
     # 강제 베토는 §16에서 REJECT(최악픽 -71.6 미탐·동결기준 미충족) → 승인 방향은 관측 노출
     # + 경고 배지 + forward 상관 추적뿐. 경고 경계는 학습 시 기록된 OOS 상위 20%(top-quintile).
@@ -303,7 +417,7 @@ def _a_picks_ledger(lane=None):
     cache = {}
     for key in keys:
         meta = LANES[key]
-        led = cache.setdefault(meta["ledger"], _read_ledger(meta["ledger"]))
+        led = cache.setdefault(meta["ledger"], _read_ledger(meta["ledger"], meta.get("dir")))
         if not led:
             continue
         want_market = "KOSPI" if "kospi" in key else ("KOSDAQ" if "kosdaq" in key else "")
@@ -312,6 +426,20 @@ def _a_picks_ledger(lane=None):
             continue
         last = max(str(r.get("date", "")) for r in recs)
         seen = set()
+        # 같은날 p 랭킹 — **측정된 엣지는 top-1 에만 있다.**
+        # 2026-08-20 실측(같은날 대조·유동성매칭 유니버스 대조):
+        #   swing KOSDAQ    전체 -0.08  ->  top-1 +2.39 (승률 84.6%)
+        #   kospi_intraday  전체 +0.11  ->  top-1 +2.11 (승률 75.8%, 시장중립 초과 +1.61)
+        # 순위 없이 3건을 나란히 보여주면 사용자가 엣지 없는 2건을 고를 수 있다.
+        # 화면이 "무엇을 살까"에 답하려면 어느 것이 그 1건인지 말해야 한다.
+        _today_recs = [r for r in recs if str(r.get("date", "")) == last]
+        _ranked = sorted(_today_recs,
+                         key=lambda r: (r.get("p") if isinstance(r.get("p"), (int, float)) else -1),
+                         reverse=True)
+        _rank_of = {}
+        for _i, _r in enumerate(_ranked):
+            _c = str(_r.get("ticker", "")).split(".")[0].zfill(6)
+            _rank_of.setdefault(_c, _i + 1)
         for r in recs:
             if str(r.get("date", "")) != last:
                 continue
@@ -323,10 +451,13 @@ def _a_picks_ledger(lane=None):
             if code6 in seen:
                 continue
             seen.add(code6)
+            _extra = {k: r.get(k) for k in _LEDGER_EXTRA_KEYS}
+            _extra["rank_in_day"] = _rank_of.get(code6)
+            _extra["picks_in_day"] = len(_ranked)
             rows.append(_pick_row(code, want_market or mk, key,
                                   entry=r.get("entry_reference_price") or r.get("close"),
                                   prob=r.get("p"), scan_date=last, source="A",
-                                  extra={k: r.get(k) for k in _LEDGER_EXTRA_KEYS}))
+                                  extra=_extra))
     return rows
 
 
