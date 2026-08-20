@@ -65,3 +65,27 @@ export function Card({ children, style }: { children: React.ReactNode; style?: R
     </div>
   );
 }
+
+/** 픽 상태 칩 — **픽 페이지와 개요가 같은 것을 쓴다.**
+ *  페이지마다 사본을 두면 한쪽만 고쳐진다. 실제로 그랬다: 픽 페이지엔 판정을 그렸는데
+ *  개요(첫 화면)엔 아무것도 없어서, 사용자가 "적중확률 84.4%"만 보고 있었다 —
+ *  그 레인은 forward EV +0.09% 로 폐기선 아래다. */
+export function StatusChips({ p }: { p: any }) {
+  const f = p.lane_frequency;
+  const chip = (c: string, t: any) => (
+    <span style={{ fontSize: 11, padding: "2px 7px", borderRadius: 999,
+                   border: `1px solid ${c}55`, color: c, background: `${c}12`, whiteSpace: "nowrap" }}>{t}</span>
+  );
+  return (
+    <>
+      {p.is_top1 && chip("#facc15", "⭐ 1순위")}
+      {p.rank_in_day != null && !p.is_top1 && chip("#64748b", `${p.rank_in_day}순위`)}
+      {p.expired && chip("#ef4444", `⏱ 만료 ${p.stale_days}일`)}
+      {p.operator_verdict === "KILL" && chip("#ef4444", `폐기선 EV ${p.forward_ev}%`)}
+      {p.operator_verdict === "DEPLOY" && chip("#22c55e", "✅ 즉시적용")}
+      {p.operator_verdict === "UNKNOWN" && chip("#f59e0b", "⚠ 근거없음")}
+      {f && f.frequency_ok === false && chip("#f59e0b", `발화부족 ${f.median_gap}일간격`)}
+      {p.stream_excluded && chip("#ef4444", "⛔ 관측전용")}
+    </>
+  );
+}

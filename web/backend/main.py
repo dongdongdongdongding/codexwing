@@ -191,7 +191,8 @@ def archive(date_from: str = "", date_to: str = "", market: str = "", ticker: st
 def lanes():
     """레인 메타(프론트 필터용)."""
     out = [{"key": k, **{kk: v[kk] for kk in ("label", "kind", "badge")}} for k, v in S.LANES.items()]
-    out.append({"key": "nasdaq_swing", "label": "나스닥 스윙", "kind": "SWING", "badge": "🟢"})
+    # nasdaq_swing 하드코딩 제거(2026-08-20): LANES 에 정식 등록돼 위에서 이미 나온다.
+    # 남겨 두면 탭이 "나스닥 장중"과 "나스닥 스윙" 둘로 보인다 — 레인은 하나다.
     out.append({"key": "b_market_neutral", "label": "B 시장중립", "kind": "B", "badge": "🟣"})
     return {"lanes": out}
 

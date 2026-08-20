@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, Overview as OV } from "../api";
 import { C, fmt } from "../theme";
-import { Card, MarketBadge, LaneBadge, Term } from "../components/ui";
+import { Card, MarketBadge, LaneBadge, Term, StatusChips } from "../components/ui";
 
 export function Overview() {
   const [ov, setOv] = useState<OV | null>(null);
@@ -18,17 +18,32 @@ export function Overview() {
           {ov.top_picks.map((p, i) => (
             <div key={p.code + p.lane} style={{ background: C.surface2, border: `1px solid ${C.line}`, borderRadius: 10, padding: 14 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-                <span style={{ color: C.mut, fontSize: 12 }}>#{i + 1}</span>
+                {/* 배열 인덱스를 순위처럼 보이면 안 된다 — 정렬 근거가 없는 숫자를
+                    사용자가 1순위로 읽는다. 실제 당일 순위(레인 내 p 랭킹)를 쓴다. */}
+                <span style={{ color: (p as any).is_top1 ? "#facc15" : C.mut, fontSize: 12,
+                               fontWeight: (p as any).is_top1 ? 700 : 400 }}>
+                  {(p as any).rank_in_day != null ? ((p as any).is_top1 ? "⭐1" : `${(p as any).rank_in_day}`) : "·"}
+                </span>
                 <b style={{ fontSize: 16 }}>{p.name}</b>
                 <span style={{ color: C.mut, fontSize: 12 }}>{p.code}</span>
               </div>
               <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
                 <MarketBadge market={p.market} />
                 <LaneBadge kind={p.kind} badge={p.badge} label={p.lane_label} />
+                <StatusChips p={p} />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontVariantNumeric: "tabular-nums" }}>
                 <span style={{ color: C.mut }}>진입 {fmt(p.entry)}</span>
-                <span>{p.prob != null ? `적중확률 ${p.prob}%` : "시장중립"}</span>
+                {/* 확률만 크게 보이면 폐기선 아래 레인도 좋아 보인다.
+                    실측 forward EV 를 나란히 둔다 — 모델 점수와 실현 성적은 다른 것이다. */}
+                <span>
+                  {p.prob != null ? `적중확률 ${p.prob}%` : "시장중립"}
+                  {(p as any).forward_ev != null && (
+                    <span style={{ color: (p as any).forward_ev > 1 ? C.up : C.down, marginLeft: 6 }}>
+                      · 실측 EV {(p as any).forward_ev}%
+                    </span>
+                  )}
+                </span>
               </div>
             </div>
           ))}

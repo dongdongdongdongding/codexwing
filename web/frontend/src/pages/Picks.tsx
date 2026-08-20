@@ -2,25 +2,8 @@ import { useEffect, useState } from "react";
 import { useIsMobile } from "../useIsMobile";
 import { api, Pick, Lane, Price } from "../api";
 import { C, fmt, pct, signColor } from "../theme";
-import { MarketBadge, LaneBadge, Term, WarnBadge } from "../components/ui";
+import { MarketBadge, LaneBadge, Term, WarnBadge, StatusChips } from "../components/ui";
 import { Chart } from "../components/Chart";
-
-/** 픽 상태 칩 — 카드 뷰와 테이블 뷰가 **같은 함수**를 쓴다.
- *  두 벌로 두면 한쪽만 고쳐지고 화면이 뷰에 따라 달라진다(백엔드 랭킹에서 실제로 그랬다). */
-function StatusChips({ p }: { p: Pick }) {
-  const f = p.lane_frequency;
-  return (
-    <>
-      {p.is_top1 && <Chip color="#facc15">⭐ 1순위</Chip>}
-      {p.rank_in_day != null && !p.is_top1 && <Chip color="#64748b">{p.rank_in_day}순위</Chip>}
-      {p.expired && <Chip color="#ef4444">⏱ 만료 {p.stale_days}일</Chip>}
-      {p.operator_verdict === "KILL" && <Chip color="#ef4444">⛔ 폐기선 EV {p.forward_ev}%</Chip>}
-      {p.operator_verdict === "DEPLOY" && <Chip color="#22c55e">✅ 즉시적용</Chip>}
-      {p.operator_verdict === "UNKNOWN" && <Chip color="#f59e0b">⚠ 근거없음</Chip>}
-      {f && f.frequency_ok === false && <Chip color="#f59e0b">⛔ 발화부족 {f.median_gap}일간격</Chip>}
-    </>
-  );
-}
 
 export function Picks() {
   const isMobile = useIsMobile();
@@ -78,8 +61,7 @@ export function Picks() {
                   {p.tier === "PRIMARY" && <Chip color="#22c55e">주력</Chip>}
                   {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
                   {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
-                  {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
-                  <StatusChips p={p} />
+                                    <StatusChips p={p} />
                   {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
                   {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
                   {p.tail_warn && <Chip color="#f59e0b">⚠tail</Chip>}
@@ -140,8 +122,7 @@ export function Picks() {
                       {p.tier === "CANDIDATE" && <Chip color="#94a3b8">후보</Chip>}
                       {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
                       {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
-                  {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
-                  <StatusChips p={p} />
+                                    <StatusChips p={p} />
                   {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
                   {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
                   {p.tail_warn && <Chip color="#f59e0b">⚠tail</Chip>}
