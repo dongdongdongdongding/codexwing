@@ -58,20 +58,52 @@ def test_fresh_pick_keeps_its_sizing():
 # ── 2. 순위 ──────────────────────────────────────────────────────────────────
 
 def test_top1_is_marked_and_others_are_told_they_are_not():
-    r1 = S._pick_row("000001", "KOSDAQ", "kosdaq_swing", entry=1000.0, prob=0.9,
-                     scan_date="2026-08-20", extra={"rank_in_day": 1, "picks_in_day": 3})
-    r2 = S._pick_row("000002", "KOSDAQ", "kosdaq_swing", entry=1000.0, prob=0.8,
-                     scan_date="2026-08-20", extra={"rank_in_day": 2, "picks_in_day": 3})
-    assert r1["is_top1"] is True and "1순위" in r1["rank_note"]
-    assert r2["is_top1"] is False
-    assert "1순위에만" in r2["rank_note"], "엣지가 어디 있는지 말해줘야 한다"
+    rows = [
+        {"lane": "kosdaq_swing", "scan_date": "2026-08-20", "prob": 80.0},
+        {"lane": "kosdaq_swing", "scan_date": "2026-08-20", "prob": 91.0},
+        {"lane": "kosdaq_swing", "scan_date": "2026-08-20", "prob": 70.0},
+    ]
+    S._attach_day_rank(rows)
+    top = [r for r in rows if r.get("is_top1")]
+    assert len(top) == 1 and top[0]["prob"] == 91.0, "확률 최댓값이 1순위여야 한다"
+    assert "1순위" in top[0]["rank_note"]
+    others = [r for r in rows if not r.get("is_top1")]
+    assert all("1순위에만" in r["rank_note"] for r in others), "엣지가 어디 있는지 말해줘야 한다"
+    assert {r["rank_in_day"] for r in rows} == {1, 2, 3}
+    assert all(r["picks_in_day"] == 3 for r in rows)
+
+
+def test_rank_is_scoped_to_lane_and_day():
+    """레인이나 날짜가 다르면 각자 1순위가 있어야 한다 — 섞으면 순위가 거짓이 된다."""
+    rows = [
+        {"lane": "kospi_swing", "scan_date": "2026-08-20", "prob": 60.0},
+        {"lane": "kosdaq_swing", "scan_date": "2026-08-20", "prob": 50.0},
+        {"lane": "kospi_swing", "scan_date": "2026-08-19", "prob": 40.0},
+    ]
+    S._attach_day_rank(rows)
+    assert all(r["is_top1"] for r in rows), "각 (레인,날짜) 그룹마다 1순위가 하나씩"
+    assert all(r["picks_in_day"] == 1 for r in rows)
+
+
+def test_rank_is_attached_on_the_merged_list_not_per_path():
+    """DB 경로와 원장 경로 양쪽을 지난 뒤에 붙어야 한다.
+
+    한쪽 경로에만 두면 화면이 데이터 출처에 따라 달라진다 — 실제로 그랬다:
+    KR 레인은 DB 경로라 순위가 없고 나스닥만 원장 경로라 순위가 붙었다.
+    """
+    import inspect
+    src = inspect.getsource(S.a_picks)
+    assert "_attach_day_rank(rows)" in src, "최종 목록에 붙여야 한다"
+    assert "_attach_day_rank" not in inspect.getsource(S._a_picks_ledger), "경로별 사본 금지"
+    assert "_attach_day_rank" not in inspect.getsource(S._pick_row), "경로별 사본 금지"
 
 
 def test_rank_absent_does_not_invent_a_label():
-    """순위를 모르면 조용히 1순위라고 하지 않는다 — 없는 근거를 만들면 안 된다."""
-    row = S._pick_row("000003", "KOSPI", "kospi_swing", entry=1000.0, prob=0.7,
-                      scan_date="2026-08-20")
-    assert "is_top1" not in row and "rank_note" not in row
+    """확률이 없으면 조용히 1순위라고 하지 않는다 — 없는 근거를 만들면 안 된다."""
+    rows = [{"lane": "kospi_swing", "scan_date": "2026-08-20", "prob": None},
+            {"lane": "kospi_swing", "scan_date": "2026-08-20", "prob": None}]
+    S._attach_day_rank(rows)
+    assert all("is_top1" not in r and "rank_note" not in r for r in rows)
 
 
 # ── 3. 운영자 EV 기준 (2026-08-20 지시) ──────────────────────────────────────
@@ -137,3 +169,15 @@ def test_nasdaq_lane_is_registered_and_mapped_to_the_gate():
     assert "nasdaq_intraday" in S.LANES
     assert S.LANES["nasdaq_intraday"]["dir"] == "us_research"
     assert GATE_LANE_MAP.get("nasdaq_intraday") == "nasdaq_session_tape"
+
+
+def test_ledger_reader_accepts_the_symbol_key():
+    """원장마다 종목 키가 다르다 — 나스닥은 `symbol` 이다.
+
+    ticker 만 물으면 code 가 빈 문자열이 되어 이름도 차트도 안 붙는다.
+    라이브에서 실제로 나스닥 픽의 종목명이 비어 있었다.
+    """
+    import inspect
+    src = inspect.getsource(S._a_picks_ledger)
+    assert 'r.get("ticker") or r.get("symbol")' in src
+    assert "if not code:" in src, "코드가 없으면 픽을 만들지 않아야 한다"

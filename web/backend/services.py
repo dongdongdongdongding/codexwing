@@ -373,15 +373,6 @@ def _pick_row(code, market, lane_key, *, entry=None, prob=None, alpha=None, name
     # 낡은 픽에 "2%/픽" 이 붙어 나가면 사용자가 지난 진입가로 매매한다. 게이트 판정과
     # 무관한 축이라 스트림 제외가 통과해도 여기서 막아야 한다.
     _apply_operator_ev_floor(row, lane_key)
-    # top-1 표기 — 측정된 엣지가 있는 자리를 화면에서 구분한다.
-    _rk = row.get("rank_in_day")
-    if isinstance(_rk, int):
-        row["is_top1"] = (_rk == 1)
-        if _rk == 1:
-            row["rank_note"] = f"⭐ 당일 1순위 (총 {row.get('picks_in_day', '?')}건 중)"
-        else:
-            row["rank_note"] = (f"{_rk}순위 — 실측 엣지는 1순위에만 확인됐다 "
-                                f"(전체 평균은 EV≈0)")
     _stale = _pick_is_stale(row.get("buy_date"))
     if _stale:
         row["stale_days"] = _stale
@@ -426,24 +417,14 @@ def _a_picks_ledger(lane=None):
             continue
         last = max(str(r.get("date", "")) for r in recs)
         seen = set()
-        # 같은날 p 랭킹 — **측정된 엣지는 top-1 에만 있다.**
-        # 2026-08-20 실측(같은날 대조·유동성매칭 유니버스 대조):
-        #   swing KOSDAQ    전체 -0.08  ->  top-1 +2.39 (승률 84.6%)
-        #   kospi_intraday  전체 +0.11  ->  top-1 +2.11 (승률 75.8%, 시장중립 초과 +1.61)
-        # 순위 없이 3건을 나란히 보여주면 사용자가 엣지 없는 2건을 고를 수 있다.
-        # 화면이 "무엇을 살까"에 답하려면 어느 것이 그 1건인지 말해야 한다.
-        _today_recs = [r for r in recs if str(r.get("date", "")) == last]
-        _ranked = sorted(_today_recs,
-                         key=lambda r: (r.get("p") if isinstance(r.get("p"), (int, float)) else -1),
-                         reverse=True)
-        _rank_of = {}
-        for _i, _r in enumerate(_ranked):
-            _c = str(_r.get("ticker", "")).split(".")[0].zfill(6)
-            _rank_of.setdefault(_c, _i + 1)
         for r in recs:
             if str(r.get("date", "")) != last:
                 continue
-            code = str(r.get("ticker", ""))
+            # 원장마다 종목 키가 다르다 — 나스닥은 `symbol` 이다.
+            # ticker 만 물으면 code 가 빈 문자열이 되어 이름도 차트도 붙지 않는다.
+            code = str(r.get("ticker") or r.get("symbol") or "")
+            if not code:
+                continue
             mk = (r.get("market") or _market_of(code)).upper()
             if want_market and mk != want_market:
                 continue
@@ -452,8 +433,6 @@ def _a_picks_ledger(lane=None):
                 continue
             seen.add(code6)
             _extra = {k: r.get(k) for k in _LEDGER_EXTRA_KEYS}
-            _extra["rank_in_day"] = _rank_of.get(code6)
-            _extra["picks_in_day"] = len(_ranked)
             rows.append(_pick_row(code, want_market or mk, key,
                                   entry=r.get("entry_reference_price") or r.get("close"),
                                   prob=r.get("p"), scan_date=last, source="A",
@@ -526,6 +505,35 @@ def _kr_scan_picks():
     return out["rows"]
 
 
+def _attach_day_rank(rows):
+    """같은 레인·같은 스캔일 안에서 확률 순위를 매긴다.
+
+    **측정된 엣지는 top-1 에만 있다** (2026-08-20 실측, 같은날 대조):
+      swing KOSDAQ    전체 -0.08  ->  top-1 +2.39 (승률 84.6%)
+      kospi_intraday  전체 +0.11  ->  top-1 +2.11 (시장중립 초과 +1.61)
+    순위 없이 여러 건을 나란히 놓으면 사용자가 엣지 없는 픽을 고를 수 있다.
+
+    **DB 경로와 원장 경로 양쪽을 지나는 최종 목록에 한 번만 붙인다.** 두 경로에 따로
+    두면 한쪽만 고쳐지고 화면이 경로에 따라 달라진다 — 이 리포가 반복해 온 '판정 사본이 둘'이다.
+    """
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for r in rows:
+        groups[(r.get("lane"), r.get("scan_date"))].append(r)
+    for _key, grp in groups.items():
+        ranked = sorted(grp, key=lambda r: (r.get("prob") if isinstance(r.get("prob"), (int, float)) else -1),
+                        reverse=True)
+        for i, r in enumerate(ranked):
+            if not isinstance(r.get("prob"), (int, float)):
+                continue                      # 확률이 없으면 순위를 지어내지 않는다
+            r["rank_in_day"] = i + 1
+            r["picks_in_day"] = len(ranked)
+            r["is_top1"] = (i == 0)
+            r["rank_note"] = (f"⭐ 당일 1순위 (총 {len(ranked)}건 중)" if i == 0
+                              else f"{i + 1}순위 — 실측 엣지는 1순위에만 확인됐다 (전체 평균은 EV≈0)")
+    return rows
+
+
 def a_picks(lane=None):
     """A 레인 픽 — 레인별 최신: scan_deep_reports(웹·일일·디스코드 스캔) 우선, 없는 레인은 ledger 폴백.
     → 스캔하면 픽·개요에 즉시 반영(스캔 완료시 jobs가 캐시 무효화)."""
@@ -537,6 +545,7 @@ def a_picks(lane=None):
         scan.setdefault(r["lane"], []).append(r)
     by_lane.update(scan)  # 스캔이 있는 레인은 최신 스캔으로 교체
     rows = [r for rs in by_lane.values() for r in rs]
+    _attach_day_rank(rows)
     if lane:
         rows = [r for r in rows if r.get("lane") == lane]
     return rows
