@@ -1195,6 +1195,9 @@ def performance():
         v = ((pv.loc[cur_date] / pv.loc[d] - 1) * 100).mean()
         return float(v) if math.isfinite(v) else None
 
+    # 나스닥이 이 표에 없는 것은 누락이 아니라 **구조적 한계**다: 알파는 px_long(KR
+    # 유니버스) 대비 초과수익이라 US 종목은 벤치마크가 없다. 조용히 빼면 사용자는
+    # "나스닥은 성과가 없다"로 읽는다 — 아래 계약 실현 성과 표에는 들어 있다.
     LED = {"코스피 스윙": ("kr_swing_candidate_ledger.jsonl", "KOSPI"),
            "코스닥 스윙": ("kr_swing_candidate_ledger.jsonl", "KOSDAQ"),
            "코스피 장중": ("kospi_intraday_swing_ledger.jsonl", "KOSPI"),
@@ -1275,6 +1278,8 @@ def performance():
             b["alpha_win"] = round(float(np.mean([r.get("win", 0) for r in sett])) * 100)
     out = {"as_of": str(cur_date.date()), "overall": overall, "lanes": lanes_out,
             "b_shadow": b, "rows": sorted(rows, key=lambda x: (x["alpha"] is None, -(x["alpha"] or -999)))}
+    out["lanes_note"] = ("레인별 알파는 KR 유니버스(px_long) 대비라 나스닥은 계산 대상이 아니다 — "
+                         "나스닥 성과는 아래 계약 실현 성과 표에서 본다.")
     _PERF_CACHE.update(ts=time.time(), data=out)
     return out
 

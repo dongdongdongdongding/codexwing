@@ -306,3 +306,18 @@ def test_timing_recommends_nothing_when_everything_is_below_the_kill_floor():
     ts = (ROOT_TS := Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Timing.tsx").read_text(encoding="utf-8")
     assert "no_best_reason" in ts, "화면이 그 사유를 읽어야 한다"
     assert "오늘의 최선: 없음" in ts
+
+
+def test_performance_says_why_nasdaq_is_absent_from_the_alpha_table():
+    """조용히 빼면 "나스닥은 성과가 없다"로 읽힌다.
+
+    레인별 알파는 px_long(KR 유니버스) 대비라 US 종목은 벤치마크가 없다 —
+    누락이 아니라 구조적 한계다. 화면이 그 사실을 말해야 한다.
+    """
+    import inspect
+    src = inspect.getsource(S.performance)
+    assert "lanes_note" in src, "사유를 산출에 실어야 한다"
+    assert "구조적 한계" in src
+
+    tsx = (Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Performance.tsx").read_text(encoding="utf-8")
+    assert "lanes_note" in tsx, "화면이 그 사유를 읽어야 한다"

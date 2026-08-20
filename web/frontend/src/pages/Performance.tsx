@@ -65,7 +65,7 @@ function Summary() {
             ))}
           </tbody>
         </table>
-        <div style={{ color: C.mut, fontSize: 11, marginTop: 6 }}>대기 = 스캔 직후 아직 '다음 거래일 종가'가 없어 평가 보류 중인 픽 (다음 거래일 도래 시 자동 편입).</div>
+        <div style={{ color: C.mut, fontSize: 11, marginTop: 6 }}>대기 = 스캔 직후 아직 '다음 거래일 종가'가 없어 평가 보류 중인 픽 (다음 거래일 도래 시 자동 편입).{(pf as any)?.lanes_note ? ` · ${(pf as any).lanes_note}` : ""}</div>
       </Card>
 
       {cp && (
