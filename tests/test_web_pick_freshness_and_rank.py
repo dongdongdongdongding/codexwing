@@ -268,3 +268,41 @@ def test_pick_row_survives_a_lane_outside_the_registry():
     assert "lane_frequency" not in row, "근거가 없으면 빈도를 지어내지 않는다"
     assert row.get("operator_verdict") == "UNKNOWN"
     assert "size_pct_total" not in row, "근거 없는 레인에 사이징을 주면 안 된다"
+
+
+# ── 6. 매수 타이밍 (2026-08-20 브라우저 확인) ────────────────────────────────
+
+def test_timing_reads_the_nasdaq_ledger_directory():
+    """디렉터리 인자를 빠뜨리면 이 화면에서만 나스닥이 통째로 사라진다(탭도 안 생긴다)."""
+    import inspect
+    src = inspect.getsource(S.buy_timing)
+    assert '_read_ledger(meta["ledger"], meta.get("dir"))' in src
+
+
+def test_timing_win_rate_comes_from_the_gate_not_a_constant():
+    """화면이 "실측"이라 말하면 실측이어야 한다.
+
+    종전에는 하드코딩 상수(kospi_intraday PRIMARY=86)를 "실측 승률"로 표시했다.
+    게이트 실측은 그와 다르고(fwd_win 70.8) 상수는 갱신되지 않는다.
+    """
+    import inspect
+    src = inspect.getsource(S.buy_timing)
+    assert "_lane_forward_ev()" in src, "게이트 실측을 읽어야 한다"
+    assert "게이트 실측" in src and "참고치" in src, "실측/참고치를 구분해 표시해야 한다"
+    assert 'f"레인 교차 최선 — {best[\'lane_label\']} 실측 승률 ~{_w(best)}%"' not in src
+
+
+def test_timing_recommends_nothing_when_everything_is_below_the_kill_floor():
+    """최선이 없는 날은 없다고 말해야 한다.
+
+    억지로 하나를 세우면 화면이 매일 매수를 권하는 도구가 된다.
+    실제로 만료된 픽(삼성공조, 매수일 08-19)이 08-20 화면에서 "오늘의 최선"이었다.
+    """
+    import inspect
+    src = inspect.getsource(S.buy_timing)
+    assert "tradable" in src and "OPERATOR_EV_KILL_PCT" in src
+    assert "no_best_reason" in src, "고르지 않은 사유를 남겨야 한다"
+
+    ts = (ROOT_TS := Path(__file__).resolve().parents[1] / "web/frontend/src/pages/Timing.tsx").read_text(encoding="utf-8")
+    assert "no_best_reason" in ts, "화면이 그 사유를 읽어야 한다"
+    assert "오늘의 최선: 없음" in ts

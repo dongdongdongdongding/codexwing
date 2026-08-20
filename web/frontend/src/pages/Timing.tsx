@@ -142,13 +142,26 @@ export function Timing() {
       </div>
 
       {/* 오늘의 최선 (레인 교차) */}
-      {(() => { const b = picks.find((p) => p.today_best); return b ? (
-        <div onClick={() => setSel(b)} style={{ display: "flex", alignItems: "center", gap: 8, background: "#22c55e14", border: "1px solid #22c55e55", borderRadius: 12, padding: "10px 14px", marginBottom: 10, cursor: "pointer", flexWrap: "wrap" }}>
-          <span style={{ fontSize: 16 }}>⭐</span>
-          <b>오늘의 최선: {b.name}</b>
-          <span style={{ fontSize: 12, color: C.mut }}>{b.today_best_note} · 여력 {b.headroom != null && b.headroom >= 0 ? "+" : ""}{b.headroom}% · 잔여 {b.sessions_left}세션</span>
-        </div>
-      ) : null; })()}
+      {(() => {
+        const b = picks.find((p) => p.today_best);
+        if (b) return (
+          <div onClick={() => setSel(b)} style={{ display: "flex", alignItems: "center", gap: 8, background: "#22c55e14", border: "1px solid #22c55e55", borderRadius: 12, padding: "10px 14px", marginBottom: 10, cursor: "pointer", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 16 }}>⭐</span>
+            <b>오늘의 최선: {b.name}</b>
+            <span style={{ fontSize: 12, color: C.mut }}>{b.today_best_note} · 여력 {b.headroom != null && b.headroom >= 0 ? "+" : ""}{b.headroom}% · 잔여 {b.sessions_left}세션</span>
+          </div>
+        );
+        // 최선이 없는 날은 **없다고 말한다.** 억지로 하나를 세우면 화면이 매일
+        // 매수를 권하는 도구가 된다. 사유를 그대로 보인다.
+        const why = (picks.find((p: any) => p.no_best_reason) as any)?.no_best_reason;
+        return why ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f59e0b14", border: "1px solid #f59e0b55", borderRadius: 12, padding: "10px 14px", marginBottom: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 16 }}>⏸</span>
+            <b>오늘의 최선: 없음</b>
+            <span style={{ fontSize: 12, color: C.mut }}>{why}</span>
+          </div>
+        ) : null;
+      })()}
       {/* 사분면 버블 맵 */}
       <BubbleMap picks={shown} sel={sel} onSel={setSel} isMobile={isMobile} />
 

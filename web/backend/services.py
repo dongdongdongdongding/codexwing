@@ -1480,7 +1480,9 @@ def buy_timing(days=5):
     cutoff = sessions[-days] if len(sessions) >= days else sessions[0]
     picks = []
     for key, meta in LANES.items():
-        for r in _read_ledger(meta["ledger"]):
+        # 디렉터리 인자를 빠뜨리면 us_research/ 에 있는 나스닥 원장을 못 찾아
+        # 이 화면에서만 레인이 통째로 사라진다(탭도 안 생긴다).
+        for r in _read_ledger(meta["ledger"], meta.get("dir")):
             d = r.get("date")
             if not d or pd.Timestamp(d) < cutoff:
                 continue
@@ -1572,16 +1574,45 @@ def buy_timing(days=5):
     # 오늘의 최선 (§27, swing-main-xfnc): 기권일 강제발행은 실측 EV<0으로 기각 —
     # 대신 레인 교차로 "지금 살 수 있는(GREEN) 픽 중 실측 티어 승률 최고" 1개를 지목.
     # 스윙(매일 top3)·나스닥(매일 rank-1)이 기권하지 않으므로 항상 후보가 존재.
-    TIER_WIN = {("kospi_intraday", "PRIMARY"): 86, ("kosdaq_intraday", None): 72,
-                ("kospi_swing", None): 62, ("kosdaq_swing", None): 62}
+    # 승률은 **게이트 산출의 forward 실측**을 쓴다.
+    # 종전에는 하드코딩 상수(kospi_intraday PRIMARY=86 등)를 "실측 승률"이라 표시했다.
+    # 게이트 실측은 그와 다르고(kospi_intraday fwd_win 70.8), 상수는 갱신되지 않는다.
+    # 화면이 "실측"이라 말하면 실측이어야 한다.
+    _FALLBACK_WIN = {("kospi_intraday", "PRIMARY"): 86, ("kosdaq_intraday", None): 72,
+                     ("kospi_swing", None): 62, ("kosdaq_swing", None): 62}
+
     def _w(p):
-        return TIER_WIN.get((p["lane"], p.get("tier"))) or TIER_WIN.get((p["lane"], None)) or 50
+        try:
+            from modules.stream_exclusion import GATE_LANE_MAP
+            ev, win, n = (_lane_forward_ev().get(GATE_LANE_MAP.get(p["lane"])) or (None, None, None))
+        except Exception:
+            ev = win = n = None
+        if isinstance(win, (int, float)):
+            return round(float(win)), f"게이트 실측 {win:.1f}% (n={n})", ev
+        fb = (_FALLBACK_WIN.get((p["lane"], p.get("tier")))
+              or _FALLBACK_WIN.get((p["lane"], None)) or 50)
+        return fb, f"참고치 {fb}% — 게이트 실측 없음", None
+
     live = [p for p in picks if p["state"] == "GREEN"]
     pool2 = live or [p for p in picks if p["state"] == "YELLOW"]
-    if pool2:
-        best = max(pool2, key=lambda p: (_w(p), -(p.get("pos_vs_ref") or 0)))
+    # 운영자 폐기선(EV<=+1%) 아래 레인은 "오늘의 최선"으로 추천하지 않는다.
+    # 전부 폐기선 아래면 **아무것도 고르지 않는다** — 최선이 없는 날 억지로 하나를
+    # 세우면 화면이 매일 매수를 권하는 도구가 된다.
+    tradable = [p for p in pool2 if (_w(p)[2] is not None and _w(p)[2] > OPERATOR_EV_KILL_PCT)]
+    if tradable:
+        best = max(tradable, key=lambda p: (_w(p)[0], -(p.get("pos_vs_ref") or 0)))
+        w, wnote, ev = _w(best)
         best["today_best"] = True
-        best["today_best_note"] = f"레인 교차 최선 — {best['lane_label']} 실측 승률 ~{_w(best)}%"
+        best["today_best_note"] = f"레인 교차 최선 — {best['lane_label']} · {wnote} · forward EV {ev:+.2f}%"
+    elif pool2:
+        # 후보는 있으나 전부 폐기선 아래 — 그 사실 자체를 화면에 남긴다.
+        worst_note = "; ".join(sorted({f"{p['lane_label']} EV {(_w(p)[2] if _w(p)[2] is not None else float('nan')):+.2f}%"
+                                       for p in pool2 if _w(p)[2] is not None}))
+        for p in picks:
+            p["no_best_reason"] = (f"오늘 추천할 픽이 없다 — 후보 {len(pool2)}건이 모두 운영자 "
+                                   f"폐기선(EV<=+{OPERATOR_EV_KILL_PCT:.0f}%) 아래다. "
+                                   + (worst_note or ""))
+            break
     return {"days": days, "asof": datetime.now().strftime("%Y-%m-%d %H:%M"), "picks": picks}
 
 

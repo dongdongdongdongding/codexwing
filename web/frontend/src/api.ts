@@ -76,7 +76,7 @@ const j = async <T>(u: string): Promise<T> => {
 };
 
 export interface TimingTrailPt { d: string; headroom: number; left: number; }
-export interface TimingPick { trail?: TimingTrailPt[]; today_best?: boolean; today_best_note?: string; code: string; ticker: string; name: string; lane: string; lane_label: string; kind: string; badge: string; scan_date: string; ref: number; target: number; tp_pct: number; age: number; sessions_left: number; touched: boolean; tier?: string | null; mkt_state?: string | null; prob?: number | null; entry_note: string; current?: number | null; change_pct?: number | null; pos_vs_ref?: number | null; headroom?: number | null; state: string; state_label: string; }
+export interface TimingPick { trail?: TimingTrailPt[]; today_best?: boolean; today_best_note?: string; no_best_reason?: string; code: string; ticker: string; name: string; lane: string; lane_label: string; kind: string; badge: string; scan_date: string; ref: number; target: number; tp_pct: number; age: number; sessions_left: number; touched: boolean; tier?: string | null; mkt_state?: string | null; prob?: number | null; entry_note: string; current?: number | null; change_pct?: number | null; pos_vs_ref?: number | null; headroom?: number | null; state: string; state_label: string; }
 export interface ScanPost { scan_id: string; time: string; source: string; markets: string[]; lanes: string[]; pick_count: number; note?: string | null; }
 export interface TickerCard { ticker: string; code: string; name: string; market: string; lane: string; prob?: number | null; score?: number | null; entry?: number | null; }
 
