@@ -5,6 +5,23 @@ import { C, fmt, pct, signColor } from "../theme";
 import { MarketBadge, LaneBadge, Term, WarnBadge } from "../components/ui";
 import { Chart } from "../components/Chart";
 
+/** 픽 상태 칩 — 카드 뷰와 테이블 뷰가 **같은 함수**를 쓴다.
+ *  두 벌로 두면 한쪽만 고쳐지고 화면이 뷰에 따라 달라진다(백엔드 랭킹에서 실제로 그랬다). */
+function StatusChips({ p }: { p: Pick }) {
+  const f = p.lane_frequency;
+  return (
+    <>
+      {p.is_top1 && <Chip color="#facc15">⭐ 1순위</Chip>}
+      {p.rank_in_day != null && !p.is_top1 && <Chip color="#64748b">{p.rank_in_day}순위</Chip>}
+      {p.expired && <Chip color="#ef4444">⏱ 만료 {p.stale_days}일</Chip>}
+      {p.operator_verdict === "KILL" && <Chip color="#ef4444">⛔ 폐기선 EV {p.forward_ev}%</Chip>}
+      {p.operator_verdict === "DEPLOY" && <Chip color="#22c55e">✅ 즉시적용</Chip>}
+      {p.operator_verdict === "UNKNOWN" && <Chip color="#f59e0b">⚠ 근거없음</Chip>}
+      {f && f.frequency_ok === false && <Chip color="#f59e0b">⛔ 발화부족 {f.median_gap}일간격</Chip>}
+    </>
+  );
+}
+
 export function Picks() {
   const isMobile = useIsMobile();
   const [lanes, setLanes] = useState<Lane[]>([]);
@@ -62,6 +79,7 @@ export function Picks() {
                   {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
                   {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
                   {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
+                  <StatusChips p={p} />
                   {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
                   {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
                   {p.tail_warn && <Chip color="#f59e0b">⚠tail</Chip>}
@@ -96,7 +114,12 @@ export function Picks() {
                   style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer", fontVariantNumeric: "tabular-nums" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = C.surface2)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-                  <Td style={{ textAlign: "left", color: C.mut }}>{i + 1}</Td>
+                  {/* 배열 인덱스를 순위처럼 보여주면 안 된다 — 정렬 근거가 없는 숫자를
+                      사용자가 1순위로 읽는다. 실제 당일 순위가 있으면 그것을 쓴다. */}
+                  <Td style={{ textAlign: "left", color: p.is_top1 ? "#facc15" : C.mut,
+                               fontWeight: p.is_top1 ? 700 : 400 }}>
+                    {p.rank_in_day != null ? (p.is_top1 ? "⭐1" : p.rank_in_day) : "·"}
+                  </Td>
                   <Td style={{ textAlign: "left" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <b style={{ fontSize: 15 }}>{p.name}</b>
@@ -118,6 +141,7 @@ export function Picks() {
                       {p.mkt_state === "RISK_OFF" && <Chip color="#f59e0b">약세장</Chip>}
                       {p.size_pct_total != null && <Chip color="#818cf8">비중 {p.size_pct_total}%</Chip>}
                   {p.stream_excluded && <Chip color="#ef4444">⛔ 관측전용</Chip>}
+                  <StatusChips p={p} />
                   {p.sector_capitulation === "epicenter" && <Chip color="#22c55e">섹터동반↑</Chip>}
                   {p.sector_capitulation === "resilient" && <Chip color="#f59e0b">비진앙 단독항복</Chip>}
                   {p.tail_warn && <Chip color="#f59e0b">⚠tail</Chip>}
@@ -178,6 +202,15 @@ function Drawer({ pick, live, onClose }: { pick: Pick; live?: Price; onClose: ()
         <Section title="근거">
           {pick.rationale && <Row k="모델 근거" v={pick.rationale} />}
           {pick.size_note && <Row k="권장 비중" v={pick.size_note} />}
+          {/* 왜 이 상태인지를 상세에서 숫자로 보인다 — 칩만으론 근거가 안 남는다. */}
+          {pick.rank_note && <Row k="당일 순위" v={pick.rank_note} />}
+          {pick.forward_ev != null && (
+            <Row k="실측 forward" v={`EV ${pick.forward_ev}%${pick.forward_win != null ? ` · 승률 ${pick.forward_win}%` : ""}${pick.forward_n != null ? ` (n=${pick.forward_n})` : ""}`} />
+          )}
+          {pick.lane_frequency?.last_fired && (
+            <Row k="레인 발화" v={`마지막 ${pick.lane_frequency.last_fired} · ${pick.lane_frequency.days_since}거래일 전 · 통상 ${pick.lane_frequency.median_gap}거래일 간격${pick.lane_frequency.frequency_ok === false ? " — 기준(3거래일) 미달" : ""}`} />
+          )}
+          {pick.expired && <Row k="신선도" v={`매수일 ${pick.buy_date} 이 ${pick.stale_days}일 지났다 — 지금 진입가가 다르다`} />}
           {(pick as any).exit_mix_plan && <Row k="출구 shadow" v={`${(pick as any).exit_mix_plan} — 실매도는 현행 계약(+5% 터치) 기준, 혼합안은 §29 검증중`} />}
           {detail?.events?.map((e: { type: string; date: string; d_left: number; note: string }, i: number) => (
             <Row key={"ev" + i} k={`⚠ ${e.type} D-${e.d_left}`} v={`${e.date} — ${e.note}`} />

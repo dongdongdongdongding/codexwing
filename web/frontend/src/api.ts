@@ -12,6 +12,18 @@ export interface Pick {
   // 승격 계약(§7-E) 필드: 선별 티어 / 레짐 상태
   tier?: "PRIMARY" | "CANDIDATE"; tier_threshold?: number; rationale?: string;
   mkt_state?: "RISK_OFF" | "NORMAL" | "UNKNOWN"; mkt_dd20?: number; ev_pred?: number;
+  // 2026-08-20 — 측정된 엣지는 top-1 에만 있다(swing KOSDAQ 전체 -0.08 vs top-1 +2.39,
+  // kospi_intraday +0.11 vs +2.11). 순위를 화면에 내지 않으면 엣지 없는 픽을 고르게 된다.
+  rank_in_day?: number; picks_in_day?: number; is_top1?: boolean; rank_note?: string;
+  // 운영자 기준(EV<=+1% 폐기 / >=+15%&승률>=75% 즉시적용). 게이트 verdict 와 다른 축이다 —
+  // nasdaq_session_tape 는 게이트 CONFIRM 인데 forward EV +0.09% 다.
+  operator_verdict?: "KILL" | "OBSERVE" | "DEPLOY" | "UNKNOWN";
+  forward_ev?: number; forward_win?: number; forward_n?: number;
+  // 신선도 — 매수일이 지난 픽. 낡은 픽이 오늘 픽처럼 보이면 지난 진입가로 매매하게 된다.
+  expired?: boolean; stale_days?: number;
+  // 발화 빈도 — EV 가 좋아도 픽이 안 나오면 거래할 수 없다(운영자 기준 3거래일 1회).
+  lane_frequency?: { last_fired?: string; days_since?: number; median_gap?: number;
+                     worst_gap?: number; firing_days?: number; frequency_ok?: boolean };
 }
 export interface ContractLane { label: string; n: number; ev_avg?: number; win_pct?: number; worst?: number; }
 export interface ContractPerf {
