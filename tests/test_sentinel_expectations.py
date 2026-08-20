@@ -788,3 +788,53 @@ def test_precondition_dispatch_routes_top1_away_from_raw_row_counting(tmp_path):
     assert got["verified"] is True, "기계 검사 경로를 타야 한다"
     assert got["met"] is False, "raw 30행으로 세면 충족이 되어 관문이 거짓으로 열린다"
     assert "top-1" in got["detail"], got["detail"]
+
+
+def test_exit_width_gate_registers_a_single_hypothesis_not_a_grid_max():
+    """격자 최댓값을 등록하면 과적합을 사전등록으로 세탁하는 것이 된다.
+
+    +20%/10일이 EV +5.85 로 가장 높지만 n=22 · 승률 59.1%(목표 75% 미달)다.
+    등록된 것은 현행 +5% 에서 한 칸 인접한 +7%/5일이어야 한다.
+    """
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    g = {x["id"]: x for x in cfg["prereg_track_gates"]}["swing_kosdaq_exit_width_7pct"]
+
+    crit = g["criterion_at_termination"]
+    assert "격자 재탐색" in crit, "다른 칸을 고르지 못하게 막아야 한다"
+    assert "단일 가설" in crit
+    assert "승률로 판정하지 않는다" in crit, "익절을 넓히면 승률이 내려간다"
+
+    m = g["precondition"]["measured_2026_08_20"]
+    assert m["ev_7pct"] == 3.33 and m["ev_5pct"] == 2.48
+
+
+def test_exit_width_gate_requires_the_overlap_aware_interval():
+    """겹침을 반영하지 않으면 p=0.00016 을 발견으로 보고하게 된다.
+
+    보유 5일이 겹쳐 27개 날짜의 유효 표본은 약 6이다. 등록은 블록 부트스트랩을
+    요구하고, 순진한 수치도 나란히 남겨 대비가 보이게 해야 한다.
+    """
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    g = {x["id"]: x for x in cfg["prereg_track_gates"]}["swing_kosdaq_exit_width_7pct"]
+
+    assert "블록 부트스트랩(L=5)" in g["criterion_at_termination"]
+    m = g["precondition"]["measured_2026_08_20"]
+    assert m["excess_ci_block_L5"][0] < 0, "블록 CI 하한은 아직 0 아래다 — 미확인 상태"
+    assert m["sign_test_naive_p"] < 0.001, "순진한 검정이 얼마나 낙관적이었는지 남긴다"
+    assert m["effective_n_estimate"] == 6
+
+    # 깊이 관문에도 같은 규율이 걸려 있어야 한다
+    d = {x["id"]: x for x in cfg["prereg_track_gates"]}["swing_kosdaq_top1_depth_verdict"]
+    assert "블록 부트스트랩" in d["criterion_at_termination"]
+    assert "부호검정 금지" in d["criterion_at_termination"]
+
+
+def test_exit_width_gate_pins_the_data_source():
+    """ohlc_full 로 돌리면 재현이 65/59 로 깨진다 — 정본을 등록에 박아 둔다."""
+    import yaml
+    cfg = yaml.safe_load(sen.CONFIG.read_text(encoding="utf-8"))
+    g = {x["id"]: x for x in cfg["prereg_track_gates"]}["swing_kosdaq_exit_width_7pct"]
+    assert "fdr" in g["notes"] and "ohlc_full.parquet 은 쓰지 마라" in g["notes"]
+    assert "재현 검증" in g["notes"]

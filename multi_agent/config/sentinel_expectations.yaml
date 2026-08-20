@@ -1224,6 +1224,11 @@ prereg_track_gates:
       (2) 플라시보: 같은날 무작위 1건 대비 p-value < 0.05.
       (3) 방향성: 같은날 p 최상위 - 최하위 스프레드의 CI 하한 > 0.
 
+      **모든 CI 는 블록 부트스트랩(L=5)으로 낸다. 단순 부트스트랩·부호검정 금지.**
+      보유 5일이 겹쳐 날짜가 독립이 아니다. 2026-08-20 실측에서 순진한 부호검정은
+      p=0.00016 을 냈지만 겹침을 반영하면 CI 가 0 을 포함하고, 5일 간격 독립 부분표본에서는
+      5/6 승리 p=0.109 로 유의하지 않다. 유효 표본은 27 이 아니라 약 6 이다.
+
       **(2)(3) 이 핵심이다.** 2026-08-20 실측에서 (1) 만으로는 부족함이 드러났다 —
       p 최상위 EV +2.39 인데 **최하위가 +2.18** 이고 스프레드는 +0.21, CI(-4.78, 4.35) 로
       0 을 포함한다. 무작위 대비 p-value 도 0.109 로 0.05 를 넘는다.
@@ -1245,6 +1250,62 @@ prereg_track_gates:
       **아직 안 한 필수 검정: 시장중립.** +2.39 가 KOSDAQ 상승 베타인지 확인하지 않았다.
       원장에 보유창 지수수익이 없어 별도 결합이 필요하다. 승격 전 반드시 선행한다 —
       down_edge_was_beta_correction 이 정확히 이 누락으로 났다.
+
+  # ── 2026-08-20 anglerfish 등록: 출구폭 단일 가설 ────────────────────────────
+  # 격자에서 최댓값을 고르지 않았다. +20%/10일이 EV +5.85 로 가장 높지만 n=22 에
+  # 10칸 격자는 과적합이고 승률이 59.1%로 목표(75%) 아래로 떨어진다.
+  # 현행 +5% 에서 **한 칸** 인접한 +7%/5일만 단일 가설로 등록한다.
+  - id: swing_kosdaq_exit_width_7pct
+    source: "anglerfish 백테스트 2026-08-20 (fdr 정본, 전건 재현 188/188)"
+    prose: >
+      스윙 KOSDAQ top-1 의 익절폭을 +5% -> +7% (보유 5일 유지)로 넓히면 EV 가 개선되는가.
+      실측: EV +2.48 -> +3.33, 승률 85.2% -> 81.5%(목표 75% 유지),
+      같은날 유동성매칭 유니버스 대비 초과 +2.07 -> +2.90.
+      **스톱은 이미 기각됐다** — 6수준 전부 EV 악화, -3%에서 74% 발동(승자를 죽인다).
+    kind: one_shot
+    status: pending
+    severity: warn
+    precondition:
+      desc: "KOSDAQ top-1 채점행 46건 (블록 부트스트랩 CI 하한이 0 을 넘기는 데 필요한 n)"
+      met: false
+      check:
+        type: top1_scored
+        file: runtime_state/reports/experimental/kr_swing_candidate_ledger.jsonl
+        market: KOSDAQ
+        score_field: p
+        outcome_field: policy_ret
+        min: 46
+      measured_2026_08_20:
+        n: 27
+        ev_5pct: 2.48
+        ev_7pct: 3.33
+        win_5pct: 85.2
+        win_7pct: 81.5
+        excess_7pct: 2.90
+        excess_ci_block_L5: [-1.35, 5.94]
+        excess_ci_naive: [-0.37, 6.08]
+        sign_test_naive_p: 0.00016
+        independent_subsample: "5/6 승리 p=0.109"
+        effective_n_estimate: 6
+    adjudication_record: "RESEARCH_LOG.md 출구폭 판정 서술 + adjudications.jsonl"
+    criterion_at_termination: >
+      n>=46 에서 **+7% 의 시장중립 초과**(같은날 유동성매칭 유니버스에 같은 계약 적용)의
+      **블록 부트스트랩(L=5) CI 하한 > 0** 이면 계약 변경을 운영자에게 올린다.
+      넘지 못하면 +7% 가설을 기각하고 현행 +5% 를 유지한다.
+
+      **금지**: 격자 재탐색으로 다른 칸을 고르지 않는다. 이 등록은 +7%/5일 단일 가설이다.
+      +10%/+15%/+20% 가 더 좋아 보여도 그것은 n=22~27 격자의 최댓값이지 발견이 아니다.
+      **금지**: 승률로 판정하지 않는다. 익절을 넓힐수록 승률은 내려간다(85.2->59.1).
+    narrowing: >
+      순환논증 금지: 이 등록의 근거인 n=27 백테스트는 판정의 입력이지 결론의 근거가 아니다.
+      추가 19건은 새 데이터여야 한다.
+      벤치마크 주의: 처음에 exec_5d(단순보유)로 재서 초과를 +0.82 로 과소평가했다.
+      계약 효과와 선별 효과가 섞이므로 **유니버스에 같은 계약을 적용**해야 한다.
+    notes: >
+      데이터 정본은 fdr 이다. ohlc_full.parquet 은 쓰지 마라 —
+      커버리지 937종목(채점종목 22개 결측), px_long 과 종가 40.2%만 일치(수정주가 기준 상이).
+      재현 검증 없이 돌리면 전부 헛수치다.
+      투고: backtest-exit-policy-anglerfish.md · measure-alpha-vs-criteria-anglerfish.md
 
 prereg_reopen_conditions:
   - id: kr_ranking_shadow_reopen
