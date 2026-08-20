@@ -92,8 +92,11 @@ export function Ops() {
           <Card>
             <div style={{ color: C.mut, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>데이터 신선도</div>
             <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-              {Object.entries(status.freshness).map(([k, v]: any) => (
-                <span key={k} style={{ fontSize: 13 }}><span style={{ color: C.mut }}>{({ daily: "일봉", minute: "분봉", flow: "수급", dart: "공시", pead: "실적" } as any)[k] || k}</span> {v || "–"}{k === "flow" && v && v < status.freshness.daily ? <span style={{ color: C.warn }}> ⚠지연</span> : ""}</span>
+              {/* 지연 표시가 flow 한 줄에만 있었다 — 부분 가드는 무가드보다 조용하다.
+                  백엔드가 내는 거래일 지연(_lag)을 모든 행에 같은 규칙으로 쓴다.
+                  `_` 로 시작하는 키는 메타라 행으로 그리지 않는다. */}
+              {Object.entries(status.freshness).filter(([k]: any) => !String(k).startsWith("_")).map(([k, v]: any) => (
+                <span key={k} style={{ fontSize: 13 }}><span style={{ color: C.mut }}>{({ daily: "일봉", minute: "분봉", flow: "수급", dart: "공시", pead: "실적" } as any)[k] || k}</span> {v || "–"}{(() => { const g = (status.freshness as any)._lag?.[k]; return v && g != null && g > 0 ? <span style={{ color: g >= 2 ? C.down : C.warn }}> ⚠{g}거래일 지연</span> : ""; })()}</span>
               ))}
             </div>
             <div style={{ color: C.mut, fontSize: 11, marginTop: 8 }}>※ 수급은 KIS API 시간제한(00:00~15:40)으로 09:35 아침세션이 갱신. 지연시 다음날 아침 최신화.</div>

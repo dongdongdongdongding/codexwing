@@ -848,12 +848,25 @@ def freshness():
             out[key] = str(pd.to_datetime(d[col]).max())[:10]
         except Exception:
             out[key] = None
-    # 분봉: 샘플 1종목 최신
+    # 분봉: 캐시 전체의 최신 내용 날짜.
+    # 알파벳 첫 파일 하나를 표본으로 쓰면 **그 종목의 지연이 캐시 전체의 신선도로 보고된다** —
+    # 실측(2026-08-20): 000020 은 08-19 인데 085620 은 08-20 이라 화면이 하루 늦게 나왔다.
+    # 2,614 파일을 매 요청마다 다 읽을 수는 없으니 mtime 으로 후보를 좁히고 날짜는 내용에서 읽는다.
+    # mtime 은 **고르는 데만** 쓴다 — 판정은 내용이 한다(mtime 은 신선도가 아니다).
+    # 후보를 놓치면 실제보다 오래된 날짜가 나오는데, 그 방향이 안전하다(신선을 낡음으로 볼지언정 반대는 아니다).
     try:
         import glob
-        f = sorted(glob.glob(os.path.join(RESEARCH, "intraday", "*.parquet")))[:1]
-        if f:
-            mi = pd.read_parquet(f[0]); out["minute"] = str(pd.to_datetime(mi.index).max())[:10]
+        fs = glob.glob(os.path.join(RESEARCH, "intraday", "*.parquet"))
+        fs.sort(key=lambda f: os.path.getmtime(f), reverse=True)
+        newest = None
+        for f in fs[:24]:
+            try:
+                d = str(pd.to_datetime(pd.read_parquet(f).index).max())[:10]
+            except Exception:
+                continue
+            if d and (newest is None or d > newest):
+                newest = d
+        out["minute"] = newest
     except Exception:
         out["minute"] = None
     # 모델 학습 신선도 — 프론트가 값을 그대로 렌더링하므로 반드시 문자열(객체 넣으면 React 크래시).
@@ -867,6 +880,30 @@ def freshness():
         out["kosdaq_bundle"] = f"재학습 {str(kb.get('retrained_at',''))[:16]} · {kb.get('train_span')}"
     except Exception:
         out["kosdaq_bundle"] = None
+    # 날짜만 내놓으면 화면이 그걸 판정 없이 그린다 — 08-19 와 08-20 이 똑같아 보인다.
+    # 지연을 **거래일**로 함께 낸다. 달력은 일봉 원장에서 유래시킨다(휴장일을 결석으로 세지 않기 위해).
+    # 값은 별도 키에 담는다 — 기존 항목을 객체로 바꾸면 그대로 렌더링하는 화면이 깨진다.
+    lag = {}
+    try:
+        sessions = sorted({str(x)[:10] for x in
+                           pd.to_datetime(pd.read_parquet(os.path.join(RESEARCH, "px_long.parquet"),
+                                                          columns=["date"])["date"]).unique()})
+        idx = {d: i for i, d in enumerate(sessions)}
+        last = len(sessions) - 1
+        for k in ("daily", "minute", "flow", "dart", "pead"):
+            v = out.get(k)
+            if not v:
+                continue
+            # 원장에 없는 날짜(휴장일 공시 등)는 그 이하 최근 거래일로 내린다.
+            i = idx.get(v)
+            if i is None:
+                prior = [j for j, d in enumerate(sessions) if d <= v]
+                i = prior[-1] if prior else None
+            if i is not None:
+                lag[k] = last - i
+    except Exception:
+        pass
+    out["_lag"] = lag
     return out
 
 
@@ -1574,14 +1611,53 @@ def ops_status():
     return out
 
 
+def pick_blockers(p):
+    """이 픽을 지금 실행할 수 없게 만드는 사유들. 화면이 판정을 다시 짜지 않게 한 곳에서 낸다.
+
+    칩은 이미 사유를 그리고 있었지만 **정렬과 개수가 그걸 무시했다** — 확률만으로 줄을 세우니
+    만료된 픽이 신선한 픽 위에 오고, 헤더는 전부 차단된 10건을 그냥 '핵심 픽 10건'이라 불렀다.
+    사유를 아는 곳과 순서를 정하는 곳이 달라서 생긴 일이라 같은 함수에서 낸다."""
+    b = []
+    if p.get("expired"):
+        b.append("만료 %s일" % p.get("stale_days"))
+    if p.get("attainability") == "LIMIT_UP":
+        b.append("상한가 체결불가")
+    elif p.get("attainability") == "LIMIT_DOWN":
+        b.append("하한가 체결불가")
+    if p.get("stream_excluded"):
+        b.append("관측전용")
+    f = p.get("lane_frequency") or {}
+    if isinstance(f, dict) and f.get("frequency_ok") is False:
+        b.append("발화 부족")
+    if p.get("operator_verdict") == "KILL":
+        b.append("폐기선 아래")
+    elif p.get("operator_verdict") == "UNKNOWN":
+        b.append("근거 없음")
+    return b
+
+
 def overview(top=6):
-    allp = picks()   # 이미 확률 통일 정렬됨 → 픽 화면과 동일 순서
-    merged = allp[:top]
+    allp = picks()
+    for p in allp:
+        p["blockers"] = pick_blockers(p)
+    # 확률 순서를 그대로 자르면 **살 수 없는 픽이 첫 화면 맨 위**에 온다.
+    # 실측(2026-08-20): 만료 1일 지난 08-18 장중 픽이 08-20 스윙 픽들보다 위였다.
+    # 실행 가능한 것을 먼저 세우고 그 안에서 확률로 정렬한다. 차단된 픽을 숨기지는 않는다 —
+    # 빼면 왜 없는지 알 수 없고, 이 화면이 정직해야 하는 이유가 그것이다.
+    # 차단 여부만 보면 전부 차단인 날(오늘이 그렇다)에는 다시 확률 순서로 돌아가,
+    # 만료까지 겹친 픽이 관측전용뿐인 픽 위에 온다. 걸린 개수도 함께 센다.
+    merged = sorted(allp, key=lambda x: (len(x["blockers"]),
+                                         x.get("prob") is None,
+                                         -(x.get("prob") or 0)))[:top]
     fr = freshness()
+    actionable = [p for p in allp if not p["blockers"]]
     return {"generated_at": datetime.now().isoformat(timespec="seconds"),
             "top_picks": merged, "freshness": fr,
             "counts": {"A": len([p for p in allp if p["signal_class"] == "A"]),
-                       "B": len([p for p in allp if p["signal_class"] == "B"])}}
+                       "B": len([p for p in allp if p["signal_class"] == "B"]),
+                       # 총 건수만 내놓으면 화면이 그걸 '살 수 있는 픽 수'로 읽는다.
+                       "actionable": len(actionable),
+                       "blocked": len(allp) - len(actionable)}}
 
 
 # ── 매수 타이밍 (§26 후속, 운영자 요청): "지금 가격에 사도 되나" — 계약 오버레이 판단 ──

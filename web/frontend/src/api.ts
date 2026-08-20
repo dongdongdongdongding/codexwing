@@ -39,7 +39,7 @@ export interface ContractPerf {
 export interface Lane { key: string; label: string; kind: string; badge: string; }
 export interface Freshness { daily?: string; minute?: string; flow?: string; dart?: string; pead?: string; }
 export interface Overview {
-  generated_at: string; top_picks: Pick[]; freshness: Freshness; counts: { A: number; B: number };
+  generated_at: string; top_picks: Pick[]; freshness: Freshness; counts: { A: number; B: number; actionable: number; blocked: number };
 }
 export interface Price { price?: number | null; change_pct?: number | null; status?: string; }
 export interface ChartData {

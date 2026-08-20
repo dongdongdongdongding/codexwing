@@ -13,7 +13,16 @@ export function Overview() {
     <div style={{ display: "grid", gap: 16 }}>
       <Compass />
       <Card>
-        <div style={{ color: C.mut, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>오늘의 핵심 픽 (A {ov.counts.A} · B {ov.counts.B})</div>
+        {/* 총 건수만 적으면 사용자가 그걸 '살 수 있는 픽 수'로 읽는다. 실측(2026-08-20)은
+            10건 전부 차단이었는데 헤더는 "A 10 · B 0" 이라 열 개가 대기 중인 것처럼 보였다.
+            실행 가능한 수를 먼저 말하고, 0이면 0이라고 말한다. */}
+        <div style={{ color: C.mut, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>
+          오늘의 핵심 픽
+          {ov.counts.actionable > 0
+            ? <span> — 실행 가능 {ov.counts.actionable}건{ov.counts.blocked > 0 && <span style={{ color: C.mut }}> · 차단 {ov.counts.blocked}건</span>}</span>
+            : <span style={{ color: "#f59e0b" }}> — 실행 가능한 픽이 없습니다 (전체 {ov.counts.blocked}건 차단)</span>}
+          <span style={{ color: C.mut, fontWeight: 400 }}> · A {ov.counts.A} · B {ov.counts.B}</span>
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
           {ov.top_picks.map((p, i) => (
             <div key={p.code + p.lane} style={{ background: C.surface2, border: `1px solid ${C.line}`, borderRadius: 10, padding: 14 }}>
@@ -32,6 +41,13 @@ export function Overview() {
                 <LaneBadge kind={p.kind} badge={p.badge} label={p.lane_label} />
                 <StatusChips p={p} />
               </div>
+              {/* 칩은 상태를 그리지만 흩어져 있다. 왜 못 사는지를 한 문장으로 못박는다 —
+                  적중확률 77%가 옆에 있으면 칩 몇 개로는 안 읽힌다. */}
+              {(p as any).blockers?.length > 0 && (
+                <div style={{ fontSize: 11, color: "#f59e0b", marginBottom: 8 }}>
+                  실행 불가 — {(p as any).blockers.join(" · ")}
+                </div>
+              )}
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontVariantNumeric: "tabular-nums" }}>
                 <span style={{ color: C.mut }}>진입 {fmt(p.entry)}</span>
                 {/* 확률만 크게 보이면 폐기선 아래 레인도 좋아 보인다.
@@ -53,11 +69,24 @@ export function Overview() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Card>
           <div style={{ color: C.mut, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>데이터 신선도</div>
-          {[["일봉", fr.daily], ["분봉", fr.minute], ["수급", fr.flow], ["공시", fr.dart], ["실적", fr.pead]].map(([k, v]) => (
-            <div key={k as string} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontSize: 13 }}>
-              <span style={{ color: C.mut }}>{k}</span><span>{v || "–"}</span>
-            </div>
-          ))}
+          {/* 날짜만 나란히 그리면 08-19 와 08-20 이 똑같아 보인다. 며칠 밀렸는지를 함께 말한다.
+              지연은 거래일 기준이다 — 휴장일을 결석으로 세면 주말마다 전부 낡은 것이 된다. */}
+          {([["일봉", "daily", fr.daily], ["분봉", "minute", fr.minute], ["수급", "flow", fr.flow],
+             ["공시", "dart", fr.dart], ["실적", "pead", fr.pead]] as [string, string, string | null][]).map(([k, key, v]) => {
+            const lag = (fr as any)._lag?.[key];
+            return (
+              <div key={key} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontSize: 13 }}>
+                <span style={{ color: C.mut }}>{k}</span>
+                <span>
+                  {v || "–"}
+                  {v && lag != null && lag > 0 && (
+                    <span style={{ color: lag >= 2 ? "#ef4444" : "#f59e0b", marginLeft: 6 }}>{lag}거래일 지연</span>
+                  )}
+                  {!v && <span style={{ color: C.mut, marginLeft: 6 }}>(읽지 못함)</span>}
+                </span>
+              </div>
+            );
+          })}
         </Card>
         <Card>
           <div style={{ color: C.mut, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>정직 안내</div>
