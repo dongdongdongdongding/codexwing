@@ -31,11 +31,12 @@ LANES = {
     "kosdaq_swing":  {"ledger": "kr_swing_candidate_ledger.jsonl",             "label": "코스닥 스윙",  "kind": "SWING",    "badge": "🟢"},
     "kospi_intraday":{"ledger": "kospi_intraday_swing_ledger.jsonl",           "label": "코스피 장중",  "kind": "INTRADAY", "badge": "🔵"},
     "kosdaq_intraday":{"ledger":"kosdaq_intraday_1500_3d_t5_vwap_guard_ledger.jsonl","label":"코스닥 장중","kind":"INTRADAY","badge":"🔵"},
-    # 2026-08-20 추가 — 운영자 지시로 나스닥을 화면에 올린다. 원장 디렉터리가 KR과 다르다.
-    # 상태는 정직하게: 재귀게이트는 CONFIRM 이지만 **EV +0.34 로 운영자 폐기선(+1%) 아래**다.
-    # 게이트 CONFIRM 은 "백테스트 기대와 맞는가"이지 "거래할 만한가"가 아니다.
-    "nasdaq_intraday":{"ledger":"nasdaq_session_tape_ledger.jsonl", "dir": "us_research",
-                       "label":"나스닥 장중", "kind":"INTRADAY", "badge":"🟠"},
+    # 2026-08-20 — 나스닥을 정식 레인으로 등록. **새 레인을 만들지 않았다**:
+    # nasdaq_picks() 가 이미 이 원장을 읽고 있었고(2026-07-07 `10f6dfc` 에서 교체),
+    # 별도 레인을 추가했더니 AXTI·MRNA 가 화면에 두 번 나왔다. 하나로 합친다.
+    # 원장 디렉터리가 KR 과 다르다(us_research/).
+    "nasdaq_swing":  {"ledger":"nasdaq_session_tape_ledger.jsonl", "dir": "us_research",
+                      "label":"나스닥 장중", "kind":"INTRADAY", "badge":"🟠"},
 
 }
 
@@ -505,7 +506,8 @@ def _a_picks_ledger(lane=None):
             seen.add(code6)
             _extra = {k: r.get(k) for k in _LEDGER_EXTRA_KEYS}
             rows.append(_pick_row(code, want_market or mk, key,
-                                  entry=r.get("entry_reference_price") or r.get("close"),
+                                  entry=(r.get("entry_reference_price") or r.get("entry")
+                                         or r.get("close")),
                                   prob=r.get("p"), scan_date=last, source="A",
                                   extra=_extra))
     return rows
@@ -681,43 +683,24 @@ def _db():
 
 def nasdaq_picks():
     """나스닥 픽 = 세션테이프 shadow 원장 (§12-D: 유일한 플라시보-분리 신호, rank-1/일).
-    2026-07-07 교체: 이전엔 구식 범용 스캔(RUN-*)의 음수엣지 종목이 확률 50% 스텁으로 표시되던 문제."""
-    fp = os.path.join(REPO, "runtime_state/reports/us_research/nasdaq_session_tape_ledger.jsonl")
-    if not os.path.exists(fp):
-        return []
-    rows = []
-    for ln in open(fp, encoding="utf-8"):
-        if ln.strip():
-            try:
-                rows.append(json.loads(ln))
-            except Exception:
-                pass
-    if not rows:
-        return []
-    last = max(str(r.get("date", "")) for r in rows)
-    out = []
-    for r in rows:
-        if str(r.get("date")) != last:
-            continue
-        out.append(_pick_row(r.get("symbol"), "NASDAQ", "nasdaq_swing",
-                             entry=r.get("entry"), prob=r.get("p"),
-                             name=resolve_any_name(r.get("symbol")), scan_date=last, source="A",
-                             extra={"lane_label": "나스닥 세션테이프", "kind": "SWING", "badge": "🟢",
-                                    "hold_days": 5, "target_tp_pct": 5.0,
-                                    "tier": "SHADOW" if r.get("tier") == "SHADOW" else r.get("tier"),
-                                    "rationale_extra": "관측 shadow — forward n>=30 전 실자본 금지"}))
-    return out
+
+    2026-08-20: **자체 리더를 걷어내고 등록 레인으로 위임한다.** 사본을 두었더니
+    같은 원장이 두 번 읽혀 AXTI·MRNA 가 화면에 중복으로 떴다. 위임하면 순위·만료·
+    운영자 EV 기준·발화 빈도가 KR 레인과 **같은 규칙으로** 붙는다.
+    """
+    return _a_picks_ledger("nasdaq_swing")
 
 
 def picks(lane=None):
     if lane == "b_market_neutral":
         return b_picks()
-    if lane == "nasdaq_swing":
-        return nasdaq_picks()
+    # nasdaq_swing 특례를 없앴다 — LANES 에 등록됐으니 a_picks 가 그대로 처리한다.
+    # 특례가 남아 있으면 그 레인만 순위·만료·EV기준을 다른 경로로 받게 된다.
     if lane:
         return a_picks(lane)
     # 전체: KR(A) + B + NASDAQ. 확률(p) 기준 통일 정렬 → 개요와 픽 순서 일치.
-    allp = a_picks() + b_picks() + nasdaq_picks()
+    # nasdaq_swing 은 LANES 에 등록돼 a_picks() 가 이미 낸다 — 다시 더하면 중복이다.
+    allp = a_picks() + b_picks()
     return sorted(allp, key=lambda x: (x.get("prob") is None, -(x.get("prob") or 0)))
 
 

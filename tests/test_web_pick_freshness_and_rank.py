@@ -123,7 +123,7 @@ def test_kill_floor_strips_sizing_even_when_the_gate_says_confirm(monkeypatch):
     """
     _fake_gate(monkeypatch, ev=0.34)
     row = {"size_pct_total": 2.0, "size_note": "총자본 2%/픽"}
-    S._apply_operator_ev_floor(row, "nasdaq_intraday")
+    S._apply_operator_ev_floor(row, "nasdaq_swing")
     assert row["operator_verdict"] == "KILL"
     assert "size_pct_total" not in row
     assert "폐기선" in row["size_note"] and "+0.34" in row["size_note"]
@@ -134,12 +134,12 @@ def test_deploy_band_needs_both_ev_and_win(monkeypatch):
     """EV 만 높고 승률이 낮으면 즉시적용이 아니다 — 목표는 두 축이다."""
     _fake_gate(monkeypatch, ev=20.0, win=60.0)
     row = {"size_pct_total": 2.0}
-    S._apply_operator_ev_floor(row, "nasdaq_intraday")
+    S._apply_operator_ev_floor(row, "nasdaq_swing")
     assert row["operator_verdict"] == "OBSERVE"
 
     _fake_gate(monkeypatch, ev=20.0, win=80.0)
     row = {"size_pct_total": 2.0}
-    S._apply_operator_ev_floor(row, "nasdaq_intraday")
+    S._apply_operator_ev_floor(row, "nasdaq_swing")
     assert row["operator_verdict"] == "DEPLOY"
     assert "즉시적용" in row["size_note"]
 
@@ -147,7 +147,7 @@ def test_deploy_band_needs_both_ev_and_win(monkeypatch):
 def test_middle_band_keeps_sizing_and_is_labelled_observe(monkeypatch):
     _fake_gate(monkeypatch, ev=2.4, win=84.6)
     row = {"size_pct_total": 2.0, "size_note": "총자본 2%/픽"}
-    S._apply_operator_ev_floor(row, "nasdaq_intraday")
+    S._apply_operator_ev_floor(row, "nasdaq_swing")
     assert row["operator_verdict"] == "OBSERVE"
     assert row["size_pct_total"] == 2.0, "폐기선 위 관측대는 사이징을 유지한다"
 
@@ -158,17 +158,36 @@ def test_unknown_ev_is_fail_closed(monkeypatch):
         S._lane_forward_ev.cache_clear()
     monkeypatch.setattr(S, "_lane_forward_ev", lambda: {})
     row = {"size_pct_total": 2.0}
-    S._apply_operator_ev_floor(row, "nasdaq_intraday")
+    S._apply_operator_ev_floor(row, "nasdaq_swing")
     assert row["operator_verdict"] == "UNKNOWN"
     assert "size_pct_total" not in row
 
 
 def test_nasdaq_lane_is_registered_and_mapped_to_the_gate():
     """웹에 레인만 넣고 게이트 매핑을 빼면 '모른다'가 차단 사유가 된다."""
-    from modules.stream_exclusion import GATE_LANE_MAP
-    assert "nasdaq_intraday" in S.LANES
-    assert S.LANES["nasdaq_intraday"]["dir"] == "us_research"
-    assert GATE_LANE_MAP.get("nasdaq_intraday") == "nasdaq_session_tape"
+    from modules.stream_exclusion import GATE_LANE_MAP, UNGATED_PUBLISHED_LANES
+    assert "nasdaq_swing" in S.LANES
+    assert S.LANES["nasdaq_swing"]["dir"] == "us_research"
+    assert GATE_LANE_MAP.get("nasdaq_swing") == "nasdaq_session_tape"
+    assert "nasdaq_swing" not in UNGATED_PUBLISHED_LANES, (
+        "이 레인은 게이트 원장을 읽는다 — UNGATED 로 두면 CONFIRM 이 나와도 "
+        "화면엔 '게이트가 판단하지 않는 레인'으로 막힌다")
+
+
+def test_nasdaq_is_produced_by_exactly_one_path():
+    """급소 — 같은 원장을 두 곳에서 읽어 AXTI·MRNA 가 화면에 두 번 떴다.
+
+    nasdaq_picks() 가 자체 리더를 갖고 있었고 내가 별도 레인을 추가해 중복이 됐다.
+    한 경로로 합쳐야 순위·만료·EV기준·발화빈도가 KR 레인과 같은 규칙으로 붙는다.
+    """
+    import inspect
+    src = inspect.getsource(S.nasdaq_picks)
+    assert "_a_picks_ledger" in src, "등록 레인으로 위임해야 한다"
+    assert "open(" not in src, "자체 리더를 두면 사본이 된다"
+    psrc = inspect.getsource(S.picks)
+    assert "a_picks() + b_picks() + nasdaq_picks()" not in psrc, "합산하면 중복이다"
+    assert 'lane == "nasdaq_swing"' not in psrc, (
+        "특례가 남으면 그 레인만 순위·만료·EV기준을 다른 경로로 받는다")
 
 
 def test_ledger_reader_accepts_the_symbol_key():

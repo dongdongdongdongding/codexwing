@@ -58,9 +58,14 @@ GATE_LANE_MAP: Dict[str, str] = {
     # Discord decision_bucket
     "swing_candidate": "swing_candidate",
     "kosdaq_intraday_3d_t5_vwap_guard": "kosdaq_intraday_t10",
-    # 2026-08-20: 나스닥을 화면에 올리며 매핑을 채웠다. 매핑이 없으면 미지 레인으로
-    # 일괄 차단돼(fail-closed) 게이트 판정이 아니라 "모른다"가 사유가 된다.
-    "nasdaq_intraday": "nasdaq_session_tape",
+    # 2026-08-20 정정: nasdaq_swing 은 UNGATED 가 아니다.
+    # 아래 UNGATED 주석은 이 레인이 nasdaq_session_edge 의 웹 어휘라고 적었지만,
+    # `services.nasdaq_picks()` 는 **2026-07-07 `10f6dfc` 에서 이미**
+    # nasdaq_session_tape_ledger.jsonl 로 바뀌었다 — 게이트가 판정하는 바로 그 원장이다.
+    # 08-16 분류가 한 달 묵은 사실 위에 세워졌고, 그래서 게이트가 CONFIRM 을 낸 레인이
+    # 화면에선 "게이트가 판단하지 않는 레인"으로 막혔다.
+    # 그 주석이 스스로 경고한 '두 어휘' 실패가 선언 계층에서 재발한 것이다.
+    "nasdaq_swing": "nasdaq_session_tape",
 }
 
 # 발행되지만 게이트가 덮지 않는 레인 — 의도적 미매핑이며, 남의 판정을 물려주지 않는다.
@@ -75,7 +80,8 @@ GATE_LANE_MAP: Dict[str, str] = {
 #                         "공백을 코드에 명시한다"는 계약이 Discord 어휘에만 적용됐던 것이라,
 #                         이 커밋이 잡겠다던 근본원인(두 어휘)이 선언 계층에서 재발한 셈이다.
 UNGATED_PUBLISHED_LANES = frozenset({
-    "nasdaq_session_edge", "nasdaq_swing", "b_market_neutral", "swing_ensemble",
+    # nasdaq_swing 은 2026-08-20 에 GATE_LANE_MAP 으로 옮겼다 — 실제로 게이트 원장을 읽는다.
+    "nasdaq_session_edge", "b_market_neutral", "swing_ensemble",
 })
 
 # UNGATED 레인의 사유 분류. 전부 발행 불가지만 **왜 막혔고 어떻게 풀리는지**가 다르다.
@@ -94,7 +100,8 @@ UNGATED_PUBLISHED_LANES = frozenset({
 UNGATED_LANE_KINDS: Dict[str, str] = {
     "swing_ensemble": "retired",
     "nasdaq_session_edge": "unadjudicated",
-    "nasdaq_swing": "unadjudicated",
+    # nasdaq_swing 제거(2026-08-20): UNGATED 가 아니라 GATE_LANE_MAP 소속이다.
+    # services.nasdaq_picks() 가 읽는 원장이 게이트의 nasdaq_session_tape 그것이다.
     "b_market_neutral": "suspended",
 }
 

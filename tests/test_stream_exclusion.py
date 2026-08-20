@@ -273,12 +273,41 @@ def test_missing_gate_file_also_withdraws_the_discord_buy_card(monkeypatch, tmp_
 # --------------------------------------------------------------------------
 
 def test_web_nasdaq_lane_is_declared(tmp_path):
-    """`nasdaq_swing`(services.py:517)이 두 집합 어디에도 없어 조용히 통과했다.
+    """`nasdaq_swing`(services.py)이 두 집합 어디에도 없어 조용히 통과했었다.
 
     커밋이 내세운 계약은 "공백을 코드에 명시한다"였는데 그 명시가 **Discord 어휘에만**
     적용됐다. 잡겠다던 근본원인(두 어휘)이 선언 계층에서 재발한 것이다.
+    **이 테스트의 의도는 '어느 집합인가'가 아니라 '반드시 한쪽에 선언돼 있는가'다.**
+
+    2026-08-20 이동: UNGATED -> GATE_LANE_MAP.
+    08-16 분류는 이 레인이 nasdaq_session_edge 의 웹 어휘라고 적었지만,
+    `services.nasdaq_picks()` 는 **2026-07-07 `10f6dfc` 에서 이미**
+    nasdaq_session_tape_ledger.jsonl 로 바뀌어 있었다 — 게이트가 판정하는 그 원장이다.
+    분류가 한 달 묵은 사실 위에 세워져, 게이트가 CONFIRM 을 낸 레인이 화면에선
+    "게이트가 판단하지 않는 레인"으로 막혔다. 같은 '두 어휘' 실패의 재발이다.
     """
-    assert "nasdaq_swing" in se.UNGATED_PUBLISHED_LANES
+    declared_in = [name for name, coll in
+                   (("GATE_LANE_MAP", se.GATE_LANE_MAP),
+                    ("UNGATED", se.UNGATED_PUBLISHED_LANES))
+                   if "nasdaq_swing" in coll]
+    assert declared_in == ["GATE_LANE_MAP"], (
+        f"정확히 한 집합에 선언돼야 한다 — 현재 {declared_in}")
+    assert se.GATE_LANE_MAP["nasdaq_swing"] == "nasdaq_session_tape"
+
+
+def test_web_nasdaq_lane_reads_the_ledger_its_mapping_claims(tmp_path):
+    """매핑이 가리키는 원장을 웹이 실제로 읽는가.
+
+    08-16 분류가 틀린 이유가 이것이다 — 코드가 읽는 파일을 확인하지 않고
+    레인 이름만 보고 분류했다. 이름은 그대로인데 원장이 바뀌어 있었다.
+    """
+    from pathlib import Path as _P
+    from web.backend import services as S
+    from multi_agent.tools.report_research_recursion_gate import LANES as GATE_LANES
+    web_ledger = S.LANES["nasdaq_swing"]["ledger"]
+    gate_ledger = _P(str(GATE_LANES["nasdaq_session_tape"]["ledger"])).name
+    assert web_ledger == gate_ledger, (
+        f"웹은 {web_ledger} 를 읽는데 매핑은 {gate_ledger} 를 판정한다 — 배선이 틀렸다")
 
 
 def test_lane_sets_are_disjoint():
